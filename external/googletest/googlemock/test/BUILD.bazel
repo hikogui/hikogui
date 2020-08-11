@@ -28,9 +28,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# Author: misterg@google.com (Gennadiy Civil)
-#
 #   Bazel Build for Google C++ Testing Framework(Google Test)-googlemock
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_test")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 licenses(["notice"])
 
@@ -95,6 +96,7 @@ py_test(
         ":gmock_output_test_",
         ":gmock_output_test_golden.txt",
     ],
+    python_version = "PY2",
     deps = [":gmock_test_utils"],
 )
 

@@ -34,8 +34,8 @@
 namespace testing {
 
 GMOCK_DEFINE_bool_(catch_leaked_mocks, true,
-                   "true iff Google Mock should report leaked mock objects "
-                   "as failures.");
+                   "true if and only if Google Mock should report leaked "
+                   "mock objects as failures.");
 
 GMOCK_DEFINE_string_(verbose, internal::kWarningVerbosity,
                      "Controls how verbose Google Mock's output is."
@@ -124,7 +124,7 @@ static bool ParseGoogleMockStringFlag(const char* str, const char* flag,
 }
 
 static bool ParseGoogleMockIntFlag(const char* str, const char* flag,
-                                   int* value) {
+                                   int32_t* value) {
   // Gets the value of the flag as a string.
   const char* const value_str = ParseGoogleMockFlagValue(str, flag, true);
 

@@ -33,16 +33,20 @@
 // This file tests the internal utilities.
 
 #include "gmock/internal/gmock-internal-utils.h"
+
 #include <stdlib.h>
+
+#include <cstdint>
 #include <map>
 #include <memory>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
+
 #include "gmock/gmock.h"
 #include "gmock/internal/gmock-port.h"
-#include "gtest/gtest.h"
 #include "gtest/gtest-spi.h"
+#include "gtest/gtest.h"
 
 // Indicates that this translation unit is part of Google Test's
 // implementation.  It must come before gtest-internal-inl.h is
@@ -121,15 +125,17 @@ TEST(ConvertIdentifierNameToWordsTest, WorksWhenNameIsMixture) {
 }
 
 TEST(PointeeOfTest, WorksForSmartPointers) {
-  CompileAssertTypesEqual<int, PointeeOf<std::unique_ptr<int> >::type>();
-  CompileAssertTypesEqual<std::string,
-                          PointeeOf<std::shared_ptr<std::string> >::type>();
+  EXPECT_TRUE(
+      (std::is_same<int, PointeeOf<std::unique_ptr<int>>::type>::value));
+  EXPECT_TRUE(
+      (std::is_same<std::string,
+                    PointeeOf<std::shared_ptr<std::string>>::type>::value));
 }
 
 TEST(PointeeOfTest, WorksForRawPointers) {
-  CompileAssertTypesEqual<int, PointeeOf<int*>::type>();
-  CompileAssertTypesEqual<const char, PointeeOf<const char*>::type>();
-  CompileAssertTypesEqual<void, PointeeOf<void*>::type>();
+  EXPECT_TRUE((std::is_same<int, PointeeOf<int*>::type>::value));
+  EXPECT_TRUE((std::is_same<const char, PointeeOf<const char*>::type>::value));
+  EXPECT_TRUE((std::is_void<PointeeOf<void*>::type>::value));
 }
 
 TEST(GetRawPointerTest, WorksForSmartPointers) {
@@ -167,9 +173,9 @@ TEST(KindOfTest, Integer) {
   EXPECT_EQ(kInteger, GMOCK_KIND_OF_(unsigned int));  // NOLINT
   EXPECT_EQ(kInteger, GMOCK_KIND_OF_(long));  // NOLINT
   EXPECT_EQ(kInteger, GMOCK_KIND_OF_(unsigned long));  // NOLINT
+  EXPECT_EQ(kInteger, GMOCK_KIND_OF_(long long));  // NOLINT
+  EXPECT_EQ(kInteger, GMOCK_KIND_OF_(unsigned long long));  // NOLINT
   EXPECT_EQ(kInteger, GMOCK_KIND_OF_(wchar_t));  // NOLINT
-  EXPECT_EQ(kInteger, GMOCK_KIND_OF_(Int64));  // NOLINT
-  EXPECT_EQ(kInteger, GMOCK_KIND_OF_(UInt64));  // NOLINT
   EXPECT_EQ(kInteger, GMOCK_KIND_OF_(size_t));  // NOLINT
 #if GTEST_OS_LINUX || GTEST_OS_MAC || GTEST_OS_CYGWIN
   // ssize_t is not defined on Windows and possibly some other OSes.
@@ -217,11 +223,12 @@ TEST(LosslessArithmeticConvertibleTest, IntegerToInteger) {
   EXPECT_TRUE((LosslessArithmeticConvertible<unsigned char, int>::value));
 
   // Unsigned => larger unsigned is fine.
-  EXPECT_TRUE(
-      (LosslessArithmeticConvertible<unsigned short, UInt64>::value)); // NOLINT
+  EXPECT_TRUE((LosslessArithmeticConvertible<
+               unsigned short, uint64_t>::value));  // NOLINT
 
   // Signed => unsigned is not fine.
-  EXPECT_FALSE((LosslessArithmeticConvertible<short, UInt64>::value)); // NOLINT
+  EXPECT_FALSE((LosslessArithmeticConvertible<
+                short, uint64_t>::value));  // NOLINT
   EXPECT_FALSE((LosslessArithmeticConvertible<
       signed char, unsigned int>::value));  // NOLINT
 
@@ -237,12 +244,12 @@ TEST(LosslessArithmeticConvertibleTest, IntegerToInteger) {
   EXPECT_FALSE((LosslessArithmeticConvertible<
                 unsigned char, signed char>::value));
   EXPECT_FALSE((LosslessArithmeticConvertible<int, unsigned int>::value));
-  EXPECT_FALSE((LosslessArithmeticConvertible<UInt64, Int64>::value));
+  EXPECT_FALSE((LosslessArithmeticConvertible<uint64_t, int64_t>::value));
 
   // Larger size => smaller size is not fine.
   EXPECT_FALSE((LosslessArithmeticConvertible<long, char>::value));  // NOLINT
   EXPECT_FALSE((LosslessArithmeticConvertible<int, signed char>::value));
-  EXPECT_FALSE((LosslessArithmeticConvertible<Int64, unsigned int>::value));
+  EXPECT_FALSE((LosslessArithmeticConvertible<int64_t, unsigned int>::value));
 }
 
 TEST(LosslessArithmeticConvertibleTest, IntegerToFloatingPoint) {
@@ -261,7 +268,7 @@ TEST(LosslessArithmeticConvertibleTest, FloatingPointToBool) {
 
 TEST(LosslessArithmeticConvertibleTest, FloatingPointToInteger) {
   EXPECT_FALSE((LosslessArithmeticConvertible<float, long>::value));  // NOLINT
-  EXPECT_FALSE((LosslessArithmeticConvertible<double, Int64>::value));
+  EXPECT_FALSE((LosslessArithmeticConvertible<double, int64_t>::value));
   EXPECT_FALSE((LosslessArithmeticConvertible<long double, int>::value));
 }
 
@@ -502,39 +509,6 @@ TEST(LogTest, OnlyWarningsArePrintedWhenVerbosityIsInvalid) {
   TestLogWithSeverity("invalid", kWarning, true);
 }
 
-#endif  // GTEST_HAS_STREAM_REDIRECTION
-
-TEST(TypeTraitsTest, true_type) {
-  EXPECT_TRUE(true_type::value);
-}
-
-TEST(TypeTraitsTest, false_type) {
-  EXPECT_FALSE(false_type::value);
-}
-
-TEST(TypeTraitsTest, is_reference) {
-  EXPECT_FALSE(is_reference<int>::value);
-  EXPECT_FALSE(is_reference<char*>::value);
-  EXPECT_TRUE(is_reference<const int&>::value);
-}
-
-TEST(TypeTraitsTest, type_equals) {
-  EXPECT_FALSE((type_equals<int, const int>::value));
-  EXPECT_FALSE((type_equals<int, int&>::value));
-  EXPECT_FALSE((type_equals<int, double>::value));
-  EXPECT_TRUE((type_equals<char, char>::value));
-}
-
-TEST(TypeTraitsTest, remove_reference) {
-  EXPECT_TRUE((type_equals<char, remove_reference<char&>::type>::value));
-  EXPECT_TRUE((type_equals<const int,
-               remove_reference<const int&>::type>::value));
-  EXPECT_TRUE((type_equals<int, remove_reference<int>::type>::value));
-  EXPECT_TRUE((type_equals<double*, remove_reference<double*>::type>::value));
-}
-
-#if GTEST_HAS_STREAM_REDIRECTION
-
 // Verifies that Log() behaves correctly for the given verbosity level
 // and log severity.
 std::string GrabOutput(void(*logger)(), const char* verbosity) {
@@ -693,63 +667,66 @@ TEST(StlContainerViewTest, WorksForDynamicNativeArray) {
 TEST(FunctionTest, Nullary) {
   typedef Function<int()> F;  // NOLINT
   EXPECT_EQ(0u, F::ArgumentCount);
-  CompileAssertTypesEqual<int, F::Result>();
-  CompileAssertTypesEqual<std::tuple<>, F::ArgumentTuple>();
-  CompileAssertTypesEqual<std::tuple<>, F::ArgumentMatcherTuple>();
-  CompileAssertTypesEqual<void(), F::MakeResultVoid>();
-  CompileAssertTypesEqual<IgnoredValue(), F::MakeResultIgnoredValue>();
+  EXPECT_TRUE((std::is_same<int, F::Result>::value));
+  EXPECT_TRUE((std::is_same<std::tuple<>, F::ArgumentTuple>::value));
+  EXPECT_TRUE((std::is_same<std::tuple<>, F::ArgumentMatcherTuple>::value));
+  EXPECT_TRUE((std::is_same<void(), F::MakeResultVoid>::value));
+  EXPECT_TRUE((std::is_same<IgnoredValue(), F::MakeResultIgnoredValue>::value));
 }
 
 TEST(FunctionTest, Unary) {
   typedef Function<int(bool)> F;  // NOLINT
   EXPECT_EQ(1u, F::ArgumentCount);
-  CompileAssertTypesEqual<int, F::Result>();
-  CompileAssertTypesEqual<bool, F::Arg<0>::type>();
-  CompileAssertTypesEqual<std::tuple<bool>, F::ArgumentTuple>();
-  CompileAssertTypesEqual<std::tuple<Matcher<bool> >,
-                          F::ArgumentMatcherTuple>();
-  CompileAssertTypesEqual<void(bool), F::MakeResultVoid>();  // NOLINT
-  CompileAssertTypesEqual<IgnoredValue(bool),  // NOLINT
-      F::MakeResultIgnoredValue>();
+  EXPECT_TRUE((std::is_same<int, F::Result>::value));
+  EXPECT_TRUE((std::is_same<bool, F::Arg<0>::type>::value));
+  EXPECT_TRUE((std::is_same<std::tuple<bool>, F::ArgumentTuple>::value));
+  EXPECT_TRUE((
+      std::is_same<std::tuple<Matcher<bool>>, F::ArgumentMatcherTuple>::value));
+  EXPECT_TRUE((std::is_same<void(bool), F::MakeResultVoid>::value));  // NOLINT
+  EXPECT_TRUE((std::is_same<IgnoredValue(bool),                       // NOLINT
+                            F::MakeResultIgnoredValue>::value));
 }
 
 TEST(FunctionTest, Binary) {
   typedef Function<int(bool, const long&)> F;  // NOLINT
   EXPECT_EQ(2u, F::ArgumentCount);
-  CompileAssertTypesEqual<int, F::Result>();
-  CompileAssertTypesEqual<bool, F::Arg<0>::type>();
-  CompileAssertTypesEqual<const long&, F::Arg<1>::type>();  // NOLINT
-  CompileAssertTypesEqual<std::tuple<bool, const long&>,  // NOLINT
-                          F::ArgumentTuple>();
-  CompileAssertTypesEqual<
-      std::tuple<Matcher<bool>, Matcher<const long&> >,  // NOLINT
-      F::ArgumentMatcherTuple>();
-  CompileAssertTypesEqual<void(bool, const long&), F::MakeResultVoid>();  // NOLINT
-  CompileAssertTypesEqual<IgnoredValue(bool, const long&),  // NOLINT
-      F::MakeResultIgnoredValue>();
+  EXPECT_TRUE((std::is_same<int, F::Result>::value));
+  EXPECT_TRUE((std::is_same<bool, F::Arg<0>::type>::value));
+  EXPECT_TRUE((std::is_same<const long&, F::Arg<1>::type>::value));  // NOLINT
+  EXPECT_TRUE((std::is_same<std::tuple<bool, const long&>,           // NOLINT
+                            F::ArgumentTuple>::value));
+  EXPECT_TRUE(
+      (std::is_same<std::tuple<Matcher<bool>, Matcher<const long&>>,  // NOLINT
+                    F::ArgumentMatcherTuple>::value));
+  EXPECT_TRUE((std::is_same<void(bool, const long&),  // NOLINT
+                            F::MakeResultVoid>::value));
+  EXPECT_TRUE((std::is_same<IgnoredValue(bool, const long&),  // NOLINT
+                            F::MakeResultIgnoredValue>::value));
 }
 
 TEST(FunctionTest, LongArgumentList) {
   typedef Function<char(bool, int, char*, int&, const long&)> F;  // NOLINT
   EXPECT_EQ(5u, F::ArgumentCount);
-  CompileAssertTypesEqual<char, F::Result>();
-  CompileAssertTypesEqual<bool, F::Arg<0>::type>();
-  CompileAssertTypesEqual<int, F::Arg<1>::type>();
-  CompileAssertTypesEqual<char*, F::Arg<2>::type>();
-  CompileAssertTypesEqual<int&, F::Arg<3>::type>();
-  CompileAssertTypesEqual<const long&, F::Arg<4>::type>();  // NOLINT
-  CompileAssertTypesEqual<
-      std::tuple<bool, int, char*, int&, const long&>,  // NOLINT
-      F::ArgumentTuple>();
-  CompileAssertTypesEqual<
-      std::tuple<Matcher<bool>, Matcher<int>, Matcher<char*>, Matcher<int&>,
-                 Matcher<const long&> >,  // NOLINT
-      F::ArgumentMatcherTuple>();
-  CompileAssertTypesEqual<void(bool, int, char*, int&, const long&),  // NOLINT
-                          F::MakeResultVoid>();
-  CompileAssertTypesEqual<
-      IgnoredValue(bool, int, char*, int&, const long&),  // NOLINT
-      F::MakeResultIgnoredValue>();
+  EXPECT_TRUE((std::is_same<char, F::Result>::value));
+  EXPECT_TRUE((std::is_same<bool, F::Arg<0>::type>::value));
+  EXPECT_TRUE((std::is_same<int, F::Arg<1>::type>::value));
+  EXPECT_TRUE((std::is_same<char*, F::Arg<2>::type>::value));
+  EXPECT_TRUE((std::is_same<int&, F::Arg<3>::type>::value));
+  EXPECT_TRUE((std::is_same<const long&, F::Arg<4>::type>::value));  // NOLINT
+  EXPECT_TRUE(
+      (std::is_same<std::tuple<bool, int, char*, int&, const long&>,  // NOLINT
+                    F::ArgumentTuple>::value));
+  EXPECT_TRUE(
+      (std::is_same<
+          std::tuple<Matcher<bool>, Matcher<int>, Matcher<char*>, Matcher<int&>,
+                     Matcher<const long&>>,  // NOLINT
+          F::ArgumentMatcherTuple>::value));
+  EXPECT_TRUE(
+      (std::is_same<void(bool, int, char*, int&, const long&),  // NOLINT
+                    F::MakeResultVoid>::value));
+  EXPECT_TRUE((
+      std::is_same<IgnoredValue(bool, int, char*, int&, const long&),  // NOLINT
+                   F::MakeResultIgnoredValue>::value));
 }
 
 }  // namespace

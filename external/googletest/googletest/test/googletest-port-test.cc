@@ -90,10 +90,10 @@ TEST(IsXDigitTest, ReturnsFalseForWideNonAscii) {
 
 class Base {
  public:
-  // Copy constructor and assignment operator do exactly what we need, so we
-  // use them.
   Base() : member_(0) {}
   explicit Base(int n) : member_(n) {}
+  Base(const Base&) = default;
+  Base& operator=(const Base&) = default;
   virtual ~Base() {}
   int member() { return member_; }
 
@@ -199,24 +199,6 @@ TEST(ImplicitCastTest, CanUseImplicitConstructor) {
   To to = ::testing::internal::ImplicitCast_<To>(&converted);
   (void)to;
   EXPECT_TRUE(converted);
-}
-
-TEST(IteratorTraitsTest, WorksForSTLContainerIterators) {
-  StaticAssertTypeEq<int,
-      IteratorTraits< ::std::vector<int>::const_iterator>::value_type>();
-  StaticAssertTypeEq<bool,
-      IteratorTraits< ::std::list<bool>::iterator>::value_type>();
-}
-
-TEST(IteratorTraitsTest, WorksForPointerToNonConst) {
-  StaticAssertTypeEq<char, IteratorTraits<char*>::value_type>();
-  StaticAssertTypeEq<const void*, IteratorTraits<const void**>::value_type>();
-}
-
-TEST(IteratorTraitsTest, WorksForPointerToConst) {
-  StaticAssertTypeEq<char, IteratorTraits<const char*>::value_type>();
-  StaticAssertTypeEq<const void*,
-      IteratorTraits<const void* const*>::value_type>();
 }
 
 TEST(GtestCheckSyntaxTest, BehavesLikeASingleStatement) {
@@ -1198,8 +1180,6 @@ class DestructorTracker {
     return DestructorCall::List().size() - 1;
   }
   const size_t index_;
-
-  GTEST_DISALLOW_ASSIGN_(DestructorTracker);
 };
 
 typedef ThreadLocal<DestructorTracker>* ThreadParam;

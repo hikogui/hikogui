@@ -37,21 +37,22 @@
 // code once "gtest.h" has been #included.
 // Do not move it after other gtest #includes.
 TEST(CommandLineFlagsTest, CanBeAccessedInCodeOnceGTestHIsIncluded) {
-  bool dummy = testing::GTEST_FLAG(also_run_disabled_tests)
-      || testing::GTEST_FLAG(break_on_failure)
-      || testing::GTEST_FLAG(catch_exceptions)
-      || testing::GTEST_FLAG(color) != "unknown"
-      || testing::GTEST_FLAG(filter) != "unknown"
-      || testing::GTEST_FLAG(list_tests)
-      || testing::GTEST_FLAG(output) != "unknown"
-      || testing::GTEST_FLAG(print_time)
-      || testing::GTEST_FLAG(random_seed)
-      || testing::GTEST_FLAG(repeat) > 0
-      || testing::GTEST_FLAG(show_internal_stack_frames)
-      || testing::GTEST_FLAG(shuffle)
-      || testing::GTEST_FLAG(stack_trace_depth) > 0
-      || testing::GTEST_FLAG(stream_result_to) != "unknown"
-      || testing::GTEST_FLAG(throw_on_failure);
+  bool dummy = testing::GTEST_FLAG(also_run_disabled_tests) ||
+               testing::GTEST_FLAG(break_on_failure) ||
+               testing::GTEST_FLAG(catch_exceptions) ||
+               testing::GTEST_FLAG(color) != "unknown" ||
+               testing::GTEST_FLAG(fail_fast) ||
+               testing::GTEST_FLAG(filter) != "unknown" ||
+               testing::GTEST_FLAG(list_tests) ||
+               testing::GTEST_FLAG(output) != "unknown" ||
+               testing::GTEST_FLAG(brief) || testing::GTEST_FLAG(print_time) ||
+               testing::GTEST_FLAG(random_seed) ||
+               testing::GTEST_FLAG(repeat) > 0 ||
+               testing::GTEST_FLAG(show_internal_stack_frames) ||
+               testing::GTEST_FLAG(shuffle) ||
+               testing::GTEST_FLAG(stack_trace_depth) > 0 ||
+               testing::GTEST_FLAG(stream_result_to) != "unknown" ||
+               testing::GTEST_FLAG(throw_on_failure);
   EXPECT_TRUE(dummy || !dummy);  // Suppresses warning that dummy is unused.
 }
 
@@ -60,10 +61,12 @@ TEST(CommandLineFlagsTest, CanBeAccessedInCodeOnceGTestHIsIncluded) {
 #include <string.h>
 #include <time.h>
 
+#include <cstdint>
 #include <map>
-#include <vector>
 #include <ostream>
+#include <type_traits>
 #include <unordered_set>
+#include <vector>
 
 #include "gtest/gtest-spi.h"
 #include "src/gtest-internal-inl.h"
@@ -200,9 +203,11 @@ using testing::GTEST_FLAG(break_on_failure);
 using testing::GTEST_FLAG(catch_exceptions);
 using testing::GTEST_FLAG(color);
 using testing::GTEST_FLAG(death_test_use_fork);
+using testing::GTEST_FLAG(fail_fast);
 using testing::GTEST_FLAG(filter);
 using testing::GTEST_FLAG(list_tests);
 using testing::GTEST_FLAG(output);
+using testing::GTEST_FLAG(brief);
 using testing::GTEST_FLAG(print_time);
 using testing::GTEST_FLAG(random_seed);
 using testing::GTEST_FLAG(repeat);
@@ -213,27 +218,26 @@ using testing::GTEST_FLAG(stream_result_to);
 using testing::GTEST_FLAG(throw_on_failure);
 using testing::IsNotSubstring;
 using testing::IsSubstring;
+using testing::kMaxStackTraceDepth;
 using testing::Message;
 using testing::ScopedFakeTestPartResultReporter;
 using testing::StaticAssertTypeEq;
 using testing::Test;
-using testing::TestCase;
 using testing::TestEventListeners;
 using testing::TestInfo;
 using testing::TestPartResult;
 using testing::TestPartResultArray;
 using testing::TestProperty;
 using testing::TestResult;
+using testing::TestSuite;
 using testing::TimeInMillis;
 using testing::UnitTest;
-using testing::internal::AddReference;
 using testing::internal::AlwaysFalse;
 using testing::internal::AlwaysTrue;
 using testing::internal::AppendUserMessage;
 using testing::internal::ArrayAwareFind;
 using testing::internal::ArrayEq;
 using testing::internal::CodePointToUtf8;
-using testing::internal::CompileAssertTypesEqual;
 using testing::internal::CopyArray;
 using testing::internal::CountIf;
 using testing::internal::EqFailure;
@@ -241,7 +245,6 @@ using testing::internal::FloatingPoint;
 using testing::internal::ForEach;
 using testing::internal::FormatEpochTimeInMillisAsIso8601;
 using testing::internal::FormatTimeInMillisAsSeconds;
-using testing::internal::GTestFlagSaver;
 using testing::internal::GetCurrentOsStackTraceExceptTop;
 using testing::internal::GetElementOr;
 using testing::internal::GetNextRandomSeed;
@@ -250,20 +253,20 @@ using testing::internal::GetTestTypeId;
 using testing::internal::GetTimeInMillis;
 using testing::internal::GetTypeId;
 using testing::internal::GetUnitTestImpl;
-using testing::internal::Int32;
+using testing::internal::GTestFlagSaver;
 using testing::internal::Int32FromEnvOrDie;
 using testing::internal::IsAProtocolMessage;
 using testing::internal::IsContainer;
 using testing::internal::IsContainerTest;
 using testing::internal::IsNotContainer;
+using testing::internal::kMaxRandomSeed;
+using testing::internal::kTestTypeIdInGoogleTest;
 using testing::internal::NativeArray;
 using testing::internal::OsStackTraceGetter;
 using testing::internal::OsStackTraceGetterInterface;
 using testing::internal::ParseInt32Flag;
 using testing::internal::RelationToSourceCopy;
 using testing::internal::RelationToSourceReference;
-using testing::internal::RemoveConst;
-using testing::internal::RemoveReference;
 using testing::internal::ShouldRunTestOnShard;
 using testing::internal::ShouldShard;
 using testing::internal::ShouldUseColor;
@@ -274,15 +277,11 @@ using testing::internal::StreamableToString;
 using testing::internal::String;
 using testing::internal::TestEventListenersAccessor;
 using testing::internal::TestResultAccessor;
-using testing::internal::UInt32;
 using testing::internal::UnitTestImpl;
 using testing::internal::WideStringToUtf8;
 using testing::internal::edit_distance::CalculateOptimalEdits;
 using testing::internal::edit_distance::CreateUnifiedDiff;
 using testing::internal::edit_distance::EditType;
-using testing::internal::kMaxRandomSeed;
-using testing::internal::kTestTypeIdInGoogleTest;
-using testing::kMaxStackTraceDepth;
 
 #if GTEST_HAS_STREAM_REDIRECTION
 using testing::internal::CaptureStdout;
@@ -791,7 +790,7 @@ TEST(RandomDeathTest, GeneratesCrashesOnInvalidRange) {
 }
 
 TEST(RandomTest, GeneratesNumbersWithinRange) {
-  const UInt32 kRange = 10000;
+  constexpr uint32_t kRange = 10000;
   testing::internal::Random random(12345);
   for (int i = 0; i < 10; i++) {
     EXPECT_LT(random.Generate(kRange), kRange) << " for iteration " << i;
@@ -804,10 +803,10 @@ TEST(RandomTest, GeneratesNumbersWithinRange) {
 }
 
 TEST(RandomTest, RepeatsWhenReseeded) {
-  const int kSeed = 123;
-  const int kArraySize = 10;
-  const UInt32 kRange = 10000;
-  UInt32 values[kArraySize];
+  constexpr int kSeed = 123;
+  constexpr int kArraySize = 10;
+  constexpr uint32_t kRange = 10000;
+  uint32_t values[kArraySize];
 
   testing::internal::Random random(kSeed);
   for (int i = 0; i < kArraySize; i++) {
@@ -1602,9 +1601,11 @@ class GTestFlagSaverTest : public Test {
     GTEST_FLAG(catch_exceptions) = false;
     GTEST_FLAG(death_test_use_fork) = false;
     GTEST_FLAG(color) = "auto";
+    GTEST_FLAG(fail_fast) = false;
     GTEST_FLAG(filter) = "";
     GTEST_FLAG(list_tests) = false;
     GTEST_FLAG(output) = "";
+    GTEST_FLAG(brief) = false;
     GTEST_FLAG(print_time) = true;
     GTEST_FLAG(random_seed) = 0;
     GTEST_FLAG(repeat) = 1;
@@ -1629,9 +1630,11 @@ class GTestFlagSaverTest : public Test {
     EXPECT_FALSE(GTEST_FLAG(catch_exceptions));
     EXPECT_STREQ("auto", GTEST_FLAG(color).c_str());
     EXPECT_FALSE(GTEST_FLAG(death_test_use_fork));
+    EXPECT_FALSE(GTEST_FLAG(fail_fast));
     EXPECT_STREQ("", GTEST_FLAG(filter).c_str());
     EXPECT_FALSE(GTEST_FLAG(list_tests));
     EXPECT_STREQ("", GTEST_FLAG(output).c_str());
+    EXPECT_FALSE(GTEST_FLAG(brief));
     EXPECT_TRUE(GTEST_FLAG(print_time));
     EXPECT_EQ(0, GTEST_FLAG(random_seed));
     EXPECT_EQ(1, GTEST_FLAG(repeat));
@@ -1645,9 +1648,11 @@ class GTestFlagSaverTest : public Test {
     GTEST_FLAG(catch_exceptions) = true;
     GTEST_FLAG(color) = "no";
     GTEST_FLAG(death_test_use_fork) = true;
+    GTEST_FLAG(fail_fast) = true;
     GTEST_FLAG(filter) = "abc";
     GTEST_FLAG(list_tests) = true;
     GTEST_FLAG(output) = "xml:foo.xml";
+    GTEST_FLAG(brief) = true;
     GTEST_FLAG(print_time) = false;
     GTEST_FLAG(random_seed) = 1;
     GTEST_FLAG(repeat) = 100;
@@ -1775,7 +1780,7 @@ TEST(Int32FromGTestEnvTest, ParsesAndReturnsValidValue) {
 // Tests that ParseInt32Flag() returns false and doesn't change the
 // output value when the flag has wrong format
 TEST(ParseInt32FlagTest, ReturnsFalseForInvalidFlag) {
-  Int32 value = 123;
+  int32_t value = 123;
   EXPECT_FALSE(ParseInt32Flag("--a=100", "b", &value));
   EXPECT_EQ(123, value);
 
@@ -1788,7 +1793,7 @@ TEST(ParseInt32FlagTest, ReturnsFalseForInvalidFlag) {
 TEST(ParseInt32FlagTest, ReturnsDefaultWhenValueOverflows) {
   printf("(expecting 2 warnings)\n");
 
-  Int32 value = 123;
+  int32_t value = 123;
   EXPECT_FALSE(ParseInt32Flag("--abc=12345678987654321", "abc", &value));
   EXPECT_EQ(123, value);
 
@@ -1802,7 +1807,7 @@ TEST(ParseInt32FlagTest, ReturnsDefaultWhenValueOverflows) {
 TEST(ParseInt32FlagTest, ReturnsDefaultWhenValueIsInvalid) {
   printf("(expecting 2 warnings)\n");
 
-  Int32 value = 123;
+  int32_t value = 123;
   EXPECT_FALSE(ParseInt32Flag("--abc=A1", "abc", &value));
   EXPECT_EQ(123, value);
 
@@ -1814,7 +1819,7 @@ TEST(ParseInt32FlagTest, ReturnsDefaultWhenValueIsInvalid) {
 // returns true when the flag represents a valid decimal integer in
 // the range of an Int32.
 TEST(ParseInt32FlagTest, ParsesAndReturnsValidValue) {
-  Int32 value = 123;
+  int32_t value = 123;
   EXPECT_TRUE(ParseInt32Flag("--" GTEST_FLAG_PREFIX_ "abc=456", "abc", &value));
   EXPECT_EQ(456, value);
 
@@ -1837,7 +1842,7 @@ TEST(Int32FromEnvOrDieTest, ParsesAndReturnsValidValue) {
 #endif  // !GTEST_OS_WINDOWS_MOBILE
 
 // Tests that Int32FromEnvOrDie() aborts with an error message
-// if the variable is not an Int32.
+// if the variable is not an int32_t.
 TEST(Int32FromEnvOrDieDeathTest, AbortsOnFailure) {
   SetEnv(GTEST_FLAG_PREFIX_UPPER_ "VAR", "xxx");
   EXPECT_DEATH_IF_SUPPORTED(
@@ -1846,7 +1851,7 @@ TEST(Int32FromEnvOrDieDeathTest, AbortsOnFailure) {
 }
 
 // Tests that Int32FromEnvOrDie() aborts with an error message
-// if the variable cannot be represented by an Int32.
+// if the variable cannot be represented by an int32_t.
 TEST(Int32FromEnvOrDieDeathTest, AbortsOnInt32Overflow) {
   SetEnv(GTEST_FLAG_PREFIX_UPPER_ "VAR", "1234567891234567891234");
   EXPECT_DEATH_IF_SUPPORTED(
@@ -2016,10 +2021,11 @@ void ExpectNonFatalFailureRecordingPropertyWithReservedKeyForCurrentTest(
 
 void ExpectNonFatalFailureRecordingPropertyWithReservedKeyForCurrentTestSuite(
     const char* key) {
-  const TestCase* test_case = UnitTest::GetInstance()->current_test_case();
-  ASSERT_TRUE(test_case != nullptr);
+  const testing::TestSuite* test_suite =
+      UnitTest::GetInstance()->current_test_suite();
+  ASSERT_TRUE(test_suite != nullptr);
   ExpectNonFatalFailureRecordingPropertyWithReservedKey(
-      test_case->ad_hoc_test_result(), key);
+      test_suite->ad_hoc_test_result(), key);
 }
 
 void ExpectNonFatalFailureRecordingPropertyWithReservedKeyOutsideOfTestSuite(
@@ -2049,8 +2055,10 @@ class UnitTestRecordPropertyTest :
         "time");
 
     Test::RecordProperty("test_case_key_1", "1");
+
     const testing::TestSuite* test_suite =
-        UnitTest::GetInstance()->current_test_case();
+        UnitTest::GetInstance()->current_test_suite();
+
     ASSERT_TRUE(test_suite != nullptr);
 
     ASSERT_EQ(1, test_suite->ad_hoc_test_result().test_property_count());
@@ -2167,12 +2175,12 @@ static Environment* record_property_env GTEST_ATTRIBUTE_UNUSED_ =
 
 // First, some predicates and predicate-formatters needed by the tests.
 
-// Returns true iff the argument is an even number.
+// Returns true if and only if the argument is an even number.
 bool IsEven(int n) {
   return (n % 2) == 0;
 }
 
-// A functor that returns true iff the argument is an even number.
+// A functor that returns true if and only if the argument is an even number.
 struct IsEvenFunctor {
   bool operator()(int n) { return IsEven(n); }
 };
@@ -2216,13 +2224,13 @@ struct AssertIsEvenFunctor {
   }
 };
 
-// Returns true iff the sum of the arguments is an even number.
+// Returns true if and only if the sum of the arguments is an even number.
 bool SumIsEven2(int n1, int n2) {
   return IsEven(n1 + n2);
 }
 
-// A functor that returns true iff the sum of the arguments is an even
-// number.
+// A functor that returns true if and only if the sum of the arguments is an
+// even number.
 struct SumIsEven3Functor {
   bool operator()(int n1, int n2, int n3) {
     return IsEven(n1 + n2 + n3);
@@ -2924,22 +2932,18 @@ TEST_F(FloatTest, Commutative) {
 TEST_F(FloatTest, EXPECT_NEAR) {
   EXPECT_NEAR(-1.0f, -1.1f, 0.2f);
   EXPECT_NEAR(2.0f, 3.0f, 1.0f);
-  EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.0f,1.5f, 0.25f),  // NOLINT
+  EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.0f, 1.5f, 0.25f),  // NOLINT
                           "The difference between 1.0f and 1.5f is 0.5, "
                           "which exceeds 0.25f");
-  // To work around a bug in gcc 2.95.0, there is intentionally no
-  // space after the first comma in the previous line.
 }
 
 // Tests ASSERT_NEAR.
 TEST_F(FloatTest, ASSERT_NEAR) {
   ASSERT_NEAR(-1.0f, -1.1f, 0.2f);
   ASSERT_NEAR(2.0f, 3.0f, 1.0f);
-  EXPECT_FATAL_FAILURE(ASSERT_NEAR(1.0f,1.5f, 0.25f),  // NOLINT
+  EXPECT_FATAL_FAILURE(ASSERT_NEAR(1.0f, 1.5f, 0.25f),  // NOLINT
                        "The difference between 1.0f and 1.5f is 0.5, "
                        "which exceeds 0.25f");
-  // To work around a bug in gcc 2.95.0, there is intentionally no
-  // space after the first comma in the previous line.
 }
 
 // Tests the cases where FloatLE() should succeed.
@@ -3080,8 +3084,6 @@ TEST_F(DoubleTest, EXPECT_NEAR) {
   EXPECT_NONFATAL_FAILURE(EXPECT_NEAR(1.0, 1.5, 0.25),  // NOLINT
                           "The difference between 1.0 and 1.5 is 0.5, "
                           "which exceeds 0.25");
-  // To work around a bug in gcc 2.95.0, there is intentionally no
-  // space after the first comma in the previous statement.
 }
 
 // Tests ASSERT_NEAR.
@@ -3091,8 +3093,6 @@ TEST_F(DoubleTest, ASSERT_NEAR) {
   EXPECT_FATAL_FAILURE(ASSERT_NEAR(1.0, 1.5, 0.25),  // NOLINT
                        "The difference between 1.0 and 1.5 is 0.5, "
                        "which exceeds 0.25");
-  // To work around a bug in gcc 2.95.0, there is intentionally no
-  // space after the first comma in the previous statement.
 }
 
 // Tests the cases where DoubleLE() should succeed.
@@ -3345,8 +3345,21 @@ TEST_F(SingleEvaluationTest, OtherCases) {
 
 #if GTEST_HAS_EXCEPTIONS
 
+#if GTEST_HAS_RTTI
+
+#define ERROR_DESC "std::runtime_error"
+
+#else  // GTEST_HAS_RTTI
+
+#define ERROR_DESC "an std::exception-derived error"
+
+#endif  // GTEST_HAS_RTTI
+
 void ThrowAnInteger() {
   throw 1;
+}
+void ThrowRuntimeError(const char* what) {
+  throw std::runtime_error(what);
 }
 
 // Tests that assertion arguments are evaluated exactly once.
@@ -3365,31 +3378,38 @@ TEST_F(SingleEvaluationTest, ExceptionTests) {
   }, bool), "throws a different type");
   EXPECT_EQ(2, a_);
 
+  // failed EXPECT_THROW, throws runtime error
+  EXPECT_NONFATAL_FAILURE(EXPECT_THROW({  // NOLINT
+    a_++;
+    ThrowRuntimeError("A description");
+  }, bool), "throws " ERROR_DESC " with description \"A description\"");
+  EXPECT_EQ(3, a_);
+
   // failed EXPECT_THROW, throws nothing
   EXPECT_NONFATAL_FAILURE(EXPECT_THROW(a_++, bool), "throws nothing");
-  EXPECT_EQ(3, a_);
+  EXPECT_EQ(4, a_);
 
   // successful EXPECT_NO_THROW
   EXPECT_NO_THROW(a_++);
-  EXPECT_EQ(4, a_);
+  EXPECT_EQ(5, a_);
 
   // failed EXPECT_NO_THROW
   EXPECT_NONFATAL_FAILURE(EXPECT_NO_THROW({  // NOLINT
     a_++;
     ThrowAnInteger();
   }), "it throws");
-  EXPECT_EQ(5, a_);
+  EXPECT_EQ(6, a_);
 
   // successful EXPECT_ANY_THROW
   EXPECT_ANY_THROW({  // NOLINT
     a_++;
     ThrowAnInteger();
   });
-  EXPECT_EQ(6, a_);
+  EXPECT_EQ(7, a_);
 
   // failed EXPECT_ANY_THROW
   EXPECT_NONFATAL_FAILURE(EXPECT_ANY_THROW(a_++), "it doesn't");
-  EXPECT_EQ(7, a_);
+  EXPECT_EQ(8, a_);
 }
 
 #endif  // GTEST_HAS_EXCEPTIONS
@@ -3734,10 +3754,6 @@ TEST(AssertionTest, ASSERT_EQ) {
 TEST(AssertionTest, ASSERT_EQ_NULL) {
   // A success.
   const char* p = nullptr;
-  // Some older GCC versions may issue a spurious warning in this or the next
-  // assertion statement. This warning should not be suppressed with
-  // static_cast since the test verifies the ability to use bare NULL as the
-  // expected parameter to the macro.
   ASSERT_EQ(nullptr, p);
 
   // A failure.
@@ -3813,6 +3829,12 @@ TEST(AssertionTest, ASSERT_THROW) {
       ASSERT_THROW(ThrowAnInteger(), bool),
       "Expected: ThrowAnInteger() throws an exception of type bool.\n"
       "  Actual: it throws a different type.");
+  EXPECT_FATAL_FAILURE(
+      ASSERT_THROW(ThrowRuntimeError("A description"), std::logic_error),
+      "Expected: ThrowRuntimeError(\"A description\") "
+      "throws an exception of type std::logic_error.\n  "
+      "Actual: it throws " ERROR_DESC " "
+      "with description \"A description\".");
 # endif
 
   EXPECT_FATAL_FAILURE(
@@ -3827,6 +3849,11 @@ TEST(AssertionTest, ASSERT_NO_THROW) {
   EXPECT_FATAL_FAILURE(ASSERT_NO_THROW(ThrowAnInteger()),
                        "Expected: ThrowAnInteger() doesn't throw an exception."
                        "\n  Actual: it throws.");
+  EXPECT_FATAL_FAILURE(ASSERT_NO_THROW(ThrowRuntimeError("A description")),
+                       "Expected: ThrowRuntimeError(\"A description\") "
+                       "doesn't throw an exception.\n  "
+                       "Actual: it throws " ERROR_DESC " "
+                       "with description \"A description\".");
 }
 
 // Tests ASSERT_ANY_THROW.
@@ -4136,6 +4163,10 @@ TEST(ExpectThrowTest, DoesNotGenerateUnreachableCodeWarning) {
   EXPECT_NONFATAL_FAILURE(EXPECT_ANY_THROW(n++), "");
 }
 
+TEST(ExpectThrowTest, DoesNotGenerateDuplicateCatchClauseWarning) {
+  EXPECT_THROW(throw std::exception(), std::exception);
+}
+
 TEST(AssertionSyntaxTest, ExceptionAssertionsBehavesLikeSingleStatement) {
   if (AlwaysFalse())
     EXPECT_THROW(ThrowNothing(), bool);
@@ -4314,10 +4345,8 @@ TEST(AssertionWithMessageTest, ASSERT_STR) {
 TEST(AssertionWithMessageTest, ASSERT_FLOATING) {
   ASSERT_FLOAT_EQ(1, 1) << "This should succeed.";
   ASSERT_DOUBLE_EQ(1, 1) << "This should succeed.";
-  EXPECT_FATAL_FAILURE(ASSERT_NEAR(1,1.2, 0.1) << "Expect failure.",  // NOLINT
+  EXPECT_FATAL_FAILURE(ASSERT_NEAR(1, 1.2, 0.1) << "Expect failure.",  // NOLINT
                        "Expect failure.");
-  // To work around a bug in gcc 2.95.0, there is intentionally no
-  // space after the first comma in the previous statement.
 }
 
 // Tests using ASSERT_FALSE with a streamed message.
@@ -4458,10 +4487,6 @@ TEST(ExpectTest, EXPECT_EQ_Double) {
 TEST(ExpectTest, EXPECT_EQ_NULL) {
   // A success.
   const char* p = nullptr;
-  // Some older GCC versions may issue a spurious warning in this or the next
-  // assertion statement. This warning should not be suppressed with
-  // static_cast since the test verifies the ability to use bare NULL as the
-  // expected parameter to the macro.
   EXPECT_EQ(nullptr, p);
 
   // A failure.
@@ -4552,6 +4577,12 @@ TEST(ExpectTest, EXPECT_THROW) {
   EXPECT_NONFATAL_FAILURE(EXPECT_THROW(ThrowAnInteger(), bool),
                           "Expected: ThrowAnInteger() throws an exception of "
                           "type bool.\n  Actual: it throws a different type.");
+  EXPECT_NONFATAL_FAILURE(EXPECT_THROW(ThrowRuntimeError("A description"),
+                                       std::logic_error),
+                          "Expected: ThrowRuntimeError(\"A description\") "
+                          "throws an exception of type std::logic_error.\n  "
+                          "Actual: it throws " ERROR_DESC " "
+                          "with description \"A description\".");
   EXPECT_NONFATAL_FAILURE(
       EXPECT_THROW(ThrowNothing(), bool),
       "Expected: ThrowNothing() throws an exception of type bool.\n"
@@ -4564,6 +4595,11 @@ TEST(ExpectTest, EXPECT_NO_THROW) {
   EXPECT_NONFATAL_FAILURE(EXPECT_NO_THROW(ThrowAnInteger()),
                           "Expected: ThrowAnInteger() doesn't throw an "
                           "exception.\n  Actual: it throws.");
+  EXPECT_NONFATAL_FAILURE(EXPECT_NO_THROW(ThrowRuntimeError("A description")),
+                          "Expected: ThrowRuntimeError(\"A description\") "
+                          "doesn't throw an exception.\n  "
+                          "Actual: it throws " ERROR_DESC " "
+                          "with description \"A description\".");
 }
 
 // Tests EXPECT_ANY_THROW.
@@ -5303,7 +5339,7 @@ class TestInfoTest : public Test {
 TEST_F(TestInfoTest, Names) {
   const TestInfo* const test_info = GetTestInfo("Names");
 
-  ASSERT_STREQ("TestInfoTest", test_info->test_case_name());
+  ASSERT_STREQ("TestInfoTest", test_info->test_suite_name());
   ASSERT_STREQ("Names", test_info->name());
 }
 
@@ -5373,7 +5409,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, CodeLocationForTYPEDTESTP, int);
 
 // Tests setting up and tearing down a test case.
 // Legacy API is deprecated but still available
-#ifndef REMOVE_LEGACY_TEST_CASEAPI
+#ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 class SetUpTestCaseTest : public Test {
  protected:
   // This will be called once before the first test in this test case
@@ -5432,7 +5468,7 @@ TEST_F(SetUpTestCaseTest, Test1) { EXPECT_STRNE(nullptr, shared_resource_); }
 TEST_F(SetUpTestCaseTest, Test2) {
   EXPECT_STREQ("123", shared_resource_);
 }
-#endif  //  REMOVE_LEGACY_TEST_CASEAPI
+#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
 // Tests SetupTestSuite/TearDown TestSuite
 class SetUpTestSuiteTest : public Test {
@@ -5501,20 +5537,23 @@ TEST_F(SetUpTestSuiteTest, TestSetupTestSuite2) {
 // The Flags struct stores a copy of all Google Test flags.
 struct Flags {
   // Constructs a Flags struct where each flag has its default value.
-  Flags() : also_run_disabled_tests(false),
-            break_on_failure(false),
-            catch_exceptions(false),
-            death_test_use_fork(false),
-            filter(""),
-            list_tests(false),
-            output(""),
-            print_time(true),
-            random_seed(0),
-            repeat(1),
-            shuffle(false),
-            stack_trace_depth(kMaxStackTraceDepth),
-            stream_result_to(""),
-            throw_on_failure(false) {}
+  Flags()
+      : also_run_disabled_tests(false),
+        break_on_failure(false),
+        catch_exceptions(false),
+        death_test_use_fork(false),
+        fail_fast(false),
+        filter(""),
+        list_tests(false),
+        output(""),
+        brief(false),
+        print_time(true),
+        random_seed(0),
+        repeat(1),
+        shuffle(false),
+        stack_trace_depth(kMaxStackTraceDepth),
+        stream_result_to(""),
+        throw_on_failure(false) {}
 
   // Factory methods.
 
@@ -5550,6 +5589,14 @@ struct Flags {
     return flags;
   }
 
+  // Creates a Flags struct where the gtest_fail_fast flag has
+  // the given value.
+  static Flags FailFast(bool fail_fast) {
+    Flags flags;
+    flags.fail_fast = fail_fast;
+    return flags;
+  }
+
   // Creates a Flags struct where the gtest_filter flag has the given
   // value.
   static Flags Filter(const char* filter) {
@@ -5574,6 +5621,14 @@ struct Flags {
     return flags;
   }
 
+  // Creates a Flags struct where the gtest_brief flag has the given
+  // value.
+  static Flags Brief(bool brief) {
+    Flags flags;
+    flags.brief = brief;
+    return flags;
+  }
+
   // Creates a Flags struct where the gtest_print_time flag has the given
   // value.
   static Flags PrintTime(bool print_time) {
@@ -5584,7 +5639,7 @@ struct Flags {
 
   // Creates a Flags struct where the gtest_random_seed flag has the given
   // value.
-  static Flags RandomSeed(Int32 random_seed) {
+  static Flags RandomSeed(int32_t random_seed) {
     Flags flags;
     flags.random_seed = random_seed;
     return flags;
@@ -5592,7 +5647,7 @@ struct Flags {
 
   // Creates a Flags struct where the gtest_repeat flag has the given
   // value.
-  static Flags Repeat(Int32 repeat) {
+  static Flags Repeat(int32_t repeat) {
     Flags flags;
     flags.repeat = repeat;
     return flags;
@@ -5608,7 +5663,7 @@ struct Flags {
 
   // Creates a Flags struct where the GTEST_FLAG(stack_trace_depth) flag has
   // the given value.
-  static Flags StackTraceDepth(Int32 stack_trace_depth) {
+  static Flags StackTraceDepth(int32_t stack_trace_depth) {
     Flags flags;
     flags.stack_trace_depth = stack_trace_depth;
     return flags;
@@ -5635,14 +5690,16 @@ struct Flags {
   bool break_on_failure;
   bool catch_exceptions;
   bool death_test_use_fork;
+  bool fail_fast;
   const char* filter;
   bool list_tests;
   const char* output;
+  bool brief;
   bool print_time;
-  Int32 random_seed;
-  Int32 repeat;
+  int32_t random_seed;
+  int32_t repeat;
   bool shuffle;
-  Int32 stack_trace_depth;
+  int32_t stack_trace_depth;
   const char* stream_result_to;
   bool throw_on_failure;
 };
@@ -5656,9 +5713,11 @@ class ParseFlagsTest : public Test {
     GTEST_FLAG(break_on_failure) = false;
     GTEST_FLAG(catch_exceptions) = false;
     GTEST_FLAG(death_test_use_fork) = false;
+    GTEST_FLAG(fail_fast) = false;
     GTEST_FLAG(filter) = "";
     GTEST_FLAG(list_tests) = false;
     GTEST_FLAG(output) = "";
+    GTEST_FLAG(brief) = false;
     GTEST_FLAG(print_time) = true;
     GTEST_FLAG(random_seed) = 0;
     GTEST_FLAG(repeat) = 1;
@@ -5686,9 +5745,11 @@ class ParseFlagsTest : public Test {
     EXPECT_EQ(expected.break_on_failure, GTEST_FLAG(break_on_failure));
     EXPECT_EQ(expected.catch_exceptions, GTEST_FLAG(catch_exceptions));
     EXPECT_EQ(expected.death_test_use_fork, GTEST_FLAG(death_test_use_fork));
+    EXPECT_EQ(expected.fail_fast, GTEST_FLAG(fail_fast));
     EXPECT_STREQ(expected.filter, GTEST_FLAG(filter).c_str());
     EXPECT_EQ(expected.list_tests, GTEST_FLAG(list_tests));
     EXPECT_STREQ(expected.output, GTEST_FLAG(output).c_str());
+    EXPECT_EQ(expected.brief, GTEST_FLAG(brief));
     EXPECT_EQ(expected.print_time, GTEST_FLAG(print_time));
     EXPECT_EQ(expected.random_seed, GTEST_FLAG(random_seed));
     EXPECT_EQ(expected.repeat, GTEST_FLAG(repeat));
@@ -5770,6 +5831,15 @@ TEST_F(ParseFlagsTest, NoFlag) {
   const char* argv2[] = {"foo.exe", nullptr};
 
   GTEST_TEST_PARSING_FLAGS_(argv, argv2, Flags(), false);
+}
+
+// Tests parsing --gtest_fail_fast.
+TEST_F(ParseFlagsTest, FailFast) {
+  const char* argv[] = {"foo.exe", "--gtest_fail_fast", nullptr};
+
+  const char* argv2[] = {"foo.exe", nullptr};
+
+  GTEST_TEST_PARSING_FLAGS_(argv, argv2, Flags::FailFast(true), false);
 }
 
 // Tests parsing a bad --gtest_filter flag.
@@ -5971,6 +6041,33 @@ TEST_F(ParseFlagsTest, OutputXmlDirectory) {
                             Flags::Output("xml:directory/path/"), false);
 }
 
+// Tests having a --gtest_brief flag
+TEST_F(ParseFlagsTest, BriefFlag) {
+  const char* argv[] = {"foo.exe", "--gtest_brief", nullptr};
+
+  const char* argv2[] = {"foo.exe", nullptr};
+
+  GTEST_TEST_PARSING_FLAGS_(argv, argv2, Flags::Brief(true), false);
+}
+
+// Tests having a --gtest_brief flag with a "true" value
+TEST_F(ParseFlagsTest, BriefFlagTrue) {
+  const char* argv[] = {"foo.exe", "--gtest_brief=1", nullptr};
+
+  const char* argv2[] = {"foo.exe", nullptr};
+
+  GTEST_TEST_PARSING_FLAGS_(argv, argv2, Flags::Brief(true), false);
+}
+
+// Tests having a --gtest_brief flag with a "false" value
+TEST_F(ParseFlagsTest, BriefFlagFalse) {
+  const char* argv[] = {"foo.exe", "--gtest_brief=0", nullptr};
+
+  const char* argv2[] = {"foo.exe", nullptr};
+
+  GTEST_TEST_PARSING_FLAGS_(argv, argv2, Flags::Brief(false), false);
+}
+
 // Tests having a --gtest_print_time flag
 TEST_F(ParseFlagsTest, PrintTimeFlag) {
   const char* argv[] = {"foo.exe", "--gtest_print_time", nullptr};
@@ -6170,7 +6267,7 @@ TEST_F(ParseFlagsTest, WideStrings) {
 #if GTEST_USE_OWN_FLAGFILE_FLAG_
 class FlagfileTest : public ParseFlagsTest {
  public:
-  virtual void SetUp() {
+  void SetUp() override {
     ParseFlagsTest::SetUp();
 
     testdata_path_.Set(internal::FilePath(
@@ -6180,7 +6277,7 @@ class FlagfileTest : public ParseFlagsTest {
     EXPECT_TRUE(testdata_path_.CreateFolder());
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     testing::internal::posix::RmDir(testdata_path_.c_str());
     ParseFlagsTest::TearDown();
   }
@@ -6277,8 +6374,8 @@ TEST_F(CurrentTestInfoTest, WorksForFirstTestInATestSuite) {
     UnitTest::GetInstance()->current_test_info();
   ASSERT_TRUE(nullptr != test_info)
       << "There is a test running so we should have a valid TestInfo.";
-  EXPECT_STREQ("CurrentTestInfoTest", test_info->test_case_name())
-      << "Expected the name of the currently running test case.";
+  EXPECT_STREQ("CurrentTestInfoTest", test_info->test_suite_name())
+      << "Expected the name of the currently running test suite.";
   EXPECT_STREQ("WorksForFirstTestInATestSuite", test_info->name())
       << "Expected the name of the currently running test.";
 }
@@ -6292,8 +6389,8 @@ TEST_F(CurrentTestInfoTest, WorksForSecondTestInATestSuite) {
     UnitTest::GetInstance()->current_test_info();
   ASSERT_TRUE(nullptr != test_info)
       << "There is a test running so we should have a valid TestInfo.";
-  EXPECT_STREQ("CurrentTestInfoTest", test_info->test_case_name())
-      << "Expected the name of the currently running test case.";
+  EXPECT_STREQ("CurrentTestInfoTest", test_info->test_suite_name())
+      << "Expected the name of the currently running test suite.";
   EXPECT_STREQ("WorksForSecondTestInATestSuite", test_info->name())
       << "Expected the name of the currently running test.";
 }
@@ -7083,7 +7180,7 @@ class ConversionHelperDerived : public ConversionHelperBase {};
 
 // Tests that IsAProtocolMessage<T>::value is a compile-time constant.
 TEST(IsAProtocolMessageTest, ValueIsCompileTimeConstant) {
-  GTEST_COMPILE_ASSERT_(IsAProtocolMessage<::proto2::Message>::value,
+  GTEST_COMPILE_ASSERT_(IsAProtocolMessage<::proto2::MessageLite>::value,
                         const_true);
   GTEST_COMPILE_ASSERT_(!IsAProtocolMessage<int>::value, const_false);
 }
@@ -7091,7 +7188,7 @@ TEST(IsAProtocolMessageTest, ValueIsCompileTimeConstant) {
 // Tests that IsAProtocolMessage<T>::value is true when T is
 // proto2::Message or a sub-class of it.
 TEST(IsAProtocolMessageTest, ValueIsTrueWhenTypeIsAProtocolMessage) {
-  EXPECT_TRUE(IsAProtocolMessage< ::proto2::Message>::value);
+  EXPECT_TRUE(IsAProtocolMessage<::proto2::MessageLite>::value);
 }
 
 // Tests that IsAProtocolMessage<T>::value is false when T is neither
@@ -7101,69 +7198,12 @@ TEST(IsAProtocolMessageTest, ValueIsFalseWhenTypeIsNotAProtocolMessage) {
   EXPECT_FALSE(IsAProtocolMessage<const ConversionHelperBase>::value);
 }
 
-// Tests that CompileAssertTypesEqual compiles when the type arguments are
-// equal.
-TEST(CompileAssertTypesEqual, CompilesWhenTypesAreEqual) {
-  CompileAssertTypesEqual<void, void>();
-  CompileAssertTypesEqual<int*, int*>();
-}
-
-// Tests that RemoveReference does not affect non-reference types.
-TEST(RemoveReferenceTest, DoesNotAffectNonReferenceType) {
-  CompileAssertTypesEqual<int, RemoveReference<int>::type>();
-  CompileAssertTypesEqual<const char, RemoveReference<const char>::type>();
-}
-
-// Tests that RemoveReference removes reference from reference types.
-TEST(RemoveReferenceTest, RemovesReference) {
-  CompileAssertTypesEqual<int, RemoveReference<int&>::type>();
-  CompileAssertTypesEqual<const char, RemoveReference<const char&>::type>();
-}
-
-// Tests GTEST_REMOVE_REFERENCE_.
-
-template <typename T1, typename T2>
-void TestGTestRemoveReference() {
-  CompileAssertTypesEqual<T1, GTEST_REMOVE_REFERENCE_(T2)>();
-}
-
-TEST(RemoveReferenceTest, MacroVersion) {
-  TestGTestRemoveReference<int, int>();
-  TestGTestRemoveReference<const char, const char&>();
-}
-
-
-// Tests that RemoveConst does not affect non-const types.
-TEST(RemoveConstTest, DoesNotAffectNonConstType) {
-  CompileAssertTypesEqual<int, RemoveConst<int>::type>();
-  CompileAssertTypesEqual<char&, RemoveConst<char&>::type>();
-}
-
-// Tests that RemoveConst removes const from const types.
-TEST(RemoveConstTest, RemovesConst) {
-  CompileAssertTypesEqual<int, RemoveConst<const int>::type>();
-  CompileAssertTypesEqual<char[2], RemoveConst<const char[2]>::type>();
-  CompileAssertTypesEqual<char[2][3], RemoveConst<const char[2][3]>::type>();
-}
-
-// Tests GTEST_REMOVE_CONST_.
-
-template <typename T1, typename T2>
-void TestGTestRemoveConst() {
-  CompileAssertTypesEqual<T1, GTEST_REMOVE_CONST_(T2)>();
-}
-
-TEST(RemoveConstTest, MacroVersion) {
-  TestGTestRemoveConst<int, int>();
-  TestGTestRemoveConst<double&, double&>();
-  TestGTestRemoveConst<char, const char>();
-}
-
 // Tests GTEST_REMOVE_REFERENCE_AND_CONST_.
 
 template <typename T1, typename T2>
 void TestGTestRemoveReferenceAndConst() {
-  CompileAssertTypesEqual<T1, GTEST_REMOVE_REFERENCE_AND_CONST_(T2)>();
+  static_assert(std::is_same<T1, GTEST_REMOVE_REFERENCE_AND_CONST_(T2)>::value,
+                "GTEST_REMOVE_REFERENCE_AND_CONST_ failed.");
 }
 
 TEST(RemoveReferenceToConstTest, Works) {
@@ -7174,35 +7214,12 @@ TEST(RemoveReferenceToConstTest, Works) {
   TestGTestRemoveReferenceAndConst<const char*, const char*>();
 }
 
-// Tests that AddReference does not affect reference types.
-TEST(AddReferenceTest, DoesNotAffectReferenceType) {
-  CompileAssertTypesEqual<int&, AddReference<int&>::type>();
-  CompileAssertTypesEqual<const char&, AddReference<const char&>::type>();
-}
-
-// Tests that AddReference adds reference to non-reference types.
-TEST(AddReferenceTest, AddsReference) {
-  CompileAssertTypesEqual<int&, AddReference<int>::type>();
-  CompileAssertTypesEqual<const char&, AddReference<const char>::type>();
-}
-
-// Tests GTEST_ADD_REFERENCE_.
-
-template <typename T1, typename T2>
-void TestGTestAddReference() {
-  CompileAssertTypesEqual<T1, GTEST_ADD_REFERENCE_(T2)>();
-}
-
-TEST(AddReferenceTest, MacroVersion) {
-  TestGTestAddReference<int&, int>();
-  TestGTestAddReference<const char&, const char&>();
-}
-
 // Tests GTEST_REFERENCE_TO_CONST_.
 
 template <typename T1, typename T2>
 void TestGTestReferenceToConst() {
-  CompileAssertTypesEqual<T1, GTEST_REFERENCE_TO_CONST_(T2)>();
+  static_assert(std::is_same<T1, GTEST_REFERENCE_TO_CONST_(T2)>::value,
+                "GTEST_REFERENCE_TO_CONST_ failed.");
 }
 
 TEST(GTestReferenceToConstTest, Works) {
@@ -7433,20 +7450,15 @@ TEST(IndexSequence, MakeIndexSequence) {
 // ElemFromList
 TEST(ElemFromList, Basic) {
   using testing::internal::ElemFromList;
-  using Idx = testing::internal::MakeIndexSequence<3>::type;
+  EXPECT_TRUE(
+      (std::is_same<int, ElemFromList<0, int, double, char>::type>::value));
+  EXPECT_TRUE(
+      (std::is_same<double, ElemFromList<1, int, double, char>::type>::value));
+  EXPECT_TRUE(
+      (std::is_same<char, ElemFromList<2, int, double, char>::type>::value));
   EXPECT_TRUE((
-      std::is_same<int, ElemFromList<0, Idx, int, double, char>::type>::value));
-  EXPECT_TRUE(
-      (std::is_same<double,
-                    ElemFromList<1, Idx, int, double, char>::type>::value));
-  EXPECT_TRUE(
-      (std::is_same<char,
-                    ElemFromList<2, Idx, int, double, char>::type>::value));
-  EXPECT_TRUE(
-      (std::is_same<
-          char, ElemFromList<7, testing::internal::MakeIndexSequence<12>::type,
-                             int, int, int, int, int, int, int, char, int, int,
-                             int, int>::type>::value));
+      std::is_same<char, ElemFromList<7, int, int, int, int, int, int, int,
+                                      char, int, int, int, int>::type>::value));
 }
 
 // FlatTuple
@@ -7519,22 +7531,7 @@ TEST(SkipPrefixTest, DoesNotSkipWhenPrefixDoesNotMatch) {
 }
 
 // Tests ad_hoc_test_result().
-
-class AdHocTestResultTest : public testing::Test {
- protected:
-  static void SetUpTestSuite() {
-    FAIL() << "A failure happened inside SetUpTestSuite().";
-  }
-};
-
-TEST_F(AdHocTestResultTest, AdHocTestResultForTestSuiteShowsFailure) {
-  const testing::TestResult& test_result = testing::UnitTest::GetInstance()
-                                               ->current_test_suite()
-                                               ->ad_hoc_test_result();
-  EXPECT_TRUE(test_result.Failed());
-}
-
-TEST_F(AdHocTestResultTest, AdHocTestResultTestForUnitTestDoesNotShowFailure) {
+TEST(AdHocTestResultTest, AdHocTestResultForUnitTestDoesNotShowFailure) {
   const testing::TestResult& test_result =
       testing::UnitTest::GetInstance()->ad_hoc_test_result();
   EXPECT_FALSE(test_result.Failed());
