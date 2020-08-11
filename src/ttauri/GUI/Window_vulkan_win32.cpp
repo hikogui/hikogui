@@ -288,7 +288,7 @@ void Window_vulkan_win32::setTextOnClipboard(std::string str) noexcept
     {
         auto wstr = tt::to_wstring(str);
 
-        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (nonstd::ssize(wstr) + 1) * sizeof(wchar_t));
+        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (std::ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {
             LOG_ERROR("Could not allocate clipboard data '{}'", getLastErrorMessage());
             goto done;
@@ -301,7 +301,7 @@ void Window_vulkan_win32::setTextOnClipboard(std::string str) noexcept
             goto done;
         }
 
-        std::memcpy(wstr_c, wstr.c_str(), (nonstd::ssize(wstr) + 1) * sizeof(wchar_t));
+        std::memcpy(wstr_c, wstr.c_str(), (std::ssize(wstr) + 1) * sizeof(wchar_t));
 
         if (!GlobalUnlock(wstr_handle) && GetLastError() != ERROR_SUCCESS) {
             LOG_ERROR("Could not unlock clipboard data '{}'", getLastErrorMessage());

@@ -85,7 +85,7 @@ namespace tt {
     po_translation r;
 
     while (true) {
-        if (nonstd::ssize(r.msgstr) == 0) {
+        if (std::ssize(r.msgstr) == 0) {
             if (auto result = parseLine(token)) {
                 token = result.next_token;
 
@@ -100,7 +100,7 @@ namespace tt {
                     r.msgid_plural = value;
 
                 } else if (name == "msgstr") {
-                    while (nonstd::ssize(r.msgstr) <= index) {
+                    while (std::ssize(r.msgstr) <= index) {
                         r.msgstr.push_back({});
                     }
                     r.msgstr[index] = value;
@@ -118,7 +118,7 @@ namespace tt {
                 token = result.next_token;
                 ttlet [name, index, value] = *result;
 
-                while (nonstd::ssize(r.msgstr) <= index) {
+                while (std::ssize(r.msgstr) <= index) {
                     r.msgstr.push_back({});
                 }
                 r.msgstr[index] = value;
@@ -136,13 +136,13 @@ namespace tt {
 static void parse_po_header(po_translations &r, std::string const &header)
 {
     for (ttlet &line : split(header, "\n")) {
-        if (nonstd::ssize(line) == 0) {
+        if (std::ssize(line) == 0) {
             // Skip empty header lines.
             continue;
         }
 
         auto split_line = split(line, ":");
-        if (nonstd::ssize(split_line) < 2) {
+        if (std::ssize(split_line) < 2) {
             TTAURI_THROW(parse_error("Unknown header '{}'", line));
         }
 
@@ -170,10 +170,10 @@ static void parse_po_header(po_translations &r, std::string const &header)
         if (auto result = parse_po_translation(token)) {
             token = result.next_token;
 
-            if (nonstd::ssize(result.value.msgid) != 0) {
+            if (std::ssize(result.value.msgid) != 0) {
                 r.translations.push_back(result.value);
 
-            } else if (nonstd::ssize(result.value.msgstr) == 1) {
+            } else if (std::ssize(result.value.msgstr) == 1) {
                 parse_po_header(r, result.value.msgstr.front());
 
             } else {

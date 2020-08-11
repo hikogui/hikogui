@@ -26,7 +26,7 @@ namespace tt {
 
         cluster += codePoint;
     }
-    if (nonstd::ssize(cluster) != 0) {
+    if (std::ssize(cluster) != 0) {
         r += tt::Grapheme{cluster};
     }
     return r;

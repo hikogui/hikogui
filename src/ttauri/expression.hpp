@@ -62,7 +62,7 @@ struct expression_evaluation_context {
      * Used if you need to reset the output to a previous position.
      */
     ssize_t output_size() const noexcept {
-        return nonstd::ssize(output);
+        return std::ssize(output);
     }
 
     /** Set the size of the output.
@@ -88,7 +88,7 @@ struct expression_evaluation_context {
     }
 
     void loop_pop() noexcept {
-        tt_assert(nonstd::ssize(loop_stack) > 0);
+        tt_assert(std::ssize(loop_stack) > 0);
         loop_stack.pop_back();
     }
 

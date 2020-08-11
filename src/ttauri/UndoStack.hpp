@@ -41,7 +41,7 @@ public:
     }
 
     [[nodiscard]] ssize_t redoDepth() const noexcept {
-        return nonstd::ssize(stack) - undoPosition;
+        return std::ssize(stack) - undoPosition;
     }
 
     void clearRedo() noexcept {
@@ -73,7 +73,7 @@ public:
     }
 
     [[nodiscard]] UndoElement const &redo() noexcept {
-        tt_assume(undoPosition < nonstd::ssize(stack));
+        tt_assume(undoPosition < std::ssize(stack));
         return stack[undoPosition++];
     }
 

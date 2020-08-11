@@ -71,7 +71,7 @@ struct language {
         for (ttlet &tag: tags) {
             ttlet short_tag = split(tag, "-").front();
 
-            if (nonstd::ssize(prev_short_tag) != 0 && short_tag != prev_short_tag) {
+            if (std::ssize(prev_short_tag) != 0 && short_tag != prev_short_tag) {
                 if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
                     r.push_back(prev_short_tag);
                 }
@@ -84,7 +84,7 @@ struct language {
             prev_short_tag = short_tag;
         }
 
-        if (nonstd::ssize(prev_short_tag) != 0) {
+        if (std::ssize(prev_short_tag) != 0) {
             if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
                 r.push_back(prev_short_tag);
             }

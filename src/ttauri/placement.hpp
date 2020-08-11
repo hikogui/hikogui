@@ -129,7 +129,7 @@ public:
     }
 
     bool contains(ssize_t index) const noexcept {
-        return index < nonstd::ssize(*this);
+        return index < std::ssize(*this);
     }
 
     value_type *begin() const noexcept {
@@ -175,7 +175,7 @@ placement_array<T,Byte> unsafe_make_placement_array(nonstd::span<Byte> bytes, ss
 template<typename T,typename Byte>
 bool check_placement_array(nonstd::span<Byte> bytes, ssize_t offset, ssize_t n)
 {
-    return check_alignment<T>(bytes.data()) && (offset + (n * ssizeof(T)) <= nonstd::ssize(bytes));
+    return check_alignment<T>(bytes.data()) && (offset + (n * ssizeof(T)) <= std::ssize(bytes));
 }
 
 template<typename T,typename Byte>
@@ -201,7 +201,7 @@ placement_array<T,Byte> make_placement_array(nonstd::span<Byte> bytes, ssize_t &
 template<typename T,typename Byte>
 placement_array<T,Byte> make_placement_array(nonstd::span<Byte> bytes, ssize_t &offset)
 {
-    ttlet n = nonstd::ssize(bytes) / ssizeof(T);
+    ttlet n = std::ssize(bytes) / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 

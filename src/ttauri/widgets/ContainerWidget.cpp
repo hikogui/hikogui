@@ -8,7 +8,7 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    if (nonstd::ssize(children) == 0) {
+    if (std::ssize(children) == 0) {
         // When there are no children, relative addresses need to be at the origin.
         current_address = initialize(address);
     } else {
@@ -110,7 +110,7 @@ std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcep
     tt_assume(mutex.is_locked_by_current_thread());
 
     std::vector<Widget *> r;
-    r.reserve(nonstd::ssize(children));
+    r.reserve(std::ssize(children));
     for (ttlet &child : children) {
         r.push_back(child.get());
     }

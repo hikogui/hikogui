@@ -16,7 +16,7 @@ struct gstring {
     using value_type = Grapheme;
 
     ssize_t size() const noexcept {
-        return nonstd::ssize(graphemes);
+        return std::ssize(graphemes);
     }
 
     Grapheme const &at(ssize_t i) const {
@@ -53,7 +53,7 @@ struct gstring {
 
     [[nodiscard]] friend std::u32string to_u32string(gstring const &rhs) noexcept {
         std::u32string r;
-        r.reserve(nonstd::ssize(rhs));
+        r.reserve(std::ssize(rhs));
         for (ttlet &c : rhs) {
             r += c.NFC();
         }

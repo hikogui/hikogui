@@ -117,7 +117,7 @@ public:
         ttlet optionHeight = rectangle().height() - Theme::margin * 2.0f;
 
         // Calculate the rectangles for each cell in the optionList
-        optionListHeight = (optionHeight + Theme::margin * 2.0f) * nonstd::ssize(optionList);
+        optionListHeight = (optionHeight + Theme::margin * 2.0f) * std::ssize(optionList);
         ttlet optionListWidth = optionWidth + Theme::margin * 2.0f;
         auto y = optionListHeight;
         selectedOptionY = 0.0f;

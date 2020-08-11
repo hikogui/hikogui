@@ -207,7 +207,7 @@ public:
             output += static_cast<std::byte>(BON8_code_eot);
         }
 
-        if (nonstd::ssize(value) == 0) {
+        if (std::ssize(value) == 0) {
             output += static_cast<std::byte>(BON8_code_eot);
             open_string = false;
 
@@ -257,7 +257,7 @@ public:
     template<typename T>
     void add(std::vector<T> const &items) {
         open_string = false;
-        if (nonstd::ssize(items) == 0) {
+        if (std::ssize(items) == 0) {
             output += static_cast<std::byte>(BON8_code_array_empty);
         } else {
             output += static_cast<std::byte>(BON8_code_array);
@@ -276,7 +276,7 @@ public:
         using item_type = std::map<Key,Value>::value_type;
 
         open_string = false;
-        if (nonstd::ssize(value) == 0) {
+        if (std::ssize(value) == 0) {
             output += static_cast<std::byte>(BON8_code_object_empty);
         } else {
             // Keys must be ordered lexically.
@@ -481,7 +481,7 @@ void BON8_encoder::add(datum const &value) {
                 }
                 continue;
 
-            } else if (nonstd::ssize(str) != 0) {
+            } else if (std::ssize(str) != 0) {
                 // Multibyte integer found, but first return the current string.
                 return datum{str};
 
@@ -490,7 +490,7 @@ void BON8_encoder::add(datum const &value) {
                 return decode_BON8_UTF8_like_int(ptr, last, -count);
             }
 
-        } else if (nonstd::ssize(str) != 0) {
+        } else if (std::ssize(str) != 0) {
             // This must be a non-string type, but first return the current string.
             return datum{str};
 

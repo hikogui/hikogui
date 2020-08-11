@@ -359,7 +359,7 @@ template<bool IsRow>
     }
 
     if (auto span = get_span<IsRow>(rhs); span != 1) {
-        if (nonstd::ssize(r) == 0) {
+        if (std::ssize(r) == 0) {
             r += axis;
         }
         r += fmt::format(":{}", span);

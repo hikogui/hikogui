@@ -12,7 +12,7 @@ namespace tt {
     FontGlyphIDs r;
 
     // First try composed normalization
-    for (ssize_t i = 0; i != nonstd::ssize(g); ++i) {
+    for (ssize_t i = 0; i != std::ssize(g); ++i) {
         if (ttlet glyph_id = find_glyph(g[i])) {
             r += glyph_id;
         } else {

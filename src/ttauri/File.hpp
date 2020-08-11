@@ -95,7 +95,7 @@ struct File {
     }
 
     ssize_t write(std::string_view text) {
-        return write(text.data(), nonstd::ssize(text));
+        return write(text.data(), std::ssize(text));
     }
 
     /*! Get the size of a file on the file system.

@@ -74,22 +74,22 @@ void GridWidget::addAllConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    while (nonstd::ssize(leftGridLines) < nrLeftColumns + 1) {
+    while (std::ssize(leftGridLines) < nrLeftColumns + 1) {
         leftGridLines.emplace_back();
     }
-    while (nonstd::ssize(rightGridLines) < nrRightColumns + 1) {
+    while (std::ssize(rightGridLines) < nrRightColumns + 1) {
         rightGridLines.emplace_back();
     }
-    while (nonstd::ssize(bottomGridLines) < nrBottomRows + 1) {
+    while (std::ssize(bottomGridLines) < nrBottomRows + 1) {
         bottomGridLines.emplace_back();
     }
-    while (nonstd::ssize(topGridLines) < nrTopRows + 1) {
+    while (std::ssize(topGridLines) < nrTopRows + 1) {
         topGridLines.emplace_back();
     }
-    while (nonstd::ssize(bottomBaseLines) < nrBottomRows) {
+    while (std::ssize(bottomBaseLines) < nrBottomRows) {
         bottomBaseLines.emplace_back();
     }
-    while (nonstd::ssize(topBaseLines) < nrTopRows) {
+    while (std::ssize(topBaseLines) < nrTopRows) {
         topBaseLines.emplace_back();
     }
 

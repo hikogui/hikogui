@@ -23,7 +23,7 @@ ThemeBook::ThemeBook(std::vector<URL> const &theme_directories) noexcept :
         }
     }
 
-    if (nonstd::ssize(themes) == 0) {
+    if (std::ssize(themes) == 0) {
         LOG_FATAL("Could not parse any themes.");
     }
 
@@ -87,7 +87,7 @@ void ThemeBook::updateTheme() noexcept {
         theme = defaultAndModeTheme;
     } else if (defaultTheme) {
         theme = defaultTheme;
-    } else if (nonstd::ssize(themes) > 0) {
+    } else if (std::ssize(themes) > 0) {
         theme = themes[0].get();
     } else {
         tt_no_default;

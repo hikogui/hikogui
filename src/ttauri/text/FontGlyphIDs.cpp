@@ -13,7 +13,7 @@ namespace tt {
     auto boundingBox = aarect{};
 
     ttlet &font = application->fonts->get_font(font_id());
-    for (ssize_t i = 0; i < nonstd::ssize(*this); i++) {
+    for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 
         Path glyph_path;
@@ -42,7 +42,7 @@ namespace tt {
     auto boundingBox = aarect{};
 
     ttlet &font = application->fonts->get_font(font_id());
-    for (ssize_t i = 0; i < nonstd::ssize(*this); i++) {
+    for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 
         GlyphMetrics glyph_metrics;

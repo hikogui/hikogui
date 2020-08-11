@@ -9,25 +9,7 @@
 #include <cstdint>
 
 
-namespace nonstd {
-
-template <class C>
-constexpr auto ssize(const C& c) -> std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>> 
-{
-    using R = std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
-    return static_cast<R>(c.size());
-}
-
-template <class T, size_t N>
-constexpr ptrdiff_t ssize(const T (&array)[N]) noexcept
-{
-    return N;
-}
-
-}
-
 namespace tt {
-
 
 using namespace std::literals;
 

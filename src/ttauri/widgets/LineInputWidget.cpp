@@ -61,7 +61,7 @@ WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point dis
 
     field.setStyleOfAll(theme->labelStyle);
 
-    if (nonstd::ssize(field) == 0) {
+    if (std::ssize(field) == 0) {
         shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::MiddleLeft);
     } else {
         field.setWidth(textRectangle.width());

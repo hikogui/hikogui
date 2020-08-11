@@ -180,7 +180,7 @@ static std::string read_string(nonstd::span<std::byte const> bytes)
 {
     std::string r;
 
-    for (ssize_t i = 0; i != nonstd::ssize(bytes); ++i) {
+    for (ssize_t i = 0; i != std::ssize(bytes); ++i) {
         auto c = static_cast<char>(bytes[i]);
         if (c == 0) {
             return r;
@@ -218,7 +218,7 @@ void png::read_chunks(nonstd::span<std::byte const> bytes, ssize_t &offset)
         ttlet header = make_placement_ptr<ChunkHeader>(bytes, offset);
         ttlet length = numeric_cast<ssize_t>(header->length.value());
         parse_assert2(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
-        parse_assert2(offset + length + ssizeof(uint32_t) <= nonstd::ssize(bytes), "Chuck extents beyond file.");
+        parse_assert2(offset + length + ssizeof(uint32_t) <= std::ssize(bytes), "Chuck extents beyond file.");
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"):
@@ -298,14 +298,14 @@ png::png(std::unique_ptr<ResourceView> view) :
 }
 
 bstring png::decompress_IDATs(ssize_t image_data_size) const {
-    if (nonstd::ssize(idat_chunk_data) == 1) {
+    if (std::ssize(idat_chunk_data) == 1) {
         return zlib_decompress(idat_chunk_data[0], image_data_size);
     } else {
         // Merge all idat chunks together.
         ttlet compressed_data_size = std::accumulate(
             idat_chunk_data.cbegin(), idat_chunk_data.cend(), ssize_t{0},
             [](ttlet &a, ttlet &b) {
-            return a + nonstd::ssize(b);
+            return a + std::ssize(b);
         }
         );
 
@@ -392,10 +392,10 @@ void png::unfilter_line(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> 
 
 void png::unfilter_lines(bstring &image_data) const
 {
-    auto image_bytes = nonstd::span(reinterpret_cast<uint8_t *>(image_data.data()), nonstd::ssize(image_data));
+    auto image_bytes = nonstd::span(reinterpret_cast<uint8_t *>(image_data.data()), std::ssize(image_data));
     auto zero_line = bstring(bytes_per_line, std::byte{0});
 
-    auto prev_line = nonstd::span(reinterpret_cast<uint8_t *>(zero_line.data()), nonstd::ssize(zero_line));
+    auto prev_line = nonstd::span(reinterpret_cast<uint8_t *>(zero_line.data()), std::ssize(zero_line));
     for (int y = 0; y != height; ++y) {
         auto line = image_bytes.subspan(y * stride, stride);
         unfilter_line(line, prev_line);
@@ -477,7 +477,7 @@ void png::decode_image(PixelMap<R16G16B16A16SFloat> &image) const
     ttlet image_data_size = stride * height;
 
     auto image_data = decompress_IDATs(image_data_size);
-    parse_assert2(nonstd::ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
+    parse_assert2(std::ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
 
     unfilter_lines(image_data);
 

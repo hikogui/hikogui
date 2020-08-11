@@ -14,7 +14,7 @@ struct SpecializationConstants {
 
     [[nodiscard]] vk::SpecializationInfo specializationInfo(std::vector<vk::SpecializationMapEntry> &entries) const noexcept {
         return {
-            numeric_cast<uint32_t>(nonstd::ssize(entries)), entries.data(),
+            numeric_cast<uint32_t>(std::ssize(entries)), entries.data(),
             sizeof (SpecializationConstants),
             this
         };

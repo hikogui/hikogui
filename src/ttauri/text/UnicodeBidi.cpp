@@ -93,7 +93,7 @@ static void BidiP1_P3(BidiContext &context) noexcept
     // P1. Split text in paragraphs, the paragraph delimiter comes at the end of the previous paragraph.
     // We will not physically split the paragraphs, but make sure the text does end in a paragraph.
     // We can not ourselves add the paragraph separator, because we do not know the text-style of an empty text.
-    tt_assume(nonstd::ssize(context.characters) > 0 && context.characters.back().bidiClass == BidiClass::B);
+    tt_assume(std::ssize(context.characters) > 0 && context.characters.back().bidiClass == BidiClass::B);
 }
 
 
@@ -233,7 +233,7 @@ static void BidiX1_X8(BidiContext &context) noexcept
                     ;
                 } else if (overflowEmbeddingCount > 0) {
                     --overflowEmbeddingCount;
-                } else if (stack.back().isolateStatus == false && nonstd::ssize(stack) >= 2) {
+                } else if (stack.back().isolateStatus == false && std::ssize(stack) >= 2) {
                     stack.pop_back();
                 } else {
                     // PDF does not match embedding character.

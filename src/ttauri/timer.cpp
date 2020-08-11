@@ -31,7 +31,7 @@ timer::timer(std::string name) noexcept :
 timer::~timer()
 {
     stop();
-    tt_assert(nonstd::ssize(callback_list) == 0);
+    tt_assert(std::ssize(callback_list) == 0);
 }
 
 void timer::start_with_lock_held() noexcept
@@ -114,7 +114,7 @@ void timer::loop() noexcept
         }
 
         ttlet lock = std::scoped_lock(mutex);
-        if (stop_thread || nonstd::ssize(callback_list) == 0) {
+        if (stop_thread || std::ssize(callback_list) == 0) {
             break;
         }
     }
@@ -140,7 +140,7 @@ void timer::remove_callback(size_t callback_id) noexcept
 
     callback_list.erase(i);
 
-    if (nonstd::ssize(callback_list) == 0) {
+    if (std::ssize(callback_list) == 0) {
         stop_with_lock_held();
     }
 

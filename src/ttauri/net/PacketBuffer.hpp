@@ -87,7 +87,7 @@ public:
 
         while (true) {
             if (packets.front().readSize() >= nrBytes) {
-                return {packets.front().readSize(), nonstd::ssize(packets)};
+                return {packets.front().readSize(), std::ssize(packets)};
             }
 
             // Check if we can merge packets.
@@ -111,7 +111,7 @@ public:
         while (packetNr < nrPackets()) {
             parse_assert(byteNr < nrBytes, "New-line not found within {} bytes", nrBytes);
 
-            if (i == nonstd::ssize(packets[packetNr])) {
+            if (i == std::ssize(packets[packetNr])) {
                 // Advance to next packet.
                 ++packetNr;
                 i = 0;
@@ -141,14 +141,14 @@ public:
         peekBuffer.clear();
 
         while (nrBytes) {
-            ttlet packet_size = nonstd::ssize(packets.front());
+            ttlet packet_size = std::ssize(packets.front());
             if (nrBytes >= packet_size) {
                 packets.pop_front();
             } else {
                 packets.front().read(nrBytes);
-                tt_assume(nonstd::ssize(packets.front()) > 0);
+                tt_assume(std::ssize(packets.front()) > 0);
             }
-            nrBytes -= nonstd::ssize(packets_size);
+            nrBytes -= std::ssize(packets_size);
         }
     }
 

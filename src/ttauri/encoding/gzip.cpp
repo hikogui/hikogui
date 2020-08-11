@@ -41,7 +41,7 @@ static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize
     if (FNAME) {
         std::byte c;
         do {
-            parse_assert(offset < nonstd::ssize(bytes));
+            parse_assert(offset < std::ssize(bytes));
             c = bytes[offset++];
         } while (c != std::byte{0});
     }
@@ -49,7 +49,7 @@ static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize
     if (FCOMMENT) {
         std::byte c;
         do {
-            parse_assert(offset < nonstd::ssize(bytes));
+            parse_assert(offset < std::ssize(bytes));
             c = bytes[offset++];
         } while (c != std::byte{0});
     }
@@ -72,9 +72,9 @@ bstring gzip_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size)
     auto r = bstring{};
 
     ssize_t offset = 0;
-    while (offset < nonstd::ssize(bytes)) {
+    while (offset < std::ssize(bytes)) {
         auto member = gzip_decompress_member(bytes, offset, max_size);
-        max_size -= nonstd::ssize(member);
+        max_size -= std::ssize(member);
         r.append(member);
     }
 

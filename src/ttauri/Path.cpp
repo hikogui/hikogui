@@ -11,12 +11,12 @@ namespace tt {
 
 ssize_t Path::numberOfContours() const noexcept
 {
-    return nonstd::ssize(contourEndPoints);
+    return std::ssize(contourEndPoints);
 }
 
 ssize_t Path::numberOfLayers() const noexcept
 {
-    return nonstd::ssize(layerEndContours);
+    return std::ssize(layerEndContours);
 }
 
 bool Path::hasLayers() const noexcept
@@ -42,7 +42,7 @@ bool Path::allLayersHaveSameColor() const noexcept
 
 [[nodiscard]] aarect Path::boundingBox() const noexcept
 {
-    if (nonstd::ssize(points) == 0) {
+    if (std::ssize(points) == 0) {
         return aarect{0.0, 0.0, 0.0, 0.0};
     }
 
@@ -115,12 +115,12 @@ std::pair<Path,vec> Path::getLayer(ssize_t layerNr) const noexcept
 
 void Path::optimizeLayers() noexcept
 {
-    if (nonstd::ssize(layerEndContours) == 0) {
+    if (std::ssize(layerEndContours) == 0) {
         return;
     }
 
     decltype(layerEndContours) tmp;
-    tmp.reserve(nonstd::ssize(layerEndContours));
+    tmp.reserve(std::ssize(layerEndContours));
 
     auto prev_i = layerEndContours.begin(); 
     for (auto i = prev_i + 1; i != layerEndContours.end(); ++i) {
@@ -169,14 +169,14 @@ bool Path::isContourOpen() const noexcept
     } else if (contourEndPoints.size() == 0) {
         return true;
     } else {
-        return contourEndPoints.back() != (nonstd::ssize(points) - 1);
+        return contourEndPoints.back() != (std::ssize(points) - 1);
     }
 }
 
 void Path::closeContour() noexcept
 {
     if (isContourOpen()) {
-        contourEndPoints.push_back(nonstd::ssize(points) - 1);
+        contourEndPoints.push_back(std::ssize(points) - 1);
     }
 }
 
@@ -189,7 +189,7 @@ bool Path::isLayerOpen() const noexcept
     } else if (layerEndContours.size() == 0) {
         return true;
     } else {
-        return layerEndContours.back().first != (nonstd::ssize(contourEndPoints) - 1);
+        return layerEndContours.back().first != (std::ssize(contourEndPoints) - 1);
     }
 }
 
@@ -197,7 +197,7 @@ void Path::closeLayer(vec fillColor) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
-        layerEndContours.emplace_back(nonstd::ssize(contourEndPoints) - 1, fillColor);
+        layerEndContours.emplace_back(std::ssize(contourEndPoints) - 1, fillColor);
     }
 }
 
@@ -474,8 +474,8 @@ Path &Path::operator+=(Path const &rhs) noexcept
     // Left hand layer can only be open if the right hand side contains no layers.
     tt_assert(!rhs.hasLayers() || !isLayerOpen());
 
-    ttlet pointOffset = nonstd::ssize(points);
-    ttlet contourOffset = nonstd::ssize(contourEndPoints);
+    ttlet pointOffset = std::ssize(points);
+    ttlet contourOffset = std::ssize(contourEndPoints);
 
     layerEndContours.reserve(layerEndContours.size() + rhs.layerEndContours.size());
     for (ttlet &[x, fillColor]: rhs.layerEndContours) {

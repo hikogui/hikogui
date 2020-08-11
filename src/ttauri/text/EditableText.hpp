@@ -52,7 +52,7 @@ public:
 
         // Make sure there is an end-paragraph marker in the text.
         // This allows the shapedText to figure out the style of the text of an empty paragraph.
-        if (nonstd::ssize(text) == 0) {
+        if (std::ssize(text) == 0) {
             text_.emplace_back(Grapheme('\n'), currentStyle, 0);
         } else {
             text_.emplace_back(Grapheme('\n'), text_.back().style, 0);
@@ -93,7 +93,7 @@ public:
     decltype(auto) it(ssize_t index) noexcept {
         tt_assume(index >= 0);
         // Index should never be at text.cend();
-        tt_assume(index < nonstd::ssize(text));
+        tt_assume(index < std::ssize(text));
 
         return text.begin() + index;
     }
@@ -103,7 +103,7 @@ public:
     decltype(auto) cit(ssize_t index) const noexcept {
         tt_assume(index >= 0);
         // Index should never be beyond text.cend();
-        tt_assume(index <= nonstd::ssize(text));
+        tt_assume(index <= std::ssize(text));
 
         return text.cbegin() + index;
     }
@@ -165,7 +165,7 @@ public:
         if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             selectionIndex = cursorIndex = *newCursorPosition;
             tt_assume(selectionIndex >= 0);
-            tt_assume(selectionIndex <= nonstd::ssize(text));
+            tt_assume(selectionIndex <= std::ssize(text));
         }
     }
 
@@ -173,9 +173,9 @@ public:
         if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newCursorPosition);
             tt_assume(selectionIndex >= 0);
-            tt_assume(selectionIndex <= nonstd::ssize(text));
+            tt_assume(selectionIndex <= std::ssize(text));
             tt_assume(cursorIndex >= 0);
-            tt_assume(cursorIndex <= nonstd::ssize(text));
+            tt_assume(cursorIndex <= std::ssize(text));
         }
     }
 
@@ -183,9 +183,9 @@ public:
         if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfParagraph(*newCursorPosition);
             tt_assume(selectionIndex >= 0);
-            tt_assume(selectionIndex <= nonstd::ssize(text));
+            tt_assume(selectionIndex <= std::ssize(text));
             tt_assume(cursorIndex >= 0);
-            tt_assume(cursorIndex <= nonstd::ssize(text));
+            tt_assume(cursorIndex <= std::ssize(text));
         }
     }
 
@@ -193,7 +193,7 @@ public:
         if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             cursorIndex = *newCursorPosition;
             tt_assume(cursorIndex >= 0);
-            tt_assume(cursorIndex <= nonstd::ssize(text));
+            tt_assume(cursorIndex <= std::ssize(text));
         }
     }
 
@@ -220,9 +220,9 @@ public:
             }
 
             tt_assume(selectionIndex >= 0);
-            tt_assume(selectionIndex <= nonstd::ssize(text));
+            tt_assume(selectionIndex <= std::ssize(text));
             tt_assume(cursorIndex >= 0);
-            tt_assume(cursorIndex <= nonstd::ssize(text));
+            tt_assume(cursorIndex <= std::ssize(text));
         }
     }
 
@@ -249,9 +249,9 @@ public:
             }
 
             tt_assume(selectionIndex >= 0);
-            tt_assume(selectionIndex <= nonstd::ssize(text));
+            tt_assume(selectionIndex <= std::ssize(text));
             tt_assume(cursorIndex >= 0);
-            tt_assume(cursorIndex <= nonstd::ssize(text));
+            tt_assume(cursorIndex <= std::ssize(text));
         }
     }
 
@@ -261,9 +261,9 @@ public:
 
             selectionIndex = --cursorIndex;
             tt_assume(selectionIndex >= 0);
-            tt_assume(selectionIndex <= nonstd::ssize(text));
+            tt_assume(selectionIndex <= std::ssize(text));
             tt_assume(cursorIndex >= 0);
-            tt_assume(cursorIndex <= nonstd::ssize(text));
+            tt_assume(cursorIndex <= std::ssize(text));
 
             text.erase(cit(cursorIndex));
             hasPartialGrapheme = false;
@@ -284,9 +284,9 @@ public:
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
         tt_assume(selectionIndex >= 0);
-        tt_assume(selectionIndex <= nonstd::ssize(text));
+        tt_assume(selectionIndex <= std::ssize(text));
         tt_assume(cursorIndex >= 0);
-        tt_assume(cursorIndex <= nonstd::ssize(text));
+        tt_assume(cursorIndex <= std::ssize(text));
 
         hasPartialGrapheme = true;
         updateShapedText();
@@ -305,9 +305,9 @@ public:
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
         tt_assume(selectionIndex >= 0);
-        tt_assume(selectionIndex <= nonstd::ssize(text));
+        tt_assume(selectionIndex <= std::ssize(text));
         tt_assume(cursorIndex >= 0);
-        tt_assume(cursorIndex <= nonstd::ssize(text));
+        tt_assume(cursorIndex <= std::ssize(text));
 
         updateShapedText();
     }
@@ -319,17 +319,17 @@ public:
         gstring gstr = to_gstring(str);
 
         auto str_attr = std::vector<AttributedGrapheme>{};
-        str_attr.reserve(nonstd::ssize(gstr));
+        str_attr.reserve(std::ssize(gstr));
         for (ttlet &g: gstr) {
             str_attr.emplace_back(g, currentStyle);
         }
 
         text.insert(cit(cursorIndex), str_attr.cbegin(), str_attr.cend());
-        selectionIndex = cursorIndex += nonstd::ssize(str_attr);
+        selectionIndex = cursorIndex += std::ssize(str_attr);
         tt_assume(selectionIndex >= 0);
-        tt_assume(selectionIndex <= nonstd::ssize(text));
+        tt_assume(selectionIndex <= std::ssize(text));
         tt_assume(cursorIndex >= 0);
-        tt_assume(cursorIndex <= nonstd::ssize(text));
+        tt_assume(cursorIndex <= std::ssize(text));
 
         updateShapedText();
     }
@@ -359,7 +359,7 @@ public:
     }
 
     void handleCommand(command command) noexcept {
-        tt_assume(cursorIndex <= nonstd::ssize(text));
+        tt_assume(cursorIndex <= std::ssize(text));
         cancelPartialGrapheme();
 
         switch (command) {
@@ -440,7 +440,7 @@ public:
             if (cursorIndex != selectionIndex) {
                 deleteSelection();
 
-            } else if (cursorIndex < (nonstd::ssize(text) - 1)) {
+            } else if (cursorIndex < (std::ssize(text) - 1)) {
                 // Don't delete the trailing paragraph separator.
                 text.erase(cit(cursorIndex));
                 updateShapedText();
@@ -449,9 +449,9 @@ public:
         }
 
         tt_assume(selectionIndex >= 0);
-        tt_assume(selectionIndex <= nonstd::ssize(text));
+        tt_assume(selectionIndex <= std::ssize(text));
         tt_assume(cursorIndex >= 0);
-        tt_assume(cursorIndex <= nonstd::ssize(text));
+        tt_assume(cursorIndex <= std::ssize(text));
     }
 };
 

@@ -19,7 +19,7 @@ struct template_top_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        if (nonstd::ssize(children) > 0) {
+        if (std::ssize(children) > 0) {
             children.back()->left_align();
         }
 
@@ -54,7 +54,7 @@ struct template_string_node final: template_node {
 
     void left_align() noexcept override {
         // first check if there are only spaces and tabs after the last line feed.
-        auto new_text_length = nonstd::ssize(text);
+        auto new_text_length = std::ssize(text);
         for (auto i = text.crbegin(); i != text.crend(); ++i, --new_text_length) {
             if (*i == ' ' || *i == '\t') {
                 // Strip spaces and tabs.
@@ -193,13 +193,13 @@ struct template_if_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        tt_assert(nonstd::ssize(expressions) == nonstd::ssize(expression_locations));
-        for (ssize_t i = 0; i != nonstd::ssize(expressions); ++i) {
+        tt_assert(std::ssize(expressions) == std::ssize(expression_locations));
+        for (ssize_t i = 0; i != std::ssize(expressions); ++i) {
             post_process_expression(context, *expressions[i], expression_locations[i]);
         }
 
         for (ttlet &children: children_groups) {
-            if (nonstd::ssize(children) > 0) {
+            if (std::ssize(children) > 0) {
                 children.back()->left_align();
             }
 
@@ -210,14 +210,14 @@ struct template_if_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        tt_assume(nonstd::ssize(expressions) == nonstd::ssize(expression_locations));
-        for (ssize_t i = 0; i != nonstd::ssize(expressions); ++i) {
+        tt_assume(std::ssize(expressions) == std::ssize(expression_locations));
+        for (ssize_t i = 0; i != std::ssize(expressions); ++i) {
             if (evaluate_expression_without_output(context, *expressions[i], expression_locations[i])) {
                 return evaluate_children(context, children_groups[i]);
             }
         }
-        if (nonstd::ssize(children_groups) > nonstd::ssize(expressions)) {
-            return evaluate_children(context, children_groups[nonstd::ssize(expressions)]);
+        if (std::ssize(children_groups) > std::ssize(expressions)) {
+            return evaluate_children(context, children_groups[std::ssize(expressions)]);
         }
         return {};
     }
@@ -259,7 +259,7 @@ struct template_while_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        if (nonstd::ssize(children) > 0) {
+        if (std::ssize(children) > 0) {
             children.back()->left_align();
         }
 
@@ -329,7 +329,7 @@ struct template_do_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        if (nonstd::ssize(children) > 0) {
+        if (std::ssize(children) > 0) {
             children.back()->left_align();
         }
 
@@ -403,10 +403,10 @@ struct template_for_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        if (nonstd::ssize(children) > 0) {
+        if (std::ssize(children) > 0) {
             children.back()->left_align();
         }
-        if (nonstd::ssize(else_children) > 0) {
+        if (std::ssize(else_children) > 0) {
             else_children.back()->left_align();
         }
 
@@ -430,7 +430,7 @@ struct template_for_node final: template_node {
 
         ttlet output_size = context.output_size();
         if (list_data.size() > 0) {
-            ttlet loop_size = nonstd::ssize(list_data);
+            ttlet loop_size = std::ssize(list_data);
             ssize_t loop_count = 0;
             for (auto i = list_data.vector_begin(); i != list_data.vector_end(); ++i) {
                 ttlet &item = *i;
@@ -520,7 +520,7 @@ struct template_function_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        if (nonstd::ssize(children) > 0) {
+        if (std::ssize(children) > 0) {
             children.back()->left_align();
         }
 
@@ -537,11 +537,11 @@ struct template_function_node final: template_node {
 
     datum evaluate_call(expression_evaluation_context &context, datum::vector const &arguments) {
         context.push();
-        if (nonstd::ssize(argument_names) != nonstd::ssize(arguments)) {
+        if (std::ssize(argument_names) != std::ssize(arguments)) {
             TTAURI_THROW(invalid_operation_error("Invalid number of arguments to function {}() expecting {} got {}.", name, argument_names.size(), arguments.size()).set_location(location));
         }
 
-        for (ssize_t i = 0; i != nonstd::ssize(argument_names); ++i) {
+        for (ssize_t i = 0; i != std::ssize(argument_names); ++i) {
             context.set(argument_names[i], arguments[i]);
         }
 
@@ -605,7 +605,7 @@ struct template_block_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        if (nonstd::ssize(children) > 0) {
+        if (std::ssize(children) > 0) {
             children.back()->left_align();
         }
 
@@ -830,7 +830,7 @@ void template_parse_context::include(parse_location _location, std::unique_ptr<e
 
     ttlet new_template_path = current_template_directory.urlByAppendingPath(static_cast<std::string>(argument));
 
-    if (nonstd::ssize(statement_stack) > 0) {
+    if (std::ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_template(new_template_path))) {
             TTAURI_THROW(parse_error("Unexpected #include statement").set_location(_location));
         }
