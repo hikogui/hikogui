@@ -27,7 +27,7 @@ Make sure to install it for all users and add Python to the path.
 Sphinx must be installed as Administrator otherwise the sphinx-build executable
 is not installed.
 
-pip install sphinx
+pip install sphinx==2.4.4
 pip install sphinx_rtd_theme
-pip install breathe
+pip install breathe==4.13.0
 pip install exhale

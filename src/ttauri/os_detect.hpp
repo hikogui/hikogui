@@ -95,6 +95,23 @@ enum class Compiler {
 #define TT_CPU_X64 'i'
 #define TT_CPU_ARM 'a'
 
+#define TT_CPPVER_17 '7'
+#define TT_CPPVER_20 '2'
+
+#if __cplusplus > 201703L
+#define TT_CPP_VERSION TT_CPPVER_20
+#elif __cplusplus == 201703L
+#define TT_CPP_VERSION TT_CPPVER_17
+#else
+#error "Unknown C++ version"
+#endif
+enum class CPPVersion {
+    CPP17 = TT_CPPVER_17,
+    CPP20 = TT_CPPVER_20,
+
+    current = TT_CPP_VERSION
+};
+
 #if defined(__amd64__) || defined(__x86_64__) || defined(_M_AMD64)
 #define TT_PROCESSOR TT_CPU_X64
 #elif defined(__arm__) || defined(_M_ARM)

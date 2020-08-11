@@ -276,6 +276,19 @@ struct utf8_to_utf32_state {
     return r;
 }
 
+#if TT_CPP_VERSION == TT_CPPVER_20
+[[nodiscard]] inline std::string to_string(std::u8string_view rhs) noexcept {
+    auto r = std::string{};
+    r.reserve(nonstd::ssize(rhs));
+
+    for (auto c: rhs) {
+        r += static_cast<char>(c);
+    }
+    return r;
+}
+#endif
+
+
 #if WCHAR_MAX < 65536
 /** Convert a MS-Windows wide string to a UTF-16 string.
  */
@@ -324,6 +337,12 @@ struct utf8_to_utf32_state {
 
     return r;
 }
+
+#if TT_CPP_VERSION == TT_CPPVER_20
+[[nodiscard]] inline std::u32string to_u32string(std::u8string_view rhs) noexcept {
+    return to_u32string(to_string(rhs));
+}
+#endif
 
 /** Convert a UTF-16 string to a UTF-32 string.
  */
@@ -382,13 +401,13 @@ struct utf8_to_utf32_state {
 /** Convert a UTF-16 string to a UTF-8 string.
  */
 [[nodiscard]] inline std::string to_string(std::u16string_view rhs) noexcept {
-    return to_string(to_u32string(rhs));
+    return tt::to_string(to_u32string(rhs));
 }
 
 /** Convert a MS-Windows wide string to a UTF-8 string.
  */
 [[nodiscard]] inline std::string to_string(std::wstring_view rhs) noexcept {
-    return to_string(to_u32string(rhs));
+    return tt::to_string(to_u32string(rhs));
 }
 
 /** Convert a UTF-8 string to a UTF-16 string.
@@ -397,11 +416,27 @@ struct utf8_to_utf32_state {
     return to_u16string(to_u32string(rhs));
 }
 
+
 /** Convert a MS-Windows wide string to a UTF-16 string.
  */
 [[nodiscard]] inline std::wstring to_wstring(std::string_view rhs) noexcept {
     return to_wstring(to_u32string(rhs));
 }
+
+#if TT_CPP_VERSION == TT_CPPVER_20
+/** Convert a UTF-8 string to a UTF-16 string.
+*/
+[[nodiscard]] inline std::u16string to_u16string(std::u8string_view rhs) noexcept {
+    return to_u16string(to_u32string(rhs));
+}
+
+/** Convert a MS-Windows wide string to a UTF-16 string.
+*/
+[[nodiscard]] inline std::wstring to_wstring(std::u8string_view rhs) noexcept {
+    return to_wstring(to_u32string(rhs));
+}
+
+#endif
 
 }
 

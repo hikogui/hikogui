@@ -57,7 +57,7 @@ target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_compile_features(ttauri PUBLIC cxx_std_17)
+target_compile_features(ttauri PUBLIC cxx_std_20)
 
 add_custom_command(
   TARGET ttauri POST_BUILD
@@ -100,6 +100,10 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
+    # By default MSVC reports a incorrect version in __cplusplus
+    # This option will make it work correctly.
+    target_compile_options(ttauri PUBLIC -Zc:__cplusplus)
+
     # Ignore unknown pragmas.
     target_compile_options(ttauri PUBLIC -wd4068)
 
