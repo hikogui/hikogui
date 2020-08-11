@@ -183,16 +183,16 @@ private:
     static constexpr uint16_t phy_ymd_id           = make_id(0b00011);
     static constexpr uint16_t phy_integer_id       = make_id(0b00100);
     static constexpr uint16_t phy_string_id        = make_id(0b00101);
-    static constexpr uint16_t phy_reserved_id1     = make_id(0b00110);
-    static constexpr uint16_t phy_reserved_id2     = make_id(0b00111);
-    static constexpr uint16_t phy_reserved_id3     = make_id(0b01000);
-    static constexpr uint16_t phy_reserved_id4     = make_id(0b01001);
-    static constexpr uint16_t phy_reserved_id5     = make_id(0b01010);
-    static constexpr uint16_t phy_reserved_id6     = make_id(0b01011);
-    static constexpr uint16_t phy_reserved_id7     = make_id(0b01100);
-    static constexpr uint16_t phy_reserved_id8     = make_id(0b01101);
-    static constexpr uint16_t phy_reserved_id9     = make_id(0b01110);
-    static constexpr uint16_t phy_reserved_id10    = make_id(0b01111);
+    static constexpr uint16_t phy_reserved_id0     = make_id(0b00110);
+    static constexpr uint16_t phy_reserved_id1     = make_id(0b00111);
+    static constexpr uint16_t phy_reserved_id2     = make_id(0b01000);
+    static constexpr uint16_t phy_reserved_id3     = make_id(0b01001);
+    static constexpr uint16_t phy_reserved_id4     = make_id(0b01010);
+    static constexpr uint16_t phy_reserved_id5     = make_id(0b01011);
+    static constexpr uint16_t phy_reserved_id6     = make_id(0b01100);
+    static constexpr uint16_t phy_reserved_id7     = make_id(0b01101);
+    static constexpr uint16_t phy_reserved_id8     = make_id(0b01110);
+    static constexpr uint16_t phy_reserved_id9     = make_id(0b01111);
 
     static constexpr uint16_t phy_string_ptr_id    = make_id(0b10001);
     static constexpr uint16_t phy_url_ptr_id       = make_id(0b10010);
