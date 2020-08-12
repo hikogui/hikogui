@@ -14,8 +14,9 @@ the global or local scope depending where the loop is defined. Some special read
 prefixed with one or more '$' characters are available inside the loop.
 
 Functions and blocks exist in a special global scope which only contains functions.
-`%function` or `%block` definitions which appear later in a file will override a previous
-definition. By calling `super()` from within a `%function` or `%block` you can call its previous definition.
+`#function` or `#block` definitions which appear later in a file will override a previous
+definition. By calling `super()` from within a `#function` or `#block` you can call its previous
+definition.
 
 ## Expressions
 The `tt::datum` class is used for holding and operating on all the data while executing
@@ -383,7 +384,7 @@ Result:
 
 ### Expression Statement
 Expressions can be evaluated as statements themselves. This is mostly useful for
-doing assignment, modiyfing data or calling functions with side effects.
+doing assignment, modifying data or calling functions with side effects.
 
 Expression statement will add text to the output.
 
@@ -391,12 +392,15 @@ At the top-level assignments are done in global scope. Inside functions and bloc
 are done in the local scope, even if the name already exists in the global scope.
 Loops do not introduce scopes.
 
-Syntax: '##' expression
+Syntax: '#' expression
+
+If the expression starts with a keyword such as `if`, `while`, `return`, etc. A white space should be inserted
+between the '#' and the expression.
 
 Example
 ```
-## foo = 42
-## [foo, bar] = [foo + 2, 2]
+#foo = 42
+# [foo, bar] = [foo + 2, 2]
 ${foo} ${bar}
 ```
 
@@ -447,7 +451,7 @@ Syntax:
 
 Example:
 ```
-## foo = 5
+# foo = 5
 
 #if foo == 2
 Foo is two.
@@ -522,10 +526,10 @@ Syntax:
 
 Example:
 ```
-## i = 0
+# i = 0
 #while i < 3
 Iteration ${i}.
-## i = i + 1
+# i = i + 1
 #end
 ```
 
@@ -549,10 +553,10 @@ Syntax:
  - `'#while' boolean-expression '\n'`
 
 ```
-## i = 0
+# i = 0
 #do
 Iteration ${i}.
-## i = i + 1
+# i = i + 1
 #while i < 0
 ```
 

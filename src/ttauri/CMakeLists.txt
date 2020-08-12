@@ -5,6 +5,7 @@ add_subdirectory(widgets)
 add_subdirectory(cells)
 add_subdirectory(audio)
 add_subdirectory(encoding)
+add_subdirectory(veer)
 
 target_sources(ttauri PRIVATE
     detail/observable_base.hpp
@@ -130,8 +131,6 @@ target_sources(ttauri PRIVATE
     tag.hpp
     tagged_id.hpp
     tagged_map.hpp
-    template.cpp
-    template.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.hpp
@@ -208,7 +207,6 @@ target_sources(ttauri_tests PRIVATE
     tokenizer_tests.cpp
     glob_tests.cpp
     decimal_tests.cpp
-    template_tests.cpp
     math_tests.cpp
     vec_tests.cpp
     mat_tests.cpp

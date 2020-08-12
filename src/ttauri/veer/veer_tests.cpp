@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/template.hpp"
+#include "ttauri/veer/veer.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -9,38 +9,38 @@
 using namespace std;
 using namespace tt;
 
-TEST(TextTemplate, Text) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, Text) {
+    std::unique_ptr<veer_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"), ""));
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"), ""));
     ASSERT_EQ(to_string(*t), "<top >");
     ASSERT_NO_THROW(result = t->evaluate_output());
     ASSERT_EQ(result, "");
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"), "foo"));
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"), "foo"));
     ASSERT_EQ(to_string(*t), "<top <text foo>>");
     ASSERT_NO_THROW(result = t->evaluate_output());
     ASSERT_EQ(result, "foo");
 }
 
-TEST(TextTemplate, Placeholder) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, Placeholder) {
+    std::unique_ptr<veer_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"), "foo${42}bar"));
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"), "foo${42}bar"));
     ASSERT_EQ(to_string(*t), "<top <text foo><placeholder 42><text bar>>");
     ASSERT_NO_THROW(result = t->evaluate_output());
     ASSERT_EQ(result, "foo42bar");
 }
 
-TEST(TextTemplate, If) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, If) {
+    std::unique_ptr<veer_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
-        "## a = 42\n"
+        "#a = 42\n"
         "#if a == 42\n"
         "forty two\n"
         "#end\n"
@@ -63,9 +63,9 @@ TEST(TextTemplate, If) {
         "bar\n"
     );
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
-        "## a = 43\n"
+        "# a = 43\n"
         "#if a == 42\n"
         "forty two\n"
         "#elif a == 43\n"
@@ -92,9 +92,9 @@ TEST(TextTemplate, If) {
         "bar\n"
     );
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
-        "## a = 2\n"
+        "# a = 2\n"
         "#if a == 42\n"
         "forty two\n"
         "#elif a == 43\n"
@@ -126,11 +126,11 @@ TEST(TextTemplate, If) {
     );
 }
 
-TEST(TextTemplate, For) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, For) {
+    std::unique_ptr<veer_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
         "#for a: [42, 43]\n"
         "value is ${a}\n"
@@ -154,7 +154,7 @@ TEST(TextTemplate, For) {
         "bar\n"
     );
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
         "#for a: [42, 43]\n"
         "value is ${a}\n"
@@ -184,16 +184,16 @@ TEST(TextTemplate, For) {
 
 }
 
-TEST(TextTemplate, While) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, While) {
+    std::unique_ptr<veer_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
-        "## a = 40\n"
+        "# a = 40\n"
         "#while a < 42\n"
         "    value is ${a}\n"
-        "    ## ++a\n"
+        "    # ++a\n"
         "#end\n"
         "bar\n"
     ));
@@ -216,15 +216,15 @@ TEST(TextTemplate, While) {
         "bar\n"
     );
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
-        "## a = 38\n"
+        "# a = 38\n"
         "#while a < 42\n"
         "    #if a == 40\n"
         "        #break\n"
         "    #end\n"
         "    value is ${a}\n"
-        "    ## ++a\n"
+        "    # ++a\n"
         "#end\n"
         "bar\n"
     ));
@@ -250,11 +250,11 @@ TEST(TextTemplate, While) {
         "bar\n"
     );
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
-        "## a = 38\n"
+        "# a = 38\n"
         "#while a < 42\n"
-        "    ## ++a\n"
+        "    # ++a\n"
         "    #if a == 40\n"
         "        #continue\n"
         "    #end\n"
@@ -286,10 +286,10 @@ TEST(TextTemplate, While) {
     );
 }
 
-TEST(TextTemplate, DoWhile) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, DoWhile) {
+    std::unique_ptr<veer_node> t;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
         "#do\n"
         "value is ${a}\n"
@@ -307,11 +307,11 @@ TEST(TextTemplate, DoWhile) {
     );
 }
 
-TEST(TextTemplate, Function) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, Function) {
+    std::unique_ptr<veer_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
         "#function foo(bar, baz)\n"
         "value is ${bar + baz}\n"
@@ -335,11 +335,11 @@ TEST(TextTemplate, Function) {
     );
 }
 
-TEST(TextTemplate, FunctionReplaceAndSuper) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, FunctionReplaceAndSuper) {
+    std::unique_ptr<veer_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
         "#function foo(bar, baz)\n"
         "value is ${bar + baz}\n"
@@ -378,11 +378,11 @@ TEST(TextTemplate, FunctionReplaceAndSuper) {
     );
 }
 
-TEST(TextTemplate, FunctionReturn) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, FunctionReturn) {
+    std::unique_ptr<veer_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
         "#function foo(bar, baz)\n"
         "    This text is ignored\n"
@@ -411,10 +411,10 @@ TEST(TextTemplate, FunctionReturn) {
     );
 }
 
-TEST(TextTemplate, Block) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, Block) {
+    std::unique_ptr<veer_node> t;
 
-    ASSERT_NO_THROW(t = parse_template(URL("none:"),
+    ASSERT_NO_THROW(t = parse_veer(URL("none:"),
         "foo\n"
         "#block foo\n"
         "value is ${1 + 2}\n"
@@ -432,10 +432,10 @@ TEST(TextTemplate, Block) {
     );
 }
 
-TEST(TextTemplate, Include) {
-    std::unique_ptr<template_node> t;
+TEST(Veer, Include) {
+    std::unique_ptr<veer_node> t;
 
-    ASSERT_NO_THROW(t = parse_template(URL("file:includer.ttt")));
+    ASSERT_NO_THROW(t = parse_veer(URL("file:includer.ttt")));
     ASSERT_EQ(normalize_lf(to_string(*t)),
         "<top "
             "<text foo\n>"
