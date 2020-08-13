@@ -46,6 +46,7 @@ target_sources(ttauri PRIVATE
     formula_node.hpp
     formula_parse_context.hpp
     formula_plus_node.hpp
+    formula_post_process_context.cpp
     formula_post_process_context.hpp
     formula_pow_node.hpp
     formula_shl_node.hpp
