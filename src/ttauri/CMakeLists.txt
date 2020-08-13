@@ -5,7 +5,8 @@ add_subdirectory(widgets)
 add_subdirectory(cells)
 add_subdirectory(audio)
 add_subdirectory(encoding)
-add_subdirectory(veer)
+add_subdirectory(formula)
+add_subdirectory(stencil)
 
 target_sources(ttauri PRIVATE
     detail/observable_base.hpp
@@ -57,8 +58,6 @@ target_sources(ttauri PRIVATE
     decimal.hpp
     endian.hpp
     exceptions.hpp
-    expression.cpp
-    expression.hpp
     File.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/File_posix.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/File_win32.cpp>
@@ -196,7 +195,6 @@ target_sources(ttauri_tests PRIVATE
     counters_tests.cpp
     datum_tests.cpp
     exceptions_tests.cpp
-    expression_tests.cpp
     FileView_tests.cpp
     polynomial_tests.cpp
     small_map_tests.cpp

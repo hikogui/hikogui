@@ -1,0 +1,762 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
+
+#include "formula.hpp"
+#include "formula_add_node.hpp"
+#include "formula_arguments.hpp"
+#include "formula_assign_node.hpp"
+#include "formula_binary_operator_node.hpp"
+#include "formula_bit_and_node.hpp"
+#include "formula_bit_or_node.hpp"
+#include "formula_bit_xor_node.hpp"
+#include "formula_call_node.hpp"
+#include "formula_decrement_node.hpp"
+#include "formula_div_node.hpp"
+#include "formula_eq_node.hpp"
+#include "formula_filter_node.hpp"
+#include "formula_ge_node.hpp"
+#include "formula_gt_node.hpp"
+#include "formula_increment_node.hpp"
+#include "formula_index_node.hpp"
+#include "formula_inplace_add_node.hpp"
+#include "formula_inplace_and_node.hpp"
+#include "formula_inplace_div_node.hpp"
+#include "formula_inplace_mod_node.hpp"
+#include "formula_inplace_mul_node.hpp"
+#include "formula_inplace_or_node.hpp"
+#include "formula_inplace_shl_node.hpp"
+#include "formula_inplace_shr_node.hpp"
+#include "formula_inplace_sub_node.hpp"
+#include "formula_inplace_xor_node.hpp"
+#include "formula_invert_node.hpp"
+#include "formula_le_node.hpp"
+#include "formula_literal_node.hpp"
+#include "formula_logical_and_node.hpp"
+#include "formula_logical_not_node.hpp"
+#include "formula_logical_or_node.hpp"
+#include "formula_lt_node.hpp"
+#include "formula_map_literal_node.hpp"
+#include "formula_member_node.hpp"
+#include "formula_minus_node.hpp"
+#include "formula_mod_node.hpp"
+#include "formula_mul_node.hpp"
+#include "formula_name_node.hpp"
+#include "formula_ne_node.hpp"
+#include "formula_node.hpp"
+#include "formula_plus_node.hpp"
+#include "formula_pow_node.hpp"
+#include "formula_shl_node.hpp"
+#include "formula_shr_node.hpp"
+#include "formula_sub_node.hpp"
+#include "formula_ternary_operator_node.hpp"
+#include "formula_unary_operator_node.hpp"
+#include "formula_vector_literal_node.hpp"
+#include "../operator.hpp"
+#include "../strings.hpp"
+#include "../url_parser.hpp"
+#include <fmt/format.h>
+#include <string>
+#include <string_view>
+#include <memory>
+#include <unordered_map>
+#include <vector>
+#include <functional>
+#include <limits>
+
+namespace tt {
+
+static std::unique_ptr<formula_node> parse_formula_1(formula_parse_context& context, std::unique_ptr<formula_node> lhs, uint8_t min_precedence);
+
+static datum function_float(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for float() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<double>(args[0])};
+}
+
+static datum function_integer(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for integer() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<long long int>(args[0])};
+}
+
+static datum function_decimal(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for decimal() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<decimal>(args[0])};
+}
+
+static datum function_string(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for string() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<std::string>(args[0])};
+}
+
+static datum function_boolean(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for boolean() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<bool>(args[0])};
+}
+
+static datum function_url(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for url() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<URL>(args[0])};
+}
+
+static datum function_size(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for size() function, got {}", args.size()));
+    }
+
+    return datum{args[0].size()};
+}
+
+static datum function_keys(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for keys() function, got {}", args.size()));
+    }
+
+    ttlet &arg = args[0];
+
+    datum::vector keys;
+    for (auto i = arg.map_begin(); i != arg.map_end(); i++) {
+        keys.push_back(i->first);
+    }
+    return datum{std::move(keys)};
+}
+
+static datum function_values(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for values() function, got {}", args.size()));
+    }
+
+    ttlet &arg = args[0];
+
+    if (arg.is_map()) {
+        datum::vector values;
+        for (auto i = arg.map_begin(); i != arg.map_end(); i++) {
+            values.push_back(i->second);
+        }
+        return datum{std::move(values)};
+    } else if (arg.is_vector()) {
+        return datum{arg};
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector or map argument for values() function, got {}", arg.type_name()));
+    }
+}
+
+static datum function_items(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for items() function, got {}", args.size()));
+    }
+
+    ttlet &arg = args[0];
+
+    if (arg.is_map()) {
+        datum::vector values;
+        for (auto i = arg.map_begin(); i != arg.map_end(); i++) {
+            values.emplace_back(datum::vector{i->first, i->second});
+        }
+        return datum{std::move(values)};
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting map argument for items() function, got {}", arg.type_name()));
+    }
+}
+
+static datum function_sort(formula_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for sort() function, got {}", args.size()));
+    }
+
+    ttlet &arg = args[0];
+
+    if (arg.is_vector()) {
+        auto r = static_cast<datum::vector>(arg);
+        std::sort(r.begin(), r.end());
+        return datum{r};
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector argument for sort() function, got {}", arg.type_name()));
+    }
+}
+
+formula_post_process_context::function_table formula_post_process_context::global_functions = {
+    {"float"s, function_float},
+    {"integer"s, function_integer},
+    {"decimal"s, function_decimal},
+    {"string"s, function_string},
+    {"boolean"s, function_boolean},
+    {"url"s, function_url},
+    {"size"s, function_size},
+    {"keys"s, function_keys},
+    {"values"s, function_values},
+    {"items"s, function_items},
+    {"sort"s, function_sort}
+};
+
+static datum method_contains(formula_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for .contains() method, got {}", args.size()));
+    }
+
+    if (self.is_vector() || self.is_map()) {
+        return self.contains(args[0]);
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector or map on left hand side for .contains() method, got {}", self.type_name()));
+    }
+}
+
+static datum method_append(formula_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for .append() method, got {}", args.size()));
+    }
+
+    if (self.is_vector()) {
+        self.push_back(args[0]);
+        return {};
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector on left hand side for .append() method, got {}", self.type_name()));
+    }
+}
+
+static datum method_pop(formula_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .pop() method, got {}", args.size()));
+    }
+
+    if (self.is_vector()) {
+        auto r = self.back();
+        self.pop_back();
+        return r;
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector on left hand side for .pop() method, got {}", self.type_name()));
+    }
+}
+
+static datum method_year(formula_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .year() method, got {}", args.size()));
+    }
+
+    return self.year();
+}
+
+static datum method_quarter(formula_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .quarter() method, got {}", args.size()));
+    }
+
+    return self.quarter();
+}
+
+static datum method_month(formula_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .month() method, got {}", args.size()));
+    }
+
+    return self.month();
+}
+
+static datum method_day(formula_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .day() method, got {}", args.size()));
+    }
+
+    return self.day();
+}
+
+formula_post_process_context::method_table formula_post_process_context::global_methods = {
+    {"append"s, method_append},
+    {"contains"s, method_contains},
+    {"push"s, method_append},
+    {"pop"s, method_pop},
+    {"year"s, method_year},
+    {"quarter"s, method_quarter},
+    {"month"s, method_month},
+    {"day"s, method_day},
+};
+
+formula_post_process_context::filter_table formula_post_process_context::global_filters = {
+    {"id"s, id_encode},
+    {"url"s, url_encode}
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[[nodiscard]] std::pair<uint8_t,bool> operator_precedence(token_t const &token, bool binary) noexcept {
+    if (token != tokenizer_name_t::Operator) {
+        return {uint8_t{0}, false};
+    } else {
+        auto [precedence, left_to_right] = operator_precedence(token.value.data(), binary);
+        return {static_cast<uint8_t>(std::numeric_limits<uint8_t>::max() - precedence), left_to_right};
+    }
+}
+
+static std::unique_ptr<formula_node> parse_operation_formula(
+    formula_parse_context& context, std::unique_ptr<formula_node> lhs, token_t const& op, std::unique_ptr<formula_node> rhs
+) {
+    if (lhs) {
+        // Binary operator
+        switch (operator_to_int(op.value.data())) {
+        case operator_to_int("."): return std::make_unique<formula_member_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("**"): return std::make_unique<formula_pow_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("*"): return std::make_unique<formula_mul_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("/"): return std::make_unique<formula_div_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("%"): return std::make_unique<formula_mod_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("+"): return std::make_unique<formula_add_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("-"): return std::make_unique<formula_sub_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<<"): return std::make_unique<formula_shl_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">>"): return std::make_unique<formula_shr_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<"): return std::make_unique<formula_lt_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">"): return std::make_unique<formula_gt_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<="): return std::make_unique<formula_le_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">="): return std::make_unique<formula_ge_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("=="): return std::make_unique<formula_eq_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("!="): return std::make_unique<formula_ne_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("&"): return std::make_unique<formula_bit_and_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("^"): return std::make_unique<formula_bit_xor_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("|"): return std::make_unique<formula_bit_or_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("&&"): return std::make_unique<formula_logical_and_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("||"): return std::make_unique<formula_logical_or_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("?"): return std::make_unique<formula_ternary_operator_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("["): return std::make_unique<formula_index_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("("): return std::make_unique<formula_call_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("="): return std::make_unique<formula_assign_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("+="): return std::make_unique<formula_inplace_add_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("-="): return std::make_unique<formula_inplace_sub_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("*="): return std::make_unique<formula_inplace_mul_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("/="): return std::make_unique<formula_inplace_div_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("%="): return std::make_unique<formula_inplace_mod_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<<="): return std::make_unique<formula_inplace_shl_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">>="): return std::make_unique<formula_inplace_shr_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("&="): return std::make_unique<formula_inplace_and_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("|="): return std::make_unique<formula_inplace_or_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("^="): return std::make_unique<formula_inplace_xor_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("!"): return std::make_unique<formula_filter_node>(op.location, std::move(lhs), std::move(rhs));
+        default: TTAURI_THROW(parse_error("Unexpected binary operator {}", op).set_location(op.location));
+        }
+    } else {
+        // Unary operator
+        switch (operator_to_int(op.value.data())) {
+        case operator_to_int("+"): return std::make_unique<formula_plus_node>(op.location, std::move(rhs));
+        case operator_to_int("-"): return std::make_unique<formula_minus_node>(op.location, std::move(rhs));
+        case operator_to_int("~"): return std::make_unique<formula_invert_node>(op.location, std::move(rhs));
+        case operator_to_int("!"): return std::make_unique<formula_logical_not_node>(op.location, std::move(rhs));
+        case operator_to_int("++"): return std::make_unique<formula_increment_node>(op.location, std::move(rhs));
+        case operator_to_int("--"): return std::make_unique<formula_decrement_node>(op.location, std::move(rhs));
+        default: TTAURI_THROW(parse_error("Unexpected unary operator {}", op).set_location(op.location));
+        }
+    }
+}
+
+/** Parse a lhs or rhs part of an formula.
+    * This should expect any off:
+    *  - leaf node: literal
+    *  - leaf node: name
+    *  - vector literal: '[' ( parse_formula() ( ',' parse_formula() )* ','? )? ']'
+    *  - map literal: '{' ( parse_formula() ':' parse_formula() ( ',' parse_formula() ':' parse_formula() )* ','? )? '}'
+    *  - subformula:  '(' parse_formula() ')'
+    *  - unary operator: op parse_formula()
+    */
+static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context& context)
+{
+    ttlet &location = context->location;
+
+    switch (context->name) {
+    case tokenizer_name_t::IntegerLiteral:
+        return std::make_unique<formula_literal_node>(location, static_cast<long long>(*context++));
+
+    case tokenizer_name_t::FloatLiteral:
+        return std::make_unique<formula_literal_node>(location, static_cast<double>(*context++));
+
+    case tokenizer_name_t::StringLiteral:
+        return std::make_unique<formula_literal_node>(location, static_cast<std::string>(*context++));
+
+    case tokenizer_name_t::Name:
+        if (*context == "true") {
+            ++context;
+            return std::make_unique<formula_literal_node>(location, true);
+
+        } else if (*context == "false") {
+            ++context;
+            return std::make_unique<formula_literal_node>(location, false);
+
+        } else if (*context == "null") {
+            ++context;
+            return std::make_unique<formula_literal_node>(location, datum::null{});
+
+        } else if (*context == "undefined") {
+            ++context;
+            return std::make_unique<formula_literal_node>(location, datum{});
+
+        } else {
+            return std::make_unique<formula_name_node>(location, (context++)->value);
+        }
+
+    case tokenizer_name_t::Operator:
+        if (*context == "(") {
+            ++context;
+            auto subformula = parse_formula(context);
+
+            if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
+                ++context;
+            } else {
+                TTAURI_THROW(parse_error("Expected ')' token for function call got {}", *context).set_location(location));
+            }
+
+            return subformula;
+
+        } else if (*context == "[") {
+            ++context;
+
+            formula_node::formula_vector values;
+
+            // ',' is between each formula, but a ']' may follow a ',' directly.
+            while (!((*context == tokenizer_name_t::Operator) && (*context == "]"))) {
+                values.push_back(parse_formula(context));
+
+                if ((*context == tokenizer_name_t::Operator) && (*context == ",")) {
+                    ++context;
+                } else if ((*context == tokenizer_name_t::Operator) && (*context == "]")) {
+                    ++context;
+                    break;
+                } else {
+                    TTAURI_THROW(parse_error("Expected ']' or ',' after a vector sub-formula. got {}", *context).set_location(location));
+                }
+            }
+
+            return std::make_unique<formula_vector_literal_node>(location, std::move(values));
+
+        } else if (*context == "{") {
+            ++context;
+
+            formula_node::formula_vector keys;
+            formula_node::formula_vector values;
+
+            // ',' is between each formula, but a ']' may follow a ',' directly.
+            while (!((*context == tokenizer_name_t::Operator) && (*context == "}"))) {
+                keys.push_back(parse_formula(context));
+
+                if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
+                    ++context;
+                } else {
+                    TTAURI_THROW(parse_error("Expected ':' after a map key. got {}", *context).set_location(location));
+                }
+
+                values.push_back(parse_formula(context));
+
+                if ((*context == tokenizer_name_t::Operator) && (*context == ",")) {
+                    ++context;
+                } else if ((*context == tokenizer_name_t::Operator) && (*context == "}")) {
+                    ++context;
+                    break;
+                } else {
+                    TTAURI_THROW(parse_error("Expected ']' or ',' after a vector sub-formula. got {}", *context).set_location(location));
+                }
+            }
+
+            return std::make_unique<formula_map_literal_node>(location, std::move(keys), std::move(values));
+
+        } else {
+            ttlet unary_op = *context;
+            ++context;
+            ttlet [precedence, left_to_right] = operator_precedence(unary_op, false);
+            auto subformula = parse_formula_1(context, parse_primary_formula(context), precedence);
+            return parse_operation_formula(context, {}, unary_op, std::move(subformula));
+        }
+
+    default:
+        TTAURI_THROW(parse_error("Unexpected token in primary formula {}", *context).set_location(location));
+    }
+}
+
+/** Parse the rhs of an index operator, including the closing bracket.
+    */
+static std::unique_ptr<formula_node> parse_index_formula(formula_parse_context& context)
+{
+    auto rhs = parse_formula(context);
+
+    if ((*context == tokenizer_name_t::Operator) && (*context == "]")) {
+        ++context;
+    } else {
+        TTAURI_THROW(parse_error("Expected ']' token at end of indexing operator got {}", *context).set_location(context->location));
+    }
+    return rhs;
+}
+
+/** Parse the rhs of an index operator, including the closing bracket.
+ */
+static std::unique_ptr<formula_node> parse_ternary_argument_formula(formula_parse_context& context)
+{
+    auto rhs_true = parse_formula(context);
+
+    if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
+        ++context;
+    } else {
+        TTAURI_THROW(parse_error("Expected ':' token in ternary formula {}", *context).set_location(context->location));
+    }
+
+    auto rhs_false = parse_formula(context);
+
+    return std::make_unique<formula_arguments>(context->location, std::move(rhs_true), std::move(rhs_false));
+}
+
+/** Parse the rhs of an index operator, including the closing bracket.
+ */
+static std::unique_ptr<formula_node> parse_call_argument_formula(formula_parse_context& context)
+{
+    formula_node::formula_vector args;
+
+    if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
+        ++context;
+
+    } else while (true) {
+        args.push_back(parse_formula(context));
+
+        if ((*context == tokenizer_name_t::Operator) && (*context == ",")) {
+            ++context;
+            continue;
+
+        } else if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
+            ++context;
+            break;
+
+        } else {
+            TTAURI_THROW(parse_error("Expected ',' or ')' After a function argument {}", *context).set_location(context->location));
+        }
+    }
+
+    return std::make_unique<formula_arguments>(context->location, std::move(args));
+}
+
+static bool parse_formula_is_at_end(formula_parse_context& context)
+{
+    if (*context == tokenizer_name_t::End) {
+        return true;
+    }
+
+    if (*context != tokenizer_name_t::Operator) {
+        TTAURI_THROW(parse_error("Expecting an operator token got {}", *context).set_location(context->location));
+    }
+
+    return
+        *context == ")" ||
+        *context == "}" ||
+        *context == "]" ||
+        *context == ":" ||
+        *context == ",";
+}
+
+/** Parse an formula.
+ * https://en.wikipedia.org/wiki/Operator-precedence_parser
+ * Parses an formula until EOF, ')', '}', ']', ':', ','
+ */
+static std::unique_ptr<formula_node> parse_formula_1(formula_parse_context& context, std::unique_ptr<formula_node> lhs, uint8_t min_precedence)
+{
+    token_t lookahead;
+    uint8_t lookahead_precedence;
+    bool lookahead_left_to_right;
+
+    std::tie(lookahead_precedence, lookahead_left_to_right) = operator_precedence(lookahead = *context, true);
+    if (parse_formula_is_at_end(context)) {
+        return lhs;
+    }
+
+    while (lookahead_precedence >= min_precedence) {
+        ttlet op = lookahead;
+        ttlet op_precedence = lookahead_precedence;
+        ++context;
+
+        std::unique_ptr<formula_node> rhs;
+        if (op == tokenizer_name_t::Operator && op == "[") {
+            rhs = parse_index_formula(context);
+        } else if (op == tokenizer_name_t::Operator && op == "(") {
+            rhs = parse_call_argument_formula(context);
+        } else if (op == tokenizer_name_t::Operator && op == "?") {
+            rhs = parse_ternary_argument_formula(context);
+        } else {
+            rhs = parse_primary_formula(context);
+        }
+
+        std::tie(lookahead_precedence, lookahead_left_to_right) = operator_precedence(lookahead = *context, true);
+        if (parse_formula_is_at_end(context)) {
+            return parse_operation_formula(context, std::move(lhs), op, std::move(rhs));
+        }
+
+        while (
+            (lookahead_left_to_right == true && lookahead_precedence > op_precedence) ||
+            (lookahead_left_to_right == false && lookahead_precedence == op_precedence)
+        ) {
+            rhs = parse_formula_1(context, std::move(rhs), lookahead_precedence);
+
+            std::tie(lookahead_precedence, lookahead_left_to_right) = operator_precedence(lookahead = *context, true);
+            if (parse_formula_is_at_end(context)) {
+                return parse_operation_formula(context, std::move(lhs), op, std::move(rhs));
+            }
+        }
+        lhs = parse_operation_formula(context, std::move(lhs), op, std::move(rhs));
+    }
+    return lhs;
+}
+
+std::unique_ptr<formula_node> parse_formula(formula_parse_context& context)
+{
+    return parse_formula_1(context, parse_primary_formula(context), 0);
+}
+
+std::string_view::const_iterator find_end_of_formula(
+    std::string_view::const_iterator first,
+    std::string_view::const_iterator last,
+    std::string_view terminating_string)
+{
+    std::string bracket_stack;
+    char in_string = 0;
+    bool in_escape = false;
+
+    for (auto i = first; i != last; i++) {
+        if (in_escape) {
+            in_escape = false;
+
+        } else if (in_string) {
+            if (*i == in_string) {
+                in_string = 0;
+            } else if (*i == '\\') {
+                in_escape = true;
+            }
+
+        } else {
+            switch (*i) {
+            case '"': in_string = '"'; break;
+            case '\'': in_string = '\''; break;
+            case '{': bracket_stack += '}'; break;
+            case '[': bracket_stack += ']'; break;
+            case '(': bracket_stack += ')'; break;
+            case '\\': in_escape = true; break; // It is possible to escape any character, including the terminating_character.
+            default:
+                if (bracket_stack.size() > 0) {
+                    if (*i == bracket_stack.back()) {
+                        bracket_stack.pop_back();
+                    }
+
+                } else if (starts_with(i, last, terminating_string.begin(), terminating_string.end())) {
+                    return i;
+                }
+            }
+        }
+    }
+    return last;
+}
+
+}

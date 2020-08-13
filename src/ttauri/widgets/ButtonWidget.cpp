@@ -11,9 +11,11 @@ namespace tt {
 
 using namespace std::literals;
 
-ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    Widget(window, parent), label(label)
+ButtonWidget::ButtonWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
 {
+    [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...) {
+        requestConstraint = true;
+    });
 }
 
 ButtonWidget::~ButtonWidget() {}
@@ -26,7 +28,7 @@ ButtonWidget::~ButtonWidget() {}
         return result;
     }
 
-    labelCell = std::make_unique<TextCell>(label, theme->warningLabelStyle);
+    labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
 
     window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width() + Theme::margin * 2.0f);
     window.replaceConstraint(
@@ -57,7 +59,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
     if (*enabled) {
         context.color = theme->foregroundColor;
     }
-    context.transform = drawContext.transform * (mat::T{0.0f, 0.0f, 0.001f} * textTranslate);
+    context.transform = drawContext.transform * mat::T{0.0f, 0.0f, 0.001f};
     labelCell->draw(context, rectangle(), Alignment::MiddleCenter, baseHeight(), true);
 
     Widget::draw(drawContext, displayTimePoint);

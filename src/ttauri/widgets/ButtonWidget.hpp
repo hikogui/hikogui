@@ -19,13 +19,12 @@ protected:
     bool value = false;
     bool pressed = false;
 
-    std::string label = "<unknown>";
-
     std::unique_ptr<TextCell> labelCell;
-    mat::T textTranslate;
 
 public:
-    ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
+    observable<std::string> label;
+
+    ButtonWidget(Window &window, Widget *parent) noexcept;
     ~ButtonWidget();
 
     virtual WidgetUpdateResult updateConstraints() noexcept override;
