@@ -59,7 +59,6 @@ public:
     URL &operator=(URL &&other) noexcept = default;
 
     [[nodiscard]] size_t hash() const noexcept;
-    [[nodiscard]] std::string string() const noexcept;
 
     [[nodiscard]] std::string_view scheme() const noexcept;
 
@@ -140,21 +139,58 @@ public:
     [[nodiscard]] static std::string nativePathFromPath(std::string_view path) noexcept;
     [[nodiscard]] static std::wstring nativeWPathFromPath(std::string_view path) noexcept;
 
-    friend bool operator==(URL const &lhs, URL const &rhs) noexcept;
-    friend bool operator<(URL const &lhs, URL const &rhs) noexcept;
+    [[nodiscard]] friend bool operator==(URL const &lhs, URL const &rhs) noexcept
+    {
+        return lhs.value == rhs.value;
+    }
+
+    [[nodiscard]] friend bool operator<(URL const &lhs, URL const &rhs) noexcept
+    {
+        return lhs.value < rhs.value;
+    }
+
+    [[nodiscard]] friend bool operator>(URL const &lhs, URL const &rhs) noexcept
+    {
+        return rhs < lhs;
+    }
+
+    [[nodiscard]] friend bool operator!=(URL const &lhs, URL const &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
+
+    [[nodiscard]] friend bool operator>=(URL const &lhs, URL const &rhs) noexcept
+    {
+        return !(lhs < rhs);
+    }
+
+    [[nodiscard]] friend bool operator<=(URL const &lhs, URL const &rhs) noexcept
+    {
+        return !(lhs > rhs);
+    }
+
+    [[nodiscard]] friend URL operator/(URL const &lhs, URL const &rhs) noexcept
+    {
+        return lhs.urlByAppendingPath(rhs);
+    }
+
+    [[nodiscard]] friend URL operator/(URL const &lhs, std::string_view const &rhs) noexcept
+    {
+        return lhs.urlByAppendingPath(URL{rhs});
+    }
+
+    [[nodiscard]] friend std::string to_string(URL const &url) noexcept
+    {
+        return url.value;
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, const URL &rhs)
+    {
+        return lhs << to_string(rhs);
+    }
 };
 
-inline bool operator==(URL const &lhs, URL const &rhs) noexcept { return lhs.value == rhs.value; }
-inline bool operator<(URL const &lhs, URL const &rhs) noexcept { return lhs.value < rhs.value; }
-inline bool operator>(URL const &lhs, URL const &rhs) noexcept { return rhs < lhs; }
-inline bool operator!=(URL const &lhs, URL const &rhs) noexcept { return !(lhs == rhs); }
-inline bool operator>=(URL const &lhs, URL const &rhs) noexcept { return !(lhs < rhs); }
-inline bool operator<=(URL const &lhs, URL const &rhs) noexcept { return !(lhs > rhs); }
-inline URL operator/(URL const &lhs, URL const &rhs) noexcept { return lhs.urlByAppendingPath(rhs); }
-inline URL operator/(URL const &lhs, std::string_view const &rhs) noexcept { return lhs.urlByAppendingPath(URL{rhs}); }
-inline std::string to_string(URL const &url) noexcept { return url.string(); }
 
-std::ostream& operator<<(std::ostream& lhs, const URL& rhs);
 
 }
 

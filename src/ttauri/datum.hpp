@@ -1047,7 +1047,7 @@ public:
 
         case phy_url_ptr_id:
             if constexpr (HasLargeObjects) {
-                return get_pointer<URL>()->string();
+                return to_string(*get_pointer<URL>());
             } else {
                 tt_no_default;
             }

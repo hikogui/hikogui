@@ -39,11 +39,6 @@ size_t URL::hash() const noexcept
     return std::hash<std::string>{}(value);
 }
 
-std::string URL::string() const noexcept
-{
-    return value;
-}
-
 std::string_view URL::scheme() const noexcept
 {
     return parse_url(value).scheme;
@@ -232,12 +227,6 @@ URL URL::urlFromExecutableDirectory() noexcept
 URL URL::urlFromApplicationLogDirectory() noexcept
 {
     return urlFromApplicationDataDirectory() / "Log";
-}
-
-std::ostream& operator<<(std::ostream& lhs, const URL& rhs)
-{
-    lhs << rhs.string();
-    return lhs;
 }
 
 std::string URL::nativePathFromPath(std::string_view path) noexcept

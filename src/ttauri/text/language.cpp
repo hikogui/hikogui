@@ -4,7 +4,6 @@
 #include "translation.hpp"
 #include "po_parser.hpp"
 #include <fmt/format.h>
-#include <fmt/ostream.h>
 
 namespace tt {
 

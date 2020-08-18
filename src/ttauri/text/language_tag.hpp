@@ -26,7 +26,7 @@ public:
         return std::hash<std::string>{}(tag);
     }
 
-    operator bool()
+    operator bool() const noexcept
     {
         return size(tag) != 0;
     }
@@ -41,12 +41,14 @@ public:
         return lhs.tag == rhs.tag;
     }
 
-    [[nodiscard]] friend std::string to_string(language_tag const &rhs) noexcept {
-        return rhs.tag;
+    [[nodiscard]] friend std::string to_string(language_tag const &url) noexcept
+    {
+        return url.tag;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, language_tag const &rhs) {
-        return lhs << rhs.tag;
+    friend std::ostream &operator<<(std::ostream &lhs, const language_tag &rhs)
+    {
+        return lhs << to_string(rhs);
     }
 
 private:
