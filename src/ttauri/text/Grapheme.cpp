@@ -34,6 +34,34 @@ Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
     }
 }
 
+Grapheme& Grapheme::operator+=(char32_t codePoint) noexcept
+{
+    tt_assume(size() < std::tuple_size_v<long_Grapheme>);
+    switch (size()) {
+    case 0:
+        value |= (static_cast<uint64_t>(codePoint & 0x1f'ffff) << 1);
+        break;
+    case 1:
+        value |= (static_cast<uint64_t>(codePoint & 0x1f'ffff) << 22);
+        break;
+    case 2:
+        value |= (static_cast<uint64_t>(codePoint & 0x1f'ffff) << 43);
+        break;
+    case 3: {
+        std::array<char32_t,4> tmp;
+        tmp[0] = (*this)[0];
+        tmp[1] = (*this)[1];
+        tmp[2] = (*this)[2];
+        tmp[3] = codePoint;
+        value = create_pointer(tmp.data(), 3);
+        } break;
+    default:
+        auto tmp = *get_pointer();
+        tmp[size()] = codePoint;
+    }
+    return *this;
+}
+
 [[nodiscard]] std::u32string Grapheme::NFD() const noexcept {
     return application->unicodeData->toNFD(static_cast<std::u32string>(*this));
 }

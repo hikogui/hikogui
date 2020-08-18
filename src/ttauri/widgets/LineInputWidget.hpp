@@ -15,7 +15,7 @@ namespace tt {
 
 class LineInputWidget : public Widget {
 protected:
-    std::string label = "<unknown>";
+    std::u8string label = u8"<unknown>";
 
     EditableText field;
     ShapedText shapedText;
@@ -50,7 +50,7 @@ public:
 
     LineInputWidget(
         Window &window, Widget *parent,
-        std::string const label
+        std::u8string const label
     ) noexcept;
 
     ~LineInputWidget();

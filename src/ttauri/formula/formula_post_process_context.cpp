@@ -1,8 +1,6 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#pragma once
-
 #include "formula_post_process_context.hpp"
 #include "../url_parser.hpp"
 

@@ -102,7 +102,7 @@ public:
      * @param wrap When fitting the text in the extent wrap lines when needed.
      */
     ShapedText(
-        std::string_view text,
+        std::u8string_view text,
         TextStyle const &style,
         float width,
         Alignment const alignment=Alignment::MiddleCenter,

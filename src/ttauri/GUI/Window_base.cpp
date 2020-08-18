@@ -25,9 +25,9 @@ Window_base::~Window_base()
 
     try {
         if (state != State::NoWindow) {
-            LOG_FATAL("Window '{}' was not properly teardown before destruction.", title.text());
+            LOG_FATAL("Window '{}' was not properly teardown before destruction.", tt::to_string(title.text()));
         }
-        LOG_INFO("Window '{}' has been propertly destructed.", title.text());
+        LOG_INFO("Window '{}' has been propertly destructed.", tt::to_string(title.text()));
     } catch (...) {
         abort();
     }
@@ -170,7 +170,7 @@ void Window_base::layoutWindow() noexcept {
     widget->setWindowExtent(currentWindowExtent);
 
     LOG_INFO("Window constraints '{}' minimumExtent={} preferredExtent={} maximumExtent={} currentExtent={}",
-        title.text(),
+        tt::to_string(title.text()),
         widget->minimumExtent(),
         widget->preferredExtent(),
         widget->maximumExtent(),

@@ -11,13 +11,13 @@
 namespace tt {
 
 class TextCell: public Cell {
-    std::string text;
+    std::u8string text;
     TextStyle style;
     mutable ShapedText shapedText;
 
 public:
-    TextCell(std::string_view text, TextStyle style) noexcept;
-    TextCell(std::string text, TextStyle style) noexcept;
+    TextCell(std::u8string_view text, TextStyle style) noexcept;
+    TextCell(std::u8string text, TextStyle style) noexcept;
 
     [[nodiscard]] vec preferredExtent() const noexcept override;
 

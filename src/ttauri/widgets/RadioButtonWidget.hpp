@@ -28,7 +28,7 @@ protected:
 
 public:
     observable<ValueType> value;
-    observable<std::string> label;
+    observable<std::u8string> label;
 
     RadioButtonWidget(Window &window, Widget *parent, ValueType activeValue) noexcept :
         Widget(window, parent),

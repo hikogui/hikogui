@@ -79,7 +79,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void Window_vulkan_win32::createWindow(const std::string &_title, vec extent)
+void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
 {
     createWindowClass();
 
@@ -146,7 +146,7 @@ Window_vulkan_win32::~Window_vulkan_win32()
 {
     try {
         if (win32Window != nullptr) {
-            LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title.text());
+            LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", to_string(title.text()));
         }
     } catch (...) {
         abort();
@@ -220,9 +220,9 @@ void Window_vulkan_win32::openingWindow()
     });
 }
 
-[[nodiscard]] std::string Window_vulkan_win32::getTextFromClipboard() const noexcept
+[[nodiscard]] std::u8string Window_vulkan_win32::getTextFromClipboard() const noexcept
 {
-    auto r = std::string{};
+    auto r = std::u8string{};
 
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
         LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());
@@ -249,8 +249,8 @@ void Window_vulkan_win32::openingWindow()
             }
 
             ttlet wstr = std::wstring_view(wstr_c);
-            r = tt::to_string(wstr);
-            LOG_DEBUG("getTextFromClipboad '{}'", r);
+            r = tt::to_u8string(wstr);
+            LOG_DEBUG("getTextFromClipboad '{}'", tt::to_string(r));
 
             if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
                 LOG_ERROR("Could not unlock clipboard data: '{}'", getLastErrorMessage());
@@ -273,7 +273,7 @@ done:
     return r;
 }
 
-void Window_vulkan_win32::setTextOnClipboard(std::string str) noexcept
+void Window_vulkan_win32::setTextOnClipboard(std::u8string str) noexcept
 {
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
         LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());

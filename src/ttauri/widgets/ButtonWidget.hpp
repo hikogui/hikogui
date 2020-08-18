@@ -22,7 +22,7 @@ protected:
     std::unique_ptr<TextCell> labelCell;
 
 public:
-    observable<std::string> label;
+    observable<std::u8string> label;
 
     ButtonWidget(Window &window, Widget *parent) noexcept;
     ~ButtonWidget();

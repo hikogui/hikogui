@@ -12,7 +12,7 @@ namespace tt {
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
-using long_Grapheme = std::array<char32_t,18>;
+using long_Grapheme = std::array<char32_t, 18>;
 
 /*! A Grapheme, what a user thinks a character is.
  * This will exclude ligatures, because a user would see those as separate characters.
@@ -39,18 +39,21 @@ class Grapheme {
 public:
     Grapheme() noexcept : value(1) {}
 
-    ~Grapheme() {
+    ~Grapheme()
+    {
         delete_pointer();
     }
 
-    Grapheme(const Grapheme& other) noexcept {
+    Grapheme(const Grapheme &other) noexcept
+    {
         value = other.value;
         if (other.has_pointer()) {
             value = create_pointer(other.get_pointer()->data(), other.size());
         }
     }
 
-    Grapheme& operator=(const Grapheme& other) noexcept {
+    Grapheme &operator=(const Grapheme &other) noexcept
+    {
         if (this != &other) {
             delete_pointer();
             value = other.value;
@@ -61,12 +64,14 @@ public:
         return *this;
     }
 
-    Grapheme(Grapheme&& other) noexcept {
+    Grapheme(Grapheme &&other) noexcept
+    {
         value = other.value;
         other.value = 1;
     }
 
-    Grapheme& operator=(Grapheme&& other) noexcept {
+    Grapheme &operator=(Grapheme &&other) noexcept
+    {
         delete_pointer();
         value = other.value;
         other.value = 1;
@@ -75,20 +80,33 @@ public:
 
     explicit Grapheme(std::u32string_view codePoints) noexcept;
 
-    explicit Grapheme(char32_t codePoint) noexcept :
-        Grapheme(std::u32string_view{&codePoint, 1}) {}
+    explicit Grapheme(char32_t codePoint) noexcept : Grapheme(std::u32string_view{&codePoint, 1}) {}
 
-    Grapheme& operator=(std::u32string_view codePoints) noexcept {
+    template<typename It>
+    explicit Grapheme(It ptr, It last) noexcept : Grapheme(*ptr)
+    {
+        ++ptr;
+        while (ptr != last) {
+            *this += *(ptr++);
+        }
+    }
+
+    Grapheme &operator=(std::u32string_view codePoints) noexcept
+    {
         *this = Grapheme(codePoints);
         return *this;
     }
 
-    Grapheme& operator=(char32_t codePoint) noexcept {
+    Grapheme &operator=(char32_t codePoint) noexcept
+    {
         *this = Grapheme(codePoint);
         return *this;
     }
 
-    explicit operator std::u32string () const noexcept {
+    Grapheme &operator+=(char32_t codePoint) noexcept;
+
+    explicit operator std::u32string() const noexcept
+    {
         if (has_pointer()) {
             return {get_pointer()->data(), size()};
         } else {
@@ -105,11 +123,13 @@ public:
         }
     }
 
-    operator bool () const noexcept {
+    operator bool() const noexcept
+    {
         return value != 1;
     }
 
-    [[nodiscard]] size_t hash() const noexcept {
+    [[nodiscard]] size_t hash() const noexcept
+    {
         size_t r = 0;
         for (ssize_t i = 0; i != std::ssize(*this); ++i) {
             r = hash_mix_two(r, std::hash<char32_t>{}((*this)[i]));
@@ -117,7 +137,8 @@ public:
         return r;
     }
 
-    [[nodiscard]] size_t size() const noexcept {
+    [[nodiscard]] size_t size() const noexcept
+    {
         if (has_pointer()) {
             return value >> 48;
         } else {
@@ -132,7 +153,8 @@ public:
         }
     }
 
-    [[nodiscard]] char32_t front() const noexcept {
+    [[nodiscard]] char32_t front() const noexcept
+    {
         if (size() == 0) {
             return 0;
         } else {
@@ -140,9 +162,10 @@ public:
         }
     }
 
-    [[nodiscard]] char32_t operator[](size_t i) const noexcept {
+    [[nodiscard]] char32_t operator[](size_t i) const noexcept
+    {
         if (has_pointer()) {
-            tt_assume(i < std::tuple_size_v<long_Grapheme>); 
+            tt_assume(i < std::tuple_size_v<long_Grapheme>);
             return (*get_pointer())[i];
 
         } else {
@@ -151,7 +174,8 @@ public:
         }
     }
 
-    [[nodiscard]] std::u32string NFC() const noexcept {
+    [[nodiscard]] std::u32string NFC() const noexcept
+    {
         std::u32string r;
         r.reserve(std::ssize(*this));
         for (ssize_t i = 0; i != std::ssize(*this); ++i) {
@@ -166,20 +190,29 @@ public:
 
     [[nodiscard]] std::u32string NFKD() const noexcept;
 
-    [[nodiscard]] friend std::string to_string(Grapheme const &g) noexcept {
+    [[nodiscard]] friend std::string to_string(Grapheme const &g) noexcept
+    {
         return tt::to_string(g.NFC());
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, Grapheme const &rhs) {
+    [[nodiscard]] friend std::u8string to_u8string(Grapheme const &g) noexcept
+    {
+        return tt::to_u8string(g.NFC());
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, Grapheme const &rhs)
+    {
         return lhs << to_string(rhs);
     }
 
 private:
-    [[nodiscard]] bool has_pointer() const noexcept {
+    [[nodiscard]] bool has_pointer() const noexcept
+    {
         return (value & 1) == 0;
     }
 
-    [[nodiscard]] static uint64_t create_pointer(char32_t const *data, size_t size) noexcept {
+    [[nodiscard]] static uint64_t create_pointer(char32_t const *data, size_t size) noexcept
+    {
         tt_assert(size <= std::tuple_size<long_Grapheme>::value);
 
         auto ptr = new long_Grapheme();
@@ -190,19 +223,22 @@ private:
         return (size << 48) | uptr;
     }
 
-    [[nodiscard]] long_Grapheme *get_pointer() const noexcept {
+    [[nodiscard]] long_Grapheme *get_pointer() const noexcept
+    {
         auto uptr = (value << 16);
         auto iptr = static_cast<ptrdiff_t>(uptr) >> 16;
         return std::launder(reinterpret_cast<long_Grapheme *>(iptr));
     }
 
-    void delete_pointer() noexcept {
+    void delete_pointer() noexcept
+    {
         if (has_pointer()) {
             delete get_pointer();
         }
     }
 
-    [[nodiscard]] friend bool operator<(Grapheme const& a, Grapheme const& b) noexcept {
+    [[nodiscard]] friend bool operator<(Grapheme const &a, Grapheme const &b) noexcept
+    {
         ttlet length = std::min(std::ssize(a), std::ssize(b));
 
         for (ssize_t i = 0; i != length; ++i) {
@@ -213,7 +249,8 @@ private:
         return std::ssize(a) < std::ssize(b);
     }
 
-    [[nodiscard]] friend bool operator==(Grapheme const& a, Grapheme const& b) noexcept {
+    [[nodiscard]] friend bool operator==(Grapheme const &a, Grapheme const &b) noexcept
+    {
         if (a.value == b.value) {
             return true;
         }
@@ -230,33 +267,37 @@ private:
         return true;
     }
 
-    [[nodiscard]] friend bool operator==(Grapheme const &lhs, char32_t const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(Grapheme const &lhs, char32_t const &rhs) noexcept
+    {
         return (std::ssize(lhs) == 1) && (lhs[0] == rhs);
     }
 
-    [[nodiscard]] friend bool operator!=(Grapheme const &lhs, char32_t const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(Grapheme const &lhs, char32_t const &rhs) noexcept
+    {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] friend bool operator==(Grapheme const &lhs, char const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(Grapheme const &lhs, char const &rhs) noexcept
+    {
         return lhs == static_cast<char32_t>(rhs);
     }
 
-    [[nodiscard]] friend bool operator!=(Grapheme const &lhs, char const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(Grapheme const &lhs, char const &rhs) noexcept
+    {
         return !(lhs == rhs);
     }
-
 };
 
-}
+} // namespace tt
 
 namespace std {
 
 template<>
 struct hash<tt::Grapheme> {
-    [[nodiscard]] size_t operator() (tt::Grapheme const &rhs) const noexcept {
+    [[nodiscard]] size_t operator()(tt::Grapheme const &rhs) const noexcept
+    {
         return rhs.hash();
     }
 };
 
-}
+} // namespace std

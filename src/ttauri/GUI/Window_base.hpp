@@ -238,8 +238,8 @@ public:
     virtual void normalizeWindow() = 0;
     virtual void setWindowSize(ivec extent) = 0;
 
-    [[nodiscard]] virtual std::string getTextFromClipboard() const noexcept = 0;
-    virtual void setTextOnClipboard(std::string str) noexcept = 0;
+    [[nodiscard]] virtual std::u8string getTextFromClipboard() const noexcept = 0;
+    virtual void setTextOnClipboard(std::u8string str) noexcept = 0;
 
     void updateToNextKeyboardTarget(Widget *currentTargetWidget) noexcept;
 

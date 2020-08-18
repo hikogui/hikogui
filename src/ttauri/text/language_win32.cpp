@@ -14,13 +14,13 @@ using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::System::UserProfile;
 
-std::vector<std::string> language::get_preferred_language_tags() noexcept
+std::vector<language_tag> language::get_preferred_language_tags() noexcept
 {
     winrt::init_apartment();
 
-    std::vector<std::string> r;
+    std::vector<language_tag> r;
     for (const auto& lang : GlobalizationPreferences::Languages()) {
-        r.push_back(tt::to_string(lang));
+        r.emplace_back(tt::to_string(lang));
     }
     return r;
 }

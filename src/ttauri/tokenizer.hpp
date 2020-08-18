@@ -9,6 +9,7 @@
 #include "decimal.hpp"
 #include "exceptions.hpp"
 #include "parse_location.hpp"
+#include "text/UTF.hpp"
 #include <date/date.h>
 #include <memory>
 #include <string>
@@ -209,6 +210,10 @@ struct token_t {
 
     explicit operator std::string () const noexcept {
         return value;
+    }
+
+    explicit operator std::u8string () const noexcept {
+        return sanitize_u8string(make_u8string(value));
     }
 
     explicit operator decimal () const {

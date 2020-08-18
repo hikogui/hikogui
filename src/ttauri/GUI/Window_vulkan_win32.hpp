@@ -27,7 +27,7 @@ public:
     void closingWindow() override;
     void openingWindow() override;
 
-    void createWindow(const std::string &title, vec extent);
+    void createWindow(const std::u8string &title, vec extent);
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam);
 
     vk::SurfaceKHR getSurface() const override;
@@ -45,9 +45,9 @@ public:
     void setWindowSize(ivec extent) override;
 
 
-    [[nodiscard]] std::string getTextFromClipboard() const noexcept override;
+    [[nodiscard]] std::u8string getTextFromClipboard() const noexcept override;
 
-    void setTextOnClipboard(std::string str) noexcept override;
+    void setTextOnClipboard(std::u8string str) noexcept override;
 
 private:
     void setOSWindowRectangleFromRECT(RECT aarect) noexcept;

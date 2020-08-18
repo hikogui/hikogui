@@ -23,7 +23,7 @@ protected:
     Alignment alignment;
 
 public:
-    observable<std::string> label;
+    observable<std::u8string> label;
 
     LabelWidget(Window &window, Widget *parent, Alignment alignment) noexcept :
         Widget(window, parent),

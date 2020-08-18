@@ -318,7 +318,7 @@ noexcept :
     ShapedText(makeAttributedGraphemeVector(text, style), width, alignment, wrap) {}
 
 ShapedText::ShapedText(
-    std::string_view text,
+    std::u8string_view text,
     TextStyle const &style,
     float width,
     Alignment alignment,

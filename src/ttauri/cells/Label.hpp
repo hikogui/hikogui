@@ -10,11 +10,11 @@
 namespace tt {
 
 class Label {
-    std::string _text;
+    std::u8string _text;
     Image _icon;
 
 public:
-    Label(std::string text, Image &&icon = Image{}) noexcept :
+    Label(std::u8string text, Image &&icon = Image{}) noexcept :
         _text(text), _icon(std::move(icon)) {}
 
     Label(Image &&icon) noexcept :
@@ -35,7 +35,8 @@ public:
 
     /** Get the text translated in the current locale.
      */
-    [[nodiscard]] std::string text() const noexcept {
+    [[nodiscard]] std::u8string text() const noexcept
+    {
         return _text;
     }
 
@@ -45,8 +46,9 @@ public:
         return _icon;
     }
 
-    [[nodiscard]] friend std::string to_string(Label const &rhs) noexcept {
-        return fmt::format("label:{}", rhs._text);
+    [[nodiscard]] friend std::string to_string(Label const &rhs) noexcept
+    {
+        return fmt::format("label:{}", tt::to_string(rhs._text));
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, Label const &rhs) {

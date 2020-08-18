@@ -18,65 +18,74 @@
 
 namespace tt {
 
-[[nodiscard]] constexpr bool isUpper(char c) noexcept {
+[[nodiscard]] constexpr bool isUpper(char c) noexcept
+{
     return c >= 'A' && c <= 'Z';
 }
 
-[[nodiscard]] constexpr bool isLower(char c) noexcept {
+[[nodiscard]] constexpr bool isLower(char c) noexcept
+{
     return c >= 'a' && c <= 'z';
 }
 
-[[nodiscard]] constexpr bool isAlpha(char c) noexcept {
+[[nodiscard]] constexpr bool isAlpha(char c) noexcept
+{
     return isUpper(c) || isLower(c);
 }
 
-[[nodiscard]] constexpr bool isDigit(char c) noexcept {
+[[nodiscard]] constexpr bool isDigit(char c) noexcept
+{
     return c >= '0' && c <= '9';
 }
 
-[[nodiscard]] constexpr bool isAlphaNum(char c) noexcept {
+[[nodiscard]] constexpr bool isAlphaNum(char c) noexcept
+{
     return isAlpha(c) || isDigit(c);
 }
 
-[[nodiscard]] constexpr bool isLinefeed(char c) noexcept {
+[[nodiscard]] constexpr bool isLinefeed(char c) noexcept
+{
     return c == '\r' || c == '\n' || c == '\f' || c == '\v';
 }
 
-[[nodiscard]] constexpr bool isWhitespace(char c) noexcept {
+[[nodiscard]] constexpr bool isWhitespace(char c) noexcept
+{
     return c == ' ' || c == '\t' || isLinefeed(c);
 }
 
-[[nodiscard]] constexpr bool isNumberFirst(char c) noexcept {
+[[nodiscard]] constexpr bool isNumberFirst(char c) noexcept
+{
     return isDigit(c) || c == '+' || c == '-';
 }
 
-[[nodiscard]] constexpr bool isNameFirst(char c) noexcept {
+[[nodiscard]] constexpr bool isNameFirst(char c) noexcept
+{
     return isAlpha(c) || c == '_' || c == '$';
 }
 
-[[nodiscard]] constexpr bool isNameNext(char c) noexcept {
+[[nodiscard]] constexpr bool isNameNext(char c) noexcept
+{
     return isAlphaNum(c) || c == '_' || c == '$';
 }
 
-[[nodiscard]] constexpr bool isQuote(char c) noexcept {
+[[nodiscard]] constexpr bool isQuote(char c) noexcept
+{
     return c == '"' || c == '\'' || c == '`';
 }
 
-[[nodiscard]] constexpr bool isOpenBracket(char c) noexcept {
+[[nodiscard]] constexpr bool isOpenBracket(char c) noexcept
+{
     return c == '(' || c == '{' || c == '[';
 }
 
-[[nodiscard]] constexpr bool isCloseBracket(char c) noexcept {
+[[nodiscard]] constexpr bool isCloseBracket(char c) noexcept
+{
     return c == ')' || c == '}' || c == ']';
 }
 
-[[nodiscard]] constexpr bool isOperator(char c) noexcept {
-    return
-        !isAlphaNum(c) && c != '_' &&
-        !isWhitespace(c) &&
-        !isQuote(c) &&
-        !isOpenBracket(c) &&
-        !isCloseBracket(c);
+[[nodiscard]] constexpr bool isOperator(char c) noexcept
+{
+    return !isAlphaNum(c) && c != '_' && !isWhitespace(c) && !isQuote(c) && !isOpenBracket(c) && !isCloseBracket(c);
 }
 
 [[nodiscard]] inline std::string to_lower(std::string_view str) noexcept
@@ -84,8 +93,8 @@ namespace tt {
     std::string r;
     r.reserve(size(str));
 
-    for (ttlet c: str) {
-        r += (c >= 'A' && c <= 'Z') ? (c - 'A') + 'a': c;
+    for (ttlet c : str) {
+        r += (c >= 'A' && c <= 'Z') ? (c - 'A') + 'a' : c;
     }
 
     return r;
@@ -96,8 +105,8 @@ namespace tt {
     std::string r;
     r.reserve(size(str));
 
-    for (ttlet c: str) {
-        r += (c >= 'a' && c <= 'z') ? (c - 'a') + 'A': c;
+    for (ttlet c : str) {
+        r += (c >= 'a' && c <= 'z') ? (c - 'a') + 'A' : c;
     }
 
     return r;
@@ -111,7 +120,7 @@ namespace tt {
     r.reserve(size(str));
 
     auto found_cr = false;
-    for (ttlet c: str) {
+    for (ttlet c : str) {
         if (tt_unlikely(found_cr)) {
             // This is Microsoft or old-Apple, we replace the previous carriage-return
             // with a line-feed and emit the current character.
@@ -119,7 +128,7 @@ namespace tt {
             if (c != '\r' && c != '\n') {
                 r += c;
             }
-        
+
         } else if (tt_likely(c != '\r')) {
             // Emit any non-carriage return character.
             r += c;
@@ -143,7 +152,7 @@ namespace tt {
     r.reserve(size(str));
 
     r += isNameFirst(str.front()) ? str.front() : '_';
-    for (ttlet c: str.substr(1)) {
+    for (ttlet c : str.substr(1)) {
         r += isNameNext(c) ? c : '_';
     }
 
@@ -153,21 +162,15 @@ namespace tt {
 [[nodiscard]] constexpr uint32_t fourcc(char const txt[5]) noexcept
 {
     return (
-        (static_cast<uint32_t>(txt[0]) << 24) |
-        (static_cast<uint32_t>(txt[1]) << 16) |
-        (static_cast<uint32_t>(txt[2]) <<  8) |
-        static_cast<uint32_t>(txt[3])
-        );
+        (static_cast<uint32_t>(txt[0]) << 24) | (static_cast<uint32_t>(txt[1]) << 16) | (static_cast<uint32_t>(txt[2]) << 8) |
+        static_cast<uint32_t>(txt[3]));
 }
 
 [[nodiscard]] constexpr uint32_t fourcc(uint8_t const *txt) noexcept
 {
     return (
-        (static_cast<uint32_t>(txt[0]) << 24) |
-        (static_cast<uint32_t>(txt[1]) << 16) |
-        (static_cast<uint32_t>(txt[2]) <<  8) |
-        static_cast<uint32_t>(txt[3])
-        );
+        (static_cast<uint32_t>(txt[0]) << 24) | (static_cast<uint32_t>(txt[1]) << 16) | (static_cast<uint32_t>(txt[2]) << 8) |
+        static_cast<uint32_t>(txt[3]));
 }
 
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
@@ -209,14 +212,10 @@ namespace tt {
     }
 }
 
-[[nodiscard]] inline std::string_view make_string_view(
-    typename std::string::const_iterator b,
-    typename std::string::const_iterator e
-) noexcept
+[[nodiscard]] inline std::string_view
+make_string_view(typename std::string::const_iterator b, typename std::string::const_iterator e) noexcept
 {
-    return (b != e) ?
-        std::string_view{&(*b), numeric_cast<size_t>(std::distance(b, e))} :
-        std::string_view{};
+    return (b != e) ? std::string_view{&(*b), numeric_cast<size_t>(std::distance(b, e))} : std::string_view{};
 }
 
 template<typename Needle>
@@ -237,16 +236,12 @@ template<int N>
     return N - 1;
 }
 
-
 template<typename Haystack, typename... Needles>
 [[nodiscard]] auto split_find_needle(size_t offset, Haystack const &haystack, Needles const &... needles) noexcept
 {
-    return std::min(
-        {std::pair{haystack.find(needles, offset), split_needle_size(needles)}...},
-        [](ttlet &a, ttlet &b) {
-            return a.first < b.first;
-        }
-    );
+    return std::min({std::pair{haystack.find(needles, offset), split_needle_size(needles)}...}, [](ttlet &a, ttlet &b) {
+        return a.first < b.first;
+    });
 }
 
 template<typename Haystack, typename... Needles>
@@ -270,26 +265,40 @@ template<typename Haystack, typename... Needles>
     return r;
 }
 
-[[nodiscard]] inline std::string join(std::vector<std::string> const &list, std::string_view const joiner = {}) noexcept
+template<typename CharT>
+[[nodiscard]] std::basic_string<CharT>
+join(std::vector<std::basic_string<CharT>> const &list, std::basic_string_view<CharT> const joiner = {}) noexcept
 {
     std::string r;
 
     if (list.size() > 1) {
         size_t final_size = (list.size() - 1) * joiner.size();
-        for (ttlet &item: list) {
+        for (ttlet &item : list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
-    int64_t i = 0;
-    for (ttlet &item: list) {
-        if (i++ > 0) {
+    size_t i = 0;
+    for (ttlet &item : list) {
+        if (i++ != 0) {
             r += joiner;
         }
         r += item;
     }
     return r;
+}
+
+template<typename CharT>
+[[nodiscard]] std::basic_string<CharT> join(std::vector<std::basic_string<CharT>> const &list, std::basic_string<CharT> const &joiner) noexcept
+{
+    return join(list, std::basic_string_view<CharT>{joiner});
+}
+
+template<typename CharT>
+[[nodiscard]] std::basic_string<CharT> join(std::vector<std::basic_string<CharT>> const &list, CharT const *joiner) noexcept
+{
+    return join(list, std::basic_string_view<CharT>{joiner});
 }
 
 [[nodiscard]] inline std::string join(std::vector<std::string_view> const &list, std::string_view const joiner = {}) noexcept
@@ -298,14 +307,14 @@ template<typename Haystack, typename... Needles>
 
     if (list.size() > 1) {
         size_t final_size = (list.size() - 1) * joiner.size();
-        for (ttlet &item: list) {
+        for (ttlet &item : list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
     int64_t i = 0;
-    for (ttlet &item: list) {
+    for (ttlet &item : list) {
         if (i++ > 0) {
             r += joiner;
         }
@@ -314,12 +323,10 @@ template<typename Haystack, typename... Needles>
     return r;
 }
 
-
-
 /*! Return line and column count at the end iterator.
  */
 template<typename It>
-[[nodiscard]] inline std::pair<int,int> count_line_and_columns(It begin, It const end)
+[[nodiscard]] inline std::pair<int, int> count_line_and_columns(It begin, It const end)
 {
     int line = 1;
     int column = 1;
@@ -327,16 +334,12 @@ template<typename It>
     for (; begin != end; begin++) {
         switch (*begin) {
         case '\n': line++; [[fallthrough]];
-        case '\r': column = 1;
-            break;
-        case '\t':
-            column = ((((column-1) / 8) + 1) * 8) + 1;
-            break;
-        default:
-            column++;
+        case '\r': column = 1; break;
+        case '\t': column = ((((column - 1) / 8) + 1) * 8) + 1; break;
+        default: column++;
         }
     }
-    return { line, column };
+    return {line, column};
 }
 
-}
+} // namespace tt

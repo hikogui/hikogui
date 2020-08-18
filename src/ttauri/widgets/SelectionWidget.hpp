@@ -52,7 +52,7 @@ protected:
     std::optional<ValueType> clickedOption;
 public:
     observable<ValueType> value;
-    observable<std::vector<std::pair<ValueType,std::string>>> options;
+    observable<std::vector<std::pair<ValueType, std::u8string>>> options;
 
     SelectionWidget(Window &window, Widget *parent, ValueType defaultValue) noexcept :
         Widget(window, parent),

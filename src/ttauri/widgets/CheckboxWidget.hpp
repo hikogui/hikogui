@@ -39,9 +39,9 @@ protected:
 
 public:
     observable<ValueType> value;
-    observable<std::string> trueLabel;
-    observable<std::string> falseLabel;
-    observable<std::string> otherLabel;
+    observable<std::u8string> trueLabel;
+    observable<std::u8string> falseLabel;
+    observable<std::u8string> otherLabel;
 
     CheckboxWidget(Window &window, Widget *parent, ValueType trueValue, ValueType falseValue) noexcept :
         Widget(window, parent), trueValue(trueValue), falseValue(falseValue)

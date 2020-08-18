@@ -37,9 +37,9 @@ protected:
 
 public:
     observable<ValueType> value;
-    observable<std::string> onLabel;
-    observable<std::string> offLabel;
-    observable<std::string> otherLabel;
+    observable<std::u8string> onLabel;
+    observable<std::u8string> offLabel;
+    observable<std::u8string> otherLabel;
 
     ToggleWidget(Window &window, Widget *parent, ValueType onValue, ValueType offValue) noexcept :
         Widget(window, parent),

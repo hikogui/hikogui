@@ -5,6 +5,7 @@
 
 #include "../observable.hpp"
 #include "../numeric_cast.hpp"
+#include "language_tag.hpp"
 #include <string>
 #include <vector>
 #include <functional>
@@ -12,11 +13,12 @@
 
 namespace tt {
 
+
 struct language {
-    std::string tag;
+    language_tag tag;
     std::function<int(int)> plurality_func;
 
-    language(std::string tag) noexcept;
+    language(language_tag tag) noexcept;
 
     language(language const &) = delete;
     language(language &&) = delete;
@@ -34,11 +36,11 @@ struct language {
         return std::clamp(numeric_cast<ssize_t>(r), ssize_t{0}, max - 1);
     }
 
-    inline static std::unordered_map<std::string,std::unique_ptr<language>> languages;
+    inline static std::unordered_map<language_tag,std::unique_ptr<language>> languages;
     inline static observable<std::vector<language *>> preferred_languages;
     inline static std::recursive_mutex static_mutex;
 
-    [[nodiscard]] static language *find(std::string const &tag) noexcept {
+    [[nodiscard]] static language *find(language_tag const &tag) noexcept {
         ttlet lock = std::scoped_lock(static_mutex);
 
         ttlet i = languages.find(tag);
@@ -49,7 +51,8 @@ struct language {
         }
     }
 
-    [[nodiscard]] static language &find_or_create(std::string const &tag) noexcept {
+    [[nodiscard]] static language &find_or_create(language_tag const &tag) noexcept
+    {
         ttlet lock = std::scoped_lock(static_mutex);
 
         auto *r = find(tag);
@@ -64,14 +67,15 @@ struct language {
     /** Add short language names to the list of names.
      * The short names are inserted right after a consecutive group of long names with the same short name.
      */
-    [[nodiscard]] static std::vector<std::string> add_short_names(std::vector<std::string> tags) noexcept {
-        std::vector<std::string> r;
+    [[nodiscard]] static std::vector<language_tag> add_short_names(std::vector<language_tag> tags) noexcept
+    {
+        std::vector<language_tag> r;
 
-        std::string prev_short_tag;
+        auto prev_short_tag = language_tag{};
         for (ttlet &tag: tags) {
-            ttlet short_tag = split(tag, "-").front();
+            ttlet short_tag = tag.short_tag();
 
-            if (std::ssize(prev_short_tag) != 0 && short_tag != prev_short_tag) {
+            if (prev_short_tag && short_tag != prev_short_tag) {
                 if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
                     r.push_back(prev_short_tag);
                 }
@@ -84,7 +88,7 @@ struct language {
             prev_short_tag = short_tag;
         }
 
-        if (std::ssize(prev_short_tag) != 0) {
+        if (prev_short_tag) {
             if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
                 r.push_back(prev_short_tag);
             }
@@ -92,7 +96,8 @@ struct language {
         return r;
     }
 
-    static void set_preferred_languages(std::vector<std::string> tags) noexcept {
+    static void set_preferred_languages(std::vector<language_tag> tags) noexcept
+    {
         ttlet lock = std::scoped_lock(static_mutex);
 
         auto tmp = std::vector<language*>{};
@@ -106,7 +111,7 @@ struct language {
     /** Get the preferred language tags from the operating system.
      * Language tags are based on IETF BCP-47/RFC-5646
      */
-    [[nodiscard]] static std::vector<std::string> get_preferred_language_tags() noexcept;
+    [[nodiscard]] static std::vector<language_tag> get_preferred_language_tags() noexcept;
 };
 
 }

@@ -1,16 +1,20 @@
 
+#include "language_tag.hpp"
 #include "language.hpp"
 #include "translation.hpp"
 #include "po_parser.hpp"
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 
 namespace tt {
 
-language::language(std::string tag) noexcept :
+language::language(language_tag tag) noexcept :
     tag(std::move(tag)), plurality_func()
 {
-    auto po_url = URL(fmt::format("resource:locale/{}.po", this->tag));
+    // XXX fmt::format is unable to find language_tag::operator<<
+    auto po_url = URL(fmt::format("resource:locale/{}.po", to_string(this->tag)));
 
-    LOG_INFO("Loading language {} catalogue {}", this->tag, po_url);
+    LOG_INFO("Loading language {} catalogue {}", to_string(this->tag), po_url);
 
     try {
         add_translation(parse_po(po_url), *this);

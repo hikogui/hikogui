@@ -6,6 +6,7 @@ target_sources(ttauri PRIVATE
     AttributedGlyph.hpp
     AttributedGlyphLine.hpp
     AttributedGrapheme.hpp
+    code_point_iterator.hpp
     EditableText.hpp
     ElusiveIcons.hpp
     Font.cpp
@@ -20,11 +21,13 @@ target_sources(ttauri PRIVATE
     FontID.hpp
     FontVariant.hpp
     FontWeight.hpp
+    format.hpp
     format10.hpp
     GlyphID.hpp
     GlyphMetrics.hpp
     Grapheme.cpp
     Grapheme.hpp
+    grapheme_iterator.hpp
     gstring.cpp
     gstring.hpp
     language.cpp
