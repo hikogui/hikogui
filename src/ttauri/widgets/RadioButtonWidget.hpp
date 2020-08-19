@@ -28,23 +28,33 @@ public:
     observable<ValueType> value;
     observable<std::u8string> label;
 
-    RadioButtonWidget(Window &window, Widget *parent) noexcept :
-        Widget(window, parent),
-        value(),
-        label()
+    template<typename V, typename... Args>
+    RadioButtonWidget(Window &window, Widget *parent, V &&value, l10n const &fmt, Args const &... args) noexcept :
+        Widget(window, parent), value(std::forward<V>(value)), label(format(fmt, args...))
     {
-        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
+        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
             this->window.requestRedraw = true;
         });
-        [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
+        [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...) {
             requestConstraint = true;
         });
     }
 
-    ~RadioButtonWidget() {
+    template<typename V>
+    RadioButtonWidget(Window &window, Widget *parent, V &&value) noexcept :
+        RadioButtonWidget(window, parent, std::forward<V>(value), l10n{})
+    {
     }
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+    RadioButtonWidget(Window &window, Widget *parent) noexcept :
+        RadioButtonWidget(window, parent, observable<ValueType>{}, l10n{})
+    {
+    }
+
+    ~RadioButtonWidget() {}
+
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
@@ -64,40 +74,34 @@ public:
         return WidgetUpdateResult::Self;
     }
 
-    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+    [[nodiscard]] WidgetUpdateResult
+    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
             return result;
         }
 
-        radioButtonRectangle = aarect{
-            0.0f,
-            baseHeight() - Theme::smallSize * 0.5f,
-            Theme::smallSize,
-            Theme::smallSize
-        };
+        radioButtonRectangle = aarect{0.0f, baseHeight() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
 
         ttlet labelX = radioButtonRectangle.p3().x() + Theme::margin;
-        labelRectangle = aarect{
-            labelX,
-            0.0f,
-            rectangle().width() - labelX,
-            rectangle().height()
-        };
+        labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
 
         pipRectangle = shrink(radioButtonRectangle, 1.5f);
         return WidgetUpdateResult::Self;
     }
 
-    void drawRadioButton(DrawContext drawContext) noexcept {
+    void drawRadioButton(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.cornerShapes = vec{radioButtonRectangle.height() * 0.5f};
         drawContext.drawBoxIncludeBorder(radioButtonRectangle);
     }
 
-    void drawPip(DrawContext drawContext) noexcept {
+    void drawPip(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         // draw pip
@@ -111,7 +115,8 @@ public:
         }
     }
 
-    void drawLabel(DrawContext drawContext) noexcept {
+    void drawLabel(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (*enabled) {
@@ -121,7 +126,8 @@ public:
         labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawRadioButton(drawContext);
@@ -130,23 +136,21 @@ public:
         Widget::draw(drawContext, displayTimePoint);
     }
 
-    void handleMouseEvent(MouseEvent const &event) noexcept override {
+    void handleMouseEvent(MouseEvent const &event) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         Widget::handleMouseEvent(event);
 
         if (*enabled) {
-            if (
-                event.type == MouseEvent::Type::ButtonUp &&
-                event.cause.leftButton &&
-                rectangle().contains(event.position)
-            ) {
+            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
                 handleCommand(command::gui_activate);
             }
         }
     }
 
-    void handleCommand(command command) noexcept override {
+    void handleCommand(command command) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (!*enabled) {
@@ -161,7 +165,8 @@ public:
         Widget::handleCommand(command);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override {
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (rectangle().contains(position)) {
@@ -171,11 +176,11 @@ public:
         }
     }
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override {
+    [[nodiscard]] bool acceptsFocus() const noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;
     }
 };
 
-
-}
+} // namespace tt

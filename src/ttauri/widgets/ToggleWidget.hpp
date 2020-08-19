@@ -38,10 +38,25 @@ public:
     observable<std::u8string> offLabel;
     observable<std::u8string> otherLabel;
 
-    ToggleWidget(Window &window, Widget *parent) noexcept :
-        Widget(window, parent)
+    template<
+        typename V = observable<ValueType>,
+        typename L1 = observable<std::u8string>,
+        typename L2 = observable<std::u8string>,
+        typename L3 = observable<std::u8string>>
+    ToggleWidget(
+        Window &window,
+        Widget *parent,
+        V &&value = observable<ValueType>{},
+        L1 &&onLabel = observable<std::u8string>{},
+        L2 &&offLabel = observable<std::u8string>{},
+        L3 &&otherLabel = observable<std::u8string>{}) noexcept :
+        Widget(window, parent),
+        value(std::forward<V>(value)),
+        onLabel(std::forward<L1>(onLabel)),
+        offLabel(std::forward<L2>(offLabel)),
+        otherLabel(std::forward<L3>(otherLabel))
     {
-        [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...){
+        [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...) {
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet on_label_cbid = this->onLabel.add_callback([this](auto...) {
@@ -55,10 +70,10 @@ public:
         });
     }
 
-    ~ToggleWidget() {
-    }
+    ~ToggleWidget() {}
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
@@ -69,18 +84,18 @@ public:
         offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
         otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
 
-        ttlet minimumHeight = std::max({
-            onLabelCell->preferredExtent().height(),
-            offLabelCell->preferredExtent().height(),
-            otherLabelCell->preferredExtent().height(),
-            Theme::smallSize
-            });
+        ttlet minimumHeight = std::max(
+            {onLabelCell->preferredExtent().height(),
+             offLabelCell->preferredExtent().height(),
+             otherLabelCell->preferredExtent().height(),
+             Theme::smallSize});
 
         ttlet minimumWidth = std::max({
-            onLabelCell->preferredExtent().width(),
-            offLabelCell->preferredExtent().width(),
-            otherLabelCell->preferredExtent().width(),
-            }) + Theme::smallSize * 2.0f + Theme::margin * 2.0f;
+                                 onLabelCell->preferredExtent().width(),
+                                 offLabelCell->preferredExtent().width(),
+                                 otherLabelCell->preferredExtent().width(),
+                             }) +
+            Theme::smallSize * 2.0f + Theme::margin * 2.0f;
 
         window.stopConstraintSolver();
         window.replaceConstraint(minimumWidthConstraint, width >= minimumWidth);
@@ -90,7 +105,9 @@ public:
         return WidgetUpdateResult::Self;
     }
 
-    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+    [[nodiscard]] WidgetUpdateResult
+    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
@@ -101,38 +118,29 @@ public:
             -0.5f, // Expand horizontally due to rounded shape
             baseHeight() - Theme::smallSize * 0.5f,
             Theme::smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
-            Theme::smallSize
-        };
+            Theme::smallSize};
 
         ttlet labelX = Theme::smallSize * 2.0f + Theme::margin;
-        labelRectangle = aarect{
-            labelX,
-            0.0f,
-            rectangle().width() - labelX,
-            rectangle().height()
-        };
+        labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
 
-        sliderRectangle = shrink(aarect{
-            0.0f,
-            toggleRectangle.y(),
-            toggleRectangle.height(),
-            toggleRectangle.height()
-        }, 1.5f);
-        
+        sliderRectangle = shrink(aarect{0.0f, toggleRectangle.y(), toggleRectangle.height(), toggleRectangle.height()}, 1.5f);
+
         ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (sliderRectangle.x() * 2.0f);
         sliderMoveRange = sliderMoveWidth - sliderRectangle.width();
 
         return WidgetUpdateResult::Self;
     }
-    
-    void drawToggle(DrawContext drawContext) noexcept {
+
+    void drawToggle(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.cornerShapes = vec{toggleRectangle.height() * 0.5f};
         drawContext.drawBoxIncludeBorder(toggleRectangle);
     }
 
-    void drawSlider(DrawContext drawContext) noexcept {
+    void drawSlider(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         // Prepare animation values.
@@ -151,9 +159,7 @@ public:
             }
         } else {
             if (*enabled && window.active) {
-                drawContext.color = hover ?
-                    theme->borderColor(nestingLevel() + 1) :
-                    theme->borderColor(nestingLevel());
+                drawContext.color = hover ? theme->borderColor(nestingLevel() + 1) : theme->borderColor(nestingLevel());
             }
         }
         std::swap(drawContext.color, drawContext.fillColor);
@@ -161,22 +167,21 @@ public:
         drawContext.drawBoxIncludeBorder(positionedSliderRectangle);
     }
 
-    void drawLabel(DrawContext drawContext) noexcept {
+    void drawLabel(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;
         }
 
-        ttlet &labelCell =
-            value == OnValue ? onLabelCell :
-            value == OffValue ? offLabelCell :
-            otherLabelCell;
+        ttlet &labelCell = value == OnValue ? onLabelCell : value == OffValue ? offLabelCell : otherLabelCell;
 
         labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
         drawToggle(drawContext);
         drawSlider(drawContext);
@@ -184,23 +189,21 @@ public:
         Widget::draw(drawContext, displayTimePoint);
     }
 
-    void handleMouseEvent(MouseEvent const &event) noexcept override {
+    void handleMouseEvent(MouseEvent const &event) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         Widget::handleMouseEvent(event);
 
         if (*enabled) {
-            if (
-                event.type == MouseEvent::Type::ButtonUp &&
-                event.cause.leftButton &&
-                rectangle().contains(event.position)
-            ) {
+            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
                 handleCommand(command::gui_activate);
             }
         }
     }
-    
-    void handleCommand(command command) noexcept override {
+
+    void handleCommand(command command) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (!*enabled) {
@@ -215,7 +218,8 @@ public:
         Widget::handleCommand(command);
     }
 
-    HitBox hitBoxTest(vec position) const noexcept override {
+    HitBox hitBoxTest(vec position) const noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (rectangle().contains(position)) {
@@ -225,14 +229,14 @@ public:
         }
     }
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override {
+    [[nodiscard]] bool acceptsFocus() const noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         return *enabled;
     }
-
 };
 
-using BooleanToggleWidget = ToggleWidget<bool,true,false>;
+using BooleanToggleWidget = ToggleWidget<bool, true, false>;
 
-}
+} // namespace tt

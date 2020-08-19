@@ -34,3 +34,6 @@ private:
 };
 
 } // namespace tt
+
+// Add specialization for observable_cast
+#include "detail/observable_cast_l10n.hpp"
