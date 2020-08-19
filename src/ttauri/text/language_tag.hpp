@@ -13,16 +13,30 @@ namespace tt {
  */
 class language_tag {
 public:
-    language_tag(language_tag const &) noexcept = default;
-    language_tag(language_tag &&) noexcept = default;
-    language_tag &operator=(language_tag const &) noexcept = default;
-    language_tag &operator=(language_tag &&) noexcept = default;
+    language_tag(language_tag const &other) noexcept : tag(other.tag) {}
+
+    language_tag(language_tag &&other) noexcept : tag(std::move(other.tag)) {}
+
+    language_tag &operator=(language_tag const &other) noexcept
+    {
+        tt_assume(this != &other);
+        tag = other.tag;
+        return *this;
+    }
+
+    language_tag &operator=(language_tag &&other) noexcept
+    {
+        tt_assume(this != &other);
+        tag = std::move(other.tag);
+        return *this;
+    }
 
     language_tag() noexcept : tag() {}
 
     explicit language_tag(std::string tag) noexcept : tag(std::move(tag)) {}
 
-    [[nodiscard]] size_t hash() const noexcept {
+    [[nodiscard]] size_t hash() const noexcept
+    {
         return std::hash<std::string>{}(tag);
     }
 
@@ -36,10 +50,12 @@ public:
         return language_tag{split(tag, "-").front()};
     }
 
-    [[nodiscard]] friend bool operator==(language_tag const &lhs, language_tag const &rhs) noexcept
+    [[nodiscard]] bool operator==(language_tag const &rhs) const noexcept
     {
-        return lhs.tag == rhs.tag;
+        return tag == rhs.tag;
     }
+
+    [[nodiscard]] bool operator!=(language_tag const &rhs) const noexcept = default;
 
     [[nodiscard]] friend std::string to_string(language_tag const &url) noexcept
     {
@@ -68,4 +84,4 @@ public:
     }
 };
 
-}
+} // namespace std

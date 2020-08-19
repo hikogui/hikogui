@@ -25,14 +25,23 @@ protected:
 public:
     observable<std::u8string> label;
 
-    LabelWidget(Window &window, Widget *parent, Alignment alignment) noexcept :
+    template<typename... Args>
+    LabelWidget(Window &window, Widget *parent, Alignment alignment, l10n const &fmt, Args const &... args) noexcept :
         Widget(window, parent),
-        alignment(alignment)
+        alignment(alignment),
+        label(format(fmt, args...))
     {
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
             requestConstraint = true;
         });
     }
+
+    template<typename... Args>
+    LabelWidget(Window &window, Widget *parent, l10n const &fmt, Args const &... args) noexcept :
+        LabelWidget(window, parent, Alignment::TopLeft, fmt, args) {}
+
+    LabelWidget(Window &window, Widget *parent, Alignment alignment) noexcept :
+        LabelWidget(window, parent, alignment, l10n{}) {}
 
     ~LabelWidget() {
     }

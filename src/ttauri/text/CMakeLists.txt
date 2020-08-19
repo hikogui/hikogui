@@ -30,6 +30,7 @@ target_sources(ttauri PRIVATE
     grapheme_iterator.hpp
     gstring.cpp
     gstring.hpp
+    l10n.hpp
     language.cpp
     language.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/language_macos.mm>

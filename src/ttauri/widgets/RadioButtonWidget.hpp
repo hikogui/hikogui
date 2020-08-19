@@ -15,7 +15,7 @@
 
 namespace tt {
 
-template<typename ValueType>
+template<typename ValueType, ValueType ActiveValue>
 class RadioButtonWidget : public Widget {
 protected:
     aarect radioButtonRectangle;
@@ -24,15 +24,12 @@ protected:
 
     std::unique_ptr<TextCell> labelCell;
 
-    ValueType activeValue;
-
 public:
     observable<ValueType> value;
     observable<std::u8string> label;
 
-    RadioButtonWidget(Window &window, Widget *parent, ValueType activeValue) noexcept :
+    RadioButtonWidget(Window &window, Widget *parent) noexcept :
         Widget(window, parent),
-        activeValue(std::move(activeValue)),
         value(),
         label()
     {
@@ -104,7 +101,7 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
 
         // draw pip
-        if (value == activeValue) {
+        if (value == ActiveValue) {
             if (*enabled && window.active) {
                 drawContext.color = theme->accentColor;
             }
@@ -157,7 +154,7 @@ public:
         }
 
         if (command == command::gui_activate) {
-            if (assign_and_compare(value, activeValue)) {
+            if (assign_and_compare(value, ActiveValue)) {
                 window.requestRedraw = true;
             }
         }

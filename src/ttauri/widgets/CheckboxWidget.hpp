@@ -17,7 +17,7 @@
 
 namespace tt {
 
-template<typename ValueType>
+template<typename ValueType, ValueType TrueValue, ValueType FalseValue>
 class CheckboxWidget : public Widget {
 protected:
     std::unique_ptr<TextCell> trueLabelCell;
@@ -34,17 +34,14 @@ protected:
 
     aarect labelRectangle;
 
-    ValueType trueValue;
-    ValueType falseValue;
-
 public:
     observable<ValueType> value;
     observable<std::u8string> trueLabel;
     observable<std::u8string> falseLabel;
     observable<std::u8string> otherLabel;
 
-    CheckboxWidget(Window &window, Widget *parent, ValueType trueValue, ValueType falseValue) noexcept :
-        Widget(window, parent), trueValue(trueValue), falseValue(falseValue)
+    CheckboxWidget(Window &window, Widget *parent) noexcept :
+        Widget(window, parent)
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
             this->window.requestRedraw = true;
@@ -137,9 +134,9 @@ public:
         }
 
         // Checkmark or tristate.
-        if (value == trueValue) {
+        if (value == TrueValue) {
             drawContext.drawGlyph(checkGlyph, checkRectangle);
-        } else if (value == falseValue) {
+        } else if (value == FalseValue) {
             ;
         } else {
             drawContext.drawGlyph(minusGlyph, minusRectangle);
@@ -154,7 +151,7 @@ public:
             drawContext.color = theme->labelStyle.color;
         }
 
-        ttlet &labelCell = value == trueValue ? trueLabelCell : value == falseValue ? falseLabelCell : otherLabelCell;
+        ttlet &labelCell = value == TrueValue ? trueLabelCell : value == FalseValue ? falseLabelCell : otherLabelCell;
 
         labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
     }
@@ -191,7 +188,7 @@ public:
         }
 
         if (command == command::gui_activate) {
-            if (assign_and_compare(value, value == falseValue ? trueValue : falseValue)) {
+            if (assign_and_compare(value, value == FalseValue ? TrueValue : FalseValue)) {
                 window.requestRedraw = true;
             }
         }
@@ -214,5 +211,7 @@ public:
         return *enabled;
     }
 };
+
+using BooleanCheckboxWidget = CheckboxWidget<bool,true,false>;
 
 } // namespace tt

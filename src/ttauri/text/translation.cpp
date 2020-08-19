@@ -52,7 +52,10 @@ std::unordered_map<translation_key,std::vector<std::u8string>> translations;
         ttlet i = translations.find(key);
         if (i != translations.cend()) {
             ttlet plurality = language->plurality(n, std::ssize(i->second));
-            return i->second[plurality];
+            ttlet &translation = i->second[plurality];
+            if (translation.size() != 0) {
+                return translation;
+            }
         }
     }
     LOG_WARNING("No translation found for '{}'", tt::to_string(msgid));

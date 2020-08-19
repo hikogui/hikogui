@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <string_view>
 #include <string>
+#include "l10n.hpp"
 
 namespace tt {
 namespace detail {
@@ -31,6 +32,7 @@ std::u8string format(const std::locale &loc, std::u8string_view fmt, const Args 
     auto r = fmt::format(detail::u8format_argument_cast(fmt), detail::u8format_argument_cast(args)...);
 
     // The following will need to allocate a copy of the formatted string.
+    // XXX sanitize the UTF-8 string here.
     return std::string{reinterpret_cast<char8_t *>(r.data()), r.size()};
 }
 
@@ -39,5 +41,7 @@ std::u8string format(std::u8string_view fmt, const Args &... args)
 {
     return format(std::locale::classic(), fmt, args...);
 }
+
+
 
 } // namespace tt

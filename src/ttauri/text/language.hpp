@@ -105,6 +105,15 @@ struct language {
             tmp.push_back(&find_or_create(tag));
         }
 
+        auto language_order_string = std::string{};
+        for (ttlet &language : tmp) {
+            if (language_order_string.size() != 0) {
+                language_order_string += ", ";
+            }
+            language_order_string += to_string(language->tag);
+        }
+        LOG_INFO("Setting preferred language in order: ", language_order_string);
+
         preferred_languages = tmp;
     }
 

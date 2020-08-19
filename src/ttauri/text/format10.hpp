@@ -5,6 +5,7 @@
 
 #include "translation.hpp"
 #include "format.hpp"
+#include "l10n.hpp"
 #include <utility>
 #include <tuple>
 #include <memory>
@@ -16,10 +17,10 @@ namespace tt {
 
 class format10_base {
 protected:
-    std::u8string fmt;
+    l10n fmt;
 
 public:
-    format10_base(std::u8string_view fmt) noexcept : fmt(std::u8string{fmt}) {}
+    format10_base(l10n const &fmt) noexcept : fmt(fmt) {}
 
     virtual ~format10_base() = default;
 
@@ -46,12 +47,12 @@ class format10_impl : public format10_base {
     using make_unique_type = std::unique_ptr<format10_impl> (*)(std::u8string_view const &, std::remove_cvref_t<Args> const &...);
 
 public:
-    format10_impl(std::u8string_view fmt, Args const &... args) noexcept : format10_base(fmt), args(args...) {}
+    format10_impl(l10n const &fmt, Args const &... args) noexcept : format10_base(fmt), args(args...) {}
 
     operator std::u8string() const noexcept override
     {
         auto locale = std::locale{};
-        auto translated_fmt = get_translation(fmt);
+        auto translated_fmt = static_cast<std::u8string>(fmt);
 
         format_func_type format_func = cpp20_format;
         return std::apply(format_func, std::tuple_cat(std::tuple(locale, translated_fmt), args));
@@ -73,13 +74,13 @@ public:
 template<>
 class format10_impl<> : public format10_base {
 public:
-    format10_impl() noexcept : format10_base(std::u8string_view{}) {}
+    format10_impl() noexcept : format10_base(l10n{}) {}
 
-    format10_impl(std::u8string_view fmt) noexcept : format10_base(fmt) {}
+    format10_impl(l10n const &fmt) noexcept : format10_base(fmt) {}
 
     operator std::u8string() const noexcept override
     {
-        return std::u8string{get_translation(fmt)};
+        return static_cast<std::u8string>(fmt);
     }
 
     std::unique_ptr<format10_base> make_unique_copy() const noexcept override
@@ -101,7 +102,7 @@ public:
     format10() noexcept : impl(std::make_unique<format10_impl<>>()) {}
 
     template<typename... Args>
-    format10(std::u8string_view fmt, Args const &... args) noexcept : impl(std::make_unique<format10_impl<Args...>>(fmt, args...))
+    format10(l10n const &fmt, Args const &... args) noexcept : impl(std::make_unique<format10_impl<Args...>>(fmt, args...))
     {
     }
 
@@ -139,7 +140,11 @@ public:
     }
 };
 
-using format10p = format10;
+template<typename... Args>
+format10 format(l10n fmt, const Args &... args)
+{
+    return format10(fmt, args...);
+}
 
 } // namespace tt
 

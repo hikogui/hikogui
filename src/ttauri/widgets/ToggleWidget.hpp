@@ -16,7 +16,7 @@
 
 namespace tt {
 
-template<typename ValueType=bool>
+template<typename ValueType, ValueType OnValue, ValueType OffValue>
 class ToggleWidget : public Widget {
 protected:
     static constexpr hires_utc_clock::duration animationDuration = 150ms;
@@ -32,19 +32,14 @@ protected:
     std::unique_ptr<TextCell> offLabelCell;
     std::unique_ptr<TextCell> otherLabelCell;
 
-    ValueType onValue;
-    ValueType offValue;
-
 public:
     observable<ValueType> value;
     observable<std::u8string> onLabel;
     observable<std::u8string> offLabel;
     observable<std::u8string> otherLabel;
 
-    ToggleWidget(Window &window, Widget *parent, ValueType onValue, ValueType offValue) noexcept :
-        Widget(window, parent),
-        onValue(onValue),
-        offValue(offValue)
+    ToggleWidget(Window &window, Widget *parent) noexcept :
+        Widget(window, parent)
     {
         [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...){
             this->window.requestRedraw = true;
@@ -150,7 +145,7 @@ public:
 
         ttlet positionedSliderRectangle = mat::T2(sliderMoveRange * animatedValue, 0.0f) * sliderRectangle;
 
-        if (value == onValue) {
+        if (value == OnValue) {
             if (*enabled && window.active) {
                 drawContext.color = theme->accentColor;
             }
@@ -174,8 +169,8 @@ public:
         }
 
         ttlet &labelCell =
-            value == onValue ? onLabelCell :
-            value == offValue ? offLabelCell :
+            value == OnValue ? onLabelCell :
+            value == OffValue ? offLabelCell :
             otherLabelCell;
 
         labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
@@ -213,7 +208,7 @@ public:
         }
 
         if (command == command::gui_activate) {
-            if (assign_and_compare(value, value == offValue ? onValue : offValue)) {
+            if (assign_and_compare(value, value == OffValue ? OnValue : OffValue)) {
                 window.requestRedraw = true;
             }
         }
@@ -237,5 +232,7 @@ public:
     }
 
 };
+
+using BooleanToggleWidget = ToggleWidget<bool,true,false>;
 
 }
