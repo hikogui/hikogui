@@ -22,14 +22,14 @@ bool is_main_thread()
     return std::this_thread::get_id() == application->mainThreadID;
 }
 
-void run_on_main_thread(std::function<void()> f)
+void run_from_main_loop(std::function<void()> f)
 {
     if (is_main_thread()) {
         return f();
 
     } else {
         tt_assume(application);
-        application->runOnMainThread(f);
+        application->runFromMainLoop(f);
     }
 }
 

@@ -28,7 +28,9 @@ tt_no_inline void unfair_mutex::lock_contented(uint32_t expected) noexcept
         if (should_wait || semaphore.compare_exchange_strong(expected, 2)) {
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-            tt_assert(locking_thread != std::this_thread::get_id());
+            // This check only works because locking_thread can never be the current
+            // thread id. It is either the thread that made the lock, or it is zero.
+            tt_assert(locking_thread != current_thread_id());
 #endif
 
             wait_on(semaphore, 2);
@@ -47,7 +49,7 @@ tt_no_inline void unfair_mutex::lock_contented(uint32_t expected) noexcept
         return false;
     }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-    locking_thread = std::this_thread::get_id();
+    locking_thread = current_thread_id();
 #endif
     return true;
 }
@@ -60,7 +62,7 @@ inline void unfair_mutex::lock() noexcept
         lock_contented(expected);
     }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-    locking_thread = std::this_thread::get_id();
+    locking_thread = current_thread_id();
 #endif
 }
 
@@ -73,6 +75,9 @@ inline void unfair_mutex::unlock() noexcept
     } else {
         atomic_thread_fence(std::memory_order::memory_order_release);
     }
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+    locking_thread = 0;
+#endif
 }
 
 }

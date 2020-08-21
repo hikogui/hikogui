@@ -10,14 +10,15 @@
 
 namespace tt {
 
-Image::Image(PixelMap<R16G16B16A16SFloat> &&image) noexcept :
-    image(std::move(image)) {}
+Image::Image(PixelMap<R16G16B16A16SFloat> &&image) noexcept : image(std::move(image)) {}
 
-Image::Image(FontGlyphIDs const &image) noexcept :
-    image(image) {}
+Image::Image(FontGlyphIDs const &image) noexcept : image(image) {}
 
-Image::Image(URL const &url) :
-    Image(png::load(url)) {}
+Image::Image(URL const &url) : Image(png::load(url)) {}
+
+Image::Image(ElusiveIcon const &icon) noexcept : Image(to_FontGlyphIDs(icon)) {}
+
+Image::Image(TTauriIcon const &icon) noexcept : Image(to_FontGlyphIDs(icon)) {}
 
 Image::Image(Image const &other) noexcept
 {
@@ -57,5 +58,4 @@ Image &Image::operator=(Image const &other) noexcept
     }
 }
 
-
-}
+} // namespace tt

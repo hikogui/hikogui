@@ -21,20 +21,22 @@ namespace tt {
 template<typename ValueType>
 class SelectionWidget : public Widget {
 protected:
-    ValueType defaultValue;
-    
-    struct OptionListEntry {
+    std::unique_ptr<TextCell> labelCell;
+
+    struct option_list_entry {
         ValueType tag;
         std::unique_ptr<TextCell> cell;
         aarect cellRectangle;
         aarect backgroundRectangle;
 
-        OptionListEntry(ValueType tag, std::unique_ptr<TextCell> cell) noexcept :
-            tag(tag), cell(std::move(cell)), cellRectangle(), backgroundRectangle() {}
+        option_list_entry(ValueType tag, std::unique_ptr<TextCell> cell) noexcept :
+            tag(tag), cell(std::move(cell)), cellRectangle(), backgroundRectangle()
+        {
+        }
     };
 
-    float optionListHeight;
-    std::vector<OptionListEntry> optionList;
+    float option_cache_list_height;
+    std::vector<option_list_entry> option_cache_list;
     float selectedOptionY;
 
     aarect optionRectangle;
@@ -50,42 +52,101 @@ protected:
     ValueType chosenOption;
     std::optional<ValueType> hoverOption;
     std::optional<ValueType> clickedOption;
-public:
-    observable<ValueType> value;
-    observable<std::vector<std::pair<ValueType, std::u8string>>> options;
 
-    SelectionWidget(Window &window, Widget *parent, ValueType defaultValue) noexcept :
-        Widget(window, parent),
-        defaultValue(defaultValue)
+public:
+    using option_list_type = observable<std::vector<std::pair<ValueType, std::u8string>>>;
+    using value_type = observable<ValueType>;
+    using label_type = observable<std::u8string>;
+
+    label_type label;
+    value_type value;
+    option_list_type option_list;
+
+    SelectionWidget(
+        Window &window,
+        Widget *parent,
+        value_type const &value = {},
+        option_list_type const &option_list = {},
+        label_type const &label = l10n(u8"<unknown>")) noexcept :
+        Widget(window, parent), value(value), option_list(option_list), label(label)
     {
-        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
+        [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...) {
             this->window.requestRedraw = true;
         });
-
-        [[maybe_unused]] ttlet options_cbid = options.add_callback([this](auto...){
+        [[maybe_unused]] ttlet option_list_cbid = this->option_list.add_callback([this](auto...) {
+            requestConstraint = true;
+        });
+        [[maybe_unused]] ttlet label_cbid = this->label.add_callback([this](auto...) {
             requestConstraint = true;
         });
     }
 
+    template<typename... Args>
+    SelectionWidget(
+        Window &window,
+        Widget *parent,
+        value_type const &value,
+        option_list_type const &option_list,
+        l10n const &fmt,
+        Args const &... args) noexcept :
+        SelectionWidget(window, parent, value, option_list, format(fmt, args...))
+    {
+    }
+
+    template<typename... Args>
+    SelectionWidget(
+        Window &window,
+        Widget *parent,
+        option_list_type const &option_list,
+        l10n const &fmt,
+        Args const &... args) noexcept :
+        SelectionWidget(window, parent, value_type{}, option_list, format(fmt, args...))
+    {
+    }
+
+    template<typename... Args>
+    SelectionWidget(
+        Window &window,
+        Widget *parent,
+        value_type const &value,
+        l10n const &fmt,
+        Args const &... args) noexcept :
+        SelectionWidget(window, parent, value, option_list_type{}, format(fmt, args...))
+    {
+    }
+
+    template<typename... Args>
+    SelectionWidget(
+        Window &window,
+        Widget *parent,
+        l10n const &fmt,
+        Args const &... args) noexcept :
+        SelectionWidget(window, parent, value_type{}, option_list_type{}, format(fmt, args...))
+    {
+    }
+
     ~SelectionWidget() {}
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
             return result;
         }
 
+        labelCell = std::make_unique<TextCell>(*label, theme->placeholderLabelStyle);
+        auto preferredWidth = labelCell->preferredExtent().width();
+        auto preferredHeight = labelCell->preferredExtent().height();
+
         // Create a list of cells, one for each option and calculate
         // the optionHeight based on the option which is the tallest.
-        optionList.clear();
-        auto preferredWidth = 0.0f;
-        auto preferredHeight = 0.0f;
-        for (ttlet &[tag, labelText]: *options) {
+        option_cache_list.clear();
+        for (ttlet & [ tag, labelText ] : *option_list) {
             auto cell = std::make_unique<TextCell>(labelText, theme->labelStyle);
             preferredWidth = std::max(preferredWidth, cell->preferredExtent().width());
             preferredHeight = std::max(preferredHeight, cell->preferredExtent().height());
-            optionList.emplace_back(tag, std::move(cell));
+            option_cache_list.emplace_back(tag, std::move(cell));
         }
 
         // Set the widget height to the tallest option, fallback to a small size widget.
@@ -100,28 +161,27 @@ public:
         return WidgetUpdateResult::Self;
     }
 
-    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+    [[nodiscard]] WidgetUpdateResult
+    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
             return result;
         }
 
-        leftBoxRectangle = aarect{
-            0.0f, 0.0f,
-            Theme::smallSize, rectangle().height()
-        };
+        leftBoxRectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
 
         ttlet optionX = leftBoxRectangle.p3().x() + Theme::margin;
         ttlet optionWidth = rectangle().width() - optionX - Theme::margin;
         ttlet optionHeight = rectangle().height() - Theme::margin * 2.0f;
 
-        // Calculate the rectangles for each cell in the optionList
-        optionListHeight = (optionHeight + Theme::margin * 2.0f) * std::ssize(optionList);
-        ttlet optionListWidth = optionWidth + Theme::margin * 2.0f;
-        auto y = optionListHeight;
+        // Calculate the rectangles for each cell in the option_cache_list
+        option_cache_list_height = (optionHeight + Theme::margin * 2.0f) * std::ssize(option_cache_list);
+        ttlet option_cache_listWidth = optionWidth + Theme::margin * 2.0f;
+        auto y = option_cache_list_height;
         selectedOptionY = 0.0f;
-        for (auto &&option: optionList) {
+        for (auto &&option : option_cache_list) {
             y -= Theme::margin;
             y -= optionHeight;
             option.cellRectangle = aarect{Theme::margin, y, optionWidth, optionHeight};
@@ -137,39 +197,23 @@ public:
         ttlet windowHeight = window.widget->extent.height() - Theme::toolbarHeight;
 
         // Calculate overlay dimensions and position.
-        ttlet overlayWidth = optionListWidth;
+        ttlet overlayWidth = option_cache_listWidth;
         ttlet overlayWindowX = windowRectangle().x() + Theme::smallSize;
-        ttlet overlayHeight = std::min(optionListHeight, windowHeight);
+        ttlet overlayHeight = std::min(option_cache_list_height, windowHeight);
         auto overlayWindowY = windowRectangle().y() - selectedOptionY;
-            
-        // Adjust overlay to fit inside the window, below the top window decoration.
-        overlayWindowY = std::clamp(
-            overlayWindowY,
-            0.0f,
-            windowHeight - overlayHeight
-        );
 
-        overlayWindowRectangle = aarect{
-            overlayWindowX,
-            overlayWindowY,
-            overlayWidth,
-            overlayHeight
-        };
+        // Adjust overlay to fit inside the window, below the top window decoration.
+        overlayWindowY = std::clamp(overlayWindowY, 0.0f, windowHeight - overlayHeight);
+
+        overlayWindowRectangle = aarect{overlayWindowX, overlayWindowY, overlayWidth, overlayHeight};
 
         // The overlayRectangle are in the coordinate system of the current widget, so it will
         // extent beyond the current widget.
-        overlayRectangle = aarect{
-            overlayWindowX - windowRectangle().x(),
-            overlayWindowY - windowRectangle().y(),
-            overlayWidth,
-            overlayHeight
-        };
+        overlayRectangle =
+            aarect{overlayWindowX - windowRectangle().x(), overlayWindowY - windowRectangle().y(), overlayWidth, overlayHeight};
 
         // The label is located to the right of the selection box icon.
-        optionRectangle = aarect{
-            optionX, rectangle().height() - optionHeight - Theme::margin,
-            optionWidth, optionHeight
-        };
+        optionRectangle = aarect{optionX, rectangle().height() - optionHeight - Theme::margin, optionWidth, optionHeight};
 
         chevronsGlyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
         ttlet chevronsGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(chevronsGlyph);
@@ -178,7 +222,8 @@ public:
         return WidgetUpdateResult::Self;
     }
 
-    void drawOptionHighlight(DrawContext drawContext, OptionListEntry const &option) noexcept {
+    void drawOptionHighlight(DrawContext drawContext, option_list_entry const &option) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
@@ -195,7 +240,8 @@ public:
         drawContext.drawFilledQuad(option.backgroundRectangle);
     }
 
-    void drawOptionLabel(DrawContext drawContext, OptionListEntry const &option) noexcept {
+    void drawOptionLabel(DrawContext drawContext, option_list_entry const &option) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.003f};
@@ -203,14 +249,16 @@ public:
         option.cell->draw(drawContext, option.cellRectangle, Alignment::MiddleLeft, center(option.cellRectangle).y(), true);
     }
 
-    void drawOption(DrawContext drawContext, OptionListEntry const &option) noexcept {
+    void drawOption(DrawContext drawContext, option_list_entry const &option) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawOptionHighlight(drawContext, option);
         drawOptionLabel(drawContext, option);
     }
 
-    void drawOverlayOutline(DrawContext drawContext) noexcept {
+    void drawOverlayOutline(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.010f};
@@ -218,30 +266,33 @@ public:
         drawContext.drawBoxIncludeBorder(overlayRectangle);
     }
 
-    void drawOverlay(DrawContext const &drawContext) noexcept {
+    void drawOverlay(DrawContext const &drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawOverlayOutline(drawContext);
 
-        auto optionListContext = drawContext;
-        optionListContext.transform = mat::T{overlayRectangle.x(), overlayRectangle.y()} * drawContext.transform;
-        for (ttlet &option : optionList) {
-            drawOption(optionListContext, option);
+        auto option_cache_listContext = drawContext;
+        option_cache_listContext.transform = mat::T{overlayRectangle.x(), overlayRectangle.y()} * drawContext.transform;
+        for (ttlet &option : option_cache_list) {
+            drawOption(option_cache_listContext, option);
         }
     }
 
-    void drawOutline(DrawContext drawContext) noexcept {
+    void drawOutline(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.cornerShapes = Theme::roundingRadius;
         drawContext.drawBoxIncludeBorder(rectangle());
     }
 
-    void drawLeftBox(DrawContext drawContext) noexcept {
+    void drawLeftBox(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-        //if (*enabled && window.active) {
+        // if (*enabled && window.active) {
         //    drawContext.color = theme->accentColor;
         //}
         drawContext.fillColor = drawContext.color;
@@ -249,7 +300,8 @@ public:
         drawContext.drawBoxIncludeBorder(leftBoxRectangle);
     }
 
-    void drawChevrons(DrawContext drawContext) noexcept {
+    void drawChevrons(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.002f};
@@ -257,23 +309,27 @@ public:
         drawContext.drawGlyph(chevronsGlyph, chevronsRectangle);
     }
 
-    void drawValue(DrawContext drawContext) noexcept {
+    void drawValue(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        auto i = std::find_if(optionList.cbegin(), optionList.cend(), [this](ttlet &item) {
+        auto i = std::find_if(option_cache_list.cbegin(), option_cache_list.cend(), [this](ttlet &item) {
             return item.tag == value;
         });
 
-        if (i == optionList.cend()) {
-            return;
+        if (i != option_cache_list.cend()) {
+            drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
+            drawContext.color = *enabled ? theme->labelStyle.color : drawContext.color;
+            i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, baseHeight(), true);
+        } else {
+            drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
+            drawContext.color = *enabled ? theme->placeholderLabelStyle.color : drawContext.color;
+            labelCell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, baseHeight(), true);
         }
-
-        drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-        drawContext.color = *enabled ? theme->labelStyle.color : drawContext.color;
-        i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, baseHeight(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawOutline(drawContext);
@@ -291,7 +347,8 @@ public:
         Widget::draw(drawContext, displayTimePoint);
     }
 
-    void handleKeyboardEvent(KeyboardEvent const &event) noexcept override {
+    void handleKeyboardEvent(KeyboardEvent const &event) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         Widget::handleKeyboardEvent(event);
@@ -301,7 +358,8 @@ public:
         }
     }
 
-    void handleMouseEvent(MouseEvent const &event) noexcept override {
+    void handleMouseEvent(MouseEvent const &event) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         Widget::handleMouseEvent(event);
@@ -311,7 +369,7 @@ public:
                 auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * event.position;
 
                 if (overlayRectangle.contains(event.position)) {
-                    for (ttlet &option : optionList) {
+                    for (ttlet &option : option_cache_list) {
                         if (option.backgroundRectangle.contains(mouseInListPosition)) {
                             if (hoverOption != option.tag) {
                                 window.requestRedraw = true;
@@ -341,18 +399,15 @@ public:
                 }
 
             } else {
-                if (
-                    event.type == MouseEvent::Type::ButtonUp &&
-                    event.cause.leftButton &&
-                    rectangle().contains(event.position)
-                ) {
+                if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
                     handleCommand(command::gui_activate);
                 }
             }
         }
     }
 
-    void handleCommand(command command) noexcept override {
+    void handleCommand(command command) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (!*enabled) {
@@ -362,18 +417,18 @@ public:
         switch (command) {
         case command::gui_up: {
             std::optional<ValueType> prev_tag;
-            for (ttlet &option : optionList) {
+            for (ttlet &option : option_cache_list) {
                 if (option.tag == chosenOption && prev_tag.has_value()) {
                     chosenOption = *prev_tag;
                     break;
                 }
                 prev_tag = option.tag;
             }
-            } break;
+        } break;
 
         case command::gui_down: {
             bool found = false;
-            for (ttlet &option : optionList) {
+            for (ttlet &option : option_cache_list) {
                 if (found) {
                     chosenOption = option.tag;
                     break;
@@ -381,7 +436,7 @@ public:
                     found = true;
                 }
             }
-            } break;
+        } break;
 
         case command::gui_activate:
             if (selecting) {
@@ -415,7 +470,8 @@ public:
         Widget::handleCommand(command);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override {
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (selecting && overlayRectangle.contains(position)) {
@@ -429,11 +485,11 @@ public:
         }
     }
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override {
+    [[nodiscard]] bool acceptsFocus() const noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;
     }
 };
 
-
-}
+} // namespace tt

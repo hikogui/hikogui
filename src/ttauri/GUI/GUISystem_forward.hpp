@@ -20,11 +20,3 @@ using GUISystem = GUISystem_vulkan_macos;
 #endif
 
 }
-
-namespace tt {
-
-/*! Global mutex for GUI functionality.
-*/
-inline std::recursive_mutex guiMutex;
-
-}

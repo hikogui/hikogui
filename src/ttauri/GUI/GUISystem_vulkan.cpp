@@ -29,8 +29,6 @@ GUISystem_vulkan::GUISystem_vulkan(GUISystemDelegate *delegate, const std::vecto
     GUISystem_base(delegate),
     requiredExtensions(std::move(extensionNames))
 {
-    auto lock = std::scoped_lock(guiMutex);
-
     applicationInfo = vk::ApplicationInfo(
         "TTauri App", VK_MAKE_VERSION(0, 1, 0), "TTauri Engine", VK_MAKE_VERSION(0, 1, 0), VK_API_VERSION_1_0);
 
@@ -86,7 +84,7 @@ GUISystem_vulkan::~GUISystem_vulkan()
 
 void GUISystem_vulkan::initialize() noexcept(false)
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
         debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
@@ -114,8 +112,6 @@ VkBool32 GUISystem_vulkan::debugUtilsMessageCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData)
 {
-    //auto self = reinterpret_cast<GUISystem *>(pUserData);
-
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
         LOG_DEBUG("Vulkan: {}", pCallbackData->pMessage);

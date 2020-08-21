@@ -31,7 +31,7 @@ Window_vulkan::~Window_vulkan()
 
 void Window_vulkan::initialize()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     Window_base::initialize();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
@@ -43,17 +43,19 @@ void Window_vulkan::initialize()
 
 void Window_vulkan::waitIdle()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     tt_assert(device);
-    device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    if (renderFinishedFence) {
+        device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    }
     device->waitIdle();
     LOG_INFO("/waitIdle");
 }
 
 std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
@@ -95,9 +97,9 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
 void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
-    tt_assert(device);
+    auto lock = std::scoped_lock(mutex);
 
-    auto lock = std::scoped_lock(guiMutex);
+    tt_assume(device);
 
     std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { semaphore };
     std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
@@ -141,7 +143,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 
 void Window_vulkan::build()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     if (state == State::NoDevice) {
         if (device) {
@@ -170,6 +172,7 @@ void Window_vulkan::build()
     if (state == State::NoSwapchain) {
         if (!readSurfaceExtent()) {
             // Minimized window, can not build a new swap chain.
+            state = State::NoSwapchain;
             return;
         }
 
@@ -205,7 +208,8 @@ void Window_vulkan::build()
 
 void Window_vulkan::teardown()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
+
     auto nextState = state;
 
     if (state >= State::SwapchainLost) {
@@ -263,7 +267,7 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
@@ -418,7 +422,7 @@ void Window_vulkan::submitCommandBuffer()
 
 std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     tt_assert(device);
@@ -515,9 +519,9 @@ bool Window_vulkan::buildSurface()
 
 Window_base::State Window_vulkan::buildSwapchain()
 {
-    tt_assert(device);
+    auto lock = std::scoped_lock(mutex);
 
-    auto lock = std::scoped_lock(guiMutex);
+    tt_assume(device);
 
     LOG_INFO("Building swap chain");
 
@@ -612,7 +616,7 @@ Window_base::State Window_vulkan::buildSwapchain()
 
 void Window_vulkan::teardownSwapchain()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     tt_assert(device);
     device->destroy(swapchain);
@@ -622,7 +626,7 @@ void Window_vulkan::teardownSwapchain()
 
 void Window_vulkan::buildFramebuffers()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     depthImageView = device->createImageView({
         vk::ImageViewCreateFlags(),
@@ -686,7 +690,7 @@ void Window_vulkan::buildFramebuffers()
 
 void Window_vulkan::teardownFramebuffers()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     tt_assert(device);
     for (auto frameBuffer : swapchainFramebuffers) {
@@ -705,7 +709,7 @@ void Window_vulkan::teardownFramebuffers()
 
 void Window_vulkan::buildRenderPasses()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     ttlet attachmentDescriptions = std::array{
         vk::AttachmentDescription{ // Swapchain attachment.
@@ -884,7 +888,7 @@ void Window_vulkan::buildRenderPasses()
 
 void Window_vulkan::teardownRenderPasses()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     tt_assert(device);
     device->destroy(renderPass);
@@ -892,7 +896,7 @@ void Window_vulkan::teardownRenderPasses()
 
 void Window_vulkan::buildSemaphores()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     tt_assert(device);
     imageAvailableSemaphore = device->createSemaphore({});
@@ -906,7 +910,7 @@ void Window_vulkan::buildSemaphores()
 
 void Window_vulkan::teardownSemaphores()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     tt_assert(device);
     device->destroy(renderFinishedSemaphore);
@@ -916,6 +920,8 @@ void Window_vulkan::teardownSemaphores()
 
 void Window_vulkan::buildCommandBuffers()
 {
+    auto lock = std::scoped_lock(mutex);
+
     tt_assume(device != nullptr);
 
     ttlet commandBuffers = device->allocateCommandBuffers({
@@ -929,6 +935,7 @@ void Window_vulkan::buildCommandBuffers()
 
 void Window_vulkan::teardownCommandBuffers()
 {
+    auto lock = std::scoped_lock(mutex);
     ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
     tt_assume(device != nullptr);
@@ -937,14 +944,14 @@ void Window_vulkan::teardownCommandBuffers()
 
 void Window_vulkan::teardownSurface()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     application->gui->destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    auto lock = std::scoped_lock(mutex);
 
     device = nullptr;
 }

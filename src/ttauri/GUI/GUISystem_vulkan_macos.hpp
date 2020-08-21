@@ -19,7 +19,7 @@ public:
     GUISystem_vulkan_macos &operator=(GUISystem_vulkan_macos &&) = delete;
 
     vk::ResultValueType<vk::SurfaceKHR>::type createMetalSurfaceKHR(const vk::MetalSurfaceCreateInfoEXT& createInfo) const {
-        auto lock = std::scoped_lock(guiMutex);
+        ttlet lock = std::scoped_lock(mutex);
         return intrinsic.createMetalSurfaceEXT(createInfo);
     }
 };

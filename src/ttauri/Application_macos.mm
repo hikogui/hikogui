@@ -58,7 +58,7 @@ Application_macos::~Application_macos()
 {
 }
 
-void Application_macos::runOnMainThread(std::function<void()> function)
+void Application_macos::runFromMainLoop(std::function<void()> function)
 {
 
     ttlet functionP = new std::function<void()>(std::move(function));

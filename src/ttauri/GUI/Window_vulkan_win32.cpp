@@ -155,28 +155,28 @@ Window_vulkan_win32::~Window_vulkan_win32()
 
 void Window_vulkan_win32::closeWindow()
 {
-    run_on_main_thread([=]() {
+    run_from_main_loop([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
 void Window_vulkan_win32::minimizeWindow()
 {
-    run_on_main_thread([=]() {
+    run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
 void Window_vulkan_win32::maximizeWindow()
 {
-    run_on_main_thread([=]() {
+    run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
 void Window_vulkan_win32::normalizeWindow()
 {
-    run_on_main_thread([=]() {
+    run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
@@ -185,7 +185,7 @@ void Window_vulkan_win32::setWindowSize(ivec extent)
 {
     tt_assert(win32Window);
 
-    run_on_main_thread([=]() {
+    run_from_main_loop([=]() {
 
         SetWindowPos(
             reinterpret_cast<HWND>(win32Window),
@@ -202,22 +202,22 @@ void Window_vulkan_win32::setWindowSize(ivec extent)
 
 void Window_vulkan_win32::closingWindow()
 {
-    run_on_main_thread([&]() {
+    run_from_main_loop([&]() {
         Window_vulkan::closingWindow();
     });
 }
 
 void Window_vulkan_win32::openingWindow()
 {
-    run_on_main_thread([&]() {
-        auto lock = std::scoped_lock(guiMutex);
+    tt_assume(is_main_thread());
 
-        Window_vulkan::openingWindow();
+    ttlet lock = std::scoped_lock(mutex);
 
-        // Delegate has been called, layout of widgets has been calculated for the
-        // minimum and maximum size of the window.
-        createWindow(title.text(), currentWindowExtent);
-    });
+    Window_vulkan::openingWindow();
+
+    // Delegate has been called, layout of widgets has been calculated for the
+    // minimum and maximum size of the window.
+    createWindow(title.text(), currentWindowExtent);
 }
 
 [[nodiscard]] std::u8string Window_vulkan_win32::getTextFromClipboard() const noexcept
@@ -411,7 +411,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
 
 int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam)
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     MouseEvent mouseEvent;
 
@@ -479,9 +479,18 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         resizing = false;
         break;
     
-    case WM_ACTIVATEAPP:
-        LOG_INFO("Activate");
-        active = (wParam == TRUE);
+    case WM_ACTIVATE:
+        switch (wParam) {
+        case 1: // WA_ACTIVE
+        case 2: // WA_CLICKACTIVE
+            active = true;
+            break;
+        case 0: // WA_INACTIVE
+            active = false;
+            break;
+        default:
+            LOG_ERROR("Unknown WM_ACTIVE value.");
+        }
         requestLayout = true;
         break;
 

@@ -75,7 +75,7 @@ public:
 
     /*! Run the given function on the main thread.
      */
-    virtual void runOnMainThread(std::function<void()> function) = 0;
+    virtual void runFromMainLoop(std::function<void()> function) = 0;
 
     /*! Run the operating system's main loop.
      * Must be called after initialize().

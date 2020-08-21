@@ -8,6 +8,8 @@
 #include "../PixelMap.hpp"
 #include "../R16G16B16A16SFloat.hpp"
 #include "../text/FontGlyphIDs.hpp"
+#include "../text/ElusiveIcons.hpp"
+#include "../text/TTauriIcons.hpp"
 #include <variant>
 
 namespace tt {
@@ -24,6 +26,8 @@ public:
     Image(URL const &url);
     Image(PixelMap<R16G16B16A16SFloat> &&image) noexcept;
     Image(FontGlyphIDs const &glyph) noexcept;
+    Image(ElusiveIcon const &icon) noexcept;
+    Image(TTauriIcon const &icon) noexcept;
 
     Image() = default;
     Image(Image const &) noexcept;

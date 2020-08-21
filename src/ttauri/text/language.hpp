@@ -5,6 +5,8 @@
 
 #include "../observable.hpp"
 #include "../numeric_cast.hpp"
+#include "../utils.hpp"
+#include "../logger.hpp"
 #include "language_tag.hpp"
 #include <string>
 #include <vector>
@@ -105,16 +107,16 @@ struct language {
             tmp.push_back(&find_or_create(tag));
         }
 
-        auto language_order_string = std::string{};
-        for (ttlet &language : tmp) {
-            if (language_order_string.size() != 0) {
-                language_order_string += ", ";
+        if (compare_then_assign(preferred_languages, tmp)) {
+            auto language_order_string = std::string{};
+            for (ttlet &language : tmp) {
+                if (language_order_string.size() != 0) {
+                    language_order_string += ", ";
+                }
+                language_order_string += to_string(language->tag);
             }
-            language_order_string += to_string(language->tag);
+            LOG_INFO("Setting preferred language in order: ", language_order_string);
         }
-        LOG_INFO("Setting preferred language in order: ", language_order_string);
-
-        preferred_languages = tmp;
     }
 
     /** Get the preferred language tags from the operating system.

@@ -19,7 +19,7 @@
 #include "../iaarect.hpp"
 #include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
-#include "../unfair_mutex.hpp"
+#include "../unfair_recursive_mutex.hpp"
 #include "../cell_address.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
@@ -89,10 +89,6 @@ public:
      */
     Size size = Size::Normal;
 
-    /** Mutex for access to rhea objects registered with the widgetSolver.
-    * Widgets will need to lock this mutex when reading variables or equations.
-    */
-    unfair_mutex widgetSolverMutex;
 
     //! The current window extent as set by the GPU library.
     ivec currentWindowExtent;
@@ -172,10 +168,16 @@ public:
     bool isClosed();
 
     /** Add a widget to main widget of the window.
-     * The implementation is in Widget.hpp
+     * The implementation is in widgets.hpp
      */
     template<typename T, cell_address CellAddress,typename... Args>
     T &makeWidget(Args &&... args);
+
+    /** Add a widget to main widget of the window.
+     * The implementation is in widgets.hpp
+     */
+    template<typename T, cell_address CellAddress, typename... Args>
+    T &makeToolbarWidget(Args &&... args);
 
     int64_t stopConstraintSolverDepth = 0;
     void stopConstraintSolver() noexcept {
@@ -320,8 +322,13 @@ private:
     */
     bool constraintsUpdated = false;
 
-    
+protected:
+    mutable unfair_recursive_mutex mutex;
 
+    /** Mutex for access to rhea objects registered with the widgetSolver.
+     * Widgets will need to lock this mutex when reading variables or equations.
+     */
+    unfair_mutex widgetSolverMutex;
 };
 
 }

@@ -42,7 +42,7 @@ Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delega
 
 void Application_win32::lastWindowClosed()
 {
-    runOnMainThread([&]() {
+    runFromMainLoop([&]() {
         // Let the application have a chance to open new windows from the main thread.
         delegate->lastWindowClosed();
 
@@ -53,7 +53,7 @@ void Application_win32::lastWindowClosed()
     });
 }
 
-void Application_win32::runOnMainThread(std::function<void()> function)
+void Application_win32::runFromMainLoop(std::function<void()> function)
 {
     tt_assert(inLoop);
 
@@ -71,11 +71,11 @@ bool Application_win32::initializeApplication()
 
 int Application_win32::loop()
 {
+    inLoop = true;
+
     if (!initializeApplication()) {
         return 0;
     }
-
-    inLoop = true;
 
     // Run the message loop.
     MSG msg = {};

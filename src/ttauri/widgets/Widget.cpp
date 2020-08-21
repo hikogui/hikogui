@@ -37,7 +37,6 @@ GUIDevice *Widget::device() const noexcept
 }
 
 [[nodiscard]] float Widget::baseHeight() const noexcept {
-    ttlet lock = std::scoped_lock(window.widgetSolverMutex);
     return numeric_cast<float>(base.value() - bottom.value());
 }
 

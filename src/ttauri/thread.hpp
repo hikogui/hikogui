@@ -27,7 +27,7 @@ void set_thread_name(std::string_view name);
 
 bool is_main_thread();
 
-void run_on_main_thread(std::function<void()> f);
+void run_from_main_loop(std::function<void()> f);
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 using thread_id = uint32_t;

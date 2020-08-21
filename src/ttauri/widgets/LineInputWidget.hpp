@@ -5,6 +5,8 @@
 
 #include "Widget.hpp"
 #include "../text/EditableText.hpp"
+#include "../text/l10n.hpp"
+#include "../text/format.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -46,17 +48,18 @@ protected:
     static constexpr hires_utc_clock::duration blinkInterval = 500ms;
     hires_utc_clock::time_point nextRedrawTimePoint;
     hires_utc_clock::time_point lastUpdateTimePoint;
-public:
 
-    LineInputWidget(
-        Window &window, Widget *parent,
-        std::u8string const label
-    ) noexcept;
+public:
+    LineInputWidget(Window &window, Widget *parent, std::u8string const label) noexcept;
+
+    LineInputWidget(Window &window, Widget *parent, l10n const label) noexcept :
+        LineInputWidget(window, parent, std::u8string{static_cast<std::u8string_view>(label)}) {}
 
     ~LineInputWidget();
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;
-    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    [[nodiscard]] WidgetUpdateResult
+    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleCommand(command command) noexcept override;
@@ -65,7 +68,8 @@ public:
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override {
+    [[nodiscard]] bool acceptsFocus() const noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;
     }
@@ -74,4 +78,4 @@ private:
     void dragSelect() noexcept;
 };
 
-}
+} // namespace tt

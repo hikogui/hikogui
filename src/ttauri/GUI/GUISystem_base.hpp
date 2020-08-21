@@ -7,6 +7,7 @@
 #include "Window.hpp"
 #include "VerticalSync.hpp"
 #include "GUISystemDelegate.hpp"
+#include "../unfair_recursive_mutex.hpp"
 #include <span>
 #include <memory>
 #include <mutex>
@@ -89,6 +90,8 @@ public:
     static void _handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 protected:
+    mutable unfair_recursive_mutex mutex;
+
     GUIDevice *findBestDeviceForWindow(Window const &window);
 };
 

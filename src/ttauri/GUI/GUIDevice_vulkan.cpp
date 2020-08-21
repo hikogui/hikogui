@@ -169,7 +169,7 @@ GUIDevice_vulkan::~GUIDevice_vulkan()
 
 void GUIDevice_vulkan::initializeDevice(Window const &window)
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     const float defaultQueuePriority = 1.0;
 
@@ -245,6 +245,8 @@ void GUIDevice_vulkan::initializeDevice(Window const &window)
 
 void GUIDevice_vulkan::initializeQuadIndexBuffer()
 {
+    tt_assume(mutex.is_locked_by_current_thread());
+
     using vertex_index_type = uint16_t;
     constexpr ssize_t maximum_number_of_vertices = 1 << (sizeof(vertex_index_type) * CHAR_BIT);
     constexpr ssize_t maximum_number_of_quads = maximum_number_of_vertices / 4;
@@ -319,12 +321,13 @@ void GUIDevice_vulkan::initializeQuadIndexBuffer()
 
 void GUIDevice_vulkan::destroyQuadIndexBuffer()
 {
+    ttlet lock = std::scoped_lock(mutex);
     destroyBuffer(quadIndexBuffer, quadIndexBufferAllocation);
 }
 
 std::vector<std::pair<uint32_t, uint8_t>> GUIDevice_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     LOG_INFO(" - Scoring QueueFamilies");
 
@@ -379,7 +382,7 @@ std::vector<std::pair<uint32_t, uint8_t>> GUIDevice_vulkan::findBestQueueFamilyI
 
 int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto formats = physicalIntrinsic.getSurfaceFormatsKHR(surface);
     auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
@@ -509,6 +512,8 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
 }
 
 int GUIDevice_vulkan::score(Window const &window) const {
+    ttlet lock = std::scoped_lock(mutex);
+
     auto surface = window.getSurface();
     ttlet s = score(surface);
     application->gui->destroySurfaceKHR(surface);
@@ -517,7 +522,7 @@ int GUIDevice_vulkan::score(Window const &window) const {
 
 std::pair<vk::Buffer, VmaAllocation> GUIDevice_vulkan::createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     VkBuffer buffer;
     VmaAllocation allocation;
@@ -532,14 +537,14 @@ std::pair<vk::Buffer, VmaAllocation> GUIDevice_vulkan::createBuffer(const vk::Bu
 
 void GUIDevice_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     vmaDestroyBuffer(allocator, buffer, allocation);
 }
 
 std::pair<vk::Image, VmaAllocation> GUIDevice_vulkan::createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     VkImage image;
     VmaAllocation allocation;
@@ -554,21 +559,21 @@ std::pair<vk::Image, VmaAllocation> GUIDevice_vulkan::createImage(const vk::Imag
 
 void GUIDevice_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     vmaDestroyImage(allocator, image, allocation);
 }
 
 void GUIDevice_vulkan::unmapMemory(const VmaAllocation &allocation) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     vmaUnmapMemory(allocator, allocation);
 }
 
 vk::CommandBuffer GUIDevice_vulkan::beginSingleTimeCommands() const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     ttlet commandBuffers = intrinsic.allocateCommandBuffers({ graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1 });
     ttlet commandBuffer = commandBuffers.at(0);
@@ -579,7 +584,7 @@ vk::CommandBuffer GUIDevice_vulkan::beginSingleTimeCommands() const
 
 void GUIDevice_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     commandBuffer.end();
 
@@ -622,7 +627,7 @@ static std::pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayo
 
 void GUIDevice_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     ttlet commandBuffer = beginSingleTimeCommands();
 
@@ -658,7 +663,7 @@ void GUIDevice_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::
 
 void GUIDevice_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, vk::ArrayProxy<vk::ImageCopy const> regions) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     ttlet commandBuffer = beginSingleTimeCommands();
 
@@ -673,7 +678,7 @@ void GUIDevice_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, 
 
 void GUIDevice_vulkan::clearColorImage(vk::Image image, vk::ImageLayout layout, vk::ClearColorValue const &color, vk::ArrayProxy<const vk::ImageSubresourceRange> ranges) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     ttlet commandBuffer = beginSingleTimeCommands();
 
@@ -690,7 +695,7 @@ void GUIDevice_vulkan::clearColorImage(vk::Image image, vk::ImageLayout layout, 
 
 vk::ShaderModule GUIDevice_vulkan::loadShader(uint32_t const *data, size_t size) const
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     LOG_INFO("Loading shader");
 
@@ -702,6 +707,8 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(uint32_t const *data, size_t size)
 
 vk::ShaderModule GUIDevice_vulkan::loadShader(std::span<std::byte const> shaderObjectBytes) const
 {
+    // no lock, only local variable.
+
     // Make sure the address is aligned to uint32_t;
     ttlet address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());
     tt_assert((address & 2) == 0);
@@ -712,6 +719,8 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(std::span<std::byte const> shaderO
 
 vk::ShaderModule GUIDevice_vulkan::loadShader(URL const &shaderObjectLocation) const
 {
+    // no lock, only local variable.
+
     return loadShader(*shaderObjectLocation.loadView());
 }
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "observable_base.hpp"
+#include <concepts>
 
 namespace tt::detail {
 
@@ -28,14 +29,22 @@ public:
         observable_base<T>::mutex.lock();
 
         ttlet old_value = value;
-        if (new_value != old_value) {
+        if constexpr (std::equality_comparable<T>) {
+            if (new_value != old_value) {
+                value = new_value;
+                observable_base<T>::mutex.unlock();
+                this->notify(old_value, new_value);
+                return true;
+            } else {
+                observable_base<T>::mutex.unlock();
+                return false;
+            }
+
+        } else {
             value = new_value;
             observable_base<T>::mutex.unlock();
             this->notify(old_value, new_value);
             return true;
-        } else {
-            observable_base<T>::mutex.unlock();
-            return false;
         }
     }
 };

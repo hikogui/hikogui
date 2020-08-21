@@ -188,7 +188,7 @@ public:
         }
 
         if (command == command::gui_activate) {
-            if (assign_and_compare(value, value == FalseValue ? TrueValue : FalseValue)) {
+            if (compare_then_assign(value, value == FalseValue ? TrueValue : FalseValue)) {
                 window.requestRedraw = true;
             }
         }

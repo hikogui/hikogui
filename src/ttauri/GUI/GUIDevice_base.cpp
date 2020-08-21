@@ -24,21 +24,21 @@ GUIDevice_base::~GUIDevice_base()
 
 std::string GUIDevice_base::string() const noexcept
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     return fmt::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.UUIDString());
 }
 
 void GUIDevice_base::initializeDevice(Window const &window)
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     state = State::READY_TO_DRAW;
 }
 
 void GUIDevice_base::add(std::unique_ptr<Window> window)
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     if (state == State::NO_DEVICE) {
         initializeDevice(*window);
@@ -53,7 +53,7 @@ void GUIDevice_base::add(std::unique_ptr<Window> window)
 
 void GUIDevice_base::remove(Window &window) noexcept
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     window.unsetDevice();
     windows.erase(std::find_if(windows.begin(), windows.end(), [&](auto &x) {

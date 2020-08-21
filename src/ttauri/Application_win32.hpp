@@ -30,7 +30,7 @@ public:
 
     void lastWindowClosed() override;
 
-    void runOnMainThread(std::function<void()> function) override;
+    void runFromMainLoop(std::function<void()> function) override;
 
     int loop() override;
 

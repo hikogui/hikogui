@@ -11,7 +11,7 @@ using namespace std;
 
 GUIDevice *GUISystem_base::findBestDeviceForWindow(Window const &window)
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     int bestScore = -1;
     GUIDevice *bestDevice = nullptr;
@@ -39,7 +39,7 @@ GUIDevice *GUISystem_base::findBestDeviceForWindow(Window const &window)
 
 ssize_t GUISystem_base::getNumberOfWindows()
 {
-    auto lock = std::scoped_lock(guiMutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     ssize_t numberOfWindows = 0;
     for (const auto &device: devices) {

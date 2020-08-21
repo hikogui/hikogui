@@ -74,7 +74,7 @@ void ButtonWidget::handleCommand(command command) noexcept
     }
 
     if (command == command::gui_activate) {
-        if (assign_and_compare(value, !value)) {
+        if (compare_then_assign(value, !value)) {
             window.requestRedraw = true;
         }
     }
@@ -88,7 +88,7 @@ void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
     Widget::handleMouseEvent(event);
 
     if (*enabled) {
-        if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
+        if (compare_then_assign(pressed, static_cast<bool>(event.down.leftButton))) {
             window.requestRedraw = true;
         }
 

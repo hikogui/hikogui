@@ -16,7 +16,6 @@
 
 namespace tt {
 
-template<typename ValueType, ValueType OnValue, ValueType OffValue>
 class ToggleWidget : public Widget {
 protected:
     static constexpr hires_utc_clock::duration animationDuration = 150ms;
@@ -33,28 +32,25 @@ protected:
     std::unique_ptr<TextCell> otherLabelCell;
 
 public:
-    observable<ValueType> value;
+    observable<bool> value;
     observable<std::u8string> onLabel;
     observable<std::u8string> offLabel;
-    observable<std::u8string> otherLabel;
 
     template<
-        typename V = observable<ValueType>,
+        typename V = observable<bool>,
         typename L1 = observable<std::u8string>,
         typename L2 = observable<std::u8string>,
         typename L3 = observable<std::u8string>>
     ToggleWidget(
         Window &window,
         Widget *parent,
-        V &&value = observable<ValueType>{},
+        V &&value = observable<bool>{},
         L1 &&onLabel = observable<std::u8string>{},
-        L2 &&offLabel = observable<std::u8string>{},
-        L3 &&otherLabel = observable<std::u8string>{}) noexcept :
+        L2 &&offLabel = observable<std::u8string>{}) noexcept :
         Widget(window, parent),
         value(std::forward<V>(value)),
         onLabel(std::forward<L1>(onLabel)),
-        offLabel(std::forward<L2>(offLabel)),
-        otherLabel(std::forward<L3>(otherLabel))
+        offLabel(std::forward<L2>(offLabel))
     {
         [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...) {
             this->window.requestRedraw = true;
@@ -63,9 +59,6 @@ public:
             requestConstraint = true;
         });
         [[maybe_unused]] ttlet off_label_cbid = this->offLabel.add_callback([this](auto...) {
-            requestConstraint = true;
-        });
-        [[maybe_unused]] ttlet other_label_cbid = this->otherLabel.add_callback([this](auto...) {
             requestConstraint = true;
         });
     }
@@ -82,19 +75,11 @@ public:
 
         onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
         offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
-        otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
 
-        ttlet minimumHeight = std::max(
-            {onLabelCell->preferredExtent().height(),
-             offLabelCell->preferredExtent().height(),
-             otherLabelCell->preferredExtent().height(),
-             Theme::smallSize});
+        ttlet minimumHeight =
+            std::max({onLabelCell->preferredExtent().height(), offLabelCell->preferredExtent().height(), Theme::smallSize});
 
-        ttlet minimumWidth = std::max({
-                                 onLabelCell->preferredExtent().width(),
-                                 offLabelCell->preferredExtent().width(),
-                                 otherLabelCell->preferredExtent().width(),
-                             }) +
+        ttlet minimumWidth = std::max({onLabelCell->preferredExtent().width(), offLabelCell->preferredExtent().width()}) +
             Theme::smallSize * 2.0f + Theme::margin * 2.0f;
 
         window.stopConstraintSolver();
@@ -153,7 +138,7 @@ public:
 
         ttlet positionedSliderRectangle = mat::T2(sliderMoveRange * animatedValue, 0.0f) * sliderRectangle;
 
-        if (value == OnValue) {
+        if (*value) {
             if (*enabled && window.active) {
                 drawContext.color = theme->accentColor;
             }
@@ -175,7 +160,7 @@ public:
             drawContext.color = theme->labelStyle.color;
         }
 
-        ttlet &labelCell = value == OnValue ? onLabelCell : value == OffValue ? offLabelCell : otherLabelCell;
+        ttlet &labelCell = *value ? onLabelCell : offLabelCell;
 
         labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
     }
@@ -211,7 +196,7 @@ public:
         }
 
         if (command == command::gui_activate) {
-            if (assign_and_compare(value, value == OffValue ? OnValue : OffValue)) {
+            if (compare_then_assign(value, !*value)) {
                 window.requestRedraw = true;
             }
         }
@@ -236,7 +221,5 @@ public:
         return *enabled;
     }
 };
-
-using BooleanToggleWidget = ToggleWidget<bool, true, false>;
 
 } // namespace tt

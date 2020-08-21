@@ -8,6 +8,7 @@
 #include "../text/FontGlyphIDs.hpp"
 #include "../text/ElusiveIcons.hpp"
 #include "../text/TTauriIcons.hpp"
+#include "../GUI/DrawContext.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -17,33 +18,145 @@ namespace tt {
 
 class ToolbarButtonWidget : public Widget {
 public:
-    bool pressed = false;
+    using icon_type = observable<Image>;
+    using delegate_type = std::function<void()>;
 
-    /** This is a close button, show background in red.
-     */
-    bool closeButton = false;
-
-    using icon_type = std::variant<FontGlyphIDs>;
     icon_type icon;
-    std::function<void()> delegate;
 
-    ToolbarButtonWidget(Window &window, Widget *parent, icon_type icon, std::function<void()> delegate) noexcept;
+    ToolbarButtonWidget(
+        Window &window,
+        Widget *parent,
+        icon_type const &icon = icon_type{ElusiveIcon::BanCircle},
+        delegate_type const &delegate = delegate_type{}) noexcept :
+        Widget(window, parent), icon(icon), _delegate(delegate)
+    {
+        [[maybe_unused]] ttlet icon_cbid = this->icon.add_callback([this](auto...) {
+            requestConstraint = true;
+        });
+    }
 
-    ToolbarButtonWidget(Window &window, Widget *parent, ElusiveIcon icon, std::function<void()> delegate) noexcept :
-        ToolbarButtonWidget(window, parent, to_FontGlyphIDs(icon), std::move(delegate)) {}
-    ToolbarButtonWidget(Window &window, Widget *parent, TTauriIcon icon, std::function<void()> delegate) noexcept :
-        ToolbarButtonWidget(window, parent, to_FontGlyphIDs(icon), std::move(delegate)) {}
+    ToolbarButtonWidget(
+        Window &window,
+        Widget *parent,
+        Image const &icon,
+        delegate_type const &delegate = delegate_type{}) noexcept :
+        ToolbarButtonWidget(window, parent, icon_type{icon}, delegate)
+    {
+    }
+
+    ToolbarButtonWidget(
+        Window &window,
+        Widget *parent,
+        ElusiveIcon icon,
+        delegate_type const &delegate = delegate_type{}) noexcept :
+        ToolbarButtonWidget(window, parent, Image{icon}, delegate)
+    {
+    }
+
+    ToolbarButtonWidget(
+        Window &window,
+        Widget *parent,
+        TTauriIcon icon,
+        delegate_type const &delegate = delegate_type{}) noexcept :
+        ToolbarButtonWidget(window, parent, Image{icon}, delegate)
+    {
+    }
 
     ~ToolbarButtonWidget() {}
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
+    delegate_type &delegate() noexcept {
+        ttlet lock = std::scoped_lock(mutex);
+        return _delegate;
+    }
 
-    void handleMouseEvent(MouseEvent const &event) noexcept override;
+    void setDelegate(delegate_type delegate) noexcept {
+        ttlet lock = std::scoped_lock(mutex);
+        _delegate = delegate;
+    }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+            return result;
+        }
+
+        icon_cell = (*icon).makeCell();
+
+        window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth);
+        window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth, rhea::strength::weak());
+        window.replaceConstraint(minimumHeightConstraint, height >= Theme::toolbarHeight);
+        window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
+        return WidgetUpdateResult::Self;
+    }
+
+    void drawBackground(DrawContext context) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        if (pressed) {
+            context.fillColor = theme->fillColor(nestingLevel() + 1);
+        } else if (hover) {
+            context.fillColor = theme->fillColor(nestingLevel());
+        } else {
+            context.fillColor = theme->fillColor(nestingLevel() - 1);
+        }
+        context.drawFilledQuad(rectangle());
+    }
+
+    void drawIcon(DrawContext context) noexcept
+    {
+        context.transform = mat::T(0.0f, 0.0f, 0.0001f) * context.transform;
+        if (*enabled) {
+            context.color = theme->foregroundColor;
+        }
+        icon_cell->draw(context, rectangle(), Alignment::MiddleCenter);
+    }
+
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        drawBackground(drawContext);
+        drawIcon(drawContext);
+        Widget::draw(drawContext, displayTimePoint);
+    }
+
+    void handleMouseEvent(MouseEvent const &event) noexcept override
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        Widget::handleMouseEvent(event);
+
+        if (*enabled) {
+            if (compare_then_assign(pressed, static_cast<bool>(event.down.leftButton))) {
+                window.requestRedraw = true;
+            }
+
+            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
+                tt_assert2(_delegate, "Delegate on ToolbarButtonWidget was not set");
+                run_from_main_loop(_delegate);
+            }
+        }
+    }
+
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        if (rectangle().contains(position)) {
+            return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        } else {
+            return HitBox{};
+        }
+    }
 
 private:
-    int state() const noexcept;
+    bool pressed = false;
+
+    std::unique_ptr<ImageCell> icon_cell;
+
+    delegate_type _delegate;
 };
 
-}
+} // namespace tt

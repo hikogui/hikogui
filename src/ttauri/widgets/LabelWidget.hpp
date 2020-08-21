@@ -38,7 +38,7 @@ public:
 
     template<typename... Args>
     LabelWidget(Window &window, Widget *parent, l10n const &fmt, Args const &... args) noexcept :
-        LabelWidget(window, parent, Alignment::TopLeft, fmt, args) {}
+        LabelWidget(window, parent, Alignment::TopRight, fmt, args...) {}
 
     LabelWidget(Window &window, Widget *parent, Alignment alignment) noexcept :
         LabelWidget(window, parent, alignment, l10n{}) {}
@@ -78,6 +78,5 @@ public:
         Widget::draw(drawContext, displayTimePoint);
     }
 };
-
 
 }

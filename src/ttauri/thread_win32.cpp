@@ -23,15 +23,12 @@ bool is_main_thread()
     return std::this_thread::get_id() == application->mainThreadID;
 }
 
-void run_on_main_thread(std::function<void()> f)
+void run_from_main_loop(std::function<void()> f)
 {
-    if (is_main_thread()) {
-        return f();
-
-    } else {
-        tt_assume(application);
-        application->runOnMainThread(f);
-    }
+    // Do not optimize by checking if this is called from the main thread
+    // the function should be passed to the queue on the main loop.
+    tt_assume(application);
+    application->runFromMainLoop(f);
 }
 
 void wait_on(std::atomic<uint32_t> &value, uint32_t expected, hires_utc_clock::duration timeout) noexcept

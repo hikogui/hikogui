@@ -7,6 +7,7 @@
 #include "../exceptions.hpp"
 #include "../numeric_cast.hpp"
 #include "../bigint.hpp"
+#include "../unfair_recursive_mutex.hpp"
 #include <unordered_set>
 #include <mutex>
 #include <tuple>
@@ -29,9 +30,6 @@ public:
     uint32_t deviceID = 0;
     uuid deviceUUID = {};
 
-    /*! A list of windows managed by this device.
-     */
-    std::vector<std::unique_ptr<Window>> windows;
 
     std::string string() const noexcept;
 
@@ -67,6 +65,8 @@ public:
     void remove(Window &window) noexcept;
 
     void render(hires_utc_clock::time_point displayTimePoint) noexcept {
+        ttlet lock = std::scoped_lock(mutex);
+
         for (auto &window: windows) {
             window->render(displayTimePoint);
         }
@@ -74,6 +74,13 @@ public:
         ttlet new_end = std::remove_if(windows.begin(), windows.end(), [](ttlet &window) { return window->isClosed(); });
         windows.erase(new_end, windows.end());
     }
+
+protected:
+    mutable unfair_recursive_mutex mutex;
+
+    /** A list of windows managed by this device.
+     */
+    std::vector<std::unique_ptr<Window>> windows;
 };
 
 }

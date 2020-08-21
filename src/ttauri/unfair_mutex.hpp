@@ -4,6 +4,7 @@
 #pragma once
 
 #include "required.hpp"
+#include "thread.hpp"
 #include <atomic>
 #include <memory>
 #include <thread>
@@ -40,7 +41,7 @@ class unfair_mutex {
 #endif
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-    std::thread::id locking_thread;
+    thread_id locking_thread;
 #endif
 
 public:

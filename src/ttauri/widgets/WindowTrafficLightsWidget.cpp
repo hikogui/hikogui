@@ -259,15 +259,15 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
     auto stateHasChanged = false;
 
     // Check the hover states of each button.
-    stateHasChanged |= assign_and_compare(hoverClose, closeRectangle.contains(event.position));
-    stateHasChanged |= assign_and_compare(hoverMinimize, minimizeRectangle.contains(event.position));
-    stateHasChanged |= assign_and_compare(hoverMaximize, maximizeRectangle.contains(event.position));
+    stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(event.position));
+    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(event.position));
+    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(event.position));
 
     // Only change the pressed state after checking for Button Up, the
     // button up will check which button was pressed from button down.
-    stateHasChanged |= assign_and_compare(pressedClose, event.down.leftButton && hoverClose);
-    stateHasChanged |= assign_and_compare(pressedMinimize, event.down.leftButton && hoverMinimize);
-    stateHasChanged |= assign_and_compare(pressedMaximize, event.down.leftButton && hoverMaximize);
+    stateHasChanged |= compare_then_assign(pressedClose, event.down.leftButton && hoverClose);
+    stateHasChanged |= compare_then_assign(pressedMinimize, event.down.leftButton && hoverMinimize);
+    stateHasChanged |= compare_then_assign(pressedMaximize, event.down.leftButton && hoverMaximize);
 
 
     if (stateHasChanged) {
