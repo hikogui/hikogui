@@ -33,8 +33,8 @@ constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
     return arguments;
 }
 
-Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, int nCmdShow) :
-    Application_base(std::move(delegate), passArguments()),
+Application_win32::Application_win32(ApplicationDelegate &delegate, void *hInstance, int nCmdShow) :
+    Application_base(delegate, passArguments()),
     OSMainThreadID(GetCurrentThreadId()),
     hInstance(hInstance), nCmdShow(nCmdShow)
 {
@@ -44,7 +44,7 @@ void Application_win32::lastWindowClosed()
 {
     runFromMainLoop([&]() {
         // Let the application have a chance to open new windows from the main thread.
-        delegate->lastWindowClosed();
+        delegate.lastWindowClosed();
 
         if (gui->getNumberOfWindows() == 0) {
             LOG_INFO("Application quiting due to all windows having been closed.");

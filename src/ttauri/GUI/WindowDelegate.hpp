@@ -1,23 +1,17 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
 #include "Window_forward.hpp"
+#include "../widgets/ContainerWidgetDelegate.hpp"
 
 namespace tt {
 
-class WindowDelegate {
+class WindowDelegate : public ContainerWidgetDelegate {
 public:
-    WindowDelegate() = default;
-    virtual ~WindowDelegate() = default;
-    WindowDelegate(const WindowDelegate&) = delete;
-    WindowDelegate& operator=(const WindowDelegate&) = delete;
-    WindowDelegate(WindowDelegate&&) = delete;
-    WindowDelegate& operator=(WindowDelegate&&) = delete;
-
-    virtual void openingWindow(Window &window) = 0;
-    virtual void closingWindow(const Window &window) = 0;
+    virtual void openingWindow(Window &window) noexcept {}
+    virtual void closingWindow(Window &window) noexcept {}
 };
 
 }

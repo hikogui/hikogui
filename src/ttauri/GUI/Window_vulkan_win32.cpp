@@ -81,6 +81,8 @@ static void createWindowClass()
 
 void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
 {
+    tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
+
     createWindowClass();
 
     auto u16title = to_wstring(_title);
@@ -134,7 +136,7 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
     dpi = numeric_cast<float>(_dpi);
 }
 
-Window_vulkan_win32::Window_vulkan_win32(std::shared_ptr<WindowDelegate> const &delegate, Label &&title) :
+Window_vulkan_win32::Window_vulkan_win32(WindowDelegate *delegate, Label &&title) :
     Window_vulkan(delegate, std::move(title)),
     trackMouseLeaveEventParameters()
 {
@@ -197,27 +199,6 @@ void Window_vulkan_win32::setWindowSize(ivec extent)
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED
         );
     });
-}
-
-
-void Window_vulkan_win32::closingWindow()
-{
-    run_from_main_loop([&]() {
-        Window_vulkan::closingWindow();
-    });
-}
-
-void Window_vulkan_win32::openingWindow()
-{
-    tt_assume(is_main_thread());
-
-    ttlet lock = std::scoped_lock(mutex);
-
-    Window_vulkan::openingWindow();
-
-    // Delegate has been called, layout of widgets has been calculated for the
-    // minimum and maximum size of the window.
-    createWindow(title.text(), currentWindowExtent);
 }
 
 [[nodiscard]] std::u8string Window_vulkan_win32::getTextFromClipboard() const noexcept

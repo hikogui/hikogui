@@ -40,9 +40,8 @@ namespace tt {
 using namespace std;
 
 Application_base::Application_base(
-    std::shared_ptr<ApplicationDelegate> applicationDelegate,
-    std::vector<std::string> const &arguments) :
-    delegate(applicationDelegate)
+    ApplicationDelegate &delegate,
+    std::vector<std::string> const &arguments) : delegate(delegate)
 {
     set_thread_name("Main Thread");
 
@@ -50,10 +49,8 @@ Application_base::Application_base(
     tt_assert(application == nullptr);
     application = reinterpret_cast<Application *>(this);
 
-    tt_assert(delegate);
-
-    application_version.name = applicationDelegate->applicationName();
-    configuration = applicationDelegate->configuration(arguments);
+    application_version.name = delegate.applicationName();
+    configuration = delegate.configuration(arguments);
 
     LOG_INFO("Starting application '{}'.", application_version.name);
 
@@ -207,7 +204,7 @@ void Application_base::GUIStop()
 bool Application_base::initializeApplication()
 {
     try {
-        return delegate->initializeApplication();
+        return delegate.initializeApplication();
     } catch (error &e) {
         LOG_FATAL("Exception during initializeApplication {}", to_string(e));
     }
@@ -215,7 +212,7 @@ bool Application_base::initializeApplication()
 
 void Application_base::audioDeviceListChanged()
 {
-    delegate->audioDeviceListChanged();
+    delegate.audioDeviceListChanged();
 }
 
 void Application_base::addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept

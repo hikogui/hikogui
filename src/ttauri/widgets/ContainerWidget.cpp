@@ -19,7 +19,7 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
     tt_assume(widget_ptr);
 
     children.push_back(std::move(childWidget));
-    requestReconstrain = true;
+    requestConstraint = true;
     window.requestLayout = true;
     return *widget_ptr;
 }

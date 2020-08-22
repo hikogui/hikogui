@@ -89,11 +89,10 @@ public:
      */
     Size size = Size::Normal;
 
-
     //! The current window extent as set by the GPU library.
     ivec currentWindowExtent;
 
-    std::shared_ptr<WindowDelegate> delegate;
+    WindowDelegate *delegate;
 
     Label title;
 
@@ -141,7 +140,7 @@ public:
      */
     Widget *lastKeyboardWidget = nullptr;
 
-    Window_base(std::shared_ptr<WindowDelegate> const &delegate, Label &&title);
+    Window_base(WindowDelegate *delegate, Label &&title);
     virtual ~Window_base();
 
     Window_base(Window_base const &) = delete;
@@ -257,6 +256,12 @@ protected:
      */
     iaarect OSWindowRectangle;
 
+    /** Let the operating system create the actual window.
+     * @param title The title of the window.
+     * @param extent The size of the window.
+     */
+    virtual void createWindow(const std::u8string &title, vec extent) = 0;
+
     /** By how much graphic elements should be scaled to match a point.
     * The widget should not care much about this value, since the
     * transformation matrix will match the window scaling.
@@ -270,14 +275,6 @@ protected:
     /*! Called when the GPU library has changed the window size.
      */
     virtual void windowChangedSize(ivec extent);
-
-    /*! call openingWindow() on the delegate. 
-     */
-    virtual void openingWindow();
-
-    /*! call closingWindow() on the delegate.
-     */
-    virtual void closingWindow();
 
     /*! Teardown Window based on State::*_LOST
      */

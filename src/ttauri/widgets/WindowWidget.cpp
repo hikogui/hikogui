@@ -14,8 +14,8 @@ namespace tt {
 
 using namespace std;
 
-WindowWidget::WindowWidget(Window &window, Label title) noexcept :
-    ContainerWidget(window, nullptr), title(std::move(title))
+WindowWidget::WindowWidget(Window &window, ContainerWidgetDelegate *delegate, Label title) noexcept :
+    ContainerWidget(window, nullptr, delegate), title(std::move(title))
 {
     toolbar = &makeWidget<ToolbarWidget,""_ca>();
     toolbar->placeLeft(0.0f);

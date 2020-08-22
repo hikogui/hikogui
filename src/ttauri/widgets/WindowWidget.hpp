@@ -26,7 +26,7 @@ public:
     ContainerWidget *content = nullptr;
     ToolbarWidget *toolbar = nullptr;
 
-    WindowWidget(Window &window, Label title) noexcept;
+    WindowWidget(Window &window, ContainerWidgetDelegate *delegate, Label title) noexcept;
     ~WindowWidget();
 
     /** The minimum extend that the contained widgets allow.

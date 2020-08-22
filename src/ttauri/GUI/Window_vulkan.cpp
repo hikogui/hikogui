@@ -20,7 +20,7 @@ namespace tt {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(std::shared_ptr<WindowDelegate> const &delegate, Label &&title) :
+Window_vulkan::Window_vulkan(WindowDelegate *delegate, Label &&title) :
     Window_base(delegate, std::move(title)), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
@@ -256,8 +256,9 @@ void Window_vulkan::teardown()
                     imagePipeline->teardownForWindowLost();
                     boxPipeline->teardownForWindowLost();
                     flatPipeline->teardownForWindowLost();
-                    // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
-                    closingWindow();
+
+                    delegate->closingWindow(*static_cast<Window *>(this));
+                    nextState = State::NoWindow;
                 }
             }
         }

@@ -16,7 +16,7 @@ class Window_vulkan_win32 final : public Window_vulkan {
 public:
     void *win32Window = nullptr;
 
-    Window_vulkan_win32(std::shared_ptr<WindowDelegate> const &delegate, Label &&title);
+    Window_vulkan_win32(WindowDelegate *delegate, Label &&title);
     ~Window_vulkan_win32();
 
     Window_vulkan_win32(const Window_vulkan_win32 &) = delete;
@@ -24,10 +24,7 @@ public:
     Window_vulkan_win32(Window_vulkan_win32 &&) = delete;
     Window_vulkan_win32 &operator=(Window_vulkan_win32 &&) = delete;
 
-    void closingWindow() override;
-    void openingWindow() override;
-
-    void createWindow(const std::u8string &title, vec extent);
+    void createWindow(const std::u8string &title, vec extent) override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam);
 
     vk::SurfaceKHR getSurface() const override;

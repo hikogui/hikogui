@@ -111,6 +111,7 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/Window_vulkan_macos.hpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/Window_vulkan_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/Window_vulkan_win32.hpp>
+    WindowDelegate.cpp
     WindowDelegate.hpp
 )
 

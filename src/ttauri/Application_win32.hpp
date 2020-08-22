@@ -20,7 +20,7 @@ public:
     */
     int nCmdShow = 0;
 
-    Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, int nCmdShow);
+    Application_win32(ApplicationDelegate &delegate, void *hInstance, int nCmdShow);
     ~Application_win32() = default;
 
     Application_win32(const Application_win32 &) = delete;

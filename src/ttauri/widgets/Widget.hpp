@@ -118,10 +118,6 @@ constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateRe
  */
 class Widget {
 protected:
-    /** Convenient reference to the Window.
-     */
-    Window &window;
-
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
@@ -134,6 +130,10 @@ protected:
     rhea::constraint baseConstraint;
 
 public:
+    /** Convenient reference to the Window.
+     */
+    Window &window;
+
     mutable unfair_recursive_mutex mutex;
 
     /** Mouse cursor is hovering over the widget.

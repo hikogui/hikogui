@@ -10,7 +10,7 @@ namespace tt {
 
 using namespace std;
 
-Window_base::Window_base(std::shared_ptr<WindowDelegate> const &delegate, Label &&title) :
+Window_base::Window_base(WindowDelegate *delegate, Label &&title) :
     state(State::Initializing),
     delegate(delegate),
     title(std::move(title))
@@ -37,18 +37,30 @@ void Window_base::initialize()
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    widget = std::make_unique<WindowWidget>(*static_cast<Window *>(this), title);
+    widget = std::make_unique<WindowWidget>(*static_cast<Window *>(this), delegate, title);
 
-    // The width and height of the window will be modified by the user and also for
-    // testing the minimum and maximum size of the window.
-    // XXX
-    //widgetSolver.add_stay(widget->width, rhea::strength::medium());
-    //widgetSolver.add_stay(widget->height, rhea::strength::medium());
+    delegate->openingWindow(*static_cast<Window *>(this));
 
-    openingWindow();
+    // Start of with a large window size, so that widgets have room to layout.
+    // for the first time. Otherwise the minimum height is determined based on
+    // the tiny width of 0 by 0 window.
+    currentWindowExtent = ivec{500, 500};
+
+    // Execute a layout to determine initial window size.
+    ttlet widget_lock = std::scoped_lock(widget->mutex);
+    if (widget->updateConstraints() >= WidgetUpdateResult::Children) {
+        requestLayout = true;
+        layoutWindow();
+    }
+
+    updateToNextKeyboardTarget(nullptr);
 
     // Finished initializing the window.
     state = State::NoDevice;
+
+    // Delegate has been called, layout of widgets has been calculated for the
+    // minimum and maximum size of the window.
+    createWindow(title.text(), currentWindowExtent);
 }
 
 bool Window_base::isClosed() {
@@ -177,38 +189,6 @@ void Window_base::layoutWindow() noexcept {
         widget->maximumExtent(),
         widget->windowExtent()
     );
-}
-
-void Window_base::openingWindow() {
-    ttlet lock = std::scoped_lock(mutex);
-
-    Window *thisWindow = dynamic_cast<Window *>(this);
-    assert(thisWindow);
-    delegate->openingWindow(*thisWindow);
-
-    // Start of with a large window size, so that widgets have room to layout.
-    // for the first time. Otherwise the minimum height is determined based on
-    // the tiny width of 0 by 0 window.
-    currentWindowExtent = ivec{500, 500};
-
-    // Execute a layout to determine initial window size.
-    ttlet widget_lock = std::scoped_lock(widget->mutex);
-    if (widget->updateConstraints() >= WidgetUpdateResult::Children) {
-        requestLayout = true;
-        layoutWindow();
-    }
-
-    updateToNextKeyboardTarget(nullptr);
-}
-
-void Window_base::closingWindow() {
-    ttlet lock = std::scoped_lock(mutex);
-
-    Window* thisWindow = dynamic_cast<Window*>(this);
-    assert(thisWindow);
-    delegate->closingWindow(*thisWindow);
-
-    state = State::NoWindow;
 }
 
 void Window_base::setDevice(GUIDevice *newDevice)

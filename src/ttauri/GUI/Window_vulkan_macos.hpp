@@ -24,9 +24,6 @@ public:
     Window_vulkan_macos(Window_vulkan_macos &&) = delete;
     Window_vulkan_macos &operator=(Window_vulkan_macos &&) = delete;
 
-    void closingWindow() override;
-    void openingWindow() override;
-
     void createWindow(const std::string &title, ivec extent);
     //LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

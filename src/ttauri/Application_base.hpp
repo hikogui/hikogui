@@ -35,7 +35,7 @@ class Application_base : public GUISystemDelegate, public AudioSystemDelegate
 public:
     /*! Application delegate
     */
-    std::shared_ptr<ApplicationDelegate> delegate;
+    ApplicationDelegate &delegate;
 
     /*! Command line arguments.
      */
@@ -62,8 +62,14 @@ public:
     std::unique_ptr<RenderDoc> renderDoc;
     std::unique_ptr<UnicodeData> unicodeData;
 
+    /**
+     * This function will take ownership of the delegate and delete it
+     * during destruction.
+     * 
+     * @param delegate A pointer to an application delegate.
+     */
     Application_base(
-        std::shared_ptr<ApplicationDelegate> applicationDelegate,
+        ApplicationDelegate &delegate,
         std::vector<std::string> const &arguments
     );
 
