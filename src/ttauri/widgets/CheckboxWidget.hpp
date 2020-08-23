@@ -17,6 +17,12 @@
 
 namespace tt {
 
+/** A checkbox widget.
+ * 
+ * @tparam ValueType The type of the value to monitor/modify
+ * @tparam TrueValue The value when the checkbox is checked
+ * @tparam FaseValue The value when the checkbox is unchecked
+ */
 template<typename ValueType, ValueType TrueValue, ValueType FalseValue>
 class CheckboxWidget : public Widget {
 protected:

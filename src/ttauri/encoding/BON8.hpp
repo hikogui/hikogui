@@ -36,6 +36,9 @@ constexpr auto BON8_code_eot           = uint8_t{0xff};
 
 [[nodiscard]] bstring encode_BON8(datum const &value);
 
+
+/** BON8 encoder.
+ */
 class BON8_encoder {
     bool open_string;
     bstring output;
@@ -44,10 +47,15 @@ public:
     BON8_encoder() noexcept :
         open_string(false), output() {}
 
+    /** Return a byte_string of the encoded object.
+     */
     bstring const &get() const noexcept {
         return output;
     }
 
+    /** And a signed integer.
+     * @param A signed integer.
+     */
     void add(signed long long value) noexcept {
         open_string = false;
 
@@ -117,42 +125,72 @@ public:
         }
     }
 
+    /** And a unsigned integer.
+     * @param A unsigned integer.
+     */
     void add(unsigned long long value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** And a signed integer.
+     * @param A signed integer.
+     */
     void add(signed long value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** And a unsigned integer.
+     * @param A unsigned integer.
+     */
     void add(unsigned long value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** And a signed integer.
+     * @param A signed integer.
+     */
     void add(signed int value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** And a unsigned integer.
+     * @param A unsigned integer.
+     */
     void add(unsigned int value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** And a signed integer.
+     * @param A signed integer.
+     */
     void add(signed short value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** And a unsigned integer.
+     * @param A unsigned integer.
+     */
     void add(unsigned short value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** And a signed integer.
+     * @param A signed integer.
+     */
     void add(signed char value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** And a unsigned integer.
+     * @param A unsigned integer.
+     */
     void add(unsigned char value) noexcept {
         return add(numeric_cast<signed long long>(value));
     }
 
+    /** Add a floating point number.
+     * @param A floating point number.
+     */
     void add(double value) noexcept {
         open_string = false;
 
@@ -188,21 +226,35 @@ public:
         }
     }
 
+    /** Add a floating point number.
+     * @param A floating point number.
+     */
     void add(float value) noexcept {
         return add(numeric_cast<double>(value));
     }
 
+    /** Add a boolean.
+     * @param A boolean value.
+     */
     void add(bool value) noexcept {
         open_string = false;
         output += static_cast<std::byte>(value ? BON8_code_bool_true : BON8_code_bool_false);
     }
 
+    /** Add a null.
+     * @param A null pointer.
+     */
     void add(nullptr_t value) noexcept {
         open_string = false;
         output += static_cast<std::byte>(BON8_code_null);
     }
 
-    void add(std::string_view value) noexcept {
+    /** Add a UTF-8 string.
+     * It is important that the UTF-8 string is valid.
+     *
+     * @param A null pointer.
+     */
+    void add(std::u8string_view value) noexcept {
         if (open_string) {
             output += static_cast<std::byte>(BON8_code_eot);
         }
@@ -244,16 +296,33 @@ public:
         }
     }
 
-    void add(std::string const &value) noexcept {
+    /** Add a UTF-8 string.
+     * It is important that the UTF-8 string is valid.
+     *
+     * @param A null pointer.
+     */
+    void add(std::u8string const &value) noexcept {
         return add(std::string_view{value});
     }
 
-    void add(char *value) noexcept {
+    /** Add a UTF-8 string.
+     * It is important that the UTF-8 string is valid.
+     *
+     * @param A null pointer.
+     */
+    void add(char8_t const *value) noexcept {
         return add(std::string_view{value});
     }
 
+    /** Add a datum.
+     * @param A datum value.
+     */
     void add(datum const &value);
 
+    /** Add a vector of values of the same type..
+     * @tparam T Type of the values.
+     * @param A vector of values.
+     */
     template<typename T>
     void add(std::vector<T> const &items) {
         open_string = false;
@@ -271,6 +340,11 @@ public:
         open_string = false;
     }
 
+    /** Add a map of key/values pairs.
+     * @tparam Key A type convertable to a u8string_view; a valid UTF-8 string.
+     * @tparam Value The type of the Value.
+     * @param items The map of key/value pairs.
+     */
     template<typename Key, typename Value>
     void add(std::map<Key,Value> const &items) {
         using item_type = std::map<Key,Value>::value_type;
@@ -283,13 +357,13 @@ public:
             auto sorted_items = std::vector<std::reference_wrapper<item_type>>{items.begin(), items.end()};
             std::sort(sorted_items.begin(), sorted_value.end(), [](item_type const &a, item_type const &b) {
                 return
-                    static_cast<std::string_view>(a.first) <
-                    static_cast<std::string_view>(b.first);
+                    static_cast<std::u8string_view>(a.first) <
+                    static_cast<std::u8string_view>(b.first);
             });
 
             output += static_cast<std::byte>(BON8_code_object);
             for (item_type const &item: sorted_value) {
-                add(static_cast<std::string_view>(item.first));
+                add(static_cast<std::u8string_view>(item.first));
                 add(item.second);
             }
             output += static_cast<std::byte>(BON8_code_eoc);
@@ -318,11 +392,15 @@ void BON8_encoder::add(datum const &value) {
     }
 }
 
-/** Count the number of UTF8 code units
+/** Count the number of UTF-8-like code units
  * This does not really decode the character, just calculate the size.
- * @return number of bytes in the UTF-8 character, or zero if it is a multibyte integer
+ *
+ * @param ptr The pointer to the first byte of a UTF-8-like multibyte sequence
+ * @param last The pointer beyond the buffer.
+ * @return When positive: the number of bytes in the UTF-8 character.
+ *         When negative: the number of bytes in the integer.
  */
-[[nodiscard]] int BON8_multibyte_count(cbyteptr &ptr, cbyteptr last) {
+[[nodiscard]] int BON8_multibyte_count(cbyteptr ptr, cbyteptr last) {
     ttlet c0 = static_cast<uint8_t>(*ptr);
     int count =
         c0 <= 0xdf ? 2 :
@@ -335,6 +413,14 @@ void BON8_encoder::add(datum const &value) {
     return (c1 < 0x80 || c1 > 0xbf) ? -count : count;
 }
 
+/** Decode a 4, or 8 byte signed integer.
+ *
+ * @param [in,out] ptr The pointer to the first byte of the integer.
+ *                     On return this points beyond the integer.
+ * @param last The pointer beyond the buffer.
+ * @param count The number of bytes used to encode the integer.
+ * @return The integer as a datum.
+ */
 [[nodiscard]] datum decode_BON8_int(cbyteptr &ptr, cbyteptr last, int count)
 {
     tt_assume(count == 4 || count == 8);

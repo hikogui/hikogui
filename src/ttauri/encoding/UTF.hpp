@@ -16,9 +16,14 @@ namespace tt {
  *
  * It is undefined behavior when the iterator does not point to a valid
  * and complete UTF-16 encoded code-point.
+ *
+ * @tparam Iterator A LegacyInputIterator
+ * @param [in,out] An iterator pointing to the first UTF-16 code unit of a code point.
+ *                 After the call the iterator points beyond the code point.
+ * @return The encoded code point
  */
 template<typename Iterator>
-[[nodiscard]] constexpr char32_t utf16_to_utf32(Iterator it) noexcept
+[[nodiscard]] constexpr char32_t utf16_to_utf32(Iterator &it) noexcept
 {
     using value_type = std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>;
     static_assert(std::is_same_v<value_type, char16_t>, "Iterator must point to a char16_t");
@@ -40,9 +45,14 @@ template<typename Iterator>
  *
  * It is undefined behavior when the iterator does not point to a valid
  * and complete UTF-8 encoded code-point.
+ *
+ * @tparam Iterator A LegacyInputIterator
+ * @param [in,out] An iterator pointing to the first UTF-8 code unit of a code point.
+ *                 After the call the iterator points beyond the code point.
+ * @return The encoded code point
  */
 template<typename Iterator>
-[[nodiscard]] constexpr char32_t utf8_to_utf32(Iterator it) noexcept
+[[nodiscard]] constexpr char32_t utf8_to_utf32(Iterator &it) noexcept
 {
     using value_type = std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>;
     static_assert(std::is_same_v<value_type, char8_t>, "Iterator must point to a char8_t");
@@ -155,6 +165,11 @@ constexpr bool utf8_to_utf32(Iterator &it, Iterator last, char32_t &code_point) 
 
 /** Convert a UTF-32 encoded code point to a UTF-16 encoded code point.
  * It is undefined behavior when the code-point is outside the Unicode range or if it is a surrogate-code.
+ *
+ * @tparam Iterator A LegacyOutputIterator
+ * @param code_point The code point to encode.
+ * @param [in,out] it An iterator pointing to where the UTF-16 code units should be inserted.
+ *                    After the call the iterator points beyond the code point.
  */
 template<typename Iterator>
 constexpr void utf32_to_utf16(char32_t code_point, Iterator &it) noexcept
@@ -177,6 +192,11 @@ constexpr void utf32_to_utf16(char32_t code_point, Iterator &it) noexcept
 
 /** Convert a UTF-32 encoded code point to a UTF-8 encoded code point.
  * It is undefined behavior when the code-point is outside the Unicode range or if it is a surrogate-code.
+ *
+ * @tparam Iterator A LegacyOutputIterator
+ * @param code_point The code point to encode.
+ * @param [in,out] it An iterator pointing to where the UTF-8 code units should be inserted.
+ *                    After the call the iterator points beyond the code point.
  */
 template<typename Iterator>
 constexpr void utf32_to_utf8(char32_t code_point, Iterator &it) noexcept
