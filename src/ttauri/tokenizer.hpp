@@ -9,7 +9,7 @@
 #include "decimal.hpp"
 #include "exceptions.hpp"
 #include "parse_location.hpp"
-#include "text/UTF.hpp"
+#include "encoding/UTF.hpp"
 #include <date/date.h>
 #include <memory>
 #include <string>

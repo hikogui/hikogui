@@ -16,6 +16,7 @@ target_sources(ttauri PRIVATE
     SelectionWidget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>
+    TabWidget.hpp
     ToggleWidget.hpp
     ToolbarButtonWidget.hpp
     ToolbarWidget.cpp

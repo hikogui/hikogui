@@ -18,13 +18,13 @@ WindowWidget::WindowWidget(Window &window, ContainerWidgetDelegate *delegate, La
     ContainerWidget(window, nullptr, delegate), title(std::move(title))
 {
     toolbar = &makeWidget<ToolbarWidget,""_ca>();
-    toolbar->placeLeft(0.0f);
-    toolbar->placeRight(0.0f);
-    toolbar->placeAtTop(0.0f);
+    window.addConstraint(toolbar->left == left);
+    window.addConstraint(toolbar->right == right);
+    window.addConstraint(toolbar->top == top);
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-        toolbar->makeWidget<SystemMenuWidget>(title.icon());
+        toolbar->makeWidget<SystemMenuWidget>(this->title.icon());
 #endif
         toolbar->makeWidget<WindowTrafficLightsWidget,"R0T0"_ca>();
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
@@ -36,10 +36,10 @@ WindowWidget::WindowWidget(Window &window, ContainerWidgetDelegate *delegate, La
 
     content = &makeWidget<ColumnWidget,""_ca>();
     content->elevation = elevation;
-    content->placeLeft();
-    content->placeRight();
-    content->placeAtBottom();
-    content->placeBelow(*toolbar);
+    window.addConstraint(content->left == left + Theme::margin);
+    window.addConstraint(content->right == right - Theme::margin);
+    window.addConstraint(content->top == toolbar->bottom - Theme::margin);
+    window.addConstraint(content->bottom == bottom + Theme::margin);
 
     // Add constraints for the window widget itself.
     leftConstraint = window.addConstraint(left == 0);

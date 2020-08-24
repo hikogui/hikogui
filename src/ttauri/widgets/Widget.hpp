@@ -195,21 +195,6 @@ public:
      */
     aarect makeWindowRectangle() const noexcept;
 
-    rhea::constraint placeBelow(Widget const &rhs, float margin = theme->margin) const noexcept;
-    rhea::constraint placeAbove(Widget const &rhs, float margin = theme->margin) const noexcept;
-
-    rhea::constraint placeLeftOf(Widget const &rhs, float margin = theme->margin) const noexcept;
-
-    rhea::constraint placeRightOf(Widget const &rhs, float margin = theme->margin) const noexcept;
-
-    rhea::constraint placeAtTop(float margin = theme->margin) const noexcept;
-
-    rhea::constraint placeAtBottom(float margin = theme->margin) const noexcept;
-
-    rhea::constraint placeLeft(float margin = theme->margin) const noexcept;
-
-    rhea::constraint placeRight(float margin = theme->margin) const noexcept;
-
     /** Get the rectangle in local coordinates.
      * Thread safety: requires external lock on `mutex`.
      */

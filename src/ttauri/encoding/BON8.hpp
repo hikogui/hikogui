@@ -3,6 +3,7 @@
 #include "../required.hpp"
 #include "../datum.hpp"
 #include "../exceptions.hpp"
+#include "../numeric_cast.hpp"
 #include <cstddef>
 
 #pragma once
@@ -302,7 +303,7 @@ public:
      * @param A null pointer.
      */
     void add(std::u8string const &value) noexcept {
-        return add(std::string_view{value});
+        return add(std::u8string_view{value});
     }
 
     /** Add a UTF-8 string.
@@ -311,7 +312,7 @@ public:
      * @param A null pointer.
      */
     void add(char8_t const *value) noexcept {
-        return add(std::string_view{value});
+        return add(std::u8string_view{value});
     }
 
     /** Add a datum.

@@ -19,7 +19,7 @@ class DrawContext;
  */
 class Image {
 public:
-    using image_type = std::variant<FontGlyphIDs,PixelMap<R16G16B16A16SFloat>>;
+    using image_type = std::variant<std::monostate,FontGlyphIDs,PixelMap<R16G16B16A16SFloat>>;
 
     image_type image;
 public:
@@ -29,11 +29,11 @@ public:
     Image(ElusiveIcon const &icon) noexcept;
     Image(TTauriIcon const &icon) noexcept;
 
-    Image() = default;
+    Image() noexcept;
     Image(Image const &) noexcept;
-    Image(Image &&) noexcept = default;
+    Image(Image &&) noexcept;
     Image &operator=(Image const &) noexcept;
-    Image &operator=(Image &&) noexcept = default;
+    Image &operator=(Image &&) noexcept;
 
     [[nodiscard]] std::unique_ptr<ImageCell> makeCell() const noexcept;
 };

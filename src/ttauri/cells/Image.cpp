@@ -10,6 +10,8 @@
 
 namespace tt {
 
+Image::Image() noexcept : image(std::monostate{}) {}
+
 Image::Image(PixelMap<R16G16B16A16SFloat> &&image) noexcept : image(std::move(image)) {}
 
 Image::Image(FontGlyphIDs const &image) noexcept : image(image) {}
@@ -28,9 +30,29 @@ Image::Image(Image const &other) noexcept
     } else if (auto pixmap = std::get_if<PixelMap<R16G16B16A16SFloat>>(&other.image)) {
         image = pixmap->copy();
 
+    } else if (std::holds_alternative<std::monostate>(other.image)) {
+        image = std::monostate{};
+
     } else {
         tt_no_default;
     }
+}
+
+Image::Image(Image &&other) noexcept
+{
+    if (auto font_glyph_id = std::get_if<FontGlyphIDs>(&other.image)) {
+        image = std::move(*font_glyph_id);
+
+    } else if (auto pixmap = std::get_if<PixelMap<R16G16B16A16SFloat>>(&other.image)) {
+        image = std::move(*pixmap);
+
+    } else if (std::holds_alternative<std::monostate>(other.image)) {
+        image = std::monostate{};
+
+    } else {
+        tt_no_default;
+    }
+    other.image = std::monostate{};
 }
 
 Image &Image::operator=(Image const &other) noexcept
@@ -41,9 +63,30 @@ Image &Image::operator=(Image const &other) noexcept
     } else if (auto pixmap = std::get_if<PixelMap<R16G16B16A16SFloat>>(&other.image)) {
         image = pixmap->copy();
 
+    } else if (std::holds_alternative<std::monostate>(other.image)) {
+        image = std::monostate{};
+
     } else {
         tt_no_default;
     }
+    return *this;
+}
+
+Image &Image::operator=(Image &&other) noexcept
+{
+    if (auto font_glyph_id = std::get_if<FontGlyphIDs>(&other.image)) {
+        image = std::move(*font_glyph_id);
+
+    } else if (auto pixmap = std::get_if<PixelMap<R16G16B16A16SFloat>>(&other.image)) {
+        image = std::move(*pixmap);
+
+    } else if (std::holds_alternative<std::monostate>(other.image)) {
+        image = std::monostate{};
+    
+    } else {
+        tt_no_default;
+    }
+    other.image = std::monostate{};
     return *this;
 }
 

@@ -40,38 +40,6 @@ GUIDevice *Widget::device() const noexcept
     return numeric_cast<float>(base.value() - bottom.value());
 }
 
-rhea::constraint Widget::placeBelow(Widget const &rhs, float margin) const noexcept {
-    return window.addConstraint(this->top + margin == rhs.bottom);
-}
-
-rhea::constraint Widget::placeAbove(Widget const &rhs, float margin) const noexcept {
-    return window.addConstraint(this->bottom == rhs.top + margin);
-}
-
-rhea::constraint Widget::placeLeftOf(Widget const &rhs, float margin) const noexcept {
-    return window.addConstraint(this->right + margin == rhs.left);
-}
-
-rhea::constraint Widget::placeRightOf(Widget const &rhs, float margin) const noexcept {
-    return window.addConstraint(this->left == rhs.right + margin);
-}
-
-rhea::constraint Widget::placeAtTop(float margin) const noexcept {
-    return window.addConstraint(this->top + margin == parent->top);
-}
-
-rhea::constraint Widget::placeAtBottom(float margin) const noexcept {
-    return window.addConstraint(this->bottom - margin == parent->bottom);
-}
-
-rhea::constraint Widget::placeLeft(float margin) const noexcept {
-    return window.addConstraint(this->left - margin == parent->left);
-}
-
-rhea::constraint Widget::placeRight(float margin) const noexcept {
-    return window.addConstraint(this->right + margin == parent->right);
-}
-
 WidgetUpdateResult Widget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());

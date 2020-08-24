@@ -60,8 +60,8 @@ protected:
     void addAllConstraints() noexcept;
 
 public:
-    GridWidget(Window &window, Widget *parent) noexcept :
-        ContainerWidget(window, parent)
+    GridWidget(Window &window, Widget *parent, ContainerWidgetDelegate *delegate=nullptr) noexcept :
+        ContainerWidget(window, parent, delegate)
     {
         ttlet lock = std::scoped_lock(mutex);
         calculateGridSize();
