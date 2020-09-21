@@ -16,41 +16,37 @@ template<typename T, typename Tag, ssize_t Max = std::numeric_limits<T>::max() -
 class tagged_id {
 public:
     static_assert(std::is_integral_v<T>, "Expecting tagged_id to be an integral");
+    static_assert(std::is_unsigned_v<T>, "Expecting tagged_id to be an unsigned integer");
     static_assert(Max < std::numeric_limits<T>::max(), "Max must be at least one less than the maximum value of T");
 
-    using type = T;
+    using value_type = T;
     using TAG = Tag;
 
-    constexpr static type max = Max;
-    constexpr static type invalid = max + 1;
+    constexpr static value_type max = Max;
+    constexpr static value_type invalid = max + 1;
+    constexpr static value_type mask = std::numeric_limits<value_type>::max();
 
-    constexpr static type mask = make_mask(invalid);
+    constexpr explicit tagged_id(signed long long rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(signed long rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(signed int rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(signed short rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(signed char rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(unsigned long long rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(unsigned long rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(unsigned int rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(unsigned short rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
+    constexpr explicit tagged_id(unsigned char rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
 
-private:
-    type value;
-
-public:
-    constexpr explicit tagged_id(signed long long rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(signed long rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(signed int rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(signed short rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(signed char rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(unsigned long long rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(unsigned long rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(unsigned int rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(unsigned short rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-    constexpr explicit tagged_id(unsigned char rhs) noexcept : value(numeric_cast<type>(rhs)) { tt_assume(value <= invalid); }
-
-    constexpr tagged_id &operator=(signed long long rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(signed long rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(signed int rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(signed short rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(signed char rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(unsigned long long rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(unsigned long rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(unsigned int rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(unsigned short rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
-    constexpr tagged_id &operator=(unsigned char rhs) noexcept { value = numeric_cast<type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(signed long long rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(signed long rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(signed int rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(signed short rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(signed char rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(unsigned long long rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(unsigned long rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(unsigned int rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(unsigned short rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
+    constexpr tagged_id &operator=(unsigned char rhs) noexcept { value = numeric_cast<value_type>(rhs); tt_assume(value <= invalid); return *this; }
 
     constexpr tagged_id() noexcept : value(invalid) {}
     constexpr tagged_id(tagged_id const &other) noexcept = default;
@@ -71,7 +67,7 @@ public:
 
     constexpr operator bool () const noexcept { return value <= max; }
 
-    [[nodiscard]] constexpr size_t hash() const noexcept { return std::hash<type>{}(value); }
+    [[nodiscard]] constexpr size_t hash() const noexcept { return std::hash<value_type>{}(value); }
 
     [[nodiscard]] constexpr friend bool operator==(tagged_id const &lhs, tagged_id const &rhs) noexcept { return lhs.value == rhs.value; }
     [[nodiscard]] constexpr friend bool operator!=(tagged_id const &lhs, tagged_id const &rhs) noexcept { return lhs.value != rhs.value; }
@@ -100,6 +96,10 @@ public:
     friend std::ostream &operator<<(std::ostream &lhs, tagged_id const &rhs) {
         return lhs << to_string(rhs);
     }
+
+private:
+    value_type value;
+
 };
 
 }

@@ -523,7 +523,7 @@ public:
     datum_impl(signed char value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
 
     datum_impl(bool value) noexcept : u64(value ? true_mask : false_mask) {}
-    datum_impl(char value) noexcept : u64(string_mask | (1 << 40) | value) {}
+    datum_impl(char value) noexcept : u64(string_mask | (uint64_t{1} << 40) | value) {}
 
     datum_impl(std::string_view value) noexcept :
         u64(make_string(value))
@@ -716,7 +716,7 @@ public:
         if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
-        u64 = string_mask | (1 << 40) | static_cast<uint64_t>(rhs);
+        u64 = string_mask | (uint64_t{1} << 40) | static_cast<uint64_t>(rhs);
         return *this;
     }
 
