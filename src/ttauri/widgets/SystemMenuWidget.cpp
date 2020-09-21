@@ -12,7 +12,6 @@
 
 namespace tt {
 
-
 SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &icon) noexcept :
     Widget(window, parent),
     iconCell(icon.makeCell()),
@@ -28,10 +27,8 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
         return result;
     }
 
-    window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth);
-    window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth, rhea::strength::weak());
-    window.replaceConstraint(minimumHeightConstraint, height >= Theme::toolbarHeight);
-    window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
+    _size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};
+
     return WidgetUpdateResult::Self;
 }
 
@@ -56,4 +53,4 @@ HitBox SystemMenuWidget::hitBoxTest(vec position) const noexcept
     }
 }
 
-}
+} // namespace tt

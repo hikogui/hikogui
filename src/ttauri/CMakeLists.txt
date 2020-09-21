@@ -82,6 +82,7 @@ target_sources(ttauri PRIVATE
     iaarect.hpp
     int_carry.hpp
     int_overflow.hpp
+    interval_vec2.hpp
     ivec.hpp
     logger.cpp
     logger.hpp

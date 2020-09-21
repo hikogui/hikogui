@@ -20,6 +20,7 @@ public:
     ContainerWidget(Window &window, Widget *parent, ContainerWidgetDelegate *delegate=nullptr) noexcept :
         Widget(window, parent), delegate(delegate)
     {
+        margin = 0.0f;
         if (delegate) {
             delegate->openingContainerWidget(*this);
         }

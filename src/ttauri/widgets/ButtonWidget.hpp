@@ -5,7 +5,6 @@
 
 #include "Widget.hpp"
 #include "../cells/TextCell.hpp"
-#include <rhea/constraint.hpp>
 #include <memory>
 #include <string>
 #include <array>

@@ -4,8 +4,117 @@
 #include "GridWidget.hpp"
 #include "../GUI/Window.hpp"
 #include "../algorithm.hpp"
+#include "../attributes.hpp"
 
 namespace tt {
+
+[[nodiscard]] static std::pair<int, int> calculateGridSize(std::vector<GridWidgetCell> const &cells) noexcept
+{
+    int nr_left = 0;
+    int nr_right = 0;
+    int nr_top = 0;
+    int nr_bottom = 0;
+
+    for (auto &&cell : cells) {
+        if (cell.address.row.is_opposite) {
+            nr_top = std::max(nr_top, cell.address.row.index + cell.address.row.span);
+        } else {
+            nr_bottom = std::max(nr_bottom, cell.address.row.index + cell.address.row.span);
+        }
+        if (cell.address.column.is_opposite) {
+            nr_right = std::max(nr_right, cell.address.column.index + cell.address.column.span);
+        } else {
+            nr_left = std::max(nr_left, cell.address.column.index + cell.address.column.span);
+        }
+    }
+
+    return {nr_left + nr_right, nr_bottom + nr_top};
+}
+
+static void calculateCellMinMaxSize(
+    std::vector<GridWidgetCell> const &cells,
+    std::vector<GridWidgetTick> &rows,
+    std::vector<GridWidgetTick> &columns) noexcept
+{
+    rows.clear();
+    columns.clear();
+
+    ttlet[nr_columns, nr_rows] = calculateGridSize(cells);
+
+    rows.resize(nr_rows);
+    columns.resize(nr_columns);
+
+    for (auto &&cell : cells) {
+        tt_assume(cell.address.row.is_absolute);
+        if (cell.address.row.span == 1) {
+            auto &row =
+                cell.address.row.is_opposite ? rows[std::ssize(rows) - cell.address.row.index - 1] : rows[cell.address.row.index];
+
+            row.minimum = std::max(row.minimum, cell.widget->size().minimum().height());
+            row.maximum = std::min(row.maximum, cell.widget->size().maximum().height());
+            row._base_line = std::max(row._base_line, cell.widget->preferred_base_line());
+        }
+
+        tt_assume(cell.address.column.is_absolute);
+        if (cell.address.column.span == 1) {
+            auto &column = cell.address.column.is_opposite ? columns[std::ssize(columns) - cell.address.column.index - 1] :
+                                                             columns[cell.address.column.index];
+
+            column.minimum = std::max(column.minimum, cell.widget->size().minimum().width());
+            column.maximum = std::min(column.maximum, cell.widget->size().maximum().width());
+        }
+    }
+}
+
+[[nodiscard]] std::tuple<ssize_t, float> nonMaximumTicksAndAxisSize(std::vector<GridWidgetTick> const &axis) noexcept
+{
+    ssize_t count = 0;
+    float size = 0.0f;
+    for (ttlet &tick : axis) {
+        if (tick.size < tick.maximum) {
+            ++count;
+        }
+        size += tick.size;
+    }
+    return {count, size};
+}
+
+static void addToNonMaximumTicks(float size_to_add, std::vector<GridWidgetTick> &axis) noexcept
+{
+    for (auto &&tick : axis) {
+        if (tick.size < tick.maximum) {
+            tick.size = std::min(tick.size + size_to_add, tick.maximum);
+        }
+    }
+}
+
+static void setCurrentSizeOfAxis(float total_size, std::vector<GridWidgetTick> &axis) noexcept
+{
+    // Reset axis.
+    for (auto &&tick : axis) {
+        tick.size = tick.minimum;
+    }
+
+    // Iterate until all of the total_size has been spread over all
+    // the ticks off the axis.
+    while (true) {
+        ttlet[count, size] = nonMaximumTicksAndAxisSize(axis);
+        ttlet todo = size - total_size;
+
+        if (count == 0 || todo <= 0.0f) {
+            break;
+        }
+
+        addToNonMaximumTicks(todo / count, axis);
+    }
+
+    // Calculate the offset of each tick
+    auto offset = 0.0f;
+    for (auto &&tick : axis) {
+        tick.offset = offset;
+        offset += tick.size;
+    }
+}
 
 Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
 {
@@ -16,159 +125,46 @@ Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> chil
     return widget;
 }
 
-void GridWidget::removeAllConstraints() noexcept
+WidgetUpdateResult GridWidget::updateConstraints() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
-
-    for (auto &&cell: cells) {
-        window.removeConstraint(cell.column_begin_constraint);
-        window.removeConstraint(cell.column_preferred_constraint);
-        window.removeConstraint(cell.column_max_constraint);
-        window.removeConstraint(cell.row_begin_constraint);
-        window.removeConstraint(cell.row_preferred_constraint);
-        window.removeConstraint(cell.row_max_constraint);
-        window.removeConstraint(cell.base_constraint);
-    }
-
-    window.removeConstraint(leftConstraint);
-    window.removeConstraint(rightConstraint);
-    window.removeConstraint(bottomConstraint);
-    window.removeConstraint(topConstraint);
-    window.removeConstraint(columnSplitConstraint);
-    window.removeConstraint(rowSplitConstraint);
-
-    for (auto &&constraint: leftGridConstraints) {
-        window.removeConstraint(constraint);
-    }
-    for (auto &&constraint: rightGridConstraints) {
-        window.removeConstraint(constraint);
-    }
-    for (auto &&constraint: bottomGridConstraints) {
-        window.removeConstraint(constraint);
-    }
-    for (auto &&constraint: topGridConstraints) {
-        window.removeConstraint(constraint);
-    }
-
-    leftGridConstraints.clear();
-    rightGridConstraints.clear();
-    bottomGridConstraints.clear();
-    topGridConstraints.clear();
-
-    leftGridLines.clear();
-    rightGridLines.clear();
-    bottomGridLines.clear();
-    topGridLines.clear();
-}
-
-void GridWidget::calculateGridSize() noexcept
-{
-    tt_assume(mutex.is_locked_by_current_thread());
-
-    auto addresses = transform<std::vector<cell_address>>(cells, [](auto &item) { return item.address; });
-
-    std::tie(nrLeftColumns, nrRightColumns, nrBottomRows, nrTopRows) = cell_address_max(addresses.cbegin(), addresses.cend());
-}
-
-void GridWidget::addAllConstraints() noexcept
-{
-    tt_assume(mutex.is_locked_by_current_thread());
-
-    while (std::ssize(leftGridLines) < nrLeftColumns + 1) {
-        leftGridLines.emplace_back();
-    }
-    while (std::ssize(rightGridLines) < nrRightColumns + 1) {
-        rightGridLines.emplace_back();
-    }
-    while (std::ssize(bottomGridLines) < nrBottomRows + 1) {
-        bottomGridLines.emplace_back();
-    }
-    while (std::ssize(topGridLines) < nrTopRows + 1) {
-        topGridLines.emplace_back();
-    }
-    while (std::ssize(bottomBaseLines) < nrBottomRows) {
-        bottomBaseLines.emplace_back();
-    }
-    while (std::ssize(topBaseLines) < nrTopRows) {
-        topBaseLines.emplace_back();
-    }
-
-    for (int i = 0; i != nrLeftColumns; ++i) {
-        leftGridConstraints.push_back(window.addConstraint(leftGridLines[i] <= leftGridLines[i+1]));
-    }
-    for (int i = 0; i != nrRightColumns; ++i) {
-        rightGridConstraints.push_back(window.addConstraint(rightGridLines[i] >= rightGridLines[i+1]));
-    }
-    for (int i = 0; i != nrBottomRows; ++i) {
-        bottomGridConstraints.push_back(window.addConstraint(bottomGridLines[i] <= bottomGridLines[i+1]));
-    }
-    for (int i = 0; i != nrTopRows; ++i) {
-        topGridConstraints.push_back(window.addConstraint(topGridLines[i] >= topGridLines[i+1]));
-    }
-
-    leftConstraint = window.addConstraint(leftGridLines.front() == left - Theme::margin * 0.5f);
-    rightConstraint = window.addConstraint(rightGridLines.front() == right + Theme::margin * 0.5f);
-    bottomConstraint = window.addConstraint(bottomGridLines.front() == bottom - Theme::margin * 0.5f);
-    topConstraint = window.addConstraint(topGridLines.front() == top + Theme::margin * 0.5f);
-
-    if (joinColumns && nrLeftColumns + nrRightColumns != 0) {
-        columnSplitConstraint = window.addConstraint(leftGridLines.back() == rightGridLines.back());
-    } else {
-        columnSplitConstraint = window.addConstraint(leftGridLines.back() <= rightGridLines.back());
-    }
-
-    if (joinRows && nrBottomRows + nrTopRows != 0) {
-        rowSplitConstraint = window.addConstraint(bottomGridLines.back() == topGridLines.back());
-    } else {
-        rowSplitConstraint = window.addConstraint(bottomGridLines.back() <= topGridLines.back());
-    }
-
-    for (auto &&cell: cells) {
-        ttlet xbegin = begin<false>(cell.address);
-        ttlet xend = end<false>(cell.address);
-        ttlet ybegin = begin<true>(cell.address);
-        ttlet yend = end<true>(cell.address);
-        ttlet ybase = ybegin + get_alignment<true>(cell.address);
-
-        if (is_opposite<false>(cell.address)) {
-            cell.column_begin_constraint = window.addConstraint(cell.widget->right + Theme::margin * 0.5f == rightGridLines[xbegin]);
-            cell.column_preferred_constraint = window.addConstraint(cell.widget->left - Theme::margin * 0.5f == rightGridLines[xend], rhea::strength::medium());
-            cell.column_max_constraint = window.addConstraint(cell.widget->left - Theme::margin * 0.5f >= rightGridLines[xend]);
-        } else {
-            cell.column_begin_constraint = window.addConstraint(cell.widget->left - Theme::margin * 0.5f == leftGridLines[xbegin]);
-            cell.column_preferred_constraint = window.addConstraint(cell.widget->right + Theme::margin * 0.5f == leftGridLines[xend], rhea::strength::medium());
-            cell.column_max_constraint = window.addConstraint(cell.widget->right + Theme::margin * 0.5f <= leftGridLines[xend]);
-        }
-
-        if (is_opposite<true>(cell.address)) {
-            cell.row_begin_constraint = window.addConstraint(cell.widget->top + Theme::margin * 0.5f == topGridLines[ybegin]);
-            cell.row_preferred_constraint = window.addConstraint(cell.widget->bottom - Theme::margin * 0.5f == topGridLines[yend], rhea::strength::medium());
-            cell.row_max_constraint = window.addConstraint(cell.widget->bottom - Theme::margin * 0.5f >= topGridLines[yend]);
-
-            cell.base_constraint = window.addConstraint(cell.widget->base == topBaseLines[ybase]);
-        } else {
-            cell.row_begin_constraint = window.addConstraint(cell.widget->bottom - Theme::margin * 0.5f == bottomGridLines[ybegin]);
-            cell.row_preferred_constraint = window.addConstraint(cell.widget->top + Theme::margin * 0.5f == bottomGridLines[yend], rhea::strength::medium());
-            cell.row_max_constraint = window.addConstraint(cell.widget->top + Theme::margin * 0.5f <= bottomGridLines[yend]);
-
-            cell.base_constraint = window.addConstraint(cell.widget->base == bottomBaseLines[ybase]);
-        }
-    }
-}
-
-WidgetUpdateResult GridWidget::updateConstraints() noexcept {
     tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
     }
 
-    window.stopConstraintSolver();
-    removeAllConstraints();
-    calculateGridSize();
-    addAllConstraints();
-    window.startConstraintSolver();
+    calculateCellMinMaxSize(cells, rows, columns);
+
+    auto row_sum = std::accumulate(rows.cbegin(), rows.cend(), GridWidgetTick{0.0f, 0.0f});
+    auto column_sum = std::accumulate(columns.cbegin(), columns.cend(), GridWidgetTick{0.0f, 0.0f});
+
+    _size = {vec{column_sum.minimum, row_sum.minimum}, vec{column_sum.maximum, row_sum.maximum}};
+
     return WidgetUpdateResult::Self;
 }
 
+WidgetUpdateResult GridWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+{
+    tt_assume(mutex.is_locked_by_current_thread());
+    forceLayout |= requestLayout.exchange(false);
+
+    if (forceLayout) {
+        // We need to pass the sizes for each child before calling the ContainerWidget::updateLayout().
+        setCurrentSizeOfAxis(rectangle().width(), columns);
+        setCurrentSizeOfAxis(rectangle().height(), rows);
+
+        for(auto &&cell: cells) {
+            auto &&child = cell.widget;
+            ttlet child_lock = std::scoped_lock(child->mutex);
+
+            ttlet rectangle = cell.rectangle(columns, rows);
+            ttlet base_line = cell.base_line(rows);
+
+            child->set_window_rectangle_and_base_line_position(rectangle + window_rectangle().offset(), 0.0f);
+        }
+    }
+
+    return ContainerWidget::updateLayout(displayTimePoint, forceLayout);
 }
+
+} // namespace tt

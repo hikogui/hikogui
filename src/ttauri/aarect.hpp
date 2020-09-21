@@ -253,7 +253,7 @@ public:
      */
     [[nodiscard]] bool contains(vec const &rhs) const noexcept
     {
-        return (rhs.xyxy() >= v) == 0b0011;
+        return ge(rhs.xyxy(), v) == 0b0011;
     }
 
     /** Align a rectangle within another rectangle.
@@ -315,10 +315,10 @@ public:
     [[nodiscard]] friend bool overlaps(aarect const &lhs, aarect const &rhs) noexcept
     {
         ttlet rhs_swap = rhs.v.zwxy();
-        if (((lhs.v > rhs_swap) & 0x0011) != 0) {
+        if ((gt(lhs.v, rhs_swap) & 0x0011) != 0) {
             return false;
         }
-        if (((lhs.v < rhs_swap) & 0x1100) != 0) {
+        if ((lt(lhs.v, rhs_swap) & 0x1100) != 0) {
             return false;
         }
         return true;

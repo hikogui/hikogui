@@ -80,13 +80,11 @@ public:
             std::max({onLabelCell->preferredExtent().height(), offLabelCell->preferredExtent().height(), Theme::smallSize});
 
         ttlet minimumWidth = std::max({onLabelCell->preferredExtent().width(), offLabelCell->preferredExtent().width()}) +
-            Theme::smallSize * 2.0f + Theme::margin * 2.0f;
+            Theme::smallSize * 2.0f + Theme::margin;
 
-        window.stopConstraintSolver();
-        window.replaceConstraint(minimumWidthConstraint, width >= minimumWidth);
-        window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
-        window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
-        window.startConstraintSolver();
+        _size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+        _preferred_base_line = base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+
         return WidgetUpdateResult::Self;
     }
 
@@ -101,7 +99,7 @@ public:
 
         toggleRectangle = aarect{
             -0.5f, // Expand horizontally due to rounded shape
-            baseHeight() - Theme::smallSize * 0.5f,
+            base_line_position() - Theme::smallSize * 0.5f,
             Theme::smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
             Theme::smallSize};
 
@@ -162,7 +160,7 @@ public:
 
         ttlet &labelCell = *value ? onLabelCell : offLabelCell;
 
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line_position(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override

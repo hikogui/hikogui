@@ -464,10 +464,12 @@ bool Window_vulkan::readSurfaceExtent()
 
     tt_assume(widget);
     ttlet widget_lock = std::scoped_lock(widget->mutex);
+    ttlet widget_size = widget->size();
+    ttlet minimum_widget_size = widget_size.minimum();
+    ttlet maximum_widget_size = widget_size.maximum();
 
-    if (
-        numeric_cast<int>(swapchainImageExtent.width) < widget->minimumExtent().width() ||
-        numeric_cast<int>(swapchainImageExtent.height) < widget->minimumExtent().height()
+    if (numeric_cast<int>(swapchainImageExtent.width) < minimum_widget_size.width() ||
+        numeric_cast<int>(swapchainImageExtent.height) < minimum_widget_size.height()
     ) {
         // Due to vulkan surface being extended across the window decoration;
         // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
@@ -480,13 +482,12 @@ bool Window_vulkan::readSurfaceExtent()
         return false;
     }
 
-    if (
-        numeric_cast<int>(swapchainImageExtent.width) > widget->maximumExtent().width() ||
-        numeric_cast<int>(swapchainImageExtent.height) > widget->maximumExtent().height()
+    if (numeric_cast<int>(swapchainImageExtent.width) > maximum_widget_size.width() ||
+        numeric_cast<int>(swapchainImageExtent.height) > maximum_widget_size.height()
         ) {
         LOG_ERROR("Window too large to draw current=({}, {}), maximum=({})",
             swapchainImageExtent.width, swapchainImageExtent.height,
-            widget->maximumExtent()
+            maximum_widget_size
         );
         return false;
     }

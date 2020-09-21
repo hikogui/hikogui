@@ -52,7 +52,7 @@ add_library(ttauri STATIC)
 add_executable(ttauri_tests)
 add_subdirectory(src)
 
-target_link_libraries(ttauri PUBLIC fmt date date-tz ${Vulkan_LIBRARIES} VMA rhea RenderDoc)
+target_link_libraries(ttauri PUBLIC fmt date date-tz ${Vulkan_LIBRARIES} VMA RenderDoc)
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)

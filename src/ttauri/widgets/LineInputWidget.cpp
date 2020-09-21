@@ -12,16 +12,11 @@ namespace tt {
 using namespace std::literals;
 
 LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::u8string const label) noexcept :
-    Widget(window, parent),
-    label(std::move(label)),
-    field(theme->labelStyle),
-    shapedText()
+    Widget(window, parent), label(std::move(label)), field(theme->labelStyle), shapedText()
 {
 }
 
-LineInputWidget::~LineInputWidget()
-{
-}
+LineInputWidget::~LineInputWidget() {}
 
 WidgetUpdateResult LineInputWidget::updateConstraints() noexcept
 {
@@ -33,15 +28,15 @@ WidgetUpdateResult LineInputWidget::updateConstraints() noexcept
 
     ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
 
-    window.replaceConstraint(minimumWidthConstraint, width >= 100.0f);
-    window.replaceConstraint(maximumWidthConstraint, width <= 500.0f);
-    window.replaceConstraint(minimumHeightConstraint, height >= (Theme::smallSize + Theme::margin * 2.0f));
-    window.replaceConstraint(maximumHeightConstraint, height <= (Theme::smallSize + Theme::margin * 2.0f), rhea::strength::weak());
-    window.replaceConstraint(baseConstraint, base == middle);
+    _size = {
+        vec{100.0f, Theme::smallSize + Theme::margin * 2.0f},
+        vec{500.0f, Theme::smallSize + Theme::margin * 2.0f}
+    };
+    _preferred_base_line = base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
     return WidgetUpdateResult::Self;
 }
 
-WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
+WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
@@ -57,7 +52,7 @@ WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point dis
 
     // Set the clipping rectangle to within the border of the input field.
     // Add another border width, so glyphs do not touch the border.
-    textClippingRectangle = shrink(windowRectangle(), Theme::borderWidth * 2.0f);
+    textClippingRectangle = shrink(window_rectangle(), Theme::borderWidth * 2.0f);
 
     field.setStyleOfAll(theme->labelStyle);
 
@@ -80,15 +75,9 @@ void LineInputWidget::dragSelect() noexcept
 
     ttlet mouseInTextPosition = textInvTranslate * dragSelectPosition;
     switch (dragClickCount) {
-    case 1:
-        field.dragCursorAtCoordinate(mouseInTextPosition);
-        break;
-    case 2:
-        field.dragWordAtCoordinate(mouseInTextPosition);
-        break;
-    case 3:
-        field.dragParagraphAtCoordinate(mouseInTextPosition);
-        break;
+    case 1: field.dragCursorAtCoordinate(mouseInTextPosition); break;
+    case 2: field.dragWordAtCoordinate(mouseInTextPosition); break;
+    case 3: field.dragParagraphAtCoordinate(mouseInTextPosition); break;
     default:;
     }
 }
@@ -108,7 +97,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     context.clippingRectangle = textClippingRectangle;
 
     if (dragScrollSpeedX != 0.0f) {
-        textScrollX += dragScrollSpeedX * (1.0f/60.0f);
+        textScrollX += dragScrollSpeedX * (1.0f / 60.0f);
         dragSelect();
 
         // Once we are scrolling, don't stop.
@@ -140,7 +129,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     context.transform = drawContext.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
 
     selectionRectangles = field.selectionRectangles();
-    for (ttlet selectionRectangle: selectionRectangles) {
+    for (ttlet selectionRectangle : selectionRectangles) {
         context.fillColor = theme->textSelectColor;
         context.drawFilledQuad(selectionRectangle);
     }
@@ -168,7 +157,6 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     Widget::draw(drawContext, displayTimePoint);
 }
 
-
 void LineInputWidget::handleCommand(command command) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
@@ -179,17 +167,10 @@ void LineInputWidget::handleCommand(command command) noexcept
     }
 
     switch (command) {
-    case command::text_edit_paste:
-        field.handlePaste(window.getTextFromClipboard());
-        break;
-    case command::text_edit_copy:
-        window.setTextOnClipboard(field.handleCopy());
-        break;
-    case command::text_edit_cut:
-        window.setTextOnClipboard(field.handleCut());
-        break;
-    default:
-        field.handleCommand(command);
+    case command::text_edit_paste: field.handlePaste(window.getTextFromClipboard()); break;
+    case command::text_edit_copy: window.setTextOnClipboard(field.handleCopy()); break;
+    case command::text_edit_cut: window.setTextOnClipboard(field.handleCut()); break;
+    default: field.handleCommand(command);
     }
 
     requestLayout = true;
@@ -209,13 +190,9 @@ void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
     }
 
     switch (event.type) {
-    case KeyboardEvent::Type::Grapheme:
-        field.insertGrapheme(event.grapheme);
-        break;
+    case KeyboardEvent::Type::Grapheme: field.insertGrapheme(event.grapheme); break;
 
-    case KeyboardEvent::Type::PartialGrapheme:
-        field.insertPartialGrapheme(event.grapheme);
-        break;
+    case KeyboardEvent::Type::PartialGrapheme: field.insertPartialGrapheme(event.grapheme); break;
 
     default:;
     }
@@ -250,12 +227,8 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
                     field.setCursorAtCoordinate(mouseInTextPosition);
                 }
                 break;
-            case 2:
-                field.selectWordAtCoordinate(mouseInTextPosition);
-                break;
-            case 3:
-                field.selectParagraphAtCoordinate(mouseInTextPosition);
-                break;
+            case 2: field.selectWordAtCoordinate(mouseInTextPosition); break;
+            case 3: field.selectParagraphAtCoordinate(mouseInTextPosition); break;
             default:;
             }
         }
@@ -300,4 +273,4 @@ HitBox LineInputWidget::hitBoxTest(vec position) const noexcept
     }
 }
 
-}
+} // namespace tt

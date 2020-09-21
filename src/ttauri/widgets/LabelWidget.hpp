@@ -54,10 +54,7 @@ public:
         }
 
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        window.stopConstraintSolver();
-        window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width());
-        window.replaceConstraint(minimumHeightConstraint, height >= labelCell->preferredExtent().height());
-        window.startConstraintSolver();
+        _size = interval_vec2::make_minimum(labelCell->preferredExtent());
         return WidgetUpdateResult::Self;
     }
 
@@ -68,7 +65,7 @@ public:
             drawContext.color = theme->labelStyle.color;
         }
 
-        labelCell->draw(drawContext, rectangle(), alignment, baseHeight(), true);
+        labelCell->draw(drawContext, rectangle(), alignment, base_line_position(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {

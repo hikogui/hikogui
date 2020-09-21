@@ -33,6 +33,9 @@ public:
         [[maybe_unused]] ttlet icon_cbid = this->icon.add_callback([this](auto...) {
             requestConstraint = true;
         });
+
+        // Toolbar buttons hug the toolbar and neighbour widgets.
+        margin = 0.0f;
     }
 
     ToolbarButtonWidget(
@@ -84,10 +87,7 @@ public:
 
         icon_cell = (*icon).makeCell();
 
-        window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth);
-        window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth, rhea::strength::weak());
-        window.replaceConstraint(minimumHeightConstraint, height >= Theme::toolbarHeight);
-        window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
+        _size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};        
         return WidgetUpdateResult::Self;
     }
 

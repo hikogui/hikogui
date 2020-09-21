@@ -478,13 +478,16 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_GETMINMAXINFO: {
         tt_assume(widget);
         ttlet widget_lock = std::scoped_lock(widget->mutex);
+        ttlet widget_size = widget->size();
+        ttlet minimum_widget_size = widget_size.minimum();
+        ttlet maximum_widget_size = widget_size.maximum();
         ttlet minmaxinfo = to_ptr<MINMAXINFO>(lParam);
-        minmaxinfo->ptMaxSize.x = numeric_cast<long>(widget->maximumExtent().width());
-        minmaxinfo->ptMaxSize.y = numeric_cast<long>(widget->maximumExtent().height());
-        minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(widget->minimumExtent().width());
-        minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(widget->minimumExtent().height());
-        minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(widget->maximumExtent().width());
-        minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(widget->maximumExtent().height());
+        minmaxinfo->ptMaxSize.x = numeric_cast<long>(maximum_widget_size.width());
+        minmaxinfo->ptMaxSize.y = numeric_cast<long>(maximum_widget_size.height());
+        minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(minimum_widget_size.width());
+        minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(minimum_widget_size.height());
+        minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(maximum_widget_size.width());
+        minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(maximum_widget_size.height());
         } break;
 
     case WM_UNICHAR: {

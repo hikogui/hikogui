@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Widget.hpp"
+#include "WindowWidget.hpp"
 #include "../cells/TextCell.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
@@ -105,22 +106,13 @@ public:
     }
 
     template<typename... Args>
-    SelectionWidget(
-        Window &window,
-        Widget *parent,
-        value_type const &value,
-        l10n const &fmt,
-        Args const &... args) noexcept :
+    SelectionWidget(Window &window, Widget *parent, value_type const &value, l10n const &fmt, Args const &... args) noexcept :
         SelectionWidget(window, parent, value, option_list_type{}, format(fmt, args...))
     {
     }
 
     template<typename... Args>
-    SelectionWidget(
-        Window &window,
-        Widget *parent,
-        l10n const &fmt,
-        Args const &... args) noexcept :
+    SelectionWidget(Window &window, Widget *parent, l10n const &fmt, Args const &... args) noexcept :
         SelectionWidget(window, parent, value_type{}, option_list_type{}, format(fmt, args...))
     {
     }
@@ -154,10 +146,10 @@ public:
             preferredHeight = Theme::smallSize;
         }
 
-        window.replaceConstraint(minimumWidthConstraint, width >= preferredWidth + Theme::smallSize + Theme::margin * 2.0f);
-        window.replaceConstraint(minimumHeightConstraint, height >= preferredHeight + Theme::margin * 2.0f);
+        _size = interval_vec2::make_minimum(
+            Theme::smallSize + preferredWidth + Theme::margin * 2.0f, preferredHeight + Theme::margin * 2.0f);
+        _preferred_base_line = base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
 
-        window.replaceConstraint(baseConstraint, base == middle);
         return WidgetUpdateResult::Self;
     }
 
@@ -194,13 +186,13 @@ public:
         }
 
         // The window height, excluding the top window decoration.
-        ttlet windowHeight = window.widget->extent.height() - Theme::toolbarHeight;
+        ttlet windowHeight = window.widget->rectangle().height() - Theme::toolbarHeight;
 
         // Calculate overlay dimensions and position.
         ttlet overlayWidth = option_cache_listWidth;
-        ttlet overlayWindowX = windowRectangle().x() + Theme::smallSize;
+        ttlet overlayWindowX = window_rectangle().x() + Theme::smallSize;
         ttlet overlayHeight = std::min(option_cache_list_height, windowHeight);
-        auto overlayWindowY = windowRectangle().y() - selectedOptionY;
+        auto overlayWindowY = window_rectangle().y() - selectedOptionY;
 
         // Adjust overlay to fit inside the window, below the top window decoration.
         overlayWindowY = std::clamp(overlayWindowY, 0.0f, windowHeight - overlayHeight);
@@ -210,7 +202,7 @@ public:
         // The overlayRectangle are in the coordinate system of the current widget, so it will
         // extent beyond the current widget.
         overlayRectangle =
-            aarect{overlayWindowX - windowRectangle().x(), overlayWindowY - windowRectangle().y(), overlayWidth, overlayHeight};
+            aarect{overlayWindowX - window_rectangle().x(), overlayWindowY - window_rectangle().y(), overlayWidth, overlayHeight};
 
         // The label is located to the right of the selection box icon.
         optionRectangle = aarect{optionX, rectangle().height() - optionHeight - Theme::margin, optionWidth, optionHeight};
@@ -320,11 +312,11 @@ public:
         if (i != option_cache_list.cend()) {
             drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
             drawContext.color = *enabled ? theme->labelStyle.color : drawContext.color;
-            i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, baseHeight(), true);
+            i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line_position(), true);
         } else {
             drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
             drawContext.color = *enabled ? theme->placeholderLabelStyle.color : drawContext.color;
-            labelCell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, baseHeight(), true);
+            labelCell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line_position(), true);
         }
     }
 

@@ -10,7 +10,7 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 
     if (std::ssize(children) == 0) {
         // When there are no children, relative addresses need to be at the origin.
-        current_address = initialize(address);
+        current_address = cell_address{};
     } else {
         current_address *= address;
     }
@@ -61,7 +61,7 @@ void ContainerWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     for (auto &child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
 
-        childContext.clippingRectangle = child->clippingRectangle();
+        childContext.clippingRectangle = child->clipping_rectangle();
         childContext.transform = child->toWindowTransform;
 
         // The default fill and border colors.

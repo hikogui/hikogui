@@ -7,17 +7,11 @@
 
 namespace tt {
 
-enum class VerticalAlignment {
-    Top,
-    Middle,
-    Bottom
-};
+enum class arrangement : bool { column, row };
 
-enum class HorizontalAlignment {
-    Left,
-    Center,
-    Right
-};
+enum class VerticalAlignment { Top, Middle, Bottom };
+
+enum class HorizontalAlignment { Left, Center, Right };
 
 enum class Alignment {
     TopLeft,
@@ -31,10 +25,47 @@ enum class Alignment {
     BottomRight
 };
 
-enum class LineJoinStyle {
-    Bevel,
-    Miter,
-    Rounded
+enum class LineJoinStyle { Bevel, Miter, Rounded };
+
+class base_line {
+    VerticalAlignment alignment;
+    float offset;
+    float priority;
+
+public:
+    /* Construct a base-line.
+     * @param alignment Start position of the base line.
+     * @param offset Number of pt above the start position.
+     * @param priority Higher values will have priority over lower values.
+     */
+    constexpr base_line(VerticalAlignment alignment, float offset = 0.0f, float priority = 100.0f) noexcept :
+        alignment(alignment), offset(offset), priority(priority)
+    {
+    }
+
+    /** Constructs a low-priority base line in the middle.
+     */
+    constexpr base_line() noexcept : base_line(VerticalAlignment::Middle, 0.0f, 0.0f) {}
+
+    constexpr float position(float bottom, float top) const noexcept
+    {
+        switch (alignment) {
+        case VerticalAlignment::Bottom: return bottom + offset;
+        case VerticalAlignment::Top: return top + offset;
+        case VerticalAlignment::Middle: return (bottom + top) * 0.5f + offset;
+        }
+        tt_no_default;
+    }
+
+    [[nodiscard]] auto operator==(base_line const &rhs) const noexcept
+    {
+        return this->priority == rhs.priority;
+    }
+
+    [[nodiscard]] auto operator<=>(base_line const &rhs) const noexcept
+    {
+        return this->priority <=> rhs.priority;
+    }
 };
 
 inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs) noexcept
@@ -74,22 +105,13 @@ inline bool operator==(Alignment lhs, HorizontalAlignment rhs) noexcept
 {
     switch (rhs) {
     case HorizontalAlignment::Left:
-        return
-            lhs == Alignment::TopLeft ||
-            lhs == Alignment::MiddleLeft ||
-            lhs == Alignment::BottomLeft;
+        return lhs == Alignment::TopLeft || lhs == Alignment::MiddleLeft || lhs == Alignment::BottomLeft;
 
     case HorizontalAlignment::Center:
-        return
-            lhs == Alignment::TopCenter ||
-            lhs == Alignment::MiddleCenter ||
-            lhs == Alignment::BottomCenter;
+        return lhs == Alignment::TopCenter || lhs == Alignment::MiddleCenter || lhs == Alignment::BottomCenter;
 
     case HorizontalAlignment::Right:
-        return
-            lhs == Alignment::TopRight ||
-            lhs == Alignment::MiddleRight ||
-            lhs == Alignment::BottomRight;
+        return lhs == Alignment::TopRight || lhs == Alignment::MiddleRight || lhs == Alignment::BottomRight;
 
     default: tt_no_default;
     }
@@ -98,23 +120,13 @@ inline bool operator==(Alignment lhs, HorizontalAlignment rhs) noexcept
 inline bool operator==(Alignment lhs, VerticalAlignment rhs) noexcept
 {
     switch (rhs) {
-    case VerticalAlignment::Top:
-        return
-            lhs == Alignment::TopLeft ||
-            lhs == Alignment::TopCenter ||
-            lhs == Alignment::TopRight;
+    case VerticalAlignment::Top: return lhs == Alignment::TopLeft || lhs == Alignment::TopCenter || lhs == Alignment::TopRight;
 
     case VerticalAlignment::Middle:
-        return
-            lhs == Alignment::MiddleLeft ||
-            lhs == Alignment::MiddleCenter ||
-            lhs == Alignment::MiddleRight;
+        return lhs == Alignment::MiddleLeft || lhs == Alignment::MiddleCenter || lhs == Alignment::MiddleRight;
 
     case VerticalAlignment::Bottom:
-        return
-            lhs == Alignment::BottomLeft ||
-            lhs == Alignment::BottomCenter ||
-            lhs == Alignment::BottomRight;
+        return lhs == Alignment::BottomLeft || lhs == Alignment::BottomCenter || lhs == Alignment::BottomRight;
 
     default: tt_no_default;
     }
@@ -130,4 +142,4 @@ inline bool operator!=(Alignment lhs, VerticalAlignment rhs) noexcept
     return !(lhs == rhs);
 }
 
-}
+} // namespace tt

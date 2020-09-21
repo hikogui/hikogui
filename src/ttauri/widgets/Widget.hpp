@@ -22,7 +22,7 @@
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../unfair_recursive_mutex.hpp"
-#include <rhea/constraint.hpp>
+#include "../interval_vec2.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
@@ -123,12 +123,6 @@ protected:
      */
     Widget *parent;
 
-    rhea::constraint minimumWidthConstraint;
-    rhea::constraint minimumHeightConstraint;
-    rhea::constraint maximumWidthConstraint;
-    rhea::constraint maximumHeightConstraint;
-    rhea::constraint baseConstraint;
-
 public:
     /** Convenient reference to the Window.
      */
@@ -144,25 +138,15 @@ public:
      */
     bool focus = false;
 
-    /** Location of the frame compared to the window.
-     * Thread-safety: the box is not modified by the class.
-     */
-    rhea::variable const left;
-    rhea::variable const bottom;
-    rhea::variable const width;
-    rhea::variable const height;
-    rhea::variable const base;
-
-    rhea::linear_expression const right = left + width;
-    rhea::linear_expression const centre = left + width * 0.5;
-    rhea::linear_expression const top = bottom + height;
-    rhea::linear_expression const middle = bottom + height * 0.5;
-
     float elevation;
 
-    vec extent;
-    vec offsetFromParent;
-    vec offsetFromWindow;
+    /** The margin outside the widget.
+     */
+    float margin = Theme::margin;
+    interval_vec2 _size;
+    base_line _preferred_base_line = base_line{};
+    aarect _window_rectangle;
+    float _window_base_line_position;
 
     /** Transformation matrix from window coords to local coords.
      */
@@ -171,6 +155,10 @@ public:
     /** Transformation matrix from local coords to window coords.
      */
     mat::T toWindowTransform;
+
+    /** Offset to apply to mouse position.
+     */
+    vec offsetFromParent;
 
     mutable std::atomic<bool> requestConstraint = true;
     mutable std::atomic<bool> requestLayout = true;
@@ -190,10 +178,45 @@ public:
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
 
-    /** Create a window rectangle from left, bottom, width and height
-     * Thread-safety: locks window.widgetSolverMutex
+    /** Get the minimum size of the widget.
+     * Thread safety: requires external lock on `mutex`.
      */
-    aarect makeWindowRectangle() const noexcept;
+    [[nodiscard]] interval_vec2 size() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _size;
+    }
+
+    [[nodiscard]] base_line preferred_base_line() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _preferred_base_line;
+    }
+
+    /** Get the rectangle in window coordinates.
+     * Thread safety: requires external lock on `mutex`.
+     */
+    [[nodiscard]] aarect window_rectangle() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _window_rectangle;
+    }
+
+    /** Get the clipping rectangle in window coordinates
+     * Thread safety: requires external lock on `mutex`.
+     */
+    [[nodiscard]] aarect clipping_rectangle() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return expand(_window_rectangle, margin);
+    }
+
+    void set_window_rectangle_and_base_line_position(aarect window_rectangle, float window_base_line_position) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        _window_rectangle = window_rectangle;
+        _window_base_line_position = window_base_line_position;
+    }
 
     /** Get the rectangle in local coordinates.
      * Thread safety: requires external lock on `mutex`.
@@ -201,31 +224,16 @@ public:
     [[nodiscard]] aarect rectangle() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-
-        return aarect{extent};
+        return aarect{_window_rectangle.extent()};
     }
 
-    /** Get the rectangle in window coordinates.
+    /** Get the base-line in local coordinates.
      * Thread safety: requires external lock on `mutex`.
      */
-    [[nodiscard]] aarect windowRectangle() const noexcept
+    [[nodiscard]] float base_line_position() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-
-        return {vec::origin() + offsetFromWindow, vec{extent}};
-    }
-
-    [[nodiscard]] float baseHeight() const noexcept;
-
-    /** Get the clipping-rectangle in window coordinates.
-     *
-     * Thread safety: requires external lock on `mutex`.
-     */
-    [[nodiscard]] aarect clippingRectangle() const noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        return expand(windowRectangle(), Theme::margin);
+        return _window_base_line_position - _window_rectangle.y();
     }
 
     [[nodiscard]] GUIDevice *device() const noexcept;

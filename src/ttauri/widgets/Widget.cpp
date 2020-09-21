@@ -16,15 +16,15 @@ Widget::Widget(Window &_window, Widget *_parent) noexcept :
     [[maybe_unused]] ttlet enabled_cbid = enabled.add_callback([this](auto...){
         window.requestRedraw = true;
     });
+
+    _size = {
+        vec{0.0f, 0.0f},
+        vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}
+    };
 }
 
 Widget::~Widget()
 {
-    window.removeConstraint(minimumWidthConstraint);
-    window.removeConstraint(minimumHeightConstraint);
-    window.removeConstraint(maximumWidthConstraint);
-    window.removeConstraint(maximumHeightConstraint);
-    window.removeConstraint(baseConstraint);
 }
 
 GUIDevice *Widget::device() const noexcept
@@ -34,10 +34,6 @@ GUIDevice *Widget::device() const noexcept
     auto device = window.device;
     tt_assert(device);
     return device;
-}
-
-[[nodiscard]] float Widget::baseHeight() const noexcept {
-    return numeric_cast<float>(base.value() - bottom.value());
 }
 
 WidgetUpdateResult Widget::updateConstraints() noexcept
@@ -56,22 +52,16 @@ WidgetUpdateResult Widget::updateLayout(hires_utc_clock::time_point displayTimeP
     auto needLayout = forceLayout;
 
     needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
-
-    auto newExtent = round(vec{width.value(), height.value()});
-    needLayout |= newExtent != extent;
-    extent = newExtent;
-
-    auto newOffsetFromWindow = round(vec{left.value(), bottom.value()});
-    needLayout |= newOffsetFromWindow != offsetFromWindow;
-    offsetFromWindow = newOffsetFromWindow;
     
     if (needLayout) {
-        offsetFromParent = parent ?
-            offsetFromWindow - parent->offsetFromWindow:
-            offsetFromWindow;
-        
-        toWindowTransform = mat::T(offsetFromWindow.x(), offsetFromWindow.y(), z());
+        toWindowTransform = mat::T(_window_rectangle.x(), _window_rectangle.y(), z());
         fromWindowTransform = ~toWindowTransform;
+
+        if (parent) {
+            offsetFromParent = _window_rectangle.p0() - parent->window_rectangle().p0();
+        } else {
+            offsetFromParent = _window_rectangle.p0();
+        }
     }
 
     return needLayout ? WidgetUpdateResult::Self : WidgetUpdateResult::Nothing;

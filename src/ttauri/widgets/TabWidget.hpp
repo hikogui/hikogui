@@ -39,41 +39,32 @@ public:
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs));
 
         auto has_constrainted = Widget::updateConstraints();
-        // Recurse into the selected widget.
-        if (selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs)) {
-            auto &tab = tabs[selected_tab_index];
-            auto &child = tab.widget;
 
-            ttlet child_lock = std::scoped_lock(child->mutex);
-            has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
-        }
+        // Recurse into the selected widget.
+        auto &tab = tabs[selected_tab_index];
+        auto &child = tab.widget;
+        ttlet child_lock = std::scoped_lock(child->mutex);
+        has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
 
         if (has_constrainted >= WidgetUpdateResult::Self) {
-            auto tab_text_width = Theme::iconSize;
-            auto tab_text_height = 0.0f;
+            ttlet tab_text_width = Theme::iconSize;
+            ttlet tab_text_height = 0.0f;
             for (auto &&tab : tabs) {
                 tab.image_cell = tab.image.makeCell();
                 tab.text_cell = std::make_unique<TextCell>(*tab.text, theme->labelStyle);
                 tab_text_width = std::max(tab_text_width, tab.text_cell->preferredExtent().width());
                 tab_text_height = std::max(tab_text_height, tab.text_cell->preferredExtent().height());
             }
-            auto tab_width = tab_text_width + Theme::margin * 2.0f;
-            tab_height = tab_text_height + Theme::iconSize + Theme::margin * 3.0f;
+            ttlet tab_width = tab_text_width + Theme::margin * 2.0f;
+            ttlet tab_height = tab_text_height + Theme::iconSize + Theme::margin * 3.0f;
 
-            window.replaceConstraint(minimumWidthConstraint, width >= tab_width * std::ssize(tabs));
-            window.replaceConstraint(minimumHeightConstraint, height >= tab_height);
+            ttlet header_width = std::ssize(tabs) * tab_width;
+            header_height = tab_height;
 
-            if (selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs)) {
-                auto &tab = tabs[selected_tab_index];
-                auto &child = tab.widget;
-
-                window.replaceConstraint(left_constraint, left == child->left);
-                window.replaceConstraint(right_constraint, right == child->right);
-                window.replaceConstraint(bottom_constraint, bottom == child->bottom);
-                window.replaceConstraint(top_constraint, top - tab_height == child->top);
-            }
+            _size = merge(child->size() + vec{0.0f, header_height}, vec{header_width, 0.0f});
         }
 
         return has_constrainted;
@@ -83,23 +74,27 @@ public:
     updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
-        if (selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs)) {
-            auto &tab = tabs[selected_tab_index];
-            auto &child = tab.widget;
+        tt_assume(selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs));
 
-            ttlet child_lock = std::scoped_lock(child->mutex);
-            has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
-        }
+        content_rectangle = aarect{0.0f, 0.0f, rectangle().width(), rectangle().height() - header_height};
+        header_rectangle = aarect{0.0f, content_rectangle.height(), rectangle().width(), header_height};
+
+        auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
+        auto &tab = tabs[selected_tab_index];
+        auto &child = tab.widget;
+
+        ttlet child_lock = std::scoped_lock(child->mutex);
+        child->set_window_rectangle_and_base_line_position(content_rectangle + window_rectangle().offset(), base_line{});
+        has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
 
         if (has_laid_out >= WidgetUpdateResult::Self) {
             if (std::ssize(tabs) != 0) {
                 // Spread the tabs over the width of container.
-                auto tab_width = std::floor(rectangle().width() / std::ssize(tabs));
+                auto tab_width = std::floor(header_rectangle.width() / std::ssize(tabs));
 
                 auto x = 0.0f;
                 for (auto &tab : tabs) {
-                    tab.tab_rect = aarect{x, rectangle().height() - tab_height, tab_width, tab_height};
+                    tab.tab_rect = aarect{header_rectangle.x() + x, header_rectangle.y(), tab_width, header_rectangle.height()};
                     auto tab_inner_rect = shrink(tab.tab_rect, Theme::margin);
 
                     auto icon_size = aarect{Theme::iconSize, Theme::iconSize};
@@ -240,12 +235,10 @@ public:
 protected:
     std::vector<TabEntry> tabs;
     ssize_t selected_tab_index = 0;
-    float tab_height = 0.0f;
 
-    rhea::constraint left_constraint;
-    rhea::constraint right_constraint;
-    rhea::constraint top_constraint;
-    rhea::constraint bottom_constraint;
+    float header_height;
+    aarect header_rectangle;
+    aarect content_rectangle;
 };
 
 } // namespace tt

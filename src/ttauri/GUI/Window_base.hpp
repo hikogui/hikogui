@@ -21,7 +21,6 @@
 #include "../cpu_utc_clock.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include "../cell_address.hpp"
-#include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -178,58 +177,6 @@ public:
     template<typename T, cell_address CellAddress, typename... Args>
     T &makeToolbarWidget(Args &&... args);
 
-    int64_t stopConstraintSolverDepth = 0;
-    void stopConstraintSolver() noexcept {
-        ttlet lock = std::scoped_lock(widgetSolverMutex);
-        tt_assume(stopConstraintSolverDepth >= 0);
-        if (++stopConstraintSolverDepth == 1) {
-            widgetSolver.set_autosolve(false);
-        }
-    }
-
-    void startConstraintSolver() noexcept {
-        ttlet lock = std::scoped_lock(widgetSolverMutex);
-        tt_assume(stopConstraintSolverDepth > 0);
-        if (--stopConstraintSolverDepth == 0) {
-            widgetSolver.set_autosolve(true);
-        }
-    }
-
-    rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept;
-
-    rhea::constraint addConstraint(
-        rhea::linear_equation const& equation,
-        rhea::strength const &strength = rhea::strength::required(),
-        double weight = 1.0
-    ) noexcept;
-
-    rhea::constraint addConstraint(
-        rhea::linear_inequality const& equation,
-        rhea::strength const &strength = rhea::strength::required(),
-        double weight = 1.0
-    ) noexcept;
-
-    void removeConstraint(rhea::constraint &constraint) noexcept;
-
-    void replaceConstraint(
-        rhea::constraint &oldConstraint,
-        rhea::constraint const &newConstraint
-    ) noexcept;
-
-    void replaceConstraint(
-        rhea::constraint &oldConstraint,
-        rhea::linear_equation const &newEquation,
-        rhea::strength const &strength = rhea::strength::required(),
-        double weight = 1.0
-    ) noexcept;
-
-    void replaceConstraint(
-        rhea::constraint &oldConstraint,
-        rhea::linear_inequality const &newEquation,
-        rhea::strength const &strength = rhea::strength::required(),
-        double weight = 1.0
-    ) noexcept;
-
     virtual void setCursor(Cursor cursor) = 0;
 
     virtual void closeWindow() = 0;
@@ -311,21 +258,8 @@ protected:
      */
     HitBox hitBoxTest(vec position) const noexcept;
 
-private:
-    //! This solver determines size and position of all widgets in this window.
-    rhea::simplex_solver widgetSolver;
-
-    /** Constraints have been updated.
-    */
-    bool constraintsUpdated = false;
-
 protected:
     mutable unfair_recursive_mutex mutex;
-
-    /** Mutex for access to rhea objects registered with the widgetSolver.
-     * Widgets will need to lock this mutex when reading variables or equations.
-     */
-    unfair_mutex widgetSolverMutex;
 };
 
 }

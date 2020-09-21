@@ -87,13 +87,11 @@ public:
             {trueLabelCell->preferredExtent().width(),
              falseLabelCell->preferredExtent().width(),
              otherLabelCell->preferredExtent().width()});
-        ttlet minimumWidth = minimumWidthOfLabels + Theme::smallSize + Theme::margin * 2.0f;
+        ttlet minimumWidth = Theme::smallSize + Theme::margin + minimumWidthOfLabels;
 
-        window.stopConstraintSolver();
-        window.replaceConstraint(minimumWidthConstraint, width >= minimumWidth);
-        window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
-        window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
-        window.startConstraintSolver();
+        _size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+        _preferred_base_line = base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+
         return WidgetUpdateResult::Self;
     }
 
@@ -106,7 +104,7 @@ public:
             return result;
         }
 
-        checkboxRectangle = aarect{0.0f, baseHeight() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
+        checkboxRectangle = aarect{0.0f, base_line_position() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
 
         ttlet labelX = checkboxRectangle.p3().x() + Theme::margin;
         labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
@@ -159,7 +157,7 @@ public:
 
         ttlet &labelCell = value == TrueValue ? trueLabelCell : value == FalseValue ? falseLabelCell : otherLabelCell;
 
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line_position(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override

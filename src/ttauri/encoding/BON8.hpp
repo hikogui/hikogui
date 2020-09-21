@@ -348,22 +348,22 @@ public:
      */
     template<typename Key, typename Value>
     void add(std::map<Key,Value> const &items) {
-        using item_type = std::map<Key,Value>::value_type;
+        using item_type = typename std::map<Key,Value>::value_type;
 
         open_string = false;
-        if (std::ssize(value) == 0) {
+        if (std::ssize(items) == 0) {
             output += static_cast<std::byte>(BON8_code_object_empty);
         } else {
             // Keys must be ordered lexically.
             auto sorted_items = std::vector<std::reference_wrapper<item_type>>{items.begin(), items.end()};
-            std::sort(sorted_items.begin(), sorted_value.end(), [](item_type const &a, item_type const &b) {
+            std::sort(sorted_items.begin(), sorted_items.end(), [](item_type const &a, item_type const &b) {
                 return
                     static_cast<std::u8string_view>(a.first) <
                     static_cast<std::u8string_view>(b.first);
             });
 
             output += static_cast<std::byte>(BON8_code_object);
-            for (item_type const &item: sorted_value) {
+            for (item_type const &item: sorted_items) {
                 add(static_cast<std::u8string_view>(item.first));
                 add(item.second);
             }

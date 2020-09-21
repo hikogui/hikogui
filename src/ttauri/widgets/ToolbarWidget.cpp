@@ -14,7 +14,6 @@ using namespace std;
 ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
     GridWidget(window, parent)
 {
-    joinColumns = false;
 }
 
 [[nodiscard]] WidgetUpdateResult ToolbarWidget::updateConstraints() noexcept
@@ -25,7 +24,6 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
         return result;
     }
 
-    window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
     return WidgetUpdateResult::Self;
 }
 

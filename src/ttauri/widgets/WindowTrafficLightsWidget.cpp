@@ -10,10 +10,7 @@
 
 namespace tt {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
-    Widget(window, parent)
-{
-}
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept : Widget(window, parent) {}
 
 [[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateConstraints() noexcept
 {
@@ -24,18 +21,10 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
     }
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth * 3.0f);
-        window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth * 3.0f, rhea::strength::weak());
-
-        window.replaceConstraint(minimumHeightConstraint, height >= Theme::toolbarHeight);
-        window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
+        _size = {Theme::toolbarDecorationButtonWidth * 3.0f, Theme::toolbarHeight};
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        window.replaceConstraint(minimumWidthConstraint, width >= DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING);
-        window.replaceConstraint(maximumWidthConstraint, width <= DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING, rhea::strength::weak());
-
-        window.replaceConstraint(minimumHeightConstraint, height >= DIAMETER + 2.0 * MARGIN);
-        window.replaceConstraint(maximumHeightConstraint, height <= DIAMETER + 2.0 * MARGIN, rhea::strength::weak());
+        _size = {DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING, DIAMETER + 2.0 * MARGIN};
 
     } else {
         tt_no_default;
@@ -43,7 +32,8 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
     return WidgetUpdateResult::Self;
 }
 
-[[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+[[nodiscard]] WidgetUpdateResult
+WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
@@ -51,37 +41,25 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
         return result;
     }
 
+    auto extent = rectangle().extent();
+
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        closeRectangle = aarect{
-            vec::point(extent.width() * 2.0f/3.0f, 0.0f),
-            vec{extent.width() * 1.0f/3.0f, extent.height()}
-        };
+        closeRectangle =
+            aarect{vec::point(extent.width() * 2.0f / 3.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-        maximizeRectangle = aarect{
-            vec::point(extent.width() * 1.0f/3.0f, 0.0f),
-            vec{extent.width() * 1.0f/3.0f, extent.height()}
-        };
+        maximizeRectangle =
+            aarect{vec::point(extent.width() * 1.0f / 3.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-        minimizeRectangle = aarect{
-            vec::point(0.0f, 0.0f),
-            vec{extent.width() * 1.0f/3.0f, extent.height()}
-        };
+        minimizeRectangle = aarect{vec::point(0.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        closeRectangle = aarect{
-            vec::point(MARGIN, extent.height() / 2.0f - RADIUS),
-            {DIAMETER, DIAMETER}
-        };
+        closeRectangle = aarect{vec::point(MARGIN, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
 
-        minimizeRectangle = aarect{
-            vec::point(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
-            {DIAMETER, DIAMETER}
-        };
+        minimizeRectangle =
+            aarect{vec::point(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
 
         maximizeRectangle = aarect{
-            vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
-            {DIAMETER, DIAMETER}
-        };
+            vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
     } else {
         tt_no_default;
     }
@@ -244,14 +222,9 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
             window.minimizeWindow();
         } else if (pressedMaximize) {
             switch (window.size) {
-            case Window::Size::Normal:
-                window.maximizeWindow();
-                break;
-            case Window::Size::Maximized:
-                window.normalizeWindow();
-                break;
-            default:
-                tt_no_default;
+            case Window::Size::Normal: window.maximizeWindow(); break;
+            case Window::Size::Maximized: window.normalizeWindow(); break;
+            default: tt_no_default;
             }
         }
     }
@@ -269,25 +242,20 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
     stateHasChanged |= compare_then_assign(pressedMinimize, event.down.leftButton && hoverMinimize);
     stateHasChanged |= compare_then_assign(pressedMaximize, event.down.leftButton && hoverMaximize);
 
-
     if (stateHasChanged) {
         window.requestRedraw = true;
     }
-
 }
 
 HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (closeRectangle.contains(position) ||
-        minimizeRectangle.contains(position) ||
-        maximizeRectangle.contains(position)
-    ) {
+    if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
         return HitBox{this, elevation, HitBox::Type::Button};
     } else {
         return {};
     }
 }
 
-}
+} // namespace tt

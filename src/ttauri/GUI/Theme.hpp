@@ -33,6 +33,7 @@ public:
     static constexpr float margin = 6.0f;
 
     static inline const vec margin2D = vec{margin, margin};
+    static inline const vec margin2Dx2 = vec{margin * 2.0f, margin * 2.0f};
 
     /** The line-width of a border.
      */

@@ -30,14 +30,8 @@ ButtonWidget::~ButtonWidget() {}
 
     labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
 
-    window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width() + Theme::margin * 2.0f);
-    window.replaceConstraint(
-        maximumWidthConstraint, width <= labelCell->preferredExtent().width() + Theme::margin * 2.0f, rhea::strength::weak());
-    window.replaceConstraint(minimumHeightConstraint, height >= labelCell->preferredExtent().height() + Theme::margin * 2.0f);
-    window.replaceConstraint(
-        maximumHeightConstraint, height <= labelCell->preferredExtent().height() + Theme::margin * 2.0f, rhea::strength::weak());
+    _size = labelCell->preferredExtent() + Theme::margin2Dx2;
 
-    window.replaceConstraint(baseConstraint, base == middle);
     return WidgetUpdateResult::Self;
 }
 
@@ -60,7 +54,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
         context.color = theme->foregroundColor;
     }
     context.transform = drawContext.transform * mat::T{0.0f, 0.0f, 0.001f};
-    labelCell->draw(context, rectangle(), Alignment::MiddleCenter, baseHeight(), true);
+    labelCell->draw(context, rectangle(), Alignment::MiddleCenter, base_line_position(), true);
 
     Widget::draw(drawContext, displayTimePoint);
 }
