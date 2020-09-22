@@ -24,7 +24,7 @@ public:
 
     constexpr static value_type max = Max;
     constexpr static value_type invalid = max + 1;
-    constexpr static value_type mask = std::numeric_limits<value_type>::max();
+    constexpr static value_type mask = static_cast<value_type>((1ULL << std::bit_width(invalid)) - 1);
 
     constexpr explicit tagged_id(signed long long rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }
     constexpr explicit tagged_id(signed long rhs) noexcept : value(numeric_cast<value_type>(rhs)) { tt_assume(value <= invalid); }

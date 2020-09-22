@@ -193,6 +193,12 @@ public:
 
     void updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexcept;
 
+    /** Get the size of the virtual-screen.
+     * Each window may be on a different virtual screen with different
+     * sizes, so retrieve it on a per window basis.
+     */
+    [[nodiscard]] virtual ivec virtualScreenSize() const noexcept = 0;
+
 protected:
 
     /*! The current rectangle which has been set by the operating system.

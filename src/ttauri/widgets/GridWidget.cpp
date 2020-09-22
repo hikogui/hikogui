@@ -45,6 +45,8 @@ static void calculateCellMinMaxSize(
     columns.resize(nr_columns);
 
     for (auto &&cell : cells) {
+        ttlet child_lock = std::scoped_lock(cell.widget->mutex);
+
         tt_assume(cell.address.row.is_absolute);
         if (cell.address.row.span == 1) {
             auto &row =
@@ -53,6 +55,7 @@ static void calculateCellMinMaxSize(
             row.minimum = std::max(row.minimum, cell.widget->size().minimum().height());
             row.maximum = std::min(row.maximum, cell.widget->size().maximum().height());
             row._base_line = std::max(row._base_line, cell.widget->preferred_base_line());
+            tt_assume2(row.minimum <= row.maximum, "Conflicting size of widgets in a row");
         }
 
         tt_assume(cell.address.column.is_absolute);
@@ -62,6 +65,7 @@ static void calculateCellMinMaxSize(
 
             column.minimum = std::max(column.minimum, cell.widget->size().minimum().width());
             column.maximum = std::min(column.maximum, cell.widget->size().maximum().width());
+            tt_assume2(column.minimum <= column.maximum, "Conflicting size of widgets in a column");
         }
     }
 }
@@ -157,10 +161,10 @@ WidgetUpdateResult GridWidget::updateLayout(hires_utc_clock::time_point displayT
             auto &&child = cell.widget;
             ttlet child_lock = std::scoped_lock(child->mutex);
 
-            ttlet rectangle = cell.rectangle(columns, rows);
+            ttlet child_rectangle = cell.rectangle(columns, rows);
             ttlet base_line = cell.base_line(rows);
 
-            child->set_window_rectangle_and_base_line_position(rectangle + window_rectangle().offset(), 0.0f);
+            child->set_window_rectangle_and_base_line_position(child_rectangle + window_rectangle().offset(), 0.0f);
         }
     }
 

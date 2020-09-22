@@ -30,7 +30,7 @@ ButtonWidget::~ButtonWidget() {}
 
     labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
 
-    _size = labelCell->preferredExtent() + Theme::margin2Dx2;
+    _size = interval_vec2::make_minimum(labelCell->preferredExtent() + Theme::margin2Dx2);
 
     return WidgetUpdateResult::Self;
 }

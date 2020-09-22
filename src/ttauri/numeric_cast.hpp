@@ -14,10 +14,14 @@ struct is_lossless_cast {
     static_assert(std::is_floating_point_v<To> || std::is_integral_v<To>, "is_lossless_cast 'To' must be float or integer");
     static_assert(std::is_floating_point_v<From> || std::is_integral_v<From>, "is_lossless_cast 'From' must be float or integer");
 
-    static constexpr bool value = 
-        std::is_floating_point_v<To> ||
-        (std::is_signed_v<To> && sizeof(To) > sizeof(From)) ||
-        (std::is_signed_v<To> == std::is_signed_v<To> && sizeof(To) >= sizeof(From));
+    static constexpr bool value =
+        std::is_integral_v<From> ? (
+            std::is_floating_point_v<To> ||
+            (std::is_signed_v<To> && sizeof(To) > sizeof(From)) ||
+            (std::is_signed_v<To> == std::is_signed_v<From> && sizeof(To) >= sizeof(From))
+        ) : (
+            std::is_floating_point_v<To> && sizeof(To) >= sizeof(From)
+        );
 };
 
 template<typename To, typename From>
@@ -31,8 +35,21 @@ template<typename To, typename From>
 constexpr To numeric_cast(From x) noexcept
 {
     if constexpr (!is_lossless_cast_v<To,From>) {
-        if constexpr (std::is_signed_v<To> == std::is_signed_v<From>) {
-            // When both sides have the same signess, then they both get converted to
+        if constexpr (std::is_floating_point_v<From>) {
+            if (std::is_floating_point_v<To>) {
+                tt_assume(x >= -std::numeric_limits<To>::max() || std::isinf(x));
+                tt_assume(x <= std::numeric_limits<To>::max() || std::isinf(x));
+
+            } else if constexpr (std::is_unsigned_v<To>) {
+                tt_assume(x >= 0);
+                tt_assume(x <= std::numeric_limits<To>::max());
+            } else {
+                tt_assume(x >= std::numeric_limits<To>::min());
+                tt_assume(x <= std::numeric_limits<To>::max());
+            }
+
+        } else if constexpr (std::is_signed_v<To> == std::is_signed_v<From>) {
+            // When both sides have the same sign, then they both get converted to
             // the largest fitting type.
             if constexpr (std::is_signed_v<To>) {
                 // Only signed numbers can be less than zero.

@@ -24,6 +24,8 @@ public:
     {
         tt_assume(min.z() == 0.0f && min.w() == 0.0f);
         tt_assume(max.z() == 0.0f && max.w() == 0.0f);
+        tt_assume(min.x() <= max.x());
+        tt_assume(min.y() <= max.y());
     }
 
     [[nodiscard]] interval_vec2() noexcept :
@@ -109,6 +111,21 @@ public:
         return make(lhs.value - rhs.value.yxwz());
     }
 
+    [[nodiscard]] friend bool operator==(interval_vec2 const &lhs, interval_vec2 const &rhs) noexcept
+    {
+        return lhs.value == rhs.value;
+    }
+
+    [[nodiscard]] friend std::string to_string(interval_vec2 const &rhs) noexcept
+    {
+        return fmt::format("({}:{}, {}:{})", rhs.value.x(), rhs.value.z(), rhs.value.y(), rhs.value.w());
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, interval_vec2 const &rhs)
+    {
+        return lhs << to_string(rhs);
+    }
+
     /** Intersect two intervals.
      * The returned interval only includes the part that overlap.
      * 
@@ -127,9 +144,30 @@ public:
         return make(max(lhs.value, rhs.value));
     }
 
+    /** Get the maximum interval of both operants.
+     */
+    [[nodiscard]] friend interval_vec2 min(interval_vec2 const &lhs, interval_vec2 const &rhs) noexcept
+    {
+        ttlet tmp_max = max(lhs.value, rhs.value);
+        ttlet tmp_min = min(lhs.value, rhs.value);
+        return make(tmp_max.xy00() + tmp_min._00zw());
+    }
+
+    /** Get the minimum interval of both operants.
+     */
+    [[nodiscard]] friend interval_vec2 max(interval_vec2 const &lhs, interval_vec2 const &rhs) noexcept
+    {
+        ttlet tmp_max = max(lhs.value, rhs.value);
+        ttlet tmp_min = min(lhs.value, rhs.value);
+        return make(tmp_min.xy00() + tmp_max._00zw());
+    }
+
 private:
     [[nodiscard]] static interval_vec2 make(vec other) noexcept
     {
+        tt_assume(-other.x() <= other.z());
+        tt_assume(-other.y() <= other.w());
+
         interval_vec2 r;
         r.value = other;
         return r;

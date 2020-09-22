@@ -48,8 +48,33 @@ WindowWidget::~WindowWidget() {}
     ttlet toolbar_size = toolbar->size();
 
     ttlet content_lock = std::scoped_lock(content->mutex);
-    _size = merge(content->size() + toolbar_size._0y(), toolbar_size.x0());
+    ttlet content_size = content->size();
+    _size = intersect(
+        max(content_size + toolbar_size._0y(), toolbar_size.x0()),
+        interval_vec2::make_maximum(window.virtualScreenSize())   
+    );
     return WidgetUpdateResult::Self;
+}
+
+WidgetUpdateResult WindowWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+{
+    tt_assume(mutex.is_locked_by_current_thread());
+    forceLayout |= requestLayout.exchange(false);
+
+    if (forceLayout) {
+        ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
+        ttlet toolbar_size = toolbar->size();
+        ttlet toolbar_height = toolbar_size.minimum().height();
+        ttlet toolbar_rectangle = aarect{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
+        toolbar->set_window_rectangle_and_base_line_position(toolbar_rectangle, 0.0f);
+
+        ttlet content_lock = std::scoped_lock(content->mutex);
+        ttlet content_size = content->size();
+        ttlet content_rectangle = aarect{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
+        content->set_window_rectangle_and_base_line_position(content_rectangle, 0.0f);
+    }
+
+    return ContainerWidget::updateLayout(displayTimePoint, forceLayout);
 }
 
 HitBox WindowWidget::hitBoxTest(vec position) const noexcept

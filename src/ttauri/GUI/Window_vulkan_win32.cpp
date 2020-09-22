@@ -201,6 +201,16 @@ void Window_vulkan_win32::setWindowSize(ivec extent)
     });
 }
 
+[[nodiscard]] ivec Window_vulkan_win32::virtualScreenSize() const noexcept
+{
+    ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
+    ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
+    if (width <= 0 || height <= 0) {
+        LOG_FATAL("Failed to get virtual screen size");
+    }
+    return {width, height};
+}
+
 [[nodiscard]] std::u8string Window_vulkan_win32::getTextFromClipboard() const noexcept
 {
     auto r = std::u8string{};
@@ -482,12 +492,12 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         ttlet minimum_widget_size = widget_size.minimum();
         ttlet maximum_widget_size = widget_size.maximum();
         ttlet minmaxinfo = to_ptr<MINMAXINFO>(lParam);
-        minmaxinfo->ptMaxSize.x = numeric_cast<long>(maximum_widget_size.width());
-        minmaxinfo->ptMaxSize.y = numeric_cast<long>(maximum_widget_size.height());
-        minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(minimum_widget_size.width());
-        minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(minimum_widget_size.height());
-        minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(maximum_widget_size.width());
-        minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(maximum_widget_size.height());
+        minmaxinfo->ptMaxSize.x = numeric_cast<LONG>(maximum_widget_size.width());
+        minmaxinfo->ptMaxSize.y = numeric_cast<LONG>(maximum_widget_size.height());
+        minmaxinfo->ptMinTrackSize.x = numeric_cast<LONG>(minimum_widget_size.width());
+        minmaxinfo->ptMinTrackSize.y = numeric_cast<LONG>(minimum_widget_size.height());
+        minmaxinfo->ptMaxTrackSize.x = numeric_cast<LONG>(maximum_widget_size.width());
+        minmaxinfo->ptMaxTrackSize.y = numeric_cast<LONG>(maximum_widget_size.height());
         } break;
 
     case WM_UNICHAR: {

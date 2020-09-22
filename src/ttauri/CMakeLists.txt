@@ -192,6 +192,7 @@ target_sources(ttauri_tests PRIVATE
     URL_tests.cpp
     bigint_tests.cpp
     int_overflow_tests.cpp
+    interval_vec2_tests.cpp
     cell_address_tests.cpp
     counters_tests.cpp
     datum_tests.cpp

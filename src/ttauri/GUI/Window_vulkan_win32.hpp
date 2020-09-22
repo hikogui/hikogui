@@ -41,6 +41,7 @@ public:
 
     void setWindowSize(ivec extent) override;
 
+    [[nodiscard]] ivec virtualScreenSize() const noexcept override;
 
     [[nodiscard]] std::u8string getTextFromClipboard() const noexcept override;
 

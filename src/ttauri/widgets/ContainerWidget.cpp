@@ -9,8 +9,8 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
     ttlet lock = std::scoped_lock(mutex);
 
     if (std::ssize(children) == 0) {
-        // When there are no children, relative addresses need to be at the origin.
-        current_address = cell_address{};
+        // When there are no children, relative addresses need to start at the origin.
+        current_address = "L0T0"_ca;
     } else {
         current_address *= address;
     }
