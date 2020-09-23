@@ -187,7 +187,7 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &g
 
     // If none of the vertices is inside the clipping rectangle then don't add the
     // quad to the vertex list.
-    if (!overlaps(clippingRectangle, box.ortho())) {
+    if (!overlaps(clippingRectangle, box.aabb())) {
         return glyph_was_added;
     }
 

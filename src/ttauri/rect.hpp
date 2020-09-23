@@ -75,7 +75,8 @@ public:
         return {width(), height()};
     }
 
-    aarect ortho() const noexcept {
+    aarect aabb() const noexcept {
+        // XXX - Should actually check maximum and minimums of all points.
         return aarect::p0p3(std::get<0>(corners).xy01(), std::get<3>(corners).xy01());
     }
 
