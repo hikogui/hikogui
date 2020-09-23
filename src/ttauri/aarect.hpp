@@ -233,6 +233,26 @@ public:
         return (v.zwzw() - v).y();
     }
 
+    [[nodiscard]] float bottom() const noexcept
+    {
+        return v.y();
+    }
+
+    [[nodiscard]] float top() const noexcept
+    {
+        return v.w();
+    }
+
+    [[nodiscard]] float left() const noexcept
+    {
+        return v.x();
+    }
+
+    [[nodiscard]] float right() const noexcept
+    {
+        return v.z();
+    }
+
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     aarect &width(T newWidth) noexcept
     {

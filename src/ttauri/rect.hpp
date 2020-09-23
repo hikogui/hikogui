@@ -75,6 +75,10 @@ public:
         return {width(), height()};
     }
 
+    aarect ortho() const noexcept {
+        return aarect::p0p3(std::get<0>(corners).xy01(), std::get<3>(corners).xy01());
+    }
+
     /** Get coordinate of a corner.
     *
     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.

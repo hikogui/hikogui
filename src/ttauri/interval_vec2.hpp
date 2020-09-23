@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "interval.hpp"
 #include "vec.hpp"
 
 namespace tt {
@@ -27,6 +28,9 @@ public:
         tt_assume(min.x() <= max.x());
         tt_assume(min.y() <= max.y());
     }
+
+    [[nodiscard]] interval_vec2(finterval x, finterval y) noexcept :
+        interval_vec2(vec{x.minimum(), y.minimum()}, vec{x.maximum(), y.maximum()}) {}
 
     [[nodiscard]] interval_vec2() noexcept :
         interval_vec2(
@@ -77,6 +81,26 @@ public:
     [[nodiscard]] vec maximum() const noexcept
     {
         return value.zw00();
+    }
+
+    [[nodiscard]] finterval x() const noexcept
+    {
+        return finterval(-value.x(), value.z());
+    }
+
+    [[nodiscard]] finterval y() const noexcept
+    {
+        return finterval(-value.y(), value.w());
+    }
+
+    [[nodiscard]] finterval width() const noexcept
+    {
+        return x();
+    }
+
+    [[nodiscard]] finterval height() const noexcept
+    {
+        return y();
     }
 
     [[nodiscard]] interval_vec2 x0() const noexcept
