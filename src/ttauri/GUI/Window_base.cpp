@@ -72,7 +72,7 @@ void Window_base::layoutWindow() noexcept {
     tt_assume(widget);
     ttlet lock = std::scoped_lock(mutex);
     ttlet widget_lock = std::scoped_lock(widget->mutex);
-    ttlet widget_size = widget->size();
+    ttlet widget_size = widget->preferred_size();
     ttlet minimum_widget_size = widget_size.minimum();
     ttlet maximum_widget_size = widget_size.maximum();
 
@@ -94,7 +94,7 @@ void Window_base::layoutWindow() noexcept {
     }
 
     // Set to actual window size.
-    widget->set_window_rectangle_and_base_line_position(aarect{currentWindowExtent}, 0.0f);
+    widget->set_window_rectangle(aarect{currentWindowExtent});
 
     LOG_INFO("Window constraints '{}' minimumExtent={} maximumExtent={} currentExtent={}",
         title,
@@ -152,7 +152,7 @@ void Window_base::windowChangedSize(ivec extent) {
     tt_assume(widget);
 
     ttlet widget_lock = std::scoped_lock(widget->mutex);
-    widget->set_window_rectangle_and_base_line_position(vec{currentWindowExtent}, 0.0f);
+    widget->set_window_rectangle(aarect{vec{currentWindowExtent}});
     requestLayout = true;
 }
 

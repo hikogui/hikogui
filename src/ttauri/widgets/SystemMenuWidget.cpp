@@ -27,7 +27,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
         return result;
     }
 
-    _size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};
+    _preferred_size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};
 
     return WidgetUpdateResult::Self;
 }

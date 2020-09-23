@@ -5,19 +5,17 @@
 
 #include "Widget.hpp"
 #include "ContainerWidgetDelegate.hpp"
-#include "../cell_address.hpp"
 
 namespace tt {
 
 class ContainerWidget : public Widget {
 protected:
     std::vector<std::unique_ptr<Widget>> children;
-    cell_address current_address = "L0T0"_ca;
 
-    ContainerWidgetDelegate *delegate = nullptr;
+    ContainerWidgetDelegateBase *delegate = nullptr;
 
 public:
-    ContainerWidget(Window &window, Widget *parent, ContainerWidgetDelegate *delegate=nullptr) noexcept :
+    ContainerWidget(Window &window, Widget *parent, ContainerWidgetDelegateBase *delegate=nullptr) noexcept :
         Widget(window, parent), delegate(delegate)
     {
         margin = 0.0f;
@@ -45,27 +43,16 @@ public:
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    virtual Widget &addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept;
+    virtual Widget &addWidget(std::unique_ptr<Widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
-     *
-     * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, typename... Args>
-    T &makeWidgetAtAddress(cell_address address, Args &&... args)
-    {
-        return static_cast<T &>(addWidget(address, std::make_unique<T>(window, this, std::forward<Args>(args)...)));
-    }
-
-    /** Add a widget directly to this widget.
-     *
-     * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
-     */
-    template<typename T, cell_address CellAddress, typename... Args>
     T &makeWidget(Args &&... args)
     {
-        return makeWidgetAtAddress<T>(CellAddress, std::forward<Args>(args)...);
+        return static_cast<T &>(addWidget(std::make_unique<T>(window, this, std::forward<Args>(args)...)));
     }
+
 
 private:
     [[nodiscard]] std::vector<Widget *> childPointers(bool reverse) const noexcept;

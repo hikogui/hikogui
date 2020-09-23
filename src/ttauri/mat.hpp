@@ -191,6 +191,11 @@ public:
             tt_assume(rhs.z() == 0.0f);
         }
 
+        explicit T2(aarect rhs) noexcept : t(rhs.offset()) {
+            tt_assume(rhs.offset().is_vector());
+            tt_assume(rhs.offset().z() == 0.0f);
+        }
+
         T2(float x, float y) noexcept :
             t(x, y, 0.0f) {}
 

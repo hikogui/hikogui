@@ -87,7 +87,7 @@ public:
 
         icon_cell = (*icon).makeCell();
 
-        _size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};        
+        _preferred_size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};        
         return WidgetUpdateResult::Self;
     }
 

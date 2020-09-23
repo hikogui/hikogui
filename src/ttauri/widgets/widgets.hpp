@@ -36,12 +36,12 @@ T &Window_base::makeWidget(Args &&... args)
 /** Add a widget to the toolbar of the window.
  * The implementation is located here so that widget is a concrete type.
  */
-template<typename T, cell_address CellAddress, typename... Args>
+template<typename T, HorizontalAlignment Alignment, typename... Args>
 T &Window_base::makeToolbarWidget(Args &&... args)
 {
     tt_assume(widget);
     tt_assume(widget->toolbar);
-    return widget->toolbar->makeWidget<T, CellAddress>(std::forward<Args>(args)...);
+    return widget->toolbar->makeWidget<T, Alignment>(std::forward<Args>(args)...);
 }
 
 }

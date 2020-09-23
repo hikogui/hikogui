@@ -3,23 +3,26 @@
 
 #pragma once
 
-#include "GridWidget.hpp"
+#include "ContainerWidget.hpp"
 #include <memory>
 
 namespace tt {
 
-class ToolbarWidget : public GridWidget {
+class ToolbarWidget : public ContainerWidget {
 public:
     ToolbarWidget(Window &window, Widget *parent) noexcept;
     ~ToolbarWidget() {}
 
     /** Add a widget directly to this widget.
-    *
-    * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
-    */
-    template<typename T, cell_address CellAddress="T0L+1"_ca, typename... Args>
+     * Thread safety: locks.
+     */
+    virtual Widget &addWidget(HorizontalAlignment alignment, std::unique_ptr<Widget> childWidget) noexcept;
+
+    /** Add a widget directly to this widget.
+     */
+    template<typename T, HorizontalAlignment Alignment=HorizontalAlignment::Left, typename... Args>
     T &makeWidget(Args &&... args) {
-        return ContainerWidget::makeWidget<T,CellAddress>(std::forward<Args>(args)...);
+        return static_cast<T &>(addWidget(Alignment, std::make_unique<T>(window, this, std::forward<Args>(args)...)));
     }
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;
@@ -27,6 +30,10 @@ public:
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+
+protected:
+    std::vector<Widget *> left_children;
+    std::vector<Widget *> right_children;
 };
 
 }

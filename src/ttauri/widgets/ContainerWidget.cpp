@@ -4,23 +4,16 @@
 
 namespace tt {
 
-Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
+Widget &ContainerWidget::addWidget(std::unique_ptr<Widget> childWidget) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-
-    if (std::ssize(children) == 0) {
-        // When there are no children, relative addresses need to start at the origin.
-        current_address = "L0T0"_ca;
-    } else {
-        current_address *= address;
-    }
-
-    ttlet widget_ptr = childWidget.get();
-    tt_assume(widget_ptr);
 
     children.push_back(std::move(childWidget));
     requestConstraint = true;
     window.requestLayout = true;
+
+    ttlet widget_ptr = children.back().get();
+    tt_assume(widget_ptr);
     return *widget_ptr;
 }
 

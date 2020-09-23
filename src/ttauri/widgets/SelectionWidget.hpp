@@ -146,9 +146,9 @@ public:
             preferredHeight = Theme::smallSize;
         }
 
-        _size = interval_vec2::make_minimum(
+        _preferred_size = interval_vec2::make_minimum(
             Theme::smallSize + preferredWidth + Theme::margin * 2.0f, preferredHeight + Theme::margin * 2.0f);
-        _preferred_base_line = base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
+        _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
 
         return WidgetUpdateResult::Self;
     }
@@ -312,11 +312,11 @@ public:
         if (i != option_cache_list.cend()) {
             drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
             drawContext.color = *enabled ? theme->labelStyle.color : drawContext.color;
-            i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line_position(), true);
+            i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line(), true);
         } else {
             drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
             drawContext.color = *enabled ? theme->placeholderLabelStyle.color : drawContext.color;
-            labelCell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line_position(), true);
+            labelCell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line(), true);
         }
     }
 

@@ -12,15 +12,33 @@ namespace tt {
 using namespace std;
 
 ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
-    GridWidget(window, parent)
+    ContainerWidget(window, parent)
 {
+}
+
+Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<Widget> childWidget) noexcept
+{
+    auto &widget = ContainerWidget::addWidget(std::move(childWidget));
+    switch (alignment) {
+    using enum HorizontalAlignment;
+    case Left:
+        left_children.push_back(&widget);
+        break;
+    case Right:
+        right_children.push_back(&widget);
+        break;
+    default:
+        tt_no_default;
+    }
+    
+    return widget;
 }
 
 [[nodiscard]] WidgetUpdateResult ToolbarWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = GridWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
+    if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
     }
 

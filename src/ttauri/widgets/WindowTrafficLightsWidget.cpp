@@ -21,10 +21,10 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
     }
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        _size = {Theme::toolbarDecorationButtonWidth * 3.0f, Theme::toolbarHeight};
+        _preferred_size = {Theme::toolbarDecorationButtonWidth * 3.0f, Theme::toolbarHeight};
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        _size = {DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING, DIAMETER + 2.0 * MARGIN};
+        _preferred_size = {DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING, DIAMETER + 2.0 * MARGIN};
 
     } else {
         tt_no_default;

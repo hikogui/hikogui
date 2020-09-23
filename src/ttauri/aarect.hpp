@@ -79,7 +79,7 @@ public:
      * The rectangle's left bottom corner is at the origin.
      * @param extent The size of the box.
      */
-    aarect(vec const &extent) noexcept : v(extent._00xy())
+    explicit aarect(vec const &extent) noexcept : v(extent._00xy())
     {
         tt_assume(extent.is_vector());
         tt_assume(extent.z() == 0.0);

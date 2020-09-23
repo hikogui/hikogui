@@ -17,7 +17,7 @@ Widget::Widget(Window &_window, Widget *_parent) noexcept :
         window.requestRedraw = true;
     });
 
-    _size = {
+    _preferred_size = {
         vec{0.0f, 0.0f},
         vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}
     };

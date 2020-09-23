@@ -143,10 +143,10 @@ public:
     /** The margin outside the widget.
      */
     float margin = Theme::margin;
-    interval_vec2 _size;
-    base_line _preferred_base_line = base_line{};
+    interval_vec2 _preferred_size;
+    relative_base_line _preferred_base_line = relative_base_line{};
     aarect _window_rectangle;
-    float _window_base_line_position;
+    float _window_base_line;
 
     /** Transformation matrix from window coords to local coords.
      */
@@ -181,13 +181,13 @@ public:
     /** Get the minimum size of the widget.
      * Thread safety: requires external lock on `mutex`.
      */
-    [[nodiscard]] interval_vec2 size() const noexcept
+    [[nodiscard]] interval_vec2 preferred_size() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _size;
+        return _preferred_size;
     }
 
-    [[nodiscard]] base_line preferred_base_line() const noexcept
+    [[nodiscard]] relative_base_line preferred_base_line() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return _preferred_base_line;
@@ -202,6 +202,24 @@ public:
         return _window_rectangle;
     }
 
+    void set_window_rectangle(aarect const &rhs) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        _window_rectangle = rhs;
+    }
+
+    [[nodiscard]] float window_base_line() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _window_base_line;
+    }
+
+    void set_window_base_line(float const &rhs) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        _window_base_line = rhs;
+    }
+
     /** Get the clipping rectangle in window coordinates
      * Thread safety: requires external lock on `mutex`.
      */
@@ -209,13 +227,6 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return expand(_window_rectangle, margin);
-    }
-
-    void set_window_rectangle_and_base_line_position(aarect window_rectangle, float window_base_line_position) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-        _window_rectangle = window_rectangle;
-        _window_base_line_position = window_base_line_position;
     }
 
     /** Get the rectangle in local coordinates.
@@ -230,10 +241,10 @@ public:
     /** Get the base-line in local coordinates.
      * Thread safety: requires external lock on `mutex`.
      */
-    [[nodiscard]] float base_line_position() const noexcept
+    [[nodiscard]] float base_line() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _window_base_line_position - _window_rectangle.y();
+        return _window_base_line - _window_rectangle.y();
     }
 
     [[nodiscard]] GUIDevice *device() const noexcept;

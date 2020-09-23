@@ -64,7 +64,7 @@ public:
             ttlet header_width = std::ssize(tabs) * tab_width;
             header_height = tab_height;
 
-            _size = merge(child->size() + vec{0.0f, header_height}, vec{header_width, 0.0f});
+            _preferred_size = merge(child->size() + vec{0.0f, header_height}, vec{header_width, 0.0f});
         }
 
         return has_constrainted;

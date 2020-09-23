@@ -4,7 +4,7 @@
 #include "WindowWidget.hpp"
 #include "WindowTrafficLightsWidget.hpp"
 #include "ToolbarWidget.hpp"
-#include "ColumnWidget.hpp"
+#include "GridWidget.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "SystemMenuWidget.hpp"
 #endif
@@ -14,23 +14,23 @@ namespace tt {
 
 using namespace std;
 
-WindowWidget::WindowWidget(Window &window, ContainerWidgetDelegate *delegate, Label title) noexcept :
+WindowWidget::WindowWidget(Window &window, ContainerWidgetDelegate<GridWidget> *delegate, Label title) noexcept :
     ContainerWidget(window, nullptr, delegate), title(std::move(title))
 {
-    toolbar = &makeWidget<ToolbarWidget, ""_ca>();
+    toolbar = &makeWidget<ToolbarWidget>();
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         toolbar->makeWidget<SystemMenuWidget>(this->title.icon());
 #endif
-        toolbar->makeWidget<WindowTrafficLightsWidget, "R0T0"_ca>();
+        toolbar->makeWidget<WindowTrafficLightsWidget, HorizontalAlignment::Right>();
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         toolbar->makeWidget<WindowTrafficLightsWidget>();
     } else {
         tt_no_default;
     }
 
-    content = &makeWidget<ColumnWidget, ""_ca>();
+    content = &makeWidget<GridWidget>();
     content->elevation = elevation;
 }
 
@@ -45,11 +45,11 @@ WindowWidget::~WindowWidget() {}
     }
 
     ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
-    ttlet toolbar_size = toolbar->size();
+    ttlet toolbar_size = toolbar->preferred_size();
 
     ttlet content_lock = std::scoped_lock(content->mutex);
-    ttlet content_size = content->size();
-    _size = intersect(
+    ttlet content_size = content->preferred_size();
+    _preferred_size = intersect(
         max(content_size + toolbar_size._0y(), toolbar_size.x0()),
         interval_vec2::make_maximum(window.virtualScreenSize())   
     );
@@ -63,15 +63,15 @@ WidgetUpdateResult WindowWidget::updateLayout(hires_utc_clock::time_point displa
 
     if (forceLayout) {
         ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
-        ttlet toolbar_size = toolbar->size();
+        ttlet toolbar_size = toolbar->preferred_size();
         ttlet toolbar_height = toolbar_size.minimum().height();
         ttlet toolbar_rectangle = aarect{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        toolbar->set_window_rectangle_and_base_line_position(toolbar_rectangle, 0.0f);
+        toolbar->set_window_rectangle(mat::T2{window_rectangle()} * toolbar_rectangle);
 
         ttlet content_lock = std::scoped_lock(content->mutex);
-        ttlet content_size = content->size();
+        ttlet content_size = content->preferred_size();
         ttlet content_rectangle = aarect{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        content->set_window_rectangle_and_base_line_position(content_rectangle, 0.0f);
+        content->set_window_rectangle(mat::T2{window_rectangle()} * content_rectangle);
     }
 
     return ContainerWidget::updateLayout(displayTimePoint, forceLayout);

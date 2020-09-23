@@ -28,7 +28,7 @@ enum class Alignment {
 
 enum class LineJoinStyle { Bevel, Miter, Rounded };
 
-class base_line {
+class relative_base_line {
     VerticalAlignment alignment;
     float offset;
     float priority;
@@ -39,15 +39,17 @@ public:
      * @param offset Number of pt above the start position.
      * @param priority Higher values will have priority over lower values.
      */
-    constexpr base_line(VerticalAlignment alignment, float offset = 0.0f, float priority = 100.0f) noexcept :
+    constexpr relative_base_line(VerticalAlignment alignment, float offset = 0.0f, float priority = 100.0f) noexcept :
         alignment(alignment), offset(offset), priority(priority)
     {
     }
 
     /** Constructs a low-priority base line in the middle.
      */
-    constexpr base_line() noexcept : base_line(VerticalAlignment::Middle, 0.0f, 0.0f) {}
+    constexpr relative_base_line() noexcept : relative_base_line(VerticalAlignment::Middle, 0.0f, 0.0f) {}
 
+    /** Get a base-line position.
+     */
     constexpr float position(float bottom, float top) const noexcept
     {
         switch (alignment) {
@@ -58,12 +60,12 @@ public:
         tt_no_default;
     }
 
-    [[nodiscard]] auto operator==(base_line const &rhs) const noexcept
+    [[nodiscard]] auto operator==(relative_base_line const &rhs) const noexcept
     {
         return this->priority == rhs.priority;
     }
 
-    [[nodiscard]] auto operator<=>(base_line const &rhs) const noexcept
+    [[nodiscard]] auto operator<=>(relative_base_line const &rhs) const noexcept
     {
         return this->priority <=> rhs.priority;
     }

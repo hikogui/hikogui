@@ -9,15 +9,16 @@
 namespace tt {
 
 class ToolbarWidget;
+class GridWidget;
 
 class WindowWidget : public ContainerWidget {
     Label title;
 
 public:
-    ContainerWidget *content = nullptr;
+    GridWidget *content = nullptr;
     ToolbarWidget *toolbar = nullptr;
 
-    WindowWidget(Window &window, ContainerWidgetDelegate *delegate, Label title) noexcept;
+    WindowWidget(Window &window, ContainerWidgetDelegate<GridWidget> *delegate, Label title) noexcept;
     ~WindowWidget();
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;

@@ -464,7 +464,7 @@ bool Window_vulkan::readSurfaceExtent()
 
     tt_assume(widget);
     ttlet widget_lock = std::scoped_lock(widget->mutex);
-    ttlet widget_size = widget->size();
+    ttlet widget_size = widget->preferred_size();
     ttlet minimum_widget_size = widget_size.minimum();
     ttlet maximum_widget_size = widget_size.maximum();
 

@@ -488,7 +488,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_GETMINMAXINFO: {
         tt_assume(widget);
         ttlet widget_lock = std::scoped_lock(widget->mutex);
-        ttlet widget_size = widget->size();
+        ttlet widget_size = widget->preferred_size();
         ttlet minimum_widget_size = widget_size.minimum();
         ttlet maximum_widget_size = widget_size.maximum();
         ttlet minmaxinfo = to_ptr<MINMAXINFO>(lParam);

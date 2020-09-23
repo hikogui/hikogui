@@ -174,7 +174,7 @@ public:
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
-    template<typename T, cell_address CellAddress, typename... Args>
+    template<typename T, HorizontalAlignment Alignment=HorizontalAlignment::Left, typename... Args>
     T &makeToolbarWidget(Args &&... args);
 
     virtual void setCursor(Cursor cursor) = 0;

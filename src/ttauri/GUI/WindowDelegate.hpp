@@ -8,7 +8,7 @@
 
 namespace tt {
 
-class WindowDelegate : public ContainerWidgetDelegate {
+class WindowDelegate : public ContainerWidgetDelegate<GridWidget> {
 public:
     virtual void openingWindow(Window &window) noexcept {}
     virtual void closingWindow(Window &window) noexcept {}

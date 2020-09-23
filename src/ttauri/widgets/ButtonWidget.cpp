@@ -30,7 +30,7 @@ ButtonWidget::~ButtonWidget() {}
 
     labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
 
-    _size = interval_vec2::make_minimum(labelCell->preferredExtent() + Theme::margin2Dx2);
+    _preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent() + Theme::margin2Dx2);
 
     return WidgetUpdateResult::Self;
 }
@@ -54,7 +54,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
         context.color = theme->foregroundColor;
     }
     context.transform = drawContext.transform * mat::T{0.0f, 0.0f, 0.001f};
-    labelCell->draw(context, rectangle(), Alignment::MiddleCenter, base_line_position(), true);
+    labelCell->draw(context, rectangle(), Alignment::MiddleCenter, base_line(), true);
 
     Widget::draw(drawContext, displayTimePoint);
 }

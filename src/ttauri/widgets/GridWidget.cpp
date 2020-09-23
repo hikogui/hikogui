@@ -52,9 +52,9 @@ static void calculateCellMinMaxSize(
             auto &row =
                 cell.address.row.is_opposite ? rows[std::ssize(rows) - cell.address.row.index - 1] : rows[cell.address.row.index];
 
-            row.minimum = std::max(row.minimum, cell.widget->size().minimum().height());
-            row.maximum = std::min(row.maximum, cell.widget->size().maximum().height());
-            row._base_line = std::max(row._base_line, cell.widget->preferred_base_line());
+            row.minimum = std::max(row.minimum, cell.widget->preferred_size().minimum().height());
+            row.maximum = std::min(row.maximum, cell.widget->preferred_size().maximum().height());
+            row.base_line = std::max(row.base_line, cell.widget->preferred_base_line());
             tt_assume2(row.minimum <= row.maximum, "Conflicting size of widgets in a row");
         }
 
@@ -63,8 +63,8 @@ static void calculateCellMinMaxSize(
             auto &column = cell.address.column.is_opposite ? columns[std::ssize(columns) - cell.address.column.index - 1] :
                                                              columns[cell.address.column.index];
 
-            column.minimum = std::max(column.minimum, cell.widget->size().minimum().width());
-            column.maximum = std::min(column.maximum, cell.widget->size().maximum().width());
+            column.minimum = std::max(column.minimum, cell.widget->preferred_size().minimum().width());
+            column.maximum = std::min(column.maximum, cell.widget->preferred_size().maximum().width());
             tt_assume2(column.minimum <= column.maximum, "Conflicting size of widgets in a column");
         }
     }
@@ -124,7 +124,14 @@ Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> chil
 {
     auto lock = std::scoped_lock(mutex);
 
-    auto &widget = ContainerWidget::addWidget(address, std::move(childWidget));
+    if (std::ssize(children) == 0) {
+        // When there are no children, relative addresses need to start at the origin.
+        current_address = "L0T0"_ca;
+    } else {
+        current_address *= address;
+    }
+
+    auto &widget = ContainerWidget::addWidget(std::move(childWidget));
     cells.emplace_back(current_address, &widget);
     return widget;
 }
@@ -142,7 +149,7 @@ WidgetUpdateResult GridWidget::updateConstraints() noexcept
     auto row_sum = std::accumulate(rows.cbegin(), rows.cend(), GridWidgetTick{0.0f, 0.0f});
     auto column_sum = std::accumulate(columns.cbegin(), columns.cend(), GridWidgetTick{0.0f, 0.0f});
 
-    _size = {vec{column_sum.minimum, row_sum.minimum}, vec{column_sum.maximum, row_sum.maximum}};
+    _preferred_size = {vec{column_sum.minimum, row_sum.minimum}, vec{column_sum.maximum, row_sum.maximum}};
 
     return WidgetUpdateResult::Self;
 }
@@ -164,7 +171,7 @@ WidgetUpdateResult GridWidget::updateLayout(hires_utc_clock::time_point displayT
             ttlet child_rectangle = cell.rectangle(columns, rows);
             ttlet base_line = cell.base_line(rows);
 
-            child->set_window_rectangle_and_base_line_position(child_rectangle + window_rectangle().offset(), 0.0f);
+            child->set_window_rectangle(mat::T2{window_rectangle()} * child_rectangle);
         }
     }
 

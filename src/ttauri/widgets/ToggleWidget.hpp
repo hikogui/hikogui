@@ -82,8 +82,8 @@ public:
         ttlet minimumWidth = std::max({onLabelCell->preferredExtent().width(), offLabelCell->preferredExtent().width()}) +
             Theme::smallSize * 2.0f + Theme::margin;
 
-        _size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-        _preferred_base_line = base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+        _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+        _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
 
         return WidgetUpdateResult::Self;
     }
@@ -99,7 +99,7 @@ public:
 
         toggleRectangle = aarect{
             -0.5f, // Expand horizontally due to rounded shape
-            base_line_position() - Theme::smallSize * 0.5f,
+            base_line() - Theme::smallSize * 0.5f,
             Theme::smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
             Theme::smallSize};
 
@@ -160,7 +160,7 @@ public:
 
         ttlet &labelCell = *value ? onLabelCell : offLabelCell;
 
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line_position(), true);
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override

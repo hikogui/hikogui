@@ -54,7 +54,7 @@ public:
         }
 
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        _size = interval_vec2::make_minimum(labelCell->preferredExtent());
+        _preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent());
         return WidgetUpdateResult::Self;
     }
 
@@ -65,7 +65,7 @@ public:
             drawContext.color = theme->labelStyle.color;
         }
 
-        labelCell->draw(drawContext, rectangle(), alignment, base_line_position(), true);
+        labelCell->draw(drawContext, rectangle(), alignment, base_line(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
