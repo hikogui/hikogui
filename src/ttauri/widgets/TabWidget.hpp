@@ -44,14 +44,14 @@ public:
         auto has_constrainted = Widget::updateConstraints();
 
         // Recurse into the selected widget.
-        auto &tab = tabs[selected_tab_index];
-        auto &child = tab.widget;
+        auto &selected_tab = tabs[selected_tab_index];
+        auto &child = selected_tab.widget;
         ttlet child_lock = std::scoped_lock(child->mutex);
         has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
 
         if (has_constrainted >= WidgetUpdateResult::Self) {
-            ttlet tab_text_width = Theme::iconSize;
-            ttlet tab_text_height = 0.0f;
+            auto tab_text_width = Theme::iconSize;
+            auto tab_text_height = 0.0f;
             for (auto &&tab : tabs) {
                 tab.image_cell = tab.image.makeCell();
                 tab.text_cell = std::make_unique<TextCell>(*tab.text, theme->labelStyle);
@@ -64,7 +64,7 @@ public:
             ttlet header_width = std::ssize(tabs) * tab_width;
             header_height = tab_height;
 
-            _preferred_size = merge(child->size() + vec{0.0f, header_height}, vec{header_width, 0.0f});
+            _preferred_size = max(child->preferred_size() + vec{0.0f, header_height}, vec{header_width, 0.0f});
         }
 
         return has_constrainted;
@@ -80,13 +80,18 @@ public:
         header_rectangle = aarect{0.0f, content_rectangle.height(), rectangle().width(), header_height};
 
         auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
-        auto &tab = tabs[selected_tab_index];
-        auto &child = tab.widget;
+        auto &selected_child = tabs[selected_tab_index];
+        auto &child = selected_child.widget;
 
         ttlet child_lock = std::scoped_lock(child->mutex);
-        child->set_window_rectangle_and_base_line_position(content_rectangle + window_rectangle().offset(), base_line{});
-        has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
+        ttlet child_window_rectangle = mat::T2(window_rectangle()) * content_rectangle;
+        child->set_window_rectangle(child_window_rectangle);
 
+        ttlet child_base_line =
+            child->preferred_base_line().position(child_window_rectangle.bottom(), child_window_rectangle.top());
+        child->set_window_base_line(child_base_line);
+
+        has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
         if (has_laid_out >= WidgetUpdateResult::Self) {
             if (std::ssize(tabs) != 0) {
                 // Spread the tabs over the width of container.
@@ -115,7 +120,7 @@ public:
     {
         ttlet child_lock = std::scoped_lock(child.mutex);
 
-        context.clippingRectangle = child.clippingRectangle();
+        context.clippingRectangle = child.clipping_rectangle();
         context.transform = child.toWindowTransform;
 
         // The default fill and border colors.

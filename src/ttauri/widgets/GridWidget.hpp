@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ContainerWidget.hpp"
+#include "GridWidgetDelegate.hpp"
 #include "../iaarect.hpp"
 #include "../GUI/Theme.hpp"
 #include "../cell_address.hpp"
@@ -25,8 +26,8 @@ struct GridWidgetCell {
         ttlet first_row_nr = address.row.begin(std::ssize(rows));
         ttlet last_row_nr = address.row.end(std::ssize(rows));
 
-        ttlet [x, width] = columns.get_offset_and_size(first_column_nr, last_column_nr);
-        ttlet [y, height] = rows.get_offset_and_size(first_row_nr, last_row_nr);
+        ttlet[x, width] = columns.get_offset_and_size(first_column_nr, last_column_nr);
+        ttlet[y, height] = rows.get_offset_and_size(first_row_nr, last_row_nr);
 
         return {x, y, width, height};
     };
@@ -40,9 +41,19 @@ struct GridWidgetCell {
 
 class GridWidget : public ContainerWidget {
 public:
-    GridWidget(Window &window, Widget *parent, ContainerWidgetDelegate<GridWidget> *delegate = nullptr) noexcept :
-        ContainerWidget(window, parent, delegate)
+    GridWidget(Window &window, Widget *parent, GridWidgetDelegate *delegate = nullptr) noexcept :
+        ContainerWidget(window, parent), delegate(delegate)
     {
+        if (delegate) {
+            delegate->openingWidget(*this);
+        }
+    }
+
+    ~GridWidget()
+    {
+        if (delegate) {
+            delegate->closingWidget(*this);
+        }
     }
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;
@@ -76,6 +87,8 @@ public:
 protected:
     std::vector<GridWidgetCell> cells;
     cell_address current_address = "L0T0"_ca;
+
+    GridWidgetDelegate *delegate = nullptr;
 
 private:
     flow_layout rows;

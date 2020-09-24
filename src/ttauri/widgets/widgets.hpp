@@ -10,7 +10,7 @@
 #include "CheckboxWidget.hpp"
 #include "SelectionWidget.hpp"
 #include "RadioButtonWidget.hpp"
-//#include "TabWidget.hpp"
+#include "TabWidget.hpp"
 #include "ToolbarWidget.hpp"
 #include "ToolbarButtonWidget.hpp"
 #include "WindowWidget.hpp"

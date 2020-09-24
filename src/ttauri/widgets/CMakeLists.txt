@@ -8,6 +8,7 @@ target_sources(ttauri PRIVATE
     ContainerWidget.hpp
     GridWidget.cpp
     GridWidget.hpp
+    GridWidgetDelegate.hpp
     LabelWidget.hpp
     LineInputWidget.cpp
     LineInputWidget.hpp

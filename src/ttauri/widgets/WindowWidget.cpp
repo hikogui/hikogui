@@ -14,8 +14,8 @@ namespace tt {
 
 using namespace std;
 
-WindowWidget::WindowWidget(Window &window, ContainerWidgetDelegate<GridWidget> *delegate, Label title) noexcept :
-    ContainerWidget(window, nullptr, delegate), title(std::move(title))
+WindowWidget::WindowWidget(Window &window, GridWidgetDelegate *delegate, Label title) noexcept :
+    ContainerWidget(window, nullptr), title(std::move(title))
 {
     toolbar = &makeWidget<ToolbarWidget>();
 
@@ -30,7 +30,7 @@ WindowWidget::WindowWidget(Window &window, ContainerWidgetDelegate<GridWidget> *
         tt_no_default;
     }
 
-    content = &makeWidget<GridWidget>();
+    content = &makeWidget<GridWidget>(delegate);
     content->elevation = elevation;
 }
 

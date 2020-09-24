@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Widget.hpp"
-#include "ContainerWidgetDelegate.hpp"
 
 namespace tt {
 
@@ -12,22 +11,14 @@ class ContainerWidget : public Widget {
 protected:
     std::vector<std::unique_ptr<Widget>> children;
 
-    ContainerWidgetDelegateBase *delegate = nullptr;
-
 public:
-    ContainerWidget(Window &window, Widget *parent, ContainerWidgetDelegateBase *delegate=nullptr) noexcept :
-        Widget(window, parent), delegate(delegate)
+    ContainerWidget(Window &window, Widget *parent) noexcept :
+        Widget(window, parent)
     {
         margin = 0.0f;
-        if (delegate) {
-            delegate->openingContainerWidget(*this);
-        }
     }
 
     ~ContainerWidget() {
-        if (delegate) {
-            delegate->closingContainerWidget(*this);
-        }
     }
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;

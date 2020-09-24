@@ -18,7 +18,7 @@ public:
     GridWidget *content = nullptr;
     ToolbarWidget *toolbar = nullptr;
 
-    WindowWidget(Window &window, ContainerWidgetDelegate<GridWidget> *delegate, Label title) noexcept;
+    WindowWidget(Window &window, GridWidgetDelegate *delegate, Label title) noexcept;
     ~WindowWidget();
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;
