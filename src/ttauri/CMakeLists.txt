@@ -29,7 +29,7 @@ target_sources(ttauri PRIVATE
     ApplicationDelegate.hpp
     assert.hpp
     atomic.hpp
-    attributes.hpp
+    alignment.hpp
     audio_counter_clock.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_macos.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_win32.cpp>
@@ -71,6 +71,7 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/FileView_win32.cpp>
     fixed.hpp
     float16.hpp
+    flow_layout.hpp
     format.hpp
     glob.hpp
     hash.hpp

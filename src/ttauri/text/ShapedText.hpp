@@ -6,7 +6,7 @@
 #include "AttributedGlyphLine.hpp"
 #include "gstring.hpp"
 #include "../required.hpp"
-#include "../attributes.hpp"
+#include "../alignment.hpp"
 #include "../Path.hpp"
 #include "../vec.hpp"
 #include "../nested_vector_iterator.hpp"

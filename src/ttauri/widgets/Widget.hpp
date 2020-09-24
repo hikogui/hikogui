@@ -10,7 +10,7 @@
 #include "../GUI/KeyboardEvent.hpp"
 #include "../GUI/Theme.hpp"
 #include "../text/ShapedText.hpp"
-#include "../attributes.hpp"
+#include "../alignment.hpp"
 #include "../Path.hpp"
 #include "../R16G16B16A16SFloat.hpp"
 #include "../R32G32SFloat.hpp"
@@ -23,6 +23,7 @@
 #include "../command.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include "../interval_vec2.hpp"
+#include "../flow_layout.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
@@ -144,7 +145,10 @@ public:
      */
     float margin = Theme::margin;
     interval_vec2 _preferred_size;
+    flow_resistance height_resistance = flow_resistance::normal;
+    flow_resistance width_resistance = flow_resistance::normal;
     relative_base_line _preferred_base_line = relative_base_line{};
+
     aarect _window_rectangle;
     float _window_base_line;
 

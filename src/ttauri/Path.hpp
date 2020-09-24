@@ -4,7 +4,7 @@
 #pragma once
 
 #include "BezierPoint.hpp"
-#include "attributes.hpp"
+#include "alignment.hpp"
 #include "ResourceView.hpp"
 #include "exceptions.hpp"
 #include "vec.hpp"

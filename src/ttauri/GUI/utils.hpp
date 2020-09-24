@@ -11,4 +11,4 @@
 #include "Theme.hpp"
 #include "../text/ShapedText.hpp"
 #include "../PixelMap.inl"
-#include "../attributes.hpp"
+#include "../alignment.hpp"

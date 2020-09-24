@@ -4,7 +4,7 @@
 #include "GridWidget.hpp"
 #include "../GUI/Window.hpp"
 #include "../algorithm.hpp"
-#include "../attributes.hpp"
+#include "../alignment.hpp"
 
 namespace tt {
 
@@ -31,93 +31,38 @@ namespace tt {
     return {nr_left + nr_right, nr_bottom + nr_top};
 }
 
-static void calculateCellMinMaxSize(
-    std::vector<GridWidgetCell> const &cells,
-    std::vector<GridWidgetTick> &rows,
-    std::vector<GridWidgetTick> &columns) noexcept
+static interval_vec2 calculateCellMinMaxSize(std::vector<GridWidgetCell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     rows.clear();
     columns.clear();
 
     ttlet[nr_columns, nr_rows] = calculateGridSize(cells);
 
-    rows.resize(nr_rows);
-    columns.resize(nr_columns);
-
     for (auto &&cell : cells) {
         ttlet child_lock = std::scoped_lock(cell.widget->mutex);
 
         tt_assume(cell.address.row.is_absolute);
         if (cell.address.row.span == 1) {
-            auto &row =
-                cell.address.row.is_opposite ? rows[std::ssize(rows) - cell.address.row.index - 1] : rows[cell.address.row.index];
+            auto index = cell.address.row.begin(nr_rows);
 
-            row.minimum = std::max(row.minimum, cell.widget->preferred_size().minimum().height());
-            row.maximum = std::min(row.maximum, cell.widget->preferred_size().maximum().height());
-            row.base_line = std::max(row.base_line, cell.widget->preferred_base_line());
-            tt_assume2(row.minimum <= row.maximum, "Conflicting size of widgets in a row");
+            rows.update(
+                index,
+                cell.widget->preferred_size().height(),
+                cell.widget->height_resistance,
+                cell.widget->margin,
+                cell.widget->preferred_base_line());
         }
 
         tt_assume(cell.address.column.is_absolute);
         if (cell.address.column.span == 1) {
-            auto &column = cell.address.column.is_opposite ? columns[std::ssize(columns) - cell.address.column.index - 1] :
-                                                             columns[cell.address.column.index];
+            auto index = cell.address.column.begin(nr_columns);
 
-            column.minimum = std::max(column.minimum, cell.widget->preferred_size().minimum().width());
-            column.maximum = std::min(column.maximum, cell.widget->preferred_size().maximum().width());
-            tt_assume2(column.minimum <= column.maximum, "Conflicting size of widgets in a column");
+            columns.update(
+                index, cell.widget->preferred_size().width(), cell.widget->width_resistance, cell.widget->margin, relative_base_line{});
         }
     }
-}
 
-[[nodiscard]] std::tuple<ssize_t, float> nonMaximumTicksAndAxisSize(std::vector<GridWidgetTick> const &axis) noexcept
-{
-    ssize_t count = 0;
-    float size = 0.0f;
-    for (ttlet &tick : axis) {
-        if (tick.size < tick.maximum) {
-            ++count;
-        }
-        size += tick.size;
-    }
-    return {count, size};
-}
-
-static void addToNonMaximumTicks(float size_to_add, std::vector<GridWidgetTick> &axis) noexcept
-{
-    for (auto &&tick : axis) {
-        if (tick.size < tick.maximum) {
-            tick.size = std::min(tick.size + size_to_add, tick.maximum);
-        }
-    }
-}
-
-static void setCurrentSizeOfAxis(float total_size, std::vector<GridWidgetTick> &axis) noexcept
-{
-    // Reset axis.
-    for (auto &&tick : axis) {
-        tick.size = tick.minimum;
-    }
-
-    // Iterate until all of the total_size has been spread over all
-    // the ticks off the axis.
-    while (true) {
-        ttlet[count, size] = nonMaximumTicksAndAxisSize(axis);
-        ttlet todo = size - total_size;
-
-        if (count == 0 || todo <= 0.0f) {
-            break;
-        }
-
-        addToNonMaximumTicks(todo / count, axis);
-    }
-
-    // Calculate the offset of each tick
-    auto offset = 0.0f;
-    for (auto &&tick : axis) {
-        tick.offset = offset;
-        offset += tick.size;
-    }
+    return {columns.extent(), rows.extent()};
 }
 
 Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
@@ -144,13 +89,7 @@ WidgetUpdateResult GridWidget::updateConstraints() noexcept
         return result;
     }
 
-    calculateCellMinMaxSize(cells, rows, columns);
-
-    auto row_sum = std::accumulate(rows.cbegin(), rows.cend(), GridWidgetTick{0.0f, 0.0f});
-    auto column_sum = std::accumulate(columns.cbegin(), columns.cend(), GridWidgetTick{0.0f, 0.0f});
-
-    _preferred_size = {vec{column_sum.minimum, row_sum.minimum}, vec{column_sum.maximum, row_sum.maximum}};
-
+    _preferred_size = calculateCellMinMaxSize(cells, rows, columns);
     return WidgetUpdateResult::Self;
 }
 
@@ -160,18 +99,21 @@ WidgetUpdateResult GridWidget::updateLayout(hires_utc_clock::time_point displayT
     forceLayout |= requestLayout.exchange(false);
 
     if (forceLayout) {
-        // We need to pass the sizes for each child before calling the ContainerWidget::updateLayout().
-        setCurrentSizeOfAxis(rectangle().width(), columns);
-        setCurrentSizeOfAxis(rectangle().height(), rows);
+        columns.flow(rectangle().width());
+        rows.flow(rectangle().height());
 
-        for(auto &&cell: cells) {
+        for (auto &&cell : cells) {
             auto &&child = cell.widget;
             ttlet child_lock = std::scoped_lock(child->mutex);
 
             ttlet child_rectangle = cell.rectangle(columns, rows);
-            ttlet base_line = cell.base_line(rows);
+            ttlet child_window_rectangle = mat::T2{window_rectangle()} *child_rectangle;
+            child->set_window_rectangle(child_window_rectangle);
 
-            child->set_window_rectangle(mat::T2{window_rectangle()} * child_rectangle);
+            ttlet child_base_line = cell.base_line(rows);
+            ttlet child_base_line_position =
+                child_base_line.position(child_window_rectangle.bottom(), child_window_rectangle.top());
+            child->set_window_base_line(child_base_line_position);
         }
     }
 

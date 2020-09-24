@@ -7,28 +7,10 @@
 #include "../iaarect.hpp"
 #include "../GUI/Theme.hpp"
 #include "../cell_address.hpp"
+#include "../flow_layout.hpp"
 #include <memory>
 
 namespace tt {
-
-struct GridWidgetTick {
-    float minimum = 0.0f;
-    float maximum = std::numeric_limits<float>::infinity();
-    float size = 0.0f;
-    float offset = 0.0f;
-    relative_base_line base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, -std::numeric_limits<float>::infinity()};
-
-    [[nodiscard]] friend GridWidgetTick operator+(GridWidgetTick const &lhs, GridWidgetTick const &rhs) noexcept
-    {
-        GridWidgetTick r;
-        r.minimum = lhs.minimum + rhs.minimum;
-        r.maximum = lhs.maximum + rhs.maximum;
-        r.size = 0.0f;
-        r.offset = 0.0f;
-        r.base_line = std::max(lhs.base_line, rhs.base_line);
-        return r;
-    }
-};
 
 struct GridWidgetCell {
     cell_address address;
@@ -36,33 +18,23 @@ struct GridWidgetCell {
 
     GridWidgetCell(cell_address address, Widget *widget) noexcept : address(address), widget(widget) {}
 
-    [[nodiscard]] aarect
-    rectangle(std::vector<GridWidgetTick> const &columns, std::vector<GridWidgetTick> const &rows) const noexcept
+    [[nodiscard]] aarect rectangle(flow_layout const &columns, flow_layout const &rows) const noexcept
     {
         ttlet first_column_nr = address.column.begin(std::ssize(columns));
         ttlet last_column_nr = address.column.end(std::ssize(columns));
         ttlet first_row_nr = address.row.begin(std::ssize(rows));
         ttlet last_row_nr = address.row.end(std::ssize(rows));
 
-        ttlet x = columns[first_column_nr].offset;
-        ttlet y = rows[first_row_nr].offset;
+        ttlet [x, width] = columns.get_offset_and_size(first_column_nr, last_column_nr);
+        ttlet [y, height] = rows.get_offset_and_size(first_row_nr, last_row_nr);
 
-        auto width = 0.0f;
-        for (auto i = first_column_nr; i != last_column_nr; ++i) {
-            width += columns[i].size;
-        }
-
-        auto height = 0.0f;
-        for (auto i = first_row_nr; i != last_row_nr; ++i) {
-            height += rows[i].size;
-        }
         return {x, y, width, height};
     };
 
-    [[nodiscard]] relative_base_line base_line(std::vector<GridWidgetTick> const &rows) const noexcept
+    [[nodiscard]] relative_base_line base_line(flow_layout const &rows) const noexcept
     {
         ttlet aligned_row_nr = address.row.aligned_to(std::ssize(rows));
-        return rows[aligned_row_nr].base_line;
+        return rows.get_base_line(aligned_row_nr);
     }
 };
 
@@ -106,8 +78,8 @@ protected:
     cell_address current_address = "L0T0"_ca;
 
 private:
-    std::vector<GridWidgetTick> rows;
-    std::vector<GridWidgetTick> columns;
+    flow_layout rows;
+    flow_layout columns;
 };
 
 } // namespace tt

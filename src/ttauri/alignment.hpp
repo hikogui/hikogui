@@ -28,48 +28,7 @@ enum class Alignment {
 
 enum class LineJoinStyle { Bevel, Miter, Rounded };
 
-class relative_base_line {
-    VerticalAlignment alignment;
-    float offset;
-    float priority;
 
-public:
-    /* Construct a base-line.
-     * @param alignment Start position of the base line.
-     * @param offset Number of pt above the start position.
-     * @param priority Higher values will have priority over lower values.
-     */
-    constexpr relative_base_line(VerticalAlignment alignment, float offset = 0.0f, float priority = 100.0f) noexcept :
-        alignment(alignment), offset(offset), priority(priority)
-    {
-    }
-
-    /** Constructs a low-priority base line in the middle.
-     */
-    constexpr relative_base_line() noexcept : relative_base_line(VerticalAlignment::Middle, 0.0f, 0.0f) {}
-
-    /** Get a base-line position.
-     */
-    constexpr float position(float bottom, float top) const noexcept
-    {
-        switch (alignment) {
-        case VerticalAlignment::Bottom: return bottom + offset;
-        case VerticalAlignment::Top: return top + offset;
-        case VerticalAlignment::Middle: return (bottom + top) * 0.5f + offset;
-        }
-        tt_no_default;
-    }
-
-    [[nodiscard]] auto operator==(relative_base_line const &rhs) const noexcept
-    {
-        return this->priority == rhs.priority;
-    }
-
-    [[nodiscard]] auto operator<=>(relative_base_line const &rhs) const noexcept
-    {
-        return this->priority <=> rhs.priority;
-    }
-};
 
 inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs) noexcept
 {
@@ -144,5 +103,48 @@ inline bool operator!=(Alignment lhs, VerticalAlignment rhs) noexcept
 {
     return !(lhs == rhs);
 }
+
+class relative_base_line {
+    VerticalAlignment alignment;
+    float offset;
+    float priority;
+
+public:
+    /* Construct a base-line.
+     * @param alignment Start position of the base line.
+     * @param offset Number of pt above the start position.
+     * @param priority Higher values will have priority over lower values.
+     */
+    constexpr relative_base_line(VerticalAlignment alignment, float offset = 0.0f, float priority = 100.0f) noexcept :
+        alignment(alignment), offset(offset), priority(priority)
+    {
+    }
+
+    /** Constructs a low-priority base line in the middle.
+     */
+    constexpr relative_base_line() noexcept : relative_base_line(VerticalAlignment::Middle, 0.0f, 0.0f) {}
+
+    /** Get a base-line position.
+     */
+    constexpr float position(float bottom, float top) const noexcept
+    {
+        switch (alignment) {
+        case VerticalAlignment::Bottom: return bottom + offset;
+        case VerticalAlignment::Top: return top + offset;
+        case VerticalAlignment::Middle: return (bottom + top) * 0.5f + offset;
+        }
+        tt_no_default;
+    }
+
+    [[nodiscard]] auto operator==(relative_base_line const &rhs) const noexcept
+    {
+        return this->priority == rhs.priority;
+    }
+
+    [[nodiscard]] auto operator<=>(relative_base_line const &rhs) const noexcept
+    {
+        return this->priority <=> rhs.priority;
+    }
+};
 
 } // namespace tt

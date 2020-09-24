@@ -11,7 +11,7 @@
 #include "ttauri/text/FontGraphemeID.hpp"
 #include "ttauri/text/FontGlyphIDs.hpp"
 #include "ttauri/URL.hpp"
-#include "ttauri/attributes.hpp"
+#include "ttauri/alignment.hpp"
 #include <limits>
 #include <array>
 #include <new>

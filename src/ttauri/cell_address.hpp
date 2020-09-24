@@ -4,7 +4,7 @@
 #include "required.hpp"
 #include "numeric_cast.hpp"
 #include "exceptions.hpp"
-#include "attributes.hpp"
+#include "alignment.hpp"
 
 #pragma once
 

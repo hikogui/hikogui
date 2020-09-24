@@ -8,7 +8,7 @@
 #include "../cells/TextCell.hpp"
 #include "../text/format10.hpp"
 #include "../observable.hpp"
-#include "../attributes.hpp"
+#include "../alignment.hpp"
 #include <memory>
 #include <string>
 #include <array>

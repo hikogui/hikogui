@@ -4,7 +4,7 @@
 #pragma once
 
 #include "vec.hpp"
-#include "attributes.hpp"
+#include "alignment.hpp"
 
 namespace tt {
 

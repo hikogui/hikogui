@@ -15,9 +15,10 @@ requires std::floating_point<T> class interval {
 public:
     using value_type = T;
 
-    constexpr interval() noexcept :
-        _minimum(std::numeric_limits<value_type>::max()), _maximum(std::numeric_limits<value_type>::max())
+    constexpr interval() noexcept : v()
     {
+        v[0] = std::numeric_limits<value_type>::max();
+        v[1] = std::numeric_limits<value_type>::max();
     }
 
     constexpr interval(interval const &rhs) noexcept = default;
@@ -25,7 +26,10 @@ public:
     constexpr interval &operator=(interval const &rhs) noexcept = default;
     constexpr interval &operator=(interval &&rhs) noexcept = default;
 
-    [[nodiscard]] constexpr interval(value_type _minimum, value_type _maximum) noexcept : _minimum(-_minimum), _maximum(_maximum) {
+    [[nodiscard]] constexpr interval(value_type _minimum, value_type _maximum) noexcept : v()
+    {
+        v[0] = -_minimum;
+        v[1] = _maximum;
         tt_assume(minimum() <= maximum());
     }
 
@@ -33,12 +37,12 @@ public:
 
     [[nodiscard]] constexpr value_type minimum() const noexcept
     {
-        return -_minimum;
+        return -v[0];
     }
 
     [[nodiscard]] constexpr value_type maximum() const noexcept
     {
-        return _maximum;
+        return v[1];
     }
 
     interval &operator+=(interval const &rhs) noexcept
@@ -77,11 +81,53 @@ public:
         return r;
     }
 
+    /** lhs is less than the upper edge of the interval.
+     */
+    [[nodiscard]] friend constexpr bool operator<(value_type const &lhs, interval const &rhs) noexcept
+    {
+        return lhs < rhs.maximum();
+    }
+
+    /** lhs is less than or equal the upper edge of the interval.
+     */
+    [[nodiscard]] friend constexpr bool operator<=(value_type const &lhs, interval const &rhs) noexcept
+    {
+        return lhs <= rhs.maximum();
+    }
+
+    /** lhs is less than and outside of the interval
+     */
+    [[nodiscard]] friend constexpr bool operator<<(value_type const &lhs, interval const &rhs) noexcept
+    {
+        return lhs < rhs.minimum();
+    }
+
+    /** lhs is greater than the lower edge of the interval.
+     */
+    [[nodiscard]] friend constexpr bool operator>(value_type const &lhs, interval const &rhs) noexcept
+    {
+        return lhs > rhs.minimum();
+    }
+
+    /** lhs is greater than or equal to the lower edge of the interval.
+     */
+    [[nodiscard]] friend constexpr bool operator>=(value_type const &lhs, interval const &rhs) noexcept
+    {
+        return lhs >= rhs.minimum();
+    }
+
+    /** lhs is greater than and outside of the interval
+     */
+    [[nodiscard]] friend constexpr bool operator>>(value_type const &lhs, interval const &rhs) noexcept
+    {
+        return lhs > rhs.maximum();
+    }
+
     [[nodiscard]] friend constexpr interval max(interval const &lhs, interval const &rhs) noexcept
     {
         auto r = interval{};
-        r._minimum = lhs._minimum < rhs._minimum ? lhs._minimum : rhs._minimum; // std::min()
-        r._maximum = lhs._maximum > rhs._maximum ? lhs._maximum : rhs._maximum; // std::max()
+        r.v[0] = lhs.v[0] < rhs.v[0] ? lhs.v[0] : rhs.v[0]; // std::min()
+        r.v[1] = lhs.v[1] > rhs.v[1] ? lhs.v[1] : rhs.v[1]; // std::max()
         tt_assume(r.minimum() <= r.maximum());
         return r;
     }
@@ -89,8 +135,8 @@ public:
     [[nodiscard]] friend constexpr interval min(interval const &lhs, interval const &rhs) noexcept
     {
         auto r = interval{};
-        r._minimum = lhs._minimum > rhs._minimum ? lhs._minimum : rhs._minimum; // std::max()
-        r._maximum = lhs._maximum < rhs._maximum ? lhs._maximum : rhs._maximum; // std::min()
+        r.v[0] = lhs.v[0] > rhs.v[0] ? lhs.v[0] : rhs.v[0]; // std::max()
+        r.v[1] = lhs.v[1] < rhs.v[1] ? lhs.v[1] : rhs.v[1]; // std::min()
         tt_assume(r.minimum() <= r.maximum());
         return r;
     }
@@ -115,14 +161,14 @@ public:
         return r;
     }
 
+    [[nodiscard]] friend constexpr value_type clamp(value_type const &lhs, interval const &rhs) noexcept
+    {
+        tt_assume(rhs.minimum() <= rhs.maximum());
+        return std::clamp(lhs, rhs.minimum(), rhs.maximum());
+    }
+
 private:
-    union {
-        alignas(sizeof(value_type) * 2) value_type v[2];
-        struct {
-            value_type _minimum;
-            value_type _maximum;
-        };
-    };
+    alignas(sizeof(value_type) * 2) value_type v[2];
 };
 
 using finterval = interval<float>;

@@ -5,7 +5,7 @@
 
 #include "SDF8.hpp"
 #include "PixelMap.hpp"
-#include "attributes.hpp"
+#include "alignment.hpp"
 #include "math.hpp"
 #include "bezier.hpp"
 #include "required.hpp"
