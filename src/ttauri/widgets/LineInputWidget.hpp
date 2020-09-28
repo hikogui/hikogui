@@ -57,7 +57,7 @@ public:
 
     ~LineInputWidget();
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;
+    [[nodiscard]] bool updateConstraints() noexcept override;
     [[nodiscard]] WidgetUpdateResult
     updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;

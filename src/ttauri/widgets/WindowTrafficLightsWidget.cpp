@@ -16,24 +16,24 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
     margin = 0.0f;
 }
 
-[[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateConstraints() noexcept
+[[nodiscard]] bool WindowTrafficLightsWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-        return result;
-    }
+    if (Widget::updateConstraints()) {
+        if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+            _preferred_size = {Theme::toolbarDecorationButtonWidth * 3.0f, Theme::toolbarHeight};
 
-    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        _preferred_size = {Theme::toolbarDecorationButtonWidth * 3.0f, Theme::toolbarHeight};
+        } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+            _preferred_size = {DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING, DIAMETER + 2.0 * MARGIN};
 
-    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        _preferred_size = {DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING, DIAMETER + 2.0 * MARGIN};
-
+        } else {
+            tt_no_default;
+        }
+        return true;
     } else {
-        tt_no_default;
+        return false;
     }
-    return WidgetUpdateResult::Self;
 }
 
 [[nodiscard]] WidgetUpdateResult

@@ -20,19 +20,17 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent) noexcept : Widget(win
 
 ButtonWidget::~ButtonWidget() {}
 
-[[nodiscard]] WidgetUpdateResult ButtonWidget::updateConstraints() noexcept
+[[nodiscard]] bool ButtonWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-        return result;
+    if (Widget::updateConstraints()) {
+        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
+        _preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent() + Theme::margin2Dx2);
+        return true;
+    } else {
+        return false;
     }
-
-    labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-
-    _preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent() + Theme::margin2Dx2);
-
-    return WidgetUpdateResult::Self;
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

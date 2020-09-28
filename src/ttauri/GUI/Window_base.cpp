@@ -48,7 +48,7 @@ void Window_base::initialize()
 
     // Execute a layout to determine initial window size.
     ttlet widget_lock = std::scoped_lock(widget->mutex);
-    if (widget->updateConstraints() >= WidgetUpdateResult::Children) {
+    if (widget->updateConstraints()) {
         requestLayout = true;
         layoutWindow();
     }
@@ -76,7 +76,13 @@ void Window_base::layoutWindow() noexcept {
     ttlet minimum_widget_size = widget_size.minimum();
     ttlet maximum_widget_size = widget_size.maximum();
 
-    if (state != Window_base::State::Initializing) {
+    if (state == State::Initializing) {
+        currentWindowExtent = minimum_widget_size;
+
+    } else if (requestResize.exchange(false)) {
+        setWindowSize(minimum_widget_size);
+
+    } else {
         if ((currentWindowExtent.width() < minimum_widget_size.width()) ||
             (currentWindowExtent.height() < minimum_widget_size.height())
             ) {
@@ -88,9 +94,6 @@ void Window_base::layoutWindow() noexcept {
             ) {
             setWindowSize(maximum_widget_size);
         }
-
-    } else {
-        currentWindowExtent = minimum_widget_size;
     }
 
     // Set to actual window size.

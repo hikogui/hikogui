@@ -73,6 +73,10 @@ public:
     */
     std::atomic<bool> requestRedraw = true;
 
+    /** When set to true the window will resize to the size of the contained widget.
+     */
+    std::atomic<bool> requestResize = true;
+
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
      * is false again.

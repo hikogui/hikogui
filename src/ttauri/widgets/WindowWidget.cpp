@@ -36,24 +36,24 @@ WindowWidget::WindowWidget(Window &window, GridWidgetDelegate *delegate, Label t
 
 WindowWidget::~WindowWidget() {}
 
-[[nodiscard]] WidgetUpdateResult WindowWidget::updateConstraints() noexcept
+[[nodiscard]] bool WindowWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Children) {
-        return result;
+    if (ContainerWidget::updateConstraints()) {
+        ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
+        ttlet toolbar_size = toolbar->preferred_size();
+
+        ttlet content_lock = std::scoped_lock(content->mutex);
+        ttlet content_size = content->preferred_size();
+        _preferred_size = intersect(
+            max(content_size + toolbar_size._0y(), toolbar_size.x0()),
+            interval_vec2::make_maximum(window.virtualScreenSize())   
+        );
+        return true;
+    } else {
+        return false;
     }
-
-    ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
-    ttlet toolbar_size = toolbar->preferred_size();
-
-    ttlet content_lock = std::scoped_lock(content->mutex);
-    ttlet content_size = content->preferred_size();
-    _preferred_size = intersect(
-        max(content_size + toolbar_size._0y(), toolbar_size.x0()),
-        interval_vec2::make_maximum(window.virtualScreenSize())   
-    );
-    return WidgetUpdateResult::Self;
 }
 
 WidgetUpdateResult WindowWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
@@ -81,7 +81,7 @@ HitBox WindowWidget::hitBoxTest(vec position) const noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    constexpr float BORDER_WIDTH = 5.0;
+    constexpr float BORDER_WIDTH = 10.0f;
 
     auto r = HitBox{this, elevation};
 

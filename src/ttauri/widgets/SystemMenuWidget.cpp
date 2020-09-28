@@ -21,17 +21,16 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
     margin = 0.0f;
 }
 
-[[nodiscard]] WidgetUpdateResult SystemMenuWidget::updateConstraints() noexcept
+[[nodiscard]] bool SystemMenuWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-        return result;
+    if (Widget::updateConstraints()) {
+        _preferred_size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};
+        return true;
+    } else {
+        return false;
     }
-
-    _preferred_size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};
-
-    return WidgetUpdateResult::Self;
 }
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

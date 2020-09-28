@@ -77,18 +77,17 @@ public:
         _delegate = delegate;
     }
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    [[nodiscard]] bool updateConstraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-            return result;
+        if (Widget::updateConstraints()) {
+            icon_cell = (*icon).makeCell();
+            _preferred_size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};        
+            return true;
+        } else {
+            return false;
         }
-
-        icon_cell = (*icon).makeCell();
-
-        _preferred_size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};        
-        return WidgetUpdateResult::Self;
     }
 
     void drawBackground(DrawContext context) noexcept

@@ -65,27 +65,27 @@ public:
 
     ~ToggleWidget() {}
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    [[nodiscard]] bool updateConstraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-            return result;
+        if (Widget::updateConstraints()) {
+            onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
+            offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
+
+            ttlet minimumHeight =
+                std::max({onLabelCell->preferredExtent().height(), offLabelCell->preferredExtent().height(), Theme::smallSize});
+
+            ttlet minimumWidth = std::max({onLabelCell->preferredExtent().width(), offLabelCell->preferredExtent().width()}) +
+                Theme::smallSize * 2.0f + Theme::margin;
+
+            _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+            _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+
+            return true;
+        } else {
+            return false;
         }
-
-        onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
-        offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
-
-        ttlet minimumHeight =
-            std::max({onLabelCell->preferredExtent().height(), offLabelCell->preferredExtent().height(), Theme::smallSize});
-
-        ttlet minimumWidth = std::max({onLabelCell->preferredExtent().width(), offLabelCell->preferredExtent().width()}) +
-            Theme::smallSize * 2.0f + Theme::margin;
-
-        _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-        _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
-
-        return WidgetUpdateResult::Self;
     }
 
     [[nodiscard]] WidgetUpdateResult

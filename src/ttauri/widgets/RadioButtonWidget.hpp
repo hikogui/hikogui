@@ -53,22 +53,22 @@ public:
 
     ~RadioButtonWidget() {}
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    [[nodiscard]] bool updateConstraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-            return result;
+        if (Widget::updateConstraints()) {
+            labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
+
+            ttlet minimumHeight = std::max(labelCell->preferredExtent().height(), Theme::smallSize);
+            ttlet minimumWidth = Theme::smallSize + Theme::margin + labelCell->preferredExtent().width();
+
+            _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+            _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+            return true;
+        } else {
+            return false;
         }
-
-        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-
-        ttlet minimumHeight = std::max(labelCell->preferredExtent().height(), Theme::smallSize);
-        ttlet minimumWidth = Theme::smallSize + Theme::margin + labelCell->preferredExtent().width();
-
-        _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-        _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
-        return WidgetUpdateResult::Self;
     }
 
     [[nodiscard]] WidgetUpdateResult

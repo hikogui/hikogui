@@ -81,16 +81,16 @@ Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> chil
     return widget;
 }
 
-WidgetUpdateResult GridWidget::updateConstraints() noexcept
+bool GridWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
-        return result;
+    if (ContainerWidget::updateConstraints()) {
+        _preferred_size = calculateCellMinMaxSize(cells, rows, columns);
+        return true;
+    } else {
+        return false;
     }
-
-    _preferred_size = calculateCellMinMaxSize(cells, rows, columns);
-    return WidgetUpdateResult::Self;
 }
 
 WidgetUpdateResult GridWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept

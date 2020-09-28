@@ -17,7 +17,7 @@ Widget &ContainerWidget::addWidget(std::unique_ptr<Widget> childWidget) noexcept
     return *widget_ptr;
 }
 
-[[nodiscard]] WidgetUpdateResult ContainerWidget::updateConstraints() noexcept
+[[nodiscard]] bool ContainerWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
@@ -25,7 +25,7 @@ Widget &ContainerWidget::addWidget(std::unique_ptr<Widget> childWidget) noexcept
 
     for (auto &&child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
-        has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
+        has_constrainted |= child->updateConstraints();
     }
 
     return has_constrainted;

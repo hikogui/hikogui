@@ -65,34 +65,34 @@ public:
 
     ~CheckboxWidget() {}
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    [[nodiscard]] bool updateConstraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-            return result;
+        if (Widget::updateConstraints()) {
+            trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
+            falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
+            otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
+
+            ttlet minimumHeight = std::max(
+                {trueLabelCell->preferredExtent().height(),
+                 falseLabelCell->preferredExtent().height(),
+                 otherLabelCell->preferredExtent().height(),
+                 Theme::smallSize});
+
+            ttlet minimumWidthOfLabels = std::max(
+                {trueLabelCell->preferredExtent().width(),
+                 falseLabelCell->preferredExtent().width(),
+                 otherLabelCell->preferredExtent().width()});
+            ttlet minimumWidth = Theme::smallSize + Theme::margin + minimumWidthOfLabels;
+
+            _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+            _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+
+            return true;
+        } else {
+            return false;
         }
-
-        trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
-        falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
-        otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
-
-        ttlet minimumHeight = std::max(
-            {trueLabelCell->preferredExtent().height(),
-             falseLabelCell->preferredExtent().height(),
-             otherLabelCell->preferredExtent().height(),
-             Theme::smallSize});
-
-        ttlet minimumWidthOfLabels = std::max(
-            {trueLabelCell->preferredExtent().width(),
-             falseLabelCell->preferredExtent().width(),
-             otherLabelCell->preferredExtent().width()});
-        ttlet minimumWidth = Theme::smallSize + Theme::margin + minimumWidthOfLabels;
-
-        _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-        _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
-
-        return WidgetUpdateResult::Self;
     }
 
     [[nodiscard]] WidgetUpdateResult

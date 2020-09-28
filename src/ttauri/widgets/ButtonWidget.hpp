@@ -26,7 +26,7 @@ public:
     ButtonWidget(Window &window, Widget *parent) noexcept;
     ~ButtonWidget();
 
-    virtual WidgetUpdateResult updateConstraints() noexcept override;
+    virtual bool updateConstraints() noexcept override;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

@@ -36,13 +36,10 @@ GUIDevice *Widget::device() const noexcept
     return device;
 }
 
-WidgetUpdateResult Widget::updateConstraints() noexcept
+bool Widget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
-
-    return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed) ?
-        WidgetUpdateResult::Self :
-        WidgetUpdateResult::Nothing;
+    return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed);
 }
 
 WidgetUpdateResult Widget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept

@@ -119,38 +119,38 @@ public:
 
     ~SelectionWidget() {}
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    [[nodiscard]] bool updateConstraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-            return result;
+        if (Widget::updateConstraints()) {
+            labelCell = std::make_unique<TextCell>(*label, theme->placeholderLabelStyle);
+            auto preferredWidth = labelCell->preferredExtent().width();
+            auto preferredHeight = labelCell->preferredExtent().height();
+
+            // Create a list of cells, one for each option and calculate
+            // the optionHeight based on the option which is the tallest.
+            option_cache_list.clear();
+            for (ttlet & [ tag, labelText ] : *option_list) {
+                auto cell = std::make_unique<TextCell>(labelText, theme->labelStyle);
+                preferredWidth = std::max(preferredWidth, cell->preferredExtent().width());
+                preferredHeight = std::max(preferredHeight, cell->preferredExtent().height());
+                option_cache_list.emplace_back(tag, std::move(cell));
+            }
+
+            // Set the widget height to the tallest option, fallback to a small size widget.
+            if (preferredHeight == 0.0f) {
+                preferredHeight = Theme::smallSize;
+            }
+
+            _preferred_size = interval_vec2::make_minimum(
+                Theme::smallSize + preferredWidth + Theme::margin * 2.0f, preferredHeight + Theme::margin * 2.0f);
+            _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
+
+            return true;
+        } else {
+            return false;
         }
-
-        labelCell = std::make_unique<TextCell>(*label, theme->placeholderLabelStyle);
-        auto preferredWidth = labelCell->preferredExtent().width();
-        auto preferredHeight = labelCell->preferredExtent().height();
-
-        // Create a list of cells, one for each option and calculate
-        // the optionHeight based on the option which is the tallest.
-        option_cache_list.clear();
-        for (ttlet & [ tag, labelText ] : *option_list) {
-            auto cell = std::make_unique<TextCell>(labelText, theme->labelStyle);
-            preferredWidth = std::max(preferredWidth, cell->preferredExtent().width());
-            preferredHeight = std::max(preferredHeight, cell->preferredExtent().height());
-            option_cache_list.emplace_back(tag, std::move(cell));
-        }
-
-        // Set the widget height to the tallest option, fallback to a small size widget.
-        if (preferredHeight == 0.0f) {
-            preferredHeight = Theme::smallSize;
-        }
-
-        _preferred_size = interval_vec2::make_minimum(
-            Theme::smallSize + preferredWidth + Theme::margin * 2.0f, preferredHeight + Theme::margin * 2.0f);
-        _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
-
-        return WidgetUpdateResult::Self;
     }
 
     [[nodiscard]] WidgetUpdateResult

@@ -41,7 +41,7 @@ public:
 
     /** The rounding radius of boxes with rounded corners.
      */
-    static constexpr float roundingRadius = 5.0f;
+    static constexpr float roundingRadius = 8.0f;
 
     /** The size of small square widgets.
      */

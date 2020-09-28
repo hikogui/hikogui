@@ -46,16 +46,16 @@ public:
     ~LabelWidget() {
     }
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+    [[nodiscard]] bool updateConstraints() noexcept override {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-            return result;
+        if (Widget::updateConstraints()) {
+            labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
+            _preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent());
+            return true;
+        } else {
+            return false;
         }
-
-        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        _preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent());
-        return WidgetUpdateResult::Self;
     }
 
     void drawLabel(DrawContext drawContext) noexcept {

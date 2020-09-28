@@ -253,6 +253,20 @@ public:
         return v.z();
     }
 
+    /** The middle on the y-axis between bottom and top.
+     */
+    [[nodiscard]] float middle() const noexcept
+    {
+        return (bottom() + top()) * 0.5f;
+    }
+
+    /** The center on the x-axis between left and right.
+     */
+    [[nodiscard]] float center() const noexcept
+    {
+        return (left() + right()) * 0.5f;
+    }
+
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     aarect &width(T newWidth) noexcept
     {

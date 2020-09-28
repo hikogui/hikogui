@@ -73,7 +73,7 @@ public:
 
     void flow_default() noexcept {
         for (auto &&item: items) {
-            item.size = item.extent().minimum();
+            item.size = std::ceil(item.extent().minimum());
         }
     }
 
@@ -91,13 +91,16 @@ public:
 
     [[nodiscard]] ssize_t flow_expand(ssize_t nr_non_max, flow_resistance resistance, float &extra_size) noexcept
     {
-        auto extra_size_per_item = extra_size / nr_non_max;
+        ttlet extra_size_per_item = std::ceil(extra_size / nr_non_max);
 
         nr_non_max = 0;
         for (auto &&item : items) {
             if (item.resistance == resistance) {
                 auto old_size = item.size;
-                item.size = clamp(item.size + extra_size_per_item, item.extent());
+
+                ttlet extra_size_this_item = std::min(extra_size, extra_size_per_item);
+
+                item.size = std::ceil(clamp(item.size + extra_size_this_item, item.extent()));
                 extra_size -= item.size - old_size;
 
                 if (item.size < item.extent()) {
@@ -113,7 +116,7 @@ public:
         auto offset = 0.0f;
         for (ssize_t i = 0; i != ssize(items); ++i) {
             offset += margins[i];
-            items[i].offset = offset;
+            items[i].offset = std::floor(offset);
             offset += items[i].size;
         }
     }
@@ -126,17 +129,17 @@ public:
         flow_default();
 
         auto nr_non_max = flow_non_max(flow_resistance::greedy);
-        while (extra_size > 0.0f && nr_non_max != 0) {
+        while (extra_size >= 1.0f && nr_non_max != 0) {
             nr_non_max = flow_expand(nr_non_max, flow_resistance::greedy, extra_size);
         }
 
         nr_non_max = flow_non_max(flow_resistance::normal);
-        while (extra_size > 0.0f && nr_non_max != 0) {
+        while (extra_size >= 1.0f && nr_non_max != 0) {
             nr_non_max = flow_expand(nr_non_max, flow_resistance::normal, extra_size);
         }
 
         nr_non_max = flow_non_max(flow_resistance::resist);
-        while (extra_size > 0.0f && nr_non_max != 0) {
+        while (extra_size >= 1.0f && nr_non_max != 0) {
             nr_non_max = flow_expand(nr_non_max, flow_resistance::resist, extra_size);
         }
 

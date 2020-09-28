@@ -281,7 +281,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 
     {
         ttlet widget_lock = std::scoped_lock(widget->mutex);
-        auto needLayout = widget->updateConstraints() >= WidgetUpdateResult::Children;
+        auto needLayout = widget->updateConstraints();
         needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
         if (needLayout) {
             layoutWindow();

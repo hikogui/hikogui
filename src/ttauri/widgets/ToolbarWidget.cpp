@@ -28,46 +28,45 @@ Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<
     return widget;
 }
 
-[[nodiscard]] WidgetUpdateResult ToolbarWidget::updateConstraints() noexcept
+[[nodiscard]] bool ToolbarWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
-        return result;
+    if (ContainerWidget::updateConstraints()) {
+        auto width = finterval{0.0f};
+        auto height = finterval{};
+        child_base_line = relative_base_line{};
+        auto prev_right_margin = 0.0f;
+        for (ttlet &child : left_children) {
+            ttlet child_lock = std::scoped_lock(child->mutex);
+            ttlet _margin = std::max(prev_right_margin, child->margin);
+            prev_right_margin = child->margin;
+
+            width += _margin;
+            width += child->preferred_size().width();
+            height = intersect(height, child->preferred_size().height() + child->margin * 2.0f);
+            child_base_line = std::max(child_base_line, child->preferred_base_line());
+        }
+
+        for (ttlet &child : views::reverse(right_children)) {
+            ttlet child_lock = std::scoped_lock(child->mutex);
+            ttlet _margin = std::max(prev_right_margin, child->margin);
+            prev_right_margin = child->margin;
+
+            width += _margin;
+            width += child->preferred_size().width();
+            height = intersect(height, child->preferred_size().height() + child->margin * 2.0f);
+            child_base_line = std::max(child_base_line, child->preferred_base_line());
+        }
+
+        // Add right hand margin for the last child added.
+        width += prev_right_margin;
+
+        _preferred_size = {width, height};
+        return true;
+    } else {
+        return false;
     }
-
-    auto width = finterval{0.0f};
-    auto height = finterval{};
-    child_base_line = relative_base_line{};
-    auto prev_right_margin = 0.0f;
-    for (ttlet &child : left_children) {
-        ttlet child_lock = std::scoped_lock(child->mutex);
-        ttlet _margin = std::max(prev_right_margin, child->margin);
-        prev_right_margin = child->margin;
-
-        width += _margin;
-        width += child->preferred_size().width();
-        height = intersect(height, child->preferred_size().height() + child->margin * 2.0f);
-        child_base_line = std::max(child_base_line, child->preferred_base_line());
-    }
-
-    for (ttlet &child : views::reverse(right_children)) {
-        ttlet child_lock = std::scoped_lock(child->mutex);
-        ttlet _margin = std::max(prev_right_margin, child->margin);
-        prev_right_margin = child->margin;
-
-        width += _margin;
-        width += child->preferred_size().width();
-        height = intersect(height, child->preferred_size().height() + child->margin * 2.0f);
-        child_base_line = std::max(child_base_line, child->preferred_base_line());
-    }
-
-    // Add right hand margin for the last child added.
-    width += prev_right_margin;
-
-    _preferred_size = {width, height};
-
-    return WidgetUpdateResult::Self;
 }
 
 WidgetUpdateResult ToolbarWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept

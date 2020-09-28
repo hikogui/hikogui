@@ -32,24 +32,27 @@ public:
         }
     };
 
-    TabWidget(Window &window, Widget *parent) noexcept : Widget(window, parent) {}
+    TabWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
+    {
+        margin = 0.0f;
+    }
 
     ~TabWidget() {}
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    [[nodiscard]] bool updateConstraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        tt_assume(selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs));
 
         auto has_constrainted = Widget::updateConstraints();
 
         // Recurse into the selected widget.
+        tt_assume(selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs));
         auto &selected_tab = tabs[selected_tab_index];
         auto &child = selected_tab.widget;
         ttlet child_lock = std::scoped_lock(child->mutex);
-        has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
+        has_constrainted |= child->updateConstraints();
 
-        if (has_constrainted >= WidgetUpdateResult::Self) {
+        if (has_constrainted) {
             auto tab_text_width = Theme::iconSize;
             auto tab_text_height = 0.0f;
             for (auto &&tab : tabs) {
@@ -58,16 +61,17 @@ public:
                 tab_text_width = std::max(tab_text_width, tab.text_cell->preferredExtent().width());
                 tab_text_height = std::max(tab_text_height, tab.text_cell->preferredExtent().height());
             }
-            ttlet tab_width = tab_text_width + Theme::margin * 2.0f;
+            tab_width = std::ceil(tab_text_width + Theme::margin * 2.0f);
             ttlet tab_height = tab_text_height + Theme::iconSize + Theme::margin * 3.0f;
 
-            ttlet header_width = std::ssize(tabs) * tab_width;
+            ttlet header_width = std::ssize(tabs) * tab_width + std::ssize(tabs) * Theme::margin;
             header_height = tab_height;
 
             _preferred_size = max(child->preferred_size() + vec{0.0f, header_height}, vec{header_width, 0.0f});
+            return true;
+        } else {
+            return false;
         }
-
-        return has_constrainted;
     }
 
     [[nodiscard]] WidgetUpdateResult
@@ -94,10 +98,7 @@ public:
         has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
         if (has_laid_out >= WidgetUpdateResult::Self) {
             if (std::ssize(tabs) != 0) {
-                // Spread the tabs over the width of container.
-                auto tab_width = std::floor(header_rectangle.width() / std::ssize(tabs));
-
-                auto x = 0.0f;
+                auto x = Theme::margin;
                 for (auto &tab : tabs) {
                     tab.tab_rect = aarect{header_rectangle.x() + x, header_rectangle.y(), tab_width, header_rectangle.height()};
                     auto tab_inner_rect = shrink(tab.tab_rect, Theme::margin);
@@ -109,6 +110,7 @@ public:
                     tab.text_rect = align(tab_inner_rect, text_size, Alignment::BottomCenter);
 
                     x += tab_width;
+                    x += Theme::margin;
                 }
             }
         }
@@ -116,10 +118,50 @@ public:
         return has_laid_out;
     }
 
+    void drawTab(DrawContext drawContext, TabEntry const &tab, bool tab_is_selected, bool hover_over_tab, bool tab_is_pressed) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        if (tab_is_pressed) {
+            drawContext.fillColor = theme->fillColor(nestingLevel() + 1);
+        } else if (tab_is_selected || hover_over_tab) {
+            drawContext.fillColor = theme->fillColor(nestingLevel());
+        } else {
+            drawContext.fillColor = theme->fillColor(nestingLevel() - 1);
+        }
+        drawContext.color = theme->fillColor(nestingLevel());
+        drawContext.cornerShapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
+        ttlet extended_tab_rect = aarect{
+            tab.tab_rect.x(), tab.tab_rect.y() - 1.0f, tab.tab_rect.width(), tab.tab_rect.height() + 1
+        };
+        drawContext.drawBoxIncludeBorder(extended_tab_rect);
+
+        drawContext.transform = mat::T{0.0f, 0.0f, 0.001f} * drawContext.transform;
+        drawContext.color = theme->foregroundColor;
+        tab.image_cell->draw(drawContext, tab.image_rect, Alignment::MiddleCenter, tab.image_rect.middle(), true);
+        tab.text_cell->draw(drawContext, tab.text_rect, Alignment::MiddleCenter, tab.text_rect.middle(), true);
+    }
+
+    void drawHeader(DrawContext const &drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        for (ssize_t i = 0; i != std::ssize(tabs); ++i) {
+            ttlet &tab = tabs[i];
+
+            drawTab(drawContext, tab, i == selected_tab_index, i == hover_tab_index, i == pressed_tab_index);
+        }
+    }
+
     void drawChild(DrawContext context, hires_utc_clock::time_point displayTimePoint, Widget &child) noexcept
     {
-        ttlet child_lock = std::scoped_lock(child.mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
 
+        // Draw a background for the child.
+        context.fillColor = theme->fillColor(nestingLevel());
+        context.drawFilledQuad(content_rectangle);
+
+        ttlet child_lock = std::scoped_lock(child.mutex);
         context.clippingRectangle = child.clipping_rectangle();
         context.transform = child.toWindowTransform;
 
@@ -152,7 +194,7 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawContext.drawFilledQuad(rectangle());
+        drawHeader(drawContext);
 
         if (selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs)) {
             auto &tab = tabs[selected_tab_index];
@@ -160,11 +202,40 @@ public:
         }
     }
 
+    void handleMouseEvent(MouseEvent const &event) noexcept override
+    {
+        if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+            if (pressed_tab_index != -1) {
+                selected_tab_index = pressed_tab_index;
+                requestConstraint = true;
+                window.requestResize = true;
+            }
+        }
+
+        ssize_t new_hover_tab_index = -1;
+        for (ssize_t i = 0; i != std::ssize(tabs); ++i) {
+            if (tabs[i].tab_rect.contains(event.position)) {
+                new_hover_tab_index = i;
+            }
+        }
+
+        auto state_has_changed = false;
+        state_has_changed |= compare_then_assign(hover_tab_index, new_hover_tab_index);
+        state_has_changed |= compare_then_assign(pressed_tab_index, event.down.leftButton ? new_hover_tab_index : -1);
+
+        if (state_has_changed) {
+            window.requestRedraw = true;
+        }
+    }
+
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        auto r = rectangle().contains(position) ? HitBox{this, elevation} : HitBox{};
+        auto r =
+            header_rectangle.contains(position) ? HitBox(this, elevation, HitBox::Type::Button) :
+            rectangle().contains(position) ? HitBox{this, elevation} :
+            HitBox{};
 
         if (selected_tab_index >= 0 && selected_tab_index < std::ssize(tabs)) {
             auto &tab = tabs[selected_tab_index];
@@ -240,7 +311,10 @@ public:
 protected:
     std::vector<TabEntry> tabs;
     ssize_t selected_tab_index = 0;
+    ssize_t hover_tab_index = -1;
+    ssize_t pressed_tab_index = -1;
 
+    float tab_width;
     float header_height;
     aarect header_rectangle;
     aarect content_rectangle;

@@ -18,22 +18,22 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::u8string c
 
 LineInputWidget::~LineInputWidget() {}
 
-WidgetUpdateResult LineInputWidget::updateConstraints() noexcept
+bool LineInputWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
-        return result;
+    if (Widget::updateConstraints()) {
+        ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
+
+        _preferred_size = {
+            vec{100.0f, Theme::smallSize + Theme::margin * 2.0f},
+            vec{500.0f, Theme::smallSize + Theme::margin * 2.0f}
+        };
+        _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
+        return true;
+    } else {
+        return false;
     }
-
-    ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
-
-    _preferred_size = {
-        vec{100.0f, Theme::smallSize + Theme::margin * 2.0f},
-        vec{500.0f, Theme::smallSize + Theme::margin * 2.0f}
-    };
-    _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
-    return WidgetUpdateResult::Self;
 }
 
 WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept

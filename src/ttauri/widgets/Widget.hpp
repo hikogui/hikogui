@@ -296,12 +296,9 @@ public:
      * This function should update the constraints whenever the data changes,
      * such as changing the text of a label, or when adding or removing child widgets.
      *
-     * @return If true then the constraints have been updated by this widget, or
-     *         any of its children.
-     *         This value should be used by the overriding function to determine if
-     *         it should update the constraints.
+     * @return True if its constraints has changed
      */
-    [[nodiscard]] virtual WidgetUpdateResult updateConstraints() noexcept;
+    [[nodiscard]] virtual bool updateConstraints() noexcept;
 
     /** Update the internal layout of the widget.
      * This function is called by the window on every frame. It should recursively
