@@ -73,8 +73,9 @@ public:
             return result;
         }
 
+        ttlet offset = Theme::margin + Theme::borderWidth;
         button_rectangle = aarect{
-            rectangle().x(), rectangle().y() - Theme::margin, rectangle().width(), rectangle().height() + Theme::margin
+            rectangle().x(), rectangle().y() - offset, rectangle().width(), rectangle().height() + offset
         };
 
         return WidgetUpdateResult::Self;
@@ -88,6 +89,10 @@ public:
         } else {
             drawContext.fillColor = theme->fillColor(nestingLevel() - 1);
             drawContext.color = drawContext.fillColor;
+        }
+
+        if (focus && window.active) {
+            drawContext.color = theme->accentColor;
         }
 
         drawContext.cornerShapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
@@ -154,6 +159,12 @@ public:
         } else {
             return HitBox{};
         }
+    }
+
+    [[nodiscard]] bool acceptsFocus() const noexcept override
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return *enabled;
     }
 
 protected:

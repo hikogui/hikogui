@@ -119,6 +119,16 @@ public:
         return child->hitBoxTest(position - child->offsetFromParent);
     }
 
+    Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(*value >= 0 && *value < std::ssize(children));
+
+        ttlet &child = children[*value];
+        ttlet child_lock = std::scoped_lock(child->mutex);
+        return child->nextKeyboardWidget(currentKeyboardWidget, reverse);
+    }
+
     template<typename WidgetType = GridWidget, typename... Args>
     WidgetType &addTab(Args const &... args) noexcept
     {
