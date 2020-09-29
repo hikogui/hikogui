@@ -225,10 +225,6 @@ protected:
     */
     [[nodiscard]] float windowScale() const noexcept;
 
-    /** layout and constrain the window based on the window-widget's extent.
-    */
-    void layoutWindow() noexcept;
-
     /*! Called when the GPU library has changed the window size.
      */
     virtual void windowChangedSize(ivec extent);

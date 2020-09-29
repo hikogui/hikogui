@@ -281,11 +281,29 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 
     {
         ttlet widget_lock = std::scoped_lock(widget->mutex);
-        auto needLayout = widget->updateConstraints();
-        needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
-        if (needLayout) {
-            layoutWindow();
+
+        // Update the size constraints of the WindowWidget and it children.
+        auto constraintsHaveChanged = widget->updateConstraints();
+
+        // Check if the window size matches the preferred size of the WindowWidget.
+        // If not ask the operating system to change the size of the window, which is
+        // done asynchronously.
+        //
+        // We need to continue drawing into the incorrectly sized window, otherwise
+        // Vulkan will not detect the change of drawing surface's size.
+        //
+        // Make sure the widget does have its window rectangle match the constraints, otherwise
+        // the logic for layout and drawing becomes complicated.
+        ttlet preferred_size = widget->preferred_size();
+        if (requestResize.exchange(false) || currentWindowExtent << preferred_size) {
+            setWindowSize(currentWindowExtent = preferred_size.minimum());
+        } else if (currentWindowExtent >> preferred_size) {
+            setWindowSize(currentWindowExtent = preferred_size.maximum());
         }
+        widget->set_window_rectangle(aarect{currentWindowExtent});
+
+        // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
+        auto needLayout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraintsHaveChanged;
 
         // Make sure the widget's layout is updated before draw, but after window resize.
         auto needRedraw = widget->updateLayout(displayTimePoint, needLayout) >= WidgetUpdateResult::Children;

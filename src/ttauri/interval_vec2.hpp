@@ -140,6 +140,19 @@ public:
         return lhs.value == rhs.value;
     }
 
+    /** Check if lhs.x or lhs.y is smaller then rhs.minimum.
+     */
+    [[nodiscard]] friend bool operator<<(vec const &lhs, interval_vec2 const &rhs) noexcept
+    {
+        return lhs.x() < rhs.minimum().x() || lhs.y() < rhs.minimum().y();
+    }
+
+    /** Check if lhs.x or lhs.y is larger then rhs.maximum.
+     */
+    [[nodiscard]] friend bool operator>>(vec const &lhs, interval_vec2 const &rhs) noexcept
+    {
+        return lhs.x() > rhs.maximum().x() || lhs.y() > rhs.maximum().y();
+    }
     [[nodiscard]] friend std::string to_string(interval_vec2 const &rhs) noexcept
     {
         return fmt::format("({}:{}, {}:{})", rhs.value.x(), rhs.value.z(), rhs.value.y(), rhs.value.w());

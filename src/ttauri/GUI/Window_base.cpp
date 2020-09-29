@@ -39,20 +39,19 @@ void Window_base::initialize()
 
     widget = std::make_unique<WindowWidget>(*static_cast<Window *>(this), delegate, title);
 
+    // The delegate will populate the window with widgets.
+    // This needs to be done first to figure out the initial size of the window.
     delegate->openingWindow(*static_cast<Window *>(this));
 
-    // Start of with a large window size, so that widgets have room to layout.
-    // for the first time. Otherwise the minimum height is determined based on
-    // the tiny width of 0 by 0 window.
-    currentWindowExtent = ivec{500, 500};
-
-    // Execute a layout to determine initial window size.
+    // Execute a constraint check to determine initial window size.
     ttlet widget_lock = std::scoped_lock(widget->mutex);
-    if (widget->updateConstraints()) {
-        requestLayout = true;
-        layoutWindow();
-    }
+    static_cast<void>(widget->updateConstraints());
+    currentWindowExtent = widget->preferred_size().minimum();
 
+    // Once the window is open, we should be a full constraint, layout and draw of the window.
+    requestLayout = true;
+    
+    // Rest the keyboard target to not focus anything.
     updateToNextKeyboardTarget(nullptr);
 
     // Finished initializing the window.
@@ -66,45 +65,6 @@ void Window_base::initialize()
 bool Window_base::isClosed() {
     ttlet lock = std::scoped_lock(mutex);
     return state == State::NoWindow;
-}
-
-void Window_base::layoutWindow() noexcept {
-    tt_assume(widget);
-    ttlet lock = std::scoped_lock(mutex);
-    ttlet widget_lock = std::scoped_lock(widget->mutex);
-    ttlet widget_size = widget->preferred_size();
-    ttlet minimum_widget_size = widget_size.minimum();
-    ttlet maximum_widget_size = widget_size.maximum();
-
-    if (state == State::Initializing) {
-        currentWindowExtent = minimum_widget_size;
-
-    } else if (requestResize.exchange(false)) {
-        setWindowSize(minimum_widget_size);
-
-    } else {
-        if ((currentWindowExtent.width() < minimum_widget_size.width()) ||
-            (currentWindowExtent.height() < minimum_widget_size.height())
-            ) {
-            setWindowSize(minimum_widget_size);
-        }
-
-        if ((currentWindowExtent.width() > maximum_widget_size.width()) ||
-            (currentWindowExtent.height() > maximum_widget_size.height())
-            ) {
-            setWindowSize(maximum_widget_size);
-        }
-    }
-
-    // Set to actual window size.
-    widget->set_window_rectangle(aarect{currentWindowExtent});
-
-    LOG_INFO("Window constraints '{}' minimumExtent={} maximumExtent={} currentExtent={}",
-        title,
-        minimum_widget_size,
-        maximum_widget_size,
-        widget->rectangle().extent()
-    );
 }
 
 void Window_base::setDevice(GUIDevice *newDevice)
