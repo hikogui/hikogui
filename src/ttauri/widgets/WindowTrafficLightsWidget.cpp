@@ -22,10 +22,14 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 
     if (Widget::updateConstraints()) {
         if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-            _preferred_size = {Theme::toolbarDecorationButtonWidth * 3.0f, Theme::toolbarHeight};
+            ttlet width = Theme::toolbarDecorationButtonWidth * 3.0f;
+            ttlet height = Theme::toolbarHeight;
+            _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
 
         } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-            _preferred_size = {DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING, DIAMETER + 2.0 * MARGIN};
+            ttlet width = DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING;
+            ttlet height = DIAMETER + 2.0f * MARGIN;
+            _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
 
         } else {
             tt_no_default;

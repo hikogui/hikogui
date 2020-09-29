@@ -56,23 +56,22 @@ public:
     {
     }
 
-    ToolbarButtonWidget(
-        Window &window,
-        Widget *parent,
-        TTauriIcon icon,
-        delegate_type const &delegate = delegate_type{}) noexcept :
+    ToolbarButtonWidget(Window &window, Widget *parent, TTauriIcon icon, delegate_type const &delegate = delegate_type{}) noexcept
+        :
         ToolbarButtonWidget(window, parent, Image{icon}, delegate)
     {
     }
 
     ~ToolbarButtonWidget() {}
 
-    delegate_type &delegate() noexcept {
+    delegate_type &delegate() noexcept
+    {
         ttlet lock = std::scoped_lock(mutex);
         return _delegate;
     }
 
-    void setDelegate(delegate_type delegate) noexcept {
+    void setDelegate(delegate_type delegate) noexcept
+    {
         ttlet lock = std::scoped_lock(mutex);
         _delegate = delegate;
     }
@@ -83,7 +82,9 @@ public:
 
         if (Widget::updateConstraints()) {
             icon_cell = (*icon).makeCell();
-            _preferred_size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};        
+            ttlet width = Theme::toolbarDecorationButtonWidth;
+            ttlet height = Theme::toolbarHeight;
+            _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
             return true;
         } else {
             return false;

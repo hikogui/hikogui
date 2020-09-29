@@ -13,6 +13,7 @@
 #include "TabWidget.hpp"
 #include "ToolbarWidget.hpp"
 #include "ToolbarButtonWidget.hpp"
+#include "ToolbarTabButtonWidget.hpp"
 #include "WindowWidget.hpp"
 #include "RowWidget.hpp"
 #include "ColumnWidget.hpp"

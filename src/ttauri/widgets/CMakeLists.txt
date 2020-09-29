@@ -20,6 +20,7 @@ target_sources(ttauri PRIVATE
     TabWidget.hpp
     ToggleWidget.hpp
     ToolbarButtonWidget.hpp
+    ToolbarTabButtonWidget.hpp
     ToolbarWidget.cpp
     ToolbarWidget.hpp
     Widget.cpp

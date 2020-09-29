@@ -26,7 +26,9 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
     tt_assume(mutex.is_locked_by_current_thread());
 
     if (Widget::updateConstraints()) {
-        _preferred_size = {Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight};
+        ttlet width = Theme::toolbarDecorationButtonWidth;
+        ttlet height = Theme::toolbarHeight;
+        _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
         return true;
     } else {
         return false;
