@@ -35,7 +35,7 @@ Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<
     if (ContainerWidget::updateConstraints()) {
         auto width = finterval{0.0f};
         auto height = finterval{};
-        child_base_line = relative_base_line{};
+        child_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
         auto prev_right_margin = 0.0f;
         for (ttlet &child : left_children) {
             ttlet child_lock = std::scoped_lock(child->mutex);
