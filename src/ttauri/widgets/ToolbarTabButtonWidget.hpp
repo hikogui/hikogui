@@ -64,21 +64,19 @@ public:
         }
     }
 
-    [[nodiscard]] WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
-            return result;
+        need_layout |= requestLayout.exchange(false);
+        if (need_layout) {
+            ttlet offset = Theme::margin + Theme::borderWidth;
+            button_rectangle = aarect{
+                rectangle().x(), rectangle().y() - offset, rectangle().width(), rectangle().height() + offset
+            };
         }
 
-        ttlet offset = Theme::margin + Theme::borderWidth;
-        button_rectangle = aarect{
-            rectangle().x(), rectangle().y() - offset, rectangle().width(), rectangle().height() + offset
-        };
-
-        return WidgetUpdateResult::Self;
+        return Widget::updateLayout(display_time_point, need_layout);
     }
 
     void drawButton(DrawContext drawContext) noexcept

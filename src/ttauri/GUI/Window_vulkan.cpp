@@ -283,7 +283,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         ttlet widget_lock = std::scoped_lock(widget->mutex);
 
         // Update the size constraints of the WindowWidget and it children.
-        auto constraintsHaveChanged = widget->updateConstraints();
+        auto constraints_have_changed = widget->updateConstraints();
 
         // Check if the window size matches the preferred size of the WindowWidget.
         // If not ask the operating system to change the size of the window, which is
@@ -303,13 +303,13 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         widget->set_window_rectangle(aarect{currentWindowExtent});
 
         // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
-        auto needLayout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraintsHaveChanged;
+        ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;
 
         // Make sure the widget's layout is updated before draw, but after window resize.
-        auto needRedraw = widget->updateLayout(displayTimePoint, needLayout) >= WidgetUpdateResult::Children;
-        needRedraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
+        auto need_redraw = widget->updateLayout(displayTimePoint, need_layout);
+        need_redraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
 
-        if (!needRedraw) {
+        if (!need_redraw) {
             return;
         }
     }

@@ -93,12 +93,12 @@ bool GridWidget::updateConstraints() noexcept
     }
 }
 
-WidgetUpdateResult GridWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+bool GridWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
-    forceLayout |= requestLayout.exchange(false);
 
-    if (forceLayout) {
+    need_layout |= requestLayout.exchange(false);
+    if (need_layout) {
         columns.flow(rectangle().width());
         rows.flow(rectangle().height());
 
@@ -117,7 +117,7 @@ WidgetUpdateResult GridWidget::updateLayout(hires_utc_clock::time_point displayT
         }
     }
 
-    return ContainerWidget::updateLayout(displayTimePoint, forceLayout);
+    return ContainerWidget::updateLayout(display_time_point, need_layout);
 }
 
 } // namespace tt

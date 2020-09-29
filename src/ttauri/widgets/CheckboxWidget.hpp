@@ -95,29 +95,27 @@ public:
         }
     }
 
-    [[nodiscard]] WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
-            return result;
+        need_layout |= requestLayout.exchange(false);
+        if (need_layout) {
+            checkboxRectangle = aarect{0.0f, base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
+
+            ttlet labelX = checkboxRectangle.p3().x() + Theme::margin;
+            labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
+
+            checkGlyph = to_FontGlyphIDs(ElusiveIcon::Ok);
+            ttlet checkGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(checkGlyph);
+            checkRectangle = align(checkboxRectangle, scale(checkGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
+
+            minusGlyph = to_FontGlyphIDs(ElusiveIcon::Minus);
+            ttlet minusGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minusGlyph);
+            minusRectangle = align(checkboxRectangle, scale(minusGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
         }
-
-        checkboxRectangle = aarect{0.0f, base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
-
-        ttlet labelX = checkboxRectangle.p3().x() + Theme::margin;
-        labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
-
-        checkGlyph = to_FontGlyphIDs(ElusiveIcon::Ok);
-        ttlet checkGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(checkGlyph);
-        checkRectangle = align(checkboxRectangle, scale(checkGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
-
-        minusGlyph = to_FontGlyphIDs(ElusiveIcon::Minus);
-        ttlet minusGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minusGlyph);
-        minusRectangle = align(checkboxRectangle, scale(minusGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
-
-        return WidgetUpdateResult::Self;
+        
+        return Widget::updateLayout(displayTimePoint, need_layout);
     }
 
     void drawCheckBox(DrawContext const &drawContext) noexcept

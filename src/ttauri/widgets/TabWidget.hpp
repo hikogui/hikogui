@@ -50,21 +50,22 @@ public:
         }
     }
 
-    [[nodiscard]] WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         tt_assume(*value >= 0 && *value < std::ssize(children));
 
-        auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
         auto &child = children[*value];
-
         ttlet child_lock = std::scoped_lock(child->mutex);
-        child->set_window_rectangle(window_rectangle());
-        child->set_window_base_line(window_base_line());
 
-        has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
-        return has_laid_out;
+        auto need_redraw = need_layout |= requestLayout.exchange(false);
+        if (need_layout) {
+            child->set_window_rectangle(window_rectangle());
+            child->set_window_base_line(window_base_line());
+        }
+
+        need_redraw |= child->updateLayout(display_time_point, need_layout);
+        return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
     }
 
     void drawChild(DrawContext context, hires_utc_clock::time_point displayTimePoint, Widget &child) noexcept

@@ -12,18 +12,15 @@ protected:
     std::vector<std::unique_ptr<Widget>> children;
 
 public:
-    ContainerWidget(Window &window, Widget *parent) noexcept :
-        Widget(window, parent)
+    ContainerWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
     {
         margin = 0.0f;
     }
 
-    ~ContainerWidget() {
-    }
+    ~ContainerWidget() {}
 
     [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
@@ -43,7 +40,6 @@ public:
     {
         return static_cast<T &>(addWidget(std::make_unique<T>(window, this, std::forward<Args>(args)...)));
     }
-
 
 private:
     [[nodiscard]] std::vector<Widget *> childPointers(bool reverse) const noexcept;

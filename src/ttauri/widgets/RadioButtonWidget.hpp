@@ -71,22 +71,20 @@ public:
         }
     }
 
-    [[nodiscard]] WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
-            return result;
+        need_layout |= requestLayout.exchange(false);
+        if (need_layout) {
+            radioButtonRectangle = aarect{0.0f, base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
+
+            ttlet labelX = radioButtonRectangle.p3().x() + Theme::margin;
+            labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
+
+            pipRectangle = shrink(radioButtonRectangle, 1.5f);
         }
-
-        radioButtonRectangle = aarect{0.0f, base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
-
-        ttlet labelX = radioButtonRectangle.p3().x() + Theme::margin;
-        labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
-
-        pipRectangle = shrink(radioButtonRectangle, 1.5f);
-        return WidgetUpdateResult::Self;
+        return Widget::updateLayout(display_time_point, need_layout);
     }
 
     void drawRadioButton(DrawContext drawContext) noexcept

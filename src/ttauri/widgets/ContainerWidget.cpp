@@ -31,19 +31,17 @@ Widget &ContainerWidget::addWidget(std::unique_ptr<Widget> childWidget) noexcept
     return has_constrainted;
 }
 
-[[nodiscard]] WidgetUpdateResult
-ContainerWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+bool ContainerWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
-
+    auto need_redraw = need_layout |= requestLayout.exchange(false);
     for (auto &&child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
-        has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
+        need_redraw |= child->updateLayout(display_time_point, need_layout);
     }
 
-    return has_laid_out;
+    return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
 }
 
 void ContainerWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

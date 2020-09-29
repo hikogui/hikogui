@@ -36,37 +36,33 @@ bool LineInputWidget::updateConstraints() noexcept
     }
 }
 
-WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+bool LineInputWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
-        if (focus && displayTimePoint >= nextRedrawTimePoint) {
-            return WidgetUpdateResult::Children;
+    auto need_redraw = need_layout |= requestLayout.exchange(false);
+    need_redraw |= focus && display_time_point >= nextRedrawTimePoint;
+    if (need_layout) {
+        textRectangle = shrink(rectangle(), Theme::margin);
+
+        // Set the clipping rectangle to within the border of the input field.
+        // Add another border width, so glyphs do not touch the border.
+        textClippingRectangle = shrink(window_rectangle(), Theme::borderWidth * 2.0f);
+
+        field.setStyleOfAll(theme->labelStyle);
+
+        if (std::ssize(field) == 0) {
+            shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::MiddleLeft);
         } else {
-            return result;
+            field.setWidth(textRectangle.width());
+            shapedText = field.shapedText();
         }
+
+        // Record the last time the text is modified, so that the caret remains lit.
+        lastUpdateTimePoint = display_time_point;
     }
 
-    textRectangle = shrink(rectangle(), Theme::margin);
-
-    // Set the clipping rectangle to within the border of the input field.
-    // Add another border width, so glyphs do not touch the border.
-    textClippingRectangle = shrink(window_rectangle(), Theme::borderWidth * 2.0f);
-
-    field.setStyleOfAll(theme->labelStyle);
-
-    if (std::ssize(field) == 0) {
-        shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::MiddleLeft);
-    } else {
-        field.setWidth(textRectangle.width());
-        shapedText = field.shapedText();
-    }
-
-    // Record the last time the text is modified, so that the carret remains lit.
-    lastUpdateTimePoint = displayTimePoint;
-
-    return WidgetUpdateResult::Self;
+    return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
 }
 
 void LineInputWidget::dragSelect() noexcept

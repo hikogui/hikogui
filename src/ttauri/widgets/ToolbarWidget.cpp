@@ -69,12 +69,12 @@ Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<
     }
 }
 
-WidgetUpdateResult ToolbarWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
-    forceLayout |= requestLayout.exchange(false);
 
-    if (forceLayout) {
+    need_layout |= requestLayout.exchange(false);
+    if (need_layout) {
         auto extra_width = rectangle().width() - _preferred_size.width().minimum();
 
         auto x = rectangle().left();
@@ -127,7 +127,7 @@ WidgetUpdateResult ToolbarWidget::updateLayout(hires_utc_clock::time_point displ
             child->set_window_base_line(base_line_position);
         }
     }
-    return ContainerWidget::updateLayout(displayTimePoint, forceLayout);
+    return ContainerWidget::updateLayout(display_time_point, need_layout);
 }
 
 void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

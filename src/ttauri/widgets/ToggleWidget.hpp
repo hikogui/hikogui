@@ -88,30 +88,28 @@ public:
         }
     }
 
-    [[nodiscard]] WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
-            return result;
+        need_layout |= requestLayout.exchange(false);
+        if (need_layout) {
+            toggleRectangle = aarect{
+                -0.5f, // Expand horizontally due to rounded shape
+                base_line() - Theme::smallSize * 0.5f,
+                Theme::smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
+                Theme::smallSize};
+
+            ttlet labelX = Theme::smallSize * 2.0f + Theme::margin;
+            labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
+
+            sliderRectangle = shrink(aarect{0.0f, toggleRectangle.y(), toggleRectangle.height(), toggleRectangle.height()}, 1.5f);
+
+            ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (sliderRectangle.x() * 2.0f);
+            sliderMoveRange = sliderMoveWidth - sliderRectangle.width();
         }
 
-        toggleRectangle = aarect{
-            -0.5f, // Expand horizontally due to rounded shape
-            base_line() - Theme::smallSize * 0.5f,
-            Theme::smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
-            Theme::smallSize};
-
-        ttlet labelX = Theme::smallSize * 2.0f + Theme::margin;
-        labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
-
-        sliderRectangle = shrink(aarect{0.0f, toggleRectangle.y(), toggleRectangle.height(), toggleRectangle.height()}, 1.5f);
-
-        ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (sliderRectangle.x() * 2.0f);
-        sliderMoveRange = sliderMoveWidth - sliderRectangle.width();
-
-        return WidgetUpdateResult::Self;
+        return Widget::updateLayout(display_time_point, need_layout);
     }
 
     void drawToggle(DrawContext drawContext) noexcept

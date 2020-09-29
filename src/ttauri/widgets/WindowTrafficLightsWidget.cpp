@@ -40,64 +40,62 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
     }
 }
 
-[[nodiscard]] WidgetUpdateResult
-WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+[[nodiscard]] bool WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
-        return result;
+    need_layout |= requestLayout.exchange(false);
+    if (need_layout) {
+        auto extent = rectangle().extent();
+
+        if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+            closeRectangle =
+                aarect{vec::point(extent.width() * 2.0f / 3.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
+
+            maximizeRectangle =
+                aarect{vec::point(extent.width() * 1.0f / 3.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
+
+            minimizeRectangle = aarect{vec::point(0.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
+
+        } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+            closeRectangle = aarect{vec::point(MARGIN, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
+
+            minimizeRectangle =
+                aarect{vec::point(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
+
+            maximizeRectangle = aarect{
+                vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
+        } else {
+            tt_no_default;
+        }
+
+        closeWindowGlyph = to_FontGlyphIDs(TTauriIcon::CloseWindow);
+        minimizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MinimizeWindow);
+
+        if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+            maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMS);
+            restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMS);
+
+        } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+            maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMacOS);
+            restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMacOS);
+        } else {
+            tt_no_default;
+        }
+
+        ttlet closeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(closeWindowGlyph);
+        ttlet minimizeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minimizeWindowGlyph);
+        ttlet maximizeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(maximizeWindowGlyph);
+        ttlet restoreWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(restoreWindowGlyph);
+
+        ttlet glyph_size = Theme::operatingSystem == OperatingSystem::MacOS ? 5.0f : Theme::iconSize;
+
+        closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+        minimizeWindowGlyphRectangle = align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+        maximizeWindowGlyphRectangle = align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+        restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
     }
-
-    auto extent = rectangle().extent();
-
-    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        closeRectangle =
-            aarect{vec::point(extent.width() * 2.0f / 3.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
-
-        maximizeRectangle =
-            aarect{vec::point(extent.width() * 1.0f / 3.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
-
-        minimizeRectangle = aarect{vec::point(0.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
-
-    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        closeRectangle = aarect{vec::point(MARGIN, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
-
-        minimizeRectangle =
-            aarect{vec::point(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
-
-        maximizeRectangle = aarect{
-            vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
-    } else {
-        tt_no_default;
-    }
-
-    closeWindowGlyph = to_FontGlyphIDs(TTauriIcon::CloseWindow);
-    minimizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MinimizeWindow);
-
-    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMS);
-        restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMS);
-
-    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMacOS);
-        restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMacOS);
-    } else {
-        tt_no_default;
-    }
-
-    ttlet closeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(closeWindowGlyph);
-    ttlet minimizeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minimizeWindowGlyph);
-    ttlet maximizeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(maximizeWindowGlyph);
-    ttlet restoreWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(restoreWindowGlyph);
-
-    ttlet glyph_size = Theme::operatingSystem == OperatingSystem::MacOS ? 5.0f : Theme::iconSize;
-
-    closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
-    minimizeWindowGlyphRectangle = align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
-    maximizeWindowGlyphRectangle = align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
-    restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
-    return WidgetUpdateResult::Self;
+    return Widget::updateLayout(display_time_point, need_layout);
 }
 
 void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

@@ -42,26 +42,23 @@ bool Widget::updateConstraints() noexcept
     return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed);
 }
 
-WidgetUpdateResult Widget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+bool Widget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto needLayout = forceLayout;
-
-    needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
-    
-    if (needLayout) {
+    need_layout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
+    if (need_layout) {
+        // Used by draw().
         toWindowTransform = mat::T(_window_rectangle.x(), _window_rectangle.y(), z());
+
+        // Used by handleMouseEvent()
         fromWindowTransform = ~toWindowTransform;
 
-        if (parent) {
-            offsetFromParent = _window_rectangle.p0() - parent->window_rectangle().p0();
-        } else {
-            offsetFromParent = _window_rectangle.p0();
-        }
+        // Used by hitboxTest().
+        offsetFromParent = parent ? _window_rectangle.p0() - parent->window_rectangle().p0() : _window_rectangle.p0();
     }
 
-    return needLayout ? WidgetUpdateResult::Self : WidgetUpdateResult::Nothing;
+    return need_layout;
 }
 
 void Widget::handleCommand(command command) noexcept {

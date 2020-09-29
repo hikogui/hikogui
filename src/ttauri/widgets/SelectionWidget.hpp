@@ -153,65 +153,62 @@ public:
         }
     }
 
-    [[nodiscard]] WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
-            return result;
-        }
+        need_layout |= requestLayout.exchange(false);
+        if (need_layout) {
+            leftBoxRectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
 
-        leftBoxRectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
+            ttlet optionX = leftBoxRectangle.p3().x() + Theme::margin;
+            ttlet optionWidth = rectangle().width() - optionX - Theme::margin;
+            ttlet optionHeight = rectangle().height() - Theme::margin * 2.0f;
 
-        ttlet optionX = leftBoxRectangle.p3().x() + Theme::margin;
-        ttlet optionWidth = rectangle().width() - optionX - Theme::margin;
-        ttlet optionHeight = rectangle().height() - Theme::margin * 2.0f;
+            // Calculate the rectangles for each cell in the option_cache_list
+            option_cache_list_height = (optionHeight + Theme::margin * 2.0f) * std::ssize(option_cache_list);
+            ttlet option_cache_listWidth = optionWidth + Theme::margin * 2.0f;
+            auto y = option_cache_list_height;
+            selectedOptionY = 0.0f;
+            for (auto &&option : option_cache_list) {
+                y -= Theme::margin;
+                y -= optionHeight;
+                option.cellRectangle = aarect{Theme::margin, y, optionWidth, optionHeight};
+                option.backgroundRectangle = expand(option.cellRectangle, Theme::margin);
+                y -= Theme::margin;
 
-        // Calculate the rectangles for each cell in the option_cache_list
-        option_cache_list_height = (optionHeight + Theme::margin * 2.0f) * std::ssize(option_cache_list);
-        ttlet option_cache_listWidth = optionWidth + Theme::margin * 2.0f;
-        auto y = option_cache_list_height;
-        selectedOptionY = 0.0f;
-        for (auto &&option : option_cache_list) {
-            y -= Theme::margin;
-            y -= optionHeight;
-            option.cellRectangle = aarect{Theme::margin, y, optionWidth, optionHeight};
-            option.backgroundRectangle = expand(option.cellRectangle, Theme::margin);
-            y -= Theme::margin;
-
-            if (option.tag == value) {
-                selectedOptionY = y;
+                if (option.tag == value) {
+                    selectedOptionY = y;
+                }
             }
+
+            // The window height, excluding the top window decoration.
+            ttlet windowHeight = window.widget->rectangle().height() - Theme::toolbarHeight;
+
+            // Calculate overlay dimensions and position.
+            ttlet overlayWidth = option_cache_listWidth;
+            ttlet overlayWindowX = window_rectangle().x() + Theme::smallSize;
+            ttlet overlayHeight = std::min(option_cache_list_height, windowHeight);
+            auto overlayWindowY = window_rectangle().y() - selectedOptionY;
+
+            // Adjust overlay to fit inside the window, below the top window decoration.
+            overlayWindowY = std::clamp(overlayWindowY, 0.0f, windowHeight - overlayHeight);
+
+            overlayWindowRectangle = aarect{overlayWindowX, overlayWindowY, overlayWidth, overlayHeight};
+
+            // The overlayRectangle are in the coordinate system of the current widget, so it will
+            // extent beyond the current widget.
+            overlayRectangle =
+                aarect{overlayWindowX - window_rectangle().x(), overlayWindowY - window_rectangle().y(), overlayWidth, overlayHeight};
+
+            // The label is located to the right of the selection box icon.
+            optionRectangle = aarect{optionX, rectangle().height() - optionHeight - Theme::margin, optionWidth, optionHeight};
+
+            chevronsGlyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
+            ttlet chevronsGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(chevronsGlyph);
+            chevronsRectangle = align(leftBoxRectangle, scale(chevronsGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
         }
-
-        // The window height, excluding the top window decoration.
-        ttlet windowHeight = window.widget->rectangle().height() - Theme::toolbarHeight;
-
-        // Calculate overlay dimensions and position.
-        ttlet overlayWidth = option_cache_listWidth;
-        ttlet overlayWindowX = window_rectangle().x() + Theme::smallSize;
-        ttlet overlayHeight = std::min(option_cache_list_height, windowHeight);
-        auto overlayWindowY = window_rectangle().y() - selectedOptionY;
-
-        // Adjust overlay to fit inside the window, below the top window decoration.
-        overlayWindowY = std::clamp(overlayWindowY, 0.0f, windowHeight - overlayHeight);
-
-        overlayWindowRectangle = aarect{overlayWindowX, overlayWindowY, overlayWidth, overlayHeight};
-
-        // The overlayRectangle are in the coordinate system of the current widget, so it will
-        // extent beyond the current widget.
-        overlayRectangle =
-            aarect{overlayWindowX - window_rectangle().x(), overlayWindowY - window_rectangle().y(), overlayWidth, overlayHeight};
-
-        // The label is located to the right of the selection box icon.
-        optionRectangle = aarect{optionX, rectangle().height() - optionHeight - Theme::margin, optionWidth, optionHeight};
-
-        chevronsGlyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
-        ttlet chevronsGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(chevronsGlyph);
-        chevronsRectangle = align(leftBoxRectangle, scale(chevronsGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
-
-        return WidgetUpdateResult::Self;
+        return Widget::updateLayout(display_time_point, need_layout);
     }
 
     void drawOptionHighlight(DrawContext drawContext, option_list_entry const &option) noexcept

@@ -22,7 +22,7 @@ public:
     ~WindowWidget();
 
     [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 };

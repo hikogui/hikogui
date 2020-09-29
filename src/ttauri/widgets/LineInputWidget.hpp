@@ -53,13 +53,14 @@ public:
     LineInputWidget(Window &window, Widget *parent, std::u8string const label) noexcept;
 
     LineInputWidget(Window &window, Widget *parent, l10n const label) noexcept :
-        LineInputWidget(window, parent, std::u8string{static_cast<std::u8string_view>(label)}) {}
+        LineInputWidget(window, parent, std::u8string{static_cast<std::u8string_view>(label)})
+    {
+    }
 
     ~LineInputWidget();
 
     [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleCommand(command command) noexcept override;

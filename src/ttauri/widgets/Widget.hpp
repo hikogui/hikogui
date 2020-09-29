@@ -49,32 +49,6 @@ struct Vertex;
 
 namespace tt {
 
-/** Result of `Widget::updateConstraints()` and `Widget::updateLayout()`.
- */
-enum class WidgetUpdateResult { Nothing, Children, Self };
-
-[[nodiscard]] constexpr WidgetUpdateResult operator|(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept
-{
-    return std::max(lhs, rhs);
-}
-
-[[nodiscard]] constexpr WidgetUpdateResult operator&(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept
-{
-    return std::min(lhs, rhs);
-}
-
-constexpr WidgetUpdateResult &operator|=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept
-{
-    lhs = lhs | rhs;
-    return lhs;
-}
-
-constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept
-{
-    lhs = lhs & rhs;
-    return lhs;
-}
-
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
  * which contains that static data of an Widget and the drawing code. Backings are shared
@@ -290,32 +264,44 @@ public:
     }
 
     /** Update the constraints of the widget.
-     * This function is called by the window on every frame. It should recursively
-     * call this function on every visible child.
-     *
-     * This function should update the constraints whenever the data changes,
-     * such as changing the text of a label, or when adding or removing child widgets.
-     *
-     * @return True if its constraints has changed
+     * This function is called on each vertical sync, even if no drawing is to be done.
+     * It should recursively call `updateConstraints()` on each of the visible children,
+     * so they get a chance to update.
+     * 
+     * This function may be used for expensive calculations, such as text-shaping, which
+     * should only be done when the data changes. Because this function is called on every
+     * vertical sync it should cache these calculations.
+     * 
+     * Subclasses should call `updateConstraints()` on its base-class to check if the constraints where
+     * changed. `Widget::updateConstraints()` will check if `requestConstraints` was set.
+     * `Container::updateConstraints()` will check if any of the children changed constraints.
+     * 
+     * This function will change what is returned by `preferred_size()` and `preferred_base_line()`.
+     * 
+     * @return True if its or any children's constraints has changed.
      */
     [[nodiscard]] virtual bool updateConstraints() noexcept;
 
     /** Update the internal layout of the widget.
-     * This function is called by the window on every frame. It should recursively
-     * call this function on every visible child.
+     * This function is called on each vertical sync, even if no drawing is to be done.
+     * It should recursively call `updateLayout()` on each of the visible children,
+     * so they get a chance to update.
      *
-     * This function should update the internal layout whenever data changes or during
-     * an animation.
+     * This function may be used for expensive calculations, such as geometry calculations,
+     * which should only be done when the data or sizes change. Because this function is called
+     * on every vertical sync it should cache these calculations.
      *
-     * @param displayTimePoint The time point when the widget will be shown on the screen.
-     * @param forceLayout Force the layout of this widget and its children
-     * @return If true then the internal layout has been updated by this widget, or
-     *         any of its children.
-     *         This value should be used by the overriding function to determine if
-     *         it should update the internal layout.
+     * This function will likely call `set_window_rectangle()` and `set_window_base_line()` on
+     * its children, before calling `updateLayout()` on that child.
+     * 
+     * Subclasses should call `updateLayout()` on its children, call `updateLayout()` on its
+     * base class with `forceLayout` argument to the result of `layoutRequest.exchange(false)`.
+     * 
+     * @param display_time_point The time point when the widget will be shown on the screen.
+     * @param need_layout Force the widget to layout
+     * @retrun True if the widget, or any of the children requires the window to be redrawn.
      */
-    [[nodiscard]] virtual WidgetUpdateResult
-    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
+    [[nodiscard]] virtual bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
 
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.

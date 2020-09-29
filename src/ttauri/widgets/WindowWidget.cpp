@@ -56,12 +56,12 @@ WindowWidget::~WindowWidget() {}
     }
 }
 
-WidgetUpdateResult WindowWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+bool WindowWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
-    forceLayout |= requestLayout.exchange(false);
 
-    if (forceLayout) {
+    need_layout |= requestLayout.exchange(false);
+    if (need_layout) {
         ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
         ttlet toolbar_size = toolbar->preferred_size();
         ttlet toolbar_height = toolbar_size.minimum().height();
@@ -74,7 +74,7 @@ WidgetUpdateResult WindowWidget::updateLayout(hires_utc_clock::time_point displa
         content->set_window_rectangle(mat::T2{window_rectangle()} * content_rectangle);
     }
 
-    return ContainerWidget::updateLayout(displayTimePoint, forceLayout);
+    return ContainerWidget::updateLayout(display_time_point, need_layout);
 }
 
 HitBox WindowWidget::hitBoxTest(vec position) const noexcept
