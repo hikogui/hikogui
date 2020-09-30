@@ -120,6 +120,8 @@ target_sources(ttauri PRIVATE
     Rec2100.hpp
     rect.hpp
     required.hpp
+    range_map.hpp
+    ranged_numeric.hpp
     ResourceView.hpp
     safe_int.hpp
     SDF8.hpp

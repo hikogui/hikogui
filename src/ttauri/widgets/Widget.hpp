@@ -24,7 +24,7 @@
 #include "../unfair_recursive_mutex.hpp"
 #include "../interval_vec2.hpp"
 #include "../flow_layout.hpp"
-#include "../ranged_int.hpp"
+#include "../ranged_numeric.hpp"
 #include <limits>
 #include <memory>
 #include <vector>

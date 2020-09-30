@@ -6,7 +6,7 @@
 #include "required.hpp"
 #include "interval.hpp"
 #include "alignment.hpp"
-#include "ranged_int.hpp"
+#include "ranged_numeric.hpp"
 #include <vector>
 #include <optional>
 
