@@ -18,7 +18,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
     systemMenuRectangle(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight})
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.
-    margin = 0.0f;
+    _margin = 0.0f;
 }
 
 [[nodiscard]] bool SystemMenuWidget::updateConstraints() noexcept

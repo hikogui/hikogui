@@ -31,7 +31,8 @@ namespace tt {
     return {nr_left + nr_right, nr_bottom + nr_top};
 }
 
-static interval_vec2 calculateCellMinMaxSize(std::vector<GridWidgetCell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
+static interval_vec2
+calculateCellMinMaxSize(std::vector<GridWidgetCell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     rows.clear();
     columns.clear();
@@ -48,8 +49,8 @@ static interval_vec2 calculateCellMinMaxSize(std::vector<GridWidgetCell> const &
             rows.update(
                 index,
                 cell.widget->preferred_size().height(),
-                cell.widget->height_resistance,
-                cell.widget->margin,
+                cell.widget->height_resistance(),
+                cell.widget->margin(),
                 cell.widget->preferred_base_line());
         }
 
@@ -58,7 +59,11 @@ static interval_vec2 calculateCellMinMaxSize(std::vector<GridWidgetCell> const &
             auto index = cell.address.column.begin(nr_columns);
 
             columns.update(
-                index, cell.widget->preferred_size().width(), cell.widget->width_resistance, cell.widget->margin, relative_base_line{});
+                index,
+                cell.widget->preferred_size().width(),
+                cell.widget->width_resistance(),
+                cell.widget->margin(),
+                relative_base_line{});
         }
     }
 
@@ -107,13 +112,13 @@ bool GridWidget::updateLayout(hires_utc_clock::time_point display_time_point, bo
             ttlet child_lock = std::scoped_lock(child->mutex);
 
             ttlet child_rectangle = cell.rectangle(columns, rows);
-            ttlet child_window_rectangle = mat::T2{window_rectangle()} *child_rectangle;
-            child->set_window_rectangle(child_window_rectangle);
-
             ttlet child_base_line = cell.base_line(rows);
+
+            ttlet child_window_rectangle = mat::T2{window_rectangle} * child_rectangle;
             ttlet child_base_line_position =
                 child_base_line.position(child_window_rectangle.bottom(), child_window_rectangle.top());
-            child->set_window_base_line(child_base_line_position);
+
+            child->set_window_rectangle(child_window_rectangle, child_base_line_position);
         }
     }
 

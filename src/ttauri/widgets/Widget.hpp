@@ -24,6 +24,7 @@
 #include "../unfair_recursive_mutex.hpp"
 #include "../interval_vec2.hpp"
 #include "../flow_layout.hpp"
+#include "../ranged_int.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
@@ -93,31 +94,9 @@ namespace tt {
  */
 class Widget {
 public:
-    /** Convenient reference to the Window.
-     */
-    Window &window;
-
     mutable unfair_recursive_mutex mutex;
 
-    
-
     float elevation;
-
-    /** The margin outside the widget.
-     */
-    float margin = Theme::margin;
-    interval_vec2 _preferred_size;
-    flow_resistance height_resistance = flow_resistance::normal;
-    flow_resistance width_resistance = flow_resistance::normal;
-    relative_base_line _preferred_base_line = relative_base_line{};
-
-    /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
-     */
-    bool requestConstraint = true;
-
-    /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
-     */
-    bool requestLayout = true;
 
     /** The widget is enabled.
      */
@@ -134,6 +113,28 @@ public:
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
 
+    [[nodiscard]] float margin() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _margin;
+    }
+
+    /** Get the resistance in width.
+     */
+    [[nodiscard]] ranged_int<3> width_resistance() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _width_resistance;
+    }
+
+    /** Get the resistance in height.
+     */
+    [[nodiscard]] ranged_int<3> height_resistance() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _height_resistance;
+    }
+
     /** Get the minimum size of the widget.
      * Thread safety: requires external lock on `mutex`.
      */
@@ -149,31 +150,22 @@ public:
         return _preferred_base_line;
     }
 
-    /** Get the rectangle in window coordinates.
-     * Thread safety: requires external lock on `mutex`.
+    /** Set the location and size of the widget inside the window.
+     *
+     * @param _window_rectangle The location and size of the widget inside the window
+     * @param _window_base_line The position of the text base-line from the bottom of the window. When not given
+     *                          the middle of the _window_rectangle is used together with the preferred
+     *                          relative base-line.
      */
-    [[nodiscard]] aarect window_rectangle() const noexcept
+    void set_window_rectangle(aarect const &_window_rectangle, float _window_base_line = std::numeric_limits<float>::infinity()) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _window_rectangle;
-    }
-
-    void set_window_rectangle(aarect const &rhs) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-        _window_rectangle = rhs;
-    }
-
-    [[nodiscard]] float window_base_line() const noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-        return _window_base_line;
-    }
-
-    void set_window_base_line(float const &rhs) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-        _window_base_line = rhs;
+        window_rectangle = _window_rectangle;
+        if (std::isinf(_window_base_line)) {
+            window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
+        } else {
+            window_base_line = _window_base_line;
+        }
     }
 
     /** Get the clipping rectangle in window coordinates
@@ -182,7 +174,7 @@ public:
     [[nodiscard]] aarect clipping_rectangle() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return expand(_window_rectangle, margin);
+        return expand(window_rectangle, _margin);
     }
 
     /** Get the rectangle in local coordinates.
@@ -191,7 +183,7 @@ public:
     [[nodiscard]] aarect rectangle() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return aarect{_window_rectangle.extent()};
+        return aarect{window_rectangle.extent()};
     }
 
     /** Get the base-line in local coordinates.
@@ -200,7 +192,7 @@ public:
     [[nodiscard]] float base_line() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _window_base_line - _window_rectangle.y();
+        return window_base_line - window_rectangle.y();
     }
 
     [[nodiscard]] GUIDevice *device() const noexcept;
@@ -354,6 +346,11 @@ public:
     virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept;
 
 protected:
+
+    /** Convenient reference to the Window.
+     */
+    Window &window;
+
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
@@ -375,9 +372,34 @@ protected:
      */
     mat::T toWindowTransform;
 
+    /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
+     */
+    bool requestConstraint = true;
+
+    /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
+     */
+    bool requestLayout = true;
+
+    /** The position of the widget on the window.
+     */
+    aarect window_rectangle;
+
+    /** The height of the base line from the bottom of the window.
+     */
+    float window_base_line;
+
+    interval_vec2 _preferred_size;
+
+    relative_base_line _preferred_base_line = relative_base_line{};
+
+    ranged_int<3> _width_resistance = 1;
+    ranged_int<3> _height_resistance = 1;
+
+    /** The margin outside the widget.
+     */
+    float _margin = Theme::margin;
+
 private:
-    aarect _window_rectangle;
-    float _window_base_line;
 };
 
 } // namespace tt

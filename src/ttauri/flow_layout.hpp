@@ -6,16 +6,11 @@
 #include "required.hpp"
 #include "interval.hpp"
 #include "alignment.hpp"
+#include "ranged_int.hpp"
 #include <vector>
 #include <optional>
 
 namespace tt {
-
-enum class flow_resistance {
-    normal,
-    greedy,
-    resist
-};
 
 /** Layout algorithm.
  */
@@ -39,7 +34,7 @@ public:
     }
 
     void
-    update(ssize_t index, finterval extent, flow_resistance resistance, float margin, relative_base_line base_line) noexcept
+    update(ssize_t index, finterval extent, ranged_int<3> resistance, float margin, relative_base_line base_line) noexcept
     {
         tt_assume(index >= 0);
 
@@ -77,7 +72,7 @@ public:
         }
     }
 
-    [[nodiscard]] ssize_t flow_non_max(flow_resistance resistance) const noexcept
+    [[nodiscard]] ssize_t flow_non_max(ranged_int<3> resistance) const noexcept
     {
         auto nr_non_max = ssize_t{0};
 
@@ -89,7 +84,7 @@ public:
         return nr_non_max;
     }
 
-    [[nodiscard]] ssize_t flow_expand(ssize_t nr_non_max, flow_resistance resistance, float &extra_size) noexcept
+    [[nodiscard]] ssize_t flow_expand(ssize_t nr_non_max, ranged_int<3> resistance, float &extra_size) noexcept
     {
         ttlet extra_size_per_item = std::ceil(extra_size / nr_non_max);
 
@@ -114,7 +109,7 @@ public:
     void flow_positions() noexcept
     {
         auto offset = 0.0f;
-        for (ssize_t i = 0; i != ssize(items); ++i) {
+        for (ssize_t i = 0; i != std::ssize(items); ++i) {
             offset += margins[i];
             items[i].offset = std::floor(offset);
             offset += items[i].size;
@@ -128,19 +123,11 @@ public:
 
         flow_default();
 
-        auto nr_non_max = flow_non_max(flow_resistance::greedy);
-        while (extra_size >= 1.0f && nr_non_max != 0) {
-            nr_non_max = flow_expand(nr_non_max, flow_resistance::greedy, extra_size);
-        }
-
-        nr_non_max = flow_non_max(flow_resistance::normal);
-        while (extra_size >= 1.0f && nr_non_max != 0) {
-            nr_non_max = flow_expand(nr_non_max, flow_resistance::normal, extra_size);
-        }
-
-        nr_non_max = flow_non_max(flow_resistance::resist);
-        while (extra_size >= 1.0f && nr_non_max != 0) {
-            nr_non_max = flow_expand(nr_non_max, flow_resistance::resist, extra_size);
+        for (ttlet resistance : ranged_int<3>::range()) {
+            auto nr_non_max = flow_non_max(resistance);
+            while (extra_size >= 1.0f && nr_non_max != 0) {
+                nr_non_max = flow_expand(nr_non_max, resistance, extra_size);
+            }
         }
 
         flow_positions();
@@ -153,8 +140,8 @@ public:
      */
     [[nodiscard]] std::pair<float, float> get_offset_and_size(ssize_t first, ssize_t last) const noexcept
     {
-        tt_assume(first >= 0 && first < ssize(items));
-        tt_assume(last > 0 && last <= ssize(items));
+        tt_assume(first >= 0 && first < std::ssize(items));
+        tt_assume(last > 0 && last <= std::ssize(items));
 
         auto offset = items[first].offset;
         auto size = (items[last - 1].offset + items[last - 1].size) - offset;
@@ -184,14 +171,14 @@ private:
     }
 
     struct flow_layout_item {
-        constexpr flow_layout_item() noexcept : _extent(), resistance(flow_resistance::normal), base_line() {}
+        constexpr flow_layout_item() noexcept : _extent(), resistance(0), base_line() {}
 
         constexpr flow_layout_item(flow_layout_item const &rhs) noexcept = default;
         constexpr flow_layout_item(flow_layout_item &&rhs) noexcept = default;
         constexpr flow_layout_item &operator=(flow_layout_item const &rhs) noexcept = default;
         constexpr flow_layout_item &operator=(flow_layout_item &&rhs) noexcept = default;
 
-        constexpr void update(finterval a_extent, flow_resistance _resistance, relative_base_line _base_line) noexcept
+        constexpr void update(finterval a_extent, ranged_int<3> _resistance, relative_base_line _base_line) noexcept
         {
             _extent = intersect(_extent, a_extent);
             resistance = std::max(resistance, _resistance);
@@ -204,7 +191,7 @@ private:
         }
 
         finterval _extent;
-        flow_resistance resistance;
+        ranged_int<3> resistance;
         relative_base_line base_line;
 
         float offset;

@@ -47,7 +47,7 @@ bool LineInputWidget::updateLayout(hires_utc_clock::time_point display_time_poin
 
         // Set the clipping rectangle to within the border of the input field.
         // Add another border width, so glyphs do not touch the border.
-        textClippingRectangle = shrink(window_rectangle(), Theme::borderWidth * 2.0f);
+        textClippingRectangle = shrink(window_rectangle, Theme::borderWidth * 2.0f);
 
         field.setStyleOfAll(theme->labelStyle);
 

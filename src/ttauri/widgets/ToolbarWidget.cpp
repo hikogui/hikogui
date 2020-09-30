@@ -39,23 +39,23 @@ Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<
         auto prev_right_margin = 0.0f;
         for (ttlet &child : left_children) {
             ttlet child_lock = std::scoped_lock(child->mutex);
-            ttlet _margin = std::max(prev_right_margin, child->margin);
-            prev_right_margin = child->margin;
+            ttlet left_margin = std::max(prev_right_margin, child->margin());
+            prev_right_margin = child->margin();
 
-            width += _margin;
+            width += left_margin;
             width += child->preferred_size().width();
-            height = intersect(height, child->preferred_size().height() + child->margin * 2.0f);
+            height = intersect(height, child->preferred_size().height() + child->margin() * 2.0f);
             child_base_line = std::max(child_base_line, child->preferred_base_line());
         }
 
         for (ttlet &child : views::reverse(right_children)) {
             ttlet child_lock = std::scoped_lock(child->mutex);
-            ttlet _margin = std::max(prev_right_margin, child->margin);
-            prev_right_margin = child->margin;
+            ttlet left_margin = std::max(prev_right_margin, child->margin());
+            prev_right_margin = child->margin();
 
-            width += _margin;
+            width += left_margin;
             width += child->preferred_size().width();
-            height = intersect(height, child->preferred_size().height() + child->margin * 2.0f);
+            height = intersect(height, child->preferred_size().height() + child->margin() * 2.0f);
             child_base_line = std::max(child_base_line, child->preferred_base_line());
         }
 
@@ -79,14 +79,14 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
 
         auto x = rectangle().left();
         auto prev_right_margin = 0.0f;
-        ttlet base_line_position = child_base_line.position(window_rectangle().bottom(), window_rectangle().top()); 
+        ttlet base_line_position = child_base_line.position(window_rectangle.bottom(), window_rectangle.top()); 
         for (ttlet &child : left_children) {
             ttlet child_lock = std::scoped_lock(child->mutex);
 
-            prev_right_margin = child->margin;
-            ttlet _margin = std::max(prev_right_margin, child->margin);
+            prev_right_margin = child->margin();
+            ttlet left_margin = std::max(prev_right_margin, child->margin());
 
-            x += _margin;
+            x += left_margin;
             ttlet width = std::clamp(
                 child->preferred_size().width().maximum(),
                 child->preferred_size().width().minimum(),
@@ -96,9 +96,8 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
                 extra_width -= (width - child->preferred_size().width().minimum());
             }
 
-            ttlet child_rectangle = aarect{x, child->margin, width, rectangle().height() - child->margin * 2.0f};
-            child->set_window_rectangle(mat::T2(window_rectangle()) * child_rectangle);
-            child->set_window_base_line(base_line_position);
+            ttlet child_rectangle = aarect{x, child->margin(), width, rectangle().height() - child->margin() * 2.0f};
+            child->set_window_rectangle(mat::T2(window_rectangle) * child_rectangle, base_line_position);
 
             x += width;
         }
@@ -108,10 +107,10 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
         for (ttlet &child : right_children) {
             ttlet child_lock = std::scoped_lock(child->mutex);
 
-            prev_left_margin = child->margin;
-            ttlet _margin = std::max(prev_left_margin, child->margin);
+            prev_left_margin = child->margin();
+            ttlet right_margin = std::max(prev_left_margin, child->margin());
 
-            x -= _margin;
+            x -= right_margin;
             ttlet width = std::clamp(
                 child->preferred_size().width().maximum(),
                 child->preferred_size().width().minimum(),
@@ -122,9 +121,8 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
             }
 
             x -= width;
-            ttlet child_rectangle = aarect{x, child->margin, width, rectangle().height() - child->margin * 2.0f};
-            child->set_window_rectangle(mat::T2(window_rectangle()) * child_rectangle);
-            child->set_window_base_line(base_line_position);
+            ttlet child_rectangle = aarect{x, child->margin(), width, rectangle().height() - child->margin() * 2.0f};
+            child->set_window_rectangle(mat::T2(window_rectangle) * child_rectangle, base_line_position);
         }
     }
     return ContainerWidget::updateLayout(display_time_point, need_layout);

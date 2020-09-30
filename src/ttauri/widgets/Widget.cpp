@@ -49,7 +49,7 @@ bool Widget::updateLayout(hires_utc_clock::time_point display_time_point, bool n
     need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
         // Used by draw().
-        toWindowTransform = mat::T(_window_rectangle.x(), _window_rectangle.y(), z());
+        toWindowTransform = mat::T(window_rectangle.x(), window_rectangle.y(), z());
 
         // Used by handleMouseEvent()
         fromWindowTransform = ~toWindowTransform;

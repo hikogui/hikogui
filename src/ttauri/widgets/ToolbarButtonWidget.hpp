@@ -35,7 +35,7 @@ public:
         });
 
         // Toolbar buttons hug the toolbar and neighbour widgets.
-        margin = 0.0f;
+        _margin = 0.0f;
     }
 
     ToolbarButtonWidget(

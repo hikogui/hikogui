@@ -12,8 +12,8 @@ namespace tt {
 
 WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
 {
-    // Toolbar buttons hug the toolbar and neighbour widgets.
-    margin = 0.0f;
+    // Toolbar buttons hug the toolbar and neighbor widgets.
+    _margin = 0.0f;
 }
 
 [[nodiscard]] bool WindowTrafficLightsWidget::updateConstraints() noexcept

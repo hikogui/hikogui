@@ -21,7 +21,7 @@ public:
             this->requestConstraint = true;
         });
 
-        margin = 0.0f;
+        _margin = 0.0f;
     }
 
     ~TabWidget() {}
@@ -60,8 +60,7 @@ public:
 
         auto need_redraw = need_layout |= std::exchange(requestLayout, false);
         if (need_layout) {
-            child->set_window_rectangle(window_rectangle());
-            child->set_window_base_line(window_base_line());
+            child->set_window_rectangle(window_rectangle, window_base_line);
         }
 
         need_redraw |= child->updateLayout(display_time_point, need_layout);

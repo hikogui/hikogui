@@ -14,7 +14,7 @@ protected:
 public:
     ContainerWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
     {
-        margin = 0.0f;
+        _margin = 0.0f;
     }
 
     ~ContainerWidget() {}
