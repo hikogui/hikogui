@@ -198,22 +198,23 @@ void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
 
 void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
+    ttlet position = fromWindowTransform * event.position;
 
     Widget::handleMouseEvent(event);
 
     // Make sure we only scroll when dragging outside the widget.
     dragScrollSpeedX = 0.0f;
     dragClickCount = event.clickCount;
-    dragSelectPosition = event.position;
+    dragSelectPosition = position;
 
     if (!*enabled) {
         return;
     }
 
     if (event.type == MouseEvent::Type::ButtonDown && event.cause.leftButton) {
-        if (textRectangle.contains(event.position)) {
-            ttlet mouseInTextPosition = textInvTranslate * event.position;
+        if (textRectangle.contains(position)) {
+            ttlet mouseInTextPosition = textInvTranslate * position;
 
             switch (event.clickCount) {
             case 1:
@@ -237,14 +238,14 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
     } else if (event.type == MouseEvent::Type::Drag && event.cause.leftButton) {
         // When the mouse is dragged beyond the line input,
         // start scrolling the text and select on the edge of the textRectangle.
-        if (event.position.x() > textRectangle.p3().x()) {
+        if (position.x() > textRectangle.p3().x()) {
             // The mouse is on the right of the text.
             dragSelectPosition.x(textRectangle.p3().x());
 
             // Scroll text to the left in points per second.
             dragScrollSpeedX = 50.0f;
 
-        } else if (event.position.x() < textRectangle.x()) {
+        } else if (position.x() < textRectangle.x()) {
             // The mouse is on the left of the text.
             dragSelectPosition.x(textRectangle.x());
 

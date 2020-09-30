@@ -349,15 +349,17 @@ public:
 
     void handleMouseEvent(MouseEvent const &event) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
 
         Widget::handleMouseEvent(event);
 
         if (*enabled) {
             if (selecting) {
-                auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * event.position;
+                ttlet position = fromWindowTransform * event.position;
 
-                if (overlayRectangle.contains(event.position)) {
+                auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * position;
+
+                if (overlayRectangle.contains(position)) {
                     for (ttlet &option : option_cache_list) {
                         if (option.backgroundRectangle.contains(mouseInListPosition)) {
                             if (hoverOption != option.tag) {
@@ -378,6 +380,7 @@ public:
                     clickedOption = hoverOption;
                     window.requestRedraw = true;
                 }
+
                 if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
                     if (clickedOption.has_value() && clickedOption == hoverOption) {
                         chosenOption = *clickedOption;
@@ -387,8 +390,10 @@ public:
                     window.requestRedraw = true;
                 }
 
-            } else {
-                if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
+            } else if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+                ttlet position = fromWindowTransform * event.position;
+
+                if (rectangle().contains(position)) {
                     handleCommand(command::gui_activate);
                 }
             }

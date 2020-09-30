@@ -75,7 +75,7 @@ void ButtonWidget::handleCommand(command command) noexcept
 
 void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
     Widget::handleMouseEvent(event);
 
@@ -84,8 +84,11 @@ void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
             window.requestRedraw = true;
         }
 
-        if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
-            handleCommand(command::gui_activate);
+        if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+            ttlet position = fromWindowTransform * event.position;
+            if (rectangle().contains(position)) {
+                handleCommand(command::gui_activate);
+            }
         }
     }
 }

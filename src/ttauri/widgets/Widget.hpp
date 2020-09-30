@@ -54,7 +54,7 @@ namespace tt {
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  *
- * All methods should lock make sure the mutex is locked by the current thread.
+ * All methods should make sure the mutex is locked by the current thread.
  *
  * Rendering is done in three distinct phases:
  *  1. Updating Constraints
@@ -84,20 +84,14 @@ namespace tt {
  * if layout calculations are needed. If a constraint has changed (the window size
  * is also a constraint) then the `forceLayout` flag is set.
  *
- * A widget should return true if a widget has changed its layout.
+ * A widget should return true if the window needs to be redrawn.
  *
  * ## Drawing (optional)
  * A widget can draw itself when the `draw()` function is called. This phase is only
  * entered when one of the widget's layout was changed. But if this phase is entered
- * then all the widget's `draw()` functions are called.
+ * then all the widgets' `draw()` functions are called.
  */
 class Widget {
-protected:
-    /** Pointer to the parent widget.
-     * May be a nullptr only when this is the top level widget.
-     */
-    Widget *parent;
-
 public:
     /** Convenient reference to the Window.
      */
@@ -105,13 +99,7 @@ public:
 
     mutable unfair_recursive_mutex mutex;
 
-    /** Mouse cursor is hovering over the widget.
-     */
-    bool hover = false;
-
-    /** The widget has keyboard focus.
-     */
-    bool focus = false;
+    
 
     float elevation;
 
@@ -122,11 +110,6 @@ public:
     flow_resistance height_resistance = flow_resistance::normal;
     flow_resistance width_resistance = flow_resistance::normal;
     relative_base_line _preferred_base_line = relative_base_line{};
-
-    aarect _window_rectangle;
-    float _window_base_line;
-
-    
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
@@ -139,14 +122,6 @@ public:
     /** The widget is enabled.
      */
     observable<bool> enabled = true;
-
-    /** Transformation matrix from window coords to local coords.
-     */
-    mat::T fromWindowTransform;
-
-    /** Transformation matrix from local coords to window coords.
-     */
-    mat::T toWindowTransform;
 
     /*! Constructor for creating sub views.
      */
@@ -256,7 +231,7 @@ public:
 
     /** Get nesting level used for selecting colors for the widget.
      */
-    [[nodiscard]] ssize_t nestingLevel() noexcept
+    [[nodiscard]] ssize_t nestingLevel() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return numeric_cast<ssize_t>(elevation);
@@ -264,7 +239,7 @@ public:
 
     /** Get z value for compositing order.
      */
-    [[nodiscard]] float z() noexcept
+    [[nodiscard]] float z() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return elevation * 0.01f;
@@ -312,6 +287,17 @@ public:
      * @retrun True if the widget, or any of the children requires the window to be redrawn.
      */
     [[nodiscard]] virtual bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+
+    /** Make a draw context for this widget.
+     * This function will make a draw context with the correct transformation
+     * and default color values.
+     * 
+     * @param context A template drawing context. This template may be taken
+     *                from the parent's draw call.
+     * @return A new draw context for drawing the current widget in the
+     *         local coordinate system.
+     */
+    DrawContext makeDrawContext(DrawContext context) const noexcept;
 
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.
@@ -368,6 +354,30 @@ public:
     virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept;
 
 protected:
+    /** Pointer to the parent widget.
+     * May be a nullptr only when this is the top level widget.
+     */
+    Widget *parent;
+
+    /** Mouse cursor is hovering over the widget.
+     */
+    bool hover = false;
+
+    /** The widget has keyboard focus.
+     */
+    bool focus = false;
+
+    /** Transformation matrix from window coords to local coords.
+     */
+    mat::T fromWindowTransform;
+
+    /** Transformation matrix from local coords to window coords.
+     */
+    mat::T toWindowTransform;
+
+private:
+    aarect _window_rectangle;
+    float _window_base_line;
 };
 
 } // namespace tt

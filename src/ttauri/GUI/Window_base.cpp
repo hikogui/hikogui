@@ -128,12 +128,10 @@ void Window_base::updateMouseTarget(Widget const *newTargetWidget, vec position)
 
     if (newTargetWidget != mouseTargetWidget) {
         if (mouseTargetWidget != nullptr) {
-            ttlet widget_lock = std::scoped_lock(mouseTargetWidget->mutex);
             mouseTargetWidget->handleMouseEvent(MouseEvent::exited());
         }
         mouseTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (mouseTargetWidget != nullptr) { 
-            ttlet widget_lock = std::scoped_lock(mouseTargetWidget->mutex);
             mouseTargetWidget->handleMouseEvent(MouseEvent::entered(position));
         }
     }
@@ -184,10 +182,6 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     // Send event to target-widget.
     if (mouseTargetWidget != nullptr) {
-        ttlet widget_lock = std::scoped_lock(mouseTargetWidget->mutex);
-
-        event.position = mouseTargetWidget->fromWindowTransform * event.position;
-        event.downPosition = mouseTargetWidget->fromWindowTransform * event.downPosition;
         mouseTargetWidget->handleMouseEvent(event);
     }
 }

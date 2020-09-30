@@ -121,13 +121,16 @@ public:
 
     void handleMouseEvent(MouseEvent const &event) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
 
         Widget::handleMouseEvent(event);
 
         if (*enabled) {
-            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && button_rectangle.contains(event.position)) {
-                handleCommand(command::gui_activate);
+            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+                ttlet position = fromWindowTransform * event.position;
+                if (button_rectangle.contains(position)) {
+                    handleCommand(command::gui_activate);
+                }
             }
         }
     }

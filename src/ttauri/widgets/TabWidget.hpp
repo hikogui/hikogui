@@ -73,32 +73,7 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
 
         ttlet child_lock = std::scoped_lock(child.mutex);
-        context.clippingRectangle = child.clipping_rectangle();
-        context.transform = child.toWindowTransform;
-
-        // The default fill and border colors.
-        ttlet childNestingLevel = child.nestingLevel();
-        context.color = theme->borderColor(childNestingLevel);
-        context.fillColor = theme->fillColor(childNestingLevel);
-
-        if (*child.enabled) {
-            if (child.focus && window.active) {
-                context.color = theme->accentColor;
-            } else if (child.hover) {
-                context.color = theme->borderColor(childNestingLevel + 1);
-            }
-
-            if (child.hover) {
-                context.fillColor = theme->fillColor(childNestingLevel + 1);
-            }
-
-        } else {
-            // Disabled, only the outline is shown.
-            context.color = theme->borderColor(childNestingLevel - 1);
-            context.fillColor = theme->fillColor(childNestingLevel - 1);
-        }
-
-        child.draw(context, displayTimePoint);
+        child.draw(child.makeDrawContext(context), displayTimePoint);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override

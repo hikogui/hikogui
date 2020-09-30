@@ -44,43 +44,17 @@ bool ContainerWidget::updateLayout(hires_utc_clock::time_point display_time_poin
     return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
 }
 
-void ContainerWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+
+void ContainerWidget::draw(DrawContext const &context, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto childContext = drawContext;
     for (auto &child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
-
-        childContext.clippingRectangle = child->clipping_rectangle();
-        childContext.transform = child->toWindowTransform;
-
-        // The default fill and border colors.
-        ttlet childNestingLevel = child->nestingLevel();
-        childContext.color = theme->borderColor(childNestingLevel);
-        childContext.fillColor = theme->fillColor(childNestingLevel);
-
-        if (*child->enabled) {
-            if (child->focus && window.active) {
-                childContext.color = theme->accentColor;
-            } else if (child->hover) {
-                childContext.color = theme->borderColor(childNestingLevel + 1);
-            }
-
-            if (child->hover) {
-                childContext.fillColor = theme->fillColor(childNestingLevel + 1);
-            }
-
-        } else {
-            // Disabled, only the outline is shown.
-            childContext.color = theme->borderColor(childNestingLevel - 1);
-            childContext.fillColor = theme->fillColor(childNestingLevel - 1);
-        }
-
-        child->draw(childContext, displayTimePoint);
+        child->draw(child->makeDrawContext(context), displayTimePoint);
     }
 
-    Widget::draw(drawContext, displayTimePoint);
+    Widget::draw(context, displayTimePoint);
 }
 
 HitBox ContainerWidget::hitBoxTest(vec window_position) const noexcept

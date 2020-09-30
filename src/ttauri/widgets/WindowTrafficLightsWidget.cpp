@@ -217,7 +217,8 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_c
 
 void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
+    ttlet position = fromWindowTransform * event.position;
 
     Widget::handleMouseEvent(event);
 
@@ -238,9 +239,9 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
     auto stateHasChanged = false;
 
     // Check the hover states of each button.
-    stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(event.position));
-    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(event.position));
-    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(event.position));
+    stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(position));
+    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(position));
+    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(position));
 
     // Only change the pressed state after checking for Button Up, the
     // button up will check which button was pressed from button down.

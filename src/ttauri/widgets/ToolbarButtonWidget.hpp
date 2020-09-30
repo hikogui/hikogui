@@ -124,7 +124,7 @@ public:
 
     void handleMouseEvent(MouseEvent const &event) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
 
         Widget::handleMouseEvent(event);
 
@@ -133,9 +133,12 @@ public:
                 window.requestRedraw = true;
             }
 
-            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
-                tt_assert2(_delegate, "Delegate on ToolbarButtonWidget was not set");
-                run_from_main_loop(_delegate);
+            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+                ttlet position = fromWindowTransform * event.position;
+                if (rectangle().contains(position)) {
+                    tt_assert2(_delegate, "Delegate on ToolbarButtonWidget was not set");
+                    run_from_main_loop(_delegate);
+                }
             }
         }
     }

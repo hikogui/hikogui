@@ -58,6 +58,37 @@ bool Widget::updateLayout(hires_utc_clock::time_point display_time_point, bool n
     return need_layout;
 }
 
+DrawContext Widget::makeDrawContext(DrawContext context) const noexcept
+{
+    tt_assume(mutex.is_locked_by_current_thread());
+
+    context.clippingRectangle = clipping_rectangle();
+    context.transform = toWindowTransform;
+
+    // The default fill and border colors.
+    context.color = theme->borderColor(nestingLevel());
+    context.fillColor = theme->fillColor(nestingLevel());
+
+    if (*enabled) {
+        if (focus && window.active) {
+            context.color = theme->accentColor;
+        } else if (hover) {
+            context.color = theme->borderColor(nestingLevel() + 1);
+        }
+
+        if (hover) {
+            context.fillColor = theme->fillColor(nestingLevel() + 1);
+        }
+
+    } else {
+        // Disabled, only the outline is shown.
+        context.color = theme->borderColor(nestingLevel() - 1);
+        context.fillColor = theme->fillColor(nestingLevel() - 1);
+    }
+
+    return context;
+}
+
 void Widget::handleCommand(command command) noexcept {
     tt_assume(mutex.is_locked_by_current_thread());
 
@@ -73,7 +104,7 @@ void Widget::handleCommand(command command) noexcept {
 }
 
 void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
     if (event.type == MouseEvent::Type::Entered) {
         hover = true;
