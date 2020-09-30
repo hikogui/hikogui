@@ -97,7 +97,7 @@ bool GridWidget::updateLayout(hires_utc_clock::time_point display_time_point, bo
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    need_layout |= requestLayout.exchange(false);
+    need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
         columns.flow(rectangle().width());
         rows.flow(rectangle().height());

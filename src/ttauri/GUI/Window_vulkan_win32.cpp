@@ -585,7 +585,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
         ttlet insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};
 
-        switch (hitBoxTest(insideWindowPosition).type) {
+        switch (widget->hitBoxTest(insideWindowPosition).type) {
         case HitBox::Type::BottomResizeBorder: currentCursor = Cursor::None; return HTBOTTOM;
         case HitBox::Type::TopResizeBorder: currentCursor = Cursor::None; return HTTOP;
         case HitBox::Type::LeftResizeBorder: currentCursor = Cursor::None; return HTLEFT;

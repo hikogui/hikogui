@@ -67,7 +67,7 @@ public:
 
     void handleMouseEvent(MouseEvent const &event) noexcept override;
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 
     [[nodiscard]] bool acceptsFocus() const noexcept override
     {

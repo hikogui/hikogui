@@ -260,10 +260,6 @@ protected:
 
     void handleKeyboardEvent(char32_t c, bool full=true) noexcept;
 
-    /*! Test where the certain features of a window are located.
-     */
-    HitBox hitBoxTest(vec position) const noexcept;
-
 protected:
     mutable unfair_recursive_mutex mutex;
 };

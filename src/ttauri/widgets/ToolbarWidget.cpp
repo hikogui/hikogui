@@ -73,7 +73,7 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    need_layout |= requestLayout.exchange(false);
+    need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
         auto extra_width = rectangle().width() - _preferred_size.width().minimum();
 
@@ -139,15 +139,15 @@ void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_p
     ContainerWidget::draw(drawContext, displayTimePoint);
 }
 
-HitBox ToolbarWidget::hitBoxTest(vec position) const noexcept
+HitBox ToolbarWidget::hitBoxTest(vec window_position) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
+    ttlet position = fromWindowTransform * window_position;
 
     auto r = rectangle().contains(position) ? HitBox{this, elevation, HitBox::Type::MoveArea} : HitBox{};
 
     for (ttlet &child : children) {
-        ttlet child_lock = std::scoped_lock(child->mutex);
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
+        r = std::max(r, child->hitBoxTest(window_position));
     }
     return r;
 }

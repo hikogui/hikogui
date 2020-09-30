@@ -39,23 +39,20 @@ GUIDevice *Widget::device() const noexcept
 bool Widget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
-    return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed);
+    return std::exchange(requestConstraint, false);
 }
 
 bool Widget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    need_layout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
+    need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
         // Used by draw().
         toWindowTransform = mat::T(_window_rectangle.x(), _window_rectangle.y(), z());
 
         // Used by handleMouseEvent()
         fromWindowTransform = ~toWindowTransform;
-
-        // Used by hitboxTest().
-        offsetFromParent = parent ? _window_rectangle.p0() - parent->window_rectangle().p0() : _window_rectangle.p0();
     }
 
     return need_layout;
@@ -111,13 +108,13 @@ void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
     }
 }
 
-Widget *Widget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+Widget const *Widget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
     if (currentKeyboardWidget == nullptr && acceptsFocus()) {
         // The first widget that accepts focus.
-        return const_cast<Widget *>(this);
+        return this;
 
     } else {
         return nullptr;

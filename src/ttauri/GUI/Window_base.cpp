@@ -79,26 +79,30 @@ void Window_base::setDevice(GUIDevice *newDevice)
     device = newDevice;
 }
 
-void Window_base::updateToNextKeyboardTarget(Widget *currentTargetWidget) noexcept {
+void Window_base::updateToNextKeyboardTarget(Widget *current_target_widget) noexcept {
     ttlet lock = std::scoped_lock(mutex);
-    ttlet widget_lock = std::scoped_lock(widget->mutex);
 
-    auto tmp = widget->nextKeyboardWidget(currentTargetWidget, false);
-    if (tmp == foundWidgetPtr) {
-        tmp = nullptr;
+    auto *tmp = widget->nextKeyboardWidget(current_target_widget, false);
+    if (tmp == current_target_widget) {
+        // The currentTargetWidget was already the last (or only) widget.
+        // cycle back to the first.
+        tmp = widget->nextKeyboardWidget(nullptr, false);
     }
 
     updateKeyboardTarget(tmp);
 }
 
-void Window_base::updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexcept {
+void Window_base::updateToPrevKeyboardTarget(Widget *current_target_widget) noexcept
+{
     ttlet lock = std::scoped_lock(mutex);
-    ttlet widget_lock = std::scoped_lock(widget->mutex);
 
-    auto tmp = widget->nextKeyboardWidget(currentTargetWidget, true);
-    if (tmp == foundWidgetPtr) {
-        tmp = nullptr;
+    auto *tmp = widget->nextKeyboardWidget(current_target_widget, true);
+    if (tmp == current_target_widget) {
+        // The currentTargetWidget was already the first (or only) widget.
+        // cycle back to the last.
+        tmp = widget->nextKeyboardWidget(nullptr, true);
     }
+
     updateKeyboardTarget(tmp);
 }
 
@@ -168,7 +172,7 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     case MouseEvent::Type::ButtonDown:
     case MouseEvent::Type::Move: {
-        ttlet hitbox = hitBoxTest(event.position);
+        ttlet hitbox = widget->hitBoxTest(event.position);
         updateMouseTarget(hitbox.widget, event.position);
 
         if (event.type == MouseEvent::Type::ButtonDown) {
@@ -222,13 +226,5 @@ void Window_base::handleKeyboardEvent(Grapheme grapheme, bool full) noexcept {
 void Window_base::handleKeyboardEvent(char32_t c, bool full) noexcept {
     return handleKeyboardEvent(Grapheme(c), full);
 }
-
-HitBox Window_base::hitBoxTest(vec position) const noexcept {
-    ttlet lock = std::scoped_lock(mutex);
-    ttlet widget_lock = std::scoped_lock(widget->mutex);
-    return widget->hitBoxTest(position);
-}
-
-
 
 }

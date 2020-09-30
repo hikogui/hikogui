@@ -157,7 +157,7 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= requestLayout.exchange(false);
+        need_layout |= std::exchange(requestLayout, false);
         if (need_layout) {
             leftBoxRectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
 
@@ -459,9 +459,10 @@ public:
         Widget::handleCommand(command);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override
+    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
+        ttlet position = fromWindowTransform * window_position;
 
         if (selecting && overlayRectangle.contains(position)) {
             return HitBox{this, elevation + 25.0f, *enabled ? HitBox::Type::Button : HitBox::Type::Default};

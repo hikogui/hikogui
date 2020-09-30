@@ -43,9 +43,10 @@ void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::tim
     Widget::draw(drawContext, displayTimePoint);
 }
 
-HitBox SystemMenuWidget::hitBoxTest(vec position) const noexcept
+HitBox SystemMenuWidget::hitBoxTest(vec window_position) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
+    ttlet position = fromWindowTransform * window_position;
 
     if (systemMenuRectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave

@@ -24,7 +24,7 @@ public:
     [[nodiscard]] bool updateConstraints() noexcept override;
     [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 };
 
 } // namespace tt

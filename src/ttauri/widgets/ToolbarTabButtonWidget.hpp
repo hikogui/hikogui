@@ -68,7 +68,7 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= requestLayout.exchange(false);
+        need_layout |= std::exchange(requestLayout, false);
         if (need_layout) {
             ttlet offset = Theme::margin + Theme::borderWidth;
             button_rectangle = aarect{
@@ -148,9 +148,10 @@ public:
         Widget::handleCommand(command);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override
+    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
+        ttlet position = fromWindowTransform * window_position;
 
         if (button_rectangle.contains(position)) {
             return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};

@@ -54,7 +54,7 @@ namespace tt {
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  *
- * All methods should lock the mutex, unless they use only the atomic data.
+ * All methods should lock make sure the mutex is locked by the current thread.
  *
  * Rendering is done in three distinct phases:
  *  1. Updating Constraints
@@ -126,6 +126,20 @@ public:
     aarect _window_rectangle;
     float _window_base_line;
 
+    
+
+    /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
+     */
+    bool requestConstraint = true;
+
+    /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
+     */
+    bool requestLayout = true;
+
+    /** The widget is enabled.
+     */
+    observable<bool> enabled = true;
+
     /** Transformation matrix from window coords to local coords.
      */
     mat::T fromWindowTransform;
@@ -133,17 +147,6 @@ public:
     /** Transformation matrix from local coords to window coords.
      */
     mat::T toWindowTransform;
-
-    /** Offset to apply to mouse position.
-     */
-    vec offsetFromParent;
-
-    mutable std::atomic<bool> requestConstraint = true;
-    mutable std::atomic<bool> requestLayout = true;
-
-    /** The widget is enabled.
-     */
-    observable<bool> enabled = true;
 
     /*! Constructor for creating sub views.
      */
@@ -228,12 +231,16 @@ public:
     [[nodiscard]] GUIDevice *device() const noexcept;
 
     /** Find the widget that is under the mouse cursor.
-     *
+     * This function will recursively test with visual child widgets, when
+     * widgets overlap on the screen the hitbox object with the highest elevation is returned.
+     * 
      * Thread safety: locks.
+     * @param window_position The coordinate of the mouse on the window.
+     *                        Use `fromWindowTransform` to convert to widget-local coordinates.
+     * @return A HitBox object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept
+    [[nodiscard]] virtual HitBox hitBoxTest(vec window_position) const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
         return {};
     }
 
@@ -275,6 +282,9 @@ public:
      * Subclasses should call `updateConstraints()` on its base-class to check if the constraints where
      * changed. `Widget::updateConstraints()` will check if `requestConstraints` was set.
      * `Container::updateConstraints()` will check if any of the children changed constraints.
+     * 
+     * If the container, due to a change in constraints, wants the window to resize to the minimum size
+     * it should set window.requestResize to true.
      * 
      * This function will change what is returned by `preferred_size()` and `preferred_base_line()`.
      * 
@@ -337,9 +347,20 @@ public:
      */
     virtual void handleMouseEvent(MouseEvent const &event) noexcept;
 
-    [[nodiscard]] virtual Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
+    /** Find the next widget that handles keyboard focus.
+     * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
+     * that returns true from `acceptsFocus()`.
+     * 
+     * @param currentKeyboardWidget The widget that currently has focus, or nullptr to get the first widget
+     *                              that accepts focus.
+     * @param reverse Walk the widget tree in reverse order.
+     * @return A pointer to the next widget. The currentKeyboardWidget when it was found
+     *         but no next widget was not yet found. nullptr when currentKeyboardWidget is
+     *         not yet found.
+     */
+    [[nodiscard]] virtual Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
 
-    /*! Handle keyboard event.
+    /** Handle keyboard event.
      * Called by the operating system when editing text, or entering special keys
      *
      * Thread safety: locks
@@ -348,7 +369,5 @@ public:
 
 protected:
 };
-
-inline Widget *const foundWidgetPtr = reinterpret_cast<Widget *>(1);
 
 } // namespace tt

@@ -44,7 +44,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    need_layout |= requestLayout.exchange(false);
+    need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
         auto extent = rectangle().extent();
 
@@ -253,9 +253,10 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
     }
 }
 
-HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
+HitBox WindowTrafficLightsWidget::hitBoxTest(vec window_position) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
+    ttlet position = fromWindowTransform * window_position;
 
     if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
         return HitBox{this, elevation, HitBox::Type::Button};

@@ -24,9 +24,9 @@ public:
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 
-    [[nodiscard]] Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept override;
+    [[nodiscard]] Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept override;
 
     /** Add a widget directly to this widget.
      * Thread safety: locks.

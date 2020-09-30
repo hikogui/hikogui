@@ -35,7 +35,7 @@ bool ContainerWidget::updateLayout(hires_utc_clock::time_point display_time_poin
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto need_redraw = need_layout |= requestLayout.exchange(false);
+    auto need_redraw = need_layout |= std::exchange(requestLayout, false);
     for (auto &&child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
         need_redraw |= child->updateLayout(display_time_point, need_layout);
@@ -83,15 +83,15 @@ void ContainerWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     Widget::draw(drawContext, displayTimePoint);
 }
 
-HitBox ContainerWidget::hitBoxTest(vec position) const noexcept
+HitBox ContainerWidget::hitBoxTest(vec window_position) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
+    ttlet position = fromWindowTransform * window_position;
 
     auto r = rectangle().contains(position) ? HitBox{this, elevation} : HitBox{};
 
     for (ttlet &child : children) {
-        ttlet child_lock = std::scoped_lock(child->mutex);
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
+        r = std::max(r, child->hitBoxTest(window_position));
     }
     return r;
 }
@@ -111,42 +111,46 @@ std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcep
     return r;
 }
 
-Widget *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+Widget const *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
-    if (currentKeyboardWidget == nullptr && acceptsFocus()) {
-        // The first widget that accepts focus.
-        return const_cast<ContainerWidget *>(this);
+    // If currentKeyboardWidget is nullptr, then we need to find the first widget that accepts focus.
+    auto found = (currentKeyboardWidget == nullptr);
 
-    } else {
-        bool found = false;
+    // The container widget itself accepts focus.
+    if (found && !reverse && acceptsFocus()) {
+        return this;
+    }
 
-        for (auto *child : childPointers(reverse)) {
-            ttlet child_lock = std::scoped_lock(child->mutex);
+    for (auto *child : childPointers(reverse)) {
+        if (found) {
+            // Find the first focus accepting widget.
+            if (auto *tmp = child->nextKeyboardWidget(nullptr, reverse)) {
+                return tmp;
+            }
 
-            if (found) {
-                // Find the first focus accepting widget.
-                if (auto *tmp = child->nextKeyboardWidget(nullptr, reverse)) {
-                    return tmp;
-                }
+        } else if (child == currentKeyboardWidget) {
+            found = true;
 
-            } else if (child == currentKeyboardWidget) {
+        } else {
+            auto *tmp = child->nextKeyboardWidget(currentKeyboardWidget, reverse);
+            if (tmp == currentKeyboardWidget) {
+                // The current widget was found, but no next widget available in the child.
                 found = true;
 
-            } else {
-                auto *tmp = child->nextKeyboardWidget(currentKeyboardWidget, reverse);
-                if (tmp == foundWidgetPtr) {
-                    // The current widget was found, but no next widget available in the child.
-                    found = true;
-
-                } else if (tmp) {
-                    return tmp;
-                }
+            } else if (tmp) {
+                return tmp;
             }
         }
-        return found ? foundWidgetPtr : nullptr;
     }
+
+    // The container widget itself accepts focus.
+    if (found && reverse && acceptsFocus()) {
+        return this;
+    }
+
+    return found ? currentKeyboardWidget : nullptr;
 }
 
 } // namespace tt

@@ -28,7 +28,7 @@ public:
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 
 private:
 

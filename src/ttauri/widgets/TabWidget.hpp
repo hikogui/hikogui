@@ -58,7 +58,7 @@ public:
         auto &child = children[*value];
         ttlet child_lock = std::scoped_lock(child->mutex);
 
-        auto need_redraw = need_layout |= requestLayout.exchange(false);
+        auto need_redraw = need_layout |= std::exchange(requestLayout, false);
         if (need_layout) {
             child->set_window_rectangle(window_rectangle());
             child->set_window_base_line(window_base_line());
@@ -110,24 +110,20 @@ public:
         drawChild(drawContext, displayTimePoint, *child);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override
+    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
-        tt_assume(*value >= 0 && *value <= std::ssize(children));
+        ttlet lock = std::scoped_lock(mutex);
 
-        auto &child = children[*value];
-        ttlet child_lock = std::scoped_lock(child->mutex);
-        return child->hitBoxTest(position - child->offsetFromParent);
+        tt_assume(*value >= 0 && *value <= std::ssize(children));
+        return children[*value]->hitBoxTest(window_position);
     }
 
-    Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+    Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
-        tt_assume(*value >= 0 && *value < std::ssize(children));
+        ttlet lock = std::scoped_lock(mutex);
 
-        ttlet &child = children[*value];
-        ttlet child_lock = std::scoped_lock(child->mutex);
-        return child->nextKeyboardWidget(currentKeyboardWidget, reverse);
+        tt_assume(*value >= 0 && *value < std::ssize(children));
+        return children[*value]->nextKeyboardWidget(currentKeyboardWidget, reverse);
     }
 
     template<typename WidgetType = GridWidget, typename... Args>

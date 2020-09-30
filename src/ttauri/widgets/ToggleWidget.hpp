@@ -92,7 +92,7 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= requestLayout.exchange(false);
+        need_layout |= std::exchange(requestLayout, false);
         if (need_layout) {
             toggleRectangle = aarect{
                 -0.5f, // Expand horizontally due to rounded shape
@@ -199,9 +199,10 @@ public:
         Widget::handleCommand(command);
     }
 
-    HitBox hitBoxTest(vec position) const noexcept override
+    HitBox hitBoxTest(vec window_position) const noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
+        ttlet position = fromWindowTransform * window_position;
 
         if (rectangle().contains(position)) {
             return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};

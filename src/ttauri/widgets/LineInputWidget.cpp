@@ -40,7 +40,7 @@ bool LineInputWidget::updateLayout(hires_utc_clock::time_point display_time_poin
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto need_redraw = need_layout |= requestLayout.exchange(false);
+    auto need_redraw = need_layout |= std::exchange(requestLayout, false);
     need_redraw |= focus && display_time_point >= nextRedrawTimePoint;
     if (need_layout) {
         textRectangle = shrink(rectangle(), Theme::margin);
@@ -258,9 +258,10 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
     }
 }
 
-HitBox LineInputWidget::hitBoxTest(vec position) const noexcept
+HitBox LineInputWidget::hitBoxTest(vec window_position) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
+    ttlet position = fromWindowTransform * window_position;
 
     if (rectangle().contains(position)) {
         return HitBox{this, elevation, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};

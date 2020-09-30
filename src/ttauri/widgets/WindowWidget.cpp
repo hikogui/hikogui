@@ -60,7 +60,7 @@ bool WindowWidget::updateLayout(hires_utc_clock::time_point display_time_point, 
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    need_layout |= requestLayout.exchange(false);
+    need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
         ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
         ttlet toolbar_size = toolbar->preferred_size();
@@ -77,9 +77,10 @@ bool WindowWidget::updateLayout(hires_utc_clock::time_point display_time_point, 
     return ContainerWidget::updateLayout(display_time_point, need_layout);
 }
 
-HitBox WindowWidget::hitBoxTest(vec position) const noexcept
+HitBox WindowWidget::hitBoxTest(vec window_position) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
+    ttlet position = fromWindowTransform * window_position;
 
     constexpr float BORDER_WIDTH = 10.0f;
 
@@ -117,8 +118,7 @@ HitBox WindowWidget::hitBoxTest(vec position) const noexcept
     }
 
     for (ttlet &child : children) {
-        ttlet child_lock = std::scoped_lock(child->mutex);
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
+        r = std::max(r, child->hitBoxTest(window_position));
     }
 
     return r;
