@@ -17,11 +17,17 @@ public:
     template<typename V>
     TabWidget(Window &window, Widget *parent, V &&value) noexcept : Widget(window, parent), value(std::forward<V>(value))
     {
+        if (parent) {
+            // The tab-widget will not draw itself, only its selected child.
+            ttlet lock = std::scoped_lock(parent->mutex);
+            _draw_layer = parent->draw_layer();
+            _semantic_layer = parent->semantic_layer();
+        }
+        _margin = 0.0f;
+
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
             this->requestConstraint = true;
         });
-
-        _margin = 0.0f;
     }
 
     ~TabWidget() {}
@@ -75,13 +81,14 @@ public:
         child.draw(child.makeDrawContext(context), displayTimePoint);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         tt_assume(*value >= 0 && *value <= std::ssize(children));
 
         auto &child = children[*value];
-        drawChild(drawContext, displayTimePoint, *child);
+        drawChild(context, display_time_point, *child);
+        Widget::draw(std::move(context), display_time_point);
     }
 
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override

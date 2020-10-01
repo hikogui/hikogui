@@ -140,10 +140,11 @@ public:
             }
         } else {
             if (*enabled && window.active) {
-                drawContext.color = hover ? theme->borderColor(nestingLevel() + 1) : theme->borderColor(nestingLevel());
+                drawContext.color = hover ? theme->borderColor(_semantic_layer + 1) : theme->borderColor(_semantic_layer);
             }
         }
         std::swap(drawContext.color, drawContext.fillColor);
+        drawContext.transform = mat::T{0.0f, 0.0f, 0.1f} * drawContext.transform;
         drawContext.cornerShapes = vec{positionedSliderRectangle.height() * 0.5f};
         drawContext.drawBoxIncludeBorder(positionedSliderRectangle);
     }
@@ -161,13 +162,13 @@ public:
         labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        drawToggle(drawContext);
-        drawSlider(drawContext);
-        drawLabel(drawContext);
-        Widget::draw(drawContext, displayTimePoint);
+        drawToggle(context);
+        drawSlider(context);
+        drawLabel(context);
+        Widget::draw(std::move(context), display_time_point);
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override
@@ -208,7 +209,7 @@ public:
         ttlet position = fromWindowTransform * window_position;
 
         if (rectangle().contains(position)) {
-            return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }

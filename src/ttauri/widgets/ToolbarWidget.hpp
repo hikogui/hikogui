@@ -28,8 +28,7 @@ public:
 
     [[nodiscard]] bool updateConstraints() noexcept override;
     [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
-
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 

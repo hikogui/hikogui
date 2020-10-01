@@ -50,7 +50,7 @@ public:
 
     [[nodiscard]] bool updateConstraints() noexcept override;
     [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
 
     void handleMouseEvent(MouseEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
@@ -58,8 +58,8 @@ public:
 private:
     static vec calculateExtent(Window &window) noexcept;
 
-    void drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
-    void drawWindows(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
+    void drawMacOS(DrawContext const &context, hires_utc_clock::time_point display_time_point) noexcept;
+    void drawWindows(DrawContext const &context, hires_utc_clock::time_point display_time_point) noexcept;
 
 };
 

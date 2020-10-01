@@ -45,16 +45,16 @@ bool ContainerWidget::updateLayout(hires_utc_clock::time_point display_time_poin
 }
 
 
-void ContainerWidget::draw(DrawContext const &context, hires_utc_clock::time_point displayTimePoint) noexcept
+void ContainerWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
     for (auto &child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
-        child->draw(child->makeDrawContext(context), displayTimePoint);
+        child->draw(child->makeDrawContext(context), display_time_point);
     }
 
-    Widget::draw(context, displayTimePoint);
+    Widget::draw(std::move(context), display_time_point);
 }
 
 HitBox ContainerWidget::hitBoxTest(vec window_position) const noexcept
@@ -62,7 +62,7 @@ HitBox ContainerWidget::hitBoxTest(vec window_position) const noexcept
     ttlet lock = std::scoped_lock(mutex);
     ttlet position = fromWindowTransform * window_position;
 
-    auto r = rectangle().contains(position) ? HitBox{this, elevation} : HitBox{};
+    auto r = rectangle().contains(position) ? HitBox{this, _draw_layer} : HitBox{};
 
     for (ttlet &child : children) {
         r = std::max(r, child->hitBoxTest(window_position));

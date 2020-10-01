@@ -78,20 +78,8 @@ void LineInputWidget::dragSelect() noexcept
     }
 }
 
-void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+void LineInputWidget::scrollText() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
-
-    nextRedrawTimePoint = displayTimePoint + blinkInterval;
-
-    auto context = drawContext;
-
-    context.drawBoxIncludeBorder(rectangle());
-
-    // After drawing the border around the input field make sure any other
-    // drawing remains inside this border.
-    context.clippingRectangle = textClippingRectangle;
-
     if (dragScrollSpeedX != 0.0f) {
         textScrollX += dragScrollSpeedX * (1.0f / 60.0f);
         dragSelect();
@@ -119,25 +107,38 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     ttlet maxScrollWidth = std::max(0.0f, shapedText.preferredExtent.width() - textRectangle.width());
     textScrollX = std::clamp(textScrollX, 0.0f, maxScrollWidth);
 
+    // Calculate how much we need to translate the text.
     textTranslate = mat::T2(-textScrollX, 0.0f) * shapedText.T(textRectangle);
     textInvTranslate = ~textTranslate;
+}
 
-    context.transform = drawContext.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
+void LineInputWidget::drawBackgroundBox(DrawContext const &context) const noexcept
+{
+    context.drawBoxIncludeBorder(rectangle());
+}
 
-    selectionRectangles = field.selectionRectangles();
+void LineInputWidget::drawSelectionRectangles(DrawContext context) const noexcept
+{
+    ttlet selectionRectangles = field.selectionRectangles();
     for (ttlet selectionRectangle : selectionRectangles) {
         context.fillColor = theme->textSelectColor;
         context.drawFilledQuad(selectionRectangle);
     }
+}
 
-    partialGraphemeCaret = field.partialGraphemeCaret();
+void LineInputWidget::drawPartialGraphemeCaret(DrawContext context) const noexcept
+{
+    ttlet partialGraphemeCaret = field.partialGraphemeCaret();
     if (partialGraphemeCaret) {
         context.fillColor = theme->incompleteGlyphColor;
         context.drawFilledQuad(partialGraphemeCaret);
     }
+}
 
+void LineInputWidget::drawCaret(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
+{
     // Display the caret and handle blinking.
-    auto durationSinceLastUpdate = displayTimePoint - lastUpdateTimePoint;
+    auto durationSinceLastUpdate = display_time_point - lastUpdateTimePoint;
     auto nrHalfBlinks = static_cast<int64_t>(durationSinceLastUpdate / blinkInterval);
 
     auto blinkIsOn = nrHalfBlinks % 2 == 0;
@@ -146,11 +147,35 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
         context.fillColor = theme->cursorColor;
         context.drawFilledQuad(leftToRightCaret);
     }
+}
 
-    context.transform = context.transform * mat::T(0.0f, 0.0f, 0.001f);
+void LineInputWidget::drawText(DrawContext context) const noexcept
+{
+    context.transform = mat::T(0.0f, 0.0f, 0.2f) * context.transform;
     context.drawText(shapedText);
+}
 
-    Widget::draw(drawContext, displayTimePoint);
+void LineInputWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
+{
+    tt_assume(mutex.is_locked_by_current_thread());
+
+    nextRedrawTimePoint = display_time_point + blinkInterval;
+    scrollText();
+
+    drawBackgroundBox(context);
+
+    // After drawing the border around the input field make sure any other
+    // drawing remains inside this border. And change the transform to account
+    // for how much the text has scrolled.
+    context.clippingRectangle = textClippingRectangle;
+    context.transform = (mat::T(0.0, 0.0, 0.1f) * textTranslate) * context.transform;
+
+    drawSelectionRectangles(context);
+    drawPartialGraphemeCaret(context);
+    drawCaret(context, display_time_point);
+    drawText(context);
+
+    Widget::draw(std::move(context), display_time_point);
 }
 
 void LineInputWidget::handleCommand(command command) noexcept
@@ -265,7 +290,7 @@ HitBox LineInputWidget::hitBoxTest(vec window_position) const noexcept
     ttlet position = fromWindowTransform * window_position;
 
     if (rectangle().contains(position)) {
-        return HitBox{this, elevation, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
+        return HitBox{this, _draw_layer, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

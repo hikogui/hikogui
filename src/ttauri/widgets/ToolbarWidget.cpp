@@ -13,7 +13,15 @@ namespace tt {
 
 using namespace std;
 
-ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept : ContainerWidget(window, parent) {}
+ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept : ContainerWidget(window, parent)
+{
+    if (parent) {
+        // The toolbar widget does draw itself.
+        ttlet lock = std::scoped_lock(parent->mutex);
+        _draw_layer = parent->draw_layer() + 1.0f;
+        _semantic_layer = parent->semantic_layer() + 1;
+    }
+}
 
 Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<Widget> childWidget) noexcept
 {
@@ -128,13 +136,12 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
     return ContainerWidget::updateLayout(display_time_point, need_layout);
 }
 
-void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+void ToolbarWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto context = drawContext;
     context.drawFilledQuad(rectangle());
-    ContainerWidget::draw(drawContext, displayTimePoint);
+    ContainerWidget::draw(std::move(context), display_time_point);
 }
 
 HitBox ToolbarWidget::hitBoxTest(vec window_position) const noexcept
@@ -142,7 +149,7 @@ HitBox ToolbarWidget::hitBoxTest(vec window_position) const noexcept
     ttlet lock = std::scoped_lock(mutex);
     ttlet position = fromWindowTransform * window_position;
 
-    auto r = rectangle().contains(position) ? HitBox{this, elevation, HitBox::Type::MoveArea} : HitBox{};
+    auto r = rectangle().contains(position) ? HitBox{this, _draw_layer, HitBox::Type::MoveArea} : HitBox{};
 
     for (ttlet &child : children) {
         r = std::max(r, child->hitBoxTest(window_position));

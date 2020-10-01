@@ -31,7 +31,6 @@ WindowWidget::WindowWidget(Window &window, GridWidgetDelegate *delegate, Label t
     }
 
     content = &makeWidget<GridWidget>(delegate);
-    content->elevation = elevation;
 }
 
 WindowWidget::~WindowWidget() {}
@@ -84,7 +83,7 @@ HitBox WindowWidget::hitBoxTest(vec window_position) const noexcept
 
     constexpr float BORDER_WIDTH = 10.0f;
 
-    auto r = HitBox{this, elevation};
+    auto r = HitBox{this, _draw_layer};
 
     if (position.x() <= BORDER_WIDTH) {
         if (position.y() <= BORDER_WIDTH) {

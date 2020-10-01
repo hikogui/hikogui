@@ -9,6 +9,7 @@
 #include "../GUI/HitBox.hpp"
 #include "../GUI/KeyboardEvent.hpp"
 #include "../GUI/Theme.hpp"
+#include "../GUI/DrawContext.hpp"
 #include "../text/ShapedText.hpp"
 #include "../alignment.hpp"
 #include "../Path.hpp"
@@ -31,9 +32,6 @@
 #include <mutex>
 #include <typeinfo>
 
-namespace tt {
-class DrawContext;
-}
 namespace tt::PipelineImage {
 struct Image;
 struct Vertex;
@@ -119,13 +117,74 @@ public:
      * A container widget should layout the children in such
      * a way that the maximum margin of neighbouring widgets is maintained.
      *
-     * @pre `mutex` must be locked.
+     * @pre `mutex` must be locked by current thread.
      * @return The margin for this widget.
      */
     [[nodiscard]] float margin() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return _margin;
+    }
+
+    /** The first drawing layer of the widget.
+     * Drawing layers start at 0.0 and go up to 100.0.
+     *
+     * Each child widget that has drawing to do increases the layer by 1.0.
+     *
+     * The widget should draw within 0.0 and 1.0 of its drawing layer.
+     * The toWindowTransfer and the DrawingContext will already include
+     * the draw_layer.
+     *
+     * An overlay widget such as popups will increase the layer by 25.0,
+     * to make sure the overlay will draw above other widgets in the window.
+     *
+     * @pre `mutex` must be locked by current thread.
+     * @return The draw layer of this widget.
+     */
+    [[nodiscard]] float draw_layer() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _draw_layer;
+    }
+
+    /** The logical layer of the widget.
+     * The logical layer can be used to determine how for away
+     * from the window-widget (root) the current widget is.
+     * 
+     * Logical layers start at 0 for the window-widget.
+     * Each child widget increases the logical layer by 1.
+     *
+     * @pre `mutex` must be locked by current thread.
+     * @return The draw layer of this widget.
+     */
+    [[nodiscard]] int logical_layer() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _logical_layer;
+    }
+
+    /** The semantic layer of the widget.
+     *
+     * The semantic layer is used mostly by the `draw()` function
+     * for selecting colors from the theme, to denote nesting widgets
+     * inside other widgets.
+     * 
+     * Semantic layers start at 0 for the window-widget and for any pop-up
+     * widgets.
+     * 
+     * The semantic layer is increased by one, whenever a user of the
+     * user-interface would understand the next layer to begin.
+     *
+     * In most cases it would mean that a container widget that does not
+     * draw itself will not increase the semantic_layer number.
+     *
+     * @pre `mutex` must be locked by current thread.
+     * @return The draw layer of this widget.
+     */
+    [[nodiscard]] int semantic_layer() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _semantic_layer;
     }
 
     /** Get the resistance in width.
@@ -265,26 +324,6 @@ public:
         return false;
     }
 
-    /** Get nesting level used for selecting colors for the widget.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] ssize_t nestingLevel() const noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-        return numeric_cast<ssize_t>(elevation);
-    }
-
-    /** Get z value for compositing order.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] float z() const noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-        return elevation * 0.01f;
-    }
-
     /** Update the constraints of the widget.
      * This function is called on each vertical sync, even if no drawing is to be done.
      * It should recursively call `updateConstraints()` on each of the visible children,
@@ -303,6 +342,7 @@ public:
      * 
      * This function will change what is returned by `preferred_size()` and `preferred_base_line()`.
      * 
+     * @pre `mutex` must be locked by current thread.
      * @return True if its or any children's constraints has changed.
      */
     [[nodiscard]] virtual bool updateConstraints() noexcept;
@@ -322,6 +362,7 @@ public:
      * Subclasses should call `updateLayout()` on its children, call `updateLayout()` on its
      * base class with `forceLayout` argument to the result of `layoutRequest.exchange(false)`.
      * 
+     * @pre `mutex` must be locked by current thread.
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_layout Force the widget to layout
      * @retrun True if the widget, or any of the children requires the window to be redrawn.
@@ -355,7 +396,7 @@ public:
      * @param drawContext The context to where the widget will draw.
      * @param displayTimePoint The time point when the widget will be shown on the screen.
      */
-    virtual void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+    virtual void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
     }
@@ -445,27 +486,21 @@ protected:
     ranged_int<3> _width_resistance = 1;
     ranged_int<3> _height_resistance = 1;
 
-    /** The margin outside the widget.
-     */
     float _margin = Theme::margin;
 
-    /** The first compositing layer of the widget.
-     * Layers start at 0.0 and go up to 100.0.
-     *
-     * Each widget that has drawing to do increases the layer by 1.0.
-     *
-     * The widget should draw within base_layer and base_layer + 1.0.
-     * The toWindowTransfer and the DrawingContext will already include
-     * the base_layer.
-     *
-     * An overlay widget such as popups will increase the layer by 25.0,
-     * to make sure the overlay will draw above other widgets in the window.
-     *
+    /** The draw layer of the widget.
+     * @sa draw_layer() const
      */
     float _draw_layer;
 
+    /** The draw layer of the widget.
+     * @sa semantic_layer() const
+     */
     int _semantic_layer;
 
+    /** The draw layer of the widget.
+     * @sa logical_layer() const
+     */
     int _logical_layer;
 
 

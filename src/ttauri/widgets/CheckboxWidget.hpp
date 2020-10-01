@@ -118,54 +118,54 @@ public:
         return Widget::updateLayout(displayTimePoint, need_layout);
     }
 
-    void drawCheckBox(DrawContext const &drawContext) noexcept
+    void drawCheckBox(DrawContext const &context) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawContext.drawBoxIncludeBorder(checkboxRectangle);
+        context.drawBoxIncludeBorder(checkboxRectangle);
     }
 
-    void drawCheckMark(DrawContext drawContext) noexcept
+    void drawCheckMark(DrawContext context) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
+        context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
 
         if (*enabled && window.active) {
-            drawContext.color = theme->accentColor;
+            context.color = theme->accentColor;
         }
 
         // Checkmark or tristate.
         if (value == TrueValue) {
-            drawContext.drawGlyph(checkGlyph, checkRectangle);
+            context.drawGlyph(checkGlyph, checkRectangle);
         } else if (value == FalseValue) {
             ;
         } else {
-            drawContext.drawGlyph(minusGlyph, minusRectangle);
+            context.drawGlyph(minusGlyph, minusRectangle);
         }
     }
 
-    void drawLabel(DrawContext drawContext) noexcept
+    void drawLabel(DrawContext context) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (*enabled) {
-            drawContext.color = theme->labelStyle.color;
+            context.color = theme->labelStyle.color;
         }
 
         ttlet &labelCell = value == TrueValue ? trueLabelCell : value == FalseValue ? falseLabelCell : otherLabelCell;
 
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
+        labelCell->draw(context, labelRectangle, Alignment::TopLeft, base_line(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawCheckBox(drawContext);
-        drawCheckMark(drawContext);
-        drawLabel(drawContext);
-        Widget::draw(drawContext, displayTimePoint);
+        drawCheckBox(context);
+        drawCheckMark(context);
+        drawLabel(context);
+        Widget::draw(std::move(context), display_time_point);
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override
@@ -206,7 +206,7 @@ public:
         ttlet position = fromWindowTransform * window_position;
 
         if (rectangle().contains(position)) {
-            return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }

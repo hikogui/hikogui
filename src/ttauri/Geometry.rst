@@ -59,18 +59,14 @@ further DPI scaling will be handled by the DrawContext.
 
 
 ### Window depth
-Z-coordinate for a window is between 0.0 (far) to 1.0 (near).
-For better precission we use a reverse-z method, to combine
-1/z together with float with linear precission.
+Z-coordinate for a window is between 0.0 (far) to 100.0 (near).
+For better precision we use a reverse-z method, to combine
+1/z together with float with linear precision.
 
  - The window-widget is set to depth 0.0.
- - Each nested widget is 0.001 nearer.
- - Widgets which extends accross other widgets, such as a combo-box-widget
-   will be 0.1 nearer.
- - A utlity sub-window is set to a depth of 0.25
- - A sheet over the window is set to a depth of 0.5
- - A modal dialogue is set to a depth of 0.75
- - A privacy-overlay/screen-saver is set to a depth of 0.95
+ - Each nested widget, which needs to draw itself, is 1.0 nearer.
+ - Widgets which extends across other widgets, such as a combo-box-widget
+   will be 25.0 nearer.
 
 ### Image coordinates
 The coordinates in a image are in pixels. With the center of the left bottom

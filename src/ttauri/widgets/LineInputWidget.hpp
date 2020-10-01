@@ -24,8 +24,6 @@ protected:
     aarect textRectangle = {};
     aarect textClippingRectangle = {};
     aarect leftToRightCaret = {};
-    aarect partialGraphemeCaret = {};
-    std::vector<aarect> selectionRectangles = {};
 
     /** Scroll speed in points per second.
      * This is used when dragging outside of the widget.
@@ -61,7 +59,14 @@ public:
 
     [[nodiscard]] bool updateConstraints() noexcept override;
     [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
+
+    void scrollText() noexcept;
+    void drawBackgroundBox(DrawContext const &context) const noexcept;
+    void drawSelectionRectangles(DrawContext context) const noexcept;
+    void drawPartialGraphemeCaret(DrawContext context) const noexcept;
+    void drawCaret(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept;
+    void drawText(DrawContext context) const noexcept;
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
 
     void handleCommand(command command) noexcept override;
 

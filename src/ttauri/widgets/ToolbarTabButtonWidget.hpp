@@ -82,10 +82,10 @@ public:
     void drawButton(DrawContext drawContext) noexcept
     {
         if (hover || *value == ActiveValue) {
-            drawContext.fillColor = theme->fillColor(nestingLevel() - 2);
+            drawContext.fillColor = theme->fillColor(_semantic_layer - 2);
             drawContext.color = drawContext.fillColor;
         } else {
-            drawContext.fillColor = theme->fillColor(nestingLevel() - 1);
+            drawContext.fillColor = theme->fillColor(_semantic_layer - 1);
             drawContext.color = drawContext.fillColor;
         }
 
@@ -101,7 +101,7 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawContext.transform = mat::T(0.0f, 0.0f, 0.001f) * drawContext.transform;
+        drawContext.transform = mat::T(0.0f, 0.0f, 0.1f) * drawContext.transform;
 
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;
@@ -110,13 +110,13 @@ public:
         label_cell->draw(drawContext, rectangle(), Alignment::MiddleCenter, base_line(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawButton(drawContext);
-        drawLabel(drawContext);
-        Widget::draw(drawContext, displayTimePoint);
+        drawButton(context);
+        drawLabel(context);
+        Widget::draw(std::move(context), display_time_point);
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override
@@ -157,7 +157,7 @@ public:
         ttlet position = fromWindowTransform * window_position;
 
         if (button_rectangle.contains(position)) {
-            return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }

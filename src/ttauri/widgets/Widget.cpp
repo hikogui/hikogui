@@ -7,12 +7,20 @@
 namespace tt {
 
 Widget::Widget(Window &_window, Widget *_parent) noexcept :
+    enabled(true),
     window(_window),
     parent(_parent),
-    elevation(_parent ? _parent->elevation + 1.0f : 0.0f),
-    enabled(true)
-    
+    _draw_layer(0.0f),
+    _logical_layer(0),
+    _semantic_layer(0)
 {
+    if (_parent) {
+        ttlet lock = std::scoped_lock(_parent->mutex);
+        _draw_layer = _parent->draw_layer() + 1.0f;
+        _logical_layer = _parent->logical_layer() + 1;
+        _semantic_layer = _parent->semantic_layer() + 1;
+    }
+
     [[maybe_unused]] ttlet enabled_cbid = enabled.add_callback([this](auto...){
         window.requestRedraw = true;
     });
@@ -49,7 +57,7 @@ bool Widget::updateLayout(hires_utc_clock::time_point display_time_point, bool n
     need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
         // Used by draw().
-        toWindowTransform = mat::T(window_rectangle.x(), window_rectangle.y(), z());
+        toWindowTransform = mat::T(window_rectangle.x(), window_rectangle.y(), _draw_layer);
 
         // Used by handleMouseEvent()
         fromWindowTransform = ~toWindowTransform;
@@ -66,24 +74,24 @@ DrawContext Widget::makeDrawContext(DrawContext context) const noexcept
     context.transform = toWindowTransform;
 
     // The default fill and border colors.
-    context.color = theme->borderColor(nestingLevel());
-    context.fillColor = theme->fillColor(nestingLevel());
+    context.color = theme->borderColor(_semantic_layer);
+    context.fillColor = theme->fillColor(_semantic_layer);
 
     if (*enabled) {
         if (focus && window.active) {
             context.color = theme->accentColor;
         } else if (hover) {
-            context.color = theme->borderColor(nestingLevel() + 1);
+            context.color = theme->borderColor(_semantic_layer + 1);
         }
 
         if (hover) {
-            context.fillColor = theme->fillColor(nestingLevel() + 1);
+            context.fillColor = theme->fillColor(_semantic_layer + 1);
         }
 
     } else {
         // Disabled, only the outline is shown.
-        context.color = theme->borderColor(nestingLevel() - 1);
-        context.fillColor = theme->fillColor(nestingLevel() - 1);
+        context.color = theme->borderColor(_semantic_layer - 1);
+        context.fillColor = theme->fillColor(_semantic_layer - 1);
     }
 
     return context;

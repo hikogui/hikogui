@@ -14,6 +14,12 @@ protected:
 public:
     ContainerWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
     {
+        if (parent) {
+            // Most containers will not draw itself, only its children.
+            ttlet lock = std::scoped_lock(parent->mutex);
+            _draw_layer = parent->draw_layer();
+            _semantic_layer = parent->semantic_layer();
+        }
         _margin = 0.0f;
     }
 
@@ -22,7 +28,7 @@ public:
     [[nodiscard]] bool updateConstraints() noexcept override;
     [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 

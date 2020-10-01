@@ -96,30 +96,30 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (pressed) {
-            context.fillColor = theme->fillColor(nestingLevel() + 1);
+            context.fillColor = theme->fillColor(_semantic_layer + 1);
         } else if (hover) {
-            context.fillColor = theme->fillColor(nestingLevel());
+            context.fillColor = theme->fillColor(_semantic_layer);
         } else {
-            context.fillColor = theme->fillColor(nestingLevel() - 1);
+            context.fillColor = theme->fillColor(_semantic_layer - 1);
         }
         context.drawFilledQuad(rectangle());
     }
 
     void drawIcon(DrawContext context) noexcept
     {
-        context.transform = mat::T(0.0f, 0.0f, 0.0001f) * context.transform;
+        context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
         if (*enabled) {
             context.color = theme->foregroundColor;
         }
         icon_cell->draw(context, rectangle(), Alignment::MiddleCenter);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        drawBackground(drawContext);
-        drawIcon(drawContext);
-        Widget::draw(drawContext, displayTimePoint);
+        drawBackground(context);
+        drawIcon(context);
+        Widget::draw(std::move(context), display_time_point);
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override
@@ -149,7 +149,7 @@ public:
         ttlet position = fromWindowTransform * window_position;
 
         if (rectangle().contains(position)) {
-            return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }

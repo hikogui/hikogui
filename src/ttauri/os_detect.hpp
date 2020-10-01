@@ -185,7 +185,7 @@ enum class Processor {
 #endif
 
 constexpr size_t cache_line_size =
-    Processor::current == Processor::X64 ? 128 :
+    Processor::current == Processor::x64 ? 128 :
     Processor::current == Processor::ARM ? 64 :
     0;
 

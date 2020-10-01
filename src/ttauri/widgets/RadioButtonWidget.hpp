@@ -121,14 +121,14 @@ public:
         labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawRadioButton(drawContext);
-        drawPip(drawContext);
-        drawLabel(drawContext);
-        Widget::draw(drawContext, displayTimePoint);
+        drawRadioButton(context);
+        drawPip(context);
+        drawLabel(context);
+        Widget::draw(std::move(context), display_time_point);
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override
@@ -169,7 +169,7 @@ public:
         ttlet position = fromWindowTransform * window_position;
 
         if (rectangle().contains(position)) {
-            return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }

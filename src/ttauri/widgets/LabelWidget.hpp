@@ -68,11 +68,11 @@ public:
         labelCell->draw(drawContext, rectangle(), alignment, base_line(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawLabel(drawContext);
-        Widget::draw(drawContext, displayTimePoint);
+        drawLabel(context);
+        Widget::draw(std::move(context), display_time_point);
     }
 };
 

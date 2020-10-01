@@ -35,12 +35,12 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
     }
 }
 
-void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    iconCell->draw(drawContext, rectangle(), Alignment::MiddleCenter);
-    Widget::draw(drawContext, displayTimePoint);
+    iconCell->draw(context, rectangle(), Alignment::MiddleCenter);
+    Widget::draw(std::move(context), display_time_point);
 }
 
 HitBox SystemMenuWidget::hitBoxTest(vec window_position) const noexcept
@@ -51,7 +51,7 @@ HitBox SystemMenuWidget::hitBoxTest(vec window_position) const noexcept
     if (systemMenuRectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return HitBox{this, elevation, HitBox::Type::ApplicationIcon};
+        return HitBox{this, _draw_layer, HitBox::Type::ApplicationIcon};
     } else {
         return {};
     }
