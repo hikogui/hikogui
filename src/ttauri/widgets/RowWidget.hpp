@@ -9,7 +9,7 @@
 
 namespace tt {
 
-class RowWidget : public GridWidget {
+class RowWidget final : public GridWidget {
 public:
     RowWidget(Window &window, Widget *parent) noexcept : GridWidget(window, parent) {}
 

@@ -16,14 +16,7 @@
 namespace tt {
 
 template<typename ValueType, ValueType ActiveValue>
-class RadioButtonWidget : public Widget {
-protected:
-    aarect radioButtonRectangle;
-    aarect pipRectangle;
-    aarect labelRectangle;
-
-    std::unique_ptr<TextCell> labelCell;
-
+class RadioButtonWidget final : public Widget {
 public:
     observable<ValueType> value;
     observable<std::u8string> label;
@@ -87,40 +80,6 @@ public:
         return Widget::updateLayout(display_time_point, need_layout);
     }
 
-    void drawRadioButton(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.cornerShapes = vec{radioButtonRectangle.height() * 0.5f};
-        drawContext.drawBoxIncludeBorder(radioButtonRectangle);
-    }
-
-    void drawPip(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        // draw pip
-        if (value == ActiveValue) {
-            if (*enabled && window.active) {
-                drawContext.color = theme->accentColor;
-            }
-            std::swap(drawContext.color, drawContext.fillColor);
-            drawContext.cornerShapes = vec{pipRectangle.height() * 0.5f};
-            drawContext.drawBoxIncludeBorder(pipRectangle);
-        }
-    }
-
-    void drawLabel(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        if (*enabled) {
-            drawContext.color = theme->labelStyle.color;
-        }
-
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
-    }
-
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -179,6 +138,47 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;
+    }
+
+private:
+    aarect radioButtonRectangle;
+    aarect pipRectangle;
+    aarect labelRectangle;
+
+    std::unique_ptr<TextCell> labelCell;
+
+    void drawRadioButton(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.cornerShapes = vec{radioButtonRectangle.height() * 0.5f};
+        drawContext.drawBoxIncludeBorder(radioButtonRectangle);
+    }
+
+    void drawPip(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        // draw pip
+        if (value == ActiveValue) {
+            if (*enabled && window.active) {
+                drawContext.color = theme->accentColor;
+            }
+            std::swap(drawContext.color, drawContext.fillColor);
+            drawContext.cornerShapes = vec{pipRectangle.height() * 0.5f};
+            drawContext.drawBoxIncludeBorder(pipRectangle);
+        }
+    }
+
+    void drawLabel(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        if (*enabled) {
+            drawContext.color = theme->labelStyle.color;
+        }
+
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
     }
 };
 

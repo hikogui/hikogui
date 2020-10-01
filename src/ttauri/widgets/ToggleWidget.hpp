@@ -16,21 +16,7 @@
 
 namespace tt {
 
-class ToggleWidget : public Widget {
-protected:
-    static constexpr hires_utc_clock::duration animationDuration = 150ms;
-
-    aarect toggleRectangle;
-
-    aarect sliderRectangle;
-    float sliderMoveRange;
-
-    aarect labelRectangle;
-
-    std::unique_ptr<TextCell> onLabelCell;
-    std::unique_ptr<TextCell> offLabelCell;
-    std::unique_ptr<TextCell> otherLabelCell;
-
+class ToggleWidget final : public Widget {
 public:
     observable<bool> value;
     observable<std::u8string> onLabel;
@@ -112,56 +98,6 @@ public:
         return Widget::updateLayout(display_time_point, need_layout);
     }
 
-    void drawToggle(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.cornerShapes = vec{toggleRectangle.height() * 0.5f};
-        drawContext.drawBoxIncludeBorder(toggleRectangle);
-    }
-
-    void drawSlider(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        // Prepare animation values.
-        ttlet animationProgress = value.animation_progress(animationDuration);
-        if (animationProgress < 1.0f) {
-            window.requestRedraw = true;
-        }
-
-        ttlet animatedValue = to_float(value, animationDuration);
-
-        ttlet positionedSliderRectangle = mat::T2(sliderMoveRange * animatedValue, 0.0f) * sliderRectangle;
-
-        if (*value) {
-            if (*enabled && window.active) {
-                drawContext.color = theme->accentColor;
-            }
-        } else {
-            if (*enabled && window.active) {
-                drawContext.color = hover ? theme->borderColor(_semantic_layer + 1) : theme->borderColor(_semantic_layer);
-            }
-        }
-        std::swap(drawContext.color, drawContext.fillColor);
-        drawContext.transform = mat::T{0.0f, 0.0f, 0.1f} * drawContext.transform;
-        drawContext.cornerShapes = vec{positionedSliderRectangle.height() * 0.5f};
-        drawContext.drawBoxIncludeBorder(positionedSliderRectangle);
-    }
-
-    void drawLabel(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        if (*enabled) {
-            drawContext.color = theme->labelStyle.color;
-        }
-
-        ttlet &labelCell = *value ? onLabelCell : offLabelCell;
-
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
-    }
-
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -220,6 +156,70 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
 
         return *enabled;
+    }
+
+private:
+    static constexpr hires_utc_clock::duration animationDuration = 150ms;
+
+    aarect toggleRectangle;
+
+    aarect sliderRectangle;
+    float sliderMoveRange;
+
+    aarect labelRectangle;
+
+    std::unique_ptr<TextCell> onLabelCell;
+    std::unique_ptr<TextCell> offLabelCell;
+    std::unique_ptr<TextCell> otherLabelCell;
+
+    void drawToggle(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.cornerShapes = vec{toggleRectangle.height() * 0.5f};
+        drawContext.drawBoxIncludeBorder(toggleRectangle);
+    }
+
+    void drawSlider(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        // Prepare animation values.
+        ttlet animationProgress = value.animation_progress(animationDuration);
+        if (animationProgress < 1.0f) {
+            window.requestRedraw = true;
+        }
+
+        ttlet animatedValue = to_float(value, animationDuration);
+
+        ttlet positionedSliderRectangle = mat::T2(sliderMoveRange * animatedValue, 0.0f) * sliderRectangle;
+
+        if (*value) {
+            if (*enabled && window.active) {
+                drawContext.color = theme->accentColor;
+            }
+        } else {
+            if (*enabled && window.active) {
+                drawContext.color = hover ? theme->borderColor(_semantic_layer + 1) : theme->borderColor(_semantic_layer);
+            }
+        }
+        std::swap(drawContext.color, drawContext.fillColor);
+        drawContext.transform = mat::T{0.0f, 0.0f, 0.1f} * drawContext.transform;
+        drawContext.cornerShapes = vec{positionedSliderRectangle.height() * 0.5f};
+        drawContext.drawBoxIncludeBorder(positionedSliderRectangle);
+    }
+
+    void drawLabel(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        if (*enabled) {
+            drawContext.color = theme->labelStyle.color;
+        }
+
+        ttlet &labelCell = *value ? onLabelCell : offLabelCell;
+
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
     }
 };
 

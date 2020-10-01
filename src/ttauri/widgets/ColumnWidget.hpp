@@ -9,7 +9,7 @@
 
 namespace tt {
 
-class ColumnWidget : public GridWidget {
+class ColumnWidget final : public GridWidget {
 public:
     ColumnWidget(Window &window, Widget *parent) noexcept :
         GridWidget(window, parent) {}
@@ -22,7 +22,6 @@ public:
     T &makeWidget(Args &&... args) {
         return GridWidget::makeWidget<T,"L0T+1"_ca>(std::forward<Args>(args)...);
     }
-
 };
 
 }

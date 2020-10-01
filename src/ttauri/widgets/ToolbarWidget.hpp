@@ -8,7 +8,7 @@
 
 namespace tt {
 
-class ToolbarWidget : public ContainerWidget {
+class ToolbarWidget final : public ContainerWidget {
 public:
     ToolbarWidget(Window &window, Widget *parent) noexcept;
     ~ToolbarWidget() {}

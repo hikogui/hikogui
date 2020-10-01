@@ -20,40 +20,7 @@
 namespace tt {
 
 template<typename ValueType>
-class SelectionWidget : public Widget {
-protected:
-    std::unique_ptr<TextCell> labelCell;
-
-    struct option_list_entry {
-        ValueType tag;
-        std::unique_ptr<TextCell> cell;
-        aarect cellRectangle;
-        aarect backgroundRectangle;
-
-        option_list_entry(ValueType tag, std::unique_ptr<TextCell> cell) noexcept :
-            tag(tag), cell(std::move(cell)), cellRectangle(), backgroundRectangle()
-        {
-        }
-    };
-
-    float option_cache_list_height;
-    std::vector<option_list_entry> option_cache_list;
-    float selectedOptionY;
-
-    aarect optionRectangle;
-    aarect leftBoxRectangle;
-
-    FontGlyphIDs chevronsGlyph;
-    aarect chevronsRectangle;
-
-    aarect overlayWindowRectangle;
-    aarect overlayRectangle;
-
-    bool selecting = false;
-    ValueType chosenOption;
-    std::optional<ValueType> hoverOption;
-    std::optional<ValueType> clickedOption;
-
+class SelectionWidget final : public Widget {
 public:
     using option_list_type = observable<std::vector<std::pair<ValueType, std::u8string>>>;
     using value_type = observable<ValueType>;
@@ -209,115 +176,6 @@ public:
             chevronsRectangle = align(leftBoxRectangle, scale(chevronsGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
         }
         return Widget::updateLayout(display_time_point, need_layout);
-    }
-
-    void drawOptionHighlight(DrawContext drawContext, option_list_entry const &option) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-
-        if (option.tag == chosenOption && !clickedOption.has_value()) {
-            drawContext.fillColor = theme->accentColor;
-        } else if (option.tag == clickedOption) {
-            drawContext.fillColor = theme->accentColor;
-        } else if (option.tag == hoverOption) {
-            drawContext.fillColor = theme->fillColor(_semantic_layer + 1);
-        } else {
-            drawContext.fillColor = theme->fillColor(_semantic_layer);
-        }
-        drawContext.drawFilledQuad(option.backgroundRectangle);
-    }
-
-    void drawOptionLabel(DrawContext drawContext, option_list_entry const &option) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T{0.0, 0.0, 0.3f} * drawContext.transform;
-        drawContext.color = theme->labelStyle.color;
-        option.cell->draw(drawContext, option.cellRectangle, Alignment::MiddleLeft, center(option.cellRectangle).y(), true);
-    }
-
-    void drawOption(DrawContext drawContext, option_list_entry const &option) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawOptionHighlight(drawContext, option);
-        drawOptionLabel(drawContext, option);
-    }
-
-    void drawOverlayOutline(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-        drawContext.fillColor = drawContext.fillColor.a(0.0f);
-        drawContext.drawBoxIncludeBorder(overlayRectangle);
-    }
-
-    void drawOverlay(DrawContext context) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        context.transform = mat::T{0.0, 0.0, 25.0f} * context.transform;
-        context.clippingRectangle = expand(overlayWindowRectangle, Theme::borderWidth * 0.5f);
-
-        drawOverlayOutline(context);
-
-        auto option_cache_listContext = context;
-        option_cache_listContext.transform = mat::T{overlayRectangle.x(), overlayRectangle.y()} * context.transform;
-        for (ttlet &option : option_cache_list) {
-            drawOption(option_cache_listContext, option);
-        }
-    }
-
-    void drawOutline(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.cornerShapes = Theme::roundingRadius;
-        drawContext.drawBoxIncludeBorder(rectangle());
-    }
-
-    void drawLeftBox(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-        // if (*enabled && window.active) {
-        //    drawContext.color = theme->accentColor;
-        //}
-        drawContext.fillColor = drawContext.color;
-        drawContext.cornerShapes = vec{Theme::roundingRadius, 0.0f, Theme::roundingRadius, 0.0f};
-        drawContext.drawBoxIncludeBorder(leftBoxRectangle);
-    }
-
-    void drawChevrons(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T{0.0, 0.0, 0.2f} * drawContext.transform;
-        drawContext.color = *enabled ? theme->foregroundColor : drawContext.fillColor;
-        drawContext.drawGlyph(chevronsGlyph, chevronsRectangle);
-    }
-
-    void drawValue(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        auto i = std::find_if(option_cache_list.cbegin(), option_cache_list.cend(), [this](ttlet &item) {
-            return item.tag == value;
-        });
-
-        if (i != option_cache_list.cend()) {
-            drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-            drawContext.color = *enabled ? theme->labelStyle.color : drawContext.color;
-            i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line(), true);
-        } else {
-            drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-            drawContext.color = *enabled ? theme->placeholderLabelStyle.color : drawContext.color;
-            labelCell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line(), true);
-        }
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -484,6 +342,148 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;
+    }
+
+private:
+    std::unique_ptr<TextCell> labelCell;
+
+    struct option_list_entry {
+        ValueType tag;
+        std::unique_ptr<TextCell> cell;
+        aarect cellRectangle;
+        aarect backgroundRectangle;
+
+        option_list_entry(ValueType tag, std::unique_ptr<TextCell> cell) noexcept :
+            tag(tag), cell(std::move(cell)), cellRectangle(), backgroundRectangle()
+        {
+        }
+    };
+
+    float option_cache_list_height;
+    std::vector<option_list_entry> option_cache_list;
+    float selectedOptionY;
+
+    aarect optionRectangle;
+    aarect leftBoxRectangle;
+
+    FontGlyphIDs chevronsGlyph;
+    aarect chevronsRectangle;
+
+    aarect overlayWindowRectangle;
+    aarect overlayRectangle;
+
+    bool selecting = false;
+    ValueType chosenOption;
+    std::optional<ValueType> hoverOption;
+    std::optional<ValueType> clickedOption;
+
+    void drawOptionHighlight(DrawContext drawContext, option_list_entry const &option) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
+
+        if (option.tag == chosenOption && !clickedOption.has_value()) {
+            drawContext.fillColor = theme->accentColor;
+        } else if (option.tag == clickedOption) {
+            drawContext.fillColor = theme->accentColor;
+        } else if (option.tag == hoverOption) {
+            drawContext.fillColor = theme->fillColor(_semantic_layer + 1);
+        } else {
+            drawContext.fillColor = theme->fillColor(_semantic_layer);
+        }
+        drawContext.drawFilledQuad(option.backgroundRectangle);
+    }
+
+    void drawOptionLabel(DrawContext drawContext, option_list_entry const &option) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.transform = mat::T{0.0, 0.0, 0.3f} * drawContext.transform;
+        drawContext.color = theme->labelStyle.color;
+        option.cell->draw(drawContext, option.cellRectangle, Alignment::MiddleLeft, center(option.cellRectangle).y(), true);
+    }
+
+    void drawOption(DrawContext drawContext, option_list_entry const &option) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawOptionHighlight(drawContext, option);
+        drawOptionLabel(drawContext, option);
+    }
+
+    void drawOverlayOutline(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
+        drawContext.fillColor = drawContext.fillColor.a(0.0f);
+        drawContext.drawBoxIncludeBorder(overlayRectangle);
+    }
+
+    void drawOverlay(DrawContext context) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        context.transform = mat::T{0.0, 0.0, 25.0f} * context.transform;
+        context.clippingRectangle = expand(overlayWindowRectangle, Theme::borderWidth * 0.5f);
+
+        drawOverlayOutline(context);
+
+        auto option_cache_listContext = context;
+        option_cache_listContext.transform = mat::T{overlayRectangle.x(), overlayRectangle.y()} * context.transform;
+        for (ttlet &option : option_cache_list) {
+            drawOption(option_cache_listContext, option);
+        }
+    }
+
+    void drawOutline(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.cornerShapes = Theme::roundingRadius;
+        drawContext.drawBoxIncludeBorder(rectangle());
+    }
+
+    void drawLeftBox(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
+        // if (*enabled && window.active) {
+        //    drawContext.color = theme->accentColor;
+        //}
+        drawContext.fillColor = drawContext.color;
+        drawContext.cornerShapes = vec{Theme::roundingRadius, 0.0f, Theme::roundingRadius, 0.0f};
+        drawContext.drawBoxIncludeBorder(leftBoxRectangle);
+    }
+
+    void drawChevrons(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.transform = mat::T{0.0, 0.0, 0.2f} * drawContext.transform;
+        drawContext.color = *enabled ? theme->foregroundColor : drawContext.fillColor;
+        drawContext.drawGlyph(chevronsGlyph, chevronsRectangle);
+    }
+
+    void drawValue(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        auto i = std::find_if(option_cache_list.cbegin(), option_cache_list.cend(), [this](ttlet &item) {
+            return item.tag == value;
+        });
+
+        if (i != option_cache_list.cend()) {
+            drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
+            drawContext.color = *enabled ? theme->labelStyle.color : drawContext.color;
+            i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line(), true);
+        } else {
+            drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
+            drawContext.color = *enabled ? theme->placeholderLabelStyle.color : drawContext.color;
+            labelCell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line(), true);
+        }
     }
 };
 

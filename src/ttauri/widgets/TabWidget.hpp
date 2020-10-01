@@ -10,9 +10,9 @@
 
 namespace tt {
 
-class TabWidget : public Widget {
+class TabWidget final : public Widget {
 public:
-    using text_type = observable<std::u8string>;
+    observable<int> value = 0;
 
     template<typename V>
     TabWidget(Window &window, Widget *parent, V &&value) noexcept : Widget(window, parent), value(std::forward<V>(value))
@@ -124,9 +124,8 @@ public:
         return widget;
     }
 
-protected:
+private:
     std::vector<std::unique_ptr<Widget>> children;
-    observable<int> value = 0;
 };
 
 } // namespace tt

@@ -24,22 +24,7 @@ namespace tt {
  * @tparam FaseValue The value when the checkbox is unchecked
  */
 template<typename ValueType, ValueType TrueValue, ValueType FalseValue>
-class CheckboxWidget : public Widget {
-protected:
-    std::unique_ptr<TextCell> trueLabelCell;
-    std::unique_ptr<TextCell> falseLabelCell;
-    std::unique_ptr<TextCell> otherLabelCell;
-
-    FontGlyphIDs checkGlyph;
-    aarect checkRectangle;
-
-    FontGlyphIDs minusGlyph;
-    aarect minusRectangle;
-
-    aarect checkboxRectangle;
-
-    aarect labelRectangle;
-
+class CheckboxWidget final : public Widget {
 public:
     observable<ValueType> value;
     observable<std::u8string> trueLabel;
@@ -118,46 +103,6 @@ public:
         return Widget::updateLayout(displayTimePoint, need_layout);
     }
 
-    void drawCheckBox(DrawContext const &context) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        context.drawBoxIncludeBorder(checkboxRectangle);
-    }
-
-    void drawCheckMark(DrawContext context) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
-
-        if (*enabled && window.active) {
-            context.color = theme->accentColor;
-        }
-
-        // Checkmark or tristate.
-        if (value == TrueValue) {
-            context.drawGlyph(checkGlyph, checkRectangle);
-        } else if (value == FalseValue) {
-            ;
-        } else {
-            context.drawGlyph(minusGlyph, minusRectangle);
-        }
-    }
-
-    void drawLabel(DrawContext context) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        if (*enabled) {
-            context.color = theme->labelStyle.color;
-        }
-
-        ttlet &labelCell = value == TrueValue ? trueLabelCell : value == FalseValue ? falseLabelCell : otherLabelCell;
-
-        labelCell->draw(context, labelRectangle, Alignment::TopLeft, base_line(), true);
-    }
-
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -214,7 +159,63 @@ public:
 
     [[nodiscard]] bool acceptsFocus() const noexcept override
     {
+        tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;
+    }
+
+private:
+    std::unique_ptr<TextCell> trueLabelCell;
+    std::unique_ptr<TextCell> falseLabelCell;
+    std::unique_ptr<TextCell> otherLabelCell;
+
+    FontGlyphIDs checkGlyph;
+    aarect checkRectangle;
+
+    FontGlyphIDs minusGlyph;
+    aarect minusRectangle;
+
+    aarect checkboxRectangle;
+
+    aarect labelRectangle;
+
+    void drawCheckBox(DrawContext const &context) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        context.drawBoxIncludeBorder(checkboxRectangle);
+    }
+
+    void drawCheckMark(DrawContext context) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
+
+        if (*enabled && window.active) {
+            context.color = theme->accentColor;
+        }
+
+        // Checkmark or tristate.
+        if (value == TrueValue) {
+            context.drawGlyph(checkGlyph, checkRectangle);
+        } else if (value == FalseValue) {
+            ;
+        } else {
+            context.drawGlyph(minusGlyph, minusRectangle);
+        }
+    }
+
+    void drawLabel(DrawContext context) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        if (*enabled) {
+            context.color = theme->labelStyle.color;
+        }
+
+        ttlet &labelCell = value == TrueValue ? trueLabelCell : value == FalseValue ? falseLabelCell : otherLabelCell;
+
+        labelCell->draw(context, labelRectangle, Alignment::TopLeft, base_line(), true);
     }
 };
 

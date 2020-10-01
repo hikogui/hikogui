@@ -98,7 +98,6 @@ public:
      */
     mutable unfair_recursive_mutex mutex;
 
-
     /** The widget is enabled.
      */
     observable<bool> enabled = true;
@@ -502,9 +501,6 @@ protected:
      * @sa logical_layer() const
      */
     int _logical_layer;
-
-
-private:
 };
 
 } // namespace tt

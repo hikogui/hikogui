@@ -8,7 +8,7 @@
 
 namespace tt {
 
-[[nodiscard]] static std::pair<int, int> calculateGridSize(std::vector<GridWidgetCell> const &cells) noexcept
+[[nodiscard]] std::pair<int, int> GridWidget::calculateGridSize(std::vector<cell> const &cells) noexcept
 {
     int nr_left = 0;
     int nr_right = 0;
@@ -31,8 +31,8 @@ namespace tt {
     return {nr_left + nr_right, nr_bottom + nr_top};
 }
 
-static interval_vec2
-calculateCellMinMaxSize(std::vector<GridWidgetCell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
+[[nodiscard]] interval_vec2
+GridWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     rows.clear();
     columns.clear();

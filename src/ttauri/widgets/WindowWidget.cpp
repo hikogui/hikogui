@@ -17,20 +17,20 @@ using namespace std;
 WindowWidget::WindowWidget(Window &window, GridWidgetDelegate *delegate, Label title) noexcept :
     ContainerWidget(window, nullptr), title(std::move(title))
 {
-    toolbar = &makeWidget<ToolbarWidget>();
+    _toolbar = &makeWidget<ToolbarWidget>();
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-        toolbar->makeWidget<SystemMenuWidget>(this->title.icon());
+        _toolbar->makeWidget<SystemMenuWidget>(this->title.icon());
 #endif
-        toolbar->makeWidget<WindowTrafficLightsWidget, HorizontalAlignment::Right>();
+        _toolbar->makeWidget<WindowTrafficLightsWidget, HorizontalAlignment::Right>();
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        toolbar->makeWidget<WindowTrafficLightsWidget>();
+        _toolbar->makeWidget<WindowTrafficLightsWidget>();
     } else {
         tt_no_default;
     }
 
-    content = &makeWidget<GridWidget>(delegate);
+    _content = &makeWidget<GridWidget>(delegate);
 }
 
 WindowWidget::~WindowWidget() {}
@@ -40,11 +40,11 @@ WindowWidget::~WindowWidget() {}
     tt_assume(mutex.is_locked_by_current_thread());
 
     if (ContainerWidget::updateConstraints()) {
-        ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
-        ttlet toolbar_size = toolbar->preferred_size();
+        ttlet toolbar_lock = std::scoped_lock(_toolbar->mutex);
+        ttlet toolbar_size = _toolbar->preferred_size();
 
-        ttlet content_lock = std::scoped_lock(content->mutex);
-        ttlet content_size = content->preferred_size();
+        ttlet content_lock = std::scoped_lock(_content->mutex);
+        ttlet content_size = _content->preferred_size();
         _preferred_size = intersect(
             max(content_size + toolbar_size._0y(), toolbar_size.x0()),
             interval_vec2::make_maximum(window.virtualScreenSize())   
@@ -61,16 +61,16 @@ bool WindowWidget::updateLayout(hires_utc_clock::time_point display_time_point, 
 
     need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
-        ttlet toolbar_lock = std::scoped_lock(toolbar->mutex);
-        ttlet toolbar_size = toolbar->preferred_size();
+        ttlet toolbar_lock = std::scoped_lock(_toolbar->mutex);
+        ttlet toolbar_size = _toolbar->preferred_size();
         ttlet toolbar_height = toolbar_size.minimum().height();
         ttlet toolbar_rectangle = aarect{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        toolbar->set_window_rectangle(mat::T2{window_rectangle} * toolbar_rectangle);
+        _toolbar->set_window_rectangle(mat::T2{window_rectangle} * toolbar_rectangle);
 
-        ttlet content_lock = std::scoped_lock(content->mutex);
-        ttlet content_size = content->preferred_size();
+        ttlet content_lock = std::scoped_lock(_content->mutex);
+        ttlet content_size = _content->preferred_size();
         ttlet content_rectangle = aarect{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        content->set_window_rectangle(mat::T2{window_rectangle} * content_rectangle);
+        _content->set_window_rectangle(mat::T2{window_rectangle} * content_rectangle);
     }
 
     return ContainerWidget::updateLayout(display_time_point, need_layout);

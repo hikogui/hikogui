@@ -30,8 +30,8 @@ template<typename T, cell_address CellAddress, typename... Args>
 T &Window_base::makeWidget(Args &&... args)
 {
     tt_assume(widget);
-    tt_assume(widget->content);
-    return widget->content->makeWidget<T, CellAddress>(std::forward<Args>(args)...);
+    ttlet lock = std::scoped_lock(widget->mutex);
+    return widget->content()->makeWidget<T, CellAddress>(std::forward<Args>(args)...);
 }
 
 /** Add a widget to the toolbar of the window.
@@ -41,8 +41,8 @@ template<typename T, HorizontalAlignment Alignment, typename... Args>
 T &Window_base::makeToolbarWidget(Args &&... args)
 {
     tt_assume(widget);
-    tt_assume(widget->toolbar);
-    return widget->toolbar->makeWidget<T, Alignment>(std::forward<Args>(args)...);
+    ttlet lock = std::scoped_lock(widget->mutex);
+    return widget->toolbar()->makeWidget<T, Alignment>(std::forward<Args>(args)...);
 }
 
 }

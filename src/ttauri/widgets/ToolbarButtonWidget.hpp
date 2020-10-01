@@ -16,7 +16,7 @@
 
 namespace tt {
 
-class ToolbarButtonWidget : public Widget {
+class ToolbarButtonWidget final : public Widget {
 public:
     using icon_type = observable<Image>;
     using delegate_type = std::function<void()>;
@@ -91,29 +91,6 @@ public:
         }
     }
 
-    void drawBackground(DrawContext context) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        if (pressed) {
-            context.fillColor = theme->fillColor(_semantic_layer + 1);
-        } else if (hover) {
-            context.fillColor = theme->fillColor(_semantic_layer);
-        } else {
-            context.fillColor = theme->fillColor(_semantic_layer - 1);
-        }
-        context.drawFilledQuad(rectangle());
-    }
-
-    void drawIcon(DrawContext context) noexcept
-    {
-        context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
-        if (*enabled) {
-            context.color = theme->foregroundColor;
-        }
-        icon_cell->draw(context, rectangle(), Alignment::MiddleCenter);
-    }
-
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -161,6 +138,29 @@ private:
     std::unique_ptr<ImageCell> icon_cell;
 
     delegate_type _delegate;
+
+    void drawBackground(DrawContext context) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        if (pressed) {
+            context.fillColor = theme->fillColor(_semantic_layer + 1);
+        } else if (hover) {
+            context.fillColor = theme->fillColor(_semantic_layer);
+        } else {
+            context.fillColor = theme->fillColor(_semantic_layer - 1);
+        }
+        context.drawFilledQuad(rectangle());
+    }
+
+    void drawIcon(DrawContext context) noexcept
+    {
+        context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
+        if (*enabled) {
+            context.color = theme->foregroundColor;
+        }
+        icon_cell->draw(context, rectangle(), Alignment::MiddleCenter);
+    }
 };
 
 } // namespace tt

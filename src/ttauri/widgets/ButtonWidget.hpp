@@ -13,23 +13,15 @@
 
 namespace tt {
 
-class ButtonWidget : public Widget {
-protected:
-    bool value = false;
-    bool pressed = false;
-
-    std::unique_ptr<TextCell> labelCell;
-
+class ButtonWidget final : public Widget {
 public:
     observable<std::u8string> label;
 
     ButtonWidget(Window &window, Widget *parent) noexcept;
     ~ButtonWidget();
 
-    virtual bool updateConstraints() noexcept override;
-
+    bool updateConstraints() noexcept override;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
-
     void handleMouseEvent(MouseEvent const &event) noexcept override;
     void handleCommand(command command) noexcept override;
 
@@ -38,9 +30,14 @@ public:
     [[nodiscard]] bool acceptsFocus() const noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
-
         return *enabled;
     }
+
+private:
+    bool value = false;
+    bool pressed = false;
+
+    std::unique_ptr<TextCell> labelCell;
 };
 
 } // namespace tt

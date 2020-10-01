@@ -16,7 +16,7 @@
 namespace tt {
 
 template<int ActiveValue>
-class ToolbarTabButtonWidget : public Widget {
+class ToolbarTabButtonWidget final : public Widget {
 public:
     observable<int> value;
     observable<std::u8string> label;
@@ -79,37 +79,6 @@ public:
         return Widget::updateLayout(display_time_point, need_layout);
     }
 
-    void drawButton(DrawContext drawContext) noexcept
-    {
-        if (hover || *value == ActiveValue) {
-            drawContext.fillColor = theme->fillColor(_semantic_layer - 2);
-            drawContext.color = drawContext.fillColor;
-        } else {
-            drawContext.fillColor = theme->fillColor(_semantic_layer - 1);
-            drawContext.color = drawContext.fillColor;
-        }
-
-        if (focus && window.active) {
-            drawContext.color = theme->accentColor;
-        }
-
-        drawContext.cornerShapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
-        drawContext.drawBoxIncludeBorder(button_rectangle);
-    }
-
-    void drawLabel(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T(0.0f, 0.0f, 0.1f) * drawContext.transform;
-
-        if (*enabled) {
-            drawContext.color = theme->labelStyle.color;
-        }
-
-        label_cell->draw(drawContext, rectangle(), Alignment::MiddleCenter, base_line(), true);
-    }
-
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -169,9 +138,40 @@ public:
         return *enabled;
     }
 
-protected:
+private:
     aarect button_rectangle;
     std::unique_ptr<TextCell> label_cell;
+
+    void drawButton(DrawContext drawContext) noexcept
+    {
+        if (hover || *value == ActiveValue) {
+            drawContext.fillColor = theme->fillColor(_semantic_layer - 2);
+            drawContext.color = drawContext.fillColor;
+        } else {
+            drawContext.fillColor = theme->fillColor(_semantic_layer - 1);
+            drawContext.color = drawContext.fillColor;
+        }
+
+        if (focus && window.active) {
+            drawContext.color = theme->accentColor;
+        }
+
+        drawContext.cornerShapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
+        drawContext.drawBoxIncludeBorder(button_rectangle);
+    }
+
+    void drawLabel(DrawContext drawContext) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        drawContext.transform = mat::T(0.0f, 0.0f, 0.1f) * drawContext.transform;
+
+        if (*enabled) {
+            drawContext.color = theme->labelStyle.color;
+        }
+
+        label_cell->draw(drawContext, rectangle(), Alignment::MiddleCenter, base_line(), true);
+    }
 };
 
 } // namespace tt

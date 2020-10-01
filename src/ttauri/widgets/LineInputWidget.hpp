@@ -15,8 +15,32 @@
 
 namespace tt {
 
-class LineInputWidget : public Widget {
-protected:
+class LineInputWidget final : public Widget {
+public:
+    LineInputWidget(Window &window, Widget *parent, std::u8string const label) noexcept;
+
+    LineInputWidget(Window &window, Widget *parent, l10n const label) noexcept :
+        LineInputWidget(window, parent, std::u8string{static_cast<std::u8string_view>(label)})
+    {
+    }
+
+    ~LineInputWidget();
+
+    [[nodiscard]] bool updateConstraints() noexcept override;
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
+    void handleCommand(command command) noexcept override;
+    void handleMouseEvent(MouseEvent const &event) noexcept override;
+    void handleKeyboardEvent(KeyboardEvent const &event) noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
+
+    [[nodiscard]] bool acceptsFocus() const noexcept override
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return *enabled;
+    }
+
+private:
     std::u8string label = u8"<unknown>";
 
     EditableText field;
@@ -47,41 +71,13 @@ protected:
     hires_utc_clock::time_point nextRedrawTimePoint;
     hires_utc_clock::time_point lastUpdateTimePoint;
 
-public:
-    LineInputWidget(Window &window, Widget *parent, std::u8string const label) noexcept;
-
-    LineInputWidget(Window &window, Widget *parent, l10n const label) noexcept :
-        LineInputWidget(window, parent, std::u8string{static_cast<std::u8string_view>(label)})
-    {
-    }
-
-    ~LineInputWidget();
-
-    [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
-
+    void dragSelect() noexcept;
     void scrollText() noexcept;
     void drawBackgroundBox(DrawContext const &context) const noexcept;
     void drawSelectionRectangles(DrawContext context) const noexcept;
     void drawPartialGraphemeCaret(DrawContext context) const noexcept;
     void drawCaret(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept;
     void drawText(DrawContext context) const noexcept;
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
-
-    void handleCommand(command command) noexcept override;
-
-    void handleMouseEvent(MouseEvent const &event) noexcept override;
-    void handleKeyboardEvent(KeyboardEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
-
-    [[nodiscard]] bool acceptsFocus() const noexcept override
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-        return *enabled;
-    }
-
-private:
-    void dragSelect() noexcept;
 };
 
 } // namespace tt

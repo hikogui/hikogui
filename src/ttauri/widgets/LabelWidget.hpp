@@ -17,11 +17,7 @@
 
 namespace tt {
 
-class LabelWidget : public Widget {
-protected:
-    std::unique_ptr<TextCell> labelCell;
-    Alignment alignment;
-
+class LabelWidget final : public Widget {
 public:
     observable<std::u8string> label;
 
@@ -58,22 +54,20 @@ public:
         }
     }
 
-    void drawLabel(DrawContext drawContext) noexcept {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        if (*enabled) {
-            drawContext.color = theme->labelStyle.color;
-        }
-
-        labelCell->draw(drawContext, rectangle(), alignment, base_line(), true);
-    }
-
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawLabel(context);
+        if (*enabled) {
+            context.color = theme->labelStyle.color;
+        }
+
+        labelCell->draw(context, rectangle(), alignment, base_line(), true);
         Widget::draw(std::move(context), display_time_point);
     }
+
+private:
+    std::unique_ptr<TextCell> labelCell;
+    Alignment alignment;
 };
 
 }
