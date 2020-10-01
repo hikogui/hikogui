@@ -94,9 +94,12 @@ namespace tt {
  */
 class Widget {
 public:
+    /** The mutex of a widget.
+     * Certain accessor method of the Widget class require the mutex
+     * to be already locked by the caller.
+     */
     mutable unfair_recursive_mutex mutex;
 
-    float elevation;
 
     /** The widget is enabled.
      */
@@ -107,12 +110,18 @@ public:
     Widget(Window &window, Widget *parent) noexcept;
 
     virtual ~Widget();
-
     Widget(const Widget &) = delete;
     Widget &operator=(const Widget &) = delete;
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
 
+    /** Get the margin around the Widget.
+     * A container widget should layout the children in such
+     * a way that the maximum margin of neighbouring widgets is maintained.
+     *
+     * @pre `mutex` must be locked.
+     * @return The margin for this widget.
+     */
     [[nodiscard]] float margin() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -120,6 +129,13 @@ public:
     }
 
     /** Get the resistance in width.
+     * The amount of resistance the widget has for resizing to larger than the minimum size.
+     *
+     * @pre `mutex` must be locked by current thread.
+     * @return The amount of resistance to horizontal resize.
+     * @retval 0 Greedy: Widget will try to become the largest.
+     * @retval 1 Normal: Widget will share the space with others.
+     * @retval 2 Resist: Widget will try to maintain minimum size.
      */
     [[nodiscard]] ranged_int<3> width_resistance() const noexcept
     {
@@ -128,6 +144,13 @@ public:
     }
 
     /** Get the resistance in height.
+     * The amount of resistance the widget has for resizing to larger than the minimum size.
+     *
+     * @pre `mutex` must be locked by current thread.
+     * @return The amount of resistance to vertical resize.
+     * @retval 0 Greedy: Widget will try to become the largest.
+     * @retval 1 Normal: Widget will share the space with others.
+     * @retval 2 Resist: Widget will try to maintain minimum size.
      */
     [[nodiscard]] ranged_int<3> height_resistance() const noexcept
     {
@@ -135,8 +158,13 @@ public:
         return _height_resistance;
     }
 
-    /** Get the minimum size of the widget.
-     * Thread safety: requires external lock on `mutex`.
+    /** Get the size-range of the widget.
+     * This size-range is used to determine the size of container widgets
+     * and eventually the size of the window.
+     *
+     * @pre `mutex` must be locked by current thread.
+     * @pre `updateConstraint()` must be called first.
+     * @return The minimum and maximum size as an interval of a 2D vector.
      */
     [[nodiscard]] interval_vec2 preferred_size() const noexcept
     {
@@ -144,6 +172,19 @@ public:
         return _preferred_size;
     }
 
+    /** Get the relative_base_line of the widget.
+     * This value is used by a container widget to align the text
+     * of its children on the same base-line.
+     *
+     * By taking `std::max()`  of the `preferred_base_line()` of all children,
+     * you will get the highest priority relative-base-line. The container
+     * can then use the `relative_base_line::position()` method to get the
+     * base-line position that should be used for all widgets in a row.
+     * 
+     * @pre `mutex` must be locked by current thread.
+     * @pre `updateConstraint()` must be called first.
+     * @return A relative base-line position preferred by this widget.
+     */
     [[nodiscard]] relative_base_line preferred_base_line() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -152,6 +193,7 @@ public:
 
     /** Set the location and size of the widget inside the window.
      *
+     * @pre `mutex` must be locked by current thread.
      * @param _window_rectangle The location and size of the widget inside the window
      * @param _window_base_line The position of the text base-line from the bottom of the window. When not given
      *                          the middle of the _window_rectangle is used together with the preferred
@@ -169,7 +211,8 @@ public:
     }
 
     /** Get the clipping rectangle in window coordinates
-     * Thread safety: requires external lock on `mutex`.
+     *
+     * @pre `mutex` must be locked by current thread.
      */
     [[nodiscard]] aarect clipping_rectangle() const noexcept
     {
@@ -178,7 +221,8 @@ public:
     }
 
     /** Get the rectangle in local coordinates.
-     * Thread safety: requires external lock on `mutex`.
+     *
+     * @pre `mutex` must be locked by current thread.
      */
     [[nodiscard]] aarect rectangle() const noexcept
     {
@@ -187,7 +231,8 @@ public:
     }
 
     /** Get the base-line in local coordinates.
-     * Thread safety: requires external lock on `mutex`.
+     *
+     * @pre `mutex` must be locked by current thread.
      */
     [[nodiscard]] float base_line() const noexcept
     {
@@ -201,7 +246,6 @@ public:
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
      * 
-     * Thread safety: locks.
      * @param window_position The coordinate of the mouse on the window.
      *                        Use `fromWindowTransform` to convert to widget-local coordinates.
      * @return A HitBox object with the cursor-type and a reference to the widget.
@@ -213,7 +257,7 @@ public:
 
     /** Check if the widget will accept keyboard focus.
      *
-     * Thread safety: requires external lock on `mutex`.
+     * @pre `mutex` must be locked by current thread.
      */
     [[nodiscard]] virtual bool acceptsFocus() const noexcept
     {
@@ -222,6 +266,8 @@ public:
     }
 
     /** Get nesting level used for selecting colors for the widget.
+     *
+     * @pre `mutex` must be locked by current thread.
      */
     [[nodiscard]] ssize_t nestingLevel() const noexcept
     {
@@ -230,6 +276,8 @@ public:
     }
 
     /** Get z value for compositing order.
+     *
+     * @pre `mutex` must be locked by current thread.
      */
     [[nodiscard]] float z() const noexcept
     {
@@ -284,6 +332,7 @@ public:
      * This function will make a draw context with the correct transformation
      * and default color values.
      * 
+     * @pre `mutex` must be locked by current thread.
      * @param context A template drawing context. This template may be taken
      *                from the parent's draw call.
      * @return A new draw context for drawing the current widget in the
@@ -302,6 +351,7 @@ public:
      * for alpha-compositing. However the pipelines are always drawn in the same
      * order.
      *
+     * @pre `mutex` must be locked by current thread.
      * @param drawContext The context to where the widget will draw.
      * @param displayTimePoint The time point when the widget will be shown on the screen.
      */
@@ -312,7 +362,7 @@ public:
 
     /** Handle command.
      *
-     * Thread safety: locks
+     * @pre `mutex` must be locked by current thread.
      */
     virtual void handleCommand(command command) noexcept;
 
@@ -321,7 +371,7 @@ public:
      * This is called very often so it must be made efficient.
      * This function is also used to determine the mouse cursor.
      *
-     * Thread safety: locks
+     * @param event The mouse event, positions are in window coordinates.
      */
     virtual void handleMouseEvent(MouseEvent const &event) noexcept;
 
@@ -332,9 +382,9 @@ public:
      * @param currentKeyboardWidget The widget that currently has focus, or nullptr to get the first widget
      *                              that accepts focus.
      * @param reverse Walk the widget tree in reverse order.
-     * @return A pointer to the next widget. The currentKeyboardWidget when it was found
-     *         but no next widget was not yet found. nullptr when currentKeyboardWidget is
-     *         not yet found.
+     * @return A pointer to the next widget.
+     * @retval currentKeyboardWidget when currentKeyboardWidget was found but no next widget was found.
+     * @retval nullptr when currentKeyboardWidget is not found in this Widget.
      */
     [[nodiscard]] virtual Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
 
@@ -398,6 +448,26 @@ protected:
     /** The margin outside the widget.
      */
     float _margin = Theme::margin;
+
+    /** The first compositing layer of the widget.
+     * Layers start at 0.0 and go up to 100.0.
+     *
+     * Each widget that has drawing to do increases the layer by 1.0.
+     *
+     * The widget should draw within base_layer and base_layer + 1.0.
+     * The toWindowTransfer and the DrawingContext will already include
+     * the base_layer.
+     *
+     * An overlay widget such as popups will increase the layer by 25.0,
+     * to make sure the overlay will draw above other widgets in the window.
+     *
+     */
+    float _draw_layer;
+
+    int _semantic_layer;
+
+    int _logical_layer;
+
 
 private:
 };

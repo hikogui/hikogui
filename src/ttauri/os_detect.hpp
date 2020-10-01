@@ -121,7 +121,7 @@ enum class CPPVersion {
 #endif
 
 enum class Processor {
-    X64 = TT_CPU_X64,
+    x64 = TT_CPU_X64,
     ARM = TT_CPU_ARM,
 
     current = TT_PROCESSOR
