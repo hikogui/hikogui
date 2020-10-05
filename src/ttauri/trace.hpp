@@ -245,15 +245,15 @@ public:
     ~trace() {
         ttlet end_timestamp = cpu_counter_clock::now();
 
-        if(tt_unlikely(trace_statistics<Tag>.write(end_timestamp - data.timestamp))) {
-            add_to_map();
+        if(trace_statistics<Tag>.write(end_timestamp - data.timestamp)) {
+            [[unlikely]] add_to_map();
         }
 
         ttlet [id, is_recording] = stack->pop(data.parent_id);
 
         // Send the log to the log thread.
-        if (tt_unlikely(is_recording)) {
-            logger.log<log_level::Trace>(end_timestamp, "id={} {}", id, std::move(data));
+        if (is_recording) {
+            [[unlikely]] logger.log<log_level::Trace>(end_timestamp, "id={} {}", id, std::move(data));
         }
     }
 

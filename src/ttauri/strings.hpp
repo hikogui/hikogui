@@ -121,17 +121,17 @@ namespace tt {
 
     auto found_cr = false;
     for (ttlet c : str) {
-        if (tt_unlikely(found_cr)) {
+        if (found_cr) {
             // This is Microsoft or old-Apple, we replace the previous carriage-return
             // with a line-feed and emit the current character.
-            r += '\n';
+            [[unlikely]] r += '\n';
             if (c != '\r' && c != '\n') {
                 r += c;
             }
 
-        } else if (tt_likely(c != '\r')) {
+        } else if (c != '\r') {
             // Emit any non-carriage return character.
-            r += c;
+            [[likely]] r += c;
         }
 
         found_cr = c == '\r';

@@ -82,8 +82,8 @@ public:
         auto x = state.load(std::memory_order_relaxed);
         uint64_t new_state;
         do {
-            new_state = x * multiplier + increment;
-        } while (tt_unlikely(!state.compare_exchange_weak(x, new_state, std::memory_order_relaxed)));
+            [[unlikely]] new_state = x * multiplier + increment;
+        } while (!state.compare_exchange_weak(x, new_state, std::memory_order_relaxed));
 
         ttlet count = static_cast<unsigned int>(x >> 59);
 

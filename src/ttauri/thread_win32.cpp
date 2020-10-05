@@ -31,24 +31,4 @@ void run_from_main_loop(std::function<void()> f)
     application->runFromMainLoop(f);
 }
 
-void wait_on(std::atomic<uint32_t> &value, uint32_t expected, hires_utc_clock::duration timeout) noexcept
-{
-    DWORD timeout_ms = timeout == hires_utc_clock::duration::max() ? INFINITE : numeric_cast<DWORD>(timeout / 1ms);
-    if (!WaitOnAddress(&value, &expected, sizeof (value), timeout_ms)) {
-        if (GetLastError() != ERROR_TIMEOUT) {
-            LOG_FATAL("Could not wait on address {}", getLastErrorMessage());
-        }
-    }
-}
-
-void wake_single_thread_waiting_on(std::atomic<uint32_t> &value) noexcept
-{
-    WakeByAddressSingle(&value);
-}
-
-void wake_all_threads_waiting_on(std::atomic<uint32_t> &value) noexcept
-{
-    WakeByAddressAll(&value);
-}
-
 }

@@ -130,8 +130,6 @@ enum class Processor {
 #define tt_stringify(a) #a
 
 #if TT_COMPILER == TT_CC_MSVC
-#define tt_likely(condition) condition
-#define tt_unlikely(condition) condition
 #define tt_unreachable() __assume(0)
 #define tt_assume(condition) __assume(condition)
 #define tt_assume2(condition, msg) __assume(condition)
@@ -141,8 +139,6 @@ enum class Processor {
 #define msvc_suppress(a) _Pragma(tt_stringify(warning(disable:a)))
 
 #elif TT_COMPILER == TT_CC_CLANG
-#define tt_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
-#define tt_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
 #define tt_unreachable() __builtin_unreachable()
 #define tt_assume(condition) __builtin_assume(static_cast<bool>(condition))
 #define tt_assume2(condition, msg) __builtin_assume(static_cast<bool>(condition))
@@ -152,8 +148,6 @@ enum class Processor {
 #define msvc_suppress(a)
 
 #elif TT_COMPILER == TT_CC_GCC
-#define tt_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
-#define tt_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
 #define tt_unreachable() __builtin_unreachable()
 #define tt_assume(condition) do { if (!(condition)) tt_unreachable(); } while (false)
 #define tt_assume2(condition, msg) do { if (!(condition)) tt_unreachable(); } while (false)
@@ -163,8 +157,6 @@ enum class Processor {
 #define msvc_suppress(a)
 
 #else
-#define tt_likely(condition) condition
-#define tt_unlikely(condition) condition
 #define tt_unreachable() std::terminate()
 #define tt_assume(condition) static_assert(sizeof(condition) == 1)
 #define tt_assume2(condition, msg) static_assert(sizeof(condition) == 1, msg)

@@ -17,7 +17,7 @@ struct counter_map_value_type {
     int64_t previous_value;
 };
 
-using counter_map_type = wfree_unordered_map<std::type_index,counter_map_value_type,MAX_NR_COUNTERS>;
+using counter_map_type = wfree_unordered_map<std::type_index, counter_map_value_type, MAX_NR_COUNTERS>;
 
 // To reduce number of executed instruction this is a global varable.
 // The wfree_unordered_map does not need to be initialized.
@@ -28,21 +28,24 @@ struct counter_functor {
     // Make sure non of the counters are false sharing cache-lines.
     alignas(cache_line_size) inline static std::atomic<int64_t> counter = 0;
 
-    tt_no_inline void add_to_map() const noexcept {
+    tt_no_inline void add_to_map() const noexcept
+    {
         counter_map.insert(std::type_index(typeid(Tag)), counter_map_value_type{&counter, 0});
     }
 
-    int64_t increment() const noexcept {
+    int64_t increment() const noexcept
+    {
         ttlet value = counter.fetch_add(1, std::memory_order_relaxed);
 
-        if (tt_unlikely(value == 0)) {
-            add_to_map();
+        if (value == 0) {
+            [[unlikely]] add_to_map();
         }
 
         return value + 1;
     }
 
-    int64_t read() const noexcept {
+    int64_t read() const noexcept
+    {
         return counter.load(std::memory_order_relaxed);
     }
 
@@ -50,7 +53,7 @@ struct counter_functor {
 };
 
 template<typename Tag>
-inline int64_t increment_counter() noexcept 
+inline int64_t increment_counter() noexcept
 {
     return counter_functor<Tag>{}.increment();
 }
@@ -68,11 +71,11 @@ inline std::pair<int64_t, int64_t> read_counter(std::type_index tag) noexcept
 {
     auto &item = counter_map[tag];
 
-    ttlet * const count_ptr = item.counter;
+    ttlet *const count_ptr = item.counter;
     ttlet count = count_ptr != nullptr ? item.counter->load(std::memory_order_relaxed) : 0;
     ttlet count_since_last_read = count - item.previous_value;
     item.previous_value = count;
     return {count, count_since_last_read};
 }
 
-}
+} // namespace tt

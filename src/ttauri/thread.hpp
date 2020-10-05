@@ -52,19 +52,5 @@ inline thread_local thread_id current_thread_id_dummy = 0;
 #endif
 }
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS || TT_OPERATING_SYSTEM == TT_OS_LINUX
-
-void wait_on(
-    std::atomic<uint32_t> &value,
-    uint32_t expected,
-    hires_utc_clock::duration duration=hires_utc_clock::duration::max()
-) noexcept;
-
-void wake_single_thread_waiting_on(std::atomic<uint32_t> &value) noexcept;
-
-void wake_all_threads_waiting_on(std::atomic<uint32_t> &value) noexcept;
-
-#endif
-
 }
 

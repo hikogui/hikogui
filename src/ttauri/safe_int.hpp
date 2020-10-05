@@ -55,8 +55,8 @@ T safe_handle_overflow(T value, bool overflow, bool is_positive) noexcept(OnOver
     } else if constexpr (OnOverflow == on_overflow_t::Axiom) {
         tt_assume(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Saturate) {
-        if (tt_unlikely(overflow)) {
-            value = is_positive ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();
+        if (overflow) {
+            [[unlikely]] value = is_positive ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();
         }
     }
     return value;

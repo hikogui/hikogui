@@ -8,7 +8,7 @@
 #include <cstddef>
 
 
-#define assert_or_return(x, y) if (tt_unlikely(!(x))) { return y; }
+#define assert_or_return(x, y) if (!(x)) { [[unlikely]] return y; }
 
 namespace tt {
 

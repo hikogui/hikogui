@@ -138,9 +138,9 @@ constexpr bool utf8_to_utf32(Iterator &it, Iterator last, char32_t &code_point) 
 
     auto old_it = it;
     for (int i = 0; i != continuation_count; ++i) {
-        if (tt_unlikely(it == last || (*it & 0xc0) != 0x80)) {
+        if (it == last || (*it & 0xc0) != 0x80) {
             // No continuation character, or at end of string.
-            code_point = CP1252_to_UTF32(static_cast<char>(first_cu));
+            [[unlikely]] code_point = CP1252_to_UTF32(static_cast<char>(first_cu));
             it = old_it;
             return false;
         }

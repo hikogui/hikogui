@@ -20,7 +20,8 @@ namespace tt {
  * @param to The value the state needs to be before this function returns.
  */
 template<typename CounterTag, typename T>
-tt_no_inline void contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
+tt_no_inline void
+contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
@@ -49,10 +50,10 @@ tt_no_inline void contended_wait_for_transition(std::atomic<T> const &state, T t
  * @param to The value the state needs to be before this function returns.
  */
 template<typename CounterTag, typename T>
-void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
+void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order_seq_cst)
 {
-    if (tt_unlikely(state.load(order) != to)) {
-        contended_wait_for_transition<CounterTag>(state, to, order);
+    if (state.load(order) != to) {
+        [[unlikely]] contended_wait_for_transition<CounterTag>(state, to, order);
     }
 }
 
@@ -64,12 +65,12 @@ void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order or
  * @param to The value to set once state has the value `from` .
  * @param order Memory order to use for this state variable.
  */
-template<typename BlockCounterTag=void,typename T>
-tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
+template<typename BlockCounterTag = void, typename T>
+tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order = std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
-    if constexpr (!std::is_same_v<BlockCounterTag,void>) {
+    if constexpr (!std::is_same_v<BlockCounterTag, void>) {
         increment_counter<BlockCounterTag>();
     }
 
@@ -96,17 +97,15 @@ tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std:
  * @param to The value to set once state has the value `from` .
  * @param order Memory order to use for this state variable.
  */
-template<typename BlockCounterTag=void,typename T>
-void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
+template<typename BlockCounterTag = void, typename T>
+void transition(std::atomic<T> &state, T from, T to, std::memory_order order = std::memory_order_seq_cst)
 {
     auto expect = from;
-    if (tt_likely(state.compare_exchange_strong(expect, to, order))) {
-        return;
+    if (state.compare_exchange_strong(expect, to, order)) {
+        [[likely]] return;
     } else {
         return contended_transition<BlockCounterTag>(state, from, to, order);
     }
 }
 
-
-}
-
+} // namespace tt

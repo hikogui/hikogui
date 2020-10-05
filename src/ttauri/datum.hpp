@@ -27,7 +27,6 @@
 #include <string_view>
 #include <cmath>
 
-
 namespace tt {
 template<bool HasLargeObjects>
 class datum_impl;
@@ -42,7 +41,7 @@ public:
     size_t operator()(tt::datum_impl<HasLargeObjects> const &value) const;
 };
 
-}
+} // namespace std
 
 namespace tt {
 
@@ -104,7 +103,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
  * you can serialize your own types by adding conversion constructor and
  * operator to and from the datum on your type.
  *
- * @param HasLargeObjects true when the datum will manage memory for large objects 
+ * @param HasLargeObjects true when the datum will manage memory for large objects
  */
 template<bool HasLargeObjects>
 class datum_impl {
@@ -114,7 +113,8 @@ private:
      * @param str String to encode into an uint64_t
      * @return Encoded string, or zero if `str` did not fit.
      */
-    static constexpr uint64_t make_string(std::string_view str) {
+    static constexpr uint64_t make_string(std::string_view str)
+    {
         ttlet len = str.size();
 
         if (len > 5) {
@@ -135,7 +135,8 @@ private:
      * @param ptr Pointer to encode.
      * @return Encoded pointer.
      */
-    static uint64_t make_pointer(uint64_t mask, void *ptr) {
+    static uint64_t make_pointer(uint64_t mask, void *ptr)
+    {
         return mask | (reinterpret_cast<uint64_t>(ptr) & pointer_mask);
     }
 
@@ -144,7 +145,8 @@ private:
      * @param id Type id
      * @return Encoded type id.
      */
-    static constexpr uint64_t id_to_mask(uint64_t id) {
+    static constexpr uint64_t id_to_mask(uint64_t id)
+    {
         return id << 48;
     }
 
@@ -156,7 +158,8 @@ private:
      * @param id 5 bit integer.
      * @return 16-bit type id.
      */
-    static constexpr uint16_t make_id(uint16_t id) {
+    static constexpr uint16_t make_id(uint16_t id)
+    {
         return ((id & 0x10) << 11) | (id & 0xf) | 0x7ff0;
     }
 
@@ -178,29 +181,29 @@ private:
     static constexpr uint64_t small_break = 4;
     static constexpr uint64_t small_continue = 5;
 
-    static constexpr uint16_t phy_small_id         = make_id(0b00001);
-    static constexpr uint16_t phy_decimal_id       = make_id(0b00010);
-    static constexpr uint16_t phy_ymd_id           = make_id(0b00011);
-    static constexpr uint16_t phy_integer_id       = make_id(0b00100);
-    static constexpr uint16_t phy_string_id        = make_id(0b00101);
-    static constexpr uint16_t phy_reserved_id0     = make_id(0b00110);
-    static constexpr uint16_t phy_reserved_id1     = make_id(0b00111);
-    static constexpr uint16_t phy_reserved_id2     = make_id(0b01000);
-    static constexpr uint16_t phy_reserved_id3     = make_id(0b01001);
-    static constexpr uint16_t phy_reserved_id4     = make_id(0b01010);
-    static constexpr uint16_t phy_reserved_id5     = make_id(0b01011);
-    static constexpr uint16_t phy_reserved_id6     = make_id(0b01100);
-    static constexpr uint16_t phy_reserved_id7     = make_id(0b01101);
-    static constexpr uint16_t phy_reserved_id8     = make_id(0b01110);
-    static constexpr uint16_t phy_reserved_id9     = make_id(0b01111);
+    static constexpr uint16_t phy_small_id = make_id(0b00001);
+    static constexpr uint16_t phy_decimal_id = make_id(0b00010);
+    static constexpr uint16_t phy_ymd_id = make_id(0b00011);
+    static constexpr uint16_t phy_integer_id = make_id(0b00100);
+    static constexpr uint16_t phy_string_id = make_id(0b00101);
+    static constexpr uint16_t phy_reserved_id0 = make_id(0b00110);
+    static constexpr uint16_t phy_reserved_id1 = make_id(0b00111);
+    static constexpr uint16_t phy_reserved_id2 = make_id(0b01000);
+    static constexpr uint16_t phy_reserved_id3 = make_id(0b01001);
+    static constexpr uint16_t phy_reserved_id4 = make_id(0b01010);
+    static constexpr uint16_t phy_reserved_id5 = make_id(0b01011);
+    static constexpr uint16_t phy_reserved_id6 = make_id(0b01100);
+    static constexpr uint16_t phy_reserved_id7 = make_id(0b01101);
+    static constexpr uint16_t phy_reserved_id8 = make_id(0b01110);
+    static constexpr uint16_t phy_reserved_id9 = make_id(0b01111);
 
-    static constexpr uint16_t phy_string_ptr_id    = make_id(0b10001);
-    static constexpr uint16_t phy_url_ptr_id       = make_id(0b10010);
-    static constexpr uint16_t phy_integer_ptr_id   = make_id(0b10011);
-    static constexpr uint16_t phy_vector_ptr_id    = make_id(0b10100);
-    static constexpr uint16_t phy_map_ptr_id       = make_id(0b10101);
-    static constexpr uint16_t phy_decimal_ptr_id   = make_id(0b10110);
-    static constexpr uint16_t phy_bytes_ptr_id     = make_id(0b10111);
+    static constexpr uint16_t phy_string_ptr_id = make_id(0b10001);
+    static constexpr uint16_t phy_url_ptr_id = make_id(0b10010);
+    static constexpr uint16_t phy_integer_ptr_id = make_id(0b10011);
+    static constexpr uint16_t phy_vector_ptr_id = make_id(0b10100);
+    static constexpr uint16_t phy_map_ptr_id = make_id(0b10101);
+    static constexpr uint16_t phy_decimal_ptr_id = make_id(0b10110);
+    static constexpr uint16_t phy_bytes_ptr_id = make_id(0b10111);
     static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11000);
     static constexpr uint16_t phy_reserved_ptr_id1 = make_id(0b11001);
     static constexpr uint16_t phy_reserved_ptr_id2 = make_id(0b11010);
@@ -242,78 +245,95 @@ private:
      *
      * @return The type_id of the stored object.
      */
-    uint16_t type_id() const noexcept {
+    uint16_t type_id() const noexcept
+    {
         uint64_t data;
         std::memcpy(&data, this, sizeof(data));
         return static_cast<uint16_t>(data >> 48);
     }
 
-    bool is_phy_float() const noexcept {
+    bool is_phy_float() const noexcept
+    {
         ttlet id = type_id();
         return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
     }
 
-    bool is_phy_integer() const noexcept {
+    bool is_phy_integer() const noexcept
+    {
         return type_id() == phy_integer_id;
     }
 
-    bool is_phy_string() const noexcept {
+    bool is_phy_string() const noexcept
+    {
         return type_id() == phy_string_id;
     }
 
-    bool is_phy_decimal() const noexcept {
+    bool is_phy_decimal() const noexcept
+    {
         return type_id() == phy_decimal_id;
     }
 
-    bool is_phy_ymd() const noexcept {
+    bool is_phy_ymd() const noexcept
+    {
         return type_id() == phy_ymd_id;
     }
 
-    bool is_phy_small() const noexcept {
+    bool is_phy_small() const noexcept
+    {
         return type_id() == phy_small_id;
     }
 
-    bool is_phy_pointer() const noexcept {
+    bool is_phy_pointer() const noexcept
+    {
         return HasLargeObjects && (type_id() & 0xfff0) == 0xfff0;
     }
 
-    bool is_phy_string_ptr() const noexcept {
+    bool is_phy_string_ptr() const noexcept
+    {
         return HasLargeObjects && type_id() == phy_string_ptr_id;
     }
 
-    bool is_phy_url_ptr() const noexcept {
+    bool is_phy_url_ptr() const noexcept
+    {
         return HasLargeObjects && type_id() == phy_url_ptr_id;
     }
 
-    bool is_phy_integer_ptr() const noexcept {
+    bool is_phy_integer_ptr() const noexcept
+    {
         return HasLargeObjects && type_id() == phy_integer_ptr_id;
     }
 
-    bool is_phy_vector_ptr() const noexcept {
+    bool is_phy_vector_ptr() const noexcept
+    {
         return HasLargeObjects && type_id() == phy_vector_ptr_id;
     }
 
-    bool is_phy_map_ptr() const noexcept {
+    bool is_phy_map_ptr() const noexcept
+    {
         return HasLargeObjects && type_id() == phy_map_ptr_id;
     }
 
-    bool is_phy_decimal_ptr() const noexcept {
+    bool is_phy_decimal_ptr() const noexcept
+    {
         return HasLargeObjects && type_id() == phy_decimal_ptr_id;
     }
 
-    bool is_phy_bytes_ptr() const noexcept {
+    bool is_phy_bytes_ptr() const noexcept
+    {
         return HasLargeObjects && type_id() == phy_bytes_ptr_id;
     }
 
     /** Extract the 48 bit unsigned integer from datum's storage.
      */
-    uint64_t get_unsigned_integer() const noexcept {
+    uint64_t get_unsigned_integer() const noexcept
+    {
         return (u64 << 16) >> 16;
     }
 
     /** Extract the 48 bit signed integer from datum's storage and sign extent to 64 bit.
      */
-    int64_t get_signed_integer() const noexcept {
+    int64_t get_signed_integer() const noexcept
+    {
         return static_cast<int64_t>(u64 << 16) >> 16;
     }
 
@@ -322,14 +342,16 @@ private:
      * Since the pointer is stored as a 48 bit integer, this function will launder it.
      */
     template<typename O>
-    O *get_pointer() const {
+    O *get_pointer() const
+    {
         return std::launder(reinterpret_cast<O *>(get_signed_integer()));
     }
 
     /** Delete the object that the datum is pointing to.
      * This function should only be called on a datum that holds a pointer.
      */
-    void delete_pointer() noexcept {
+    void delete_pointer() noexcept
+    {
         if constexpr (HasLargeObjects) {
             switch (type_id()) {
             case phy_integer_ptr_id: delete get_pointer<int64_t>(); break;
@@ -349,83 +371,92 @@ private:
      *
      * @param other The other datum which holds a pointer to an object.
      */
-    void copy_pointer(datum_impl const &other) noexcept {
+    void copy_pointer(datum_impl const &other) noexcept
+    {
         if constexpr (HasLargeObjects) {
             switch (other.type_id()) {
             case phy_integer_ptr_id: {
-                auto * const p = new int64_t(*other.get_pointer<int64_t>());
+                auto *const p = new int64_t(*other.get_pointer<int64_t>());
                 u64 = make_pointer(integer_ptr_mask, p);
             } break;
 
             case phy_string_ptr_id: {
-                auto * const p = new std::string(*other.get_pointer<std::string>());
+                auto *const p = new std::string(*other.get_pointer<std::string>());
                 u64 = make_pointer(string_ptr_mask, p);
             } break;
 
             case phy_url_ptr_id: {
-                auto * const p = new URL(*other.get_pointer<URL>());
+                auto *const p = new URL(*other.get_pointer<URL>());
                 u64 = make_pointer(url_ptr_mask, p);
             } break;
 
             case phy_vector_ptr_id: {
-                auto * const p = new datum_impl::vector(*other.get_pointer<datum_impl::vector>());
+                auto *const p = new datum_impl::vector(*other.get_pointer<datum_impl::vector>());
                 u64 = make_pointer(vector_ptr_mask, p);
             } break;
 
             case phy_map_ptr_id: {
-                auto * const p = new datum_impl::map(*other.get_pointer<datum_impl::map>());
+                auto *const p = new datum_impl::map(*other.get_pointer<datum_impl::map>());
                 u64 = make_pointer(map_ptr_mask, p);
             } break;
 
             case phy_decimal_ptr_id: {
-                auto* const p = new decimal(*other.get_pointer<decimal>());
+                auto *const p = new decimal(*other.get_pointer<decimal>());
                 u64 = make_pointer(decimal_ptr_mask, p);
             } break;
 
             case phy_bytes_ptr_id: {
-                auto* const p = new bstring(*other.get_pointer<bstring>());
+                auto *const p = new bstring(*other.get_pointer<bstring>());
                 u64 = make_pointer(bytes_ptr_mask, p);
             } break;
 
-            default:
-                tt_no_default;
+            default: tt_no_default;
             }
         }
     }
 
-    
 public:
     using vector = std::vector<datum_impl>;
-    using map = std::unordered_map<datum_impl,datum_impl>;
-    struct undefined {};
-    struct null {};
-    struct _continue {};
-    struct _break {};
+    using map = std::unordered_map<datum_impl, datum_impl>;
+    struct undefined {
+    };
+    struct null {
+    };
+    struct _continue {
+    };
+    struct _break {
+    };
 
     datum_impl() noexcept : u64(undefined_mask) {}
 
-    ~datum_impl() noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    ~datum_impl() noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
     }
 
-    datum_impl(datum_impl const &other) noexcept {
-        if (tt_unlikely(other.is_phy_pointer())) {
-            copy_pointer(other);
+    datum_impl(datum_impl const &other) noexcept
+    {
+        if (other.is_phy_pointer()) {
+            [[unlikely]] copy_pointer(other);
+
         } else {
             // We do a memcpy, because we don't know the type in the union.
             std::memcpy(this, &other, sizeof(*this));
         }
     }
 
-    datum_impl &operator=(datum_impl const &other) noexcept {
+    datum_impl &operator=(datum_impl const &other) noexcept
+    {
         if (this != &other) {
-            if (tt_unlikely(is_phy_pointer())) {
-                delete_pointer();
+            if (is_phy_pointer()) {
+                [[unlikely]] delete_pointer();
             }
-            if (tt_unlikely(other.is_phy_pointer())) {
-                copy_pointer(other);
+
+            if (other.is_phy_pointer()) {
+                [[unlikely]] copy_pointer(other);
+
             } else {
                 // We do a memcpy, because we don't know the type in the union.
                 std::memcpy(this, &other, sizeof(*this));
@@ -434,13 +465,15 @@ public:
         return *this;
     }
 
-    datum_impl(datum_impl &&other) noexcept : u64(undefined_mask) {
+    datum_impl(datum_impl &&other) noexcept : u64(undefined_mask)
+    {
         // We do a memcpy, because we don't know the type in the union.
         std::memcpy(this, &other, sizeof(*this));
         other.u64 = undefined_mask;
     }
 
-    datum_impl &operator=(datum_impl &&other) noexcept {
+    datum_impl &operator=(datum_impl &&other) noexcept
+    {
         if (this != &other) {
             // We do a memcpy, because we don't know the type in the union.
             std::memcpy(this, &other, sizeof(*this));
@@ -454,48 +487,54 @@ public:
     datum_impl(datum_impl::_break) noexcept : u64(break_mask) {}
     datum_impl(datum_impl::_continue) noexcept : u64(continue_mask) {}
 
-    datum_impl(double value) noexcept : f64(value) {
+    datum_impl(double value) noexcept : f64(value)
+    {
         if (value != value) {
             u64 = undefined_mask;
         }
     }
     datum_impl(float value) noexcept : datum_impl(static_cast<double>(value)) {}
 
-    datum_impl(decimal value) noexcept {
+    datum_impl(decimal value) noexcept
+    {
         long long m = value.mantissa();
 
-        if (tt_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
-            if constexpr (HasLargeObjects) {
-                auto* const p = new decimal(value);
+        if (m < minimum_mantissa || m > maximum_mantissa) {
+            [[unlikely]] if constexpr (HasLargeObjects)
+            {
+                auto *const p = new decimal(value);
                 u64 = make_pointer(decimal_ptr_mask, p);
-            } else {
+            }
+            else
+            {
                 TTAURI_THROW_MATH_ERROR("Constructing decimal {} to datum", value);
             }
         } else {
             int e = value.exponent();
 
-            u64 =
-                decimal_mask |
-                static_cast<uint8_t>(e) |
-                ((static_cast<uint64_t>(m) << 24) >> 16);
+            u64 = decimal_mask | static_cast<uint8_t>(e) | ((static_cast<uint64_t>(m) << 24) >> 16);
         }
     }
 
     datum_impl(date::year_month_day const &ymd) noexcept :
-        u64(
-            ymd_mask | ((
-                (static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
-                (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
-                static_cast<uint64_t>(static_cast<unsigned>(ymd.day()))
-            ) & 0x0000ffff'ffffffff)
-        ) {}
+        u64(ymd_mask |
+            (((static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
+              (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
+              static_cast<uint64_t>(static_cast<unsigned>(ymd.day()))) &
+             0x0000ffff'ffffffff))
+    {
+    }
 
-    datum_impl(unsigned long long value) noexcept : u64(integer_mask | value) {
-        if (tt_unlikely(value > maximum_int)) {
-            if constexpr (HasLargeObjects) {
-                auto * const p = new uint64_t(value);
+    datum_impl(unsigned long long value) noexcept : u64(integer_mask | value)
+    {
+        if (value > maximum_int) {
+            [[unlikely]] if constexpr (HasLargeObjects)
+            {
+                auto *const p = new uint64_t(value);
                 u64 = make_pointer(integer_ptr_mask, p);
-            } else {
+            }
+            else
+            {
                 TTAURI_THROW_MATH_ERROR("Constructing datum from integer {}, larger than {}", value, maximum_int);
             }
         }
@@ -505,17 +544,19 @@ public:
     datum_impl(unsigned short value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
     datum_impl(unsigned char value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
 
-    datum_impl(signed long long value) noexcept :
-        u64(integer_mask | (static_cast<uint64_t>(value) & 0x0000ffff'ffffffff))
+    datum_impl(signed long long value) noexcept : u64(integer_mask | (static_cast<uint64_t>(value) & 0x0000ffff'ffffffff))
     {
-        if (tt_unlikely(value < minimum_int || value > maximum_int)) {
-            if constexpr (HasLargeObjects) {
-                auto * const p = new int64_t(value);
-                u64 = make_pointer(integer_ptr_mask, p);
-            } else {
-                TTAURI_THROW_MATH_ERROR("Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int);
+        if (value < minimum_int || value > maximum_int)
+            [[unlikely]]
+            {
+                if constexpr (HasLargeObjects) {
+                    auto *const p = new int64_t(value);
+                    u64 = make_pointer(integer_ptr_mask, p);
+                } else {
+                    TTAURI_THROW_MATH_ERROR(
+                        "Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int);
+                }
             }
-        }
     }
     datum_impl(signed long value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
     datum_impl(signed int value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
@@ -525,12 +566,11 @@ public:
     datum_impl(bool value) noexcept : u64(value ? true_mask : false_mask) {}
     datum_impl(char value) noexcept : u64(string_mask | (uint64_t{1} << 40) | value) {}
 
-    datum_impl(std::string_view value) noexcept :
-        u64(make_string(value))
+    datum_impl(std::string_view value) noexcept : u64(make_string(value))
     {
         if (u64 == 0) {
             if constexpr (HasLargeObjects) {
-                auto * const p = new std::string(value);
+                auto *const p = new std::string(value);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
                 TTAURI_THROW_MATH_ERROR("Constructing string {} to datum, larger than 6 characters", value);
@@ -541,77 +581,88 @@ public:
     datum_impl(std::string const &value) noexcept : datum_impl(std::string_view(value)) {}
     datum_impl(char const *value) noexcept : datum_impl(std::string_view(value)) {}
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl(URL const &value) noexcept {
-        auto * const p = new URL(value);
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl(URL const &value) noexcept
+    {
+        auto *const p = new URL(value);
         u64 = make_pointer(url_ptr_mask, p);
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl(URL &&value) noexcept {
-        auto * const p = new URL(std::move(value));
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl(URL &&value) noexcept
+    {
+        auto *const p = new URL(std::move(value));
         u64 = make_pointer(url_ptr_mask, p);
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl(datum_impl::vector const &value) noexcept {
-        auto * const p = new datum_impl::vector(value);
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl(datum_impl::vector const &value) noexcept
+    {
+        auto *const p = new datum_impl::vector(value);
         u64 = make_pointer(vector_ptr_mask, p);
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl(datum_impl::vector &&value) noexcept {
-        auto * const p = new datum_impl::vector(std::move(value));
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl(datum_impl::vector &&value) noexcept
+    {
+        auto *const p = new datum_impl::vector(std::move(value));
         u64 = make_pointer(vector_ptr_mask, p);
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl(datum_impl::map const &value) noexcept {
-        auto * const p = new datum_impl::map(value);
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl(datum_impl::map const &value) noexcept
+    {
+        auto *const p = new datum_impl::map(value);
         u64 = make_pointer(map_ptr_mask, p);
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl(datum_impl::map &&value) noexcept {
-        auto * const p = new datum_impl::map(std::move(value));
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl(datum_impl::map &&value) noexcept
+    {
+        auto *const p = new datum_impl::map(std::move(value));
         u64 = make_pointer(map_ptr_mask, p);
     }
 
-    datum_impl &operator=(datum_impl::undefined rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(datum_impl::undefined rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
         u64 = undefined_mask;
         return *this;
     }
 
-    datum_impl &operator=(datum_impl::null rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(datum_impl::null rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
         u64 = null_mask;
         return *this;
     }
 
-    datum_impl &operator=(datum_impl::_break rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(datum_impl::_break rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
         u64 = break_mask;
         return *this;
     }
 
-    datum_impl &operator=(datum_impl::_continue rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(datum_impl::_continue rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
         u64 = continue_mask;
         return *this;
     }
 
-    datum_impl &operator=(double rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(double rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
         if (rhs == rhs) {
@@ -621,114 +672,153 @@ public:
         }
         return *this;
     }
-    datum_impl& operator=(float rhs) noexcept { return *this = static_cast<double>(rhs); }
+    datum_impl &operator=(float rhs) noexcept
+    {
+        return *this = static_cast<double>(rhs);
+    }
 
-
-    datum_impl& operator=(decimal rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(decimal rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
         long long m = rhs.mantissa();
-        if (tt_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
-            if constexpr (HasLargeObjects) {
-                auto* const p = new decimal(rhs);
+        if (m < minimum_mantissa || m > maximum_mantissa) {
+            [[unlikely]] if constexpr (HasLargeObjects)
+            {
+                auto *const p = new decimal(rhs);
                 u64 = make_pointer(decimal_ptr_mask, p);
-            } else {
+            }
+            else
+            {
                 TTAURI_THROW_MATH_ERROR("Constructing decimal {} to datum", rhs);
             }
         } else {
             int e = rhs.exponent();
 
-            u64 =
-                decimal_mask |
-                static_cast<uint8_t>(e) |
-                ((static_cast<uint64_t>(m) << 24) >> 16);
+            u64 = decimal_mask | static_cast<uint8_t>(e) | ((static_cast<uint64_t>(m) << 24) >> 16);
         }
         return *this;
     }
 
-    datum_impl &operator=(date::year_month_day const & ymd) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(date::year_month_day const &ymd) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
-        u64 = ymd_mask | ((
-            (static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
-            (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
-            static_cast<uint64_t>(static_cast<unsigned>(ymd.day()))
-        ) & 0x0000ffff'ffffffff);
+        u64 = ymd_mask |
+            (((static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
+              (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
+              static_cast<uint64_t>(static_cast<unsigned>(ymd.day()))) &
+             0x0000ffff'ffffffff);
         return *this;
     }
 
-    datum_impl &operator=(unsigned long long rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(unsigned long long rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
         u64 = integer_mask | static_cast<uint64_t>(rhs);
-        if (tt_unlikely(rhs > maximum_int)) {
-            if constexpr (HasLargeObjects) {
-                auto * const p = new uint64_t(rhs);
+        if (rhs > maximum_int) {
+            [[unlikely]] if constexpr (HasLargeObjects)
+            {
+                auto *const p = new uint64_t(rhs);
                 u64 = make_pointer(integer_ptr_mask, p);
-            } else {
+            }
+            else
+            {
                 TTAURI_THROW_MATH_ERROR("Assigning integer {} to datum, larger than {}", rhs, maximum_int);
             }
         }
         return *this;
     }
-    datum_impl& operator=(unsigned long rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
-    datum_impl& operator=(unsigned int rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
-    datum_impl& operator=(unsigned short rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
-    datum_impl& operator=(unsigned char rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
+    datum_impl &operator=(unsigned long rhs) noexcept
+    {
+        return *this = static_cast<unsigned long long>(rhs);
+    }
+    datum_impl &operator=(unsigned int rhs) noexcept
+    {
+        return *this = static_cast<unsigned long long>(rhs);
+    }
+    datum_impl &operator=(unsigned short rhs) noexcept
+    {
+        return *this = static_cast<unsigned long long>(rhs);
+    }
+    datum_impl &operator=(unsigned char rhs) noexcept
+    {
+        return *this = static_cast<unsigned long long>(rhs);
+    }
 
-    datum_impl &operator=(signed long long rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(signed long long rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
         u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0000ffff'ffffffff);
-        if (tt_unlikely(rhs < minimum_int || rhs > maximum_int)) {
-            if constexpr (HasLargeObjects) {
-                auto * const p = new int64_t(rhs);
+        if (rhs < minimum_int || rhs > maximum_int) {
+            [[unlikely]] if constexpr (HasLargeObjects)
+            {
+                auto *const p = new int64_t(rhs);
                 u64 = make_pointer(integer_ptr_mask, p);
-            } else {
+            }
+            else
+            {
                 TTAURI_THROW_MATH_ERROR("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int);
             }
         }
 
         return *this;
     }
-    datum_impl& operator=(signed long rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
-    datum_impl& operator=(signed int rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
-    datum_impl& operator=(signed short rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
-    datum_impl& operator=(signed char rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
+    datum_impl &operator=(signed long rhs) noexcept
+    {
+        return *this = static_cast<signed long long>(rhs);
+    }
+    datum_impl &operator=(signed int rhs) noexcept
+    {
+        return *this = static_cast<signed long long>(rhs);
+    }
+    datum_impl &operator=(signed short rhs) noexcept
+    {
+        return *this = static_cast<signed long long>(rhs);
+    }
+    datum_impl &operator=(signed char rhs) noexcept
+    {
+        return *this = static_cast<signed long long>(rhs);
+    }
 
-    datum_impl &operator=(bool rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(bool rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
         u64 = rhs ? true_mask : false_mask;
         return *this;
     }
-    
-    datum_impl &operator=(char rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+
+    datum_impl &operator=(char rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
         u64 = string_mask | (uint64_t{1} << 40) | static_cast<uint64_t>(rhs);
         return *this;
     }
 
-    datum_impl &operator=(std::string_view rhs) {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    datum_impl &operator=(std::string_view rhs)
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
         u64 = make_string(rhs);
         if (u64 == 0) {
             if constexpr (HasLargeObjects) {
-                auto * const p = new std::string(rhs);
+                auto *const p = new std::string(rhs);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
                 TTAURI_THROW_MATH_ERROR("Assigning string {} to datum, larger than 6 characters", rhs);
@@ -737,88 +827,96 @@ public:
         return *this;
     }
 
-    datum_impl &operator=(std::string const &rhs) {
+    datum_impl &operator=(std::string const &rhs)
+    {
         *this = std::string_view{rhs};
         return *this;
     }
 
-    datum_impl &operator=(char const *rhs) {
+    datum_impl &operator=(char const *rhs)
+    {
         *this = std::string_view{rhs};
         return *this;
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &operator=(URL const &rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl &operator=(URL const &rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
-        auto * const p = new URL(rhs);
+        auto *const p = new URL(rhs);
         u64 = make_pointer(url_ptr_mask, p);
         return *this;
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &operator=(URL &&rhs) noexcept {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl &operator=(URL &&rhs) noexcept
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
-        auto * const p = new URL(std::move(rhs));
+        auto *const p = new URL(std::move(rhs));
         u64 = make_pointer(url_ptr_mask, p);
         return *this;
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &operator=(datum_impl::vector const &rhs) {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl &operator=(datum_impl::vector const &rhs)
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
-        auto * const p = new datum_impl::vector(rhs);
+        auto *const p = new datum_impl::vector(rhs);
         u64 = make_pointer(vector_ptr_mask, p);
 
         return *this;
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &operator=(datum_impl::vector &&rhs) {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl &operator=(datum_impl::vector &&rhs)
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
-        auto * const p = new datum_impl::vector(std::move(rhs));
+        auto *const p = new datum_impl::vector(std::move(rhs));
         u64 = make_pointer(vector_ptr_mask, p);
 
         return *this;
     }
 
-
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &operator=(datum_impl::map const &rhs) {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl &operator=(datum_impl::map const &rhs)
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
-        auto * const p = new datum_impl::map(rhs);
+        auto *const p = new datum_impl::map(rhs);
         u64 = make_pointer(map_ptr_mask, p);
 
         return *this;
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &operator=(datum_impl::map &&rhs) {
-        if (tt_unlikely(is_phy_pointer())) {
-            delete_pointer();
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl &operator=(datum_impl::map &&rhs)
+    {
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
         }
 
-        auto * const p = new datum_impl::map(std::move(rhs));
+        auto *const p = new datum_impl::map(std::move(rhs));
         u64 = make_pointer(map_ptr_mask, p);
 
         return *this;
     }
 
-    explicit operator double() const {
+    explicit operator double() const
+    {
         if (is_phy_float()) {
             return f64;
         } else if (is_decimal()) {
@@ -828,15 +926,18 @@ public:
         } else if (is_phy_integer_ptr()) {
             return static_cast<double>(*get_pointer<int64_t>());
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a double", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a double", this->repr(), this->type_name());
         }
     }
 
-    explicit operator float() const {
+    explicit operator float() const
+    {
         return static_cast<float>(static_cast<double>(*this));
     }
 
-    explicit operator decimal() const {
+    explicit operator decimal() const
+    {
         if (is_phy_decimal()) {
             uint64_t v = get_unsigned_integer();
             int e = static_cast<int8_t>(v);
@@ -849,11 +950,13 @@ public:
         } else if (is_phy_float()) {
             return decimal{static_cast<double>(*this)};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a decimal", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a decimal", this->repr(), this->type_name());
         }
     }
 
-    explicit operator date::year_month_day() const {
+    explicit operator date::year_month_day() const
+    {
         if (is_phy_ymd()) {
             ttlet u = get_unsigned_integer();
             ttlet i = get_signed_integer();
@@ -862,18 +965,22 @@ public:
             ttlet year = static_cast<signed>(i >> 9);
 
             if (day == 0) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
+                TTAURI_THROW_INVALID_OPERATION_ERROR(
+                    "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
             }
             if (month == 0) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
+                TTAURI_THROW_INVALID_OPERATION_ERROR(
+                    "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
             }
             return date::year_month_day{date::year{year}, date::month{month}, date::day{day}};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
         }
     }
 
-    explicit operator signed long long () const {
+    explicit operator signed long long() const
+    {
         if (is_phy_integer()) {
             return get_signed_integer();
         } else if (is_phy_integer_ptr()) {
@@ -886,82 +993,102 @@ public:
             case small_false: return 0;
             }
         }
-        TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed long long", this->repr(), this->type_name());
+        TTAURI_THROW_INVALID_OPERATION_ERROR(
+            "Value {} of type {} can not be converted to a signed long long", this->repr(), this->type_name());
     }
 
-    explicit operator signed long () const {
+    explicit operator signed long() const
+    {
         ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed long>::min() || v > std::numeric_limits<signed long>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed long", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a signed long", this->repr(), this->type_name());
         }
         return static_cast<signed long>(v);
     }
 
-    explicit operator signed int () const {
+    explicit operator signed int() const
+    {
         ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed int>::min() || v > std::numeric_limits<signed int>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed int", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a signed int", this->repr(), this->type_name());
         }
         return static_cast<signed int>(v);
     }
 
-    explicit operator signed short () const {
+    explicit operator signed short() const
+    {
         ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed short>::min() || v > std::numeric_limits<signed short>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed short", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a signed short", this->repr(), this->type_name());
         }
         return static_cast<signed short>(v);
     }
 
-    explicit operator signed char () const {
+    explicit operator signed char() const
+    {
         ttlet v = static_cast<int64_t>(*this);
         if (v < std::numeric_limits<signed char>::min() || v > std::numeric_limits<signed char>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed char", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a signed char", this->repr(), this->type_name());
         }
         return static_cast<signed char>(v);
     }
 
-    explicit operator unsigned long long () const {
+    explicit operator unsigned long long() const
+    {
         ttlet v = static_cast<signed long long>(*this);
         if (v < 0) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned long long", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a unsigned long long", this->repr(), this->type_name());
         }
         return static_cast<unsigned long long>(v);
     }
 
-    explicit operator unsigned long () const {
+    explicit operator unsigned long() const
+    {
         ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned long>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned long", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a unsigned long", this->repr(), this->type_name());
         }
         return static_cast<unsigned long>(v);
     }
 
-    explicit operator unsigned int () const {
+    explicit operator unsigned int() const
+    {
         ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned int>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned int", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a unsigned int", this->repr(), this->type_name());
         }
         return static_cast<unsigned int>(v);
     }
 
-    explicit operator unsigned short () const {
+    explicit operator unsigned short() const
+    {
         ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned short>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned short", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a unsigned short", this->repr(), this->type_name());
         }
         return static_cast<unsigned short>(v);
     }
 
-    explicit operator unsigned char () const {
+    explicit operator unsigned char() const
+    {
         ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned char>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned char", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a unsigned char", this->repr(), this->type_name());
         }
         return static_cast<unsigned char>(v);
     }
 
-    explicit operator bool() const noexcept {
+    explicit operator bool() const noexcept
+    {
         switch (type_id()) {
         case phy_small_id: return get_unsigned_integer() == small_true;
         case phy_integer_id: return static_cast<int64_t>(*this) != 0;
@@ -976,7 +1103,7 @@ public:
         case phy_decimal_ptr_id: return static_cast<decimal>(*this) != 0;
         case phy_bytes_ptr_id: return this->size() > 0;
         default:
-            if (tt_likely(is_phy_float())) {
+            if (is_phy_float()) {
                 return static_cast<double>(*this) != 0.0;
             } else {
                 tt_no_default;
@@ -984,17 +1111,20 @@ public:
         }
     }
 
-    explicit operator char() const {
+    explicit operator char() const
+    {
         if (is_phy_string() && size() == 1) {
             return u64 & 0xff;
         } else if (is_phy_string_ptr() && size() == 1) {
             return get_pointer<std::string>()->at(0);
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a char", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a char", this->repr(), this->type_name());
         }
     }
 
-    explicit operator bstring() const {
+    explicit operator bstring() const
+    {
         if (is_bytes()) {
             if constexpr (HasLargeObjects) {
                 return *get_pointer<bstring>();
@@ -1002,11 +1132,13 @@ public:
                 tt_no_default;
             }
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to bytes", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to bytes", this->repr(), this->type_name());
         }
     }
 
-    explicit operator std::string() const noexcept {
+    explicit operator std::string() const noexcept
+    {
         switch (type_id()) {
         case phy_small_id:
             switch (get_unsigned_integer()) {
@@ -1030,13 +1162,13 @@ public:
             }
 
         case phy_string_id: {
-                ttlet length = size();
-                char buffer[5];
-                for (int i = 0; i < length; i++) {
-                    buffer[i] = (u64 >> ((length - i - 1) * 8)) & 0xff;
-                }
-                return std::string(buffer, length);
+            ttlet length = size();
+            char buffer[5];
+            for (int i = 0; i < length; i++) {
+                buffer[i] = (u64 >> ((length - i - 1) * 8)) & 0xff;
             }
+            return std::string(buffer, length);
+        }
 
         case phy_string_ptr_id:
             if constexpr (HasLargeObjects) {
@@ -1077,7 +1209,7 @@ public:
 
         case phy_map_ptr_id:
             if constexpr (HasLargeObjects) {
-                std::vector<std::pair<datum_impl,datum_impl>> items;
+                std::vector<std::pair<datum_impl, datum_impl>> items;
                 items.reserve(size());
                 std::copy(map_begin(), map_end(), std::back_inserter(items));
                 std::sort(items.begin(), items.end(), [](auto &a, auto &b) {
@@ -1086,7 +1218,7 @@ public:
 
                 std::string r = "{";
                 auto count = 0;
-                for (auto &item: items) {
+                for (auto &item : items) {
                     if (count++ > 0) {
                         r += ", ";
                     }
@@ -1120,32 +1252,38 @@ public:
         }
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    explicit operator URL() const {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    explicit operator URL() const
+    {
         if (is_string()) {
             return URL{static_cast<std::string>(*this)};
         } else if (is_url()) {
             return *get_pointer<URL>();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a URL", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a URL", this->repr(), this->type_name());
         }
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    explicit operator datum_impl::vector() const {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    explicit operator datum_impl::vector() const
+    {
         if (is_vector()) {
             return *get_pointer<datum_impl::vector>();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a Vector", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a Vector", this->repr(), this->type_name());
         }
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    explicit operator datum_impl::map() const {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    explicit operator datum_impl::map() const
+    {
         if (is_map()) {
             return *get_pointer<datum_impl::map>();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a Map", this->repr(), this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Value {} of type {} can not be converted to a Map", this->repr(), this->type_name());
         }
     }
 
@@ -1156,8 +1294,9 @@ public:
      *
      * @param rhs An index into the map or vector.
      */
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &operator[](datum_impl const &rhs) {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl &operator[](datum_impl const &rhs)
+    {
         if (is_undefined()) {
             // When accessing a name on an undefined it means we need replace it with an empty map.
             auto *p = new datum_impl::map();
@@ -1178,12 +1317,14 @@ public:
             }
 
             if (index < 0 || index >= std::ssize(v)) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, std::ssize(v));
+                TTAURI_THROW_INVALID_OPERATION_ERROR(
+                    "Index {} out of range to access value in vector of size {}", index, std::ssize(v));
             } else {
                 return v[index];
             }
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
         }
     }
 
@@ -1194,8 +1335,9 @@ public:
      *
      * @param rhs An index into the map or vector.
      */
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl operator[](datum_impl const &rhs) const {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl operator[](datum_impl const &rhs) const
+    {
         if (is_map()) {
             ttlet &m = *get_pointer<datum_impl::map>();
             ttlet i = m.find(rhs);
@@ -1213,12 +1355,14 @@ public:
             }
 
             if (index < 0 || index >= std::ssize(v)) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, std::ssize(v));
+                TTAURI_THROW_INVALID_OPERATION_ERROR(
+                    "Index {} out of range to access value in vector of size {}", index, std::ssize(v));
             } else {
                 return v[index];
             }
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
         }
     }
 
@@ -1230,8 +1374,9 @@ public:
      * @param rhs An index into the map or vector.
      * @return true if the index is in the map or vector.
      */
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    bool contains(datum_impl const &rhs) const noexcept {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    bool contains(datum_impl const &rhs) const noexcept
+    {
         if (is_map()) {
             ttlet &m = *get_pointer<datum_impl::map>();
             ttlet i = m.find(rhs);
@@ -1257,8 +1402,9 @@ public:
      * This datum must hold a vector.
      * @return a reference to datum holding a vector.
      */
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &append() {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    datum_impl &append()
+    {
         if (is_undefined()) {
             // When appending on undefined it means we need replace it with an empty vector.
             auto *p = new datum_impl::vector();
@@ -1276,7 +1422,8 @@ public:
     }
 
     template<typename... Args>
-    void emplace_back(Args &&... args) {
+    void emplace_back(Args &&... args)
+    {
         if (is_undefined()) {
             // When appending on undefined it means we need replace it with an empty vector.
             auto *p = new datum_impl::vector();
@@ -1293,7 +1440,8 @@ public:
     }
 
     template<typename Arg>
-    void push_back(Arg &&arg) {
+    void push_back(Arg &&arg)
+    {
         if (is_undefined()) {
             // When appending on undefined it means we need replace it with an empty vector.
             auto *p = new datum_impl::vector();
@@ -1309,7 +1457,8 @@ public:
         }
     }
 
-    void pop_back() {
+    void pop_back()
+    {
         if (is_vector()) {
             auto *v = get_pointer<datum_impl::vector>();
             v->pop_back();
@@ -1319,7 +1468,8 @@ public:
         }
     }
 
-    datum_impl year() const {
+    datum_impl year() const
+    {
         if (is_ymd()) {
             return {static_cast<signed>(static_cast<date::year_month_day>(*this).year())};
         } else {
@@ -1327,16 +1477,18 @@ public:
         }
     }
 
-    datum_impl quarter() const {
+    datum_impl quarter() const
+    {
         if (is_ymd()) {
             auto month = static_cast<unsigned>(static_cast<date::year_month_day>(*this).month());
-            return {((month-1) / 3) + 1};
+            return {((month - 1) / 3) + 1};
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get month() from type {}", type_name());
         }
     }
 
-    datum_impl month() const {
+    datum_impl month() const
+    {
         if (is_ymd()) {
             return {static_cast<unsigned>(static_cast<date::year_month_day>(*this).month())};
         } else {
@@ -1344,7 +1496,8 @@ public:
         }
     }
 
-    datum_impl day() const {
+    datum_impl day() const
+    {
         if (is_ymd()) {
             return {static_cast<unsigned>(static_cast<date::year_month_day>(*this).day())};
         } else {
@@ -1352,7 +1505,8 @@ public:
         }
     }
 
-    datum_impl const &front() const {
+    datum_impl const &front() const
+    {
         if (is_vector()) {
             ttlet *v = get_pointer<datum_impl::vector>();
             return v->front();
@@ -1362,7 +1516,8 @@ public:
         }
     }
 
-    datum_impl &front() {
+    datum_impl &front()
+    {
         if (is_vector()) {
             auto *v = get_pointer<datum_impl::vector>();
             return v->front();
@@ -1372,7 +1527,8 @@ public:
         }
     }
 
-    datum_impl const &back() const {
+    datum_impl const &back() const
+    {
         if (is_vector()) {
             ttlet *v = get_pointer<datum_impl::vector>();
             return v->back();
@@ -1382,7 +1538,8 @@ public:
         }
     }
 
-    datum_impl &back() {
+    datum_impl &back()
+    {
         if (is_vector()) {
             auto *v = get_pointer<datum_impl::vector>();
             return v->back();
@@ -1392,8 +1549,8 @@ public:
         }
     }
 
-
-    std::string repr() const noexcept {
+    std::string repr() const noexcept
+    {
         switch (type_id()) {
         case phy_small_id:
             switch (get_unsigned_integer()) {
@@ -1417,7 +1574,7 @@ public:
         case phy_map_ptr_id: return static_cast<std::string>(*this);
         case phy_bytes_ptr_id: return static_cast<std::string>(*this);
         default:
-            if (tt_likely(is_phy_float())) {
+            if (is_phy_float()) {
                 return static_cast<std::string>(*this);
             } else {
                 tt_no_default;
@@ -1428,7 +1585,8 @@ public:
     /*! Return ordering of types.
      * Used in less-than comparison between different types.
      */
-    int type_order() const noexcept {
+    int type_order() const noexcept
+    {
         if (is_numeric()) {
             // Fold all numeric values into the same group (literal integers).
             return phy_integer_id;
@@ -1437,7 +1595,8 @@ public:
         }
     }
 
-    datum_impl &get_by_path(std::vector<std::string> const &key) {
+    datum_impl &get_by_path(std::vector<std::string> const &key)
+    {
         if (key.size() > 0 && is_map()) {
             ttlet index = key.at(0);
             auto &next = (*this)[index];
@@ -1457,7 +1616,8 @@ public:
         }
     }
 
-    datum_impl get_by_path(std::vector<std::string> const &key) const {
+    datum_impl get_by_path(std::vector<std::string> const &key) const
+    {
         if (key.size() > 0 && is_map()) {
             ttlet index = key.at(0);
             ttlet next = (*this)[index];
@@ -1475,14 +1635,33 @@ public:
         }
     }
 
-    bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
-    bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
-    bool is_ymd() const noexcept { return is_phy_ymd(); }
-    bool is_float() const noexcept { return is_phy_float(); }
-    bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
-    bool is_bytes() const noexcept { return is_phy_bytes_ptr(); }
+    bool is_integer() const noexcept
+    {
+        return is_phy_integer() || is_phy_integer_ptr();
+    }
+    bool is_decimal() const noexcept
+    {
+        return is_phy_decimal() || is_phy_decimal_ptr();
+    }
+    bool is_ymd() const noexcept
+    {
+        return is_phy_ymd();
+    }
+    bool is_float() const noexcept
+    {
+        return is_phy_float();
+    }
+    bool is_string() const noexcept
+    {
+        return is_phy_string() || is_phy_string_ptr();
+    }
+    bool is_bytes() const noexcept
+    {
+        return is_phy_bytes_ptr();
+    }
 
-    bool is_bool() const noexcept {
+    bool is_bool() const noexcept
+    {
         if (is_phy_small()) {
             ttlet tmp = get_unsigned_integer();
             return tmp == small_true || tmp == small_false;
@@ -1491,27 +1670,45 @@ public:
         }
     }
 
-    bool is_null() const noexcept {
+    bool is_null() const noexcept
+    {
         return is_phy_small() && get_unsigned_integer() == small_null;
     }
 
-    bool is_undefined() const noexcept {
+    bool is_undefined() const noexcept
+    {
         return is_phy_small() && get_unsigned_integer() == small_undefined;
     }
 
-    bool is_break() const noexcept {
+    bool is_break() const noexcept
+    {
         return is_phy_small() && get_unsigned_integer() == small_break;
     }
 
-    bool is_continue() const noexcept {
+    bool is_continue() const noexcept
+    {
         return is_phy_small() && get_unsigned_integer() == small_continue;
-    }    bool is_url() const noexcept { return is_phy_url_ptr(); }
+    }
+    bool is_url() const noexcept
+    {
+        return is_phy_url_ptr();
+    }
 
-    bool is_vector() const noexcept { return is_phy_vector_ptr(); }
-    bool is_map() const noexcept { return is_phy_map_ptr(); }
-    bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
+    bool is_vector() const noexcept
+    {
+        return is_phy_vector_ptr();
+    }
+    bool is_map() const noexcept
+    {
+        return is_phy_map_ptr();
+    }
+    bool is_numeric() const noexcept
+    {
+        return is_integer() || is_decimal() || is_float();
+    }
 
-    datum_type_t type() const noexcept {
+    datum_type_t type() const noexcept
+    {
         switch (type_id()) {
         case phy_small_id:
             switch (get_unsigned_integer()) {
@@ -1523,7 +1720,7 @@ public:
             case small_continue: return datum_type_t::Continue;
             default: tt_no_default;
             }
-      
+
         case phy_integer_id:
         case phy_integer_ptr_id: return datum_type_t::Integer;
         case phy_decimal_id:
@@ -1536,7 +1733,7 @@ public:
         case phy_map_ptr_id: return datum_type_t::Map;
         case phy_bytes_ptr_id: return datum_type_t::Bytes;
         default:
-            if (tt_likely(is_phy_float())) {
+            if (is_phy_float()) {
                 return datum_type_t::Float;
             } else {
                 tt_no_default;
@@ -1544,7 +1741,8 @@ public:
         }
     }
 
-    char const *type_name() const noexcept{
+    char const *type_name() const noexcept
+    {
         switch (type_id()) {
         case phy_small_id:
             switch (get_unsigned_integer()) {
@@ -1569,7 +1767,7 @@ public:
         case phy_map_ptr_id: return "Map";
         case phy_bytes_ptr_id: return "Bytes";
         default:
-            if (tt_likely(is_phy_float())) {
+            if (is_phy_float()) {
                 return "Float";
             } else {
                 tt_no_default;
@@ -1577,7 +1775,8 @@ public:
         }
     }
 
-    size_t size() const{
+    size_t size() const
+    {
         switch (type_id()) {
         case phy_string_id: return (u64 >> 40) & 0xff;
         case phy_string_ptr_id: return get_pointer<std::string>()->size();
@@ -1588,8 +1787,9 @@ public:
         }
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    typename map::const_iterator map_begin() const noexcept {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    typename map::const_iterator map_begin() const noexcept
+    {
         if (is_phy_map_ptr()) {
             return get_pointer<datum_impl::map>()->begin();
         } else {
@@ -1597,8 +1797,9 @@ public:
         }
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    typename map::const_iterator map_end() const noexcept {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    typename map::const_iterator map_end() const noexcept
+    {
         if (is_phy_map_ptr()) {
             return get_pointer<datum_impl::map>()->end();
         } else {
@@ -1606,17 +1807,20 @@ public:
         }
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    typename vector::const_iterator vector_begin() const noexcept {
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    typename vector::const_iterator vector_begin() const noexcept
+    {
         if (is_phy_vector_ptr()) {
             return get_pointer<datum_impl::vector>()->begin();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("vector_begin() expect datum to be a vector, but it is a {}.", this->type_name());
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "vector_begin() expect datum to be a vector, but it is a {}.", this->type_name());
         }
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    typename vector::const_iterator vector_end() const noexcept{
+    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    typename vector::const_iterator vector_end() const noexcept
+    {
         if (is_phy_vector_ptr()) {
             return get_pointer<datum_impl::vector>()->end();
         } else {
@@ -1624,27 +1828,25 @@ public:
         }
     }
 
-    size_t hash() const noexcept{
+    size_t hash() const noexcept
+    {
         if (is_phy_float()) {
             return std::hash<double>{}(f64);
-        } else if (tt_unlikely(is_phy_pointer())) {
-            switch (type_id()) {
-            case phy_string_ptr_id:
-                return std::hash<std::string>{}(*get_pointer<std::string>());
-            case phy_url_ptr_id:
-                return std::hash<URL>{}(*get_pointer<URL>());
+        } else if (is_phy_pointer()) {
+            [[unlikely]] switch (type_id())
+            {
+            case phy_string_ptr_id: return std::hash<std::string>{}(*get_pointer<std::string>());
+            case phy_url_ptr_id: return std::hash<URL>{}(*get_pointer<URL>());
             case phy_vector_ptr_id:
                 return std::accumulate(vector_begin(), vector_end(), size_t{0}, [](size_t a, auto x) {
                     return a ^ x.hash();
-                    });
+                });
             case phy_map_ptr_id:
                 return std::accumulate(map_begin(), map_end(), size_t{0}, [](size_t a, auto x) {
                     return a ^ (x.first.hash() ^ x.second.hash());
-                    });
-            case phy_decimal_ptr_id:
-                return std::hash<decimal>{}(*get_pointer<decimal>());
-            case phy_bytes_ptr_id:
-                return std::hash<bstring>{}(*get_pointer<bstring>());
+                });
+            case phy_decimal_ptr_id: return std::hash<decimal>{}(*get_pointer<decimal>());
+            case phy_bytes_ptr_id: return std::hash<bstring>{}(*get_pointer<bstring>());
             default: tt_no_default;
             }
         } else {
@@ -1652,39 +1854,40 @@ public:
         }
     }
 
-    datum_impl &operator++() {
+    datum_impl &operator++()
+    {
         if (!this->is_numeric()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '++' value {} of type {}",
-                this->repr(), this->type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '++' value {} of type {}", this->repr(), this->type_name());
         }
 
         return *this += 1;
     }
 
-    datum_impl &operator--() {
+    datum_impl &operator--()
+    {
         if (!this->is_numeric()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '--' value {} of type {}",
-                this->repr(), this->type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '--' value {} of type {}", this->repr(), this->type_name());
         }
 
         return *this -= 1;
     }
 
-    datum_impl operator++(int) {
+    datum_impl operator++(int)
+    {
         auto tmp = *this;
         ++*this;
         return tmp;
     }
 
-    datum_impl operator--(int) {
+    datum_impl operator--(int)
+    {
         auto tmp = *this;
         --*this;
         return tmp;
     }
 
-    datum_impl &operator+=(datum_impl const &rhs) {
+    datum_impl &operator+=(datum_impl const &rhs)
+    {
         if (this->is_vector()) {
             this->push_back(rhs);
         } else {
@@ -1693,111 +1896,111 @@ public:
         return *this;
     }
 
-    datum_impl &operator-=(datum_impl const &rhs) {
+    datum_impl &operator-=(datum_impl const &rhs)
+    {
         return *this = *this - rhs;
     }
 
-    datum_impl &operator*=(datum_impl const &rhs) {
+    datum_impl &operator*=(datum_impl const &rhs)
+    {
         return *this = *this * rhs;
     }
 
-    datum_impl &operator/=(datum_impl const &rhs) {
+    datum_impl &operator/=(datum_impl const &rhs)
+    {
         return *this = *this / rhs;
     }
 
-    datum_impl &operator%=(datum_impl const &rhs) {
+    datum_impl &operator%=(datum_impl const &rhs)
+    {
         return *this = *this % rhs;
     }
 
-    datum_impl &operator<<=(datum_impl const &rhs) {
+    datum_impl &operator<<=(datum_impl const &rhs)
+    {
         return *this = *this << rhs;
     }
 
-    datum_impl &operator>>=(datum_impl const &rhs) {
+    datum_impl &operator>>=(datum_impl const &rhs)
+    {
         return *this = *this >> rhs;
     }
 
-    datum_impl &operator&=(datum_impl const &rhs) {
+    datum_impl &operator&=(datum_impl const &rhs)
+    {
         return *this = *this & rhs;
     }
 
-    datum_impl &operator|=(datum_impl const &rhs) {
+    datum_impl &operator|=(datum_impl const &rhs)
+    {
         return *this = *this | rhs;
     }
 
-    datum_impl &operator^=(datum_impl const &rhs) {
+    datum_impl &operator^=(datum_impl const &rhs)
+    {
         return *this = *this ^ rhs;
     }
 
-    friend datum_impl operator~(datum_impl const &rhs) {
+    friend datum_impl operator~(datum_impl const &rhs)
+    {
         if (rhs.is_integer()) {
             return datum_impl{~static_cast<int64_t>(rhs)};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't bit-wise negate '~' value {} of type {}",
-                rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't bit-wise negate '~' value {} of type {}", rhs.repr(), rhs.type_name());
         }
     }
 
-    friend datum_impl operator-(datum_impl const &rhs) {
+    friend datum_impl operator-(datum_impl const &rhs)
+    {
         if (rhs.is_integer()) {
             return datum_impl{-static_cast<int64_t>(rhs)};
         } else if (rhs.is_decimal()) {
-             return datum_impl{-static_cast<decimal>(rhs)};
+            return datum_impl{-static_cast<decimal>(rhs)};
         } else if (rhs.is_float()) {
             return datum_impl{-static_cast<double>(rhs)};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic negate '-' value {} of type {}",
-                rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic negate '-' value {} of type {}", rhs.repr(), rhs.type_name());
         }
     }
 
-    friend datum_impl operator+(datum_impl const &rhs) {
+    friend datum_impl operator+(datum_impl const &rhs)
+    {
         if (rhs.is_numeric()) {
             return rhs;
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic posgate '+' value {} of type {}",
-                rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic posgate '+' value {} of type {}", rhs.repr(), rhs.type_name());
         }
     }
 
-    friend bool operator==(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+    friend bool operator==(datum_impl const &lhs, datum_impl const &rhs) noexcept
+    {
         switch (lhs.type_id()) {
-        case datum_impl::phy_small_id:
-            return rhs.is_phy_small() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
+        case datum_impl::phy_small_id: return rhs.is_phy_small() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
         case datum_impl::phy_integer_id:
         case datum_impl::phy_integer_ptr_id:
             return (
                 (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) ||
                 (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
-                (rhs.is_integer() && static_cast<int64_t>(lhs) == static_cast<int64_t>(rhs))
-            );
+                (rhs.is_integer() && static_cast<int64_t>(lhs) == static_cast<int64_t>(rhs)));
         case datum_impl::phy_decimal_id:
         case datum_impl::phy_decimal_ptr_id:
             return (
                 (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) ||
                 (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
-                (rhs.is_integer() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs))
-            );
-        case datum_impl::phy_ymd_id:
-            return rhs.is_ymd() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
+                (rhs.is_integer() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)));
+        case datum_impl::phy_ymd_id: return rhs.is_ymd() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
         case datum_impl::phy_string_id:
         case datum_impl::phy_string_ptr_id:
             return (
                 (rhs.is_string() && static_cast<std::string>(lhs) == static_cast<std::string>(rhs)) ||
-                (rhs.is_url() && static_cast<URL>(lhs) == static_cast<URL>(rhs))
-                );
+                (rhs.is_url() && static_cast<URL>(lhs) == static_cast<URL>(rhs)));
         case datum_impl::phy_url_ptr_id:
             return (rhs.is_url() || rhs.is_string()) && static_cast<URL>(lhs) == static_cast<URL>(rhs);
         case datum_impl::phy_vector_ptr_id:
             return rhs.is_vector() && *lhs.get_pointer<datum_impl::vector>() == *rhs.get_pointer<datum_impl::vector>();
         case datum_impl::phy_map_ptr_id:
             return rhs.is_map() && *lhs.get_pointer<datum_impl::map>() == *rhs.get_pointer<datum_impl::map>();
-        case datum_impl::phy_bytes_ptr_id:
-            return
-                (rhs.is_bytes() && static_cast<bstring>(lhs) == static_cast<bstring>(rhs));
+        case datum_impl::phy_bytes_ptr_id: return (rhs.is_bytes() && static_cast<bstring>(lhs) == static_cast<bstring>(rhs));
         default:
             if (lhs.is_phy_float()) {
                 return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
@@ -1807,7 +2010,8 @@ public:
         }
     }
 
-    friend bool operator<(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+    friend bool operator<(datum_impl const &lhs, datum_impl const &rhs) noexcept
+    {
         switch (lhs.type_id()) {
         case datum_impl::phy_small_id:
             if (lhs.is_bool() && rhs.is_bool()) {
@@ -1889,27 +2093,32 @@ public:
         }
     }
 
-    friend bool operator!=(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+    friend bool operator!=(datum_impl const &lhs, datum_impl const &rhs) noexcept
+    {
         return !(lhs == rhs);
     }
 
-    friend bool operator>(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+    friend bool operator>(datum_impl const &lhs, datum_impl const &rhs) noexcept
+    {
         return rhs < lhs;
     }
 
-    friend bool operator<=(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+    friend bool operator<=(datum_impl const &lhs, datum_impl const &rhs) noexcept
+    {
         return !(rhs < lhs);
     }
 
-    friend bool operator>=(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+    friend bool operator>=(datum_impl const &lhs, datum_impl const &rhs) noexcept
+    {
         return !(lhs < rhs);
     }
 
-    friend datum_impl operator+(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator+(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_float() || rhs.is_float()) {
             ttlet lhs_ = static_cast<double>(lhs);
             ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{ lhs_ + rhs_ };
+            return datum_impl{lhs_ + rhs_};
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             ttlet lhs_ = static_cast<decimal>(lhs);
@@ -1919,7 +2128,7 @@ public:
         } else if (lhs.is_integer() || rhs.is_integer()) {
             ttlet lhs_ = static_cast<long long int>(lhs);
             ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{ lhs_ + rhs_ };
+            return datum_impl{lhs_ + rhs_};
 
         } else if (lhs.is_string() && rhs.is_string()) {
             ttlet lhs_ = static_cast<std::string>(lhs);
@@ -1935,116 +2144,136 @@ public:
         } else if (lhs.is_map() && rhs.is_map()) {
             ttlet &lhs_ = *(lhs.get_pointer<datum_impl::map>());
             auto rhs_ = static_cast<datum_impl::map>(rhs);
-            for (ttlet &item: lhs_) {
+            for (ttlet &item : lhs_) {
                 rhs_.try_emplace(item.first, item.second);
             }
             return datum_impl{std::move(rhs_)};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't add '+' value {} of type {} to value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't add '+' value {} of type {} to value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend datum_impl operator-(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator-(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_float() || rhs.is_float()) {
             ttlet lhs_ = static_cast<double>(lhs);
             ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{ lhs_ - rhs_ };
+            return datum_impl{lhs_ - rhs_};
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             ttlet lhs_ = static_cast<decimal>(lhs);
             ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{ lhs_ - rhs_ };
+            return datum_impl{lhs_ - rhs_};
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             ttlet lhs_ = static_cast<long long int>(lhs);
             ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{ lhs_ - rhs_ };
+            return datum_impl{lhs_ - rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't subtract '-' value {} of type {} from value {} of type {}",
-                rhs.repr(), rhs.type_name(), lhs.repr(), lhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't subtract '-' value {} of type {} from value {} of type {}",
+                rhs.repr(),
+                rhs.type_name(),
+                lhs.repr(),
+                lhs.type_name());
         }
     }
 
-    friend datum_impl operator*(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator*(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_float() || rhs.is_float()) {
             ttlet lhs_ = static_cast<double>(lhs);
             ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{ lhs_ * rhs_ };
+            return datum_impl{lhs_ * rhs_};
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             ttlet lhs_ = static_cast<decimal>(lhs);
             ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{ lhs_ * rhs_ };
+            return datum_impl{lhs_ * rhs_};
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             ttlet lhs_ = static_cast<long long int>(lhs);
             ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{ lhs_ * rhs_ };
+            return datum_impl{lhs_ * rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't multiply '*' value {} of type {} with value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't multiply '*' value {} of type {} with value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend datum_impl operator/(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator/(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_float() || rhs.is_float()) {
             ttlet lhs_ = static_cast<double>(lhs);
             ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{ lhs_ / rhs_ };
+            return datum_impl{lhs_ / rhs_};
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             ttlet lhs_ = static_cast<decimal>(lhs);
             ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{ lhs_ / rhs_ };
+            return datum_impl{lhs_ / rhs_};
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             ttlet lhs_ = static_cast<long long int>(lhs);
             ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{ lhs_ / rhs_ };
+            return datum_impl{lhs_ / rhs_};
 
         } else if (lhs.is_url() && (rhs.is_url() || rhs.is_string())) {
             ttlet lhs_ = static_cast<URL>(lhs);
             ttlet rhs_ = static_cast<URL>(rhs);
-            return datum_impl{ lhs_ / rhs_ };
+            return datum_impl{lhs_ / rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't divide '/' value {} of type {} by value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't divide '/' value {} of type {} by value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend datum_impl operator%(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator%(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_float() || rhs.is_float()) {
             ttlet lhs_ = static_cast<double>(lhs);
             ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{ fmod(lhs_, rhs_) };
+            return datum_impl{fmod(lhs_, rhs_)};
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             ttlet lhs_ = static_cast<decimal>(lhs);
             ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{ lhs_ % rhs_ };
+            return datum_impl{lhs_ % rhs_};
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             ttlet lhs_ = static_cast<long long int>(lhs);
             ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{ lhs_ % rhs_ };
+            return datum_impl{lhs_ % rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't take modulo '%' value {} of type {} by value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't take modulo '%' value {} of type {} by value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend datum_impl operator<<(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator<<(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_integer() && rhs.is_integer()) {
             ttlet lhs_ = static_cast<uint64_t>(lhs);
             ttlet rhs_ = static_cast<int64_t>(rhs);
@@ -2062,13 +2291,17 @@ public:
             }
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't logical shift-left '<<' value {} of type {} with value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't logical shift-left '<<' value {} of type {} with value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend datum_impl operator>>(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator>>(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_integer() && rhs.is_integer()) {
             ttlet lhs_ = static_cast<uint64_t>(lhs);
             ttlet rhs_ = static_cast<int64_t>(rhs);
@@ -2085,73 +2318,95 @@ public:
             }
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic shift-right '>>' value {} of type {} with value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't arithmetic shift-right '>>' value {} of type {} with value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend datum_impl operator&(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator&(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_integer() && rhs.is_integer()) {
             ttlet lhs_ = static_cast<uint64_t>(lhs);
             ttlet rhs_ = static_cast<uint64_t>(rhs);
             return datum_impl{lhs_ & rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't AND '&' value {} of type {} with value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't AND '&' value {} of type {} with value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend datum_impl operator|(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator|(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_integer() && rhs.is_integer()) {
             ttlet lhs_ = static_cast<uint64_t>(lhs);
             ttlet rhs_ = static_cast<uint64_t>(rhs);
             return datum_impl{lhs_ | rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't OR '|' value {} of type {} with value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't OR '|' value {} of type {} with value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend datum_impl operator^(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl operator^(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_integer() && rhs.is_integer()) {
             ttlet lhs_ = static_cast<uint64_t>(lhs);
             ttlet rhs_ = static_cast<uint64_t>(rhs);
             return datum_impl{lhs_ ^ rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't XOR '^' value {} of type {} with value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't XOR '^' value {} of type {} with value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
-    friend std::string to_string(datum_impl const &d) {
+    friend std::string to_string(datum_impl const &d)
+    {
         return static_cast<std::string>(d);
     }
 
-    friend std::ostream &operator<<(std::ostream &os, datum_impl const &d) {
+    friend std::ostream &operator<<(std::ostream &os, datum_impl const &d)
+    {
         return os << static_cast<std::string>(d);
     }
 
-    friend void swap(datum_impl &lhs, datum_impl &rhs) noexcept {
+    friend void swap(datum_impl &lhs, datum_impl &rhs) noexcept
+    {
         memswap(lhs, rhs);
     }
 
-    friend datum_impl pow(datum_impl const &lhs, datum_impl const &rhs) {
+    friend datum_impl pow(datum_impl const &lhs, datum_impl const &rhs)
+    {
         if (lhs.is_numeric() || rhs.is_numeric()) {
             ttlet lhs_ = static_cast<double>(lhs);
             ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{ std::pow(lhs_, rhs_) };
+            return datum_impl{std::pow(lhs_, rhs_)};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't raise to a power '**' value {} of type {} with value {} of type {}",
-                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
-            );
+            TTAURI_THROW_INVALID_OPERATION_ERROR(
+                "Can't raise to a power '**' value {} of type {} with value {} of type {}",
+                lhs.repr(),
+                lhs.type_name(),
+                rhs.repr(),
+                rhs.type_name());
         }
     }
 
@@ -2160,9 +2415,10 @@ public:
      *
      * @param lhs First datum.
      * @param rhs Second datum that will override the first datum.
-     * @return 
+     * @return
      */
-    friend datum_impl deep_merge(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+    friend datum_impl deep_merge(datum_impl const &lhs, datum_impl const &rhs) noexcept
+    {
         datum_impl result;
 
         if (lhs.is_map() && rhs.is_map()) {
@@ -2195,7 +2451,8 @@ public:
 };
 
 template<typename T, bool HasLargeObjects>
-inline bool will_cast_to(datum_impl<HasLargeObjects> const &rhs) {
+inline bool will_cast_to(datum_impl<HasLargeObjects> const &rhs)
+{
     if constexpr (std::is_same_v<T, bool>) {
         return true;
     } else if constexpr (std::is_same_v<T, char>) {
@@ -2224,12 +2481,19 @@ inline bool will_cast_to(datum_impl<HasLargeObjects> const &rhs) {
 }
 
 template<bool HasLargeObjects>
-bool operator<(typename datum_impl<HasLargeObjects>::map const &lhs, typename datum_impl<HasLargeObjects>::map const &rhs) noexcept {
-    auto lhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) { return x.first; });
-    auto rhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) { return x.first; });
+bool operator<(
+    typename datum_impl<HasLargeObjects>::map const &lhs,
+    typename datum_impl<HasLargeObjects>::map const &rhs) noexcept
+{
+    auto lhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) {
+        return x.first;
+    });
+    auto rhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) {
+        return x.first;
+    });
 
     if (lhs_keys == rhs_keys) {
-        for (ttlet &k: lhs_keys) {
+        for (ttlet &k : lhs_keys) {
             if (lhs.at(k) == rhs.at(k)) {
                 continue;
             } else if (lhs.at(k) < rhs.at(k)) {
@@ -2247,16 +2511,14 @@ bool operator<(typename datum_impl<HasLargeObjects>::map const &lhs, typename da
 using datum = datum_impl<true>;
 using sdatum = datum_impl<false>;
 
-}
+} // namespace tt
 
 namespace std {
 
 template<bool HasLargeObjects>
-inline size_t hash<tt::datum_impl<HasLargeObjects>>::operator()(tt::datum_impl<HasLargeObjects> const &value) const {
+inline size_t hash<tt::datum_impl<HasLargeObjects>>::operator()(tt::datum_impl<HasLargeObjects> const &value) const
+{
     return value.hash();
 }
 
-
-
-}
-
+} // namespace std
