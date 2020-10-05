@@ -18,19 +18,30 @@ namespace tt {
 #define tt_not_implemented debugger_abort("tt_not_implemented");
 #define tt_overflow debugger_abort("overflow");
 
+//#define tt_assert2(expression, msg)\
+//    do {\
+//        if (tt_unlikely(!(expression))) {\
+//            debugger_abort(msg);\
+//        }\
+//    } while (false)
+//
+//#define tt_assert(expression) tt_assert2(expression, # expression)
+
+
 /** Assert if expression is true.
  * Independent of built type this macro will always check and abort on fail.
  */
-#define tt_assert2(expression, msg)\
+#define tt_assert(expression, ...)\
     do {\
         if (tt_unlikely(!(expression))) {\
-            debugger_abort(msg);\
+            if constexpr (__VA_OPT__(!) false) {\
+                debugger_abort(__VA_ARGS__);\
+            } else {\
+                debugger_abort(# expression);\
+            }\
         }\
     } while (false)
 
- /** Assert if expression is true.
- * Independent of built type this macro will always check and abort on fail.
- */
-#define tt_assert(expression) tt_assert2(expression, # expression)
+
 
 }

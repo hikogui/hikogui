@@ -51,6 +51,8 @@ public:
     unfair_recursive_mutex() = default;
     ~unfair_recursive_mutex() = default;
 
+    /** This function should be used in tt_assume() to check if the lock is held by current thread.
+     */
     [[nodiscard]] bool is_locked_by_current_thread() const noexcept {
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
@@ -58,7 +60,7 @@ public:
         //
         // This only works for comparing the owner with the current thread, it would
         // not work to check the owner with a thread_id of another thread.
-        return owner.load(std::memory_order::memory_order_relaxed) == current_thread_id();
+        return owner.load(std::memory_order::memory_order_acquire) == current_thread_id();
     }
 
     /**
