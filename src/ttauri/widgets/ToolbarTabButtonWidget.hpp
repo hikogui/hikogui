@@ -85,6 +85,7 @@ public:
 
         drawButton(context);
         drawLabel(context);
+        drawFocusLine(context);
         Widget::draw(std::move(context), display_time_point);
     }
 
@@ -142,35 +143,64 @@ private:
     aarect button_rectangle;
     std::unique_ptr<TextCell> label_cell;
 
-    void drawButton(DrawContext drawContext) noexcept
+    void drawFocusLine(DrawContext const &context) noexcept
     {
-        if (hover || *value == ActiveValue) {
-            drawContext.fillColor = theme->fillColor(_semantic_layer - 2);
-            drawContext.color = drawContext.fillColor;
+        if (focus && window.active && *value == ActiveValue) {
+            tt_assume(dynamic_cast<class ToolbarWidget *>(parent) != nullptr);
+
+            // Draw the focus line over the full width of the window at the bottom
+            // of the toolbar.
+            auto parentContext = parent->makeDrawContext(context);
+
+            // Draw the line above every other direct child of the toolbar, and between
+            // the selected-tab (0.6) and unselected-tabs (0.8).
+            parentContext.transform = mat::T(0.0f, 0.0f, 1.7f) * parentContext.transform;
+
+            parentContext.fillColor = theme->accentColor;
+            parentContext.drawFilledQuad(aarect{
+                parent->rectangle().x(), parent->rectangle().y(),
+                parent->rectangle().width(), 1.0f
+            });
+        }
+    }
+
+    void drawButton(DrawContext context) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        if (focus && window.active) {
+            // The focus line will be placed at 0.7.
+            context.transform = mat::T(0.0f, 0.0f, 0.8f) * context.transform;
         } else {
-            drawContext.fillColor = theme->fillColor(_semantic_layer - 1);
-            drawContext.color = drawContext.fillColor;
+            context.transform = mat::T(0.0f, 0.0f, 0.6f) * context.transform;
+        }
+
+        if (hover || *value == ActiveValue) {
+            context.fillColor = theme->fillColor(_semantic_layer - 2);
+            context.color = context.fillColor;
+        } else {
+            context.fillColor = theme->fillColor(_semantic_layer - 1);
+            context.color = context.fillColor;
         }
 
         if (focus && window.active) {
-            drawContext.color = theme->accentColor;
+            context.color = theme->accentColor;
         }
 
-        drawContext.cornerShapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
-        drawContext.drawBoxIncludeBorder(button_rectangle);
+        context.cornerShapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
+        context.drawBoxIncludeBorder(button_rectangle);
     }
 
-    void drawLabel(DrawContext drawContext) noexcept
+    void drawLabel(DrawContext context) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        drawContext.transform = mat::T(0.0f, 0.0f, 0.1f) * drawContext.transform;
+        context.transform = mat::T(0.0f, 0.0f, 0.9f) * context.transform;
 
         if (*enabled) {
-            drawContext.color = theme->labelStyle.color;
+            context.color = theme->labelStyle.color;
         }
 
-        label_cell->draw(drawContext, rectangle(), Alignment::MiddleCenter, base_line(), true);
+        label_cell->draw(context, rectangle(), Alignment::MiddleCenter, base_line(), true);
     }
 };
 
