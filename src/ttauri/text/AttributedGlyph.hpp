@@ -81,7 +81,7 @@ struct AttributedGlyph {
         case GeneralCharacterClass::Letter: return 1;
         case GeneralCharacterClass::Unknown: return 2;
         case GeneralCharacterClass::WhiteSpace: return 3;
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 

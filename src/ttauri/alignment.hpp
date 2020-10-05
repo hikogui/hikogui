@@ -38,23 +38,23 @@ inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs) noexc
         case HorizontalAlignment::Left: return Alignment::TopLeft;
         case HorizontalAlignment::Center: return Alignment::TopCenter;
         case HorizontalAlignment::Right: return Alignment::TopRight;
-        default: tt_no_default;
+        default: tt_no_default();
         }
     case VerticalAlignment::Middle:
         switch (rhs) {
         case HorizontalAlignment::Left: return Alignment::MiddleLeft;
         case HorizontalAlignment::Center: return Alignment::MiddleCenter;
         case HorizontalAlignment::Right: return Alignment::MiddleRight;
-        default: tt_no_default;
+        default: tt_no_default();
         }
     case VerticalAlignment::Bottom:
         switch (rhs) {
         case HorizontalAlignment::Left: return Alignment::BottomLeft;
         case HorizontalAlignment::Center: return Alignment::BottomCenter;
         case HorizontalAlignment::Right: return Alignment::BottomRight;
-        default: tt_no_default;
+        default: tt_no_default();
         }
-    default: tt_no_default;
+    default: tt_no_default();
     }
 }
 
@@ -75,7 +75,7 @@ inline bool operator==(Alignment lhs, HorizontalAlignment rhs) noexcept
     case HorizontalAlignment::Right:
         return lhs == Alignment::TopRight || lhs == Alignment::MiddleRight || lhs == Alignment::BottomRight;
 
-    default: tt_no_default;
+    default: tt_no_default();
     }
 }
 
@@ -90,7 +90,7 @@ inline bool operator==(Alignment lhs, VerticalAlignment rhs) noexcept
     case VerticalAlignment::Bottom:
         return lhs == Alignment::BottomLeft || lhs == Alignment::BottomCenter || lhs == Alignment::BottomRight;
 
-    default: tt_no_default;
+    default: tt_no_default();
     }
 }
 
@@ -133,7 +133,7 @@ public:
         case VerticalAlignment::Top: return top + offset;
         case VerticalAlignment::Middle: return (bottom + top) * 0.5f + offset;
         }
-        tt_no_default;
+        tt_no_default();
     }
 
     [[nodiscard]] auto operator==(relative_base_line const &rhs) const noexcept

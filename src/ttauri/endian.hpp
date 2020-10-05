@@ -24,7 +24,7 @@ template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_
         } else if constexpr (sizeof(T) == sizeof(uint16_t)) {
             return static_cast<T>(__builtin_bswap16(static_cast<uint16_t>(x)));
         } else {
-            tt_no_default;
+            tt_no_default();
         }
 #elif TT_COMPILER == TT_CC_MSVC
         if constexpr (sizeof(T) == sizeof(uint64_t)) {
@@ -34,7 +34,7 @@ template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_
         } else if constexpr (sizeof(T) == sizeof(unsigned short)) {
             return static_cast<T>(_byteswap_ushort(static_cast<unsigned short>(x)));
         } else {
-            tt_no_default;
+            tt_no_default();
         }
 #else
 #error "Byteswap not implemented for this compiler."
@@ -59,7 +59,7 @@ template<typename T, std::enable_if_t<std::is_floating_point_v<T>,T> = 0>
         utmp = byte_swap(utmp);
         return std::bit_cast<double>(x);
     } else {
-        tt_no_default;
+        tt_no_default();
     }
 }
 

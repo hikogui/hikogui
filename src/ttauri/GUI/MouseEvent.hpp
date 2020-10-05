@@ -67,7 +67,7 @@ struct MouseEvent {
         case MouseEvent::Type::Drag: type_s = "drag"; break;
         case MouseEvent::Type::ButtonDown: type_s = "down"; break;
         case MouseEvent::Type::ButtonUp: type_s = "up"; break;
-        default: tt_no_default;
+        default: tt_no_default();
         }
 
         return fmt::format("<mouse {} {}>", type_s, rhs.position);

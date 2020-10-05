@@ -32,7 +32,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
             _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
 
         } else {
-            tt_no_default;
+            tt_no_default();
         }
         return true;
     } else {
@@ -66,7 +66,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
             maximizeRectangle = aarect{
                 vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
         } else {
-            tt_no_default;
+            tt_no_default();
         }
 
         closeWindowGlyph = to_FontGlyphIDs(TTauriIcon::CloseWindow);
@@ -80,7 +80,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
             maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMacOS);
             restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMacOS);
         } else {
-            tt_no_default;
+            tt_no_default();
         }
 
         ttlet closeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(closeWindowGlyph);
@@ -211,7 +211,7 @@ void WindowTrafficLightsWidget::draw(DrawContext context, hires_utc_clock::time_
         drawWindows(context, display_time_point);
 
     } else {
-        tt_no_default;
+        tt_no_default();
     }
 
     Widget::draw(std::move(context), display_time_point);
@@ -233,7 +233,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
             switch (window.size) {
             case Window::Size::Normal: window.maximizeWindow(); break;
             case Window::Size::Maximized: window.normalizeWindow(); break;
-            default: tt_no_default;
+            default: tt_no_default();
             }
         }
     }

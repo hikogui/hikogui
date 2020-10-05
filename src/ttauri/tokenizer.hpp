@@ -51,7 +51,7 @@ constexpr char const *to_string(tokenizer_name_t name) noexcept {
     case tokenizer_name_t::FloatLiteral: return "FloatLiteral";
     case tokenizer_name_t::Operator: return "Operator";
     case tokenizer_name_t::End: return "End";
-    default: tt_no_default;
+    default: tt_no_default();
     }
 }
 

@@ -46,7 +46,7 @@ constexpr u8string RFC1924_alphabet =
         } else if (value < 62) {
             return u'a' + static_cast<char8_t>(value - 36);
         } else {
-            tt_no_default;
+            tt_no_default();
         }
     }
 }

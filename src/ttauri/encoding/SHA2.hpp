@@ -36,7 +36,7 @@ struct state {
         case 5: return f;
         case 6: return g;
         case 7: return h;
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 

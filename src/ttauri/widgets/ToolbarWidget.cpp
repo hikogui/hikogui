@@ -30,7 +30,7 @@ Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<
         using enum HorizontalAlignment;
     case Left: left_children.push_back(&widget); break;
     case Right: right_children.push_back(&widget); break;
-    default: tt_no_default;
+    default: tt_no_default();
     }
 
     return widget;

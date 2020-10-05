@@ -126,7 +126,7 @@ VkBool32 GUISystem_vulkan::debugUtilsMessageCallback(
         LOG_ERROR("Vulkan: {}", pCallbackData->pMessage);
         std::abort();
     default:
-        tt_no_default;
+        tt_no_default();
     }
 
     return VK_FALSE;

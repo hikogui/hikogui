@@ -83,7 +83,7 @@ struct BezierPoint {
                 break;
 
             default:
-                tt_no_default;
+                tt_no_default();
             }
 
             previousPreviousPoint = previousPoint;

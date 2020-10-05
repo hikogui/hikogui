@@ -76,7 +76,7 @@ bstring decode_base64(std::string_view src)
         dst.push_back(static_cast<std::byte>(group >> 8 & 0xff));
         return dst;
     default:
-        tt_no_default;
+        tt_no_default();
     }
 
     tt_unreachable();

@@ -265,7 +265,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         break;
 
     default:
-        tt_no_default;
+        tt_no_default();
     }
 }
 

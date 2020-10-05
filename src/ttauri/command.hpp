@@ -79,7 +79,7 @@ constexpr char const *to_const_string(command rhs) noexcept
     case command::gui_left: return "gui.left";
     case command::gui_right: return "gui.right";
     default:
-        tt_no_default;
+        tt_no_default();
     }
 }
 

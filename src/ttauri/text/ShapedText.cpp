@@ -126,7 +126,7 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noe
     } else if (alignment == HorizontalAlignment::Center) {
         return width * 0.5f - line_width * 0.5f;
     } else {
-        tt_no_default;
+        tt_no_default();
     }
 }
 
@@ -167,7 +167,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
             start_y_downward = 0.0;
         }
     } else {
-        tt_no_default;
+        tt_no_default();
     }
     
     {

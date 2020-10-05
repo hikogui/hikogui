@@ -645,7 +645,7 @@ void BON8_encoder::add(datum const &value) {
                 return decode_BON8_object(ptr, last);
 
             default:
-                tt_no_default;
+                tt_no_default();
             }
         }
     }

@@ -86,7 +86,7 @@ static void BidiP1_P3(BidiContext &context) noexcept
             isolateLevel = 0;
             parBidiClass = BidiClass::Unknown;
             break;
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 
@@ -204,7 +204,7 @@ static void BidiX1_X8(BidiContext &context) noexcept
             case BidiClass::FSI:
                 // X5c. Determine paragraph-level of text up to matching PDI.
                 // if 0 goto BidiClass::LRI, if 1 goto BidiClass::RLI.
-                tt_not_implemented;
+                tt_not_implemented();
                 break;
 
             case BidiClass::PDI: // X6a. Terminating Isolates
@@ -241,7 +241,7 @@ static void BidiX1_X8(BidiContext &context) noexcept
 
             case BidiClass::B: // X8. End of Paragraph
                                         // This should never appear in this loop.
-                tt_no_default;
+                tt_no_default();
 
             case BidiClass::BN: // X6. Ignore
                 break;
@@ -496,7 +496,7 @@ static void BidiW(BidiContext &context) noexcept
 
 static void BidiN0(BidiIsolateSequence &sequence) noexcept
 {
-    tt_not_implemented;
+    tt_not_implemented();
 }
 
 static void BidiN1(BidiIsolateSequence &sequence) noexcept
@@ -553,7 +553,7 @@ static void BidiN1(BidiIsolateSequence &sequence) noexcept
             break;
 
         default:
-            tt_no_default;
+            tt_no_default();
         }
     }
 

@@ -27,7 +27,7 @@ WindowWidget::WindowWidget(Window &window, GridWidgetDelegate *delegate, Label t
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         _toolbar->makeWidget<WindowTrafficLightsWidget>();
     } else {
-        tt_no_default;
+        tt_no_default();
     }
 
     _content = &makeWidget<GridWidget>(delegate);

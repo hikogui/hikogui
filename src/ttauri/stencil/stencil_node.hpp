@@ -50,7 +50,7 @@ struct stencil_node {
     *         was encountered. Otherwise data returned from a \#return statement.
     */
     [[nodiscard]] virtual datum evaluate(formula_evaluation_context &context) {
-        tt_no_default;
+        tt_no_default();
     }
 
     [[nodiscard]] std::string evaluate_output(formula_evaluation_context &context) {

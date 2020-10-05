@@ -176,7 +176,7 @@ public:
             case 0: return GlyphID{(value >> 16) & GlyphID::mask};
             case 1: return GlyphID{(value >> 32) & GlyphID::mask};
             case 2: return GlyphID{(value >> 48) & GlyphID::mask};
-            default: tt_no_default;
+            default: tt_no_default();
             }
         }
     }

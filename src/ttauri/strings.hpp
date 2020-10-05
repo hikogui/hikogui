@@ -192,7 +192,7 @@ namespace tt {
     } else if (nibble <= 15) {
         return 'a' + nibble - 10;
     } else {
-        tt_no_default;
+        tt_no_default();
     }
 }
 

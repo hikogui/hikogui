@@ -33,7 +33,7 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_type_t const &rhs)
     case glob_token_type_t::AnyString: lhs << "AnyString"; break;
     case glob_token_type_t::AnyCharacter: lhs << "AnyCharacter"; break;
     case glob_token_type_t::AnyDirectory: lhs << "AnyDirectory"; break;
-    default: tt_no_default;
+    default: tt_no_default();
     }
     return lhs;
 }
@@ -291,7 +291,7 @@ inline glob_token_list_t parseGlob(std::string_view glob)
             break;
 
         default:
-            tt_no_default;
+            tt_no_default();
         }
 
         i++;
@@ -329,7 +329,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
     case glob_match_result_t::No: break;\
     case glob_match_result_t::Match: return tmp;\
     case glob_match_result_t::Partial: out = tmp; break;\
-    default: tt_no_default;\
+    default: tt_no_default();\
     }
 
     // result may be assigned Partial by MATCH_GLOB_RECURSE.
@@ -402,7 +402,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
         return result;
 
     default:
-        tt_no_default;
+        tt_no_default();
     }
 #undef MATCH_GLOB_RECURSE
 }
@@ -451,7 +451,7 @@ inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_co
             r += '/';
             break;
         default:
-            tt_no_default;
+            tt_no_default();
         }
     }
     return r;

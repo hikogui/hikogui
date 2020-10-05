@@ -78,7 +78,7 @@ struct BezierCurve {
             break;
 
         default:
-            tt_no_default;
+            tt_no_default();
         }
     }
 
@@ -107,7 +107,7 @@ struct BezierCurve {
         case Type::Linear: return bezierPointAt(P1, P2, t);
         case Type::Quadratic: return bezierPointAt(P1, C1, P2, t);
         case Type::Cubic: return bezierPointAt(P1, C1, C2, P2, t);
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 
@@ -123,7 +123,7 @@ struct BezierCurve {
         case Type::Linear: return bezierTangentAt(P1, P2, t);
         case Type::Quadratic: return bezierTangentAt(P1, C1, P2, t);
         case Type::Cubic: return bezierTangentAt(P1, C1, C2, P2, t);
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 
@@ -136,7 +136,7 @@ struct BezierCurve {
         case Type::Linear: return bezierFindX(P1, P2, y);
         case Type::Quadratic: return bezierFindX(P1, C1, P2, y);
         case Type::Cubic: return bezierFindX(P1, C1, C2, P2, y);
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 
@@ -144,8 +144,8 @@ struct BezierCurve {
         switch (type) {
         case Type::Linear: return bezierFindTForNormalsIntersectingPoint(P1, P2, P);
         case Type::Quadratic: return bezierFindTForNormalsIntersectingPoint(P1, C1, P2, P);
-        case Type::Cubic: tt_no_default;
-        default: tt_no_default;
+        case Type::Cubic: tt_no_default();
+        default: tt_no_default();
         }
     }
 
@@ -228,7 +228,7 @@ struct BezierCurve {
         case Type::Linear: return linearSplit(t);
         case Type::Quadratic: return quadraticSplit(t);
         case Type::Cubic: return cubicSplit(t);
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 
@@ -264,7 +264,7 @@ struct BezierCurve {
         case Type::Linear: return bezierFlatness(P1, P2);
         case Type::Quadratic: return bezierFlatness(P1, C1, P2);
         case Type::Cubic: return bezierFlatness(P1, C1, C2, P2);
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 
@@ -298,7 +298,7 @@ struct BezierCurve {
         case BezierCurve::Type::Cubic:
             return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.C2 == rhs.C2) && (lhs.P2 == rhs.P2);
         default:
-            tt_no_default;
+            tt_no_default();
         }
     }
 

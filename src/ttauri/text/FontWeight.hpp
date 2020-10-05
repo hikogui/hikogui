@@ -78,7 +78,7 @@ inline ttlet FontWeight_from_string_table = std::unordered_map<std::string,FontW
     case FontWeight::ExtraBold: return "ExtraBold";
     case FontWeight::Black: return "Black";
     case FontWeight::ExtraBlack: return "ExtraBlack";
-    default: tt_no_default;
+    default: tt_no_default();
     }
 }
 

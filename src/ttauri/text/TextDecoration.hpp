@@ -38,7 +38,7 @@ inline ttlet TextDecoration_from_string_table = std::unordered_map<std::string,T
     case TextDecoration::Underline: return "underline"; 
     case TextDecoration::WavyUnderline: return "wavy-underline"; 
     case TextDecoration::StrikeThrough: return "strike-through";
-    default: tt_no_default;
+    default: tt_no_default();
     }
 }
 

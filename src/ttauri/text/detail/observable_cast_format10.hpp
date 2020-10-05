@@ -33,7 +33,7 @@ public:
     }
 
     virtual bool store(std::u8string const &new_value) noexcept override {
-        tt_no_default;
+        tt_no_default();
     }
 };
 

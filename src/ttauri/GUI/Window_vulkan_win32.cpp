@@ -354,7 +354,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
     case Cursor::Default: idc = idcArrow; break;
     case Cursor::Button: idc = idcHand; break;
     case Cursor::TextEdit: idc = idcIBeam; break;
-    default: tt_no_default;
+    default: tt_no_default();
     }
 
     SetCursor(idc);
@@ -600,7 +600,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         case HitBox::Type::Button: setCursor(Cursor::Button); return HTCLIENT;
         case HitBox::Type::Default: setCursor(Cursor::Default); return HTCLIENT;
         case HitBox::Type::Outside: currentCursor = Cursor::None; return HTCLIENT;
-        default: tt_no_default;
+        default: tt_no_default();
         }
         } break;
 
@@ -691,7 +691,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_MOUSELEAVE:
         break;
     default:
-        tt_no_default;
+        tt_no_default();
     }
 
     switch (uMsg) {
@@ -750,7 +750,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     default:
-        tt_no_default;
+        tt_no_default();
     }
 
     // Make sure we start tracking mouse events when the mouse has entered the window again.

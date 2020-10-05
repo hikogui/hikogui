@@ -79,7 +79,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
     case datum_type_t::Vector: lhs << "Vector"; break;
     case datum_type_t::YearMonthDay: lhs << "YearMonthDay"; break;
     case datum_type_t::Bytes: lhs << "Bytes"; break;
-    default: tt_no_default;
+    default: tt_no_default();
     }
     return lhs;
 }
@@ -361,7 +361,7 @@ private:
             case phy_map_ptr_id: delete get_pointer<datum_impl::map>(); break;
             case phy_decimal_ptr_id: delete get_pointer<decimal>(); break;
             case phy_bytes_ptr_id: delete get_pointer<bstring>(); break;
-            default: tt_no_default;
+            default: tt_no_default();
             }
         }
     }
@@ -410,7 +410,7 @@ private:
                 u64 = make_pointer(bytes_ptr_mask, p);
             } break;
 
-            default: tt_no_default;
+            default: tt_no_default();
             }
         }
     }
@@ -1106,7 +1106,7 @@ public:
             if (is_phy_float()) {
                 return static_cast<double>(*this) != 0.0;
             } else {
-                tt_no_default;
+                tt_no_default();
             };
         }
     }
@@ -1129,7 +1129,7 @@ public:
             if constexpr (HasLargeObjects) {
                 return *get_pointer<bstring>();
             } else {
-                tt_no_default;
+                tt_no_default();
             }
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR(
@@ -1148,7 +1148,7 @@ public:
             case small_false: return "false";
             case small_break: return "break";
             case small_continue: return "continue";
-            default: tt_no_default;
+            default: tt_no_default();
             }
 
         case phy_integer_id: return fmt::format("{}", static_cast<int64_t>(*this));
@@ -1158,7 +1158,7 @@ public:
             if constexpr (HasLargeObjects) {
                 return fmt::format("{}", static_cast<int64_t>(*this));
             } else {
-                tt_no_default;
+                tt_no_default();
             }
 
         case phy_string_id: {
@@ -1174,21 +1174,21 @@ public:
             if constexpr (HasLargeObjects) {
                 return *get_pointer<std::string>();
             } else {
-                tt_no_default;
+                tt_no_default();
             }
 
         case phy_url_ptr_id:
             if constexpr (HasLargeObjects) {
                 return to_string(*get_pointer<URL>());
             } else {
-                tt_no_default;
+                tt_no_default();
             }
 
         case phy_decimal_ptr_id:
             if constexpr (HasLargeObjects) {
                 return fmt::format("{}", static_cast<decimal>(*this));
             } else {
-                tt_no_default;
+                tt_no_default();
             }
 
         case phy_vector_ptr_id:
@@ -1204,7 +1204,7 @@ public:
                 r += "]";
                 return r;
             } else {
-                tt_no_default;
+                tt_no_default();
             }
 
         case phy_map_ptr_id:
@@ -1229,14 +1229,14 @@ public:
                 r += "}";
                 return r;
             } else {
-                tt_no_default;
+                tt_no_default();
             }
 
         case phy_bytes_ptr_id:
             if constexpr (HasLargeObjects) {
                 return to_pretty_string(*get_pointer<bstring>());
             } else {
-                tt_no_default;
+                tt_no_default();
             }
 
         default:
@@ -1247,7 +1247,7 @@ public:
                 }
                 return str;
             } else {
-                tt_no_default;
+                tt_no_default();
             }
         }
     }
@@ -1560,7 +1560,7 @@ public:
             case small_false: return "false";
             case small_break: return "break";
             case small_continue: return "continue";
-            default: tt_no_default;
+            default: tt_no_default();
             }
         case phy_integer_id:
         case phy_integer_ptr_id: return static_cast<std::string>(*this);
@@ -1577,7 +1577,7 @@ public:
             if (is_phy_float()) {
                 return static_cast<std::string>(*this);
             } else {
-                tt_no_default;
+                tt_no_default();
             }
         }
     }
@@ -1718,7 +1718,7 @@ public:
             case small_true: return datum_type_t::Boolean;
             case small_break: return datum_type_t::Break;
             case small_continue: return datum_type_t::Continue;
-            default: tt_no_default;
+            default: tt_no_default();
             }
 
         case phy_integer_id:
@@ -1736,7 +1736,7 @@ public:
             if (is_phy_float()) {
                 return datum_type_t::Float;
             } else {
-                tt_no_default;
+                tt_no_default();
             }
         }
     }
@@ -1752,7 +1752,7 @@ public:
             case small_true: return "Boolean";
             case small_break: return "Break";
             case small_continue: return "Continue";
-            default: tt_no_default;
+            default: tt_no_default();
             }
 
         case phy_integer_id:
@@ -1770,7 +1770,7 @@ public:
             if (is_phy_float()) {
                 return "Float";
             } else {
-                tt_no_default;
+                tt_no_default();
             }
         }
     }
@@ -1847,7 +1847,7 @@ public:
                 });
             case phy_decimal_ptr_id: return std::hash<decimal>{}(*get_pointer<decimal>());
             case phy_bytes_ptr_id: return std::hash<bstring>{}(*get_pointer<bstring>());
-            default: tt_no_default;
+            default: tt_no_default();
             }
         } else {
             return std::hash<uint64_t>{}(u64);
@@ -2005,7 +2005,7 @@ public:
             if (lhs.is_phy_float()) {
                 return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
             } else {
-                tt_no_default;
+                tt_no_default();
             }
         }
     }
@@ -2088,7 +2088,7 @@ public:
                     return lhs.type_order() < rhs.type_order();
                 }
             } else {
-                tt_no_default;
+                tt_no_default();
             }
         }
     }

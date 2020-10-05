@@ -116,7 +116,7 @@ enum GeneralCharacterClass {
     case BidiClass::RLI: return GeneralCharacterClass::Unknown;
     case BidiClass::FSI: return GeneralCharacterClass::Unknown;
     case BidiClass::PDI: return GeneralCharacterClass::Unknown;
-    default: tt_no_default;
+    default: tt_no_default();
     }
 }
 

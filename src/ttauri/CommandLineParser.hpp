@@ -188,7 +188,7 @@ public:
                             break; 
 
                         default:
-                            tt_no_default;
+                            tt_no_default();
                         }
                     }
                 }

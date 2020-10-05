@@ -26,7 +26,7 @@ inline std::ostream &operator<<(std::ostream &lhs, AudioDevice_state const &rhs)
     case AudioDevice_state::Disabled: return lhs << "DISABLED";
     case AudioDevice_state::NotPresent: return lhs << "NOT_PRESENT";
     case AudioDevice_state::Unplugged: return lhs << "UNPLUGGED";
-    default: tt_no_default;
+    default: tt_no_default();
     }
 }
 

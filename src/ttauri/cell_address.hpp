@@ -283,7 +283,7 @@ struct cell_address {
                         }
                         break;
 
-                    default: tt_no_default;
+                    default: tt_no_default();
                     }
 
                     if (c == ':') {
@@ -307,7 +307,7 @@ struct cell_address {
                         case part_t::Alignment:
                             TTAURI_THROW(parse_error("Unexpected third ':'"));
 
-                        default: tt_no_default;
+                        default: tt_no_default();
                         }
 
                     } else {
@@ -318,7 +318,7 @@ struct cell_address {
                 }
                 break;
 
-            default: tt_no_default;
+            default: tt_no_default();
             }
 
             if (consume) {

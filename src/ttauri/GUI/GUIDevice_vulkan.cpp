@@ -293,7 +293,7 @@ void GUIDevice_vulkan::initializeQuadIndexBuffer()
             case 3: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
             case 4: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
             case 5: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 3); break;
-            default: tt_no_default;
+            default: tt_no_default();
             }
         }
         flushAllocation(stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
@@ -621,7 +621,7 @@ static std::pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayo
         return { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer };
 
     default:
-        tt_no_default;
+        tt_no_default();
     }
 }
 

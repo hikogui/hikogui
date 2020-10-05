@@ -43,7 +43,7 @@ public:
         } else if constexpr (std::is_same_v<it_base_type, char8_t>) {
             return detail::utf8_to_utf32(it);
         } else {
-            tt_no_default;
+            tt_no_default();
         }
     }
 
@@ -61,7 +61,7 @@ public:
             while (*(--it) & 0xc0 == 0x80) {}
 
         } else {
-            tt_no_default;
+            tt_no_default();
         }
 
         return *this;
@@ -81,7 +81,7 @@ public:
             while (*(++it) & 0xc0 == 0x80) {}
 
         } else {
-            tt_no_default;
+            tt_no_default();
         }
 
         return *this;

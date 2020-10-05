@@ -309,7 +309,7 @@ public:
             x = (haystack.p0().x() + (haystack.width() * 0.5f)) - (needle.width() * 0.5f);
 
         } else {
-            tt_no_default;
+            tt_no_default();
         }
 
         float y;
@@ -323,7 +323,7 @@ public:
             y = (haystack.p0().y() + (haystack.height() * 0.5f)) - (needle.height() * 0.5f);
 
         } else {
-            tt_no_default;
+            tt_no_default();
         }
 
         return {vec::point(x, y), needle.extent()};

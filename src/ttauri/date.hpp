@@ -43,7 +43,7 @@ public:
         case 2: return date::month_day{last_month(), date::day{30}};
         case 3: return date::month_day{last_month(), date::day{30}};
         case 4: return date::month_day{last_month(), date::day{31}};
-        default: tt_no_default;
+        default: tt_no_default();
         }
     }
 

@@ -82,7 +82,7 @@ struct KeyboardEvent {
         case Type::PartialGrapheme: r += "PartialGrapheme="; break;
         case Type::Grapheme: r += "Grapheme="; break;
         case Type::Key: r += "Key="; break;
-        default: tt_no_default;
+        default: tt_no_default();
         }
 
         if (rhs.type == Type::PartialGrapheme || rhs.type == Type::Grapheme) {

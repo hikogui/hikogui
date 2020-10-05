@@ -241,7 +241,7 @@ void FontBook::post_process() noexcept
         }
     }
     // If a family exists, there must be at least one font variant available.
-    tt_no_default;
+    tt_no_default();
 }
 
 [[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, FontWeight weight, bool italic) const noexcept

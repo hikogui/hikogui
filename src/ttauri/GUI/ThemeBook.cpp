@@ -90,7 +90,7 @@ void ThemeBook::updateTheme() noexcept {
     } else if (std::ssize(themes) > 0) {
         theme = themes[0].get();
     } else {
-        tt_no_default;
+        tt_no_default();
     }
 
     LOG_INFO("Theme changed to {}, operating system mode {}", to_string(*theme), _themeMode);

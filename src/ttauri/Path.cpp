@@ -424,7 +424,7 @@ void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
             points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
             break;
         default:
-            tt_no_default;
+            tt_no_default();
         }
     }
 

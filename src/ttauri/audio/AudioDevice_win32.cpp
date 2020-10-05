@@ -83,7 +83,7 @@ AudioDevice_state AudioDevice_win32::state() const noexcept
     case DEVICE_STATE_UNPLUGGED:
         return AudioDevice_state::Unplugged;
     default:
-        tt_no_default;
+        tt_no_default();
     }
 }
 

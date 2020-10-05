@@ -164,7 +164,7 @@ public:
         } else if (alignment == VerticalAlignment::Middle) {
             return height * 0.5f - middleCapHeight() * 0.5f;
         } else {
-            tt_no_default;
+            tt_no_default();
         }
     }
 
@@ -181,7 +181,7 @@ public:
         } else if (alignment == VerticalAlignment::Middle) {
             return height - middleCapHeight() * 0.5f;
         } else {
-            tt_no_default;
+            tt_no_default();
         }
     }
 

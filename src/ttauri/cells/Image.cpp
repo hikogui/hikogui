@@ -34,7 +34,7 @@ Image::Image(Image const &other) noexcept
         image = std::monostate{};
 
     } else {
-        tt_no_default;
+        tt_no_default();
     }
 }
 
@@ -50,7 +50,7 @@ Image::Image(Image &&other) noexcept
         image = std::monostate{};
 
     } else {
-        tt_no_default;
+        tt_no_default();
     }
     other.image = std::monostate{};
 }
@@ -67,7 +67,7 @@ Image &Image::operator=(Image const &other) noexcept
         image = std::monostate{};
 
     } else {
-        tt_no_default;
+        tt_no_default();
     }
     return *this;
 }
@@ -84,7 +84,7 @@ Image &Image::operator=(Image &&other) noexcept
         image = std::monostate{};
     
     } else {
-        tt_no_default;
+        tt_no_default();
     }
     other.image = std::monostate{};
     return *this;
@@ -97,7 +97,7 @@ Image &Image::operator=(Image &&other) noexcept
     } else if (ttlet glyph = std::get_if<FontGlyphIDs>(&image)) {
         return std::make_unique<GlyphCell>(*glyph);
     } else {
-        tt_no_default;
+        tt_no_default();
     }
 }
 

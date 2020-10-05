@@ -117,7 +117,7 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
         return *r != r_;
 
     } else {
-        tt_not_implemented;
+        tt_not_implemented();
     }
 }
 
