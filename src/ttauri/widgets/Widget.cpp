@@ -57,7 +57,7 @@ bool Widget::updateLayout(hires_utc_clock::time_point display_time_point, bool n
     need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
         // Used by draw().
-        toWindowTransform = mat::T(window_rectangle.x(), window_rectangle.y(), _draw_layer);
+        toWindowTransform = mat::T(_window_rectangle.x(), _window_rectangle.y(), _draw_layer);
 
         // Used by handleMouseEvent()
         fromWindowTransform = ~toWindowTransform;
@@ -70,7 +70,7 @@ DrawContext Widget::makeDrawContext(DrawContext context) const noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    context.clippingRectangle = clipping_rectangle();
+    context.clippingRectangle = _window_clipping_rectangle;
     context.transform = toWindowTransform;
 
     // The default fill and border colors.

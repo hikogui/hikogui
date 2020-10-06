@@ -174,6 +174,10 @@ private:
             context.transform = mat::T(0.0f, 0.0f, 0.6f) * context.transform;
         }
 
+        // Override the clipping rectangle to match the toolbar.
+        ttlet parent_lock = std::scoped_lock(parent->mutex);
+        context.clippingRectangle = parent->window_rectangle();
+
         if (hover || *value == ActiveValue) {
             context.fillColor = theme->fillColor(_semantic_layer - 2);
             context.color = context.fillColor;

@@ -114,11 +114,11 @@ bool GridWidget::updateLayout(hires_utc_clock::time_point display_time_point, bo
             ttlet child_rectangle = cell.rectangle(columns, rows);
             ttlet child_base_line = cell.base_line(rows);
 
-            ttlet child_window_rectangle = mat::T2{window_rectangle} * child_rectangle;
+            ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
             ttlet child_base_line_position =
                 child_base_line.position(child_window_rectangle.bottom(), child_window_rectangle.top());
 
-            child->set_window_rectangle(child_window_rectangle, child_base_line_position);
+            child->set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, child_base_line_position);
         }
     }
 

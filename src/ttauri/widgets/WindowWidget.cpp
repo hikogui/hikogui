@@ -65,12 +65,12 @@ bool WindowWidget::updateLayout(hires_utc_clock::time_point display_time_point, 
         ttlet toolbar_size = _toolbar->preferred_size();
         ttlet toolbar_height = toolbar_size.minimum().height();
         ttlet toolbar_rectangle = aarect{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        _toolbar->set_window_rectangle(mat::T2{window_rectangle} * toolbar_rectangle);
+        _toolbar->set_layout_parameters(mat::T2{_window_rectangle} * toolbar_rectangle, _window_clipping_rectangle);
 
         ttlet content_lock = std::scoped_lock(_content->mutex);
         ttlet content_size = _content->preferred_size();
         ttlet content_rectangle = aarect{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        _content->set_window_rectangle(mat::T2{window_rectangle} * content_rectangle);
+        _content->set_layout_parameters(mat::T2{_window_rectangle} * content_rectangle, _window_clipping_rectangle);
     }
 
     return ContainerWidget::updateLayout(display_time_point, need_layout);

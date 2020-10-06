@@ -119,7 +119,7 @@ void Window_base::windowChangedSize(ivec extent) {
     tt_assume(widget);
 
     ttlet widget_lock = std::scoped_lock(widget->mutex);
-    widget->set_window_rectangle(aarect{vec{currentWindowExtent}});
+    widget->set_layout_parameters(aarect{vec{currentWindowExtent}}, aarect{vec{currentWindowExtent}});
     requestLayout = true;
 }
 

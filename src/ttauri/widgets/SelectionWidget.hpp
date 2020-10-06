@@ -154,9 +154,9 @@ public:
 
             // Calculate overlay dimensions and position.
             ttlet overlayWidth = option_cache_listWidth;
-            ttlet overlayWindowX = window_rectangle.x() + Theme::smallSize;
+            ttlet overlayWindowX = _window_rectangle.x() + Theme::smallSize;
             ttlet overlayHeight = std::min(option_cache_list_height, windowHeight);
-            auto overlayWindowY = window_rectangle.y() - selectedOptionY;
+            auto overlayWindowY = _window_rectangle.y() - selectedOptionY;
 
             // Adjust overlay to fit inside the window, below the top window decoration.
             overlayWindowY = std::clamp(overlayWindowY, 0.0f, windowHeight - overlayHeight);
@@ -166,7 +166,7 @@ public:
             // The overlayRectangle are in the coordinate system of the current widget, so it will
             // extent beyond the current widget.
             overlayRectangle =
-                aarect{overlayWindowX - window_rectangle.x(), overlayWindowY - window_rectangle.y(), overlayWidth, overlayHeight};
+                aarect{overlayWindowX - _window_rectangle.x(), overlayWindowY - _window_rectangle.y(), overlayWidth, overlayHeight};
 
             // The label is located to the right of the selection box icon.
             optionRectangle = aarect{optionX, rectangle().height() - optionHeight - Theme::margin, optionWidth, optionHeight};

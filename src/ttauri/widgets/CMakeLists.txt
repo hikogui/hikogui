@@ -14,6 +14,7 @@ target_sources(ttauri PRIVATE
     LineInputWidget.hpp
     RadioButtonWidget.hpp
     RowWidget.hpp
+    ScrollWidget.hpp
     SelectionWidget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>

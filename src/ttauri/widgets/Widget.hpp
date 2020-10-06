@@ -252,30 +252,58 @@ public:
     /** Set the location and size of the widget inside the window.
      *
      * @pre `mutex` must be locked by current thread.
-     * @param _window_rectangle The location and size of the widget inside the window
+     * @param _window_rectangle The location and size of the widget inside the window.
+     * @param _window_clipping_rectangle The location and size of the clipping rectangle,
+     *                                   beyond which not to draw or accept mouse events.
      * @param _window_base_line The position of the text base-line from the bottom of the window. When not given
      *                          the middle of the _window_rectangle is used together with the preferred
      *                          relative base-line.
      */
-    void set_window_rectangle(aarect const &_window_rectangle, float _window_base_line = std::numeric_limits<float>::infinity()) noexcept
+    void set_layout_parameters(
+        aarect const &window_rectangle,
+        aarect const &window_clipping_rectangle,
+        float window_base_line = std::numeric_limits<float>::infinity()
+    ) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        window_rectangle = _window_rectangle;
+        _window_rectangle = window_rectangle;
+        _window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
+
         if (std::isinf(_window_base_line)) {
-            window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
+            _window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
         } else {
-            window_base_line = _window_base_line;
+            _window_base_line = window_base_line;
         }
     }
 
-    /** Get the clipping rectangle in window coordinates
+    /** Get the rectangle in window coordinates.
      *
      * @pre `mutex` must be locked by current thread.
      */
-    [[nodiscard]] aarect clipping_rectangle() const noexcept
+    [[nodiscard]] aarect window_rectangle() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return expand(window_rectangle, _margin);
+        return _window_rectangle;
+    }
+
+    /** Get the clipping-rectangle in window coordinates.
+     *
+     * @pre `mutex` must be locked by current thread.
+     */
+    [[nodiscard]] aarect window_clipping_rectangle() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _window_clipping_rectangle;
+    }
+
+    /** Get the base-line distance from the bottom of the window.
+     *
+     * @pre `mutex` must be locked by current thread.
+     */
+    [[nodiscard]] float window_base_line() const noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return _window_base_line;
     }
 
     /** Get the rectangle in local coordinates.
@@ -285,7 +313,7 @@ public:
     [[nodiscard]] aarect rectangle() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return aarect{window_rectangle.extent()};
+        return aarect{_window_rectangle.extent()};
     }
 
     /** Get the base-line in local coordinates.
@@ -295,7 +323,7 @@ public:
     [[nodiscard]] float base_line() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return window_base_line - window_rectangle.y();
+        return _window_base_line - _window_rectangle.y();
     }
 
     [[nodiscard]] GUIDevice *device() const noexcept;
@@ -472,11 +500,15 @@ protected:
 
     /** The position of the widget on the window.
      */
-    aarect window_rectangle;
+    aarect _window_rectangle;
 
     /** The height of the base line from the bottom of the window.
      */
-    float window_base_line;
+    float _window_base_line;
+
+    /** The clipping rectangle beyond which not to draw or receive mouse events.
+     */
+    aarect _window_clipping_rectangle;
 
     interval_vec2 _preferred_size;
 

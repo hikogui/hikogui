@@ -300,7 +300,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         } else if (currentWindowExtent >> preferred_size) {
             setWindowSize(currentWindowExtent = preferred_size.maximum());
         }
-        widget->set_window_rectangle(aarect{currentWindowExtent});
+        widget->set_layout_parameters(aarect{currentWindowExtent}, aarect{currentWindowExtent});
 
         // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
         ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;

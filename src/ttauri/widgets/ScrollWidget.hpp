@@ -10,12 +10,13 @@
 
 namespace tt {
 
-class TabWidget final : public Widget {
+template<bool CanScrollX = false, bool CanScrollY = true>
+class ScrollWidget final : public Widget {
 public:
-    observable<int> value = 0;
+    static constexpr bool can_scroll_x = CanScrollX;
+    static constexpr bool can_scroll_y = CanScrollY;
 
-    template<typename V>
-    TabWidget(Window &window, Widget *parent, V &&value) noexcept : Widget(window, parent), value(std::forward<V>(value))
+    ScrollWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected child.
@@ -24,17 +25,14 @@ public:
             _semantic_layer = parent->semantic_layer();
         }
         _margin = 0.0f;
-
-        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
-            this->requestConstraint = true;
-        });
     }
 
-    ~TabWidget() {}
+    ~ScrollWidget() {}
 
     [[nodiscard]] bool updateConstraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(child);
 
         auto has_updated_contraints = Widget::updateConstraints();
         if (has_updated_contraints) {
@@ -43,13 +41,16 @@ public:
         }
 
         // Recurse into the selected widget.
-        tt_assume(*value >= 0 && *value < std::ssize(children));
-        auto &child = children[*value];
         ttlet child_lock = std::scoped_lock(child->mutex);
-        
         if (child->updateConstraints() || has_updated_contraints) {
-            _preferred_size = child->preferred_size();
-            _preferred_base_line = child->preferred_base_line();
+            ttlet width = can_scroll_x ? finterval{Theme::width, child->preferred_size().width().minimum()} :
+                                         child->preferred_size().width();
+
+            ttlet height = can_scroll_y ? finterval{Theme::height, child->preferred_size().height().minimum()} :
+                                          child->preferred_size().height();
+
+            _preferred_size = interval_vec2{width, height};
+            _preferred_base_line = {};
             return true;
         } else {
             return false;
@@ -59,73 +60,75 @@ public:
     [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        tt_assume(*value >= 0 && *value < std::ssize(children));
+        tt_assume(child);
 
-        auto &child = children[*value];
         ttlet child_lock = std::scoped_lock(child->mutex);
-
         auto need_redraw = need_layout |= std::exchange(requestLayout, false);
         if (need_layout) {
-            child->set_layout_parameters(_window_rectangle, _window_clipping_rectangle, _window_base_line);
+            ttlet child_minimum_size = child->preferred_size().minimum();
+            ttlet overflow_size = max(vec{}, child_minimum_size - _window_rectangle.extent());
+
+            // Clamp the scroll-position by how much the child-widget is larger than the scroll-widget.
+            scroll_position = vec::point(min(scroll_position, overflow_size));
+
+            ttlet child_size =
+                vec{can_scroll_x ? child_minimum_size.width() : _window_rectangle.width(),
+                    can_scroll_y ? child_minimum_size.height() : _window_rectangle.height()};
+
+            child->set_layout_parameters(
+                mat::T2{_window_rectangle} * aarect{scroll_position, child_size},
+                intersect(_window_rectangle, _window_clipping_rectangle));
         }
 
         need_redraw |= child->updateLayout(display_time_point, need_layout);
         return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
     }
 
-    void drawChild(DrawContext context, hires_utc_clock::time_point displayTimePoint, Widget &child) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        ttlet child_lock = std::scoped_lock(child.mutex);
-        child.draw(child.makeDrawContext(context), displayTimePoint);
-    }
-
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        tt_assume(*value >= 0 && *value <= std::ssize(children));
+        tt_assume(child);
 
-        auto &child = children[*value];
-        drawChild(context, display_time_point, *child);
+        ttlet child_lock = std::scoped_lock(child->mutex);
+        child->draw(child->makeDrawContext(context), display_time_point);
+
         Widget::draw(std::move(context), display_time_point);
     }
 
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
+        tt_assume(child);
 
-        tt_assume(*value >= 0 && *value <= std::ssize(children));
-        return children[*value]->hitBoxTest(window_position);
+        return child->hitBoxTest(window_position);
     }
 
     Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
+        tt_assume(child);
 
-        tt_assume(*value >= 0 && *value < std::ssize(children));
-        return children[*value]->nextKeyboardWidget(currentKeyboardWidget, reverse);
+        return child->nextKeyboardWidget(currentKeyboardWidget, reverse);
     }
 
     template<typename WidgetType = GridWidget, typename... Args>
-    WidgetType &addTab(Args const &... args) noexcept
+    WidgetType &setContent(Args const &... args) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
 
         auto widget_ptr = std::make_unique<WidgetType>(window, this, args...);
         auto &widget = *widget_ptr.get();
-        children.push_back(std::move(widget_ptr));
+        child = std::move(widget_ptr);
 
-        // Make sure a tab is selected.
-        if (*value < 0 || *value >= std::ssize(children)) {
-            value = 0;
-        }
         requestConstraint = true;
         return widget;
     }
 
 private:
-    std::vector<std::unique_ptr<Widget>> children;
+    std::unique_ptr<Widget> child;
+    vec scroll_position;
 };
+
+using VerticalScrollWidget = ScrollWidget<false, true>;
 
 } // namespace tt

@@ -434,6 +434,16 @@ public:
     {
         return aarect::p0p3(round(rhs.v));
     }
+
+    /** Return the overlapping part of two rectangles.
+     * When the rectangles are not overlapping, the width and height are zero.
+     */
+    [[nodiscard]] friend aarect intersect(aarect const &lhs, aarect const &rhs) noexcept
+    {
+        ttlet p0 = max(lhs.p0(), rhs.p0());
+        ttlet p3 = max(p0, min(lhs.p3(), rhs.p3()));
+        return aarect::p0p3(p0, p3);
+    }
 };
 
 } // namespace tt
