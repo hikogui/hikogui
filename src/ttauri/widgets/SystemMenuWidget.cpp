@@ -48,7 +48,7 @@ HitBox SystemMenuWidget::hitBoxTest(vec window_position) const noexcept
     ttlet lock = std::scoped_lock(mutex);
     ttlet position = fromWindowTransform * window_position;
 
-    if (systemMenuRectangle.contains(position)) {
+    if (_window_clipping_rectangle.contains(window_position), systemMenuRectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
         return HitBox{this, _draw_layer, HitBox::Type::ApplicationIcon};

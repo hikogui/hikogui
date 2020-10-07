@@ -68,15 +68,15 @@ public:
             ttlet child_minimum_size = child->preferred_size().minimum();
             ttlet overflow_size = max(vec{}, child_minimum_size - _window_rectangle.extent());
 
-            // Clamp the scroll-position by how much the child-widget is larger than the scroll-widget.
-            scroll_position = vec::point(min(scroll_position, overflow_size));
+            scroll_offset = clamp(scroll_offset, vec{}, overflow_size);
 
+            ttlet child_position = vec::point(-scroll_offset);
             ttlet child_size =
                 vec{can_scroll_x ? child_minimum_size.width() : _window_rectangle.width(),
                     can_scroll_y ? child_minimum_size.height() : _window_rectangle.height()};
 
             child->set_layout_parameters(
-                mat::T2{_window_rectangle} * aarect{scroll_position, child_size},
+                mat::T2{_window_rectangle} * aarect{child_position, child_size},
                 intersect(_window_rectangle, _window_clipping_rectangle));
         }
 
@@ -124,9 +124,27 @@ public:
         return widget;
     }
 
+    bool handleMouseEvent(MouseEvent const &event) noexcept override
+    {
+        ttlet lock = std::scoped_lock(mutex);
+
+        if (Widget::handleMouseEvent(event)) {
+            return true;
+
+        } else if (event.type == MouseEvent::Type::Wheel) {
+            scroll_offset += event.wheelDelta;
+            requestLayout = true;
+            return true;
+
+        } else if (parent) {
+            return parent->handleMouseEvent(event);
+        }
+        return false;
+    }
+
 private:
     std::unique_ptr<Widget> child;
-    vec scroll_position;
+    vec scroll_offset = vec{};
 };
 
 using VerticalScrollWidget = ScrollWidget<false, true>;

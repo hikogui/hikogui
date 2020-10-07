@@ -108,18 +108,15 @@ HitBox WindowWidget::hitBoxTest(vec window_position) const noexcept
 
     } else if (position.y() >= (rectangle().height() - BORDER_WIDTH)) {
         r.type = HitBox::Type::TopResizeBorder;
-    }
 
-    if (r.type != HitBox::Type::Outside) {
-        // Resize corners need to override anything else, so that it is
-        // always possible to resize a window.
-        return r;
-    }
+    } else if (_window_rectangle.contains(window_position) && _window_clipping_rectangle.contains(window_position)) {
+        for (ttlet &child : children) {
+            r = std::max(r, child->hitBoxTest(window_position));
+        }
 
-    for (ttlet &child : children) {
-        r = std::max(r, child->hitBoxTest(window_position));
+    } else {
+        return {};
     }
-
     return r;
 }
 

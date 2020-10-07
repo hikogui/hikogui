@@ -338,7 +338,13 @@ public:
      */
     [[nodiscard]] virtual HitBox hitBoxTest(vec window_position) const noexcept
     {
-        return {};
+        ttlet lock = std::scoped_lock(mutex);
+
+        if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
+            return HitBox{this, _draw_layer};
+        } else {
+            return {};
+        }
     }
 
     /** Check if the widget will accept keyboard focus.
@@ -429,8 +435,8 @@ public:
     }
 
     /** Handle command.
+     * If a widget does not fully handle a command it should pass the command to the super class' `handleCommand()`.
      *
-     * @pre `mutex` must be locked by current thread.
      */
     virtual void handleCommand(command command) noexcept;
 
@@ -439,9 +445,16 @@ public:
      * This is called very often so it must be made efficient.
      * This function is also used to determine the mouse cursor.
      *
+     * In most cased overriding methods should call the super's `handleMouseEvent()` at the
+     * start of the function, to detect `hover`.
+     * 
+     * final overriding methods should call `parent->handleMouseEvent()` if it did not handle
+     * the mouse event. So that underlying layout or view widgets, such as the `ScrollViewWidget`,
+     * can handle mouse events like the scroll-wheel.
+     * 
      * @param event The mouse event, positions are in window coordinates.
      */
-    virtual void handleMouseEvent(MouseEvent const &event) noexcept;
+    virtual bool handleMouseEvent(MouseEvent const &event) noexcept = 0;
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget

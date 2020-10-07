@@ -91,6 +91,16 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
+    bool handleMouseEvent(MouseEvent const &event) noexcept override
+    {
+        if (Widget::handleMouseEvent(event)) {
+            return true;
+        } else if (parent) {
+            return parent->handleMouseEvent(event);
+        }
+        return false;
+    }
+
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);

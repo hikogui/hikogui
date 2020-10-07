@@ -32,7 +32,11 @@ struct HitBox {
     float elevation;
     Type type;
 
-    HitBox(Widget const *widget=nullptr, float elevation=-std::numeric_limits<float>::max(), Type type=Type::Outside) noexcept :
+    HitBox() noexcept : widget(nullptr), elevation(-std::numeric_limits<float>::max()), type(Type::Outside)
+    {
+    }
+
+    HitBox(Widget const *widget, float elevation=-std::numeric_limits<float>::max(), Type type=Type::Default) noexcept :
         widget(widget), elevation(elevation), type(type) {}
 
 

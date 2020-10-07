@@ -217,43 +217,66 @@ void WindowTrafficLightsWidget::draw(DrawContext context, hires_utc_clock::time_
     Widget::draw(std::move(context), display_time_point);
 }
 
-void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
+bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    ttlet position = fromWindowTransform * event.position;
-
-    Widget::handleMouseEvent(event);
-
-    if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-        if (pressedClose) {
-            window.closeWindow();
-        } else if (pressedMinimize) {
-            window.minimizeWindow();
-        } else if (pressedMaximize) {
-            switch (window.size) {
-            case Window::Size::Normal: window.maximizeWindow(); break;
-            case Window::Size::Maximized: window.normalizeWindow(); break;
-            default: tt_no_default();
-            }
-        }
-    }
-
-    auto stateHasChanged = false;
 
     // Check the hover states of each button.
+    auto stateHasChanged = false;
+    ttlet position = fromWindowTransform * event.position;
     stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(position));
     stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(position));
     stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(position));
-
-    // Only change the pressed state after checking for Button Up, the
-    // button up will check which button was pressed from button down.
-    stateHasChanged |= compare_then_assign(pressedClose, event.down.leftButton && hoverClose);
-    stateHasChanged |= compare_then_assign(pressedMinimize, event.down.leftButton && hoverMinimize);
-    stateHasChanged |= compare_then_assign(pressedMaximize, event.down.leftButton && hoverMaximize);
-
     if (stateHasChanged) {
         window.requestRedraw = true;
     }
+
+    if (Widget::handleMouseEvent(event)) {
+        return true;
+
+    } else if (event.cause.leftButton) {
+        switch (event.type) {
+        using enum MouseEvent::Type;
+        case ButtonUp:
+            if (pressedClose && hoverClose) {
+                window.closeWindow();
+            }
+            
+            if (pressedMinimize && hoverMinimize) {
+                window.minimizeWindow();
+            }
+            
+            if (pressedMaximize && hoverMaximize) {
+                switch (window.size) {
+                case Window::Size::Normal: window.maximizeWindow(); break;
+                case Window::Size::Maximized: window.normalizeWindow(); break;
+                default: tt_no_default();
+                }
+            }
+
+            window.requestRedraw = true;
+            pressedClose = false;
+            pressedMinimize = false;
+            pressedMaximize = false;
+            break;
+
+        case ButtonDown:
+            window.requestRedraw = true;
+            pressedClose = hoverClose;
+            pressedMinimize = hoverMinimize;
+            pressedMaximize = hoverMaximize;
+            break;
+        }
+
+    } else if (parent) {
+        return parent->handleMouseEvent(event);
+    
+    } else {
+        return false;
+    }
+
+    
+    return true;
 }
 
 HitBox WindowTrafficLightsWidget::hitBoxTest(vec window_position) const noexcept
@@ -261,8 +284,12 @@ HitBox WindowTrafficLightsWidget::hitBoxTest(vec window_position) const noexcept
     ttlet lock = std::scoped_lock(mutex);
     ttlet position = fromWindowTransform * window_position;
 
-    if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-        return HitBox{this, _draw_layer, HitBox::Type::Button};
+    if (_window_rectangle.contains(window_position) && _window_clipping_rectangle.contains(window_position)) {
+        if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
+            return HitBox{this, _draw_layer, HitBox::Type::Button};
+        } else {
+            return HitBox{this, _draw_layer};
+        }
     } else {
         return {};
     }

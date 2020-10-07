@@ -14,7 +14,6 @@ public:
         if (parent) {
             // Most containers will not draw itself, only its children.
             ttlet lock = std::scoped_lock(parent->mutex);
-            _draw_layer = parent->draw_layer();
             _semantic_layer = parent->semantic_layer();
         }
         _margin = 0.0f;
@@ -32,6 +31,15 @@ public:
      * Thread safety: locks.
      */
     virtual Widget &addWidget(std::unique_ptr<Widget> childWidget) noexcept;
+
+    bool handleMouseEvent(MouseEvent const &event) noexcept final {
+        if (Widget::handleMouseEvent(event)) {
+            return true;
+        } else if (parent) {
+            return parent->handleMouseEvent(event);
+        }
+        return false;
+    }
 
     /** Add a widget directly to this widget.
      */

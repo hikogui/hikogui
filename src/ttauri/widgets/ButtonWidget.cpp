@@ -56,7 +56,7 @@ void ButtonWidget::draw(DrawContext context, hires_utc_clock::time_point display
 
 void ButtonWidget::handleCommand(command command) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
     if (!*enabled) {
         return;
@@ -65,37 +65,43 @@ void ButtonWidget::handleCommand(command command) noexcept
     if (command == command::gui_activate) {
         if (compare_then_assign(value, !value)) {
             window.requestRedraw = true;
+            return;
         }
     }
+
     Widget::handleCommand(command);
 }
 
-void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
+bool ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    Widget::handleMouseEvent(event);
+    if (Widget::handleMouseEvent(event)) {
+        return true;
 
-    if (*enabled) {
-        if (compare_then_assign(pressed, static_cast<bool>(event.down.leftButton))) {
-            window.requestRedraw = true;
-        }
+    } else if (event.cause.leftButton) {
+        if (*enabled) {
+            if (compare_then_assign(pressed, static_cast<bool>(event.down.leftButton))) {
+                window.requestRedraw = true;
+            }
 
-        if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-            ttlet position = fromWindowTransform * event.position;
-            if (rectangle().contains(position)) {
+            if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
                 handleCommand(command::gui_activate);
             }
         }
+        return true;
+
+    } else if (parent) {
+        return parent->handleMouseEvent(event);
     }
+    return false;
 }
 
 HitBox ButtonWidget::hitBoxTest(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    ttlet position = fromWindowTransform * window_position;
 
-    if (rectangle().contains(position)) {
+    if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
         return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};

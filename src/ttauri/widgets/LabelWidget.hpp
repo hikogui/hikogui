@@ -65,6 +65,15 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
+    bool handleMouseEvent(MouseEvent const &event) noexcept override {
+        if (Widget::handleMouseEvent(event)) {
+            return true;
+        } else if (parent) {
+            return parent->handleMouseEvent(event);
+        }
+        return false;
+    }
+
 private:
     std::unique_ptr<TextCell> labelCell;
     Alignment alignment;

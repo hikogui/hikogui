@@ -98,7 +98,7 @@ DrawContext Widget::makeDrawContext(DrawContext context) const noexcept
 }
 
 void Widget::handleCommand(command command) noexcept {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
     switch (command) {
     case command::gui_widget_next:
@@ -107,24 +107,31 @@ void Widget::handleCommand(command command) noexcept {
     case command::gui_widget_prev:
         window.updateToPrevKeyboardTarget(this);
         break;
-    default:;
+    default:
+        if (parent) {
+            parent->handleCommand(command);
+        }
     }
 }
 
-void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
+bool Widget::handleMouseEvent(MouseEvent const &event) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 
     if (event.type == MouseEvent::Type::Entered) {
         hover = true;
         window.requestRedraw = true;
+        return true;
+
     } else if (event.type == MouseEvent::Type::Exited) {
         hover = false;
         window.requestRedraw = true;
+        return true;
     }
+    return false;
 }
 
 void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
     switch (event.type) {
     case KeyboardEvent::Type::Entered:
@@ -143,7 +150,10 @@ void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
         }
         break;
 
-    default:;
+    default:
+        if (parent) {
+            parent->handleKeyboardEvent(event);
+        }
     }
 }
 

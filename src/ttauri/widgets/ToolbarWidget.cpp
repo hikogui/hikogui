@@ -147,14 +147,16 @@ void ToolbarWidget::draw(DrawContext context, hires_utc_clock::time_point displa
 HitBox ToolbarWidget::hitBoxTest(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    ttlet position = fromWindowTransform * window_position;
 
-    auto r = rectangle().contains(position) ? HitBox{this, _draw_layer, HitBox::Type::MoveArea} : HitBox{};
-
-    for (ttlet &child : children) {
-        r = std::max(r, child->hitBoxTest(window_position));
+    if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
+        auto r = HitBox{this, _draw_layer, HitBox::Type::MoveArea};
+        for (ttlet &child : children) {
+            r = std::max(r, child->hitBoxTest(window_position));
+        }
+        return r;
+    } else {
+        return {};
     }
-    return r;
 }
 
 } // namespace tt

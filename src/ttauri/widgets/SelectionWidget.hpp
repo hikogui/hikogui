@@ -196,7 +196,7 @@ public:
 
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
 
         Widget::handleKeyboardEvent(event);
 
@@ -205,13 +205,14 @@ public:
         }
     }
 
-    void handleMouseEvent(MouseEvent const &event) noexcept override
+    bool handleMouseEvent(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
 
-        Widget::handleMouseEvent(event);
+        if (Widget::handleMouseEvent(event)) {
+            return true;
 
-        if (*enabled) {
+        } else {
             if (selecting) {
                 ttlet position = fromWindowTransform * event.position;
 
@@ -233,34 +234,41 @@ public:
                         hoverOption = {};
                     }
                 }
+            }
 
-                if (event.type == MouseEvent::Type::ButtonDown && event.cause.leftButton) {
-                    clickedOption = hoverOption;
-                    window.requestRedraw = true;
-                }
+            if (event.cause.leftButton) {
+                if (*enabled) {
+                    if (selecting) {
+                        if (event.type == MouseEvent::Type::ButtonDown) {
+                            clickedOption = hoverOption;
+                            window.requestRedraw = true;
+                        }
 
-                if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-                    if (clickedOption.has_value() && clickedOption == hoverOption) {
-                        chosenOption = *clickedOption;
+                        if (event.type == MouseEvent::Type::ButtonUp) {
+                            if (clickedOption.has_value() && clickedOption == hoverOption) {
+                                chosenOption = *clickedOption;
+                                handleCommand(command::gui_activate);
+                            }
+                            clickedOption = {};
+                            window.requestRedraw = true;
+                        }
+
+                    } else if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
                         handleCommand(command::gui_activate);
                     }
-                    clickedOption = {};
-                    window.requestRedraw = true;
                 }
 
-            } else if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-                ttlet position = fromWindowTransform * event.position;
-
-                if (rectangle().contains(position)) {
-                    handleCommand(command::gui_activate);
-                }
+                return true;
+            } else if (parent) {
+                return parent->handleMouseEvent(event);
             }
         }
+        return false;
     }
 
     void handleCommand(command command) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
 
         if (!*enabled) {
             return;
@@ -330,7 +338,7 @@ public:
         if (selecting && overlayRectangle.contains(position)) {
             return HitBox{this, _draw_layer + 25.0f, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
 
-        } else if (rectangle().contains(position)) {
+        } else if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
             return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
 
         } else {

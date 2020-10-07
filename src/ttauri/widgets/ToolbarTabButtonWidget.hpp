@@ -89,25 +89,33 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
-    void handleMouseEvent(MouseEvent const &event) noexcept override
+    bool handleMouseEvent(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
 
-        Widget::handleMouseEvent(event);
+        if (Widget::handleMouseEvent(event)) {
+            return true;
 
-        if (*enabled) {
-            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-                ttlet position = fromWindowTransform * event.position;
-                if (button_rectangle.contains(position)) {
-                    handleCommand(command::gui_activate);
+        } else if (event.cause.leftButton) {
+            if (*enabled) {
+                if (event.type == MouseEvent::Type::ButtonUp) {
+                    ttlet position = fromWindowTransform * event.position;
+                    if (button_rectangle.contains(position)) {
+                        handleCommand(command::gui_activate);
+                    }
                 }
             }
+            return true;
+
+        } else if (parent) {
+            return parent->handleMouseEvent(event);
         }
+        return false;
     }
 
     void handleCommand(command command) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
 
         if (!*enabled) {
             return;
@@ -124,9 +132,8 @@ public:
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
-        ttlet position = fromWindowTransform * window_position;
 
-        if (button_rectangle.contains(position)) {
+        if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
             return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};

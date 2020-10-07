@@ -149,18 +149,16 @@ void Window_base::updateKeyboardTarget(Widget const *newTargetWidget) noexcept {
 
     if (newTargetWidget != keyboardTargetWidget) {
         if (keyboardTargetWidget != nullptr) {
-            ttlet widget_lock = std::scoped_lock(keyboardTargetWidget->mutex);
             keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited());
         }
         keyboardTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (keyboardTargetWidget != nullptr) {
-            ttlet widget_lock = std::scoped_lock(keyboardTargetWidget->mutex);
             keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered());
         }
     }
 }
 
-void Window_base::handleMouseEvent(MouseEvent event) noexcept {
+bool Window_base::handleMouseEvent(MouseEvent event) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 
     switch (event.type) {
@@ -182,15 +180,15 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     // Send event to target-widget.
     if (mouseTargetWidget != nullptr) {
-        mouseTargetWidget->handleMouseEvent(event);
+        return mouseTargetWidget->handleMouseEvent(event);
     }
+    return false;
 }
 
 void Window_base::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 
     if (keyboardTargetWidget != nullptr) {
-        ttlet widget_lock = std::scoped_lock(keyboardTargetWidget->mutex);
         keyboardTargetWidget->handleKeyboardEvent(event);
 
     } else if (event.type == KeyboardEvent::Type::Key) {

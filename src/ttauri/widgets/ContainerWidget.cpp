@@ -60,14 +60,16 @@ void ContainerWidget::draw(DrawContext context, hires_utc_clock::time_point disp
 HitBox ContainerWidget::hitBoxTest(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    ttlet position = fromWindowTransform * window_position;
 
-    auto r = rectangle().contains(position) ? HitBox{this, _draw_layer} : HitBox{};
-
-    for (ttlet &child : children) {
-        r = std::max(r, child->hitBoxTest(window_position));
+    if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
+        auto r = HitBox{this, _draw_layer};
+        for (ttlet &child : children) {
+            r = std::max(r, child->hitBoxTest(window_position));
+        }
+        return r;
     }
-    return r;
+
+    return HitBox{};
 }
 
 std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcept

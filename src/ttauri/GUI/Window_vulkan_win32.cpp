@@ -559,6 +559,8 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_MBUTTONDBLCLK:
     case WM_RBUTTONDBLCLK:
     case WM_XBUTTONDBLCLK:
+    case WM_MOUSEWHEEL:
+    case WM_MOUSEHWHEEL:
     case WM_MOUSEMOVE:
     case WM_MOUSELEAVE:
         handleMouseEvent(createMouseEvent(uMsg, wParam, lParam));
@@ -651,6 +653,13 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     // of the vertical bar. But most applications do not fix this problem.
     mouseEvent.position = vec::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
 
+    mouseEvent.wheelDelta = vec{};
+    if (uMsg == WM_MOUSEWHEEL) {
+        mouseEvent.wheelDelta.y(static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f);
+    } else if (uMsg == WM_MOUSEHWHEEL) {
+        mouseEvent.wheelDelta.x(static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f);
+    }
+
     // Track which buttons are down, in case the application wants to track multiple buttons being pressed down.
     mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
     mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
@@ -688,6 +697,8 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
             mouseEvent.cause = mouseButtonEvent.cause;
         }
         break;
+    case WM_MOUSEWHEEL:
+    case WM_MOUSEHWHEEL:
     case WM_MOUSELEAVE:
         break;
     default:
@@ -721,6 +732,11 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = 2;
         doubleClickTimePoint = cpu_utc_clock::now();
+        break;
+
+    case WM_MOUSEWHEEL:
+    case WM_MOUSEHWHEEL:
+        mouseEvent.type = MouseEvent::Type::Wheel;
         break;
 
     case WM_MOUSEMOVE: {

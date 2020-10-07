@@ -246,7 +246,7 @@ protected:
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    void handleMouseEvent(MouseEvent event) noexcept;
+    bool handleMouseEvent(MouseEvent event) noexcept;
 
     /*! Handle keyboard event.
     * Called by the operating system to show the character that was entered

@@ -180,7 +180,7 @@ void LineInputWidget::draw(DrawContext context, hires_utc_clock::time_point disp
 
 void LineInputWidget::handleCommand(command command) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
     LOG_DEBUG("LineInputWidget: Received command: {}", command);
     if (!*enabled) {
@@ -202,7 +202,7 @@ void LineInputWidget::handleCommand(command command) noexcept
 
 void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(mutex);
 
     Widget::handleKeyboardEvent(event);
 
@@ -221,75 +221,89 @@ void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
     requestLayout = true;
 }
 
-void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
+bool LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    ttlet position = fromWindowTransform * event.position;
-
-    Widget::handleMouseEvent(event);
-
+    
     // Make sure we only scroll when dragging outside the widget.
+    ttlet position = fromWindowTransform * event.position;
     dragScrollSpeedX = 0.0f;
     dragClickCount = event.clickCount;
     dragSelectPosition = position;
 
-    if (!*enabled) {
-        return;
-    }
+    if (Widget::handleMouseEvent(event)) {
+        return true;
 
-    if (event.type == MouseEvent::Type::ButtonDown && event.cause.leftButton) {
-        if (textRectangle.contains(position)) {
-            ttlet mouseInTextPosition = textInvTranslate * position;
+    } else if (event.cause.leftButton) {
+        if (!*enabled) {
+            return true;
+        }
 
-            switch (event.clickCount) {
-            case 1:
-                if (event.down.shiftKey) {
-                    field.dragCursorAtCoordinate(mouseInTextPosition);
-                } else {
-                    field.setCursorAtCoordinate(mouseInTextPosition);
+        switch (event.type) {
+        using enum MouseEvent::Type;
+        case ButtonDown:
+            if (textRectangle.contains(position)) {
+                ttlet mouseInTextPosition = textInvTranslate * position;
+
+                switch (event.clickCount) {
+                case 1:
+                    if (event.down.shiftKey) {
+                        field.dragCursorAtCoordinate(mouseInTextPosition);
+                    } else {
+                        field.setCursorAtCoordinate(mouseInTextPosition);
+                    }
+                    break;
+                case 2: field.selectWordAtCoordinate(mouseInTextPosition); break;
+                case 3: field.selectParagraphAtCoordinate(mouseInTextPosition); break;
+                default:;
                 }
-                break;
-            case 2: field.selectWordAtCoordinate(mouseInTextPosition); break;
-            case 3: field.selectParagraphAtCoordinate(mouseInTextPosition); break;
-            default:;
+
+                // Record the last time the cursor is moved, so that the caret remains lit.
+                lastUpdateTimePoint = event.timePoint;
+
+                window.requestRedraw = true;
+
             }
+            break;
+
+        case Drag:
+            // When the mouse is dragged beyond the line input,
+            // start scrolling the text and select on the edge of the textRectangle.
+            if (position.x() > textRectangle.p3().x()) {
+                // The mouse is on the right of the text.
+                dragSelectPosition.x(textRectangle.p3().x());
+
+                // Scroll text to the left in points per second.
+                dragScrollSpeedX = 50.0f;
+
+            } else if (position.x() < textRectangle.x()) {
+                // The mouse is on the left of the text.
+                dragSelectPosition.x(textRectangle.x());
+
+                // Scroll text to the right in points per second.
+                dragScrollSpeedX = -50.0f;
+            }
+
+            dragSelect();
+
+            window.requestRedraw = true;
+            break;
+
+        default:;
         }
+        return true;
 
-        // Record the last time the cursor is moved, so that the carret remains lit.
-        lastUpdateTimePoint = event.timePoint;
-
-        window.requestRedraw = true;
-
-    } else if (event.type == MouseEvent::Type::Drag && event.cause.leftButton) {
-        // When the mouse is dragged beyond the line input,
-        // start scrolling the text and select on the edge of the textRectangle.
-        if (position.x() > textRectangle.p3().x()) {
-            // The mouse is on the right of the text.
-            dragSelectPosition.x(textRectangle.p3().x());
-
-            // Scroll text to the left in points per second.
-            dragScrollSpeedX = 50.0f;
-
-        } else if (position.x() < textRectangle.x()) {
-            // The mouse is on the left of the text.
-            dragSelectPosition.x(textRectangle.x());
-
-            // Scroll text to the right in points per second.
-            dragScrollSpeedX = -50.0f;
-        }
-
-        dragSelect();
-
-        window.requestRedraw = true;
+    } else if (parent) {
+        return parent->handleMouseEvent(event);
     }
+    return false;
 }
 
 HitBox LineInputWidget::hitBoxTest(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    ttlet position = fromWindowTransform * window_position;
 
-    if (rectangle().contains(position)) {
+    if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
         return HitBox{this, _draw_layer, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};

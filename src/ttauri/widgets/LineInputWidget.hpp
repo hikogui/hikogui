@@ -30,7 +30,7 @@ public:
     [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
     void handleCommand(command command) noexcept override;
-    void handleMouseEvent(MouseEvent const &event) noexcept override;
+    bool handleMouseEvent(MouseEvent const &event) noexcept override;
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 

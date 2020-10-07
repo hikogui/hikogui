@@ -10,7 +10,7 @@
 namespace tt {
 
 struct MouseEvent {
-    enum class Type { None, Entered, Exited, Move, Drag, ButtonDown, ButtonUp };
+    enum class Type { None, Entered, Exited, Move, Drag, ButtonDown, ButtonUp, Wheel };
 
     Type type;
 
@@ -21,6 +21,9 @@ struct MouseEvent {
 
     //! The position the last time a button was pressed.
     vec downPosition;
+
+    //! Change in wheel rotation, in pixels.
+    vec wheelDelta;
 
     //! Buttons which has caused this event.
     MouseButtons cause;
@@ -60,13 +63,15 @@ struct MouseEvent {
     friend std::string to_string(MouseEvent const &rhs) noexcept {
         char const *type_s;
         switch (rhs.type) {
-        case MouseEvent::Type::None: type_s = "none"; break;
-        case MouseEvent::Type::Entered: type_s = "entered"; break;
-        case MouseEvent::Type::Exited: type_s = "exited"; break;
-        case MouseEvent::Type::Move: type_s = "move"; break;
-        case MouseEvent::Type::Drag: type_s = "drag"; break;
-        case MouseEvent::Type::ButtonDown: type_s = "down"; break;
-        case MouseEvent::Type::ButtonUp: type_s = "up"; break;
+        using enum MouseEvent::Type;
+        case None: type_s = "none"; break;
+        case Entered: type_s = "entered"; break;
+        case Exited: type_s = "exited"; break;
+        case Move: type_s = "move"; break;
+        case Drag: type_s = "drag"; break;
+        case ButtonDown: type_s = "down"; break;
+        case ButtonUp: type_s = "up"; break;
+        case Wheel: type_s = "wheel"; break;
         default: tt_no_default();
         }
 

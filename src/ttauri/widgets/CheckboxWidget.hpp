@@ -18,7 +18,7 @@
 namespace tt {
 
 /** A checkbox widget.
- * 
+ *
  * @tparam ValueType The type of the value to monitor/modify
  * @tparam TrueValue The value when the checkbox is checked
  * @tparam FaseValue The value when the checkbox is unchecked
@@ -31,8 +31,7 @@ public:
     observable<std::u8string> falseLabel;
     observable<std::u8string> otherLabel;
 
-    CheckboxWidget(Window &window, Widget *parent) noexcept :
-        Widget(window, parent)
+    CheckboxWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
             this->window.requestRedraw = true;
@@ -99,7 +98,7 @@ public:
             ttlet minusGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minusGlyph);
             minusRectangle = align(checkboxRectangle, scale(minusGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
         }
-        
+
         return Widget::updateLayout(displayTimePoint, need_layout);
     }
 
@@ -113,25 +112,30 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
-    void handleMouseEvent(MouseEvent const &event) noexcept override
+    bool handleMouseEvent(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
 
-        Widget::handleMouseEvent(event);
+        if (Widget::handleMouseEvent(event)) {
+            return true;
 
-        if (*enabled) {
-            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-                ttlet position = fromWindowTransform * event.position;
-                if (rectangle().contains(position)) {
+        } else if (event.cause.leftButton) {
+            if (*enabled) {
+                if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
                     handleCommand(command::gui_activate);
                 }
             }
+            return true;
+
+        } else if (parent) {
+            return parent->handleMouseEvent(event);
         }
+        return false;
     }
 
     void handleCommand(command command) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        ttlet lock = std::scoped_lock(mutex);
 
         if (!*enabled) {
             return;
@@ -148,9 +152,8 @@ public:
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
-        ttlet position = fromWindowTransform * window_position;
 
-        if (rectangle().contains(position)) {
+        if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
             return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
@@ -219,6 +222,6 @@ private:
     }
 };
 
-using BooleanCheckboxWidget = CheckboxWidget<bool,true,false>;
+using BooleanCheckboxWidget = CheckboxWidget<bool, true, false>;
 
 } // namespace tt

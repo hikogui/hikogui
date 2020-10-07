@@ -457,6 +457,11 @@ public:
         return max(rhs, -rhs);
     }
 
+    [[nodiscard]] friend vec clamp(vec const &value, vec const &minimum, vec const &maximum) noexcept
+    {
+        return max(minimum, min(value, maximum));
+    }
+
     /** Equal to.
      * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
      */

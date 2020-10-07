@@ -26,6 +26,16 @@ public:
 
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 
+    bool handleMouseEvent(MouseEvent const &event) noexcept override
+    {
+        if (Widget::handleMouseEvent(event)) {
+            return true;
+        } else if (parent) {
+            return parent->handleMouseEvent(event);
+        }
+        return false;
+    }
+
 private:
     std::unique_ptr<ImageCell> iconCell;
 
