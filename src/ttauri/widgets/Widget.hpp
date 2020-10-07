@@ -251,6 +251,12 @@ public:
 
     /** Set the location and size of the widget inside the window.
      *
+     * The parent should call this `set_layout_paramters()` before this `updateLayout()`.
+     *
+     * If the parent's layout did not change, it does not need to call this `set_layout_parameters()`.
+     * This way the parent does not need to keep a cache, recalculate or query the client for these
+     * layout parameters for each frame.
+     *
      * @pre `mutex` must be locked by current thread.
      * @param _window_rectangle The location and size of the widget inside the window.
      * @param _window_clipping_rectangle The location and size of the clipping rectangle,
