@@ -43,11 +43,25 @@ public:
         // Recurse into the selected widget.
         ttlet child_lock = std::scoped_lock(child->mutex);
         if (child->updateConstraints() || has_updated_contraints) {
-            ttlet width = can_scroll_x ? finterval{Theme::width, child->preferred_size().width().minimum()} :
-                                         child->preferred_size().width();
+            auto width = child->preferred_size().width();
+            auto height = child->preferred_size().height();
 
-            ttlet height = can_scroll_y ? finterval{Theme::height, child->preferred_size().height().minimum()} :
-                                          child->preferred_size().height();
+            if (can_scroll_x) {
+                width = {Theme::width, width.minimum()};
+            }
+
+            if (can_scroll_y) {
+                height = {Theme::height, height.minimum()};
+            }
+
+            // Make room for the scroll bars.
+            if (can_scroll_x) {
+                height += Theme::smallSize;
+            }
+
+            if (can_scroll_y) {
+                width += Theme::smallSize;
+            }
 
             _preferred_size = interval_vec2{width, height};
             _preferred_base_line = {};
@@ -66,18 +80,53 @@ public:
         auto need_redraw = need_layout |= std::exchange(requestLayout, false);
         if (need_layout) {
             ttlet child_minimum_size = child->preferred_size().minimum();
-            ttlet overflow_size = max(vec{}, child_minimum_size - _window_rectangle.extent());
+            overflow_size = max(vec{}, child_minimum_size - _window_rectangle.extent());
 
             scroll_offset = clamp(scroll_offset, vec{}, overflow_size);
 
+            auto width = _window_rectangle.width();
+            auto height = _window_rectangle.height();
+            if (can_scroll_x) {
+                height -= Theme::smallSize;
+            }
+            if (can_scroll_y) {
+                width -= Theme::smallSize;
+            }
+            if (can_scroll_x) {
+                width = child_minimum_size.width();
+            }
+            if (can_scroll_y) {
+                height = child_minimum_size.height();
+            }
+
             ttlet child_position = vec::point(-scroll_offset);
-            ttlet child_size =
-                vec{can_scroll_x ? child_minimum_size.width() : _window_rectangle.width(),
-                    can_scroll_y ? child_minimum_size.height() : _window_rectangle.height()};
+            ttlet child_size = vec{width, height};
+
+            content_rectangle = aarect{
+                rectangle().x(),
+                rectangle().y() + (can_scroll_x ? Theme::smallSize : 0.0f),
+                rectangle().width() - (can_scroll_y ? Theme::smallSize : 0.0f),
+                rectangle().height() - (can_scroll_x ? Theme::smallSize : 0.0f)
+            };
+
+            vertical_scroll_bar_rectangle = aarect{
+                rectangle().right() - Theme::smallSize,
+                rectangle().y() + Theme::smallSize,
+                Theme::smallSize,
+                rectangle().height() - Theme::smallSize};
+
+            horizontal_scroll_bar_rectangle = aarect{
+                rectangle().x(),
+                rectangle().y(),
+                rectangle().width() - Theme::smallSize,
+                Theme::smallSize
+            };
+
+            ttlet window_content_clipping_rectangle = mat::T2(_window_rectangle) * content_rectangle;
 
             child->set_layout_parameters(
                 mat::T2{_window_rectangle} * aarect{child_position, child_size},
-                intersect(_window_rectangle, _window_clipping_rectangle));
+                intersect(_window_rectangle, window_content_clipping_rectangle));
         }
 
         need_redraw |= child->updateLayout(display_time_point, need_layout);
@@ -91,6 +140,10 @@ public:
 
         ttlet child_lock = std::scoped_lock(child->mutex);
         child->draw(child->makeDrawContext(context), display_time_point);
+
+        if (can_scroll_y) {
+            drawVerticalScrollBar(context);
+        }
 
         Widget::draw(std::move(context), display_time_point);
     }
@@ -144,7 +197,20 @@ public:
 
 private:
     std::unique_ptr<Widget> child;
+    vec overflow_size = vec{};
     vec scroll_offset = vec{};
+
+    aarect content_rectangle;
+    aarect horizontal_scroll_bar_rectangle;
+    aarect vertical_scroll_bar_rectangle;
+
+    void drawVerticalScrollBar(DrawContext context) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        context.fillColor = theme->fillColor(_semantic_layer + 1);
+        context.drawFilledQuad(vertical_scroll_bar_rectangle);
+    }
 };
 
 using VerticalScrollWidget = ScrollWidget<false, true>;
