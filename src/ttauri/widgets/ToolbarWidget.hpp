@@ -32,10 +32,11 @@ public:
 
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 
-protected:
+private:
     std::vector<Widget *> left_children;
     std::vector<Widget *> right_children;
     relative_base_line child_base_line;
+    aarect window_move_rectangle;
 };
 
 } // namespace tt

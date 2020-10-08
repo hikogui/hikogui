@@ -79,8 +79,8 @@ public:
             ttlet slider_size = std::max(rail_length * content_aperture_ratio, Theme::smallSize * 2.0f);
 
             // Calculate the relative offset of both the view and the slider.
-            ttlet scroll_space = *content - *aperture;
-            ttlet relative_offset = *offset / scroll_space;
+            scroll_space = *content - *aperture;
+            ttlet relative_offset = scroll_space != 0.0f ? *offset / scroll_space : 0.0f;
 
             // Calculate the position of the slider.
             ttlet slide_space = rail_length - slider_size;
@@ -103,7 +103,9 @@ public:
         context.fillColor = theme->fillColor(_semantic_layer);
         context.drawFilledQuad(rectangle());
 
-        draw_slider(context);
+        if (scroll_space != 0.0f) {
+            draw_slider(context);
+        }
         Widget::draw(std::move(context), display_time_point);
     }
 
@@ -112,7 +114,7 @@ public:
         ttlet lock = std::scoped_lock(mutex);
         ttlet position = fromWindowTransform * window_position;
 
-        if (_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position)) {
+        if (_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && scroll_space != 0.0f) {
             return HitBox{this, _draw_layer};
         } else {
             return HitBox{};
@@ -139,6 +141,7 @@ private:
     observable<float> offset;
     observable<float> aperture;
     observable<float> content;
+    float scroll_space;
 
     aarect slider_rectangle;
 

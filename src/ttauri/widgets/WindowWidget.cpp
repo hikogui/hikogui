@@ -84,7 +84,6 @@ HitBox WindowWidget::hitBoxTest(vec window_position) const noexcept
     constexpr float BORDER_WIDTH = 10.0f;
 
     auto r = HitBox{this, _draw_layer};
-
     if (position.x() <= BORDER_WIDTH) {
         if (position.y() <= BORDER_WIDTH) {
             r.type = HitBox::Type::BottomLeftResizeCorner;
@@ -109,14 +108,12 @@ HitBox WindowWidget::hitBoxTest(vec window_position) const noexcept
     } else if (position.y() >= (rectangle().height() - BORDER_WIDTH)) {
         r.type = HitBox::Type::TopResizeBorder;
 
-    } else if (_window_rectangle.contains(window_position) && _window_clipping_rectangle.contains(window_position)) {
-        for (ttlet &child : children) {
-            r = std::max(r, child->hitBoxTest(window_position));
-        }
-
-    } else {
-        return {};
     }
+
+    for (ttlet &child : children) {
+        r = std::max(r, child->hitBoxTest(window_position));
+    }
+
     return r;
 }
 

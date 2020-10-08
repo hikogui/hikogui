@@ -13,9 +13,7 @@
 namespace tt {
 
 SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &icon) noexcept :
-    Widget(window, parent),
-    iconCell(icon.makeCell()),
-    systemMenuRectangle(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight})
+    Widget(window, parent), iconCell(icon.makeCell())
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.
     _margin = 0.0f;
@@ -35,6 +33,23 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
     }
 }
 
+[[nodiscard]] bool SystemMenuWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+{
+    tt_assume(mutex.is_locked_by_current_thread());
+
+    need_layout |= std::exchange(requestLayout, false);
+    if (need_layout) {
+        // Leave space for window resize handles on the left and top.
+        system_menu_rectangle = aarect{
+            rectangle().x() + Theme::margin,
+            rectangle().y(),
+            rectangle().width() - Theme::margin,
+            rectangle().height() - Theme::margin};
+    }
+
+    return Widget::updateLayout(display_time_point, need_layout);
+}
+
 void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
@@ -48,7 +63,7 @@ HitBox SystemMenuWidget::hitBoxTest(vec window_position) const noexcept
     ttlet lock = std::scoped_lock(mutex);
     ttlet position = fromWindowTransform * window_position;
 
-    if (_window_clipping_rectangle.contains(window_position) && systemMenuRectangle.contains(position)) {
+    if (_window_clipping_rectangle.contains(window_position) && system_menu_rectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
         return HitBox{this, _draw_layer, HitBox::Type::ApplicationIcon};

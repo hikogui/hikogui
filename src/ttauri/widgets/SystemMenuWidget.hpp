@@ -21,6 +21,7 @@ public:
     ~SystemMenuWidget() {}
 
     [[nodiscard]] bool updateConstraints() noexcept override;
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
 
@@ -39,7 +40,7 @@ public:
 private:
     std::unique_ptr<ImageCell> iconCell;
 
-    aarect systemMenuRectangle;
+    aarect system_menu_rectangle;
 };
 
 }

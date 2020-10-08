@@ -61,15 +61,11 @@ HitBox ContainerWidget::hitBoxTest(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
-        auto r = HitBox{this, _draw_layer};
-        for (ttlet &child : children) {
-            r = std::max(r, child->hitBoxTest(window_position));
-        }
-        return r;
+    auto r = HitBox{};
+    for (ttlet &child : children) {
+        r = std::max(r, child->hitBoxTest(window_position));
     }
-
-    return HitBox{};
+    return r;
 }
 
 std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcept

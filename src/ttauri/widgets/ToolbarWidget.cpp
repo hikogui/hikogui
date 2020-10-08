@@ -70,6 +70,9 @@ Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<
         // Add right hand margin for the last child added.
         width += prev_right_margin;
 
+        // Add space so there is a place to drag-move the window.
+        width += Theme::width;
+
         _preferred_size = {width, finterval{height.minimum()}};
         return true;
     } else {
@@ -132,6 +135,14 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
             ttlet child_rectangle = aarect{x, child->margin(), width, rectangle().height() - child->margin() * 2.0f};
             child->set_layout_parameters(mat::T2(_window_rectangle) * child_rectangle, _window_clipping_rectangle, base_line_position);
         }
+
+        // Leave a margin to the left, right and top of the toolbar for resizing.
+        window_move_rectangle = aarect{
+            _window_rectangle.x() + Theme::margin,
+            _window_rectangle.y(),
+            _window_rectangle.width() - Theme::margin * 2.0f,
+            _window_rectangle.height() - Theme::margin
+        };
     }
     return ContainerWidget::updateLayout(display_time_point, need_layout);
 }
@@ -148,15 +159,16 @@ HitBox ToolbarWidget::hitBoxTest(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
-        auto r = HitBox{this, _draw_layer, HitBox::Type::MoveArea};
-        for (ttlet &child : children) {
-            r = std::max(r, child->hitBoxTest(window_position));
-        }
-        return r;
-    } else {
-        return {};
+    auto r = HitBox{};
+
+    if (_window_clipping_rectangle.contains(window_position) && window_move_rectangle.contains(window_position)) {
+        r = HitBox{this, _draw_layer, HitBox::Type::MoveArea};
     }
+
+    for (ttlet &child : children) {
+        r = std::max(r, child->hitBoxTest(window_position));
+    }
+    return r;
 }
 
 } // namespace tt
