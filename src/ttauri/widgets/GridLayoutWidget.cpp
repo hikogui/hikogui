@@ -1,14 +1,14 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "GridWidget.hpp"
+#include "GridLayoutWidget.hpp"
 #include "../GUI/Window.hpp"
 #include "../algorithm.hpp"
 #include "../alignment.hpp"
 
 namespace tt {
 
-[[nodiscard]] std::pair<int, int> GridWidget::calculateGridSize(std::vector<cell> const &cells) noexcept
+[[nodiscard]] std::pair<int, int> GridLayoutWidget::calculateGridSize(std::vector<cell> const &cells) noexcept
 {
     int nr_left = 0;
     int nr_right = 0;
@@ -32,7 +32,7 @@ namespace tt {
 }
 
 [[nodiscard]] interval_vec2
-GridWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
+GridLayoutWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     rows.clear();
     columns.clear();
@@ -70,7 +70,7 @@ GridWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_layout 
     return {columns.extent(), rows.extent()};
 }
 
-Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
+Widget &GridLayoutWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
 {
     auto lock = std::scoped_lock(mutex);
 
@@ -86,7 +86,7 @@ Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> chil
     return widget;
 }
 
-bool GridWidget::updateConstraints() noexcept
+bool GridLayoutWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
@@ -98,7 +98,7 @@ bool GridWidget::updateConstraints() noexcept
     }
 }
 
-bool GridWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+bool GridLayoutWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 

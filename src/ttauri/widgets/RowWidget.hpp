@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "GridWidget.hpp"
+#include "GridLayoutWidget.hpp"
 #include "../GUI/Theme.hpp"
 #include <memory>
 
 namespace tt {
 
-class RowWidget final : public GridWidget {
+class RowWidget final : public GridLayoutWidget {
 public:
-    RowWidget(Window &window, Widget *parent) noexcept : GridWidget(window, parent) {}
+    RowWidget(Window &window, Widget *parent) noexcept : GridLayoutWidget(window, parent) {}
 
     /** Add a widget directly to this widget.
      *
@@ -20,7 +20,7 @@ public:
     template<typename T, typename... Args>
     T &makeWidget(Args &&... args)
     {
-        return GridWidget::makeWidget<T, "T0L+1"_ca>(std::forward<Args>(args)...);
+        return GridLayoutWidget::makeWidget<T, "T0L+1"_ca>(std::forward<Args>(args)...);
     }
 };
 

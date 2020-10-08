@@ -114,11 +114,6 @@ public:
             )
         ) {}
 
-    observable &operator=(value_type const &value) noexcept {
-        store(value);
-        return *this;
-    }
-
     template<typename Other>
     observable &operator=(observable<Other> const &other) noexcept {
         return *this = std::static_pointer_cast<detail::observable_base<value_type>>(
@@ -133,6 +128,18 @@ public:
                 std::make_shared<detail::observable_value<Other>>(other)
             )
         );
+    }
+
+    observable &operator=(value_type const &value) noexcept
+    {
+        store(value);
+        return *this;
+    }
+
+    observable &operator+=(value_type const &value) noexcept
+    {
+        store(load() + value);
+        return *this;
     }
 
     [[nodiscard]] value_type previous_value() const noexcept {

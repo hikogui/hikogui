@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ContainerWidget.hpp"
-#include "GridWidgetDelegate.hpp"
+#include "GridLayoutDelegate.hpp"
 #include "../iaarect.hpp"
 #include "../GUI/Theme.hpp"
 #include "../cell_address.hpp"
@@ -13,9 +13,9 @@
 
 namespace tt {
 
-class GridWidget : public ContainerWidget {
+class GridLayoutWidget : public ContainerWidget {
 public:
-    GridWidget(Window &window, Widget *parent, GridWidgetDelegate *delegate = nullptr) noexcept :
+    GridLayoutWidget(Window &window, Widget *parent, GridLayoutDelegate *delegate = nullptr) noexcept :
         ContainerWidget(window, parent), delegate(delegate)
     {
         if (delegate) {
@@ -23,7 +23,7 @@ public:
         }
     }
 
-    ~GridWidget()
+    ~GridLayoutWidget()
     {
         if (delegate) {
             delegate->closingWidget(*this);
@@ -87,7 +87,7 @@ private:
     std::vector<cell> cells;
     cell_address current_address = "L0T0"_ca;
 
-    GridWidgetDelegate *delegate = nullptr;
+    GridLayoutDelegate *delegate = nullptr;
 
     flow_layout rows;
     flow_layout columns;

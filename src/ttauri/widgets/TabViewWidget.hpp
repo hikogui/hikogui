@@ -4,18 +4,18 @@
 #pragma once
 
 #include "Widget.hpp"
-#include "GridWidget.hpp"
+#include "GridLayoutWidget.hpp"
 #include "../cells/ImageCell.hpp"
 #include "../cells/TextCell.hpp"
 
 namespace tt {
 
-class TabWidget final : public Widget {
+class TabViewWidget final : public Widget {
 public:
     observable<int> value = 0;
 
     template<typename V>
-    TabWidget(Window &window, Widget *parent, V &&value) noexcept : Widget(window, parent), value(std::forward<V>(value))
+    TabViewWidget(Window &window, Widget *parent, V &&value) noexcept : Widget(window, parent), value(std::forward<V>(value))
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected child.
@@ -30,7 +30,7 @@ public:
         });
     }
 
-    ~TabWidget() {}
+    ~TabViewWidget() {}
 
     [[nodiscard]] bool updateConstraints() noexcept override
     {
@@ -117,7 +117,7 @@ public:
         return children[*value]->nextKeyboardWidget(currentKeyboardWidget, reverse);
     }
 
-    template<typename WidgetType = GridWidget, typename... Args>
+    template<typename WidgetType = GridLayoutWidget, typename... Args>
     WidgetType &addTab(Args const &... args) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);

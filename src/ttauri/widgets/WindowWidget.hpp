@@ -9,18 +9,18 @@
 namespace tt {
 
 class ToolbarWidget;
-class GridWidget;
+class GridLayoutWidget;
 
 class WindowWidget final : public ContainerWidget {
 public:
-    WindowWidget(Window &window, GridWidgetDelegate *delegate, Label title) noexcept;
+    WindowWidget(Window &window, GridLayoutDelegate *delegate, Label title) noexcept;
     ~WindowWidget();
 
     [[nodiscard]] bool updateConstraints() noexcept override;
     [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
     [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
 
-    [[nodiscard]] GridWidget *content() const noexcept
+    [[nodiscard]] GridLayoutWidget *content() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
         tt_assume(_content);
@@ -36,7 +36,7 @@ public:
 
 private:
     Label title;
-    GridWidget *_content = nullptr;
+    GridLayoutWidget *_content = nullptr;
     ToolbarWidget *_toolbar = nullptr;
 };
 

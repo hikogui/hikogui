@@ -6,19 +6,20 @@ target_sources(ttauri PRIVATE
     ColumnWidget.hpp
     ContainerWidget.cpp
     ContainerWidget.hpp
-    GridWidget.cpp
-    GridWidget.hpp
-    GridWidgetDelegate.hpp
+    GridLayoutWidget.cpp
+    GridLayoutWidget.hpp
+    GridLayoutDelegate.hpp
     LabelWidget.hpp
     LineInputWidget.cpp
     LineInputWidget.hpp
     RadioButtonWidget.hpp
     RowWidget.hpp
-    ScrollWidget.hpp
+    ScrollViewWidget.hpp
+    ScrollBarWidget.hpp
     SelectionWidget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>
-    TabWidget.hpp
+    TabViewWidget.hpp
     ToggleWidget.hpp
     ToolbarButtonWidget.hpp
     ToolbarTabButtonWidget.hpp
