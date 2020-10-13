@@ -374,7 +374,10 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
     ttlet colorClearValue = vk::ClearColorValue{
-        static_cast<std::array<float,4>>(theme->fillColor(0))
+        static_cast<std::array<float,4>>([this]() {
+            ttlet lock = std::scoped_lock(widget->mutex);
+            return widget->backgroundColor();
+        }())
     };
     ttlet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
     ttlet clearValues = std::array{

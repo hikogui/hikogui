@@ -105,17 +105,17 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
         reinterpret_cast<HINSTANCE>(application->hInstance), // Instance handle
         this
     );
+    if (win32Window == nullptr) {
+        LOG_FATAL("Could not open a win32 window: {}", getLastErrorMessage());
+    }
 
     // Now we extend the drawable area over the titlebar and and border, excluding the drop shadow.
-    MARGINS m{ 0, 0, 0, 1 };
+    // At least one value needs to be postive for the drop-shadow to be rendered.
+    MARGINS m{0, 0, 0, 1};
     DwmExtendFrameIntoClientArea(reinterpret_cast<HWND>(win32Window), &m);
 
     // Force WM_NCCALCSIZE to be send to the window.
     SetWindowPos(reinterpret_cast<HWND>(win32Window), nullptr, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOOWNERZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
-
-    if (win32Window == nullptr) {
-        TTAURI_THROW(gui_error("Could not open a win32 window."));
-    }
 
     if (!firstWindowHasBeenOpened) {
         ShowWindow(reinterpret_cast<HWND>(win32Window), application->nCmdShow);
@@ -568,8 +568,10 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
     case WM_NCCALCSIZE:
         if (wParam == TRUE) {
-            // Return zero to preserve the extended client area on the window.
-
+            // When wParam is TRUE, simply returning 0 without processing the NCCALCSIZE_PARAMS rectangles
+            // will cause the client area to resize to the size of the window, including the window frame.
+            // This will remove the window frame and caption items from your window, leaving only the client area displayed.
+            //
             // Starting with Windows Vista, removing the standard frame by simply
             // returning 0 when the wParam is TRUE does not affect frames that are
             // extended into the client area using the DwmExtendFrameIntoClientArea function.
@@ -705,6 +707,9 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         tt_no_default();
     }
 
+    ttlet a_button_is_pressed = mouseEvent.down.leftButton || mouseEvent.down.middleButton || mouseEvent.down.rightButton ||
+        mouseEvent.down.x1Button || mouseEvent.down.x2Button;
+
     switch (uMsg) {
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
@@ -713,6 +718,10 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.downPosition = mouseButtonEvent.downPosition;
         mouseEvent.clickCount = 0;
+
+        if (!a_button_is_pressed) {
+            ReleaseCapture();
+        }
         break;
 
     case WM_LBUTTONDOWN:
@@ -722,6 +731,10 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = (mouseEvent.timePoint < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
+
+        // Track draging past the window borders.
+        tt_assume(win32Window != 0);
+        SetCapture(reinterpret_cast<HWND>(win32Window));
         break;
 
     case WM_LBUTTONDBLCLK:
@@ -740,14 +753,10 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_MOUSEMOVE: {
-        ttlet dragging = 
-            mouseEvent.down.leftButton ||
-            mouseEvent.down.middleButton ||
-            mouseEvent.down.rightButton ||
-            mouseEvent.down.x1Button ||
-            mouseEvent.down.x2Button;
+        
 
-        mouseEvent.type = dragging ? MouseEvent::Type::Drag : MouseEvent::Type::Move;
+        // XXX Make sure the mouse is moved enough for this to cause a drag event.
+        mouseEvent.type = a_button_is_pressed ? MouseEvent::Type::Drag : MouseEvent::Type::Move;
         mouseEvent.downPosition = mouseButtonEvent.downPosition;
         mouseEvent.clickCount = mouseButtonEvent.clickCount;
         } break;
