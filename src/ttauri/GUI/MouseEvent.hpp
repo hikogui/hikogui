@@ -43,12 +43,19 @@ struct MouseEvent {
     {
     }
 
+    /** Get the location of the mouse relative to the start of a drag.
+     */
+    [[nodiscard]] vec delta() const noexcept {
+        return type == Type::Drag ? position - downPosition : vec{};
+    }
+
     static MouseEvent entered(vec position=vec::point(0.0f, 0.0f)) noexcept {
         MouseEvent event;
         event.position = position;
         event.type = MouseEvent::Type::Entered;
         return event;
     }
+
     static MouseEvent exited() noexcept {
         // Position far away from the left/bottom corner, but where even
         // after translations will not cause the position to be infinite.

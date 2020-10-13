@@ -149,8 +149,8 @@ public:
             ttlet scroll_offset_x_max = *scroll_content_width - *scroll_aperture_width;
             ttlet scroll_offset_y_max = *scroll_content_height - *scroll_aperture_height;
 
-            scroll_offset_x = std::clamp(*scroll_offset_x, 0.0f, scroll_offset_x_max);
-            scroll_offset_y = std::clamp(*scroll_offset_y, 0.0f, scroll_offset_y_max);
+            scroll_offset_x = std::clamp(std::round(*scroll_offset_x), 0.0f, scroll_offset_x_max);
+            scroll_offset_y = std::clamp(std::round(*scroll_offset_y), 0.0f, scroll_offset_y_max);
 
             ttlet content_rectangle = aarect{-*scroll_offset_x, -*scroll_offset_y, *scroll_content_width, *scroll_content_height};
 
@@ -193,7 +193,6 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
         tt_assume(content);
 
-
         if constexpr (can_scroll_horizontally) {
             ttlet bar_lock = std::scoped_lock{horizontal_scroll_bar->mutex};
             horizontal_scroll_bar->draw(horizontal_scroll_bar->makeDrawContext(context), display_time_point);
@@ -214,7 +213,15 @@ public:
         ttlet lock = std::scoped_lock(mutex);
         tt_assume(content);
 
-        auto r = content->hitBoxTest(window_position);
+        auto r = HitBox{};
+
+        if (_window_clipping_rectangle.contains(window_position) &&
+            shrink(_window_rectangle, Theme::margin).contains(window_position)) {
+            // Claim mouse events for scrolling.
+            r = std::max(r, HitBox{this, _draw_layer});
+        }
+
+        r = std::max(r, content->hitBoxTest(window_position));
         if constexpr (can_scroll_horizontally) {
             r = std::max(r, horizontal_scroll_bar->hitBoxTest(window_position));
         }

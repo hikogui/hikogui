@@ -33,6 +33,8 @@ public:
     virtual Widget &addWidget(std::unique_ptr<Widget> childWidget) noexcept;
 
     bool handleMouseEvent(MouseEvent const &event) noexcept final {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (Widget::handleMouseEvent(event)) {
             return true;
         } else if (parent) {
