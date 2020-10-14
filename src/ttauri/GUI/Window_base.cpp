@@ -158,6 +158,14 @@ void Window_base::updateKeyboardTarget(Widget const *newTargetWidget) noexcept {
     }
 }
 
+void Window_base::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(widget);
+    ttlet child_lock = std::scoped_lock(widget->mutex);
+    return widget->set_resize_border_priority(left, right, bottom, top);
+}
+
 bool Window_base::handleMouseEvent(MouseEvent event) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 

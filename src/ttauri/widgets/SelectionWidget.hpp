@@ -338,7 +338,7 @@ public:
         if (selecting && overlayRectangle.contains(position)) {
             return HitBox{this, _draw_layer + 25.0f, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
 
-        } else if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
+        } else if (_window_clipping_rectangle.contains(window_position)) {
             return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
 
         } else {

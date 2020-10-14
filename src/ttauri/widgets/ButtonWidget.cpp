@@ -101,7 +101,7 @@ HitBox ButtonWidget::hitBoxTest(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
+    if (_window_clipping_rectangle.contains(window_position)) {
         return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};

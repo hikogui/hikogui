@@ -58,26 +58,6 @@ WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point display_time
 
             minimizeRectangle = aarect{vec::point(0.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-            // Leave room for resize window handles at the top and right.
-            closeHoverRectangle = aarect{
-                closeRectangle.x(),
-                closeRectangle.y(),
-                closeRectangle.width() - Theme::margin,
-                closeRectangle.height() - Theme::margin};
-            // Leave room for resize window handles at the top.
-            maximizeHoverRectangle = aarect{
-                maximizeRectangle.x(),
-                maximizeRectangle.y(),
-                maximizeRectangle.width(),
-                maximizeRectangle.height() - Theme::margin};
-            // Leave room for resize window handles at the top.
-            minimizeHoverRectangle = aarect{
-                minimizeRectangle.x(),
-                minimizeRectangle.y(),
-                minimizeRectangle.width(),
-                minimizeRectangle.height() - Theme::margin};
-
-
         } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
             closeRectangle = aarect{vec::point(MARGIN, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
 
@@ -87,10 +67,6 @@ WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point display_time
             maximizeRectangle = aarect{
                 vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
                 {DIAMETER, DIAMETER}};
-
-            closeHoverRectangle = closeRectangle;
-            minimizeHoverRectangle = minimizeRectangle;
-            maximizeHoverRectangle = maximizeRectangle;
         } else {
             tt_no_default();
         }
@@ -252,9 +228,9 @@ bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
     // Check the hover states of each button.
     auto stateHasChanged = false;
     ttlet position = fromWindowTransform * event.position;
-    stateHasChanged |= compare_then_assign(hoverClose, closeHoverRectangle.contains(position));
-    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeHoverRectangle.contains(position));
-    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeHoverRectangle.contains(position));
+    stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(position));
+    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(position));
+    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(position));
     if (stateHasChanged) {
         window.requestRedraw = true;
     }
@@ -311,9 +287,9 @@ HitBox WindowTrafficLightsWidget::hitBoxTest(vec window_position) const noexcept
     ttlet lock = std::scoped_lock(mutex);
     ttlet position = fromWindowTransform * window_position;
 
-    if (_window_rectangle.contains(window_position) && _window_clipping_rectangle.contains(window_position)) {
-        if (closeHoverRectangle.contains(position) || minimizeHoverRectangle.contains(position) ||
-            maximizeHoverRectangle.contains(position)) {
+    if (_window_clipping_rectangle.contains(window_position)) {
+        if (closeRectangle.contains(position) || minimizeRectangle.contains(position) ||
+            maximizeRectangle.contains(position)) {
             return HitBox{this, _draw_layer, HitBox::Type::Button};
         } else {
             return HitBox{};

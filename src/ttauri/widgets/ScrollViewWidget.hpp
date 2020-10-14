@@ -11,11 +11,12 @@
 
 namespace tt {
 
-template<bool CanScrollHorizontally = true, bool CanScrollVertically = true>
+template<bool CanScrollHorizontally = true, bool CanScrollVertically = true, bool ControlsWindow = true>
 class ScrollViewWidget final : public Widget {
 public:
     static constexpr bool can_scroll_horizontally = CanScrollHorizontally;
     static constexpr bool can_scroll_vertically = CanScrollVertically;
+    static constexpr bool controls_window = ControlsWindow;
 
     ScrollViewWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
     {
@@ -33,6 +34,10 @@ public:
         if constexpr (can_scroll_vertically) {
             vertical_scroll_bar = std::make_unique<ScrollBarWidget<true>>(
                 window, this, scroll_content_height, scroll_aperture_height, scroll_offset_y);
+        }
+
+        if constexpr (controls_window) {
+            window.set_resize_border_priority(true, !can_scroll_vertically, !can_scroll_horizontally, true);
         }
     }
 
@@ -215,8 +220,7 @@ public:
 
         auto r = HitBox{};
 
-        if (_window_clipping_rectangle.contains(window_position) &&
-            shrink(_window_rectangle, Theme::margin).contains(window_position)) {
+        if (_window_clipping_rectangle.contains(window_position)) {
             // Claim mouse events for scrolling.
             r = std::max(r, HitBox{this, _draw_layer});
         }
@@ -285,7 +289,10 @@ private:
     observable<float> scroll_offset_y;
 };
 
-using VerticalScrollViewWidget = ScrollViewWidget<false, true>;
-using HorizontalScrollViewWidget = ScrollViewWidget<true, false>;
+template<bool ControlsWindow = false>
+using VerticalScrollViewWidget = ScrollViewWidget<false, true, ControlsWindow>;
+
+template<bool ControlsWindow = false>
+using HorizontalScrollViewWidget = ScrollViewWidget<true, false, ControlsWindow>;
 
 } // namespace tt

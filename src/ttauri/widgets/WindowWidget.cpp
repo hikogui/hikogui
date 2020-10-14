@@ -46,9 +46,7 @@ WindowWidget::~WindowWidget() {}
         ttlet content_lock = std::scoped_lock(_content->mutex);
         ttlet content_size = _content->preferred_size();
         _preferred_size = intersect(
-            max(content_size + toolbar_size._0y(), toolbar_size.x0()),
-            interval_vec2::make_maximum(window.virtualScreenSize())   
-        );
+            max(content_size + toolbar_size._0y(), toolbar_size.x0()), interval_vec2::make_maximum(window.virtualScreenSize()));
         return true;
     } else {
         return false;
@@ -83,31 +81,42 @@ HitBox WindowWidget::hitBoxTest(vec window_position) const noexcept
 
     constexpr float BORDER_WIDTH = 10.0f;
 
+    ttlet is_on_left_edge = position.x() <= BORDER_WIDTH;
+    ttlet is_on_right_edge = position.x() >= (rectangle().width() - BORDER_WIDTH);
+    ttlet is_on_bottom_edge = position.y() <= BORDER_WIDTH;
+    ttlet is_on_top_edge = position.y() >= (rectangle().height() - BORDER_WIDTH);
+
+    ttlet is_on_bottom_left_corner = is_on_bottom_edge && is_on_left_edge;
+    ttlet is_on_bottom_right_corner = is_on_bottom_edge && is_on_right_edge;
+    ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
+    ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
+
     auto r = HitBox{this, _draw_layer};
-    if (position.x() <= BORDER_WIDTH) {
-        if (position.y() <= BORDER_WIDTH) {
-            r.type = HitBox::Type::BottomLeftResizeCorner;
-        } else if (position.y() >= (rectangle().height() - BORDER_WIDTH)) {
-            r.type = HitBox::Type::TopLeftResizeCorner;
-        } else {
-            r.type = HitBox::Type::LeftResizeBorder;
-        }
-
-    } else if (position.x() >= (rectangle().width() - BORDER_WIDTH)) {
-        if (position.y() <= BORDER_WIDTH) {
-            r.type = HitBox::Type::BottomRightResizeCorner;
-        } else if (position.y() >= (rectangle().height() - BORDER_WIDTH)) {
-            r.type = HitBox::Type::TopRightResizeCorner;
-        } else {
-            r.type = HitBox::Type::RightResizeBorder;
-        }
-
-    } else if (position.y() <= BORDER_WIDTH) {
+    if (is_on_bottom_left_corner) {
+        return {this, _draw_layer, HitBox::Type::BottomLeftResizeCorner};
+    } else if (is_on_bottom_right_corner) {
+        return {this, _draw_layer, HitBox::Type::BottomRightResizeCorner};
+    } else if (is_on_top_left_corner) {
+        return {this, _draw_layer, HitBox::Type::TopLeftResizeCorner};
+    } else if (is_on_top_right_corner) {
+        return {this, _draw_layer, HitBox::Type::TopRightResizeCorner};
+    } else if (is_on_left_edge) {
+        r.type = HitBox::Type::LeftResizeBorder;
+    } else if (is_on_right_edge) {
+        r.type = HitBox::Type::RightResizeBorder;
+    } else if (is_on_bottom_edge) {
         r.type = HitBox::Type::BottomResizeBorder;
-
-    } else if (position.y() >= (rectangle().height() - BORDER_WIDTH)) {
+    } else if (is_on_top_edge) {
         r.type = HitBox::Type::TopResizeBorder;
+    }
 
+    if (
+        (is_on_left_edge && left_resize_border_has_priority) ||
+        (is_on_right_edge && right_resize_border_has_priority) ||
+        (is_on_bottom_edge && bottom_resize_border_has_priority) ||
+        (is_on_top_edge && top_resize_border_has_priority)
+    ) {
+        return r;
     }
 
     for (ttlet &child : children) {

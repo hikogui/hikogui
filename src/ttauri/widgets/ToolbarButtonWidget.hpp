@@ -96,15 +96,6 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
 
         need_layout |= std::exchange(requestLayout, false);
-        if (need_layout) {
-            // Leave space for window resize handles at the top.
-            window_hover_rectangle = aarect{
-                _window_rectangle.x(),
-                _window_rectangle.y(),
-                _window_rectangle.width(),
-                _window_rectangle.height() - Theme::margin};
-        }
-
         return Widget::updateLayout(display_time_point, need_layout);
     }
 
@@ -146,7 +137,7 @@ public:
     {
         ttlet lock = std::scoped_lock(mutex);
 
-        if (_window_clipping_rectangle.contains(window_position) && window_hover_rectangle.contains(window_position)) {
+        if (_window_clipping_rectangle.contains(window_position)) {
             return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
@@ -155,7 +146,6 @@ public:
 
 private:
     bool pressed = false;
-    aarect window_hover_rectangle;
 
     std::unique_ptr<ImageCell> icon_cell;
 

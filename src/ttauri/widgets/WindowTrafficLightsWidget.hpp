@@ -38,10 +38,6 @@ private:
     aarect minimizeRectangle;
     aarect maximizeRectangle;
 
-    aarect closeHoverRectangle;
-    aarect minimizeHoverRectangle;
-    aarect maximizeHoverRectangle;
-
     FontGlyphIDs closeWindowGlyph;
     FontGlyphIDs minimizeWindowGlyph;
     FontGlyphIDs maximizeWindowGlyph;

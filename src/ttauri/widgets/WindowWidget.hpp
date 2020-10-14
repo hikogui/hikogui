@@ -25,6 +25,17 @@ public:
         return theme->fillColor(_semantic_layer);
     }
 
+    /** Defining on which edges the resize handle has priority over widget at a higher layer.
+     */
+    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+        left_resize_border_has_priority = left;
+        right_resize_border_has_priority = right;
+        bottom_resize_border_has_priority = bottom;
+        top_resize_border_has_priority = top;
+    }
+
     [[nodiscard]] GridLayoutWidget *content() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -43,6 +54,11 @@ private:
     Label title;
     GridLayoutWidget *_content = nullptr;
     ToolbarWidget *_toolbar = nullptr;
+
+    bool left_resize_border_has_priority = true;
+    bool right_resize_border_has_priority = true;
+    bool bottom_resize_border_has_priority = true;
+    bool top_resize_border_has_priority = true;
 };
 
 } // namespace tt

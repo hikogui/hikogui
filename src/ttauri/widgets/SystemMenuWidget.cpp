@@ -61,9 +61,8 @@ void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point dis
 HitBox SystemMenuWidget::hitBoxTest(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    ttlet position = fromWindowTransform * window_position;
 
-    if (_window_clipping_rectangle.contains(window_position) && system_menu_rectangle.contains(position)) {
+    if (_window_clipping_rectangle.contains(window_position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
         return HitBox{this, _draw_layer, HitBox::Type::ApplicationIcon};

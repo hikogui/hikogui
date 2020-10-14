@@ -183,6 +183,8 @@ public:
 
     virtual void setCursor(Cursor cursor) = 0;
 
+    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
+
     virtual void closeWindow() = 0;
 
     virtual void minimizeWindow() = 0;
