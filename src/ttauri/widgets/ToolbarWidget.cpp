@@ -36,48 +36,64 @@ Widget &ToolbarWidget::addWidget(HorizontalAlignment alignment, std::unique_ptr<
     return widget;
 }
 
+void ToolbarWidget::updateConstraintsForChild(
+    Widget const &child,
+    ssize_t index,
+    relative_base_line &shared_base_line,
+    finterval &shared_height) noexcept
+{
+    ttlet child_lock = std::scoped_lock(child.mutex);
+
+    layout.update(index, child.preferred_size().width(), child.width_resistance(), child.margin(), relative_base_line{});
+
+    shared_base_line = std::max(shared_base_line, child.preferred_base_line());
+    shared_height = intersect(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
+}
+
 [[nodiscard]] bool ToolbarWidget::updateConstraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
     if (ContainerWidget::updateConstraints()) {
-        auto width = finterval{0.0f};
-        auto height = finterval{};
-        child_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
-        auto prev_right_margin = 0.0f;
+        auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
+        auto shared_height = finterval{};
+
+        layout.clear();
+        ssize_t index = 0;
+
         for (ttlet &child : left_children) {
-            ttlet child_lock = std::scoped_lock(child->mutex);
-            ttlet left_margin = std::max(prev_right_margin, child->margin());
-            prev_right_margin = child->margin();
-
-            width += left_margin;
-            width += child->preferred_size().width();
-            height = intersect(height, child->preferred_size().height() + child->margin() * 2.0f);
-            child_base_line = std::max(child_base_line, child->preferred_base_line());
+            updateConstraintsForChild(*child, index++, shared_base_line, shared_height);
         }
 
-        for (ttlet &child : views::reverse(right_children)) {
-            ttlet child_lock = std::scoped_lock(child->mutex);
-            ttlet left_margin = std::max(prev_right_margin, child->margin());
-            prev_right_margin = child->margin();
+        // Add a space between the left and right widgets.
+        layout.update(
+            index++, finterval{Theme::width, std::numeric_limits<float>::max()}, ranged_int<3>{1}, 0.0f, relative_base_line{});
 
-            width += left_margin;
-            width += child->preferred_size().width();
-            height = intersect(height, child->preferred_size().height() + child->margin() * 2.0f);
-            child_base_line = std::max(child_base_line, child->preferred_base_line());
+        for (ttlet &child : std::views::reverse(right_children)) {
+            updateConstraintsForChild(*child, index++, shared_base_line, shared_height);
         }
 
-        // Add right hand margin for the last child added.
-        width += prev_right_margin;
-
-        // Add space so there is a place to drag-move the window.
-        width += Theme::width;
-
-        _preferred_size = {width, finterval{height.minimum()}};
+        tt_assume(index == std::ssize(left_children) + 1 + std::ssize(right_children));
+        _preferred_size = {layout.extent(), finterval{shared_height.minimum()}};
+        _preferred_base_line = shared_base_line;
         return true;
     } else {
         return false;
     }
+}
+
+void ToolbarWidget::updateLayoutForChild(Widget &child, ssize_t index) const noexcept
+{
+    ttlet child_lock = std::scoped_lock(child.mutex);
+
+    ttlet[child_x, child_width] = layout.get_offset_and_size(index++);
+
+    ttlet child_rectangle = aarect{
+        rectangle().x() + child_x, rectangle().y() + child.margin(), child_width, rectangle().height() - child.margin() * 2.0f};
+
+    ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
+
+    child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
 }
 
 bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
@@ -86,63 +102,21 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
 
     need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
-        auto extra_width = rectangle().width() - _preferred_size.width().minimum();
+        layout.flow(rectangle().width());
 
-        auto x = rectangle().left();
-        auto prev_right_margin = 0.0f;
-        ttlet base_line_position = child_base_line.position(_window_rectangle.bottom(), _window_rectangle.top()); 
+        ssize_t index = 0;
         for (ttlet &child : left_children) {
-            ttlet child_lock = std::scoped_lock(child->mutex);
-
-            prev_right_margin = child->margin();
-            ttlet left_margin = std::max(prev_right_margin, child->margin());
-
-            x += left_margin;
-            ttlet width = std::clamp(
-                child->preferred_size().width().maximum(),
-                child->preferred_size().width().minimum(),
-                child->preferred_size().width().minimum() + extra_width);
-
-            if (width > child->preferred_size().width().minimum()) {
-                extra_width -= (width - child->preferred_size().width().minimum());
-            }
-
-            ttlet child_rectangle = aarect{x, child->margin(), width, rectangle().height() - child->margin() * 2.0f};
-            child->set_layout_parameters(mat::T2(_window_rectangle) * child_rectangle, _window_clipping_rectangle, base_line_position);
-
-            x += width;
+            updateLayoutForChild(*child, index++);
         }
 
-        auto prev_left_margin = 0.0f;
-        x = rectangle().right();
-        for (ttlet &child : right_children) {
-            ttlet child_lock = std::scoped_lock(child->mutex);
+        // Skip over the cell between left and right children.
+        index++;
 
-            prev_left_margin = child->margin();
-            ttlet right_margin = std::max(prev_left_margin, child->margin());
-
-            x -= right_margin;
-            ttlet width = std::clamp(
-                child->preferred_size().width().maximum(),
-                child->preferred_size().width().minimum(),
-                child->preferred_size().width().minimum() + extra_width);
-
-            if (width > child->preferred_size().width().minimum()) {
-                extra_width -= (width - child->preferred_size().width().minimum());
-            }
-
-            x -= width;
-            ttlet child_rectangle = aarect{x, child->margin(), width, rectangle().height() - child->margin() * 2.0f};
-            child->set_layout_parameters(mat::T2(_window_rectangle) * child_rectangle, _window_clipping_rectangle, base_line_position);
+        for (ttlet &child : std::views::reverse(right_children)) {
+            updateLayoutForChild(*child, index++);
         }
 
-        // Leave a margin to the left, right and top of the toolbar for resizing.
-        window_move_rectangle = aarect{
-            _window_rectangle.x() + Theme::margin,
-            _window_rectangle.y(),
-            _window_rectangle.width() - Theme::margin * 2.0f,
-            _window_rectangle.height() - Theme::margin
-        };
+        tt_assume(index == std::ssize(left_children) + 1 + std::ssize(right_children));
     }
     return ContainerWidget::updateLayout(display_time_point, need_layout);
 }
@@ -161,7 +135,7 @@ HitBox ToolbarWidget::hitBoxTest(vec window_position) const noexcept
 
     auto r = HitBox{};
 
-    if (_window_clipping_rectangle.contains(window_position) && window_move_rectangle.contains(window_position)) {
+    if (_window_clipping_rectangle.contains(window_position)) {
         r = HitBox{this, _draw_layer, HitBox::Type::MoveArea};
     }
 

@@ -35,8 +35,13 @@ public:
 private:
     std::vector<Widget *> left_children;
     std::vector<Widget *> right_children;
+
+    flow_layout layout;
     relative_base_line child_base_line;
-    aarect window_move_rectangle;
+
+    void updateConstraintsForChild(Widget const &child, ssize_t index, relative_base_line &shared_base_line, finterval &shared_height) noexcept;
+
+    void updateLayoutForChild(Widget &child, ssize_t index) const noexcept;
 };
 
 } // namespace tt

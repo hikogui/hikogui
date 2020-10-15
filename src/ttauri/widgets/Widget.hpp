@@ -275,7 +275,7 @@ public:
         _window_rectangle = window_rectangle;
         _window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
 
-        if (std::isinf(_window_base_line)) {
+        if (std::isinf(window_base_line)) {
             _window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
         } else {
             _window_base_line = window_base_line;

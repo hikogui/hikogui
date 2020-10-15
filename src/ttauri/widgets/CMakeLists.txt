@@ -3,7 +3,6 @@ target_sources(ttauri PRIVATE
     ButtonWidget.cpp
     ButtonWidget.hpp
     CheckboxWidget.hpp
-    ColumnWidget.hpp
     ContainerWidget.cpp
     ContainerWidget.hpp
     GridLayoutWidget.cpp
@@ -13,7 +12,7 @@ target_sources(ttauri PRIVATE
     LineInputWidget.cpp
     LineInputWidget.hpp
     RadioButtonWidget.hpp
-    RowWidget.hpp
+    RowColumnLayoutWidget.hpp
     ScrollViewWidget.hpp
     ScrollBarWidget.hpp
     SelectionWidget.hpp
