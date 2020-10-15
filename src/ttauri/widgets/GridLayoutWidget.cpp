@@ -104,8 +104,8 @@ bool GridLayoutWidget::updateLayout(hires_utc_clock::time_point display_time_poi
 
     need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
-        columns.flow(rectangle().width());
-        rows.flow(rectangle().height());
+        columns.update_layout(rectangle().width());
+        rows.update_layout(rectangle().height());
 
         for (auto &&cell : cells) {
             auto &&child = cell.widget;

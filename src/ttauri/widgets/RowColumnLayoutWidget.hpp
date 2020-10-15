@@ -53,7 +53,7 @@ public:
 
         need_layout |= std::exchange(requestLayout, false);
         if (need_layout) {
-            layout.flow(is_row ? rectangle().width() : rectangle().height());
+            layout.update_layout(is_row ? rectangle().width() : rectangle().height());
 
             ssize_t index = 0;
             for (ttlet &child : children) {

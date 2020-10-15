@@ -102,7 +102,7 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
 
     need_layout |= std::exchange(requestLayout, false);
     if (need_layout) {
-        layout.flow(rectangle().width());
+        layout.update_layout(rectangle().width());
 
         ssize_t index = 0;
         for (ttlet &child : left_children) {
