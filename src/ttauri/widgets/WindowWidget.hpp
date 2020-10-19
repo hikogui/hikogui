@@ -16,13 +16,13 @@ public:
     WindowWidget(Window &window, GridLayoutDelegate *delegate, Label title) noexcept;
     ~WindowWidget();
 
-    [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
+    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
     [[nodiscard]] vec backgroundColor() noexcept {
         tt_assume(mutex.is_locked_by_current_thread());
-        return theme->fillColor(_semantic_layer);
+        return theme->fillColor(p_semantic_layer);
     }
 
     /** Defining on which edges the resize handle has priority over widget at a higher layer.

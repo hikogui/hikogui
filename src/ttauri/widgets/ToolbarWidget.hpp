@@ -26,11 +26,11 @@ public:
         return static_cast<T &>(addWidget(Alignment, std::make_unique<T>(window, this, std::forward<Args>(args)...)));
     }
 
-    [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
 
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
 private:
     std::vector<Widget *> left_children;

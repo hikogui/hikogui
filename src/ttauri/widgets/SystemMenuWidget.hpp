@@ -20,22 +20,12 @@ public:
     SystemMenuWidget(Window &window, Widget *parent, Image const &icon) noexcept;
     ~SystemMenuWidget() {}
 
-    [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
+    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
 
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
-
-    bool handleMouseEvent(MouseEvent const &event) noexcept override
-    {
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
-        }
-        return false;
-    }
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
 private:
     std::unique_ptr<ImageCell> iconCell;

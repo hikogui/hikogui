@@ -45,7 +45,7 @@ void Window_base::initialize()
 
     // Execute a constraint check to determine initial window size.
     ttlet widget_lock = std::scoped_lock(widget->mutex);
-    static_cast<void>(widget->updateConstraints());
+    static_cast<void>(widget->update_constraints());
     currentWindowExtent = widget->preferred_size().minimum();
 
     // Once the window is open, we should be a full constraint, layout and draw of the window.
@@ -82,11 +82,11 @@ void Window_base::setDevice(GUIDevice *newDevice)
 void Window_base::updateToNextKeyboardTarget(Widget *current_target_widget) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 
-    auto *tmp = widget->nextKeyboardWidget(current_target_widget, false);
+    auto *tmp = widget->next_keyboard_widget(current_target_widget, false);
     if (tmp == current_target_widget) {
         // The currentTargetWidget was already the last (or only) widget.
         // cycle back to the first.
-        tmp = widget->nextKeyboardWidget(nullptr, false);
+        tmp = widget->next_keyboard_widget(nullptr, false);
     }
 
     updateKeyboardTarget(tmp);
@@ -96,11 +96,11 @@ void Window_base::updateToPrevKeyboardTarget(Widget *current_target_widget) noex
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    auto *tmp = widget->nextKeyboardWidget(current_target_widget, true);
+    auto *tmp = widget->next_keyboard_widget(current_target_widget, true);
     if (tmp == current_target_widget) {
         // The currentTargetWidget was already the first (or only) widget.
         // cycle back to the last.
-        tmp = widget->nextKeyboardWidget(nullptr, true);
+        tmp = widget->next_keyboard_widget(nullptr, true);
     }
 
     updateKeyboardTarget(tmp);
@@ -128,11 +128,11 @@ void Window_base::updateMouseTarget(Widget const *newTargetWidget, vec position)
 
     if (newTargetWidget != mouseTargetWidget) {
         if (mouseTargetWidget != nullptr) {
-            mouseTargetWidget->handleMouseEvent(MouseEvent::exited());
+            mouseTargetWidget->handle_mouse_event(MouseEvent::exited());
         }
         mouseTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (mouseTargetWidget != nullptr) { 
-            mouseTargetWidget->handleMouseEvent(MouseEvent::entered(position));
+            mouseTargetWidget->handle_mouse_event(MouseEvent::entered(position));
         }
     }
 }
@@ -142,18 +142,18 @@ void Window_base::updateKeyboardTarget(Widget const *newTargetWidget) noexcept {
 
     if (newTargetWidget) {
         ttlet widget_lock = std::scoped_lock(newTargetWidget->mutex);
-        if (!newTargetWidget->acceptsFocus()) {
+        if (!newTargetWidget->accepts_focus()) {
             newTargetWidget = nullptr;
         }
     }
 
     if (newTargetWidget != keyboardTargetWidget) {
         if (keyboardTargetWidget != nullptr) {
-            keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited());
+            keyboardTargetWidget->handle_keyboard_event(KeyboardEvent::exited());
         }
         keyboardTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (keyboardTargetWidget != nullptr) {
-            keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered());
+            keyboardTargetWidget->handle_keyboard_event(KeyboardEvent::entered());
         }
     }
 }
@@ -166,7 +166,7 @@ void Window_base::set_resize_border_priority(bool left, bool right, bool bottom,
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
-bool Window_base::handleMouseEvent(MouseEvent event) noexcept {
+bool Window_base::handle_mouse_event(MouseEvent event) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 
     switch (event.type) {
@@ -176,7 +176,7 @@ bool Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     case MouseEvent::Type::ButtonDown:
     case MouseEvent::Type::Move: {
-        ttlet hitbox = widget->hitBoxTest(event.position);
+        ttlet hitbox = widget->hitbox_test(event.position);
         updateMouseTarget(hitbox.widget, event.position);
 
         if (event.type == MouseEvent::Type::ButtonDown) {
@@ -186,45 +186,76 @@ bool Window_base::handleMouseEvent(MouseEvent event) noexcept {
     default:;
     }
 
-    // Send event to target-widget.
-    if (mouseTargetWidget != nullptr) {
-        return mouseTargetWidget->handleMouseEvent(event);
+    auto target = mouseTargetWidget;
+    while (target != nullptr) {
+        if (target->handle_mouse_event(event)) {
+            return true;
+        }
+
+        // Forward the mouse event to the parent of the target.
+        target = target->parent;
     }
+    
     return false;
 }
 
-void Window_base::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
+bool Window_base::handle_keyboard_event(KeyboardEvent const &event) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 
-    if (keyboardTargetWidget != nullptr) {
-        keyboardTargetWidget->handleKeyboardEvent(event);
+    // Let the widget or its parent handle the keyboard event directly.
+    auto target = keyboardTargetWidget;
+    while (target != nullptr) {
+        if (target->handle_keyboard_event(event)) {
+            return true;
+        }
+        // Forward the keyboard event to the parent of the target.
+        target = target->parent;
+    }
 
-    } else if (event.type == KeyboardEvent::Type::Key) {
-        // If no widgets have been selected handle the keyboard-focus changes.
-        for (ttlet command : event.getCommands()) {
+    // If the keyboard event is not handled directly, convert the key event to a command.
+    if (event.type == KeyboardEvent::Type::Key) {
+        ttlet commands = event.getCommands();
+
+        // Send the commands to the widget and its parents, until the command is handled.
+        auto target = keyboardTargetWidget;
+        while (target != nullptr) {
+            for (auto command : commands) {
+                // Send a command in priority order to the widget.
+                if (target->handle_command(command)) {
+                    return true;
+                }
+            }
+            // Forward the keyboard event to the parent of the target.
+            target = target->parent;
+        }
+
+        // If no widgets handle the commands, handle the keyboard focus change commands.
+        for (ttlet command : commands) {
             switch (command) {
             case command::gui_widget_next:
-                updateToNextKeyboardTarget(nullptr);
-                break;
+                updateToNextKeyboardTarget(keyboardTargetWidget);
+                return true;
             case command::gui_widget_prev:
-                updateToPrevKeyboardTarget(nullptr);
-                break;
+                updateToPrevKeyboardTarget(keyboardTargetWidget);
+                return true;
             default:;
             }
         }
     }
+
+    return false;
 }
 
-void Window_base::handleKeyboardEvent(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {
-    return handleKeyboardEvent(KeyboardEvent(_state, modifiers, key));
+bool Window_base::handle_keyboard_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {
+    return handle_keyboard_event(KeyboardEvent(_state, modifiers, key));
 }
 
-void Window_base::handleKeyboardEvent(Grapheme grapheme, bool full) noexcept {
-    return handleKeyboardEvent(KeyboardEvent(grapheme, full));
+bool Window_base::handle_keyboard_event(Grapheme grapheme, bool full) noexcept {
+    return handle_keyboard_event(KeyboardEvent(grapheme, full));
 }
 
-void Window_base::handleKeyboardEvent(char32_t c, bool full) noexcept {
-    return handleKeyboardEvent(Grapheme(c), full);
+bool Window_base::handle_keyboard_event(char32_t c, bool full) noexcept {
+    return handle_keyboard_event(Grapheme(c), full);
 }
 
 }

@@ -42,10 +42,10 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet option_list_cbid = this->option_list.add_callback([this](auto...) {
-            requestConstraint = true;
+            request_reconstrain = true;
         });
         [[maybe_unused]] ttlet label_cbid = this->label.add_callback([this](auto...) {
-            requestConstraint = true;
+            request_reconstrain = true;
         });
     }
 
@@ -86,11 +86,11 @@ public:
 
     ~SelectionWidget() {}
 
-    [[nodiscard]] bool updateConstraints() noexcept override
+    [[nodiscard]] bool update_constraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (Widget::updateConstraints()) {
+        if (Widget::update_constraints()) {
             labelCell = std::make_unique<TextCell>(*label, theme->placeholderLabelStyle);
             auto preferredWidth = labelCell->preferredExtent().width();
             auto preferredHeight = labelCell->preferredExtent().height();
@@ -110,9 +110,9 @@ public:
                 preferredHeight = Theme::smallSize;
             }
 
-            _preferred_size = interval_vec2::make_minimum(
+            p_preferred_size = interval_vec2::make_minimum(
                 Theme::smallSize + preferredWidth + Theme::margin * 2.0f, preferredHeight + Theme::margin * 2.0f);
-            _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
+            p_preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
 
             return true;
         } else {
@@ -120,11 +120,11 @@ public:
         }
     }
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= std::exchange(requestLayout, false);
+        need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
             leftBoxRectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
 
@@ -154,9 +154,9 @@ public:
 
             // Calculate overlay dimensions and position.
             ttlet overlayWidth = option_cache_listWidth;
-            ttlet overlayWindowX = _window_rectangle.x() + Theme::smallSize;
+            ttlet overlayWindowX = p_window_rectangle.x() + Theme::smallSize;
             ttlet overlayHeight = std::min(option_cache_list_height, windowHeight);
-            auto overlayWindowY = _window_rectangle.y() - selectedOptionY;
+            auto overlayWindowY = p_window_rectangle.y() - selectedOptionY;
 
             // Adjust overlay to fit inside the window, below the top window decoration.
             overlayWindowY = std::clamp(overlayWindowY, 0.0f, windowHeight - overlayHeight);
@@ -166,7 +166,7 @@ public:
             // The overlayRectangle are in the coordinate system of the current widget, so it will
             // extent beyond the current widget.
             overlayRectangle =
-                aarect{overlayWindowX - _window_rectangle.x(), overlayWindowY - _window_rectangle.y(), overlayWidth, overlayHeight};
+                aarect{overlayWindowX - p_window_rectangle.x(), overlayWindowY - p_window_rectangle.y(), overlayWidth, overlayHeight};
 
             // The label is located to the right of the selection box icon.
             optionRectangle = aarect{optionX, rectangle().height() - optionHeight - Theme::margin, optionWidth, optionHeight};
@@ -175,7 +175,7 @@ public:
             ttlet chevronsGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(chevronsGlyph);
             chevronsRectangle = align(leftBoxRectangle, scale(chevronsGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
         }
-        return Widget::updateLayout(display_time_point, need_layout);
+        return Widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -194,159 +194,158 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
-    void handleKeyboardEvent(KeyboardEvent const &event) noexcept override
+    bool handle_keyboard_event(KeyboardEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
-
-        Widget::handleKeyboardEvent(event);
+        auto handled = Widget::handle_keyboard_event(event);
 
         if (event.type == KeyboardEvent::Type::Exited) {
-            handleCommand(command::gui_escape);
+            handled = true;
+            handle_command(command::gui_escape);
         }
+
+        return handled;
     }
 
-    bool handleMouseEvent(MouseEvent const &event) noexcept override
+    bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
+        auto handled = Widget::handle_mouse_event(event);
 
-        if (Widget::handleMouseEvent(event)) {
-            return true;
+        if (selecting) {
+            ttlet position = from_window_transform * event.position;
 
-        } else {
-            if (selecting) {
-                ttlet position = fromWindowTransform * event.position;
+            auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * position;
 
-                auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * position;
-
-                if (overlayRectangle.contains(position)) {
-                    for (ttlet &option : option_cache_list) {
-                        if (option.backgroundRectangle.contains(mouseInListPosition)) {
-                            if (hoverOption != option.tag) {
-                                window.requestRedraw = true;
-                                hoverOption = option.tag;
-                            }
-                        }
-                    }
-
-                } else {
-                    if (hoverOption.has_value()) {
-                        window.requestRedraw = true;
-                        hoverOption = {};
-                    }
-                }
-            }
-
-            if (event.cause.leftButton) {
-                if (*enabled) {
-                    if (selecting) {
-                        if (event.type == MouseEvent::Type::ButtonDown) {
-                            clickedOption = hoverOption;
+            if (overlayRectangle.contains(position)) {
+                for (ttlet &option : option_cache_list) {
+                    if (option.backgroundRectangle.contains(mouseInListPosition)) {
+                        if (hoverOption != option.tag) {
                             window.requestRedraw = true;
+                            hoverOption = option.tag;
                         }
-
-                        if (event.type == MouseEvent::Type::ButtonUp) {
-                            if (clickedOption.has_value() && clickedOption == hoverOption) {
-                                chosenOption = *clickedOption;
-                                handleCommand(command::gui_activate);
-                            }
-                            clickedOption = {};
-                            window.requestRedraw = true;
-                        }
-
-                    } else if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
-                        handleCommand(command::gui_activate);
                     }
                 }
-
-                return true;
-            } else if (parent) {
-                return parent->handleMouseEvent(event);
-            }
-        }
-        return false;
-    }
-
-    void handleCommand(command command) noexcept override
-    {
-        ttlet lock = std::scoped_lock(mutex);
-
-        if (!*enabled) {
-            return;
-        }
-
-        switch (command) {
-        case command::gui_up: {
-            std::optional<ValueType> prev_tag;
-            for (ttlet &option : option_cache_list) {
-                if (option.tag == chosenOption && prev_tag.has_value()) {
-                    chosenOption = *prev_tag;
-                    break;
-                }
-                prev_tag = option.tag;
-            }
-        } break;
-
-        case command::gui_down: {
-            bool found = false;
-            for (ttlet &option : option_cache_list) {
-                if (found) {
-                    chosenOption = option.tag;
-                    break;
-                } else if (option.tag == chosenOption) {
-                    found = true;
-                }
-            }
-        } break;
-
-        case command::gui_activate:
-            if (selecting) {
-                selecting = false;
-                value.store(chosenOption);
 
             } else {
-                selecting = true;
-                chosenOption = value.load();
+                if (hoverOption.has_value()) {
+                    window.requestRedraw = true;
+                    hoverOption = {};
+                }
             }
-            break;
-
-        case command::gui_widget_next:
-        case command::gui_widget_prev:
-            if (selecting) {
-                selecting = false;
-                value.store(chosenOption);
-            }
-            break;
-
-        case command::gui_escape:
-            if (selecting) {
-                selecting = false;
-            }
-            break;
-
-        default:;
         }
 
-        requestLayout = true;
-        Widget::handleCommand(command);
+        if (event.cause.leftButton) {
+            handled = true;
+            if (*enabled) {
+                if (selecting) {
+                    if (event.type == MouseEvent::Type::ButtonDown) {
+                        clickedOption = hoverOption;
+                        window.requestRedraw = true;
+                    }
+
+                    if (event.type == MouseEvent::Type::ButtonUp) {
+                        if (clickedOption.has_value() && clickedOption == hoverOption) {
+                            chosenOption = *clickedOption;
+                            handle_command(command::gui_activate);
+                        }
+                        clickedOption = {};
+                        window.requestRedraw = true;
+                    }
+
+                } else if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
+                    handle_command(command::gui_activate);
+                }
+            }
+        }
+        return handled;
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
+    bool handle_command(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
-        ttlet position = fromWindowTransform * window_position;
+        auto handled = Widget::handle_command(command);
+
+        if (*enabled) {
+            switch (command) {
+            case command::gui_up: {
+                handled = true;
+                std::optional<ValueType> prev_tag;
+                for (ttlet &option : option_cache_list) {
+                    if (option.tag == chosenOption && prev_tag.has_value()) {
+                        chosenOption = *prev_tag;
+                        break;
+                    }
+                    prev_tag = option.tag;
+                }
+                } break;
+
+            case command::gui_down: {
+                handled = true;
+                bool found = false;
+                for (ttlet &option : option_cache_list) {
+                    if (found) {
+                        chosenOption = option.tag;
+                        break;
+                    } else if (option.tag == chosenOption) {
+                        found = true;
+                    }
+                }
+                } break;
+
+            case command::gui_activate:
+                handled = true;
+                if (selecting) {
+                    selecting = false;
+                    value.store(chosenOption);
+
+                } else {
+                    selecting = true;
+                    chosenOption = value.load();
+                }
+                break;
+
+            case command::gui_widget_next:
+            case command::gui_widget_prev:
+                // We are not handling these commands, just committing the chosen option.
+                if (selecting) {
+                    selecting = false;
+                    value.store(chosenOption);
+                }
+                break;
+
+            case command::gui_escape:
+                handled = true;
+                if (selecting) {
+                    selecting = false;
+                }
+                break;
+
+            default:;
+            }
+        }
+
+        request_relayout = true;
+        return handled;
+    }
+
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
+    {
+        ttlet lock = std::scoped_lock(mutex);
+        ttlet position = from_window_transform * window_position;
 
         if (selecting && overlayRectangle.contains(position)) {
-            return HitBox{this, _draw_layer + 25.0f, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{this, p_draw_layer + 25.0f, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
 
-        } else if (_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        } else if (p_window_clipping_rectangle.contains(window_position)) {
+            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
 
         } else {
             return HitBox{};
         }
     }
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override
+    [[nodiscard]] bool accepts_focus() const noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;
@@ -396,9 +395,9 @@ private:
         } else if (option.tag == clickedOption) {
             drawContext.fillColor = theme->accentColor;
         } else if (option.tag == hoverOption) {
-            drawContext.fillColor = theme->fillColor(_semantic_layer + 1);
+            drawContext.fillColor = theme->fillColor(p_semantic_layer + 1);
         } else {
-            drawContext.fillColor = theme->fillColor(_semantic_layer);
+            drawContext.fillColor = theme->fillColor(p_semantic_layer);
         }
         drawContext.drawFilledQuad(option.backgroundRectangle);
     }

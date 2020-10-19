@@ -14,34 +14,23 @@ public:
         if (parent) {
             // Most containers will not draw itself, only its children.
             ttlet lock = std::scoped_lock(parent->mutex);
-            _semantic_layer = parent->semantic_layer();
+            p_semantic_layer = parent->semantic_layer();
         }
-        _margin = 0.0f;
+        p_margin = 0.0f;
     }
 
     ~ContainerWidget() {}
 
-    [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
+    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
-    [[nodiscard]] Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept override;
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
+    [[nodiscard]] Widget const *next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept override;
 
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
     virtual Widget &addWidget(std::unique_ptr<Widget> childWidget) noexcept;
-
-    bool handleMouseEvent(MouseEvent const &event) noexcept final {
-        ttlet lock = std::scoped_lock(mutex);
-
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
-        }
-        return false;
-    }
 
     /** Add a widget directly to this widget.
      */

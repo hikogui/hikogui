@@ -28,7 +28,7 @@ public:
         label(format(fmt, args...))
     {
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
-            requestConstraint = true;
+            request_reconstrain = true;
         });
     }
 
@@ -42,12 +42,12 @@ public:
     ~LabelWidget() {
     }
 
-    [[nodiscard]] bool updateConstraints() noexcept override {
+    [[nodiscard]] bool update_constraints() noexcept override {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (Widget::updateConstraints()) {
+        if (Widget::update_constraints()) {
             labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-            _preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent());
+            p_preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent());
             return true;
         } else {
             return false;
@@ -63,15 +63,6 @@ public:
 
         labelCell->draw(context, rectangle(), alignment, base_line(), true);
         Widget::draw(std::move(context), display_time_point);
-    }
-
-    bool handleMouseEvent(MouseEvent const &event) noexcept override {
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
-        }
-        return false;
     }
 
 private:

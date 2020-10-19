@@ -9,7 +9,7 @@ Widget &ContainerWidget::addWidget(std::unique_ptr<Widget> childWidget) noexcept
     ttlet lock = std::scoped_lock(mutex);
 
     children.push_back(std::move(childWidget));
-    requestConstraint = true;
+    request_reconstrain = true;
     window.requestLayout = true;
 
     ttlet widget_ptr = children.back().get();
@@ -17,31 +17,31 @@ Widget &ContainerWidget::addWidget(std::unique_ptr<Widget> childWidget) noexcept
     return *widget_ptr;
 }
 
-[[nodiscard]] bool ContainerWidget::updateConstraints() noexcept
+[[nodiscard]] bool ContainerWidget::update_constraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto has_constrainted = Widget::updateConstraints();
+    auto has_constrainted = Widget::update_constraints();
 
     for (auto &&child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
-        has_constrainted |= child->updateConstraints();
+        has_constrainted |= child->update_constraints();
     }
 
     return has_constrainted;
 }
 
-bool ContainerWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+bool ContainerWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto need_redraw = need_layout |= std::exchange(requestLayout, false);
+    auto need_redraw = need_layout |= std::exchange(request_relayout, false);
     for (auto &&child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
-        need_redraw |= child->updateLayout(display_time_point, need_layout);
+        need_redraw |= child->update_layout(display_time_point, need_layout);
     }
 
-    return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
+    return Widget::update_layout(display_time_point, need_layout) || need_redraw;
 }
 
 
@@ -51,19 +51,19 @@ void ContainerWidget::draw(DrawContext context, hires_utc_clock::time_point disp
 
     for (auto &child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
-        child->draw(child->makeDrawContext(context), display_time_point);
+        child->draw(child->make_draw_context(context), display_time_point);
     }
 
     Widget::draw(std::move(context), display_time_point);
 }
 
-HitBox ContainerWidget::hitBoxTest(vec window_position) const noexcept
+HitBox ContainerWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
     auto r = HitBox{};
     for (ttlet &child : children) {
-        r = std::max(r, child->hitBoxTest(window_position));
+        r = std::max(r, child->hitbox_test(window_position));
     }
     return r;
 }
@@ -83,7 +83,7 @@ std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcep
     return r;
 }
 
-Widget const *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+Widget const *ContainerWidget::next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
@@ -91,14 +91,14 @@ Widget const *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardW
     auto found = (currentKeyboardWidget == nullptr);
 
     // The container widget itself accepts focus.
-    if (found && !reverse && acceptsFocus()) {
+    if (found && !reverse && accepts_focus()) {
         return this;
     }
 
     for (auto *child : childPointers(reverse)) {
         if (found) {
             // Find the first focus accepting widget.
-            if (auto *tmp = child->nextKeyboardWidget(nullptr, reverse)) {
+            if (auto *tmp = child->next_keyboard_widget(nullptr, reverse)) {
                 return tmp;
             }
 
@@ -106,7 +106,7 @@ Widget const *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardW
             found = true;
 
         } else {
-            auto *tmp = child->nextKeyboardWidget(currentKeyboardWidget, reverse);
+            auto *tmp = child->next_keyboard_widget(currentKeyboardWidget, reverse);
             if (tmp == currentKeyboardWidget) {
                 // The current widget was found, but no next widget available in the child.
                 found = true;
@@ -118,7 +118,7 @@ Widget const *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardW
     }
 
     // The container widget itself accepts focus.
-    if (found && reverse && acceptsFocus()) {
+    if (found && reverse && accepts_focus()) {
         return this;
     }
 

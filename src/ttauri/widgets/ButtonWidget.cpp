@@ -14,19 +14,19 @@ using namespace std::literals;
 ButtonWidget::ButtonWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
 {
     [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...) {
-        requestConstraint = true;
+        request_reconstrain = true;
     });
 }
 
 ButtonWidget::~ButtonWidget() {}
 
-[[nodiscard]] bool ButtonWidget::updateConstraints() noexcept
+[[nodiscard]] bool ButtonWidget::update_constraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (Widget::updateConstraints()) {
+    if (Widget::update_constraints()) {
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        _preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent() + Theme::margin2Dx2);
+        p_preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent() + Theme::margin2Dx2);
         return true;
     } else {
         return false;
@@ -54,55 +54,49 @@ void ButtonWidget::draw(DrawContext context, hires_utc_clock::time_point display
     Widget::draw(std::move(context), display_time_point);
 }
 
-void ButtonWidget::handleCommand(command command) noexcept
+bool ButtonWidget::handle_command(command command) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
+    auto handled = Widget::handle_command(command);
 
-    if (!*enabled) {
-        return;
-    }
-
-    if (command == command::gui_activate) {
-        if (compare_then_assign(value, !value)) {
-            window.requestRedraw = true;
-            return;
+    if (*enabled) {
+        if (command == command::gui_activate) {
+            handled = true;
+            if (compare_then_assign(value, !value)) {
+                window.requestRedraw = true;
+            }
         }
     }
 
-    Widget::handleCommand(command);
+    return handled;
 }
 
-bool ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
+bool ButtonWidget::handle_mouse_event(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
+    auto handled = Widget::handle_mouse_event(event);
 
-    if (Widget::handleMouseEvent(event)) {
-        return true;
-
-    } else if (event.cause.leftButton) {
+    if (event.cause.leftButton) {
+        handled = true;
         if (*enabled) {
             if (compare_then_assign(pressed, static_cast<bool>(event.down.leftButton))) {
                 window.requestRedraw = true;
             }
 
-            if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
-                handleCommand(command::gui_activate);
+            if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
+                handle_command(command::gui_activate);
             }
         }
-        return true;
-
-    } else if (parent) {
-        return parent->handleMouseEvent(event);
     }
-    return false;
+    return handled;
 }
 
-HitBox ButtonWidget::hitBoxTest(vec window_position) const noexcept
+HitBox ButtonWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    if (_window_clipping_rectangle.contains(window_position)) {
-        return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+    if (p_window_clipping_rectangle.contains(window_position)) {
+        return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

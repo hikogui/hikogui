@@ -509,21 +509,21 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
             auto keyboardEvent = KeyboardEvent();
             keyboardEvent.type = KeyboardEvent::Type::Grapheme;
             keyboardEvent.grapheme = c;
-            handleKeyboardEvent(keyboardEvent);
+            handle_keyboard_event(keyboardEvent);
         }
         } break;
 
     case WM_DEADCHAR: {
         auto c = handleSuragates(numeric_cast<char32_t>(wParam));
         if (c != 0) {
-            handleKeyboardEvent(c, false);
+            handle_keyboard_event(c, false);
         }
         } break;
 
     case WM_CHAR: {
         auto c = handleSuragates(numeric_cast<char32_t>(wParam));
         if (c >= 0x20) {
-            handleKeyboardEvent(c);
+            handle_keyboard_event(c);
         }
         } break;
         
@@ -543,7 +543,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         ttlet key_modifiers = getKeyboardModifiers();
         ttlet virtual_key = to_KeyboardVirtualKey(key_code, extended, key_modifiers);
         if (virtual_key != KeyboardVirtualKey::Nul) {
-            handleKeyboardEvent(key_state, key_modifiers, virtual_key);
+            handle_keyboard_event(key_state, key_modifiers, virtual_key);
         }
         } break;
 
@@ -563,7 +563,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_MOUSEHWHEEL:
     case WM_MOUSEMOVE:
     case WM_MOUSELEAVE:
-        handleMouseEvent(createMouseEvent(uMsg, wParam, lParam));
+        handle_mouse_event(createMouseEvent(uMsg, wParam, lParam));
         break;
 
     case WM_NCCALCSIZE:
@@ -589,7 +589,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
         ttlet insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};
 
-        switch (widget->hitBoxTest(insideWindowPosition).type) {
+        switch (widget->hitbox_test(insideWindowPosition).type) {
         case HitBox::Type::BottomResizeBorder: currentCursor = Cursor::None; return HTBOTTOM;
         case HitBox::Type::TopResizeBorder: currentCursor = Cursor::None; return HTTOP;
         case HitBox::Type::LeftResizeBorder: currentCursor = Cursor::None; return HTLEFT;

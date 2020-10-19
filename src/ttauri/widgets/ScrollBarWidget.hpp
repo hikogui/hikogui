@@ -41,23 +41,23 @@ public:
 
     ~ScrollBarWidget() {}
 
-    [[nodiscard]] bool updateConstraints() noexcept override
+    [[nodiscard]] bool update_constraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (Widget::updateConstraints()) {
+        if (Widget::update_constraints()) {
             ttlet minimum_length = Theme::width; // even for vertical bars.
             ttlet thickness = Theme::margin * 2;
 
             if constexpr (is_vertical) {
-                _preferred_size =
+                p_preferred_size =
                     interval_vec2{vec{thickness, minimum_length}, vec{thickness, std::numeric_limits<float>::max()}};
             } else {
-                _preferred_size =
+                p_preferred_size =
                     interval_vec2{vec{minimum_length, thickness}, vec{std::numeric_limits<float>::max(), thickness}};
             }
 
-            _preferred_base_line = {};
+            p_preferred_base_line = {};
             return true;
         } else {
             return false;
@@ -66,11 +66,11 @@ public:
 
     
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= std::exchange(requestLayout, false);
+        need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
             tt_assume(*content != 0.0f);
 
@@ -85,7 +85,7 @@ public:
             }
         }
 
-        return Widget::updateLayout(display_time_point, need_layout);
+        return Widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -98,28 +98,28 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
-    HitBox hitBoxTest(vec window_position) const noexcept override
+    HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
-        ttlet position = fromWindowTransform * window_position;
+        ttlet position = from_window_transform * window_position;
 
-        if (_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && hidden_content() != 0.0f) {
-            return HitBox{this, _draw_layer};
+        if (p_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && hidden_content() != 0.0f) {
+            return HitBox{this, p_draw_layer};
         } else {
             return HitBox{};
         }
     }
 
-    [[nodiscard]] bool handleMouseEvent(MouseEvent const &event) noexcept
+    [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
-
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-
-        } else if (event.cause.leftButton) {
+        auto handled = Widget::handle_mouse_event(event);
+        
+        if (event.cause.leftButton) {
+            handled = true;
+            
             switch (event.type) {
-                using enum MouseEvent::Type;
+            using enum MouseEvent::Type;
             case ButtonDown:
                 // Record the original scroll-position before the drag starts.
                 offset_before_drag = *offset;
@@ -135,17 +135,11 @@ public:
         
             default:;
             }
-            return true;
-        
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
-
-        } else {
-            return false;
         }
+        return handled;
     }
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override
+    [[nodiscard]] bool accepts_focus() const noexcept override
     {
         return false;
     }
@@ -220,8 +214,8 @@ private:
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        context.color = theme->fillColor(_semantic_layer);
-        context.fillColor = theme->fillColor(_semantic_layer);
+        context.color = theme->fillColor(p_semantic_layer);
+        context.fillColor = theme->fillColor(p_semantic_layer);
         if constexpr (is_vertical) {
             context.cornerShapes = vec{rectangle().width() * 0.5f};
         } else {
@@ -234,8 +228,8 @@ private:
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        context.color = theme->fillColor(_semantic_layer + 1);
-        context.fillColor = theme->fillColor(_semantic_layer + 1);
+        context.color = theme->fillColor(p_semantic_layer + 1);
+        context.fillColor = theme->fillColor(p_semantic_layer + 1);
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         if constexpr (is_vertical) {
             context.cornerShapes = vec{slider_rectangle.width() * 0.5f};

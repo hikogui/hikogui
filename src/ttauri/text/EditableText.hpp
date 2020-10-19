@@ -300,7 +300,7 @@ public:
         deleteSelection();
 
         if (!insertMode) {
-            handleCommand(command::text_delete_char_next);
+            handle_command(command::text_delete_char_next);
         }
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
@@ -358,75 +358,108 @@ public:
         return r;
     }
 
-    void handleCommand(command command) noexcept {
+    bool handle_command(command command) noexcept {
+        auto handled = false;
+
         tt_assume(cursorIndex <= std::ssize(text));
         cancelPartialGrapheme();
 
         switch (command) {
         case command::text_cursor_char_left:
+            handled = true;
             if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
                 // XXX Change currentStyle based on the grapheme at the new cursor position.
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
             break;
+
         case command::text_cursor_char_right:
+            handled = true;
             if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
             break;
+
         case command::text_cursor_word_left:
+            handled = true;
             if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
             break;
+
         case command::text_cursor_word_right:
+            handled = true;
             if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
             break;
+
         case command::text_cursor_line_end:
+            handled = true;
             selectionIndex = cursorIndex = size() - 1;
             break;
+
         case command::text_cursor_line_begin:
+            handled = true;
             selectionIndex = cursorIndex = 0;
             break;
+
         case command::text_select_char_left:
+            handled = true;
             if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
             break;
+
         case command::text_select_char_right:
+            handled = true;
             if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
             break;
+
         case command::text_select_word_left:
+            handled = true;
             if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
             break;
+
         case command::text_select_word_right:
+            handled = true;
             if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
             break;
+
         case command::text_select_word:
+            handled = true;
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(cursorIndex);
             break;
+
         case command::text_select_line_end:
+            handled = true;
             cursorIndex = size() - 1;
             break;
+
         case command::text_select_line_begin:
+            handled = true;
             cursorIndex = 0;
             break;
+
         case command::text_select_document:
+            handled = true;
             selectionIndex = 0;
             cursorIndex = size() - 1; // Upto end-of-paragraph marker.
             break;
+
         case command::text_mode_insert:
+            handled = true;
             insertMode = !insertMode;
             break;
+
         case command::text_delete_char_prev:
+            handled = true;
             if (cursorIndex != selectionIndex) {
                 deleteSelection();
 
@@ -436,7 +469,9 @@ public:
                 updateShapedText();
             }
             break;
+
         case command::text_delete_char_next:
+            handled = true;
             if (cursorIndex != selectionIndex) {
                 deleteSelection();
 
@@ -452,6 +487,7 @@ public:
         tt_assume(selectionIndex <= std::ssize(text));
         tt_assume(cursorIndex >= 0);
         tt_assume(cursorIndex <= std::ssize(text));
+        return handled;
     }
 };
 

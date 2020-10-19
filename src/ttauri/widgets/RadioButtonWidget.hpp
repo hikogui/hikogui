@@ -29,7 +29,7 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...) {
-            requestConstraint = true;
+            request_reconstrain = true;
         });
     }
 
@@ -46,29 +46,29 @@ public:
 
     ~RadioButtonWidget() {}
 
-    [[nodiscard]] bool updateConstraints() noexcept override
+    [[nodiscard]] bool update_constraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (Widget::updateConstraints()) {
+        if (Widget::update_constraints()) {
             labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
 
             ttlet minimumHeight = std::max(labelCell->preferredExtent().height(), Theme::smallSize);
             ttlet minimumWidth = Theme::smallSize + Theme::margin + labelCell->preferredExtent().width();
 
-            _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-            _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+            p_preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+            p_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
             return true;
         } else {
             return false;
         }
     }
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= std::exchange(requestLayout, false);
+        need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
             radioButtonRectangle = aarect{0.0f, base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
 
@@ -77,7 +77,7 @@ public:
 
             pipRectangle = shrink(radioButtonRectangle, 1.5f);
         }
-        return Widget::updateLayout(display_time_point, need_layout);
+        return Widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -90,55 +90,49 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
-    bool handleMouseEvent(MouseEvent const &event) noexcept override
+    bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
+        auto handled = Widget::handle_mouse_event(event);
 
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-
-        } else if (event.cause.leftButton) {
+        if (event.cause.leftButton) {
+            handled = true;
             if (*enabled) {
-                if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
-                    handleCommand(command::gui_activate);
+                if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
+                    handle_command(command::gui_activate);
                 }
             }
-            return true;
-
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
         }
-        return false;
+        return handled;
     }
 
-    void handleCommand(command command) noexcept override
+    bool handle_command(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
+        auto handled = Widget::handle_command(command);
 
-        if (!*enabled) {
-            return;
-        }
-
-        if (command == command::gui_activate) {
-            if (compare_then_assign(value, ActiveValue)) {
-                window.requestRedraw = true;
+        if (*enabled) {
+            if (command == command::gui_activate) {
+                if (compare_then_assign(value, ActiveValue)) {
+                    window.requestRedraw = true;
+                }
             }
         }
-        Widget::handleCommand(command);
+        return handled;
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
 
-        if (_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        if (p_window_clipping_rectangle.contains(window_position)) {
+            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }
     }
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override
+    [[nodiscard]] bool accepts_focus() const noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;

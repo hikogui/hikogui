@@ -20,23 +20,23 @@ public:
         if (parent) {
             // The tab-widget will not draw itself, only its selected child.
             ttlet lock = std::scoped_lock(parent->mutex);
-            _draw_layer = parent->draw_layer();
-            _semantic_layer = parent->semantic_layer();
+            p_draw_layer = parent->draw_layer();
+            p_semantic_layer = parent->semantic_layer();
         }
-        _margin = 0.0f;
+        p_margin = 0.0f;
 
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
-            this->requestConstraint = true;
+            this->request_reconstrain = true;
         });
     }
 
     ~TabViewWidget() {}
 
-    [[nodiscard]] bool updateConstraints() noexcept override
+    [[nodiscard]] bool update_constraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        auto has_updated_contraints = Widget::updateConstraints();
+        auto has_updated_contraints = Widget::update_constraints();
         if (has_updated_contraints) {
             // The value has changed, so resize the window.
             window.requestResize = true;
@@ -47,16 +47,16 @@ public:
         auto &child = children[*value];
         ttlet child_lock = std::scoped_lock(child->mutex);
         
-        if (child->updateConstraints() || has_updated_contraints) {
-            _preferred_size = child->preferred_size();
-            _preferred_base_line = child->preferred_base_line();
+        if (child->update_constraints() || has_updated_contraints) {
+            p_preferred_size = child->preferred_size();
+            p_preferred_base_line = child->preferred_base_line();
             return true;
         } else {
             return false;
         }
     }
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         tt_assume(*value >= 0 && *value < std::ssize(children));
@@ -64,13 +64,13 @@ public:
         auto &child = children[*value];
         ttlet child_lock = std::scoped_lock(child->mutex);
 
-        auto need_redraw = need_layout |= std::exchange(requestLayout, false);
+        auto need_redraw = need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
-            child->set_layout_parameters(_window_rectangle, _window_clipping_rectangle, _window_base_line);
+            child->set_layout_parameters(p_window_rectangle, p_window_clipping_rectangle, p_window_base_line);
         }
 
-        need_redraw |= child->updateLayout(display_time_point, need_layout);
-        return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
+        need_redraw |= child->update_layout(display_time_point, need_layout);
+        return Widget::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
     void drawChild(DrawContext context, hires_utc_clock::time_point displayTimePoint, Widget &child) noexcept
@@ -78,7 +78,7 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
 
         ttlet child_lock = std::scoped_lock(child.mutex);
-        child.draw(child.makeDrawContext(context), displayTimePoint);
+        child.draw(child.make_draw_context(context), displayTimePoint);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -91,30 +91,20 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
-    bool handleMouseEvent(MouseEvent const &event) noexcept override
-    {
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
-        }
-        return false;
-    }
-
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
 
         tt_assume(*value >= 0 && *value <= std::ssize(children));
-        return children[*value]->hitBoxTest(window_position);
+        return children[*value]->hitbox_test(window_position);
     }
 
-    Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+    Widget const *next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
 
         tt_assume(*value >= 0 && *value < std::ssize(children));
-        return children[*value]->nextKeyboardWidget(currentKeyboardWidget, reverse);
+        return children[*value]->next_keyboard_widget(currentKeyboardWidget, reverse);
     }
 
     template<typename WidgetType = GridLayoutWidget, typename... Args>
@@ -130,7 +120,7 @@ public:
         if (*value < 0 || *value >= std::ssize(children)) {
             value = 0;
         }
-        requestConstraint = true;
+        request_reconstrain = true;
         return widget;
     }
 

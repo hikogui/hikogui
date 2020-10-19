@@ -17,11 +17,11 @@ public:
 
     RowColumnLayoutWidget(Window &window, Widget *parent) noexcept : ContainerWidget(window, parent) {}
 
-    [[nodiscard]] bool updateConstraints() noexcept
+    [[nodiscard]] bool update_constraints() noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (ContainerWidget::updateConstraints()) {
+        if (ContainerWidget::update_constraints()) {
             auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
             auto shared_thickness = finterval{};
 
@@ -35,11 +35,11 @@ public:
             tt_assume(index == std::ssize(children));
 
             if constexpr (is_row) {
-                _preferred_size = {layout.extent(), shared_thickness};
-                _preferred_base_line = shared_base_line;
+                p_preferred_size = {layout.extent(), shared_thickness};
+                p_preferred_base_line = shared_base_line;
             } else {
-                _preferred_size = {shared_thickness, layout.extent()};
-                _preferred_base_line = relative_base_line{};
+                p_preferred_size = {shared_thickness, layout.extent()};
+                p_preferred_base_line = relative_base_line{};
             }
             return true;
         } else {
@@ -47,11 +47,11 @@ public:
         }
     }
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= std::exchange(requestLayout, false);
+        need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
             layout.update_layout(is_row ? rectangle().width() : rectangle().height());
 
@@ -62,7 +62,7 @@ public:
 
             tt_assume(index == std::ssize(children));
         }
-        return ContainerWidget::updateLayout(display_time_point, need_layout);
+        return ContainerWidget::update_layout(display_time_point, need_layout);
     }
 
 private:
@@ -106,12 +106,12 @@ private:
                 child_length
             };
 
-        ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
+        ttlet child_window_rectangle = mat::T2{p_window_rectangle} * child_rectangle;
 
         if constexpr (is_row) {
-            child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
+            child.set_layout_parameters(child_window_rectangle, p_window_clipping_rectangle, p_window_base_line);
         } else {
-            child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle);
+            child.set_layout_parameters(child_window_rectangle, p_window_clipping_rectangle);
         }
     }
 };

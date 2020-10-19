@@ -31,11 +31,11 @@ public:
         Widget(window, parent), icon(icon), _delegate(delegate)
     {
         [[maybe_unused]] ttlet icon_cbid = this->icon.add_callback([this](auto...) {
-            requestConstraint = true;
+            request_reconstrain = true;
         });
 
         // Toolbar buttons hug the toolbar and neighbour widgets.
-        _margin = 0.0f;
+        p_margin = 0.0f;
     }
 
     ToolbarButtonWidget(
@@ -76,27 +76,27 @@ public:
         _delegate = delegate;
     }
 
-    [[nodiscard]] bool updateConstraints() noexcept override
+    [[nodiscard]] bool update_constraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (Widget::updateConstraints()) {
+        if (Widget::update_constraints()) {
             icon_cell = (*icon).makeCell();
             ttlet width = Theme::toolbarDecorationButtonWidth;
             ttlet height = Theme::toolbarHeight;
-            _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
+            p_preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
             return true;
         } else {
             return false;
         }
     }
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= std::exchange(requestLayout, false);
-        return Widget::updateLayout(display_time_point, need_layout);
+        need_layout |= std::exchange(request_relayout, false);
+        return Widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -107,38 +107,33 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
-    bool handleMouseEvent(MouseEvent const &event) noexcept override
+    bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
-
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-
-        } else if (event.cause.leftButton) {
+        auto handled = Widget::handle_mouse_event(event);
+        
+        if (event.cause.leftButton) {
+            handled = true;
             if (*enabled) {
                 if (compare_then_assign(pressed, static_cast<bool>(event.down.leftButton))) {
                     window.requestRedraw = true;
                 }
 
-                if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
+                if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
                     tt_assert2(_delegate, "Delegate on ToolbarButtonWidget was not set");
                     run_from_main_loop(_delegate);
                 }
             }
-            return true;
-
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
         }
-        return false;
+        return handled;
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
 
-        if (_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        if (p_window_clipping_rectangle.contains(window_position)) {
+            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }
@@ -156,11 +151,11 @@ private:
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (pressed) {
-            context.fillColor = theme->fillColor(_semantic_layer + 1);
+            context.fillColor = theme->fillColor(p_semantic_layer + 1);
         } else if (hover) {
-            context.fillColor = theme->fillColor(_semantic_layer);
+            context.fillColor = theme->fillColor(p_semantic_layer);
         } else {
-            context.fillColor = theme->fillColor(_semantic_layer - 1);
+            context.fillColor = theme->fillColor(p_semantic_layer - 1);
         }
         context.drawFilledQuad(rectangle());
     }

@@ -26,15 +26,15 @@ public:
 
     ~LineInputWidget();
 
-    [[nodiscard]] bool updateConstraints() noexcept override;
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
-    void handleCommand(command command) noexcept override;
-    bool handleMouseEvent(MouseEvent const &event) noexcept override;
-    void handleKeyboardEvent(KeyboardEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override;
+    bool handle_command(command command) noexcept override;
+    bool handle_mouse_event(MouseEvent const &event) noexcept override;
+    bool handle_keyboard_event(KeyboardEvent const &event) noexcept override;
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override
+    [[nodiscard]] bool accepts_focus() const noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;

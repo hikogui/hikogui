@@ -92,6 +92,15 @@ namespace tt {
  */
 class Widget {
 public:
+    /** Convenient reference to the Window.
+     */
+    Window &window;
+
+    /** Pointer to the parent widget.
+     * May be a nullptr only when this is the top level widget.
+     */
+    Widget * const parent;
+
     /** The mutex of a widget.
      * Certain accessor method of the Widget class require the mutex
      * to be already locked by the caller.
@@ -122,7 +131,7 @@ public:
     [[nodiscard]] float margin() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _margin;
+        return p_margin;
     }
 
     /** The first drawing layer of the widget.
@@ -143,7 +152,7 @@ public:
     [[nodiscard]] float draw_layer() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _draw_layer;
+        return p_draw_layer;
     }
 
     /** The logical layer of the widget.
@@ -159,7 +168,7 @@ public:
     [[nodiscard]] int logical_layer() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _logical_layer;
+        return p_logical_layer;
     }
 
     /** The semantic layer of the widget.
@@ -183,7 +192,7 @@ public:
     [[nodiscard]] int semantic_layer() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _semantic_layer;
+        return p_semantic_layer;
     }
 
     /** Get the resistance in width.
@@ -198,7 +207,7 @@ public:
     [[nodiscard]] ranged_int<3> width_resistance() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _width_resistance;
+        return p_width_resistance;
     }
 
     /** Get the resistance in height.
@@ -213,7 +222,7 @@ public:
     [[nodiscard]] ranged_int<3> height_resistance() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _height_resistance;
+        return p_height_resistance;
     }
 
     /** Get the size-range of the widget.
@@ -227,7 +236,7 @@ public:
     [[nodiscard]] interval_vec2 preferred_size() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _preferred_size;
+        return p_preferred_size;
     }
 
     /** Get the relative_base_line of the widget.
@@ -246,7 +255,7 @@ public:
     [[nodiscard]] relative_base_line preferred_base_line() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _preferred_base_line;
+        return p_preferred_base_line;
     }
 
     /** Set the location and size of the widget inside the window.
@@ -272,13 +281,13 @@ public:
     ) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        _window_rectangle = window_rectangle;
-        _window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
+        p_window_rectangle = window_rectangle;
+        p_window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
 
         if (std::isinf(window_base_line)) {
-            _window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
+            p_window_base_line = p_preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
         } else {
-            _window_base_line = window_base_line;
+            p_window_base_line = window_base_line;
         }
     }
 
@@ -289,7 +298,7 @@ public:
     [[nodiscard]] aarect window_rectangle() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _window_rectangle;
+        return p_window_rectangle;
     }
 
     /** Get the clipping-rectangle in window coordinates.
@@ -299,7 +308,7 @@ public:
     [[nodiscard]] aarect window_clipping_rectangle() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _window_clipping_rectangle;
+        return p_window_clipping_rectangle;
     }
 
     /** Get the base-line distance from the bottom of the window.
@@ -309,7 +318,7 @@ public:
     [[nodiscard]] float window_base_line() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _window_base_line;
+        return p_window_base_line;
     }
 
     /** Get the rectangle in local coordinates.
@@ -319,7 +328,7 @@ public:
     [[nodiscard]] aarect rectangle() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return aarect{_window_rectangle.extent()};
+        return aarect{p_window_rectangle.extent()};
     }
 
     /** Get the base-line in local coordinates.
@@ -329,7 +338,7 @@ public:
     [[nodiscard]] float base_line() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-        return _window_base_line - _window_rectangle.y();
+        return p_window_base_line - p_window_rectangle.y();
     }
 
     [[nodiscard]] GUIDevice *device() const noexcept;
@@ -342,12 +351,12 @@ public:
      *                        Use `fromWindowTransform` to convert to widget-local coordinates.
      * @return A HitBox object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual HitBox hitBoxTest(vec window_position) const noexcept
+    [[nodiscard]] virtual HitBox hitbox_test(vec window_position) const noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
 
-        if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
-            return HitBox{this, _draw_layer};
+        if (p_window_clipping_rectangle.contains(window_position) && p_window_rectangle.contains(window_position)) {
+            return HitBox{this, p_draw_layer};
         } else {
             return {};
         }
@@ -357,7 +366,7 @@ public:
      *
      * @pre `mutex` must be locked by current thread.
      */
-    [[nodiscard]] virtual bool acceptsFocus() const noexcept
+    [[nodiscard]] virtual bool accepts_focus() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return false;
@@ -373,8 +382,8 @@ public:
      * vertical sync it should cache these calculations.
      * 
      * Subclasses should call `updateConstraints()` on its base-class to check if the constraints where
-     * changed. `Widget::updateConstraints()` will check if `requestConstraints` was set.
-     * `Container::updateConstraints()` will check if any of the children changed constraints.
+     * changed. `Widget::update_constraints()` will check if `requestConstraints` was set.
+     * `Container::update_constraints()` will check if any of the children changed constraints.
      * 
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
      * it should set window.requestResize to true.
@@ -384,7 +393,7 @@ public:
      * @pre `mutex` must be locked by current thread.
      * @return True if its or any children's constraints has changed.
      */
-    [[nodiscard]] virtual bool updateConstraints() noexcept;
+    [[nodiscard]] virtual bool update_constraints() noexcept;
 
     /** Update the internal layout of the widget.
      * This function is called on each vertical sync, even if no drawing is to be done.
@@ -406,7 +415,7 @@ public:
      * @param need_layout Force the widget to layout
      * @retrun True if the widget, or any of the children requires the window to be redrawn.
      */
-    [[nodiscard]] virtual bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] virtual bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
 
     /** Make a draw context for this widget.
      * This function will make a draw context with the correct transformation
@@ -418,7 +427,7 @@ public:
      * @return A new draw context for drawing the current widget in the
      *         local coordinate system.
      */
-    DrawContext makeDrawContext(DrawContext context) const noexcept;
+    DrawContext make_draw_context(DrawContext context) const noexcept;
 
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.
@@ -444,23 +453,31 @@ public:
      * If a widget does not fully handle a command it should pass the command to the super class' `handleCommand()`.
      *
      */
-    virtual void handleCommand(command command) noexcept;
+    virtual bool handle_command(command command) noexcept;
 
     /*! Handle mouse event.
      * Called by the operating system to show the position and button state of the mouse.
      * This is called very often so it must be made efficient.
      * This function is also used to determine the mouse cursor.
      *
-     * In most cased overriding methods should call the super's `handleMouseEvent()` at the
+     * In most cased overriding methods should call the super's `handle_mouse_event()` at the
      * start of the function, to detect `hover`.
      * 
-     * final overriding methods should call `parent->handleMouseEvent()` if it did not handle
-     * the mouse event. So that underlying layout or view widgets, such as the `ScrollViewWidget`,
-     * can handle mouse events like the scroll-wheel.
+     * When this method does not handle the event the window will call `handle_mouse_event()`
+     * on the widget's parent.
      * 
      * @param event The mouse event, positions are in window coordinates.
+     * @return If this widget has handled the mouse event.
      */
-    virtual bool handleMouseEvent(MouseEvent const &event) noexcept = 0;
+    virtual bool handle_mouse_event(MouseEvent const &event) noexcept;
+
+    /** Handle keyboard event.
+     * Called by the operating system when editing text, or entering special keys
+     *
+     * @param event The keyboard event.
+     * @return If this widget has handled the keyboard event.
+     */
+    virtual bool handle_keyboard_event(KeyboardEvent const &event) noexcept;
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
@@ -473,26 +490,9 @@ public:
      * @retval currentKeyboardWidget when currentKeyboardWidget was found but no next widget was found.
      * @retval nullptr when currentKeyboardWidget is not found in this Widget.
      */
-    [[nodiscard]] virtual Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
-
-    /** Handle keyboard event.
-     * Called by the operating system when editing text, or entering special keys
-     *
-     * Thread safety: locks
-     */
-    virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept;
+    [[nodiscard]] virtual Widget const *next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
 
 protected:
-
-    /** Convenient reference to the Window.
-     */
-    Window &window;
-
-    /** Pointer to the parent widget.
-     * May be a nullptr only when this is the top level widget.
-     */
-    Widget *parent;
-
     /** Mouse cursor is hovering over the widget.
      */
     bool hover = false;
@@ -503,55 +503,55 @@ protected:
 
     /** Transformation matrix from window coords to local coords.
      */
-    mat::T fromWindowTransform;
+    mat::T from_window_transform;
 
     /** Transformation matrix from local coords to window coords.
      */
-    mat::T toWindowTransform;
+    mat::T to_window_transform;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
-    bool requestConstraint = true;
+    bool request_reconstrain = true;
 
     /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
      */
-    bool requestLayout = true;
+    bool request_relayout = true;
 
     /** The position of the widget on the window.
      */
-    aarect _window_rectangle;
+    aarect p_window_rectangle;
 
     /** The height of the base line from the bottom of the window.
      */
-    float _window_base_line;
+    float p_window_base_line;
 
     /** The clipping rectangle beyond which not to draw or receive mouse events.
      */
-    aarect _window_clipping_rectangle;
+    aarect p_window_clipping_rectangle;
 
-    interval_vec2 _preferred_size;
+    interval_vec2 p_preferred_size;
 
-    relative_base_line _preferred_base_line = relative_base_line{};
+    relative_base_line p_preferred_base_line = relative_base_line{};
 
-    ranged_int<3> _width_resistance = 1;
-    ranged_int<3> _height_resistance = 1;
+    ranged_int<3> p_width_resistance = 1;
+    ranged_int<3> p_height_resistance = 1;
 
-    float _margin = Theme::margin;
+    float p_margin = Theme::margin;
 
     /** The draw layer of the widget.
      * @sa draw_layer() const
      */
-    float _draw_layer;
+    float p_draw_layer;
 
     /** The draw layer of the widget.
      * @sa semantic_layer() const
      */
-    int _semantic_layer;
+    int p_semantic_layer;
 
     /** The draw layer of the widget.
      * @sa logical_layer() const
      */
-    int _logical_layer;
+    int p_logical_layer;
 };
 
 } // namespace tt

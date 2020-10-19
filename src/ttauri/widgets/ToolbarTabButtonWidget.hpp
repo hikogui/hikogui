@@ -29,7 +29,7 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...) {
-            requestConstraint = true;
+            request_reconstrain = true;
         });
     }
 
@@ -46,29 +46,29 @@ public:
 
     ~ToolbarTabButtonWidget() {}
 
-    [[nodiscard]] bool updateConstraints() noexcept override
+    [[nodiscard]] bool update_constraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (Widget::updateConstraints()) {
+        if (Widget::update_constraints()) {
             label_cell = std::make_unique<TextCell>(*label, theme->labelStyle);
 
             ttlet minimumHeight = label_cell->preferredExtent().height();
             ttlet minimumWidth = label_cell->preferredExtent().width() + 2.0f * Theme::margin;
 
-            _preferred_size = {vec{minimumWidth, minimumHeight}, vec{minimumWidth, std::numeric_limits<float>::infinity()}};
-            _preferred_base_line = relative_base_line{VerticalAlignment::Middle, -Theme::margin};
+            p_preferred_size = {vec{minimumWidth, minimumHeight}, vec{minimumWidth, std::numeric_limits<float>::infinity()}};
+            p_preferred_base_line = relative_base_line{VerticalAlignment::Middle, -Theme::margin};
             return true;
         } else {
             return false;
         }
     }
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        need_layout |= std::exchange(requestLayout, false);
+        need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
             ttlet offset = Theme::margin + Theme::borderWidth;
             button_rectangle = aarect{
@@ -76,7 +76,7 @@ public:
             };
         }
 
-        return Widget::updateLayout(display_time_point, need_layout);
+        return Widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -89,58 +89,53 @@ public:
         Widget::draw(std::move(context), display_time_point);
     }
 
-    bool handleMouseEvent(MouseEvent const &event) noexcept override
+    bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
-
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-
-        } else if (event.cause.leftButton) {
+        auto handled = Widget::handle_mouse_event(event);
+        
+        if (event.cause.leftButton) {
+            handled = true;
             if (*enabled) {
                 if (event.type == MouseEvent::Type::ButtonUp) {
-                    ttlet position = fromWindowTransform * event.position;
+                    ttlet position = from_window_transform * event.position;
                     if (button_rectangle.contains(position)) {
-                        handleCommand(command::gui_activate);
+                        handle_command(command::gui_activate);
                     }
                 }
             }
-            return true;
-
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
         }
-        return false;
+        return handled;
     }
 
-    void handleCommand(command command) noexcept override
+    bool handle_command(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
+        auto handled = Widget::handle_command(command);
 
-        if (!*enabled) {
-            return;
-        }
-
-        if (command == command::gui_activate) {
-            if (compare_then_assign(value, ActiveValue)) {
-                window.requestRedraw = true;
+        if (*enabled) {
+            if (command == command::gui_activate) {
+                handled = true;
+                if (compare_then_assign(value, ActiveValue)) {
+                    window.requestRedraw = true;
+                }
             }
         }
-        Widget::handleCommand(command);
+        return handled;
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
 
-        if (_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        if (p_window_clipping_rectangle.contains(window_position)) {
+            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }
     }
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override
+    [[nodiscard]] bool accepts_focus() const noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         return *enabled;
@@ -157,7 +152,7 @@ private:
 
             // Draw the focus line over the full width of the window at the bottom
             // of the toolbar.
-            auto parentContext = parent->makeDrawContext(context);
+            auto parentContext = parent->make_draw_context(context);
 
             // Draw the line above every other direct child of the toolbar, and between
             // the selected-tab (0.6) and unselected-tabs (0.8).
@@ -186,10 +181,10 @@ private:
         context.clippingRectangle = parent->window_rectangle();
 
         if (hover || *value == ActiveValue) {
-            context.fillColor = theme->fillColor(_semantic_layer - 2);
+            context.fillColor = theme->fillColor(p_semantic_layer - 2);
             context.color = context.fillColor;
         } else {
-            context.fillColor = theme->fillColor(_semantic_layer - 1);
+            context.fillColor = theme->fillColor(p_semantic_layer - 1);
             context.color = context.fillColor;
         }
 

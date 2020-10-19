@@ -18,8 +18,8 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept : Containe
     if (parent) {
         // The toolbar widget does draw itself.
         ttlet lock = std::scoped_lock(parent->mutex);
-        _draw_layer = parent->draw_layer() + 1.0f;
-        _semantic_layer = parent->semantic_layer() + 1;
+        p_draw_layer = parent->draw_layer() + 1.0f;
+        p_semantic_layer = parent->semantic_layer() + 1;
     }
 }
 
@@ -50,11 +50,11 @@ void ToolbarWidget::updateConstraintsForChild(
     shared_height = intersect(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
 }
 
-[[nodiscard]] bool ToolbarWidget::updateConstraints() noexcept
+[[nodiscard]] bool ToolbarWidget::update_constraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ContainerWidget::updateConstraints()) {
+    if (ContainerWidget::update_constraints()) {
         auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
         auto shared_height = finterval{};
 
@@ -74,8 +74,8 @@ void ToolbarWidget::updateConstraintsForChild(
         }
 
         tt_assume(index == std::ssize(left_children) + 1 + std::ssize(right_children));
-        _preferred_size = {layout.extent(), finterval{shared_height.minimum()}};
-        _preferred_base_line = shared_base_line;
+        p_preferred_size = {layout.extent(), finterval{shared_height.minimum()}};
+        p_preferred_base_line = shared_base_line;
         return true;
     } else {
         return false;
@@ -91,16 +91,16 @@ void ToolbarWidget::updateLayoutForChild(Widget &child, ssize_t index) const noe
     ttlet child_rectangle = aarect{
         rectangle().x() + child_x, rectangle().y() + child.margin(), child_width, rectangle().height() - child.margin() * 2.0f};
 
-    ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
+    ttlet child_window_rectangle = mat::T2{p_window_rectangle} * child_rectangle;
 
-    child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
+    child.set_layout_parameters(child_window_rectangle, p_window_clipping_rectangle, p_window_base_line);
 }
 
-bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+bool ToolbarWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    need_layout |= std::exchange(requestLayout, false);
+    need_layout |= std::exchange(request_relayout, false);
     if (need_layout) {
         layout.update_layout(rectangle().width());
 
@@ -118,7 +118,7 @@ bool ToolbarWidget::updateLayout(hires_utc_clock::time_point display_time_point,
 
         tt_assume(index == std::ssize(left_children) + 1 + std::ssize(right_children));
     }
-    return ContainerWidget::updateLayout(display_time_point, need_layout);
+    return ContainerWidget::update_layout(display_time_point, need_layout);
 }
 
 void ToolbarWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
@@ -129,18 +129,18 @@ void ToolbarWidget::draw(DrawContext context, hires_utc_clock::time_point displa
     ContainerWidget::draw(std::move(context), display_time_point);
 }
 
-HitBox ToolbarWidget::hitBoxTest(vec window_position) const noexcept
+HitBox ToolbarWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
     auto r = HitBox{};
 
-    if (_window_clipping_rectangle.contains(window_position)) {
-        r = HitBox{this, _draw_layer, HitBox::Type::MoveArea};
+    if (p_window_clipping_rectangle.contains(window_position)) {
+        r = HitBox{this, p_draw_layer, HitBox::Type::MoveArea};
     }
 
     for (ttlet &child : children) {
-        r = std::max(r, child->hitBoxTest(window_position));
+        r = std::max(r, child->hitbox_test(window_position));
     }
     return r;
 }

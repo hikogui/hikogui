@@ -18,36 +18,36 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::u8string c
 
 LineInputWidget::~LineInputWidget() {}
 
-bool LineInputWidget::updateConstraints() noexcept
+bool LineInputWidget::update_constraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (Widget::updateConstraints()) {
+    if (Widget::update_constraints()) {
         ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
 
-        _preferred_size = {
+        p_preferred_size = {
             vec{100.0f, Theme::smallSize + Theme::margin * 2.0f},
             vec{500.0f, Theme::smallSize + Theme::margin * 2.0f}
         };
-        _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
+        p_preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
         return true;
     } else {
         return false;
     }
 }
 
-bool LineInputWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+bool LineInputWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    auto need_redraw = need_layout |= std::exchange(requestLayout, false);
+    auto need_redraw = need_layout |= std::exchange(request_relayout, false);
     need_redraw |= focus && display_time_point >= nextRedrawTimePoint;
     if (need_layout) {
         textRectangle = shrink(rectangle(), Theme::margin);
 
         // Set the clipping rectangle to within the border of the input field.
         // Add another border width, so glyphs do not touch the border.
-        textClippingRectangle = intersect(_window_clipping_rectangle, shrink(_window_rectangle, Theme::borderWidth * 2.0f));
+        textClippingRectangle = intersect(p_window_clipping_rectangle, shrink(p_window_rectangle, Theme::borderWidth * 2.0f));
 
         field.setStyleOfAll(theme->labelStyle);
 
@@ -62,7 +62,7 @@ bool LineInputWidget::updateLayout(hires_utc_clock::time_point display_time_poin
         lastUpdateTimePoint = display_time_point;
     }
 
-    return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
+    return Widget::update_layout(display_time_point, need_layout) || need_redraw;
 }
 
 void LineInputWidget::dragSelect() noexcept
@@ -178,63 +178,78 @@ void LineInputWidget::draw(DrawContext context, hires_utc_clock::time_point disp
     Widget::draw(std::move(context), display_time_point);
 }
 
-void LineInputWidget::handleCommand(command command) noexcept
+bool LineInputWidget::handle_command(command command) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
+    auto handled = Widget::handle_command(command);
 
     LOG_DEBUG("LineInputWidget: Received command: {}", command);
-    if (!*enabled) {
-        return;
+    if (*enabled) {
+        switch (command) {
+        case command::text_edit_paste:
+            handled = true;
+            field.handlePaste(window.getTextFromClipboard());
+            break;
+
+        case command::text_edit_copy:
+            handled = true;
+            window.setTextOnClipboard(field.handleCopy());
+            break;
+
+        case command::text_edit_cut:
+            handled = true;
+            window.setTextOnClipboard(field.handleCut());
+            break;
+
+        default:
+            handled |= field.handle_command(command);
+        }
     }
 
-    switch (command) {
-    case command::text_edit_paste: field.handlePaste(window.getTextFromClipboard()); break;
-    case command::text_edit_copy: window.setTextOnClipboard(field.handleCopy()); break;
-    case command::text_edit_cut: window.setTextOnClipboard(field.handleCut()); break;
-    default: field.handleCommand(command);
-    }
-
-    requestLayout = true;
-
-    // Make sure changing keyboard focus is handled.
-    Widget::handleCommand(command);
+    request_relayout = true;
+    return handled;
 }
 
-void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
+bool LineInputWidget::handle_keyboard_event(KeyboardEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    Widget::handleKeyboardEvent(event);
+    auto handled = Widget::handle_keyboard_event(event);
 
-    if (!*enabled) {
-        return;
+    if (*enabled) {
+        switch (event.type) {
+        case KeyboardEvent::Type::Grapheme:
+            handled = true;
+            field.insertGrapheme(event.grapheme);
+            break;
+
+        case KeyboardEvent::Type::PartialGrapheme:
+            handled = true;
+            field.insertPartialGrapheme(event.grapheme);
+            break;
+
+        default:;
+        }
     }
 
-    switch (event.type) {
-    case KeyboardEvent::Type::Grapheme: field.insertGrapheme(event.grapheme); break;
-
-    case KeyboardEvent::Type::PartialGrapheme: field.insertPartialGrapheme(event.grapheme); break;
-
-    default:;
-    }
-
-    requestLayout = true;
+    request_relayout = true;
+    return handled;
 }
 
-bool LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
+bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    
+    auto handled = Widget::handle_mouse_event(event);
+
     // Make sure we only scroll when dragging outside the widget.
-    ttlet position = fromWindowTransform * event.position;
+    ttlet position = from_window_transform * event.position;
     dragScrollSpeedX = 0.0f;
     dragClickCount = event.clickCount;
     dragSelectPosition = position;
 
-    if (Widget::handleMouseEvent(event)) {
-        return true;
+    if (event.cause.leftButton) {
+        handled = true;
 
-    } else if (event.cause.leftButton) {
         if (!*enabled) {
             return true;
         }
@@ -291,20 +306,16 @@ bool LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
 
         default:;
         }
-        return true;
-
-    } else if (parent) {
-        return parent->handleMouseEvent(event);
     }
-    return false;
+    return handled;
 }
 
-HitBox LineInputWidget::hitBoxTest(vec window_position) const noexcept
+HitBox LineInputWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
-    if (_window_clipping_rectangle.contains(window_position)) {
-        return HitBox{this, _draw_layer, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
+    if (p_window_clipping_rectangle.contains(window_position)) {
+        return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

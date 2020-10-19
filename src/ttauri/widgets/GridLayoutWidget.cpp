@@ -86,23 +86,23 @@ Widget &GridLayoutWidget::addWidget(cell_address address, std::unique_ptr<Widget
     return widget;
 }
 
-bool GridLayoutWidget::updateConstraints() noexcept
+bool GridLayoutWidget::update_constraints() noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    if (ContainerWidget::updateConstraints()) {
-        _preferred_size = calculateCellMinMaxSize(cells, rows, columns);
+    if (ContainerWidget::update_constraints()) {
+        p_preferred_size = calculateCellMinMaxSize(cells, rows, columns);
         return true;
     } else {
         return false;
     }
 }
 
-bool GridLayoutWidget::updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
-    need_layout |= std::exchange(requestLayout, false);
+    need_layout |= std::exchange(request_relayout, false);
     if (need_layout) {
         columns.update_layout(rectangle().width());
         rows.update_layout(rectangle().height());
@@ -114,15 +114,15 @@ bool GridLayoutWidget::updateLayout(hires_utc_clock::time_point display_time_poi
             ttlet child_rectangle = cell.rectangle(columns, rows);
             ttlet child_base_line = cell.base_line(rows);
 
-            ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
+            ttlet child_window_rectangle = mat::T2{p_window_rectangle} * child_rectangle;
             ttlet child_base_line_position =
                 child_base_line.position(child_window_rectangle.bottom(), child_window_rectangle.top());
 
-            child->set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, child_base_line_position);
+            child->set_layout_parameters(child_window_rectangle, p_window_clipping_rectangle, child_base_line_position);
         }
     }
 
-    return ContainerWidget::updateLayout(display_time_point, need_layout);
+    return ContainerWidget::update_layout(display_time_point, need_layout);
 }
 
 } // namespace tt

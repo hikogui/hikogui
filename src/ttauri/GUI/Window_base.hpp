@@ -248,19 +248,19 @@ protected:
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    bool handleMouseEvent(MouseEvent event) noexcept;
+    bool handle_mouse_event(MouseEvent event) noexcept;
 
     /*! Handle keyboard event.
     * Called by the operating system to show the character that was entered
     * or special key that was used.
     */
-    void handleKeyboardEvent(KeyboardEvent const &event) noexcept;
+    bool handle_keyboard_event(KeyboardEvent const &event) noexcept;
 
-    void handleKeyboardEvent(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
+    bool handle_keyboard_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
 
-    void handleKeyboardEvent(Grapheme grapheme, bool full=true) noexcept;
+    bool handle_keyboard_event(Grapheme grapheme, bool full=true) noexcept;
 
-    void handleKeyboardEvent(char32_t c, bool full=true) noexcept;
+    bool handle_keyboard_event(char32_t c, bool full=true) noexcept;
 
 protected:
     mutable unfair_recursive_mutex mutex;

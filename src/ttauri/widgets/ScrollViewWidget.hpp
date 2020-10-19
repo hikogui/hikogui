@@ -23,9 +23,9 @@ public:
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
             ttlet lock = std::scoped_lock(parent->mutex);
-            _semantic_layer = parent->semantic_layer();
+            p_semantic_layer = parent->semantic_layer();
         }
-        _margin = 0.0f;
+        p_margin = 0.0f;
 
         if constexpr (can_scroll_horizontally) {
             horizontal_scroll_bar = std::make_unique<ScrollBarWidget<false>>(
@@ -43,7 +43,7 @@ public:
 
     ~ScrollViewWidget() {}
 
-    [[nodiscard]] bool updateConstraints() noexcept override
+    [[nodiscard]] bool update_constraints() noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         tt_assume(content);
@@ -58,13 +58,13 @@ public:
         }
         ttlet content_lock = std::scoped_lock{content->mutex};
 
-        auto has_updated_contraints = Widget::updateConstraints();
-        has_updated_contraints |= content->updateConstraints();
+        auto has_updated_contraints = Widget::update_constraints();
+        has_updated_contraints |= content->update_constraints();
         if constexpr (can_scroll_horizontally) {
-            has_updated_contraints |= horizontal_scroll_bar->updateConstraints();
+            has_updated_contraints |= horizontal_scroll_bar->update_constraints();
         }
         if constexpr (can_scroll_vertically) {
-            has_updated_contraints |= vertical_scroll_bar->updateConstraints();
+            has_updated_contraints |= vertical_scroll_bar->update_constraints();
         }
 
         // Recurse into the selected widget.
@@ -89,8 +89,8 @@ public:
                 width += vertical_scroll_bar->preferred_size().width();
             }
 
-            _preferred_size = interval_vec2{width, height};
-            _preferred_base_line = {};
+            p_preferred_size = interval_vec2{width, height};
+            p_preferred_base_line = {};
         }
 
         if (can_scroll_horizontally) {
@@ -102,7 +102,7 @@ public:
         return has_updated_contraints;
     }
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
         tt_assume(content);
@@ -115,7 +115,7 @@ public:
         }
         ttlet content_lock = std::scoped_lock{content->mutex};
 
-        auto need_redraw = need_layout |= std::exchange(requestLayout, false);
+        auto need_redraw = need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
             // Calculate the width and height of the scroll-bars, make the infinity thin when they don't exist.
             ttlet vertical_scroll_bar_width =
@@ -161,26 +161,26 @@ public:
 
             // Make a clipping rectangle that fits the content_rectangle exactly.
             ttlet window_aperture_clipping_rectangle =
-                intersect(_window_clipping_rectangle, mat::T2{_window_rectangle} * aperture_rectangle);
+                intersect(p_window_clipping_rectangle, mat::T2{p_window_rectangle} * aperture_rectangle);
 
             // Update layout parameters for each child.
-            content->set_layout_parameters(mat::T2{_window_rectangle} * content_rectangle, window_aperture_clipping_rectangle);
+            content->set_layout_parameters(mat::T2{p_window_rectangle} * content_rectangle, window_aperture_clipping_rectangle);
             if constexpr (can_scroll_horizontally) {
                 horizontal_scroll_bar->set_layout_parameters(
-                    mat::T2{_window_rectangle} * horizontal_scroll_bar_rectangle, _window_clipping_rectangle);
+                    mat::T2{p_window_rectangle} * horizontal_scroll_bar_rectangle, p_window_clipping_rectangle);
             }
             if constexpr (can_scroll_vertically) {
                 vertical_scroll_bar->set_layout_parameters(
-                    mat::T2{_window_rectangle} * vertical_scroll_bar_rectangle, _window_clipping_rectangle);
+                    mat::T2{p_window_rectangle} * vertical_scroll_bar_rectangle, p_window_clipping_rectangle);
             }
         }
 
-        need_redraw |= content->updateLayout(display_time_point, need_layout);
+        need_redraw |= content->update_layout(display_time_point, need_layout);
         if constexpr (can_scroll_horizontally) {
-            need_redraw |= horizontal_scroll_bar->updateLayout(display_time_point, need_layout);
+            need_redraw |= horizontal_scroll_bar->update_layout(display_time_point, need_layout);
         }
         if constexpr (can_scroll_vertically) {
-            need_redraw |= vertical_scroll_bar->updateLayout(display_time_point, need_layout);
+            need_redraw |= vertical_scroll_bar->update_layout(display_time_point, need_layout);
         }
 
         if (can_scroll_horizontally) {
@@ -190,7 +190,7 @@ public:
             vertical_scroll_bar->mutex.unlock();
         }
 
-        return Widget::updateLayout(display_time_point, need_layout) || need_redraw;
+        return Widget::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -200,52 +200,52 @@ public:
 
         if constexpr (can_scroll_horizontally) {
             ttlet bar_lock = std::scoped_lock{horizontal_scroll_bar->mutex};
-            horizontal_scroll_bar->draw(horizontal_scroll_bar->makeDrawContext(context), display_time_point);
+            horizontal_scroll_bar->draw(horizontal_scroll_bar->make_draw_context(context), display_time_point);
         }
         if constexpr (can_scroll_vertically) {
             ttlet bar_lock = std::scoped_lock{vertical_scroll_bar->mutex};
-            vertical_scroll_bar->draw(vertical_scroll_bar->makeDrawContext(context), display_time_point);
+            vertical_scroll_bar->draw(vertical_scroll_bar->make_draw_context(context), display_time_point);
         }
 
         ttlet content_lock = std::scoped_lock(content->mutex);
-        content->draw(content->makeDrawContext(context), display_time_point);
+        content->draw(content->make_draw_context(context), display_time_point);
 
         Widget::draw(std::move(context), display_time_point);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec window_position) const noexcept override
+    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
         tt_assume(content);
 
         auto r = HitBox{};
 
-        if (_window_clipping_rectangle.contains(window_position)) {
+        if (p_window_clipping_rectangle.contains(window_position)) {
             // Claim mouse events for scrolling.
-            r = std::max(r, HitBox{this, _draw_layer});
+            r = std::max(r, HitBox{this, p_draw_layer});
         }
 
-        r = std::max(r, content->hitBoxTest(window_position));
+        r = std::max(r, content->hitbox_test(window_position));
         if constexpr (can_scroll_horizontally) {
-            r = std::max(r, horizontal_scroll_bar->hitBoxTest(window_position));
+            r = std::max(r, horizontal_scroll_bar->hitbox_test(window_position));
         }
         if constexpr (can_scroll_vertically) {
-            r = std::max(r, vertical_scroll_bar->hitBoxTest(window_position));
+            r = std::max(r, vertical_scroll_bar->hitbox_test(window_position));
         }
         return r;
     }
 
-    Widget const *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+    Widget const *next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
         tt_assume(content);
 
         // Scrollbars are never keyboard focus targets.
-        return content->nextKeyboardWidget(currentKeyboardWidget, reverse);
+        return content->next_keyboard_widget(currentKeyboardWidget, reverse);
     }
 
     template<typename WidgetType = GridLayoutWidget, typename... Args>
-    WidgetType &setContent(Args const &... args) noexcept
+    WidgetType &makeContent(Args const &... args) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
 
@@ -253,27 +253,23 @@ public:
         auto &widget = *widget_ptr.get();
         content = std::move(widget_ptr);
 
-        requestConstraint = true;
+        request_reconstrain = true;
         return widget;
     }
 
-    bool handleMouseEvent(MouseEvent const &event) noexcept override
+    bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(mutex);
-
-        if (Widget::handleMouseEvent(event)) {
-            return true;
-
-        } else if (event.type == MouseEvent::Type::Wheel) {
+        auto handled = Widget::handle_mouse_event(event);
+        
+        if (event.type == MouseEvent::Type::Wheel) {
+            handled = true;
             scroll_offset_x += event.wheelDelta.x();
             scroll_offset_y += event.wheelDelta.y();
-            requestLayout = true;
+            request_relayout = true;
             return true;
-
-        } else if (parent) {
-            return parent->handleMouseEvent(event);
         }
-        return false;
+        return handled;
     }
 
 private:
