@@ -27,6 +27,14 @@ public:
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
     [[nodiscard]] Widget const *next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept override;
 
+    /** Remove and deallocate all child widgets.
+     */
+    void clear() noexcept
+    {
+        children.clear();
+        request_reconstrain = true;
+    }
+
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */

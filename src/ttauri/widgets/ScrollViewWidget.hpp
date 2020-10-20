@@ -35,10 +35,6 @@ public:
             vertical_scroll_bar = std::make_unique<ScrollBarWidget<true>>(
                 window, this, scroll_content_height, scroll_aperture_height, scroll_offset_y);
         }
-
-        if constexpr (controls_window) {
-            window.set_resize_border_priority(true, !can_scroll_vertically, !can_scroll_horizontally, true);
-        }
     }
 
     ~ScrollViewWidget() {}
@@ -135,36 +131,7 @@ public:
             ttlet horizontal_scroll_bar_rectangle = aarect{
                 rectangle().x(), rectangle().y(), rectangle().width() - vertical_scroll_bar_width, horizontal_scroll_bar_height};
 
-            ttlet aperture_rectangle = aarect{
-                rectangle().x(),
-                horizontal_scroll_bar_rectangle.top(),
-                horizontal_scroll_bar_rectangle.width(),
-                vertical_scroll_bar_rectangle.height()};
-
-            // We can not use the content_rectangle is the window for the content.
-            // We need to calculate the window_content_rectangle, to positions the content after scrolling.
-            scroll_content_width =
-                can_scroll_horizontally ? content->preferred_size().minimum().width() : aperture_rectangle.width();
-            scroll_content_height =
-                can_scroll_vertically ? content->preferred_size().minimum().height() : aperture_rectangle.height();
-
-            scroll_aperture_width = aperture_rectangle.width();
-            scroll_aperture_height = aperture_rectangle.height();
-
-            ttlet scroll_offset_x_max = *scroll_content_width - *scroll_aperture_width;
-            ttlet scroll_offset_y_max = *scroll_content_height - *scroll_aperture_height;
-
-            scroll_offset_x = std::clamp(std::round(*scroll_offset_x), 0.0f, scroll_offset_x_max);
-            scroll_offset_y = std::clamp(std::round(*scroll_offset_y), 0.0f, scroll_offset_y_max);
-
-            ttlet content_rectangle = aarect{-*scroll_offset_x, -*scroll_offset_y, *scroll_content_width, *scroll_content_height};
-
-            // Make a clipping rectangle that fits the content_rectangle exactly.
-            ttlet window_aperture_clipping_rectangle =
-                intersect(p_window_clipping_rectangle, mat::T2{p_window_rectangle} * aperture_rectangle);
-
-            // Update layout parameters for each child.
-            content->set_layout_parameters(mat::T2{p_window_rectangle} * content_rectangle, window_aperture_clipping_rectangle);
+            // Update layout parameters for both scrollbars.
             if constexpr (can_scroll_horizontally) {
                 horizontal_scroll_bar->set_layout_parameters(
                     mat::T2{p_window_rectangle} * horizontal_scroll_bar_rectangle, p_window_clipping_rectangle);
@@ -173,6 +140,63 @@ public:
                 vertical_scroll_bar->set_layout_parameters(
                     mat::T2{p_window_rectangle} * vertical_scroll_bar_rectangle, p_window_clipping_rectangle);
             }
+
+            auto aperture_x = rectangle().x();
+            auto aperture_y = horizontal_scroll_bar_rectangle.top();
+            auto aperture_width = horizontal_scroll_bar_rectangle.width();
+            auto aperture_height = vertical_scroll_bar_rectangle.height();
+
+            // We can not use the content_rectangle is the window for the content.
+            // We need to calculate the window_content_rectangle, to positions the content after scrolling.
+            scroll_content_width = can_scroll_horizontally ? content->preferred_size().minimum().width() : aperture_width;
+            scroll_content_height = can_scroll_vertically ? content->preferred_size().minimum().height() : aperture_height;
+
+            scroll_aperture_width = aperture_width;
+            scroll_aperture_height = aperture_height;
+
+            ttlet scroll_offset_x_max = *scroll_content_width - aperture_width;
+            ttlet scroll_offset_y_max = *scroll_content_height - aperture_height;
+
+            scroll_offset_x = std::clamp(std::round(*scroll_offset_x), 0.0f, scroll_offset_x_max);
+            scroll_offset_y = std::clamp(std::round(*scroll_offset_y), 0.0f, scroll_offset_y_max);
+
+            auto content_x = -*scroll_offset_x;
+            auto content_y = -*scroll_offset_y;
+            auto content_width = *scroll_content_width;
+            auto content_height = *scroll_content_height;
+
+            // Visual hack, to extend the aperture over the invisible scrollbars.
+            ttlet content_can_extent_vertically = content->preferred_size().maximum().height() >= rectangle().height();
+            ttlet content_can_extent_horizontally = content->preferred_size().maximum().width() >= rectangle().width();
+
+            if (can_scroll_horizontally && !horizontal_scroll_bar->visible() && content_can_extent_vertically) {
+                ttlet delta_height = horizontal_scroll_bar_rectangle.height();
+                aperture_height += delta_height;
+                aperture_y -= delta_height;
+                content_height += delta_height;
+                content_y -= delta_height;
+            }
+
+            if (can_scroll_vertically && !vertical_scroll_bar->visible() && content_can_extent_horizontally) {
+                ttlet delta_width = vertical_scroll_bar_rectangle.width();
+                aperture_width += delta_width;
+                content_width += delta_width;
+            }
+
+            if constexpr (controls_window) {
+                ttlet has_horizontal_scroll_bar = can_scroll_horizontally && horizontal_scroll_bar->visible();
+                ttlet has_vertical_scroll_bar = can_scroll_vertically && vertical_scroll_bar->visible();
+                window.set_resize_border_priority(true, !has_vertical_scroll_bar, !has_horizontal_scroll_bar, true);
+            }
+
+            // Make a clipping rectangle that fits the content_rectangle exactly.
+            ttlet aperture_rectangle = aarect{aperture_x, aperture_y, aperture_width, aperture_height};
+            ttlet window_aperture_clipping_rectangle =
+                intersect(p_window_clipping_rectangle, mat::T2{p_window_rectangle} * aperture_rectangle);
+
+            ttlet content_rectangle = aarect{content_x, content_y, content_width, content_height};
+
+            content->set_layout_parameters(mat::T2{p_window_rectangle} * content_rectangle, window_aperture_clipping_rectangle);
         }
 
         need_redraw |= content->update_layout(display_time_point, need_layout);
@@ -245,7 +269,7 @@ public:
     }
 
     template<typename WidgetType = GridLayoutWidget, typename... Args>
-    WidgetType &makeContent(Args const &... args) noexcept
+    WidgetType &makeWidget(Args const &... args) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
 
@@ -261,7 +285,7 @@ public:
     {
         ttlet lock = std::scoped_lock(mutex);
         auto handled = Widget::handle_mouse_event(event);
-        
+
         if (event.type == MouseEvent::Type::Wheel) {
             handled = true;
             scroll_offset_x += event.wheelDelta.x();

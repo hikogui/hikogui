@@ -11,11 +11,9 @@
 namespace tt {
 
 class TextCell: public Cell {
-    std::u8string text;
-    TextStyle style;
-    mutable ShapedText shapedText;
-
 public:
+    TextStyle style;
+
     TextCell(std::u8string_view text, TextStyle style) noexcept;
     TextCell(std::u8string text, TextStyle style) noexcept;
 
@@ -31,6 +29,9 @@ public:
         bool useContextColor=false
     ) const noexcept override;
 
+private:
+    std::u8string text;
+    mutable ShapedText shapedText;
 };
 
 }

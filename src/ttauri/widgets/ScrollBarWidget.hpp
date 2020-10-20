@@ -64,8 +64,6 @@ public:
         }
     }
 
-    
-
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -90,9 +88,10 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        draw_rails(context);
+        tt_assume(mutex.is_locked_by_current_thread());
 
-        if (hidden_content() != 0.0f) {
+        if (visible()) {
+            draw_rails(context);
             draw_slider(context);
         }
         Widget::draw(std::move(context), display_time_point);
@@ -103,7 +102,7 @@ public:
         ttlet lock = std::scoped_lock(mutex);
         ttlet position = from_window_transform * window_position;
 
-        if (p_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && hidden_content() != 0.0f) {
+        if (p_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && visible()) {
             return HitBox{this, p_draw_layer};
         } else {
             return HitBox{};
@@ -144,6 +143,15 @@ public:
         return false;
     }
 
+    /** Is the scrollbar visible.
+     * When the content is the same size as the scroll-view then
+     * the scrollbar becomes invisible.
+     */
+    [[nodiscard]] bool visible() const noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+        return hidden_content() >= 1.0f;
+    }
+
 private:
     observable<float> offset;
     observable<float> aperture;
@@ -156,7 +164,6 @@ private:
     [[nodiscard]] float rail_length() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-
         return is_vertical ? rectangle().height() : rectangle().width();
     }
 
@@ -173,7 +180,6 @@ private:
     [[nodiscard]] float slider_travel_range() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-
         return rail_length() - slider_length();
     }
 
@@ -182,7 +188,6 @@ private:
     [[nodiscard]] float hidden_content() const noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-
         return *content - *aperture;
     }
 

@@ -5,6 +5,9 @@
 
 #include "Widget.hpp"
 #include "WindowWidget.hpp"
+#include "overlay_view_widget.hpp"
+#include "ScrollViewWidget.hpp"
+#include "RowColumnLayoutWidget.hpp"
 #include "../cells/TextCell.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
@@ -36,12 +39,21 @@ public:
         value_type const &value = {},
         option_list_type const &option_list = {},
         label_type const &label = l10n(u8"<unknown>")) noexcept :
-        Widget(window, parent), value(value), option_list(option_list), label(label)
+        Widget(window, parent),
+        value(value),
+        option_list(option_list),
+        label(label),
+        overlay_widget(std::make_unique<overlay_view_widget>(window, this)),
+        scroll_widget(overlay_widget->makeWidget<VerticalScrollViewWidget<>>()),
+        column_widget(scroll_widget.makeWidget<ColumnLayoutWidget>())
     {
+        repopulate_options();
+
         [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...) {
-            this->window.requestRedraw = true;
+            request_reconstrain = true;
         });
         [[maybe_unused]] ttlet option_list_cbid = this->option_list.add_callback([this](auto...) {
+            repopulate_options();
             request_reconstrain = true;
         });
         [[maybe_unused]] ttlet label_cbid = this->label.add_callback([this](auto...) {
@@ -90,31 +102,30 @@ public:
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        if (Widget::update_constraints()) {
-            labelCell = std::make_unique<TextCell>(*label, theme->placeholderLabelStyle);
-            auto preferredWidth = labelCell->preferredExtent().width();
-            auto preferredHeight = labelCell->preferredExtent().height();
+        auto updated = Widget::update_constraints();
+        if (selecting) {
+            ttlet child_lock = std::scoped_lock(overlay_widget->mutex);
+            updated |= overlay_widget->update_constraints();
+        }
 
-            // Create a list of cells, one for each option and calculate
-            // the optionHeight based on the option which is the tallest.
-            option_cache_list.clear();
-            for (ttlet & [ tag, labelText ] : *option_list) {
-                auto cell = std::make_unique<TextCell>(labelText, theme->labelStyle);
-                preferredWidth = std::max(preferredWidth, cell->preferredExtent().width());
-                preferredHeight = std::max(preferredHeight, cell->preferredExtent().height());
-                option_cache_list.emplace_back(tag, std::move(cell));
+        if (updated) {
+            ttlet index = get_value_as_index();
+            if (index == -1) {
+                text_cell = std::make_unique<TextCell>(*label, theme->placeholderLabelStyle);
+            } else {
+                text_cell = std::make_unique<TextCell>((*option_list)[index].second, theme->labelStyle);
             }
 
-            // Set the widget height to the tallest option, fallback to a small size widget.
-            if (preferredHeight == 0.0f) {
-                preferredHeight = Theme::smallSize;
+            auto text_size = TextCell(*label, theme->placeholderLabelStyle).preferredExtent();
+            for (ttlet & [ tag, text ] : *option_list) {
+                text_size = max(text_size, TextCell(text, theme->labelStyle).preferredExtent());
             }
 
-            p_preferred_size = interval_vec2::make_minimum(
-                Theme::smallSize + preferredWidth + Theme::margin * 2.0f, preferredHeight + Theme::margin * 2.0f);
+            p_preferred_size =
+                interval_vec2::make_minimum(text_size) + vec{Theme::smallSize + Theme::margin * 2.0f, Theme::margin * 2.0f};
             p_preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
-
             return true;
+
         } else {
             return false;
         }
@@ -125,55 +136,40 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
 
         need_layout |= std::exchange(request_relayout, false);
-        if (need_layout) {
-            leftBoxRectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
 
-            ttlet optionX = leftBoxRectangle.p3().x() + Theme::margin;
-            ttlet optionWidth = rectangle().width() - optionX - Theme::margin;
-            ttlet optionHeight = rectangle().height() - Theme::margin * 2.0f;
+        if (selecting) {
+            ttlet child_lock = std::scoped_lock(overlay_widget->mutex);
 
-            // Calculate the rectangles for each cell in the option_cache_list
-            option_cache_list_height = (optionHeight + Theme::margin * 2.0f) * std::ssize(option_cache_list);
-            ttlet option_cache_listWidth = optionWidth + Theme::margin * 2.0f;
-            auto y = option_cache_list_height;
-            selectedOptionY = 0.0f;
-            for (auto &&option : option_cache_list) {
-                y -= Theme::margin;
-                y -= optionHeight;
-                option.cellRectangle = aarect{Theme::margin, y, optionWidth, optionHeight};
-                option.backgroundRectangle = expand(option.cellRectangle, Theme::margin);
-                y -= Theme::margin;
+            if (need_layout) {
+                // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
+                // from the point of view of the selection widget.
 
-                if (option.tag == value) {
-                    selectedOptionY = y;
-                }
+                // The overlay should start on the same left edge as the selection box and the same width.
+                // The height of the overlay should be the maximum height, which will show all the options.
+
+                ttlet overlay_width = clamp(rectangle().width() - Theme::smallSize, overlay_widget->preferred_size().width());
+                ttlet overlay_height = overlay_widget->preferred_size().maximum().height();
+                ttlet overlay_x = p_window_rectangle.x() + Theme::smallSize;
+                ttlet overlay_y = std::round(p_window_rectangle.middle() - overlay_height * 0.5f);
+                ttlet overlay_rectangle = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
+
+                overlay_widget->set_layout_parameters(overlay_rectangle, overlay_rectangle);
             }
+            overlay_widget->update_layout(display_time_point, need_layout);
+        }
 
-            // The window height, excluding the top window decoration.
-            ttlet windowHeight = window.widget->rectangle().height() - Theme::toolbarHeight;
-
-            // Calculate overlay dimensions and position.
-            ttlet overlayWidth = option_cache_listWidth;
-            ttlet overlayWindowX = p_window_rectangle.x() + Theme::smallSize;
-            ttlet overlayHeight = std::min(option_cache_list_height, windowHeight);
-            auto overlayWindowY = p_window_rectangle.y() - selectedOptionY;
-
-            // Adjust overlay to fit inside the window, below the top window decoration.
-            overlayWindowY = std::clamp(overlayWindowY, 0.0f, windowHeight - overlayHeight);
-
-            overlayWindowRectangle = aarect{overlayWindowX, overlayWindowY, overlayWidth, overlayHeight};
-
-            // The overlayRectangle are in the coordinate system of the current widget, so it will
-            // extent beyond the current widget.
-            overlayRectangle =
-                aarect{overlayWindowX - p_window_rectangle.x(), overlayWindowY - p_window_rectangle.y(), overlayWidth, overlayHeight};
+        if (need_layout) {
+            left_box_rectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
+            chevrons_glyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
+            ttlet chevrons_glyph_bbox = PipelineSDF::DeviceShared::getBoundingBox(chevrons_glyph);
+            chevrons_rectangle = align(left_box_rectangle, scale(chevrons_glyph_bbox, Theme::iconSize), Alignment::MiddleCenter);
 
             // The label is located to the right of the selection box icon.
-            optionRectangle = aarect{optionX, rectangle().height() - optionHeight - Theme::margin, optionWidth, optionHeight};
-
-            chevronsGlyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
-            ttlet chevronsGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(chevronsGlyph);
-            chevronsRectangle = align(leftBoxRectangle, scale(chevronsGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
+            option_rectangle = aarect{
+                left_box_rectangle.right() + Theme::margin,
+                0.0f,
+                rectangle().width() - left_box_rectangle.width() - Theme::margin * 2.0f,
+                rectangle().height()};
         }
         return Widget::update_layout(display_time_point, need_layout);
     }
@@ -188,23 +184,11 @@ public:
         drawValue(context);
 
         if (selecting) {
-            drawOverlay(context);
+            ttlet child_lock = std::scoped_lock(overlay_widget->mutex);
+            overlay_widget->draw(overlay_widget->make_draw_context(context), display_time_point);
         }
 
         Widget::draw(std::move(context), display_time_point);
-    }
-
-    bool handle_keyboard_event(KeyboardEvent const &event) noexcept override
-    {
-        ttlet lock = std::scoped_lock(mutex);
-        auto handled = Widget::handle_keyboard_event(event);
-
-        if (event.type == KeyboardEvent::Type::Exited) {
-            handled = true;
-            handle_command(command::gui_escape);
-        }
-
-        return handled;
     }
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
@@ -212,48 +196,10 @@ public:
         ttlet lock = std::scoped_lock(mutex);
         auto handled = Widget::handle_mouse_event(event);
 
-        if (selecting) {
-            ttlet position = from_window_transform * event.position;
-
-            auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * position;
-
-            if (overlayRectangle.contains(position)) {
-                for (ttlet &option : option_cache_list) {
-                    if (option.backgroundRectangle.contains(mouseInListPosition)) {
-                        if (hoverOption != option.tag) {
-                            window.requestRedraw = true;
-                            hoverOption = option.tag;
-                        }
-                    }
-                }
-
-            } else {
-                if (hoverOption.has_value()) {
-                    window.requestRedraw = true;
-                    hoverOption = {};
-                }
-            }
-        }
-
         if (event.cause.leftButton) {
             handled = true;
             if (*enabled) {
-                if (selecting) {
-                    if (event.type == MouseEvent::Type::ButtonDown) {
-                        clickedOption = hoverOption;
-                        window.requestRedraw = true;
-                    }
-
-                    if (event.type == MouseEvent::Type::ButtonUp) {
-                        if (clickedOption.has_value() && clickedOption == hoverOption) {
-                            chosenOption = *clickedOption;
-                            handle_command(command::gui_activate);
-                        }
-                        clickedOption = {};
-                        window.requestRedraw = true;
-                    }
-
-                } else if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
+                if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
                     handle_command(command::gui_activate);
                 }
             }
@@ -267,61 +213,9 @@ public:
         auto handled = Widget::handle_command(command);
 
         if (*enabled) {
-            switch (command) {
-            case command::gui_up: {
+            if (command == command::gui_activate) {
                 handled = true;
-                std::optional<ValueType> prev_tag;
-                for (ttlet &option : option_cache_list) {
-                    if (option.tag == chosenOption && prev_tag.has_value()) {
-                        chosenOption = *prev_tag;
-                        break;
-                    }
-                    prev_tag = option.tag;
-                }
-                } break;
-
-            case command::gui_down: {
-                handled = true;
-                bool found = false;
-                for (ttlet &option : option_cache_list) {
-                    if (found) {
-                        chosenOption = option.tag;
-                        break;
-                    } else if (option.tag == chosenOption) {
-                        found = true;
-                    }
-                }
-                } break;
-
-            case command::gui_activate:
-                handled = true;
-                if (selecting) {
-                    selecting = false;
-                    value.store(chosenOption);
-
-                } else {
-                    selecting = true;
-                    chosenOption = value.load();
-                }
-                break;
-
-            case command::gui_widget_next:
-            case command::gui_widget_prev:
-                // We are not handling these commands, just committing the chosen option.
-                if (selecting) {
-                    selecting = false;
-                    value.store(chosenOption);
-                }
-                break;
-
-            case command::gui_escape:
-                handled = true;
-                if (selecting) {
-                    selecting = false;
-                }
-                break;
-
-            default:;
+                selecting = !selecting;
             }
         }
 
@@ -334,15 +228,17 @@ public:
         ttlet lock = std::scoped_lock(mutex);
         ttlet position = from_window_transform * window_position;
 
-        if (selecting && overlayRectangle.contains(position)) {
-            return HitBox{this, p_draw_layer + 25.0f, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        auto r = HitBox{};
 
-        } else if (p_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
-
-        } else {
-            return HitBox{};
+        if (selecting) {
+            r = std::max(r, overlay_widget->hitbox_test(window_position));
         }
+
+        if (p_window_clipping_rectangle.contains(window_position)) {
+            r = std::max(r, HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default});
+        }
+
+        return r;
     }
 
     [[nodiscard]] bool accepts_focus() const noexcept override
@@ -351,97 +247,45 @@ public:
         return *enabled;
     }
 
-private:
-    std::unique_ptr<TextCell> labelCell;
+    /** Populate the scroll view with menu items corresponding to the options.
+     */
+    void repopulate_options() noexcept
+    {
+        ttlet lock = std::scoped_lock(mutex);
 
-    struct option_list_entry {
-        ValueType tag;
-        std::unique_ptr<TextCell> cell;
-        aarect cellRectangle;
-        aarect backgroundRectangle;
-
-        option_list_entry(ValueType tag, std::unique_ptr<TextCell> cell) noexcept :
-            tag(tag), cell(std::move(cell)), cellRectangle(), backgroundRectangle()
-        {
+        column_widget.clear();
+        ttlet option_list_ = *option_list;
+        for (ttlet & [ tag, text ] : std::views::reverse(option_list_)) {
+            auto &button = column_widget.makeWidget<ButtonWidget>();
+            button.label = text;
         }
-    };
+    }
 
-    float option_cache_list_height;
-    std::vector<option_list_entry> option_cache_list;
-    float selectedOptionY;
+private:
+    std::unique_ptr<TextCell> text_cell;
 
-    aarect optionRectangle;
-    aarect leftBoxRectangle;
+    aarect option_rectangle;
+    aarect left_box_rectangle;
 
-    FontGlyphIDs chevronsGlyph;
-    aarect chevronsRectangle;
-
-    aarect overlayWindowRectangle;
-    aarect overlayRectangle;
+    FontGlyphIDs chevrons_glyph;
+    aarect chevrons_rectangle;
 
     bool selecting = false;
-    ValueType chosenOption;
-    std::optional<ValueType> hoverOption;
-    std::optional<ValueType> clickedOption;
+    std::unique_ptr<overlay_view_widget> overlay_widget;
+    VerticalScrollViewWidget<> &scroll_widget;
+    ColumnLayoutWidget &column_widget;
 
-    void drawOptionHighlight(DrawContext drawContext, option_list_entry const &option) noexcept
+    [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-
-        if (option.tag == chosenOption && !clickedOption.has_value()) {
-            drawContext.fillColor = theme->accentColor;
-        } else if (option.tag == clickedOption) {
-            drawContext.fillColor = theme->accentColor;
-        } else if (option.tag == hoverOption) {
-            drawContext.fillColor = theme->fillColor(p_semantic_layer + 1);
-        } else {
-            drawContext.fillColor = theme->fillColor(p_semantic_layer);
+        ssize_t index = 0;
+        for (ttlet & [ tag, label_text ] : *option_list) {
+            if (value == tag) {
+                return index;
+            }
+            ++index;
         }
-        drawContext.drawFilledQuad(option.backgroundRectangle);
-    }
 
-    void drawOptionLabel(DrawContext drawContext, option_list_entry const &option) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T{0.0, 0.0, 0.3f} * drawContext.transform;
-        drawContext.color = theme->labelStyle.color;
-        option.cell->draw(drawContext, option.cellRectangle, Alignment::MiddleLeft, center(option.cellRectangle).y(), true);
-    }
-
-    void drawOption(DrawContext drawContext, option_list_entry const &option) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawOptionHighlight(drawContext, option);
-        drawOptionLabel(drawContext, option);
-    }
-
-    void drawOverlayOutline(DrawContext drawContext) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-        drawContext.fillColor = drawContext.fillColor.a(0.0f);
-        drawContext.drawBoxIncludeBorder(overlayRectangle);
-    }
-
-    void drawOverlay(DrawContext context) noexcept
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        context.transform = mat::T{0.0, 0.0, 25.0f} * context.transform;
-        context.clippingRectangle = expand(overlayWindowRectangle, Theme::borderWidth * 0.5f);
-
-        drawOverlayOutline(context);
-
-        auto option_cache_listContext = context;
-        option_cache_listContext.transform = mat::T{overlayRectangle.x(), overlayRectangle.y()} * context.transform;
-        for (ttlet &option : option_cache_list) {
-            drawOption(option_cache_listContext, option);
-        }
+        return -1;
     }
 
     void drawOutline(DrawContext drawContext) noexcept
@@ -462,7 +306,7 @@ private:
         //}
         drawContext.fillColor = drawContext.color;
         drawContext.cornerShapes = vec{Theme::roundingRadius, 0.0f, Theme::roundingRadius, 0.0f};
-        drawContext.drawBoxIncludeBorder(leftBoxRectangle);
+        drawContext.drawBoxIncludeBorder(left_box_rectangle);
     }
 
     void drawChevrons(DrawContext drawContext) noexcept
@@ -471,26 +315,16 @@ private:
 
         drawContext.transform = mat::T{0.0, 0.0, 0.2f} * drawContext.transform;
         drawContext.color = *enabled ? theme->foregroundColor : drawContext.fillColor;
-        drawContext.drawGlyph(chevronsGlyph, chevronsRectangle);
+        drawContext.drawGlyph(chevrons_glyph, chevrons_rectangle);
     }
 
     void drawValue(DrawContext drawContext) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        auto i = std::find_if(option_cache_list.cbegin(), option_cache_list.cend(), [this](ttlet &item) {
-            return item.tag == value;
-        });
-
-        if (i != option_cache_list.cend()) {
-            drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-            drawContext.color = *enabled ? theme->labelStyle.color : drawContext.color;
-            i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line(), true);
-        } else {
-            drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-            drawContext.color = *enabled ? theme->placeholderLabelStyle.color : drawContext.color;
-            labelCell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, base_line(), true);
-        }
+        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
+        drawContext.color = *enabled ? text_cell->style.color : drawContext.color;
+        text_cell->draw(drawContext, option_rectangle, Alignment::MiddleLeft, base_line(), true);
     }
 };
 

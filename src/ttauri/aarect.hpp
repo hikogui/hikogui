@@ -444,6 +444,26 @@ public:
         ttlet p3 = max(p0, min(lhs.p3(), rhs.p3()));
         return aarect::p0p3(p0, p3);
     }
+
+    /** Make a rectangle fit inside bounds.
+     * This algorithm will try to first move the rectangle and resist resizing it.
+     *
+     * @param bounds The bounding box.
+     * @param rectangle The rectangle to fit inside the bounds.
+     * @return A rectangle that fits inside the bounds
+     */
+    [[nodiscard]] friend aarect fit(aarect const &bounds, aarect const &rectangle) noexcept
+    {
+        ttlet resized_rectangle = aarect{
+            rectangle.x(),
+            rectangle.y(),
+            std::min(rectangle.width(), bounds.width()),
+            std::min(rectangle.height(), bounds.height())};
+
+        ttlet translate_from_p0 = max(vec{}, bounds.p0() - resized_rectangle.p0());
+        ttlet translate_from_p3 = min(vec{}, bounds.p3() - resized_rectangle.p3());
+        return resized_rectangle + (translate_from_p0 + translate_from_p3);
+    }
 };
 
 } // namespace tt

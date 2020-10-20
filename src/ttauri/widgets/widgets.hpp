@@ -10,6 +10,7 @@
 #include "CheckboxWidget.hpp"
 #include "ScrollViewWidget.hpp"
 #include "SelectionWidget.hpp"
+#include "overlay_view_widget.hpp"
 #include "RadioButtonWidget.hpp"
 #include "TabViewWidget.hpp"
 #include "ToolbarWidget.hpp"

@@ -11,6 +11,7 @@ target_sources(ttauri PRIVATE
     LabelWidget.hpp
     LineInputWidget.cpp
     LineInputWidget.hpp
+    overlay_view_widget.hpp
     RadioButtonWidget.hpp
     RowColumnLayoutWidget.hpp
     ScrollViewWidget.hpp
