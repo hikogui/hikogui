@@ -15,28 +15,31 @@ class abstract_toggle_button_widget : public abstract_button_widget {
 public:
     using value_type = T;
 
-    observable<value_type> value;
     value_type const true_value;
     value_type const false_value;
+    observable<value_type> value;
 
-    template<typename Arg>
+    template<typename Arg = observable<value_type>>
     abstract_toggle_button_widget(
         Window &window,
         Widget *parent,
         value_type true_value,
         value_type false_value,
-        Arg &&arg) noexcept :
+        Arg &&arg = {}) noexcept :
         abstract_button_widget(window, parent),
-        value(std::forward<Arg>(arg)),
         true_value(std::move(true_value)),
-        false_value(std::move(false_value))
+        false_value(std::move(false_value)),
+        value(std::forward<Arg>(arg))
     {
-        _callback = {*this, [this]() { this->toggle(); }};
+        _callback = {*this, [this]() {
+                         this->toggle();
+                     }};
     }
 
-    void toggle() noexcept {
+    void toggle() noexcept
+    {
         ttlet lock = std::scoped_lock(mutex);
-    
+
         if (compare_then_assign(value, value == false_value ? true_value : false_value)) {
             window.requestRedraw = true;
         }

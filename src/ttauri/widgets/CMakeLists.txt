@@ -3,8 +3,9 @@ target_sources(ttauri PRIVATE
     abstract_bool_toggle_button_widget.hpp
     abstract_button_widget.hpp
     abstract_toggle_button_widget.hpp
+    boolean_checkbox_widget.hpp
     ButtonWidget.hpp
-    CheckboxWidget.hpp
+    checkbox_widget.hpp
     ContainerWidget.cpp
     ContainerWidget.hpp
     GridLayoutWidget.cpp

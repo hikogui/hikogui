@@ -114,7 +114,7 @@ private:
 
     std::unique_ptr<TextCell> onLabelCell;
     std::unique_ptr<TextCell> offLabelCell;
-    std::unique_ptr<TextCell> otherLabelCell;
+    std::unique_ptr<TextCell> _other_label_cell;
 
     scoped_callback<decltype(value)> value_callback;
     scoped_callback<decltype(onLabel)> on_label_callback;
