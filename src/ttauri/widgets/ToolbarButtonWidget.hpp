@@ -30,7 +30,7 @@ public:
         delegate_type const &delegate = delegate_type{}) noexcept :
         Widget(window, parent), icon(icon), _delegate(delegate)
     {
-        [[maybe_unused]] ttlet icon_cbid = this->icon.add_callback([this](auto...) {
+        icon_callback = scoped_callback(this->icon, [this](auto...) {
             request_reconstrain = true;
         });
 
@@ -142,6 +142,7 @@ public:
 private:
     bool pressed = false;
 
+    scoped_callback<decltype(icon)> icon_callback;
     std::unique_ptr<ImageCell> icon_cell;
 
     delegate_type _delegate;

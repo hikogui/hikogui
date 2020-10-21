@@ -49,14 +49,14 @@ public:
     {
         repopulate_options();
 
-        [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...) {
+        _value_callback = scoped_callback(this->value, [this](auto...) {
             request_reconstrain = true;
         });
-        [[maybe_unused]] ttlet option_list_cbid = this->option_list.add_callback([this](auto...) {
+        _option_list_callback = scoped_callback(this->option_list, [this](auto...) {
             repopulate_options();
             request_reconstrain = true;
         });
-        [[maybe_unused]] ttlet label_cbid = this->label.add_callback([this](auto...) {
+        _label_callback = scoped_callback(this->label, [this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -262,6 +262,10 @@ public:
     }
 
 private:
+    scoped_callback<decltype(label)> _label_callback;
+    scoped_callback<decltype(value)> _value_callback;
+    scoped_callback<decltype(option_list)> _option_list_callback;
+    
     std::unique_ptr<TextCell> text_cell;
 
     aarect option_rectangle;

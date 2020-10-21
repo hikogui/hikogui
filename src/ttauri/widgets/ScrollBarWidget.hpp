@@ -28,13 +28,13 @@ public:
         aperture(std::forward<Aperture>(aperture)),
         offset(std::forward<Offset>(offset))
     {
-        [[maybe_unused]] ttlet content_cbid = this->content.add_callback([this](auto...) {
+        _content_callback = scoped_callback(this->content, [this](auto...) {
             this->window.requestLayout = true;
         });
-        [[maybe_unused]] ttlet aperture_cbid = this->aperture.add_callback([this](auto...) {
+        _aperture_callback = scoped_callback(this->aperture, [this](auto...) {
             this->window.requestLayout = true;
         });
-        [[maybe_unused]] ttlet offset_cbid = this->offset.add_callback([this](auto...) {
+        _offset_callback = scoped_callback(this->offset, [this](auto...) {
             this->window.requestLayout = true;
         });
     }
@@ -156,6 +156,10 @@ private:
     observable<float> offset;
     observable<float> aperture;
     observable<float> content;
+
+    scoped_callback<decltype(offset)> _offset_callback;
+    scoped_callback<decltype(aperture)> _aperture_callback;
+    scoped_callback<decltype(content)> _content_callback;
 
     aarect slider_rectangle;
 

@@ -13,7 +13,7 @@ using namespace std::literals;
 
 ButtonWidget::ButtonWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
 {
-    [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...) {
+    _label_callback = scoped_callback(label, [this](auto...) {
         request_reconstrain = true;
     });
 }

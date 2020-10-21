@@ -27,7 +27,7 @@ public:
         alignment(alignment),
         label(format(fmt, args...))
     {
-        [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
+        label_callback = scoped_callback(label, [this](auto...){
             request_reconstrain = true;
         });
     }
@@ -66,6 +66,8 @@ public:
     }
 
 private:
+    scoped_callback<decltype(label)> label_callback;
+
     std::unique_ptr<TextCell> labelCell;
     Alignment alignment;
 };

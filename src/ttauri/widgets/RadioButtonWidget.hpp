@@ -25,10 +25,10 @@ public:
     RadioButtonWidget(Window &window, Widget *parent, V &&value, l10n const &fmt, Args const &... args) noexcept :
         Widget(window, parent), value(std::forward<V>(value)), label(format(fmt, args...))
     {
-        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
+        _value_callback = scoped_callback(value, [this](auto...) {
             this->window.requestRedraw = true;
         });
-        [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...) {
+        _label_callback = scoped_callback(label, [this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -139,6 +139,8 @@ public:
     }
 
 private:
+    scoped_callback<decltype(value)> _value_callback;
+    scoped_callback<decltype(label)> _label_callback;
     aarect radioButtonRectangle;
     aarect pipRectangle;
     aarect labelRectangle;

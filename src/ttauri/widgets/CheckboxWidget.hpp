@@ -33,16 +33,16 @@ public:
 
     CheckboxWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
     {
-        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
+        _value_callback = scoped_callback(value, [this](auto...) {
             this->window.requestRedraw = true;
         });
-        [[maybe_unused]] ttlet true_label_cbid = trueLabel.add_callback([this](auto...) {
+        _true_label_callback = scoped_callback(trueLabel, [this](auto...) {
             request_reconstrain = true;
         });
-        [[maybe_unused]] ttlet false_label_cbid = falseLabel.add_callback([this](auto...) {
+        _false_label_callback = scoped_callback(falseLabel, [this](auto...) {
             request_reconstrain = true;
         });
-        [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...) {
+        _other_label_callback = scoped_callback(otherLabel, [this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -164,6 +164,11 @@ public:
     }
 
 private:
+    scoped_callback<decltype(value)> _value_callback;
+    scoped_callback<decltype(trueLabel)> _true_label_callback;
+    scoped_callback<decltype(falseLabel)> _false_label_callback;
+    scoped_callback<decltype(otherLabel)> _other_label_callback;
+
     std::unique_ptr<TextCell> trueLabelCell;
     std::unique_ptr<TextCell> falseLabelCell;
     std::unique_ptr<TextCell> otherLabelCell;

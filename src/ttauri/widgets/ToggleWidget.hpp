@@ -38,13 +38,13 @@ public:
         onLabel(std::forward<L1>(onLabel)),
         offLabel(std::forward<L2>(offLabel))
     {
-        [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...) {
+        value_callback = scoped_callback(this->value, [this](auto...) {
             this->window.requestRedraw = true;
         });
-        [[maybe_unused]] ttlet on_label_cbid = this->onLabel.add_callback([this](auto...) {
+        on_label_callback = scoped_callback(this->onLabel, [this](auto...) {
             request_reconstrain = true;
         });
-        [[maybe_unused]] ttlet off_label_cbid = this->offLabel.add_callback([this](auto...) {
+        off_label_callback = scoped_callback(this->offLabel, [this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -171,6 +171,10 @@ private:
     std::unique_ptr<TextCell> onLabelCell;
     std::unique_ptr<TextCell> offLabelCell;
     std::unique_ptr<TextCell> otherLabelCell;
+
+    scoped_callback<decltype(value)> value_callback;
+    scoped_callback<decltype(onLabel)> on_label_callback;
+    scoped_callback<decltype(offLabel)> off_label_callback;
 
     void drawToggle(DrawContext drawContext) noexcept
     {

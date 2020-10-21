@@ -25,7 +25,7 @@ public:
         }
         p_margin = 0.0f;
 
-        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
+        _value_callback = scoped_callback(value, [this](auto...) {
             this->request_reconstrain = true;
         });
     }
@@ -125,6 +125,8 @@ public:
     }
 
 private:
+    scoped_callback<decltype(value)> _value_callback;
+
     std::vector<std::unique_ptr<Widget>> children;
 };
 

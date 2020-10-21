@@ -36,7 +36,8 @@ public:
 private:
     bool value = false;
     bool pressed = false;
-
+    
+    scoped_callback<decltype(label)> _label_callback;
     std::unique_ptr<TextCell> labelCell;
 };
 

@@ -552,6 +552,9 @@ protected:
      * @sa logical_layer() const
      */
     int p_logical_layer;
+
+private:
+    scoped_callback<decltype(enabled)> _enabled_callback;
 };
 
 } // namespace tt

@@ -21,7 +21,7 @@ Widget::Widget(Window &_window, Widget *_parent) noexcept :
         p_semantic_layer = _parent->semantic_layer() + 1;
     }
 
-    [[maybe_unused]] ttlet enabled_cbid = enabled.add_callback([this](auto...){
+    _enabled_callback = scoped_callback(enabled, [this](auto...){
         window.requestRedraw = true;
     });
 

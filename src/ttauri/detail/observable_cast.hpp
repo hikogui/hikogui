@@ -14,7 +14,7 @@ public:
         observable_unary<T,OT>(operand) {}
 
     virtual T load() const noexcept override {
-        ttlet lock = std::scoped_lock(observable_unary<T,OT>::mutex);
+        ttlet lock = std::scoped_lock(observable_unary<T,OT>::_mutex);
         return static_cast<T>(this->operand_cache);
     }
 
