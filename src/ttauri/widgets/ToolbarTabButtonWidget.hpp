@@ -84,7 +84,7 @@ public:
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawButton(context);
-        drawLabel(context);
+        draw_label(context);
         drawFocusLine(context);
         Widget::draw(std::move(context), display_time_point);
     }
@@ -199,7 +199,7 @@ private:
         context.drawBoxIncludeBorder(button_rectangle);
     }
 
-    void drawLabel(DrawContext context) noexcept
+    void draw_label(DrawContext context) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 

@@ -73,7 +73,7 @@ public:
             radioButtonRectangle = aarect{0.0f, base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
 
             ttlet labelX = radioButtonRectangle.p3().x() + Theme::margin;
-            labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
+            _label_rectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
 
             pipRectangle = shrink(radioButtonRectangle, 1.5f);
         }
@@ -86,7 +86,7 @@ public:
 
         drawRadioButton(context);
         drawPip(context);
-        drawLabel(context);
+        draw_label(context);
         Widget::draw(std::move(context), display_time_point);
     }
 
@@ -143,7 +143,7 @@ private:
     scoped_callback<decltype(label)> _label_callback;
     aarect radioButtonRectangle;
     aarect pipRectangle;
-    aarect labelRectangle;
+    aarect _label_rectangle;
 
     std::unique_ptr<TextCell> labelCell;
 
@@ -170,7 +170,7 @@ private:
         }
     }
 
-    void drawLabel(DrawContext drawContext) noexcept
+    void draw_label(DrawContext drawContext) noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
 
@@ -178,7 +178,7 @@ private:
             drawContext.color = theme->labelStyle.color;
         }
 
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, base_line(), true);
+        labelCell->draw(drawContext, _label_rectangle, Alignment::TopLeft, base_line(), true);
     }
 };
 

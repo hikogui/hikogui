@@ -23,7 +23,7 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>
     TabViewWidget.hpp
-    ToggleWidget.hpp
+    toggle_widget.hpp
     ToolbarButtonWidget.hpp
     ToolbarTabButtonWidget.hpp
     ToolbarWidget.cpp
