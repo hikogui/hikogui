@@ -203,13 +203,15 @@ bool Window_base::handle_keyboard_event(KeyboardEvent const &event) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 
     // Let the widget or its parent handle the keyboard event directly.
-    auto target = keyboardTargetWidget;
-    while (target != nullptr) {
-        if (target->handle_keyboard_event(event)) {
-            return true;
+    {
+        auto target = keyboardTargetWidget;
+        while (target != nullptr) {
+            if (target->handle_keyboard_event(event)) {
+                return true;
+            }
+            // Forward the keyboard event to the parent of the target.
+            target = target->parent;
         }
-        // Forward the keyboard event to the parent of the target.
-        target = target->parent;
     }
 
     // If the keyboard event is not handled directly, convert the key event to a command.
@@ -217,16 +219,18 @@ bool Window_base::handle_keyboard_event(KeyboardEvent const &event) noexcept {
         ttlet commands = event.getCommands();
 
         // Send the commands to the widget and its parents, until the command is handled.
-        auto target = keyboardTargetWidget;
-        while (target != nullptr) {
-            for (auto command : commands) {
-                // Send a command in priority order to the widget.
-                if (target->handle_command(command)) {
-                    return true;
+        {
+            auto target = keyboardTargetWidget;
+            while (target != nullptr) {
+                for (auto command : commands) {
+                    // Send a command in priority order to the widget.
+                    if (target->handle_command(command)) {
+                        return true;
+                    }
                 }
+                // Forward the keyboard event to the parent of the target.
+                target = target->parent;
             }
-            // Forward the keyboard event to the parent of the target.
-            target = target->parent;
         }
 
         // If no widgets handle the commands, handle the keyboard focus change commands.

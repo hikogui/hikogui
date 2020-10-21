@@ -108,9 +108,6 @@ elseif (MSVC)
     # experimental-and-incompatible coroutine support.
     target_compile_options(ttauri PUBLIC -await)
 
-    # Ignore unknown pragmas.
-    target_compile_options(ttauri PUBLIC -wd4068)
-
     # Support Intel's IvyBridge and AMD's Steamroller
     target_compile_options(ttauri PUBLIC -arch:AVX)
 
@@ -120,6 +117,9 @@ elseif (MSVC)
     target_compile_options(ttauri PUBLIC -W4)
     #target_compile_options(ttauri PUBLIC -permissive-)
 
+    # Ignore unknown pragmas.
+    target_compile_options(ttauri PUBLIC -wd4068)
+
     # C4324 structure was padded due to alignment specifier.
     # Ofcourse it is, that is what the alignment specifier is used for??????
     target_compile_options(ttauri PUBLIC -wd4324)
@@ -128,6 +128,12 @@ elseif (MSVC)
     # This warning is in the way when you want to document a parameter of a virtual function
     # with an implementation that does not use the parameter.
     target_compile_options(ttauri PUBLIC -wd4100)
+
+    # C4127 conditional expression is constant.
+    # This warning will also trigger with expressions that include template parameters
+    # that sometimes causes the expression to be constant, but at other times not.
+    # Therefor this warning is useless.
+    target_compile_options(ttauri PUBLIC -wd4127)
 
     if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
         # Enable Security Development Lifecycle checks.

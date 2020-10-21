@@ -155,7 +155,7 @@ public:
 
                 overlay_widget->set_layout_parameters(overlay_rectangle, overlay_rectangle);
             }
-            overlay_widget->update_layout(display_time_point, need_layout);
+            need_layout |= overlay_widget->update_layout(display_time_point, need_layout);
         }
 
         if (need_layout) {
