@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "abstract_bool_toggle_button_widget.hpp"
 #include "../cells/TextCell.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../observable.hpp"
@@ -16,9 +16,8 @@
 
 namespace tt {
 
-class ToggleWidget final : public Widget {
+class ToggleWidget final : public abstract_bool_toggle_button_widget {
 public:
-    observable<bool> value;
     observable<std::u8string> onLabel;
     observable<std::u8string> offLabel;
 
@@ -33,14 +32,10 @@ public:
         V &&value = observable<bool>{},
         L1 &&onLabel = observable<std::u8string>{},
         L2 &&offLabel = observable<std::u8string>{}) noexcept :
-        Widget(window, parent),
-        value(std::forward<V>(value)),
+        abstract_bool_toggle_button_widget(window, parent, std::forward<V>(value)),
         onLabel(std::forward<L1>(onLabel)),
         offLabel(std::forward<L2>(offLabel))
     {
-        value_callback = scoped_callback(this->value, [this](auto...) {
-            this->window.requestRedraw = true;
-        });
         on_label_callback = scoped_callback(this->onLabel, [this](auto...) {
             request_reconstrain = true;
         });
@@ -105,57 +100,6 @@ public:
         drawSlider(context);
         drawLabel(context);
         Widget::draw(std::move(context), display_time_point);
-    }
-
-    bool handle_mouse_event(MouseEvent const &event) noexcept override
-    {
-        ttlet lock = std::scoped_lock(mutex);
-        auto handled = Widget::handle_mouse_event(event);
-        
-        if (event.cause.leftButton) {
-            handled = true;
-            if (*enabled) {
-                if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
-                    handle_command(command::gui_activate);
-                }
-            }
-        }
-        return handled;
-    }
-
-    bool handle_command(command command) noexcept override
-    {
-        ttlet lock = std::scoped_lock(mutex);
-        auto handled = Widget::handle_command(command);
-
-        if (*enabled) {
-            if (command == command::gui_activate) {
-                handled = true;
-                if (compare_then_assign(value, !*value)) {
-                    window.requestRedraw = true;
-                }
-            }
-        }
-
-        return handled;
-    }
-
-    HitBox hitbox_test(vec window_position) const noexcept override
-    {
-        ttlet lock = std::scoped_lock(mutex);
-
-        if (p_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
-        } else {
-            return HitBox{};
-        }
-    }
-
-    [[nodiscard]] bool accepts_focus() const noexcept override
-    {
-        tt_assume(mutex.is_locked_by_current_thread());
-
-        return *enabled;
     }
 
 private:

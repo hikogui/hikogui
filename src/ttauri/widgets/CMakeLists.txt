@@ -1,6 +1,8 @@
 
 target_sources(ttauri PRIVATE
-    ButtonWidget.cpp
+    abstract_bool_toggle_button_widget.hpp
+    abstract_button_widget.hpp
+    abstract_toggle_button_widget.hpp
     ButtonWidget.hpp
     CheckboxWidget.hpp
     ContainerWidget.cpp

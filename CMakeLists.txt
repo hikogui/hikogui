@@ -121,7 +121,7 @@ elseif (MSVC)
     target_compile_options(ttauri PUBLIC -wd4068)
 
     # C4324 structure was padded due to alignment specifier.
-    # Ofcourse it is, that is what the alignment specifier is used for??????
+    # Of course it is, that is what the alignment specifier is used for??????
     target_compile_options(ttauri PUBLIC -wd4324)
 
     # C4100 unreferenced formal parameter.

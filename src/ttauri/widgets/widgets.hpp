@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include "abstract_bool_toggle_button_widget.hpp"
+#include "abstract_button_widget.hpp"
+#include "abstract_toggle_button_widget.hpp"
 #include "ButtonWidget.hpp"
 #include "LabelWidget.hpp"
 #include "LineInputWidget.hpp"
