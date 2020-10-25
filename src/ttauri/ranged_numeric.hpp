@@ -31,6 +31,11 @@ public:
     constexpr ranged_numeric &operator=(ranged_numeric const &rhs) noexcept = default;
     constexpr ranged_numeric &operator=(ranged_numeric &&rhs) noexcept = default;
 
+    constexpr explicit operator value_type () noexcept
+    {
+        return value;
+    }
+
     [[nodiscard]] constexpr ranged_numeric(signed long long rhs) noexcept : value(numeric_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);

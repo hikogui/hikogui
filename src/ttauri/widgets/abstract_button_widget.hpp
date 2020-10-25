@@ -17,26 +17,30 @@ public:
     using callback_type = typename notifier_type::callback_type;
     using callback_id_type = typename notifier_type::callback_id_type;
 
-    [[nodiscard]] abstract_button_widget(Window &window, Widget *parent) :
+    [[nodiscard]] abstract_button_widget(Window &window, std::shared_ptr<Widget> parent) :
         Widget(window, parent)
     {
     }
 
     [[nodiscard]] bool accepts_focus() const noexcept final
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return *enabled;
     }
 
     [[nodiscard]] bool handle_command(command command) noexcept final
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_command(command);
 
         if (*enabled) {
             if (command == command::gui_activate) {
                 handled = true;
-                _notifier();
+
+                // Run the callbacks from the main loop so that recursion is eliminated.
+                run_from_main_loop([this]() {
+                    this->_notifier();
+                });
             }
         }
 
@@ -45,7 +49,7 @@ public:
 
     [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept final
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
@@ -65,10 +69,10 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept final
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
 
         if (p_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{weak_from_this(), p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }

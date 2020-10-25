@@ -22,7 +22,12 @@ public:
     static constexpr bool is_vertical = IsVertical;
 
     template<typename Content, typename Aperture, typename Offset>
-    ScrollBarWidget(Window &window, Widget *parent, Content &&content, Aperture &&aperture, Offset &&offset) noexcept :
+    ScrollBarWidget(
+        Window &window,
+        std::shared_ptr<Widget> parent,
+        Content &&content,
+        Aperture &&aperture,
+        Offset &&offset) noexcept :
         Widget(window, parent),
         content(std::forward<Content>(content)),
         aperture(std::forward<Aperture>(aperture)),
@@ -43,7 +48,7 @@ public:
 
     [[nodiscard]] bool update_constraints() noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (Widget::update_constraints()) {
             ttlet minimum_length = Theme::width; // even for vertical bars.
@@ -66,7 +71,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
@@ -88,7 +93,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (visible()) {
             draw_rails(context);
@@ -99,11 +104,11 @@ public:
 
     HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         ttlet position = from_window_transform * window_position;
 
         if (p_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && visible()) {
-            return HitBox{this, p_draw_layer};
+            return HitBox{weak_from_this(), p_draw_layer};
         } else {
             return HitBox{};
         }
@@ -111,7 +116,7 @@ public:
 
     [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_mouse_event(event);
         
         if (event.cause.leftButton) {
@@ -148,7 +153,7 @@ public:
      * the scrollbar becomes invisible.
      */
     [[nodiscard]] bool visible() const noexcept {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return hidden_content() >= 1.0f;
     }
 
@@ -167,13 +172,13 @@ private:
 
     [[nodiscard]] float rail_length() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return is_vertical ? rectangle().height() : rectangle().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         ttlet content_aperture_ratio = *aperture / *content;
         return std::max(rail_length() * content_aperture_ratio, Theme::smallSize * 2.0f);
@@ -183,7 +188,7 @@ private:
      */
     [[nodiscard]] float slider_travel_range() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return rail_length() - slider_length();
     }
 
@@ -191,7 +196,7 @@ private:
      */
     [[nodiscard]] float hidden_content() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return *content - *aperture;
     }
 
@@ -201,7 +206,7 @@ private:
      */
     [[nodiscard]] float hidden_content_vs_travel_ratio() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         ttlet _slider_travel_range = slider_travel_range();
         return _slider_travel_range != 0.0f ? hidden_content() / _slider_travel_range : 0.0f;
@@ -213,7 +218,7 @@ private:
      */
     [[nodiscard]] float travel_vs_hidden_content_ratio() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         ttlet _hidden_content = hidden_content();
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
@@ -221,7 +226,7 @@ private:
 
     void draw_rails(DrawContext context) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         context.color = theme->fillColor(p_semantic_layer);
         context.fillColor = theme->fillColor(p_semantic_layer);
@@ -235,7 +240,7 @@ private:
 
     void draw_slider(DrawContext context) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         context.color = theme->fillColor(p_semantic_layer + 1);
         context.fillColor = theme->fillColor(p_semantic_layer + 1);

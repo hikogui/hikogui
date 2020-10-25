@@ -18,41 +18,38 @@ public:
     static constexpr bool can_scroll_vertically = CanScrollVertically;
     static constexpr bool controls_window = ControlsWindow;
 
-    ScrollViewWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
+    ScrollViewWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : Widget(window, parent)
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
-            ttlet lock = std::scoped_lock(parent->mutex);
+            ttlet lock = std::scoped_lock(GUISystem_mutex);
             p_semantic_layer = parent->semantic_layer();
         }
         p_margin = 0.0f;
-
-        if constexpr (can_scroll_horizontally) {
-            horizontal_scroll_bar = std::make_unique<ScrollBarWidget<false>>(
-                window, this, scroll_content_width, scroll_aperture_width, scroll_offset_x);
-        }
-        if constexpr (can_scroll_vertically) {
-            vertical_scroll_bar = std::make_unique<ScrollBarWidget<true>>(
-                window, this, scroll_content_height, scroll_aperture_height, scroll_offset_y);
-        }
     }
 
     ~ScrollViewWidget() {}
 
+    void initialize() noexcept override
+    {
+        if constexpr (can_scroll_horizontally) {
+            horizontal_scroll_bar = std::make_shared<ScrollBarWidget<false>>(
+                window, shared_from_this(), scroll_content_width, scroll_aperture_width, scroll_offset_x);
+            horizontal_scroll_bar->initialize();
+        }
+        if constexpr (can_scroll_vertically) {
+            vertical_scroll_bar = std::make_shared<ScrollBarWidget<true>>(
+                window, shared_from_this(), scroll_content_height, scroll_aperture_height, scroll_offset_y);
+            vertical_scroll_bar->initialize();
+        }
+    }
+
     [[nodiscard]] bool update_constraints() noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         tt_assume(content);
         tt_assume(!can_scroll_horizontally || horizontal_scroll_bar);
         tt_assume(!can_scroll_vertically || vertical_scroll_bar);
-
-        if (can_scroll_horizontally) {
-            horizontal_scroll_bar->mutex.lock();
-        }
-        if (can_scroll_vertically) {
-            vertical_scroll_bar->mutex.lock();
-        }
-        ttlet content_lock = std::scoped_lock{content->mutex};
 
         auto has_updated_contraints = Widget::update_constraints();
         has_updated_contraints |= content->update_constraints();
@@ -89,27 +86,13 @@ public:
             p_preferred_base_line = {};
         }
 
-        if (can_scroll_horizontally) {
-            horizontal_scroll_bar->mutex.unlock();
-        }
-        if (can_scroll_vertically) {
-            vertical_scroll_bar->mutex.unlock();
-        }
         return has_updated_contraints;
     }
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         tt_assume(content);
-
-        if (can_scroll_horizontally) {
-            horizontal_scroll_bar->mutex.lock();
-        }
-        if (can_scroll_vertically) {
-            vertical_scroll_bar->mutex.lock();
-        }
-        ttlet content_lock = std::scoped_lock{content->mutex};
 
         auto need_redraw = need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
@@ -207,31 +190,21 @@ public:
             need_redraw |= vertical_scroll_bar->update_layout(display_time_point, need_layout);
         }
 
-        if (can_scroll_horizontally) {
-            horizontal_scroll_bar->mutex.unlock();
-        }
-        if (can_scroll_vertically) {
-            vertical_scroll_bar->mutex.unlock();
-        }
-
         return Widget::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         tt_assume(content);
 
         if constexpr (can_scroll_horizontally) {
-            ttlet bar_lock = std::scoped_lock{horizontal_scroll_bar->mutex};
             horizontal_scroll_bar->draw(horizontal_scroll_bar->make_draw_context(context), display_time_point);
         }
         if constexpr (can_scroll_vertically) {
-            ttlet bar_lock = std::scoped_lock{vertical_scroll_bar->mutex};
             vertical_scroll_bar->draw(vertical_scroll_bar->make_draw_context(context), display_time_point);
         }
 
-        ttlet content_lock = std::scoped_lock(content->mutex);
         content->draw(content->make_draw_context(context), display_time_point);
 
         Widget::draw(std::move(context), display_time_point);
@@ -239,14 +212,14 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         tt_assume(content);
 
         auto r = HitBox{};
 
         if (p_window_clipping_rectangle.contains(window_position)) {
             // Claim mouse events for scrolling.
-            r = std::max(r, HitBox{this, p_draw_layer});
+            r = std::max(r, HitBox{weak_from_this(), p_draw_layer});
         }
 
         r = std::max(r, content->hitbox_test(window_position));
@@ -259,9 +232,9 @@ public:
         return r;
     }
 
-    Widget const *next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+    std::shared_ptr<Widget> next_keyboard_widget(std::shared_ptr<Widget> const &currentKeyboardWidget, bool reverse) const noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         tt_assume(content);
 
         // Scrollbars are never keyboard focus targets.
@@ -269,21 +242,21 @@ public:
     }
 
     template<typename WidgetType = GridLayoutWidget, typename... Args>
-    WidgetType &makeWidget(Args const &... args) noexcept
+    std::shared_ptr<WidgetType> make_widget(Args const &... args) noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-        auto widget_ptr = std::make_unique<WidgetType>(window, this, args...);
-        auto &widget = *widget_ptr.get();
-        content = std::move(widget_ptr);
+        auto widget = std::make_shared<WidgetType>(window, shared_from_this(), args...);
+        widget->initialize();
 
+        content = widget;
         request_reconstrain = true;
         return widget;
     }
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_mouse_event(event);
 
         if (event.type == MouseEvent::Type::Wheel) {
@@ -297,9 +270,9 @@ public:
     }
 
 private:
-    std::unique_ptr<Widget> content;
-    std::unique_ptr<ScrollBarWidget<false>> horizontal_scroll_bar;
-    std::unique_ptr<ScrollBarWidget<true>> vertical_scroll_bar;
+    std::shared_ptr<Widget> content;
+    std::shared_ptr<ScrollBarWidget<false>> horizontal_scroll_bar;
+    std::shared_ptr<ScrollBarWidget<true>> vertical_scroll_bar;
 
     observable<float> scroll_content_width;
     observable<float> scroll_content_height;

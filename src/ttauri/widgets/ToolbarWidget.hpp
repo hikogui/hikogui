@@ -10,20 +10,22 @@ namespace tt {
 
 class ToolbarWidget final : public ContainerWidget {
 public:
-    ToolbarWidget(Window &window, Widget *parent) noexcept;
+    ToolbarWidget(Window &window, std::shared_ptr<Widget> parent) noexcept;
     ~ToolbarWidget() {}
 
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    virtual Widget &addWidget(HorizontalAlignment alignment, std::unique_ptr<Widget> childWidget) noexcept;
+    virtual std::shared_ptr<Widget> add_widget(HorizontalAlignment alignment, std::shared_ptr<Widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
      */
     template<typename T, HorizontalAlignment Alignment = HorizontalAlignment::Left, typename... Args>
-    T &makeWidget(Args &&... args)
+    std::shared_ptr<T> make_widget(Args &&... args)
     {
-        return static_cast<T &>(addWidget(Alignment, std::make_unique<T>(window, this, std::forward<Args>(args)...)));
+        auto widget = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        widget->initialize();
+        return std::static_pointer_cast<T>(add_widget(Alignment, std::move(widget)));
     }
 
     [[nodiscard]] bool update_constraints() noexcept override;
@@ -33,8 +35,8 @@ public:
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
 private:
-    std::vector<Widget *> left_children;
-    std::vector<Widget *> right_children;
+    std::vector<std::shared_ptr<Widget>> left_children;
+    std::vector<std::shared_ptr<Widget>> right_children;
 
     flow_layout layout;
     relative_base_line child_base_line;

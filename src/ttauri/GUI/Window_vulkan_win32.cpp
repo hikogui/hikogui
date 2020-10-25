@@ -12,7 +12,7 @@
 #include <windowsx.h>
 #include <dwmapi.h>
 
-#pragma comment( lib, "dwmapi" )
+#pragma comment(lib, "dwmapi")
 
 namespace tt {
 
@@ -30,42 +30,74 @@ inline T *to_ptr(LPARAM lParam) noexcept
 static const wchar_t *win32WindowClassName = nullptr;
 static WNDCLASSW win32WindowClass = {};
 static bool win32WindowClassIsRegistered = false;
-static std::unordered_map<HWND, Window_vulkan_win32 *> win32WindowMap = {};
 static bool firstWindowHasBeenOpened = false;
 
-static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static std::unordered_map<HWND, Window_vulkan_win32 *> win32_window_map = {};
+static unfair_mutex win32_window_map_mutex;
+
+static void add_win32_window(HWND handle, Window_vulkan_win32 &window) noexcept
+{
+    ttlet lock = std::scoped_lock(win32_window_map_mutex);
+    win32_window_map[handle] = &window;
+}
+
+static Window_vulkan_win32 *find_win32_window(HWND handle) noexcept
+{
+    ttlet lock = std::scoped_lock(win32_window_map_mutex);
+    auto i = win32_window_map.find(handle);
+    return i != win32_window_map.end() ? i->second : nullptr;
+}
+
+static void erase_win32_window(HWND handle) noexcept
+{
+    ttlet lock = std::scoped_lock(win32_window_map_mutex);
+    auto i = win32_window_map.find(handle);
+    if (i != win32_window_map.end()) {
+        win32_window_map.erase(i);
+    }
+}
+
+/** The win32 window message handler.
+ * This function should not take any locks as _WindowProc is called recursively.
+ */
+static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     if (uMsg == WM_NCCREATE && lParam) {
         ttlet createData = reinterpret_cast<CREATESTRUCT *>(lParam);
+        auto *const window = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
 
-        if (createData->lpCreateParams) {
-            win32WindowMap[hwnd] = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
+        if (window != nullptr) {
+            add_win32_window(hwnd, *window);
         }
     }
 
-    auto i = win32WindowMap.find(hwnd);
-    if (i != win32WindowMap.end()) {
-        ttlet window = i->second;
-
+    auto *const window = find_win32_window(hwnd);
+    if (window != nullptr) {
+        tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
         LRESULT result = window->windowProc(uMsg, wParam, lParam);
+
+        if (uMsg == WM_DESTROY) {
+            // Remove the window now, before DefWindowProc, which could recursively
+            // Reuse the window as it is being cleaned up.
+            erase_win32_window(hwnd);
+        }
+
+        // The call to DefWindowProc() recurses make sure we do not hold on to any locks.
         if (result == -1) {
             result = DefWindowProc(hwnd, uMsg, wParam, lParam);
         }
 
-        if (uMsg == WM_DESTROY) {
-            win32WindowMap.erase(i);
-        }
-
         return result;
-    }
 
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    } else {
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
 }
 
 static void createWindowClass()
 {
     if (!win32WindowClassIsRegistered) {
-         // Register the window class.
+        // Register the window class.
         win32WindowClassName = L"TTauri Window Class";
 
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
@@ -81,7 +113,9 @@ static void createWindowClass()
 
 void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
 {
+    // This function should be called during initialize(), and therefor should not have a lock on the window.
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
+    tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
 
     createWindowClass();
 
@@ -103,8 +137,7 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
         NULL, // Parent window
         NULL, // Menu
         reinterpret_cast<HINSTANCE>(application->hInstance), // Instance handle
-        this
-    );
+        this);
     if (win32Window == nullptr) {
         LOG_FATAL("Could not open a win32 window: {}", getLastErrorMessage());
     }
@@ -115,7 +148,14 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
     DwmExtendFrameIntoClientArea(reinterpret_cast<HWND>(win32Window), &m);
 
     // Force WM_NCCALCSIZE to be send to the window.
-    SetWindowPos(reinterpret_cast<HWND>(win32Window), nullptr, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOOWNERZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
+    SetWindowPos(
+        reinterpret_cast<HWND>(win32Window),
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (!firstWindowHasBeenOpened) {
         ShowWindow(reinterpret_cast<HWND>(win32Window), application->nCmdShow);
@@ -136,9 +176,8 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
     dpi = numeric_cast<float>(_dpi);
 }
 
-Window_vulkan_win32::Window_vulkan_win32(WindowDelegate *delegate, Label &&title) :
-    Window_vulkan(delegate, std::move(title)),
-    trackMouseLeaveEventParameters()
+Window_vulkan_win32::Window_vulkan_win32(GUISystem &system, WindowDelegate *delegate, Label &&title) :
+    Window_vulkan(system, delegate, std::move(title)), trackMouseLeaveEventParameters()
 {
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
     LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
@@ -185,19 +224,19 @@ void Window_vulkan_win32::normalizeWindow()
 
 void Window_vulkan_win32::setWindowSize(ivec extent)
 {
-    tt_assert(win32Window);
+    GUISystem_mutex.lock();
+    ttlet handle = reinterpret_cast<HWND>(win32Window);
+    GUISystem_mutex.unlock();
 
     run_from_main_loop([=]() {
-
         SetWindowPos(
-            reinterpret_cast<HWND>(win32Window),
+            reinterpret_cast<HWND>(handle),
             HWND_NOTOPMOST,
             0,
             0,
             extent.x(),
             extent.y(),
-            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED
-        );
+            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
     });
 }
 
@@ -215,7 +254,11 @@ void Window_vulkan_win32::setWindowSize(ivec extent)
 {
     auto r = std::u8string{};
 
-    if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
+    GUISystem_mutex.lock();
+    ttlet handle = reinterpret_cast<HWND>(win32Window);
+    GUISystem_mutex.unlock();
+
+    if (!OpenClipboard(handle)) {
         LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());
         return r;
     }
@@ -247,8 +290,8 @@ void Window_vulkan_win32::setWindowSize(ivec extent)
                 LOG_ERROR("Could not unlock clipboard data: '{}'", getLastErrorMessage());
                 goto done;
             }
-
-            } goto done;
+        }
+            goto done;
 
         default:;
         }
@@ -312,41 +355,49 @@ done:
     CloseClipboard();
 }
 
-
 vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
-    return application->gui->createWin32SurfaceKHR({
-        vk::Win32SurfaceCreateFlagsKHR(),
-        reinterpret_cast<HINSTANCE>(application->hInstance),
-        reinterpret_cast<HWND>(win32Window)
-    });
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    return application->gui->createWin32SurfaceKHR(
+        {vk::Win32SurfaceCreateFlagsKHR(),
+         reinterpret_cast<HINSTANCE>(application->hInstance),
+         reinterpret_cast<HWND>(win32Window)});
 }
 
 void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 {
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
+
     // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
-    OSWindowRectangle = iaarect{
-        rect.left,
-        0 - rect.bottom,
-        rect.right - rect.left,
-        rect.bottom - rect.top
-    };
+    OSWindowRectangle = iaarect{rect.left, 0 - rect.bottom, rect.right - rect.left, rect.bottom - rect.top};
 
     // Force a redraw, so that the swapchain is used and causes out-of-date results on window resize,
     // which in turn will cause a forceLayout.
     requestRedraw = true;
 }
 
-void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
+void Window_vulkan_win32::setCursor(Cursor cursor) noexcept
+{
+    tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+
+    {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
+
+        if (currentCursor == cursor) {
+            return;
+        }
+        currentCursor = cursor;
+
+        if (cursor == Cursor::None) {
+            return;
+        }
+    }
+
     static auto idcAppStarting = LoadCursorW(nullptr, IDC_APPSTARTING);
     static auto idcArrow = LoadCursorW(nullptr, IDC_ARROW);
     static auto idcHand = LoadCursorW(nullptr, IDC_HAND);
     static auto idcIBeam = LoadCursorW(nullptr, IDC_IBEAM);
     static auto idcNo = LoadCursorW(nullptr, IDC_NO);
-
-    if (currentCursor == cursor) {
-        return;
-    }
 
     auto idc = idcNo;
     switch (cursor) {
@@ -358,7 +409,6 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
     }
 
     SetCursor(idc);
-    currentCursor = cursor;
 }
 
 [[nodiscard]] KeyboardModifiers Window_vulkan_win32::getKeyboardModifiers() noexcept
@@ -374,10 +424,8 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_MENU)) & 0x8000) != 0) {
         r |= KeyboardModifiers::Alt;
     }
-    if (
-        (static_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
-        (static_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0
-    ) {
+    if ((static_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
+        (static_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0) {
         r |= KeyboardModifiers::Super;
     }
 
@@ -387,7 +435,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
 [[nodiscard]] KeyboardState Window_vulkan_win32::getKeyboardState() noexcept
 {
     auto r = KeyboardState::Idle;
-    
+
     if (GetKeyState(VK_CAPITAL) != 0) {
         r |= KeyboardState::CapsLock;
     }
@@ -400,17 +448,19 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
     return r;
 }
 
-int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam)
+/** The win32 window message handler.
+ * This function should not take any long-term-locks as windowProc is called recursively.
+ */
+int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
-
     MouseEvent mouseEvent;
 
-    switch (uMsg) {    
-    case WM_DESTROY:
+    switch (uMsg) {
+    case WM_DESTROY: {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         win32Window = nullptr;
         state = State::WindowLost;
-        break;
+    } break;
 
     case WM_CREATE: {
         ttlet createstruct_ptr = to_ptr<CREATESTRUCT>(lParam);
@@ -420,37 +470,32 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         rect.right = createstruct_ptr->x + createstruct_ptr->cx;
         rect.bottom = createstruct_ptr->y + createstruct_ptr->cy;
         setOSWindowRectangleFromRECT(rect);
-        } break;
+    } break;
 
-    case WM_PAINT:
+    case WM_PAINT: {
+        ttlet lock = std::scoped_lock();
         requestLayout = true;
-        break;
+    } break;
 
-    case WM_SIZE:
+    case WM_SIZE: {
+        ttlet lock = std::scoped_lock();
         switch (wParam) {
-        case SIZE_MAXIMIZED:
-            size = Size::Maximized;
-            break;
-        case SIZE_MINIMIZED:
-            size = Size::Minimized;
-            break;
-        case SIZE_RESTORED:
-            size = Size::Normal;
-            break;
-        default:
-            break;
+        case SIZE_MAXIMIZED: size = Size::Maximized; break;
+        case SIZE_MINIMIZED: size = Size::Minimized; break;
+        case SIZE_RESTORED: size = Size::Normal; break;
+        default: break;
         }
-        break;
+    } break;
 
     case WM_SIZING: {
         ttlet rect_ptr = to_ptr<RECT>(lParam);
         setOSWindowRectangleFromRECT(*rect_ptr);
-        } break;
+    } break;
 
     case WM_MOVING: {
         ttlet rect_ptr = to_ptr<RECT>(lParam);
         setOSWindowRectangleFromRECT(*rect_ptr);
-        } break;
+    } break;
 
     case WM_WINDOWPOSCHANGED: {
         ttlet windowpos_ptr = to_ptr<WINDOWPOS>(lParam);
@@ -460,17 +505,20 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         rect.right = windowpos_ptr->x + windowpos_ptr->cx;
         rect.bottom = windowpos_ptr->y + windowpos_ptr->cy;
         setOSWindowRectangleFromRECT(rect);
-        } break;
+    } break;
 
-    case WM_ENTERSIZEMOVE:
+    case WM_ENTERSIZEMOVE: {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         resizing = true;
-        break;
+    } break;
 
-    case WM_EXITSIZEMOVE:
+    case WM_EXITSIZEMOVE: {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         resizing = false;
-        break;
-    
-    case WM_ACTIVATE:
+    } break;
+
+    case WM_ACTIVATE: {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         switch (wParam) {
         case 1: // WA_ACTIVE
         case 2: // WA_CLICKACTIVE
@@ -479,15 +527,14 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         case 0: // WA_INACTIVE
             active = false;
             break;
-        default:
-            LOG_ERROR("Unknown WM_ACTIVE value.");
+        default: LOG_ERROR("Unknown WM_ACTIVE value.");
         }
         requestLayout = true;
-        break;
+    } break;
 
     case WM_GETMINMAXINFO: {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         tt_assume(widget);
-        ttlet widget_lock = std::scoped_lock(widget->mutex);
         ttlet widget_size = widget->preferred_size();
         ttlet minimum_widget_size = widget_size.minimum();
         ttlet maximum_widget_size = widget_size.maximum();
@@ -498,7 +545,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         minmaxinfo->ptMinTrackSize.y = numeric_cast<LONG>(minimum_widget_size.height());
         minmaxinfo->ptMaxTrackSize.x = numeric_cast<LONG>(maximum_widget_size.width());
         minmaxinfo->ptMaxTrackSize.y = numeric_cast<LONG>(maximum_widget_size.height());
-        } break;
+    } break;
 
     case WM_UNICHAR: {
         auto c = numeric_cast<char32_t>(wParam);
@@ -511,28 +558,29 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
             keyboardEvent.grapheme = c;
             handle_keyboard_event(keyboardEvent);
         }
-        } break;
+    } break;
 
     case WM_DEADCHAR: {
         auto c = handleSuragates(numeric_cast<char32_t>(wParam));
         if (c != 0) {
             handle_keyboard_event(c, false);
         }
-        } break;
+    } break;
 
     case WM_CHAR: {
         auto c = handleSuragates(numeric_cast<char32_t>(wParam));
         if (c >= 0x20) {
             handle_keyboard_event(c);
         }
-        } break;
-        
+    } break;
+
     case WM_SYSKEYDOWN: {
         auto alt_pressed = (numeric_cast<uint32_t>(lParam) & 0x20000000) != 0;
         if (!alt_pressed) {
             return -1;
         }
-        } [[fallthrough]];
+    }
+        [[fallthrough]];
     case WM_KEYDOWN: {
         auto extended = (numeric_cast<uint32_t>(lParam) & 0x01000000) != 0;
         auto key_code = numeric_cast<int>(wParam);
@@ -545,7 +593,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         if (virtual_key != KeyboardVirtualKey::Nul) {
             handle_keyboard_event(key_state, key_modifiers, virtual_key);
         }
-        } break;
+    } break;
 
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
@@ -562,9 +610,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     case WM_MOUSEMOVE:
-    case WM_MOUSELEAVE:
-        handle_mouse_event(createMouseEvent(uMsg, wParam, lParam));
-        break;
+    case WM_MOUSELEAVE: handle_mouse_event(createMouseEvent(uMsg, wParam, lParam)); break;
 
     case WM_NCCALCSIZE:
         if (wParam == TRUE) {
@@ -582,55 +628,59 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_NCHITTEST: {
-        ttlet screenPosition = vec{
-            GET_X_LPARAM(lParam),
-            0 - GET_Y_LPARAM(lParam)
-        };
-
+        GUISystem_mutex.lock();
+        ttlet screenPosition = vec{GET_X_LPARAM(lParam), 0 - GET_Y_LPARAM(lParam)};
         ttlet insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};
+        ttlet hitbox_type = widget->hitbox_test(insideWindowPosition).type;
+        GUISystem_mutex.unlock();
 
-        switch (widget->hitbox_test(insideWindowPosition).type) {
-        case HitBox::Type::BottomResizeBorder: currentCursor = Cursor::None; return HTBOTTOM;
-        case HitBox::Type::TopResizeBorder: currentCursor = Cursor::None; return HTTOP;
-        case HitBox::Type::LeftResizeBorder: currentCursor = Cursor::None; return HTLEFT;
-        case HitBox::Type::RightResizeBorder: currentCursor = Cursor::None; return HTRIGHT;
-        case HitBox::Type::BottomLeftResizeCorner: currentCursor = Cursor::None; return HTBOTTOMLEFT;
-        case HitBox::Type::BottomRightResizeCorner: currentCursor = Cursor::None; return HTBOTTOMRIGHT;
-        case HitBox::Type::TopLeftResizeCorner: currentCursor = Cursor::None; return HTTOPLEFT;
-        case HitBox::Type::TopRightResizeCorner: currentCursor = Cursor::None; return HTTOPRIGHT;
-        case HitBox::Type::ApplicationIcon: currentCursor = Cursor::None; return HTSYSMENU;
-        case HitBox::Type::MoveArea: currentCursor = Cursor::None; return HTCAPTION;
+        switch (hitbox_type) {
+        case HitBox::Type::BottomResizeBorder: setCursor(Cursor::None); return HTBOTTOM;
+        case HitBox::Type::TopResizeBorder: setCursor(Cursor::None); return HTTOP;
+        case HitBox::Type::LeftResizeBorder: setCursor(Cursor::None); return HTLEFT;
+        case HitBox::Type::RightResizeBorder: setCursor(Cursor::None); return HTRIGHT;
+        case HitBox::Type::BottomLeftResizeCorner: setCursor(Cursor::None); return HTBOTTOMLEFT;
+        case HitBox::Type::BottomRightResizeCorner: setCursor(Cursor::None); return HTBOTTOMRIGHT;
+        case HitBox::Type::TopLeftResizeCorner: setCursor(Cursor::None); return HTTOPLEFT;
+        case HitBox::Type::TopRightResizeCorner: setCursor(Cursor::None); return HTTOPRIGHT;
+        case HitBox::Type::ApplicationIcon: setCursor(Cursor::None); return HTSYSMENU;
+        case HitBox::Type::MoveArea: setCursor(Cursor::None); return HTCAPTION;
         case HitBox::Type::TextEdit: setCursor(Cursor::TextEdit); return HTCLIENT;
         case HitBox::Type::Button: setCursor(Cursor::Button); return HTCLIENT;
         case HitBox::Type::Default: setCursor(Cursor::Default); return HTCLIENT;
-        case HitBox::Type::Outside: currentCursor = Cursor::None; return HTCLIENT;
+        case HitBox::Type::Outside: setCursor(Cursor::None); return HTCLIENT;
         default: tt_no_default();
         }
-        } break;
+    } break;
 
-    case WM_SETTINGCHANGE:
+    case WM_SETTINGCHANGE: {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
         application->themes->setThemeMode(readOSThemeMode());
         requestLayout = true;
-        break;
+    } break;
 
-    case WM_DPICHANGED:
+    case WM_DPICHANGED: {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         // x-axis dpi value.
         dpi = numeric_cast<float>(LOWORD(wParam));
         requestLayout = true;
-        break;
+    } break;
 
-    default:
-        break;
+    default: break;
     }
 
     // Let DefWindowProc() handle it.
     return -1;
 }
 
-[[nodiscard]] char32_t Window_vulkan_win32::handleSuragates(char32_t c) noexcept {
+[[nodiscard]] char32_t Window_vulkan_win32::handleSuragates(char32_t c) noexcept
+{
+    tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
+
     if (c >= 0xd800 && c <= 0xdbff) {
         highSurrogate = ((c - 0xd800) << 10) + 0x10000;
         return 0;
@@ -642,13 +692,15 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     return c;
 }
 
-[[nodiscard]] MouseEvent Window_vulkan_win32::createMouseEvent(
-    unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
+[[nodiscard]] MouseEvent Window_vulkan_win32::createMouseEvent(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
-    // wParam and lParam at set to zero on WM_MOUSELEAVE.
+    // We have to do manual locking, since we don't want this
+    // function or its caller to hold a lock while calling the windows API.
+    // This function should only return once, to make it easier.
+    tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+    GUISystem_mutex.lock();
 
     auto mouseEvent = MouseEvent{};
-
     mouseEvent.timePoint = cpu_utc_clock::now();
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
@@ -675,19 +727,13 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     switch (uMsg) {
     case WM_LBUTTONUP:
     case WM_LBUTTONDOWN:
-    case WM_LBUTTONDBLCLK:
-        mouseEvent.cause.leftButton = true;
-        break;
+    case WM_LBUTTONDBLCLK: mouseEvent.cause.leftButton = true; break;
     case WM_RBUTTONUP:
     case WM_RBUTTONDOWN:
-    case WM_RBUTTONDBLCLK:
-        mouseEvent.cause.rightButton = true;
-        break;
+    case WM_RBUTTONDBLCLK: mouseEvent.cause.rightButton = true; break;
     case WM_MBUTTONUP:
     case WM_MBUTTONDOWN:
-    case WM_MBUTTONDBLCLK:
-        mouseEvent.cause.middleButton = true;
-        break;
+    case WM_MBUTTONDBLCLK: mouseEvent.cause.middleButton = true; break;
     case WM_XBUTTONUP:
     case WM_XBUTTONDOWN:
     case WM_XBUTTONDBLCLK:
@@ -701,10 +747,8 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
-    case WM_MOUSELEAVE:
-        break;
-    default:
-        tt_no_default();
+    case WM_MOUSELEAVE: break;
+    default: tt_no_default();
     }
 
     ttlet a_button_is_pressed = mouseEvent.down.leftButton || mouseEvent.down.middleButton || mouseEvent.down.rightButton ||
@@ -720,22 +764,30 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         mouseEvent.clickCount = 0;
 
         if (!a_button_is_pressed) {
+            GUISystem_mutex.unlock();
+            tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
             ReleaseCapture();
+            GUISystem_mutex.lock();
         }
         break;
 
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
-    case WM_XBUTTONDOWN:
+    case WM_XBUTTONDOWN: {
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = (mouseEvent.timePoint < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
 
         // Track draging past the window borders.
         tt_assume(win32Window != 0);
-        SetCapture(reinterpret_cast<HWND>(win32Window));
-        break;
+        ttlet window_handle = reinterpret_cast<HWND>(win32Window);
+
+        GUISystem_mutex.unlock();
+        tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+        SetCapture(window_handle);
+        GUISystem_mutex.lock();
+    } break;
 
     case WM_LBUTTONDBLCLK:
     case WM_MBUTTONDBLCLK:
@@ -748,18 +800,14 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_MOUSEWHEEL:
-    case WM_MOUSEHWHEEL:
-        mouseEvent.type = MouseEvent::Type::Wheel;
-        break;
+    case WM_MOUSEHWHEEL: mouseEvent.type = MouseEvent::Type::Wheel; break;
 
     case WM_MOUSEMOVE: {
-        
-
         // XXX Make sure the mouse is moved enough for this to cause a drag event.
         mouseEvent.type = a_button_is_pressed ? MouseEvent::Type::Drag : MouseEvent::Type::Move;
         mouseEvent.downPosition = mouseButtonEvent.downPosition;
         mouseEvent.clickCount = mouseButtonEvent.clickCount;
-        } break;
+    } break;
 
     case WM_MOUSELEAVE:
         mouseEvent.type = MouseEvent::Type::Exited;
@@ -774,29 +822,32 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         currentCursor = Cursor::None;
         break;
 
-    default:
-        tt_no_default();
+    default: tt_no_default();
     }
 
     // Make sure we start tracking mouse events when the mouse has entered the window again.
     // So that once the mouse leaves the window we receive a WM_MOUSELEAVE event.
     if (!trackingMouseLeaveEvent && uMsg != WM_MOUSELEAVE) {
-        if (!TrackMouseEvent(&trackMouseLeaveEventParameters)) {
+        auto *track_mouse_leave_event_parameters_p = &trackMouseLeaveEventParameters;
+        GUISystem_mutex.unlock();
+        tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+        if (!TrackMouseEvent(track_mouse_leave_event_parameters_p)) {
             LOG_ERROR("Could not track leave event '{}'", getLastErrorMessage());
         }
+        GUISystem_mutex.lock();
         trackingMouseLeaveEvent = true;
     }
 
     // Remember the last time a button was pressed or released, so that we can convert
     // a move into a drag event.
-    if (
-        mouseEvent.type == MouseEvent::Type::ButtonDown ||
-        mouseEvent.type == MouseEvent::Type::ButtonUp ||
-        mouseEvent.type == MouseEvent::Type::Exited
-    ) {
+    if (mouseEvent.type == MouseEvent::Type::ButtonDown || mouseEvent.type == MouseEvent::Type::ButtonUp ||
+        mouseEvent.type == MouseEvent::Type::Exited) {
         mouseButtonEvent = mouseEvent;
     }
+
+    GUISystem_mutex.unlock();
+    tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
     return mouseEvent;
 }
 
-}
+} // namespace tt

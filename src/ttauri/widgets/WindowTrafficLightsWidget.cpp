@@ -10,7 +10,8 @@
 
 namespace tt {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, std::shared_ptr<Widget> parent) noexcept :
+    Widget(window, parent)
 {
     // Toolbar buttons hug the toolbar and neighbor widgets.
     p_margin = 0.0f;
@@ -18,7 +19,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 
 [[nodiscard]] bool WindowTrafficLightsWidget::update_constraints() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     if (Widget::update_constraints()) {
         if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
@@ -43,7 +44,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 [[nodiscard]] bool
 WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(request_relayout, false);
     if (need_layout) {
@@ -104,7 +105,7 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
 
 void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     auto context = drawContext;
     context.cornerShapes = vec{RADIUS, RADIUS, RADIUS, RADIUS};
@@ -158,7 +159,7 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
 
 void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     auto context = drawContext;
 
@@ -206,7 +207,7 @@ void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hire
 
 void WindowTrafficLightsWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         drawMacOS(context, display_time_point);
@@ -223,7 +224,7 @@ void WindowTrafficLightsWidget::draw(DrawContext context, hires_utc_clock::time_
 
 bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     auto handled = Widget::handle_mouse_event(event);
 
     // Check the hover states of each button.
@@ -278,13 +279,13 @@ bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noex
 
 HitBox WindowTrafficLightsWidget::hitbox_test(vec window_position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     ttlet position = from_window_transform * window_position;
 
     if (p_window_clipping_rectangle.contains(window_position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) ||
             maximizeRectangle.contains(position)) {
-            return HitBox{this, p_draw_layer, HitBox::Type::Button};
+            return HitBox{weak_from_this(), p_draw_layer, HitBox::Type::Button};
         } else {
             return HitBox{};
         }

@@ -17,7 +17,7 @@ class ButtonWidget final : public abstract_button_widget {
 public:
     observable<std::u8string> label;
 
-    ButtonWidget(Window &window, Widget *parent) noexcept : abstract_button_widget(window, parent)
+    ButtonWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : abstract_button_widget(window, parent)
     {
         _label_callback = scoped_callback(label, [this](auto...) {
             request_reconstrain = true;
@@ -30,7 +30,7 @@ public:
 
     [[nodiscard]] bool update_constraints() noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (abstract_button_widget::update_constraints()) {
             labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
@@ -43,7 +43,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         context.cornerShapes = vec{Theme::roundingRadius};
         if (value) {
@@ -64,7 +64,7 @@ public:
 
     void clicked() noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         if (compare_then_assign(value, !value)) {
             window.requestRedraw = true;
         }

@@ -32,22 +32,22 @@ namespace tt {
 * The implementation is located here so that widget is a concrete type.
 */
 template<typename T, cell_address CellAddress, typename... Args>
-T &Window_base::makeWidget(Args &&... args)
+std::shared_ptr<T> Window_base::make_widget(Args &&... args)
 {
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     tt_assume(widget);
-    ttlet lock = std::scoped_lock(widget->mutex);
-    return widget->content()->makeWidget<T, CellAddress>(std::forward<Args>(args)...);
+    return widget->content()->make_widget<T, CellAddress>(std::forward<Args>(args)...);
 }
 
 /** Add a widget to the toolbar of the window.
  * The implementation is located here so that widget is a concrete type.
  */
 template<typename T, HorizontalAlignment Alignment, typename... Args>
-T &Window_base::makeToolbarWidget(Args &&... args)
+std::shared_ptr<T> Window_base::make_toolbar_widget(Args &&... args)
 {
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     tt_assume(widget);
-    ttlet lock = std::scoped_lock(widget->mutex);
-    return widget->toolbar()->makeWidget<T, Alignment>(std::forward<Args>(args)...);
+    return widget->toolbar()->make_widget<T, Alignment>(std::forward<Args>(args)...);
 }
 
 }

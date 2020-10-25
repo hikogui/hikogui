@@ -15,19 +15,20 @@ class RowColumnLayoutWidget final : public ContainerWidget {
 public:
     static constexpr bool is_row = IsRow;
 
-    RowColumnLayoutWidget(Window &window, Widget *parent) noexcept : ContainerWidget(window, parent) {}
+    RowColumnLayoutWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : ContainerWidget(window, parent) {}
 
     [[nodiscard]] bool update_constraints() noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (ContainerWidget::update_constraints()) {
             auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
             auto shared_thickness = finterval{};
 
             layout.clear();
-            ssize_t index = 0;
+            layout.reserve(std::ssize(children));
 
+            ssize_t index = 0;
             for (ttlet &child : children) {
                 updateConstraintsForChild(*child, index++, shared_base_line, shared_thickness);
             }
@@ -49,7 +50,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
@@ -74,7 +75,7 @@ private:
         relative_base_line &shared_base_line,
         finterval &shared_thickness) noexcept
     {
-        ttlet child_lock = std::scoped_lock(child.mutex);
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         ttlet length = is_row ? child.preferred_size().width() : child.preferred_size().height();
         ttlet thickness = is_row ? child.preferred_size().height() : child.preferred_size().width();
@@ -89,7 +90,7 @@ private:
 
     void updateLayoutForChild(Widget &child, ssize_t index) const noexcept
     {
-        ttlet child_lock = std::scoped_lock(child.mutex);
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         ttlet[child_offset, child_length] = layout.get_offset_and_size(index++);
 

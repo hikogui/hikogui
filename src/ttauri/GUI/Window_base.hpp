@@ -5,6 +5,7 @@
 
 #include "WindowDelegate.hpp"
 #include "GUIDevice_forward.hpp"
+#include "GUISystem_forward.hpp"
 #include "Cursor.hpp"
 #include "HitBox.hpp"
 #include "MouseEvent.hpp"
@@ -19,7 +20,6 @@
 #include "../iaarect.hpp"
 #include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
-#include "../unfair_recursive_mutex.hpp"
 #include "../cell_address.hpp"
 #include <unordered_set>
 #include <memory>
@@ -53,6 +53,8 @@ public:
         Minimized,
         Maximized
     };
+
+    GUISystem &system;
 
     State state = State::NoDevice;
 
@@ -99,8 +101,6 @@ public:
 
     Label title;
 
-    GUIDevice *device = nullptr;
-
     /*! Orientation of the RGB subpixels.
      */
     SubpixelOrientation subpixelOrientation = SubpixelOrientation::BlueRight;
@@ -119,31 +119,31 @@ public:
     }
 
     //! The widget covering the complete window.
-    std::unique_ptr<WindowWidget> widget;
+    std::shared_ptr<WindowWidget> widget;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
      */
-    Widget *mouseTargetWidget = nullptr;
+    std::weak_ptr<Widget> mouseTargetWidget = {};
 
     /** Target of the keyboard
      * widget where keyboard events are sent to.
      */
-    Widget *keyboardTargetWidget = nullptr;
+    std::weak_ptr<Widget> keyboardTargetWidget = {};
 
     /** The first widget in the window that needs to be selected.
      * This widget is selected when the window is opened and when
      * pressing tab when no other widget is selected.
      */
-    Widget *firstKeyboardWidget = nullptr;
+    std::weak_ptr<Widget> firstKeyboardWidget = {};
 
     /** The first widget in the window that needs to be selected.
      * This widget is selected when pressing shift-tab when no other widget is selected.
      */
-    Widget *lastKeyboardWidget = nullptr;
+    std::weak_ptr<Widget> lastKeyboardWidget = {};
 
-    Window_base(WindowDelegate *delegate, Label &&title);
+    Window_base(GUISystem &system, WindowDelegate *delegate, Label &&title);
     virtual ~Window_base();
 
     Window_base(Window_base const &) = delete;
@@ -151,6 +151,12 @@ public:
     Window_base(Window_base &&) = delete;
     Window_base &operator=(Window_base &&) = delete;
 
+    /** 2 phase constructor.
+     * Must be called directly after the constructor on the same thread,
+     * before another thread can send messages to the window.
+     * 
+     * `initialize()` shoudl not take locks on window::mutex.
+     */
     virtual void initialize();
 
     /*! Set GPU device to manage this window.
@@ -161,6 +167,12 @@ public:
     /*! Remove the GPU device from the window, making it an orphan.
      */
     void unsetDevice() { setDevice({}); }
+
+    GUIDevice *device() const noexcept
+    {
+        tt_assume(GUISystem_mutex.recurse_lock_count());
+        return _device;
+    }
 
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.
@@ -173,13 +185,13 @@ public:
      * The implementation is in widgets.hpp
      */
     template<typename T, cell_address CellAddress,typename... Args>
-    T &makeWidget(Args &&... args);
+    std::shared_ptr<T> make_widget(Args &&... args);
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
     template<typename T, HorizontalAlignment Alignment=HorizontalAlignment::Left, typename... Args>
-    T &makeToolbarWidget(Args &&... args);
+    std::shared_ptr<T> make_toolbar_widget(Args &&... args);
 
     virtual void setCursor(Cursor cursor) = 0;
 
@@ -195,9 +207,7 @@ public:
     [[nodiscard]] virtual std::u8string getTextFromClipboard() const noexcept = 0;
     virtual void setTextOnClipboard(std::u8string str) noexcept = 0;
 
-    void updateToNextKeyboardTarget(Widget *currentTargetWidget) noexcept;
-
-    void updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexcept;
+    void next_keyboard_widget(std::shared_ptr<Widget> const &currentTargetWidget, bool reverse) noexcept;
 
     /** Get the size of the virtual-screen.
      * Each window may be on a different virtual screen with different
@@ -206,6 +216,11 @@ public:
     [[nodiscard]] virtual ivec virtualScreenSize() const noexcept = 0;
 
 protected:
+    /** The device the window is assigned to.
+     * The device may change during the lifetime of a window,
+     * as long as the device belongs to the same GUIInstance.
+     */
+    GUIDevice *_device = nullptr;
 
     /*! The current rectangle which has been set by the operating system.
      * This value may lag behind the actual window extent as seen by the GPU
@@ -239,9 +254,9 @@ protected:
      */
     virtual void build() = 0;
 
-    void updateMouseTarget(Widget const *newTargetWidget, vec position=vec{0.0f, 0.0f}) noexcept;
+    void update_mouse_target(std::shared_ptr<Widget> new_target_widget, vec position=vec{0.0f, 0.0f}) noexcept;
 
-    void updateKeyboardTarget(Widget const *newTargetWidget) noexcept;
+    void update_keyboard_target(std::shared_ptr<Widget> new_target_widget) noexcept;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
@@ -262,8 +277,6 @@ protected:
 
     bool handle_keyboard_event(char32_t c, bool full=true) noexcept;
 
-protected:
-    mutable unfair_recursive_mutex mutex;
 };
 
 }

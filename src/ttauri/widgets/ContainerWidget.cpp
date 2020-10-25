@@ -4,27 +4,25 @@
 
 namespace tt {
 
-Widget &ContainerWidget::addWidget(std::unique_ptr<Widget> childWidget) noexcept
+std::shared_ptr<Widget> ContainerWidget::add_widget(std::shared_ptr<Widget> widget) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-    children.push_back(std::move(childWidget));
+    tt_assume(widget->parent.lock().get() == this);
+    children.push_back(widget);
     request_reconstrain = true;
     window.requestLayout = true;
-
-    ttlet widget_ptr = children.back().get();
-    tt_assume(widget_ptr);
-    return *widget_ptr;
+    return widget;
 }
 
 [[nodiscard]] bool ContainerWidget::update_constraints() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     auto has_constrainted = Widget::update_constraints();
 
     for (auto &&child : children) {
-        ttlet child_lock = std::scoped_lock(child->mutex);
+        tt_assume(child->parent.lock() == shared_from_this());
         has_constrainted |= child->update_constraints();
     }
 
@@ -33,11 +31,11 @@ Widget &ContainerWidget::addWidget(std::unique_ptr<Widget> childWidget) noexcept
 
 bool ContainerWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     auto need_redraw = need_layout |= std::exchange(request_relayout, false);
     for (auto &&child : children) {
-        ttlet child_lock = std::scoped_lock(child->mutex);
+        tt_assume(child->parent.lock().get() == this);
         need_redraw |= child->update_layout(display_time_point, need_layout);
     }
 
@@ -47,10 +45,10 @@ bool ContainerWidget::update_layout(hires_utc_clock::time_point display_time_poi
 
 void ContainerWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     for (auto &child : children) {
-        ttlet child_lock = std::scoped_lock(child->mutex);
+        tt_assume(child->parent.lock().get() == this);
         child->draw(child->make_draw_context(context), display_time_point);
     }
 
@@ -59,55 +57,46 @@ void ContainerWidget::draw(DrawContext context, hires_utc_clock::time_point disp
 
 HitBox ContainerWidget::hitbox_test(vec window_position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
     auto r = HitBox{};
     for (ttlet &child : children) {
+        tt_assume(child->parent.lock().get() == this);
         r = std::max(r, child->hitbox_test(window_position));
     }
     return r;
 }
 
-std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcept
+std::shared_ptr<Widget> ContainerWidget::next_keyboard_widget(std::shared_ptr<Widget> const &current_keyboard_widget, bool reverse) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-    std::vector<Widget *> r;
-    r.reserve(std::ssize(children));
-    for (ttlet &child : children) {
-        r.push_back(child.get());
-    }
-    if (reverse) {
-        std::reverse(r.begin(), r.end());
-    }
-    return r;
-}
-
-Widget const *ContainerWidget::next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
-{
-    ttlet lock = std::scoped_lock(mutex);
-
-    // If currentKeyboardWidget is nullptr, then we need to find the first widget that accepts focus.
-    auto found = (currentKeyboardWidget == nullptr);
+    // If current_keyboard_widget is empty, then we need to find the first widget that accepts focus.
+    auto found = !current_keyboard_widget;
 
     // The container widget itself accepts focus.
     if (found && !reverse && accepts_focus()) {
-        return this;
+        return std::const_pointer_cast<Widget>(shared_from_this());
     }
 
-    for (auto *child : childPointers(reverse)) {
+    ssize_t first = reverse ? ssize(children) - 1 : 0;
+    ssize_t last = reverse ? -1 : ssize(children);
+    ssize_t step = reverse ? -1 : 1;
+    for (ssize_t i = first; i != last; i += step) {
+        auto &&child = children[i];
+
         if (found) {
             // Find the first focus accepting widget.
-            if (auto *tmp = child->next_keyboard_widget(nullptr, reverse)) {
+            if (auto tmp = child->next_keyboard_widget({}, reverse)) {
                 return tmp;
             }
 
-        } else if (child == currentKeyboardWidget) {
+        } else if (child == current_keyboard_widget) {
             found = true;
 
         } else {
-            auto *tmp = child->next_keyboard_widget(currentKeyboardWidget, reverse);
-            if (tmp == currentKeyboardWidget) {
+            auto tmp = child->next_keyboard_widget(current_keyboard_widget, reverse);
+            if (tmp == current_keyboard_widget) {
                 // The current widget was found, but no next widget available in the child.
                 found = true;
 
@@ -119,10 +108,10 @@ Widget const *ContainerWidget::next_keyboard_widget(Widget const *currentKeyboar
 
     // The container widget itself accepts focus.
     if (found && reverse && accepts_focus()) {
-        return this;
+        return std::const_pointer_cast<Widget>(shared_from_this());
     }
 
-    return found ? currentKeyboardWidget : nullptr;
+    return found ? current_keyboard_widget : std::shared_ptr<Widget>{};
 }
 
 } // namespace tt

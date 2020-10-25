@@ -22,7 +22,7 @@ public:
     template<typename Arg = observable<value_type>>
     abstract_toggle_button_widget(
         Window &window,
-        Widget *parent,
+        std::shared_ptr<Widget> parent,
         value_type true_value,
         value_type false_value,
         Arg &&arg = {}) noexcept :
@@ -31,6 +31,9 @@ public:
         false_value(std::move(false_value)),
         value(std::forward<Arg>(arg))
     {
+        _value_callback = {this->value, [this](auto...) {
+                                                               this->window.requestRedraw = true;
+                                                           }};
         _callback = {*this, [this]() {
                          this->toggle();
                      }};
@@ -38,7 +41,7 @@ public:
 
     void toggle() noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
 
         if (compare_then_assign(value, value == false_value ? true_value : false_value)) {
             window.requestRedraw = true;
@@ -46,6 +49,7 @@ public:
     }
 
 private:
+    scoped_callback<decltype(value)> _value_callback;
     scoped_callback<abstract_button_widget> _callback;
 };
 

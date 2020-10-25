@@ -90,7 +90,7 @@ namespace tt {
  * entered when one of the widget's layout was changed. But if this phase is entered
  * then all the widgets' `draw()` functions are called.
  */
-class Widget {
+class Widget : public std::enable_shared_from_this<Widget> {
 public:
     /** Convenient reference to the Window.
      */
@@ -99,13 +99,7 @@ public:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    Widget * const parent;
-
-    /** The mutex of a widget.
-     * Certain accessor method of the Widget class require the mutex
-     * to be already locked by the caller.
-     */
-    mutable unfair_recursive_mutex mutex;
+    std::weak_ptr<Widget> parent;
 
     /** The widget is enabled.
      */
@@ -113,13 +107,17 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    Widget(Window &window, Widget *parent) noexcept;
+    Widget(Window &window, std::shared_ptr<Widget> parent) noexcept;
 
     virtual ~Widget();
     Widget(const Widget &) = delete;
     Widget &operator=(const Widget &) = delete;
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
+
+    /** Should be called right after allocating and constructing a widget.
+     */
+    virtual void initialize() noexcept {}
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
@@ -130,7 +128,7 @@ public:
      */
     [[nodiscard]] float margin() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_margin;
     }
 
@@ -151,7 +149,7 @@ public:
      */
     [[nodiscard]] float draw_layer() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_draw_layer;
     }
 
@@ -167,7 +165,7 @@ public:
      */
     [[nodiscard]] int logical_layer() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_logical_layer;
     }
 
@@ -191,7 +189,7 @@ public:
      */
     [[nodiscard]] int semantic_layer() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_semantic_layer;
     }
 
@@ -206,7 +204,7 @@ public:
      */
     [[nodiscard]] ranged_int<3> width_resistance() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_width_resistance;
     }
 
@@ -221,7 +219,7 @@ public:
      */
     [[nodiscard]] ranged_int<3> height_resistance() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_height_resistance;
     }
 
@@ -235,7 +233,7 @@ public:
      */
     [[nodiscard]] interval_vec2 preferred_size() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_preferred_size;
     }
 
@@ -254,7 +252,7 @@ public:
      */
     [[nodiscard]] relative_base_line preferred_base_line() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_preferred_base_line;
     }
 
@@ -280,7 +278,7 @@ public:
         float window_base_line = std::numeric_limits<float>::infinity()
     ) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         p_window_rectangle = window_rectangle;
         p_window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
 
@@ -297,7 +295,7 @@ public:
      */
     [[nodiscard]] aarect window_rectangle() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_window_rectangle;
     }
 
@@ -307,7 +305,7 @@ public:
      */
     [[nodiscard]] aarect window_clipping_rectangle() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_window_clipping_rectangle;
     }
 
@@ -317,7 +315,7 @@ public:
      */
     [[nodiscard]] float window_base_line() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_window_base_line;
     }
 
@@ -327,7 +325,7 @@ public:
      */
     [[nodiscard]] aarect rectangle() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return aarect{p_window_rectangle.extent()};
     }
 
@@ -337,7 +335,7 @@ public:
      */
     [[nodiscard]] float base_line() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return p_window_base_line - p_window_rectangle.y();
     }
 
@@ -353,10 +351,10 @@ public:
      */
     [[nodiscard]] virtual HitBox hitbox_test(vec window_position) const noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
 
         if (p_window_clipping_rectangle.contains(window_position) && p_window_rectangle.contains(window_position)) {
-            return HitBox{this, p_draw_layer};
+            return HitBox{weak_from_this(), p_draw_layer};
         } else {
             return {};
         }
@@ -368,7 +366,7 @@ public:
      */
     [[nodiscard]] virtual bool accepts_focus() const noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return false;
     }
 
@@ -446,7 +444,7 @@ public:
      */
     virtual void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
     }
 
     /** Handle command.
@@ -483,14 +481,15 @@ public:
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
      * that returns true from `acceptsFocus()`.
      * 
-     * @param currentKeyboardWidget The widget that currently has focus, or nullptr to get the first widget
+     * @param current_keyboard_widget The widget that currently has focus; or empty to get the first widget
      *                              that accepts focus.
      * @param reverse Walk the widget tree in reverse order.
      * @return A pointer to the next widget.
      * @retval currentKeyboardWidget when currentKeyboardWidget was found but no next widget was found.
-     * @retval nullptr when currentKeyboardWidget is not found in this Widget.
+     * @retval empty when currentKeyboardWidget is not found in this Widget.
      */
-    [[nodiscard]] virtual Widget const *next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
+    [[nodiscard]] virtual std::shared_ptr<Widget>
+    next_keyboard_widget(std::shared_ptr<Widget> const &current_keyboard_widget, bool reverse) const noexcept;
 
 protected:
     /** Mouse cursor is hovering over the widget.

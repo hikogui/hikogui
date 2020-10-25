@@ -40,7 +40,8 @@ public:
 
         cache_extent = {};
 
-        expand_the_number_of_items(index + 1);
+        tt_assume(index < std::ssize(items));
+        tt_assume(index + 1 < std::ssize(margins));
         items[index].update(extent, resistance, base_line);
         margins[index] = std::max(margins[index], margin);
         margins[index+1] = std::max(margins[index+1], margin);
@@ -114,9 +115,24 @@ public:
         return items[index].base_line;
     }
 
+    /** Grow layout to include upto new_size of items.
+     */
+    void reserve(ssize_t new_size) noexcept
+    {
+        while (std::ssize(items) < new_size) {
+            items.emplace_back();
+        }
+
+        while (std::ssize(margins) < new_size + 1) {
+            margins.push_back(0.0f);
+        }
+
+        tt_assume(margins.size() == items.size() + 1);
+    }
+
 private:
     struct flow_layout_item {
-        constexpr flow_layout_item() noexcept : _extent(), resistance(0), base_line() {}
+        constexpr flow_layout_item() noexcept : _extent(0.0f, std::numeric_limits<float>::max()), resistance(1), base_line() {}
 
         constexpr flow_layout_item(flow_layout_item const &rhs) noexcept = default;
         constexpr flow_layout_item(flow_layout_item &&rhs) noexcept = default;
@@ -126,7 +142,18 @@ private:
         constexpr void update(finterval a_extent, ranged_int<3> _resistance, relative_base_line _base_line) noexcept
         {
             _extent = intersect(_extent, a_extent);
-            resistance = std::max(resistance, _resistance);
+            switch (static_cast<int>(_resistance)) {
+            case 0: // No resistance has lower priority than strong resistance.
+                resistance = resistance == 2 ? 2 : 0;
+                break;
+            case 1: // Normal resistance will not change the value.
+                break;
+            case 2: // Strong resistance overrides all
+                resistance = 2;
+                break;
+            default:
+                tt_no_default();
+            }
             base_line = std::max(base_line, _base_line);
         }
 
@@ -152,17 +179,7 @@ private:
 
     mutable std::optional<finterval> cache_extent;
 
-    /** Grow layout to include upto new_size of items.
-     */
-    void expand_the_number_of_items(ssize_t new_size) noexcept
-    {
-        if (new_size > std::ssize(items)) {
-            items.resize(new_size);
-            margins.resize(new_size + 1);
-        }
-        tt_assume(margins.size() == items.size() + 1);
-    }
-
+    
     void set_items_to_minimum_size() noexcept
     {
         for (auto &&item : items) {

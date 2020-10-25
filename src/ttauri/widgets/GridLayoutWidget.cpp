@@ -34,14 +34,16 @@ namespace tt {
 [[nodiscard]] interval_vec2
 GridLayoutWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
+    tt_assume(GUISystem_mutex.recurse_lock_count());
+
     rows.clear();
     columns.clear();
 
     ttlet[nr_columns, nr_rows] = calculateGridSize(cells);
+    rows.reserve(nr_rows);
+    columns.reserve(nr_columns);
 
     for (auto &&cell : cells) {
-        ttlet child_lock = std::scoped_lock(cell.widget->mutex);
-
         tt_assume(cell.address.row.is_absolute);
         if (cell.address.row.span == 1) {
             auto index = cell.address.row.begin(nr_rows);
@@ -70,9 +72,10 @@ GridLayoutWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_l
     return {columns.extent(), rows.extent()};
 }
 
-Widget &GridLayoutWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
+std::shared_ptr<Widget> GridLayoutWidget::add_widget(cell_address address, std::shared_ptr<Widget> widget) noexcept
 {
-    auto lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    auto tmp = ContainerWidget::add_widget(std::move(widget));
 
     if (std::ssize(children) == 0) {
         // When there are no children, relative addresses need to start at the origin.
@@ -81,14 +84,13 @@ Widget &GridLayoutWidget::addWidget(cell_address address, std::unique_ptr<Widget
         current_address *= address;
     }
 
-    auto &widget = ContainerWidget::addWidget(std::move(childWidget));
-    cells.emplace_back(current_address, &widget);
-    return widget;
+    cells.emplace_back(current_address, tmp);
+    return tmp;
 }
 
 bool GridLayoutWidget::update_constraints() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     if (ContainerWidget::update_constraints()) {
         p_preferred_size = calculateCellMinMaxSize(cells, rows, columns);
@@ -100,7 +102,7 @@ bool GridLayoutWidget::update_constraints() noexcept
 
 bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(request_relayout, false);
     if (need_layout) {
@@ -109,8 +111,6 @@ bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_po
 
         for (auto &&cell : cells) {
             auto &&child = cell.widget;
-            ttlet child_lock = std::scoped_lock(child->mutex);
-
             ttlet child_rectangle = cell.rectangle(columns, rows);
             ttlet child_base_line = cell.base_line(rows);
 

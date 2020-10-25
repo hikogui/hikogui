@@ -6,7 +6,7 @@
 
 namespace tt {
 
-Widget::Widget(Window &_window, Widget *_parent) noexcept :
+Widget::Widget(Window &_window, std::shared_ptr<Widget> _parent) noexcept :
     enabled(true),
     window(_window),
     parent(_parent),
@@ -15,13 +15,13 @@ Widget::Widget(Window &_window, Widget *_parent) noexcept :
     p_semantic_layer(0)
 {
     if (_parent) {
-        ttlet lock = std::scoped_lock(_parent->mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         p_draw_layer = _parent->draw_layer() + 1.0f;
         p_logical_layer = _parent->logical_layer() + 1;
         p_semantic_layer = _parent->semantic_layer() + 1;
     }
 
-    _enabled_callback = scoped_callback(enabled, [this](auto...){
+    _enabled_callback = scoped_callback(enabled, [this](auto...) {
         window.requestRedraw = true;
     });
 
@@ -37,22 +37,22 @@ Widget::~Widget()
 
 GUIDevice *Widget::device() const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    auto device = window.device;
+    auto device = window.device();
     tt_assert(device);
     return device;
 }
 
 bool Widget::update_constraints() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
     return std::exchange(request_reconstrain, false);
 }
 
 bool Widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(request_relayout, false);
     if (need_layout) {
@@ -68,7 +68,7 @@ bool Widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 DrawContext Widget::make_draw_context(DrawContext context) const noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     context.clippingRectangle = p_window_clipping_rectangle;
     context.transform = to_window_transform;
@@ -103,7 +103,7 @@ bool Widget::handle_command(command command) noexcept
 }
 
 bool Widget::handle_mouse_event(MouseEvent const &event) noexcept {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     auto handled = false;
 
     if (event.type == MouseEvent::Type::Entered) {
@@ -120,7 +120,7 @@ bool Widget::handle_mouse_event(MouseEvent const &event) noexcept {
 }
 
 bool Widget::handle_keyboard_event(KeyboardEvent const &event) noexcept {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     auto handled = false;
 
     switch (event.type) {
@@ -142,16 +142,18 @@ bool Widget::handle_keyboard_event(KeyboardEvent const &event) noexcept {
     return handled;
 }
 
-Widget const *Widget::next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+std::shared_ptr<Widget>
+Widget::next_keyboard_widget(std::shared_ptr<Widget> const &current_keyboard_widget, bool reverse) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-    if (currentKeyboardWidget == nullptr && accepts_focus()) {
-        // The first widget that accepts focus.
-        return this;
+    if (!current_keyboard_widget && accepts_focus()) {
+        // If the current_keyboard_widget is empty or expired, then return the first widget
+        // that accepts focus.
+        return std::const_pointer_cast<Widget>(shared_from_this());
 
     } else {
-        return nullptr;
+        return {};
     }
 }
 

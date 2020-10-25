@@ -17,9 +17,9 @@ namespace tt {
 
 class LineInputWidget final : public Widget {
 public:
-    LineInputWidget(Window &window, Widget *parent, std::u8string const label) noexcept;
+    LineInputWidget(Window &window, std::shared_ptr<Widget> parent, std::u8string const label) noexcept;
 
-    LineInputWidget(Window &window, Widget *parent, l10n const label) noexcept :
+    LineInputWidget(Window &window, std::shared_ptr<Widget> parent, l10n const label) noexcept :
         LineInputWidget(window, parent, std::u8string{static_cast<std::u8string_view>(label)})
     {
     }
@@ -36,7 +36,7 @@ public:
 
     [[nodiscard]] bool accepts_focus() const noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return *enabled;
     }
 

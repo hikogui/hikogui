@@ -29,7 +29,7 @@ public:
     observable<std::u8string> other_label;
 
     template<typename Value = observable<T>>
-    checkbox_widget(Window &window, Widget *parent, T true_value, T false_value, Value &&value = {}) noexcept :
+    checkbox_widget(Window &window, std::shared_ptr<Widget> parent, T true_value, T false_value, Value &&value = {}) noexcept :
         abstract_toggle_button_widget<T>(
             window,
             parent,
@@ -50,7 +50,7 @@ public:
 
     [[nodiscard]] bool update_constraints() noexcept override
     {
-        tt_assume(this->mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (Widget::update_constraints()) {
             _true_label_cell = std::make_unique<TextCell>(*true_label, theme->labelStyle);
@@ -80,7 +80,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
-        tt_assume(this->mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(this->request_relayout, false);
         if (need_layout) {
@@ -103,7 +103,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(this->mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         draw_check_box(context);
         draw_check_mark(context);
@@ -132,14 +132,14 @@ private:
 
     void draw_check_box(DrawContext const &context) noexcept
     {
-        tt_assume(this->mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         context.drawBoxIncludeBorder(_checkbox_rectangle);
     }
 
     void draw_check_mark(DrawContext context) noexcept
     {
-        tt_assume(this->mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
 
@@ -159,7 +159,7 @@ private:
 
     void draw_label(DrawContext context) noexcept
     {
-        tt_assume(this->mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (*this->enabled) {
             context.color = theme->labelStyle.color;

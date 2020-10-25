@@ -17,7 +17,7 @@ namespace tt {
 
 class SystemMenuWidget final : public Widget {
 public:
-    SystemMenuWidget(Window &window, Widget *parent, Image const &icon) noexcept;
+    SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, Image const &icon) noexcept;
     ~SystemMenuWidget() {}
 
     [[nodiscard]] bool update_constraints() noexcept override;

@@ -23,8 +23,7 @@ public:
 
     template<typename V = observable<bool>>
     toggle_widget(
-        Window &window,
-        Widget *parent,
+        Window &window, std::shared_ptr<Widget> parent,
         V &&value = observable<bool>{}) noexcept :
         abstract_bool_toggle_button_widget(window, parent, std::forward<V>(value))
     {
@@ -40,7 +39,7 @@ public:
 
     [[nodiscard]] bool update_constraints() noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (Widget::update_constraints()) {
             _on_label_cell = std::make_unique<TextCell>(*on_label, theme->labelStyle);
@@ -63,7 +62,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
@@ -87,7 +86,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         draw_rail(context);
         draw_slider(context);
         draw_label(context);
@@ -114,7 +113,7 @@ private:
 
     void draw_rail(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawContext.cornerShapes = vec{_rail_rectangle.height() * 0.5f};
         drawContext.drawBoxIncludeBorder(_rail_rectangle);
@@ -122,7 +121,7 @@ private:
 
     void draw_slider(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(_animation_duration);
@@ -151,7 +150,7 @@ private:
 
     void draw_label(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;

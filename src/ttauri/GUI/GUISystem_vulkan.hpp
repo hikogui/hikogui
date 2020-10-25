@@ -56,12 +56,12 @@ public:
     void initialize() noexcept(false) override;
 
     vk::DispatchLoaderDynamic loader() const noexcept {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         return _loader;
     }
 
     void destroySurfaceKHR(vk::SurfaceKHR surface) {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         intrinsic.destroySurfaceKHR(surface);
     }
 

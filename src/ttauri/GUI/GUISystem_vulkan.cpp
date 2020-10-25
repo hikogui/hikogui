@@ -84,7 +84,7 @@ GUISystem_vulkan::~GUISystem_vulkan()
 
 void GUISystem_vulkan::initialize() noexcept(false)
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
     if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
         debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
@@ -102,7 +102,7 @@ void GUISystem_vulkan::initialize() noexcept(false)
     }
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-        devices.push_back(std::make_unique<GUIDevice>(_physicalDevice));
+        devices.push_back(std::make_shared<GUIDevice>(static_cast<GUISystem&>(*this), _physicalDevice));
     }
 }
 

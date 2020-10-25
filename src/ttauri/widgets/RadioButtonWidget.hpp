@@ -22,33 +22,37 @@ public:
     observable<std::u8string> label;
 
     template<typename V, typename... Args>
-    RadioButtonWidget(Window &window, Widget *parent, V &&value, l10n const &fmt, Args const &... args) noexcept :
+    RadioButtonWidget(Window &window, std::shared_ptr<Widget> parent, V &&value, l10n const &fmt, Args const &... args) noexcept :
         Widget(window, parent), value(std::forward<V>(value)), label(format(fmt, args...))
     {
-        _value_callback = scoped_callback(value, [this](auto...) {
-            this->window.requestRedraw = true;
-        });
-        _label_callback = scoped_callback(label, [this](auto...) {
-            request_reconstrain = true;
-        });
     }
 
     template<typename V>
-    RadioButtonWidget(Window &window, Widget *parent, V &&value) noexcept :
+    RadioButtonWidget(Window &window, std::shared_ptr<Widget> parent, V &&value) noexcept :
         RadioButtonWidget(window, parent, std::forward<V>(value), l10n{})
     {
     }
 
-    RadioButtonWidget(Window &window, Widget *parent) noexcept :
+    RadioButtonWidget(Window &window, std::shared_ptr<Widget> parent) noexcept :
         RadioButtonWidget(window, parent, observable<ValueType>{}, l10n{})
     {
     }
 
     ~RadioButtonWidget() {}
 
+    void initialize() noexcept override
+    {
+        value.subscribe([this](auto...) {
+            this->window.requestRedraw = true;
+        });
+        label.subscribe([this](auto...) {
+            request_reconstrain = true;
+        });
+    }
+
     [[nodiscard]] bool update_constraints() noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (Widget::update_constraints()) {
             labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
@@ -66,7 +70,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
@@ -82,7 +86,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawRadioButton(context);
         drawPip(context);
@@ -92,7 +96,7 @@ public:
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
@@ -108,7 +112,7 @@ public:
 
     bool handle_command(command command) noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_command(command);
 
         if (*enabled) {
@@ -123,10 +127,10 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
 
         if (p_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{weak_from_this(), p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }
@@ -134,13 +138,11 @@ public:
 
     [[nodiscard]] bool accepts_focus() const noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return *enabled;
     }
 
 private:
-    scoped_callback<decltype(value)> _value_callback;
-    scoped_callback<decltype(label)> _label_callback;
     aarect radioButtonRectangle;
     aarect pipRectangle;
     aarect _label_rectangle;
@@ -149,7 +151,7 @@ private:
 
     void drawRadioButton(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawContext.cornerShapes = vec{radioButtonRectangle.height() * 0.5f};
         drawContext.drawBoxIncludeBorder(radioButtonRectangle);
@@ -157,7 +159,7 @@ private:
 
     void drawPip(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         // draw pip
         if (value == ActiveValue) {
@@ -172,7 +174,7 @@ private:
 
     void draw_label(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;

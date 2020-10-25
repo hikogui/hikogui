@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Window.hpp"
+#include "GUISystem_forward.hpp"
 #include "../exceptions.hpp"
 #include "../numeric_cast.hpp"
 #include "../bigint.hpp"
@@ -18,6 +19,8 @@ namespace tt {
  */
 class GUIDevice_base {
 public:
+    GUISystem &system;
+
     enum class State {
         NO_DEVICE,
         READY_TO_DRAW,
@@ -33,7 +36,7 @@ public:
 
     std::string string() const noexcept;
 
-    GUIDevice_base() noexcept;
+    GUIDevice_base(GUISystem &system) noexcept;
     virtual ~GUIDevice_base();
 
     GUIDevice_base(const GUIDevice_base &) = delete;
@@ -60,12 +63,12 @@ public:
         return std::ssize(windows);
     }
 
-    void add(std::unique_ptr<Window> window);
+    void add(std::shared_ptr<Window> window);
 
     void remove(Window &window) noexcept;
 
     void render(hires_utc_clock::time_point displayTimePoint) noexcept {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
 
         for (auto &window: windows) {
             window->render(displayTimePoint);
@@ -76,11 +79,9 @@ public:
     }
 
 protected:
-    mutable unfair_recursive_mutex mutex;
-
     /** A list of windows managed by this device.
      */
-    std::vector<std::unique_ptr<Window>> windows;
+    std::vector<std::shared_ptr<Window>> windows;
 };
 
 }

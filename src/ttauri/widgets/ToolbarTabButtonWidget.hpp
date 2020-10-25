@@ -22,7 +22,12 @@ public:
     observable<std::u8string> label;
 
     template<typename V, typename... Args>
-    ToolbarTabButtonWidget(Window &window, Widget *parent, V &&value, l10n const &fmt, Args const &... args) noexcept :
+    ToolbarTabButtonWidget(
+        Window &window,
+        std::shared_ptr<Widget> parent,
+        V &&value,
+        l10n const &fmt,
+        Args const &... args) noexcept :
         Widget(window, parent), value(std::forward<V>(value)), label(format(fmt, args...))
     {
         _value_callback = scoped_callback(value, [this](auto...) {
@@ -34,12 +39,12 @@ public:
     }
 
     template<typename V>
-    ToolbarTabButtonWidget(Window &window, Widget *parent, V &&value) noexcept :
+    ToolbarTabButtonWidget(Window &window, std::shared_ptr<Widget> parent, V &&value) noexcept :
         ToolbarTabButtonWidget(window, parent, std::forward<V>(value), l10n{})
     {
     }
 
-    ToolbarTabButtonWidget(Window &window, Widget *parent) noexcept :
+    ToolbarTabButtonWidget(Window &window, std::shared_ptr<Widget> parent) noexcept :
         ToolbarTabButtonWidget(window, parent, observable<int>{}, l10n{})
     {
     }
@@ -48,7 +53,7 @@ public:
 
     [[nodiscard]] bool update_constraints() noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (Widget::update_constraints()) {
             label_cell = std::make_unique<TextCell>(*label, theme->labelStyle);
@@ -66,7 +71,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(request_relayout, false);
         if (need_layout) {
@@ -81,7 +86,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawButton(context);
         draw_label(context);
@@ -91,7 +96,7 @@ public:
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_mouse_event(event);
         
         if (event.cause.leftButton) {
@@ -110,7 +115,7 @@ public:
 
     bool handle_command(command command) noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_command(command);
 
         if (*enabled) {
@@ -126,10 +131,10 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
 
         if (p_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{weak_from_this(), p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }
@@ -137,7 +142,7 @@ public:
 
     [[nodiscard]] bool accepts_focus() const noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return *enabled;
     }
 
@@ -151,27 +156,27 @@ private:
     void drawFocusLine(DrawContext const &context) noexcept
     {
         if (focus && window.active && *value == ActiveValue) {
-            tt_assume(dynamic_cast<class ToolbarWidget *>(parent) != nullptr);
+            auto parent_ = parent.lock();
+            tt_assume(std::dynamic_pointer_cast<class ToolbarWidget>(parent_) != nullptr);
 
             // Draw the focus line over the full width of the window at the bottom
             // of the toolbar.
-            auto parentContext = parent->make_draw_context(context);
+            auto parentContext = parent_->make_draw_context(context);
 
             // Draw the line above every other direct child of the toolbar, and between
             // the selected-tab (0.6) and unselected-tabs (0.8).
             parentContext.transform = mat::T(0.0f, 0.0f, 1.7f) * parentContext.transform;
 
             parentContext.fillColor = theme->accentColor;
-            parentContext.drawFilledQuad(aarect{
-                parent->rectangle().x(), parent->rectangle().y(),
-                parent->rectangle().width(), 1.0f
+            parentContext.drawFilledQuad(
+                aarect{parent_->rectangle().x(), parent_->rectangle().y(), parent_->rectangle().width(), 1.0f
             });
         }
     }
 
     void drawButton(DrawContext context) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         if (focus && window.active) {
             // The focus line will be placed at 0.7.
             context.transform = mat::T(0.0f, 0.0f, 0.8f) * context.transform;
@@ -180,8 +185,7 @@ private:
         }
 
         // Override the clipping rectangle to match the toolbar.
-        ttlet parent_lock = std::scoped_lock(parent->mutex);
-        context.clippingRectangle = parent->window_rectangle();
+        context.clippingRectangle = parent.lock()->window_rectangle();
 
         if (hover || *value == ActiveValue) {
             context.fillColor = theme->fillColor(p_semantic_layer - 2);
@@ -201,7 +205,7 @@ private:
 
     void draw_label(DrawContext context) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         context.transform = mat::T(0.0f, 0.0f, 0.9f) * context.transform;
 

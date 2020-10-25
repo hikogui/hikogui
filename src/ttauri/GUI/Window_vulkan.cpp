@@ -20,8 +20,8 @@ namespace tt {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(WindowDelegate *delegate, Label &&title) :
-    Window_base(delegate, std::move(title)), nrSwapchainImages(0), swapchainImageFormat()
+Window_vulkan::Window_vulkan(GUISystem &system, WindowDelegate *delegate, Label &&title) :
+    Window_base(system, delegate, std::move(title)), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
 
@@ -31,7 +31,10 @@ Window_vulkan::~Window_vulkan()
 
 void Window_vulkan::initialize()
 {
-    ttlet lock = std::scoped_lock(mutex);
+    // This function is called just after construction in single threaded mode,
+    // and therefor should not have a lock on the window.
+    tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
+    tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
 
     Window_base::initialize();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
@@ -43,25 +46,25 @@ void Window_vulkan::initialize()
 
 void Window_vulkan::waitIdle()
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-    tt_assert(device);
+    tt_assert(_device);
     if (renderFinishedFence) {
-        device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        _device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
     }
-    device->waitIdle();
+    _device->waitIdle();
     LOG_INFO("/waitIdle");
 }
 
 std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
     //LOG_DEBUG("acquireNextImage '{}'", title);
-    tt_assert(device);
-    ttlet result = device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
+    tt_assert(_device);
+    ttlet result = _device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
     //LOG_DEBUG("acquireNextImage {}", frameBufferIndex);
 
     switch (result) {
@@ -97,9 +100,9 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
 void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
-    auto lock = std::scoped_lock(mutex);
+    auto lock = std::scoped_lock(GUISystem_mutex);
 
-    tt_assume(device);
+    tt_assume(_device);
 
     std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { semaphore };
     std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
@@ -108,7 +111,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 
     try {
         //LOG_DEBUG("presentQueue {}", presentImageIndices.at(0));
-        ttlet result = device->presentQueue.presentKHR({
+        ttlet result = _device->presentQueue.presentKHR({
             numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
             numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
         });
@@ -143,15 +146,15 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 
 void Window_vulkan::build()
 {
-    auto lock = std::scoped_lock(mutex);
+    auto lock = std::scoped_lock(GUISystem_mutex);
 
     if (state == State::NoDevice) {
-        if (device) {
-            flatPipeline->buildForNewDevice(device);
-            boxPipeline->buildForNewDevice(device);
-            imagePipeline->buildForNewDevice(device);
-            SDFPipeline->buildForNewDevice(device);
-            toneMapperPipeline->buildForNewDevice(device);
+        if (_device) {
+            flatPipeline->buildForNewDevice(_device);
+            boxPipeline->buildForNewDevice(_device);
+            imagePipeline->buildForNewDevice(_device);
+            SDFPipeline->buildForNewDevice(_device);
+            toneMapperPipeline->buildForNewDevice(_device);
             state = State::NoSurface;
         }
     }
@@ -208,7 +211,7 @@ void Window_vulkan::build()
 
 void Window_vulkan::teardown()
 {
-    auto lock = std::scoped_lock(mutex);
+    auto lock = std::scoped_lock(GUISystem_mutex);
 
     auto nextState = state;
 
@@ -268,7 +271,7 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 {
-    auto lock = std::scoped_lock(mutex);
+    auto lock = std::scoped_lock(GUISystem_mutex);
 
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
@@ -279,39 +282,35 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         return;
     }
 
-    {
-        ttlet widget_lock = std::scoped_lock(widget->mutex);
+    // Update the size constraints of the WindowWidget and it children.
+    auto constraints_have_changed = widget->update_constraints();
 
-        // Update the size constraints of the WindowWidget and it children.
-        auto constraints_have_changed = widget->update_constraints();
+    // Check if the window size matches the preferred size of the WindowWidget.
+    // If not ask the operating system to change the size of the window, which is
+    // done asynchronously.
+    //
+    // We need to continue drawing into the incorrectly sized window, otherwise
+    // Vulkan will not detect the change of drawing surface's size.
+    //
+    // Make sure the widget does have its window rectangle match the constraints, otherwise
+    // the logic for layout and drawing becomes complicated.
+    ttlet preferred_size = widget->preferred_size();
+    if (requestResize.exchange(false) || currentWindowExtent << preferred_size) {
+        setWindowSize(currentWindowExtent = preferred_size.minimum());
+    } else if (currentWindowExtent >> preferred_size) {
+        setWindowSize(currentWindowExtent = preferred_size.maximum());
+    }
+    widget->set_layout_parameters(aarect{currentWindowExtent}, aarect{currentWindowExtent});
 
-        // Check if the window size matches the preferred size of the WindowWidget.
-        // If not ask the operating system to change the size of the window, which is
-        // done asynchronously.
-        //
-        // We need to continue drawing into the incorrectly sized window, otherwise
-        // Vulkan will not detect the change of drawing surface's size.
-        //
-        // Make sure the widget does have its window rectangle match the constraints, otherwise
-        // the logic for layout and drawing becomes complicated.
-        ttlet preferred_size = widget->preferred_size();
-        if (requestResize.exchange(false) || currentWindowExtent << preferred_size) {
-            setWindowSize(currentWindowExtent = preferred_size.minimum());
-        } else if (currentWindowExtent >> preferred_size) {
-            setWindowSize(currentWindowExtent = preferred_size.maximum());
-        }
-        widget->set_layout_parameters(aarect{currentWindowExtent}, aarect{currentWindowExtent});
+    // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
+    ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;
 
-        // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
-        ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;
+    // Make sure the widget's layout is updated before draw, but after window resize.
+    auto need_redraw = widget->update_layout(displayTimePoint, need_layout);
+    need_redraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
 
-        // Make sure the widget's layout is updated before draw, but after window resize.
-        auto need_redraw = widget->update_layout(displayTimePoint, need_layout);
-        need_redraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
-
-        if (!need_redraw) {
-            return;
-        }
+    if (!need_redraw) {
+        return;
     }
 
     struct window_render_tag {};
@@ -330,11 +329,11 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     tr.set<frame_buffer_index_tag>(frameBufferIndex);
 
     // Wait until previous rendering has finished, before the next rendering.
-    tt_assert(device);
-    device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    tt_assert(_device);
+    _device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
-    device->resetFences({ renderFinishedFence });
+    _device->resetFences({ renderFinishedFence });
 
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
@@ -347,17 +346,14 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     );
     drawContext.transform = drawContext.transform * mat::T{0.5, 0.5};
 
-    {
-        ttlet widget_lock = std::scoped_lock(widget->mutex);
-        widget->draw(drawContext, displayTimePoint);
-    }
+    widget->draw(drawContext, displayTimePoint);
 
     fillCommandBuffer(frameBuffer);
     submitCommandBuffer();
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
-    device->graphicsQueue.submit(0, nullptr, renderFinishedFence);
+    _device->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
     presentImageToQueue(frameBufferIndex, renderFinishedSemaphore);
 
@@ -367,6 +363,8 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 
 void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 {
+    tt_assume(GUISystem_mutex.recurse_lock_count());
+
     struct fill_command_buffer_tag {};
     auto t = trace<fill_command_buffer_tag>{};
 
@@ -374,10 +372,7 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
     ttlet colorClearValue = vk::ClearColorValue{
-        static_cast<std::array<float,4>>([this]() {
-            ttlet lock = std::scoped_lock(widget->mutex);
-            return widget->backgroundColor();
-        }())
+        static_cast<std::array<float,4>>(widget->backgroundColor())
     };
     ttlet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
     ttlet clearValues = std::array{
@@ -417,6 +412,8 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 
 void Window_vulkan::submitCommandBuffer()
 {
+    tt_assume(GUISystem_mutex.recurse_lock_count());
+
     ttlet waitSemaphores = std::array{
         imageAvailableSemaphore
     };
@@ -438,17 +435,17 @@ void Window_vulkan::submitCommandBuffer()
         }
     };
 
-    tt_assume(device != nullptr);
-    device->graphicsQueue.submit(submitInfo, vk::Fence());
+    tt_assume(_device != nullptr);
+    _device->graphicsQueue.submit(submitInfo, vk::Fence());
 }
 
 std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
-    tt_assert(device);
-    surfaceCapabilities = device->getSurfaceCapabilitiesKHR(intrinsic);
+    tt_assert(_device);
+    surfaceCapabilities = _device->getSurfaceCapabilitiesKHR(intrinsic);
 
     LOG_INFO("minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {})",
         surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height,
@@ -475,6 +472,8 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
 
 bool Window_vulkan::readSurfaceExtent()
 {
+    tt_assume(GUISystem_mutex.recurse_lock_count());
+
     try {
         std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
 
@@ -484,7 +483,6 @@ bool Window_vulkan::readSurfaceExtent()
     }
 
     tt_assume(widget);
-    ttlet widget_lock = std::scoped_lock(widget->mutex);
     ttlet widget_size = widget->preferred_size();
     ttlet minimum_widget_size = widget_size.minimum();
     ttlet maximum_widget_size = widget_size.maximum();
@@ -518,6 +516,8 @@ bool Window_vulkan::readSurfaceExtent()
 
 bool Window_vulkan::checkSurfaceExtent()
 {
+    tt_assume(GUISystem_mutex.recurse_lock_count());
+
     try {
         ttlet [nrImages, extent] = getImageCountAndExtent();
         return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent == swapchainImageExtent);
@@ -530,31 +530,34 @@ bool Window_vulkan::checkSurfaceExtent()
 
 void Window_vulkan::buildDevice()
 {
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 }
 
 bool Window_vulkan::buildSurface()
 {
+    tt_assume(GUISystem_mutex.recurse_lock_count());
+
     intrinsic = getSurface();
 
-    tt_assert(device);
-    return device->score(intrinsic) > 0;
+    tt_assert(_device);
+    return _device->score(intrinsic) > 0;
 }
 
 Window_base::State Window_vulkan::buildSwapchain()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    tt_assume(device);
+    tt_assume(_device);
 
     LOG_INFO("Building swap chain");
 
-    ttlet sharingMode = device->graphicsQueueFamilyIndex == device->presentQueueFamilyIndex ?
+    ttlet sharingMode = _device->graphicsQueueFamilyIndex == _device->presentQueueFamilyIndex ?
         vk::SharingMode::eExclusive :
         vk::SharingMode::eConcurrent;
 
-    std::array<uint32_t, 2> const sharingQueueFamilyAllIndices = { device->graphicsQueueFamilyIndex, device->presentQueueFamilyIndex };
+    std::array<uint32_t, 2> const sharingQueueFamilyAllIndices = { _device->graphicsQueueFamilyIndex, _device->presentQueueFamilyIndex };
 
-    swapchainImageFormat = device->bestSurfaceFormat;
+    swapchainImageFormat = _device->bestSurfaceFormat;
     vk::SwapchainCreateInfoKHR swapchainCreateInfo{
         vk::SwapchainCreateFlagsKHR(),
         intrinsic,
@@ -569,12 +572,12 @@ Window_base::State Window_vulkan::buildSwapchain()
         sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices.data() : nullptr,
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        device->bestSurfacePresentMode,
+        _device->bestSurfacePresentMode,
         VK_TRUE, // clipped
         nullptr
     };
         
-    vk::Result const result = device->createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
+    vk::Result const result = _device->createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
     switch (result) {
     case vk::Result::eSuccess:
         break;
@@ -604,15 +607,15 @@ Window_base::State Window_vulkan::buildSwapchain()
         1, // arrayLayers
         vk::SampleCountFlagBits::e1,
         vk::ImageTiling::eOptimal,
-        vk::ImageUsageFlagBits::eDepthStencilAttachment | device->transientImageUsageFlags,
+        vk::ImageUsageFlagBits::eDepthStencilAttachment | _device->transientImageUsageFlags,
         vk::SharingMode::eExclusive,
         0, nullptr,
         vk::ImageLayout::eUndefined
     };
 
     VmaAllocationCreateInfo depthAllocationCreateInfo = {};
-    depthAllocationCreateInfo.usage = device->lazyMemoryUsage;
-    std::tie(depthImage, depthImageAllocation) = device->createImage(depthImageCreateInfo, depthAllocationCreateInfo);
+    depthAllocationCreateInfo.usage = _device->lazyMemoryUsage;
+    std::tie(depthImage, depthImageAllocation) = _device->createImage(depthImageCreateInfo, depthAllocationCreateInfo);
 
     // Create color image matching the swapchain.
     vk::ImageCreateInfo const colorImageCreateInfo = {
@@ -624,34 +627,34 @@ Window_base::State Window_vulkan::buildSwapchain()
         1, // arrayLayers
         vk::SampleCountFlagBits::e1,
         vk::ImageTiling::eOptimal,
-        vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment | device->transientImageUsageFlags,
+        vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment | _device->transientImageUsageFlags,
         vk::SharingMode::eExclusive,
         0, nullptr,
         vk::ImageLayout::eUndefined
     };
     
     VmaAllocationCreateInfo colorAllocationCreateInfo = {};
-    colorAllocationCreateInfo.usage = device->lazyMemoryUsage;
-    std::tie(colorImage, colorImageAllocation) = device->createImage(colorImageCreateInfo, colorAllocationCreateInfo);
+    colorAllocationCreateInfo.usage = _device->lazyMemoryUsage;
+    std::tie(colorImage, colorImageAllocation) = _device->createImage(colorImageCreateInfo, colorAllocationCreateInfo);
     
     return State::ReadyToRender;
 }
 
 void Window_vulkan::teardownSwapchain()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    tt_assert(device);
-    device->destroy(swapchain);
-    device->destroyImage(depthImage, depthImageAllocation);
-    device->destroyImage(colorImage, colorImageAllocation);
+    tt_assert(_device);
+    _device->destroy(swapchain);
+    _device->destroyImage(depthImage, depthImageAllocation);
+    _device->destroyImage(colorImage, colorImageAllocation);
 }
 
 void Window_vulkan::buildFramebuffers()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    depthImageView = device->createImageView({
+    depthImageView = _device->createImageView({
         vk::ImageViewCreateFlags(),
         depthImage,
         vk::ImageViewType::e2D,
@@ -660,7 +663,7 @@ void Window_vulkan::buildFramebuffers()
         { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 }
     });
 
-    colorImageView = device->createImageView({
+    colorImageView = _device->createImageView({
         vk::ImageViewCreateFlags(),
         colorImage,
         vk::ImageViewType::e2D,
@@ -675,10 +678,10 @@ void Window_vulkan::buildFramebuffers()
         vk::ImageLayout::eShaderReadOnlyOptimal
     };
 
-    tt_assert(device);
-    swapchainImages = device->getSwapchainImagesKHR(swapchain);
+    tt_assert(_device);
+    swapchainImages = _device->getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
-        ttlet swapchainImageView = device->createImageView({
+        ttlet swapchainImageView = _device->createImageView({
             vk::ImageViewCreateFlags(),
             image,
             vk::ImageViewType::e2D,
@@ -695,7 +698,7 @@ void Window_vulkan::buildFramebuffers()
             depthImageView
         };
 
-        ttlet framebuffer = device->createFramebuffer({
+        ttlet framebuffer = _device->createFramebuffer({
             vk::FramebufferCreateFlags(),
             renderPass,
             numeric_cast<uint32_t>(attachments.size()),
@@ -713,26 +716,26 @@ void Window_vulkan::buildFramebuffers()
 
 void Window_vulkan::teardownFramebuffers()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    tt_assert(device);
+    tt_assert(_device);
     for (auto frameBuffer : swapchainFramebuffers) {
-        device->destroy(frameBuffer);
+        _device->destroy(frameBuffer);
     }
     swapchainFramebuffers.clear();
 
     for (auto imageView : swapchainImageViews) {
-        device->destroy(imageView);
+        _device->destroy(imageView);
     }
     swapchainImageViews.clear();
 
-    device->destroy(depthImageView);
-    device->destroy(colorImageView);
+    _device->destroy(depthImageView);
+    _device->destroy(colorImageView);
 }
 
 void Window_vulkan::buildRenderPasses()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     ttlet attachmentDescriptions = std::array{
         vk::AttachmentDescription{ // Swapchain attachment.
@@ -905,50 +908,50 @@ void Window_vulkan::buildRenderPasses()
         subpassDependency.data() // dependencies
     };
 
-    tt_assert(device);
-    renderPass = device->createRenderPass(renderPassCreateInfo);
+    tt_assert(_device);
+    renderPass = _device->createRenderPass(renderPassCreateInfo);
 }
 
 void Window_vulkan::teardownRenderPasses()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    tt_assert(device);
-    device->destroy(renderPass);
+    tt_assert(_device);
+    _device->destroy(renderPass);
 }
 
 void Window_vulkan::buildSemaphores()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    tt_assert(device);
-    imageAvailableSemaphore = device->createSemaphore({});
-    renderFinishedSemaphore = device->createSemaphore({});
+    tt_assert(_device);
+    imageAvailableSemaphore = _device->createSemaphore({});
+    renderFinishedSemaphore = _device->createSemaphore({});
 
     // This fence is used to wait for the Window and its Pipelines to be idle.
     // It should therefor be signed at the start so that when no rendering has been
     // done it is still idle.
-    renderFinishedFence = device->createFence({ vk::FenceCreateFlagBits::eSignaled });
+    renderFinishedFence = _device->createFence({ vk::FenceCreateFlagBits::eSignaled });
 }
 
 void Window_vulkan::teardownSemaphores()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    tt_assert(device);
-    device->destroy(renderFinishedSemaphore);
-    device->destroy(imageAvailableSemaphore);
-    device->destroy(renderFinishedFence);
+    tt_assert(_device);
+    _device->destroy(renderFinishedSemaphore);
+    _device->destroy(imageAvailableSemaphore);
+    _device->destroy(renderFinishedFence);
 }
 
 void Window_vulkan::buildCommandBuffers()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    tt_assume(device != nullptr);
+    tt_assume(_device);
 
-    ttlet commandBuffers = device->allocateCommandBuffers({
-        device->graphicsCommandPool, 
+    ttlet commandBuffers = _device->allocateCommandBuffers({
+        _device->graphicsCommandPool, 
         vk::CommandBufferLevel::ePrimary, 
         1
     });
@@ -958,25 +961,25 @@ void Window_vulkan::buildCommandBuffers()
 
 void Window_vulkan::teardownCommandBuffers()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
     ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
-    tt_assume(device != nullptr);
-    device->freeCommandBuffers(device->graphicsCommandPool, commandBuffers);
+    tt_assume(_device);
+    _device->freeCommandBuffers(_device->graphicsCommandPool, commandBuffers);
 }
 
 void Window_vulkan::teardownSurface()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     application->gui->destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    device = nullptr;
+    _device = nullptr;
 }
 
 }

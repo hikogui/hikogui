@@ -52,15 +52,22 @@ public:
     ~unfair_recursive_mutex() = default;
 
     /** This function should be used in tt_assume() to check if the lock is held by current thread.
+     *
+     * @return The number of recursive locks the current thread has taken.
+     * @retval 0 The current thread does not have a lock, or no-thread have a lock.
      */
-    [[nodiscard]] bool is_locked_by_current_thread() const noexcept {
+    [[nodiscard]] int recurse_lock_count() const noexcept {
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
         //
         // This only works for comparing the owner with the current thread, it would
         // not work to check the owner with a thread_id of another thread.
-        return owner.load(std::memory_order::memory_order_acquire) == current_thread_id();
+        if (owner.load(std::memory_order::memory_order_acquire) == current_thread_id()) {
+            return count;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -140,7 +147,7 @@ public:
 
     void unlock() noexcept {
         // FIRST | OWNER
-        tt_assume2(is_locked_by_current_thread(), "Unlock must be called on the thread that locked the mutex");
+        tt_assume2(recurse_lock_count(), "Unlock must be called on the thread that locked the mutex");
 
         if (--count == 0) {
             // FIRST

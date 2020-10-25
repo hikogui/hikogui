@@ -17,7 +17,7 @@ namespace tt {
 
 class WindowTrafficLightsWidget final : public Widget {
 public:
-    WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept;
+    WindowTrafficLightsWidget(Window &window, std::shared_ptr<Widget> parent) noexcept;
     ~WindowTrafficLightsWidget() {}
 
     [[nodiscard]] bool update_constraints() noexcept override;

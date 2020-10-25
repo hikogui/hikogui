@@ -108,7 +108,7 @@ public:
 
     GUIDevice &device() const noexcept
     {
-        auto device = window().device;
+        auto device = window().device();
         tt_assume(device);
         return *device;
     }

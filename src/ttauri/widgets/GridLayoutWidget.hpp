@@ -15,18 +15,23 @@ namespace tt {
 
 class GridLayoutWidget : public ContainerWidget {
 public:
-    GridLayoutWidget(Window &window, Widget *parent, GridLayoutDelegate *delegate = nullptr) noexcept :
+    GridLayoutWidget(Window &window, std::shared_ptr<Widget> parent, GridLayoutDelegate *delegate = nullptr) noexcept :
         ContainerWidget(window, parent), delegate(delegate)
     {
-        if (delegate) {
-            delegate->openingWidget(*this);
-        }
+        
     }
 
     ~GridLayoutWidget()
     {
         if (delegate) {
-            delegate->closingWidget(*this);
+            delegate->closingWidget();
+        }
+    }
+
+    void initialize() noexcept override
+    {
+        if (delegate) {
+            delegate->openingWidget(std::static_pointer_cast<GridLayoutWidget>(shared_from_this()));
         }
     }
 
@@ -35,16 +40,18 @@ public:
 
     /* Add a widget to the grid.
      */
-    Widget &addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept;
+    std::shared_ptr<Widget> add_widget(cell_address address, std::shared_ptr<Widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
      *
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, typename... Args>
-    T &makeWidgetAtAddress(cell_address address, Args &&... args)
+    std::shared_ptr<T> make_widget_at_address(cell_address address, Args &&... args)
     {
-        return static_cast<T &>(addWidget(address, std::make_unique<T>(window, this, std::forward<Args>(args)...)));
+        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        tmp->initialize();
+        return std::static_pointer_cast<T>(add_widget(address, std::move(tmp)));
     }
 
     /** Add a widget directly to this widget.
@@ -52,17 +59,17 @@ public:
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, cell_address CellAddress, typename... Args>
-    T &makeWidget(Args &&... args)
+    std::shared_ptr<T> make_widget(Args &&... args)
     {
-        return makeWidgetAtAddress<T>(CellAddress, std::forward<Args>(args)...);
+        return make_widget_at_address<T>(CellAddress, std::forward<Args>(args)...);
     }
 
 private:
     struct cell {
         cell_address address;
-        Widget *widget;
+        std::shared_ptr<Widget> widget;
 
-        cell(cell_address address, Widget *widget) noexcept : address(address), widget(widget) {}
+        cell(cell_address address, std::shared_ptr<Widget> widget) noexcept : address(address), widget(std::move(widget)) {}
 
         [[nodiscard]] aarect rectangle(flow_layout const &columns, flow_layout const &rows) const noexcept
         {

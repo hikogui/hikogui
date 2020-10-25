@@ -35,18 +35,67 @@ public:
 
     SelectionWidget(
         Window &window,
-        Widget *parent,
+        std::shared_ptr<Widget> parent,
         value_type const &value = {},
         option_list_type const &option_list = {},
         label_type const &label = l10n(u8"<unknown>")) noexcept :
         Widget(window, parent),
         value(value),
         option_list(option_list),
-        label(label),
-        overlay_widget(std::make_unique<overlay_view_widget>(window, this)),
-        scroll_widget(overlay_widget->makeWidget<VerticalScrollViewWidget<>>()),
-        column_widget(scroll_widget.makeWidget<ColumnLayoutWidget>())
+        label(label)
     {
+    }
+
+    template<typename... Args>
+    SelectionWidget(
+        Window &window,
+        std::shared_ptr<Widget> parent,
+        value_type const &value,
+        option_list_type const &option_list,
+        l10n const &fmt,
+        Args const &... args) noexcept :
+        SelectionWidget(window, parent, value, option_list, format(fmt, args...))
+    {
+    }
+
+    template<typename... Args>
+    SelectionWidget(
+        Window &window,
+        std::shared_ptr<Widget> parent,
+        option_list_type const &option_list,
+        l10n const &fmt,
+        Args const &... args) noexcept :
+        SelectionWidget(window, parent, value_type{}, option_list, format(fmt, args...))
+    {
+    }
+
+    template<typename... Args>
+    SelectionWidget(
+        Window &window,
+        std::shared_ptr<Widget> parent,
+        value_type const &value,
+        l10n const &fmt,
+        Args const &... args) noexcept :
+        SelectionWidget(window, parent, value, option_list_type{}, format(fmt, args...))
+    {
+    }
+
+    template<typename... Args>
+    SelectionWidget(Window &window, std::shared_ptr<Widget> parent, l10n const &fmt, Args const &... args) noexcept :
+        SelectionWidget(window, parent, value_type{}, option_list_type{}, format(fmt, args...))
+    {
+    }
+
+    ~SelectionWidget() {}
+
+    void initialize() noexcept override
+    {
+        overlay_widget = std::make_shared<overlay_view_widget>(window, shared_from_this());
+        overlay_widget->initialize();
+
+        scroll_widget = overlay_widget->make_widget<VerticalScrollViewWidget<>>();
+        column_widget = scroll_widget->make_widget<ColumnLayoutWidget>();
+
         repopulate_options();
 
         _value_callback = scoped_callback(this->value, [this](auto...) {
@@ -61,50 +110,12 @@ public:
         });
     }
 
-    template<typename... Args>
-    SelectionWidget(
-        Window &window,
-        Widget *parent,
-        value_type const &value,
-        option_list_type const &option_list,
-        l10n const &fmt,
-        Args const &... args) noexcept :
-        SelectionWidget(window, parent, value, option_list, format(fmt, args...))
-    {
-    }
-
-    template<typename... Args>
-    SelectionWidget(
-        Window &window,
-        Widget *parent,
-        option_list_type const &option_list,
-        l10n const &fmt,
-        Args const &... args) noexcept :
-        SelectionWidget(window, parent, value_type{}, option_list, format(fmt, args...))
-    {
-    }
-
-    template<typename... Args>
-    SelectionWidget(Window &window, Widget *parent, value_type const &value, l10n const &fmt, Args const &... args) noexcept :
-        SelectionWidget(window, parent, value, option_list_type{}, format(fmt, args...))
-    {
-    }
-
-    template<typename... Args>
-    SelectionWidget(Window &window, Widget *parent, l10n const &fmt, Args const &... args) noexcept :
-        SelectionWidget(window, parent, value_type{}, option_list_type{}, format(fmt, args...))
-    {
-    }
-
-    ~SelectionWidget() {}
-
     [[nodiscard]] bool update_constraints() noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         auto updated = Widget::update_constraints();
         if (selecting) {
-            ttlet child_lock = std::scoped_lock(overlay_widget->mutex);
             updated |= overlay_widget->update_constraints();
         }
 
@@ -133,13 +144,11 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(request_relayout, false);
 
         if (selecting) {
-            ttlet child_lock = std::scoped_lock(overlay_widget->mutex);
-
             if (need_layout) {
                 // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
                 // from the point of view of the selection widget.
@@ -176,7 +185,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawOutline(context);
         drawLeftBox(context);
@@ -184,7 +193,6 @@ public:
         drawValue(context);
 
         if (selecting) {
-            ttlet child_lock = std::scoped_lock(overlay_widget->mutex);
             overlay_widget->draw(overlay_widget->make_draw_context(context), display_time_point);
         }
 
@@ -193,7 +201,7 @@ public:
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
@@ -209,7 +217,7 @@ public:
 
     bool handle_command(command command) noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto handled = Widget::handle_command(command);
 
         if (*enabled) {
@@ -225,7 +233,7 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         ttlet position = from_window_transform * window_position;
 
         auto r = HitBox{};
@@ -235,7 +243,7 @@ public:
         }
 
         if (p_window_clipping_rectangle.contains(window_position)) {
-            r = std::max(r, HitBox{this, p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default});
+            r = std::max(r, HitBox{weak_from_this(), p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default});
         }
 
         return r;
@@ -243,7 +251,7 @@ public:
 
     [[nodiscard]] bool accepts_focus() const noexcept override
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
         return *enabled;
     }
 
@@ -251,13 +259,13 @@ public:
      */
     void repopulate_options() noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-        column_widget.clear();
+        column_widget->clear();
         ttlet option_list_ = *option_list;
         for (ttlet & [ tag, text ] : std::views::reverse(option_list_)) {
-            auto &button = column_widget.makeWidget<ButtonWidget>();
-            button.label = text;
+            auto button = column_widget->make_widget<ButtonWidget>();
+            button->label = text;
         }
     }
 
@@ -275,9 +283,9 @@ private:
     aarect chevrons_rectangle;
 
     bool selecting = false;
-    std::unique_ptr<overlay_view_widget> overlay_widget;
-    VerticalScrollViewWidget<> &scroll_widget;
-    ColumnLayoutWidget &column_widget;
+    std::shared_ptr<overlay_view_widget> overlay_widget;
+    std::shared_ptr<VerticalScrollViewWidget<>> scroll_widget;
+    std::shared_ptr<ColumnLayoutWidget> column_widget;
 
     [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
@@ -294,7 +302,7 @@ private:
 
     void drawOutline(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawContext.cornerShapes = Theme::roundingRadius;
         drawContext.drawBoxIncludeBorder(rectangle());
@@ -302,7 +310,7 @@ private:
 
     void drawLeftBox(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
         // if (*enabled && window.active) {
@@ -315,7 +323,7 @@ private:
 
     void drawChevrons(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawContext.transform = mat::T{0.0, 0.0, 0.2f} * drawContext.transform;
         drawContext.color = *enabled ? theme->foregroundColor : drawContext.fillColor;
@@ -324,7 +332,7 @@ private:
 
     void drawValue(DrawContext drawContext) noexcept
     {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
         drawContext.color = *enabled ? text_cell->style.color : drawContext.color;

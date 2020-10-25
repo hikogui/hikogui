@@ -9,11 +9,11 @@ namespace tt {
 
 class ContainerWidget : public Widget {
 public:
-    ContainerWidget(Window &window, Widget *parent) noexcept : Widget(window, parent)
+    ContainerWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : Widget(window, parent)
     {
         if (parent) {
             // Most containers will not draw itself, only its children.
-            ttlet lock = std::scoped_lock(parent->mutex);
+            ttlet lock = std::scoped_lock(GUISystem_mutex);
             p_semantic_layer = parent->semantic_layer();
         }
         p_margin = 0.0f;
@@ -25,7 +25,7 @@ public:
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
-    [[nodiscard]] Widget const *next_keyboard_widget(Widget const *currentKeyboardWidget, bool reverse) const noexcept override;
+    [[nodiscard]] std::shared_ptr<Widget> next_keyboard_widget(std::shared_ptr<Widget> const &currentKeyboardWidget, bool reverse) const noexcept override;
 
     /** Remove and deallocate all child widgets.
      */
@@ -38,21 +38,20 @@ public:
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    virtual Widget &addWidget(std::unique_ptr<Widget> childWidget) noexcept;
+    virtual std::shared_ptr<Widget> add_widget(std::shared_ptr<Widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
      */
     template<typename T, typename... Args>
-    T &makeWidget(Args &&... args)
+    std::shared_ptr<T> make_widget(Args &&... args)
     {
-        return static_cast<T &>(addWidget(std::make_unique<T>(window, this, std::forward<Args>(args)...)));
+        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        tmp->initialize();
+        return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
     }
 
 protected:
-    std::vector<std::unique_ptr<Widget>> children;
-
-private:
-    [[nodiscard]] std::vector<Widget *> childPointers(bool reverse) const noexcept;
+    std::vector<std::shared_ptr<Widget>> children;
 };
 
 } // namespace tt

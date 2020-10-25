@@ -12,7 +12,7 @@
 
 namespace tt {
 
-SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &icon) noexcept :
+SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, Image const &icon) noexcept :
     Widget(window, parent), iconCell(icon.makeCell())
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.
@@ -21,7 +21,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 
 [[nodiscard]] bool SystemMenuWidget::update_constraints() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     if (Widget::update_constraints()) {
         ttlet width = Theme::toolbarDecorationButtonWidth;
@@ -35,7 +35,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 
 [[nodiscard]] bool SystemMenuWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(request_relayout, false);
     if (need_layout) {
@@ -52,7 +52,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 
 void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     iconCell->draw(context, rectangle(), Alignment::MiddleCenter);
     Widget::draw(std::move(context), display_time_point);
@@ -60,12 +60,12 @@ void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point dis
 
 HitBox SystemMenuWidget::hitbox_test(vec window_position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
     if (p_window_clipping_rectangle.contains(window_position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return HitBox{this, p_draw_layer, HitBox::Type::ApplicationIcon};
+        return HitBox{weak_from_this(), p_draw_layer, HitBox::Type::ApplicationIcon};
     } else {
         return {};
     }

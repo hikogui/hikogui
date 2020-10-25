@@ -11,7 +11,7 @@ namespace tt {
 
 using namespace std::literals;
 
-LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::u8string const label) noexcept :
+LineInputWidget::LineInputWidget(Window &window, std::shared_ptr<Widget> parent, std::u8string const label) noexcept :
     Widget(window, parent), label(std::move(label)), field(theme->labelStyle), shapedText()
 {
 }
@@ -20,7 +20,7 @@ LineInputWidget::~LineInputWidget() {}
 
 bool LineInputWidget::update_constraints() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     if (Widget::update_constraints()) {
         ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
@@ -38,7 +38,7 @@ bool LineInputWidget::update_constraints() noexcept
 
 bool LineInputWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     auto need_redraw = need_layout |= std::exchange(request_relayout, false);
     need_redraw |= focus && display_time_point >= nextRedrawTimePoint;
@@ -67,7 +67,7 @@ bool LineInputWidget::update_layout(hires_utc_clock::time_point display_time_poi
 
 void LineInputWidget::dragSelect() noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     ttlet mouseInTextPosition = textInvTranslate * dragSelectPosition;
     switch (dragClickCount) {
@@ -157,7 +157,7 @@ void LineInputWidget::drawText(DrawContext context) const noexcept
 
 void LineInputWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_assume(mutex.is_locked_by_current_thread());
+    tt_assume(GUISystem_mutex.recurse_lock_count());
 
     nextRedrawTimePoint = display_time_point + blinkInterval;
     scrollText();
@@ -180,7 +180,7 @@ void LineInputWidget::draw(DrawContext context, hires_utc_clock::time_point disp
 
 bool LineInputWidget::handle_command(command command) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     auto handled = Widget::handle_command(command);
 
     LOG_DEBUG("LineInputWidget: Received command: {}", command);
@@ -212,7 +212,7 @@ bool LineInputWidget::handle_command(command command) noexcept
 
 bool LineInputWidget::handle_keyboard_event(KeyboardEvent const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
     auto handled = Widget::handle_keyboard_event(event);
 
@@ -238,7 +238,7 @@ bool LineInputWidget::handle_keyboard_event(KeyboardEvent const &event) noexcept
 
 bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     auto handled = Widget::handle_mouse_event(event);
 
     // Make sure we only scroll when dragging outside the widget.
@@ -312,10 +312,10 @@ bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
 
 HitBox LineInputWidget::hitbox_test(vec window_position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
     if (p_window_clipping_rectangle.contains(window_position)) {
-        return HitBox{this, p_draw_layer, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
+        return HitBox{weak_from_this(), p_draw_layer, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

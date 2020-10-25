@@ -22,7 +22,8 @@ public:
     observable<std::u8string> label;
 
     template<typename... Args>
-    LabelWidget(Window &window, Widget *parent, Alignment alignment, l10n const &fmt, Args const &... args) noexcept :
+    LabelWidget(Window &window, std::shared_ptr<Widget> parent, Alignment alignment, l10n const &fmt, Args const &... args) noexcept
+        :
         Widget(window, parent),
         alignment(alignment),
         label(format(fmt, args...))
@@ -33,17 +34,17 @@ public:
     }
 
     template<typename... Args>
-    LabelWidget(Window &window, Widget *parent, l10n const &fmt, Args const &... args) noexcept :
+    LabelWidget(Window &window, std::shared_ptr<Widget> parent, l10n const &fmt, Args const &... args) noexcept :
         LabelWidget(window, parent, Alignment::TopRight, fmt, args...) {}
 
-    LabelWidget(Window &window, Widget *parent, Alignment alignment) noexcept :
+    LabelWidget(Window &window, std::shared_ptr<Widget> parent, Alignment alignment) noexcept :
         LabelWidget(window, parent, alignment, l10n{}) {}
 
     ~LabelWidget() {
     }
 
     [[nodiscard]] bool update_constraints() noexcept override {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (Widget::update_constraints()) {
             labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
@@ -55,7 +56,7 @@ public:
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override {
-        tt_assume(mutex.is_locked_by_current_thread());
+        tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (*enabled) {
             context.color = theme->labelStyle.color;

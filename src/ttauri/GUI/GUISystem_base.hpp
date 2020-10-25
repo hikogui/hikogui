@@ -27,7 +27,7 @@ public:
     std::unique_ptr<VerticalSync> verticalSync;
 
     //! List of all devices.
-    std::vector<std::unique_ptr<GUIDevice>> devices;
+    std::vector<std::shared_ptr<GUIDevice>> devices;
 
     /*! Keep track of the numberOfWindows in the previous render cycle.
      * This way we can call closedLastWindow on the application once.
@@ -47,15 +47,24 @@ public:
     GUISystem_base(GUISystem_base &&) = delete;
     GUISystem_base &operator=(GUISystem_base &&) = delete;
 
-    virtual void initialize() noexcept(false) = 0;
+    /** Initialize after construction.
+     * Call this function directly after the constructor on the same thread.
+     */
+    virtual void initialize() = 0;
 
     template<typename T, typename... Args>
     T *makeWindow(Args &&... args)
     {
-        auto window = std::make_unique<T>(std::forward<Args>(args)...);
+        // This function should be called from the main thread from the main loop,
+        // and therefor should not have a lock on the window.
+        tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
+        tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+
+        auto window = std::make_shared<T>(static_cast<GUISystem &>(*this), std::forward<Args>(args)...);
         auto window_ptr = window.get();
         window->initialize();
 
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
         auto device = findBestDeviceForWindow(*window);
         if (!device) {
             TTAURI_THROW(gui_error("Could not find a vulkan-device matching this window"));
@@ -65,12 +74,13 @@ public:
         return window_ptr;
     }
 
-
     /*! Count the number of windows managed by the GUI.
      */
     ssize_t getNumberOfWindows();
 
     void render(hires_utc_clock::time_point displayTimePoint) {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
+
         for (auto &device: devices) {
             device->render(displayTimePoint);
         }
@@ -90,8 +100,6 @@ public:
     static void _handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 protected:
-    mutable unfair_recursive_mutex mutex;
-
     GUIDevice *findBestDeviceForWindow(Window const &window);
 };
 
