@@ -20,23 +20,24 @@ template<typename T>
 class observable {
 public:
     using value_type = T;
-    using notifier_type = notifier<value_type>;
+    using notifier_type = notifier<void(value_type)>;
     using callback_type = typename notifier_type::callback_type;
-    using callback_id_type = typename notifier_type::callback_id_type;
+    using callback_ptr_type = typename notifier_type::callback_ptr_type;
     using time_point = hires_utc_clock::time_point;
     using duration = hires_utc_clock::duration;
 
     observable(observable const &other) noexcept : pimpl(other.pimpl)
     {
-        pimpl_callback = scoped_callback(*pimpl, [this](ttlet &tmp) {
+        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
             this->notifier(tmp);
         });
     }
 
     observable &operator=(observable const &other) noexcept
     {
+        pimpl->unsubscribe(pimpl_callback);
         pimpl = other.pimpl;
-        pimpl_callback = scoped_callback(*pimpl, [this](ttlet &tmp) {
+        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
             this->notifier(tmp);
         });
         this->notifier(this->load());
@@ -169,14 +170,15 @@ public:
         return pimpl->store(new_value);
     }
 
-    [[nodiscard]] callback_id_type subscribe(callback_type callback) noexcept
+    template<typename Callback>
+    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
-        return notifier.subscribe(callback);
+        return notifier.subscribe(std::forward<Callback>(callback));
     }
 
-    void unsubscribe(callback_id_type id) noexcept
+    void unsubscribe(callback_ptr_type callback_ptr) noexcept
     {
-        return notifier.unsubscribe(id);
+        return notifier.unsubscribe(callback_ptr);
     }
 
     [[nodiscard]] friend observable<bool> operator!(observable const &rhs) noexcept
@@ -240,28 +242,29 @@ public:
 private:
     using pimpl_type = detail::observable_base<value_type>;
 
-    notifier_type notifier = {};
-    std::shared_ptr<pimpl_type> pimpl = {};
-    scoped_callback<pimpl_type> pimpl_callback = {};
+    notifier_type notifier;
+    std::shared_ptr<pimpl_type> pimpl;
+    typename pimpl_type::callback_ptr_type pimpl_callback;
 
-    observable(std::shared_ptr<detail::observable_base<value_type>> const &value) noexcept : pimpl(value)
+    observable(std::shared_ptr<detail::observable_base<value_type>> const &other) noexcept : pimpl(other)
     {
-        pimpl_callback = scoped_callback(*pimpl, [this](ttlet &tmp) {
+        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
             this->notifier(tmp);
         });
     }
 
-    observable(std::shared_ptr<detail::observable_base<value_type>> &&value) noexcept : pimpl(std::move(value))
+    observable(std::shared_ptr<detail::observable_base<value_type>> &&other) noexcept : pimpl(std::move(other))
     {
-        pimpl_callback = scoped_callback(*pimpl, [this](ttlet &tmp) {
+        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
             this->notifier(tmp);
         });
     }
 
-    observable &operator=(std::shared_ptr<detail::observable_base<value_type>> const &value) noexcept
+    observable &operator=(std::shared_ptr<detail::observable_base<value_type>> const &other) noexcept
     {
-        pimpl = value;
-        pimpl_callback = scoped_callback(*pimpl, [this](ttlet &tmp) {
+        pimpl->unsubscribe(pimpl_callback);
+        pimpl = other;
+        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
             this->notifier(tmp);
         });
 

@@ -553,7 +553,7 @@ protected:
     int p_logical_layer;
 
 private:
-    scoped_callback<decltype(enabled)> _enabled_callback;
+    typename decltype(enabled)::callback_ptr_type _enabled_callback;
 };
 
 } // namespace tt

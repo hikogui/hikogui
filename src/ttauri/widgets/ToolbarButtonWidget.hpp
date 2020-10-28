@@ -23,7 +23,7 @@ public:
     ToolbarButtonWidget(Window &window, std::shared_ptr<Widget> parent) noexcept :
         abstract_button_widget(window, parent)
     {
-        icon_callback = scoped_callback(this->icon, [this](auto...) {
+        icon_callback = this->icon.subscribe([this](auto...) {
             request_reconstrain = true;
         });
 
@@ -63,7 +63,7 @@ public:
     }
 
 private:
-    scoped_callback<decltype(icon)> icon_callback;
+    typename decltype(icon)::callback_ptr_type icon_callback;
     std::unique_ptr<ImageCell> icon_cell;
 
     void drawBackground(DrawContext context) noexcept

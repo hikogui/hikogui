@@ -31,12 +31,12 @@ public:
         false_value(std::move(false_value)),
         value(std::forward<Arg>(arg))
     {
-        _value_callback = {this->value, [this](auto...) {
-                                                               this->window.requestRedraw = true;
-                                                           }};
-        _callback = {*this, [this]() {
-                         this->toggle();
-                     }};
+        _value_callback = this->value.subscribe([this](auto...) {
+            this->window.requestRedraw = true;
+        });
+        _callback = subscribe([this]() {
+            this->toggle();
+        });
     }
 
     void toggle() noexcept
@@ -49,8 +49,8 @@ public:
     }
 
 private:
-    scoped_callback<decltype(value)> _value_callback;
-    scoped_callback<abstract_button_widget> _callback;
+    typename decltype(value)::callback_ptr_type _value_callback;
+    typename abstract_button_widget::callback_ptr_type _callback;
 };
 
 } // namespace tt

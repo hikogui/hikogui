@@ -37,13 +37,13 @@ public:
             std::move(false_value),
             std::forward<Value>(value))
     {
-        _true_label_callback = scoped_callback(true_label, [this](auto...) {
+        _true_label_callback = true_label.subscribe([this](auto...) {
             this->request_reconstrain = true;
         });
-        _false_label_callback = scoped_callback(false_label, [this](auto...) {
+        _false_label_callback = false_label.subscribe([this](auto...) {
             this->request_reconstrain = true;
         });
-        _other_label_callback = scoped_callback(other_label, [this](auto...) {
+        _other_label_callback = other_label.subscribe([this](auto...) {
             this->request_reconstrain = true;
         });
     }
@@ -112,9 +112,9 @@ public:
     }
 
 private:
-    scoped_callback<decltype(true_label)> _true_label_callback;
-    scoped_callback<decltype(false_label)> _false_label_callback;
-    scoped_callback<decltype(other_label)> _other_label_callback;
+    typename decltype(true_label)::callback_ptr_type _true_label_callback;
+    typename decltype(false_label)::callback_ptr_type _false_label_callback;
+    typename decltype(other_label)::callback_ptr_type _other_label_callback;
 
     std::unique_ptr<TextCell> _true_label_cell;
     std::unique_ptr<TextCell> _false_label_cell;

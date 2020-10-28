@@ -27,10 +27,10 @@ public:
         V &&value = observable<bool>{}) noexcept :
         abstract_bool_toggle_button_widget(window, parent, std::forward<V>(value))
     {
-        _on_label_callback = scoped_callback(this->on_label, [this](auto...) {
+        _on_label_callback = this->on_label.subscribe([this](auto...) {
             request_reconstrain = true;
         });
-        _off_label_callback = scoped_callback(this->off_label, [this](auto...) {
+        _off_label_callback = this->off_label.subscribe([this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -107,9 +107,9 @@ private:
     std::unique_ptr<TextCell> _off_label_cell;
     std::unique_ptr<TextCell> _other_label_cell;
 
-    scoped_callback<decltype(value)> _value_callback;
-    scoped_callback<decltype(on_label)> _on_label_callback;
-    scoped_callback<decltype(off_label)> _off_label_callback;
+    decltype(value)::callback_ptr_type _value_callback;
+    decltype(on_label)::callback_ptr_type _on_label_callback;
+    decltype(off_label)::callback_ptr_type _off_label_callback;
 
     void draw_rail(DrawContext drawContext) noexcept
     {

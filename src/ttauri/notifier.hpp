@@ -12,130 +12,109 @@
 
 namespace tt {
 
+template<typename T>
+class notifier {
+};
+
 /** A notifier which can be used to call a set of registered callbacks.
  * This class is thread-safe; however you must not use this object
  * from within the callback.
  *
+ * @tparam Result The result of calling the callback.
  * @tparam Args The argument types of the callback function.
  */
-template<typename... Args>
-class notifier {
+template<typename Result, typename... Args>
+class notifier<Result(Args...)> {
 public:
-    using callback_type = std::function<void(Args const &...)>;
-    using callback_id_type = size_t;
+    using callback_type = std::function<Result(Args const &...)>;
+    using callback_ptr_type = std::shared_ptr<callback_type>;
 
     /** Add a callback to the notifier.
-     * @param callback The callback to register.
+     * @param callback The callback-function to register.
      * @return An id used to unregister a callback from the notifier.
      */
-    callback_id_type subscribe(callback_type callback) noexcept
+    template<typename Callback>
+    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
+        auto callback_ptr = std::make_shared<callback_type>(std::forward<Callback>(callback));
+
         auto lock = std::scoped_lock(_mutex);
         tt_assert(!_executing_callbacks);
 
-        auto id = ++_counter;
-        _callbacks.emplace_back(id, std::move(callback));
-        return id;
-    }
-
-    /** Add a callback to the notifier and invoke it.
-     * @param callback The callback to register.
-     * @param args The arguments to pass with the invocation of the callback
-     * @return An id used to unregister a callback from the notifier.
-     */
-    callback_id_type add_and_call(callback_type callback, Args const &... args) noexcept
-    {
-        auto lock = std::scoped_lock(_mutex);
-
-        ttlet id = subscribe(callback);
-
-        _executing_callbacks = true;
-        callback(args...);
-        _executing_callbacks = false;
-
-        return id;
+        _callbacks.emplace_back(callback_ptr);
+        return callback_ptr;
     }
 
     /** Remove a callback from the notifier.
      * @param id The id returned from `add()` and `add_and_call()`.
      */
-    void unsubscribe(callback_id_type id) noexcept
+    void unsubscribe(std::shared_ptr<callback_type> const &callback_ptr) noexcept
     {
         auto lock = std::scoped_lock(_mutex);
         tt_assert(!_executing_callbacks);
 
-        ttlet new_end = std::remove_if(_callbacks.begin(), _callbacks.end(), [id](ttlet &item) {
-            return item.first == id;
+        ttlet new_end = std::remove_if(_callbacks.begin(), _callbacks.end(), [&callback_ptr](ttlet &item) {
+            return item.expired() || item.lock() == callback_ptr;
         });
         _callbacks.erase(new_end, _callbacks.cend());
     }
 
-    /** Call the registerd callbacks with the given arguments.
-     * @param args The arguments to pass with the invocation of the callback
+    /** Call the subscribed callbacks with the given arguments.
+     * @param args The arguments to pass with the invocation of the callback.
+     * @param op The binary operation to accumulate the results of the callbacks.
+     * @return The result of the callback, reduced.
      */
-    void operator()(Args const &... args) const noexcept
+    template<typename BinaryOp, typename Result_ = Result>
+    requires(!std::is_same_v<Result_, void>) Result_
+    operator()(Args const &... args, Result_ init = {}, BinaryOp op = std::plus) const noexcept
     {
         auto lock = std::scoped_lock(_mutex);
         tt_assert(!_executing_callbacks);
-
         _executing_callbacks = true;
-        for (ttlet & [ id, callback ] : _callbacks) {
-            callback(args...);
-        }
+
+        auto result = init;
+        auto i = _callbacks.begin();
+        while (i != _callbacks.end()) {
+            if (auto callback = i->lock()) {
+                result = op(result, (*callback)(args...));
+                ++i;
+
+            } else {
+                i = _callbacks.erase(i);
+            }
+        };
+        _executing_callbacks = false;
+
+        return result;
+    }
+
+    /** Call the subscribed callbacks with the given arguments.
+     * @param args The arguments to pass with the invocation of the callback
+     */
+    template<typename Result_ = Result>
+    requires(std::is_same_v<Result_, void>) void operator()(Args const &... args) const noexcept
+    {
+        auto lock = std::scoped_lock(_mutex);
+        tt_assert(!_executing_callbacks);
+        _executing_callbacks = true;
+
+        auto i = _callbacks.begin();
+        while (i != _callbacks.end()) {
+            if (auto callback = i->lock()) {
+                (*callback)(args...);
+                ++i;
+
+            } else {
+                i = _callbacks.erase(i);
+            }
+        };
         _executing_callbacks = false;
     }
 
 private:
     mutable unfair_recursive_mutex _mutex;
     mutable bool _executing_callbacks = false;
-    callback_id_type _counter = 0;
-    std::vector<std::pair<callback_id_type, callback_type>> _callbacks;
-};
-
-template<typename Notifier>
-class scoped_callback {
-public:
-    using notifier_type = Notifier;
-    using callback_type = typename notifier_type::callback_type;
-    using callback_id_type = typename notifier_type::callback_id_type;
-
-    constexpr scoped_callback() noexcept : _notifier(nullptr), _id() {}
-
-    scoped_callback(scoped_callback const &other) = delete;
-    scoped_callback &operator=(scoped_callback const &other) = delete;
-
-    constexpr scoped_callback(scoped_callback &&other) noexcept :
-        _notifier(other._notifier), _id(other._id)
-    {
-        other._notifier = nullptr;
-    }
-
-    constexpr scoped_callback &operator=(scoped_callback &&other) noexcept {
-        _notifier = std::exchange(other._notifier, nullptr);
-        _id = other._id;
-        return *this;
-    }
-
-    ~scoped_callback()
-    {
-        if (_notifier != nullptr) {
-            _notifier->unsubscribe(_id);
-        }
-    }
-
-    [[nodiscard]] scoped_callback(notifier_type &notifier, callback_type &&callback) noexcept :
-        _notifier(&notifier), _id(notifier.subscribe(std::move(callback)))
-    {
-    }
-
-    [[nodiscard]] scoped_callback(notifier_type &notifier, callback_type const &callback) noexcept :
-        _notifier(&notifier), _id(notifier.subscribe(callback))
-    {
-    }
-
-private:
-    callback_id_type _id;
-    notifier_type *_notifier;
+    mutable std::vector<std::weak_ptr<callback_type>> _callbacks;
 };
 
 } // namespace tt

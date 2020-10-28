@@ -19,11 +19,11 @@ public:
 
     ButtonWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : abstract_button_widget(window, parent)
     {
-        _label_callback = scoped_callback(label, [this](auto...) {
+        _label_callback = label.subscribe([this](auto...) {
             request_reconstrain = true;
         });
 
-        _button_callback = scoped_callback(*this, [this](auto...) {
+        _button_callback = subscribe([this](auto...) {
             this->clicked();
         });
     }
@@ -74,8 +74,8 @@ private:
     bool value = false;
     bool pressed = false;
     
-    scoped_callback<decltype(label)> _label_callback;
-    scoped_callback<ButtonWidget> _button_callback;
+    observable<std::u8string>::callback_ptr_type _label_callback;
+    callback_ptr_type _button_callback;
 
     std::unique_ptr<TextCell> labelCell;
 };

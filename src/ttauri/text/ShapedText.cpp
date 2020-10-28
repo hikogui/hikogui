@@ -446,10 +446,14 @@ ShapedText::ShapedText(
     }
 }
 
-/** Return the index at the left side of a word
-*/
 [[nodiscard]] std::pair<ssize_t,ssize_t> ShapedText::indicesOfParagraph(ssize_t logicalIndex) const noexcept
 {
+    tt_assume(size() != 0);
+    if (size() == 1) {
+        // One line with only a paragraph separator means this is empty.
+        return {0,0};
+    }
+
     auto i = find(logicalIndex);
 
     auto beginOfParagraph = i;

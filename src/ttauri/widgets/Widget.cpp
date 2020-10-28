@@ -21,7 +21,7 @@ Widget::Widget(Window &_window, std::shared_ptr<Widget> _parent) noexcept :
         p_semantic_layer = _parent->semantic_layer() + 1;
     }
 
-    _enabled_callback = scoped_callback(enabled, [this](auto...) {
+    _enabled_callback = enabled.subscribe([this](auto...) {
         window.requestRedraw = true;
     });
 

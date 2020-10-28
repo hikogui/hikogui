@@ -17,7 +17,7 @@ public:
         _operand(operand),
         _operand_cache(operand->load())
     {
-        _operand_callback = scoped_callback(*_operand, [this](OT const &value) {
+        _operand_callback = _operand->subscribe([this](OT const &value) {
             ttlet old_value = this->load();
             {
                 ttlet lock = std::scoped_lock(observable_base<T>::_mutex);
@@ -31,7 +31,7 @@ public:
 protected:
     std::shared_ptr<operand_type> _operand;
     OT _operand_cache;
-    scoped_callback<operand_type> _operand_callback;
+    typename operand_type::callback_ptr_type _operand_callback;
 };
 
 }

@@ -98,14 +98,14 @@ public:
 
         repopulate_options();
 
-        _value_callback = scoped_callback(this->value, [this](auto...) {
+        _value_callback = this->value.subscribe([this](auto...) {
             request_reconstrain = true;
         });
-        _option_list_callback = scoped_callback(this->option_list, [this](auto...) {
+        _option_list_callback = this->option_list.subscribe([this](auto...) {
             repopulate_options();
             request_reconstrain = true;
         });
-        _label_callback = scoped_callback(this->label, [this](auto...) {
+        _label_callback = this->label.subscribe([this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -270,9 +270,9 @@ public:
     }
 
 private:
-    scoped_callback<decltype(label)> _label_callback;
-    scoped_callback<decltype(value)> _value_callback;
-    scoped_callback<decltype(option_list)> _option_list_callback;
+    typename decltype(label)::callback_ptr_type _label_callback;
+    typename decltype(value)::callback_ptr_type _value_callback;
+    typename decltype(option_list)::callback_ptr_type _option_list_callback;
     
     std::unique_ptr<TextCell> text_cell;
 

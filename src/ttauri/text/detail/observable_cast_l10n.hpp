@@ -14,7 +14,7 @@ public:
     observable_cast(std::shared_ptr<observable_base<tt::l10n>> const &operand) noexcept :
         observable_unary<std::u8string, tt::l10n>(operand)
     {
-        _language_list_callback = scoped_callback(language::preferred_languages, [this](auto...) {
+        _language_list_callback = language::preferred_languages.subscribe([this](auto...) {
             notify({}, load());
         });
     }
@@ -29,7 +29,7 @@ public:
     }
 
 private:
-    scoped_callback<decltype(language::preferred_languages)> _language_list_callback;
+    typename decltype(language::preferred_languages)::callback_ptr_type _language_list_callback;
 };
 
 }

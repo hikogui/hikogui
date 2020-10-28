@@ -30,10 +30,10 @@ public:
         Args const &... args) noexcept :
         Widget(window, parent), value(std::forward<V>(value)), label(format(fmt, args...))
     {
-        _value_callback = scoped_callback(value, [this](auto...) {
+        _value_callback = value.subscribe([this](auto...) {
             this->window.requestRedraw = true;
         });
-        _label_callback = scoped_callback(label, [this](auto...) {
+        _label_callback = label.subscribe([this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -147,8 +147,8 @@ public:
     }
 
 private:
-    scoped_callback<decltype(value)> _value_callback;
-    scoped_callback<decltype(label)> _label_callback;
+    typename decltype(value)::callback_ptr_type _value_callback;
+    typename decltype(label)::callback_ptr_type _label_callback;
 
     aarect button_rectangle;
     std::unique_ptr<TextCell> label_cell;

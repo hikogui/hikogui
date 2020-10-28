@@ -13,9 +13,9 @@ namespace tt {
  */
 class abstract_button_widget : public Widget {
 public:
-    using notifier_type = notifier<>;
+    using notifier_type = notifier<void()>;
     using callback_type = typename notifier_type::callback_type;
-    using callback_id_type = typename notifier_type::callback_id_type;
+    using callback_ptr_type = typename notifier_type::callback_ptr_type;
 
     [[nodiscard]] abstract_button_widget(Window &window, std::shared_ptr<Widget> parent) :
         Widget(window, parent)
@@ -78,19 +78,15 @@ public:
         }
     }
 
-    [[nodiscard]] callback_id_type subscribe(callback_type const &callback) noexcept
+    template<typename Callback>
+    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
-        return _notifier.subscribe(callback);
+        return _notifier.subscribe(std::forward<Callback>(callback));
     }
 
-    [[nodiscard]] callback_id_type subscribe(callback_type &&callback) noexcept
+    void unsubscribe(callback_ptr_type &callback_ptr) noexcept
     {
-        return _notifier.subscribe(std::move(callback));
-    }
-
-    void unsubscribe(callback_id_type id) noexcept
-    {
-        return _notifier.unsubscribe(id);
+        return _notifier.unsubscribe(callback_ptr);
     }
 
 protected:

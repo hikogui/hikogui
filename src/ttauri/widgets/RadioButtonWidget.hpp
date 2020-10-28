@@ -42,10 +42,10 @@ public:
 
     void initialize() noexcept override
     {
-        value.subscribe([this](auto...) {
+        value_callback = value.subscribe([this](auto...) {
             this->window.requestRedraw = true;
         });
-        label.subscribe([this](auto...) {
+        label_callback = label.subscribe([this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -148,6 +148,9 @@ private:
     aarect _label_rectangle;
 
     std::unique_ptr<TextCell> labelCell;
+
+    typename decltype(value)::callback_ptr_type value_callback;
+    typename decltype(label)::callback_ptr_type label_callback;
 
     void drawRadioButton(DrawContext drawContext) noexcept
     {

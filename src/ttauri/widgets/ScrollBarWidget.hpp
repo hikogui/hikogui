@@ -33,13 +33,13 @@ public:
         aperture(std::forward<Aperture>(aperture)),
         offset(std::forward<Offset>(offset))
     {
-        _content_callback = scoped_callback(this->content, [this](auto...) {
+        _content_callback = this->content.subscribe([this](auto...) {
             this->window.requestLayout = true;
         });
-        _aperture_callback = scoped_callback(this->aperture, [this](auto...) {
+        _aperture_callback = this->aperture.subscribe([this](auto...) {
             this->window.requestLayout = true;
         });
-        _offset_callback = scoped_callback(this->offset, [this](auto...) {
+        _offset_callback = this->offset.subscribe([this](auto...) {
             this->window.requestLayout = true;
         });
     }
@@ -162,9 +162,9 @@ private:
     observable<float> aperture;
     observable<float> content;
 
-    scoped_callback<decltype(offset)> _offset_callback;
-    scoped_callback<decltype(aperture)> _aperture_callback;
-    scoped_callback<decltype(content)> _content_callback;
+    typename decltype(offset)::callback_ptr_type _offset_callback;
+    typename decltype(aperture)::callback_ptr_type _aperture_callback;
+    typename decltype(content)::callback_ptr_type _content_callback;
 
     aarect slider_rectangle;
 

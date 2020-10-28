@@ -26,7 +26,7 @@ public:
         }
         p_margin = 0.0f;
 
-        _value_callback = scoped_callback(value, [this](auto...) {
+        _value_callback = value.subscribe([this](auto...) {
             this->request_reconstrain = true;
         });
     }
@@ -123,7 +123,7 @@ public:
     }
 
 private:
-    scoped_callback<decltype(value)> _value_callback;
+    typename decltype(value)::callback_ptr_type _value_callback;
 
     std::vector<std::shared_ptr<Widget>> children;
 };

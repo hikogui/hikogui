@@ -28,7 +28,7 @@ public:
         alignment(alignment),
         label(format(fmt, args...))
     {
-        label_callback = scoped_callback(label, [this](auto...){
+        label_callback = label.subscribe([this](auto...){
             request_reconstrain = true;
         });
     }
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    scoped_callback<decltype(label)> label_callback;
+    typename decltype(label)::callback_ptr_type label_callback;
 
     std::unique_ptr<TextCell> labelCell;
     Alignment alignment;

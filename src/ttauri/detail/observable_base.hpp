@@ -29,9 +29,9 @@ template<typename T>
 class observable_base {
 public:
     using value_type = T;
-    using notifier_type = notifier<value_type>;
+    using notifier_type = notifier<void(value_type)>;
     using callback_type = typename notifier_type::callback_type;
-    using callback_id_type = typename notifier_type::callback_id_type;
+    using callback_ptr_type = typename notifier_type::callback_ptr_type;
     using time_point = typename hires_utc_clock::time_point;
     using duration = typename hires_utc_clock::duration;
 
@@ -108,19 +108,20 @@ public:
 
     /** Add a callback as a listener.
      * @param callback The callback to register, the new value is passed as the first argument.
-     * @return The id of the callback, used to unregister the callback.
+     * @return The shared callback pointer, used to unsubscribe the callback.
      */
-    [[nodiscard]] callback_id_type subscribe(callback_type callback) noexcept
+    template<typename Callback>
+    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
-        return _notifier.subscribe(callback);
+        return _notifier.subscribe(std::forward<Callback>(callback));
     }
 
     /** Remove a callback.
-     * @param id The id of the callback returned by the `add_callback()` method.
+     * @param callback_ptr The shared callback pointer returned by the `add_callback()` method.
      */
-    void unsubscribe(callback_id_type id) noexcept
+    void unsubscribe(callback_ptr_type callback_ptr) noexcept
     {
-        _notifier.unsubscribe(id);
+        _notifier.unsubscribe(callback_ptr);
     }
 
 protected:
