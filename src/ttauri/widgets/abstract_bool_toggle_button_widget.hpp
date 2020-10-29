@@ -7,14 +7,16 @@
 
 namespace tt {
 
-/** An abstract toggle button widget.
- * This widgets toggles a value from the true_value to false_value and back.
+/** An abstract boolean toggle button widget.
+ * This widgets toggles a value from true to false and back.
  */
 class abstract_bool_toggle_button_widget : public abstract_toggle_button_widget<bool> {
 public:
-    template<typename Arg>
-    abstract_bool_toggle_button_widget(Window &window, std::shared_ptr<Widget> parent, Arg &&arg) noexcept :
-        abstract_toggle_button_widget<bool>(window, parent, true, false, std::forward<Arg>(arg)) {}
+    template<typename Value>
+    abstract_bool_toggle_button_widget(Window &window, std::shared_ptr<Widget> parent, Value &&value) noexcept :
+        abstract_toggle_button_widget<bool>(window, parent, true, false, std::forward<Value>(value))
+    {
+    }
 };
 
 }

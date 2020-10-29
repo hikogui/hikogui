@@ -16,6 +16,18 @@ template<typename T>
 class notifier {
 };
 
+template<typename T>
+struct is_shared_function_ptr : public std::false_type {};
+
+template<typename Result, typename... Args>
+struct is_shared_function_ptr<std::shared_ptr<std::function<Result(Args...)>>> : public std::true_type {};
+
+template<typename T>
+inline constexpr bool is_shared_function_ptr_v = is_shared_function_ptr<T>::value;
+
+template<typename T>
+concept shared_function_ptr = is_shared_function_ptr_v<T>;
+
 /** A notifier which can be used to call a set of registered callbacks.
  * This class is thread-safe; however you must not use this object
  * from within the callback.
@@ -30,17 +42,40 @@ public:
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
     /** Add a callback to the notifier.
+     * Ownership of the callback belongs with the caller of `subscribe()`. The
+     * `notifier` will hold a weak_ptr to the callback so that when the callback is destroyed
+     * it will no longer be called.
+     *
+     * @param callback_ptr A shared_ptr to a callback function.
+     * @return A shared_ptr to a function object holding the callback.
+     */
+    template<shared_function_ptr CallbackPtr>
+    [[nodiscard]] callback_ptr_type subscribe(CallbackPtr &&callback_ptr) noexcept
+    {
+        auto lock = std::scoped_lock(_mutex);
+
+        ttlet i = std::find(_callbacks.cbegin(), _callbacks.cend(), callback_ptr);
+        if (i == _callbacks.cend()) {
+            _callbacks.emplace_back(callback_ptr);
+        }
+
+        return callback_ptr;
+    }
+
+    /** Add a callback to the notifier.
+     * Ownership of the callback belongs with the caller of `subscribe()`. The
+     * `notifier` will hold a weak_ptr to the callback so that when the callback is destroyed
+     * it will no longer be called.
+     * 
      * @param callback The callback-function to register.
-     * @return An id used to unregister a callback from the notifier.
+     * @return A shared_ptr to a function object holding the callback.
      */
     template<typename Callback>
     [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
-        auto callback_ptr = std::make_shared<callback_type>(std::forward<Callback>(callback));
+        auto callback_ptr = std::make_shared<callback_type>(std::forward<decltype(callback)>(callback));
 
         auto lock = std::scoped_lock(_mutex);
-        tt_assert(!_executing_callbacks);
-
         _callbacks.emplace_back(callback_ptr);
         return callback_ptr;
     }
@@ -51,7 +86,6 @@ public:
     void unsubscribe(std::shared_ptr<callback_type> const &callback_ptr) noexcept
     {
         auto lock = std::scoped_lock(_mutex);
-        tt_assert(!_executing_callbacks);
 
         ttlet new_end = std::remove_if(_callbacks.begin(), _callbacks.end(), [&callback_ptr](ttlet &item) {
             return item.expired() || item.lock() == callback_ptr;

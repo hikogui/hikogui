@@ -24,18 +24,30 @@ namespace tt {
 template<typename T>
 class checkbox_widget : public abstract_toggle_button_widget<T> {
 public:
+    using super = abstract_toggle_button_widget<T>;
+    using value_type = typename super::value_type;
+
     observable<std::u8string> true_label;
     observable<std::u8string> false_label;
     observable<std::u8string> other_label;
 
-    template<typename Value = observable<T>>
-    checkbox_widget(Window &window, std::shared_ptr<Widget> parent, T true_value, T false_value, Value &&value = {}) noexcept :
+    template<typename Value = observable<value_type>>
+    checkbox_widget(
+        Window &window,
+        std::shared_ptr<Widget> parent,
+        value_type true_value,
+        value_type false_value,
+        Value &&value = {}) noexcept :
         abstract_toggle_button_widget<T>(
             window,
             parent,
             std::move(true_value),
             std::move(false_value),
             std::forward<Value>(value))
+    {
+    }
+
+    void initialize() noexcept override
     {
         _true_label_callback = true_label.subscribe([this](auto...) {
             this->request_reconstrain = true;
@@ -52,24 +64,24 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (Widget::update_constraints()) {
+        if (super::update_constraints()) {
             _true_label_cell = std::make_unique<TextCell>(*true_label, theme->labelStyle);
             _false_label_cell = std::make_unique<TextCell>(*false_label, theme->labelStyle);
             _other_label_cell = std::make_unique<TextCell>(*other_label, theme->labelStyle);
 
-            ttlet minimumHeight = std::max(
+            ttlet minimum_height = std::max(
                 {_true_label_cell->preferredExtent().height(),
                  _false_label_cell->preferredExtent().height(),
                  _other_label_cell->preferredExtent().height(),
                  Theme::smallSize});
 
-            ttlet minimumWidthOfLabels = std::max(
+            ttlet minimum_width_of_labels = std::max(
                 {_true_label_cell->preferredExtent().width(),
                  _false_label_cell->preferredExtent().width(),
                  _other_label_cell->preferredExtent().width()});
-            ttlet minimumWidth = Theme::smallSize + Theme::margin + minimumWidthOfLabels;
+            ttlet minimum_width = Theme::smallSize + Theme::margin + minimum_width_of_labels;
 
-            this->p_preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+            this->p_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
             this->p_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
 
             return true;
@@ -86,19 +98,19 @@ public:
         if (need_layout) {
             _checkbox_rectangle = aarect{0.0f, this->base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
 
-            ttlet labelX = _checkbox_rectangle.p3().x() + Theme::margin;
-            _label_rectangle = aarect{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
+            ttlet label_x = _checkbox_rectangle.p3().x() + Theme::margin;
+            _label_rectangle = aarect{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
 
             _check_glyph = to_FontGlyphIDs(ElusiveIcon::Ok);
-            ttlet checkGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
-            _check_glyph_rectangle = align(_checkbox_rectangle, scale(checkGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
+            ttlet check_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
+            _check_glyph_rectangle = align(_checkbox_rectangle, scale(check_glyph_bb, Theme::iconSize), Alignment::MiddleCenter);
 
             _minus_glyph = to_FontGlyphIDs(ElusiveIcon::Minus);
-            ttlet minusGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(_minus_glyph);
-            _minus_glyph_rectangle = align(_checkbox_rectangle, scale(minusGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
+            ttlet minus_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_minus_glyph);
+            _minus_glyph_rectangle = align(_checkbox_rectangle, scale(minus_glyph_bb, Theme::iconSize), Alignment::MiddleCenter);
         }
 
-        return Widget::update_layout(displayTimePoint, need_layout);
+        return super::update_layout(displayTimePoint, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -108,7 +120,7 @@ public:
         draw_check_box(context);
         draw_check_mark(context);
         draw_label(context);
-        Widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
 private:

@@ -142,11 +142,9 @@ void Window_base::update_mouse_target(std::shared_ptr<Widget> new_target_widget,
 
 void Window_base::update_keyboard_target(std::shared_ptr<Widget> new_target_widget) noexcept {
     tt_assume(GUISystem_mutex.recurse_lock_count());
-
-    tt_assume(!new_target_widget || new_target_widget->accepts_focus());
-
+    
     auto current_target_widget = keyboardTargetWidget.lock();
-    if (new_target_widget != current_target_widget) {
+    if ((!new_target_widget || new_target_widget->accepts_focus()) && new_target_widget != current_target_widget) {
         if (current_target_widget) {
             current_target_widget->handle_keyboard_event(KeyboardEvent::exited());
         }
@@ -178,7 +176,7 @@ bool Window_base::handle_mouse_event(MouseEvent event) noexcept {
         update_mouse_target(std::const_pointer_cast<Widget>(hitbox.widget.lock()), event.position);
 
         if (event.type == MouseEvent::Type::ButtonDown) {
-            update_mouse_target(std::const_pointer_cast<Widget>(hitbox.widget.lock()));
+            update_keyboard_target(std::const_pointer_cast<Widget>(hitbox.widget.lock()));
         }
         } break;
     default:;

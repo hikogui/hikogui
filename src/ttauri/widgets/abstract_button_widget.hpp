@@ -8,8 +8,8 @@
 namespace tt {
 
 /** An abstract button widget.
- * This widgets implements the behaviour for a widget where its whole
- * area is clickable, accepts and responds to keyboard activate commands.
+ * This widgets implements the behavior for a widget where its whole
+ * area is clickable, accepts and responds to gui_activate commands.
  */
 class abstract_button_widget : public Widget {
 public:
@@ -78,12 +78,18 @@ public:
         }
     }
 
+    /** Subscribe a callback to call when the button is activated.
+     * @see notifier::subscribe()
+     */
     template<typename Callback>
     [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
         return _notifier.subscribe(std::forward<Callback>(callback));
     }
 
+    /** Unsubscribe a callback.
+     * @see notifier::subscribe()
+     */
     void unsubscribe(callback_ptr_type &callback_ptr) noexcept
     {
         return _notifier.unsubscribe(callback_ptr);
