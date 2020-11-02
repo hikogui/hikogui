@@ -2,11 +2,9 @@
 // All rights reserved.
 
 #include "icon.hpp"
-#include "PixelMapCell.hpp"
-#include "GlyphCell.hpp"
-#include "../encoding/png.hpp"
-#include "../GUI/DrawContext.hpp"
-#include "../GUI/Window.hpp"
+#include "cells/PixelMapCell.hpp"
+#include "cells/GlyphCell.hpp"
+#include "encoding/png.hpp"
 
 namespace tt {
 
@@ -54,8 +52,6 @@ icon &icon::operator=(icon const &other) noexcept
     }
     return *this;
 }
-
-
 
 [[nodiscard]] std::unique_ptr<ImageCell> icon::makeCell() const noexcept
 {

@@ -6,7 +6,7 @@
 #include "Widget.hpp"
 #include "../GUI/PipelineImage_Image.hpp"
 #include "../Path.hpp"
-#include "../cells/icon.hpp"
+#include "../icon.hpp"
 #include "../cells/ImageCell.hpp"
 #include <memory>
 #include <string>

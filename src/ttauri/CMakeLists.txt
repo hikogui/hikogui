@@ -80,6 +80,8 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_win32.cpp>
     huffman.hpp
     iaarect.hpp
+    icon.cpp
+    icon.hpp
     int_carry.hpp
     int_overflow.hpp
     interval.hpp

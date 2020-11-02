@@ -6,7 +6,7 @@
 #include "required.hpp"
 #include "strings.hpp"
 #include "observable.hpp"
-#include "cells/icon.hpp"
+#include "icon.hpp"
 #include "text/translation.hpp"
 #include <string>
 #include <type_traits>
@@ -74,6 +74,12 @@ private:
  */
 class l10n {
 public:
+    l10n() noexcept : msgid() {}
+    l10n(l10n const &) noexcept = default;
+    l10n(l10n &&) noexcept = default;
+    l10n &operator=(l10n const &) noexcept = default;
+    l10n &operator=(l10n &&) noexcept = default;
+
     l10n(std::u8string_view msgid) noexcept : msgid(msgid) {}
     l10n(std::string_view msgid) noexcept
     {
@@ -90,17 +96,20 @@ private:
  */
 class l10n_label {
 public:
-    template<typename Icon, typename... Args>
-    l10n_label(Icon &&icon, l10n fmt, Args &&... args) noexcept :
-        _icon(std::forward<Icon>(icon)),
-        _msgid(fmt.msgid),
+    template<typename... Args>
+    l10n_label(tt::icon icon, l10n fmt, Args &&... args) noexcept :
+        _icon(std::move(icon)),
+        _msgid(std::move(fmt.msgid)),
         _args(std::make_unique<detail::l10n_label_arguments<Args...>>(std::forward<Args>(args)...))
     {
     }
 
     template<typename... Args>
-    l10n_label(l10n fmt, Args &&... args) noexcept :
-        l10n_label(tt::icon{}, fmt, std::forward<Args>(args)...)
+    l10n_label(l10n fmt, Args &&... args) noexcept : l10n_label(tt::icon{}, std::move(fmt), std::forward<Args>(args)...)
+    {
+    }
+
+    l10n_label(tt::icon icon) noexcept : l10n_label(std::move(icon), l10n{})
     {
     }
 
@@ -132,6 +141,11 @@ public:
     [[nodiscard]] icon icon() const noexcept
     {
         return _icon;
+    }
+
+    [[nodiscard]] std::unique_ptr<ImageCell> makeCell() const noexcept
+    {
+        return _icon.makeCell();
     }
 
     [[nodiscard]] friend bool operator==(l10n_label const &lhs, l10n_label const &rhs) noexcept

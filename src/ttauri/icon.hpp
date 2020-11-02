@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "ImageCell.hpp"
-#include "../URL.hpp"
-#include "../PixelMap.hpp"
-#include "../R16G16B16A16SFloat.hpp"
-#include "../text/FontGlyphIDs.hpp"
-#include "../text/ElusiveIcons.hpp"
-#include "../text/TTauriIcons.hpp"
+#include "cells/ImageCell.hpp"
+#include "URL.hpp"
+#include "PixelMap.hpp"
+#include "R16G16B16A16SFloat.hpp"
+#include "text/FontGlyphIDs.hpp"
+#include "text/ElusiveIcons.hpp"
+#include "text/TTauriIcons.hpp"
 #include <variant>
 
 namespace tt {

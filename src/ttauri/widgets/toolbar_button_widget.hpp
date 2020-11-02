@@ -5,9 +5,6 @@
 
 #include "abstract_button_widget.hpp"
 #include "../Path.hpp"
-#include "../text/FontGlyphIDs.hpp"
-#include "../text/ElusiveIcons.hpp"
-#include "../text/TTauriIcons.hpp"
 #include "../GUI/DrawContext.hpp"
 #include <memory>
 #include <string>
@@ -19,17 +16,21 @@ namespace tt {
 class toolbar_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
-    observable<icon> icon;
+    observable<l10n_label> label;
 
     toolbar_button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept :
         abstract_button_widget(window, parent)
     {
-        _icon_callback = this->icon.subscribe([this](auto...) {
-            request_reconstrain = true;
-        });
 
         // Toolbar buttons hug the toolbar and neighbor widgets.
         p_margin = 0.0f;
+    }
+
+    void initialize() noexcept override {
+        super::initialize();
+        _label_callback = this->label.subscribe([this](auto...) {
+            request_reconstrain = true;
+        });
     }
 
     [[nodiscard]] bool update_constraints() noexcept override
@@ -37,7 +38,7 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _icon_cell = (*icon).makeCell();
+            _label_cell = (*label).makeCell();
             ttlet width = Theme::toolbarDecorationButtonWidth;
             ttlet height = Theme::toolbarHeight;
             p_preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
@@ -64,8 +65,8 @@ public:
     }
 
 private:
-    typename decltype(icon)::callback_ptr_type _icon_callback;
-    std::unique_ptr<ImageCell> _icon_cell;
+    typename decltype(label)::callback_ptr_type _label_callback;
+    std::unique_ptr<ImageCell> _label_cell;
 
     void draw_background(DrawContext context) noexcept
     {
@@ -87,7 +88,7 @@ private:
         if (*enabled) {
             context.color = theme->foregroundColor;
         }
-        _icon_cell->draw(context, rectangle(), Alignment::MiddleCenter);
+        _label_cell->draw(context, rectangle(), Alignment::MiddleCenter);
     }
 };
 
