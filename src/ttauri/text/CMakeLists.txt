@@ -21,7 +21,6 @@ target_sources(ttauri PRIVATE
     FontID.hpp
     FontVariant.hpp
     FontWeight.hpp
-    format.hpp
     format10.hpp
     GlyphID.hpp
     GlyphMetrics.hpp

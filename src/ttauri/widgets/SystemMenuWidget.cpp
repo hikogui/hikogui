@@ -12,7 +12,7 @@
 
 namespace tt {
 
-SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, Image const &icon) noexcept :
+SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, icon const &icon) noexcept :
     Widget(window, parent), iconCell(icon.makeCell())
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.

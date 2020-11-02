@@ -2,7 +2,7 @@
 #pragma once
 
 #include "../URL.hpp"
-#include "Image.hpp"
+#include "icon.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <ostream>
@@ -11,13 +11,13 @@ namespace tt {
 
 class Label {
     std::u8string _text;
-    Image _icon;
+    icon _icon;
 
 public:
-    Label(std::u8string text, Image &&icon = Image{}) noexcept :
-        _text(text), _icon(std::move(icon)) {}
+    Label(std::u8string text, icon &&_icon = {}) noexcept :
+        _text(text), _icon(std::move(_icon)) {}
 
-    Label(Image &&icon) noexcept :
+    Label(icon &&icon) noexcept :
         _text(), _icon(std::move(icon)) {}
 
     Label(Label const &other) noexcept:
@@ -42,7 +42,7 @@ public:
 
     /** Get the text translated in the current locale.
     */
-    [[nodiscard]] Image const &icon() const noexcept {
+    [[nodiscard]] icon const &icon() const noexcept {
         return _icon;
     }
 

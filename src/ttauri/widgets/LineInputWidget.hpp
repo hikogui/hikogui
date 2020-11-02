@@ -6,7 +6,7 @@
 #include "Widget.hpp"
 #include "../text/EditableText.hpp"
 #include "../text/l10n.hpp"
-#include "../text/format.hpp"
+#include "../format.hpp"
 #include <memory>
 #include <string>
 #include <array>

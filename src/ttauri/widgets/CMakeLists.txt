@@ -4,7 +4,7 @@ target_sources(ttauri PRIVATE
     abstract_button_widget.hpp
     abstract_toggle_button_widget.hpp
     boolean_checkbox_widget.hpp
-    ButtonWidget.hpp
+    button_widget.hpp
     checkbox_widget.hpp
     ContainerWidget.cpp
     ContainerWidget.hpp
@@ -15,17 +15,17 @@ target_sources(ttauri PRIVATE
     LineInputWidget.cpp
     LineInputWidget.hpp
     overlay_view_widget.hpp
-    RadioButtonWidget.hpp
+    radio_button_widget.hpp
     RowColumnLayoutWidget.hpp
     ScrollViewWidget.hpp
     ScrollBarWidget.hpp
     SelectionWidget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>
-    TabViewWidget.hpp
+    tab_view_widget.hpp
     toggle_widget.hpp
-    ToolbarButtonWidget.hpp
-    ToolbarTabButtonWidget.hpp
+    toolbar_button_widget.hpp
+    toolbar_tab_button_widget.hpp
     ToolbarWidget.cpp
     ToolbarWidget.hpp
     Widget.cpp

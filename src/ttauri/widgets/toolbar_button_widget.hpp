@@ -19,7 +19,7 @@ namespace tt {
 class toolbar_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
-    observable<Image> icon;
+    observable<icon> icon;
 
     toolbar_button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept :
         abstract_button_widget(window, parent)
@@ -28,7 +28,7 @@ public:
             request_reconstrain = true;
         });
 
-        // Toolbar buttons hug the toolbar and neighbour widgets.
+        // Toolbar buttons hug the toolbar and neighbor widgets.
         p_margin = 0.0f;
     }
 

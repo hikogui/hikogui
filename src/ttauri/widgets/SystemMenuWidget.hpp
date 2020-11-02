@@ -6,7 +6,7 @@
 #include "Widget.hpp"
 #include "../GUI/PipelineImage_Image.hpp"
 #include "../Path.hpp"
-#include "../cells/Image.hpp"
+#include "../cells/icon.hpp"
 #include "../cells/ImageCell.hpp"
 #include <memory>
 #include <string>
@@ -17,7 +17,7 @@ namespace tt {
 
 class SystemMenuWidget final : public Widget {
 public:
-    SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, Image const &icon) noexcept;
+    SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, icon const &icon) noexcept;
     ~SystemMenuWidget() {}
 
     [[nodiscard]] bool update_constraints() noexcept override;

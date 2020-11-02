@@ -3,8 +3,8 @@ target_sources(ttauri PRIVATE
     Cell.hpp
     GlyphCell.cpp
     GlyphCell.hpp
-    Image.cpp
-    Image.hpp
+    icon.cpp
+    icon.hpp
     ImageCell.hpp
     Label.hpp
     PixelMapCell.cpp
