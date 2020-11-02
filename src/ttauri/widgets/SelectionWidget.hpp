@@ -264,7 +264,7 @@ public:
         column_widget->clear();
         ttlet option_list_ = *option_list;
         for (ttlet & [ tag, text ] : std::views::reverse(option_list_)) {
-            auto button = column_widget->make_widget<ButtonWidget>();
+            auto button = column_widget->make_widget<button_widget>();
             button->label = text;
         }
     }

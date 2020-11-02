@@ -3,7 +3,6 @@
 
 #include "ToolbarWidget.hpp"
 #include "WindowTrafficLightsWidget.hpp"
-#include "ToolbarButtonWidget.hpp"
 #include "../GUI/utils.hpp"
 #include "../interval.hpp"
 #include <cmath>

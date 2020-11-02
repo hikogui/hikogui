@@ -16,14 +16,15 @@
 
 namespace tt {
 
-class ToolbarButtonWidget final : public abstract_button_widget {
+class toolbar_button_widget final : public abstract_button_widget {
 public:
+    using super = abstract_button_widget;
     observable<Image> icon;
 
-    ToolbarButtonWidget(Window &window, std::shared_ptr<Widget> parent) noexcept :
+    toolbar_button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept :
         abstract_button_widget(window, parent)
     {
-        icon_callback = this->icon.subscribe([this](auto...) {
+        _icon_callback = this->icon.subscribe([this](auto...) {
             request_reconstrain = true;
         });
 
@@ -35,8 +36,8 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (Widget::update_constraints()) {
-            icon_cell = (*icon).makeCell();
+        if (super::update_constraints()) {
+            _icon_cell = (*icon).makeCell();
             ttlet width = Theme::toolbarDecorationButtonWidth;
             ttlet height = Theme::toolbarHeight;
             p_preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
@@ -51,22 +52,22 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(request_relayout, false);
-        return Widget::update_layout(display_time_point, need_layout);
+        return super::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        drawBackground(context);
-        drawIcon(context);
-        Widget::draw(std::move(context), display_time_point);
+        draw_background(context);
+        draw_icon(context);
+        super::draw(std::move(context), display_time_point);
     }
 
 private:
-    typename decltype(icon)::callback_ptr_type icon_callback;
-    std::unique_ptr<ImageCell> icon_cell;
+    typename decltype(icon)::callback_ptr_type _icon_callback;
+    std::unique_ptr<ImageCell> _icon_cell;
 
-    void drawBackground(DrawContext context) noexcept
+    void draw_background(DrawContext context) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
@@ -80,13 +81,13 @@ private:
         context.drawFilledQuad(rectangle());
     }
 
-    void drawIcon(DrawContext context) noexcept
+    void draw_icon(DrawContext context) noexcept
     {
         context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
         if (*enabled) {
             context.color = theme->foregroundColor;
         }
-        icon_cell->draw(context, rectangle(), Alignment::MiddleCenter);
+        _icon_cell->draw(context, rectangle(), Alignment::MiddleCenter);
     }
 };
 

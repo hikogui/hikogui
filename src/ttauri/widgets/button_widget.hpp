@@ -13,17 +13,21 @@
 
 namespace tt {
 
-class ButtonWidget final : public abstract_button_widget {
+class button_widget final : public abstract_button_widget {
 public:
     observable<std::u8string> label;
 
-    ButtonWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : abstract_button_widget(window, parent)
+    button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept : abstract_button_widget(window, parent)
+    { 
+    }
+
+    void initialize() noexcept override
     {
         _label_callback = label.subscribe([this](auto...) {
             request_reconstrain = true;
         });
 
-        _button_callback = subscribe([this](auto...) {
+        _callback = subscribe([this](auto...) {
             this->clicked();
         });
     }
@@ -75,7 +79,7 @@ private:
     bool pressed = false;
     
     observable<std::u8string>::callback_ptr_type _label_callback;
-    callback_ptr_type _button_callback;
+    callback_ptr_type _callback;
 
     std::unique_ptr<TextCell> labelCell;
 };
