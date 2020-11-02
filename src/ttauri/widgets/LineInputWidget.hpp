@@ -5,8 +5,8 @@
 
 #include "Widget.hpp"
 #include "../text/EditableText.hpp"
-#include "../text/l10n.hpp"
 #include "../format.hpp"
+#include "../l10n_label.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -19,8 +19,8 @@ class LineInputWidget final : public Widget {
 public:
     LineInputWidget(Window &window, std::shared_ptr<Widget> parent, std::u8string const label) noexcept;
 
-    LineInputWidget(Window &window, std::shared_ptr<Widget> parent, l10n const label) noexcept :
-        LineInputWidget(window, parent, std::u8string{static_cast<std::u8string_view>(label)})
+    LineInputWidget(Window &window, std::shared_ptr<Widget> parent, l10n_label const label) noexcept :
+        LineInputWidget(window, parent, std::u8string{label})
     {
     }
 

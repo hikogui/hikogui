@@ -20,8 +20,8 @@ namespace tt {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(GUISystem &system, WindowDelegate *delegate, Label &&title) :
-    Window_base(system, delegate, std::move(title)), nrSwapchainImages(0), swapchainImageFormat()
+Window_vulkan::Window_vulkan(GUISystem &system, WindowDelegate *delegate, l10n_label const &title) :
+    Window_base(system, delegate, title), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
 

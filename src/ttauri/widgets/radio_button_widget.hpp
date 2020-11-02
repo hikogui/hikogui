@@ -5,7 +5,6 @@
 
 #include "abstract_radio_button_widget.hpp"
 #include "../GUI/DrawContext.hpp"
-#include "../text/format10.hpp"
 #include "../observable.hpp"
 #include "../l10n_label.hpp"
 #include <memory>

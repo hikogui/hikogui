@@ -11,11 +11,11 @@ namespace tt {
 
 using namespace std;
 
-Window_base::Window_base(GUISystem &system, WindowDelegate *delegate, Label &&title) :
+Window_base::Window_base(GUISystem &system, WindowDelegate *delegate, l10n_label const &title) :
     system(system),
     state(State::Initializing),
     delegate(delegate),
-    title(std::move(title))
+    title(title)
 {
 }
 
@@ -66,7 +66,7 @@ void Window_base::initialize()
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
-    createWindow(title.text(), currentWindowExtent);
+    createWindow(title, currentWindowExtent);
 }
 
 void Window_base::setDevice(GUIDevice *new_device)

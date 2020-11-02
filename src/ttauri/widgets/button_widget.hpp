@@ -5,6 +5,7 @@
 
 #include "abstract_button_widget.hpp"
 #include "../cells/TextCell.hpp"
+#include "../l10n_label.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -15,7 +16,7 @@ namespace tt {
 
 class button_widget final : public abstract_button_widget {
 public:
-    observable<std::u8string> label;
+    observable<l10n_label> label;
 
     button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept : abstract_button_widget(window, parent)
     { 
@@ -78,7 +79,7 @@ private:
     bool value = false;
     bool pressed = false;
     
-    observable<std::u8string>::callback_ptr_type _label_callback;
+    decltype(label)::callback_ptr_type _label_callback;
     callback_ptr_type _callback;
 
     std::unique_ptr<TextCell> labelCell;

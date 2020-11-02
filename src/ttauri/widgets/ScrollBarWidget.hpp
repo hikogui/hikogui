@@ -7,7 +7,6 @@
 #include "../cells/TextCell.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../observable.hpp"
-#include "../text/format10.hpp"
 #include <memory>
 #include <string>
 #include <array>

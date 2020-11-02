@@ -16,7 +16,7 @@ class Window_vulkan_win32 final : public Window_vulkan {
 public:
     void *win32Window = nullptr;
 
-    Window_vulkan_win32(GUISystem &system, WindowDelegate *delegate, Label &&title);
+    Window_vulkan_win32(GUISystem &system, WindowDelegate *delegate, l10n_label const &title);
     ~Window_vulkan_win32();
 
     Window_vulkan_win32(const Window_vulkan_win32 &) = delete;

@@ -6,7 +6,6 @@
 #include "Widget.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../cells/TextCell.hpp"
-#include "../text/format10.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
 #include <memory>
@@ -19,28 +18,30 @@ namespace tt {
 
 class LabelWidget final : public Widget {
 public:
-    observable<std::u8string> label;
+    observable<l10n_label> label;
 
-    template<typename... Args>
-    LabelWidget(Window &window, std::shared_ptr<Widget> parent, Alignment alignment, l10n const &fmt, Args const &... args) noexcept
+    template<typename Label>
+    LabelWidget(Window &window, std::shared_ptr<Widget> parent, Alignment alignment, Label &&label) noexcept
         :
         Widget(window, parent),
         alignment(alignment),
-        label(format(fmt, args...))
+        label(std::forward<Label>(label))
     {
-        label_callback = label.subscribe([this](auto...){
-            request_reconstrain = true;
-        });
     }
 
-    template<typename... Args>
-    LabelWidget(Window &window, std::shared_ptr<Widget> parent, l10n const &fmt, Args const &... args) noexcept :
-        LabelWidget(window, parent, Alignment::TopRight, fmt, args...) {}
-
-    LabelWidget(Window &window, std::shared_ptr<Widget> parent, Alignment alignment) noexcept :
-        LabelWidget(window, parent, alignment, l10n{}) {}
+    template<typename Label>
+    LabelWidget(Window &window, std::shared_ptr<Widget> parent, Label &&label) noexcept :
+        Widget(window, parent), alignment(Alignment::TopRight), label(std::forward<Label>(label))
+    {
+    }
 
     ~LabelWidget() {
+    }
+
+    void initialize() noexcept override {
+        label_callback = label.subscribe([this](auto...) {
+            request_reconstrain = true;
+        });
     }
 
     [[nodiscard]] bool update_constraints() noexcept override {

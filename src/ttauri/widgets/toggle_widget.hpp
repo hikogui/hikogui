@@ -4,10 +4,10 @@
 #pragma once
 
 #include "abstract_bool_toggle_button_widget.hpp"
+#include "../l10n_label.hpp"
 #include "../cells/TextCell.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../observable.hpp"
-#include "../text/format10.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -18,14 +18,14 @@ namespace tt {
 
 class toggle_widget final : public abstract_bool_toggle_button_widget {
 public:
-    observable<std::u8string> on_label;
-    observable<std::u8string> off_label;
+    observable<l10n_label> on_label;
+    observable<l10n_label> off_label;
 
-    template<typename V = observable<bool>>
+    template<typename Value = observable<bool>>
     toggle_widget(
         Window &window, std::shared_ptr<Widget> parent,
-        V &&value = observable<bool>{}) noexcept :
-        abstract_bool_toggle_button_widget(window, parent, std::forward<V>(value))
+        Value &&value = observable<bool>{}) noexcept :
+        abstract_bool_toggle_button_widget(window, parent, std::forward<Value>(value))
     {
         _on_label_callback = this->on_label.subscribe([this](auto...) {
             request_reconstrain = true;

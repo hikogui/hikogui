@@ -6,7 +6,6 @@ target_sources(ttauri PRIVATE
     icon.cpp
     icon.hpp
     ImageCell.hpp
-    Label.hpp
     PixelMapCell.cpp
     PixelMapCell.hpp
     TextCell.cpp

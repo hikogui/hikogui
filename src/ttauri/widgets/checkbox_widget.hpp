@@ -7,8 +7,8 @@
 #include "../cells/TextCell.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
-#include "../text/format10.hpp"
 #include "../observable.hpp"
+#include "../l10n_label.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -27,9 +27,9 @@ public:
     using super = abstract_toggle_button_widget<T>;
     using value_type = typename super::value_type;
 
-    observable<std::u8string> true_label;
-    observable<std::u8string> false_label;
-    observable<std::u8string> other_label;
+    observable<l10n_label> true_label;
+    observable<l10n_label> false_label;
+    observable<l10n_label> other_label;
 
     template<typename Value = observable<value_type>>
     checkbox_widget(

@@ -10,7 +10,6 @@ add_subdirectory(stencil)
 
 target_sources(ttauri PRIVATE
     detail/observable_base.hpp
-    detail/observable_cast.hpp
     detail/observable_not.hpp
     detail/observable_unary.hpp
     detail/observable_value.hpp

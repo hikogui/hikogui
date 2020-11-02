@@ -1,7 +1,6 @@
 
 
 target_sources(ttauri PRIVATE
-    detail/observable_cast_format10.hpp
     AttributedGlyph.cpp
     AttributedGlyph.hpp
     AttributedGlyphLine.hpp
@@ -21,7 +20,6 @@ target_sources(ttauri PRIVATE
     FontID.hpp
     FontVariant.hpp
     FontWeight.hpp
-    format10.hpp
     GlyphID.hpp
     GlyphMetrics.hpp
     Grapheme.cpp
@@ -29,7 +27,6 @@ target_sources(ttauri PRIVATE
     grapheme_iterator.hpp
     gstring.cpp
     gstring.hpp
-    l10n.hpp
     language.cpp
     language.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/language_macos.mm>

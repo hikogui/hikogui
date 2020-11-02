@@ -11,7 +11,6 @@
 #include "../cells/TextCell.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
-#include "../text/format10.hpp"
 #include "../text/ElusiveIcons.hpp"
 #include "../observable.hpp"
 #include <memory>
@@ -25,64 +24,24 @@ namespace tt {
 template<typename ValueType>
 class SelectionWidget final : public Widget {
 public:
-    using option_list_type = observable<std::vector<std::pair<ValueType, std::u8string>>>;
-    using value_type = observable<ValueType>;
-    using label_type = observable<std::u8string>;
+    using value_type = ValueType;
+    using option_list_type = std::vector<std::pair<ValueType, l10n_label>>;
 
-    label_type label;
-    value_type value;
-    option_list_type option_list;
+    observable<l10n_label> unknown_label;
+    observable<value_type> value;
+    observable<option_list_type> option_list;
 
+    template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = l10n_label>
     SelectionWidget(
         Window &window,
         std::shared_ptr<Widget> parent,
-        value_type const &value = {},
-        option_list_type const &option_list = {},
-        label_type const &label = l10n(u8"<unknown>")) noexcept :
+        Value &&value = value_type{},
+        OptionList &&option_list = option_list_type{},
+        UnknownLabel &&unknown_label = l10n_label{l10n(u8"<unknown>")}) noexcept :
         Widget(window, parent),
-        value(value),
-        option_list(option_list),
-        label(label)
-    {
-    }
-
-    template<typename... Args>
-    SelectionWidget(
-        Window &window,
-        std::shared_ptr<Widget> parent,
-        value_type const &value,
-        option_list_type const &option_list,
-        l10n const &fmt,
-        Args const &... args) noexcept :
-        SelectionWidget(window, parent, value, option_list, format(fmt, args...))
-    {
-    }
-
-    template<typename... Args>
-    SelectionWidget(
-        Window &window,
-        std::shared_ptr<Widget> parent,
-        option_list_type const &option_list,
-        l10n const &fmt,
-        Args const &... args) noexcept :
-        SelectionWidget(window, parent, value_type{}, option_list, format(fmt, args...))
-    {
-    }
-
-    template<typename... Args>
-    SelectionWidget(
-        Window &window,
-        std::shared_ptr<Widget> parent,
-        value_type const &value,
-        l10n const &fmt,
-        Args const &... args) noexcept :
-        SelectionWidget(window, parent, value, option_list_type{}, format(fmt, args...))
-    {
-    }
-
-    template<typename... Args>
-    SelectionWidget(Window &window, std::shared_ptr<Widget> parent, l10n const &fmt, Args const &... args) noexcept :
-        SelectionWidget(window, parent, value_type{}, option_list_type{}, format(fmt, args...))
+        value(std::forward<Value>(value)),
+        option_list(std::forward<OptionList>(option_list)),
+        unknown_label(std::forward<UnknownLabel>(unknown_label))
     {
     }
 
@@ -105,7 +64,7 @@ public:
             repopulate_options();
             request_reconstrain = true;
         });
-        _label_callback = this->label.subscribe([this](auto...) {
+        _unknown_label_callback = this->unknown_label.subscribe([this](auto...) {
             request_reconstrain = true;
         });
     }
@@ -122,12 +81,12 @@ public:
         if (updated) {
             ttlet index = get_value_as_index();
             if (index == -1) {
-                text_cell = std::make_unique<TextCell>(*label, theme->placeholderLabelStyle);
+                text_cell = std::make_unique<TextCell>(*unknown_label, theme->placeholderLabelStyle);
             } else {
                 text_cell = std::make_unique<TextCell>((*option_list)[index].second, theme->labelStyle);
             }
 
-            auto text_size = TextCell(*label, theme->placeholderLabelStyle).preferredExtent();
+            auto text_size = TextCell(*unknown_label, theme->placeholderLabelStyle).preferredExtent();
             for (ttlet & [ tag, text ] : *option_list) {
                 text_size = max(text_size, TextCell(text, theme->labelStyle).preferredExtent());
             }
@@ -173,7 +132,7 @@ public:
             ttlet chevrons_glyph_bbox = PipelineSDF::DeviceShared::getBoundingBox(chevrons_glyph);
             chevrons_rectangle = align(left_box_rectangle, scale(chevrons_glyph_bbox, Theme::iconSize), Alignment::MiddleCenter);
 
-            // The label is located to the right of the selection box icon.
+            // The unknown_label is located to the right of the selection box icon.
             option_rectangle = aarect{
                 left_box_rectangle.right() + Theme::margin,
                 0.0f,
@@ -270,7 +229,7 @@ public:
     }
 
 private:
-    typename decltype(label)::callback_ptr_type _label_callback;
+    typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
     typename decltype(value)::callback_ptr_type _value_callback;
     typename decltype(option_list)::callback_ptr_type _option_list_callback;
     
@@ -290,7 +249,7 @@ private:
     [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
         ssize_t index = 0;
-        for (ttlet & [ tag, label_text ] : *option_list) {
+        for (ttlet & [ tag, unknown_label_text ] : *option_list) {
             if (value == tag) {
                 return index;
             }

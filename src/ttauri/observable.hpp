@@ -9,7 +9,6 @@
 #include "notifier.hpp"
 #include "detail/observable_value.hpp"
 #include "detail/observable_not.hpp"
-#include "detail/observable_cast.hpp"
 #include <memory>
 #include <functional>
 #include <algorithm>
@@ -63,36 +62,6 @@ public:
         observable(std::static_pointer_cast<detail::observable_base<value_type>>(
             std::make_shared<detail::observable_value<value_type>>(value)))
     {
-    }
-
-    template<typename Other>
-    observable(observable<Other> const &other) noexcept :
-        observable(std::static_pointer_cast<detail::observable_base<value_type>>(
-            std::make_shared<detail::observable_cast<value_type, Other>>(other.pimpl)))
-    {
-    }
-
-    template<typename Other>
-    observable(Other const &other) noexcept :
-        observable(std::static_pointer_cast<detail::observable_base<value_type>>(
-            std::make_shared<detail::observable_cast<value_type, Other>>(
-                std::make_shared<detail::observable_value<Other>>(other))))
-    {
-    }
-
-    template<typename Other>
-    observable &operator=(observable<Other> const &other) noexcept
-    {
-        return *this = std::static_pointer_cast<detail::observable_base<value_type>>(
-                   std::make_shared<detail::observable_cast<value_type, Other>>(other.pimpl));
-    }
-
-    template<typename Other>
-    observable &operator=(Other const &other) noexcept
-    {
-        return *this = std::static_pointer_cast<detail::observable_base<value_type>>(
-                   std::make_shared<detail::observable_cast<value_type, Other>>(
-                       std::make_shared<detail::observable_value<Other>>(other)));
     }
 
     observable &operator=(value_type const &value) noexcept
