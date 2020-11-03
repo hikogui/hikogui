@@ -18,18 +18,18 @@ public:
     using super = abstract_button_widget;
     observable<l10n_label> label;
 
-    toolbar_button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept :
+    toolbar_button_widget(Window &window, std::shared_ptr<widget> parent) noexcept :
         abstract_button_widget(window, parent)
     {
 
         // Toolbar buttons hug the toolbar and neighbor widgets.
-        p_margin = 0.0f;
+        _margin = 0.0f;
     }
 
     void initialize() noexcept override {
         super::initialize();
         _label_callback = this->label.subscribe([this](auto...) {
-            request_reconstrain = true;
+            _request_reconstrain = true;
         });
     }
 
@@ -38,10 +38,10 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _label_stencil = (*label).makeCell(Alignment::MiddleCenter);
+            _label_stencil = (*label).make_stencil(Alignment::MiddleCenter);
             ttlet width = Theme::toolbarDecorationButtonWidth;
             ttlet height = Theme::toolbarHeight;
-            p_preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
+            _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
             return true;
         } else {
             return false;
@@ -52,7 +52,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             _label_stencil->set_layout_parameters(rectangle());
         }
@@ -69,18 +69,18 @@ public:
 
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
-    std::unique_ptr<image_stencil> _label_stencil;
+    std::unique_ptr<stencil> _label_stencil;
 
     void draw_background(DrawContext context) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (_pressed) {
-            context.fillColor = theme->fillColor(p_semantic_layer + 1);
-        } else if (hover) {
-            context.fillColor = theme->fillColor(p_semantic_layer);
+            context.fillColor = theme->fillColor(_semantic_layer + 1);
+        } else if (_hover) {
+            context.fillColor = theme->fillColor(_semantic_layer);
         } else {
-            context.fillColor = theme->fillColor(p_semantic_layer - 1);
+            context.fillColor = theme->fillColor(_semantic_layer - 1);
         }
         context.drawFilledQuad(rectangle());
     }

@@ -24,7 +24,7 @@ public:
 
     [[nodiscard]] vec backgroundColor() noexcept {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return theme->fillColor(p_semantic_layer);
+        return theme->fillColor(_semantic_layer);
     }
 
     /** Defining on which edges the resize handle has priority over widget at a higher layer.

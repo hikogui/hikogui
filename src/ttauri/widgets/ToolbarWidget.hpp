@@ -10,13 +10,13 @@ namespace tt {
 
 class ToolbarWidget final : public ContainerWidget {
 public:
-    ToolbarWidget(Window &window, std::shared_ptr<Widget> parent) noexcept;
+    ToolbarWidget(Window &window, std::shared_ptr<widget> parent) noexcept;
     ~ToolbarWidget() {}
 
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    virtual std::shared_ptr<Widget> add_widget(HorizontalAlignment alignment, std::shared_ptr<Widget> childWidget) noexcept;
+    virtual std::shared_ptr<widget> add_widget(HorizontalAlignment alignment, std::shared_ptr<widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
      */
@@ -35,15 +35,15 @@ public:
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
 private:
-    std::vector<std::shared_ptr<Widget>> left_children;
-    std::vector<std::shared_ptr<Widget>> right_children;
+    std::vector<std::shared_ptr<widget>> left_children;
+    std::vector<std::shared_ptr<widget>> right_children;
 
     flow_layout layout;
     relative_base_line child_base_line;
 
-    void updateConstraintsForChild(Widget const &child, ssize_t index, relative_base_line &shared_base_line, finterval &shared_height) noexcept;
+    void updateConstraintsForChild(widget const &child, ssize_t index, relative_base_line &shared_base_line, finterval &shared_height) noexcept;
 
-    void updateLayoutForChild(Widget &child, ssize_t index) const noexcept;
+    void updateLayoutForChild(widget &child, ssize_t index) const noexcept;
 };
 
 } // namespace tt

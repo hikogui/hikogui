@@ -23,15 +23,15 @@ public:
 
     template<typename Value = observable<bool>>
     toggle_widget(
-        Window &window, std::shared_ptr<Widget> parent,
+        Window &window, std::shared_ptr<widget> parent,
         Value &&value = observable<bool>{}) noexcept :
         abstract_bool_toggle_button_widget(window, parent, std::forward<Value>(value))
     {
         _on_label_callback = this->on_label.subscribe([this](auto...) {
-            request_reconstrain = true;
+            _request_reconstrain = true;
         });
         _off_label_callback = this->off_label.subscribe([this](auto...) {
-            request_reconstrain = true;
+            _request_reconstrain = true;
         });
     }
 
@@ -41,9 +41,9 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (Widget::update_constraints()) {
-            _on_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *on_label, theme->labelStyle);
-            _off_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *off_label, theme->labelStyle);
+        if (widget::update_constraints()) {
+            _on_label_stencil = (*on_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
+            _off_label_stencil = (*off_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
 
             ttlet minimumHeight =
                 std::max({_on_label_stencil->preferred_extent().height(), _off_label_stencil->preferred_extent().height(), Theme::smallSize});
@@ -51,8 +51,8 @@ public:
             ttlet minimumWidth = std::max({_on_label_stencil->preferred_extent().width(), _off_label_stencil->preferred_extent().width()}) +
                 Theme::smallSize * 2.0f + Theme::margin;
 
-            p_preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-            p_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+            _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
+            _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
 
             return true;
         } else {
@@ -64,7 +64,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             _rail_rectangle = aarect{
                 -0.5f, // Expand horizontally due to rounded shape
@@ -83,7 +83,7 @@ public:
             _slider_move_range = sliderMoveWidth - _slider_rectangle.width();
         }
 
-        return Widget::update_layout(display_time_point, need_layout);
+        return widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -92,7 +92,7 @@ public:
         draw_rail(context);
         draw_slider(context);
         draw_label(context);
-        Widget::draw(std::move(context), display_time_point);
+        widget::draw(std::move(context), display_time_point);
     }
 
 private:
@@ -105,8 +105,8 @@ private:
 
     aarect _label_rectangle;
 
-    std::unique_ptr<text_stencil> _on_label_stencil;
-    std::unique_ptr<text_stencil> _off_label_stencil;
+    std::unique_ptr<stencil> _on_label_stencil;
+    std::unique_ptr<stencil> _off_label_stencil;
 
     decltype(value)::callback_ptr_type _value_callback;
     decltype(on_label)::callback_ptr_type _on_label_callback;
@@ -140,7 +140,7 @@ private:
             }
         } else {
             if (*enabled && window.active) {
-                drawContext.color = hover ? theme->borderColor(p_semantic_layer + 1) : theme->borderColor(p_semantic_layer);
+                drawContext.color = _hover ? theme->borderColor(_semantic_layer + 1) : theme->borderColor(_semantic_layer);
             }
         }
         std::swap(drawContext.color, drawContext.fillColor);

@@ -34,7 +34,7 @@ public:
     template<typename Value = observable<value_type>>
     checkbox_widget(
         Window &window,
-        std::shared_ptr<Widget> parent,
+        std::shared_ptr<widget> parent,
         value_type true_value,
         value_type false_value,
         Value &&value = {}) noexcept :
@@ -50,13 +50,13 @@ public:
     void initialize() noexcept override
     {
         _true_label_callback = true_label.subscribe([this](auto...) {
-            this->request_reconstrain = true;
+            this->_request_reconstrain = true;
         });
         _false_label_callback = false_label.subscribe([this](auto...) {
-            this->request_reconstrain = true;
+            this->_request_reconstrain = true;
         });
         _other_label_callback = other_label.subscribe([this](auto...) {
-            this->request_reconstrain = true;
+            this->_request_reconstrain = true;
         });
     }
 
@@ -65,9 +65,9 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _true_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *true_label, theme->labelStyle);
-            _false_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *false_label, theme->labelStyle);
-            _other_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *other_label, theme->labelStyle);
+            _true_label_stencil = (*true_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
+            _false_label_stencil = (*false_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
+            _other_label_stencil = (*other_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
 
             ttlet minimum_height = std::max(
                 {_true_label_stencil->preferred_extent().height(),
@@ -81,8 +81,8 @@ public:
                  _other_label_stencil->preferred_extent().width()});
             ttlet minimum_width = Theme::smallSize + Theme::margin + minimum_width_of_labels;
 
-            this->p_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            this->p_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+            this->_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
+            this->_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
 
             return true;
         } else {
@@ -94,7 +94,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(this->request_relayout, false);
+        need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             _checkbox_rectangle = aarect{0.0f, this->base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
 
@@ -131,9 +131,9 @@ private:
     typename decltype(false_label)::callback_ptr_type _false_label_callback;
     typename decltype(other_label)::callback_ptr_type _other_label_callback;
 
-    std::unique_ptr<text_stencil> _true_label_stencil;
-    std::unique_ptr<text_stencil> _false_label_stencil;
-    std::unique_ptr<text_stencil> _other_label_stencil;
+    std::unique_ptr<stencil> _true_label_stencil;
+    std::unique_ptr<stencil> _false_label_stencil;
+    std::unique_ptr<stencil> _other_label_stencil;
 
     FontGlyphIDs _check_glyph;
     aarect _check_glyph_rectangle;

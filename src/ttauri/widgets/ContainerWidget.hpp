@@ -7,16 +7,16 @@
 
 namespace tt {
 
-class ContainerWidget : public Widget {
+class ContainerWidget : public widget {
 public:
-    ContainerWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : Widget(window, parent)
+    ContainerWidget(Window &window, std::shared_ptr<widget> parent) noexcept : widget(window, parent)
     {
         if (parent) {
             // Most containers will not draw itself, only its children.
             ttlet lock = std::scoped_lock(GUISystem_mutex);
-            p_semantic_layer = parent->semantic_layer();
+            _semantic_layer = parent->semantic_layer();
         }
-        p_margin = 0.0f;
+        _margin = 0.0f;
     }
 
     ~ContainerWidget() {}
@@ -25,20 +25,20 @@ public:
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
-    [[nodiscard]] std::shared_ptr<Widget> next_keyboard_widget(std::shared_ptr<Widget> const &currentKeyboardWidget, bool reverse) const noexcept override;
+    [[nodiscard]] std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept override;
 
     /** Remove and deallocate all child widgets.
      */
     void clear() noexcept
     {
         children.clear();
-        request_reconstrain = true;
+        _request_reconstrain = true;
     }
 
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    virtual std::shared_ptr<Widget> add_widget(std::shared_ptr<Widget> childWidget) noexcept;
+    virtual std::shared_ptr<widget> add_widget(std::shared_ptr<widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
      */
@@ -51,7 +51,7 @@ public:
     }
 
 protected:
-    std::vector<std::shared_ptr<Widget>> children;
+    std::vector<std::shared_ptr<widget>> children;
 };
 
 } // namespace tt

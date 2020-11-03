@@ -12,21 +12,21 @@
 
 namespace tt {
 
-SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, icon const &icon) noexcept :
-    Widget(window, parent), iconCell(icon.makeCell(Alignment::MiddleCenter))
+SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<widget> parent, icon const &icon) noexcept :
+    widget(window, parent), iconCell(icon.make_stencil(Alignment::MiddleCenter))
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.
-    p_margin = 0.0f;
+    _margin = 0.0f;
 }
 
 [[nodiscard]] bool SystemMenuWidget::update_constraints() noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    if (Widget::update_constraints()) {
+    if (widget::update_constraints()) {
         ttlet width = Theme::toolbarDecorationButtonWidth;
         ttlet height = Theme::toolbarHeight;
-        p_preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
+        _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
         return true;
     } else {
         return false;
@@ -37,7 +37,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<Widget> paren
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    need_layout |= std::exchange(request_relayout, false);
+    need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         iconCell->set_layout_parameters(rectangle());
 
@@ -49,7 +49,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<Widget> paren
             rectangle().height() - Theme::margin};
     }
 
-    return Widget::update_layout(display_time_point, need_layout);
+    return widget::update_layout(display_time_point, need_layout);
 }
 
 void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
@@ -57,17 +57,17 @@ void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point dis
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
     iconCell->draw(context);
-    Widget::draw(std::move(context), display_time_point);
+    widget::draw(std::move(context), display_time_point);
 }
 
 HitBox SystemMenuWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-    if (p_window_clipping_rectangle.contains(window_position)) {
+    if (_window_clipping_rectangle.contains(window_position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return HitBox{weak_from_this(), p_draw_layer, HitBox::Type::ApplicationIcon};
+        return HitBox{weak_from_this(), _draw_layer, HitBox::Type::ApplicationIcon};
     } else {
         return {};
     }

@@ -15,9 +15,9 @@
 
 namespace tt {
 
-class SystemMenuWidget final : public Widget {
+class SystemMenuWidget final : public widget {
 public:
-    SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, icon const &icon) noexcept;
+    SystemMenuWidget(Window &window, std::shared_ptr<widget> parent, icon const &icon) noexcept;
     ~SystemMenuWidget() {}
 
     [[nodiscard]] bool update_constraints() noexcept override;
@@ -28,7 +28,7 @@ public:
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
 private:
-    std::unique_ptr<image_stencil> iconCell;
+    std::unique_ptr<stencil> iconCell;
 
     aarect system_menu_rectangle;
 };

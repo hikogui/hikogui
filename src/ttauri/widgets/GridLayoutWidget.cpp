@@ -72,7 +72,7 @@ GridLayoutWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_l
     return {columns.extent(), rows.extent()};
 }
 
-std::shared_ptr<Widget> GridLayoutWidget::add_widget(cell_address address, std::shared_ptr<Widget> widget) noexcept
+std::shared_ptr<widget> GridLayoutWidget::add_widget(cell_address address, std::shared_ptr<widget> widget) noexcept
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);
     auto tmp = ContainerWidget::add_widget(std::move(widget));
@@ -93,7 +93,7 @@ bool GridLayoutWidget::update_constraints() noexcept
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
     if (ContainerWidget::update_constraints()) {
-        p_preferred_size = calculateCellMinMaxSize(cells, rows, columns);
+        _preferred_size = calculateCellMinMaxSize(cells, rows, columns);
         return true;
     } else {
         return false;
@@ -104,7 +104,7 @@ bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_po
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    need_layout |= std::exchange(request_relayout, false);
+    need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         columns.update_layout(rectangle().width());
         rows.update_layout(rectangle().height());
@@ -114,11 +114,11 @@ bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_po
             ttlet child_rectangle = cell.rectangle(columns, rows);
             ttlet child_base_line = cell.base_line(rows);
 
-            ttlet child_window_rectangle = mat::T2{p_window_rectangle} * child_rectangle;
+            ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
             ttlet child_base_line_position =
                 child_base_line.position(child_window_rectangle.bottom(), child_window_rectangle.top());
 
-            child->set_layout_parameters(child_window_rectangle, p_window_clipping_rectangle, child_base_line_position);
+            child->set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, child_base_line_position);
         }
     }
 

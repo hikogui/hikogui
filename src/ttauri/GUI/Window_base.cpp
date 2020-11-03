@@ -96,7 +96,8 @@ bool Window_base::isClosed()
     return state == State::NoWindow;
 }
 
-void Window_base::next_keyboard_widget(std::shared_ptr<Widget> const &current_target_widget, bool reverse) noexcept {
+void Window_base::next_keyboard_widget(std::shared_ptr<tt::widget> const &current_target_widget, bool reverse) noexcept
+{
     ttlet lock = std::scoped_lock(GUISystem_mutex);
 
     auto tmp = widget->next_keyboard_widget(current_target_widget, reverse);
@@ -125,7 +126,8 @@ void Window_base::windowChangedSize(ivec extent) {
     requestLayout = true;
 }
 
-void Window_base::update_mouse_target(std::shared_ptr<Widget> new_target_widget, vec position) noexcept {
+void Window_base::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, vec position) noexcept
+{
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
     auto current_target_widget = mouseTargetWidget.lock();
@@ -140,7 +142,8 @@ void Window_base::update_mouse_target(std::shared_ptr<Widget> new_target_widget,
     }
 }
 
-void Window_base::update_keyboard_target(std::shared_ptr<Widget> new_target_widget) noexcept {
+void Window_base::update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget) noexcept
+{
     tt_assume(GUISystem_mutex.recurse_lock_count());
     
     auto current_target_widget = keyboardTargetWidget.lock();
@@ -173,10 +176,10 @@ bool Window_base::handle_mouse_event(MouseEvent event) noexcept {
     case MouseEvent::Type::ButtonDown:
     case MouseEvent::Type::Move: {
         ttlet hitbox = widget->hitbox_test(event.position);
-        update_mouse_target(std::const_pointer_cast<Widget>(hitbox.widget.lock()), event.position);
+        update_mouse_target(std::const_pointer_cast<tt::widget>(hitbox.widget.lock()), event.position);
 
         if (event.type == MouseEvent::Type::ButtonDown) {
-            update_keyboard_target(std::const_pointer_cast<Widget>(hitbox.widget.lock()));
+            update_keyboard_target(std::const_pointer_cast<tt::widget>(hitbox.widget.lock()));
         }
         } break;
     default:;

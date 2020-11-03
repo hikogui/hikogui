@@ -12,17 +12,17 @@ namespace tt {
 
 using namespace std;
 
-ToolbarWidget::ToolbarWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : ContainerWidget(window, parent)
+ToolbarWidget::ToolbarWidget(Window &window, std::shared_ptr<widget> parent) noexcept : ContainerWidget(window, parent)
 {
     if (parent) {
         // The toolbar widget does draw itself.
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        p_draw_layer = parent->draw_layer() + 1.0f;
-        p_semantic_layer = parent->semantic_layer() + 1;
+        _draw_layer = parent->draw_layer() + 1.0f;
+        _semantic_layer = parent->semantic_layer() + 1;
     }
 }
 
-std::shared_ptr<Widget> ToolbarWidget::add_widget(HorizontalAlignment alignment, std::shared_ptr<Widget> widget) noexcept
+std::shared_ptr<widget> ToolbarWidget::add_widget(HorizontalAlignment alignment, std::shared_ptr<widget> widget) noexcept
 {
     auto tmp = ContainerWidget::add_widget(std::move(widget));
     switch (alignment) {
@@ -36,7 +36,7 @@ std::shared_ptr<Widget> ToolbarWidget::add_widget(HorizontalAlignment alignment,
 }
 
 void ToolbarWidget::updateConstraintsForChild(
-    Widget const &child,
+    widget const &child,
     ssize_t index,
     relative_base_line &shared_base_line,
     finterval &shared_height) noexcept
@@ -74,15 +74,15 @@ void ToolbarWidget::updateConstraintsForChild(
         }
 
         tt_assume(index == std::ssize(left_children) + 1 + std::ssize(right_children));
-        p_preferred_size = {layout.extent(), finterval{shared_height.minimum()}};
-        p_preferred_base_line = shared_base_line;
+        _preferred_size = {layout.extent(), finterval{shared_height.minimum()}};
+        _preferred_base_line = shared_base_line;
         return true;
     } else {
         return false;
     }
 }
 
-void ToolbarWidget::updateLayoutForChild(Widget &child, ssize_t index) const noexcept
+void ToolbarWidget::updateLayoutForChild(widget &child, ssize_t index) const noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
@@ -91,16 +91,16 @@ void ToolbarWidget::updateLayoutForChild(Widget &child, ssize_t index) const noe
     ttlet child_rectangle = aarect{
         rectangle().x() + child_x, rectangle().y() + child.margin(), child_width, rectangle().height() - child.margin() * 2.0f};
 
-    ttlet child_window_rectangle = mat::T2{p_window_rectangle} * child_rectangle;
+    ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
 
-    child.set_layout_parameters(child_window_rectangle, p_window_clipping_rectangle, p_window_base_line);
+    child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
 }
 
 bool ToolbarWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    need_layout |= std::exchange(request_relayout, false);
+    need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         layout.update_layout(rectangle().width());
 
@@ -135,8 +135,8 @@ HitBox ToolbarWidget::hitbox_test(vec window_position) const noexcept
 
     auto r = HitBox{};
 
-    if (p_window_clipping_rectangle.contains(window_position)) {
-        r = HitBox{weak_from_this(), p_draw_layer, HitBox::Type::MoveArea};
+    if (_window_clipping_rectangle.contains(window_position)) {
+        r = HitBox{weak_from_this(), _draw_layer, HitBox::Type::MoveArea};
     }
 
     for (ttlet &child : children) {

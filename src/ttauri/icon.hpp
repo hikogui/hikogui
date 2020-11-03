@@ -31,7 +31,7 @@ public:
     icon &operator=(icon const &) noexcept;
     icon &operator=(icon &&) noexcept = default;
 
-    [[nodiscard]] std::unique_ptr<image_stencil> makeCell(Alignment alignment) const noexcept;
+    [[nodiscard]] std::unique_ptr<stencil> make_stencil(Alignment alignment) const noexcept;
 
     [[nodiscard]] friend bool operator==(icon const &lhs, icon const &rhs) noexcept
     {

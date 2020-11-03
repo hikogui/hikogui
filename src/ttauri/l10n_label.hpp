@@ -8,6 +8,7 @@
 #include "observable.hpp"
 #include "icon.hpp"
 #include "text/translation.hpp"
+#include "stencils/text_stencil.hpp"
 #include <string>
 #include <type_traits>
 #include <memory>
@@ -143,9 +144,14 @@ public:
         return _icon;
     }
 
-    [[nodiscard]] std::unique_ptr<image_stencil> makeCell(Alignment alignment) const noexcept
+    [[nodiscard]] std::unique_ptr<stencil> make_stencil(Alignment alignment) const noexcept
     {
-        return _icon.makeCell(alignment);
+        return _icon.make_stencil(alignment);
+    }
+
+    [[nodiscard]] std::unique_ptr<stencil> make_stencil(Alignment alignment, TextStyle style) const noexcept
+    {
+        return std::make_unique<text_stencil>(alignment, to_u8string(*this), style);
     }
 
     [[nodiscard]] friend bool operator==(l10n_label const &lhs, l10n_label const &rhs) noexcept

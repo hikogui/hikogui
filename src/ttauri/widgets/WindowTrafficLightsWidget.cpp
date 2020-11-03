@@ -10,27 +10,27 @@
 
 namespace tt {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, std::shared_ptr<Widget> parent) noexcept :
-    Widget(window, parent)
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, std::shared_ptr<widget> parent) noexcept :
+    widget(window, parent)
 {
     // Toolbar buttons hug the toolbar and neighbor widgets.
-    p_margin = 0.0f;
+    _margin = 0.0f;
 }
 
 [[nodiscard]] bool WindowTrafficLightsWidget::update_constraints() noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    if (Widget::update_constraints()) {
+    if (widget::update_constraints()) {
         if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
             ttlet width = Theme::toolbarDecorationButtonWidth * 3.0f;
             ttlet height = Theme::toolbarHeight;
-            p_preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
+            _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
 
         } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
             ttlet width = DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING;
             ttlet height = DIAMETER + 2.0f * MARGIN;
-            p_preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
+            _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
 
         } else {
             tt_no_default();
@@ -46,7 +46,7 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    need_layout |= std::exchange(request_relayout, false);
+    need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         auto extent = rectangle().extent();
 
@@ -100,7 +100,7 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
             align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
         restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
     }
-    return Widget::update_layout(display_time_point, need_layout);
+    return widget::update_layout(display_time_point, need_layout);
 }
 
 void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
@@ -110,7 +110,7 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
     auto context = drawContext;
     context.cornerShapes = vec{RADIUS, RADIUS, RADIUS, RADIUS};
 
-    if (!window.active && !hover) {
+    if (!window.active && !_hover) {
         context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedClose) {
         context.fillColor = vec::color(1.0f, 0.242f, 0.212f);
@@ -120,7 +120,7 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
     context.color = context.fillColor;
     context.drawBoxIncludeBorder(closeRectangle);
 
-    if (!window.active && !hover) {
+    if (!window.active && !_hover) {
         context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedMinimize) {
         context.fillColor = vec::color(1.0f, 0.847f, 0.093f);
@@ -130,7 +130,7 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
     context.color = context.fillColor;
     context.drawBoxIncludeBorder(minimizeRectangle);
 
-    if (!window.active && !hover) {
+    if (!window.active && !_hover) {
         context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedMaximize) {
         context.fillColor = vec::color(0.223f, 0.863f, 0.1f);
@@ -140,7 +140,7 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
     context.color = context.fillColor;
     context.drawBoxIncludeBorder(maximizeRectangle);
 
-    if (hover) {
+    if (_hover) {
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         context.color = vec::color(0.319f, 0.0f, 0.0f);
         context.drawGlyph(closeWindowGlyph, closeWindowGlyphRectangle);
@@ -168,32 +168,32 @@ void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hire
     } else if (hoverClose) {
         context.fillColor = vec::color(0.5f, 0.0f, 0.0f);
     } else {
-        context.fillColor = theme->fillColor(p_semantic_layer - 1);
+        context.fillColor = theme->fillColor(_semantic_layer - 1);
     }
     context.drawFilledQuad(closeRectangle);
 
     if (pressedMinimize) {
-        context.fillColor = theme->fillColor(p_semantic_layer + 1);
+        context.fillColor = theme->fillColor(_semantic_layer + 1);
     } else if (hoverMinimize) {
-        context.fillColor = theme->fillColor(p_semantic_layer);
+        context.fillColor = theme->fillColor(_semantic_layer);
     } else {
-        context.fillColor = theme->fillColor(p_semantic_layer - 1);
+        context.fillColor = theme->fillColor(_semantic_layer - 1);
     }
     context.drawFilledQuad(minimizeRectangle);
 
     if (pressedMaximize) {
-        context.fillColor = theme->fillColor(p_semantic_layer + 1);
+        context.fillColor = theme->fillColor(_semantic_layer + 1);
     } else if (hoverMaximize) {
-        context.fillColor = theme->fillColor(p_semantic_layer);
+        context.fillColor = theme->fillColor(_semantic_layer);
     } else {
-        context.fillColor = theme->fillColor(p_semantic_layer - 1);
+        context.fillColor = theme->fillColor(_semantic_layer - 1);
     }
     context.drawFilledQuad(maximizeRectangle);
 
     if (window.active) {
         context.color = theme->foregroundColor;
     } else {
-        context.color = theme->borderColor(p_semantic_layer);
+        context.color = theme->borderColor(_semantic_layer);
     }
     context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
     context.drawGlyph(closeWindowGlyph, closeWindowGlyphRectangle);
@@ -219,17 +219,17 @@ void WindowTrafficLightsWidget::draw(DrawContext context, hires_utc_clock::time_
         tt_no_default();
     }
 
-    Widget::draw(std::move(context), display_time_point);
+    widget::draw(std::move(context), display_time_point);
 }
 
 bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);
-    auto handled = Widget::handle_mouse_event(event);
+    auto handled = widget::handle_mouse_event(event);
 
     // Check the hover states of each button.
     auto stateHasChanged = false;
-    ttlet position = from_window_transform * event.position;
+    ttlet position = _from_window_transform * event.position;
     stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(position));
     stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(position));
     stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(position));
@@ -280,12 +280,12 @@ bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noex
 HitBox WindowTrafficLightsWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);
-    ttlet position = from_window_transform * window_position;
+    ttlet position = _from_window_transform * window_position;
 
-    if (p_window_clipping_rectangle.contains(window_position)) {
+    if (_window_clipping_rectangle.contains(window_position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) ||
             maximizeRectangle.contains(position)) {
-            return HitBox{weak_from_this(), p_draw_layer, HitBox::Type::Button};
+            return HitBox{weak_from_this(), _draw_layer, HitBox::Type::Button};
         } else {
             return HitBox{};
         }

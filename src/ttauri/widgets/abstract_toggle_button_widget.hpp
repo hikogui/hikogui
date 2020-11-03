@@ -22,7 +22,7 @@ public:
     template<typename Arg = observable<value_type>>
     abstract_toggle_button_widget(
         Window &window,
-        std::shared_ptr<Widget> parent,
+        std::shared_ptr<widget> parent,
         value_type true_value,
         value_type false_value,
         Arg &&arg = {}) noexcept :

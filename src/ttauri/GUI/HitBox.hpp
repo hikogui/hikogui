@@ -9,7 +9,7 @@
 
 namespace tt {
 
-class Widget;
+class widget;
 
 struct HitBox {
     enum class Type : uint8_t {
@@ -29,7 +29,7 @@ struct HitBox {
         ApplicationIcon
     };
 
-    std::weak_ptr<Widget const> widget;
+    std::weak_ptr<widget const> widget;
     float elevation;
     Type type;
 
@@ -37,20 +37,11 @@ struct HitBox {
     {
     }
 
-    HitBox(std::weak_ptr<Widget const> widget, float elevation = -std::numeric_limits<float>::max(), Type type = Type::Default) noexcept
+    HitBox(std::weak_ptr<tt::widget const> widget, float elevation = -std::numeric_limits<float>::max(), Type type = Type::Default) noexcept
         :
         widget(widget), elevation(elevation), type(type)
     {
     }
-
-
-    //friend bool operator==(HitBox const &lhs, HitBox const &rhs) noexcept {
-    //    return lhs.widget == rhs.widget && lhs.elevation == rhs.elevation && lhs.type == rhs.type;
-    //}
-
-    //friend bool operator!=(HitBox const &lhs, HitBox const &rhs) noexcept {
-    //    return !(lhs == rhs);
-    //}
 
     friend bool operator<(HitBox const &lhs, HitBox const &rhs) noexcept {
         if (lhs.widget.expired() == rhs.widget.expired()) {
@@ -65,18 +56,6 @@ struct HitBox {
             return lhs.widget.expired();
         }
     }
-
-    //friend bool operator>(HitBox const &lhs, HitBox const &rhs) noexcept {
-    //    return rhs < lhs;
-    //}
-
-    //friend bool operator<=(HitBox const &lhs, HitBox const &rhs) noexcept {
-    //    return !(lhs > rhs);
-    //}
-
-    //friend bool operator>=(HitBox const &lhs, HitBox const &rhs) noexcept {
-    //    return !(lhs < rhs);
-    //}
 
 };
 

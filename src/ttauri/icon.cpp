@@ -53,7 +53,7 @@ icon &icon::operator=(icon const &other) noexcept
     return *this;
 }
 
-[[nodiscard]] std::unique_ptr<image_stencil> icon::makeCell(Alignment alignment) const noexcept
+[[nodiscard]] std::unique_ptr<stencil> icon::make_stencil(Alignment alignment) const noexcept
 {
     if (ttlet pixel_map = std::get_if<PixelMap<R16G16B16A16SFloat>>(&image)) {
         return std::make_unique<pixel_map_stencil>(alignment, *pixel_map);

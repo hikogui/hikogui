@@ -47,7 +47,7 @@ void WindowWidget::initialize() noexcept
         ttlet toolbar_size = _toolbar->preferred_size();
 
         ttlet content_size = _content->preferred_size();
-        p_preferred_size = intersect(
+        _preferred_size = intersect(
             max(content_size + toolbar_size._0y(), toolbar_size.x0()), interval_vec2::make_maximum(window.virtualScreenSize()));
         return true;
     } else {
@@ -59,16 +59,16 @@ bool WindowWidget::update_layout(hires_utc_clock::time_point display_time_point,
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    need_layout |= std::exchange(request_relayout, false);
+    need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         ttlet toolbar_size = _toolbar->preferred_size();
         ttlet toolbar_height = toolbar_size.minimum().height();
         ttlet toolbar_rectangle = aarect{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        _toolbar->set_layout_parameters(mat::T2{p_window_rectangle} * toolbar_rectangle, p_window_clipping_rectangle);
+        _toolbar->set_layout_parameters(mat::T2{_window_rectangle} * toolbar_rectangle, _window_clipping_rectangle);
 
         ttlet content_size = _content->preferred_size();
         ttlet content_rectangle = aarect{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        _content->set_layout_parameters(mat::T2{p_window_rectangle} * content_rectangle, p_window_clipping_rectangle);
+        _content->set_layout_parameters(mat::T2{_window_rectangle} * content_rectangle, _window_clipping_rectangle);
     }
 
     return ContainerWidget::update_layout(display_time_point, need_layout);
@@ -77,7 +77,7 @@ bool WindowWidget::update_layout(hires_utc_clock::time_point display_time_point,
 HitBox WindowWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);
-    ttlet position = from_window_transform * window_position;
+    ttlet position = _from_window_transform * window_position;
 
     constexpr float BORDER_WIDTH = 10.0f;
 
@@ -91,15 +91,15 @@ HitBox WindowWidget::hitbox_test(vec window_position) const noexcept
     ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
     ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
 
-    auto r = HitBox{weak_from_this(), p_draw_layer};
+    auto r = HitBox{weak_from_this(), _draw_layer};
     if (is_on_bottom_left_corner) {
-        return {weak_from_this(), p_draw_layer, HitBox::Type::BottomLeftResizeCorner};
+        return {weak_from_this(), _draw_layer, HitBox::Type::BottomLeftResizeCorner};
     } else if (is_on_bottom_right_corner) {
-        return {weak_from_this(), p_draw_layer, HitBox::Type::BottomRightResizeCorner};
+        return {weak_from_this(), _draw_layer, HitBox::Type::BottomRightResizeCorner};
     } else if (is_on_top_left_corner) {
-        return {weak_from_this(), p_draw_layer, HitBox::Type::TopLeftResizeCorner};
+        return {weak_from_this(), _draw_layer, HitBox::Type::TopLeftResizeCorner};
     } else if (is_on_top_right_corner) {
-        return {weak_from_this(), p_draw_layer, HitBox::Type::TopRightResizeCorner};
+        return {weak_from_this(), _draw_layer, HitBox::Type::TopRightResizeCorner};
     } else if (is_on_left_edge) {
         r.type = HitBox::Type::LeftResizeBorder;
     } else if (is_on_right_edge) {

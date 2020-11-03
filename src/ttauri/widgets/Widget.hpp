@@ -90,7 +90,7 @@ namespace tt {
  * entered when one of the widget's layout was changed. But if this phase is entered
  * then all the widgets' `draw()` functions are called.
  */
-class Widget : public std::enable_shared_from_this<Widget> {
+class widget : public std::enable_shared_from_this<widget> {
 public:
     /** Convenient reference to the Window.
      */
@@ -99,7 +99,7 @@ public:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    std::weak_ptr<Widget> parent;
+    std::weak_ptr<widget> parent;
 
     /** The widget is enabled.
      */
@@ -107,13 +107,13 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    Widget(Window &window, std::shared_ptr<Widget> parent) noexcept;
+    widget(Window &window, std::shared_ptr<widget> parent) noexcept;
 
-    virtual ~Widget();
-    Widget(const Widget &) = delete;
-    Widget &operator=(const Widget &) = delete;
-    Widget(Widget &&) = delete;
-    Widget &operator=(Widget &&) = delete;
+    virtual ~widget();
+    widget(const widget &) = delete;
+    widget &operator=(const widget &) = delete;
+    widget(widget &&) = delete;
+    widget &operator=(widget &&) = delete;
 
     /** Should be called right after allocating and constructing a widget.
      */
@@ -129,7 +129,7 @@ public:
     [[nodiscard]] float margin() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_margin;
+        return _margin;
     }
 
     /** The first drawing layer of the widget.
@@ -150,7 +150,7 @@ public:
     [[nodiscard]] float draw_layer() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_draw_layer;
+        return _draw_layer;
     }
 
     /** The logical layer of the widget.
@@ -166,7 +166,7 @@ public:
     [[nodiscard]] int logical_layer() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_logical_layer;
+        return _logical_layer;
     }
 
     /** The semantic layer of the widget.
@@ -190,7 +190,7 @@ public:
     [[nodiscard]] int semantic_layer() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_semantic_layer;
+        return _semantic_layer;
     }
 
     /** Get the resistance in width.
@@ -205,7 +205,7 @@ public:
     [[nodiscard]] ranged_int<3> width_resistance() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_width_resistance;
+        return _width_resistance;
     }
 
     /** Get the resistance in height.
@@ -220,7 +220,7 @@ public:
     [[nodiscard]] ranged_int<3> height_resistance() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_height_resistance;
+        return _height_resistance;
     }
 
     /** Get the size-range of the widget.
@@ -234,7 +234,7 @@ public:
     [[nodiscard]] interval_vec2 preferred_size() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_preferred_size;
+        return _preferred_size;
     }
 
     /** Get the relative_base_line of the widget.
@@ -253,7 +253,7 @@ public:
     [[nodiscard]] relative_base_line preferred_base_line() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_preferred_base_line;
+        return _preferred_base_line;
     }
 
     /** Set the location and size of the widget inside the window.
@@ -279,13 +279,13 @@ public:
     ) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        p_window_rectangle = window_rectangle;
-        p_window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
+        _window_rectangle = window_rectangle;
+        _window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
 
         if (std::isinf(window_base_line)) {
-            p_window_base_line = p_preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
+            _window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
         } else {
-            p_window_base_line = window_base_line;
+            _window_base_line = window_base_line;
         }
     }
 
@@ -296,7 +296,7 @@ public:
     [[nodiscard]] aarect window_rectangle() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_window_rectangle;
+        return _window_rectangle;
     }
 
     /** Get the clipping-rectangle in window coordinates.
@@ -306,7 +306,7 @@ public:
     [[nodiscard]] aarect window_clipping_rectangle() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_window_clipping_rectangle;
+        return _window_clipping_rectangle;
     }
 
     /** Get the base-line distance from the bottom of the window.
@@ -316,7 +316,7 @@ public:
     [[nodiscard]] float window_base_line() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_window_base_line;
+        return _window_base_line;
     }
 
     /** Get the rectangle in local coordinates.
@@ -326,7 +326,7 @@ public:
     [[nodiscard]] aarect rectangle() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return aarect{p_window_rectangle.extent()};
+        return aarect{_window_rectangle.extent()};
     }
 
     /** Get the base-line in local coordinates.
@@ -336,7 +336,7 @@ public:
     [[nodiscard]] float base_line() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        return p_window_base_line - p_window_rectangle.y();
+        return _window_base_line - _window_rectangle.y();
     }
 
     [[nodiscard]] GUIDevice *device() const noexcept;
@@ -353,8 +353,8 @@ public:
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-        if (p_window_clipping_rectangle.contains(window_position) && p_window_rectangle.contains(window_position)) {
-            return HitBox{weak_from_this(), p_draw_layer};
+        if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
+            return HitBox{weak_from_this(), _draw_layer};
         } else {
             return {};
         }
@@ -488,69 +488,80 @@ public:
      * @retval currentKeyboardWidget when currentKeyboardWidget was found but no next widget was found.
      * @retval empty when currentKeyboardWidget is not found in this Widget.
      */
-    [[nodiscard]] virtual std::shared_ptr<Widget>
-    next_keyboard_widget(std::shared_ptr<Widget> const &current_keyboard_widget, bool reverse) const noexcept;
+    [[nodiscard]] virtual std::shared_ptr<widget>
+    next_keyboard_widget(std::shared_ptr<widget> const &current_keyboard_widget, bool reverse) const noexcept;
 
 protected:
     /** Mouse cursor is hovering over the widget.
      */
-    bool hover = false;
+    bool _hover = false;
 
     /** The widget has keyboard focus.
      */
-    bool focus = false;
+    bool _focus = false;
 
     /** Transformation matrix from window coords to local coords.
      */
-    mat::T from_window_transform;
+    mat::T _from_window_transform;
 
     /** Transformation matrix from local coords to window coords.
      */
-    mat::T to_window_transform;
+    mat::T _to_window_transform;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
-    bool request_reconstrain = true;
+    bool _request_reconstrain = true;
 
     /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
      */
-    bool request_relayout = true;
+    bool _request_relayout = true;
 
     /** The position of the widget on the window.
      */
-    aarect p_window_rectangle;
+    aarect _window_rectangle;
 
     /** The height of the base line from the bottom of the window.
      */
-    float p_window_base_line;
+    float _window_base_line;
 
     /** The clipping rectangle beyond which not to draw or receive mouse events.
      */
-    aarect p_window_clipping_rectangle;
+    aarect _window_clipping_rectangle;
 
-    interval_vec2 p_preferred_size;
+    interval_vec2 _preferred_size;
 
-    relative_base_line p_preferred_base_line = relative_base_line{};
+    relative_base_line _preferred_base_line = relative_base_line{};
 
-    ranged_int<3> p_width_resistance = 1;
-    ranged_int<3> p_height_resistance = 1;
+    ranged_int<3> _width_resistance = 1;
+    ranged_int<3> _height_resistance = 1;
 
-    float p_margin = Theme::margin;
+    float _margin = Theme::margin;
 
     /** The draw layer of the widget.
+     * This value translates directly to the z-axis between 0.0 (far) and 100.0 (near)
+     * of the clipping volume.
+     * 
+     * This value is discontinues to handle overlay-panels which should be drawn on top
+     * of widgets which may have a high `_logical_layer`.
+     * 
      * @sa draw_layer() const
      */
-    float p_draw_layer;
+    float _draw_layer;
 
     /** The draw layer of the widget.
+     * This value increments for each visible child-layer in the widget tree
+     * and resets on overlay-panels.
+     * 
      * @sa semantic_layer() const
      */
-    int p_semantic_layer;
+    int _semantic_layer;
 
-    /** The draw layer of the widget.
+    /** The logical layer of the widget.
+     * This value increments for each child-layer in the widget tree.
+     * 
      * @sa logical_layer() const
      */
-    int p_logical_layer;
+    int _logical_layer;
 
 private:
     typename decltype(enabled)::callback_ptr_type _enabled_callback;

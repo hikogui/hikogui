@@ -11,14 +11,14 @@ namespace tt {
  * This widgets implements the behavior for a widget where its whole
  * area is clickable, accepts and responds to gui_activate commands.
  */
-class abstract_button_widget : public Widget {
+class abstract_button_widget : public widget {
 public:
     using notifier_type = notifier<void()>;
     using callback_type = typename notifier_type::callback_type;
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
 
-    [[nodiscard]] abstract_button_widget(Window &window, std::shared_ptr<Widget> parent) :
-        Widget(window, parent)
+    [[nodiscard]] abstract_button_widget(Window &window, std::shared_ptr<widget> parent) :
+        widget(window, parent)
     {
     }
 
@@ -31,7 +31,7 @@ public:
     [[nodiscard]] bool handle_command(command command) noexcept final
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        auto handled = Widget::handle_command(command);
+        auto handled = widget::handle_command(command);
 
         if (*enabled) {
             if (command == command::gui_activate) {
@@ -50,7 +50,7 @@ public:
     [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept final
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        auto handled = Widget::handle_mouse_event(event);
+        auto handled = widget::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
             handled = true;
@@ -59,7 +59,7 @@ public:
                     window.requestRedraw = true;
                 }
 
-                if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
+                if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
                     handled |= handle_command(command::gui_activate);
                 }
             }
@@ -71,8 +71,8 @@ public:
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-        if (p_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{weak_from_this(), p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        if (_window_clipping_rectangle.contains(window_position)) {
+            return HitBox{weak_from_this(), _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }

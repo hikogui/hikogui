@@ -15,11 +15,11 @@
 
 namespace tt {
 
-class LineInputWidget final : public Widget {
+class LineInputWidget final : public widget {
 public:
-    LineInputWidget(Window &window, std::shared_ptr<Widget> parent, std::u8string const label) noexcept;
+    LineInputWidget(Window &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept;
 
-    LineInputWidget(Window &window, std::shared_ptr<Widget> parent, l10n_label const label) noexcept :
+    LineInputWidget(Window &window, std::shared_ptr<widget> parent, l10n_label const label) noexcept :
         LineInputWidget(window, parent, std::u8string{label})
     {
     }

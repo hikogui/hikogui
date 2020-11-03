@@ -121,27 +121,7 @@ public:
     //! The widget covering the complete window.
     std::shared_ptr<WindowWidget> widget;
 
-    /** Target of the mouse
-     * Since any mouse event will change the target this is used
-     * to check if the target has changed, to send exit events to the previous mouse target.
-     */
-    std::weak_ptr<Widget> mouseTargetWidget = {};
-
-    /** Target of the keyboard
-     * widget where keyboard events are sent to.
-     */
-    std::weak_ptr<Widget> keyboardTargetWidget = {};
-
-    /** The first widget in the window that needs to be selected.
-     * This widget is selected when the window is opened and when
-     * pressing tab when no other widget is selected.
-     */
-    std::weak_ptr<Widget> firstKeyboardWidget = {};
-
-    /** The first widget in the window that needs to be selected.
-     * This widget is selected when pressing shift-tab when no other widget is selected.
-     */
-    std::weak_ptr<Widget> lastKeyboardWidget = {};
+    
 
     Window_base(GUISystem &system, WindowDelegate *delegate, l10n_label const &title);
     virtual ~Window_base();
@@ -207,7 +187,7 @@ public:
     [[nodiscard]] virtual std::u8string getTextFromClipboard() const noexcept = 0;
     virtual void setTextOnClipboard(std::u8string str) noexcept = 0;
 
-    void next_keyboard_widget(std::shared_ptr<Widget> const &currentTargetWidget, bool reverse) noexcept;
+    void next_keyboard_widget(std::shared_ptr<tt::widget> const &currentTargetWidget, bool reverse) noexcept;
 
     /** Get the size of the virtual-screen.
      * Each window may be on a different virtual screen with different
@@ -254,9 +234,9 @@ protected:
      */
     virtual void build() = 0;
 
-    void update_mouse_target(std::shared_ptr<Widget> new_target_widget, vec position=vec{0.0f, 0.0f}) noexcept;
+    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, vec position = vec{0.0f, 0.0f}) noexcept;
 
-    void update_keyboard_target(std::shared_ptr<Widget> new_target_widget) noexcept;
+    void update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget) noexcept;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
@@ -277,6 +257,28 @@ protected:
 
     bool handle_keyboard_event(char32_t c, bool full=true) noexcept;
 
+private:
+    /** Target of the mouse
+     * Since any mouse event will change the target this is used
+     * to check if the target has changed, to send exit events to the previous mouse target.
+     */
+    std::weak_ptr<tt::widget> mouseTargetWidget = {};
+
+    /** Target of the keyboard
+     * widget where keyboard events are sent to.
+     */
+    std::weak_ptr<tt::widget> keyboardTargetWidget = {};
+
+    /** The first widget in the window that needs to be selected.
+     * This widget is selected when the window is opened and when
+     * pressing tab when no other widget is selected.
+     */
+    std::weak_ptr<tt::widget> firstKeyboardWidget = {};
+
+    /** The first widget in the window that needs to be selected.
+     * This widget is selected when pressing shift-tab when no other widget is selected.
+     */
+    std::weak_ptr<tt::widget> lastKeyboardWidget = {};
 };
 
 }

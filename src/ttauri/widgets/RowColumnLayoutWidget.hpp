@@ -15,7 +15,7 @@ class RowColumnLayoutWidget final : public ContainerWidget {
 public:
     static constexpr bool is_row = IsRow;
 
-    RowColumnLayoutWidget(Window &window, std::shared_ptr<Widget> parent) noexcept : ContainerWidget(window, parent) {}
+    RowColumnLayoutWidget(Window &window, std::shared_ptr<widget> parent) noexcept : ContainerWidget(window, parent) {}
 
     [[nodiscard]] bool update_constraints() noexcept
     {
@@ -36,11 +36,11 @@ public:
             tt_assume(index == std::ssize(children));
 
             if constexpr (is_row) {
-                p_preferred_size = {layout.extent(), shared_thickness};
-                p_preferred_base_line = shared_base_line;
+                _preferred_size = {layout.extent(), shared_thickness};
+                _preferred_base_line = shared_base_line;
             } else {
-                p_preferred_size = {shared_thickness, layout.extent()};
-                p_preferred_base_line = relative_base_line{};
+                _preferred_size = {shared_thickness, layout.extent()};
+                _preferred_base_line = relative_base_line{};
             }
             return true;
         } else {
@@ -52,7 +52,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             layout.update_layout(is_row ? rectangle().width() : rectangle().height());
 
@@ -70,7 +70,7 @@ private:
     flow_layout layout;
 
     void updateConstraintsForChild(
-        Widget const &child,
+        widget const &child,
         ssize_t index,
         relative_base_line &shared_base_line,
         finterval &shared_thickness) noexcept
@@ -88,7 +88,7 @@ private:
         shared_thickness = intersect(shared_thickness, thickness + child.margin() * 2.0f);
     }
 
-    void updateLayoutForChild(Widget &child, ssize_t index) const noexcept
+    void updateLayoutForChild(widget &child, ssize_t index) const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
@@ -107,12 +107,12 @@ private:
                 child_length
             };
 
-        ttlet child_window_rectangle = mat::T2{p_window_rectangle} * child_rectangle;
+        ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
 
         if constexpr (is_row) {
-            child.set_layout_parameters(child_window_rectangle, p_window_clipping_rectangle, p_window_base_line);
+            child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
         } else {
-            child.set_layout_parameters(child_window_rectangle, p_window_clipping_rectangle);
+            child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle);
         }
     }
 };

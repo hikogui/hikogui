@@ -15,9 +15,9 @@ struct Path;
 
 namespace tt {
 
-class WindowTrafficLightsWidget final : public Widget {
+class WindowTrafficLightsWidget final : public widget {
 public:
-    WindowTrafficLightsWidget(Window &window, std::shared_ptr<Widget> parent) noexcept;
+    WindowTrafficLightsWidget(Window &window, std::shared_ptr<widget> parent) noexcept;
     ~WindowTrafficLightsWidget() {}
 
     [[nodiscard]] bool update_constraints() noexcept override;

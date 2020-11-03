@@ -22,7 +22,7 @@
 namespace tt {
 
 template<typename ValueType>
-class SelectionWidget final : public Widget {
+class SelectionWidget final : public widget {
 public:
     using value_type = ValueType;
     using option_list_type = std::vector<std::pair<ValueType, l10n_label>>;
@@ -34,11 +34,11 @@ public:
     template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = l10n_label>
     SelectionWidget(
         Window &window,
-        std::shared_ptr<Widget> parent,
+        std::shared_ptr<widget> parent,
         Value &&value = value_type{},
         OptionList &&option_list = option_list_type{},
         UnknownLabel &&unknown_label = l10n_label{l10n(u8"<unknown>")}) noexcept :
-        Widget(window, parent),
+        widget(window, parent),
         value(std::forward<Value>(value)),
         option_list(std::forward<OptionList>(option_list)),
         unknown_label(std::forward<UnknownLabel>(unknown_label))
@@ -58,14 +58,14 @@ public:
         repopulate_options();
 
         _value_callback = this->value.subscribe([this](auto...) {
-            request_reconstrain = true;
+            _request_reconstrain = true;
         });
         _option_list_callback = this->option_list.subscribe([this](auto...) {
             repopulate_options();
-            request_reconstrain = true;
+            _request_reconstrain = true;
         });
         _unknown_label_callback = this->unknown_label.subscribe([this](auto...) {
-            request_reconstrain = true;
+            _request_reconstrain = true;
         });
     }
 
@@ -73,7 +73,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        auto updated = Widget::update_constraints();
+        auto updated = widget::update_constraints();
         if (selecting) {
             updated |= overlay_widget->update_constraints();
         }
@@ -81,22 +81,22 @@ public:
         if (updated) {
             ttlet index = get_value_as_index();
             if (index == -1) {
-                text_stencil = std::make_unique<tt::text_stencil>(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle);
+                text_stencil = (*unknown_label).make_stencil(Alignment::MiddleLeft, theme->placeholderLabelStyle);
                 text_stencil_color = theme->placeholderLabelStyle.color;
             } else {
-                text_stencil =
-                    std::make_unique<tt::text_stencil>(Alignment::MiddleLeft, (*option_list)[index].second, theme->labelStyle);
+                text_stencil = (*option_list)[index].second.make_stencil(Alignment::MiddleLeft, theme->labelStyle);
                 text_stencil_color = theme->labelStyle.color;
             }
 
-            auto text_size = tt::text_stencil(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle).preferred_extent();
+            auto text_size =
+                (*unknown_label).make_stencil(Alignment::MiddleLeft, theme->placeholderLabelStyle)->preferred_extent();
             for (ttlet & [ tag, text ] : *option_list) {
-                text_size = max(text_size, tt::text_stencil(Alignment::MiddleLeft, text, theme->labelStyle).preferred_extent());
+                text_size = max(text_size, text.make_stencil(Alignment::MiddleLeft, theme->labelStyle)->preferred_extent());
             }
 
-            p_preferred_size =
+            _preferred_size =
                 interval_vec2::make_minimum(text_size) + vec{Theme::smallSize + Theme::margin * 2.0f, Theme::margin * 2.0f};
-            p_preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
+            _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
             return true;
 
         } else {
@@ -108,7 +108,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
 
         if (selecting) {
             if (need_layout) {
@@ -120,8 +120,8 @@ public:
 
                 ttlet overlay_width = clamp(rectangle().width() - Theme::smallSize, overlay_widget->preferred_size().width());
                 ttlet overlay_height = overlay_widget->preferred_size().maximum().height();
-                ttlet overlay_x = p_window_rectangle.x() + Theme::smallSize;
-                ttlet overlay_y = std::round(p_window_rectangle.middle() - overlay_height * 0.5f);
+                ttlet overlay_x = _window_rectangle.x() + Theme::smallSize;
+                ttlet overlay_y = std::round(_window_rectangle.middle() - overlay_height * 0.5f);
                 ttlet overlay_rectangle = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
 
                 overlay_widget->set_layout_parameters(overlay_rectangle, overlay_rectangle);
@@ -144,7 +144,7 @@ public:
 
             text_stencil->set_layout_parameters(option_rectangle, base_line());
         }
-        return Widget::update_layout(display_time_point, need_layout);
+        return widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -160,18 +160,18 @@ public:
             overlay_widget->draw(overlay_widget->make_draw_context(context), display_time_point);
         }
 
-        Widget::draw(std::move(context), display_time_point);
+        widget::draw(std::move(context), display_time_point);
     }
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        auto handled = Widget::handle_mouse_event(event);
+        auto handled = widget::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
             handled = true;
             if (*enabled) {
-                if (event.type == MouseEvent::Type::ButtonUp && p_window_rectangle.contains(event.position)) {
+                if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
                     handle_command(command::gui_activate);
                 }
             }
@@ -182,7 +182,7 @@ public:
     bool handle_command(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        auto handled = Widget::handle_command(command);
+        auto handled = widget::handle_command(command);
 
         if (*enabled) {
             if (command == command::gui_activate) {
@@ -191,14 +191,14 @@ public:
             }
         }
 
-        request_relayout = true;
+        _request_relayout = true;
         return handled;
     }
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        ttlet position = from_window_transform * window_position;
+        ttlet position = _from_window_transform * window_position;
 
         auto r = HitBox{};
 
@@ -206,8 +206,8 @@ public:
             r = std::max(r, overlay_widget->hitbox_test(window_position));
         }
 
-        if (p_window_clipping_rectangle.contains(window_position)) {
-            r = std::max(r, HitBox{weak_from_this(), p_draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default});
+        if (_window_clipping_rectangle.contains(window_position)) {
+            r = std::max(r, HitBox{weak_from_this(), _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default});
         }
 
         return r;
@@ -237,8 +237,8 @@ private:
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
     typename decltype(value)::callback_ptr_type _value_callback;
     typename decltype(option_list)::callback_ptr_type _option_list_callback;
-    
-    std::unique_ptr<text_stencil> text_stencil;
+
+    std::unique_ptr<stencil> text_stencil;
     vec text_stencil_color;
 
     aarect option_rectangle;

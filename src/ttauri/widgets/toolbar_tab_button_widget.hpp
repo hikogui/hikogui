@@ -26,7 +26,7 @@ public:
     template<typename Value, typename Label = observable<l10n_label>>
     toolbar_tab_button_widget(
         Window &window,
-        std::shared_ptr<Widget> parent,
+        std::shared_ptr<widget> parent,
         value_type true_value,
         Value &&value,
         Label &&label = l10n_label{}) noexcept :
@@ -35,7 +35,7 @@ public:
     {
     }
 
-    toolbar_tab_button_widget(Window &window, std::shared_ptr<Widget> parent, value_type true_value) noexcept :
+    toolbar_tab_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
         toolbar_tab_button_widget(window, parent, std::move(true_value), observable<int>{}, l10n{})
     {
     }
@@ -45,7 +45,7 @@ public:
     void initialize() noexcept override
     {
         _label_callback = label.subscribe([this](auto...) {
-            this->request_reconstrain = true;
+            this->_request_reconstrain = true;
         });
     }
 
@@ -54,13 +54,13 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _label_stencil = std::make_unique<text_stencil>(Alignment::MiddleCenter, *label, theme->labelStyle);
+            _label_stencil = (*label).make_stencil(Alignment::MiddleCenter, theme->labelStyle);
 
             ttlet minimum_height = _label_stencil->preferred_extent().height();
             ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * Theme::margin;
 
-            this->p_preferred_size = {vec{minimum_width, minimum_height}, vec{minimum_width, std::numeric_limits<float>::infinity()}};
-            this->p_preferred_base_line = relative_base_line{VerticalAlignment::Middle, -Theme::margin};
+            this->_preferred_size = {vec{minimum_width, minimum_height}, vec{minimum_width, std::numeric_limits<float>::infinity()}};
+            this->_preferred_base_line = relative_base_line{VerticalAlignment::Middle, -Theme::margin};
             return true;
         } else {
             return false;
@@ -71,7 +71,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(this->request_relayout, false);
+        need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             ttlet offset = Theme::margin + Theme::borderWidth;
             _button_rectangle = aarect{
@@ -99,11 +99,11 @@ public:
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
     aarect _button_rectangle;
-    std::unique_ptr<text_stencil> _label_stencil;
+    std::unique_ptr<stencil> _label_stencil;
 
     void draw_focus_line(DrawContext const &context) noexcept
     {
-        if (this->focus && this->window.active && *this->value == this->true_value) {
+        if (this->_focus && this->window.active && *this->value == this->true_value) {
             auto parent_ = this->parent.lock();
             tt_assume(std::dynamic_pointer_cast<class ToolbarWidget>(parent_) != nullptr);
 
@@ -124,7 +124,7 @@ private:
     void draw_button(DrawContext context) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        if (this->focus && this->window.active) {
+        if (this->_focus && this->window.active) {
             // The focus line will be placed at 0.7.
             context.transform = mat::T(0.0f, 0.0f, 0.8f) * context.transform;
         } else {
@@ -134,15 +134,15 @@ private:
         // Override the clipping rectangle to match the toolbar.
         context.clippingRectangle = this->parent.lock()->window_rectangle();
 
-        if (this->hover || *this->value == this->true_value) {
-            context.fillColor = theme->fillColor(this->p_semantic_layer - 2);
+        if (this->_hover || *this->value == this->true_value) {
+            context.fillColor = theme->fillColor(this->_semantic_layer - 2);
             context.color = context.fillColor;
         } else {
-            context.fillColor = theme->fillColor(this->p_semantic_layer - 1);
+            context.fillColor = theme->fillColor(this->_semantic_layer - 1);
             context.color = context.fillColor;
         }
 
-        if (this->focus && this->window.active) {
+        if (this->_focus && this->window.active) {
             context.color = theme->accentColor;
         }
 

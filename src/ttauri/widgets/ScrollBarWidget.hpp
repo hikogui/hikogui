@@ -15,18 +15,18 @@
 namespace tt {
 
 template<bool IsVertical>
-class ScrollBarWidget final : public Widget {
+class ScrollBarWidget final : public widget {
 public:
     static constexpr bool is_vertical = IsVertical;
 
     template<typename Content, typename Aperture, typename Offset>
     ScrollBarWidget(
         Window &window,
-        std::shared_ptr<Widget> parent,
+        std::shared_ptr<widget> parent,
         Content &&content,
         Aperture &&aperture,
         Offset &&offset) noexcept :
-        Widget(window, parent),
+        widget(window, parent),
         content(std::forward<Content>(content)),
         aperture(std::forward<Aperture>(aperture)),
         offset(std::forward<Offset>(offset))
@@ -48,19 +48,19 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (Widget::update_constraints()) {
+        if (widget::update_constraints()) {
             ttlet minimum_length = Theme::width; // even for vertical bars.
             ttlet thickness = Theme::margin * 2;
 
             if constexpr (is_vertical) {
-                p_preferred_size =
+                _preferred_size =
                     interval_vec2{vec{thickness, minimum_length}, vec{thickness, std::numeric_limits<float>::max()}};
             } else {
-                p_preferred_size =
+                _preferred_size =
                     interval_vec2{vec{minimum_length, thickness}, vec{std::numeric_limits<float>::max(), thickness}};
             }
 
-            p_preferred_base_line = {};
+            _preferred_base_line = {};
             return true;
         } else {
             return false;
@@ -71,7 +71,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             tt_assume(*content != 0.0f);
 
@@ -86,7 +86,7 @@ public:
             }
         }
 
-        return Widget::update_layout(display_time_point, need_layout);
+        return widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -97,16 +97,16 @@ public:
             draw_rails(context);
             draw_slider(context);
         }
-        Widget::draw(std::move(context), display_time_point);
+        widget::draw(std::move(context), display_time_point);
     }
 
     HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        ttlet position = from_window_transform * window_position;
+        ttlet position = _from_window_transform * window_position;
 
-        if (p_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && visible()) {
-            return HitBox{weak_from_this(), p_draw_layer};
+        if (_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && visible()) {
+            return HitBox{weak_from_this(), _draw_layer};
         } else {
             return HitBox{};
         }
@@ -115,7 +115,7 @@ public:
     [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        auto handled = Widget::handle_mouse_event(event);
+        auto handled = widget::handle_mouse_event(event);
         
         if (event.cause.leftButton) {
             handled = true;
@@ -226,8 +226,8 @@ private:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        context.color = theme->fillColor(p_semantic_layer);
-        context.fillColor = theme->fillColor(p_semantic_layer);
+        context.color = theme->fillColor(_semantic_layer);
+        context.fillColor = theme->fillColor(_semantic_layer);
         if constexpr (is_vertical) {
             context.cornerShapes = vec{rectangle().width() * 0.5f};
         } else {
@@ -240,8 +240,8 @@ private:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        context.color = theme->fillColor(p_semantic_layer + 1);
-        context.fillColor = theme->fillColor(p_semantic_layer + 1);
+        context.color = theme->fillColor(_semantic_layer + 1);
+        context.fillColor = theme->fillColor(_semantic_layer + 1);
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         if constexpr (is_vertical) {
             context.cornerShapes = vec{slider_rectangle.width() * 0.5f};

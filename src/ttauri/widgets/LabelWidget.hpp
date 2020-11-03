@@ -16,14 +16,14 @@
 
 namespace tt {
 
-class LabelWidget final : public Widget {
+class LabelWidget final : public widget {
 public:
-    using super = Widget;
+    using super = widget;
 
     observable<l10n_label> label;
 
     template<typename Label>
-    LabelWidget(Window &window, std::shared_ptr<Widget> parent, Alignment alignment, Label &&label) noexcept
+    LabelWidget(Window &window, std::shared_ptr<widget> parent, Alignment alignment, Label &&label) noexcept
         :
         super(window, parent),
         alignment(alignment),
@@ -32,7 +32,7 @@ public:
     }
 
     template<typename Label>
-    LabelWidget(Window &window, std::shared_ptr<Widget> parent, Label &&label) noexcept :
+    LabelWidget(Window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
         super(window, parent), alignment(Alignment::TopRight), label(std::forward<Label>(label))
     {
     }
@@ -42,7 +42,7 @@ public:
 
     void initialize() noexcept override {
         label_callback = label.subscribe([this](auto...) {
-            request_reconstrain = true;
+            _request_reconstrain = true;
         });
     }
 
@@ -50,8 +50,8 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            labelCell = std::make_unique<text_stencil>(alignment, *label, theme->labelStyle);
-            p_preferred_size = interval_vec2::make_minimum(labelCell->preferred_extent());
+            labelCell = (*label).make_stencil(alignment, theme->labelStyle);
+            _preferred_size = interval_vec2::make_minimum(labelCell->preferred_extent());
             return true;
         } else {
             return false;
@@ -62,7 +62,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(this->request_relayout, false);
+        need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             labelCell->set_layout_parameters(rectangle(), base_line());
         }
@@ -77,13 +77,13 @@ public:
         }
 
         labelCell->draw(context, true);
-        Widget::draw(std::move(context), display_time_point);
+        widget::draw(std::move(context), display_time_point);
     }
 
 private:
     typename decltype(label)::callback_ptr_type label_callback;
 
-    std::unique_ptr<text_stencil> labelCell;
+    std::unique_ptr<stencil> labelCell;
     Alignment alignment;
 };
 

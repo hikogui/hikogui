@@ -20,12 +20,12 @@ public:
 
     observable<l10n_label> label;
 
-    button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept : super(window, parent) {}
+    button_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent) {}
 
     void initialize() noexcept override
     {
         _label_callback = label.subscribe([this](auto...) {
-            request_reconstrain = true;
+            _request_reconstrain = true;
         });
 
         _callback = subscribe([this](auto...) {
@@ -38,8 +38,8 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            labelCell = std::make_unique<text_stencil>(Alignment::MiddleCenter, *label, theme->labelStyle);
-            p_preferred_size = interval_vec2::make_minimum(labelCell->preferred_extent() + Theme::margin2Dx2);
+            _label_stencil = (*label).make_stencil(Alignment::MiddleCenter, theme->labelStyle);
+            _preferred_size = interval_vec2::make_minimum(_label_stencil->preferred_extent() + Theme::margin2Dx2);
             return true;
         } else {
             return false;
@@ -50,9 +50,9 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(this->request_relayout, false);
+        need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            labelCell->set_layout_parameters(rectangle(), base_line());
+            _label_stencil->set_layout_parameters(rectangle(), base_line());
         }
         return super::update_layout(displayTimePoint, need_layout);
     }
@@ -73,7 +73,7 @@ public:
             context.color = theme->foregroundColor;
         }
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
-        labelCell->draw(context, true);
+        _label_stencil->draw(context, true);
 
         abstract_button_widget::draw(std::move(context), display_time_point);
     }
@@ -93,7 +93,7 @@ private:
     decltype(label)::callback_ptr_type _label_callback;
     callback_ptr_type _callback;
 
-    std::unique_ptr<text_stencil> labelCell;
+    std::unique_ptr<stencil> _label_stencil;
 };
 
 } // namespace tt

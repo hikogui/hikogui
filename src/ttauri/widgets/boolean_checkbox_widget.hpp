@@ -13,7 +13,7 @@ namespace tt {
 class boolean_checkbox_widget : public checkbox_widget<bool> {
 public:
     template<typename Value = observable<bool>>
-    boolean_checkbox_widget(Window &window, std::shared_ptr<Widget> parent, Value &&value = {}) noexcept :
+    boolean_checkbox_widget(Window &window, std::shared_ptr<widget> parent, Value &&value = {}) noexcept :
         checkbox_widget<bool>(window, parent, true, false, std::forward<Value>(value))
     {
     }

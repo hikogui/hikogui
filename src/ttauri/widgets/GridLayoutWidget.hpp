@@ -15,7 +15,7 @@ namespace tt {
 
 class GridLayoutWidget : public ContainerWidget {
 public:
-    GridLayoutWidget(Window &window, std::shared_ptr<Widget> parent, GridLayoutDelegate *delegate = nullptr) noexcept :
+    GridLayoutWidget(Window &window, std::shared_ptr<widget> parent, GridLayoutDelegate *delegate = nullptr) noexcept :
         ContainerWidget(window, parent), delegate(delegate)
     {
         
@@ -40,7 +40,7 @@ public:
 
     /* Add a widget to the grid.
      */
-    std::shared_ptr<Widget> add_widget(cell_address address, std::shared_ptr<Widget> childWidget) noexcept;
+    std::shared_ptr<widget> add_widget(cell_address address, std::shared_ptr<widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
      *
@@ -67,9 +67,9 @@ public:
 private:
     struct cell {
         cell_address address;
-        std::shared_ptr<Widget> widget;
+        std::shared_ptr<tt::widget> widget;
 
-        cell(cell_address address, std::shared_ptr<Widget> widget) noexcept : address(address), widget(std::move(widget)) {}
+        cell(cell_address address, std::shared_ptr<tt::widget> widget) noexcept : address(address), widget(std::move(widget)) {}
 
         [[nodiscard]] aarect rectangle(flow_layout const &columns, flow_layout const &rows) const noexcept
         {

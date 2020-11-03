@@ -26,7 +26,7 @@ public:
     template<typename Value, typename Label>
     radio_button_widget(
         Window &window,
-        std::shared_ptr<Widget> parent,
+        std::shared_ptr<widget> parent,
         value_type true_value,
         Value &&value,
         Label &&label) noexcept :
@@ -36,12 +36,12 @@ public:
     }
 
     template<typename Value>
-    radio_button_widget(Window &window, std::shared_ptr<Widget> parent, value_type true_value, Value &&value) noexcept :
+    radio_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value) noexcept :
         radio_button_widget(window, parent, std::move(true_value), std::forward<Value>(value), l10n_label{})
     {
     }
 
-    radio_button_widget(Window &window, std::shared_ptr<Widget> parent, value_type true_value) noexcept :
+    radio_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
         radio_button_widget(window, parent, std::move(true_value), observable<value_type>{}, l10n_label{})
     {
     }
@@ -51,7 +51,7 @@ public:
     void initialize() noexcept override
     {
         label_callback = label.subscribe([this](auto...) {
-            super::request_reconstrain = true;
+            this->_request_reconstrain = true;
         });
     }
 
@@ -59,14 +59,14 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (Widget::update_constraints()) {
-            _label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *label, theme->labelStyle);
+        if (widget::update_constraints()) {
+            _label_stencil = (*label).make_stencil(Alignment::TopLeft, theme->labelStyle);
 
             ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), Theme::smallSize);
             ttlet minimum_width = Theme::smallSize + Theme::margin + _label_stencil->preferred_extent().width();
 
-            super::p_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            super::p_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+            super::_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
+            super::_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
             return true;
         } else {
             return false;
@@ -77,7 +77,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(this->request_relayout, false);
+        need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             _outline_rectangle = aarect{0.0f, this->base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
 
@@ -87,7 +87,7 @@ public:
 
             _pip_rectangle = shrink(_outline_rectangle, 1.5f);
         }
-        return Widget::update_layout(display_time_point, need_layout);
+        return widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -97,14 +97,14 @@ public:
         draw_outline(context);
         draw_pip(context);
         draw_label(context);
-        Widget::draw(std::move(context), display_time_point);
+        widget::draw(std::move(context), display_time_point);
     }
 
 private:
     aarect _outline_rectangle;
     aarect _pip_rectangle;
     aarect _label_rectangle;
-    std::unique_ptr<text_stencil> _label_stencil;
+    std::unique_ptr<stencil> _label_stencil;
 
     typename decltype(label)::callback_ptr_type label_callback;
 
