@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Widget.hpp"
+#include "widget.hpp"
 #include "../GUI/utils.hpp"
 
 namespace tt {

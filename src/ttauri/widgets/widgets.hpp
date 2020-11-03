@@ -17,7 +17,7 @@
 #include "overlay_view_widget.hpp"
 #include "radio_button_widget.hpp"
 #include "tab_view_widget.hpp"
-#include "ToolbarWidget.hpp"
+#include "toolbar_widget.hpp"
 #include "toolbar_button_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "WindowWidget.hpp"

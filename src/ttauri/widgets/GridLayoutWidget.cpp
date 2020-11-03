@@ -75,9 +75,9 @@ GridLayoutWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_l
 std::shared_ptr<widget> GridLayoutWidget::add_widget(cell_address address, std::shared_ptr<widget> widget) noexcept
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);
-    auto tmp = ContainerWidget::add_widget(std::move(widget));
+    auto tmp = abstract_container_widget::add_widget(std::move(widget));
 
-    if (std::ssize(children) == 0) {
+    if (std::ssize(_children) == 0) {
         // When there are no children, relative addresses need to start at the origin.
         current_address = "L0T0"_ca;
     } else {
@@ -92,7 +92,7 @@ bool GridLayoutWidget::update_constraints() noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    if (ContainerWidget::update_constraints()) {
+    if (abstract_container_widget::update_constraints()) {
         _preferred_size = calculateCellMinMaxSize(cells, rows, columns);
         return true;
     } else {
@@ -122,7 +122,7 @@ bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_po
         }
     }
 
-    return ContainerWidget::update_layout(display_time_point, need_layout);
+    return abstract_container_widget::update_layout(display_time_point, need_layout);
 }
 
 } // namespace tt

@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "WindowDelegate.hpp"
-#include "../widgets/ContainerWidget.hpp"
+#include "../widgets/abstract_container_widget.hpp"
 
 namespace tt {
 

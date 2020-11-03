@@ -3,7 +3,7 @@
 
 #include "WindowWidget.hpp"
 #include "WindowTrafficLightsWidget.hpp"
-#include "ToolbarWidget.hpp"
+#include "toolbar_widget.hpp"
 #include "GridLayoutWidget.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "SystemMenuWidget.hpp"
@@ -15,7 +15,7 @@ namespace tt {
 using namespace std;
 
 WindowWidget::WindowWidget(Window &window, GridLayoutDelegate *delegate, l10n_label title) noexcept :
-    ContainerWidget(window, {}), title(std::move(title)), _content_delegate(delegate)
+    abstract_container_widget(window, {}), title(std::move(title)), _content_delegate(delegate)
 {
 }
 
@@ -23,7 +23,7 @@ WindowWidget::~WindowWidget() {}
 
 void WindowWidget::initialize() noexcept
 {
-    _toolbar = make_widget<ToolbarWidget>();
+    _toolbar = make_widget<toolbar_widget>();
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
@@ -43,7 +43,7 @@ void WindowWidget::initialize() noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    if (ContainerWidget::update_constraints()) {
+    if (abstract_container_widget::update_constraints()) {
         ttlet toolbar_size = _toolbar->preferred_size();
 
         ttlet content_size = _content->preferred_size();
@@ -71,7 +71,7 @@ bool WindowWidget::update_layout(hires_utc_clock::time_point display_time_point,
         _content->set_layout_parameters(mat::T2{_window_rectangle} * content_rectangle, _window_clipping_rectangle);
     }
 
-    return ContainerWidget::update_layout(display_time_point, need_layout);
+    return abstract_container_widget::update_layout(display_time_point, need_layout);
 }
 
 HitBox WindowWidget::hitbox_test(vec window_position) const noexcept
@@ -119,7 +119,7 @@ HitBox WindowWidget::hitbox_test(vec window_position) const noexcept
         return r;
     }
 
-    for (ttlet &child : children) {
+    for (ttlet &child : _children) {
         r = std::max(r, child->hitbox_test(window_position));
     }
 

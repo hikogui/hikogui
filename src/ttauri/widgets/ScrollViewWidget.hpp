@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "widget.hpp"
 #include "GridLayoutWidget.hpp"
 #include "ScrollBarWidget.hpp"
 

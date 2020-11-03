@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "widget.hpp"
 #include "../GUI/PipelineImage_Image.hpp"
 #include "../Path.hpp"
 #include "../icon.hpp"

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ContainerWidget.hpp"
+#include "abstract_container_widget.hpp"
 #include "../GUI/Theme.hpp"
 #include "../flow_layout.hpp"
 #include <memory>
@@ -11,29 +11,29 @@
 namespace tt {
 
 template<bool IsRow>
-class RowColumnLayoutWidget final : public ContainerWidget {
+class RowColumnLayoutWidget final : public abstract_container_widget {
 public:
     static constexpr bool is_row = IsRow;
 
-    RowColumnLayoutWidget(Window &window, std::shared_ptr<widget> parent) noexcept : ContainerWidget(window, parent) {}
+    RowColumnLayoutWidget(Window &window, std::shared_ptr<widget> parent) noexcept : abstract_container_widget(window, parent) {}
 
     [[nodiscard]] bool update_constraints() noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (ContainerWidget::update_constraints()) {
+        if (abstract_container_widget::update_constraints()) {
             auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
             auto shared_thickness = finterval{};
 
             layout.clear();
-            layout.reserve(std::ssize(children));
+            layout.reserve(std::ssize(_children));
 
             ssize_t index = 0;
-            for (ttlet &child : children) {
+            for (ttlet &child : _children) {
                 updateConstraintsForChild(*child, index++, shared_base_line, shared_thickness);
             }
 
-            tt_assume(index == std::ssize(children));
+            tt_assume(index == std::ssize(_children));
 
             if constexpr (is_row) {
                 _preferred_size = {layout.extent(), shared_thickness};
@@ -57,13 +57,13 @@ public:
             layout.update_layout(is_row ? rectangle().width() : rectangle().height());
 
             ssize_t index = 0;
-            for (ttlet &child : children) {
+            for (ttlet &child : _children) {
                 updateLayoutForChild(*child, index++);
             }
 
-            tt_assume(index == std::ssize(children));
+            tt_assume(index == std::ssize(_children));
         }
-        return ContainerWidget::update_layout(display_time_point, need_layout);
+        return abstract_container_widget::update_layout(display_time_point, need_layout);
     }
 
 private:

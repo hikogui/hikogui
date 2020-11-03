@@ -105,7 +105,7 @@ private:
     {
         if (this->_focus && this->window.active && *this->value == this->true_value) {
             auto parent_ = this->parent.lock();
-            tt_assume(std::dynamic_pointer_cast<class ToolbarWidget>(parent_) != nullptr);
+            tt_assume(std::dynamic_pointer_cast<class toolbar_widget>(parent_) != nullptr);
 
             // Draw the focus line over the full width of the window at the bottom
             // of the toolbar.

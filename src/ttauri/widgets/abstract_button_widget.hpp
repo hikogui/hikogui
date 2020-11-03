@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "widget.hpp"
 
 namespace tt {
 

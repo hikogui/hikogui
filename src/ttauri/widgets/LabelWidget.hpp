@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "widget.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../stencils/text_stencil.hpp"
 #include "../observable.hpp"

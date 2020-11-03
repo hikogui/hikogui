@@ -2,12 +2,11 @@
 target_sources(ttauri PRIVATE
     abstract_bool_toggle_button_widget.hpp
     abstract_button_widget.hpp
+    abstract_container_widget.hpp
     abstract_toggle_button_widget.hpp
     boolean_checkbox_widget.hpp
     button_widget.hpp
     checkbox_widget.hpp
-    ContainerWidget.cpp
-    ContainerWidget.hpp
     GridLayoutWidget.cpp
     GridLayoutWidget.hpp
     GridLayoutDelegate.hpp
@@ -26,10 +25,9 @@ target_sources(ttauri PRIVATE
     toggle_widget.hpp
     toolbar_button_widget.hpp
     toolbar_tab_button_widget.hpp
-    ToolbarWidget.cpp
-    ToolbarWidget.hpp
-    Widget.cpp
-    Widget.hpp
+    toolbar_widget.hpp
+    widget.cpp
+    widget.hpp
     widgets.hpp
     WindowTrafficLightsWidget.cpp
     WindowTrafficLightsWidget.hpp

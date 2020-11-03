@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ContainerWidget.hpp"
+#include "abstract_container_widget.hpp"
 #include "GridLayoutDelegate.hpp"
 #include "../iaarect.hpp"
 #include "../GUI/Theme.hpp"
@@ -13,10 +13,10 @@
 
 namespace tt {
 
-class GridLayoutWidget : public ContainerWidget {
+class GridLayoutWidget : public abstract_container_widget {
 public:
     GridLayoutWidget(Window &window, std::shared_ptr<widget> parent, GridLayoutDelegate *delegate = nullptr) noexcept :
-        ContainerWidget(window, parent), delegate(delegate)
+        abstract_container_widget(window, parent), delegate(delegate)
     {
         
     }

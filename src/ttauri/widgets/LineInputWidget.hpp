@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "widget.hpp"
 #include "../text/EditableText.hpp"
 #include "../format.hpp"
 #include "../l10n_label.hpp"

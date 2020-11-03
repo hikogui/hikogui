@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "widget.hpp"
 #include "WindowWidget.hpp"
 #include "overlay_view_widget.hpp"
 #include "ScrollViewWidget.hpp"

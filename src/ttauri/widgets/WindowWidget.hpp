@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "ContainerWidget.hpp"
+#include "abstract_container_widget.hpp"
 #include "../l10n_label.hpp"
 
 namespace tt {
 
-class ToolbarWidget;
+class toolbar_widget;
 class GridLayoutWidget;
 
-class WindowWidget final : public ContainerWidget {
+class WindowWidget final : public abstract_container_widget {
 public:
     WindowWidget(Window &window, GridLayoutDelegate *delegate, l10n_label title) noexcept;
     ~WindowWidget();
@@ -45,7 +45,7 @@ public:
         return _content;
     }
 
-    [[nodiscard]] std::shared_ptr<ToolbarWidget> toolbar() const noexcept
+    [[nodiscard]] std::shared_ptr<toolbar_widget> toolbar() const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
         tt_assume(_toolbar);
@@ -56,7 +56,7 @@ private:
     l10n_label title;
     GridLayoutDelegate *_content_delegate;
     std::shared_ptr<GridLayoutWidget> _content;
-    std::shared_ptr<ToolbarWidget> _toolbar;
+    std::shared_ptr<toolbar_widget> _toolbar;
 
     bool left_resize_border_has_priority = true;
     bool right_resize_border_has_priority = true;
