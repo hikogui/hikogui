@@ -60,10 +60,10 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (Widget::update_constraints()) {
-            _label_cell = std::make_unique<TextCell>(*label, theme->labelStyle);
+            _label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *label, theme->labelStyle);
 
-            ttlet minimum_height = std::max(_label_cell->preferredExtent().height(), Theme::smallSize);
-            ttlet minimum_width = Theme::smallSize + Theme::margin + _label_cell->preferredExtent().width();
+            ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), Theme::smallSize);
+            ttlet minimum_width = Theme::smallSize + Theme::margin + _label_stencil->preferred_extent().width();
 
             super::p_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
             super::p_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
@@ -83,6 +83,7 @@ public:
 
             ttlet labelX = _outline_rectangle.p3().x() + Theme::margin;
             _label_rectangle = aarect{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
+            _label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 
             _pip_rectangle = shrink(_outline_rectangle, 1.5f);
         }
@@ -103,7 +104,7 @@ private:
     aarect _outline_rectangle;
     aarect _pip_rectangle;
     aarect _label_rectangle;
-    std::unique_ptr<TextCell> _label_cell;
+    std::unique_ptr<text_stencil> _label_stencil;
 
     typename decltype(label)::callback_ptr_type label_callback;
 
@@ -138,7 +139,7 @@ private:
             context.color = theme->labelStyle.color;
         }
 
-        _label_cell->draw(context, _label_rectangle, Alignment::TopLeft, this->base_line(), true);
+        _label_stencil->draw(context, true);
     }
 };
 

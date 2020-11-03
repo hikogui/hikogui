@@ -104,7 +104,7 @@ void LineInputWidget::scrollText() noexcept
     }
 
     // cap how far we scroll.
-    ttlet maxScrollWidth = std::max(0.0f, shapedText.preferredExtent.width() - textRectangle.width());
+    ttlet maxScrollWidth = std::max(0.0f, shapedText.preferred_extent.width() - textRectangle.width());
     textScrollX = std::clamp(textScrollX, 0.0f, maxScrollWidth);
 
     // Calculate how much we need to translate the text.

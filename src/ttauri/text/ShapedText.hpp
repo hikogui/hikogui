@@ -33,14 +33,14 @@ public:
     Alignment alignment;
     aarect boundingBox;
     float width;
-    vec preferredExtent;
+    vec preferred_extent;
 
 private:
     std::vector<AttributedGlyphLine> lines;
 
 public:
     ShapedText() noexcept :
-        alignment(Alignment::MiddleCenter), boundingBox(), width(0.0f), preferredExtent(), lines() {}
+        alignment(Alignment::MiddleCenter), boundingBox(), width(0.0f), preferred_extent(), lines() {}
     ShapedText(ShapedText const &other) = default;
     ShapedText(ShapedText &&other) noexcept = default;
     ShapedText &operator=(ShapedText const &other) = default;

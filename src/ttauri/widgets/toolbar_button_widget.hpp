@@ -38,7 +38,7 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _label_cell = (*label).makeCell();
+            _label_stencil = (*label).makeCell(Alignment::MiddleCenter);
             ttlet width = Theme::toolbarDecorationButtonWidth;
             ttlet height = Theme::toolbarHeight;
             p_preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
@@ -53,6 +53,9 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(request_relayout, false);
+        if (need_layout) {
+            _label_stencil->set_layout_parameters(rectangle());
+        }
         return super::update_layout(display_time_point, need_layout);
     }
 
@@ -66,7 +69,7 @@ public:
 
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
-    std::unique_ptr<ImageCell> _label_cell;
+    std::unique_ptr<image_stencil> _label_stencil;
 
     void draw_background(DrawContext context) noexcept
     {
@@ -88,7 +91,7 @@ private:
         if (*enabled) {
             context.color = theme->foregroundColor;
         }
-        _label_cell->draw(context, rectangle(), Alignment::MiddleCenter);
+        _label_stencil->draw(context);
     }
 };
 

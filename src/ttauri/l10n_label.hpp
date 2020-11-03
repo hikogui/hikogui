@@ -143,9 +143,9 @@ public:
         return _icon;
     }
 
-    [[nodiscard]] std::unique_ptr<ImageCell> makeCell() const noexcept
+    [[nodiscard]] std::unique_ptr<image_stencil> makeCell(Alignment alignment) const noexcept
     {
-        return _icon.makeCell();
+        return _icon.makeCell(alignment);
     }
 
     [[nodiscard]] friend bool operator==(l10n_label const &lhs, l10n_label const &rhs) noexcept

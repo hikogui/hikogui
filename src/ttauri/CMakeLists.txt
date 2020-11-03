@@ -2,11 +2,11 @@
 add_subdirectory(text)
 add_subdirectory(GUI)
 add_subdirectory(widgets)
-add_subdirectory(cells)
+add_subdirectory(stencils)
 add_subdirectory(audio)
 add_subdirectory(encoding)
 add_subdirectory(formula)
-add_subdirectory(stencil)
+add_subdirectory(skeleton)
 
 target_sources(ttauri PRIVATE
     detail/observable_base.hpp

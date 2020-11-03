@@ -5,8 +5,6 @@
 
 #include "Widget.hpp"
 #include "GridLayoutWidget.hpp"
-#include "../cells/ImageCell.hpp"
-#include "../cells/TextCell.hpp"
 
 namespace tt {
 

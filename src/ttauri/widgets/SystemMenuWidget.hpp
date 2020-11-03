@@ -7,7 +7,7 @@
 #include "../GUI/PipelineImage_Image.hpp"
 #include "../Path.hpp"
 #include "../icon.hpp"
-#include "../cells/ImageCell.hpp"
+#include "../stencils/image_stencil.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -28,7 +28,7 @@ public:
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
 private:
-    std::unique_ptr<ImageCell> iconCell;
+    std::unique_ptr<image_stencil> iconCell;
 
     aarect system_menu_rectangle;
 };

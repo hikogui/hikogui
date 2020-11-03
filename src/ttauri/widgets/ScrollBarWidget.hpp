@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Widget.hpp"
-#include "../cells/TextCell.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../observable.hpp"
 #include <memory>

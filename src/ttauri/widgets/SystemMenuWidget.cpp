@@ -13,7 +13,7 @@
 namespace tt {
 
 SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<Widget> parent, icon const &icon) noexcept :
-    Widget(window, parent), iconCell(icon.makeCell())
+    Widget(window, parent), iconCell(icon.makeCell(Alignment::MiddleCenter))
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.
     p_margin = 0.0f;
@@ -39,6 +39,8 @@ SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<Widget> paren
 
     need_layout |= std::exchange(request_relayout, false);
     if (need_layout) {
+        iconCell->set_layout_parameters(rectangle());
+
         // Leave space for window resize handles on the left and top.
         system_menu_rectangle = aarect{
             rectangle().x() + Theme::margin,
@@ -54,7 +56,7 @@ void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point dis
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    iconCell->draw(context, rectangle(), Alignment::MiddleCenter);
+    iconCell->draw(context);
     Widget::draw(std::move(context), display_time_point);
 }
 

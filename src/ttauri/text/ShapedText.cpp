@@ -222,7 +222,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
 }
 
 struct shape_text_result {
-    vec preferredExtent;
+    vec preferred_extent;
     aarect boundingBox;
     std::vector<AttributedGlyphLine> lines;
 };
@@ -303,7 +303,7 @@ ShapedText::ShapedText(
     width(width)
 {
     auto result = shape_text(text, width, alignment, wrap);
-    preferredExtent = result.preferredExtent;
+    preferred_extent = result.preferred_extent;
     boundingBox = result.boundingBox;
     lines = std::move(result.lines);
 }

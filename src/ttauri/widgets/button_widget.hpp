@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "../cells/TextCell.hpp"
+#include "../stencils/text_stencil.hpp"
 #include "../l10n_label.hpp"
 #include <memory>
 #include <string>
@@ -16,11 +16,11 @@ namespace tt {
 
 class button_widget final : public abstract_button_widget {
 public:
+    using super = abstract_button_widget;
+
     observable<l10n_label> label;
 
-    button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept : abstract_button_widget(window, parent)
-    { 
-    }
+    button_widget(Window &window, std::shared_ptr<Widget> parent) noexcept : super(window, parent) {}
 
     void initialize() noexcept override
     {
@@ -37,13 +37,24 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (abstract_button_widget::update_constraints()) {
-            labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-            p_preferred_size = interval_vec2::make_minimum(labelCell->preferredExtent() + Theme::margin2Dx2);
+        if (super::update_constraints()) {
+            labelCell = std::make_unique<text_stencil>(Alignment::MiddleCenter, *label, theme->labelStyle);
+            p_preferred_size = interval_vec2::make_minimum(labelCell->preferred_extent() + Theme::margin2Dx2);
             return true;
         } else {
             return false;
         }
+    }
+
+    [[nodiscard]] bool update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
+    {
+        tt_assume(GUISystem_mutex.recurse_lock_count());
+
+        need_layout |= std::exchange(this->request_relayout, false);
+        if (need_layout) {
+            labelCell->set_layout_parameters(rectangle(), base_line());
+        }
+        return super::update_layout(displayTimePoint, need_layout);
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -62,7 +73,7 @@ public:
             context.color = theme->foregroundColor;
         }
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
-        labelCell->draw(context, rectangle(), Alignment::MiddleCenter, base_line(), true);
+        labelCell->draw(context, true);
 
         abstract_button_widget::draw(std::move(context), display_time_point);
     }
@@ -78,11 +89,11 @@ public:
 private:
     bool value = false;
     bool pressed = false;
-    
+
     decltype(label)::callback_ptr_type _label_callback;
     callback_ptr_type _callback;
 
-    std::unique_ptr<TextCell> labelCell;
+    std::unique_ptr<text_stencil> labelCell;
 };
 
 } // namespace tt

@@ -8,7 +8,7 @@
 #include "overlay_view_widget.hpp"
 #include "ScrollViewWidget.hpp"
 #include "RowColumnLayoutWidget.hpp"
-#include "../cells/TextCell.hpp"
+#include "../stencils/text_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
 #include "../text/ElusiveIcons.hpp"
@@ -81,14 +81,17 @@ public:
         if (updated) {
             ttlet index = get_value_as_index();
             if (index == -1) {
-                text_cell = std::make_unique<TextCell>(*unknown_label, theme->placeholderLabelStyle);
+                text_stencil = std::make_unique<tt::text_stencil>(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle);
+                text_stencil_color = theme->placeholderLabelStyle.color;
             } else {
-                text_cell = std::make_unique<TextCell>((*option_list)[index].second, theme->labelStyle);
+                text_stencil =
+                    std::make_unique<tt::text_stencil>(Alignment::MiddleLeft, (*option_list)[index].second, theme->labelStyle);
+                text_stencil_color = theme->labelStyle.color;
             }
 
-            auto text_size = TextCell(*unknown_label, theme->placeholderLabelStyle).preferredExtent();
+            auto text_size = tt::text_stencil(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle).preferred_extent();
             for (ttlet & [ tag, text ] : *option_list) {
-                text_size = max(text_size, TextCell(text, theme->labelStyle).preferredExtent());
+                text_size = max(text_size, tt::text_stencil(Alignment::MiddleLeft, text, theme->labelStyle).preferred_extent());
             }
 
             p_preferred_size =
@@ -138,6 +141,8 @@ public:
                 0.0f,
                 rectangle().width() - left_box_rectangle.width() - Theme::margin * 2.0f,
                 rectangle().height()};
+
+            text_stencil->set_layout_parameters(option_rectangle, base_line());
         }
         return Widget::update_layout(display_time_point, need_layout);
     }
@@ -233,7 +238,8 @@ private:
     typename decltype(value)::callback_ptr_type _value_callback;
     typename decltype(option_list)::callback_ptr_type _option_list_callback;
     
-    std::unique_ptr<TextCell> text_cell;
+    std::unique_ptr<text_stencil> text_stencil;
+    vec text_stencil_color;
 
     aarect option_rectangle;
     aarect left_box_rectangle;
@@ -294,8 +300,8 @@ private:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-        drawContext.color = *enabled ? text_cell->style.color : drawContext.color;
-        text_cell->draw(drawContext, option_rectangle, Alignment::MiddleLeft, base_line(), true);
+        drawContext.color = *enabled ? text_stencil_color : drawContext.color;
+        text_stencil->draw(drawContext, true);
     }
 };
 

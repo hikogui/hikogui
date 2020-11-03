@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "icon.hpp"
-#include "cells/PixelMapCell.hpp"
-#include "cells/GlyphCell.hpp"
+#include "stencils/pixel_map_stencil.hpp"
+#include "stencils/glyph_stencil.hpp"
 #include "encoding/png.hpp"
 
 namespace tt {
@@ -53,12 +53,12 @@ icon &icon::operator=(icon const &other) noexcept
     return *this;
 }
 
-[[nodiscard]] std::unique_ptr<ImageCell> icon::makeCell() const noexcept
+[[nodiscard]] std::unique_ptr<image_stencil> icon::makeCell(Alignment alignment) const noexcept
 {
     if (ttlet pixel_map = std::get_if<PixelMap<R16G16B16A16SFloat>>(&image)) {
-        return std::make_unique<PixelMapCell>(*pixel_map);
+        return std::make_unique<pixel_map_stencil>(alignment, *pixel_map);
     } else if (ttlet glyph = std::get_if<FontGlyphIDs>(&image)) {
-        return std::make_unique<GlyphCell>(*glyph);
+        return std::make_unique<glyph_stencil>(alignment, *glyph);
     } else {
         tt_no_default();
     }

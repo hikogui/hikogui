@@ -54,10 +54,10 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _label_cell = std::make_unique<TextCell>(*label, theme->labelStyle);
+            _label_stencil = std::make_unique<text_stencil>(Alignment::MiddleCenter, *label, theme->labelStyle);
 
-            ttlet minimum_height = _label_cell->preferredExtent().height();
-            ttlet minimum_width = _label_cell->preferredExtent().width() + 2.0f * Theme::margin;
+            ttlet minimum_height = _label_stencil->preferred_extent().height();
+            ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * Theme::margin;
 
             this->p_preferred_size = {vec{minimum_width, minimum_height}, vec{minimum_width, std::numeric_limits<float>::infinity()}};
             this->p_preferred_base_line = relative_base_line{VerticalAlignment::Middle, -Theme::margin};
@@ -79,6 +79,8 @@ public:
                 this->rectangle().y() - offset,
                 this->rectangle().width(),
                 this->rectangle().height() + offset};
+
+            _label_stencil->set_layout_parameters(this->rectangle(), this->base_line());
         }
 
         return super::update_layout(display_time_point, need_layout);
@@ -97,7 +99,7 @@ public:
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
     aarect _button_rectangle;
-    std::unique_ptr<TextCell> _label_cell;
+    std::unique_ptr<text_stencil> _label_stencil;
 
     void draw_focus_line(DrawContext const &context) noexcept
     {
@@ -158,7 +160,7 @@ private:
             context.color = theme->labelStyle.color;
         }
 
-        _label_cell->draw(context, this->rectangle(), Alignment::MiddleCenter, this->base_line(), true);
+        _label_stencil->draw(context, true);
     }
 };
 

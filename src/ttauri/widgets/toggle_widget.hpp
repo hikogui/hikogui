@@ -5,7 +5,7 @@
 
 #include "abstract_bool_toggle_button_widget.hpp"
 #include "../l10n_label.hpp"
-#include "../cells/TextCell.hpp"
+#include "../stencils/text_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../observable.hpp"
 #include <memory>
@@ -42,13 +42,13 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (Widget::update_constraints()) {
-            _on_label_cell = std::make_unique<TextCell>(*on_label, theme->labelStyle);
-            _off_label_cell = std::make_unique<TextCell>(*off_label, theme->labelStyle);
+            _on_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *on_label, theme->labelStyle);
+            _off_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *off_label, theme->labelStyle);
 
             ttlet minimumHeight =
-                std::max({_on_label_cell->preferredExtent().height(), _off_label_cell->preferredExtent().height(), Theme::smallSize});
+                std::max({_on_label_stencil->preferred_extent().height(), _off_label_stencil->preferred_extent().height(), Theme::smallSize});
 
-            ttlet minimumWidth = std::max({_on_label_cell->preferredExtent().width(), _off_label_cell->preferredExtent().width()}) +
+            ttlet minimumWidth = std::max({_on_label_stencil->preferred_extent().width(), _off_label_stencil->preferred_extent().width()}) +
                 Theme::smallSize * 2.0f + Theme::margin;
 
             p_preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
@@ -74,6 +74,8 @@ public:
 
             ttlet labelX = Theme::smallSize * 2.0f + Theme::margin;
             _label_rectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
+            _on_label_stencil->set_layout_parameters(_label_rectangle, base_line());
+            _off_label_stencil->set_layout_parameters(_label_rectangle, base_line());
 
             _slider_rectangle = shrink(aarect{0.0f, _rail_rectangle.y(), _rail_rectangle.height(), _rail_rectangle.height()}, 1.5f);
 
@@ -103,9 +105,8 @@ private:
 
     aarect _label_rectangle;
 
-    std::unique_ptr<TextCell> _on_label_cell;
-    std::unique_ptr<TextCell> _off_label_cell;
-    std::unique_ptr<TextCell> _other_label_cell;
+    std::unique_ptr<text_stencil> _on_label_stencil;
+    std::unique_ptr<text_stencil> _off_label_stencil;
 
     decltype(value)::callback_ptr_type _value_callback;
     decltype(on_label)::callback_ptr_type _on_label_callback;
@@ -156,9 +157,9 @@ private:
             drawContext.color = theme->labelStyle.color;
         }
 
-        ttlet &labelCell = *value ? _on_label_cell : _off_label_cell;
+        ttlet &label_stencil = *value ? _on_label_stencil : _off_label_stencil;
 
-        labelCell->draw(drawContext, _label_rectangle, Alignment::TopLeft, base_line(), true);
+        label_stencil->draw(drawContext, true);
     }
 };
 

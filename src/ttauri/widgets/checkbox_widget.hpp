@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_toggle_button_widget.hpp"
-#include "../cells/TextCell.hpp"
+#include "../stencils/text_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
 #include "../observable.hpp"
@@ -65,20 +65,20 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _true_label_cell = std::make_unique<TextCell>(*true_label, theme->labelStyle);
-            _false_label_cell = std::make_unique<TextCell>(*false_label, theme->labelStyle);
-            _other_label_cell = std::make_unique<TextCell>(*other_label, theme->labelStyle);
+            _true_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *true_label, theme->labelStyle);
+            _false_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *false_label, theme->labelStyle);
+            _other_label_stencil = std::make_unique<text_stencil>(Alignment::TopLeft, *other_label, theme->labelStyle);
 
             ttlet minimum_height = std::max(
-                {_true_label_cell->preferredExtent().height(),
-                 _false_label_cell->preferredExtent().height(),
-                 _other_label_cell->preferredExtent().height(),
+                {_true_label_stencil->preferred_extent().height(),
+                 _false_label_stencil->preferred_extent().height(),
+                 _other_label_stencil->preferred_extent().height(),
                  Theme::smallSize});
 
             ttlet minimum_width_of_labels = std::max(
-                {_true_label_cell->preferredExtent().width(),
-                 _false_label_cell->preferredExtent().width(),
-                 _other_label_cell->preferredExtent().width()});
+                {_true_label_stencil->preferred_extent().width(),
+                 _false_label_stencil->preferred_extent().width(),
+                 _other_label_stencil->preferred_extent().width()});
             ttlet minimum_width = Theme::smallSize + Theme::margin + minimum_width_of_labels;
 
             this->p_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
@@ -100,6 +100,9 @@ public:
 
             ttlet label_x = _checkbox_rectangle.p3().x() + Theme::margin;
             _label_rectangle = aarect{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
+            _true_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
+            _false_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
+            _other_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 
             _check_glyph = to_FontGlyphIDs(ElusiveIcon::Ok);
             ttlet check_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
@@ -128,9 +131,9 @@ private:
     typename decltype(false_label)::callback_ptr_type _false_label_callback;
     typename decltype(other_label)::callback_ptr_type _other_label_callback;
 
-    std::unique_ptr<TextCell> _true_label_cell;
-    std::unique_ptr<TextCell> _false_label_cell;
-    std::unique_ptr<TextCell> _other_label_cell;
+    std::unique_ptr<text_stencil> _true_label_stencil;
+    std::unique_ptr<text_stencil> _false_label_stencil;
+    std::unique_ptr<text_stencil> _other_label_stencil;
 
     FontGlyphIDs _check_glyph;
     aarect _check_glyph_rectangle;
@@ -178,9 +181,9 @@ private:
         }
 
         ttlet &labelCell =
-            this->value == this->true_value ? _true_label_cell : this->value == this->false_value ? _false_label_cell : _other_label_cell;
+            this->value == this->true_value ? _true_label_stencil : this->value == this->false_value ? _false_label_stencil : _other_label_stencil;
 
-        labelCell->draw(context, _label_rectangle, Alignment::TopLeft, this->base_line(), true);
+        labelCell->draw(context, true);
     }
 };
 
