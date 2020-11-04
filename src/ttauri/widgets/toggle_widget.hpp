@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_bool_toggle_button_widget.hpp"
-#include "../l10n_label.hpp"
+#include "../label.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../observable.hpp"
@@ -18,8 +18,8 @@ namespace tt {
 
 class toggle_widget final : public abstract_bool_toggle_button_widget {
 public:
-    observable<l10n_label> on_label;
-    observable<l10n_label> off_label;
+    observable<label> on_label;
+    observable<label> off_label;
 
     template<typename Value = observable<bool>>
     toggle_widget(

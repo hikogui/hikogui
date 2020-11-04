@@ -5,7 +5,7 @@
 
 #include "abstract_button_widget.hpp"
 #include "../stencils/label_stencil.hpp"
-#include "../l10n_label.hpp"
+#include "../label.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -20,7 +20,7 @@ public:
     using super = abstract_button_widget<T>;
     using value_type = T;
 
-    observable<l10n_label> label;
+    observable<label> label;
 
     template<typename Value = observable<value_type>>
     button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :

@@ -20,7 +20,7 @@ class LabelWidget final : public widget {
 public:
     using super = widget;
 
-    observable<l10n_label> label;
+    observable<label> label;
 
     template<typename Label>
     LabelWidget(Window &window, std::shared_ptr<widget> parent, Alignment alignment, Label &&label) noexcept

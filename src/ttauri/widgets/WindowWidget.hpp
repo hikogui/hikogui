@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_container_widget.hpp"
-#include "../l10n_label.hpp"
+#include "../label.hpp"
 
 namespace tt {
 
@@ -13,7 +13,7 @@ class GridLayoutWidget;
 
 class WindowWidget final : public abstract_container_widget {
 public:
-    WindowWidget(Window &window, GridLayoutDelegate *delegate, l10n_label title) noexcept;
+    WindowWidget(Window &window, GridLayoutDelegate *delegate, label title) noexcept;
     ~WindowWidget();
 
     void initialize() noexcept override;
@@ -53,7 +53,7 @@ public:
     }
 
 private:
-    l10n_label title;
+    label title;
     GridLayoutDelegate *_content_delegate;
     std::shared_ptr<GridLayoutWidget> _content;
     std::shared_ptr<toolbar_widget> _toolbar;

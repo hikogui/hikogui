@@ -87,7 +87,8 @@ target_sources(ttauri PRIVATE
     interval.hpp
     interval_vec2.hpp
     ivec.hpp
-    l10n_label.hpp
+    l10n.hpp
+    label.hpp
     logger.cpp
     logger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/logger_macos.mm>

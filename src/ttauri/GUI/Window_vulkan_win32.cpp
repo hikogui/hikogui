@@ -176,7 +176,7 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
     dpi = numeric_cast<float>(_dpi);
 }
 
-Window_vulkan_win32::Window_vulkan_win32(GUISystem &system, WindowDelegate *delegate, l10n_label const &title) :
+Window_vulkan_win32::Window_vulkan_win32(GUISystem &system, WindowDelegate *delegate, label const &title) :
     Window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
 {
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;

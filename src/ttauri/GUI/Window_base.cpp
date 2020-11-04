@@ -11,7 +11,7 @@ namespace tt {
 
 using namespace std;
 
-Window_base::Window_base(GUISystem &system, WindowDelegate *delegate, l10n_label const &title) :
+Window_base::Window_base(GUISystem &system, WindowDelegate *delegate, label const &title) :
     system(system),
     state(State::Initializing),
     delegate(delegate),

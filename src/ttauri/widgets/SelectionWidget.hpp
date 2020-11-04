@@ -27,19 +27,19 @@ class SelectionWidget final : public widget {
 public:
     using super = widget;
     using value_type = T;
-    using option_list_type = std::vector<std::pair<value_type, l10n_label>>;
+    using option_list_type = std::vector<std::pair<value_type, label>>;
 
-    observable<l10n_label> unknown_label;
+    observable<label> unknown_label;
     observable<value_type> value;
     observable<option_list_type> option_list;
 
-    template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = l10n_label>
+    template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = label>
     SelectionWidget(
         Window &window,
         std::shared_ptr<widget> parent,
         Value &&value = value_type{},
         OptionList &&option_list = option_list_type{},
-        UnknownLabel &&unknown_label = l10n_label{l10n(u8"<unknown>")}) noexcept :
+        UnknownLabel &&unknown_label = label{l10n("<unknown>")}) noexcept :
         widget(window, parent),
         value(std::forward<Value>(value)),
         option_list(std::forward<OptionList>(option_list)),

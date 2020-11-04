@@ -20,7 +20,7 @@
 #include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
 #include "../cell_address.hpp"
-#include "../l10n_label.hpp"
+#include "../label.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -99,7 +99,7 @@ public:
 
     WindowDelegate *delegate;
 
-    l10n_label title;
+    label title;
 
     /*! Orientation of the RGB subpixels.
      */
@@ -123,7 +123,7 @@ public:
 
     
 
-    Window_base(GUISystem &system, WindowDelegate *delegate, l10n_label const &title);
+    Window_base(GUISystem &system, WindowDelegate *delegate, label const &title);
     virtual ~Window_base();
 
     Window_base(Window_base const &) = delete;

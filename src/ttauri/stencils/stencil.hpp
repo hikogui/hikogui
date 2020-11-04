@@ -9,7 +9,7 @@
 namespace tt {
 class DrawContext;
 class icon;
-class l10n_label;
+class label;
 struct TextStyle;
 
 class stencil {
@@ -54,7 +54,7 @@ public:
     make_unique(Alignment alignment, std::u8string const &text, TextStyle const &style);
 
     [[nodiscard]] static std::unique_ptr<class label_stencil>
-    make_unique(Alignment alignment, tt::l10n_label const &label, TextStyle const &style);
+    make_unique(Alignment alignment, tt::label const &label, TextStyle const &style);
 
 protected:
     Alignment _alignment;

@@ -20,7 +20,7 @@ public:
     using super = abstract_button_widget<T>;
     using value_type = typename super::value_type;
 
-    observable<l10n_label> label;
+    observable<label> label;
 
     template<typename Value = observable<value_type>>
     toolbar_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :

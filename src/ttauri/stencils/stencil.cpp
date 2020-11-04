@@ -27,7 +27,7 @@ namespace tt {
     return std::make_unique<text_stencil>(alignment, text, style);
 }
 
-[[nodiscard]] std::unique_ptr<label_stencil> stencil::make_unique(Alignment alignment, tt::l10n_label const &label, TextStyle const &style)
+[[nodiscard]] std::unique_ptr<label_stencil> stencil::make_unique(Alignment alignment, tt::label const &label, TextStyle const &style)
 {
     return std::make_unique<label_stencil>(alignment, label, style);
 }

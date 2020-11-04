@@ -6,7 +6,7 @@
 #include "widget.hpp"
 #include "../text/EditableText.hpp"
 #include "../format.hpp"
-#include "../l10n_label.hpp"
+#include "../label.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -19,7 +19,7 @@ class LineInputWidget final : public widget {
 public:
     LineInputWidget(Window &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept;
 
-    LineInputWidget(Window &window, std::shared_ptr<widget> parent, l10n_label const label) noexcept :
+    LineInputWidget(Window &window, std::shared_ptr<widget> parent, label const label) noexcept :
         LineInputWidget(window, parent, label.text())
     {
     }

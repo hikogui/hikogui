@@ -6,14 +6,14 @@
 #include "stencil.hpp"
 #include "text_stencil.hpp"
 #include "image_stencil.hpp"
-#include "../l10n_label.hpp"
+#include "../label.hpp"
 #include <string_view>
 
 namespace tt {
 
 class label_stencil : public stencil {
 public:
-    label_stencil(Alignment alignment, l10n_label label, TextStyle style) noexcept :
+    label_stencil(Alignment alignment, label label, TextStyle style) noexcept :
         stencil(alignment),
         _style(style),
         _icon_size(_alignment == HorizontalAlignment::Center ? _style.size * 3.0f : _style.size * 2.0f)

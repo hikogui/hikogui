@@ -8,7 +8,7 @@
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
 #include "../observable.hpp"
-#include "../l10n_label.hpp"
+#include "../label.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -27,9 +27,9 @@ public:
     using super = abstract_toggle_button_widget<T>;
     using value_type = typename super::value_type;
 
-    observable<l10n_label> true_label;
-    observable<l10n_label> false_label;
-    observable<l10n_label> other_label;
+    observable<label> true_label;
+    observable<label> false_label;
+    observable<label> other_label;
 
     template<typename Value = observable<value_type>>
     checkbox_widget(

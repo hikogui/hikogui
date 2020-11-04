@@ -6,7 +6,7 @@
 #include "abstract_radio_button_widget.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../observable.hpp"
-#include "../l10n_label.hpp"
+#include "../label.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -21,7 +21,7 @@ public:
     using super = abstract_radio_button_widget<T>;
     using value_type = typename super::value_type;
 
-    observable<l10n_label> label;
+    observable<label> label;
 
     template<typename Value, typename Label>
     radio_button_widget(
@@ -37,12 +37,12 @@ public:
 
     template<typename Value>
     radio_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value) noexcept :
-        radio_button_widget(window, parent, std::move(true_value), std::forward<Value>(value), l10n_label{})
+        radio_button_widget(window, parent, std::move(true_value), std::forward<Value>(value), observable<tt::label>{})
     {
     }
 
     radio_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
-        radio_button_widget(window, parent, std::move(true_value), observable<value_type>{}, l10n_label{})
+        radio_button_widget(window, parent, std::move(true_value), observable<value_type>{}, observable<tt::label>{})
     {
     }
 
