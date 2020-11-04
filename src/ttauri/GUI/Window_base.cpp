@@ -59,14 +59,14 @@ void Window_base::initialize()
     requestLayout = true;
     
     // Rest the keyboard target to not focus anything.
-    next_keyboard_widget({}, false);
+    update_keyboard_target({});
 
     // Finished initializing the window.
     state = State::NoDevice;
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
-    createWindow(title, currentWindowExtent);
+    createWindow(title.text(), currentWindowExtent);
 }
 
 void Window_base::setDevice(GUIDevice *new_device)
@@ -102,9 +102,9 @@ void Window_base::next_keyboard_widget(std::shared_ptr<tt::widget> const &curren
 
     auto tmp = widget->next_keyboard_widget(current_target_widget, reverse);
     if (tmp == current_target_widget) {
-        // The currentTargetWidget was already the last (or only) widget.
-        // cycle back to the first.
-        tmp = widget->next_keyboard_widget(nullptr, reverse);
+        // The currentTargetWidget was already the last (or only) widget;
+        // don't focus anything.
+        tmp = nullptr;
     }
 
     update_keyboard_target(std::move(tmp));
@@ -144,7 +144,7 @@ void Window_base::update_mouse_target(std::shared_ptr<tt::widget> new_target_wid
 
 void Window_base::update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
     
     auto current_target_widget = keyboardTargetWidget.lock();
     if ((!new_target_widget || new_target_widget->accepts_focus()) && new_target_widget != current_target_widget) {

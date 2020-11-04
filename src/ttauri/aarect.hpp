@@ -419,6 +419,17 @@ public:
         return aarect::p0p3(lhs.v + neg<1, 1, 0, 0>(vec{rhs}));
     }
 
+    /** Expand the rectangle for the same amount in all directions.
+     * @param lhs The original rectangle.
+     * @param rhs How much should be added on each side of the rectangle,
+     *            this value may be zero or negative.
+     * @return A new rectangle expanded on each side.
+     */
+    [[nodiscard]] friend aarect expand(aarect const &lhs, vec rhs) noexcept
+    {
+        return aarect::p0p3(lhs.v + neg<1, 1, 0, 0>(rhs.xyxy()));
+    }
+
     /** Shrink the rectangle for the same amount in all directions.
      * @param lhs The original rectangle.
      * @param rhs How much should be added on each side of the rectangle,
@@ -426,6 +437,17 @@ public:
      * @return A new rectangle shrank on each side.
      */
     [[nodiscard]] friend aarect shrink(aarect const &lhs, float rhs) noexcept
+    {
+        return expand(lhs, -rhs);
+    }
+
+    /** Shrink the rectangle for the same amount in all directions.
+     * @param lhs The original rectangle.
+     * @param rhs How much should be added on each side of the rectangle,
+     *            this value may be zero or negative.
+     * @return A new rectangle shrank on each side.
+     */
+    [[nodiscard]] friend aarect shrink(aarect const &lhs, vec rhs) noexcept
     {
         return expand(lhs, -rhs);
     }

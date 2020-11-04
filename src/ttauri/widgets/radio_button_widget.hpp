@@ -60,7 +60,7 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (widget::update_constraints()) {
-            _label_stencil = (*label).make_stencil(Alignment::TopLeft, theme->labelStyle);
+            _label_stencil = stencil::make_unique(Alignment::TopLeft, *label, theme->labelStyle);
 
             ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), Theme::smallSize);
             ttlet minimum_width = Theme::smallSize + Theme::margin + _label_stencil->preferred_extent().width();

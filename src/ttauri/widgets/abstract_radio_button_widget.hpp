@@ -11,27 +11,23 @@ namespace tt {
  * This widgets set the value to true_value when pressed.
  */
 template<typename T>
-class abstract_radio_button_widget : public abstract_button_widget {
+class abstract_radio_button_widget : public abstract_button_widget<T> {
 public:
+    using super = abstract_button_widget<T>;
     using value_type = T;
 
-    value_type const true_value;
-    observable<value_type> value;
-
-    template<typename Arg = observable<value_type>>
+    template<typename Value = observable<value_type>>
     abstract_radio_button_widget(
         Window &window,
         std::shared_ptr<widget> parent,
         value_type true_value,
-        Arg &&arg = {}) noexcept :
-        abstract_button_widget(window, parent),
-        true_value(std::move(true_value)),
-        value(std::forward<Arg>(arg))
+        Value &&value = {}) noexcept :
+        super(window, parent, std::move(true_value), std::forward<Value>(value))
     {
         _value_callback = this->value.subscribe([this](auto...) {
             this->window.requestRedraw = true;
         });
-        _callback = subscribe([this]() {
+        _callback = this->subscribe([this]() {
             this->select();
         });
     }
@@ -42,14 +38,14 @@ public:
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-        if (compare_then_assign(value, true_value)) {
-            window.requestRedraw = true;
+        if (compare_then_assign(this->value, this->true_value)) {
+            this->window.requestRedraw = true;
         }
     }
 
 private:
-    typename decltype(value)::callback_ptr_type _value_callback;
-    typename abstract_button_widget::callback_ptr_type _callback;
+    typename decltype(super::value)::callback_ptr_type _value_callback;
+    typename super::callback_ptr_type _callback;
 };
 
 } // namespace tt

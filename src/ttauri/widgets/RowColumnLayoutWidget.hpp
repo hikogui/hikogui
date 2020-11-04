@@ -96,13 +96,13 @@ private:
 
         ttlet child_rectangle = is_row ?
             aarect{
-                rectangle().x() + child_offset,
-                rectangle().y() + child.margin(),
+                rectangle().left() + child_offset,
+                rectangle().bottom() + child.margin(),
                 child_length,
                 rectangle().height() - child.margin() * 2.0f} :
             aarect{
-                rectangle().x() + child.margin(),
-                rectangle().y() + child_offset,
+                rectangle().left() + child.margin(),
+                rectangle().top() - child_offset - child_length,
                 rectangle().width() - child.margin() * 2.0f,
                 child_length
             };

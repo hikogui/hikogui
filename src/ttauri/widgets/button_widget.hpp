@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "../stencils/text_stencil.hpp"
+#include "../stencils/label_stencil.hpp"
 #include "../l10n_label.hpp"
 #include <memory>
 #include <string>
@@ -14,21 +14,27 @@
 
 namespace tt {
 
-class button_widget final : public abstract_button_widget {
+template<typename T>
+class button_widget final : public abstract_button_widget<T> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<T>;
+    using value_type = T;
 
     observable<l10n_label> label;
 
-    button_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent) {}
+    template<typename Value = observable<value_type>>
+    button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :
+        super(window, parent, std::move(true_value), std::forward<Value>(value))
+    {
+    }
 
     void initialize() noexcept override
     {
         _label_callback = label.subscribe([this](auto...) {
-            _request_reconstrain = true;
+            this->_request_reconstrain = true;
         });
 
-        _callback = subscribe([this](auto...) {
+        _callback = this->subscribe([this](auto...) {
             this->clicked();
         });
     }
@@ -38,8 +44,8 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _label_stencil = (*label).make_stencil(Alignment::MiddleCenter, theme->labelStyle);
-            _preferred_size = interval_vec2::make_minimum(_label_stencil->preferred_extent() + Theme::margin2Dx2);
+            _label_stencil = stencil::make_unique(Alignment::MiddleCenter, *label, theme->labelStyle);
+            this->_preferred_size = interval_vec2::make_minimum(_label_stencil->preferred_extent() + Theme::margin2Dx2);
             return true;
         } else {
             return false;
@@ -52,7 +58,7 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _label_stencil->set_layout_parameters(rectangle(), base_line());
+            _label_stencil->set_layout_parameters(this->rectangle(), this->base_line());
         }
         return super::update_layout(displayTimePoint, need_layout);
     }
@@ -62,38 +68,35 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         context.cornerShapes = vec{Theme::roundingRadius};
-        if (value) {
+        if (*this->value) {
             context.fillColor = theme->accentColor;
         }
 
         // Move the border of the button in the middle of a pixel.
-        context.drawBoxIncludeBorder(rectangle());
+        context.drawBoxIncludeBorder(this->rectangle());
 
-        if (*enabled) {
+        if (*this->enabled) {
             context.color = theme->foregroundColor;
         }
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         _label_stencil->draw(context, true);
 
-        abstract_button_widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
     void clicked() noexcept
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        if (compare_then_assign(value, !value)) {
-            window.requestRedraw = true;
+        if (compare_then_assign(this->value, !this->value)) {
+            this->window.requestRedraw = true;
         }
     }
 
 private:
-    bool value = false;
-    bool pressed = false;
+    typename decltype(label)::callback_ptr_type _label_callback;
+    super::callback_ptr_type _callback;
 
-    decltype(label)::callback_ptr_type _label_callback;
-    callback_ptr_type _callback;
-
-    std::unique_ptr<stencil> _label_stencil;
+    std::unique_ptr<label_stencil> _label_stencil;
 };
 
 } // namespace tt

@@ -16,7 +16,9 @@ public:
             // The toolbar widget does draw itself.
             ttlet lock = std::scoped_lock(GUISystem_mutex);
             _draw_layer = parent->draw_layer() + 1.0f;
-            _semantic_layer = parent->semantic_layer() + 1;
+
+            // The toolbar is a top level widget, which draws its background as the next level.
+            _semantic_layer = 0;
         }
     }
 
@@ -104,6 +106,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
+        context.fillColor = theme->fillColor(_semantic_layer + 1);
         context.drawFilledQuad(rectangle());
         abstract_container_widget::draw(std::move(context), display_time_point);
     }

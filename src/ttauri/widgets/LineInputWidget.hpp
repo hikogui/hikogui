@@ -20,7 +20,7 @@ public:
     LineInputWidget(Window &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept;
 
     LineInputWidget(Window &window, std::shared_ptr<widget> parent, l10n_label const label) noexcept :
-        LineInputWidget(window, parent, std::u8string{label})
+        LineInputWidget(window, parent, label.text())
     {
     }
 

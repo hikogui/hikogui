@@ -33,6 +33,7 @@ public:
         abstract_radio_button_widget<T>(window, parent, std::move(true_value), std::forward<Value>(value)),
         label(std::forward<Label>(label))
     {
+        this->_width_resistance = 2;
     }
 
     toolbar_tab_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
@@ -54,12 +55,14 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _label_stencil = (*label).make_stencil(Alignment::MiddleCenter, theme->labelStyle);
+            _label_stencil = stencil::make_unique(Alignment::TopCenter, *label, theme->labelStyle);
 
             ttlet minimum_height = _label_stencil->preferred_extent().height();
             ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * Theme::margin;
 
-            this->_preferred_size = {vec{minimum_width, minimum_height}, vec{minimum_width, std::numeric_limits<float>::infinity()}};
+            this->_preferred_size = {
+                vec{minimum_width, minimum_height},
+                vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             this->_preferred_base_line = relative_base_line{VerticalAlignment::Middle, -Theme::margin};
             return true;
         } else {
@@ -135,10 +138,10 @@ private:
         context.clippingRectangle = this->parent.lock()->window_rectangle();
 
         if (this->_hover || *this->value == this->true_value) {
-            context.fillColor = theme->fillColor(this->_semantic_layer - 2);
+            context.fillColor = theme->fillColor(this->_semantic_layer - 1);
             context.color = context.fillColor;
         } else {
-            context.fillColor = theme->fillColor(this->_semantic_layer - 1);
+            context.fillColor = theme->fillColor(this->_semantic_layer);
             context.color = context.fillColor;
         }
 

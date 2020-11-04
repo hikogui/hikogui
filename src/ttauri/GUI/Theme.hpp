@@ -35,6 +35,8 @@ public:
     static inline const vec margin2D = vec{margin, margin};
     static inline const vec margin2Dx2 = vec{margin * 2.0f, margin * 2.0f};
 
+    static constexpr float scroll_bar_thickness = margin * 2.0f;
+
     /** The line-width of a border.
      */
     static constexpr float borderWidth = 1.0f;

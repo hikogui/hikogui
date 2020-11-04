@@ -8,7 +8,8 @@
 #include "overlay_view_widget.hpp"
 #include "ScrollViewWidget.hpp"
 #include "RowColumnLayoutWidget.hpp"
-#include "../stencils/text_stencil.hpp"
+#include "toolbar_button_widget.hpp"
+#include "../stencils/label_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
 #include "../text/ElusiveIcons.hpp"
@@ -21,11 +22,12 @@
 
 namespace tt {
 
-template<typename ValueType>
+template<typename T>
 class SelectionWidget final : public widget {
 public:
-    using value_type = ValueType;
-    using option_list_type = std::vector<std::pair<ValueType, l10n_label>>;
+    using super = widget;
+    using value_type = T;
+    using option_list_type = std::vector<std::pair<value_type, l10n_label>>;
 
     observable<l10n_label> unknown_label;
     observable<value_type> value;
@@ -81,21 +83,23 @@ public:
         if (updated) {
             ttlet index = get_value_as_index();
             if (index == -1) {
-                text_stencil = (*unknown_label).make_stencil(Alignment::MiddleLeft, theme->placeholderLabelStyle);
+                text_stencil = stencil::make_unique(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle);
                 text_stencil_color = theme->placeholderLabelStyle.color;
             } else {
-                text_stencil = (*option_list)[index].second.make_stencil(Alignment::MiddleLeft, theme->labelStyle);
+                text_stencil = stencil::make_unique(Alignment::MiddleLeft, (*option_list)[index].second, theme->labelStyle);
                 text_stencil_color = theme->labelStyle.color;
             }
 
             auto text_size =
-                (*unknown_label).make_stencil(Alignment::MiddleLeft, theme->placeholderLabelStyle)->preferred_extent();
+                stencil::make_unique(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle)->preferred_extent();
             for (ttlet & [ tag, text ] : *option_list) {
-                text_size = max(text_size, text.make_stencil(Alignment::MiddleLeft, theme->labelStyle)->preferred_extent());
+                text_size =
+                    max(text_size, stencil::make_unique(Alignment::MiddleLeft, text, theme->labelStyle)->preferred_extent());
             }
 
-            _preferred_size =
-                interval_vec2::make_minimum(text_size) + vec{Theme::smallSize + Theme::margin * 2.0f, Theme::margin * 2.0f};
+            // The preferred width includes: The left-side-chevron, margin, label, margin, scrollbar.
+            _preferred_size = interval_vec2::make_minimum(text_size) +
+                vec{Theme::smallSize + Theme::margin * 2.0f + Theme::scroll_bar_thickness, Theme::margin * 2.0f};
             _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
             return true;
 
@@ -219,17 +223,21 @@ public:
         return *enabled;
     }
 
-    /** Populate the scroll view with menu items corresponding to the options.
-     */
-    void repopulate_options() noexcept
+    std::shared_ptr<widget>
+    next_keyboard_widget(std::shared_ptr<widget> const &current_keyboard_widget, bool reverse) const noexcept
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-        column_widget->clear();
-        ttlet option_list_ = *option_list;
-        for (ttlet & [ tag, text ] : std::views::reverse(option_list_)) {
-            auto button = column_widget->make_widget<button_widget>();
-            button->label = text;
+        if (selecting) {
+            tt_assume(overlay_widget);
+            if (current_keyboard_widget == shared_from_this()) {
+                return overlay_widget->next_keyboard_widget({}, reverse);
+            } else {
+                return overlay_widget->next_keyboard_widget(current_keyboard_widget, reverse);
+            }
+
+        } else {
+            return super::next_keyboard_widget(current_keyboard_widget, reverse);
         }
     }
 
@@ -238,7 +246,7 @@ private:
     typename decltype(value)::callback_ptr_type _value_callback;
     typename decltype(option_list)::callback_ptr_type _option_list_callback;
 
-    std::unique_ptr<stencil> text_stencil;
+    std::unique_ptr<label_stencil> text_stencil;
     vec text_stencil_color;
 
     aarect option_rectangle;
@@ -251,6 +259,8 @@ private:
     std::shared_ptr<overlay_view_widget> overlay_widget;
     std::shared_ptr<VerticalScrollViewWidget<>> scroll_widget;
     std::shared_ptr<ColumnLayoutWidget> column_widget;
+
+    std::vector<typename toolbar_button_widget<value_type>::callback_ptr_type> menu_item_callbacks;
 
     [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
@@ -265,6 +275,24 @@ private:
         return -1;
     }
 
+    /** Populate the scroll view with menu items corresponding to the options.
+     */
+    void repopulate_options() noexcept
+    {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
+
+        column_widget->clear();
+        menu_item_callbacks.clear();
+        for (ttlet & [ tag, text ] : *option_list) {
+            auto button = column_widget->make_widget<toolbar_button_widget<value_type>>(tag, this->value);
+            button->label = text;
+
+            menu_item_callbacks.push_back(button->subscribe([this, tag] {
+                this->value = tag;
+                this->selecting = false;
+            }));
+        }
+    }
     void drawOutline(DrawContext drawContext) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());

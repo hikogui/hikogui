@@ -4,6 +4,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
+#include "../stencils/label_stencil.hpp"
 #include "../Path.hpp"
 #include "../GUI/DrawContext.hpp"
 #include <memory>
@@ -13,23 +14,27 @@
 
 namespace tt {
 
-class toolbar_button_widget final : public abstract_button_widget {
+template<typename T>
+class toolbar_button_widget final : public abstract_button_widget<T> {
 public:
-    using super = abstract_button_widget;
+    using super = abstract_button_widget<T>;
+    using value_type = typename super::value_type;
+
     observable<l10n_label> label;
 
-    toolbar_button_widget(Window &window, std::shared_ptr<widget> parent) noexcept :
-        abstract_button_widget(window, parent)
+    template<typename Value = observable<value_type>>
+    toolbar_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :
+        super(window, parent, std::move(true_value), std::forward<Value>(value))
     {
 
         // Toolbar buttons hug the toolbar and neighbor widgets.
-        _margin = 0.0f;
+        this->_margin = 0.0f;
     }
 
     void initialize() noexcept override {
         super::initialize();
         _label_callback = this->label.subscribe([this](auto...) {
-            _request_reconstrain = true;
+            this->_request_reconstrain = true;
         });
     }
 
@@ -38,10 +43,11 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _label_stencil = (*label).make_stencil(Alignment::MiddleCenter);
-            ttlet width = Theme::toolbarDecorationButtonWidth;
-            ttlet height = Theme::toolbarHeight;
-            _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
+            _label_stencil = stencil::make_unique(Alignment::MiddleLeft, *label, theme->labelStyle);
+            ttlet width = _label_stencil->preferred_extent().width() + Theme::margin * 2.0f;
+            ttlet height = _label_stencil->preferred_extent().height() + Theme::margin * 2.0f;
+            this->_preferred_size = {
+                vec{width, height}, vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             return true;
         } else {
             return false;
@@ -52,9 +58,9 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _label_stencil->set_layout_parameters(rectangle());
+            _label_stencil->set_layout_parameters(shrink(this->rectangle(), vec{Theme::margin, 0.0f}));
         }
         return super::update_layout(display_time_point, need_layout);
     }
@@ -69,26 +75,28 @@ public:
 
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
-    std::unique_ptr<stencil> _label_stencil;
+    std::unique_ptr<label_stencil> _label_stencil;
 
     void draw_background(DrawContext context) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (_pressed) {
-            context.fillColor = theme->fillColor(_semantic_layer + 1);
-        } else if (_hover) {
-            context.fillColor = theme->fillColor(_semantic_layer);
-        } else {
-            context.fillColor = theme->fillColor(_semantic_layer - 1);
+        context.color = context.fillColor;
+        if (this->_focus && this->window.active) {
+            context.color = theme->accentColor;
         }
-        context.drawFilledQuad(rectangle());
+
+        if (this->value == this->true_value) {
+            context.fillColor = theme->accentColor;
+        }
+
+        context.drawBoxIncludeBorder(this->rectangle());
     }
 
     void draw_icon(DrawContext context) noexcept
     {
         context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
-        if (*enabled) {
+        if (*this->enabled) {
             context.color = theme->foregroundColor;
         }
         _label_stencil->draw(context);

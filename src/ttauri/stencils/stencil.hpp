@@ -8,6 +8,9 @@
 
 namespace tt {
 class DrawContext;
+class icon;
+class l10n_label;
+struct TextStyle;
 
 class stencil {
 public:
@@ -29,7 +32,7 @@ public:
      * @param rectangle The rectangle the stencil will be drawn into.
      * @param base_line_position The position of the base line within the rectangle.
      */
-    void
+    virtual void
     set_layout_parameters(aarect const &rectangle, float base_line_position = std::numeric_limits<float>::infinity()) noexcept
     {
         _rectangle = rectangle;
@@ -44,6 +47,14 @@ public:
      * @param use_context_color True to use the colors in the context, False to use the colors in the cell itself.
      */
     virtual void draw(DrawContext context, bool use_context_color = false) noexcept = 0;
+
+    [[nodiscard]] static std::unique_ptr<class image_stencil> make_unique(Alignment alignment, icon const &icon);
+
+    [[nodiscard]] static std::unique_ptr<class text_stencil>
+    make_unique(Alignment alignment, std::u8string const &text, TextStyle const &style);
+
+    [[nodiscard]] static std::unique_ptr<class label_stencil>
+    make_unique(Alignment alignment, tt::l10n_label const &label, TextStyle const &style);
 
 protected:
     Alignment _alignment;

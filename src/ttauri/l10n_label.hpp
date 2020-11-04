@@ -8,7 +8,6 @@
 #include "observable.hpp"
 #include "icon.hpp"
 #include "text/translation.hpp"
-#include "stencils/text_stencil.hpp"
 #include <string>
 #include <type_traits>
 #include <memory>
@@ -63,7 +62,6 @@ public:
         return _args == other_->_args;
     }
 
-
 private:
     std::tuple<std::remove_cvref_t<Args>...> _args;
 };
@@ -110,9 +108,7 @@ public:
     {
     }
 
-    l10n_label(tt::icon icon) noexcept : l10n_label(std::move(icon), l10n{})
-    {
-    }
+    l10n_label(tt::icon icon) noexcept : l10n_label(std::move(icon), l10n{}) {}
 
     l10n_label() noexcept : l10n_label(tt::icon{}, std::u8string_view{}) {}
 
@@ -132,11 +128,9 @@ public:
     l10n_label(l10n_label &&other) noexcept = default;
     l10n_label &operator=(l10n_label &&other) noexcept = default;
 
-    [[nodiscard]] operator std::u8string() const noexcept
+    [[nodiscard]] bool has_icon() const noexcept
     {
-        auto fmt = get_translation(_msgid);
-        tt_assume(_args);
-        return _args->format(fmt);
+        return static_cast<bool>(_icon);
     }
 
     [[nodiscard]] icon icon() const noexcept
@@ -144,24 +138,26 @@ public:
         return _icon;
     }
 
-    [[nodiscard]] std::unique_ptr<stencil> make_stencil(Alignment alignment) const noexcept
+    [[nodiscard]] bool has_text() const noexcept
     {
-        return _icon.make_stencil(alignment);
+        return _msgid.size() != 0;
     }
 
-    [[nodiscard]] std::unique_ptr<stencil> make_stencil(Alignment alignment, TextStyle style) const noexcept
+    [[nodiscard]] std::u8string text() const noexcept
     {
-        return std::make_unique<text_stencil>(alignment, to_u8string(*this), style);
+        auto fmt = get_translation(_msgid);
+        tt_assume(_args);
+        return _args->format(fmt);
     }
 
     [[nodiscard]] friend bool operator==(l10n_label const &lhs, l10n_label const &rhs) noexcept
     {
-        return lhs._icon == rhs._icon && lhs._msgid == rhs._msgid &&
-            lhs._args->eq(*rhs._args);
+        return lhs._icon == rhs._icon && lhs._msgid == rhs._msgid && lhs._args->eq(*rhs._args);
     }
 
-    [[nodiscard]] friend std::u8string to_u8string(l10n_label const &rhs) noexcept {
-        return static_cast<std::u8string>(rhs);
+    [[nodiscard]] friend std::u8string to_u8string(l10n_label const &rhs) noexcept
+    {
+        return rhs.text();
     }
 
     [[nodiscard]] friend std::string to_string(l10n_label const &rhs) noexcept
@@ -181,7 +177,6 @@ private:
     std::unique_ptr<detail::l10n_label_arguments_base> _args;
 };
 
-
 namespace detail {
 
 template<>
@@ -189,13 +184,15 @@ class observable_value<l10n_label> final : public observable_base<l10n_label> {
 public:
     using super = observable_base<l10n_label>;
 
-    observable_value() noexcept : super(), _value() {
+    observable_value() noexcept : super(), _value()
+    {
         _language_list_callback = language::preferred_languages.subscribe([this](auto...) {
             notify({}, load());
         });
     }
 
-    observable_value(l10n_label const &value) noexcept : super(), _value(value) {
+    observable_value(l10n_label const &value) noexcept : super(), _value(value)
+    {
         _language_list_callback = language::preferred_languages.subscribe([this](auto...) {
             notify({}, load());
         });
@@ -236,6 +233,6 @@ private:
     typename decltype(language::preferred_languages)::callback_ptr_type _language_list_callback;
 };
 
-}
+} // namespace detail
 
 } // namespace tt

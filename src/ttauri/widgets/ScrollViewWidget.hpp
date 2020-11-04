@@ -66,10 +66,13 @@ public:
             // When there are scrollbars the minimum size is the minimum length of the scrollbar.
             // The maximum size is the minimum size of the content.
             if constexpr (can_scroll_horizontally) {
-                width = {horizontal_scroll_bar->preferred_size().width().minimum(), width.minimum()};
+                // The content could be smaller than the scrollbar.
+                ttlet minimum_width = std::min(width.minimum(), horizontal_scroll_bar->preferred_size().width().minimum());
+                width = {minimum_width, width.minimum()};
             }
             if constexpr (can_scroll_vertically) {
-                height = {vertical_scroll_bar->preferred_size().height().minimum(), height.minimum()};
+                ttlet minimum_height = std::min(height.minimum(), vertical_scroll_bar->preferred_size().height().minimum());
+                height = {minimum_height, height.minimum()};
             }
 
             // Make room for the scroll bars.

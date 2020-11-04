@@ -5,7 +5,7 @@
 
 #include "abstract_bool_toggle_button_widget.hpp"
 #include "../l10n_label.hpp"
-#include "../stencils/text_stencil.hpp"
+#include "../stencils/label_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../observable.hpp"
 #include <memory>
@@ -42,8 +42,8 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (widget::update_constraints()) {
-            _on_label_stencil = (*on_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
-            _off_label_stencil = (*off_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
+            _on_label_stencil = stencil::make_unique(Alignment::TopLeft, *on_label, theme->labelStyle);
+            _off_label_stencil = stencil::make_unique(Alignment::TopLeft, *off_label, theme->labelStyle);
 
             ttlet minimumHeight =
                 std::max({_on_label_stencil->preferred_extent().height(), _off_label_stencil->preferred_extent().height(), Theme::smallSize});
@@ -105,8 +105,8 @@ private:
 
     aarect _label_rectangle;
 
-    std::unique_ptr<stencil> _on_label_stencil;
-    std::unique_ptr<stencil> _off_label_stencil;
+    std::unique_ptr<label_stencil> _on_label_stencil;
+    std::unique_ptr<label_stencil> _off_label_stencil;
 
     decltype(value)::callback_ptr_type _value_callback;
     decltype(on_label)::callback_ptr_type _on_label_callback;

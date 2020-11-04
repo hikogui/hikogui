@@ -50,14 +50,15 @@ public:
 
         if (widget::update_constraints()) {
             ttlet minimum_length = Theme::width; // even for vertical bars.
-            ttlet thickness = Theme::margin * 2;
 
             if constexpr (is_vertical) {
-                _preferred_size =
-                    interval_vec2{vec{thickness, minimum_length}, vec{thickness, std::numeric_limits<float>::max()}};
+                _preferred_size = interval_vec2{
+                    vec{Theme::scroll_bar_thickness, minimum_length},
+                    vec{Theme::scroll_bar_thickness, std::numeric_limits<float>::max()}};
             } else {
-                _preferred_size =
-                    interval_vec2{vec{minimum_length, thickness}, vec{std::numeric_limits<float>::max(), thickness}};
+                _preferred_size = interval_vec2{
+                    vec{minimum_length, Theme::scroll_bar_thickness},
+                    vec{std::numeric_limits<float>::max(), Theme::scroll_bar_thickness}};
             }
 
             _preferred_base_line = {};

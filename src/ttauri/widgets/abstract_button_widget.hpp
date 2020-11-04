@@ -11,15 +11,33 @@ namespace tt {
  * This widgets implements the behavior for a widget where its whole
  * area is clickable, accepts and responds to gui_activate commands.
  */
+template<typename T>
 class abstract_button_widget : public widget {
 public:
+    using super = widget;
+    using value_type = T;
+
+    value_type const true_value;
+    observable<value_type> value;
+
     using notifier_type = notifier<void()>;
     using callback_type = typename notifier_type::callback_type;
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
 
-    [[nodiscard]] abstract_button_widget(Window &window, std::shared_ptr<widget> parent) :
-        widget(window, parent)
+    template<typename Value = observable<value_type>>
+    [[nodiscard]] abstract_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) :
+        widget(window, parent), true_value(std::move(true_value)), value(std::forward<Value>(value))
     {
+    }
+
+    DrawContext make_draw_context(DrawContext context) const noexcept override {
+        auto new_context = super::make_draw_context(context);
+
+        if (_pressed) {
+            new_context.fillColor = theme->fillColor(this->_semantic_layer + 2);
+        }
+
+        return new_context;
     }
 
     [[nodiscard]] bool accepts_focus() const noexcept final

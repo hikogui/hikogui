@@ -49,15 +49,19 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         auto extent = rectangle().extent();
+        if (extent.height() > Theme::toolbarHeight * 1.2f) {
+            extent = vec{extent.width(), Theme::toolbarHeight};
+        }
+        auto y = rectangle().height() - extent.height();
 
         if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
             closeRectangle =
-                aarect{vec::point(extent.width() * 2.0f / 3.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
+                aarect{vec::point(extent.width() * 2.0f / 3.0f, y), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
 
             maximizeRectangle =
-                aarect{vec::point(extent.width() * 1.0f / 3.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
+                aarect{vec::point(extent.width() * 1.0f / 3.0f, y), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-            minimizeRectangle = aarect{vec::point(0.0f, 0.0f), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
+            minimizeRectangle = aarect{vec::point(0.0f, y), vec{extent.width() * 1.0f / 3.0f, extent.height()}};
 
         } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
             closeRectangle = aarect{vec::point(MARGIN, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
@@ -168,25 +172,25 @@ void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hire
     } else if (hoverClose) {
         context.fillColor = vec::color(0.5f, 0.0f, 0.0f);
     } else {
-        context.fillColor = theme->fillColor(_semantic_layer - 1);
+        context.fillColor = theme->fillColor(_semantic_layer);
     }
     context.drawFilledQuad(closeRectangle);
 
     if (pressedMinimize) {
-        context.fillColor = theme->fillColor(_semantic_layer + 1);
+        context.fillColor = theme->fillColor(_semantic_layer + 2);
     } else if (hoverMinimize) {
-        context.fillColor = theme->fillColor(_semantic_layer);
+        context.fillColor = theme->fillColor(_semantic_layer + 1);
     } else {
-        context.fillColor = theme->fillColor(_semantic_layer - 1);
+        context.fillColor = theme->fillColor(_semantic_layer);
     }
     context.drawFilledQuad(minimizeRectangle);
 
     if (pressedMaximize) {
-        context.fillColor = theme->fillColor(_semantic_layer + 1);
+        context.fillColor = theme->fillColor(_semantic_layer + 2);
     } else if (hoverMaximize) {
-        context.fillColor = theme->fillColor(_semantic_layer);
+        context.fillColor = theme->fillColor(_semantic_layer + 1);
     } else {
-        context.fillColor = theme->fillColor(_semantic_layer - 1);
+        context.fillColor = theme->fillColor(_semantic_layer);
     }
     context.drawFilledQuad(maximizeRectangle);
 

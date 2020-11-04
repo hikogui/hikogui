@@ -28,7 +28,7 @@ public:
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
 private:
-    std::unique_ptr<stencil> iconCell;
+    std::unique_ptr<image_stencil> _icon_stencil;
 
     aarect system_menu_rectangle;
 };

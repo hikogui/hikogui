@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_toggle_button_widget.hpp"
-#include "../stencils/text_stencil.hpp"
+#include "../stencils/label_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
 #include "../observable.hpp"
@@ -65,9 +65,9 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            _true_label_stencil = (*true_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
-            _false_label_stencil = (*false_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
-            _other_label_stencil = (*other_label).make_stencil(Alignment::TopLeft, theme->labelStyle);
+            _true_label_stencil = stencil::make_unique(Alignment::TopLeft, *true_label, theme->labelStyle);
+            _false_label_stencil = stencil::make_unique(Alignment::TopLeft, *false_label, theme->labelStyle);
+            _other_label_stencil = stencil::make_unique(Alignment::TopLeft, *other_label, theme->labelStyle);
 
             ttlet minimum_height = std::max(
                 {_true_label_stencil->preferred_extent().height(),
@@ -131,9 +131,9 @@ private:
     typename decltype(false_label)::callback_ptr_type _false_label_callback;
     typename decltype(other_label)::callback_ptr_type _other_label_callback;
 
-    std::unique_ptr<stencil> _true_label_stencil;
-    std::unique_ptr<stencil> _false_label_stencil;
-    std::unique_ptr<stencil> _other_label_stencil;
+    std::unique_ptr<label_stencil> _true_label_stencil;
+    std::unique_ptr<label_stencil> _false_label_stencil;
+    std::unique_ptr<label_stencil> _other_label_stencil;
 
     FontGlyphIDs _check_glyph;
     aarect _check_glyph_rectangle;

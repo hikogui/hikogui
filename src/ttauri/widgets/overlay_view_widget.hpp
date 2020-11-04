@@ -10,7 +10,9 @@ namespace tt {
 
 class overlay_view_widget final : public widget {
 public:
-    overlay_view_widget(Window &window, std::shared_ptr<widget> parent) noexcept : widget(window, parent)
+    using super = widget;
+
+    overlay_view_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The overlay-widget will reset the semantic_layer as it is the bottom
@@ -28,7 +30,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        auto has_updated_contraints = widget::update_constraints();
+        auto has_updated_contraints = super::update_constraints();
 
         // Recurse into the selected widget.
         tt_assume(child);
@@ -53,13 +55,13 @@ public:
             ttlet window_rectangle_and_margin = expand(_window_rectangle, _margin);
             ttlet new_window_rectangle_and_margin = fit(aarect{window.currentWindowExtent}, window_rectangle_and_margin);
             _window_rectangle = shrink(new_window_rectangle_and_margin, _margin);
-            _window_clipping_rectangle = expand(_window_rectangle, Theme::borderWidth);
+            _window_clipping_rectangle = _window_rectangle;
 
             child->set_layout_parameters(_window_rectangle, _window_clipping_rectangle);
         }
 
         need_redraw |= child->update_layout(display_time_point, need_layout);
-        return widget::update_layout(display_time_point, need_layout) || need_redraw;
+        return super::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -67,11 +69,8 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
         tt_assume(child);
 
-        context.drawBoxExcludeBorder(rectangle());
-
         child->draw(child->make_draw_context(context), display_time_point);
-
-        widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override

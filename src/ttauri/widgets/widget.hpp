@@ -425,7 +425,7 @@ public:
      * @return A new draw context for drawing the current widget in the
      *         local coordinate system.
      */
-    DrawContext make_draw_context(DrawContext context) const noexcept;
+    virtual DrawContext make_draw_context(DrawContext context) const noexcept;
 
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.

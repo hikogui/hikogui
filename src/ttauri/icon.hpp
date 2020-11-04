@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "stencils/image_stencil.hpp"
 #include "URL.hpp"
 #include "PixelMap.hpp"
 #include "R16G16B16A16SFloat.hpp"
@@ -13,7 +12,6 @@
 #include <variant>
 
 namespace tt {
-class DrawContext;
 
 /** An image, in different formats.
  */
@@ -31,7 +29,10 @@ public:
     icon &operator=(icon const &) noexcept;
     icon &operator=(icon &&) noexcept = default;
 
-    [[nodiscard]] std::unique_ptr<stencil> make_stencil(Alignment alignment) const noexcept;
+    [[nodiscard]] operator bool () const noexcept
+    {
+        return !std::holds_alternative<std::monostate>(image);
+    }
 
     [[nodiscard]] friend bool operator==(icon const &lhs, icon const &rhs) noexcept
     {
@@ -42,6 +43,8 @@ private:
     using image_type = std::variant<std::monostate, FontGlyphIDs, PixelMap<R16G16B16A16SFloat>>;
 
     image_type image;
+
+    friend class stencil;
 };
 
 

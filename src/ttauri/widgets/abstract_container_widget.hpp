@@ -130,9 +130,6 @@ public:
                     return tmp;
                 }
 
-            } else if (child == current_keyboard_widget) {
-                found = true;
-
             } else {
                 auto tmp = child->next_keyboard_widget(current_keyboard_widget, reverse);
                 if (tmp == current_keyboard_widget) {

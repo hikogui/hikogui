@@ -5,7 +5,7 @@
 
 #include "widget.hpp"
 #include "../GUI/DrawContext.hpp"
-#include "../stencils/text_stencil.hpp"
+#include "../stencils/label_stencil.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
 #include <memory>
@@ -50,7 +50,7 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints()) {
-            labelCell = (*label).make_stencil(alignment, theme->labelStyle);
+            labelCell = stencil::make_unique(alignment, *label, theme->labelStyle);
             _preferred_size = interval_vec2::make_minimum(labelCell->preferred_extent());
             return true;
         } else {
@@ -83,7 +83,7 @@ public:
 private:
     typename decltype(label)::callback_ptr_type label_callback;
 
-    std::unique_ptr<stencil> labelCell;
+    std::unique_ptr<label_stencil> labelCell;
     Alignment alignment;
 };
 
