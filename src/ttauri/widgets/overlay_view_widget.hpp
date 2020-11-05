@@ -73,6 +73,18 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
+    bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
+    {
+        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(child);
+        tt_assume(child->parent.lock().get() == this);
+
+        auto handled = false;
+        handled |= child->handle_command_recursive(command, reject_list);
+        handled |= super::handle_command_recursive(command, reject_list);
+        return handled;
+    }
+
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);

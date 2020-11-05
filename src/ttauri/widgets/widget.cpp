@@ -3,6 +3,7 @@
 
 #include "widget.hpp"
 #include "../GUI/utils.hpp"
+#include <ranges>
 
 namespace tt {
 
@@ -100,6 +101,15 @@ DrawContext widget::make_draw_context(DrawContext context) const noexcept
 bool widget::handle_command(command command) noexcept
 {
     return false;
+}
+
+bool widget::handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept
+{
+    tt_assume(GUISystem_mutex.recurse_lock_count());
+
+    if (!std::ranges::any_of(reject_list, [this](ttlet &x) { return x.get() == this; })) {
+        return handle_command(command);
+    }
 }
 
 bool widget::handle_mouse_event(MouseEvent const &event) noexcept {

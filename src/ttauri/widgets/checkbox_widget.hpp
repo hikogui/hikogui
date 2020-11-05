@@ -106,11 +106,11 @@ public:
 
             _check_glyph = to_FontGlyphIDs(ElusiveIcon::Ok);
             ttlet check_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
-            _check_glyph_rectangle = align(_checkbox_rectangle, scale(check_glyph_bb, Theme::iconSize), Alignment::MiddleCenter);
+            _check_glyph_rectangle = align(_checkbox_rectangle, scale(check_glyph_bb, Theme::small_icon_size), Alignment::MiddleCenter);
 
             _minus_glyph = to_FontGlyphIDs(ElusiveIcon::Minus);
             ttlet minus_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_minus_glyph);
-            _minus_glyph_rectangle = align(_checkbox_rectangle, scale(minus_glyph_bb, Theme::iconSize), Alignment::MiddleCenter);
+            _minus_glyph_rectangle = align(_checkbox_rectangle, scale(minus_glyph_bb, Theme::small_icon_size), Alignment::MiddleCenter);
         }
 
         return super::update_layout(displayTimePoint, need_layout);

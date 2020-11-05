@@ -8,7 +8,7 @@
 #include "overlay_view_widget.hpp"
 #include "ScrollViewWidget.hpp"
 #include "RowColumnLayoutWidget.hpp"
-#include "toolbar_button_widget.hpp"
+#include "menu_item_widget.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../text/FontBook.hpp"
@@ -76,9 +76,7 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         auto updated = widget::update_constraints();
-        if (selecting) {
-            updated |= overlay_widget->update_constraints();
-        }
+        updated |= overlay_widget->update_constraints();
 
         if (updated) {
             ttlet index = get_value_as_index();
@@ -90,16 +88,24 @@ public:
                 text_stencil_color = theme->labelStyle.color;
             }
 
-            auto text_size =
+            // Calculate the size of the widget based on the largest height of a label and the width of the overlay.
+            ttlet unknown_label_size =
                 stencil::make_unique(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle)->preferred_extent();
-            for (ttlet & [ tag, text ] : *option_list) {
-                text_size =
-                    max(text_size, stencil::make_unique(Alignment::MiddleLeft, text, theme->labelStyle)->preferred_extent());
-            }
 
-            // The preferred width includes: The left-side-chevron, margin, label, margin, scrollbar.
-            _preferred_size = interval_vec2::make_minimum(text_size) +
-                vec{Theme::smallSize + Theme::margin * 2.0f + Theme::scroll_bar_thickness, Theme::margin * 2.0f};
+            ttlet overlay_width = overlay_widget->preferred_size().minimum().width();
+            auto option_width = std::max(overlay_width, unknown_label_size.width() + Theme::margin * 2.0f);
+
+            auto option_height = unknown_label_size.height();
+            for (ttlet & [ tag, text ] : *option_list) {
+                option_height =
+                    std::max(option_height,
+                        stencil::make_unique(Alignment::MiddleLeft, text, theme->labelStyle)->preferred_extent().height());
+            }
+            option_height += Theme::margin * 2.0f;
+            
+            ttlet chevron_width = Theme::smallSize;
+
+            _preferred_size = interval_vec2::make_minimum(vec{chevron_width + option_width, option_height});
             _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
             return true;
 
@@ -137,7 +143,10 @@ public:
             left_box_rectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
             chevrons_glyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
             ttlet chevrons_glyph_bbox = PipelineSDF::DeviceShared::getBoundingBox(chevrons_glyph);
-            chevrons_rectangle = align(left_box_rectangle, scale(chevrons_glyph_bbox, Theme::iconSize), Alignment::MiddleCenter);
+            chevrons_rectangle =
+                align(left_box_rectangle, scale(chevrons_glyph_bbox, Theme::small_icon_size), Alignment::MiddleCenter);
+            chevrons_rectangle =
+                align(left_box_rectangle, scale(chevrons_glyph_bbox, Theme::small_icon_size), Alignment::MiddleCenter);
 
             // The unknown_label is located to the right of the selection box icon.
             option_rectangle = aarect{
@@ -189,13 +198,38 @@ public:
         auto handled = widget::handle_command(command);
 
         if (*enabled) {
-            if (command == command::gui_activate) {
+            switch (command) {
+            using enum tt::command;
+            case gui_activate:
                 handled = true;
-                selecting = !selecting;
+                if (!selecting) {
+                    start_selecting();
+                } else {
+                    stop_selecting();
+                }
+                break;
+            case gui_escape:
+                if (selecting) {
+                    handled = true;
+                    stop_selecting();
+                }
+                break;
+            default:;
             }
         }
 
         _request_relayout = true;
+        return handled;
+    }
+
+    bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
+    {
+        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(overlay_widget);
+
+        auto handled = false;
+        handled |= overlay_widget->handle_command_recursive(command, reject_list); 
+        handled |= super::handle_command_recursive(command, reject_list);
         return handled;
     }
 
@@ -260,7 +294,8 @@ private:
     std::shared_ptr<VerticalScrollViewWidget<>> scroll_widget;
     std::shared_ptr<ColumnLayoutWidget> column_widget;
 
-    std::vector<typename toolbar_button_widget<value_type>::callback_ptr_type> menu_item_callbacks;
+    std::vector<std::shared_ptr<menu_item_widget<value_type>>> menu_item_widgets;
+    std::vector<typename menu_item_widget<value_type>::callback_ptr_type> menu_item_callbacks;
 
     [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
@@ -275,22 +310,56 @@ private:
         return -1;
     }
 
+    [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_selected_menu_item() const noexcept
+    {
+        ttlet i = get_value_as_index();
+        if (i >= 0 && i < std::ssize(menu_item_widgets)) {
+            return menu_item_widgets[i];
+        } else {
+            return {};
+        }
+    }
+
+    void start_selecting() noexcept
+    {
+        selecting = true;
+        this->window.update_keyboard_target(get_selected_menu_item());
+    }
+
+    void stop_selecting() noexcept
+    {
+        selecting = false;
+    }
+
+
     /** Populate the scroll view with menu items corresponding to the options.
      */
     void repopulate_options() noexcept
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
+        auto option_list_ = *option_list;
+
+        // If any of the options has a an icon, all of the options should show the icon.
+        auto show_icon = false;
+        for (ttlet &[tag, label] : option_list_) {
+            show_icon |= label.has_icon();
+        }
 
         column_widget->clear();
+        menu_item_widgets.clear();
         menu_item_callbacks.clear();
-        for (ttlet & [ tag, text ] : *option_list) {
-            auto button = column_widget->make_widget<toolbar_button_widget<value_type>>(tag, this->value);
-            button->label = text;
+        for (ttlet & [ tag, text ] : option_list_) {
+            auto menu_item = column_widget->make_widget<menu_item_widget<value_type>>(tag, this->value);
+            menu_item->set_show_check_mark(true);
+            menu_item->set_show_icon(show_icon);
+            menu_item->label = text;
 
-            menu_item_callbacks.push_back(button->subscribe([this, tag] {
+            menu_item_callbacks.push_back(menu_item->subscribe([this, tag] {
                 this->value = tag;
                 this->selecting = false;
             }));
+
+            menu_item_widgets.push_back(std::move(menu_item));
         }
     }
     void drawOutline(DrawContext drawContext) noexcept

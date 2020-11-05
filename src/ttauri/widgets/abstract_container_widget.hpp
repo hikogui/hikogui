@@ -9,7 +9,9 @@ namespace tt {
 
 class abstract_container_widget : public widget {
 public:
-    abstract_container_widget(Window &window, std::shared_ptr<widget> parent) noexcept : widget(window, parent)
+    using super = widget;
+
+    abstract_container_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // Most containers will not draw itself, only its children.
@@ -57,7 +59,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        auto has_constrainted = widget::update_constraints();
+        auto has_constrainted = super::update_constraints();
 
         for (auto &&child : _children) {
             tt_assume(child->parent.lock() == shared_from_this());
@@ -77,7 +79,7 @@ public:
             need_redraw |= child->update_layout(display_time_point, need_layout);
         }
 
-        return widget::update_layout(display_time_point, need_layout) || need_redraw;
+        return super::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
@@ -89,7 +91,20 @@ public:
             child->draw(child->make_draw_context(context), display_time_point);
         }
 
-        widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
+    }
+
+    bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
+    {
+        tt_assume(GUISystem_mutex.recurse_lock_count());
+
+        auto handled = false;
+        for (auto &child : _children) {
+            tt_assume(child->parent.lock().get() == this);
+            handled |= child->handle_command_recursive(command, reject_list);
+        }
+        handled |= super::handle_command_recursive(command, reject_list);
+        return handled;
     }
 
     HitBox hitbox_test(vec window_position) const noexcept

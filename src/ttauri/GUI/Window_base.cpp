@@ -145,6 +145,10 @@ void Window_base::update_mouse_target(std::shared_ptr<tt::widget> new_target_wid
 void Window_base::update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget) noexcept
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);
+
+    // Send a gui_cancel command to any widget that is not in the new_target_widget-parent-chain.
+    auto new_target_parent_chain = tt::widget::parent_chain(new_target_widget);
+    widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
     
     auto current_target_widget = keyboardTargetWidget.lock();
     if ((!new_target_widget || new_target_widget->accepts_focus()) && new_target_widget != current_target_widget) {

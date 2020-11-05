@@ -449,9 +449,17 @@ public:
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the command to the super class' `handleCommand()`.
-     *
      */
     virtual bool handle_command(command command) noexcept;
+
+    /** Handle command recursive.
+     * Handle a command and pass it to each child.
+     * 
+     * @param command The command to handle by this widget.
+     * @param reject_list The widgets that should ignore this command
+     * @return True when the command was handled by this widget or recursed child.
+     */
+    virtual bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept;
 
     /*! Handle mouse event.
      * Called by the operating system to show the position and button state of the mouse.
@@ -490,6 +498,25 @@ public:
      */
     [[nodiscard]] virtual std::shared_ptr<widget>
     next_keyboard_widget(std::shared_ptr<widget> const &current_keyboard_widget, bool reverse) const noexcept;
+
+    /** Get a list of parents of a given widget.
+     * The chain includes the given widget.
+     */
+    static std::vector<std::shared_ptr<widget>> parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept
+    {
+        ttlet lock = std::scoped_lock(GUISystem_mutex);
+
+        std::vector<std::shared_ptr<widget>> chain;
+
+        if (auto w = child_widget) {
+            chain.push_back(w);
+            while (w = w->parent.lock()) {
+                chain.push_back(w);
+            }
+        }
+
+        return chain;
+    }
 
 protected:
     /** Mouse cursor is hovering over the widget.

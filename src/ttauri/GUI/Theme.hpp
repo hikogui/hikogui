@@ -61,9 +61,18 @@ public:
      */
     static constexpr float maxLabelWidth = 300.0f;
 
-    /** Size of icons in buttons, based on the original 1EM.
+    /** Size of icons that represents the size of label's text.
      */
-    static constexpr float iconSize = 10.0;
+    static constexpr float small_icon_size = 10.0f;
+
+    /** Size of icons extending from the ascender to descender of a label's text.
+     */
+    static constexpr float icon_size = 20.0f;
+
+    /** Size of icons representing the length of am average word of a label's text.
+     */
+    static constexpr float large_icon_size = 30.0f;
+
 
     std::string name;
     ThemeMode mode;

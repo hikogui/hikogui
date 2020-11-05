@@ -189,6 +189,14 @@ public:
 
     void next_keyboard_widget(std::shared_ptr<tt::widget> const &currentTargetWidget, bool reverse) noexcept;
 
+
+    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, vec position = vec{0.0f, 0.0f}) noexcept;
+
+    /** Change the keyboard focus to the given widget.
+     */
+    void update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget) noexcept;
+
+
     /** Get the size of the virtual-screen.
      * Each window may be on a different virtual screen with different
      * sizes, so retrieve it on a per window basis.
@@ -233,10 +241,6 @@ protected:
     /*! Build Windows based on State::NO_*
      */
     virtual void build() = 0;
-
-    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, vec position = vec{0.0f, 0.0f}) noexcept;
-
-    void update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget) noexcept;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.

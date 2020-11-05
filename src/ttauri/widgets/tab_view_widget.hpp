@@ -11,13 +11,14 @@ namespace tt {
 template<typename T>
 class tab_view_widget final : public widget {
 public:
+    using super = widget;
     using value_type = T;
 
     observable<value_type> value = 0;
 
     template<typename Value>
     tab_view_widget(Window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
-        widget(window, parent), value(std::forward<Value>(value))
+        super(window, parent), value(std::forward<Value>(value))
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected child.
@@ -38,7 +39,7 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        auto has_updated_contraints = widget::update_constraints();
+        auto has_updated_contraints = super::update_constraints();
         if (has_updated_contraints) {
             // The value has changed, so resize the window.
             window.requestResize = true;
@@ -68,7 +69,7 @@ public:
         }
 
         need_redraw |= child.update_layout(display_time_point, need_layout);
-        return widget::update_layout(display_time_point, need_layout) || need_redraw;
+        return super::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -76,13 +77,26 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         draw_child(context, display_time_point, selected_child());
-        widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
         return selected_child().hitbox_test(window_position);
+    }
+
+    bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
+    {
+        tt_assume(GUISystem_mutex.recurse_lock_count());
+
+        auto handled = false;
+        for (auto &[tag, child] : _children) {
+            tt_assume(child->parent.lock().get() == this);
+            handled |= child->handle_command_recursive(command, reject_list);
+        }
+        handled |= super::handle_command_recursive(command, reject_list);
+        return handled;
     }
 
     std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept

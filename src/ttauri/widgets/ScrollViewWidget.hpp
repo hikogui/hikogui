@@ -12,11 +12,13 @@ namespace tt {
 template<bool CanScrollHorizontally = true, bool CanScrollVertically = true, bool ControlsWindow = true>
 class ScrollViewWidget final : public widget {
 public:
+    using super = widget;
+
     static constexpr bool can_scroll_horizontally = CanScrollHorizontally;
     static constexpr bool can_scroll_vertically = CanScrollVertically;
     static constexpr bool controls_window = ControlsWindow;
 
-    ScrollViewWidget(Window &window, std::shared_ptr<widget> parent) noexcept : widget(window, parent)
+    ScrollViewWidget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
@@ -49,7 +51,7 @@ public:
         tt_assume(!can_scroll_horizontally || horizontal_scroll_bar);
         tt_assume(!can_scroll_vertically || vertical_scroll_bar);
 
-        auto has_updated_contraints = widget::update_constraints();
+        auto has_updated_contraints = super::update_constraints();
         has_updated_contraints |= content->update_constraints();
         if constexpr (can_scroll_horizontally) {
             has_updated_contraints |= horizontal_scroll_bar->update_constraints();
@@ -191,7 +193,7 @@ public:
             need_redraw |= vertical_scroll_bar->update_layout(display_time_point, need_layout);
         }
 
-        return widget::update_layout(display_time_point, need_layout) || need_redraw;
+        return super::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -208,7 +210,27 @@ public:
 
         content->draw(content->make_draw_context(context), display_time_point);
 
-        widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
+    }
+
+    bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
+    {
+        tt_assume(GUISystem_mutex.recurse_lock_count());
+
+        auto handled = false;
+        tt_assume(content->parent.lock().get() == this);
+        handled |= content->handle_command_recursive(command, reject_list);
+        if constexpr (can_scroll_horizontally) {
+            tt_assume(horizontal_scroll_bar->parent.lock().get() == this);
+            handled |= horizontal_scroll_bar->handle_command_recursive(command, reject_list);
+        }
+        if constexpr (can_scroll_vertically) {
+            tt_assume(vertical_scroll_bar->parent.lock().get() == this);
+            handled |= vertical_scroll_bar->handle_command_recursive(command, reject_list);
+        }
+
+        handled |= super::handle_command_recursive(command, reject_list);
+        return handled;
     }
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
@@ -258,7 +280,7 @@ public:
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        auto handled = widget::handle_mouse_event(event);
+        auto handled = super::handle_mouse_event(event);
 
         if (event.type == MouseEvent::Type::Wheel) {
             handled = true;

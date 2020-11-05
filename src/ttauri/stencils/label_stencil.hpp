@@ -16,7 +16,7 @@ public:
     label_stencil(Alignment alignment, label label, TextStyle style) noexcept :
         stencil(alignment),
         _style(style),
-        _icon_size(_alignment == HorizontalAlignment::Center ? _style.size * 3.0f : _style.size * 2.0f)
+        _icon_size(_alignment == HorizontalAlignment::Center ? Theme::large_icon_size : Theme::icon_size)
     {
         if (label.has_icon()) {
             _icon_stencil = stencil::make_unique(Alignment::MiddleCenter, label.icon());
@@ -33,7 +33,7 @@ public:
             return {_icon_size, _icon_size};
         }
 
-        if (!_icon_stencil && !_always_show_icon) {
+        if (!_icon_stencil && !_show_icon) {
             // There is no image, just use the text label.
             return _text_stencil->preferred_extent();
         }
@@ -51,6 +51,31 @@ public:
         // clang-format on
 
         return {width, height};
+    }
+
+    /** Whether the text in the label will align to an optional icon in the label.
+     * Make space for, and optionally display, an icon in front
+     * of the text. This option should be used when any of the labels in a menu
+     * has an icon.
+     *
+     * This should not be used when a menu is displayed in the same direction as
+     * the icon label. For example a left or right aligned menu item in a row menu;
+     * such as the tool-bar.
+     *
+     * @retval true The text of the label will be aligned after an optional icon of the label.
+     * @retval false The text of the label will be not be aligned to an optional icon of the label.
+     */
+    [[nodiscard]] bool show_icon() const noexcept
+    {
+        return _show_icon;
+    }
+
+    /** Set the `show_icon()` flag.
+     */
+    void set_show_icon(bool flag) noexcept
+    {
+        _show_icon = flag;
+        _layout_is_modified = true;
     }
 
     void set_layout_parameters(
@@ -81,12 +106,12 @@ public:
             // clang-format off
             ttlet text_width =
                 _alignment == HorizontalAlignment::Center ? _rectangle.width() :
-                _icon_stencil || _always_show_icon ? _rectangle.width() - Theme::margin - _icon_size :
+                _icon_stencil || _show_icon ? _rectangle.width() - Theme::margin - _icon_size :
                 _rectangle.width();
 
             ttlet text_height =
                 _alignment == VerticalAlignment::Middle ? _rectangle.height() :
-                _icon_stencil || _always_show_icon ? _rectangle.height() - _icon_size :
+                _icon_stencil || _show_icon ? _rectangle.height() - _icon_size :
                 _rectangle.height();
 
             ttlet text_x =
@@ -120,7 +145,7 @@ public:
     }
 
 private:
-    bool _always_show_icon = false;
+    bool _show_icon = false;
     TextStyle _style;
     float _icon_size;
     std::unique_ptr<image_stencil> _icon_stencil;
