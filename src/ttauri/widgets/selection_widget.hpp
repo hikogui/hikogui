@@ -7,7 +7,7 @@
 #include "WindowWidget.hpp"
 #include "overlay_view_widget.hpp"
 #include "ScrollViewWidget.hpp"
-#include "RowColumnLayoutWidget.hpp"
+#include "row_column_layout_widget.hpp"
 #include "menu_item_widget.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/DrawContext.hpp"
@@ -23,7 +23,7 @@
 namespace tt {
 
 template<typename T>
-class SelectionWidget final : public widget {
+class selection_widget final : public widget {
 public:
     using super = widget;
     using value_type = T;
@@ -34,7 +34,7 @@ public:
     observable<option_list_type> option_list;
 
     template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = label>
-    SelectionWidget(
+    selection_widget(
         Window &window,
         std::shared_ptr<widget> parent,
         Value &&value = value_type{},
@@ -47,15 +47,15 @@ public:
     {
     }
 
-    ~SelectionWidget() {}
+    ~selection_widget() {}
 
     void initialize() noexcept override
     {
-        overlay_widget = std::make_shared<overlay_view_widget>(window, shared_from_this());
-        overlay_widget->initialize();
+        _overlay_widget = std::make_shared<overlay_view_widget>(window, shared_from_this());
+        _overlay_widget->initialize();
 
-        scroll_widget = overlay_widget->make_widget<VerticalScrollViewWidget<>>();
-        column_widget = scroll_widget->make_widget<ColumnLayoutWidget>();
+        _scroll_widget = _overlay_widget->make_widget<VerticalScrollViewWidget<>>();
+        _column_widget = _scroll_widget->make_widget<column_layout_widget>();
 
         repopulate_options();
 
@@ -76,37 +76,37 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         auto updated = super::update_constraints(display_time_point, need_reconstrain);
-        updated |= overlay_widget->update_constraints(display_time_point, need_reconstrain);
+        updated |= _overlay_widget->update_constraints(display_time_point, need_reconstrain);
 
         if (updated) {
             ttlet index = get_value_as_index();
             if (index == -1) {
-                text_stencil = stencil::make_unique(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle);
-                text_stencil_color = theme->placeholderLabelStyle.color;
+                _text_stencil = stencil::make_unique(alignment::middle_left, *unknown_label, theme->placeholderLabelStyle);
+                _text_stencil_color = theme->placeholderLabelStyle.color;
             } else {
-                text_stencil = stencil::make_unique(Alignment::MiddleLeft, (*option_list)[index].second, theme->labelStyle);
-                text_stencil_color = theme->labelStyle.color;
+                _text_stencil = stencil::make_unique(alignment::middle_left, (*option_list)[index].second, theme->labelStyle);
+                _text_stencil_color = theme->labelStyle.color;
             }
 
             // Calculate the size of the widget based on the largest height of a label and the width of the overlay.
             ttlet unknown_label_size =
-                stencil::make_unique(Alignment::MiddleLeft, *unknown_label, theme->placeholderLabelStyle)->preferred_extent();
+                stencil::make_unique(alignment::middle_left, *unknown_label, theme->placeholderLabelStyle)->preferred_extent();
 
-            ttlet overlay_width = overlay_widget->preferred_size().minimum().width();
+            ttlet overlay_width = _overlay_widget->preferred_size().minimum().width();
             auto option_width = std::max(overlay_width, unknown_label_size.width() + Theme::margin * 2.0f);
 
             auto option_height = unknown_label_size.height();
             for (ttlet & [ tag, text ] : *option_list) {
                 option_height =
                     std::max(option_height,
-                        stencil::make_unique(Alignment::MiddleLeft, text, theme->labelStyle)->preferred_extent().height());
+                        stencil::make_unique(alignment::middle_left, text, theme->labelStyle)->preferred_extent().height());
             }
             option_height += Theme::margin * 2.0f;
             
             ttlet chevron_width = Theme::smallSize;
 
             _preferred_size = interval_vec2::make_minimum(vec{chevron_width + option_width, option_height});
-            _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
+            _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
             return true;
 
         } else {
@@ -120,7 +120,7 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
 
-        if (selecting) {
+        if (_selecting) {
             if (need_layout) {
                 // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
                 // from the point of view of the selection widget.
@@ -128,34 +128,34 @@ public:
                 // The overlay should start on the same left edge as the selection box and the same width.
                 // The height of the overlay should be the maximum height, which will show all the options.
 
-                ttlet overlay_width = clamp(rectangle().width() - Theme::smallSize, overlay_widget->preferred_size().width());
-                ttlet overlay_height = overlay_widget->preferred_size().maximum().height();
+                ttlet overlay_width = clamp(rectangle().width() - Theme::smallSize, _overlay_widget->preferred_size().width());
+                ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
                 ttlet overlay_x = _window_rectangle.x() + Theme::smallSize;
                 ttlet overlay_y = std::round(_window_rectangle.middle() - overlay_height * 0.5f);
                 ttlet overlay_rectangle = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
 
-                overlay_widget->set_layout_parameters(overlay_rectangle, overlay_rectangle);
+                _overlay_widget->set_layout_parameters(overlay_rectangle, overlay_rectangle);
             }
-            need_layout |= overlay_widget->update_layout(display_time_point, need_layout);
+            need_layout |= _overlay_widget->update_layout(display_time_point, need_layout);
         }
 
         if (need_layout) {
-            left_box_rectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
-            chevrons_glyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
-            ttlet chevrons_glyph_bbox = PipelineSDF::DeviceShared::getBoundingBox(chevrons_glyph);
-            chevrons_rectangle =
-                align(left_box_rectangle, scale(chevrons_glyph_bbox, Theme::small_icon_size), Alignment::MiddleCenter);
-            chevrons_rectangle =
-                align(left_box_rectangle, scale(chevrons_glyph_bbox, Theme::small_icon_size), Alignment::MiddleCenter);
+            _left_box_rectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
+            _chevrons_glyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
+            ttlet chevrons_glyph_bbox = PipelineSDF::DeviceShared::getBoundingBox(_chevrons_glyph);
+            _chevrons_rectangle =
+                align(_left_box_rectangle, scale(chevrons_glyph_bbox, Theme::small_icon_size), alignment::middle_center);
+            _chevrons_rectangle =
+                align(_left_box_rectangle, scale(chevrons_glyph_bbox, Theme::small_icon_size), alignment::middle_center);
 
             // The unknown_label is located to the right of the selection box icon.
-            option_rectangle = aarect{
-                left_box_rectangle.right() + Theme::margin,
+            _option_rectangle = aarect{
+                _left_box_rectangle.right() + Theme::margin,
                 0.0f,
-                rectangle().width() - left_box_rectangle.width() - Theme::margin * 2.0f,
+                rectangle().width() - _left_box_rectangle.width() - Theme::margin * 2.0f,
                 rectangle().height()};
 
-            text_stencil->set_layout_parameters(option_rectangle, base_line());
+            _text_stencil->set_layout_parameters(_option_rectangle, base_line());
         }
         return widget::update_layout(display_time_point, need_layout);
     }
@@ -164,13 +164,13 @@ public:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        drawOutline(context);
-        drawLeftBox(context);
-        drawChevrons(context);
-        drawValue(context);
+        draw_outline(context);
+        draw_left_box(context);
+        draw_chevrons(context);
+        draw_value(context);
 
-        if (selecting) {
-            overlay_widget->draw(overlay_widget->make_draw_context(context), display_time_point);
+        if (_selecting) {
+            _overlay_widget->draw(_overlay_widget->make_draw_context(context), display_time_point);
         }
 
         widget::draw(std::move(context), display_time_point);
@@ -202,14 +202,14 @@ public:
             using enum tt::command;
             case gui_activate:
                 handled = true;
-                if (!selecting) {
+                if (!_selecting) {
                     start_selecting();
                 } else {
                     stop_selecting();
                 }
                 break;
             case gui_escape:
-                if (selecting) {
+                if (_selecting) {
                     handled = true;
                     stop_selecting();
                 }
@@ -225,10 +225,10 @@ public:
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
-        tt_assume(overlay_widget);
+        tt_assume(_overlay_widget);
 
         auto handled = false;
-        handled |= overlay_widget->handle_command_recursive(command, reject_list); 
+        handled |= _overlay_widget->handle_command_recursive(command, reject_list); 
         handled |= super::handle_command_recursive(command, reject_list);
         return handled;
     }
@@ -240,8 +240,8 @@ public:
 
         auto r = HitBox{};
 
-        if (selecting) {
-            r = std::max(r, overlay_widget->hitbox_test(window_position));
+        if (_selecting) {
+            r = std::max(r, _overlay_widget->hitbox_test(window_position));
         }
 
         if (_window_clipping_rectangle.contains(window_position)) {
@@ -262,12 +262,12 @@ public:
     {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
 
-        if (selecting) {
-            tt_assume(overlay_widget);
+        if (_selecting) {
+            tt_assume(_overlay_widget);
             if (current_keyboard_widget == shared_from_this()) {
-                return overlay_widget->next_keyboard_widget({}, reverse);
+                return _overlay_widget->next_keyboard_widget({}, reverse);
             } else {
-                return overlay_widget->next_keyboard_widget(current_keyboard_widget, reverse);
+                return _overlay_widget->next_keyboard_widget(current_keyboard_widget, reverse);
             }
 
         } else {
@@ -280,22 +280,22 @@ private:
     typename decltype(value)::callback_ptr_type _value_callback;
     typename decltype(option_list)::callback_ptr_type _option_list_callback;
 
-    std::unique_ptr<label_stencil> text_stencil;
-    vec text_stencil_color;
+    std::unique_ptr<label_stencil> _text_stencil;
+    vec _text_stencil_color;
 
-    aarect option_rectangle;
-    aarect left_box_rectangle;
+    aarect _option_rectangle;
+    aarect _left_box_rectangle;
 
-    FontGlyphIDs chevrons_glyph;
-    aarect chevrons_rectangle;
+    FontGlyphIDs _chevrons_glyph;
+    aarect _chevrons_rectangle;
 
-    bool selecting = false;
-    std::shared_ptr<overlay_view_widget> overlay_widget;
-    std::shared_ptr<VerticalScrollViewWidget<>> scroll_widget;
-    std::shared_ptr<ColumnLayoutWidget> column_widget;
+    bool _selecting = false;
+    std::shared_ptr<overlay_view_widget> _overlay_widget;
+    std::shared_ptr<VerticalScrollViewWidget<>> _scroll_widget;
+    std::shared_ptr<column_layout_widget> _column_widget;
 
-    std::vector<std::shared_ptr<menu_item_widget<value_type>>> menu_item_widgets;
-    std::vector<typename menu_item_widget<value_type>::callback_ptr_type> menu_item_callbacks;
+    std::vector<std::shared_ptr<menu_item_widget<value_type>>> _menu_item_widgets;
+    std::vector<typename menu_item_widget<value_type>::callback_ptr_type> _menu_item_callbacks;
 
     [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
@@ -313,8 +313,8 @@ private:
     [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_selected_menu_item() const noexcept
     {
         ttlet i = get_value_as_index();
-        if (i >= 0 && i < std::ssize(menu_item_widgets)) {
-            return menu_item_widgets[i];
+        if (i >= 0 && i < std::ssize(_menu_item_widgets)) {
+            return _menu_item_widgets[i];
         } else {
             return {};
         }
@@ -322,13 +322,13 @@ private:
 
     void start_selecting() noexcept
     {
-        selecting = true;
+        _selecting = true;
         this->window.update_keyboard_target(get_selected_menu_item());
     }
 
     void stop_selecting() noexcept
     {
-        selecting = false;
+        _selecting = false;
     }
 
 
@@ -345,60 +345,57 @@ private:
             show_icon |= label.has_icon();
         }
 
-        column_widget->clear();
-        menu_item_widgets.clear();
-        menu_item_callbacks.clear();
+        _column_widget->clear();
+        _menu_item_widgets.clear();
+        _menu_item_callbacks.clear();
         for (ttlet & [ tag, text ] : option_list_) {
-            auto menu_item = column_widget->make_widget<menu_item_widget<value_type>>(tag, this->value);
+            auto menu_item = _column_widget->make_widget<menu_item_widget<value_type>>(tag, this->value);
             menu_item->set_show_check_mark(true);
             menu_item->set_show_icon(show_icon);
             menu_item->label = text;
 
-            menu_item_callbacks.push_back(menu_item->subscribe([this, tag] {
+            _menu_item_callbacks.push_back(menu_item->subscribe([this, tag] {
                 this->value = tag;
-                this->selecting = false;
+                this->_selecting = false;
             }));
 
-            menu_item_widgets.push_back(std::move(menu_item));
+            _menu_item_widgets.push_back(std::move(menu_item));
         }
     }
-    void drawOutline(DrawContext drawContext) noexcept
+    void draw_outline(DrawContext context) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        drawContext.cornerShapes = Theme::roundingRadius;
-        drawContext.drawBoxIncludeBorder(rectangle());
+        context.cornerShapes = Theme::roundingRadius;
+        context.drawBoxIncludeBorder(rectangle());
     }
 
-    void drawLeftBox(DrawContext drawContext) noexcept
+    void draw_left_box(DrawContext context) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-        // if (*enabled && window.active) {
-        //    drawContext.color = theme->accentColor;
-        //}
-        drawContext.fillColor = drawContext.color;
-        drawContext.cornerShapes = vec{Theme::roundingRadius, 0.0f, Theme::roundingRadius, 0.0f};
-        drawContext.drawBoxIncludeBorder(left_box_rectangle);
+        context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
+        context.fillColor = context.color;
+        context.cornerShapes = vec{Theme::roundingRadius, 0.0f, Theme::roundingRadius, 0.0f};
+        context.drawBoxIncludeBorder(_left_box_rectangle);
     }
 
-    void drawChevrons(DrawContext drawContext) noexcept
+    void draw_chevrons(DrawContext context) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        drawContext.transform = mat::T{0.0, 0.0, 0.2f} * drawContext.transform;
-        drawContext.color = *enabled ? theme->foregroundColor : drawContext.fillColor;
-        drawContext.drawGlyph(chevrons_glyph, chevrons_rectangle);
+        context.transform = mat::T{0.0, 0.0, 0.2f} * context.transform;
+        context.color = *enabled ? theme->foregroundColor : context.fillColor;
+        context.drawGlyph(_chevrons_glyph, _chevrons_rectangle);
     }
 
-    void drawValue(DrawContext drawContext) noexcept
+    void draw_value(DrawContext context) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        drawContext.transform = mat::T{0.0, 0.0, 0.1f} * drawContext.transform;
-        drawContext.color = *enabled ? text_stencil_color : drawContext.color;
-        text_stencil->draw(drawContext, true);
+        context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
+        context.color = *enabled ? _text_stencil_color : context.color;
+        _text_stencil->draw(context, true);
     }
 };
 

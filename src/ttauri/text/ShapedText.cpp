@@ -117,34 +117,34 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noe
     };
 }
 
-[[nodiscard]] static float position_x(Alignment alignment, float line_width, float width) noexcept
+[[nodiscard]] static float position_x(alignment alignment, float line_width, float width) noexcept
 {
-    if (alignment == HorizontalAlignment::Left) {
+    if (alignment == horizontal_alignment::left) {
         return 0.0f;
-    } else if (alignment == HorizontalAlignment::Right) {
+    } else if (alignment == horizontal_alignment::right) {
         return width - line_width;
-    } else if (alignment == HorizontalAlignment::Center) {
+    } else if (alignment == horizontal_alignment::center) {
         return width * 0.5f - line_width * 0.5f;
     } else {
         tt_no_default();
     }
 }
 
-static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment alignment, float width) noexcept
+static void position_glyphs(std::vector<AttributedGlyphLine> &lines, alignment alignment, float width) noexcept
 {
     ssize_t start_line_upward;
     ssize_t start_line_downward;
     float start_y_upward = 0.0f;
     float start_y_downward = 0.0f;
-    if (alignment == VerticalAlignment::Top || std::ssize(lines) == 1) {
+    if (alignment == vertical_alignment::top || std::ssize(lines) == 1) {
         start_line_upward = -1; // Don't go upward
         start_line_downward = 0;
 
-    } else if (alignment == VerticalAlignment::Bottom) {
+    } else if (alignment == vertical_alignment::bottom) {
         start_line_upward = std::ssize(lines) - 1;
         start_line_downward = std::ssize(lines); // Don't go downward.
 
-    } else if (alignment == VerticalAlignment::Middle) {
+    } else if (alignment == vertical_alignment::middle) {
         start_line_upward = (std::ssize(lines) / 2) - 1;
         start_line_downward = std::ssize(lines) / 2; // The middle line (odd number of lines).
 
@@ -248,7 +248,7 @@ struct shape_text_result {
 [[nodiscard]] static shape_text_result shape_text(
     std::vector<AttributedGrapheme> text,
     float width,
-    Alignment alignment,
+    alignment alignment,
     float wrap) noexcept
 {
     std::vector<AttributedGlyph> attributed_glyphs;
@@ -296,7 +296,7 @@ struct shape_text_result {
 ShapedText::ShapedText(
     std::vector<AttributedGrapheme> const &text,
     float width,
-    Alignment alignment,
+    tt::alignment alignment,
     bool wrap
 ) noexcept :
     alignment(alignment),
@@ -312,7 +312,7 @@ ShapedText::ShapedText(
     gstring const &text,
     TextStyle const &style,
     float width,
-    Alignment alignment,
+    tt::alignment alignment,
     bool wrap)
 noexcept :
     ShapedText(makeAttributedGraphemeVector(text, style), width, alignment, wrap) {}
@@ -321,7 +321,7 @@ ShapedText::ShapedText(
     std::u8string_view text,
     TextStyle const &style,
     float width,
-    Alignment alignment,
+    tt::alignment alignment,
     bool wrap
 ) noexcept :
     ShapedText(to_gstring(text), style, width, alignment, wrap) {}

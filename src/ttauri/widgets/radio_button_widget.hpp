@@ -60,13 +60,13 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (widget::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(Alignment::TopLeft, *label, theme->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::top_left, *label, theme->labelStyle);
 
             ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), Theme::smallSize);
             ttlet minimum_width = Theme::smallSize + Theme::margin + _label_stencil->preferred_extent().width();
 
             super::_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            super::_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+            super::_preferred_base_line = relative_base_line{vertical_alignment::top, -Theme::smallSize * 0.5f};
             return true;
         } else {
             return false;

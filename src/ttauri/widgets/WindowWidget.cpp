@@ -29,7 +29,7 @@ void WindowWidget::initialize() noexcept
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _toolbar->make_widget<SystemMenuWidget>(this->title.icon());
 #endif
-        _toolbar->make_widget<WindowTrafficLightsWidget, HorizontalAlignment::Right>();
+        _toolbar->make_widget<WindowTrafficLightsWidget, horizontal_alignment::right>();
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         _toolbar->make_widget<WindowTrafficLightsWidget>();
     } else {

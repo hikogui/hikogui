@@ -44,7 +44,7 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(Alignment::MiddleCenter, *label, theme->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::middle_center, *label, theme->labelStyle);
             this->_preferred_size = interval_vec2::make_minimum(_label_stencil->preferred_extent() + Theme::margin2Dx2);
             return true;
         } else {

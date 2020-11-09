@@ -23,7 +23,7 @@ public:
     observable<label> label;
 
     template<typename Label>
-    LabelWidget(Window &window, std::shared_ptr<widget> parent, Alignment alignment, Label &&label) noexcept
+    LabelWidget(Window &window, std::shared_ptr<widget> parent, alignment alignment, Label &&label) noexcept
         :
         super(window, parent),
         alignment(alignment),
@@ -33,7 +33,7 @@ public:
 
     template<typename Label>
     LabelWidget(Window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
-        super(window, parent), alignment(Alignment::TopRight), label(std::forward<Label>(label))
+        super(window, parent), alignment(alignment::top_right), label(std::forward<Label>(label))
     {
     }
 
@@ -85,7 +85,7 @@ private:
     typename decltype(label)::callback_ptr_type label_callback;
 
     std::unique_ptr<label_stencil> labelCell;
-    Alignment alignment;
+    alignment alignment;
 };
 
 }

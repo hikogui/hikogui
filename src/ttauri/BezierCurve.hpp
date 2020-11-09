@@ -19,6 +19,8 @@ namespace tt {
 
 struct BezierPoint;
 
+enum class LineJoinStyle { Bevel, Miter, Rounded };
+
 /*! Bezier Curve
  * A linear, quadratic or cubic bezier curve.
  */

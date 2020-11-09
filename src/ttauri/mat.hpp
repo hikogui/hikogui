@@ -554,14 +554,14 @@ public:
     * @param alignment How the inside rectangle should be aligned.
     * @return Translation matrix to move and align the needle in the haystack
     */
-    [[nodiscard]] static mat::T align(aarect haystack, aarect needle, Alignment alignment) noexcept {
+    [[nodiscard]] static mat::T align(aarect haystack, aarect needle, alignment alignment) noexcept {
         return mat::T{
             aarect::_align(haystack, needle, alignment).offset() -
             needle.offset()
         };
     }
 
-    [[nodiscard]] static mat uniform2D_scale_and_translate(aarect haystack, aarect needle, Alignment alignment) noexcept {
+    [[nodiscard]] static mat uniform2D_scale_and_translate(aarect haystack, aarect needle, alignment alignment) noexcept {
         ttlet scale = S::uniform2D(haystack.extent(), needle.extent());
         ttlet scaled_needle = scale * needle;
         ttlet translation = align(haystack, scaled_needle, alignment);

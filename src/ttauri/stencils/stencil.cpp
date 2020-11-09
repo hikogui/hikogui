@@ -11,7 +11,7 @@
 
 namespace tt {
 
-[[nodiscard]] std::unique_ptr<image_stencil> stencil::make_unique(Alignment alignment, tt::icon const &icon)
+[[nodiscard]] std::unique_ptr<image_stencil> stencil::make_unique(alignment alignment, tt::icon const &icon)
 {
     if (ttlet pixel_map = std::get_if<PixelMap<R16G16B16A16SFloat>>(&icon.image)) {
         return std::make_unique<pixel_map_stencil>(alignment, *pixel_map);
@@ -22,12 +22,12 @@ namespace tt {
     }
 }
 
-[[nodiscard]] std::unique_ptr<text_stencil> stencil::make_unique(Alignment alignment, std::u8string const &text, TextStyle const &style)
+[[nodiscard]] std::unique_ptr<text_stencil> stencil::make_unique(alignment alignment, std::u8string const &text, TextStyle const &style)
 {
     return std::make_unique<text_stencil>(alignment, text, style);
 }
 
-[[nodiscard]] std::unique_ptr<label_stencil> stencil::make_unique(Alignment alignment, tt::label const &label, TextStyle const &style)
+[[nodiscard]] std::unique_ptr<label_stencil> stencil::make_unique(alignment alignment, tt::label const &label, TextStyle const &style)
 {
     return std::make_unique<label_stencil>(alignment, label, style);
 }

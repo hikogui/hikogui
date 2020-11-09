@@ -13,13 +13,13 @@ namespace tt {
 
 class label_stencil : public stencil {
 public:
-    label_stencil(Alignment alignment, label label, TextStyle style) noexcept :
+    label_stencil(alignment alignment, label label, TextStyle style) noexcept :
         stencil(alignment),
         _style(style),
-        _icon_size(_alignment == HorizontalAlignment::Center ? Theme::large_icon_size : Theme::icon_size)
+        _icon_size(_alignment == horizontal_alignment::center ? Theme::large_icon_size : Theme::icon_size)
     {
         if (label.has_icon()) {
-            _icon_stencil = stencil::make_unique(Alignment::MiddleCenter, label.icon());
+            _icon_stencil = stencil::make_unique(alignment::middle_center, label.icon());
         }
         if (label.has_text()) {
             _text_stencil = stencil::make_unique(alignment, label.text(), style);
@@ -41,12 +41,12 @@ public:
         // clang-format off
         // When center aligned, do not include the icon width. So that the icon may go beyond the margins.
         ttlet width =
-            _alignment == HorizontalAlignment::Center ? _text_stencil->preferred_extent().width() :
+            _alignment == horizontal_alignment::center ? _text_stencil->preferred_extent().width() :
             _icon_size + Theme::margin + _text_stencil->preferred_extent().width();
 
         // When middle aligned, do not include the icon height. So that the icon may go beyond the margins.
         ttlet height =
-            _alignment == VerticalAlignment::Middle ? _text_stencil->preferred_extent().height() :
+            _alignment == vertical_alignment::middle ? _text_stencil->preferred_extent().height() :
             _icon_size + _text_stencil->preferred_extent().height();
         // clang-format on
 
@@ -86,13 +86,13 @@ public:
 
         // clang-format off
         ttlet icon_x =
-            _alignment == HorizontalAlignment::Left ? _rectangle.left() :
-            _alignment == HorizontalAlignment::Center ? _rectangle.center() - _icon_size * 0.5f :
+            _alignment == horizontal_alignment::left ? _rectangle.left() :
+            _alignment == horizontal_alignment::center ? _rectangle.center() - _icon_size * 0.5f :
             _rectangle.right() - _icon_size;
 
         ttlet icon_y = 
-            _alignment == VerticalAlignment::Bottom ? _rectangle.bottom() :
-            _alignment == VerticalAlignment::Middle ? _rectangle.middle() - _icon_size * 0.5f :
+            _alignment == vertical_alignment::bottom ? _rectangle.bottom() :
+            _alignment == vertical_alignment::middle ? _rectangle.middle() - _icon_size * 0.5f :
             _rectangle.top() - _icon_size;
         // clang-format on
 
@@ -105,28 +105,28 @@ public:
         if (_text_stencil) {
             // clang-format off
             ttlet text_width =
-                _alignment == HorizontalAlignment::Center ? _rectangle.width() :
+                _alignment == horizontal_alignment::center ? _rectangle.width() :
                 _icon_stencil || _show_icon ? _rectangle.width() - Theme::margin - _icon_size :
                 _rectangle.width();
 
             ttlet text_height =
-                _alignment == VerticalAlignment::Middle ? _rectangle.height() :
+                _alignment == vertical_alignment::middle ? _rectangle.height() :
                 _icon_stencil || _show_icon ? _rectangle.height() - _icon_size :
                 _rectangle.height();
 
             ttlet text_x =
-                _alignment == HorizontalAlignment::Center ? _rectangle.center() - text_width * 0.5f :
-                _alignment == HorizontalAlignment::Left ? _rectangle.right() - text_width :
+                _alignment == horizontal_alignment::center ? _rectangle.center() - text_width * 0.5f :
+                _alignment == horizontal_alignment::left ? _rectangle.right() - text_width :
                 _rectangle.left();
 
             ttlet text_y =
-                _alignment == VerticalAlignment::Middle ? _rectangle.middle() - text_height * 0.5f :
-                _alignment == VerticalAlignment::Bottom ? _rectangle.top() - text_height :
+                _alignment == vertical_alignment::middle ? _rectangle.middle() - text_height * 0.5f :
+                _alignment == vertical_alignment::bottom ? _rectangle.top() - text_height :
                 _rectangle.bottom();
             // clang-format on
 
             ttlet text_rectangle = aarect{text_x, text_y, text_width, text_height};
-            if (_alignment == HorizontalAlignment::Center) {
+            if (_alignment == horizontal_alignment::center) {
                 _text_stencil->set_layout_parameters(text_rectangle);
             } else {
                 _text_stencil->set_layout_parameters(text_rectangle, _base_line_position);

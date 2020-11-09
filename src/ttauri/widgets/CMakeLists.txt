@@ -15,10 +15,10 @@ target_sources(ttauri PRIVATE
     LineInputWidget.hpp
     overlay_view_widget.hpp
     radio_button_widget.hpp
-    RowColumnLayoutWidget.hpp
+    row_column_layout_widget.hpp
     ScrollViewWidget.hpp
     ScrollBarWidget.hpp
-    SelectionWidget.hpp
+    selection_widget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>
     tab_view_widget.hpp

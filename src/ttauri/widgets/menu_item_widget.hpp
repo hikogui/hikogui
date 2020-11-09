@@ -120,10 +120,10 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(Alignment::MiddleLeft, *label, theme->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::middle_left, *label, theme->labelStyle);
             _label_stencil->set_show_icon(_show_icon);
 
-            _check_mark_stencil = stencil::make_unique(Alignment::MiddleCenter, ElusiveIcon::Ok);
+            _check_mark_stencil = stencil::make_unique(alignment::middle_center, ElusiveIcon::Ok);
 
             auto width = _label_stencil->preferred_extent().width() + Theme::margin * 2.0f;
             if (_show_check_mark) {

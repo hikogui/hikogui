@@ -98,12 +98,12 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
 
         ttlet glyph_size = Theme::operatingSystem == OperatingSystem::MacOS ? 5.0f : Theme::small_icon_size;
 
-        closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+        closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, glyph_size), alignment::middle_center);
         minimizeWindowGlyphRectangle =
-            align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+            align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), alignment::middle_center);
         maximizeWindowGlyphRectangle =
-            align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
-        restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+            align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), alignment::middle_center);
+        restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), alignment::middle_center);
     }
     return widget::update_layout(display_time_point, need_layout);
 }

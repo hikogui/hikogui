@@ -8,12 +8,12 @@
 
 namespace tt {
 
-text_stencil::text_stencil(Alignment alignment, std::u8string_view text, TextStyle style) noexcept :
-    super(alignment), _text(text), _style(style), _shaped_text(text, style, 0.0f, Alignment::TopLeft)
+text_stencil::text_stencil(alignment alignment, std::u8string_view text, TextStyle style) noexcept :
+    super(alignment), _text(text), _style(style), _shaped_text(text, style, 0.0f, alignment::top_left)
 {
 }
 
-text_stencil::text_stencil(Alignment alignment, std::u8string text, TextStyle style) noexcept :
+text_stencil::text_stencil(alignment alignment, std::u8string text, TextStyle style) noexcept :
     super(alignment), _text(std::move(text)), _style(style), _shaped_text(_text, style, 0.0f, alignment)
 {
 }

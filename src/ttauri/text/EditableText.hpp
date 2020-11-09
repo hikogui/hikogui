@@ -58,7 +58,7 @@ public:
             text_.emplace_back(Grapheme('\n'), text_.back().style, 0);
         }
 
-        _shapedText = ShapedText(text_, width, Alignment::TopLeft, false);
+        _shapedText = ShapedText(text_, width, alignment::top_left, false);
     }
 
     [[nodiscard]] ShapedText shapedText() const noexcept {

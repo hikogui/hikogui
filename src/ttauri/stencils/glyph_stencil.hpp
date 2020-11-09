@@ -13,7 +13,7 @@ class glyph_stencil : public image_stencil {
 public:
     using super = image_stencil;
 
-    glyph_stencil(Alignment alignment, FontGlyphIDs glyph) noexcept;
+    glyph_stencil(alignment alignment, FontGlyphIDs glyph) noexcept;
 
     void draw(DrawContext context, bool use_context_color=false) noexcept override;
 

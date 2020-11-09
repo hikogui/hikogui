@@ -11,7 +11,7 @@ class image_stencil: public stencil {
 public:
     using super = stencil;
 
-    image_stencil(Alignment alignment) : super(alignment) {}
+    image_stencil(alignment alignment) : super(alignment) {}
 
 };
 

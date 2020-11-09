@@ -65,9 +65,9 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _true_label_stencil = stencil::make_unique(Alignment::TopLeft, *true_label, theme->labelStyle);
-            _false_label_stencil = stencil::make_unique(Alignment::TopLeft, *false_label, theme->labelStyle);
-            _other_label_stencil = stencil::make_unique(Alignment::TopLeft, *other_label, theme->labelStyle);
+            _true_label_stencil = stencil::make_unique(alignment::top_left, *true_label, theme->labelStyle);
+            _false_label_stencil = stencil::make_unique(alignment::top_left, *false_label, theme->labelStyle);
+            _other_label_stencil = stencil::make_unique(alignment::top_left, *other_label, theme->labelStyle);
 
             ttlet minimum_height = std::max(
                 {_true_label_stencil->preferred_extent().height(),
@@ -82,7 +82,7 @@ public:
             ttlet minimum_width = Theme::smallSize + Theme::margin + minimum_width_of_labels;
 
             this->_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            this->_preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+            this->_preferred_base_line = relative_base_line{vertical_alignment::top, -Theme::smallSize * 0.5f};
 
             return true;
         } else {
@@ -106,11 +106,11 @@ public:
 
             _check_glyph = to_FontGlyphIDs(ElusiveIcon::Ok);
             ttlet check_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
-            _check_glyph_rectangle = align(_checkbox_rectangle, scale(check_glyph_bb, Theme::small_icon_size), Alignment::MiddleCenter);
+            _check_glyph_rectangle = align(_checkbox_rectangle, scale(check_glyph_bb, Theme::small_icon_size), alignment::middle_center);
 
             _minus_glyph = to_FontGlyphIDs(ElusiveIcon::Minus);
             ttlet minus_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_minus_glyph);
-            _minus_glyph_rectangle = align(_checkbox_rectangle, scale(minus_glyph_bb, Theme::small_icon_size), Alignment::MiddleCenter);
+            _minus_glyph_rectangle = align(_checkbox_rectangle, scale(minus_glyph_bb, Theme::small_icon_size), alignment::middle_center);
         }
 
         return super::update_layout(displayTimePoint, need_layout);

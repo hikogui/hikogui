@@ -13,9 +13,9 @@ namespace tt {
 
 class pixel_map_stencil : public image_stencil {
 public:
-    pixel_map_stencil(Alignment alignment, PixelMap<R16G16B16A16SFloat> &&pixel_map);
-    pixel_map_stencil(Alignment alignment, PixelMap<R16G16B16A16SFloat> const &pixel_map);
-    pixel_map_stencil(Alignment alignment, URL const &url);
+    pixel_map_stencil(tt::alignment alignment, PixelMap<R16G16B16A16SFloat> &&pixel_map);
+    pixel_map_stencil(tt::alignment alignment, PixelMap<R16G16B16A16SFloat> const &pixel_map);
+    pixel_map_stencil(tt::alignment alignment, URL const &url);
 
     void draw(DrawContext context, bool use_context_color=false) noexcept override;
 

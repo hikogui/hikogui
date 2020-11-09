@@ -14,7 +14,7 @@ struct TextStyle;
 
 class stencil {
 public:
-    stencil(Alignment alignment) : _alignment(alignment), _data_is_modified(true), _layout_is_modified(true) {}
+    stencil(alignment alignment) : _alignment(alignment), _data_is_modified(true), _layout_is_modified(true) {}
     virtual ~stencil() = default;
     stencil(stencil const &) noexcept = delete;
     stencil(stencil &&) noexcept = delete;
@@ -48,16 +48,16 @@ public:
      */
     virtual void draw(DrawContext context, bool use_context_color = false) noexcept = 0;
 
-    [[nodiscard]] static std::unique_ptr<class image_stencil> make_unique(Alignment alignment, icon const &icon);
+    [[nodiscard]] static std::unique_ptr<class image_stencil> make_unique(alignment alignment, icon const &icon);
 
     [[nodiscard]] static std::unique_ptr<class text_stencil>
-    make_unique(Alignment alignment, std::u8string const &text, TextStyle const &style);
+    make_unique(alignment alignment, std::u8string const &text, TextStyle const &style);
 
     [[nodiscard]] static std::unique_ptr<class label_stencil>
-    make_unique(Alignment alignment, tt::label const &label, TextStyle const &style);
+    make_unique(alignment alignment, tt::label const &label, TextStyle const &style);
 
 protected:
-    Alignment _alignment;
+    alignment _alignment;
     aarect _rectangle;
     float _base_line_position;
 

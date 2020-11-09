@@ -170,7 +170,7 @@ public:
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
-    template<typename T, HorizontalAlignment Alignment=HorizontalAlignment::Left, typename... Args>
+    template<typename T, horizontal_alignment Alignment=horizontal_alignment::left, typename... Args>
     std::shared_ptr<T> make_toolbar_widget(Args &&... args);
 
     virtual void setCursor(Cursor cursor) = 0;

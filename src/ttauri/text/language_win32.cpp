@@ -14,7 +14,7 @@ using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::System::UserProfile;
 
-std::vector<language_tag> language::get_preferred_language_tags() noexcept
+std::vector<language_tag> language::read_os_preferred_languages() noexcept
 {
     winrt::init_apartment();
 

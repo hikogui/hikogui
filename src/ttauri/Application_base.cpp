@@ -138,7 +138,7 @@ void Application_base::textStart()
     ElusiveIcons_font_id = application->fonts->register_font(URL("resource:elusiveicons-webfont.ttf"));
     TTauriIcons_font_id = application->fonts->register_font(URL("resource:TTauriIcons.ttf"));
 
-    language::set_preferred_languages(language::get_preferred_language_tags());
+    language::set_preferred_languages(language::read_os_preferred_languages());
 }
 
 void Application_base::textStop()
@@ -167,7 +167,7 @@ void Application_base::GUIStart()
         URL::urlFromResourceDirectory() / "themes"
     });
 
-    themes->setThemeMode(readOSThemeMode());
+    themes->settheme_mode(read_os_theme_mode());
 
     addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
     addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);

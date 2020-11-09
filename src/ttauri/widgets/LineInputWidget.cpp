@@ -29,7 +29,7 @@ bool LineInputWidget::update_constraints(hires_utc_clock::time_point display_tim
             vec{100.0f, Theme::smallSize + Theme::margin * 2.0f},
             vec{500.0f, Theme::smallSize + Theme::margin * 2.0f}
         };
-        _preferred_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 200.0f};
+        _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
         return true;
     } else {
         return false;
@@ -52,7 +52,7 @@ bool LineInputWidget::update_layout(hires_utc_clock::time_point display_time_poi
         field.setStyleOfAll(theme->labelStyle);
 
         if (std::ssize(field) == 0) {
-            shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::MiddleLeft);
+            shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), alignment::middle_left);
         } else {
             field.setWidth(textRectangle.width());
             shapedText = field.shapedText();

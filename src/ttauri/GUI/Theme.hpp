@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ThemeMode.hpp"
+#include "theme_mode.hpp"
 #include "../required.hpp"
 #include "../mat.hpp"
 #include "../text/TextStyle.hpp"
@@ -75,7 +75,7 @@ public:
 
 
     std::string name;
-    ThemeMode mode;
+    theme_mode mode;
 
     // Themed bright colors.
     vec blue;

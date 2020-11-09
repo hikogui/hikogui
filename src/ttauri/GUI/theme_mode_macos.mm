@@ -1,15 +1,15 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ThemeMode.hpp"
+#include "theme_mode.hpp"
 #include "../strings.hpp"
 #include "../logger.hpp"
 
 namespace tt {
 
-[[nodiscard]] ThemeMode readOSThemeMode() noexcept
+[[nodiscard]] theme_mode readOStheme_mode() noexcept
 {
-    return ThemeMode::Light;
+    return theme_mode::Light;
 }
 
 }

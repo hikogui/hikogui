@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ThemeMode.hpp"
+#include "theme_mode.hpp"
 #include "Theme.hpp"
 #include <limits>
 #include <vector>
@@ -19,7 +19,7 @@ namespace tt {
 class ThemeBook {
     std::vector<std::unique_ptr<Theme>> themes;
     std::string _themeName;
-    ThemeMode _themeMode;
+    theme_mode _themeMode;
 
     static inline char const *defaultThemeName = "TTauri";
 
@@ -28,9 +28,9 @@ public:
 
     [[nodiscard]] std::vector<std::string> themeNames() const noexcept;
 
-    [[nodiscard]] ThemeMode themeMode() const noexcept;
+    [[nodiscard]] theme_mode themeMode() const noexcept;
 
-    void setThemeMode(ThemeMode themeMode) noexcept;
+    void settheme_mode(theme_mode themeMode) noexcept;
 
     [[nodiscard]] std::string themeName() const noexcept;
 

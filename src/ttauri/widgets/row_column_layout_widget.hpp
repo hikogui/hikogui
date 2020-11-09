@@ -6,41 +6,42 @@
 #include "abstract_container_widget.hpp"
 #include "../GUI/Theme.hpp"
 #include "../flow_layout.hpp"
+#include "../alignment.hpp"
 #include <memory>
 
 namespace tt {
 
-template<bool IsRow>
-class RowColumnLayoutWidget final : public abstract_container_widget {
+template<arrangement Arrangement>
+class row_column_layout_widget final : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
-    static constexpr bool is_row = IsRow;
+    static constexpr auto arrangement = Arrangement;
 
-    RowColumnLayoutWidget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent) {}
+    row_column_layout_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent) {}
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
+            auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
             auto shared_thickness = finterval{};
 
-            layout.clear();
-            layout.reserve(std::ssize(_children));
+            _layout.clear();
+            _layout.reserve(std::ssize(_children));
 
             ssize_t index = 0;
             for (ttlet &child : _children) {
-                updateConstraintsForChild(*child, index++, shared_base_line, shared_thickness);
+                update_constraints_for_child(*child, index++, shared_base_line, shared_thickness);
             }
 
             tt_assume(index == std::ssize(_children));
 
-            if constexpr (is_row) {
-                _preferred_size = {layout.extent(), shared_thickness};
+            if constexpr (arrangement == arrangement::row) {
+                _preferred_size = {_layout.extent(), shared_thickness};
                 _preferred_base_line = shared_base_line;
             } else {
-                _preferred_size = {shared_thickness, layout.extent()};
+                _preferred_size = {shared_thickness, _layout.extent()};
                 _preferred_base_line = relative_base_line{};
             }
             return true;
@@ -55,11 +56,11 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            layout.update_layout(is_row ? rectangle().width() : rectangle().height());
+            _layout.update_layout(arrangement == arrangement::row ? rectangle().width() : rectangle().height());
 
             ssize_t index = 0;
             for (ttlet &child : _children) {
-                updateLayoutForChild(*child, index++);
+                update_layout_for_child(*child, index++);
             }
 
             tt_assume(index == std::ssize(_children));
@@ -68,9 +69,9 @@ public:
     }
 
 private:
-    flow_layout layout;
+    flow_layout _layout;
 
-    void updateConstraintsForChild(
+    void update_constraints_for_child(
         widget const &child,
         ssize_t index,
         relative_base_line &shared_base_line,
@@ -78,24 +79,24 @@ private:
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        ttlet length = is_row ? child.preferred_size().width() : child.preferred_size().height();
-        ttlet thickness = is_row ? child.preferred_size().height() : child.preferred_size().width();
+        ttlet length = arrangement == arrangement::row ? child.preferred_size().width() : child.preferred_size().height();
+        ttlet thickness = arrangement == arrangement::row ? child.preferred_size().height() : child.preferred_size().width();
 
-        ttlet length_resistance = is_row ? child.width_resistance() : child.height_resistance();
+        ttlet length_resistance = arrangement == arrangement::row ? child.width_resistance() : child.height_resistance();
 
-        layout.update(index, length, length_resistance, child.margin(), child.preferred_base_line());
+        _layout.update(index, length, length_resistance, child.margin(), child.preferred_base_line());
 
         shared_base_line = std::max(shared_base_line, child.preferred_base_line());
         shared_thickness = intersect(shared_thickness, thickness + child.margin() * 2.0f);
     }
 
-    void updateLayoutForChild(widget &child, ssize_t index) const noexcept
+    void update_layout_for_child(widget &child, ssize_t index) const noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        ttlet[child_offset, child_length] = layout.get_offset_and_size(index++);
+        ttlet[child_offset, child_length] = _layout.get_offset_and_size(index++);
 
-        ttlet child_rectangle = is_row ?
+        ttlet child_rectangle = arrangement == arrangement::row ?
             aarect{
                 rectangle().left() + child_offset,
                 rectangle().bottom() + child.margin(),
@@ -110,7 +111,7 @@ private:
 
         ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
 
-        if constexpr (is_row) {
+        if constexpr (arrangement == arrangement::row) {
             child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
         } else {
             child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle);
@@ -118,7 +119,7 @@ private:
     }
 };
 
-using RowLayoutWidget = RowColumnLayoutWidget<true>;
-using ColumnLayoutWidget = RowColumnLayoutWidget<false>;
+using row_layout_widget = row_column_layout_widget<arrangement::row>;
+using column_layout_widget = row_column_layout_widget<arrangement::column>;
 
 } // namespace tt

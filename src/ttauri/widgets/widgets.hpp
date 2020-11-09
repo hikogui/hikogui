@@ -12,7 +12,7 @@
 #include "LabelWidget.hpp"
 #include "LineInputWidget.hpp"
 #include "ScrollViewWidget.hpp"
-#include "SelectionWidget.hpp"
+#include "selection_widget.hpp"
 #include "toggle_widget.hpp"
 #include "overlay_view_widget.hpp"
 #include "radio_button_widget.hpp"
@@ -21,7 +21,7 @@
 #include "menu_item_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "WindowWidget.hpp"
-#include "RowColumnLayoutWidget.hpp"
+#include "row_column_layout_widget.hpp"
 #include "GridLayoutWidget.hpp"
 #include "../GUI/Window.hpp"
 #include "../cell_address.hpp"
@@ -42,7 +42,7 @@ std::shared_ptr<T> Window_base::make_widget(Args &&... args)
 /** Add a widget to the toolbar of the window.
  * The implementation is located here so that widget is a concrete type.
  */
-template<typename T, HorizontalAlignment Alignment, typename... Args>
+template<typename T, horizontal_alignment Alignment, typename... Args>
 std::shared_ptr<T> Window_base::make_toolbar_widget(Args &&... args)
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);

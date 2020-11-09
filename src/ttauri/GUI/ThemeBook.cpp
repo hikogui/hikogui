@@ -7,7 +7,7 @@
 namespace tt {
 
 ThemeBook::ThemeBook(std::vector<URL> const &theme_directories) noexcept :
-    themes(), _themeName(), _themeMode(ThemeMode::Light)
+    themes(), _themeName(), _themeMode(theme_mode::light)
 {
     for (ttlet &theme_directory: theme_directories) {
         ttlet theme_directory_glob = theme_directory / "**" / "*.theme.json";
@@ -43,11 +43,11 @@ ThemeBook::ThemeBook(std::vector<URL> const &theme_directories) noexcept :
     return names;
 }
 
-[[nodiscard]] ThemeMode ThemeBook::themeMode() const noexcept {
+[[nodiscard]] theme_mode ThemeBook::themeMode() const noexcept {
     return _themeMode;
 }
 
-void ThemeBook::setThemeMode(ThemeMode themeMode) noexcept {
+void ThemeBook::settheme_mode(theme_mode themeMode) noexcept {
     _themeMode = themeMode;
     updateTheme();
 }

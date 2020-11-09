@@ -30,7 +30,7 @@ public:
         std::vector<AttributedGlyphLine>::const_iterator,
         AttributedGlyphLine::const_iterator>;
 
-    Alignment alignment;
+    alignment alignment;
     aarect boundingBox;
     float width;
     vec preferred_extent;
@@ -40,7 +40,7 @@ private:
 
 public:
     ShapedText() noexcept :
-        alignment(Alignment::MiddleCenter), boundingBox(), width(0.0f), preferred_extent(), lines() {}
+        alignment(alignment::middle_center), boundingBox(), width(0.0f), preferred_extent(), lines() {}
     ShapedText(ShapedText const &other) = default;
     ShapedText(ShapedText &&other) noexcept = default;
     ShapedText &operator=(ShapedText const &other) = default;
@@ -71,7 +71,7 @@ public:
     ShapedText(
         std::vector<AttributedGrapheme> const &text,
         float width,
-        Alignment const alignment=Alignment::MiddleCenter,
+        tt::alignment const alignment=alignment::middle_center,
         bool wrap=true
     ) noexcept;
 
@@ -88,7 +88,7 @@ public:
         gstring const &text,
         TextStyle const &style,
         float width,
-        Alignment const alignment=Alignment::MiddleCenter,
+        tt::alignment const alignment=alignment::middle_center,
         bool wrap=true
     ) noexcept;
 
@@ -105,7 +105,7 @@ public:
         std::u8string_view text,
         TextStyle const &style,
         float width,
-        Alignment const alignment=Alignment::MiddleCenter,
+        tt::alignment const alignment=alignment::middle_center,
         bool wrap=true
     ) noexcept;
 
@@ -157,11 +157,11 @@ public:
      * The offset is depended on the vertical alignment of the shaped text.
      */
     float baselineOffset(float height) noexcept {
-        if (alignment == VerticalAlignment::Top) {
+        if (alignment == vertical_alignment::top) {
             return height - topAccender();
-        } else if (alignment == VerticalAlignment::Bottom) {
+        } else if (alignment == vertical_alignment::bottom) {
             return bottomDescender();
-        } else if (alignment == VerticalAlignment::Middle) {
+        } else if (alignment == vertical_alignment::middle) {
             return height * 0.5f - middleCapHeight() * 0.5f;
         } else {
             tt_no_default();
@@ -174,11 +174,11 @@ public:
     * The offset is depended on the vertical alignment of the shaped text.
     */
     float middleOffset(float height) const noexcept {
-        if (alignment == VerticalAlignment::Top) {
+        if (alignment == vertical_alignment::top) {
             return height - topCapHeight() * 0.5f;
-        } else if (alignment == VerticalAlignment::Bottom) {
+        } else if (alignment == vertical_alignment::bottom) {
             return height - bottomCapHeight() * 0.5f;
-        } else if (alignment == VerticalAlignment::Middle) {
+        } else if (alignment == vertical_alignment::middle) {
             return height - middleCapHeight() * 0.5f;
         } else {
             tt_no_default();

@@ -659,7 +659,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
-        application->themes->setThemeMode(readOSThemeMode());
+        application->themes->settheme_mode(read_os_theme_mode());
         _request_setting_change = true;
     } break;
 
@@ -671,7 +671,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     } break;
 
     case WM_WIN_LANGUAGE_CHANGE:
-        language::set_preferred_languages(language::get_preferred_language_tags());
+        language::set_preferred_languages(language::read_os_preferred_languages());
         _request_setting_change = true;
         break;
 

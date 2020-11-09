@@ -121,7 +121,7 @@ struct language {
     /** Get the preferred language tags from the operating system.
      * Language tags are based on IETF BCP-47/RFC-5646
      */
-    [[nodiscard]] static std::vector<language_tag> get_preferred_language_tags() noexcept;
+    [[nodiscard]] static std::vector<language_tag> read_os_preferred_languages() noexcept;
 };
 
 }

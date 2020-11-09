@@ -44,8 +44,8 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _on_label_stencil = stencil::make_unique(Alignment::TopLeft, *on_label, theme->labelStyle);
-            _off_label_stencil = stencil::make_unique(Alignment::TopLeft, *off_label, theme->labelStyle);
+            _on_label_stencil = stencil::make_unique(alignment::top_left, *on_label, theme->labelStyle);
+            _off_label_stencil = stencil::make_unique(alignment::top_left, *off_label, theme->labelStyle);
 
             ttlet minimumHeight =
                 std::max({_on_label_stencil->preferred_extent().height(), _off_label_stencil->preferred_extent().height(), Theme::smallSize});
@@ -54,7 +54,7 @@ public:
                 Theme::smallSize * 2.0f + Theme::margin;
 
             _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-            _preferred_base_line = relative_base_line{VerticalAlignment::Top, -Theme::smallSize * 0.5f};
+            _preferred_base_line = relative_base_line{vertical_alignment::top, -Theme::smallSize * 0.5f};
 
             return true;
         } else {

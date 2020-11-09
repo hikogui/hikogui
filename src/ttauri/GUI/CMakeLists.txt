@@ -91,9 +91,9 @@ target_sources(ttauri PRIVATE
     Theme.hpp
     ThemeBook.cpp
     ThemeBook.hpp
-    ThemeMode.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/ThemeMode_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/ThemeMode_win32.cpp>
+    theme_mode.hpp
+    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_macos.mm>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_win32.cpp>
     utils.hpp
     VerticalSync.hpp
     VerticalSync_base.hpp

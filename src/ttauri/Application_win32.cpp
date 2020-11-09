@@ -99,7 +99,7 @@ void Application_win32::post_message(
 bool Application_win32::initializeApplication()
 {
     languages_maintenance_callback = maintenance_timer.add_callback(1s, [this](auto...) {
-        ttlet current_language_tags = language::get_preferred_language_tags();
+        ttlet current_language_tags = language::read_os_preferred_languages();
         static auto previous_language_tags = current_language_tags;
         
         if (previous_language_tags != current_language_tags) {

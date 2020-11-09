@@ -14,8 +14,8 @@ class text_stencil : public stencil {
 public:
     using super = stencil;
 
-    text_stencil(Alignment alignment, std::u8string_view text, TextStyle style) noexcept;
-    text_stencil(Alignment alignment, std::u8string text, TextStyle style) noexcept;
+    text_stencil(alignment alignment, std::u8string_view text, TextStyle style) noexcept;
+    text_stencil(alignment alignment, std::u8string text, TextStyle style) noexcept;
 
     [[nodiscard]] vec preferred_extent() noexcept override;
 

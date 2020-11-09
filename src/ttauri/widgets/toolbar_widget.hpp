@@ -29,13 +29,13 @@ public:
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    std::shared_ptr<widget> add_widget(HorizontalAlignment alignment, std::shared_ptr<widget> widget) noexcept
+    std::shared_ptr<widget> add_widget(horizontal_alignment alignment, std::shared_ptr<widget> widget) noexcept
     {
         auto tmp = super::add_widget(std::move(widget));
         switch (alignment) {
-            using enum HorizontalAlignment;
-        case Left: _left_children.push_back(tmp); break;
-        case Right: _right_children.push_back(tmp); break;
+            using enum horizontal_alignment;
+        case left: _left_children.push_back(tmp); break;
+        case right: _right_children.push_back(tmp); break;
         default: tt_no_default();
         }
 
@@ -47,7 +47,7 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
+            auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
             auto shared_height = finterval{};
 
             _layout.clear();
@@ -131,7 +131,7 @@ public:
 
     /** Add a widget directly to this widget.
      */
-    template<typename T, HorizontalAlignment Alignment = HorizontalAlignment::Left, typename... Args>
+    template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
     std::shared_ptr<T> make_widget(Args &&... args)
     {
         auto widget = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);

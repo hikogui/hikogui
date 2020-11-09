@@ -222,9 +222,9 @@ void Theme::parse(datum const &data)
 
     ttlet mode_name = to_lower(parseString(data, "mode"));
     if (mode_name == "light") {
-        this->mode = ThemeMode::Light;
+        this->mode = theme_mode::light;
     } else if (mode_name == "dark") {
-        this->mode = ThemeMode::Dark;
+        this->mode = theme_mode::dark;
     } else {
         TTAURI_THROW(parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name));
     }

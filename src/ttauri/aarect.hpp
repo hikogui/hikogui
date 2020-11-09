@@ -296,16 +296,16 @@ public:
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
-    [[nodiscard]] friend aarect align(aarect haystack, aarect needle, Alignment alignment) noexcept
+    [[nodiscard]] friend aarect align(aarect haystack, aarect needle, alignment alignment) noexcept
     {
         float x;
-        if (alignment == HorizontalAlignment::Left) {
+        if (alignment == horizontal_alignment::left) {
             x = haystack.p0().x();
 
-        } else if (alignment == HorizontalAlignment::Right) {
+        } else if (alignment == horizontal_alignment::right) {
             x = haystack.p3().x() - needle.width();
 
-        } else if (alignment == HorizontalAlignment::Center) {
+        } else if (alignment == horizontal_alignment::center) {
             x = (haystack.p0().x() + (haystack.width() * 0.5f)) - (needle.width() * 0.5f);
 
         } else {
@@ -313,13 +313,13 @@ public:
         }
 
         float y;
-        if (alignment == VerticalAlignment::Bottom) {
+        if (alignment == vertical_alignment::bottom) {
             y = haystack.p0().y();
 
-        } else if (alignment == VerticalAlignment::Top) {
+        } else if (alignment == vertical_alignment::top) {
             y = haystack.p3().y() - needle.height();
 
-        } else if (alignment == VerticalAlignment::Middle) {
+        } else if (alignment == vertical_alignment::middle) {
             y = (haystack.p0().y() + (haystack.height() * 0.5f)) - (needle.height() * 0.5f);
 
         } else {
@@ -331,7 +331,7 @@ public:
 
     /** Need to call the hiden friend function from within another class.
      */
-    [[nodiscard]] static aarect _align(aarect outside, aarect inside, Alignment alignment) noexcept
+    [[nodiscard]] static aarect _align(aarect outside, aarect inside, alignment alignment) noexcept
     {
         return align(outside, inside, alignment);
     }

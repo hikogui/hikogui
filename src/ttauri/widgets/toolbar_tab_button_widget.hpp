@@ -55,7 +55,7 @@ public:
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(Alignment::TopCenter, *label, theme->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::top_center, *label, theme->labelStyle);
 
             ttlet minimum_height = _label_stencil->preferred_extent().height();
             ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * Theme::margin;
@@ -63,7 +63,7 @@ public:
             this->_preferred_size = {
                 vec{minimum_width, minimum_height},
                 vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
-            this->_preferred_base_line = relative_base_line{VerticalAlignment::Middle, -Theme::margin};
+            this->_preferred_base_line = relative_base_line{vertical_alignment::middle, -Theme::margin};
             return true;
         } else {
             return false;
