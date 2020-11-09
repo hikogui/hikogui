@@ -16,6 +16,7 @@
 
 namespace tt {
 
+
 using namespace std;
 
 template<typename T>
@@ -659,7 +660,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
         application->themes->setThemeMode(readOSThemeMode());
-        requestLayout = true;
+        _request_setting_change = true;
     } break;
 
     case WM_DPICHANGED: {
@@ -668,6 +669,11 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         dpi = numeric_cast<float>(LOWORD(wParam));
         requestLayout = true;
     } break;
+
+    case WM_WIN_LANGUAGE_CHANGE:
+        language::set_preferred_languages(language::get_preferred_language_tags());
+        _request_setting_change = true;
+        break;
 
     default: break;
     }

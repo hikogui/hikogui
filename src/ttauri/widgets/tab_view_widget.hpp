@@ -35,11 +35,11 @@ public:
 
     ~tab_view_widget() {}
 
-    [[nodiscard]] bool update_constraints() noexcept override
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        auto has_updated_contraints = super::update_constraints();
+        auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
         if (has_updated_contraints) {
             // The value has changed, so resize the window.
             window.requestResize = true;
@@ -48,7 +48,7 @@ public:
         // Recurse into the selected widget.
         auto &child = selected_child();
         
-        if (child.update_constraints() || has_updated_contraints) {
+        if (child.update_constraints(display_time_point, need_reconstrain) || has_updated_contraints) {
             _preferred_size = child.preferred_size();
             _preferred_base_line = child.preferred_base_line();
             return true;

@@ -16,7 +16,7 @@ namespace tt {
 [[nodiscard]] std::u8string_view get_translation(
     std::u8string_view msgid,
     long long n=0,
-    std::vector<language*> const &languages=*language::preferred_languages
+    std::vector<language*> const &languages=language::preferred_languages
 ) noexcept;
 
 void add_translation(

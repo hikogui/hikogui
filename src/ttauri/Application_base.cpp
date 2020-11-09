@@ -98,7 +98,7 @@ void Application_base::foundationStart()
     sync_clock_calibration<hires_utc_clock,cpu_counter_clock> =
         new sync_clock_calibration_type<hires_utc_clock,cpu_counter_clock>("cpu_utc");
 
-    logger_maintenance_cbid = maintenance_timer.add_callback(100ms, [](auto current_time, auto last) {
+    logger_maintenance_callback = maintenance_timer.add_callback(100ms, [](auto current_time, auto last) {
         struct logger_maintenance_tag {};
         ttlet t2 = trace<logger_maintenance_tag>{};
 
@@ -106,7 +106,7 @@ void Application_base::foundationStart()
         logger.logger_tick();
     });
 
-    clock_maintenance_cbid = maintenance_timer.add_callback(100ms, [](auto...) {
+    clock_maintenance_callback = maintenance_timer.add_callback(100ms, [](auto...) {
         struct clock_maintenance_tag {};
         ttlet t2 = trace<clock_maintenance_tag>{};
 
@@ -118,8 +118,8 @@ void Application_base::foundationStop()
 {
     // Force all timers to finish.
     maintenance_timer.stop();
-    maintenance_timer.remove_callback(clock_maintenance_cbid);
-    maintenance_timer.remove_callback(logger_maintenance_cbid);
+    maintenance_timer.remove_callback(clock_maintenance_callback);
+    maintenance_timer.remove_callback(logger_maintenance_callback);
 
     delete sync_clock_calibration<hires_utc_clock,cpu_counter_clock>;
 }
@@ -139,14 +139,10 @@ void Application_base::textStart()
     TTauriIcons_font_id = application->fonts->register_font(URL("resource:TTauriIcons.ttf"));
 
     language::set_preferred_languages(language::get_preferred_language_tags());
-    timer_preferred_languages_cbid = maintenance_timer.add_callback(1s, [](auto...){
-        language::set_preferred_languages(language::get_preferred_language_tags());
-    });
 }
 
 void Application_base::textStop()
 {
-    maintenance_timer.remove_callback(timer_preferred_languages_cbid);
 
     ElusiveIcons_font_id = FontID{};
     application->fonts = {};

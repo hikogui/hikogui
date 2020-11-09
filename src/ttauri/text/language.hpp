@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "../observable.hpp"
 #include "../numeric_cast.hpp"
 #include "../utils.hpp"
 #include "../logger.hpp"
@@ -39,7 +38,7 @@ struct language {
     }
 
     inline static std::unordered_map<language_tag,std::unique_ptr<language>> languages;
-    inline static observable<std::vector<language *>> preferred_languages;
+    inline static std::vector<language *> preferred_languages;
     inline static std::recursive_mutex static_mutex;
 
     [[nodiscard]] static language *find(language_tag const &tag) noexcept {

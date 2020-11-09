@@ -17,10 +17,13 @@ namespace tt {
 
 class SystemMenuWidget final : public widget {
 public:
+    using super = widget;
+
     SystemMenuWidget(Window &window, std::shared_ptr<widget> parent, icon const &icon) noexcept;
     ~SystemMenuWidget() {}
 
-    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool
+    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;

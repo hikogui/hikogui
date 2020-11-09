@@ -45,10 +45,12 @@ GUIDevice *widget::device() const noexcept
     return device;
 }
 
-bool widget::update_constraints() noexcept
+bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
-    return std::exchange(_request_reconstrain, false);
+
+    need_reconstrain |= std::exchange(_request_reconstrain, false);
+    return need_reconstrain;
 }
 
 bool widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept

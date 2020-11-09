@@ -70,27 +70,39 @@ void timer::stop() noexcept
     mutex.unlock();
 }
 
-[[nodiscard]] std::pair<std::vector<timer::callback_type>,timer::time_point> timer::find_triggered_callbacks(
+[[nodiscard]] std::pair<std::vector<timer::callback_ptr_type>,timer::time_point> timer::find_triggered_callbacks(
     timer::time_point current_time
 ) noexcept {
     ttlet lock = std::scoped_lock(mutex);
 
-    auto triggered_callbacks = std::vector<callback_type>{};
+    auto triggered_callbacks = std::vector<callback_ptr_type>{};
     auto next_wakeup = timer::time_point::max();
-    for (auto &&item: callback_list) {
-        if (item.next_wakeup <= current_time) {
-            triggered_callbacks.push_back(item.callback);
-            item.next_wakeup = calculate_next_wakeup(current_time, item.interval);
+
+    auto i = callback_list.begin();
+    while (i != callback_list.end()) {
+        auto callback_ptr = i->callback_ptr.lock();
+
+        if (callback_ptr) {
+            if (i->next_wakeup <= current_time) {
+                triggered_callbacks.push_back(callback_ptr);
+                i->next_wakeup = calculate_next_wakeup(current_time, i->interval);
+            }
+
+            // Protection against clock_settime().
+            if (i->next_wakeup > current_time + i->interval) {
+                i->next_wakeup = calculate_next_wakeup(current_time, i->interval);
+            }
+
+            if (i->next_wakeup < next_wakeup) {
+                next_wakeup = i->next_wakeup;
+            }
+
+            ++i;
+        } else {
+            i = callback_list.erase(i);
         }
 
-        // Protection against clock_settime().
-        if (item.next_wakeup > current_time + item.interval) {
-            item.next_wakeup = calculate_next_wakeup(current_time, item.interval);
-        }
-
-        if (item.next_wakeup < next_wakeup) {
-            next_wakeup = item.next_wakeup;
-        }
+        
     }
     return {triggered_callbacks, next_wakeup};
 }
@@ -104,10 +116,11 @@ void timer::loop() noexcept
         ttlet &[triggered_callbacks, next_wakeup] = find_triggered_callbacks(current_time);
 
         // Execute all the triggered callbacks.
-        for (ttlet &callback: triggered_callbacks) {
-            callback(current_time, false);
+        for (ttlet &callback_ptr: triggered_callbacks) {
+            (*callback_ptr)(current_time, false);
         }
 
+        // Sleep, but not for more than 100ms.
         ttlet sleep_duration = std::min(next_wakeup - current_time, timer::duration{100ms});
         if (sleep_duration > 0ms) {
             std::this_thread::sleep_for(sleep_duration);
@@ -119,32 +132,28 @@ void timer::loop() noexcept
         }
     }
     LOG_INFO("Timer {}: finishing up", name);
-    {
-        ttlet current_time = hires_utc_clock::now();
-        ttlet lock = std::scoped_lock(mutex);
-        for (ttlet &item: callback_list) {
-            item.callback(current_time, true);
+
+    ttlet lock = std::scoped_lock(mutex);
+    
+    ttlet current_time = hires_utc_clock::now();
+    for (ttlet &item: callback_list) {
+        if (auto callback_ptr_ = item.callback_ptr.lock()) {
+            (*callback_ptr_)(current_time, true);
         }
     }
+
     LOG_INFO("Timer {}: finished", name);
 }
 
-void timer::remove_callback(size_t callback_id) noexcept
+void timer::remove_callback(callback_ptr_type const &callback_ptr) noexcept
 {
-    mutex.lock();
+    ttlet lock = std::scoped_lock(mutex);
 
-    ttlet i = std::find_if(callback_list.cbegin(), callback_list.cend(), [callback_id](ttlet &item) {
-        return item.id == callback_id;
+    ttlet i = std::remove_if(callback_list.begin(), callback_list.end(), [&callback_ptr](ttlet &item) {
+        auto callback_ptr_ = item.callback_ptr.lock();
+        return !callback_ptr_ || callback_ptr_ == callback_ptr;
     });
-    tt_assert(i != callback_list.cend());
-
-    callback_list.erase(i);
-
-    if (std::ssize(callback_list) == 0) {
-        stop_with_lock_held();
-    }
-
-    mutex.unlock();
+    callback_list.erase(i, callback_list.end());
 }
 
 }

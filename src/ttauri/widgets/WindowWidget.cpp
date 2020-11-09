@@ -39,11 +39,12 @@ void WindowWidget::initialize() noexcept
     _content = make_widget<GridLayoutWidget>(_content_delegate);
 }
 
-[[nodiscard]] bool WindowWidget::update_constraints() noexcept
+[[nodiscard]] bool
+WindowWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    if (abstract_container_widget::update_constraints()) {
+    if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet toolbar_size = _toolbar->preferred_size();
 
         ttlet content_size = _content->preferred_size();

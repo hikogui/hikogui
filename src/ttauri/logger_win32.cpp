@@ -26,7 +26,7 @@ std::string getLastErrorMessage()
 {
     DWORD const errorCode = GetLastError();
     size_t const messageSize = 32768;
-    wchar_t* const c16_message = new wchar_t[messageSize];;
+    wchar_t* const c16_message = new wchar_t[messageSize];
 
     FormatMessageW(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -38,7 +38,7 @@ std::string getLastErrorMessage()
         NULL
     );
 
-    ttlet message = to_string(std::wstring(c16_message));
+    auto message = to_string(std::wstring(c16_message));
     delete [] c16_message;
 
     return message;

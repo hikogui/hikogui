@@ -44,20 +44,20 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_constraints() noexcept override
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
         tt_assume(content);
         tt_assume(!can_scroll_horizontally || horizontal_scroll_bar);
         tt_assume(!can_scroll_vertically || vertical_scroll_bar);
 
-        auto has_updated_contraints = super::update_constraints();
-        has_updated_contraints |= content->update_constraints();
+        auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
+        has_updated_contraints |= content->update_constraints(display_time_point, need_reconstrain);
         if constexpr (can_scroll_horizontally) {
-            has_updated_contraints |= horizontal_scroll_bar->update_constraints();
+            has_updated_contraints |= horizontal_scroll_bar->update_constraints(display_time_point, need_reconstrain);
         }
         if constexpr (can_scroll_vertically) {
-            has_updated_contraints |= vertical_scroll_bar->update_constraints();
+            has_updated_contraints |= vertical_scroll_bar->update_constraints(display_time_point, need_reconstrain);
         }
 
         // Recurse into the selected widget.

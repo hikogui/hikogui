@@ -55,15 +55,15 @@ public:
         return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
     }
 
-    [[nodiscard]] bool update_constraints() noexcept
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        auto has_constrainted = super::update_constraints();
+        auto has_constrainted = super::update_constraints(display_time_point, need_reconstrain);
 
         for (auto &&child : _children) {
             tt_assume(child->parent.lock() == shared_from_this());
-            has_constrainted |= child->update_constraints();
+            has_constrainted |= child->update_constraints(display_time_point, need_reconstrain);
         }
 
         return has_constrainted;

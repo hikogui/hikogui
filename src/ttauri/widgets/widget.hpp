@@ -389,9 +389,11 @@ public:
      * This function will change what is returned by `preferred_size()` and `preferred_base_line()`.
      * 
      * @pre `mutex` must be locked by current thread.
+     * @param display_time_point The time point when the widget will be shown on the screen.
+     * @param need_reconstrain Force the widget to re-constrain.
      * @return True if its or any children's constraints has changed.
      */
-    [[nodiscard]] virtual bool update_constraints() noexcept;
+    [[nodiscard]] virtual bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept;
 
     /** Update the internal layout of the widget.
      * This function is called on each vertical sync, even if no drawing is to be done.

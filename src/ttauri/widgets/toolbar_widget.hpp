@@ -10,7 +10,9 @@ namespace tt {
 
 class toolbar_widget final : public abstract_container_widget {
 public:
-    toolbar_widget(Window &window, std::shared_ptr<widget> parent) noexcept : abstract_container_widget(window, parent)
+    using super = abstract_container_widget;
+
+    toolbar_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The toolbar widget does draw itself.
@@ -29,7 +31,7 @@ public:
      */
     std::shared_ptr<widget> add_widget(HorizontalAlignment alignment, std::shared_ptr<widget> widget) noexcept
     {
-        auto tmp = abstract_container_widget::add_widget(std::move(widget));
+        auto tmp = super::add_widget(std::move(widget));
         switch (alignment) {
             using enum HorizontalAlignment;
         case Left: _left_children.push_back(tmp); break;
@@ -40,11 +42,11 @@ public:
         return tmp;
     }
 
-    [[nodiscard]] bool update_constraints() noexcept
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (abstract_container_widget::update_constraints()) {
+        if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
             auto shared_height = finterval{};
 

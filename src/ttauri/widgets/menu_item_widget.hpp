@@ -115,11 +115,11 @@ public:
         return _show_short_cut;
     }
 
-    [[nodiscard]] bool update_constraints() noexcept override
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (super::update_constraints()) {
+        if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(Alignment::MiddleLeft, *label, theme->labelStyle);
             _label_stencil->set_show_icon(_show_icon);
 

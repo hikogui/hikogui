@@ -218,6 +218,8 @@ protected:
      */
     iaarect OSWindowRectangle;
 
+    bool _request_setting_change = true;
+
     /** Let the operating system create the actual window.
      * @param title The title of the window.
      * @param extent The size of the window.

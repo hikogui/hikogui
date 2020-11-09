@@ -9,6 +9,7 @@
 #include "GUI/GUISystem_forward.hpp"
 #include "required.hpp"
 #include "URL.hpp"
+#include "timer.hpp"
 #include <span>
 #include <memory>
 #include <string>
@@ -128,9 +129,8 @@ protected:
     virtual void GUIStop();
 
 private:
-    size_t timer_preferred_languages_cbid;
-    size_t logger_maintenance_cbid;
-    size_t clock_maintenance_cbid;
+    typename timer::callback_ptr_type logger_maintenance_callback;
+    typename timer::callback_ptr_type clock_maintenance_callback;
 
 };
 

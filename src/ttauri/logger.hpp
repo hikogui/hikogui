@@ -194,19 +194,15 @@ public:
             // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
             message->emplace<log_message<Level, Args...>>(timestamp, format, std::forward<Args>(args)...);
 
-        } else {
-            return;
-        }
+            if constexpr (Level >= log_level::Fatal) {
+                // Make sure everything including this message and counters are logged.
+                terminateOnFatalError((*message)->message());
 
-        if constexpr (Level >= log_level::Fatal) {
-            ttlet message = log_message<Level, Args...>(timestamp, format, std::forward<Args>(args)...);
-            // Make sure everything including this message and counters are logged.
-            terminateOnFatalError(message.message());
-
-        } else if constexpr (Level >= log_level::Error) {
-            // Actually logging of tracing will only work when we cleanly unwind the stack and destruct all trace objects
-            // this will not work on fatal messages.
-            trace_record();
+            } else if constexpr (Level >= log_level::Error) {
+                // Actually logging of tracing will only work when we cleanly unwind the stack and destruct all trace objects
+                // this will not work on fatal messages.
+                trace_record();
+            }
         }
     }
 

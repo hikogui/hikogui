@@ -88,11 +88,11 @@ std::shared_ptr<widget> GridLayoutWidget::add_widget(cell_address address, std::
     return tmp;
 }
 
-bool GridLayoutWidget::update_constraints() noexcept
+bool GridLayoutWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    if (abstract_container_widget::update_constraints()) {
+    if (super::update_constraints(display_time_point, need_reconstrain)) {
         _preferred_size = calculateCellMinMaxSize(cells, rows, columns);
         return true;
     } else {

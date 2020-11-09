@@ -11,17 +11,18 @@
 namespace tt {
 
 WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, std::shared_ptr<widget> parent) noexcept :
-    widget(window, parent)
+    super(window, parent)
 {
     // Toolbar buttons hug the toolbar and neighbor widgets.
     _margin = 0.0f;
 }
 
-[[nodiscard]] bool WindowTrafficLightsWidget::update_constraints() noexcept
+[[nodiscard]] bool
+WindowTrafficLightsWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    if (widget::update_constraints()) {
+    if (super::update_constraints(display_time_point, need_reconstrain)) {
         if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
             ttlet width = Theme::toolbarDecorationButtonWidth * 3.0f;
             ttlet height = Theme::toolbarHeight;

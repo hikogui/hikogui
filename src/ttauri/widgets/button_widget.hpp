@@ -39,11 +39,11 @@ public:
         });
     }
 
-    [[nodiscard]] bool update_constraints() noexcept override
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (super::update_constraints()) {
+        if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(Alignment::MiddleCenter, *label, theme->labelStyle);
             this->_preferred_size = interval_vec2::make_minimum(_label_stencil->preferred_extent() + Theme::margin2Dx2);
             return true;

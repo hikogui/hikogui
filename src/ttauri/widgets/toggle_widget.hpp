@@ -18,6 +18,8 @@ namespace tt {
 
 class toggle_widget final : public abstract_bool_toggle_button_widget {
 public:
+    using super = abstract_bool_toggle_button_widget;
+
     observable<label> on_label;
     observable<label> off_label;
 
@@ -25,7 +27,7 @@ public:
     toggle_widget(
         Window &window, std::shared_ptr<widget> parent,
         Value &&value = observable<bool>{}) noexcept :
-        abstract_bool_toggle_button_widget(window, parent, std::forward<Value>(value))
+        super(window, parent, std::forward<Value>(value))
     {
         _on_label_callback = this->on_label.subscribe([this](auto...) {
             _request_reconstrain = true;
@@ -37,11 +39,11 @@ public:
 
     ~toggle_widget() {}
 
-    [[nodiscard]] bool update_constraints() noexcept override
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (widget::update_constraints()) {
+        if (super::update_constraints(display_time_point, need_reconstrain)) {
             _on_label_stencil = stencil::make_unique(Alignment::TopLeft, *on_label, theme->labelStyle);
             _off_label_stencil = stencil::make_unique(Alignment::TopLeft, *off_label, theme->labelStyle);
 

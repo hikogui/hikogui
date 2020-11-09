@@ -17,10 +17,13 @@ namespace tt {
 
 class WindowTrafficLightsWidget final : public widget {
 public:
+    using super = widget;
+
     WindowTrafficLightsWidget(Window &window, std::shared_ptr<widget> parent) noexcept;
     ~WindowTrafficLightsWidget() {}
 
-    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool
+    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
 

@@ -13,12 +13,15 @@ class GridLayoutWidget;
 
 class WindowWidget final : public abstract_container_widget {
 public:
+    using super = abstract_container_widget;
+
     WindowWidget(Window &window, GridLayoutDelegate *delegate, label title) noexcept;
     ~WindowWidget();
 
     void initialize() noexcept override;
 
-    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool
+    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 

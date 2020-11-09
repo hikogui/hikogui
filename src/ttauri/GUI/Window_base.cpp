@@ -51,7 +51,7 @@ void Window_base::initialize()
     // Execute a constraint check to determine initial window size.
     currentWindowExtent = [this]{
         ttlet lock = std::scoped_lock(GUISystem_mutex);
-        static_cast<void>(widget->update_constraints());
+        static_cast<void>(widget->update_constraints({}, true));
         return widget->preferred_size().minimum();
     }();
 

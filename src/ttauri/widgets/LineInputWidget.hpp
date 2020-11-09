@@ -17,6 +17,8 @@ namespace tt {
 
 class LineInputWidget final : public widget {
 public:
+    using super = widget;
+
     LineInputWidget(Window &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept;
 
     LineInputWidget(Window &window, std::shared_ptr<widget> parent, label const label) noexcept :
@@ -26,7 +28,8 @@ public:
 
     ~LineInputWidget();
 
-    [[nodiscard]] bool update_constraints() noexcept override;
+    [[nodiscard]] bool
+    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
     bool handle_command(command command) noexcept override;

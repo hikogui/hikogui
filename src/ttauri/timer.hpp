@@ -13,8 +13,7 @@
 
 namespace tt {
 
-/** The maintence thread.
- * This thread will execute callbacks at given intervals.
+/** A timer which will execute callbacks at given intervals.
  */
 class timer {
 public:
@@ -26,16 +25,16 @@ public:
      * @param last True if this is the last time this timer is called, on emergency stop.
      */
     using callback_type = std::function<void(time_point,bool)>;
+    using callback_ptr_type = std::shared_ptr<callback_type>;
 
 private:
     struct callback_entry {
-        size_t id;
         duration interval;
         time_point next_wakeup;
-        callback_type callback;
+        std::weak_ptr<callback_type> callback_ptr;
 
-        callback_entry(size_t id, duration interval, time_point next_wakeup, callback_type callback) noexcept :
-            id(id), interval(interval), next_wakeup(next_wakeup), callback(std::move(callback)) {}
+        callback_entry(duration interval, time_point next_wakeup, std::shared_ptr<callback_type> const &callback_ptr) noexcept :
+            interval(interval), next_wakeup(next_wakeup), callback_ptr(callback_ptr) {}
     };
 
     /** Name of the timer.
@@ -56,7 +55,7 @@ private:
      *
      * @return List of triggered callbacks, Time to wakeup to trigger on the next callback.
      */
-    [[nodiscard]] std::pair<std::vector<callback_type>,timer::time_point> find_triggered_callbacks(
+    [[nodiscard]] std::pair<std::vector<callback_ptr_type>,timer::time_point> find_triggered_callbacks(
         timer::time_point current_time
     ) noexcept;
 
@@ -105,30 +104,29 @@ public:
      * @return An identifier for the callback to be able to remove it.
      */
     template<typename Callback>
-    [[nodiscard]] size_t add_callback(duration interval, Callback callback) noexcept
+    [[nodiscard]] std::shared_ptr<callback_type> add_callback(duration interval, Callback callback) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
-
-        ttlet callback_id = ++callback_count;
         ttlet current_time = hires_utc_clock::now();
 
+        auto callback_ptr = std::make_shared<callback_type>(std::forward<Callback>(callback));
+
         callback_list.emplace_back(
-            callback_id,
             interval,
             calculate_next_wakeup(current_time, interval),
-            callback
+            callback_ptr
         );
 
         if (std::ssize(callback_list) == 1) {
             start_with_lock_held();
         }
 
-        return callback_id;
+        return callback_ptr;
     }
 
     /** Remove the callback function.
      */
-    void remove_callback(size_t callback_id) noexcept;
+    void remove_callback(callback_ptr_type const &callback_ptr) noexcept;
 
 };
 

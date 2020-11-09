@@ -13,15 +13,16 @@ namespace tt {
 template<bool IsRow>
 class RowColumnLayoutWidget final : public abstract_container_widget {
 public:
+    using super = abstract_container_widget;
     static constexpr bool is_row = IsRow;
 
-    RowColumnLayoutWidget(Window &window, std::shared_ptr<widget> parent) noexcept : abstract_container_widget(window, parent) {}
+    RowColumnLayoutWidget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent) {}
 
-    [[nodiscard]] bool update_constraints() noexcept
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        if (abstract_container_widget::update_constraints()) {
+        if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{VerticalAlignment::Middle, 0.0f, 100};
             auto shared_thickness = finterval{};
 

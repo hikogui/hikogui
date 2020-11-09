@@ -71,12 +71,12 @@ public:
         });
     }
 
-    [[nodiscard]] bool update_constraints() noexcept override
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_assume(GUISystem_mutex.recurse_lock_count());
 
-        auto updated = widget::update_constraints();
-        updated |= overlay_widget->update_constraints();
+        auto updated = super::update_constraints(display_time_point, need_reconstrain);
+        updated |= overlay_widget->update_constraints(display_time_point, need_reconstrain);
 
         if (updated) {
             ttlet index = get_value_as_index();

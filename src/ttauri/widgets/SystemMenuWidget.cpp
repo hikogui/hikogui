@@ -13,17 +13,18 @@
 namespace tt {
 
 SystemMenuWidget::SystemMenuWidget(Window &window, std::shared_ptr<widget> parent, icon const &icon) noexcept :
-    widget(window, parent), _icon_stencil(stencil::make_unique(Alignment::MiddleCenter, icon))
+    super(window, parent), _icon_stencil(stencil::make_unique(Alignment::MiddleCenter, icon))
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.
     _margin = 0.0f;
 }
 
-[[nodiscard]] bool SystemMenuWidget::update_constraints() noexcept
+[[nodiscard]] bool
+SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    if (widget::update_constraints()) {
+    if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet width = Theme::toolbarDecorationButtonWidth;
         ttlet height = Theme::toolbarHeight;
         _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};

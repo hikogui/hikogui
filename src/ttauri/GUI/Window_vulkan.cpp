@@ -271,7 +271,7 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 {
-    auto lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(GUISystem_mutex);
 
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
@@ -282,8 +282,12 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         return;
     }
 
+    // All widgets need constrains recalculated on these window-wide events.
+    // Like theme or language changes.
+    ttlet need_reconstrain = std::exchange(_request_setting_change, false);
+
     // Update the size constraints of the WindowWidget and it children.
-    auto constraints_have_changed = widget->update_constraints();
+    ttlet constraints_have_changed = widget->update_constraints(displayTimePoint, need_reconstrain);
 
     // Check if the window size matches the preferred size of the WindowWidget.
     // If not ask the operating system to change the size of the window, which is
