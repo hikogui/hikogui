@@ -976,7 +976,7 @@ void Window_vulkan::teardownSurface()
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    application->gui->destroySurfaceKHR(intrinsic);
+    GUISystem_global->destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()

@@ -45,7 +45,7 @@ public:
      * \param extensions a list of Vulkan extensions required. Most useful
      *      for including operating system specific surface extensions.
      */
-    GUISystem_vulkan(GUISystemDelegate *delegate, const std::vector<const char *> extensions);
+    GUISystem_vulkan(gui_system_delegate *delegate, const std::vector<const char *> extensions);
     ~GUISystem_vulkan();
 
     GUISystem_vulkan(const GUISystem_vulkan &) = delete;

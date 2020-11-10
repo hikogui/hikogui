@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../os_detect.hpp"
+#include "../unfair_recursive_mutex.hpp"
 
 namespace tt {
 
@@ -18,5 +19,10 @@ using GUISystem = GUISystem_vulkan_macos;
 #else
 #error "GUISystem forward not implemented for os"
 #endif
+
+/** Global mutex for GUI elements, like GUISystem, GUIDevice, Windows and Widgets.
+ */
+inline unfair_recursive_mutex GUISystem_mutex;
+inline GUISystem *GUISystem_global;
 
 }

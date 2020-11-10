@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ApplicationDelegate.hpp"
-#include "audio/AudioSystemDelegate.hpp"
-#include "GUI/GUISystemDelegate.hpp"
+#include "application_delegate.hpp"
+#include "audio/audio_system_delegate.hpp"
+#include "GUI/gui_system_delegate.hpp"
 #include "GUI/GUISystem_forward.hpp"
 #include "required.hpp"
 #include "URL.hpp"
@@ -18,7 +18,7 @@
 #include <thread>
 
 namespace tt {
-class AudioSystem;
+class audio_system;
 class FontBook;
 class ThemeBook;
 class RenderDoc;
@@ -31,12 +31,12 @@ class UnicodeData;
  * are destructed.
  *
  */
-class Application_base : public GUISystemDelegate, public AudioSystemDelegate
+class Application_base
 {
 public:
     /*! Application delegate
     */
-    ApplicationDelegate &delegate;
+    application_delegate &delegate;
 
     /*! Command line arguments.
      */
@@ -56,8 +56,6 @@ public:
 
     std::atomic<bool> inLoop;
 
-    std::unique_ptr<GUISystem> gui;
-    std::unique_ptr<AudioSystem> audio;
     std::unique_ptr<FontBook> fonts;
     std::unique_ptr<ThemeBook> themes;
     std::unique_ptr<RenderDoc> renderDoc;
@@ -70,9 +68,13 @@ public:
      * @param delegate A pointer to an application delegate.
      */
     Application_base(
-        ApplicationDelegate &delegate,
+        application_delegate &delegate,
         std::vector<std::string> const &arguments
     );
+
+    /** Two phase construction.
+     */
+    virtual void initialize();
 
     virtual ~Application_base();
     Application_base(const Application_base &) = delete;
@@ -82,17 +84,16 @@ public:
 
     /*! Run the given function on the main thread.
      */
-    virtual void runFromMainLoop(std::function<void()> function) = 0;
+    virtual void run_from_main_loop(std::function<void()> function) = 0;
 
     /*! Run the operating system's main loop.
      * Must be called after initialize().
      */
     virtual int loop() = 0;
 
-    /*! Called when the device list has changed.
-    * This can happen when external devices are connected or disconnected.
-    */
-    void audioDeviceListChanged() override;
+    /** Quit the main loop and exit the application.
+     */
+    virtual void quit() = 0;
 
     /** Get the data of a static resource.
      * These are resources that where linked into the exectuable.
@@ -105,6 +106,8 @@ public:
 
 protected:
     std::unordered_map<std::string,std::span<std::byte const>> staticResources;
+
+    std::unique_ptr<GUISystem> _gui_system;
 
     /** Add static resource.
      * This function should only be called on resources that are linked into the executable

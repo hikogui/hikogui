@@ -2,7 +2,8 @@
 // All rights reserved.
 
 #include "Application_win32.hpp"
-#include "audio/AudioSystem_win32.hpp"
+#include "audio/audio_system_aggregate.hpp"
+#include "audio/audio_system_win32.hpp"
 #include "GUI/GUISystem.hpp"
 #include "GUI/Window.hpp"
 #include "strings.hpp"
@@ -32,25 +33,12 @@ namespace tt {
     return arguments;
 }
 
-Application_win32::Application_win32(ApplicationDelegate &delegate, void *hInstance, int nCmdShow) :
+Application_win32::Application_win32(application_delegate &delegate, void *hInstance, int nCmdShow) :
     Application_base(delegate, passArguments()), OSMainThreadID(GetCurrentThreadId()), hInstance(hInstance), nCmdShow(nCmdShow)
 {
 }
 
-void Application_win32::lastWindowClosed()
-{
-    runFromMainLoop([&]() {
-        // Let the application have a chance to open new windows from the main thread.
-        delegate.lastWindowClosed();
-
-        if (gui->getNumberOfWindows() == 0) {
-            LOG_INFO("Application quiting due to all windows having been closed.");
-            PostQuitMessage(0);
-        }
-    });
-}
-
-void Application_win32::runFromMainLoop(std::function<void()> function)
+void Application_win32::run_from_main_loop(std::function<void()> function)
 {
     tt_assert(inLoop);
 
@@ -94,6 +82,13 @@ void Application_win32::post_message(
     for (auto window : windows) {
         post_message(window, Msg, wParam, lParam);
     }
+}
+
+void Application_win32::quit()
+{
+    run_from_main_loop([&]() {
+        PostQuitMessage(0);
+    });
 }
 
 bool Application_win32::initializeApplication()
@@ -141,7 +136,11 @@ int Application_win32::loop()
 void Application_win32::audioStart()
 {
     Application_base::audioStart();
-    audio = std::make_unique<AudioSystem_win32>(this);
+
+    if (audio_system::global) {
+        auto audio_system = std::dynamic_pointer_cast<audio_system_aggregate>(audio_system::global);
+        audio_system->make_audio_system<audio_system_win32>();
+    }
 }
 
 } // namespace tt

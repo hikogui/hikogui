@@ -10,7 +10,7 @@ namespace tt {
 
 class GUISystem_vulkan_macos final: public GUISystem_vulkan {
 public:
-    GUISystem_vulkan_macos(GUISystemDelegate *delegate);
+    GUISystem_vulkan_macos(gui_system_delegate *delegate);
     ~GUISystem_vulkan_macos();
 
     GUISystem_vulkan_macos(const GUISystem_vulkan_macos &) = delete;

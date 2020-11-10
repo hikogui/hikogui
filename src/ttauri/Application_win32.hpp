@@ -25,7 +25,7 @@ public:
      */
     int nCmdShow = 0;
 
-    Application_win32(ApplicationDelegate &delegate, void *hInstance, int nCmdShow);
+    Application_win32(application_delegate &delegate, void *hInstance, int nCmdShow);
     ~Application_win32() = default;
 
     Application_win32(const Application_win32 &) = delete;
@@ -33,11 +33,11 @@ public:
     Application_win32(Application_win32 &&) = delete;
     Application_win32 &operator=(Application_win32 &&) = delete;
 
-    void lastWindowClosed() override;
-
-    void runFromMainLoop(std::function<void()> function) override;
+    void run_from_main_loop(std::function<void()> function) override;
 
     int loop() override;
+
+    void quit() override;
 
     /** Get a win32 handle to each window of the application.
      */

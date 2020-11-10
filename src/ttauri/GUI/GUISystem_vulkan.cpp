@@ -25,7 +25,7 @@ static bool hasFoundationExtensions(const std::vector<const char *> &requiredExt
     return true;
 }
 
-GUISystem_vulkan::GUISystem_vulkan(GUISystemDelegate *delegate, const std::vector<const char *> extensionNames) :
+GUISystem_vulkan::GUISystem_vulkan(gui_system_delegate *delegate, const std::vector<const char *> extensionNames) :
     GUISystem_base(delegate),
     requiredExtensions(std::move(extensionNames))
 {

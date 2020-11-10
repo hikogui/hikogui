@@ -359,7 +359,7 @@ done:
 vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
     ttlet lock = std::scoped_lock(GUISystem_mutex);
-    return application->gui->createWin32SurfaceKHR(
+    return GUISystem_global->createWin32SurfaceKHR(
         {vk::Win32SurfaceCreateFlagsKHR(),
          reinterpret_cast<HINSTANCE>(application->hInstance),
          reinterpret_cast<HWND>(win32Window)});

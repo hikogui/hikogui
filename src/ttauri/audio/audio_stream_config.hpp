@@ -3,12 +3,10 @@
 
 #pragma once
 
-#include "AudioSystem.hpp"
-
 namespace tt {
 
-class AudioSystem_asio: public AudioSystem {
-
+struct audio_stream_config {
+    double sample_rate;
 
 };
 

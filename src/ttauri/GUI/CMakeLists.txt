@@ -18,7 +18,7 @@ target_sources(ttauri PRIVATE
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_win32.hpp>
-    GUISystemDelegate.hpp
+    gui_system_delegate.hpp
     HitBox.hpp
     KeyboardBindings.cpp
     KeyboardBindings.hpp

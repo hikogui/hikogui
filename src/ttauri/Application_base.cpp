@@ -18,7 +18,8 @@
 #include "GUI/ThemeBook.hpp"
 #include "GUI/KeyboardBindings.hpp"
 #include "GUI/GUISystem.hpp"
-#include "audio/AudioSystem.hpp"
+#include "audio/audio_system.hpp"
+#include "audio/audio_system_aggregate.hpp"
 #include <memory>
 
 #include "data/UnicodeData.bin.inl"
@@ -40,8 +41,12 @@ namespace tt {
 using namespace std;
 
 Application_base::Application_base(
-    ApplicationDelegate &delegate,
+    application_delegate &delegate,
     std::vector<std::string> const &arguments) : delegate(delegate)
+{
+}
+
+void Application_base::initialize()
 {
     set_thread_name("Main Thread");
 
@@ -49,7 +54,7 @@ Application_base::Application_base(
     tt_assert(application == nullptr);
     application = reinterpret_cast<Application *>(this);
 
-    application_version.name = delegate.applicationName();
+    application_version.name = delegate.application_name();
     configuration = delegate.configuration(arguments);
 
     LOG_INFO("Starting application '{}'.", application_version.name);
@@ -151,47 +156,57 @@ void Application_base::textStop()
 
 void Application_base::audioStart()
 {
+    ttlet audio_system_delegate = delegate.audio_system_delegate();
+    if (audio_system_delegate != nullptr) {
+        audio_system::global = std::make_shared<audio_system_aggregate>(audio_system_delegate);
+        audio_system::global->initialize();
+    }
 }
 
 void Application_base::audioStop()
 {
-    audio = {};
+    audio_system::global = {};
 }
 
 void Application_base::GUIStart()
 {
-    tt::guiDelegate = this;
-    renderDoc = std::make_unique<RenderDoc>();
+    ttlet gui_delegate = delegate.gui_system_delegate();
+    if (gui_delegate != nullptr) {
+        renderDoc = std::make_unique<RenderDoc>();
 
-    themes = std::make_unique<ThemeBook>(std::vector<URL>{
-        URL::urlFromResourceDirectory() / "themes"
-    });
+        themes = std::make_unique<ThemeBook>(std::vector<URL>{
+            URL::urlFromResourceDirectory() / "themes"
+        });
 
-    themes->settheme_mode(read_os_theme_mode());
+        themes->settheme_mode(read_os_theme_mode());
 
-    addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
-    addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
-    addStaticResource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
-    addStaticResource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
-    addStaticResource(PipelineBox_vert_spv_filename, PipelineBox_vert_spv_bytes);
-    addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
-    addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
-    addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
-    addStaticResource(PipelineToneMapper_vert_spv_filename, PipelineToneMapper_vert_spv_bytes);
-    addStaticResource(PipelineToneMapper_frag_spv_filename, PipelineToneMapper_frag_spv_bytes);
+        addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
+        addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
+        addStaticResource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
+        addStaticResource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
+        addStaticResource(PipelineBox_vert_spv_filename, PipelineBox_vert_spv_bytes);
+        addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
+        addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
+        addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
+        addStaticResource(PipelineToneMapper_vert_spv_filename, PipelineToneMapper_vert_spv_bytes);
+        addStaticResource(PipelineToneMapper_frag_spv_filename, PipelineToneMapper_frag_spv_bytes);
 
-    try {
-        keyboardBindings.loadSystemBindings();
-    } catch (error &e) {
-        LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
+        try {
+            keyboardBindings.loadSystemBindings();
+        } catch (error &e) {
+            LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
+        }
+
+        _gui_system = std::make_unique<GUISystem>(gui_delegate);
+        GUISystem_global = _gui_system.get();
+        _gui_system->initialize();
     }
-
-    gui = std::make_unique<GUISystem>(guiDelegate);
 }
 
 void Application_base::GUIStop()
 {
-    gui = {};
+    GUISystem_global = nullptr;
+    _gui_system = {};
     themes = {};
     renderDoc = {};
 }
@@ -200,15 +215,10 @@ void Application_base::GUIStop()
 bool Application_base::initializeApplication()
 {
     try {
-        return delegate.initializeApplication();
+        return delegate.initialize_application();
     } catch (error &e) {
         LOG_FATAL("Exception during initializeApplication {}", to_string(e));
     }
-}
-
-void Application_base::audioDeviceListChanged()
-{
-    delegate.audioDeviceListChanged();
 }
 
 void Application_base::addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept

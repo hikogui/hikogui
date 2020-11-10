@@ -107,7 +107,7 @@ GUIDevice_vulkan::GUIDevice_vulkan(GUISystem &system, vk::PhysicalDevice physica
     physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
-        application->gui->loader()
+        GUISystem_global->loader()
     );
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
@@ -184,13 +184,13 @@ void GUIDevice_vulkan::initializeDevice(Window const &window)
         numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
         numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
-        &(application->gui->requiredFeatures)
+         &(GUISystem_global->requiredFeatures)
     });
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.physicalDevice = physicalIntrinsic;
     allocatorCreateInfo.device = intrinsic;
-    allocatorCreateInfo.instance = application->gui->intrinsic;
+    allocatorCreateInfo.instance = GUISystem_global->intrinsic;
     vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 
     VmaAllocationCreateInfo lazyAllocationInfo = {};
@@ -389,12 +389,12 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
     LOG_INFO("Scoring device: {}", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, application->gui->requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, GUISystem_global->requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, application->gui->requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, GUISystem_global->requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
@@ -516,7 +516,7 @@ int GUIDevice_vulkan::score(Window const &window) const {
 
     auto surface = window.getSurface();
     ttlet s = score(surface);
-    application->gui->destroySurfaceKHR(surface);
+    GUISystem_global->destroySurfaceKHR(surface);
     return s;
 }
 

@@ -9,7 +9,7 @@ namespace tt {
 
 /*! A class representing an audio device on the system.
 */
-class AudioDevice_asio : public AudioDevice {
+class audio_device_asio : public audio_device {
 
 
 };

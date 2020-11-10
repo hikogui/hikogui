@@ -1,17 +1,17 @@
 
 target_sources(ttauri PRIVATE
-    AudioBlock.hpp
-    AudioDevice.cpp
-    AudioDevice.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/AudioDevice_asio.hpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/AudioDevice_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/AudioDevice_win32.hpp>
-    AudioDeviceDelegate.hpp
-    AudioStreamConfig.hpp
-    AudioSystem.cpp
-    AudioSystem.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/AudioSystem_asio.hpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/AudioSystem_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/AudioSystem_win32.hpp>
-    AudioSystemDelegate.hpp
+    audio_block.hpp
+    audio_device.cpp
+    audio_device.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_asio.hpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.hpp>
+    audio_device_delegate.hpp
+    audio_stream_config.hpp
+    audio_system.cpp
+    audio_system.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_asio.hpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.hpp>
+    audio_system_delegate.hpp
 )

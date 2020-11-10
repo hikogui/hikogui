@@ -28,7 +28,7 @@ void run_from_main_loop(std::function<void()> f)
     // Do not optimize by checking if this is called from the main thread
     // the function should be passed to the queue on the main loop.
     tt_assume(application);
-    application->runFromMainLoop(f);
+    application->run_from_main_loop(f);
 }
 
 }

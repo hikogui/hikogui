@@ -1,0 +1,34 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
+
+#pragma once
+
+#include "audio_system.hpp"
+#include "audio_system_delegate.hpp"
+#include <memory>
+
+namespace tt {
+
+class audio_system_win32: public audio_system {
+public:
+    using super = audio_system;
+
+    audio_system_win32(audio_system_delegate *delegate);
+    ~audio_system_win32();
+
+    void initialize() noexcept override;
+
+    [[nodiscard]] std::vector<std::shared_ptr<audio_device>> devices() noexcept override
+    {
+        ttlet lock = std::scoped_lock(audio_system::mutex);
+        return _devices;
+    }
+
+    void update_device_list() noexcept;
+
+private:
+    std::vector<std::shared_ptr<audio_device>> _devices;
+    void *_device_enumerator;
+};
+
+}

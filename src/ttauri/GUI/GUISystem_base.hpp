@@ -6,7 +6,7 @@
 #include "GUIDevice.hpp"
 #include "Window.hpp"
 #include "VerticalSync.hpp"
-#include "GUISystemDelegate.hpp"
+#include "gui_system_delegate.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include <span>
 #include <memory>
@@ -22,7 +22,7 @@ namespace tt {
  */
 class GUISystem_base {
 public:
-    GUISystemDelegate *delegate;
+    gui_system_delegate *delegate;
 
     std::unique_ptr<VerticalSync> verticalSync;
 
@@ -34,7 +34,7 @@ public:
      */
     ssize_t previousNumberOfWindows = 0;
 
-    GUISystem_base(GUISystemDelegate *delegate) noexcept :
+    GUISystem_base(gui_system_delegate *delegate) noexcept :
         delegate(delegate)
     {
         verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync, this);
@@ -86,7 +86,9 @@ public:
         }
         ttlet currentNumberOfWindows = getNumberOfWindows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
-            delegate->lastWindowClosed();
+            application->run_from_main_loop([this]{
+                this->delegate->last_window_closed();
+            });
         }
         previousNumberOfWindows = currentNumberOfWindows;
     }
