@@ -26,7 +26,7 @@ public:
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
     [[nodiscard]] vec backgroundColor() noexcept {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return theme->fillColor(_semantic_layer);
     }
 
@@ -34,7 +34,7 @@ public:
      */
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         left_resize_border_has_priority = left;
         right_resize_border_has_priority = right;
         bottom_resize_border_has_priority = bottom;
@@ -43,14 +43,14 @@ public:
 
     [[nodiscard]] std::shared_ptr<GridLayoutWidget> content() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(_content);
         return _content;
     }
 
     [[nodiscard]] std::shared_ptr<toolbar_widget> toolbar() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(_toolbar);
         return _toolbar;
     }

@@ -73,7 +73,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto updated = super::update_constraints(display_time_point, need_reconstrain);
         updated |= _overlay_widget->update_constraints(display_time_point, need_reconstrain);
@@ -116,7 +116,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
 
@@ -162,7 +162,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         draw_outline(context);
         draw_left_box(context);
@@ -178,7 +178,7 @@ public:
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = widget::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
@@ -194,7 +194,7 @@ public:
 
     bool handle_command(command command) noexcept override
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = widget::handle_command(command);
 
         if (*enabled) {
@@ -224,7 +224,7 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(_overlay_widget);
 
         auto handled = false;
@@ -235,7 +235,7 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         ttlet position = _from_window_transform * window_position;
 
         auto r = HitBox{};
@@ -253,14 +253,14 @@ public:
 
     [[nodiscard]] bool accepts_focus() const noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return *enabled;
     }
 
     std::shared_ptr<widget>
     next_keyboard_widget(std::shared_ptr<widget> const &current_keyboard_widget, bool reverse) const noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (_selecting) {
             tt_assume(_overlay_widget);
@@ -336,7 +336,7 @@ private:
      */
     void repopulate_options() noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         auto option_list_ = *option_list;
 
         // If any of the options has a an icon, all of the options should show the icon.
@@ -364,7 +364,7 @@ private:
     }
     void draw_outline(DrawContext context) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.cornerShapes = Theme::roundingRadius;
         context.drawBoxIncludeBorder(rectangle());
@@ -372,7 +372,7 @@ private:
 
     void draw_left_box(DrawContext context) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
         context.fillColor = context.color;
@@ -382,7 +382,7 @@ private:
 
     void draw_chevrons(DrawContext context) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.2f} * context.transform;
         context.color = *enabled ? theme->foregroundColor : context.fillColor;
@@ -391,7 +391,7 @@ private:
 
     void draw_value(DrawContext context) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
         context.color = *enabled ? _text_stencil_color : context.color;

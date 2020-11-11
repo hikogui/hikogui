@@ -20,7 +20,7 @@ namespace tt {
 /** Vulkan GUIDevice controller.
  * Manages Vulkan device and a set of Windows.
  */
-class GUISystem_base {
+class gui_system {
 public:
     gui_system_delegate *delegate;
 
@@ -34,18 +34,18 @@ public:
      */
     ssize_t previousNumberOfWindows = 0;
 
-    GUISystem_base(gui_system_delegate *delegate) noexcept :
+    gui_system(gui_system_delegate *delegate) noexcept :
         delegate(delegate)
     {
         verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync, this);
     }
 
-    virtual ~GUISystem_base() {}
+    virtual ~gui_system() {}
 
-    GUISystem_base(const GUISystem_base &) = delete;
-    GUISystem_base &operator=(const GUISystem_base &) = delete;
-    GUISystem_base(GUISystem_base &&) = delete;
-    GUISystem_base &operator=(GUISystem_base &&) = delete;
+    gui_system(const gui_system &) = delete;
+    gui_system &operator=(const gui_system &) = delete;
+    gui_system(gui_system &&) = delete;
+    gui_system &operator=(gui_system &&) = delete;
 
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
@@ -58,13 +58,13 @@ public:
         // This function should be called from the main thread from the main loop,
         // and therefor should not have a lock on the window.
         tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
-        tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+        tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
-        auto window = std::make_shared<T>(static_cast<GUISystem_base &>(*this), std::forward<Args>(args)...);
+        auto window = std::make_shared<T>(static_cast<gui_system &>(*this), std::forward<Args>(args)...);
         auto window_ptr = window.get();
         window->initialize();
 
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         auto device = findBestDeviceForWindow(*window);
         if (!device) {
             TTAURI_THROW(gui_error("Could not find a vulkan-device matching this window"));
@@ -79,7 +79,7 @@ public:
     ssize_t getNumberOfWindows();
 
     void render(hires_utc_clock::time_point displayTimePoint) {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         for (auto &device: devices) {
             device->render(displayTimePoint);

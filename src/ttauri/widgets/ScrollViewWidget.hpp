@@ -22,7 +22,7 @@ public:
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
-            ttlet lock = std::scoped_lock(GUISystem_mutex);
+            ttlet lock = std::scoped_lock(gui_system_mutex);
             _semantic_layer = parent->semantic_layer();
         }
         _margin = 0.0f;
@@ -46,7 +46,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(content);
         tt_assume(!can_scroll_horizontally || horizontal_scroll_bar);
         tt_assume(!can_scroll_vertically || vertical_scroll_bar);
@@ -94,7 +94,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(content);
 
         auto need_redraw = need_layout |= std::exchange(_request_relayout, false);
@@ -198,7 +198,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(content);
 
         if constexpr (can_scroll_horizontally) {
@@ -215,7 +215,7 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto handled = false;
         tt_assume(content->parent.lock().get() == this);
@@ -235,7 +235,7 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         tt_assume(content);
 
         auto r = HitBox{};
@@ -257,7 +257,7 @@ public:
 
     std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         tt_assume(content);
 
         // Scrollbars are never keyboard focus targets.
@@ -267,7 +267,7 @@ public:
     template<typename WidgetType = GridLayoutWidget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(Args const &... args) noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         auto widget = std::make_shared<WidgetType>(window, shared_from_this(), args...);
         widget->initialize();
@@ -279,7 +279,7 @@ public:
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = super::handle_mouse_event(event);
 
         if (event.type == MouseEvent::Type::Wheel) {

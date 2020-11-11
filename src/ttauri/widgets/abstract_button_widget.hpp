@@ -42,13 +42,13 @@ public:
 
     [[nodiscard]] bool accepts_focus() const noexcept final
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return *enabled;
     }
 
     [[nodiscard]] bool handle_command(command command) noexcept final
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = widget::handle_command(command);
 
         if (*enabled) {
@@ -67,7 +67,7 @@ public:
 
     [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept final
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = widget::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
@@ -87,7 +87,7 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept final
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (_window_clipping_rectangle.contains(window_position)) {
             return HitBox{weak_from_this(), _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};

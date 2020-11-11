@@ -16,7 +16,7 @@ widget::widget(Window &_window, std::shared_ptr<widget> _parent) noexcept :
     _semantic_layer(0)
 {
     if (_parent) {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         _draw_layer = _parent->draw_layer() + 1.0f;
         _logical_layer = _parent->logical_layer() + 1;
         _semantic_layer = _parent->semantic_layer() + 1;
@@ -38,7 +38,7 @@ widget::~widget()
 
 GUIDevice *widget::device() const noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     auto device = window.device();
     tt_assert(device);
@@ -47,7 +47,7 @@ GUIDevice *widget::device() const noexcept
 
 bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     need_reconstrain |= std::exchange(_request_reconstrain, false);
     return need_reconstrain;
@@ -55,7 +55,7 @@ bool widget::update_constraints(hires_utc_clock::time_point display_time_point, 
 
 bool widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -71,7 +71,7 @@ bool widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 DrawContext widget::make_draw_context(DrawContext context) const noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     context.clippingRectangle = _window_clipping_rectangle;
     context.transform = _to_window_transform;
@@ -107,7 +107,7 @@ bool widget::handle_command(command command) noexcept
 
 bool widget::handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     if (!std::ranges::any_of(reject_list, [this](ttlet &x) { return x.get() == this; })) {
         return handle_command(command);
@@ -117,7 +117,7 @@ bool widget::handle_command_recursive(command command, std::vector<std::shared_p
 }
 
 bool widget::handle_mouse_event(MouseEvent const &event) noexcept {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     auto handled = false;
 
     if (event.type == MouseEvent::Type::Entered) {
@@ -134,7 +134,7 @@ bool widget::handle_mouse_event(MouseEvent const &event) noexcept {
 }
 
 bool widget::handle_keyboard_event(KeyboardEvent const &event) noexcept {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     auto handled = false;
 
     switch (event.type) {
@@ -159,7 +159,7 @@ bool widget::handle_keyboard_event(KeyboardEvent const &event) noexcept {
 std::shared_ptr<widget>
 widget::next_keyboard_widget(std::shared_ptr<widget> const &current_keyboard_widget, bool reverse) const noexcept
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     auto this_ = shared_from_this();
     if (current_keyboard_widget == this_) {

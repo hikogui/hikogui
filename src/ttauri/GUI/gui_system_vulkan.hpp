@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "GUISystem_base.hpp"
+#include "gui_system.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt {
@@ -11,7 +11,7 @@ namespace tt {
 /** Vulkan GUIDevice controller.
  * Manages Vulkan device and a set of Windows.
  */
-class GUISystem_vulkan : public GUISystem_base {
+class gui_system_vulkan : public gui_system {
 protected:
 
     //! Vulkan dynamic loader of library functions.
@@ -45,23 +45,23 @@ public:
      * \param extensions a list of Vulkan extensions required. Most useful
      *      for including operating system specific surface extensions.
      */
-    GUISystem_vulkan(gui_system_delegate *delegate, const std::vector<const char *> extensions);
-    ~GUISystem_vulkan();
+    gui_system_vulkan(gui_system_delegate *delegate, const std::vector<const char *> extensions);
+    ~gui_system_vulkan();
 
-    GUISystem_vulkan(const GUISystem_vulkan &) = delete;
-    GUISystem_vulkan &operator=(const GUISystem_vulkan &) = delete;
-    GUISystem_vulkan(GUISystem_vulkan &&) = delete;
-    GUISystem_vulkan &operator=(GUISystem_vulkan &&) = delete;
+    gui_system_vulkan(const gui_system_vulkan &) = delete;
+    gui_system_vulkan &operator=(const gui_system_vulkan &) = delete;
+    gui_system_vulkan(gui_system_vulkan &&) = delete;
+    gui_system_vulkan &operator=(gui_system_vulkan &&) = delete;
 
     void initialize() noexcept(false) override;
 
     vk::DispatchLoaderDynamic loader() const noexcept {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         return _loader;
     }
 
     void destroySurfaceKHR(vk::SurfaceKHR surface) {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         intrinsic.destroySurfaceKHR(surface);
     }
 

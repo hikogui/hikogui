@@ -128,7 +128,7 @@ public:
      */
     [[nodiscard]] float margin() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _margin;
     }
 
@@ -149,7 +149,7 @@ public:
      */
     [[nodiscard]] float draw_layer() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _draw_layer;
     }
 
@@ -165,7 +165,7 @@ public:
      */
     [[nodiscard]] int logical_layer() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _logical_layer;
     }
 
@@ -189,7 +189,7 @@ public:
      */
     [[nodiscard]] int semantic_layer() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _semantic_layer;
     }
 
@@ -204,7 +204,7 @@ public:
      */
     [[nodiscard]] ranged_int<3> width_resistance() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _width_resistance;
     }
 
@@ -219,7 +219,7 @@ public:
      */
     [[nodiscard]] ranged_int<3> height_resistance() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _height_resistance;
     }
 
@@ -233,7 +233,7 @@ public:
      */
     [[nodiscard]] interval_vec2 preferred_size() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _preferred_size;
     }
 
@@ -252,7 +252,7 @@ public:
      */
     [[nodiscard]] relative_base_line preferred_base_line() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _preferred_base_line;
     }
 
@@ -278,7 +278,7 @@ public:
         float window_base_line = std::numeric_limits<float>::infinity()
     ) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         _window_rectangle = window_rectangle;
         _window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
 
@@ -295,7 +295,7 @@ public:
      */
     [[nodiscard]] aarect window_rectangle() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _window_rectangle;
     }
 
@@ -305,7 +305,7 @@ public:
      */
     [[nodiscard]] aarect window_clipping_rectangle() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _window_clipping_rectangle;
     }
 
@@ -315,7 +315,7 @@ public:
      */
     [[nodiscard]] float window_base_line() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _window_base_line;
     }
 
@@ -325,7 +325,7 @@ public:
      */
     [[nodiscard]] aarect rectangle() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return aarect{_window_rectangle.extent()};
     }
 
@@ -335,7 +335,7 @@ public:
      */
     [[nodiscard]] float base_line() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _window_base_line - _window_rectangle.y();
     }
 
@@ -351,7 +351,7 @@ public:
      */
     [[nodiscard]] virtual HitBox hitbox_test(vec window_position) const noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
             return HitBox{weak_from_this(), _draw_layer};
@@ -366,7 +366,7 @@ public:
      */
     [[nodiscard]] virtual bool accepts_focus() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return false;
     }
 
@@ -446,7 +446,7 @@ public:
      */
     virtual void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
     }
 
     /** Handle command.
@@ -506,7 +506,7 @@ public:
      */
     static std::vector<std::shared_ptr<widget>> parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         std::vector<std::shared_ptr<widget>> chain;
 

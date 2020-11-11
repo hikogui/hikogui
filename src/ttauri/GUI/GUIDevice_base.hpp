@@ -13,13 +13,13 @@
 #include <tuple>
 
 namespace tt {
-class GUISystem_base;
+class gui_system;
 
 /*! A GUIDevice that handles a set of windows.
  */
 class GUIDevice_base {
 public:
-    GUISystem_base &system;
+    gui_system &system;
 
     enum class State {
         NO_DEVICE,
@@ -36,7 +36,7 @@ public:
 
     std::string string() const noexcept;
 
-    GUIDevice_base(GUISystem_base &system) noexcept;
+    GUIDevice_base(gui_system &system) noexcept;
     virtual ~GUIDevice_base();
 
     GUIDevice_base(const GUIDevice_base &) = delete;
@@ -68,7 +68,7 @@ public:
     void remove(Window &window) noexcept;
 
     void render(hires_utc_clock::time_point displayTimePoint) noexcept {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         for (auto &window: windows) {
             window->render(displayTimePoint);

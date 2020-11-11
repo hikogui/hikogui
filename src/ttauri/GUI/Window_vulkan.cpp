@@ -3,7 +3,7 @@
 
 #include "Window_vulkan.hpp"
 #include "Window.hpp"
-#include "GUISystem_vulkan.hpp"
+#include "gui_system_vulkan.hpp"
 #include "GUIDevice.hpp"
 #include "PipelineFlat.hpp"
 #include "PipelineBox.hpp"
@@ -20,7 +20,7 @@ namespace tt {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(GUISystem_base &system, WindowDelegate *delegate, label const &title) :
+Window_vulkan::Window_vulkan(gui_system &system, WindowDelegate *delegate, label const &title) :
     Window_base(system, delegate, title), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
@@ -34,7 +34,7 @@ void Window_vulkan::initialize()
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock on the window.
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
-    tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+    tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
     Window_base::initialize();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
@@ -46,7 +46,7 @@ void Window_vulkan::initialize()
 
 void Window_vulkan::waitIdle()
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     tt_assert(_device);
     if (renderFinishedFence) {
@@ -58,7 +58,7 @@ void Window_vulkan::waitIdle()
 
 std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
@@ -100,7 +100,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
 void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
-    auto lock = std::scoped_lock(GUISystem_mutex);
+    auto lock = std::scoped_lock(gui_system_mutex);
 
     tt_assume(_device);
 
@@ -146,7 +146,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 
 void Window_vulkan::build()
 {
-    auto lock = std::scoped_lock(GUISystem_mutex);
+    auto lock = std::scoped_lock(gui_system_mutex);
 
     if (state == State::NoDevice) {
         if (_device) {
@@ -211,7 +211,7 @@ void Window_vulkan::build()
 
 void Window_vulkan::teardown()
 {
-    auto lock = std::scoped_lock(GUISystem_mutex);
+    auto lock = std::scoped_lock(gui_system_mutex);
 
     auto nextState = state;
 
@@ -271,7 +271,7 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
@@ -367,7 +367,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 
 void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     struct fill_command_buffer_tag {};
     auto t = trace<fill_command_buffer_tag>{};
@@ -416,7 +416,7 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 
 void Window_vulkan::submitCommandBuffer()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     ttlet waitSemaphores = std::array{
         imageAvailableSemaphore
@@ -445,7 +445,7 @@ void Window_vulkan::submitCommandBuffer()
 
 std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     tt_assert(_device);
@@ -476,7 +476,7 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
 
 bool Window_vulkan::readSurfaceExtent()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     try {
         std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
@@ -520,7 +520,7 @@ bool Window_vulkan::readSurfaceExtent()
 
 bool Window_vulkan::checkSurfaceExtent()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     try {
         ttlet [nrImages, extent] = getImageCountAndExtent();
@@ -534,12 +534,12 @@ bool Window_vulkan::checkSurfaceExtent()
 
 void Window_vulkan::buildDevice()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 }
 
 bool Window_vulkan::buildSurface()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     intrinsic = getSurface();
 
@@ -549,7 +549,7 @@ bool Window_vulkan::buildSurface()
 
 Window_base::State Window_vulkan::buildSwapchain()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     tt_assume(_device);
 
@@ -646,7 +646,7 @@ Window_base::State Window_vulkan::buildSwapchain()
 
 void Window_vulkan::teardownSwapchain()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     tt_assert(_device);
     _device->destroy(swapchain);
@@ -656,7 +656,7 @@ void Window_vulkan::teardownSwapchain()
 
 void Window_vulkan::buildFramebuffers()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     depthImageView = _device->createImageView({
         vk::ImageViewCreateFlags(),
@@ -720,7 +720,7 @@ void Window_vulkan::buildFramebuffers()
 
 void Window_vulkan::teardownFramebuffers()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     tt_assert(_device);
     for (auto frameBuffer : swapchainFramebuffers) {
@@ -739,7 +739,7 @@ void Window_vulkan::teardownFramebuffers()
 
 void Window_vulkan::buildRenderPasses()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     ttlet attachmentDescriptions = std::array{
         vk::AttachmentDescription{ // Swapchain attachment.
@@ -918,7 +918,7 @@ void Window_vulkan::buildRenderPasses()
 
 void Window_vulkan::teardownRenderPasses()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     tt_assert(_device);
     _device->destroy(renderPass);
@@ -926,7 +926,7 @@ void Window_vulkan::teardownRenderPasses()
 
 void Window_vulkan::buildSemaphores()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     tt_assert(_device);
     imageAvailableSemaphore = _device->createSemaphore({});
@@ -940,7 +940,7 @@ void Window_vulkan::buildSemaphores()
 
 void Window_vulkan::teardownSemaphores()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     tt_assert(_device);
     _device->destroy(renderFinishedSemaphore);
@@ -950,7 +950,7 @@ void Window_vulkan::teardownSemaphores()
 
 void Window_vulkan::buildCommandBuffers()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     tt_assume(_device);
 
@@ -965,7 +965,7 @@ void Window_vulkan::buildCommandBuffers()
 
 void Window_vulkan::teardownCommandBuffers()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
     ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
     tt_assume(_device);
@@ -974,14 +974,14 @@ void Window_vulkan::teardownCommandBuffers()
 
 void Window_vulkan::teardownSurface()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
-    narrow_cast<GUISystem_vulkan&>(system).destroySurfaceKHR(intrinsic);
+    narrow_cast<gui_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     _device = nullptr;
 }

@@ -22,7 +22,7 @@ public:
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected child.
-            ttlet lock = std::scoped_lock(GUISystem_mutex);
+            ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer();
             _semantic_layer = parent->semantic_layer();
         }
@@ -37,7 +37,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
         if (has_updated_contraints) {
@@ -59,7 +59,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto &child = selected_child();
 
@@ -74,7 +74,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         draw_child(context, display_time_point, selected_child());
         super::draw(std::move(context), display_time_point);
@@ -82,13 +82,13 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         return selected_child().hitbox_test(window_position);
     }
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto handled = false;
         for (auto &[tag, child] : _children) {
@@ -101,14 +101,14 @@ public:
 
     std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         return selected_child().next_keyboard_widget(currentKeyboardWidget, reverse);
     }
 
     template<typename WidgetType = GridLayoutWidget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(value_type value, Args const &... args) noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         auto widget = std::make_shared<WidgetType>(window, shared_from_this(), args...);
         widget->initialize();
@@ -127,7 +127,7 @@ private:
 
     [[nodiscard]] const_iterator find_child(value_type index) const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return std::find_if(_children.cbegin(), _children.cend(), [&index](ttlet &x) {
             return x.first == index;
         });
@@ -135,7 +135,7 @@ private:
 
     [[nodiscard]] iterator find_child(value_type index) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return std::find_if(_children.begin(), _children.end(), [&index](ttlet &x) {
             return x.first == index;
         });
@@ -143,19 +143,19 @@ private:
 
     [[nodiscard]] const_iterator find_selected_child() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return find_child(*value);
     }
 
     [[nodiscard]] iterator find_selected_child() noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return find_child(*value);
     }
 
     [[nodiscard]] widget const &selected_child() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(std::ssize(_children) != 0);
 
         auto i = find_selected_child();
@@ -168,7 +168,7 @@ private:
 
     [[nodiscard]] widget &selected_child() noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(std::ssize(_children) != 0);
 
         auto i = find_selected_child();
@@ -181,7 +181,7 @@ private:
 
     void draw_child(DrawContext context, hires_utc_clock::time_point displayTimePoint, widget &child) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         child.draw(child.make_draw_context(context), displayTimePoint);
     }
 };

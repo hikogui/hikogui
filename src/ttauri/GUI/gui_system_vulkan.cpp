@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "GUISystem_vulkan.hpp"
+#include "gui_system_vulkan.hpp"
 #include "GUIDevice.hpp"
 #include <chrono>
 
@@ -24,8 +24,8 @@ static bool hasFoundationExtensions(const std::vector<const char *> &requiredExt
     return true;
 }
 
-GUISystem_vulkan::GUISystem_vulkan(gui_system_delegate *delegate, const std::vector<const char *> extensionNames) :
-    GUISystem_base(delegate),
+gui_system_vulkan::gui_system_vulkan(gui_system_delegate *delegate, const std::vector<const char *> extensionNames) :
+    gui_system(delegate),
     requiredExtensions(std::move(extensionNames))
 {
     applicationInfo = vk::ApplicationInfo(
@@ -74,16 +74,16 @@ GUISystem_vulkan::GUISystem_vulkan(gui_system_delegate *delegate, const std::vec
     
 }
 
-GUISystem_vulkan::~GUISystem_vulkan()
+gui_system_vulkan::~gui_system_vulkan()
 {
     if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
         intrinsic.destroy(debugUtilsMessager, nullptr, loader());
     }
 }
 
-void GUISystem_vulkan::initialize() noexcept(false)
+void gui_system_vulkan::initialize() noexcept(false)
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
         debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
@@ -105,7 +105,7 @@ void GUISystem_vulkan::initialize() noexcept(false)
     }
 }
 
-VkBool32 GUISystem_vulkan::debugUtilsMessageCallback(
+VkBool32 gui_system_vulkan::debugUtilsMessageCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,

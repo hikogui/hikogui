@@ -41,7 +41,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _on_label_stencil = stencil::make_unique(alignment::top_left, *on_label, theme->labelStyle);
@@ -64,7 +64,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -90,7 +90,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         draw_rail(context);
         draw_slider(context);
         draw_label(context);
@@ -116,7 +116,7 @@ private:
 
     void draw_rail(DrawContext drawContext) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         drawContext.cornerShapes = vec{_rail_rectangle.height() * 0.5f};
         drawContext.drawBoxIncludeBorder(_rail_rectangle);
@@ -124,7 +124,7 @@ private:
 
     void draw_slider(DrawContext drawContext) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(_animation_duration);
@@ -153,7 +153,7 @@ private:
 
     void draw_label(DrawContext drawContext) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;

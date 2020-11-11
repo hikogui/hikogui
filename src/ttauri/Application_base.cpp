@@ -17,7 +17,7 @@
 #include "GUI/RenderDoc.hpp"
 #include "GUI/ThemeBook.hpp"
 #include "GUI/KeyboardBindings.hpp"
-#include "GUI/GUISystem_vulkan_win32.hpp"
+#include "GUI/gui_system_vulkan_win32.hpp"
 #include "audio/audio_system.hpp"
 #include "audio/audio_system_aggregate.hpp"
 #include <memory>
@@ -197,7 +197,7 @@ void Application_base::GUIStart()
             LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
         }
 
-        _gui_system = std::make_unique<GUISystem_vulkan_win32>(gui_delegate);
+        _gui_system = std::make_unique<gui_system_vulkan_win32>(gui_delegate);
         _gui_system->initialize();
     }
 }

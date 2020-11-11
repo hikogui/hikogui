@@ -18,7 +18,7 @@ public:
             // The overlay-widget will reset the semantic_layer as it is the bottom
             // layer of this virtual-window. However the draw-layer should be above
             // any other widget drawn.
-            ttlet lock = std::scoped_lock(GUISystem_mutex);
+            ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer() + 20.0f;
             _semantic_layer = 0;
         }
@@ -28,7 +28,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
 
@@ -45,7 +45,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(child);
 
         auto need_redraw = need_layout |= std::exchange(_request_relayout, false);
@@ -66,7 +66,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(child);
 
         child->draw(child->make_draw_context(context), display_time_point);
@@ -75,7 +75,7 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(child);
         tt_assume(child->parent.lock().get() == this);
 
@@ -87,7 +87,7 @@ public:
 
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         tt_assume(child);
         return child->hitbox_test(window_position);
@@ -95,7 +95,7 @@ public:
 
     std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         tt_assume(child);
         return child->next_keyboard_widget(currentKeyboardWidget, reverse);
@@ -104,7 +104,7 @@ public:
     template<typename WidgetType = GridLayoutWidget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(Args const &... args) noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         auto widget = std::make_shared<WidgetType>(window, shared_from_this(), args...);
         widget->initialize();

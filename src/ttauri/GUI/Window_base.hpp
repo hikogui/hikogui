@@ -25,7 +25,7 @@
 #include <mutex>
 
 namespace tt {
-class GUISystem_base;
+class gui_system;
 class WindowWidget;
 
 /*! A Window.
@@ -54,7 +54,7 @@ public:
         Maximized
     };
 
-    GUISystem_base &system;
+    gui_system &system;
 
     State state = State::NoDevice;
 
@@ -123,7 +123,7 @@ public:
 
     
 
-    Window_base(GUISystem_base &system, WindowDelegate *delegate, label const &title);
+    Window_base(gui_system &system, WindowDelegate *delegate, label const &title);
     virtual ~Window_base();
 
     Window_base(Window_base const &) = delete;
@@ -150,7 +150,7 @@ public:
 
     GUIDevice *device() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _device;
     }
 

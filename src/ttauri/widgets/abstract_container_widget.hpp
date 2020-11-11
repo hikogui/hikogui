@@ -15,7 +15,7 @@ public:
     {
         if (parent) {
             // Most containers will not draw itself, only its children.
-            ttlet lock = std::scoped_lock(GUISystem_mutex);
+            ttlet lock = std::scoped_lock(gui_system_mutex);
             _semantic_layer = parent->semantic_layer();
         }
         _margin = 0.0f;
@@ -36,7 +36,7 @@ public:
      */
     std::shared_ptr<widget> add_widget(std::shared_ptr<widget> widget) noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         tt_assume(widget->parent.lock().get() == this);
         _children.push_back(widget);
@@ -57,7 +57,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto has_constrainted = super::update_constraints(display_time_point, need_reconstrain);
 
@@ -71,7 +71,7 @@ public:
 
     bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto need_redraw = need_layout |= std::exchange(_request_relayout, false);
         for (auto &&child : _children) {
@@ -84,7 +84,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         for (auto &child : _children) {
             tt_assume(child->parent.lock().get() == this);
@@ -96,7 +96,7 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto handled = false;
         for (auto &child : _children) {
@@ -109,7 +109,7 @@ public:
 
     HitBox hitbox_test(vec window_position) const noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         auto r = HitBox{};
         for (ttlet &child : _children) {
@@ -123,7 +123,7 @@ public:
         std::shared_ptr<widget> const &current_keyboard_widget,
         bool reverse) const noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         // If current_keyboard_widget is empty, then we need to find the first widget that accepts focus.
         auto found = !current_keyboard_widget;

@@ -6,7 +6,7 @@
 #include "application_delegate.hpp"
 #include "audio/audio_system_delegate.hpp"
 #include "GUI/gui_system_delegate.hpp"
-#include "GUI/GUISystem_forward.hpp"
+#include "GUI/gui_system_globals.hpp"
 #include "required.hpp"
 #include "URL.hpp"
 #include "timer.hpp"
@@ -107,7 +107,7 @@ public:
 protected:
     std::unordered_map<std::string,std::span<std::byte const>> staticResources;
 
-    std::unique_ptr<GUISystem_base> _gui_system;
+    std::unique_ptr<gui_system> _gui_system;
 
     /** Add static resource.
      * This function should only be called on resources that are linked into the executable

@@ -10,7 +10,7 @@ namespace tt {
 
 using namespace std;
 
-Window_base::Window_base(GUISystem_base &system, WindowDelegate *delegate, label const &title) :
+Window_base::Window_base(gui_system &system, WindowDelegate *delegate, label const &title) :
     system(system),
     state(State::Initializing),
     delegate(delegate),
@@ -38,7 +38,7 @@ void Window_base::initialize()
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock on the window.
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
-    tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
+    tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
     widget = std::make_shared<WindowWidget>(*static_cast<Window *>(this), delegate, title);
     widget->initialize();
@@ -49,7 +49,7 @@ void Window_base::initialize()
 
     // Execute a constraint check to determine initial window size.
     currentWindowExtent = [this]{
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         static_cast<void>(widget->update_constraints({}, true));
         return widget->preferred_size().minimum();
     }();
@@ -70,7 +70,7 @@ void Window_base::initialize()
 
 void Window_base::setDevice(GUIDevice *new_device)
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     if (_device == new_device) {
         return;
@@ -91,13 +91,13 @@ void Window_base::setDevice(GUIDevice *new_device)
 
 bool Window_base::isClosed()
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     return state == State::NoWindow;
 }
 
 void Window_base::next_keyboard_widget(std::shared_ptr<tt::widget> const &current_target_widget, bool reverse) noexcept
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     auto tmp = widget->next_keyboard_widget(current_target_widget, reverse);
     if (tmp == current_target_widget) {
@@ -110,13 +110,13 @@ void Window_base::next_keyboard_widget(std::shared_ptr<tt::widget> const &curren
 }
 
 [[nodiscard]] float Window_base::windowScale() const noexcept {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     return std::ceil(dpi / 100.0f);
 }
 
 void Window_base::windowChangedSize(ivec extent) {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     currentWindowExtent = extent;
     tt_assume(widget);
@@ -127,7 +127,7 @@ void Window_base::windowChangedSize(ivec extent) {
 
 void Window_base::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, vec position) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     auto current_target_widget = mouseTargetWidget.lock();
     if (new_target_widget != current_target_widget) {
@@ -143,7 +143,7 @@ void Window_base::update_mouse_target(std::shared_ptr<tt::widget> new_target_wid
 
 void Window_base::update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget) noexcept
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     // Send a gui_cancel command to any widget that is not in the new_target_widget-parent-chain.
     auto new_target_parent_chain = tt::widget::parent_chain(new_target_widget);
@@ -163,13 +163,13 @@ void Window_base::update_keyboard_target(std::shared_ptr<tt::widget> new_target_
 
 void Window_base::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     tt_assume(widget);
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
 bool Window_base::handle_mouse_event(MouseEvent event) noexcept {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     switch (event.type) {
     case MouseEvent::Type::Exited: // Mouse left window.
@@ -202,7 +202,7 @@ bool Window_base::handle_mouse_event(MouseEvent event) noexcept {
 }
 
 bool Window_base::handle_keyboard_event(KeyboardEvent const &event) noexcept {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     // Let the widget or its parent handle the keyboard event directly.
     {

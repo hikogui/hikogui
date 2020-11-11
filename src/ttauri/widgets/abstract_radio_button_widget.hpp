@@ -36,7 +36,7 @@ public:
      */
     void select() noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (compare_then_assign(this->value, this->true_value)) {
             this->window.requestRedraw = true;

@@ -34,7 +34,7 @@ namespace tt {
 template<typename T, cell_address CellAddress, typename... Args>
 std::shared_ptr<T> Window_base::make_widget(Args &&... args)
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     tt_assume(widget);
     return widget->content()->make_widget<T, CellAddress>(std::forward<Args>(args)...);
 }
@@ -45,7 +45,7 @@ std::shared_ptr<T> Window_base::make_widget(Args &&... args)
 template<typename T, horizontal_alignment Alignment, typename... Args>
 std::shared_ptr<T> Window_base::make_toolbar_widget(Args &&... args)
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     tt_assume(widget);
     return widget->toolbar()->make_widget<T, Alignment>(std::forward<Args>(args)...);
 }

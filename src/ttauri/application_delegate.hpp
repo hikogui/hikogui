@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace tt {
-class GUISystem_base;
+class gui_system;
 class gui_system_delegate;
 class audio_system_delegate;
 
@@ -44,7 +44,7 @@ public:
      *
      * @return true to start the loop, false to exit the application.
      */
-    virtual bool initialize_application(GUISystem_base *gui_system) = 0;
+    virtual bool initialize_application(gui_system *gui_system) = 0;
 };
 
 }

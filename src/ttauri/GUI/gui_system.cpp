@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "GUISystem_base.hpp"
+#include "gui_system.hpp"
 #include "../logger.hpp"
 #include <chrono>
 
@@ -9,9 +9,9 @@ namespace tt {
 
 using namespace std;
 
-GUIDevice *GUISystem_base::findBestDeviceForWindow(Window const &window)
+GUIDevice *gui_system::findBestDeviceForWindow(Window const &window)
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     int bestScore = -1;
     GUIDevice *bestDevice = nullptr;
@@ -37,9 +37,9 @@ GUIDevice *GUISystem_base::findBestDeviceForWindow(Window const &window)
     }
 }
 
-ssize_t GUISystem_base::getNumberOfWindows()
+ssize_t gui_system::getNumberOfWindows()
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     ssize_t numberOfWindows = 0;
     for (const auto &device: devices) {
@@ -49,9 +49,9 @@ ssize_t GUISystem_base::getNumberOfWindows()
     return numberOfWindows;
 }
 
-void GUISystem_base::_handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint)
+void gui_system::_handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint)
 {
-    auto self = static_cast<GUISystem_base *>(data);
+    auto self = static_cast<gui_system *>(data);
 
     self->handleVerticalSync(displayTimePoint);
 }

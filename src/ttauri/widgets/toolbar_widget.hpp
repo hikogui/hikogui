@@ -16,7 +16,7 @@ public:
     {
         if (parent) {
             // The toolbar widget does draw itself.
-            ttlet lock = std::scoped_lock(GUISystem_mutex);
+            ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer() + 1.0f;
 
             // The toolbar is a top level widget, which draws its background as the next level.
@@ -44,7 +44,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
@@ -81,7 +81,7 @@ public:
 
     bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -106,7 +106,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.fillColor = theme->fillColor(_semantic_layer + 1);
         context.drawFilledQuad(rectangle());
@@ -115,7 +115,7 @@ public:
 
     HitBox hitbox_test(vec window_position) const noexcept
     {
-        ttlet lock = std::scoped_lock(GUISystem_mutex);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
 
         auto r = HitBox{};
 
@@ -150,7 +150,7 @@ private:
         relative_base_line &shared_base_line,
         finterval &shared_height) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         _layout.update(index, child.preferred_size().width(), child.width_resistance(), child.margin(), relative_base_line{});
 
@@ -160,7 +160,7 @@ private:
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
 

@@ -1,41 +1,41 @@
-#include "GUISystem_vulkan_macos.hpp"
+#include "gui_system_vulkan_macos.hpp"
 #include "Window.hpp"
 
 namespace tt {
 
-GUISystem_vulkan_macos::GUISystem_vulkan_macos(GUISystemDelegate *delegate) :
-    GUISystem_vulkan(delegate, { VK_EXT_METAL_SURFACE_EXTENSION_NAME })
+gui_system_vulkan_macos::gui_system_vulkan_macos(gui_systemDelegate *delegate) :
+    gui_system_vulkan(delegate, { VK_EXT_METAL_SURFACE_EXTENSION_NAME })
 {
     hostFrequency = narrow_cast<uint64_t>(CVGetHostClockFrequency());
 
     // Start update loop.
     CVDisplayLinkCreateWithActiveCGDisplays(&updateAndRenderThread);
-    CVDisplayLinkSetOutputCallback(updateAndRenderThread, &GUISystem_vulkan_win32::updateAndRenderLoop, static_cast<void *>(this));
+    CVDisplayLinkSetOutputCallback(updateAndRenderThread, &gui_system_vulkan_win32::updateAndRenderLoop, static_cast<void *>(this));
     CVDisplayLinkStart(updateAndRenderThread);
 }
 
-GUISystem_vulkan_macos::~GUISystem_vulkan_macos()
+gui_system_vulkan_macos::~gui_system_vulkan_macos()
 {
     stopUpdateAndRender = true;
     updateAndRenderThread.join();
 }
 
 
-std::shared_ptr<Window> GUISystem_vulkan_win32::createWindow(std::shared_ptr<Window::Delegate> windowDelegate, const std::string &title)
+std::shared_ptr<Window> gui_system_vulkan_win32::createWindow(std::shared_ptr<Window::Delegate> windowDelegate, const std::string &title)
 {
     std::scoped_lock lock(tt::mutex);
 
     auto window = std::make_shared<Window_win32>(windowDelegate, title);
-    getShared<GUISystem>()->add(window);
+    getShared<gui_system>()->add(window);
     window->initialize();
     return window;
 }
 
-CVReturn GUISystem_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target)
+CVReturn gui_system_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target)
 {
     scoped_lock lock(tt::mutex);
 
-    auto self = static_cast<GUISystem_vulkan_win32 *>(target);
+    auto self = static_cast<gui_system_vulkan_win32 *>(target);
 
     auto currentHostTime = static_cast<ubig128>(now->hostTime);
     currentHostTime *= 1000000000;

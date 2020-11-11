@@ -42,7 +42,7 @@ void WindowWidget::initialize() noexcept
 [[nodiscard]] bool
 WindowWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet toolbar_size = _toolbar->preferred_size();
@@ -58,7 +58,7 @@ WindowWidget::update_constraints(hires_utc_clock::time_point display_time_point,
 
 bool WindowWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -77,7 +77,7 @@ bool WindowWidget::update_layout(hires_utc_clock::time_point display_time_point,
 
 HitBox WindowWidget::hitbox_test(vec window_position) const noexcept
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     ttlet position = _from_window_transform * window_position;
 
     constexpr float BORDER_WIDTH = 10.0f;

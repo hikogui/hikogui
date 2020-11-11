@@ -8,15 +8,15 @@ target_sources(ttauri PRIVATE
     GUIDevice_forward.hpp
     GUIDevice_vulkan.cpp
     GUIDevice_vulkan.hpp
-    GUISystem_base.cpp
-    GUISystem_base.hpp
-    GUISystem_forward.hpp
-    GUISystem_vulkan.cpp
-    GUISystem_vulkan.hpp
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_macos.hpp>
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_win32.hpp>
+    gui_system.cpp
+    gui_system.hpp
+    gui_system_globals.hpp
+    gui_system_vulkan.cpp
+    gui_system_vulkan.hpp
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_macos.hpp>
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_macos.mm>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_win32.hpp>
     gui_system_delegate.hpp
     HitBox.hpp
     KeyboardBindings.cpp

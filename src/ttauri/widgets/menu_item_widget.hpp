@@ -42,7 +42,7 @@ public:
      */
     void set_show_check_mark(bool flag) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         this->_show_check_mark = flag;
         this->_request_reconstrain = true;
     }
@@ -58,7 +58,7 @@ public:
      */
     [[nodiscard]] bool show_check_mark() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _show_check_mark;
     }
 
@@ -66,7 +66,7 @@ public:
      */
     void set_show_icon(bool flag) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         this->_show_icon = flag;
         this->_request_reconstrain = true;
     }
@@ -85,7 +85,7 @@ public:
      */
     [[nodiscard]] bool show_icon() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _show_icon;
     }
 
@@ -93,7 +93,7 @@ public:
      */
     void set_show_short_cut(bool flag) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         this->_show_short_cut = flag;
         this->_request_reconstrain = true;
     }
@@ -111,13 +111,13 @@ public:
      */
     [[nodiscard]] bool show_short_cut() const noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         return _show_short_cut;
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::middle_left, *label, theme->labelStyle);
@@ -144,7 +144,7 @@ public:
 
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
@@ -181,7 +181,7 @@ public:
 
     void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
         draw_background(context);
         draw_check_mark(context);
         draw_label(context);
@@ -199,7 +199,7 @@ private:
 
     void draw_background(DrawContext context) noexcept
     {
-        tt_assume(GUISystem_mutex.recurse_lock_count());
+        tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.color = context.fillColor;
         if (this->_focus && this->window.active) {

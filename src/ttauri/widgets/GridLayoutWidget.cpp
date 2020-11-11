@@ -34,7 +34,7 @@ namespace tt {
 [[nodiscard]] interval_vec2
 GridLayoutWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     rows.clear();
     columns.clear();
@@ -74,7 +74,7 @@ GridLayoutWidget::calculateCellMinMaxSize(std::vector<cell> const &cells, flow_l
 
 std::shared_ptr<widget> GridLayoutWidget::add_widget(cell_address address, std::shared_ptr<widget> widget) noexcept
 {
-    ttlet lock = std::scoped_lock(GUISystem_mutex);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     auto tmp = abstract_container_widget::add_widget(std::move(widget));
 
     if (std::ssize(_children) == 0) {
@@ -90,7 +90,7 @@ std::shared_ptr<widget> GridLayoutWidget::add_widget(cell_address address, std::
 
 bool GridLayoutWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         _preferred_size = calculateCellMinMaxSize(cells, rows, columns);
@@ -102,7 +102,7 @@ bool GridLayoutWidget::update_constraints(hires_utc_clock::time_point display_ti
 
 bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(GUISystem_mutex.recurse_lock_count());
+    tt_assume(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
