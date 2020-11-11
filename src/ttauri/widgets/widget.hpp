@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../GUI/Window_forward.hpp"
-#include "../GUI/GUIDevice_forward.hpp"
+#include "../GUI/gui_device.hpp"
 #include "../GUI/MouseEvent.hpp"
 #include "../GUI/HitBox.hpp"
 #include "../GUI/KeyboardEvent.hpp"
@@ -339,7 +339,7 @@ public:
         return _window_base_line - _window_rectangle.y();
     }
 
-    [[nodiscard]] GUIDevice *device() const noexcept;
+    [[nodiscard]] gui_device *device() const noexcept;
 
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when

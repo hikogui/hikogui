@@ -5,7 +5,6 @@
 
 #include "PipelineImage_TextureMap.hpp"
 #include "PipelineImage_Page.hpp"
-#include "GUIDevice_forward.hpp"
 #include "../required.hpp"
 #include "../R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
@@ -13,6 +12,7 @@
 #include <mutex>
 
 namespace tt {
+class gui_device_vulkan;
 template<typename T> struct PixelMap;
 }
 
@@ -30,7 +30,7 @@ struct DeviceShared final {
     static constexpr int stagingImageWidth = 1024;
     static constexpr int stagingImageHeight = 1024;
 
-    GUIDevice const &device;
+    gui_device_vulkan const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -45,7 +45,7 @@ struct DeviceShared final {
 
     std::vector<Page> atlasFreePages;
 
-    DeviceShared(GUIDevice const &device);
+    DeviceShared(gui_device_vulkan const &device);
     ~DeviceShared();
 
     DeviceShared(DeviceShared const &) = delete;
@@ -54,9 +54,9 @@ struct DeviceShared final {
     DeviceShared &operator=(DeviceShared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of GUIDevice_vulkan, therefor we can not use our `std::weak_ptr<GUIDevice_vulkan> device`.
+    * This is called in the destructor of gui_device_vulkan, therefor we can not use our `std::weak_ptr<gui_device_vulkan> device`.
     */
-    void destroy(GUIDevice *vulkanDevice);
+    void destroy(gui_device_vulkan *vulkanDevice);
 
     /*! Get the coordinate in the atlas from a page index.
      * \param page number in the atlas
@@ -102,10 +102,10 @@ private:
     void updateAtlasWithStagingPixelMap(Image const &image);
 
     void buildShaders();
-    void teardownShaders(GUIDevice_vulkan *vulkanDevice);
+    void teardownShaders(gui_device_vulkan *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(GUIDevice_vulkan *vulkanDevice);
+    void teardownAtlas(gui_device_vulkan *vulkanDevice);
 
     friend Image;
 };

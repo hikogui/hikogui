@@ -8,7 +8,7 @@
 
 namespace tt {
 
-/** Vulkan GUIDevice controller.
+/** Vulkan gui_device controller.
  * Manages Vulkan device and a set of Windows.
  */
 class gui_system_vulkan : public gui_system {
@@ -38,7 +38,7 @@ public:
     //! Application info passed when the instance was created.
     vk::ApplicationInfo applicationInfo;
 
-    /*! Create an instance of a GUIDevice.
+    /*! Create an instance of a gui_device.
      * After the constructor is completed it may be used to get a
      * Vulkan surface and passed to `Window` constructors.
      *

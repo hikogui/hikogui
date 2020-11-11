@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "gui_system_vulkan.hpp"
-#include "GUIDevice.hpp"
+#include "gui_device_vulkan.hpp"
 #include <chrono>
 
 namespace tt {
@@ -101,7 +101,7 @@ void gui_system_vulkan::initialize() noexcept(false)
     }
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-        devices.push_back(std::make_shared<GUIDevice>(*this, _physicalDevice));
+        devices.push_back(std::make_shared<gui_device_vulkan>(*this, _physicalDevice));
     }
 }
 

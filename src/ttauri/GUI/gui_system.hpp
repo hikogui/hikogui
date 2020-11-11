@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "GUIDevice.hpp"
+#include "gui_device.hpp"
 #include "Window.hpp"
 #include "VerticalSync.hpp"
 #include "gui_system_delegate.hpp"
@@ -17,7 +17,7 @@
 namespace tt {
 
 
-/** Vulkan GUIDevice controller.
+/** Vulkan gui_device controller.
  * Manages Vulkan device and a set of Windows.
  */
 class gui_system {
@@ -27,7 +27,7 @@ public:
     std::unique_ptr<VerticalSync> verticalSync;
 
     //! List of all devices.
-    std::vector<std::shared_ptr<GUIDevice>> devices;
+    std::vector<std::shared_ptr<gui_device>> devices;
 
     /*! Keep track of the numberOfWindows in the previous render cycle.
      * This way we can call closedLastWindow on the application once.
@@ -102,7 +102,7 @@ public:
     static void _handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 protected:
-    GUIDevice *findBestDeviceForWindow(Window const &window);
+    gui_device *findBestDeviceForWindow(Window const &window);
 };
 
 }

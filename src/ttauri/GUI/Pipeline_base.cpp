@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "Pipeline_base.hpp"
-#include "GUIDevice.hpp"
 #include "Window.hpp"
 
 namespace tt {

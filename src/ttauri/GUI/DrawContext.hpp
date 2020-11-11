@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "GUIDevice.hpp"
+#include "gui_device_vulkan.hpp"
 #include "Window.hpp"
 #include "Theme.hpp"
 #include "PipelineImage_Image.hpp"
@@ -106,7 +106,7 @@ public:
         return *_window;
     }
 
-    GUIDevice &device() const noexcept
+    gui_device &device() const noexcept
     {
         auto device = window().device();
         tt_assume(device);
@@ -256,9 +256,10 @@ public:
         tt_assume(sdfVertices != nullptr);
 
         if (useContextColor) {
-            device().SDFPipeline->placeVertices(*sdfVertices, text, transform, clippingRectangle, color);
+            narrow_cast<gui_device_vulkan&>(device()).SDFPipeline->placeVertices(*sdfVertices, text, transform, clippingRectangle, color);
         } else {
-            device().SDFPipeline->placeVertices(*sdfVertices, text, transform, clippingRectangle);
+            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
+                *sdfVertices, text, transform, clippingRectangle);
         }
     }
 
@@ -266,7 +267,8 @@ public:
     {
         tt_assume(sdfVertices != nullptr);
 
-        device().SDFPipeline->placeVertices(*sdfVertices, glyph, transform * box, color, clippingRectangle);
+        narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
+            *sdfVertices, glyph, transform * box, color, clippingRectangle);
     }
 };
 

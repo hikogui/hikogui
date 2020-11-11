@@ -2,12 +2,10 @@
 target_sources(ttauri PRIVATE
     Cursor.hpp
     DrawContext.hpp
-    GUIDevice.hpp
-    GUIDevice_base.cpp
-    GUIDevice_base.hpp
-    GUIDevice_forward.hpp
-    GUIDevice_vulkan.cpp
-    GUIDevice_vulkan.hpp
+    gui_device.cpp
+    gui_device.hpp
+    gui_device_vulkan.cpp
+    gui_device_vulkan.hpp
     gui_system.cpp
     gui_system.hpp
     gui_system_globals.hpp
@@ -116,5 +114,5 @@ target_sources(ttauri PRIVATE
 
 target_precompile_headers(ttauri PRIVATE
     Window.hpp
-    GUIDevice.hpp
+    gui_device_vulkan.hpp
 )

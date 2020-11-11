@@ -23,7 +23,7 @@ pixel_map_stencil::pixel_map_stencil(tt::alignment alignment, URL const &url) : 
 void pixel_map_stencil::draw(DrawContext context, bool use_context_color) noexcept
 {
     if (std::exchange(_data_is_modified, false)) {
-        _backing = context.device().imagePipeline->makeImage(_pixel_map.extent());
+        _backing = narrow_cast<gui_device_vulkan&>(context.device()).imagePipeline->makeImage(_pixel_map.extent());
         _backing.upload(_pixel_map);
         _layout_is_modified = true;
     }

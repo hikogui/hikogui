@@ -1,8 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "GUIDevice_base.hpp"
-#include "GUIDevice.hpp"
+#include "gui_device.hpp"
 #include "Window.hpp"
 #include <fmt/format.h>
 #include <tuple>
@@ -12,30 +11,30 @@ namespace tt {
 
 using namespace std;
 
-GUIDevice_base::GUIDevice_base(gui_system &system) noexcept : system(system)
+gui_device::gui_device(gui_system &system) noexcept : system(system)
 {
 }
 
-GUIDevice_base::~GUIDevice_base()
+gui_device::~gui_device()
 {
     windows.clear();
 }
 
-std::string GUIDevice_base::string() const noexcept
+std::string gui_device::string() const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     return fmt::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.UUIDString());
 }
 
-void GUIDevice_base::initializeDevice(Window const &window)
+void gui_device::initializeDevice(Window const &window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     state = State::READY_TO_DRAW;
 }
 
-void GUIDevice_base::add(std::shared_ptr<Window> window)
+void gui_device::add(std::shared_ptr<Window> window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -43,14 +42,11 @@ void GUIDevice_base::add(std::shared_ptr<Window> window)
         initializeDevice(*window);
     }
 
-    auto _device = dynamic_cast<GUIDevice *>(this);
-    tt_assert(_device);
-    window->setDevice(_device);
-
+    window->setDevice(this);
     windows.push_back(std::move(window));
 }
 
-void GUIDevice_base::remove(Window &window) noexcept
+void gui_device::remove(Window &window) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 

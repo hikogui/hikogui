@@ -9,6 +9,7 @@
 #include <optional>
 
 namespace tt {
+class gui_device_vulkan;
 
 namespace PipelineImage {
 class PipelineImage;
@@ -75,6 +76,9 @@ public:
     Window_vulkan &operator=(Window_vulkan &&) = delete;
 
     void initialize() override;
+
+    gui_device_vulkan &vulkan_device() const noexcept;
+
     void render(hires_utc_clock::time_point displayTimePoint) override;
 
 protected:

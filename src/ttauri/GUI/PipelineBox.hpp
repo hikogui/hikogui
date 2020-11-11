@@ -6,7 +6,6 @@
 #include "Pipeline_vulkan.hpp"
 #include "PipelineBox_PushConstants.hpp"
 #include "PipelineBox_Vertex.hpp"
-#include "GUIDevice_forward.hpp"
 #include "../vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <span>

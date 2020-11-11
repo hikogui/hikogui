@@ -4,7 +4,6 @@
 #pragma once
 
 #include "WindowDelegate.hpp"
-#include "GUIDevice_forward.hpp"
 #include "Cursor.hpp"
 #include "HitBox.hpp"
 #include "MouseEvent.hpp"
@@ -25,6 +24,7 @@
 #include <mutex>
 
 namespace tt {
+class gui_device;
 class gui_system;
 class WindowWidget;
 
@@ -142,13 +142,13 @@ public:
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      */
-    void setDevice(GUIDevice *device);
+    void setDevice(gui_device *device);
 
     /*! Remove the GPU device from the window, making it an orphan.
      */
     void unsetDevice() { setDevice({}); }
 
-    GUIDevice *device() const noexcept
+    gui_device *device() const noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         return _device;
@@ -208,7 +208,7 @@ protected:
      * The device may change during the lifetime of a window,
      * as long as the device belongs to the same GUIInstance.
      */
-    GUIDevice *_device = nullptr;
+    gui_device *_device = nullptr;
 
     /*! The current rectangle which has been set by the operating system.
      * This value may lag behind the actual window extent as seen by the GPU

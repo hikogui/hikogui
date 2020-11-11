@@ -6,7 +6,6 @@
 #include "PipelineSDF_TextureMap.hpp"
 #include "PipelineSDF_AtlasRect.hpp"
 #include "PipelineSDF_SpecializationConstants.hpp"
-#include "GUIDevice_forward.hpp"
 #include "../text/FontGlyphIDs.hpp"
 #include "../required.hpp"
 #include "../logger.hpp"
@@ -19,6 +18,7 @@
 #include <unordered_map>
 
 namespace tt {
+class gui_device_vulkan;
 template<typename T> struct PixelMap;
 class vec;
 class mat;
@@ -50,7 +50,7 @@ struct DeviceShared final {
     static constexpr float drawBorder = SDF8::max_distance;
     static constexpr float scaledDrawBorder = drawBorder / drawFontSize;
 
-    GUIDevice const &device;
+    gui_device_vulkan const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -73,7 +73,7 @@ struct DeviceShared final {
     int atlasAllocationMaxHeight = 0;
 
 
-    DeviceShared(GUIDevice const &device);
+    DeviceShared(gui_device_vulkan const &device);
     ~DeviceShared();
 
     DeviceShared(DeviceShared const &) = delete;
@@ -82,9 +82,9 @@ struct DeviceShared final {
     DeviceShared &operator=(DeviceShared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of GUIDevice_vulkan, therefor we can not use our `std::weak_ptr<GUIDevice_vulkan> device`.
+    * This is called in the destructor of gui_device_vulkan, therefor we can not use our `std::weak_ptr<gui_device_vulkan> device`.
     */
-    void destroy(GUIDevice *vulkanDevice);
+    void destroy(gui_device_vulkan *vulkanDevice);
 
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
@@ -142,10 +142,10 @@ struct DeviceShared final {
 
 private:
     void buildShaders();
-    void teardownShaders(GUIDevice_vulkan *vulkanDevice);
+    void teardownShaders(gui_device_vulkan *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(GUIDevice_vulkan *vulkanDevice);
+    void teardownAtlas(gui_device_vulkan *vulkanDevice);
 
     /** Place vertices for a single glyph.
      * This function will not execute prepareAtlasForRendering().

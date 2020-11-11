@@ -172,7 +172,7 @@ hires_utc_clock::time_point VerticalSync_win32::wait() noexcept
         case STATUS_SUCCESS:
             break;
         case STATUS_DEVICE_REMOVED:
-            LOG_WARNING("GUIDevice for vertical sync removed.");
+            LOG_WARNING("gui_device for vertical sync removed.");
             closeAdapter();
             break;
         default:

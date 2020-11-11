@@ -10,7 +10,7 @@ namespace tt {
 
 class gui_system;
 
-/** Global mutex for GUI elements, like gui_system, GUIDevice, Windows and Widgets.
+/** Global mutex for GUI elements, like gui_system, gui_device, Windows and Widgets.
  */
 inline unfair_recursive_mutex gui_system_mutex;
 

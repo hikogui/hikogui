@@ -4,7 +4,6 @@
 #include "PipelineToneMapper.hpp"
 #include "PipelineToneMapper_DeviceShared.hpp"
 #include "Window.hpp"
-#include "GUIDevice.hpp"
 
 namespace tt::PipelineToneMapper {
 
@@ -21,7 +20,7 @@ void PipelineToneMapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
     Pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
 
-    device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
+    vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.draw(
         3,
@@ -32,7 +31,7 @@ void PipelineToneMapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> PipelineToneMapper::createShaderStages() const {
-    return device().toneMapperPipeline->shaderStages;
+    return vulkan_device().toneMapperPipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> PipelineToneMapper::createDescriptorSetLayoutBindings() const {

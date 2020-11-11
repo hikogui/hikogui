@@ -3,7 +3,7 @@
 
 #include "PipelineFlat.hpp"
 #include "PipelineFlat_DeviceShared.hpp"
-#include "GUIDevice.hpp"
+#include "gui_device_vulkan.hpp"
 #include "../PixelMap.hpp"
 #include "../URL.hpp"
 #include <array>
@@ -12,7 +12,7 @@ namespace tt::PipelineFlat {
 
 using namespace std;
 
-DeviceShared::DeviceShared(GUIDevice const &device) :
+DeviceShared::DeviceShared(gui_device_vulkan const &device) :
     device(device)
 {
     buildShaders();
@@ -23,7 +23,7 @@ DeviceShared::~DeviceShared()
 }
 
 
-void DeviceShared::destroy(GUIDevice *vulkanDevice)
+void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
 {
     tt_assume(vulkanDevice);
     teardownShaders(vulkanDevice);
@@ -45,7 +45,7 @@ void DeviceShared::buildShaders()
     };
 }
 
-void DeviceShared::teardownShaders(GUIDevice_vulkan *vulkanDevice)
+void DeviceShared::teardownShaders(gui_device_vulkan *vulkanDevice)
 {
     tt_assume(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);

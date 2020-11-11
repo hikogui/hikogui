@@ -4,7 +4,6 @@
 #include "PipelineSDF.hpp"
 #include "PipelineSDF_DeviceShared.hpp"
 #include "Window.hpp"
-#include "GUIDevice.hpp"
 
 namespace tt::PipelineSDF {
 
@@ -20,14 +19,14 @@ void PipelineSDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
     Pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
-    device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
-    device().SDFPipeline->prepareAtlasForRendering();
+    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
+    vulkan_device().SDFPipeline->prepareAtlasForRendering();
 
     std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     tt_assume(tmpVertexBuffers.size() == tmpOffsets.size());
 
-    device().SDFPipeline->drawInCommandBuffer(commandBuffer);
+    vulkan_device().SDFPipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
@@ -55,7 +54,7 @@ void PipelineSDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> PipelineSDF::createShaderStages() const {
-    return device().SDFPipeline->shaderStages;
+    return vulkan_device().SDFPipeline->shaderStages;
 }
 
 /* No alpha blending as SDF fragment shader does this manually.
@@ -97,7 +96,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineSDF::createDescriptorSetLayo
 
 vector<vk::WriteDescriptorSet> PipelineSDF::createWriteDescriptorSet() const
 {
-    ttlet &sharedImagePipeline = device().SDFPipeline;
+    ttlet &sharedImagePipeline = vulkan_device().SDFPipeline;
 
     return {
         {
@@ -133,7 +132,7 @@ vector<vk::WriteDescriptorSet> PipelineSDF::createWriteDescriptorSet() const
 
 ssize_t PipelineSDF::getDescriptorSetVersion() const
 {
-    return std::ssize(device().SDFPipeline->atlasTextures);
+    return std::ssize(vulkan_device().SDFPipeline->atlasTextures);
 }
 
 std::vector<vk::PushConstantRange> PipelineSDF::createPushConstantRanges() const
@@ -164,14 +163,14 @@ void PipelineSDF::buildVertexBuffers()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-    std::tie(vertexBuffer, vertexBufferAllocation) = device().createBuffer(bufferCreateInfo, allocationCreateInfo);
-    vertexBufferData = device().mapMemory<Vertex>(vertexBufferAllocation);
+    std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);
+    vertexBufferData = vulkan_device().mapMemory<Vertex>(vertexBufferAllocation);
 }
 
 void PipelineSDF::teardownVertexBuffers()
 {
-    device().unmapMemory(vertexBufferAllocation);
-    device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
+    vulkan_device().unmapMemory(vertexBufferAllocation);
+    vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
 }

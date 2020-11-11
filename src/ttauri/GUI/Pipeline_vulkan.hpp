@@ -22,9 +22,11 @@ public:
     Pipeline_vulkan(Pipeline_vulkan &&) = delete;
     Pipeline_vulkan &operator=(Pipeline_vulkan &&) = delete;
 
+    gui_device_vulkan &vulkan_device() const noexcept;
+
     virtual void drawInCommandBuffer(vk::CommandBuffer commandBuffer);
 
-    void buildForNewDevice(GUIDevice *device);
+    void buildForNewDevice();
     void teardownForDeviceLost();
     void buildForNewSurface();
     void teardownForSurfaceLost();

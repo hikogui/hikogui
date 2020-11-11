@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "GUIDevice_base.hpp"
+#include "gui_device.hpp"
 #include "gui_system_globals.hpp"
 #include "PipelineFlat_DeviceShared.hpp"
 #include "PipelineImage_DeviceShared.hpp"
@@ -19,7 +19,7 @@ class URL;
 
 namespace tt {
 
-class GUIDevice_vulkan final : public GUIDevice_base {
+class gui_device_vulkan final : public gui_device {
 protected:
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;
@@ -88,13 +88,13 @@ public:
      */
     mutable vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
-    GUIDevice_vulkan(gui_system &system, vk::PhysicalDevice physicalDevice);
-    ~GUIDevice_vulkan();
+    gui_device_vulkan(gui_system &system, vk::PhysicalDevice physicalDevice);
+    ~gui_device_vulkan();
 
-    GUIDevice_vulkan(const GUIDevice_vulkan &) = delete;
-    GUIDevice_vulkan &operator=(const GUIDevice_vulkan &) = delete;
-    GUIDevice_vulkan(GUIDevice_vulkan &&) = delete;
-    GUIDevice_vulkan &operator=(GUIDevice_vulkan &&) = delete;
+    gui_device_vulkan(const gui_device_vulkan &) = delete;
+    gui_device_vulkan &operator=(const gui_device_vulkan &) = delete;
+    gui_device_vulkan(gui_device_vulkan &&) = delete;
+    gui_device_vulkan &operator=(gui_device_vulkan &&) = delete;
 
     void initializeDevice(Window const &window) override;
 
@@ -139,7 +139,7 @@ public:
         T *mappingT = reinterpret_cast<T *>(mapping);
         ttlet mappingSpan = std::span<T>(mappingT, allocationInfo.size / sizeof (T));
 
-        return vk::createResultValue(result, mappingSpan, "tt::GUIDevice_vulkan::mapMemory");
+        return vk::createResultValue(result, mappingSpan, "tt::gui_device_vulkan::mapMemory");
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;

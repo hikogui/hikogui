@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "GUIDevice_forward.hpp"
 #include "../required.hpp"
 #include "../aarect.hpp"
 #include "../vec.hpp"
@@ -12,6 +11,7 @@
 #include <mutex>
 
 namespace tt {
+class gui_device_vulkan;
 template<typename T> struct PixelMap;
 }
 
@@ -20,13 +20,13 @@ namespace tt::PipelineToneMapper {
 struct Image;
 
 struct DeviceShared final {
-    GUIDevice const &device;
+    gui_device_vulkan const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-    DeviceShared(GUIDevice const &device);
+    DeviceShared(gui_device_vulkan const &device);
     ~DeviceShared();
 
     DeviceShared(DeviceShared const &) = delete;
@@ -35,15 +35,15 @@ struct DeviceShared final {
     DeviceShared &operator=(DeviceShared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of GUIDevice_vulkan, therefor we can not use our `std::weak_ptr<GUIDevice_vulkan> device`.
+    * This is called in the destructor of gui_device_vulkan, therefor we can not use our `std::weak_ptr<gui_device_vulkan> device`.
     */
-    void destroy(GUIDevice *vulkanDevice);
+    void destroy(gui_device_vulkan *vulkanDevice);
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
 private:
     void buildShaders();
-    void teardownShaders(GUIDevice_vulkan *vulkanDevice);
+    void teardownShaders(gui_device_vulkan *vulkanDevice);
 };
 
 }

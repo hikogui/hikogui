@@ -3,7 +3,7 @@
 
 #include "PipelineSDF.hpp"
 #include "PipelineSDF_DeviceShared.hpp"
-#include "GUIDevice.hpp"
+#include "gui_device_vulkan.hpp"
 #include "../text/ShapedText.hpp"
 #include "../PixelMap.hpp"
 #include "../URL.hpp"
@@ -19,7 +19,7 @@ namespace tt::PipelineSDF {
 
 using namespace std;
 
-DeviceShared::DeviceShared(GUIDevice const &device) :
+DeviceShared::DeviceShared(gui_device_vulkan const &device) :
     device(device)
 {
     buildShaders();
@@ -30,7 +30,7 @@ DeviceShared::~DeviceShared()
 {
 }
 
-void DeviceShared::destroy(GUIDevice * vulkanDevice)
+void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
 {
     tt_assume(vulkanDevice);
 
@@ -273,7 +273,7 @@ void DeviceShared::buildShaders()
     };
 }
 
-void DeviceShared::teardownShaders(GUIDevice_vulkan * vulkanDevice)
+void DeviceShared::teardownShaders(gui_device_vulkan * vulkanDevice)
 {
     tt_assume(vulkanDevice);
 
@@ -407,7 +407,7 @@ void DeviceShared::buildAtlas()
     addAtlasImage();
 }
 
-void DeviceShared::teardownAtlas(GUIDevice_vulkan *vulkanDevice)
+void DeviceShared::teardownAtlas(gui_device_vulkan *vulkanDevice)
 {
     tt_assume(vulkanDevice);
 

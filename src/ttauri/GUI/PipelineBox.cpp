@@ -4,7 +4,6 @@
 #include "PipelineBox.hpp"
 #include "PipelineBox_DeviceShared.hpp"
 #include "Window.hpp"
-#include "GUIDevice.hpp"
 
 namespace tt::PipelineBox {
 
@@ -20,13 +19,13 @@ void PipelineBox::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
     Pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
-    device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
+    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
 
     std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     tt_assume(tmpVertexBuffers.size() == tmpOffsets.size());
 
-    device().boxPipeline->drawInCommandBuffer(commandBuffer);
+    vulkan_device().boxPipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
@@ -52,7 +51,7 @@ void PipelineBox::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> PipelineBox::createShaderStages() const {
-    return device().boxPipeline->shaderStages;
+    return vulkan_device().boxPipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> PipelineBox::createDescriptorSetLayoutBindings() const {
@@ -97,14 +96,14 @@ void PipelineBox::buildVertexBuffers()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-    std::tie(vertexBuffer, vertexBufferAllocation) = device().createBuffer(bufferCreateInfo, allocationCreateInfo);
-    vertexBufferData = device().mapMemory<Vertex>(vertexBufferAllocation);
+    std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);
+    vertexBufferData = vulkan_device().mapMemory<Vertex>(vertexBufferAllocation);
 }
 
 void PipelineBox::teardownVertexBuffers()
 {
-    device().unmapMemory(vertexBufferAllocation);
-    device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
+    vulkan_device().unmapMemory(vertexBufferAllocation);
+    vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
 }

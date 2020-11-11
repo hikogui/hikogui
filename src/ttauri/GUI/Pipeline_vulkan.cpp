@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "Pipeline_vulkan.hpp"
-#include "GUIDevice.hpp"
+#include "gui_device_vulkan.hpp"
 #include "Window.hpp"
 #include "../trace.hpp"
 #include <array>
@@ -19,6 +19,13 @@ Pipeline_vulkan::~Pipeline_vulkan()
 {
 }
 
+gui_device_vulkan &Pipeline_vulkan::vulkan_device() const noexcept
+{
+    auto device = window.device();
+    tt_assume(device != nullptr);
+    return narrow_cast<gui_device_vulkan&>(*device);
+}
+
 void Pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
@@ -27,7 +34,7 @@ void Pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
         if (descriptorSetVersion < getDescriptorSetVersion()) {
             descriptorSetVersion = getDescriptorSetVersion();
 
-            device().updateDescriptorSets(createWriteDescriptorSet(), {});
+            vulkan_device().updateDescriptorSets(createWriteDescriptorSet(), {});
         }
 
         commandBuffer.bindDescriptorSets(
@@ -53,7 +60,7 @@ void Pipeline_vulkan::buildDescriptorSets()
         narrow_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
     };
 
-    descriptorSetLayout = device().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
+    descriptorSetLayout = vulkan_device().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
     ttlet descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
         descriptorSetLayoutBindings,
@@ -65,7 +72,8 @@ void Pipeline_vulkan::buildDescriptorSets()
         }
     );
   
-    descriptorPool = device().createDescriptorPool({
+    descriptorPool = vulkan_device().createDescriptorPool(
+        {
         vk::DescriptorPoolCreateFlags(),
         1, // maxSets
         narrow_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
@@ -75,7 +83,8 @@ void Pipeline_vulkan::buildDescriptorSets()
         descriptorSetLayout
     };
     
-    ttlet descriptorSets = device().allocateDescriptorSets({
+    ttlet descriptorSets = vulkan_device().allocateDescriptorSets(
+        {
         descriptorPool,
         narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
     });
@@ -90,8 +99,8 @@ void Pipeline_vulkan::teardownDescriptorSets()
         return;
     }
 
-    device().destroy(descriptorPool);
-    device().destroy(descriptorSetLayout);
+    vulkan_device().destroy(descriptorPool);
+    vulkan_device().destroy(descriptorSetLayout);
     descriptorSet = nullptr;
 }
 
@@ -143,7 +152,8 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         descriptorSetLayouts.push_back(descriptorSetLayout);
     }
 
-    pipelineLayout = device().createPipelineLayout({
+    pipelineLayout = vulkan_device().createPipelineLayout(
+        {
         vk::PipelineLayoutCreateFlags(),
         narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data(),
         narrow_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
@@ -237,21 +247,19 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         -1 // basePipelineIndex
     };
 
-    intrinsic = device().createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+    intrinsic = vulkan_device().createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
     LOG_INFO("/buildPipeline new size ({}, {})", extent.width, extent.height);
 }
 
 void Pipeline_vulkan::teardownPipeline()
 {
-    device().destroy(intrinsic);
-    device().destroy(pipelineLayout);
+    vulkan_device().destroy(intrinsic);
+    vulkan_device().destroy(pipelineLayout);
 }
 
 
-void Pipeline_vulkan::buildForNewDevice(GUIDevice *device)
+void Pipeline_vulkan::buildForNewDevice()
 {
-    tt_assert(device != nullptr);
-    _device = device;
 }
 
 void Pipeline_vulkan::buildForNewSurface()
@@ -284,7 +292,6 @@ void Pipeline_vulkan::teardownForDeviceLost()
 {
     teardownVertexBuffers();
     buffersInitialized = false;
-    _device = nullptr;
 }
 
 void Pipeline_vulkan::teardownForWindowLost()

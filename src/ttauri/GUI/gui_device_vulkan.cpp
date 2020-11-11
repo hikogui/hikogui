@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "GUIDevice_vulkan.hpp"
+#include "gui_device_vulkan.hpp"
 #include "gui_system_vulkan.hpp"
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
@@ -102,8 +102,8 @@ static bool hasRequiredFeatures(const vk::PhysicalDevice& physicalDevice, const 
     return meetsRequirements;
 }
 
-GUIDevice_vulkan::GUIDevice_vulkan(gui_system &system, vk::PhysicalDevice physicalDevice) :
-    GUIDevice_base(system),
+gui_device_vulkan::gui_device_vulkan(gui_system &system, vk::PhysicalDevice physicalDevice) :
+    gui_device(system),
     physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
@@ -126,7 +126,7 @@ GUIDevice_vulkan::GUIDevice_vulkan(gui_system &system, vk::PhysicalDevice physic
     physicalProperties = physicalIntrinsic.getProperties();
 }
 
-GUIDevice_vulkan::~GUIDevice_vulkan()
+gui_device_vulkan::~gui_device_vulkan()
 {
     try {
         toneMapperPipeline->destroy(this);
@@ -167,7 +167,7 @@ GUIDevice_vulkan::~GUIDevice_vulkan()
     }
 }
 
-void GUIDevice_vulkan::initializeDevice(Window const &window)
+void gui_device_vulkan::initializeDevice(Window const &window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -234,16 +234,16 @@ void GUIDevice_vulkan::initializeDevice(Window const &window)
 
     initializeQuadIndexBuffer();
 
-    flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(static_cast<GUIDevice &>(*this));
-    boxPipeline = std::make_unique<PipelineBox::DeviceShared>(static_cast<GUIDevice &>(*this));
-    imagePipeline = std::make_unique<PipelineImage::DeviceShared>(static_cast<GUIDevice &>(*this));
-    SDFPipeline = std::make_unique<PipelineSDF::DeviceShared>(static_cast<GUIDevice &>(*this));
-    toneMapperPipeline = std::make_unique<PipelineToneMapper::DeviceShared>(static_cast<GUIDevice &>(*this));
+    flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(*this);
+    boxPipeline = std::make_unique<PipelineBox::DeviceShared>(*this);
+    imagePipeline = std::make_unique<PipelineImage::DeviceShared>(*this);
+    SDFPipeline = std::make_unique<PipelineSDF::DeviceShared>(*this);
+    toneMapperPipeline = std::make_unique<PipelineToneMapper::DeviceShared>(*this);
 
-    GUIDevice_base::initializeDevice(window);
+    gui_device::initializeDevice(window);
 }
 
-void GUIDevice_vulkan::initializeQuadIndexBuffer()
+void gui_device_vulkan::initializeQuadIndexBuffer()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -319,13 +319,13 @@ void GUIDevice_vulkan::initializeQuadIndexBuffer()
     }
 }
 
-void GUIDevice_vulkan::destroyQuadIndexBuffer()
+void gui_device_vulkan::destroyQuadIndexBuffer()
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     destroyBuffer(quadIndexBuffer, quadIndexBufferAllocation);
 }
 
-std::vector<std::pair<uint32_t, uint8_t>> GUIDevice_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface) const
+std::vector<std::pair<uint32_t, uint8_t>> gui_device_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface) const
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -380,7 +380,7 @@ std::vector<std::pair<uint32_t, uint8_t>> GUIDevice_vulkan::findBestQueueFamilyI
     return queueFamilyIndicesAndQueueCapabilitiess;
 }
 
-int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
+int gui_device_vulkan::score(vk::SurfaceKHR surface) const
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -511,7 +511,7 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
     return totalScore;
 }
 
-int GUIDevice_vulkan::score(Window const &window) const {
+int gui_device_vulkan::score(Window const &window) const {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     auto surface = window.getSurface();
@@ -520,7 +520,7 @@ int GUIDevice_vulkan::score(Window const &window) const {
     return s;
 }
 
-std::pair<vk::Buffer, VmaAllocation> GUIDevice_vulkan::createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
+std::pair<vk::Buffer, VmaAllocation> gui_device_vulkan::createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -532,17 +532,17 @@ std::pair<vk::Buffer, VmaAllocation> GUIDevice_vulkan::createBuffer(const vk::Bu
 
     std::pair<vk::Buffer, VmaAllocation> const value = {buffer, allocation};
 
-    return vk::createResultValue(result, value, "tt::GUIDevice_vulkan::createBuffer");
+    return vk::createResultValue(result, value, "tt::gui_device_vulkan::createBuffer");
 }
 
-void GUIDevice_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation) const
+void gui_device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     vmaDestroyBuffer(allocator, buffer, allocation);
 }
 
-std::pair<vk::Image, VmaAllocation> GUIDevice_vulkan::createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
+std::pair<vk::Image, VmaAllocation> gui_device_vulkan::createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -554,24 +554,24 @@ std::pair<vk::Image, VmaAllocation> GUIDevice_vulkan::createImage(const vk::Imag
 
     std::pair<vk::Image, VmaAllocation> const value = {image, allocation};
 
-    return vk::createResultValue(result, value, "tt::GUIDevice_vulkan::createImage");
+    return vk::createResultValue(result, value, "tt::gui_device_vulkan::createImage");
 }
 
-void GUIDevice_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation) const
+void gui_device_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     vmaDestroyImage(allocator, image, allocation);
 }
 
-void GUIDevice_vulkan::unmapMemory(const VmaAllocation &allocation) const
+void gui_device_vulkan::unmapMemory(const VmaAllocation &allocation) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     vmaUnmapMemory(allocator, allocation);
 }
 
-vk::CommandBuffer GUIDevice_vulkan::beginSingleTimeCommands() const
+vk::CommandBuffer gui_device_vulkan::beginSingleTimeCommands() const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -582,7 +582,7 @@ vk::CommandBuffer GUIDevice_vulkan::beginSingleTimeCommands() const
     return commandBuffer;
 }
 
-void GUIDevice_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
+void gui_device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -625,7 +625,7 @@ static std::pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayo
     }
 }
 
-void GUIDevice_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout) const
+void gui_device_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -661,7 +661,7 @@ void GUIDevice_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::
     endSingleTimeCommands(commandBuffer);
 }
 
-void GUIDevice_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, vk::ArrayProxy<vk::ImageCopy const> regions) const
+void gui_device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, vk::ArrayProxy<vk::ImageCopy const> regions) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -676,7 +676,7 @@ void GUIDevice_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, 
     endSingleTimeCommands(commandBuffer);
 }
 
-void GUIDevice_vulkan::clearColorImage(vk::Image image, vk::ImageLayout layout, vk::ClearColorValue const &color, vk::ArrayProxy<const vk::ImageSubresourceRange> ranges) const
+void gui_device_vulkan::clearColorImage(vk::Image image, vk::ImageLayout layout, vk::ClearColorValue const &color, vk::ArrayProxy<const vk::ImageSubresourceRange> ranges) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -693,7 +693,7 @@ void GUIDevice_vulkan::clearColorImage(vk::Image image, vk::ImageLayout layout, 
 }
 
 
-vk::ShaderModule GUIDevice_vulkan::loadShader(uint32_t const *data, size_t size) const
+vk::ShaderModule gui_device_vulkan::loadShader(uint32_t const *data, size_t size) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -705,7 +705,7 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(uint32_t const *data, size_t size)
     return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
 }
 
-vk::ShaderModule GUIDevice_vulkan::loadShader(std::span<std::byte const> shaderObjectBytes) const
+vk::ShaderModule gui_device_vulkan::loadShader(std::span<std::byte const> shaderObjectBytes) const
 {
     // no lock, only local variable.
 
@@ -717,7 +717,7 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(std::span<std::byte const> shaderO
     return loadShader(shaderObjectBytes32, shaderObjectBytes.size());
 }
 
-vk::ShaderModule GUIDevice_vulkan::loadShader(URL const &shaderObjectLocation) const
+vk::ShaderModule gui_device_vulkan::loadShader(URL const &shaderObjectLocation) const
 {
     // no lock, only local variable.
 

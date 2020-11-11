@@ -3,7 +3,7 @@
 
 #include "Window_base.hpp"
 #include "Window.hpp"
-#include "GUIDevice.hpp"
+#include "gui_device.hpp"
 #include "../widgets/WindowWidget.hpp"
 
 namespace tt {
@@ -68,7 +68,7 @@ void Window_base::initialize()
     createWindow(title.text(), currentWindowExtent);
 }
 
-void Window_base::setDevice(GUIDevice *new_device)
+void Window_base::setDevice(gui_device *new_device)
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 

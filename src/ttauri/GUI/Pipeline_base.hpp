@@ -3,17 +3,16 @@
 
 #pragma once
 
-#include "GUIDevice_forward.hpp"
 #include "Window_forward.hpp"
 #include "../required.hpp"
 #include <memory>
 
 namespace tt {
+class gui_device;
 
 class Pipeline_base {
 public:
     Window const &window;
-    GUIDevice *_device = nullptr;
 
     Pipeline_base(Window const &window);
 
@@ -22,11 +21,6 @@ public:
     Pipeline_base &operator=(const Pipeline_base &) = delete;
     Pipeline_base(Pipeline_base &&) = delete;
     Pipeline_base &operator=(Pipeline_base &&) = delete;
-
-    GUIDevice const &device() const {
-        tt_assume(_device != nullptr);
-        return *_device;
-    }
 };
 
 }

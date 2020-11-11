@@ -15,9 +15,9 @@
 namespace tt {
 class gui_system;
 
-/*! A GUIDevice that handles a set of windows.
+/*! A gui_device that handles a set of windows.
  */
-class GUIDevice_base {
+class gui_device {
 public:
     gui_system &system;
 
@@ -36,13 +36,13 @@ public:
 
     std::string string() const noexcept;
 
-    GUIDevice_base(gui_system &system) noexcept;
-    virtual ~GUIDevice_base();
+    gui_device(gui_system &system) noexcept;
+    virtual ~gui_device();
 
-    GUIDevice_base(const GUIDevice_base &) = delete;
-    GUIDevice_base &operator=(const GUIDevice_base &) = delete;
-    GUIDevice_base(GUIDevice_base &&) = delete;
-    GUIDevice_base &operator=(GUIDevice_base &&) = delete;
+    gui_device(const gui_device &) = delete;
+    gui_device &operator=(const gui_device &) = delete;
+    gui_device(gui_device &&) = delete;
+    gui_device &operator=(gui_device &&) = delete;
 
     /*! Check if this device is a good match for this window.
      *

@@ -9,16 +9,16 @@ namespace tt {
 
 using namespace std;
 
-GUIDevice *gui_system::findBestDeviceForWindow(Window const &window)
+gui_device *gui_system::findBestDeviceForWindow(Window const &window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     int bestScore = -1;
-    GUIDevice *bestDevice = nullptr;
+    gui_device *bestDevice = nullptr;
 
     for (ttlet &device : devices) {
         ttlet score = device->score(window);
-        LOG_INFO("GUIDevice has score={}.", score);
+        LOG_INFO("gui_device has score={}.", score);
 
         if (score >= bestScore) {
             bestScore = score;

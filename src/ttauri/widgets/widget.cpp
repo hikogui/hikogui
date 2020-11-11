@@ -36,7 +36,7 @@ widget::~widget()
 {
 }
 
-GUIDevice *widget::device() const noexcept
+gui_device *widget::device() const noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
