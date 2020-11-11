@@ -12,7 +12,7 @@
 namespace tt {
 
 template<typename T>
-[[nodiscard]] T copy(T value)
+[[nodiscard]] constexpr T copy(T value) noexcept
 {
     return value;
 }
@@ -75,27 +75,39 @@ template<std::floating_point OutType, tt::arithmetic InType>
 }
 
 template<tt::lvalue_reference BaseType, tt::derived_from<std::remove_reference_t<BaseType>> DerivedType>
-[[nodiscard]] BaseType narrow_cast(DerivedType &value)
+[[nodiscard]] constexpr BaseType narrow_cast(DerivedType &value) noexcept
 {
+    static_assert(
+        !std::is_const_v<DerivedType> || std::is_const_v<std::remove_reference_t<BaseType>>,
+        "narrow_cast must not cast away const");
     return static_cast<BaseType>(value);
 }
 
 template<tt::lvalue_reference DerivedType, tt::strict_base_of<std::remove_reference_t<DerivedType>> BaseType>
-[[nodiscard]] DerivedType narrow_cast(BaseType &value)
+[[nodiscard]] constexpr DerivedType narrow_cast(BaseType &value) noexcept
 {
+    static_assert(
+        !std::is_const_v<BaseType> || std::is_const_v<std::remove_reference_t<DerivedType>>,
+        "narrow_cast must not cast away const");
     tt_assume(dynamic_cast<std::remove_reference_t<DerivedType> *>(&value) != nullptr);
     return static_cast<DerivedType>(value);
 }
 
 template<tt::pointer BaseType, tt::derived_from<std::remove_pointer_t<BaseType>> DerivedType>
-[[nodiscard]] BaseType narrow_cast(DerivedType *value)
+[[nodiscard]] constexpr BaseType narrow_cast(DerivedType *value) noexcept
 {
+    static_assert(
+        !std::is_const_v<DerivedType> || std::is_const_v<std::remove_pointer_t<BaseType>>,
+        "narrow_cast must not cast away const");
     return static_cast<BaseType>(value);
 }
 
 template<tt::pointer DerivedType, tt::strict_base_of<std::remove_pointer_t<DerivedType>> BaseType>
-[[nodiscard]] DerivedType narrow_cast(BaseType *value)
+[[nodiscard]] constexpr DerivedType narrow_cast(BaseType *value) noexcept
 {
+    static_assert(
+        !std::is_const_v<BaseType> || std::is_const_v<std::remove_pointer_t<DerivedType>>,
+        "narrow_cast must not cast away const");
     tt_assume(dynamic_cast<DerivedType>(value) != nullptr);
     return static_cast<DerivedType>(value);
 }

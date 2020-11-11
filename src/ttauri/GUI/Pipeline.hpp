@@ -3,18 +3,17 @@
 
 #pragma once
 
-#include "Window_forward.hpp"
 #include "../required.hpp"
 #include <memory>
 
 namespace tt {
-class gui_device;
+class Window_base;
 
 class pipeline {
 public:
-    Window const &window;
+    Window_base const &window;
 
-    pipeline(Window const &window);
+    pipeline(Window_base const &window);
 
     virtual ~pipeline() = default;
     pipeline(const pipeline &) = delete;

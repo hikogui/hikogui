@@ -23,7 +23,7 @@ public:
     observable<label> label;
 
     template<typename Value = observable<value_type>>
-    menu_item_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :
+    menu_item_widget(Window_base &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :
         super(window, parent, std::move(true_value), std::forward<Value>(value))
     {
         // Toolbar buttons hug the toolbar and neighbor widgets.

@@ -3,14 +3,13 @@
 
 #include "PipelineBox.hpp"
 #include "PipelineBox_DeviceShared.hpp"
-#include "Window.hpp"
 
 namespace tt::PipelineBox {
 
 using namespace tt;
 using namespace std;
 
-PipelineBox::PipelineBox(Window const &window) :
+PipelineBox::PipelineBox(Window_base const &window) :
     pipeline_vulkan(window)
 {
 }

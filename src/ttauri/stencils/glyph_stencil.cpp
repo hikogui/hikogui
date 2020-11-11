@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "glyph_stencil.hpp"
-#include "../GUI/Window.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../GUI/PipelineSDF_DeviceShared.hpp"
 

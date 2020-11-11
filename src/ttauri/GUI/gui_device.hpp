@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Window.hpp"
+#include "Window_base.hpp"
 #include "../exceptions.hpp"
 #include "../cast.hpp"
 #include "../bigint.hpp"
@@ -51,21 +51,21 @@ public:
      *
      * \returns -1 When not viable, 0 when not presentable, postive values for increasing score.
      */
-    virtual int score(Window const &window) const = 0;
+    virtual int score(Window_base const &window) const = 0;
 
     /*! Initialise the logical device.
      *
      * \param window is used as prototype for queue allocation.
      */
-    virtual void initializeDevice(Window const &window);
+    virtual void initializeDevice(Window_base const &window);
 
     ssize_t getNumberOfWindows() const noexcept {
         return std::ssize(windows);
     }
 
-    void add(std::shared_ptr<Window> window);
+    void add(std::shared_ptr<Window_base> window);
 
-    void remove(Window &window) noexcept;
+    void remove(Window_base &window) noexcept;
 
     void render(hires_utc_clock::time_point displayTimePoint) noexcept {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -81,7 +81,7 @@ public:
 protected:
     /** A list of windows managed by this device.
      */
-    std::vector<std::shared_ptr<Window>> windows;
+    std::vector<std::shared_ptr<Window_base>> windows;
 };
 
 }

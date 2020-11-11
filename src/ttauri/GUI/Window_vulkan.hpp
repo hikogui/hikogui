@@ -81,13 +81,13 @@ public:
 
     void render(hires_utc_clock::time_point displayTimePoint) override;
 
-protected:
-    void teardown() override;
-    void build() override;
-
     /*! Query the surface from the operating-system window.
      */
     virtual vk::SurfaceKHR getSurface() const = 0;
+
+protected:
+    void teardown() override;
+    void build() override;
     
 private:
     std::optional<uint32_t> acquireNextImageFromSwapchain();

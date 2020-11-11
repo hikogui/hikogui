@@ -14,7 +14,7 @@ namespace tt::PipelineToneMapper {
  */
 class PipelineToneMapper : public pipeline_vulkan {
 public:
-    PipelineToneMapper(Window const &window);
+    PipelineToneMapper(Window_base const &window);
     ~PipelineToneMapper() {};
 
     PipelineToneMapper(const PipelineToneMapper &) = delete;

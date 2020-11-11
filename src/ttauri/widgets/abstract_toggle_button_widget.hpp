@@ -20,7 +20,7 @@ public:
 
     template<typename Value = observable<value_type>>
     abstract_toggle_button_widget(
-        Window &window,
+        Window_base &window,
         std::shared_ptr<widget> parent,
         value_type true_value,
         value_type false_value,

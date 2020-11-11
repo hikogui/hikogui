@@ -19,9 +19,9 @@ class LineInputWidget final : public widget {
 public:
     using super = widget;
 
-    LineInputWidget(Window &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept;
+    LineInputWidget(Window_base &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept;
 
-    LineInputWidget(Window &window, std::shared_ptr<widget> parent, label const label) noexcept :
+    LineInputWidget(Window_base &window, std::shared_ptr<widget> parent, label const label) noexcept :
         LineInputWidget(window, parent, label.text())
     {
     }

@@ -24,8 +24,7 @@ public:
     observable<label> off_label;
 
     template<typename Value = observable<bool>>
-    toggle_widget(
-        Window &window, std::shared_ptr<widget> parent,
+    toggle_widget(Window_base &window, std::shared_ptr<widget> parent,
         Value &&value = observable<bool>{}) noexcept :
         super(window, parent, std::forward<Value>(value))
     {

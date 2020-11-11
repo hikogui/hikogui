@@ -3,14 +3,14 @@
 
 #include "PipelineSDF.hpp"
 #include "PipelineSDF_DeviceShared.hpp"
-#include "Window.hpp"
+#include "Window_vulkan.hpp"
 
 namespace tt::PipelineSDF {
 
 using namespace tt;
 using namespace std;
 
-PipelineSDF::PipelineSDF(Window const &window) :
+PipelineSDF::PipelineSDF(Window_base const &window) :
     pipeline_vulkan(window)
 {
 }
@@ -105,7 +105,7 @@ vector<vk::WriteDescriptorSet> PipelineSDF::createWriteDescriptorSet() const
             0, // arrayElement
             1, // descriptorCount
             vk::DescriptorType::eInputAttachment,
-            &(window.colorDescriptorImageInfo),
+            &(narrow_cast<Window_vulkan const&>(window).colorDescriptorImageInfo),
             nullptr, // bufferInfo
             nullptr // texelBufferView
         }, {

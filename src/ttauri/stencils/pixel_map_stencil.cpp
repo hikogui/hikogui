@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "pixel_map_stencil.hpp"
-#include "../GUI/Window.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../encoding/png.hpp"
 

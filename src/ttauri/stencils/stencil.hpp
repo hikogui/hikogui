@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "../GUI/Window_forward.hpp"
 #include "../aarect.hpp"
 
 namespace tt {

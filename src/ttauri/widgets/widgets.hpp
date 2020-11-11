@@ -23,7 +23,7 @@
 #include "WindowWidget.hpp"
 #include "row_column_layout_widget.hpp"
 #include "GridLayoutWidget.hpp"
-#include "../GUI/Window.hpp"
+#include "../GUI/Window_base.hpp"
 #include "../cell_address.hpp"
 
 namespace tt {

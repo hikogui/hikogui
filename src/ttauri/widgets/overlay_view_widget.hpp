@@ -12,7 +12,7 @@ class overlay_view_widget final : public widget {
 public:
     using super = widget;
 
-    overlay_view_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    overlay_view_widget(Window_base &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The overlay-widget will reset the semantic_layer as it is the bottom

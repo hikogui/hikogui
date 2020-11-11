@@ -17,7 +17,7 @@ public:
     observable<value_type> value = 0;
 
     template<typename Value>
-    tab_view_widget(Window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
+    tab_view_widget(Window_base &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
         super(window, parent), value(std::forward<Value>(value))
     {
         if (parent) {

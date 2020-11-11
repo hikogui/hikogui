@@ -18,7 +18,7 @@ class PipelineFlat : public pipeline_vulkan {
 public:
     vspan<Vertex> vertexBufferData;
 
-    PipelineFlat(Window const &window);
+    PipelineFlat(Window_base const &window);
     ~PipelineFlat() {};
 
     PipelineFlat(const PipelineFlat &) = delete;

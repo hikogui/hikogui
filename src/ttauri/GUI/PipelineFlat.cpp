@@ -3,7 +3,6 @@
 
 #include "PipelineFlat.hpp"
 #include "PipelineFlat_DeviceShared.hpp"
-#include "Window.hpp"
 #include "gui_device.hpp"
 
 namespace tt::PipelineFlat {
@@ -11,7 +10,7 @@ namespace tt::PipelineFlat {
 using namespace tt;
 using namespace std;
 
-PipelineFlat::PipelineFlat(Window const &window) :
+PipelineFlat::PipelineFlat(Window_base const &window) :
     pipeline_vulkan(window)
 {
 }

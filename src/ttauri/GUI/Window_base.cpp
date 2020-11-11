@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "Window_base.hpp"
-#include "Window.hpp"
 #include "gui_device.hpp"
 #include "../widgets/WindowWidget.hpp"
 
@@ -40,12 +39,12 @@ void Window_base::initialize()
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
     tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
-    widget = std::make_shared<WindowWidget>(*static_cast<Window *>(this), delegate, title);
+    widget = std::make_shared<WindowWidget>(*this, delegate, title);
     widget->initialize();
 
     // The delegate will populate the window with widgets.
     // This needs to be done first to figure out the initial size of the window.
-    delegate->openingWindow(*static_cast<Window *>(this));
+    delegate->openingWindow(*this);
 
     // Execute a constraint check to determine initial window size.
     currentWindowExtent = [this]{

@@ -11,7 +11,7 @@ class abstract_container_widget : public widget {
 public:
     using super = widget;
 
-    abstract_container_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    abstract_container_widget(Window_base &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // Most containers will not draw itself, only its children.

@@ -4,7 +4,6 @@
 #include "Application_win32.hpp"
 #include "audio/audio_system_aggregate.hpp"
 #include "audio/audio_system_win32.hpp"
-#include "GUI/Window.hpp"
 #include "strings.hpp"
 #include "timer.hpp"
 #include <thread>

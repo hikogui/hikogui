@@ -3,7 +3,6 @@
 
 #include "pipeline_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
-#include "Window.hpp"
 #include "../trace.hpp"
 #include <array>
 #include <vector>
@@ -12,7 +11,7 @@ namespace tt {
 
 using namespace std;
 
-pipeline_vulkan::pipeline_vulkan(Window const &window) :
+pipeline_vulkan::pipeline_vulkan(Window_base const &window) :
     pipeline(window) {}
 
 pipeline_vulkan::~pipeline_vulkan()

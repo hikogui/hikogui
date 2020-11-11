@@ -5,7 +5,7 @@
 #pragma once
 
 #include "gui_device_vulkan.hpp"
-#include "Window.hpp"
+#include "Window_base.hpp"
 #include "Theme.hpp"
 #include "PipelineImage_Image.hpp"
 #include "PipelineFlat_DeviceShared.hpp"
@@ -29,7 +29,7 @@ namespace tt {
  */
 class DrawContext {
 private:
-    Window *_window;
+    Window_base *_window;
     vspan<PipelineFlat::Vertex> *flatVertices;
     vspan<PipelineBox::Vertex> *boxVertices;
     vspan<PipelineImage::Vertex> *imageVertices;
@@ -72,7 +72,7 @@ public:
     mat transform = mat::I();
 
     DrawContext(
-        Window &window,
+        Window_base &window,
         vspan<PipelineFlat::Vertex> &flatVertices,
         vspan<PipelineBox::Vertex> &boxVertices,
         vspan<PipelineImage::Vertex> &imageVertices,
@@ -100,7 +100,7 @@ public:
     DrawContext &operator=(DrawContext &&rhs) noexcept = default;
     ~DrawContext() = default;
 
-    Window &window() const noexcept
+    Window_base &window() const noexcept
     {
         tt_assume(_window);
         return *_window;

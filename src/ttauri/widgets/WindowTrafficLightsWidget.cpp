@@ -10,7 +10,7 @@
 
 namespace tt {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, std::shared_ptr<widget> parent) noexcept :
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window_base &window, std::shared_ptr<widget> parent) noexcept :
     super(window, parent)
 {
     // Toolbar buttons hug the toolbar and neighbor widgets.
@@ -154,7 +154,7 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
         context.drawGlyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
 
         context.color = vec::color(0.0f, 0.133f, 0.0f);
-        if (window.size == Window::Size::Maximized) {
+        if (window.size == Window_base::Size::Maximized) {
             context.drawGlyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
         } else {
             context.drawGlyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
@@ -203,7 +203,7 @@ void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hire
     context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
     context.drawGlyph(closeWindowGlyph, closeWindowGlyphRectangle);
     context.drawGlyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
-    if (window.size == Window::Size::Maximized) {
+    if (window.size == Window_base::Size::Maximized) {
         context.drawGlyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
     } else {
         context.drawGlyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
@@ -258,8 +258,8 @@ bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noex
 
             if (pressedMaximize && hoverMaximize) {
                 switch (window.size) {
-                case Window::Size::Normal: window.maximizeWindow(); break;
-                case Window::Size::Maximized: window.normalizeWindow(); break;
+                case Window_base::Size::Normal: window.maximizeWindow(); break;
+                case Window_base::Size::Maximized: window.normalizeWindow(); break;
                 default: tt_no_default();
                 }
             }

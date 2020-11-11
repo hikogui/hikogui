@@ -3,14 +3,13 @@
 
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
-#include "Window.hpp"
 
 namespace tt::PipelineImage {
 
 using namespace tt;
 using namespace std;
 
-PipelineImage::PipelineImage(Window const &window) :
+PipelineImage::PipelineImage(Window_base const &window) :
     pipeline_vulkan(window)
 {
 }

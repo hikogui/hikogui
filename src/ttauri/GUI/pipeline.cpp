@@ -2,13 +2,12 @@
 // All rights reserved.
 
 #include "pipeline.hpp"
-#include "Window.hpp"
 
 namespace tt {
 
 using namespace std;
 
-pipeline::pipeline(Window const &window) :
+pipeline::pipeline(Window_base const &window) :
     window(window)
 {
 }

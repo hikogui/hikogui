@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../GUI/Window_forward.hpp"
+#include "../GUI/Window_base.hpp"
 #include "../GUI/gui_device.hpp"
 #include "../GUI/MouseEvent.hpp"
 #include "../GUI/HitBox.hpp"
@@ -94,7 +94,7 @@ class widget : public std::enable_shared_from_this<widget> {
 public:
     /** Convenient reference to the Window.
      */
-    Window &window;
+    Window_base &window;
 
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
@@ -107,7 +107,7 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    widget(Window &window, std::shared_ptr<widget> parent) noexcept;
+    widget(Window_base &window, std::shared_ptr<widget> parent) noexcept;
 
     virtual ~widget();
     widget(const widget &) = delete;

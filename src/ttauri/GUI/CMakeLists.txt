@@ -98,10 +98,8 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_win32.hpp>
     VulkanMemoryAllocator.cpp
-    Window.hpp
     Window_base.cpp
     Window_base.hpp
-    Window_forward.hpp
     Window_vulkan.cpp
     Window_vulkan.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/Window_vulkan_macos.hpp>
@@ -112,6 +110,6 @@ target_sources(ttauri PRIVATE
 )
 
 target_precompile_headers(ttauri PRIVATE
-    Window.hpp
+    Window_vulkan_win32.hpp
     gui_device_vulkan.hpp
 )

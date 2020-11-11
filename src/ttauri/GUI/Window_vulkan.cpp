@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "Window_vulkan.hpp"
-#include "Window.hpp"
 #include "gui_system_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
 #include "PipelineFlat.hpp"
@@ -45,11 +44,11 @@ void Window_vulkan::initialize()
     tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
     Window_base::initialize();
-    flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
-    boxPipeline = std::make_unique<PipelineBox::PipelineBox>(dynamic_cast<Window &>(*this));
-    imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
-    SDFPipeline = std::make_unique<PipelineSDF::PipelineSDF>(dynamic_cast<Window &>(*this));
-    toneMapperPipeline = std::make_unique<PipelineToneMapper::PipelineToneMapper>(dynamic_cast<Window &>(*this));
+    flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(*this);
+    boxPipeline = std::make_unique<PipelineBox::PipelineBox>(*this);
+    imagePipeline = std::make_unique<PipelineImage::PipelineImage>(*this);
+    SDFPipeline = std::make_unique<PipelineSDF::PipelineSDF>(*this);
+    toneMapperPipeline = std::make_unique<PipelineToneMapper::PipelineToneMapper>(*this);
 }
 
 void Window_vulkan::waitIdle()
@@ -269,7 +268,7 @@ void Window_vulkan::teardown()
                     boxPipeline->teardownForWindowLost();
                     flatPipeline->teardownForWindowLost();
 
-                    delegate->closingWindow(*static_cast<Window *>(this));
+                    delegate->closingWindow(*this);
                     nextState = State::NoWindow;
                 }
             }
@@ -350,7 +349,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
     auto drawContext = DrawContext(
-        reinterpret_cast<Window &>(*this),
+        *this,
         flatPipeline->vertexBufferData,
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,

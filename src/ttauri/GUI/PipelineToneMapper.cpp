@@ -3,14 +3,14 @@
 
 #include "PipelineToneMapper.hpp"
 #include "PipelineToneMapper_DeviceShared.hpp"
-#include "Window.hpp"
+#include "Window_vulkan.hpp"
 
 namespace tt::PipelineToneMapper {
 
 using namespace tt;
 using namespace std;
 
-PipelineToneMapper::PipelineToneMapper(Window const &window) :
+PipelineToneMapper::PipelineToneMapper(Window_base const &window) :
     pipeline_vulkan(window)
 {
 }
@@ -54,7 +54,7 @@ vector<vk::WriteDescriptorSet> PipelineToneMapper::createWriteDescriptorSet() co
             0, // arrayElement
             1, // descriptorCount
             vk::DescriptorType::eInputAttachment,
-            &(window.colorDescriptorImageInfo),
+            &(narrow_cast<Window_vulkan const&>(window).colorDescriptorImageInfo),
             nullptr, // bufferInfo
             nullptr // texelBufferView
         } 

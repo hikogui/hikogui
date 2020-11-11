@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "GridLayoutWidget.hpp"
-#include "../GUI/Window.hpp"
 #include "../algorithm.hpp"
 #include "../alignment.hpp"
 

@@ -25,7 +25,7 @@ public:
 
     template<typename Value, typename Label>
     radio_button_widget(
-        Window &window,
+        Window_base &window,
         std::shared_ptr<widget> parent,
         value_type true_value,
         Value &&value,
@@ -36,12 +36,12 @@ public:
     }
 
     template<typename Value>
-    radio_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value) noexcept :
+    radio_button_widget(Window_base &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value) noexcept :
         radio_button_widget(window, parent, std::move(true_value), std::forward<Value>(value), observable<tt::label>{})
     {
     }
 
-    radio_button_widget(Window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
+    radio_button_widget(Window_base &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
         radio_button_widget(window, parent, std::move(true_value), observable<value_type>{}, observable<tt::label>{})
     {
     }

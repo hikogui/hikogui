@@ -17,7 +17,7 @@ public:
     using super = abstract_container_widget;
     static constexpr auto arrangement = Arrangement;
 
-    row_column_layout_widget(Window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent) {}
+    row_column_layout_widget(Window_base &window, std::shared_ptr<widget> parent) noexcept : super(window, parent) {}
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {

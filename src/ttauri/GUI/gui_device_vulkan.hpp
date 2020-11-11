@@ -96,11 +96,11 @@ public:
     gui_device_vulkan(gui_device_vulkan &&) = delete;
     gui_device_vulkan &operator=(gui_device_vulkan &&) = delete;
 
-    void initializeDevice(Window const &window) override;
+    void initializeDevice(Window_base const &window) override;
 
     int score(vk::SurfaceKHR surface) const;
 
-    int score(Window const &window) const override;
+    int score(Window_base const &window) const override;
 
     /*! Find the minimum number of queue families to instantiate for a window.
      * This will give priority for having the Graphics and Present in the same

@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "gui_system_vulkan_win32.hpp"
-#include "Window.hpp"
 #include <ddraw.h>
 
 namespace tt {

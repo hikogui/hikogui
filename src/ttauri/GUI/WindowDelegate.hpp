@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "Window_forward.hpp"
 #include "../widgets/GridLayoutDelegate.hpp"
 
 namespace tt {
+class Window_base;
 
 class WindowDelegate : public GridLayoutDelegate {
 public:
-    virtual void openingWindow(Window &window) noexcept {}
-    virtual void closingWindow(Window &window) noexcept {}
+    virtual void openingWindow(Window_base &window) noexcept {}
+    virtual void closingWindow(Window_base &window) noexcept {}
 };
 
 }
