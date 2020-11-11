@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Pipeline_vulkan.hpp"
+#include "pipeline_vulkan.hpp"
 #include "../vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <span>
@@ -12,7 +12,7 @@ namespace tt::PipelineToneMapper {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */
-class PipelineToneMapper : public Pipeline_vulkan {
+class PipelineToneMapper : public pipeline_vulkan {
 public:
     PipelineToneMapper(Window const &window);
     ~PipelineToneMapper() {};

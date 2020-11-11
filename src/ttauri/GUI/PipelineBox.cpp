@@ -11,13 +11,13 @@ using namespace tt;
 using namespace std;
 
 PipelineBox::PipelineBox(Window const &window) :
-    Pipeline_vulkan(window)
+    pipeline_vulkan(window)
 {
 }
 
 void PipelineBox::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
-    Pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+    pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
     vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
 

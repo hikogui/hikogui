@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Pipeline_vulkan.hpp"
+#include "pipeline_vulkan.hpp"
 #include "PipelineFlat_PushConstants.hpp"
 #include "PipelineFlat_Vertex.hpp"
 #include "../vspan.hpp"
@@ -14,7 +14,7 @@ namespace tt::PipelineFlat {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */
-class PipelineFlat : public Pipeline_vulkan {
+class PipelineFlat : public pipeline_vulkan {
 public:
     vspan<Vertex> vertexBufferData;
 

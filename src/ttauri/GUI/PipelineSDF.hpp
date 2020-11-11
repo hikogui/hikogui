@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Pipeline_vulkan.hpp"
+#include "pipeline_vulkan.hpp"
 #include "PipelineSDF_PushConstants.hpp"
 #include "PipelineSDF_Vertex.hpp"
 #include "../vspan.hpp"
@@ -15,7 +15,7 @@ namespace tt::PipelineSDF {
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlases and sharing for all views.
  */
-class PipelineSDF : public Pipeline_vulkan {
+class PipelineSDF : public pipeline_vulkan {
 public:
     vspan<Vertex> vertexBufferData;
 

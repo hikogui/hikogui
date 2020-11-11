@@ -1,14 +1,14 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Pipeline_base.hpp"
+#include "pipeline.hpp"
 #include "Window.hpp"
 
 namespace tt {
 
 using namespace std;
 
-Pipeline_base::Pipeline_base(Window const &window) :
+pipeline::pipeline(Window const &window) :
     window(window)
 {
 }

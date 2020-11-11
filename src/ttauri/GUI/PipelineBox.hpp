@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Pipeline_vulkan.hpp"
+#include "pipeline_vulkan.hpp"
 #include "PipelineBox_PushConstants.hpp"
 #include "PipelineBox_Vertex.hpp"
 #include "../vspan.hpp"
@@ -14,7 +14,7 @@ namespace tt::PipelineBox {
 
 /*! Pipeline for rendering simple box shaded quats.
  */
-class PipelineBox : public Pipeline_vulkan {
+class PipelineBox : public pipeline_vulkan {
 public:
     vspan<Vertex> vertexBufferData;
 

@@ -11,13 +11,13 @@ using namespace tt;
 using namespace std;
 
 PipelineToneMapper::PipelineToneMapper(Window const &window) :
-    Pipeline_vulkan(window)
+    pipeline_vulkan(window)
 {
 }
 
 void PipelineToneMapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
-    Pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+    pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
 
     vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);

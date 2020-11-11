@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Pipeline_vulkan.hpp"
+#include "pipeline_vulkan.hpp"
 #include "PipelineImage_PushConstants.hpp"
 #include "PipelineImage_Vertex.hpp"
 #include "../vspan.hpp"
@@ -14,7 +14,7 @@ namespace tt::PipelineImage {
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlas and sharing for all views.
  */
-class PipelineImage : public Pipeline_vulkan {
+class PipelineImage : public pipeline_vulkan {
 public:
     vspan<Vertex> vertexBufferData;
 

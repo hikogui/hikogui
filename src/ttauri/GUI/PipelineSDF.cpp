@@ -11,13 +11,13 @@ using namespace tt;
 using namespace std;
 
 PipelineSDF::PipelineSDF(Window const &window) :
-    Pipeline_vulkan(window)
+    pipeline_vulkan(window)
 {
 }
 
 void PipelineSDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
-    Pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+    pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
     vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
     vulkan_device().SDFPipeline->prepareAtlasForRendering();

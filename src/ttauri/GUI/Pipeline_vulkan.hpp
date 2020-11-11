@@ -3,24 +3,24 @@
 
 #pragma once
 
-#include "Pipeline_base.hpp"
+#include "pipeline.hpp"
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>
 
 namespace tt {
 
-class Pipeline_vulkan : public Pipeline_base {
+class pipeline_vulkan : public pipeline {
 public:
     vk::Pipeline intrinsic;
 
-    Pipeline_vulkan(Window const &window);
-    ~Pipeline_vulkan();
+    pipeline_vulkan(Window const &window);
+    ~pipeline_vulkan();
 
-    Pipeline_vulkan(const Pipeline_vulkan &) = delete;
-    Pipeline_vulkan &operator=(const Pipeline_vulkan &) = delete;
-    Pipeline_vulkan(Pipeline_vulkan &&) = delete;
-    Pipeline_vulkan &operator=(Pipeline_vulkan &&) = delete;
+    pipeline_vulkan(const pipeline_vulkan &) = delete;
+    pipeline_vulkan &operator=(const pipeline_vulkan &) = delete;
+    pipeline_vulkan(pipeline_vulkan &&) = delete;
+    pipeline_vulkan &operator=(pipeline_vulkan &&) = delete;
 
     gui_device_vulkan &vulkan_device() const noexcept;
 

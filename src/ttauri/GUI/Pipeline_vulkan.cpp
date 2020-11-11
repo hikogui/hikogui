@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Pipeline_vulkan.hpp"
+#include "pipeline_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
 #include "Window.hpp"
 #include "../trace.hpp"
@@ -12,21 +12,21 @@ namespace tt {
 
 using namespace std;
 
-Pipeline_vulkan::Pipeline_vulkan(Window const &window) :
-    Pipeline_base(window) {}
+pipeline_vulkan::pipeline_vulkan(Window const &window) :
+    pipeline(window) {}
 
-Pipeline_vulkan::~Pipeline_vulkan()
+pipeline_vulkan::~pipeline_vulkan()
 {
 }
 
-gui_device_vulkan &Pipeline_vulkan::vulkan_device() const noexcept
+gui_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
 {
     auto device = window.device();
     tt_assume(device != nullptr);
     return narrow_cast<gui_device_vulkan&>(*device);
 }
 
-void Pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
+void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
@@ -45,7 +45,7 @@ void Pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 }
 
 
-void Pipeline_vulkan::buildDescriptorSets()
+void pipeline_vulkan::buildDescriptorSets()
 {
     ttlet descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
@@ -93,7 +93,7 @@ void Pipeline_vulkan::buildDescriptorSets()
     descriptorSetVersion = 0;
 }
 
-void Pipeline_vulkan::teardownDescriptorSets()
+void pipeline_vulkan::teardownDescriptorSets()
 {
     if (!descriptorSet) {
         return;
@@ -104,7 +104,7 @@ void Pipeline_vulkan::teardownDescriptorSets()
     descriptorSet = nullptr;
 }
 
-vk::PipelineDepthStencilStateCreateInfo Pipeline_vulkan::getPipelineDepthStencilStateCreateInfo() const
+vk::PipelineDepthStencilStateCreateInfo pipeline_vulkan::getPipelineDepthStencilStateCreateInfo() const
 {
     // Reverse-z depth configuration
     return {
@@ -123,7 +123,7 @@ vk::PipelineDepthStencilStateCreateInfo Pipeline_vulkan::getPipelineDepthStencil
 
 /* Pre-multiplied alpha blending.
 */
-std::vector<vk::PipelineColorBlendAttachmentState> Pipeline_vulkan::getPipelineColorBlendAttachmentStates() const
+std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineColorBlendAttachmentStates() const
 {
     return { {
         VK_TRUE, // blendEnable
@@ -137,7 +137,7 @@ std::vector<vk::PipelineColorBlendAttachmentState> Pipeline_vulkan::getPipelineC
     } };
 }
 
-void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
     LOG_INFO("buildPipeline previous size ({}, {})", extent.width, extent.height);
     extent = _extent;
@@ -251,22 +251,22 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
     LOG_INFO("/buildPipeline new size ({}, {})", extent.width, extent.height);
 }
 
-void Pipeline_vulkan::teardownPipeline()
+void pipeline_vulkan::teardownPipeline()
 {
     vulkan_device().destroy(intrinsic);
     vulkan_device().destroy(pipelineLayout);
 }
 
 
-void Pipeline_vulkan::buildForNewDevice()
+void pipeline_vulkan::buildForNewDevice()
 {
 }
 
-void Pipeline_vulkan::buildForNewSurface()
+void pipeline_vulkan::buildForNewSurface()
 {
 }
 
-void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+void pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
     if (!buffersInitialized) {
         buildVertexBuffers();
@@ -278,23 +278,23 @@ void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t r
     buildPipeline(renderPass, renderSubpass, _extent);
 }
 
-void Pipeline_vulkan::teardownForSwapchainLost()
+void pipeline_vulkan::teardownForSwapchainLost()
 {
     teardownPipeline();
     teardownDescriptorSets();
 }
 
-void Pipeline_vulkan::teardownForSurfaceLost()
+void pipeline_vulkan::teardownForSurfaceLost()
 {
 }
 
-void Pipeline_vulkan::teardownForDeviceLost()
+void pipeline_vulkan::teardownForDeviceLost()
 {
     teardownVertexBuffers();
     buffersInitialized = false;
 }
 
-void Pipeline_vulkan::teardownForWindowLost()
+void pipeline_vulkan::teardownForWindowLost()
 {
 }
 

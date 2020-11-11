@@ -27,11 +27,10 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/KeyboardVirtualKey_win32.cpp>
     MouseButtons.hpp
     MouseEvent.hpp
-    Pipeline.hpp
-    Pipeline_base.cpp
-    Pipeline_base.hpp
-    Pipeline_vulkan.cpp
-    Pipeline_vulkan.hpp
+    pipeline.cpp
+    pipeline.hpp
+    pipeline_vulkan.cpp
+    pipeline_vulkan.hpp
     PipelineBox.cpp
     PipelineBox.frag
     PipelineBox.hpp
