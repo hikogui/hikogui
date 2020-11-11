@@ -88,7 +88,7 @@ public:
      */
     mutable vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
-    GUIDevice_vulkan(GUISystem &system, vk::PhysicalDevice physicalDevice);
+    GUIDevice_vulkan(GUISystem_base &system, vk::PhysicalDevice physicalDevice);
     ~GUIDevice_vulkan();
 
     GUIDevice_vulkan(const GUIDevice_vulkan &) = delete;

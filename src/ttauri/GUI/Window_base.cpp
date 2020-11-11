@@ -4,14 +4,13 @@
 #include "Window_base.hpp"
 #include "Window.hpp"
 #include "GUIDevice.hpp"
-#include "GUISystem.hpp"
 #include "../widgets/WindowWidget.hpp"
 
 namespace tt {
 
 using namespace std;
 
-Window_base::Window_base(GUISystem &system, WindowDelegate *delegate, label const &title) :
+Window_base::Window_base(GUISystem_base &system, WindowDelegate *delegate, label const &title) :
     system(system),
     state(State::Initializing),
     delegate(delegate),

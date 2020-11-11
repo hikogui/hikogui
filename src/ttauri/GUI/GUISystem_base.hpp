@@ -60,7 +60,7 @@ public:
         tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
         tt_assume(GUISystem_mutex.recurse_lock_count() == 0);
 
-        auto window = std::make_shared<T>(static_cast<GUISystem &>(*this), std::forward<Args>(args)...);
+        auto window = std::make_shared<T>(static_cast<GUISystem_base &>(*this), std::forward<Args>(args)...);
         auto window_ptr = window.get();
         window->initialize();
 

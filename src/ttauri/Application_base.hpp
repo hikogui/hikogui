@@ -107,7 +107,7 @@ public:
 protected:
     std::unordered_map<std::string,std::span<std::byte const>> staticResources;
 
-    std::unique_ptr<GUISystem> _gui_system;
+    std::unique_ptr<GUISystem_base> _gui_system;
 
     /** Add static resource.
      * This function should only be called on resources that are linked into the executable

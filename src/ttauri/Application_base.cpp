@@ -17,7 +17,7 @@
 #include "GUI/RenderDoc.hpp"
 #include "GUI/ThemeBook.hpp"
 #include "GUI/KeyboardBindings.hpp"
-#include "GUI/GUISystem.hpp"
+#include "GUI/GUISystem_vulkan_win32.hpp"
 #include "audio/audio_system.hpp"
 #include "audio/audio_system_aggregate.hpp"
 #include <memory>
@@ -197,15 +197,13 @@ void Application_base::GUIStart()
             LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
         }
 
-        _gui_system = std::make_unique<GUISystem>(gui_delegate);
-        GUISystem_global = _gui_system.get();
+        _gui_system = std::make_unique<GUISystem_vulkan_win32>(gui_delegate);
         _gui_system->initialize();
     }
 }
 
 void Application_base::GUIStop()
 {
-    GUISystem_global = nullptr;
     _gui_system = {};
     themes = {};
     renderDoc = {};
@@ -215,7 +213,7 @@ void Application_base::GUIStop()
 bool Application_base::initializeApplication()
 {
     try {
-        return delegate.initialize_application();
+        return delegate.initialize_application(_gui_system.get());
     } catch (error &e) {
         LOG_FATAL("Exception during initializeApplication {}", to_string(e));
     }

@@ -5,7 +5,6 @@
 
 #include "WindowDelegate.hpp"
 #include "GUIDevice_forward.hpp"
-#include "GUISystem_forward.hpp"
 #include "Cursor.hpp"
 #include "HitBox.hpp"
 #include "MouseEvent.hpp"
@@ -26,6 +25,7 @@
 #include <mutex>
 
 namespace tt {
+class GUISystem_base;
 class WindowWidget;
 
 /*! A Window.
@@ -54,7 +54,7 @@ public:
         Maximized
     };
 
-    GUISystem &system;
+    GUISystem_base &system;
 
     State state = State::NoDevice;
 
@@ -123,7 +123,7 @@ public:
 
     
 
-    Window_base(GUISystem &system, WindowDelegate *delegate, label const &title);
+    Window_base(GUISystem_base &system, WindowDelegate *delegate, label const &title);
     virtual ~Window_base();
 
     Window_base(Window_base const &) = delete;

@@ -3,7 +3,7 @@
 
 #include "Window_vulkan.hpp"
 #include "Window.hpp"
-#include "GUISystem.hpp"
+#include "GUISystem_vulkan.hpp"
 #include "GUIDevice.hpp"
 #include "PipelineFlat.hpp"
 #include "PipelineBox.hpp"
@@ -20,7 +20,7 @@ namespace tt {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(GUISystem &system, WindowDelegate *delegate, label const &title) :
+Window_vulkan::Window_vulkan(GUISystem_base &system, WindowDelegate *delegate, label const &title) :
     Window_base(system, delegate, title), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
@@ -976,7 +976,7 @@ void Window_vulkan::teardownSurface()
 {
     tt_assume(GUISystem_mutex.recurse_lock_count());
 
-    GUISystem_global->destroySurfaceKHR(intrinsic);
+    narrow_cast<GUISystem_vulkan&>(system).destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()

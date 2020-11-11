@@ -19,7 +19,7 @@ template<> struct is_numeric_integer<signed long long> : std::true_type {};
 template<> struct is_numeric_integer<unsigned long long> : std::true_type {};
 
 /*! True is the supplied type is a numeric integer.
- * This distingueses between integer characters/bytes/boolean and integer numbers.
+ * This distinguishes between integer characters/bytes/boolean and integer numbers.
  */
 template<typename T>
 inline constexpr bool is_numeric_integer_v = is_numeric_integer<T>::value;

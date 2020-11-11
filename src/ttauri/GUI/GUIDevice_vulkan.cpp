@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "GUIDevice_vulkan.hpp"
-#include "GUISystem.hpp"
+#include "GUISystem_vulkan.hpp"
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window.hpp"
@@ -102,12 +102,12 @@ static bool hasRequiredFeatures(const vk::PhysicalDevice& physicalDevice, const 
     return meetsRequirements;
 }
 
-GUIDevice_vulkan::GUIDevice_vulkan(GUISystem &system, vk::PhysicalDevice physicalDevice) :
+GUIDevice_vulkan::GUIDevice_vulkan(GUISystem_base &system, vk::PhysicalDevice physicalDevice) :
     GUIDevice_base(system),
     physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
-        GUISystem_global->loader()
+        narrow_cast<GUISystem_vulkan &>(system).loader()
     );
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
@@ -184,13 +184,13 @@ void GUIDevice_vulkan::initializeDevice(Window const &window)
         narrow_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
         narrow_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
-         &(GUISystem_global->requiredFeatures)
+         &(narrow_cast<GUISystem_vulkan&>(system).requiredFeatures)
     });
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.physicalDevice = physicalIntrinsic;
     allocatorCreateInfo.device = intrinsic;
-    allocatorCreateInfo.instance = GUISystem_global->intrinsic;
+    allocatorCreateInfo.instance = narrow_cast<GUISystem_vulkan &>(system).intrinsic;
     vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 
     VmaAllocationCreateInfo lazyAllocationInfo = {};
@@ -389,12 +389,12 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
     LOG_INFO("Scoring device: {}", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, GUISystem_global->requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, narrow_cast<GUISystem_vulkan &>(system).requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, GUISystem_global->requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, narrow_cast<GUISystem_vulkan &>(system).requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
@@ -516,7 +516,7 @@ int GUIDevice_vulkan::score(Window const &window) const {
 
     auto surface = window.getSurface();
     ttlet s = score(surface);
-    GUISystem_global->destroySurfaceKHR(surface);
+    narrow_cast<GUISystem_vulkan &>(system).destroySurfaceKHR(surface);
     return s;
 }
 

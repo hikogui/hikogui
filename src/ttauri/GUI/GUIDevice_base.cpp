@@ -3,7 +3,6 @@
 
 #include "GUIDevice_base.hpp"
 #include "GUIDevice.hpp"
-#include "GUISystem.hpp"
 #include "Window.hpp"
 #include <fmt/format.h>
 #include <tuple>
@@ -13,7 +12,7 @@ namespace tt {
 
 using namespace std;
 
-GUIDevice_base::GUIDevice_base(GUISystem &system) noexcept : system(system)
+GUIDevice_base::GUIDevice_base(GUISystem_base &system) noexcept : system(system)
 {
 }
 

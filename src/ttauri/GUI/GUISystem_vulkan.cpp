@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "GUISystem_vulkan.hpp"
-#include "GUISystem.hpp"
 #include "GUIDevice.hpp"
 #include <chrono>
 
@@ -102,7 +101,7 @@ void GUISystem_vulkan::initialize() noexcept(false)
     }
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-        devices.push_back(std::make_shared<GUIDevice>(static_cast<GUISystem&>(*this), _physicalDevice));
+        devices.push_back(std::make_shared<GUIDevice>(*this, _physicalDevice));
     }
 }
 

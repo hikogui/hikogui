@@ -8,7 +8,6 @@ target_sources(ttauri PRIVATE
     GUIDevice_forward.hpp
     GUIDevice_vulkan.cpp
     GUIDevice_vulkan.hpp
-    GUISystem.hpp
     GUISystem_base.cpp
     GUISystem_base.hpp
     GUISystem_forward.hpp

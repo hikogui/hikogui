@@ -66,7 +66,7 @@ public:
     std::unique_ptr<PipelineSDF::PipelineSDF> SDFPipeline;
     std::unique_ptr<PipelineToneMapper::PipelineToneMapper> toneMapperPipeline;
 
-    Window_vulkan(GUISystem &system, WindowDelegate *delegate, label const &title);
+    Window_vulkan(GUISystem_base &system, WindowDelegate *delegate, label const &title);
     ~Window_vulkan();
 
     Window_vulkan(const Window_vulkan &) = delete;

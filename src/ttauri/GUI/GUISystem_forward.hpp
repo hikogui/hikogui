@@ -8,21 +8,10 @@
 
 namespace tt {
 
-#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-class GUISystem_vulkan_win32;
-using GUISystem = GUISystem_vulkan_win32;
-
-#elif  TT_OPERATING_SYSTEM == TT_OS_MACOS
-class GUISystem_vulkan_macos;
-using GUISystem = GUISystem_vulkan_macos;
-
-#else
-#error "GUISystem forward not implemented for os"
-#endif
+class GUISystem_base;
 
 /** Global mutex for GUI elements, like GUISystem, GUIDevice, Windows and Widgets.
  */
 inline unfair_recursive_mutex GUISystem_mutex;
-inline GUISystem *GUISystem_global;
 
 }

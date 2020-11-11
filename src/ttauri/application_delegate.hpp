@@ -4,13 +4,14 @@
 #pragma once
 
 #include "Application_forward.hpp"
-#include "GUI/gui_system_delegate.hpp"
-#include "audio/audio_system_delegate.hpp"
 #include "datum.hpp"
 #include <string>
 #include <vector>
 
 namespace tt {
+class GUISystem_base;
+class gui_system_delegate;
+class audio_system_delegate;
 
 /** Application Delegate.
  * Can be subclasses by the actual application to be called when certain events happen.
@@ -31,7 +32,7 @@ public:
     /** The delegate to be used for the audio system.
      * @return The delegate to be used for the audio system, or nullptr if the audio system should not be initialized.
      */
-    virtual tt::audio_system_delegate *audio_system_delegate() noexcept { return nullptr; }
+    virtual audio_system_delegate *audio_system_delegate() noexcept { return nullptr; }
 
     /** The delegate to be used for the gui system.
      * @return The delegate to be used for the gui system, or nullptr if the gui system should not be initialized.
@@ -43,7 +44,7 @@ public:
      *
      * @return true to start the loop, false to exit the application.
      */
-    virtual bool initialize_application() = 0;
+    virtual bool initialize_application(GUISystem_base *gui_system) = 0;
 };
 
 }

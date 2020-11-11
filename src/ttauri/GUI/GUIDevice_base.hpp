@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Window.hpp"
-#include "GUISystem_forward.hpp"
 #include "../exceptions.hpp"
 #include "../cast.hpp"
 #include "../bigint.hpp"
@@ -14,12 +13,13 @@
 #include <tuple>
 
 namespace tt {
+class GUISystem_base;
 
 /*! A GUIDevice that handles a set of windows.
  */
 class GUIDevice_base {
 public:
-    GUISystem &system;
+    GUISystem_base &system;
 
     enum class State {
         NO_DEVICE,
@@ -36,7 +36,7 @@ public:
 
     std::string string() const noexcept;
 
-    GUIDevice_base(GUISystem &system) noexcept;
+    GUIDevice_base(GUISystem_base &system) noexcept;
     virtual ~GUIDevice_base();
 
     GUIDevice_base(const GUIDevice_base &) = delete;
