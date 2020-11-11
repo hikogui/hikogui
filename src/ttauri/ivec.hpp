@@ -94,7 +94,7 @@ public:
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     explicit ivec(T rhs) noexcept:
-        ivec(_mm_set1_epi32(numeric_cast<int32_t>(rhs))) {}
+        ivec(_mm_set1_epi32(narrow_cast<int32_t>(rhs))) {}
 
     /** Initialize a ivec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
@@ -102,7 +102,7 @@ public:
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     ivec &operator=(T rhs) noexcept {
-        return *this = _mm_set1_epi32(numeric_cast<int32_t>(rhs));
+        return *this = _mm_set1_epi32(narrow_cast<int32_t>(rhs));
     }
 
     /** Create a ivec out of 2 to 4 values.
@@ -114,10 +114,10 @@ public:
         std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
     ivec(T x, U y, V z=0, W w=0) noexcept :
         ivec(_mm_set_epi32(
-            numeric_cast<int32_t>(w),
-            numeric_cast<int32_t>(z),
-            numeric_cast<int32_t>(y),
-            numeric_cast<int32_t>(x)
+            narrow_cast<int32_t>(w),
+            narrow_cast<int32_t>(z),
+            narrow_cast<int32_t>(y),
+            narrow_cast<int32_t>(x)
             )) {}
 
     /** Create a ivec out of 2 to 4 values.
@@ -134,7 +134,7 @@ public:
     template<size_t I, typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     ivec &set(T rhs) noexcept {
         static_assert(I <= 3);
-        return *this = _mm_insert_epi32(*this, numeric_cast<int32_t>(rhs), I);
+        return *this = _mm_insert_epi32(*this, narrow_cast<int32_t>(rhs), I);
     }
 
     template<size_t I>

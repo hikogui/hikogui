@@ -4,7 +4,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 #include "vec.hpp"
 #include "mat.hpp"
 #include <vector>

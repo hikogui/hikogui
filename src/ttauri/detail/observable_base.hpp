@@ -78,7 +78,7 @@ public:
         tt_assume(animation_duration.count() != 0);
 
         return std::clamp(
-            numeric_cast<float>(duration_since_last_modified().count()) / numeric_cast<float>(animation_duration.count()),
+            narrow_cast<float>(duration_since_last_modified().count()) / narrow_cast<float>(animation_duration.count()),
             0.0f,
             1.0f);
     }

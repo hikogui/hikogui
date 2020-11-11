@@ -4,7 +4,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 #include "strings.hpp"
 #include "exceptions.hpp"
 #include "float16.hpp"
@@ -124,7 +124,7 @@ public:
      * arithmatic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    explicit vec(T rhs) noexcept : vec(_mm_set_ps1(numeric_cast<float>(rhs)))
+    explicit vec(T rhs) noexcept : vec(_mm_set_ps1(narrow_cast<float>(rhs)))
     {
     }
 
@@ -157,25 +157,25 @@ public:
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     static vec make_x(T x) noexcept
     {
-        return vec{_mm_set_ss(numeric_cast<float>(x))};
+        return vec{_mm_set_ss(narrow_cast<float>(x))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     static vec make_y(T y) noexcept
     {
-        return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(y)), _MM_SHUFFLE(1, 1, 0, 1))};
+        return vec{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(y)), _MM_SHUFFLE(1, 1, 0, 1))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     static vec make_z(T z) noexcept
     {
-        return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(z)), _MM_SHUFFLE(1, 0, 1, 1))};
+        return vec{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(z)), _MM_SHUFFLE(1, 0, 1, 1))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     static vec make_w(T w) noexcept
     {
-        return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(w)), _MM_SHUFFLE(0, 1, 1, 1))};
+        return vec{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(w)), _MM_SHUFFLE(0, 1, 1, 1))};
     }
 
     /** Create a point out of 2 to 4 values.

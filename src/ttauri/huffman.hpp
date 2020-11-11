@@ -1,7 +1,7 @@
 
 #include "required.hpp"
 #include "bits.hpp"
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 #include <span>
 #include <vector>
 
@@ -50,7 +50,7 @@ public:
                 // Unused node entry. Point to the first of two new entries.
                 value = -(static_cast<int>(std::ssize(tree)) - offset);
 
-                tree[offset] = numeric_cast<T>(value);
+                tree[offset] = narrow_cast<T>(value);
                 tree.push_back(0);
                 tree.push_back(0);
             }
@@ -64,7 +64,7 @@ public:
         offset += select;
 
         tt_assume(tree[offset] == 0); 
-        tree[offset] = numeric_cast<T>(symbol + 1);
+        tree[offset] = narrow_cast<T>(symbol + 1);
     }
 
     [[nodiscard]] state_t start() const noexcept {

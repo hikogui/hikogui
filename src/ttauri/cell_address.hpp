@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "required.hpp"
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 #include "exceptions.hpp"
 #include "alignment.hpp"
 
@@ -255,11 +255,11 @@ struct cell_address {
                     switch (part) {
                     case part_t::Coord:
                         if (is_row) {
-                            row.index = numeric_cast<int16_t>(value);
+                            row.index = narrow_cast<int16_t>(value);
                             row.is_opposite = is_opposite;
                             row.is_absolute = is_absolute;
                         } else {
-                            column.index = numeric_cast<int16_t>(value);
+                            column.index = narrow_cast<int16_t>(value);
                             column.is_opposite = is_opposite;
                             column.is_absolute = is_absolute;
                         }
@@ -267,19 +267,19 @@ struct cell_address {
 
                     case part_t::Span:
                         if (is_row) {
-                            row.span = numeric_cast<int8_t>(value);
+                            row.span = narrow_cast<int8_t>(value);
                             row.is_opposite = is_opposite;
                         } else {
-                            column.span = numeric_cast<int8_t>(value);
+                            column.span = narrow_cast<int8_t>(value);
                             column.is_opposite = is_opposite;
                         }
                         break;
 
                     case part_t::Alignment:
                         if (is_row) {
-                            row.alignment = numeric_cast<int8_t>(value);
+                            row.alignment = narrow_cast<int8_t>(value);
                         } else {
-                            column.alignment = numeric_cast<int8_t>(value);
+                            column.alignment = narrow_cast<int8_t>(value);
                         }
                         break;
 

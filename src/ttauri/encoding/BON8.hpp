@@ -3,7 +3,7 @@
 #include "../required.hpp"
 #include "../datum.hpp"
 #include "../exceptions.hpp"
-#include "../numeric_cast.hpp"
+#include "../cast.hpp"
 #include <cstddef>
 
 #pragma once
@@ -130,63 +130,63 @@ public:
      * @param A unsigned integer.
      */
     void add(unsigned long long value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
      * @param A signed integer.
      */
     void add(signed long value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
      * @param A unsigned integer.
      */
     void add(unsigned long value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
      * @param A signed integer.
      */
     void add(signed int value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
      * @param A unsigned integer.
      */
     void add(unsigned int value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
      * @param A signed integer.
      */
     void add(signed short value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
      * @param A unsigned integer.
      */
     void add(unsigned short value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
      * @param A signed integer.
      */
     void add(signed char value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
      * @param A unsigned integer.
      */
     void add(unsigned char value) noexcept {
-        return add(numeric_cast<signed long long>(value));
+        return add(narrow_cast<signed long long>(value));
     }
 
     /** Add a floating point number.
@@ -231,7 +231,7 @@ public:
      * @param A floating point number.
      */
     void add(float value) noexcept {
-        return add(numeric_cast<double>(value));
+        return add(narrow_cast<double>(value));
     }
 
     /** Add a boolean.

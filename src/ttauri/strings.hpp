@@ -4,7 +4,7 @@
 #pragma once
 
 #include "algorithm.hpp"
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 #include "required.hpp"
 #include "assert.hpp"
 #include "os_detect.hpp"
@@ -176,10 +176,10 @@ namespace tt {
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
 {
     char c_str[5];
-    c_str[0] = numeric_cast<char>((x >> 24) & 0xff);
-    c_str[1] = numeric_cast<char>((x >> 16) & 0xff);
-    c_str[2] = numeric_cast<char>((x >> 8) & 0xff);
-    c_str[3] = numeric_cast<char>(x & 0xff);
+    c_str[0] = narrow_cast<char>((x >> 24) & 0xff);
+    c_str[1] = narrow_cast<char>((x >> 16) & 0xff);
+    c_str[2] = narrow_cast<char>((x >> 8) & 0xff);
+    c_str[3] = narrow_cast<char>(x & 0xff);
     c_str[4] = 0;
 
     return {c_str};
@@ -215,7 +215,7 @@ namespace tt {
 [[nodiscard]] inline std::string_view
 make_string_view(typename std::string::const_iterator b, typename std::string::const_iterator e) noexcept
 {
-    return (b != e) ? std::string_view{&(*b), numeric_cast<size_t>(std::distance(b, e))} : std::string_view{};
+    return (b != e) ? std::string_view{&(*b), narrow_cast<size_t>(std::distance(b, e))} : std::string_view{};
 }
 
 template<typename Needle>

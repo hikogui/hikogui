@@ -5,7 +5,7 @@
 
 #include "math.hpp"
 #include "byte_string.hpp"
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 #include <atomic>
 
 namespace tt {

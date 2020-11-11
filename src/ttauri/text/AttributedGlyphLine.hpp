@@ -160,8 +160,8 @@ private:
                 validWidth = totalWidth;
             }
         }
-        capHeight /= numeric_cast<float>(std::ssize(line));
-        xHeight /= numeric_cast<float>(std::ssize(line));
+        capHeight /= narrow_cast<float>(std::ssize(line));
+        xHeight /= narrow_cast<float>(std::ssize(line));
 
         width = validWidth;
     }

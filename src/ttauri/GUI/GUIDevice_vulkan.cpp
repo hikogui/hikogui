@@ -181,9 +181,9 @@ void GUIDevice_vulkan::initializeDevice(Window const &window)
 
     intrinsic = physicalIntrinsic.createDevice({
         vk::DeviceCreateFlags(),
-        numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
+        narrow_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
-        numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
+        narrow_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
          &(GUISystem_global->requiredFeatures)
     });
 
@@ -287,12 +287,12 @@ void GUIDevice_vulkan::initializeQuadIndexBuffer()
             ttlet rectangleBase = rectangleNr * 4;
 
             switch (vertexInRectangle) {
-            case 0: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 0); break;
-            case 1: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
-            case 2: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
-            case 3: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
-            case 4: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
-            case 5: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 3); break;
+            case 0: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 0); break;
+            case 1: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1); break;
+            case 2: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2); break;
+            case 3: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2); break;
+            case 4: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1); break;
+            case 5: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 3); break;
             default: tt_no_default();
             }
         }
@@ -310,7 +310,7 @@ void GUIDevice_vulkan::initializeQuadIndexBuffer()
         commands.end();
 
         std::vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
-        std::vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
+        std::vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, narrow_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
         graphicsQueue.submit(submitInfo, vk::Fence());
         graphicsQueue.waitIdle();
 
@@ -592,7 +592,7 @@ void GUIDevice_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) co
 
     graphicsQueue.submit({{
         0, nullptr, nullptr, // wait semaphores, wait stages
-        numeric_cast<uint32_t>(commandBuffers.size()), commandBuffers.data(),
+        narrow_cast<uint32_t>(commandBuffers.size()), commandBuffers.data(),
         0, nullptr // signal semaphores
     }}, vk::Fence());
 
@@ -655,7 +655,7 @@ void GUIDevice_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::
         vk::DependencyFlags(),
         0, nullptr,
         0, nullptr,
-        numeric_cast<uint32_t>(barriers.size()), barriers.data()
+        narrow_cast<uint32_t>(barriers.size()), barriers.data()
     );
 
     endSingleTimeCommands(commandBuffer);

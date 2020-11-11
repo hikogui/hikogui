@@ -5,7 +5,7 @@
 
 #include "notifier.hpp"
 #include "hires_utc_clock.hpp"
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 #include "notifier.hpp"
 #include "detail/observable_value.hpp"
 #include "detail/observable_not.hpp"
@@ -187,13 +187,13 @@ public:
 
     [[nodiscard]] friend float to_float(observable const &rhs) noexcept
     {
-        return numeric_cast<float>(rhs.load());
+        return narrow_cast<float>(rhs.load());
     }
 
     [[nodiscard]] friend float to_float(observable const &rhs, duration animation_duration) noexcept
     {
-        ttlet previous_value = numeric_cast<float>(rhs.previous_value());
-        ttlet current_value = numeric_cast<float>(rhs.load());
+        ttlet previous_value = narrow_cast<float>(rhs.previous_value());
+        ttlet current_value = narrow_cast<float>(rhs.load());
         ttlet animation_progress = rhs.animation_progress(animation_duration);
         return mix(animation_progress, previous_value, current_value);
     }

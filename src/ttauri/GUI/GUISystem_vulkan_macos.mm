@@ -6,7 +6,7 @@ namespace tt {
 GUISystem_vulkan_macos::GUISystem_vulkan_macos(GUISystemDelegate *delegate) :
     GUISystem_vulkan(delegate, { VK_EXT_METAL_SURFACE_EXTENSION_NAME })
 {
-    hostFrequency = numeric_cast<uint64_t>(CVGetHostClockFrequency());
+    hostFrequency = narrow_cast<uint64_t>(CVGetHostClockFrequency());
 
     // Start update loop.
     CVDisplayLinkCreateWithActiveCGDisplays(&updateAndRenderThread);
@@ -46,7 +46,7 @@ CVReturn GUISystem_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLin
     outputHostTime /= self->hostFrequency;
 
     @autoreleasepool {
-        self->updateAndRender(numeric_cast<uint64_t>(currentHostTime), numeric_cast<uint64_t>(outputHostTime), false);
+        self->updateAndRender(narrow_cast<uint64_t>(currentHostTime), narrow_cast<uint64_t>(outputHostTime), false);
     }
 
     return kCVReturnSuccess;

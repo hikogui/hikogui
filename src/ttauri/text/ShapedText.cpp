@@ -350,7 +350,7 @@ ShapedText::ShapedText(
     // This is a ligature.
     // The position is inside a ligature.
     // Place the cursor proportional inside the ligature, based on the font-metrics.
-    ttlet ligature_index = numeric_cast<int>(i->logicalIndex - index);
+    ttlet ligature_index = narrow_cast<int>(i->logicalIndex - index);
     ttlet ligature_advance_left = i->metrics.advanceForGrapheme(ligature_index);
     ttlet ligature_advance_right = i->metrics.advanceForGrapheme(ligature_index + 1);
 

@@ -9,7 +9,7 @@
 #include "../PixelMap.inl"
 #include "../URL.hpp"
 #include "../memory.hpp"
-#include "../numeric_cast.hpp"
+#include "../cast.hpp"
 #include <array>
 
 namespace tt::PipelineImage {
@@ -122,10 +122,10 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPositionIncludingBorder.z());
         regionsToCopy.push_back({
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { numeric_cast<int32_t>(imageRectToCopy.x1()), numeric_cast<int32_t>(imageRectToCopy.y1()), 0 },
+            { narrow_cast<int32_t>(imageRectToCopy.x1()), narrow_cast<int32_t>(imageRectToCopy.y1()), 0 },
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { numeric_cast<int32_t>(atlasPositionIncludingBorder.x()), numeric_cast<int32_t>(atlasPositionIncludingBorder.y()), 0 },
-            { numeric_cast<uint32_t>(imageRectToCopy.width()), numeric_cast<uint32_t>(imageRectToCopy.height()), 1}
+            { narrow_cast<int32_t>(atlasPositionIncludingBorder.x()), narrow_cast<int32_t>(atlasPositionIncludingBorder.y()), 0 },
+            { narrow_cast<uint32_t>(imageRectToCopy.width()), narrow_cast<uint32_t>(imageRectToCopy.height()), 1}
         });
     }
 

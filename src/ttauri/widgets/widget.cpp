@@ -111,6 +111,8 @@ bool widget::handle_command_recursive(command command, std::vector<std::shared_p
 
     if (!std::ranges::any_of(reject_list, [this](ttlet &x) { return x.get() == this; })) {
         return handle_command(command);
+    } else {
+        return false;
     }
 }
 

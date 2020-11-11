@@ -45,10 +45,10 @@ public:
             int> = 0>
     aarect(X x, Y y, W width, H height) noexcept :
         v(
-            vec(numeric_cast<float>(x),
-                numeric_cast<float>(y),
-                numeric_cast<float>(x) + numeric_cast<float>(width),
-                numeric_cast<float>(y) + numeric_cast<float>(height)))
+            vec(narrow_cast<float>(x),
+                narrow_cast<float>(y),
+                narrow_cast<float>(x) + narrow_cast<float>(width),
+                narrow_cast<float>(y) + narrow_cast<float>(height)))
     {
     }
 
@@ -58,7 +58,7 @@ public:
      * @param height The height of the box.
      */
     template<typename W, typename H, std::enable_if_t<std::is_arithmetic_v<W> && std::is_arithmetic_v<H>, int> = 0>
-    aarect(W width, H height) noexcept : v(vec(0.0f, 0.0f, numeric_cast<float>(width), numeric_cast<float>(height)))
+    aarect(W width, H height) noexcept : v(vec(0.0f, 0.0f, narrow_cast<float>(width), narrow_cast<float>(height)))
     {
     }
 
@@ -182,7 +182,7 @@ public:
      */
     // template<size_t I, typename Z, std::enable_if_t<std::is_arithmetic_v<Z>,int> = 0>
     //[[nodiscard]] vec corner(Z z) const noexcept {
-    //    return corner<I>().z(numeric_cast<float>(z));
+    //    return corner<I>().z(narrow_cast<float>(z));
     //}
 
     [[nodiscard]] vec p0() const noexcept

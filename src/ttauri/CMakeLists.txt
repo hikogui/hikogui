@@ -41,6 +41,7 @@ target_sources(ttauri PRIVATE
     bits.hpp
     byte_string.hpp
     cell_address.hpp
+    concepts.hpp
     command.hpp
     CommandLineParser.hpp
     counters.hpp
@@ -99,7 +100,7 @@ target_sources(ttauri PRIVATE
     meta.hpp
     nested_vector_iterator.hpp
     notifier.hpp
-    numeric_cast.hpp
+    cast.hpp
     observable.hpp
     operator.hpp
     os_detect.hpp

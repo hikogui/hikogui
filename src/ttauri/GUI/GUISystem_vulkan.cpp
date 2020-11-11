@@ -49,7 +49,7 @@ GUISystem_vulkan::GUISystem_vulkan(gui_system_delegate *delegate, const std::vec
     }
 
     auto instanceCreateInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo);
-    instanceCreateInfo.setEnabledExtensionCount(numeric_cast<uint32_t>(requiredExtensions.size()));
+    instanceCreateInfo.setEnabledExtensionCount(narrow_cast<uint32_t>(requiredExtensions.size()));
     instanceCreateInfo.setPpEnabledExtensionNames(requiredExtensions.data());
 
     if constexpr (BuildType::current == BuildType::Debug) {
@@ -61,7 +61,7 @@ GUISystem_vulkan::GUISystem_vulkan(gui_system_delegate *delegate, const std::vec
         //requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");
     }
 
-    instanceCreateInfo.setEnabledLayerCount(numeric_cast<uint32_t>(requiredLayers.size()));
+    instanceCreateInfo.setEnabledLayerCount(narrow_cast<uint32_t>(requiredLayers.size()));
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
 
     LOG_INFO("Creating Vulkan instance.");

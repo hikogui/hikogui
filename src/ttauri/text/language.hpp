@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../numeric_cast.hpp"
+#include "../cast.hpp"
 #include "../utils.hpp"
 #include "../logger.hpp"
 #include "language_tag.hpp"
@@ -29,12 +29,12 @@ struct language {
     [[nodiscard]] ssize_t plurality(long long n, ssize_t max) const noexcept {
         int r;
         if (plurality_func) {
-            r = plurality_func(numeric_cast<int>(n % 1'000'000));
+            r = plurality_func(narrow_cast<int>(n % 1'000'000));
         } else {
             // Use English as fallback.
             r = static_cast<int>(n == 1);
         }
-        return std::clamp(numeric_cast<ssize_t>(r), ssize_t{0}, max - 1);
+        return std::clamp(narrow_cast<ssize_t>(r), ssize_t{0}, max - 1);
     }
 
     inline static std::unordered_map<language_tag,std::unique_ptr<language>> languages;

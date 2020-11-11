@@ -535,8 +535,8 @@ public:
      */
     template<int N=2, typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     [[nodiscard]] static mat R(T rhs) noexcept {
-        ttlet s = sin(numeric_cast<float>(rhs));
-        ttlet c = cos(numeric_cast<float>(rhs));
+        ttlet s = sin(narrow_cast<float>(rhs));
+        ttlet c = cos(narrow_cast<float>(rhs));
         ttlet tmp = vec{c, s, -s};
 
         if constexpr (N == 0) {

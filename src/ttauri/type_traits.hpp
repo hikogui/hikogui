@@ -146,4 +146,10 @@ struct make_value_type<T, std::enable_if_t<has_value_type_v<T>>> { using type = 
 template<typename T>
 using make_value_type_t = typename make_value_type<T>::type;
 
+template<typename DerivedType, typename BaseType>
+struct is_derived_from : public std::is_base_of<BaseType,DerivedType> {};
+
+template<typename DerivedType, typename BaseType>
+constexpr bool is_derived_from_v = is_derived_from<DerivedType,BaseType>::value;
+
 }

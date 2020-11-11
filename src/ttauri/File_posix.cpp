@@ -107,7 +107,7 @@ size_t File::fileSize(URL const &url)
         TTAURI_THROW(io_error("Could not retrieve file attributes").set<url_tag>(url));
     }
 
-    return numeric_cast<size_t>(statbuf.st_size);
+    return narrow_cast<size_t>(statbuf.st_size);
 }
 
 }

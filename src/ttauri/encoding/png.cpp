@@ -67,9 +67,9 @@ void png::read_header(std::span<std::byte const> bytes, ssize_t &offset)
 void png::generate_sRGB_transfer_function() noexcept
 {
     ttlet value_range = bit_depth == 8 ? 256 : 65536;
-    ttlet value_range_f = numeric_cast<float>(value_range);
+    ttlet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
-        auto u = numeric_cast<float>(i) / value_range_f;
+        auto u = narrow_cast<float>(i) / value_range_f;
         transfer_function.push_back(sRGB_gamma_to_linear(u));
     }
 }
@@ -80,9 +80,9 @@ void png::generate_Rec2100_transfer_function() noexcept
     constexpr float hdr_multiplier = 10'000.0f / 80.0f;
 
     ttlet value_range = bit_depth == 8 ? 256 : 65536;
-    ttlet value_range_f = numeric_cast<float>(value_range);
+    ttlet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
-        auto u = numeric_cast<float>(i) / value_range_f;
+        auto u = narrow_cast<float>(i) / value_range_f;
         transfer_function.push_back(Rec2100_gamma_to_linear(u) * hdr_multiplier);
     }
 }
@@ -90,9 +90,9 @@ void png::generate_Rec2100_transfer_function() noexcept
 void png::generate_gamma_transfer_function(float gamma) noexcept
 {
     ttlet value_range = bit_depth == 8 ? 256 : 65536;
-    ttlet value_range_f = numeric_cast<float>(value_range);
+    ttlet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
-        auto u = numeric_cast<float>(i) / value_range_f;
+        auto u = narrow_cast<float>(i) / value_range_f;
         transfer_function.push_back(powf(u, gamma));
     }
 }
@@ -144,14 +144,14 @@ void png::read_cHRM(std::span<std::byte const> bytes)
     ttlet chrm = make_placement_ptr<cHRM>(bytes);
 
     ttlet color_to_XYZ = mat::RGBtoXYZ(
-        numeric_cast<float>(chrm->white_point_x.value()) / 100'000.0f,
-        numeric_cast<float>(chrm->white_point_y.value()) / 100'000.0f,
-        numeric_cast<float>(chrm->red_x.value()) / 100'000.0f,
-        numeric_cast<float>(chrm->red_y.value()) / 100'000.0f,
-        numeric_cast<float>(chrm->green_x.value()) / 100'000.0f,
-        numeric_cast<float>(chrm->green_y.value()) / 100'000.0f,
-        numeric_cast<float>(chrm->blue_x.value()) / 100'000.0f,
-        numeric_cast<float>(chrm->blue_y.value()) / 100'000.0f
+        narrow_cast<float>(chrm->white_point_x.value()) / 100'000.0f,
+        narrow_cast<float>(chrm->white_point_y.value()) / 100'000.0f,
+        narrow_cast<float>(chrm->red_x.value()) / 100'000.0f,
+        narrow_cast<float>(chrm->red_y.value()) / 100'000.0f,
+        narrow_cast<float>(chrm->green_x.value()) / 100'000.0f,
+        narrow_cast<float>(chrm->green_y.value()) / 100'000.0f,
+        narrow_cast<float>(chrm->blue_x.value()) / 100'000.0f,
+        narrow_cast<float>(chrm->blue_y.value()) / 100'000.0f
     );
 
     color_to_sRGB = XYZ_to_sRGB * color_to_XYZ;
@@ -160,7 +160,7 @@ void png::read_cHRM(std::span<std::byte const> bytes)
 void png::read_gAMA(std::span<std::byte const> bytes)
 {
     ttlet gama = make_placement_ptr<gAMA>(bytes);
-    ttlet gamma = numeric_cast<float>(gama->gamma.value()) / 100'000.0f;
+    ttlet gamma = narrow_cast<float>(gama->gamma.value()) / 100'000.0f;
     parse_assert2(gamma != 0.0f, "Gamma value can not be zero");
      
     generate_gamma_transfer_function(1.0f / gamma);
@@ -216,7 +216,7 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
 
     while (!has_IEND) {
         ttlet header = make_placement_ptr<ChunkHeader>(bytes, offset);
-        ttlet length = numeric_cast<ssize_t>(header->length.value());
+        ttlet length = narrow_cast<ssize_t>(header->length.value());
         parse_assert2(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
         parse_assert2(offset + length + ssizeof(uint32_t) <= std::ssize(bytes), "Chuck extents beyond file.");
 

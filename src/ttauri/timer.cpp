@@ -11,8 +11,8 @@ namespace tt {
 
 [[nodiscard]] timer::time_point timer::calculate_next_wakeup(timer::time_point current_time, timer::duration interval) noexcept
 {
-    ttlet current_time_ = numeric_cast<int64_t>(current_time.time_since_epoch().count());
-    ttlet interval_ = numeric_cast<int64_t>(interval.count());
+    ttlet current_time_ = narrow_cast<int64_t>(current_time.time_since_epoch().count());
+    ttlet interval_ = narrow_cast<int64_t>(interval.count());
 
     ttlet intervals_since_epoch = current_time_ / interval_;
 

@@ -23,7 +23,7 @@ VerticalSync_macos::VerticalSync_macos(std::function<void(void *,hires_utc_clock
     VerticalSync_base(std::move(callback), callbackData)
 {
 
-    hostFrequency = numeric_cast<uint64_t>(CVGetHostClockFrequency());
+    hostFrequency = narrow_cast<uint64_t>(CVGetHostClockFrequency());
 
     // Start update loop.
     CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);

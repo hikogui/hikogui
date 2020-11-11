@@ -5,7 +5,7 @@
 
 #include <limits>
 #include <ranges>
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 
 namespace tt {
 
@@ -36,52 +36,52 @@ public:
         return value;
     }
 
-    [[nodiscard]] constexpr ranged_numeric(signed long long rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(signed long long rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(unsigned long long rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(unsigned long long rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(signed long rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(signed long rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(unsigned long rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(unsigned long rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(signed int rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(signed int rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(unsigned int rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(unsigned int rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(signed short rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(signed short rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(unsigned short rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(unsigned short rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(signed char rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(signed char rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }
 
-    [[nodiscard]] constexpr ranged_numeric(unsigned char rhs) noexcept : value(numeric_cast<T>(rhs))
+    [[nodiscard]] constexpr ranged_numeric(unsigned char rhs) noexcept : value(narrow_cast<T>(rhs))
     {
         tt_assume(value >= value_min && value < value_max);
     }

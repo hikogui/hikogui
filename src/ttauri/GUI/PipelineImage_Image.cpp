@@ -7,7 +7,7 @@
 #include "PipelineImage_Vertex.hpp"
 #include "../logger.hpp"
 #include "../required.hpp"
-#include "../numeric_cast.hpp"
+#include "../cast.hpp"
 #include "../mat.hpp"
 #include "../ivec.hpp"
 #include "../iaarect.hpp"

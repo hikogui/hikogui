@@ -114,7 +114,7 @@ public:
         for (ttlet &line: lines) {
             count += std::ssize(line);
         }
-        return numeric_cast<size_t>(count);
+        return narrow_cast<size_t>(count);
     }
 
     [[nodiscard]] iterator begin() noexcept { return nested_vector_iterator_begin(lines); }

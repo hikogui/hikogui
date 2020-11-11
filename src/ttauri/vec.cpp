@@ -6,9 +6,9 @@ namespace tt {
 
 [[nodiscard]] vec vec::colorFromSRGB(float r, float g, float b, float a) noexcept {
     return vec{
-        sRGB_gamma_to_linear(numeric_cast<float>(r)),
-        sRGB_gamma_to_linear(numeric_cast<float>(g)),
-        sRGB_gamma_to_linear(numeric_cast<float>(b)),
+        sRGB_gamma_to_linear(narrow_cast<float>(r)),
+        sRGB_gamma_to_linear(narrow_cast<float>(g)),
+        sRGB_gamma_to_linear(narrow_cast<float>(b)),
         a
     };
 }

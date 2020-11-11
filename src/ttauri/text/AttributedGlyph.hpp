@@ -99,8 +99,8 @@ struct AttributedGlyph {
      */
     [[nodiscard]] ssize_t relativeIndexAtCoordinate(vec coordinate) const noexcept {
         ttlet relativePositionInGlyph = (coordinate.x() - position.x()) / metrics.advance.x();
-        ttlet relativePositionPerGrapheme = relativePositionInGlyph * numeric_cast<float>(graphemeCount);
-        return numeric_cast<ssize_t>(std::round(relativePositionPerGrapheme));
+        ttlet relativePositionPerGrapheme = relativePositionInGlyph * narrow_cast<float>(graphemeCount);
+        return narrow_cast<ssize_t>(std::round(relativePositionPerGrapheme));
     }
 
     [[nodiscard]] Path get_path() const noexcept;

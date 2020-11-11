@@ -154,7 +154,7 @@ size_t File::fileSize(URL const &url)
     LARGE_INTEGER size;
     size.HighPart = attributes.nFileSizeHigh;
     size.LowPart = attributes.nFileSizeLow;
-    return numeric_cast<int64_t>(size.QuadPart);
+    return narrow_cast<int64_t>(size.QuadPart);
 }
 
 void File::createDirectory(URL const &url, bool hierarchy)

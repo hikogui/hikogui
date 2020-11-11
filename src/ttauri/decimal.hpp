@@ -133,39 +133,39 @@ public:
 
     explicit operator signed long()
     {
-        return numeric_cast<signed long>(static_cast<signed long long>(*this));
+        return narrow_cast<signed long>(static_cast<signed long long>(*this));
     }
     explicit operator signed int()
     {
-        return numeric_cast<signed int>(static_cast<signed long long>(*this));
+        return narrow_cast<signed int>(static_cast<signed long long>(*this));
     }
     explicit operator signed short()
     {
-        return numeric_cast<signed short>(static_cast<signed long long>(*this));
+        return narrow_cast<signed short>(static_cast<signed long long>(*this));
     }
     explicit operator signed char()
     {
-        return numeric_cast<signed char>(static_cast<signed long long>(*this));
+        return narrow_cast<signed char>(static_cast<signed long long>(*this));
     }
     explicit operator unsigned long long()
     {
-        return numeric_cast<unsigned int>(static_cast<signed long long>(*this));
+        return narrow_cast<unsigned int>(static_cast<signed long long>(*this));
     }
     explicit operator unsigned long()
     {
-        return numeric_cast<unsigned long>(static_cast<signed long long>(*this));
+        return narrow_cast<unsigned long>(static_cast<signed long long>(*this));
     }
     explicit operator unsigned int()
     {
-        return numeric_cast<unsigned int>(static_cast<signed long long>(*this));
+        return narrow_cast<unsigned int>(static_cast<signed long long>(*this));
     }
     explicit operator unsigned short()
     {
-        return numeric_cast<unsigned short>(static_cast<signed long long>(*this));
+        return narrow_cast<unsigned short>(static_cast<signed long long>(*this));
     }
     explicit operator unsigned char()
     {
-        return numeric_cast<unsigned char>(static_cast<signed long long>(*this));
+        return narrow_cast<unsigned char>(static_cast<signed long long>(*this));
     }
     explicit operator long double()
     {

@@ -6,7 +6,7 @@
 #include "Window.hpp"
 #include "GUISystem_forward.hpp"
 #include "../exceptions.hpp"
-#include "../numeric_cast.hpp"
+#include "../cast.hpp"
 #include "../bigint.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include <unordered_set>

@@ -227,8 +227,8 @@ struct token_t {
         }
 
         ttlet year = date::year{stoi(parts[0])};
-        ttlet month = date::month{numeric_cast<unsigned int>(stoi(parts[1]))};
-        ttlet day = date::day{numeric_cast<unsigned int>(stoi(parts[2]))};
+        ttlet month = date::month{narrow_cast<unsigned int>(stoi(parts[1]))};
+        ttlet day = date::day{narrow_cast<unsigned int>(stoi(parts[2]))};
         return {year, month, day};
     }
 

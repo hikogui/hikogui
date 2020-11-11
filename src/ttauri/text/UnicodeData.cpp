@@ -187,7 +187,7 @@ void UnicodeData::initialize()
 
 UnicodeData_Description const *UnicodeData::getDescription(char32_t codePoint) const noexcept
 {
-    ttlet descriptions = unsafe_make_placement_array<UnicodeData_Description>(bytes, rvalue_cast(descriptions_offset), descriptions_count);
+    ttlet descriptions = unsafe_make_placement_array<UnicodeData_Description>(bytes, copy(descriptions_offset), descriptions_count);
     ttlet i = std::lower_bound(descriptions.begin(), descriptions.end(), codePoint, [](auto &element, auto value) {
         return element.codePoint() < value;
     });
@@ -322,7 +322,7 @@ void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t codePoint,
             ttlet nrTriplets = (decompositionLength + 2) / 3;
 
             if (check_placement_array<little_uint64_buf_at>(bytes, offset, nrTriplets)) {
-                ttlet decomposition = unsafe_make_placement_array<little_uint64_buf_at>(bytes, rvalue_cast(offset), nrTriplets);
+                ttlet decomposition = unsafe_make_placement_array<little_uint64_buf_at>(bytes, copy(offset), nrTriplets);
                 for (size_t tripletIndex = 0, i = 0; tripletIndex < nrTriplets; tripletIndex++, i+=3) {
                     ttlet triplet = decomposition[tripletIndex].value();
                     ttlet codePoint1 = static_cast<char32_t>(triplet >> 43);
@@ -406,8 +406,7 @@ char32_t UnicodeData::compose(char32_t startCodePoint, char32_t composingCodePoi
         return startCodePoint + TIndex;
 
     } else {
-        ttlet compositions = unsafe_make_placement_array<UnicodeData_Composition>(
-            bytes, rvalue_cast(compositions_offset), compositions_count
+        ttlet compositions = unsafe_make_placement_array<UnicodeData_Composition>(bytes, copy(compositions_offset), compositions_count
         );
 
         ttlet i = std::lower_bound(compositions.begin(), compositions.end(), searchValue, [](auto &element, auto value) {

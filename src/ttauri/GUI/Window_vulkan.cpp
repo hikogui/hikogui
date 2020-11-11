@@ -112,8 +112,8 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
     try {
         //LOG_DEBUG("presentQueue {}", presentImageIndices.at(0));
         ttlet result = _device->presentQueue.presentKHR({
-            numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
-            numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
+            narrow_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
+            narrow_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
         });
 
         switch (result) {
@@ -202,8 +202,8 @@ void Window_vulkan::build()
         toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
 
         windowChangedSize({
-            numeric_cast<float>(swapchainImageExtent.width),
-            numeric_cast<float>(swapchainImageExtent.height)
+            narrow_cast<float>(swapchainImageExtent.width),
+            narrow_cast<float>(swapchainImageExtent.height)
         });
         state = State::ReadyToRender;
     }
@@ -391,7 +391,7 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
         renderPass, 
         frameBuffer,
         renderArea, 
-        numeric_cast<uint32_t>(clearValues.size()),
+        narrow_cast<uint32_t>(clearValues.size()),
         clearValues.data()
         }, vk::SubpassContents::eInline
     );
@@ -433,9 +433,9 @@ void Window_vulkan::submitCommandBuffer()
 
     ttlet submitInfo = std::array{
         vk::SubmitInfo{
-            numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
-            numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
-            numeric_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
+            narrow_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
+            narrow_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
+            narrow_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
         }
     };
 
@@ -491,8 +491,8 @@ bool Window_vulkan::readSurfaceExtent()
     ttlet minimum_widget_size = widget_size.minimum();
     ttlet maximum_widget_size = widget_size.maximum();
 
-    if (numeric_cast<int>(swapchainImageExtent.width) < minimum_widget_size.width() ||
-        numeric_cast<int>(swapchainImageExtent.height) < minimum_widget_size.height()
+    if (narrow_cast<int>(swapchainImageExtent.width) < minimum_widget_size.width() ||
+        narrow_cast<int>(swapchainImageExtent.height) < minimum_widget_size.height()
     ) {
         // Due to vulkan surface being extended across the window decoration;
         // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
@@ -505,8 +505,8 @@ bool Window_vulkan::readSurfaceExtent()
         return false;
     }
 
-    if (numeric_cast<int>(swapchainImageExtent.width) > maximum_widget_size.width() ||
-        numeric_cast<int>(swapchainImageExtent.height) > maximum_widget_size.height()
+    if (narrow_cast<int>(swapchainImageExtent.width) > maximum_widget_size.width() ||
+        narrow_cast<int>(swapchainImageExtent.height) > maximum_widget_size.height()
         ) {
         LOG_ERROR("Window too large to draw current=({}, {}), maximum=({})",
             swapchainImageExtent.width, swapchainImageExtent.height,
@@ -572,7 +572,7 @@ Window_base::State Window_vulkan::buildSwapchain()
         1, // imageArrayLayers
         vk::ImageUsageFlagBits::eColorAttachment,
         sharingMode,
-        sharingMode == vk::SharingMode::eConcurrent ? numeric_cast<uint32_t>(sharingQueueFamilyAllIndices.size()) : 0,
+        sharingMode == vk::SharingMode::eConcurrent ? narrow_cast<uint32_t>(sharingQueueFamilyAllIndices.size()) : 0,
         sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices.data() : nullptr,
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
@@ -705,7 +705,7 @@ void Window_vulkan::buildFramebuffers()
         ttlet framebuffer = _device->createFramebuffer({
             vk::FramebufferCreateFlags(),
             renderPass,
-            numeric_cast<uint32_t>(attachments.size()),
+            narrow_cast<uint32_t>(attachments.size()),
             attachments.data(),
             swapchainImageExtent.width,
             swapchainImageExtent.height,
@@ -799,7 +799,7 @@ void Window_vulkan::buildRenderPasses()
             vk::PipelineBindPoint::eGraphics,
             0, // inputAttchmentReferencesCount
             nullptr, // inputAttachmentReferences
-            numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            narrow_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, //resolveAttachments
             &depthAttachmentReference
@@ -809,7 +809,7 @@ void Window_vulkan::buildRenderPasses()
             vk::PipelineBindPoint::eGraphics,
             0, // inputAttchmentReferencesCount
             nullptr, // inputAttachmentReferences
-            numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            narrow_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, //resolveAttachments
             &depthAttachmentReference
@@ -819,7 +819,7 @@ void Window_vulkan::buildRenderPasses()
             vk::PipelineBindPoint::eGraphics,
             0, // inputAttchmentReferencesCount
             nullptr, // inputAttachmentReferences
-            numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            narrow_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, //resolveAttachments
             &depthAttachmentReference
@@ -827,9 +827,9 @@ void Window_vulkan::buildRenderPasses()
         }, vk::SubpassDescription{ // Subpass 3
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
-            numeric_cast<uint32_t>(colorInputAttachmentReferences.size()),
+            narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
             colorInputAttachmentReferences.data(),
-            numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            narrow_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, // resolveAttachments
             &depthAttachmentReference
@@ -837,9 +837,9 @@ void Window_vulkan::buildRenderPasses()
         }, vk::SubpassDescription{ // Subpass 4 tone-mapper
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
-            numeric_cast<uint32_t>(colorInputAttachmentReferences.size()),
+            narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
             colorInputAttachmentReferences.data(),
-            numeric_cast<uint32_t>(swapchainAttachmentReferences.size()),
+            narrow_cast<uint32_t>(swapchainAttachmentReferences.size()),
             swapchainAttachmentReferences.data(),
             nullptr,
             nullptr
@@ -904,11 +904,11 @@ void Window_vulkan::buildRenderPasses()
 
     vk::RenderPassCreateInfo const renderPassCreateInfo = {
         vk::RenderPassCreateFlags(),
-        numeric_cast<uint32_t>(attachmentDescriptions.size()), // attachmentCount
+        narrow_cast<uint32_t>(attachmentDescriptions.size()), // attachmentCount
         attachmentDescriptions.data(), // attachments
-        numeric_cast<uint32_t>(subpassDescriptions.size()), // subpassCount
+        narrow_cast<uint32_t>(subpassDescriptions.size()), // subpassCount
         subpassDescriptions.data(), // subpasses
-        numeric_cast<uint32_t>(subpassDependency.size()), // dependencyCount
+        narrow_cast<uint32_t>(subpassDependency.size()), // dependencyCount
         subpassDependency.data() // dependencies
     };
 

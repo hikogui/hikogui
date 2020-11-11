@@ -8,7 +8,7 @@
 #include "../PixelMap.hpp"
 #include "../URL.hpp"
 #include "../memory.hpp"
-#include "../numeric_cast.hpp"
+#include "../cast.hpp"
 #include "../BezierCurve.hpp"
 #include "../ivec.hpp"
 #include "../iaarect.hpp"
@@ -40,8 +40,8 @@ void DeviceShared::destroy(GUIDevice * vulkanDevice)
 
 [[nodiscard]] AtlasRect DeviceShared::allocateRect(vec drawExtent) noexcept
 {
-    auto imageWidth = numeric_cast<int>(std::ceil(drawExtent.width()));
-    auto imageHeight = numeric_cast<int>(std::ceil(drawExtent.height()));
+    auto imageWidth = narrow_cast<int>(std::ceil(drawExtent.width()));
+    auto imageHeight = narrow_cast<int>(std::ceil(drawExtent.height()));
 
     if (atlasAllocationPosition.y() + imageHeight > atlasImageHeight) {
         atlasAllocationPosition.x(0); 
@@ -88,8 +88,8 @@ void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
         { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
         { 0, 0, 0 },
         { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-        { numeric_cast<int32_t>(location.atlasPosition.x()), numeric_cast<int32_t>(location.atlasPosition.y()), 0 },
-        { numeric_cast<uint32_t>(location.atlasExtent.x()), numeric_cast<uint32_t>(location.atlasExtent.y()), 1}
+        { narrow_cast<int32_t>(location.atlasPosition.x()), narrow_cast<int32_t>(location.atlasPosition.y()), 0 },
+        { narrow_cast<uint32_t>(location.atlasExtent.x()), narrow_cast<uint32_t>(location.atlasExtent.y()), 1}
     }};
 
     auto &atlasTexture = atlasTextures.at(location.atlasPosition.z());

@@ -236,9 +236,9 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
         return;
     }
 
-    ttlet startX_int = numeric_cast<ssize_t>(startX);
+    ttlet startX_int = narrow_cast<ssize_t>(startX);
     ttlet endXplusOne = endX + 1.0f;
-    ttlet endX_int = numeric_cast<ssize_t>(endXplusOne);
+    ttlet endX_int = narrow_cast<ssize_t>(endXplusOne);
     ttlet startColumn = std::max(startX_int, ssize_t{0});
     ttlet endColumn = std::min(endX_int, row.width);
     ttlet nrColumns = endColumn - startColumn;

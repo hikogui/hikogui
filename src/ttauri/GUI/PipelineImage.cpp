@@ -33,7 +33,7 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
-    pushConstants.windowExtent = { numeric_cast<int>(extent.width) , numeric_cast<int>(extent.height) };
+    pushConstants.windowExtent = { narrow_cast<int>(extent.width) , narrow_cast<int>(extent.height) };
     pushConstants.viewportScale = { 2.0f / extent.width, 2.0f / extent.height };
     pushConstants.atlasExtent = { DeviceShared::atlasImageWidth, DeviceShared::atlasImageHeight };
     pushConstants.atlasScale = { 1.0f / DeviceShared::atlasImageWidth, 1.0f / DeviceShared::atlasImageHeight };
@@ -48,7 +48,7 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
     ttlet numberOfRectangles = vertexBufferData.size() / 4;
     ttlet numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
-        numeric_cast<uint32_t>(numberOfTriangles * 3),
+        narrow_cast<uint32_t>(numberOfTriangles * 3),
         1,
         0,
         0,
@@ -69,7 +69,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
     }, {
         1, // binding
         vk::DescriptorType::eSampledImage,
-        numeric_cast<uint32_t>(DeviceShared::atlasMaximumNrImages), // descriptorCount
+        narrow_cast<uint32_t>(DeviceShared::atlasMaximumNrImages), // descriptorCount
         vk::ShaderStageFlagBits::eFragment
     } };
 }
@@ -91,7 +91,7 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet() const
         descriptorSet,
         1, // destBinding
         0, // arrayElement
-        numeric_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
+        narrow_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
         vk::DescriptorType::eSampledImage,
         sharedImagePipeline->atlasDescriptorImageInfos.data(),
         nullptr, // bufferInfo

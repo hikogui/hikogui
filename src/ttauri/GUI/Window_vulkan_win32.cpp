@@ -132,8 +132,8 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
         // Size and position
         500,
         500,
-        numeric_cast<int>(extent.x()),
-        numeric_cast<int>(extent.y()),
+        narrow_cast<int>(extent.x()),
+        narrow_cast<int>(extent.y()),
 
         NULL, // Parent window
         NULL, // Menu
@@ -174,7 +174,7 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
     if (_dpi == 0) {
         TTAURI_THROW(gui_error("Could not retrieve dpi for window."));
     }
-    dpi = numeric_cast<float>(_dpi);
+    dpi = narrow_cast<float>(_dpi);
 }
 
 Window_vulkan_win32::Window_vulkan_win32(GUISystem &system, WindowDelegate *delegate, label const &title) :
@@ -540,16 +540,16 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         ttlet minimum_widget_size = widget_size.minimum();
         ttlet maximum_widget_size = widget_size.maximum();
         ttlet minmaxinfo = to_ptr<MINMAXINFO>(lParam);
-        minmaxinfo->ptMaxSize.x = numeric_cast<LONG>(maximum_widget_size.width());
-        minmaxinfo->ptMaxSize.y = numeric_cast<LONG>(maximum_widget_size.height());
-        minmaxinfo->ptMinTrackSize.x = numeric_cast<LONG>(minimum_widget_size.width());
-        minmaxinfo->ptMinTrackSize.y = numeric_cast<LONG>(minimum_widget_size.height());
-        minmaxinfo->ptMaxTrackSize.x = numeric_cast<LONG>(maximum_widget_size.width());
-        minmaxinfo->ptMaxTrackSize.y = numeric_cast<LONG>(maximum_widget_size.height());
+        minmaxinfo->ptMaxSize.x = narrow_cast<LONG>(maximum_widget_size.width());
+        minmaxinfo->ptMaxSize.y = narrow_cast<LONG>(maximum_widget_size.height());
+        minmaxinfo->ptMinTrackSize.x = narrow_cast<LONG>(minimum_widget_size.width());
+        minmaxinfo->ptMinTrackSize.y = narrow_cast<LONG>(minimum_widget_size.height());
+        minmaxinfo->ptMaxTrackSize.x = narrow_cast<LONG>(maximum_widget_size.width());
+        minmaxinfo->ptMaxTrackSize.y = narrow_cast<LONG>(maximum_widget_size.height());
     } break;
 
     case WM_UNICHAR: {
-        auto c = numeric_cast<char32_t>(wParam);
+        auto c = narrow_cast<char32_t>(wParam);
         if (c == UNICODE_NOCHAR) {
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
@@ -562,29 +562,29 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     } break;
 
     case WM_DEADCHAR: {
-        auto c = handleSuragates(numeric_cast<char32_t>(wParam));
+        auto c = handleSuragates(narrow_cast<char32_t>(wParam));
         if (c != 0) {
             handle_keyboard_event(c, false);
         }
     } break;
 
     case WM_CHAR: {
-        auto c = handleSuragates(numeric_cast<char32_t>(wParam));
+        auto c = handleSuragates(narrow_cast<char32_t>(wParam));
         if (c >= 0x20) {
             handle_keyboard_event(c);
         }
     } break;
 
     case WM_SYSKEYDOWN: {
-        auto alt_pressed = (numeric_cast<uint32_t>(lParam) & 0x20000000) != 0;
+        auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
         if (!alt_pressed) {
             return -1;
         }
     }
         [[fallthrough]];
     case WM_KEYDOWN: {
-        auto extended = (numeric_cast<uint32_t>(lParam) & 0x01000000) != 0;
-        auto key_code = numeric_cast<int>(wParam);
+        auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
+        auto key_code = narrow_cast<int>(wParam);
 
         LOG_ERROR("Key 0x{:x} extended={}", key_code, extended);
 
@@ -666,7 +666,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_DPICHANGED: {
         ttlet lock = std::scoped_lock(GUISystem_mutex);
         // x-axis dpi value.
-        dpi = numeric_cast<float>(LOWORD(wParam));
+        dpi = narrow_cast<float>(LOWORD(wParam));
         requestLayout = true;
     } break;
 

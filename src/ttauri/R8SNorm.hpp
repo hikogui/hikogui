@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "numeric_cast.hpp"
+#include "cast.hpp"
 #include <algorithm>
 
 namespace tt {
 
 [[nodiscard]] constexpr int8_t make_R8SNorm_value(float rhs) noexcept
 {
-    return numeric_cast<int8_t>(std::clamp(rhs, -1.0f, 1.0f) * 127.0f);
+    return narrow_cast<int8_t>(std::clamp(rhs, -1.0f, 1.0f) * 127.0f);
 }
 
 struct R8SNorm {
@@ -32,7 +32,7 @@ struct R8SNorm {
     }
 
     explicit operator float () const noexcept {
-        return numeric_cast<float>(value) / 127.0f;
+        return narrow_cast<float>(value) / 127.0f;
     }
 };
 

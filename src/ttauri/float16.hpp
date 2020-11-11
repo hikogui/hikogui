@@ -17,7 +17,7 @@ public:
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     float16(T const &rhs) noexcept {
-        ttlet tmp1 = numeric_cast<float>(rhs);
+        ttlet tmp1 = narrow_cast<float>(rhs);
         ttlet tmp2 = _mm_set_ss(tmp1);
         ttlet tmp3 = _mm_cvtps_ph(tmp2, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si16(&v, tmp3);
@@ -25,7 +25,7 @@ public:
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     float16 &operator=(T const &rhs) noexcept {
-        ttlet tmp1 = numeric_cast<float>(rhs);
+        ttlet tmp1 = narrow_cast<float>(rhs);
         ttlet tmp2 = _mm_set_ss(tmp1);
         ttlet tmp3 = _mm_cvtps_ph(tmp2, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si16(&v, tmp3);

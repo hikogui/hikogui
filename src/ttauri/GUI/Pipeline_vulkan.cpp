@@ -50,7 +50,7 @@ void Pipeline_vulkan::buildDescriptorSets()
 
     ttlet descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
         vk::DescriptorSetLayoutCreateFlags(),
-        numeric_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
+        narrow_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
     };
 
     descriptorSetLayout = device().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
@@ -60,7 +60,7 @@ void Pipeline_vulkan::buildDescriptorSets()
         [](auto x) -> vk::DescriptorPoolSize {
             return {
                 x.descriptorType,
-                numeric_cast<uint32_t>(x.descriptorCount)
+                narrow_cast<uint32_t>(x.descriptorCount)
             };
         }
     );
@@ -68,7 +68,7 @@ void Pipeline_vulkan::buildDescriptorSets()
     descriptorPool = device().createDescriptorPool({
         vk::DescriptorPoolCreateFlags(),
         1, // maxSets
-        numeric_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
+        narrow_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
     });
 
     ttlet descriptorSetLayouts = std::array{
@@ -77,7 +77,7 @@ void Pipeline_vulkan::buildDescriptorSets()
     
     ttlet descriptorSets = device().allocateDescriptorSets({
         descriptorPool,
-        numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
+        narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
     });
 
     descriptorSet = descriptorSets.at(0);
@@ -145,14 +145,14 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
 
     pipelineLayout = device().createPipelineLayout({
         vk::PipelineLayoutCreateFlags(),
-        numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data(),
-        numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
+        narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data(),
+        narrow_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
     });
 
     const vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {
         vk::PipelineVertexInputStateCreateFlags(),
         1, &vertexInputBindingDescription,
-        numeric_cast<uint32_t>(vertexInputAttributeDescriptions.size()), vertexInputAttributeDescriptions.data()
+        narrow_cast<uint32_t>(vertexInputAttributeDescriptions.size()), vertexInputAttributeDescriptions.data()
     };
 
     const vk::PipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo = {
@@ -164,7 +164,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
     const std::array<vk::Viewport, 1> viewports = {
         vk::Viewport{
             0.0f, 0.0f,
-            numeric_cast<float>(extent.width), numeric_cast<float>(extent.height),
+            narrow_cast<float>(extent.width), narrow_cast<float>(extent.height),
             // Reverse-z, with float buffer this will give a linear depth buffer.
             1.0f, 0.0f
         }
@@ -176,8 +176,8 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
 
     const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         vk::PipelineViewportStateCreateFlags(),
-        numeric_cast<uint32_t>(viewports.size()), viewports.data(),
-        numeric_cast<uint32_t>(scissors.size()), scissors.data()
+        narrow_cast<uint32_t>(viewports.size()), viewports.data(),
+        narrow_cast<uint32_t>(scissors.size()), scissors.data()
     };
 
     const vk::PipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo =  {
@@ -215,12 +215,12 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         vk::PipelineColorBlendStateCreateFlags(),
         VK_FALSE, // logicOpenable
         vk::LogicOp::eCopy,
-        numeric_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()), pipelineColorBlendAttachmentStates.data()
+        narrow_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()), pipelineColorBlendAttachmentStates.data()
     };
 
     const vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {
         vk::PipelineCreateFlags(),
-        numeric_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
+        narrow_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
         &pipelineVertexInputStateCreateInfo,
         &pipelineInputAssemblyStateCreateInfo,
         nullptr, // tesselationStateCreateInfo

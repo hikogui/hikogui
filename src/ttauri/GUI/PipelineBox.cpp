@@ -30,7 +30,7 @@ void PipelineBox::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
-    pushConstants.windowExtent = { numeric_cast<int>(extent.width) , numeric_cast<int>(extent.height) };
+    pushConstants.windowExtent = { narrow_cast<int>(extent.width) , narrow_cast<int>(extent.height) };
     pushConstants.viewportScale = { 2.0f / extent.width, 2.0f / extent.height };
     commandBuffer.pushConstants(
         pipelineLayout,
@@ -43,7 +43,7 @@ void PipelineBox::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
     ttlet numberOfRectangles = vertexBufferData.size() / 4;
     ttlet numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
-        numeric_cast<uint32_t>(numberOfTriangles * 3),
+        narrow_cast<uint32_t>(numberOfTriangles * 3),
         1,
         0,
         0,

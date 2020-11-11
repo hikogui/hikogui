@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../strings.hpp"
-#include "../numeric_cast.hpp"
+#include "../cast.hpp"
 #include "../hash.hpp"
 #include <array>
 
