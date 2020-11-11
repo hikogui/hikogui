@@ -7,7 +7,7 @@ namespace tt {
 
 using namespace std;
 
-pipeline::pipeline(Window_base const &window) :
+pipeline::pipeline(gui_window const &window) :
     window(window)
 {
 }

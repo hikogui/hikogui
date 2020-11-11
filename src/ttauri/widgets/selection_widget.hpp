@@ -35,7 +35,7 @@ public:
 
     template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = label>
     selection_widget(
-        Window_base &window,
+        gui_window &window,
         std::shared_ptr<widget> parent,
         Value &&value = value_type{},
         OptionList &&option_list = option_list_type{},

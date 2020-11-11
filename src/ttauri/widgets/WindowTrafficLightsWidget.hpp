@@ -19,7 +19,7 @@ class WindowTrafficLightsWidget final : public widget {
 public:
     using super = widget;
 
-    WindowTrafficLightsWidget(Window_base &window, std::shared_ptr<widget> parent) noexcept;
+    WindowTrafficLightsWidget(gui_window &window, std::shared_ptr<widget> parent) noexcept;
     ~WindowTrafficLightsWidget() {}
 
     [[nodiscard]] bool

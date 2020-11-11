@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Window_vulkan_win32.hpp"
+#include "gui_window_vulkan_win32.hpp"
 #include "KeyboardVirtualKey.hpp"
 #include "gui_system_vulkan_win32.hpp"
 #include "ThemeBook.hpp"
@@ -33,16 +33,16 @@ static WNDCLASSW win32WindowClass = {};
 static bool win32WindowClassIsRegistered = false;
 static bool firstWindowHasBeenOpened = false;
 
-static std::unordered_map<HWND, Window_vulkan_win32 *> win32_window_map = {};
+static std::unordered_map<HWND, gui_window_vulkan_win32 *> win32_window_map = {};
 static unfair_mutex win32_window_map_mutex;
 
-static void add_win32_window(HWND handle, Window_vulkan_win32 &window) noexcept
+static void add_win32_window(HWND handle, gui_window_vulkan_win32 &window) noexcept
 {
     ttlet lock = std::scoped_lock(win32_window_map_mutex);
     win32_window_map[handle] = &window;
 }
 
-static Window_vulkan_win32 *find_win32_window(HWND handle) noexcept
+static gui_window_vulkan_win32 *find_win32_window(HWND handle) noexcept
 {
     ttlet lock = std::scoped_lock(win32_window_map_mutex);
     auto i = win32_window_map.find(handle);
@@ -65,7 +65,7 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 {
     if (uMsg == WM_NCCREATE && lParam) {
         ttlet createData = reinterpret_cast<CREATESTRUCT *>(lParam);
-        auto *const window = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
+        auto *const window = static_cast<gui_window_vulkan_win32 *>(createData->lpCreateParams);
 
         if (window != nullptr) {
             add_win32_window(hwnd, *window);
@@ -112,7 +112,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
+void gui_window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
 {
     // This function should be called during initialize(), and therefor should not have a lock on the window.
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
@@ -177,14 +177,14 @@ void Window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
     dpi = narrow_cast<float>(_dpi);
 }
 
-Window_vulkan_win32::Window_vulkan_win32(gui_system &system, WindowDelegate *delegate, label const &title) :
-    Window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
+gui_window_vulkan_win32::gui_window_vulkan_win32(gui_system &system, WindowDelegate *delegate, label const &title) :
+    gui_window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
 {
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
     LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 }
 
-Window_vulkan_win32::~Window_vulkan_win32()
+gui_window_vulkan_win32::~gui_window_vulkan_win32()
 {
     try {
         if (win32Window != nullptr) {
@@ -195,35 +195,35 @@ Window_vulkan_win32::~Window_vulkan_win32()
     }
 }
 
-void Window_vulkan_win32::closeWindow()
+void gui_window_vulkan_win32::closeWindow()
 {
     run_from_main_loop([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
-void Window_vulkan_win32::minimizeWindow()
+void gui_window_vulkan_win32::minimizeWindow()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
-void Window_vulkan_win32::maximizeWindow()
+void gui_window_vulkan_win32::maximizeWindow()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
-void Window_vulkan_win32::normalizeWindow()
+void gui_window_vulkan_win32::normalizeWindow()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
 
-void Window_vulkan_win32::setWindowSize(ivec extent)
+void gui_window_vulkan_win32::setWindowSize(ivec extent)
 {
     gui_system_mutex.lock();
     ttlet handle = reinterpret_cast<HWND>(win32Window);
@@ -241,7 +241,7 @@ void Window_vulkan_win32::setWindowSize(ivec extent)
     });
 }
 
-[[nodiscard]] ivec Window_vulkan_win32::virtualScreenSize() const noexcept
+[[nodiscard]] ivec gui_window_vulkan_win32::virtualScreenSize() const noexcept
 {
     ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
     ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
@@ -251,7 +251,7 @@ void Window_vulkan_win32::setWindowSize(ivec extent)
     return {width, height};
 }
 
-[[nodiscard]] std::u8string Window_vulkan_win32::getTextFromClipboard() const noexcept
+[[nodiscard]] std::u8string gui_window_vulkan_win32::getTextFromClipboard() const noexcept
 {
     auto r = std::u8string{};
 
@@ -308,7 +308,7 @@ done:
     return r;
 }
 
-void Window_vulkan_win32::setTextOnClipboard(std::u8string str) noexcept
+void gui_window_vulkan_win32::setTextOnClipboard(std::u8string str) noexcept
 {
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
         LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());
@@ -356,7 +356,7 @@ done:
     CloseClipboard();
 }
 
-vk::SurfaceKHR Window_vulkan_win32::getSurface() const
+vk::SurfaceKHR gui_window_vulkan_win32::getSurface() const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     return narrow_cast<gui_system_vulkan_win32&>(system).createWin32SurfaceKHR(
@@ -365,7 +365,7 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface() const
          reinterpret_cast<HWND>(win32Window)});
 }
 
-void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
+void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -377,7 +377,7 @@ void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
     requestRedraw = true;
 }
 
-void Window_vulkan_win32::setCursor(Cursor cursor) noexcept
+void gui_window_vulkan_win32::setCursor(Cursor cursor) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
@@ -412,7 +412,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept
     SetCursor(idc);
 }
 
-[[nodiscard]] KeyboardModifiers Window_vulkan_win32::getKeyboardModifiers() noexcept
+[[nodiscard]] KeyboardModifiers gui_window_vulkan_win32::getKeyboardModifiers() noexcept
 {
     auto r = KeyboardModifiers::None;
 
@@ -433,7 +433,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept
     return r;
 }
 
-[[nodiscard]] KeyboardState Window_vulkan_win32::getKeyboardState() noexcept
+[[nodiscard]] KeyboardState gui_window_vulkan_win32::getKeyboardState() noexcept
 {
     auto r = KeyboardState::Idle;
 
@@ -452,7 +452,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept
 /** The win32 window message handler.
  * This function should not take any long-term-locks as windowProc is called recursively.
  */
-int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
+int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     MouseEvent mouseEvent;
 
@@ -682,7 +682,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     return -1;
 }
 
-[[nodiscard]] char32_t Window_vulkan_win32::handleSuragates(char32_t c) noexcept
+[[nodiscard]] char32_t gui_window_vulkan_win32::handleSuragates(char32_t c) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count() == 0);
     ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -698,7 +698,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     return c;
 }
 
-[[nodiscard]] MouseEvent Window_vulkan_win32::createMouseEvent(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
+[[nodiscard]] MouseEvent gui_window_vulkan_win32::createMouseEvent(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     // We have to do manual locking, since we don't want this
     // function or its caller to hold a lock while calling the windows API.

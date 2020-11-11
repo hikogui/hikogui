@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Window_base.hpp"
+#include "gui_window.hpp"
 #include "gui_device.hpp"
 #include "PipelineImage_Image.hpp"
 #include "PipelineImage_ImageLocation.hpp"

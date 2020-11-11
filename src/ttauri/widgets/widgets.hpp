@@ -23,7 +23,7 @@
 #include "WindowWidget.hpp"
 #include "row_column_layout_widget.hpp"
 #include "GridLayoutWidget.hpp"
-#include "../GUI/Window_base.hpp"
+#include "../GUI/gui_window.hpp"
 #include "../cell_address.hpp"
 
 namespace tt {
@@ -32,7 +32,7 @@ namespace tt {
 * The implementation is located here so that widget is a concrete type.
 */
 template<typename T, cell_address CellAddress, typename... Args>
-std::shared_ptr<T> Window_base::make_widget(Args &&... args)
+std::shared_ptr<T> gui_window::make_widget(Args &&... args)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     tt_assume(widget);
@@ -43,7 +43,7 @@ std::shared_ptr<T> Window_base::make_widget(Args &&... args)
  * The implementation is located here so that widget is a concrete type.
  */
 template<typename T, horizontal_alignment Alignment, typename... Args>
-std::shared_ptr<T> Window_base::make_toolbar_widget(Args &&... args)
+std::shared_ptr<T> gui_window::make_toolbar_widget(Args &&... args)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     tt_assume(widget);

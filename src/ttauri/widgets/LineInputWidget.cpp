@@ -11,7 +11,7 @@ namespace tt {
 
 using namespace std::literals;
 
-LineInputWidget::LineInputWidget(Window_base &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept :
+LineInputWidget::LineInputWidget(gui_window &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept :
     widget(window, parent), label(std::move(label)), field(theme->labelStyle), shapedText()
 {
 }

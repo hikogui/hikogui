@@ -11,7 +11,7 @@ namespace tt {
 
 using namespace std;
 
-pipeline_vulkan::pipeline_vulkan(Window_base const &window) :
+pipeline_vulkan::pipeline_vulkan(gui_window const &window) :
     pipeline(window) {}
 
 pipeline_vulkan::~pipeline_vulkan()

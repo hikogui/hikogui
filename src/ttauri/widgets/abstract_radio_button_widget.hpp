@@ -18,7 +18,7 @@ public:
 
     template<typename Value = observable<value_type>>
     abstract_radio_button_widget(
-        Window_base &window,
+        gui_window &window,
         std::shared_ptr<widget> parent,
         value_type true_value,
         Value &&value = {}) noexcept :

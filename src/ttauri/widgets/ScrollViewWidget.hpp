@@ -18,7 +18,7 @@ public:
     static constexpr bool can_scroll_vertically = CanScrollVertically;
     static constexpr bool controls_window = ControlsWindow;
 
-    ScrollViewWidget(Window_base &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    ScrollViewWidget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.

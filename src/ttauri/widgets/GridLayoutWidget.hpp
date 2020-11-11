@@ -17,7 +17,7 @@ class GridLayoutWidget : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    GridLayoutWidget(Window_base &window, std::shared_ptr<widget> parent, GridLayoutDelegate *delegate = nullptr) noexcept :
+    GridLayoutWidget(gui_window &window, std::shared_ptr<widget> parent, GridLayoutDelegate *delegate = nullptr) noexcept :
         abstract_container_widget(window, parent), delegate(delegate)
     {
         

@@ -5,7 +5,7 @@
 #include "gui_system_vulkan.hpp"
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
-#include "Window_base.hpp"
+#include "gui_window.hpp"
 #include "../Application.hpp"
 #include "../ResourceView.hpp"
 #include <span>
@@ -167,7 +167,7 @@ gui_device_vulkan::~gui_device_vulkan()
     }
 }
 
-void gui_device_vulkan::initializeDevice(Window_base const &window)
+void gui_device_vulkan::initializeDevice(gui_window const &window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -511,11 +511,11 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
     return totalScore;
 }
 
-int gui_device_vulkan::score(Window_base const &window) const
+int gui_device_vulkan::score(gui_window const &window) const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    auto surface = narrow_cast<Window_vulkan const&>(window).getSurface();
+    auto surface = narrow_cast<gui_window_vulkan const&>(window).getSurface();
     ttlet s = score(surface);
     narrow_cast<gui_system_vulkan &>(system).destroySurfaceKHR(surface);
     return s;

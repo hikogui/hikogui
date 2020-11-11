@@ -9,7 +9,7 @@ namespace tt {
 
 using namespace std;
 
-gui_device *gui_system::findBestDeviceForWindow(Window_base const &window)
+gui_device *gui_system::findBestDeviceForWindow(gui_window const &window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 

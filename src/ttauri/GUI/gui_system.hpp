@@ -4,8 +4,8 @@
 #pragma once
 
 #include "gui_device.hpp"
-#include "Window_base.hpp"
-#include "Window_vulkan_win32.hpp"
+#include "gui_window.hpp"
+#include "gui_window_vulkan_win32.hpp"
 #include "VerticalSync.hpp"
 #include "gui_system_delegate.hpp"
 #include "../unfair_recursive_mutex.hpp"
@@ -54,14 +54,14 @@ public:
     virtual void initialize() = 0;
 
     template<typename... Args>
-    Window_base *makeWindow(Args &&... args)
+    gui_window *makeWindow(Args &&... args)
     {
         // This function should be called from the main thread from the main loop,
         // and therefor should not have a lock on the window.
         tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
         tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
-        auto window = std::make_shared<Window_vulkan_win32>(static_cast<gui_system &>(*this), std::forward<Args>(args)...);
+        auto window = std::make_shared<gui_window_vulkan_win32>(static_cast<gui_system &>(*this), std::forward<Args>(args)...);
         auto window_ptr = window.get();
         window->initialize();
 
@@ -103,7 +103,7 @@ public:
     static void _handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 protected:
-    gui_device *findBestDeviceForWindow(Window_base const &window);
+    gui_device *findBestDeviceForWindow(gui_window const &window);
 };
 
 }

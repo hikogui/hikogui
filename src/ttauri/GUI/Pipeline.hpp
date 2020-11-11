@@ -7,13 +7,13 @@
 #include <memory>
 
 namespace tt {
-class Window_base;
+class gui_window;
 
 class pipeline {
 public:
-    Window_base const &window;
+    gui_window const &window;
 
-    pipeline(Window_base const &window);
+    pipeline(gui_window const &window);
 
     virtual ~pipeline() = default;
     pipeline(const pipeline &) = delete;

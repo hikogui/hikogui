@@ -18,7 +18,7 @@ class PipelineBox : public pipeline_vulkan {
 public:
     vspan<Vertex> vertexBufferData;
 
-    PipelineBox(Window_base const &window);
+    PipelineBox(gui_window const &window);
     ~PipelineBox() {};
 
     PipelineBox(const PipelineBox &) = delete;

@@ -14,7 +14,7 @@ namespace tt {
 
 using namespace std;
 
-WindowWidget::WindowWidget(Window_base &window, GridLayoutDelegate *delegate, label title) noexcept :
+WindowWidget::WindowWidget(gui_window &window, GridLayoutDelegate *delegate, label title) noexcept :
     abstract_container_widget(window, {}), title(std::move(title)), _content_delegate(delegate)
 {
 }

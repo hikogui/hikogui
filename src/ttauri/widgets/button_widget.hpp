@@ -23,7 +23,7 @@ public:
     observable<label> label;
 
     template<typename Value = observable<value_type>>
-    button_widget(Window_base &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :
+    button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :
         super(window, parent, std::move(true_value), std::forward<Value>(value))
     {
     }

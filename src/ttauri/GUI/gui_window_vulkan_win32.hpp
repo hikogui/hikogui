@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Window_vulkan.hpp"
+#include "gui_window_vulkan.hpp"
 #include <unordered_map>
 
 namespace tt {
@@ -12,17 +12,17 @@ class Application_win32;
 
 namespace tt {
 
-class Window_vulkan_win32 final : public Window_vulkan {
+class gui_window_vulkan_win32 final : public gui_window_vulkan {
 public:
     void *win32Window = nullptr;
 
-    Window_vulkan_win32(gui_system &system, WindowDelegate *delegate, label const &title);
-    ~Window_vulkan_win32();
+    gui_window_vulkan_win32(gui_system &system, WindowDelegate *delegate, label const &title);
+    ~gui_window_vulkan_win32();
 
-    Window_vulkan_win32(const Window_vulkan_win32 &) = delete;
-    Window_vulkan_win32 &operator=(const Window_vulkan_win32 &) = delete;
-    Window_vulkan_win32(Window_vulkan_win32 &&) = delete;
-    Window_vulkan_win32 &operator=(Window_vulkan_win32 &&) = delete;
+    gui_window_vulkan_win32(const gui_window_vulkan_win32 &) = delete;
+    gui_window_vulkan_win32 &operator=(const gui_window_vulkan_win32 &) = delete;
+    gui_window_vulkan_win32(gui_window_vulkan_win32 &&) = delete;
+    gui_window_vulkan_win32 &operator=(gui_window_vulkan_win32 &&) = delete;
 
     void createWindow(const std::u8string &title, vec extent) override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;

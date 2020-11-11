@@ -15,7 +15,7 @@ class WindowWidget final : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    WindowWidget(Window_base &window, GridLayoutDelegate *delegate, label title) noexcept;
+    WindowWidget(gui_window &window, GridLayoutDelegate *delegate, label title) noexcept;
     ~WindowWidget();
 
     void initialize() noexcept override;

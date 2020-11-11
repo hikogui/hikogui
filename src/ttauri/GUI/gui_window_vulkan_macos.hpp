@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Window_vulkan.hpp"
+#include "gui_window_vulkan.hpp"
 #include <unordered_map>
 
 namespace tt {
@@ -12,17 +12,17 @@ class Application_macos;
 
 namespace tt {
 
-class Window_vulkan_macos final : public Window_vulkan {
+class gui_window_vulkan_macos final : public gui_window_vulkan {
 public:
     //HWND win32Window = nullptr;
 
-    Window_vulkan_macos(std::shared_ptr<WindowDelegate> const &delegate, Label &&title);
-    ~Window_vulkan_macos();
+    gui_window_vulkan_macos(std::shared_ptr<WindowDelegate> const &delegate, Label &&title);
+    ~gui_window_vulkan_macos();
 
-    Window_vulkan_macos(const Window_vulkan_macos &) = delete;
-    Window_vulkan_macos &operator=(const Window_vulkan_macos &) = delete;
-    Window_vulkan_macos(Window_vulkan_macos &&) = delete;
-    Window_vulkan_macos &operator=(Window_vulkan_macos &&) = delete;
+    gui_window_vulkan_macos(const gui_window_vulkan_macos &) = delete;
+    gui_window_vulkan_macos &operator=(const gui_window_vulkan_macos &) = delete;
+    gui_window_vulkan_macos(gui_window_vulkan_macos &&) = delete;
+    gui_window_vulkan_macos &operator=(gui_window_vulkan_macos &&) = delete;
 
     void createWindow(const std::string &title, ivec extent);
     //LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -32,7 +32,7 @@ public:
     //static const wchar_t *win32WindowClassName;
     //static WNDCLASSW win32WindowClass;
     //static bool win32WindowClassIsRegistered;
-    //static std::unordered_map<HWND, Window_vulkan_macos *> win32WindowMap;
+    //static std::unordered_map<HWND, gui_window_vulkan_macos *> win32WindowMap;
     static bool firstWindowHasBeenOpened;
 
     vk::SurfaceKHR getSurface() const override;

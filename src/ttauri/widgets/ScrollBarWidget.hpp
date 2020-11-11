@@ -23,7 +23,7 @@ public:
 
     template<typename Content, typename Aperture, typename Offset>
     ScrollBarWidget(
-        Window_base &window,
+        gui_window &window,
         std::shared_ptr<widget> parent,
         Content &&content,
         Aperture &&aperture,

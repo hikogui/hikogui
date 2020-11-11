@@ -6,12 +6,12 @@
 #include "../widgets/GridLayoutDelegate.hpp"
 
 namespace tt {
-class Window_base;
+class gui_window;
 
 class WindowDelegate : public GridLayoutDelegate {
 public:
-    virtual void openingWindow(Window_base &window) noexcept {}
-    virtual void closingWindow(Window_base &window) noexcept {}
+    virtual void openingWindow(gui_window &window) noexcept {}
+    virtual void closingWindow(gui_window &window) noexcept {}
 };
 
 }

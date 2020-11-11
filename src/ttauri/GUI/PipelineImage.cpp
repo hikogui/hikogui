@@ -9,7 +9,7 @@ namespace tt::PipelineImage {
 using namespace tt;
 using namespace std;
 
-PipelineImage::PipelineImage(Window_base const &window) :
+PipelineImage::PipelineImage(gui_window const &window) :
     pipeline_vulkan(window)
 {
 }

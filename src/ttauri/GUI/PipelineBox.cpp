@@ -9,7 +9,7 @@ namespace tt::PipelineBox {
 using namespace tt;
 using namespace std;
 
-PipelineBox::PipelineBox(Window_base const &window) :
+PipelineBox::PipelineBox(gui_window const &window) :
     pipeline_vulkan(window)
 {
 }

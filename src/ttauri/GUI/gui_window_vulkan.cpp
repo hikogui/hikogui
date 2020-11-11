@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Window_vulkan.hpp"
+#include "gui_window_vulkan.hpp"
 #include "gui_system_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
 #include "PipelineFlat.hpp"
@@ -20,30 +20,30 @@ namespace tt {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(gui_system &system, WindowDelegate *delegate, label const &title) :
-    Window_base(system, delegate, title), nrSwapchainImages(0), swapchainImageFormat()
+gui_window_vulkan::gui_window_vulkan(gui_system &system, WindowDelegate *delegate, label const &title) :
+    gui_window(system, delegate, title), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
 
-Window_vulkan::~Window_vulkan()
+gui_window_vulkan::~gui_window_vulkan()
 {
 }
 
-gui_device_vulkan &Window_vulkan::vulkan_device() const noexcept
+gui_device_vulkan &gui_window_vulkan::vulkan_device() const noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
     tt_assume(_device != nullptr);
     return narrow_cast<gui_device_vulkan &>(*_device);
 }
 
-void Window_vulkan::initialize()
+void gui_window_vulkan::initialize()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock on the window.
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
     tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
-    Window_base::initialize();
+    gui_window::initialize();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(*this);
     boxPipeline = std::make_unique<PipelineBox::PipelineBox>(*this);
     imagePipeline = std::make_unique<PipelineImage::PipelineImage>(*this);
@@ -51,7 +51,7 @@ void Window_vulkan::initialize()
     toneMapperPipeline = std::make_unique<PipelineToneMapper::PipelineToneMapper>(*this);
 }
 
-void Window_vulkan::waitIdle()
+void gui_window_vulkan::waitIdle()
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -63,7 +63,7 @@ void Window_vulkan::waitIdle()
     LOG_INFO("/waitIdle");
 }
 
-std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
+std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -105,7 +105,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
     }
 }
 
-void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
+void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
     auto lock = std::scoped_lock(gui_system_mutex);
 
@@ -152,7 +152,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
     }
 }
 
-void Window_vulkan::build()
+void gui_window_vulkan::build()
 {
     auto lock = std::scoped_lock(gui_system_mutex);
 
@@ -217,7 +217,7 @@ void Window_vulkan::build()
     }
 }
 
-void Window_vulkan::teardown()
+void gui_window_vulkan::teardown()
 {
     auto lock = std::scoped_lock(gui_system_mutex);
 
@@ -277,7 +277,7 @@ void Window_vulkan::teardown()
     state = nextState;
 }
 
-void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
+void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -372,7 +372,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     teardown();
 }
 
-void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
+void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -421,7 +421,7 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
     commandBuffer.end();
 }
 
-void Window_vulkan::submitCommandBuffer()
+void gui_window_vulkan::submitCommandBuffer()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -449,7 +449,7 @@ void Window_vulkan::submitCommandBuffer()
     vulkan_device().graphicsQueue.submit(submitInfo, vk::Fence());
 }
 
-std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
+std::tuple<uint32_t, vk::Extent2D> gui_window_vulkan::getImageCountAndExtent()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -479,7 +479,7 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
     return { imageCount, surfaceCapabilities.currentExtent };
 }
 
-bool Window_vulkan::readSurfaceExtent()
+bool gui_window_vulkan::readSurfaceExtent()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -523,7 +523,7 @@ bool Window_vulkan::readSurfaceExtent()
     return true;
 }
 
-bool Window_vulkan::checkSurfaceExtent()
+bool gui_window_vulkan::checkSurfaceExtent()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -537,12 +537,12 @@ bool Window_vulkan::checkSurfaceExtent()
     }
 }
 
-void Window_vulkan::buildDevice()
+void gui_window_vulkan::buildDevice()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 }
 
-bool Window_vulkan::buildSurface()
+bool gui_window_vulkan::buildSurface()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -550,7 +550,7 @@ bool Window_vulkan::buildSurface()
     return vulkan_device().score(intrinsic) > 0;
 }
 
-Window_base::State Window_vulkan::buildSwapchain()
+gui_window::State gui_window_vulkan::buildSwapchain()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -647,7 +647,7 @@ Window_base::State Window_vulkan::buildSwapchain()
     return State::ReadyToRender;
 }
 
-void Window_vulkan::teardownSwapchain()
+void gui_window_vulkan::teardownSwapchain()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -656,7 +656,7 @@ void Window_vulkan::teardownSwapchain()
     vulkan_device().destroyImage(colorImage, colorImageAllocation);
 }
 
-void Window_vulkan::buildFramebuffers()
+void gui_window_vulkan::buildFramebuffers()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -722,7 +722,7 @@ void Window_vulkan::buildFramebuffers()
     tt_assume(swapchainFramebuffers.size() == swapchainImages.size());
 }
 
-void Window_vulkan::teardownFramebuffers()
+void gui_window_vulkan::teardownFramebuffers()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -740,7 +740,7 @@ void Window_vulkan::teardownFramebuffers()
     vulkan_device().destroy(colorImageView);
 }
 
-void Window_vulkan::buildRenderPasses()
+void gui_window_vulkan::buildRenderPasses()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -918,14 +918,14 @@ void Window_vulkan::buildRenderPasses()
     renderPass = vulkan_device().createRenderPass(renderPassCreateInfo);
 }
 
-void Window_vulkan::teardownRenderPasses()
+void gui_window_vulkan::teardownRenderPasses()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     vulkan_device().destroy(renderPass);
 }
 
-void Window_vulkan::buildSemaphores()
+void gui_window_vulkan::buildSemaphores()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -938,7 +938,7 @@ void Window_vulkan::buildSemaphores()
     renderFinishedFence = vulkan_device().createFence({vk::FenceCreateFlagBits::eSignaled});
 }
 
-void Window_vulkan::teardownSemaphores()
+void gui_window_vulkan::teardownSemaphores()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -947,7 +947,7 @@ void Window_vulkan::teardownSemaphores()
     vulkan_device().destroy(renderFinishedFence);
 }
 
-void Window_vulkan::buildCommandBuffers()
+void gui_window_vulkan::buildCommandBuffers()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -960,7 +960,7 @@ void Window_vulkan::buildCommandBuffers()
     commandBuffer = commandBuffers.at(0);
 }
 
-void Window_vulkan::teardownCommandBuffers()
+void gui_window_vulkan::teardownCommandBuffers()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
     ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
@@ -968,14 +968,14 @@ void Window_vulkan::teardownCommandBuffers()
     vulkan_device().freeCommandBuffers(vulkan_device().graphicsCommandPool, commandBuffers);
 }
 
-void Window_vulkan::teardownSurface()
+void gui_window_vulkan::teardownSurface()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     narrow_cast<gui_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
 }
 
-void Window_vulkan::teardownDevice()
+void gui_window_vulkan::teardownDevice()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 

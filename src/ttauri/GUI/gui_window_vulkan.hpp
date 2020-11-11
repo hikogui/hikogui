@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Window_base.hpp"
+#include "gui_window.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <optional>
@@ -27,7 +27,7 @@ namespace PipelineToneMapper {
 class PipelineToneMapper;
 }
 
-class Window_vulkan : public Window_base {
+class gui_window_vulkan : public gui_window {
 public:
     vk::SurfaceKHR intrinsic;
 
@@ -67,13 +67,13 @@ public:
     std::unique_ptr<PipelineSDF::PipelineSDF> SDFPipeline;
     std::unique_ptr<PipelineToneMapper::PipelineToneMapper> toneMapperPipeline;
 
-    Window_vulkan(gui_system &system, WindowDelegate *delegate, label const &title);
-    ~Window_vulkan();
+    gui_window_vulkan(gui_system &system, WindowDelegate *delegate, label const &title);
+    ~gui_window_vulkan();
 
-    Window_vulkan(const Window_vulkan &) = delete;
-    Window_vulkan &operator=(const Window_vulkan &) = delete;
-    Window_vulkan(Window_vulkan &&) = delete;
-    Window_vulkan &operator=(Window_vulkan &&) = delete;
+    gui_window_vulkan(const gui_window_vulkan &) = delete;
+    gui_window_vulkan &operator=(const gui_window_vulkan &) = delete;
+    gui_window_vulkan(gui_window_vulkan &&) = delete;
+    gui_window_vulkan &operator=(gui_window_vulkan &&) = delete;
 
     void initialize() override;
 

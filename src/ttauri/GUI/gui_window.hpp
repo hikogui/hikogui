@@ -33,7 +33,7 @@ class WindowWidget;
  * The Window should not have any decorations, which are to be drawn by the GUI, because
  * modern design requires drawing of user interface elements in the border.
  */
-class Window_base {
+class gui_window {
 public:
     enum class State {
         Initializing, //!< The window has not been initialized yet.
@@ -123,13 +123,13 @@ public:
 
     
 
-    Window_base(gui_system &system, WindowDelegate *delegate, label const &title);
-    virtual ~Window_base();
+    gui_window(gui_system &system, WindowDelegate *delegate, label const &title);
+    virtual ~gui_window();
 
-    Window_base(Window_base const &) = delete;
-    Window_base &operator=(Window_base const &) = delete;
-    Window_base(Window_base &&) = delete;
-    Window_base &operator=(Window_base &&) = delete;
+    gui_window(gui_window const &) = delete;
+    gui_window &operator=(gui_window const &) = delete;
+    gui_window(gui_window &&) = delete;
+    gui_window &operator=(gui_window &&) = delete;
 
     /** 2 phase constructor.
      * Must be called directly after the constructor on the same thread,

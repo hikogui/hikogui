@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "gui_device.hpp"
-#include "Window_base.hpp"
+#include "gui_window.hpp"
 #include <fmt/format.h>
 #include <tuple>
 #include <vector>
@@ -27,14 +27,14 @@ std::string gui_device::string() const noexcept
     return fmt::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.UUIDString());
 }
 
-void gui_device::initializeDevice(Window_base const &window)
+void gui_device::initializeDevice(gui_window const &window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     state = State::READY_TO_DRAW;
 }
 
-void gui_device::add(std::shared_ptr<Window_base> window)
+void gui_device::add(std::shared_ptr<gui_window> window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -46,7 +46,7 @@ void gui_device::add(std::shared_ptr<Window_base> window)
     windows.push_back(std::move(window));
 }
 
-void gui_device::remove(Window_base &window) noexcept
+void gui_device::remove(gui_window &window) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 

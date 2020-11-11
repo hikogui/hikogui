@@ -25,7 +25,7 @@ std::shared_ptr<Window> gui_system_vulkan_win32::createWindow(std::shared_ptr<Wi
 {
     std::scoped_lock lock(tt::mutex);
 
-    auto window = std::make_shared<Window_win32>(windowDelegate, title);
+    auto window = std::make_shared<gui_window_win32>(windowDelegate, title);
     getShared<gui_system>()->add(window);
     window->initialize();
     return window;

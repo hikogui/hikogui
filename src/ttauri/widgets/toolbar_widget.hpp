@@ -12,7 +12,7 @@ class toolbar_widget final : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    toolbar_widget(Window_base &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    toolbar_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The toolbar widget does draw itself.

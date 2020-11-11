@@ -14,7 +14,7 @@ class pipeline_vulkan : public pipeline {
 public:
     vk::Pipeline intrinsic;
 
-    pipeline_vulkan(Window_base const &window);
+    pipeline_vulkan(gui_window const &window);
     ~pipeline_vulkan();
 
     pipeline_vulkan(const pipeline_vulkan &) = delete;

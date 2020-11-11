@@ -10,7 +10,7 @@ namespace tt::PipelineFlat {
 using namespace tt;
 using namespace std;
 
-PipelineFlat::PipelineFlat(Window_base const &window) :
+PipelineFlat::PipelineFlat(gui_window const &window) :
     pipeline_vulkan(window)
 {
 }

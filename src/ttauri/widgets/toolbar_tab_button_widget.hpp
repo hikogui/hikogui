@@ -25,7 +25,7 @@ public:
 
     template<typename Value, typename Label = observable<tt::label>>
     toolbar_tab_button_widget(
-        Window_base &window,
+        gui_window &window,
         std::shared_ptr<widget> parent,
         value_type true_value,
         Value &&value,
@@ -36,7 +36,7 @@ public:
         this->_width_resistance = 2;
     }
 
-    toolbar_tab_button_widget(Window_base &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
+    toolbar_tab_button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
         toolbar_tab_button_widget(window, parent, std::move(true_value), observable<int>{}, observable<tt::label>{})
     {
     }

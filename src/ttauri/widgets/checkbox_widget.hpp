@@ -33,7 +33,7 @@ public:
 
     template<typename Value = observable<value_type>>
     checkbox_widget(
-        Window_base &window,
+        gui_window &window,
         std::shared_ptr<widget> parent,
         value_type true_value,
         value_type false_value,

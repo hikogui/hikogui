@@ -18,7 +18,7 @@ class PipelineImage : public pipeline_vulkan {
 public:
     vspan<Vertex> vertexBufferData;
 
-    PipelineImage(Window_base const &window);
+    PipelineImage(gui_window const &window);
     ~PipelineImage() {};
 
     PipelineImage(const PipelineImage &) = delete;

@@ -25,7 +25,7 @@ public:
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
 
     template<typename Value = observable<value_type>>
-    [[nodiscard]] abstract_button_widget(Window_base &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) :
+    [[nodiscard]] abstract_button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) :
         widget(window, parent), true_value(std::move(true_value)), value(std::forward<Value>(value))
     {
     }

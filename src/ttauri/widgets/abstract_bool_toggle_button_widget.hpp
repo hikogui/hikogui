@@ -13,7 +13,7 @@ namespace tt {
 class abstract_bool_toggle_button_widget : public abstract_toggle_button_widget<bool> {
 public:
     template<typename Value>
-    abstract_bool_toggle_button_widget(Window_base &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
+    abstract_bool_toggle_button_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
         abstract_toggle_button_widget<bool>(window, parent, true, false, std::forward<Value>(value))
     {
     }

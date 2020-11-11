@@ -7,7 +7,7 @@
 
 namespace tt {
 
-widget::widget(Window_base &_window, std::shared_ptr<widget> _parent) noexcept :
+widget::widget(gui_window &_window, std::shared_ptr<widget> _parent) noexcept :
     enabled(true),
     window(_window),
     parent(_parent),
