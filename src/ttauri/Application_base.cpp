@@ -60,8 +60,8 @@ void Application_base::initialize()
     LOG_INFO("Starting application '{}'.", application_version.name);
 
     foundationStart();
-    audioStart();
     textStart();
+    audioStart();
     GUIStart();
 }
 
@@ -70,8 +70,8 @@ Application_base::~Application_base()
     LOG_INFO("Stopping application.");
 
     GUIStop();
-    textStop();
     audioStop();
+    textStop();
     foundationStop();
 
     // Remove the singleton.

@@ -39,11 +39,13 @@ public:
         auto new_audio_system = std::make_shared<T>(this, std::forward<Args>(args)...);
         new_audio_system->initialize();
         add_audio_system(new_audio_system);
+        audio_device_list_changed(*this);
         return new_audio_system;
     }
 
-    void audio_device_list_changed() override {
-        return _delegate->audio_device_list_changed();
+    void audio_device_list_changed(tt::audio_system &system) override
+    {
+        return _delegate->audio_device_list_changed(*this);
     }
 
 private:

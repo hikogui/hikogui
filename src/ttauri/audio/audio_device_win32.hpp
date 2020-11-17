@@ -15,6 +15,7 @@ public:
     ~audio_device_win32();
 
     std::string name() const noexcept override;
+    tt::label label() const noexcept override;
     std::string device_name() const noexcept override;
     std::string end_point_name() const noexcept override;
     audio_device_state state() const noexcept override;

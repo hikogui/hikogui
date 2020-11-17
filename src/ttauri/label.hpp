@@ -30,9 +30,10 @@ public:
     [[nodiscard]] virtual bool eq(label_arguments_base &other) const noexcept = 0;
 };
 
-template<typename... Args>
+template<typename... Types>
 class label_arguments : public label_arguments_base {
 public:
+    template<typename... Args>
     label_arguments(Args &&... args) noexcept : _args(std::forward<Args>(args)...) {}
 
     [[nodiscard]] std::u8string format(std::u8string_view fmt) const noexcept override
@@ -48,7 +49,7 @@ public:
     {
         return std::apply(
             [](auto const &... args) {
-                return std::make_unique<label_arguments<Args...>>(args...);
+                return std::make_unique<label_arguments<Types...>>(args...);
             },
             _args);
     }
@@ -64,7 +65,7 @@ public:
     }
 
 private:
-    std::tuple<std::remove_cvref_t<Args>...> _args;
+    std::tuple<Types...> _args;
 };
 
 } // namespace detail
@@ -77,7 +78,7 @@ public:
     label(tt::icon icon, l10n fmt, Args &&... args) noexcept :
         _icon(std::move(icon)),
         _msgid(std::move(fmt.msgid)),
-        _args(std::make_unique<detail::label_arguments<Args...>>(std::forward<Args>(args)...))
+        _args(std::make_unique<detail::label_arguments<std::remove_cvref_t<Args>...>>(std::forward<Args>(args)...))
     {
     }
 

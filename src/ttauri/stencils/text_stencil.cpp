@@ -24,12 +24,14 @@ vec text_stencil::preferred_extent() noexcept
 
 void text_stencil::draw(DrawContext context, bool use_context_color) noexcept
 {
-    auto modified = std::exchange(_data_is_modified, false);
-    modified |= std::exchange(_layout_is_modified, false);
+    auto data_is_modified = std::exchange(_data_is_modified, false);
 
-    if (modified) {
+    if (std::exchange(_size_is_modified, false) || data_is_modified) {
         _shaped_text = ShapedText(_text, _style, _rectangle.width(), _alignment);
+        _position_is_modified = true;
+    }
 
+    if (std::exchange(_position_is_modified, false)) {
         _shaped_text_transform = _shaped_text.TMiddle(vec{_rectangle.x(), _base_line_position});
     }
 

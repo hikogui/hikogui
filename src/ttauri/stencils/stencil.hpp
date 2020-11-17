@@ -13,7 +13,11 @@ struct TextStyle;
 
 class stencil {
 public:
-    stencil(alignment alignment) : _alignment(alignment), _data_is_modified(true), _layout_is_modified(true) {}
+    stencil(alignment alignment) :
+        _alignment(alignment), _data_is_modified(true), _size_is_modified(true), _position_is_modified(true)
+    {
+    }
+
     virtual ~stencil() = default;
     stencil(stencil const &) noexcept = delete;
     stencil(stencil &&) noexcept = delete;
@@ -34,10 +38,16 @@ public:
     virtual void
     set_layout_parameters(aarect const &rectangle, float base_line_position = std::numeric_limits<float>::infinity()) noexcept
     {
+        if (_rectangle.extent() != rectangle.extent()) {
+            _size_is_modified = true;
+        }
+        if (_rectangle.offset() != rectangle.offset() || _base_line_position != base_line_position) {
+            _position_is_modified = true;
+        }
+
         _rectangle = rectangle;
         _base_line_position =
             base_line_position != std::numeric_limits<float>::infinity() ? base_line_position : rectangle.middle();
-        _layout_is_modified = true;
     }
 
     /** Draw the cell.
@@ -63,7 +73,8 @@ protected:
     /** Set to true when the data of the cell has been modified.
      */
     bool _data_is_modified;
-    bool _layout_is_modified;
+    bool _size_is_modified;
+    bool _position_is_modified;
 };
 
 } // namespace tt

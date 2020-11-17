@@ -6,6 +6,7 @@
 #include "../bigint.hpp"
 #include "audio_device_delegate.hpp"
 #include "audio_stream_config.hpp"
+#include "../label.hpp"
 #include <string>
 #include <memory>
 #include <ostream>
@@ -49,26 +50,35 @@ inline std::ostream &operator<<(std::ostream &lhs, audio_device_state const &rhs
  * capture at the same time.
  */
 class audio_device {
-private:
-    std::shared_ptr<audio_device_delegate> delegate = {};
-
 public:
-    std::string id;
+    /** The nonephemeral unique id that for an audio device on the system.
+     */
+    std::string id = "<unknown id>";
+
+    /** This device has audio inputs.
+     * This device should be shown in a list of recording devices.
+     */
+    bool has_inputs = false;
+
+    /** This device has audio outputs.
+     * This device should be shown in a list of playback devices.
+     */
+    bool has_outputs = false;
 
     audio_device() noexcept = default;
     virtual ~audio_device() = default;
 
-    /** Get a identfier for this device which can be stored
-     * into a preferences file and be used after a reboot
-     * to get the same device.
-     */
-    //virtual uuid uuid() const noexcept = 0;
-
     /** Get a user friendly name of the audio device.
      * This is a combination of the name of the device and
-     * the name of the end-point. Such as
+     * the name of the end-point.
      */
     virtual std::string name() const noexcept = 0;
+
+    /** Get a user friendly label of the audio device.
+     * This is a combination of the name of the device and
+     * the name of the end-point, plus an icon for the driver architecture.
+     */
+    virtual label label() const noexcept = 0;
 
     /** Get a user friendly name of the audio device.
      * This is the name of the audio device itself, such as
@@ -112,6 +122,9 @@ public:
      * Stop a session, which will also stop the streams of audio.
      */
     //virtual void stopSession() noexcept = 0;
+
+private:
+    std::shared_ptr<audio_device_delegate> delegate = {};
 };
 
 }

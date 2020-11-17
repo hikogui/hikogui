@@ -12,6 +12,21 @@
 
 namespace tt {
 
+static IMMEndpoint *get_endpoint_from_device(IMMDevice *device)
+{
+    IMMEndpoint *endpoint;
+    hresult_assert_or_throw(device->QueryInterface(&endpoint));
+    return endpoint;
+}
+
+static EDataFlow get_data_flow_from_device(IMMDevice *device)
+{
+    auto endpoint = get_endpoint_from_device(device);
+    EDataFlow data_flow;
+    hresult_assert_or_throw(endpoint->GetDataFlow(&data_flow));
+    return data_flow;
+}
+
 static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
 {
     auto propertyStore_ = static_cast<IPropertyStore *>(propertyStore);
@@ -20,7 +35,7 @@ static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
     PROPVARIANT textProperty;
     PropVariantInit(&textProperty);
 
-    hresult_assert_or_throw(propertyStore_->GetValue(PKEY_Device_FriendlyName, &textProperty));
+    hresult_assert_or_throw(propertyStore_->GetValue(key, &textProperty));
     auto textWString = std::wstring_view(textProperty.pwszVal);
     auto textString = to_string(textWString);
 
@@ -32,11 +47,21 @@ audio_device_win32::audio_device_win32(void *device) :
     audio_device(), _device(device)
 {
     tt_assert(device != nullptr);
-
-    id = get_id_from_device(device);
-    
     auto device_ = static_cast<IMMDevice *>(device);
-    
+
+    id = "win32:"s + get_id_from_device(device_);
+
+    switch (get_data_flow_from_device(device_)) {
+    case eRender:
+        has_outputs = true;
+        break;
+    case eCapture:
+        has_inputs = true;
+        break;
+    default:
+        TTAURI_THROW(io_error("EndPoint data-flow is neither eRender or eCapture"));
+    }
+        
     hresult_assert_or_throw(device_->OpenPropertyStore(STGM_READ, reinterpret_cast<IPropertyStore **>(&_property_store)));
 }
 
@@ -54,6 +79,11 @@ audio_device_win32::~audio_device_win32()
 std::string audio_device_win32::name() const noexcept
 {
     return getStringProperty(_property_store, PKEY_Device_FriendlyName);
+}
+
+tt::label audio_device_win32::label() const noexcept
+{
+    return {ElusiveIcon::Speaker, l10n("{}"), name()};
 }
 
 std::string audio_device_win32::device_name() const noexcept

@@ -24,10 +24,13 @@ void pixel_map_stencil::draw(DrawContext context, bool use_context_color) noexce
     if (std::exchange(_data_is_modified, false)) {
         _backing = narrow_cast<gui_device_vulkan&>(context.device()).imagePipeline->makeImage(_pixel_map.extent());
         _backing.upload(_pixel_map);
-        _layout_is_modified = true;
+        _size_is_modified = true;
+        _position_is_modified = true;
     }
 
-    if (std::exchange(_layout_is_modified, false)) {
+    auto layout_is_modified = std::exchange(_size_is_modified, false);
+    layout_is_modified |= std::exchange(_position_is_modified, false);
+    if (layout_is_modified) {
         _pixel_map_bounding_box = aarect{_backing.extent};
         _pixel_map_transform = mat::uniform2D_scale_and_translate(_rectangle, _pixel_map_bounding_box, _alignment);
     }

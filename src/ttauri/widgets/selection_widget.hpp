@@ -323,7 +323,9 @@ private:
     void start_selecting() noexcept
     {
         _selecting = true;
-        this->window.update_keyboard_target(get_selected_menu_item());
+        if (auto selected_menu_item = get_selected_menu_item()) {
+            this->window.update_keyboard_target(selected_menu_item);
+        }
     }
 
     void stop_selecting() noexcept

@@ -27,9 +27,10 @@ bool LineInputWidget::update_constraints(hires_utc_clock::time_point display_tim
 
         _preferred_size = {
             vec{100.0f, Theme::smallSize + Theme::margin * 2.0f},
-            vec{500.0f, Theme::smallSize + Theme::margin * 2.0f}
+            vec{std::numeric_limits<float>::infinity(), Theme::smallSize + Theme::margin * 2.0f}
         };
         _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
+        _width_resistance = 2;
         return true;
     } else {
         return false;

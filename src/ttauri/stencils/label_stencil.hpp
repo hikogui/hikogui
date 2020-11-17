@@ -74,8 +74,11 @@ public:
      */
     void set_show_icon(bool flag) noexcept
     {
-        _show_icon = flag;
-        _layout_is_modified = true;
+        if (_show_icon != flag) {
+            _show_icon = flag;
+            _size_is_modified = true;
+            _position_is_modified = true;
+        }
     }
 
     void set_layout_parameters(
