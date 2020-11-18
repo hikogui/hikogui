@@ -93,16 +93,8 @@ public:
                 stencil::make_unique(alignment::middle_left, *unknown_label, theme->placeholderLabelStyle)->preferred_extent();
 
             ttlet overlay_width = _overlay_widget->preferred_size().minimum().width();
-            auto option_width = std::max(overlay_width, unknown_label_size.width() + Theme::margin * 2.0f);
-
-            auto option_height = unknown_label_size.height();
-            for (ttlet & [ tag, text ] : *option_list) {
-                option_height =
-                    std::max(option_height,
-                        stencil::make_unique(alignment::middle_left, text, theme->labelStyle)->preferred_extent().height());
-            }
-            option_height += Theme::margin * 2.0f;
-            
+            ttlet option_width = std::max(overlay_width, unknown_label_size.width() + Theme::margin * 2.0f);
+            ttlet option_height = std::max(unknown_label_size.height(), _max_option_label_height) + Theme::margin * 2.0f;
             ttlet chevron_width = Theme::smallSize;
 
             _preferred_size = interval_vec2::make_minimum(vec{chevron_width + option_width, option_height});
@@ -283,6 +275,8 @@ private:
     std::unique_ptr<label_stencil> _text_stencil;
     vec _text_stencil_color;
 
+    float _max_option_label_height;
+
     aarect _option_rectangle;
     aarect _left_box_rectangle;
 
@@ -363,7 +357,15 @@ private:
 
             _menu_item_widgets.push_back(std::move(menu_item));
         }
+
+        _max_option_label_height = 0.0f;
+        for (ttlet & [ tag, text ] : *option_list) {
+            _max_option_label_height = std::max(
+                _max_option_label_height,
+                stencil::make_unique(alignment::middle_left, text, theme->labelStyle)->preferred_extent().height());
+        }        
     }
+
     void draw_outline(DrawContext context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());

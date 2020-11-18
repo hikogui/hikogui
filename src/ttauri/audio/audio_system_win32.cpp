@@ -14,21 +14,83 @@ namespace tt {
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 
+class audio_system_win32_notification_client : public IMMNotificationClient {
+public:
+    audio_system_win32_notification_client(audio_system_win32 *system) :
+        IMMNotificationClient(), _system(system)
+    {
+    }
+
+    STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role, LPCWSTR device_id)
+    {
+        _system->default_device_changed();
+        return S_OK;
+    }
+
+    STDMETHOD(OnDeviceAdded)(LPCWSTR device_id)
+    {
+        _system->device_added();
+        return S_OK;
+    }
+
+    STDMETHOD(OnDeviceRemoved)(LPCWSTR device_id)
+    {
+        auto device_id_ = device_id == nullptr ? "win32:"s : "win32:"s + to_string(std::wstring(device_id));
+        _system->device_removed(device_id_);
+        return S_OK;
+    }
+
+    STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD state)
+    {
+        auto device_id_ = device_id == nullptr ? "win32:"s : "win32:"s + to_string(std::wstring(device_id));
+        _system->device_state_changed(device_id_);
+        return S_OK;
+    }
+
+    STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id, PROPERTYKEY const key)
+    {
+        auto device_id_ = device_id == nullptr ? "win32:"s : "win32:"s + to_string(std::wstring(device_id));
+        _system->device_property_value_changed(device_id_);
+        return S_OK;
+    }
+
+    STDMETHOD(QueryInterface)(REFIID iid, void **object)
+    {
+        tt_no_default();
+    }
+
+    STDMETHOD_(ULONG, AddRef)()
+    {
+        tt_no_default();
+    }
+
+    STDMETHOD_(ULONG, Release)()
+    {
+        tt_no_default();
+    }
+
+private:
+    audio_system_win32 *_system;
+};
+
 audio_system_win32::audio_system_win32(audio_system_delegate *delegate) : audio_system(delegate)
 {
     hresult_assert_or_throw(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
-    hresult_assert_or_throw(
-        CoCreateInstance(CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, &_device_enumerator));
+    hresult_assert_or_throw(CoCreateInstance(
+        CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, reinterpret_cast<LPVOID *>(&_device_enumerator)));
     tt_assert(_device_enumerator != nullptr);
+
+    _notification_client = new audio_system_win32_notification_client(this);
+
+    _device_enumerator->RegisterEndpointNotificationCallback(_notification_client);
 }
 
 audio_system_win32::~audio_system_win32()
 {
-    auto deviceEnumerator_ = static_cast<IMMDeviceEnumerator *>(_device_enumerator);
-
-    tt_assert(deviceEnumerator_ != nullptr);
-    deviceEnumerator_->Release();
+    _device_enumerator->UnregisterEndpointNotificationCallback(_notification_client);
+    delete _notification_client;
+    _device_enumerator->Release();
 }
 
 void audio_system_win32::initialize() noexcept
@@ -44,11 +106,8 @@ void audio_system_win32::update_device_list() noexcept
 {
     ttlet lock = std::scoped_lock(audio_system::mutex);
 
-    tt_assert(_device_enumerator != nullptr);
-    auto device_enumerator = static_cast<IMMDeviceEnumerator *>(_device_enumerator);
-
     IMMDeviceCollection *device_collection;
-    hresult_assert_or_throw(device_enumerator->EnumAudioEndpoints(eAll, DEVICE_STATE_ACTIVE, &device_collection));
+    hresult_assert_or_throw(_device_enumerator->EnumAudioEndpoints(eAll, DEVICE_STATEMASK_ALL, &device_collection));
     tt_assert(device_collection != nullptr);
 
     UINT number_of_devices;
@@ -63,7 +122,7 @@ void audio_system_win32::update_device_list() noexcept
         ttlet device_id = audio_device_win32::get_id_from_device(win32_device);
 
         auto it = std::find_if(old_devices.begin(), old_devices.end(), [&device_id](auto &item) {
-            return item->id == device_id;
+            return item->id() == device_id;
         });
 
         if (it != old_devices.end()) {
@@ -82,6 +141,30 @@ void audio_system_win32::update_device_list() noexcept
     device_collection->Release();
 
     // Any devices in old_devices that are left over will be deallocated.
+}
+
+void audio_system_win32::default_device_changed() noexcept {}
+
+void audio_system_win32::device_added() noexcept
+{
+    update_device_list();
+    _delegate->audio_device_list_changed(*this);
+}
+
+void audio_system_win32::device_removed(std::string device_id) noexcept
+{
+    update_device_list();
+    _delegate->audio_device_list_changed(*this);
+}
+
+void audio_system_win32::device_state_changed(std::string device_id) noexcept
+{
+    _delegate->audio_device_list_changed(*this);
+}
+
+void audio_system_win32::device_property_value_changed(std::string device_id) noexcept
+{
+    _delegate->audio_device_list_changed(*this);
 }
 
 } // namespace tt

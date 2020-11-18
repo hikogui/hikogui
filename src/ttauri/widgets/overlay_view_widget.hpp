@@ -69,6 +69,7 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(child);
 
+        draw_background(context);
         child->draw(child->make_draw_context(context), display_time_point);
         super::draw(std::move(context), display_time_point);
     }
@@ -116,6 +117,12 @@ public:
 
 private:
     std::shared_ptr<widget> child;
+
+    void draw_background(DrawContext context) noexcept
+    {
+        context.clippingRectangle = expand(context.clippingRectangle, Theme::borderWidth);
+        context.drawBoxExcludeBorder(rectangle());
+    }
 };
 
 } // namespace tt

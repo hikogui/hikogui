@@ -31,6 +31,12 @@ enum class audio_device_state {
     }
 }
 
+enum class audio_device_flow_direction {
+    input,
+    output,
+    bidirectional
+};
+
 [[nodiscard]] inline std::string to_string(audio_device_state const &rhs) noexcept
 {
     return {to_const_string(rhs)};
@@ -51,22 +57,12 @@ inline std::ostream &operator<<(std::ostream &lhs, audio_device_state const &rhs
  */
 class audio_device {
 public:
-    /** The nonephemeral unique id that for an audio device on the system.
-     */
-    std::string id = "<unknown id>";
-
-    /** This device has audio inputs.
-     * This device should be shown in a list of recording devices.
-     */
-    bool has_inputs = false;
-
-    /** This device has audio outputs.
-     * This device should be shown in a list of playback devices.
-     */
-    bool has_outputs = false;
-
     audio_device() noexcept = default;
     virtual ~audio_device() = default;
+
+    /** The nonephemeral unique id that for an audio device on the system.
+     */
+    virtual std::string id() const noexcept = 0;
 
     /** Get a user friendly name of the audio device.
      * This is a combination of the name of the device and
@@ -80,20 +76,11 @@ public:
      */
     virtual label label() const noexcept = 0;
 
-    /** Get a user friendly name of the audio device.
-     * This is the name of the audio device itself, such as
-     * "Realtek High Definition Audio".
-     */
-    virtual std::string device_name() const noexcept = 0;
-
-    /** Get a user friendly name of the audio end-point device.
-     * This is the name of the end point, such as "Microphone".
-     */
-    virtual std::string end_point_name() const noexcept = 0;
-
     /** Get the current state of the audio device.
      */
     virtual audio_device_state state() const noexcept = 0;
+
+    virtual audio_device_flow_direction direction() const noexcept = 0;
 
     /** Check if a audio configuration is supported by this device.
      * @param config Configuration such as sample rate, sample format and bit-depth.
