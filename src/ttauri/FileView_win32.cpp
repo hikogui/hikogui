@@ -22,10 +22,10 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     tt_assert(_offset + size <= fileMappingObject->size);
 
     DWORD desiredAccess;
-    if (accessMode() >= (AccessMode::Read | AccessMode::Write)) {
+    if (accessMode() >= (access_mode::read | access_mode::write)) {
         desiredAccess = FILE_MAP_WRITE;
     }
-    else if (accessMode() >= AccessMode::Read) {
+    else if (accessMode() >= access_mode::read) {
         desiredAccess = FILE_MAP_READ;
     }
     else {
@@ -53,7 +53,7 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     _bytes = std::shared_ptr<std::span<std::byte>>(bytes_ptr, FileView::unmap);
 }
 
-FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
+FileView::FileView(URL const &location, access_mode accessMode, size_t offset, size_t size) :
     FileView(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size) {}
 
 FileView::FileView(FileView const &other) noexcept:

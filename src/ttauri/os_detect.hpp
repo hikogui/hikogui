@@ -181,11 +181,15 @@ constexpr size_t cache_line_size =
     Processor::current == Processor::ARM ? 64 :
     0;
 
-/*! File descriptor/handle
- */
-using FileHandle =
-    std::conditional_t<OperatingSystem::current == OperatingSystem::Windows,void *,
-    std::conditional_t<OperatingSystem::current == OperatingSystem::MacOS,int,
-    void>>;
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+using HANDLE = void *;
+using file_handle = HANDLE;
+
+#elif TT_OPERATING_SYSTEM == TT_OS_MACOS
+using file_handle = int;
+
+#else
+#error "FileHandle Not implemented."
+#endif
 
 }

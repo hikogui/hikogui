@@ -58,9 +58,9 @@ target_sources(ttauri PRIVATE
     decimal.hpp
     endian.hpp
     exceptions.hpp
-    File.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/File_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/File_win32.cpp>
+    file.hpp
+    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
     FileMapping.cpp
     FileMapping.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/FileMapping_posix.cpp>

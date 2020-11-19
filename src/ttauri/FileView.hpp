@@ -29,7 +29,7 @@ private:
 
 public:
     FileView(std::shared_ptr<FileMapping> const& mappingObject, size_t offset, size_t size);
-    FileView(URL const &location, AccessMode accessMode=AccessMode::OpenForRead, size_t offset=0, size_t size=0);
+    FileView(URL const &location, access_mode accessMode=access_mode::open_for_read, size_t offset=0, size_t size=0);
     ~FileView() = default;
 
     FileView() = delete;
@@ -40,7 +40,7 @@ public:
 
     /*! Access mode of the opened file.
      */
-    [[nodiscard]] AccessMode accessMode() const noexcept { return fileMappingObject->accessMode(); }
+    [[nodiscard]] access_mode accessMode() const noexcept { return fileMappingObject->accessMode(); }
 
     /*! URL location to the file.
      */
@@ -113,7 +113,7 @@ private:
      * \param size Number of bytes from the start of the file to map.
      * \return A shared-pointer to file mapping object.
      */
-    [[nodiscard]] static std::shared_ptr<FileMapping> findOrCreateFileMappingObject(URL const& path, AccessMode accessMode, size_t size);
+    [[nodiscard]] static std::shared_ptr<FileMapping> findOrCreateFileMappingObject(URL const& path, access_mode accessMode, size_t size);
 };
 
 }

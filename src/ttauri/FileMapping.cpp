@@ -11,10 +11,10 @@
 namespace tt {
 
 
-std::shared_ptr<File> FileMapping::findOrOpenFile(URL const& location, AccessMode accessMode)
+std::shared_ptr<file> FileMapping::findOrOpenFile(URL const& location, access_mode accessMode)
 {
     static std::mutex mutex;
-    static std::unordered_map<URL, std::vector<std::weak_ptr<File>>> mappedFiles;
+    static std::unordered_map<URL, std::vector<std::weak_ptr<tt::file>>> mappedFiles;
 
     ttlet lock = std::scoped_lock(mutex);
 
@@ -24,13 +24,13 @@ std::shared_ptr<File> FileMapping::findOrOpenFile(URL const& location, AccessMod
     auto& files = mappedFiles[location];
     for (ttlet &weak_file : files) {
         if (auto file = weak_file.lock()) {
-            if (file->accessMode >= accessMode) {
+            if (file->_access_mode >= accessMode) {
                 return file;
             }
         }
     }
 
-    auto file = std::make_shared<File>(location, accessMode);
+    auto file = std::make_shared<tt::file>(location, accessMode);
     files.push_back(file);
     return file;
 }

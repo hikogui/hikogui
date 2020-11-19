@@ -11,14 +11,14 @@
 
 namespace tt {
 
-FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
-    file(file), size(size > 0 ? size : File::fileSize(file->location))
+FileMapping::FileMapping(std::shared_ptr<tt::file> const &file, size_t size) :
+    file(file), size(size > 0 ? size : file::file_size(file->_location))
 {
     DWORD protect;
-    if (accessMode() >= (AccessMode::Read | AccessMode::Write)) {
+    if (accessMode() >= (access_mode::read | access_mode::write)) {
         protect = PAGE_READWRITE;
     }
-    else if (accessMode() >= AccessMode::Read) {
+    else if (accessMode() >= access_mode::read) {
         protect = PAGE_READONLY;
     }
     else {
@@ -33,7 +33,7 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     if (this->size == 0) {
         mapHandle = nullptr;
     } else {
-        if ((mapHandle = CreateFileMappingA(file->fileHandle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
+        if ((mapHandle = CreateFileMappingA(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
             TTAURI_THROW(io_error("Could not create file mapping")
                 .set<error_message_tag>(getLastErrorMessage())
                 .set<url_tag>(location())
@@ -42,7 +42,7 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     }
 }
 
-FileMapping::FileMapping(URL const &location, AccessMode accessMode, size_t size) :
+FileMapping::FileMapping(URL const &location, access_mode accessMode, size_t size) :
     FileMapping(findOrOpenFile(location, accessMode), size) {}
 
 FileMapping::~FileMapping()

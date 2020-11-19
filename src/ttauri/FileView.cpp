@@ -11,7 +11,7 @@
 
 namespace tt {
 
-std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(URL const& location, AccessMode accessMode, size_t size)
+std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(URL const& location, access_mode accessMode, size_t size)
 {
     static std::mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<FileMapping>>> mappedFileObjects;

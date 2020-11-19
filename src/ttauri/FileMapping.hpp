@@ -15,10 +15,11 @@ namespace tt {
  * before mapping the file to actual memory.
  * \see FileView on how to map the file into actual memory.
  */
-struct FileMapping {
+class FileMapping {
+public:
     /*! A pointer to an open file.
      */
-    std::shared_ptr<File> file;
+    std::shared_ptr<file> file;
 
     /*! Size of the mapping.
      */
@@ -26,14 +27,14 @@ struct FileMapping {
 
     /*! Operating system handle to a file mapping.
      */
-    FileHandle mapHandle;
+    file_handle mapHandle;
 
     /*! Map a file.
      * Map a file up to size bytes.
      * \param file a pointer to an open file.
      * \param size Number of bytes from the start to map.
      */
-    FileMapping(std::shared_ptr<File> const& file, size_t size);
+    FileMapping(std::shared_ptr<tt::file> const &file, size_t size);
 
     /*! Map a file.
      * Map a file up to size bytes.
@@ -44,7 +45,7 @@ struct FileMapping {
      * \param accessMode mode of how to access the file.
      * \param size Number of bytes from the start to map.
      */
-    FileMapping(URL const& path, AccessMode accessMode, size_t size);
+    FileMapping(URL const& path, access_mode accessMode, size_t size);
     ~FileMapping();
 
     FileMapping(FileMapping const &other) = delete;
@@ -54,11 +55,11 @@ struct FileMapping {
 
     /*! Get access mode of the file object.
      */
-    [[nodiscard]] AccessMode accessMode() const noexcept{ return file->accessMode; }
+    [[nodiscard]] access_mode accessMode() const noexcept{ return file->_access_mode; }
 
     /*! Get URL of the file object.
      */
-    [[nodiscard]] URL const &location() const noexcept { return file->location; }
+    [[nodiscard]] URL const &location() const noexcept { return file->_location; }
 
 private:
     /*! Find or open a file object.
@@ -68,7 +69,7 @@ private:
      * \param accesssMode mode of how to access the file.
      * \return A shared pointer to a file object.
      */
-    [[nodiscard]] static std::shared_ptr<File> findOrOpenFile(URL const& path, AccessMode accessMode);
+    [[nodiscard]] static std::shared_ptr<tt::file> findOrOpenFile(URL const &path, access_mode accessMode);
 };
 
 }
