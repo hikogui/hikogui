@@ -6,7 +6,7 @@
 #include "../aarect.hpp"
 
 namespace tt {
-class DrawContext;
+class draw_context;
 class icon;
 class label;
 struct TextStyle;
@@ -55,7 +55,7 @@ public:
      * @param context The current draw context.
      * @param use_context_color True to use the colors in the context, False to use the colors in the cell itself.
      */
-    virtual void draw(DrawContext context, bool use_context_color = false) noexcept = 0;
+    virtual void draw(draw_context context, bool use_context_color = false) noexcept = 0;
 
     [[nodiscard]] static std::unique_ptr<class image_stencil> make_unique(alignment alignment, icon const &icon);
 

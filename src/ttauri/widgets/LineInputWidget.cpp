@@ -113,30 +113,30 @@ void LineInputWidget::scrollText() noexcept
     textInvTranslate = ~textTranslate;
 }
 
-void LineInputWidget::drawBackgroundBox(DrawContext const &context) const noexcept
+void LineInputWidget::drawBackgroundBox(draw_context const &context) const noexcept
 {
-    context.drawBoxIncludeBorder(rectangle());
+    context.draw_box_with_border_inside(rectangle());
 }
 
-void LineInputWidget::drawSelectionRectangles(DrawContext context) const noexcept
+void LineInputWidget::drawSelectionRectangles(draw_context context) const noexcept
 {
     ttlet selectionRectangles = field.selectionRectangles();
     for (ttlet selectionRectangle : selectionRectangles) {
-        context.fillColor = theme->textSelectColor;
-        context.drawFilledQuad(selectionRectangle);
+        context.fill_color = theme->textSelectColor;
+        context.draw_filled_quad(selectionRectangle);
     }
 }
 
-void LineInputWidget::drawPartialGraphemeCaret(DrawContext context) const noexcept
+void LineInputWidget::drawPartialGraphemeCaret(draw_context context) const noexcept
 {
     ttlet partialGraphemeCaret = field.partialGraphemeCaret();
     if (partialGraphemeCaret) {
-        context.fillColor = theme->incompleteGlyphColor;
-        context.drawFilledQuad(partialGraphemeCaret);
+        context.fill_color = theme->incompleteGlyphColor;
+        context.draw_filled_quad(partialGraphemeCaret);
     }
 }
 
-void LineInputWidget::drawCaret(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
+void LineInputWidget::drawCaret(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
     // Display the caret and handle blinking.
     auto durationSinceLastUpdate = display_time_point - lastUpdateTimePoint;
@@ -145,18 +145,18 @@ void LineInputWidget::drawCaret(DrawContext context, hires_utc_clock::time_point
     auto blinkIsOn = nrHalfBlinks % 2 == 0;
     leftToRightCaret = field.leftToRightCaret();
     if (leftToRightCaret && blinkIsOn && _focus && window.active) {
-        context.fillColor = theme->cursorColor;
-        context.drawFilledQuad(leftToRightCaret);
+        context.fill_color = theme->cursorColor;
+        context.draw_filled_quad(leftToRightCaret);
     }
 }
 
-void LineInputWidget::drawText(DrawContext context) const noexcept
+void LineInputWidget::drawText(draw_context context) const noexcept
 {
     context.transform = mat::T(0.0f, 0.0f, 0.2f) * context.transform;
-    context.drawText(shapedText);
+    context.draw_text(shapedText);
 }
 
-void LineInputWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
+void LineInputWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -168,7 +168,7 @@ void LineInputWidget::draw(DrawContext context, hires_utc_clock::time_point disp
     // After drawing the border around the input field make sure any other
     // drawing remains inside this border. And change the transform to account
     // for how much the text has scrolled.
-    context.clippingRectangle = textClippingRectangle;
+    context.clipping_rectangle = textClippingRectangle;
     context.transform = (mat::T(0.0, 0.0, 0.1f) * textTranslate) * context.transform;
 
     drawSelectionRectangles(context);

@@ -27,23 +27,16 @@ namespace tt {
 
 /** Draw context for drawing using the TTauri shaders.
  */
-class DrawContext {
-private:
-    gui_window *_window;
-    vspan<PipelineFlat::Vertex> *flatVertices;
-    vspan<PipelineBox::Vertex> *boxVertices;
-    vspan<PipelineImage::Vertex> *imageVertices;
-    vspan<PipelineSDF::Vertex> *sdfVertices;
-
+class draw_context {
 public:
     /// Foreground color.
     vec color = vec::color(1.0, 1.0, 1.0, 1.0);
 
     /// Fill color.
-    vec fillColor = vec::color(0.0, 0.0, 0.0, 0.0);
+    vec fill_color = vec::color(0.0, 0.0, 0.0, 0.0);
 
     /// Size of lines.
-    float lineWidth = 1.0;
+    float line_width = 1.0;
 
     /** Shape of the corners of a box.
      * The vector holds information for each corner:
@@ -57,13 +50,13 @@ public:
      *  - positive: Rounded corner of that radius
      *  - negative: Cur corner of that radius
      */
-    vec cornerShapes = vec{0.0, 0.0, 0.0, 0.0};
+    vec corner_shapes = vec{0.0, 0.0, 0.0, 0.0};
 
     /** The clipping rectangle when drawing.
      * The clipping rectangle is passes as-is to the pipelines and
      * is not modified by the transform.
      */
-    aarect clippingRectangle;
+    aarect clipping_rectangle;
 
     /** Transform used on the given coordinates.
      * The z-axis translate is used for specifying the elevation
@@ -71,34 +64,34 @@ public:
      */
     mat transform = mat::I();
 
-    DrawContext(
+    draw_context(
         gui_window &window,
         vspan<PipelineFlat::Vertex> &flatVertices,
         vspan<PipelineBox::Vertex> &boxVertices,
         vspan<PipelineImage::Vertex> &imageVertices,
         vspan<PipelineSDF::Vertex> &sdfVertices) noexcept :
         _window(&window),
-        flatVertices(&flatVertices),
-        boxVertices(&boxVertices),
-        imageVertices(&imageVertices),
-        sdfVertices(&sdfVertices),
+        _flat_vertices(&flatVertices),
+        _box_vertices(&boxVertices),
+        _image_vertices(&imageVertices),
+        _sdf_vertices(&sdfVertices),
         color(0.0, 1.0, 0.0, 1.0),
-        fillColor(1.0, 1.0, 0.0, 1.0),
-        lineWidth(Theme::borderWidth),
-        cornerShapes(),
-        clippingRectangle(static_cast<vec>(window.currentWindowExtent))
+        fill_color(1.0, 1.0, 0.0, 1.0),
+        line_width(Theme::borderWidth),
+        corner_shapes(),
+        clipping_rectangle(static_cast<vec>(window.currentWindowExtent))
     {
-        flatVertices.clear();
-        boxVertices.clear();
-        imageVertices.clear();
-        sdfVertices.clear();
+        _flat_vertices->clear();
+        _box_vertices->clear();
+        _image_vertices->clear();
+        _sdf_vertices->clear();
     }
 
-    DrawContext(DrawContext const &rhs) noexcept = default;
-    DrawContext(DrawContext &&rhs) noexcept = default;
-    DrawContext &operator=(DrawContext const &rhs) noexcept = default;
-    DrawContext &operator=(DrawContext &&rhs) noexcept = default;
-    ~DrawContext() = default;
+    draw_context(draw_context const &rhs) noexcept = default;
+    draw_context(draw_context &&rhs) noexcept = default;
+    draw_context &operator=(draw_context const &rhs) noexcept = default;
+    draw_context &operator=(draw_context &&rhs) noexcept = default;
+    ~draw_context() = default;
 
     gui_window &window() const noexcept
     {
@@ -120,13 +113,13 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    void drawFilledQuad(vec p1, vec p2, vec p3, vec p4) const noexcept
+    void draw_filled_quad(vec p1, vec p2, vec p3, vec p4) const noexcept
     {
-        tt_assume(flatVertices != nullptr);
-        flatVertices->emplace_back(transform * p1, clippingRectangle, fillColor);
-        flatVertices->emplace_back(transform * p2, clippingRectangle, fillColor);
-        flatVertices->emplace_back(transform * p3, clippingRectangle, fillColor);
-        flatVertices->emplace_back(transform * p4, clippingRectangle, fillColor);
+        tt_assume(_flat_vertices != nullptr);
+        _flat_vertices->emplace_back(transform * p1, clipping_rectangle, fill_color);
+        _flat_vertices->emplace_back(transform * p2, clipping_rectangle, fill_color);
+        _flat_vertices->emplace_back(transform * p3, clipping_rectangle, fill_color);
+        _flat_vertices->emplace_back(transform * p4, clipping_rectangle, fill_color);
     }
 
     /** Draw a rectangle of one color.
@@ -136,9 +129,9 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    void drawFilledQuad(aarect r) const noexcept
+    void draw_filled_quad(aarect r) const noexcept
     {
-        drawFilledQuad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>());
+        draw_filled_quad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>());
     }
 
     /** Draw an axis aligned box
@@ -152,12 +145,12 @@ public:
      *  - shadowSize
      *  - cornerShapes
      */
-    void drawBox(aarect box) const noexcept
+    void draw_box(aarect box) const noexcept
     {
-        tt_assume(boxVertices != nullptr);
+        tt_assume(_box_vertices != nullptr);
 
         PipelineBox::DeviceShared::placeVertices(
-            *boxVertices, transform * box, fillColor, lineWidth, color, cornerShapes, clippingRectangle);
+            *_box_vertices, transform * box, fill_color, line_width, color, corner_shapes, clipping_rectangle);
     }
 
     /** Draw an axis aligned box
@@ -169,29 +162,28 @@ public:
      * This function will draw the given box.
      * This will use the current:
      *  - transform, to transform the opposite corner (rotation is not recommended).
-     *  - clippingRectangle
-     *  - fillColor
-     *  - borderSize
-     *  - borderColor
-     *  - shadowSize
-     *  - cornerShapes
+     *  - clipping_rectangle
+     *  - fill_color
+     *  - border_size
+     *  - border_color
+     *  - corner_shapes
      */
-    void drawBoxIncludeBorder(aarect rectangle) const noexcept
+    void draw_box_with_border_inside(aarect rectangle) const noexcept
     {
-        tt_assume(boxVertices != nullptr);
+        tt_assume(_box_vertices != nullptr);
 
-        ttlet shrink_value = lineWidth * 0.5f;
+        ttlet shrink_value = line_width * 0.5f;
 
         ttlet new_rectangle = shrink(rectangle, shrink_value);
 
         ttlet new_corner_shapes =
-            vec{std::max(0.0f, cornerShapes.x() - shrink_value),
-                std::max(0.0f, cornerShapes.y() - shrink_value),
-                std::max(0.0f, cornerShapes.z() - shrink_value),
-                std::max(0.0f, cornerShapes.w() - shrink_value)};
+            vec{std::max(0.0f, corner_shapes.x() - shrink_value),
+                std::max(0.0f, corner_shapes.y() - shrink_value),
+                std::max(0.0f, corner_shapes.z() - shrink_value),
+                std::max(0.0f, corner_shapes.w() - shrink_value)};
 
         PipelineBox::DeviceShared::placeVertices(
-            *boxVertices, transform * new_rectangle, fillColor, lineWidth, color, new_corner_shapes, clippingRectangle);
+            *_box_vertices, transform * new_rectangle, fill_color, line_width, color, new_corner_shapes, clipping_rectangle);
     }
 
     /** Draw an axis aligned box
@@ -210,22 +202,22 @@ public:
      *  - shadowSize
      *  - cornerShapes
      */
-    void drawBoxExcludeBorder(aarect rectangle) const noexcept
+    void draw_box_with_border_outside(aarect rectangle) const noexcept
     {
-        tt_assume(boxVertices != nullptr);
+        tt_assume(_box_vertices != nullptr);
 
-        ttlet shrink_value = lineWidth * 0.5f;
+        ttlet shrink_value = line_width * 0.5f;
 
         ttlet new_rectangle = expand(rectangle, shrink_value);
 
         ttlet new_corner_shapes =
-            vec{std::max(0.0f, cornerShapes.x() - shrink_value),
-                std::max(0.0f, cornerShapes.y() - shrink_value),
-                std::max(0.0f, cornerShapes.z() - shrink_value),
-                std::max(0.0f, cornerShapes.w() - shrink_value)};
+            vec{std::max(0.0f, corner_shapes.x() - shrink_value),
+                std::max(0.0f, corner_shapes.y() - shrink_value),
+                std::max(0.0f, corner_shapes.z() - shrink_value),
+                std::max(0.0f, corner_shapes.w() - shrink_value)};
 
         PipelineBox::DeviceShared::placeVertices(
-            *boxVertices, transform * new_rectangle, fillColor, lineWidth, color, new_corner_shapes, clippingRectangle);
+            *_box_vertices, transform * new_rectangle, fill_color, line_width, color, new_corner_shapes, clipping_rectangle);
     }
 
     /** Draw an image
@@ -234,11 +226,11 @@ public:
      *  - transform, to transform the image.
      *  - clippingRectangle
      */
-    void drawImage(PipelineImage::Image &image) const noexcept
+    void draw_image(PipelineImage::Image &image) const noexcept
     {
-        tt_assume(imageVertices != nullptr);
+        tt_assume(_image_vertices != nullptr);
 
-        image.placeVertices(*imageVertices, transform, clippingRectangle);
+        image.placeVertices(*_image_vertices, transform, clipping_rectangle);
     }
 
     /** Draw shaped text.
@@ -251,25 +243,32 @@ public:
      * @param text The shaped text to draw.
      * @param useContextColor When true display the text in the context's color, if false use text style color
      */
-    void drawText(ShapedText const &text, bool useContextColor = false) const noexcept
+    void draw_text(ShapedText const &text, bool useContextColor = false) const noexcept
     {
-        tt_assume(sdfVertices != nullptr);
+        tt_assume(_sdf_vertices != nullptr);
 
         if (useContextColor) {
-            narrow_cast<gui_device_vulkan&>(device()).SDFPipeline->placeVertices(*sdfVertices, text, transform, clippingRectangle, color);
+            narrow_cast<gui_device_vulkan&>(device()).SDFPipeline->placeVertices(*_sdf_vertices, text, transform, clipping_rectangle, color);
         } else {
             narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-                *sdfVertices, text, transform, clippingRectangle);
+                *_sdf_vertices, text, transform, clipping_rectangle);
         }
     }
 
-    void drawGlyph(FontGlyphIDs const &glyph, aarect box) const noexcept
+    void draw_glyph(FontGlyphIDs const &glyph, aarect box) const noexcept
     {
-        tt_assume(sdfVertices != nullptr);
+        tt_assume(_sdf_vertices != nullptr);
 
         narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-            *sdfVertices, glyph, transform * box, color, clippingRectangle);
+            *_sdf_vertices, glyph, transform * box, color, clipping_rectangle);
     }
+
+private:
+    gui_window *_window;
+    vspan<PipelineFlat::Vertex> *_flat_vertices;
+    vspan<PipelineBox::Vertex> *_box_vertices;
+    vspan<PipelineImage::Vertex> *_image_vertices;
+    vspan<PipelineSDF::Vertex> *_sdf_vertices;
 };
 
 } // namespace tt

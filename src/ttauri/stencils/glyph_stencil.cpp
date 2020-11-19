@@ -2,14 +2,14 @@
 // All rights reserved.
 
 #include "glyph_stencil.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../GUI/PipelineSDF_DeviceShared.hpp"
 
 namespace tt {
 
 glyph_stencil::glyph_stencil(alignment alignment, FontGlyphIDs glyph) noexcept : super(alignment), _glyph(std::move(glyph)) {}
 
-void glyph_stencil::draw(DrawContext context, bool use_context_color) noexcept
+void glyph_stencil::draw(draw_context context, bool use_context_color) noexcept
 {
     if (std::exchange(_data_is_modified, false)) {
         _glyph_bounding_box = PipelineSDF::DeviceShared::getBoundingBox(_glyph);
@@ -24,7 +24,7 @@ void glyph_stencil::draw(DrawContext context, bool use_context_color) noexcept
     }
 
     context.transform = context.transform * _glyph_transform;
-    context.drawGlyph(_glyph, _glyph_bounding_box);
+    context.draw_glyph(_glyph, _glyph_bounding_box);
 }
 
 } // namespace tt

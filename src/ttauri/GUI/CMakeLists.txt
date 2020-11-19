@@ -1,7 +1,7 @@
 
 target_sources(ttauri PRIVATE
     Cursor.hpp
-    DrawContext.hpp
+    draw_context.hpp
     gui_device.cpp
     gui_device.hpp
     gui_device_vulkan.cpp

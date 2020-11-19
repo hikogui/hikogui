@@ -9,7 +9,7 @@
 #include "PipelineImage.hpp"
 #include "PipelineSDF.hpp"
 #include "PipelineToneMapper.hpp"
-#include "DrawContext.hpp"
+#include "draw_context.hpp"
 #include "../widgets/WindowWidget.hpp"
 #include "../trace.hpp"
 #include "../Application.hpp"
@@ -348,7 +348,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
-    auto drawContext = DrawContext(
+    auto drawContext = draw_context(
         *this,
         flatPipeline->vertexBufferData,
         boxPipeline->vertexBufferData,

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_radio_button_widget.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../observable.hpp"
 #include "../label.hpp"
 #include <memory>
@@ -90,7 +90,7 @@ public:
         return widget::update_layout(display_time_point, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -108,15 +108,15 @@ private:
 
     typename decltype(label)::callback_ptr_type label_callback;
 
-    void draw_outline(DrawContext context) noexcept
+    void draw_outline(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.cornerShapes = vec{_outline_rectangle.height() * 0.5f};
-        context.drawBoxIncludeBorder(_outline_rectangle);
+        context.corner_shapes = vec{_outline_rectangle.height() * 0.5f};
+        context.draw_box_with_border_inside(_outline_rectangle);
     }
 
-    void draw_pip(DrawContext context) noexcept
+    void draw_pip(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -125,13 +125,13 @@ private:
             if (*this->enabled && this->window.active) {
                 context.color = theme->accentColor;
             }
-            std::swap(context.color, context.fillColor);
-            context.cornerShapes = vec{_pip_rectangle.height() * 0.5f};
-            context.drawBoxIncludeBorder(_pip_rectangle);
+            std::swap(context.color, context.fill_color);
+            context.corner_shapes = vec{_pip_rectangle.height() * 0.5f};
+            context.draw_box_with_border_inside(_pip_rectangle);
         }
     }
 
-    void draw_label(DrawContext context) noexcept
+    void draw_label(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 

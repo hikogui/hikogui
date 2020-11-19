@@ -6,7 +6,7 @@
 #include "abstract_button_widget.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../Path.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -179,7 +179,7 @@ public:
         return super::update_layout(display_time_point, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         draw_background(context);
@@ -197,19 +197,19 @@ private:
     bool _show_icon = false;
     bool _show_short_cut = false;
 
-    void draw_background(DrawContext context) noexcept
+    void draw_background(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.color = context.fillColor;
+        context.color = context.fill_color;
         if (this->_focus && this->window.active) {
             context.color = theme->accentColor;
         }
 
-        context.drawBoxIncludeBorder(this->rectangle());
+        context.draw_box_with_border_inside(this->rectangle());
     }
 
-    void draw_label(DrawContext context) noexcept
+    void draw_label(draw_context context) noexcept
     {
         context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
         if (*this->enabled) {
@@ -218,7 +218,7 @@ private:
         _label_stencil->draw(context);
     }
 
-    void draw_check_mark(DrawContext context) noexcept
+    void draw_check_mark(draw_context context) noexcept
     {
         if (this->value == this->true_value) {
             context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;

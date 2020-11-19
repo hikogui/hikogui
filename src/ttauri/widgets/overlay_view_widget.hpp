@@ -64,7 +64,7 @@ public:
         return super::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(child);
@@ -118,10 +118,10 @@ public:
 private:
     std::shared_ptr<widget> child;
 
-    void draw_background(DrawContext context) noexcept
+    void draw_background(draw_context context) noexcept
     {
-        context.clippingRectangle = expand(context.clippingRectangle, Theme::borderWidth);
-        context.drawBoxExcludeBorder(rectangle());
+        context.clipping_rectangle = expand(context.clipping_rectangle, Theme::borderWidth);
+        context.draw_box_with_border_outside(rectangle());
     }
 };
 

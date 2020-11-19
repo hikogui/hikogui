@@ -25,7 +25,7 @@ public:
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
@@ -59,8 +59,8 @@ private:
     bool pressedMinimize = false;
     bool pressedMaximize = false;
 
-    void drawMacOS(DrawContext const &context, hires_utc_clock::time_point display_time_point) noexcept;
-    void drawWindows(DrawContext const &context, hires_utc_clock::time_point display_time_point) noexcept;
+    void drawMacOS(draw_context const &context, hires_utc_clock::time_point display_time_point) noexcept;
+    void drawWindows(draw_context const &context, hires_utc_clock::time_point display_time_point) noexcept;
 };
 
 }

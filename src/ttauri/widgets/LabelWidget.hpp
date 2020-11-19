@@ -4,7 +4,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
@@ -70,7 +70,7 @@ public:
         return super::update_layout(displayTimePoint, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override {
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (*enabled) {

@@ -69,16 +69,16 @@ bool widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
     return need_layout;
 }
 
-DrawContext widget::make_draw_context(DrawContext context) const noexcept
+draw_context widget::make_draw_context(draw_context context) const noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    context.clippingRectangle = _window_clipping_rectangle;
+    context.clipping_rectangle = _window_clipping_rectangle;
     context.transform = _to_window_transform;
 
     // The default fill and border colors.
     context.color = theme->borderColor(_semantic_layer);
-    context.fillColor = theme->fillColor(_semantic_layer);
+    context.fill_color = theme->fillColor(_semantic_layer);
 
     if (*enabled) {
         if (_focus && window.active) {
@@ -88,13 +88,13 @@ DrawContext widget::make_draw_context(DrawContext context) const noexcept
         }
 
         if (_hover) {
-            context.fillColor = theme->fillColor(_semantic_layer + 1);
+            context.fill_color = theme->fillColor(_semantic_layer + 1);
         }
 
     } else {
         // Disabled, only the outline is shown.
         context.color = theme->borderColor(_semantic_layer - 1);
-        context.fillColor = theme->fillColor(_semantic_layer - 1);
+        context.fill_color = theme->fillColor(_semantic_layer - 1);
     }
 
     return context;

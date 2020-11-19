@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "pixel_map_stencil.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../encoding/png.hpp"
 
 namespace tt {
@@ -19,7 +19,7 @@ pixel_map_stencil::pixel_map_stencil(tt::alignment alignment, PixelMap<R16G16B16
 
 pixel_map_stencil::pixel_map_stencil(tt::alignment alignment, URL const &url) : pixel_map_stencil(alignment, png::load(url)) {}
 
-void pixel_map_stencil::draw(DrawContext context, bool use_context_color) noexcept
+void pixel_map_stencil::draw(draw_context context, bool use_context_color) noexcept
 {
     if (std::exchange(_data_is_modified, false)) {
         _backing = narrow_cast<gui_device_vulkan&>(context.device()).imagePipeline->makeImage(_pixel_map.extent());
@@ -39,7 +39,7 @@ void pixel_map_stencil::draw(DrawContext context, bool use_context_color) noexce
 
     switch (_backing.state) {
     case PipelineImage::Image::State::Drawing: context.window().requestRedraw = true; break;
-    case PipelineImage::Image::State::Uploaded: context.drawImage(_backing); break;
+    case PipelineImage::Image::State::Uploaded: context.draw_image(_backing); break;
     default:;
     }
 }

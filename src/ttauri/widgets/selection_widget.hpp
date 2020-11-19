@@ -10,7 +10,7 @@
 #include "row_column_layout_widget.hpp"
 #include "menu_item_widget.hpp"
 #include "../stencils/label_stencil.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../text/FontBook.hpp"
 #include "../text/ElusiveIcons.hpp"
 #include "../observable.hpp"
@@ -152,7 +152,7 @@ public:
         return widget::update_layout(display_time_point, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -366,34 +366,34 @@ private:
         }        
     }
 
-    void draw_outline(DrawContext context) noexcept
+    void draw_outline(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.cornerShapes = Theme::roundingRadius;
-        context.drawBoxIncludeBorder(rectangle());
+        context.corner_shapes = Theme::roundingRadius;
+        context.draw_box_with_border_inside(rectangle());
     }
 
-    void draw_left_box(DrawContext context) noexcept
+    void draw_left_box(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
-        context.fillColor = context.color;
-        context.cornerShapes = vec{Theme::roundingRadius, 0.0f, Theme::roundingRadius, 0.0f};
-        context.drawBoxIncludeBorder(_left_box_rectangle);
+        context.fill_color = context.color;
+        context.corner_shapes = vec{Theme::roundingRadius, 0.0f, Theme::roundingRadius, 0.0f};
+        context.draw_box_with_border_inside(_left_box_rectangle);
     }
 
-    void draw_chevrons(DrawContext context) noexcept
+    void draw_chevrons(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.2f} * context.transform;
-        context.color = *enabled ? theme->foregroundColor : context.fillColor;
-        context.drawGlyph(_chevrons_glyph, _chevrons_rectangle);
+        context.color = *enabled ? theme->foregroundColor : context.fill_color;
+        context.draw_glyph(_chevrons_glyph, _chevrons_rectangle);
     }
 
-    void draw_value(DrawContext context) noexcept
+    void draw_value(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 

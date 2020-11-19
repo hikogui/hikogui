@@ -63,17 +63,17 @@ public:
         return super::update_layout(displayTimePoint, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.cornerShapes = vec{Theme::roundingRadius};
+        context.corner_shapes = vec{Theme::roundingRadius};
         if (*this->value) {
-            context.fillColor = theme->accentColor;
+            context.fill_color = theme->accentColor;
         }
 
         // Move the border of the button in the middle of a pixel.
-        context.drawBoxIncludeBorder(this->rectangle());
+        context.draw_box_with_border_inside(this->rectangle());
 
         if (*this->enabled) {
             context.color = theme->foregroundColor;

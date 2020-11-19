@@ -6,7 +6,7 @@
 #include "abstract_bool_toggle_button_widget.hpp"
 #include "../label.hpp"
 #include "../stencils/label_stencil.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../observable.hpp"
 #include <memory>
 #include <string>
@@ -87,7 +87,7 @@ public:
         return widget::update_layout(display_time_point, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         draw_rail(context);
@@ -113,15 +113,15 @@ private:
     decltype(on_label)::callback_ptr_type _on_label_callback;
     decltype(off_label)::callback_ptr_type _off_label_callback;
 
-    void draw_rail(DrawContext drawContext) noexcept
+    void draw_rail(draw_context drawContext) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        drawContext.cornerShapes = vec{_rail_rectangle.height() * 0.5f};
-        drawContext.drawBoxIncludeBorder(_rail_rectangle);
+        drawContext.corner_shapes = vec{_rail_rectangle.height() * 0.5f};
+        drawContext.draw_box_with_border_inside(_rail_rectangle);
     }
 
-    void draw_slider(DrawContext drawContext) noexcept
+    void draw_slider(draw_context drawContext) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -144,13 +144,13 @@ private:
                 drawContext.color = _hover ? theme->borderColor(_semantic_layer + 1) : theme->borderColor(_semantic_layer);
             }
         }
-        std::swap(drawContext.color, drawContext.fillColor);
+        std::swap(drawContext.color, drawContext.fill_color);
         drawContext.transform = mat::T{0.0f, 0.0f, 0.1f} * drawContext.transform;
-        drawContext.cornerShapes = vec{positionedSliderRectangle.height() * 0.5f};
-        drawContext.drawBoxIncludeBorder(positionedSliderRectangle);
+        drawContext.corner_shapes = vec{positionedSliderRectangle.height() * 0.5f};
+        drawContext.draw_box_with_border_inside(positionedSliderRectangle);
     }
 
-    void draw_label(DrawContext drawContext) noexcept
+    void draw_label(draw_context drawContext) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 

@@ -19,7 +19,7 @@ public:
 
     [[nodiscard]] vec preferred_extent() noexcept override;
 
-    void draw(DrawContext context, bool use_context_color = false) noexcept override;
+    void draw(draw_context context, bool use_context_color = false) noexcept override;
 
 private:
     std::u8string _text;

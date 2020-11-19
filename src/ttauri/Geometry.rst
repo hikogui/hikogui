@@ -1,8 +1,8 @@
 # TTauri Geometry System
 
 ## Data Types
-### vec
-The `vec` class is a 4D homogenious coordinate.  
+### Vector: vec
+The `vec` class is a 4D homogeneous coordinate.  
 Internally this is a `__m128` on x64 CPUs, where the bits are:
  - x [31:0]
  - y [63:32]
@@ -12,13 +12,13 @@ Internally this is a `__m128` on x64 CPUs, where the bits are:
 The `vec()` constructor will default with w=0.0. There are also the
 `vec::point()` and `vec::color()` factories which default w=1.0.
 
-### mat
-The `mat` class is a 4x4 homogenious transformation matrix in column-major
+### Matrix: mat
+The `mat` class is a 4x4 homogeneous transformation matrix in column-major
 order. Internally this a `vec` for each column.
 
 Vector * matrix multiplications are performed as if the vector is a column.
 
-### aarect
+### Axis-aligned rectangle: aarect
 The `aarect` class is a 2D axis-aligned rectangle.
 
 Internally this is a `vec` where:
@@ -47,16 +47,14 @@ alignment of lines to actual pixels.
 
 The alignment of borders to pixels is the responsibility of the
 widget that draws itself. The widget has access to
-the DrawContext::drawBoxIncludingBorder() function to position the border's
+the draw_context::drawBoxIncludingBorder() function to position the border's
 edge to the edge of the given rectangle, if the rectangle is rounded to
 integer coordinates; the rectangle, border and pixel will share the same edge.
 
 At DPI-scale of 1, it is assumed that the display has a 84 DPI.
 This is the middle ground between Window's default 96 DPI and macOS's
 default 72 DPI. The ShapedText class will scale to 84 DPI automatically,
-further DPI scaling will be handled by the DrawContext.
-
-
+further DPI scaling will be handled by the draw_context.
 
 ### Window depth
 Z-coordinate for a window is between 0.0 (far) to 100.0 (near).

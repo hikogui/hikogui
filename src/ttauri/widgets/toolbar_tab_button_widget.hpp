@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_radio_button_widget.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../observable.hpp"
 #include "../label.hpp"
 #include <memory>
@@ -89,7 +89,7 @@ public:
         return super::update_layout(display_time_point, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -104,7 +104,7 @@ private:
     aarect _button_rectangle;
     std::unique_ptr<stencil> _label_stencil;
 
-    void draw_focus_line(DrawContext const &context) noexcept
+    void draw_focus_line(draw_context const &context) noexcept
     {
         if (this->_focus && this->window.active && *this->value == this->true_value) {
             auto parent_ = this->parent.lock();
@@ -118,13 +118,13 @@ private:
             // the selected-tab (0.6) and unselected-tabs (0.8).
             parent_context.transform = mat::T(0.0f, 0.0f, 1.7f) * parent_context.transform;
 
-            parent_context.fillColor = theme->accentColor;
-            parent_context.drawFilledQuad(
+            parent_context.fill_color = theme->accentColor;
+            parent_context.draw_filled_quad(
                 aarect{parent_->rectangle().x(), parent_->rectangle().y(), parent_->rectangle().width(), 1.0f});
         }
     }
 
-    void draw_button(DrawContext context) noexcept
+    void draw_button(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         if (this->_focus && this->window.active) {
@@ -135,25 +135,25 @@ private:
         }
 
         // Override the clipping rectangle to match the toolbar.
-        context.clippingRectangle = this->parent.lock()->window_rectangle();
+        context.clipping_rectangle = this->parent.lock()->window_rectangle();
 
         if (this->_hover || *this->value == this->true_value) {
-            context.fillColor = theme->fillColor(this->_semantic_layer - 1);
-            context.color = context.fillColor;
+            context.fill_color = theme->fillColor(this->_semantic_layer - 1);
+            context.color = context.fill_color;
         } else {
-            context.fillColor = theme->fillColor(this->_semantic_layer);
-            context.color = context.fillColor;
+            context.fill_color = theme->fillColor(this->_semantic_layer);
+            context.color = context.fill_color;
         }
 
         if (this->_focus && this->window.active) {
             context.color = theme->accentColor;
         }
 
-        context.cornerShapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
-        context.drawBoxIncludeBorder(_button_rectangle);
+        context.corner_shapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
+        context.draw_box_with_border_inside(_button_rectangle);
     }
 
-    void draw_label(DrawContext context) noexcept
+    void draw_label(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 

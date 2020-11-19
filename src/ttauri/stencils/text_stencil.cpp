@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "text_stencil.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../encoding/png.hpp"
 
 namespace tt {
@@ -22,7 +22,7 @@ vec text_stencil::preferred_extent() noexcept
     return _shaped_text.preferred_extent;
 }
 
-void text_stencil::draw(DrawContext context, bool use_context_color) noexcept
+void text_stencil::draw(draw_context context, bool use_context_color) noexcept
 {
     auto data_is_modified = std::exchange(_data_is_modified, false);
 
@@ -36,7 +36,7 @@ void text_stencil::draw(DrawContext context, bool use_context_color) noexcept
     }
 
     context.transform = context.transform * _shaped_text_transform;
-    context.drawText(_shaped_text, use_context_color);
+    context.draw_text(_shaped_text, use_context_color);
 }
 
 } // namespace tt

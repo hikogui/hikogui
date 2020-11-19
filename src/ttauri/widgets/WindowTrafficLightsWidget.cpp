@@ -108,92 +108,92 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
     return widget::update_layout(display_time_point, need_layout);
 }
 
-void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+void WindowTrafficLightsWidget::drawMacOS(draw_context const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     auto context = drawContext;
-    context.cornerShapes = vec{RADIUS, RADIUS, RADIUS, RADIUS};
+    context.corner_shapes = vec{RADIUS, RADIUS, RADIUS, RADIUS};
 
     if (!window.active && !_hover) {
-        context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
+        context.fill_color = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedClose) {
-        context.fillColor = vec::color(1.0f, 0.242f, 0.212f);
+        context.fill_color = vec::color(1.0f, 0.242f, 0.212f);
     } else {
-        context.fillColor = vec::color(1.0f, 0.1f, 0.082f);
+        context.fill_color = vec::color(1.0f, 0.1f, 0.082f);
     }
-    context.color = context.fillColor;
-    context.drawBoxIncludeBorder(closeRectangle);
+    context.color = context.fill_color;
+    context.draw_box_with_border_inside(closeRectangle);
 
     if (!window.active && !_hover) {
-        context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
+        context.fill_color = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedMinimize) {
-        context.fillColor = vec::color(1.0f, 0.847f, 0.093f);
+        context.fill_color = vec::color(1.0f, 0.847f, 0.093f);
     } else {
-        context.fillColor = vec::color(0.784f, 0.521f, 0.021f);
+        context.fill_color = vec::color(0.784f, 0.521f, 0.021f);
     }
-    context.color = context.fillColor;
-    context.drawBoxIncludeBorder(minimizeRectangle);
+    context.color = context.fill_color;
+    context.draw_box_with_border_inside(minimizeRectangle);
 
     if (!window.active && !_hover) {
-        context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
+        context.fill_color = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedMaximize) {
-        context.fillColor = vec::color(0.223f, 0.863f, 0.1f);
+        context.fill_color = vec::color(0.223f, 0.863f, 0.1f);
     } else {
-        context.fillColor = vec::color(0.082f, 0.533f, 0.024f);
+        context.fill_color = vec::color(0.082f, 0.533f, 0.024f);
     }
-    context.color = context.fillColor;
-    context.drawBoxIncludeBorder(maximizeRectangle);
+    context.color = context.fill_color;
+    context.draw_box_with_border_inside(maximizeRectangle);
 
     if (_hover) {
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         context.color = vec::color(0.319f, 0.0f, 0.0f);
-        context.drawGlyph(closeWindowGlyph, closeWindowGlyphRectangle);
+        context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle);
 
         context.color = vec::color(0.212f, 0.1f, 0.0f);
-        context.drawGlyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
+        context.draw_glyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
 
         context.color = vec::color(0.0f, 0.133f, 0.0f);
         if (window.size == gui_window::Size::Maximized) {
-            context.drawGlyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
+            context.draw_glyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
         } else {
-            context.drawGlyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
+            context.draw_glyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
         }
     }
 }
 
-void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+void WindowTrafficLightsWidget::drawWindows(draw_context const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     auto context = drawContext;
 
     if (pressedClose) {
-        context.fillColor = vec::color(1.0f, 0.0f, 0.0f);
+        context.fill_color = vec::color(1.0f, 0.0f, 0.0f);
     } else if (hoverClose) {
-        context.fillColor = vec::color(0.5f, 0.0f, 0.0f);
+        context.fill_color = vec::color(0.5f, 0.0f, 0.0f);
     } else {
-        context.fillColor = theme->fillColor(_semantic_layer);
+        context.fill_color = theme->fillColor(_semantic_layer);
     }
-    context.drawFilledQuad(closeRectangle);
+    context.draw_filled_quad(closeRectangle);
 
     if (pressedMinimize) {
-        context.fillColor = theme->fillColor(_semantic_layer + 2);
+        context.fill_color = theme->fillColor(_semantic_layer + 2);
     } else if (hoverMinimize) {
-        context.fillColor = theme->fillColor(_semantic_layer + 1);
+        context.fill_color = theme->fillColor(_semantic_layer + 1);
     } else {
-        context.fillColor = theme->fillColor(_semantic_layer);
+        context.fill_color = theme->fillColor(_semantic_layer);
     }
-    context.drawFilledQuad(minimizeRectangle);
+    context.draw_filled_quad(minimizeRectangle);
 
     if (pressedMaximize) {
-        context.fillColor = theme->fillColor(_semantic_layer + 2);
+        context.fill_color = theme->fillColor(_semantic_layer + 2);
     } else if (hoverMaximize) {
-        context.fillColor = theme->fillColor(_semantic_layer + 1);
+        context.fill_color = theme->fillColor(_semantic_layer + 1);
     } else {
-        context.fillColor = theme->fillColor(_semantic_layer);
+        context.fill_color = theme->fillColor(_semantic_layer);
     }
-    context.drawFilledQuad(maximizeRectangle);
+    context.draw_filled_quad(maximizeRectangle);
 
     if (window.active) {
         context.color = theme->foregroundColor;
@@ -201,16 +201,16 @@ void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hire
         context.color = theme->borderColor(_semantic_layer);
     }
     context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
-    context.drawGlyph(closeWindowGlyph, closeWindowGlyphRectangle);
-    context.drawGlyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
+    context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle);
+    context.draw_glyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
     if (window.size == gui_window::Size::Maximized) {
-        context.drawGlyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
+        context.draw_glyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
     } else {
-        context.drawGlyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
+        context.draw_glyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
     }
 }
 
-void WindowTrafficLightsWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
+void WindowTrafficLightsWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 

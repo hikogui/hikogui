@@ -104,12 +104,12 @@ public:
         return abstract_container_widget::update_layout(display_time_point, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.fillColor = theme->fillColor(_semantic_layer + 1);
-        context.drawFilledQuad(rectangle());
+        context.fill_color = theme->fillColor(_semantic_layer + 1);
+        context.draw_filled_quad(rectangle());
         abstract_container_widget::draw(std::move(context), display_time_point);
     }
 

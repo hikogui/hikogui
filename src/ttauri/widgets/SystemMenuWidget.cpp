@@ -61,7 +61,7 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
     return widget::update_layout(display_time_point, need_layout);
 }
 
-void SystemMenuWidget::draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
+void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 

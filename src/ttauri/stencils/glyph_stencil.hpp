@@ -15,7 +15,7 @@ public:
 
     glyph_stencil(alignment alignment, FontGlyphIDs glyph) noexcept;
 
-    void draw(DrawContext context, bool use_context_color=false) noexcept override;
+    void draw(draw_context context, bool use_context_color=false) noexcept override;
 
 private:
     FontGlyphIDs _glyph;

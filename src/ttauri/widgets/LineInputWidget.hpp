@@ -31,7 +31,7 @@ public:
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] bool update_layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override;
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
     bool handle_command(command command) noexcept override;
     bool handle_mouse_event(MouseEvent const &event) noexcept override;
     bool handle_keyboard_event(KeyboardEvent const &event) noexcept override;
@@ -76,11 +76,11 @@ private:
 
     void dragSelect() noexcept;
     void scrollText() noexcept;
-    void drawBackgroundBox(DrawContext const &context) const noexcept;
-    void drawSelectionRectangles(DrawContext context) const noexcept;
-    void drawPartialGraphemeCaret(DrawContext context) const noexcept;
-    void drawCaret(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept;
-    void drawText(DrawContext context) const noexcept;
+    void drawBackgroundBox(draw_context const &context) const noexcept;
+    void drawSelectionRectangles(draw_context context) const noexcept;
+    void drawPartialGraphemeCaret(draw_context context) const noexcept;
+    void drawCaret(draw_context context, hires_utc_clock::time_point display_time_point) noexcept;
+    void drawText(draw_context context) const noexcept;
 };
 
 } // namespace tt

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../observable.hpp"
 #include <memory>
 #include <string>
@@ -92,7 +92,7 @@ public:
         return widget::update_layout(display_time_point, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -225,33 +225,33 @@ private:
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
     }
 
-    void draw_rails(DrawContext context) noexcept
+    void draw_rails(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.color = theme->fillColor(_semantic_layer);
-        context.fillColor = theme->fillColor(_semantic_layer);
+        context.fill_color = theme->fillColor(_semantic_layer);
         if constexpr (is_vertical) {
-            context.cornerShapes = vec{rectangle().width() * 0.5f};
+            context.corner_shapes = vec{rectangle().width() * 0.5f};
         } else {
-            context.cornerShapes = vec{rectangle().height() * 0.5f};
+            context.corner_shapes = vec{rectangle().height() * 0.5f};
         }
-        context.drawBoxIncludeBorder(rectangle());
+        context.draw_box_with_border_inside(rectangle());
     }
 
-    void draw_slider(DrawContext context) noexcept
+    void draw_slider(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.color = theme->fillColor(_semantic_layer + 1);
-        context.fillColor = theme->fillColor(_semantic_layer + 1);
+        context.fill_color = theme->fillColor(_semantic_layer + 1);
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         if constexpr (is_vertical) {
-            context.cornerShapes = vec{slider_rectangle.width() * 0.5f};
+            context.corner_shapes = vec{slider_rectangle.width() * 0.5f};
         } else {
-            context.cornerShapes = vec{slider_rectangle.height() * 0.5f};
+            context.corner_shapes = vec{slider_rectangle.height() * 0.5f};
         }
-        context.drawBoxIncludeBorder(slider_rectangle);
+        context.draw_box_with_border_inside(slider_rectangle);
     }
 };
 

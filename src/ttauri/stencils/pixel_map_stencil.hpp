@@ -17,7 +17,7 @@ public:
     pixel_map_stencil(tt::alignment alignment, PixelMap<R16G16B16A16SFloat> const &pixel_map);
     pixel_map_stencil(tt::alignment alignment, URL const &url);
 
-    void draw(DrawContext context, bool use_context_color=false) noexcept override;
+    void draw(draw_context context, bool use_context_color=false) noexcept override;
 
 private:
     PixelMap<R16G16B16A16SFloat> _pixel_map;

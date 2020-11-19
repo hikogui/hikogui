@@ -5,7 +5,7 @@
 
 #include "abstract_toggle_button_widget.hpp"
 #include "../stencils/label_stencil.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../text/FontBook.hpp"
 #include "../observable.hpp"
 #include "../label.hpp"
@@ -116,7 +116,7 @@ public:
         return super::update_layout(displayTimePoint, need_layout);
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -145,14 +145,14 @@ private:
 
     aarect _label_rectangle;
 
-    void draw_check_box(DrawContext const &context) noexcept
+    void draw_check_box(draw_context const &context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.drawBoxIncludeBorder(_checkbox_rectangle);
+        context.draw_box_with_border_inside(_checkbox_rectangle);
     }
 
-    void draw_check_mark(DrawContext context) noexcept
+    void draw_check_mark(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -164,15 +164,15 @@ private:
 
         // Checkmark or tristate.
         if (this->value == this->true_value) {
-            context.drawGlyph(_check_glyph, _check_glyph_rectangle);
+            context.draw_glyph(_check_glyph, _check_glyph_rectangle);
         } else if (this->value == this->false_value) {
             ;
         } else {
-            context.drawGlyph(_minus_glyph, _minus_glyph_rectangle);
+            context.draw_glyph(_minus_glyph, _minus_glyph_rectangle);
         }
     }
 
-    void draw_label(DrawContext context) noexcept
+    void draw_label(draw_context context) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 

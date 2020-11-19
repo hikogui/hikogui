@@ -9,7 +9,7 @@
 #include "../GUI/HitBox.hpp"
 #include "../GUI/KeyboardEvent.hpp"
 #include "../GUI/Theme.hpp"
-#include "../GUI/DrawContext.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../text/ShapedText.hpp"
 #include "../alignment.hpp"
 #include "../Path.hpp"
@@ -427,7 +427,7 @@ public:
      * @return A new draw context for drawing the current widget in the
      *         local coordinate system.
      */
-    virtual DrawContext make_draw_context(DrawContext context) const noexcept;
+    virtual draw_context make_draw_context(draw_context context) const noexcept;
 
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.
@@ -444,7 +444,7 @@ public:
      * @param drawContext The context to where the widget will draw.
      * @param displayTimePoint The time point when the widget will be shown on the screen.
      */
-    virtual void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept
+    virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
     }

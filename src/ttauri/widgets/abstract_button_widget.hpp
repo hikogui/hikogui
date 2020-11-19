@@ -30,11 +30,11 @@ public:
     {
     }
 
-    DrawContext make_draw_context(DrawContext context) const noexcept override {
+    draw_context make_draw_context(draw_context context) const noexcept override {
         auto new_context = super::make_draw_context(context);
 
         if (_pressed) {
-            new_context.fillColor = theme->fillColor(this->_semantic_layer + 2);
+            new_context.fill_color = theme->fillColor(this->_semantic_layer + 2);
         }
 
         return new_context;

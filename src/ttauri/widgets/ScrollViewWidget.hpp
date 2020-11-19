@@ -196,7 +196,7 @@ public:
         return super::update_layout(display_time_point, need_layout) || need_redraw;
     }
 
-    void draw(DrawContext context, hires_utc_clock::time_point display_time_point) noexcept override
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(content);
