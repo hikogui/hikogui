@@ -20,6 +20,111 @@ void memswap(T &dst, U &src) {
     memcpy(&dst, tmp, sizeof(T));
 }
 
+/** Copy an object to another memory locations.
+ * This function will copy an object located in one memory location
+ * to another through the use of placement-new.
+ *
+ * If you want to access the object in dst, you should use the return value.
+ *
+ * @param src A pointer to an object.
+ * @param dst A pointer to allocated memory.
+ * @return The dst pointer with the new object who's lifetime was started.
+ */
+template<typename T>
+T *placement_copy(T *src, T *dst)
+{
+    tt_assume(src != nullptr);
+    tt_assume(dst != nullptr);
+    tt_assume(src != dst);
+
+    return new (dst) T(*src);
+}
+
+/** Copy objects from one memory location to another memory location.
+ * This function will placement_copy an array of objects
+ * between two memory locations.
+ * 
+ * The objects may overlap: copying takes place as if the objects were copied
+ * to a temporary object array and then the objects were copied from the array to dst.
+ */
+template<typename T>
+void placement_copy(T *src_first, T *src_last, T *dst_first)
+{
+    tt_assume(src_first != dst_first);
+    tt_assume(src_last >= src_first);
+
+    if (src_first < dst_first) {
+        auto dst_last = dst + (src_last - src);
+
+        auto src = src_last;
+        auto dst = dst_last;
+        while (src != src_first) {
+            placement_copy(--src, --dst);
+        }
+
+    } else {
+        auto src = src_first;
+        auto dst = dst_first;
+        while (src != src_last) {
+            placement_copy(src++, dst++);
+        }
+    }
+}
+
+/** Move an object between two memory locations.
+ * This function will move an object from one memory location
+ * to another through the use of placement-new. The object
+ * in the source memory location is destroyed.
+ *
+ * If you want to access the object in dst, you should use the return value.
+ *
+ * @param src A pointer to an object.
+ * @param dst A pointer to allocated memory.
+ * @return The dst pointer with the new object who's lifetime was started.
+ */
+template<typename T>
+T *placement_move(T *src, T *dst)
+{
+    tt_assume(src != nullptr);
+    tt_assume(dst != nullptr);
+    tt_assume(src != dst);
+
+    auto dst_ = new (dst) T(std::move(*src));
+    std::destroy_at(src);
+    return dst_;
+}
+
+/** Move an objects between two memory locations.
+ * This function will placement_move an array of objects
+ * between two memory locations.
+ * 
+ * The objects may overlap: copying takes place as if the objects were copied
+ * to a temporary object array and then the objects were copied from the array to dst.
+ */
+template<typename T>
+void placement_move(T *src_first, T *src_last, T *dst_first)
+{
+    tt_assume(src_first != dst_first);
+    tt_assume(src_last >= src_first);
+
+    if (src_first < dst_first) {
+        auto dst_last = dst + (src_last - src);
+
+        auto src = src_last;
+        auto dst = dst_last;
+        while (src != src_first) {
+            placement_move(--src, --dst);
+        }
+
+    } else {
+        auto src = src_first;
+        auto dst = dst_first;
+        while (src != src_last) {
+            placement_move(src++, dst++);
+        }
+    }
+}
+
 template<typename T>
 bool is_aligned(T* p){
     return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
@@ -100,6 +205,24 @@ inline std::shared_ptr<Value> try_make_shared(Map &map, Key key, Args... args) {
         value = i->second;
     }
     return value;
+}
+
+/** Allocate and array of type, without constructing.
+ */
+template<typename T>
+[[nodiscard]] inline T *alloc_array(size_t count)
+{
+    void *ptr = std::aligned_alloc(std::alignment_of_v<T>, sizeof (T) * count);
+    if (ptr == nullptr) {
+        throw std::bad_alloc();
+    }
+    return static_cast<T *>(ptr);
+}
+
+template<typename T>
+inline void free_array(T *ptr) noexcept
+{
+    std::free(ptr);
 }
 
 }

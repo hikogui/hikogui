@@ -95,6 +95,10 @@ public:
         return r;
     }
 
+    /** Create aarect from two oposite points
+     * @param p0 The left bottom corner.
+     * @param p3 The right top corner.
+     */
     [[nodiscard]] static aarect p0p3(vec const &p0, vec const &p3) noexcept
     {
         tt_assume(p0.is_point());
@@ -102,9 +106,27 @@ public:
         return aarect::p0p3(p0.xy00() + p3._00xy());
     }
 
-    operator bool() const noexcept
+    /** Make sure p0 is left/bottom from p3.
+     * @return True is p0 is left and below p3.
+     */
+    [[nodiscard]] valid() const noexcept
     {
-        return v.xyxy() != v.zwzw();
+        return left() <= right() && bottom() <= top();
+    }
+
+    /** Check if the rectangle has no area.
+     */
+    [[nodiscard]] empty() const noexcept
+    {
+        tt_assume(valid());
+        return left() == right() || bottom() == top();
+    }
+
+    /** True when the rectangle has an area.
+     */
+    [[nodiscard]] operator bool() const noexcept
+    {
+        return !empty();
     }
 
     /** Expand the current rectangle to include the new rectangle.
@@ -173,17 +195,6 @@ public:
             return v.zw01();
         }
     }
-
-    /** Get coordinate of a corner.
-     *
-     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
-     * @param z The z coordinate to insert in the resulting coordinate.
-     * @return The homogeneous coordinate of the corner.
-     */
-    // template<size_t I, typename Z, std::enable_if_t<std::is_arithmetic_v<Z>,int> = 0>
-    //[[nodiscard]] vec corner(Z z) const noexcept {
-    //    return corner<I>().z(narrow_cast<float>(z));
-    //}
 
     [[nodiscard]] vec p0() const noexcept
     {
@@ -268,14 +279,14 @@ public:
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    aarect &width(T newWidth) noexcept
+    aarect &set_width(T newWidth) noexcept
     {
         v = v.xyxw() + vec::make_z(newWidth);
         return *this;
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    aarect &height(T newHeight) noexcept
+    aarect &set_height(T newHeight) noexcept
     {
         v = v.xyzy() + vec::make_w(newHeight);
         return *this;
@@ -360,13 +371,23 @@ public:
 
     [[nodiscard]] friend aarect operator|(aarect const &lhs, aarect const &rhs) noexcept
     {
-        return aarect::p0p3(min(lhs.p0(), rhs.p0()), max(lhs.p3(), rhs.p3()));
+        if (!lhs) {
+            return rhs;
+        } else if (!rhs) {
+            return lhs;
+        } else {
+            return aarect::p0p3(min(lhs.p0(), rhs.p0()), max(lhs.p3(), rhs.p3()));
+        }
     }
 
     [[nodiscard]] friend aarect operator|(aarect const &lhs, vec const &rhs) noexcept
     {
         tt_assume(rhs.is_point());
-        return aarect::p0p3(min(lhs.p0(), rhs), max(lhs.p3(), rhs));
+        if (!lhs) {
+            return aarect::p0p3(rhs, rhs);
+        } else {
+            return aarect::p0p3(min(lhs.p0(), rhs), max(lhs.p3(), rhs));
+        }
     }
 
     [[nodiscard]] friend aarect operator+(aarect const &lhs, vec const &rhs) noexcept

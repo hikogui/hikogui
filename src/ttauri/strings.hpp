@@ -342,4 +342,30 @@ template<typename It>
     return {line, column};
 }
 
+/** Create an std::array from a one dimensional array, without the last element.
+ * Useful for copying a string literal without the nul-termination
+ */
+template<typename T, size_t N>
+constexpr auto to_array_without_last(T (&rhs)[N]) noexcept
+{
+    auto r = std::array<std::remove_cv_t<T>, N - 1>{};
+    for (size_t i = 0; i != (N - 1); ++i) {
+        r[i] = rhs[i];
+    }
+    return r;
+}
+
+/** Create an std::array from a one dimensional array, without the last element.
+ * Useful for copying a string literal without the nul-termination
+ */
+template<typename T, size_t N>
+constexpr auto to_array_without_last(T (&&rhs)[N]) noexcept
+{
+    auto r = std::array<std::remove_cv_t<T>, N - 1>{};
+    for (size_t i = 0; i != (N - 1); ++i) {
+        r[i] = std::move(rhs[i]);
+    }
+    return r;
+}
+
 } // namespace tt
