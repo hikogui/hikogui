@@ -1,3 +1,5 @@
+// Copyright 2020 Pokitec
+// All rights reserved.
 
 #include "URL.hpp"
 #include "datum.hpp"
@@ -20,7 +22,7 @@ class preferences {
 public:
     mutable std::recursive_mutex mutex;
 
-    preferences(URL location);
+    preferences(URL location) noexcept;
     virtual ~preferences();
     preferences(preferences const &) = delete;
     preferences(preferences &&) = delete;
@@ -35,11 +37,11 @@ public:
 
     /** Save the preferences.
      */
-    void save();
+    void save() const noexcept;
 
     /** Load the preferences.
      */
-    void load();
+    void load() noexcept;
 
     /** Serialize the preferences data.
      * The serialize method is called when the preferences need to be saved.
@@ -48,9 +50,9 @@ public:
      *
      * It is recommended to call super::serialize() from subclass implementations.
      */
-    [[nodiscard]] virtual datum serialize() noexcept
+    [[nodiscard]] virtual datum serialize() const noexcept
     {
-        return {datum::object{}};
+        return {datum::map{}};
     }
 
     /** Deserialize the preferences.
@@ -69,7 +71,7 @@ protected:
      * This pointer should be used to subscribe the preferences to
      * each of its observable members.
      */
-    std::shared_ptr<std::function<void()> set_modified_ptr;
+    std::shared_ptr<std::function<void()>> _set_modified_ptr;
 
 private:
     URL _location;
@@ -94,9 +96,6 @@ private:
             modified = true;
         }
     }
-
-public:
-    static std::unique_ptr<preferences> global;
 };
 
 

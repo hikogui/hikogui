@@ -117,19 +117,29 @@ std::string generate_native_path(url_parts const &parts) noexcept;
 
 /*! Normalize the parts of an url.
  */
-void normalize_url_parts(url_parts &parts) noexcept;
+void normalize_url_path(url_parts &parts) noexcept;
 
 /*! Normalize the parts of an url.
  */
 std::string normalize_url(std::string_view url) noexcept;
 
-/*! Concatonate paths.
+/*! Concatenate the paths of the url.
+ * This function retains all other parts of the URL of the lhs.
  */
-url_parts concatenate_url_parts(url_parts const &lhs, url_parts const &rhs) noexcept;
+url_parts concatenate_url_path(url_parts lhs, url_parts const &rhs) noexcept;
 
-/*! Concatonate paths.
-*/
-std::string concatenate_url(std::string_view const lhs, std::string_view const rhs) noexcept;
+/*! Concatenate the paths of the url.
+ * This function retains all other parts of the URL of the lhs.
+ */
+std::string concatenate_url_path(std::string_view lhs, std::string_view rhs) noexcept;
+
+/*! Concatenate a string to the filename of the url.
+ */
+std::string concatenate_url_filename(url_parts lhs, std::string_view rhs) noexcept;
+
+/*! Concatenate a string to the filename of the url.
+ */
+std::string concatenate_url_filename(std::string_view lhs, std::string_view rhs) noexcept;
 
 /*! Extract a filename from a path.
  */

@@ -368,7 +368,7 @@ ShapedText::ShapedText(
 
     if (insertMode) {
         // Change width to a single pixel.
-        r.width(1.0);
+        r.set_width(1.0);
     }
 
     return r;

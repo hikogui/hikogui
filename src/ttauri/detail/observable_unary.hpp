@@ -17,11 +17,11 @@ public:
         _operand(operand),
         _operand_cache(operand->load())
     {
-        _operand_callback = _operand->subscribe([this](OT const &value) {
+        _operand_callback = _operand->subscribe([this]() {
             ttlet old_value = this->load();
             {
                 ttlet lock = std::scoped_lock(observable_base<T>::_mutex);
-                _operand_cache = value;
+                _operand_cache = _operand->load();
             }
             ttlet new_value = this->load();
             observable_base<T>::notify(old_value, new_value);

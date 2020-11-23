@@ -19,7 +19,7 @@ template<typename T>
 class observable {
 public:
     using value_type = T;
-    using notifier_type = notifier<void(value_type)>;
+    using notifier_type = notifier<void()>;
     using callback_type = typename notifier_type::callback_type;
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
     using time_point = hires_utc_clock::time_point;
@@ -27,8 +27,8 @@ public:
 
     observable(observable const &other) noexcept : pimpl(other.pimpl)
     {
-        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
-            this->notifier(tmp);
+        pimpl_callback = pimpl->subscribe([this]() {
+            this->notifier();
         });
     }
 
@@ -36,10 +36,10 @@ public:
     {
         pimpl->unsubscribe(pimpl_callback);
         pimpl = other.pimpl;
-        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
-            this->notifier(tmp);
+        pimpl_callback = pimpl->subscribe([this]() {
+            this->notifier();
         });
-        this->notifier(this->load());
+        this->notifier();
         return *this;
     }
 
@@ -145,7 +145,12 @@ public:
         return notifier.subscribe(std::forward<Callback>(callback));
     }
 
-    void unsubscribe(callback_ptr_type callback_ptr) noexcept
+    void subscribe_ptr(callback_ptr_type const &callback) noexcept
+    {
+        return notifier.subscribe_ptr(callback);
+    }
+
+    void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
     {
         return notifier.unsubscribe(callback_ptr);
     }
@@ -217,15 +222,15 @@ private:
 
     observable(std::shared_ptr<detail::observable_base<value_type>> const &other) noexcept : pimpl(other)
     {
-        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
-            this->notifier(tmp);
+        pimpl_callback = pimpl->subscribe([this]() {
+            this->notifier();
         });
     }
 
     observable(std::shared_ptr<detail::observable_base<value_type>> &&other) noexcept : pimpl(std::move(other))
     {
-        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
-            this->notifier(tmp);
+        pimpl_callback = pimpl->subscribe([this]() {
+            this->notifier();
         });
     }
 
@@ -233,8 +238,8 @@ private:
     {
         pimpl->unsubscribe(pimpl_callback);
         pimpl = other;
-        pimpl_callback = pimpl->subscribe([this](ttlet &tmp) {
-            this->notifier(tmp);
+        pimpl_callback = pimpl->subscribe([this]() {
+            this->notifier();
         });
 
         this->notifier(this->load());

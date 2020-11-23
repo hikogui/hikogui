@@ -100,6 +100,10 @@ public:
     [[nodiscard]] URL urlByAppendingPath(std::wstring const &other) const noexcept;
     [[nodiscard]] URL urlByAppendingPath(wchar_t const *other) const noexcept;
 
+    [[nodiscard]] URL urlByAppendingExtension(std::string_view other) const noexcept;
+    [[nodiscard]] URL urlByAppendingExtension(std::string const &other) const noexcept;
+    [[nodiscard]] URL urlByAppendingExtension(char const *other) const noexcept;
+
     [[nodiscard]] URL urlByRemovingFilename() const noexcept;
 
     /** Load a resource.

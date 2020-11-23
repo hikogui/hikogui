@@ -105,6 +105,8 @@ target_sources(ttauri PRIVATE
     operator.hpp
     os_detect.hpp
     parse_location.hpp
+    preferences.cpp
+    preferences.hpp
     Path.cpp
     Path.hpp
     PixelMap.cpp

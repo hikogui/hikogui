@@ -16,18 +16,6 @@ template<typename T>
 class notifier {
 };
 
-template<typename T>
-struct is_shared_function_ptr : public std::false_type {};
-
-template<typename Result, typename... Args>
-struct is_shared_function_ptr<std::shared_ptr<std::function<Result(Args...)>>> : public std::true_type {};
-
-template<typename T>
-inline constexpr bool is_shared_function_ptr_v = is_shared_function_ptr<T>::value;
-
-template<typename T>
-concept shared_function_ptr = is_shared_function_ptr_v<T>;
-
 /** A notifier which can be used to call a set of registered callbacks.
  * This class is thread-safe; however you must not use this object
  * from within the callback.
@@ -47,19 +35,18 @@ public:
      * it will no longer be called.
      *
      * @param callback_ptr A shared_ptr to a callback function.
-     * @return A shared_ptr to a function object holding the callback.
      */
-    template<shared_function_ptr CallbackPtr>
-    [[nodiscard]] callback_ptr_type subscribe(CallbackPtr &&callback_ptr) noexcept
+    void subscribe_ptr(callback_ptr_type const &callback_ptr) noexcept
     {
         auto lock = std::scoped_lock(_mutex);
 
-        ttlet i = std::find(_callbacks.cbegin(), _callbacks.cend(), callback_ptr);
+        ttlet i = std::find_if(_callbacks.cbegin(), _callbacks.cend(), [&callback_ptr](ttlet &item) {
+            return item.lock() == callback_ptr;
+        });
+
         if (i == _callbacks.cend()) {
             _callbacks.emplace_back(callback_ptr);
         }
-
-        return callback_ptr;
     }
 
     /** Add a callback to the notifier.
@@ -83,7 +70,7 @@ public:
     /** Remove a callback from the notifier.
      * @param id The id returned from `add()` and `add_and_call()`.
      */
-    void unsubscribe(std::shared_ptr<callback_type> const &callback_ptr) noexcept
+    void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
     {
         auto lock = std::scoped_lock(_mutex);
 

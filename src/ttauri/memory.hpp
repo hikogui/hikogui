@@ -54,7 +54,7 @@ void placement_copy(T *src_first, T *src_last, T *dst_first)
     tt_assume(src_last >= src_first);
 
     if (src_first < dst_first) {
-        auto dst_last = dst + (src_last - src);
+        auto dst_last = dst_first + (src_last - src_first);
 
         auto src = src_last;
         auto dst = dst_last;
@@ -108,7 +108,7 @@ void placement_move(T *src_first, T *src_last, T *dst_first)
     tt_assume(src_last >= src_first);
 
     if (src_first < dst_first) {
-        auto dst_last = dst + (src_last - src);
+        auto dst_last = dst_first + (src_last - src_first);
 
         auto src = src_last;
         auto dst = dst_last;
@@ -205,24 +205,6 @@ inline std::shared_ptr<Value> try_make_shared(Map &map, Key key, Args... args) {
         value = i->second;
     }
     return value;
-}
-
-/** Allocate and array of type, without constructing.
- */
-template<typename T>
-[[nodiscard]] inline T *alloc_array(size_t count)
-{
-    void *ptr = std::aligned_alloc(std::alignment_of_v<T>, sizeof (T) * count);
-    if (ptr == nullptr) {
-        throw std::bad_alloc();
-    }
-    return static_cast<T *>(ptr);
-}
-
-template<typename T>
-inline void free_array(T *ptr) noexcept
-{
-    std::free(ptr);
 }
 
 }

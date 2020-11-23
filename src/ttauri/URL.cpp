@@ -132,7 +132,7 @@ URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
     ttlet this_parts = parse_url(value);
     ttlet other_parts = parse_url(other.value);
-    ttlet new_parts = concatenate_url_parts(this_parts, other_parts);
+    ttlet new_parts = concatenate_url_path(this_parts, other_parts);
     return URL(new_parts);
 }
 
@@ -164,6 +164,23 @@ URL URL::urlByAppendingPath(std::wstring const &other) const noexcept
 URL URL::urlByAppendingPath(wchar_t const *other) const noexcept
 {
     return urlByAppendingPath(URL::urlFromWPath(other));
+}
+
+[[nodiscard]] URL URL::urlByAppendingExtension(std::string_view other) const noexcept
+{
+    ttlet this_parts = parse_url(value);
+    ttlet new_url = concatenate_url_filename(this_parts, other);
+    return URL(new_url);
+}
+
+[[nodiscard]] URL URL::urlByAppendingExtension(std::string const &other) const noexcept
+{
+    return urlByAppendingExtension(std::string_view{other});
+}
+
+[[nodiscard]] URL URL::urlByAppendingExtension(char const *other) const noexcept
+{
+    return urlByAppendingExtension(std::string_view{other});
 }
 
 URL URL::urlByRemovingFilename() const noexcept

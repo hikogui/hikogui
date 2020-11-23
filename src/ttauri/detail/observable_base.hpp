@@ -29,7 +29,7 @@ template<typename T>
 class observable_base {
 public:
     using value_type = T;
-    using notifier_type = notifier<void(value_type)>;
+    using notifier_type = notifier<void()>;
     using callback_type = typename notifier_type::callback_type;
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
     using time_point = typename hires_utc_clock::time_point;
@@ -138,7 +138,7 @@ protected:
             _previous_value = old_value;
             _last_modified = cpu_utc_clock::now();
         }
-        _notifier(new_value);
+        _notifier();
     }
 
 private:

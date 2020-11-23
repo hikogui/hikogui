@@ -19,6 +19,7 @@ enum class seek_whence {
 enum class access_mode {
     read = 0x1, ///< Allow read access to a file.
     write = 0x2, ///< Allow write access to a file.
+    rename = 0x4, ///< Allow renaming an open file.
     read_lock = 0x10, ///< Lock the file for reading, i.e. shared-lock.
     write_lock = 0x20, ///< Lock the file for writing, i.e. exclusive-lock.
     open = 0x100, ///< Open file if it exist, or fail.
@@ -184,9 +185,9 @@ public:
      */
     ssize_t read(std::byte *data, ssize_t size, ssize_t offset = -1);
 
-    ssize_t read(void const *data, ssize_t size, ssize_t offset = -1)
+    ssize_t read(void *data, ssize_t size, ssize_t offset = -1)
     {
-        return read(reinterpret_cast<std::byte const *>(data), size, offset);
+        return read(reinterpret_cast<std::byte *>(data), size, offset);
     }
 
     /** Read bytes from the file.

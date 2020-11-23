@@ -67,6 +67,10 @@ file::file(URL const &location, access_mode access_mode) : _access_mode(access_m
         flagsAndAttributes |= FILE_FLAG_WRITE_THROUGH;
     }
 
+    if (_access_mode >= access_mode::rename) {
+        desiredAccess |= DELETE;
+    }
+
     ttlet fileName = _location.nativeWPath();
     if ((_file_handle =
              CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) !=
@@ -154,15 +158,17 @@ ssize_t file::seek(ssize_t offset, seek_whence whence)
 void file::rename(URL const &destination, bool overwrite_existing)
 {
     auto dst_filename = destination.nativeWPath();
+    auto dst_filename_wsize = (std::size(dst_filename) + 1) *
+        sizeof(WCHAR);
 
     // The dst_filename terminating null is included in the _FILE_RENAME_INFO struct.
-    ttlet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + std::size(dst_filename));
+    ttlet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
 
     auto rename_info = reinterpret_cast<PFILE_RENAME_INFO>(std::malloc(rename_info_size));
     rename_info->ReplaceIfExists = overwrite_existing;
     rename_info->RootDirectory = nullptr;
-    rename_info->FileNameLength = narrow_cast<DWORD>(std::size(dst_filename) * sizeof(WCHAR));
-    std::memcpy(rename_info->FileName, dst_filename.c_str(), (std::size(dst_filename) + 1) * sizeof(WCHAR));
+    rename_info->FileNameLength = narrow_cast<DWORD>(dst_filename_wsize);
+    std::memcpy(rename_info->FileName, dst_filename.c_str(), dst_filename_wsize);
 
     ttlet r = SetFileInformationByHandle(_file_handle, FileRenameInfo, rename_info, rename_info_size);
     free(rename_info);

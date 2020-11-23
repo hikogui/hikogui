@@ -109,17 +109,16 @@ public:
     /** Make sure p0 is left/bottom from p3.
      * @return True is p0 is left and below p3.
      */
-    [[nodiscard]] valid() const noexcept
+    [[nodiscard]] bool valid() const noexcept
     {
-        return left() <= right() && bottom() <= top();
+        return le(v, v.zwzw()) == 0b1111;
     }
 
     /** Check if the rectangle has no area.
      */
-    [[nodiscard]] empty() const noexcept
+    [[nodiscard]] bool empty() const noexcept
     {
-        tt_assume(valid());
-        return left() == right() || bottom() == top();
+        return eq(v, v.zwxy()) == 0b1111;
     }
 
     /** True when the rectangle has an area.
@@ -298,6 +297,7 @@ public:
      */
     [[nodiscard]] bool contains(vec const &rhs) const noexcept
     {
+        // No need to check with empty due to half open range check.
         return ge(rhs.xyxy(), v) == 0b0011;
     }
 
@@ -359,6 +359,10 @@ public:
 
     [[nodiscard]] friend bool overlaps(aarect const &lhs, aarect const &rhs) noexcept
     {
+        if (lhs.empty() || rhs.empty()) {
+            return false;
+        }
+
         ttlet rhs_swap = rhs.v.zwxy();
         if ((gt(lhs.v, rhs_swap) & 0x0011) != 0) {
             return false;

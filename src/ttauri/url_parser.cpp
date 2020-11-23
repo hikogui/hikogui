@@ -142,7 +142,7 @@ static void parse_path_split(url_parts &parts, std::vector<std::string_view> seg
     // Check for a leading slash '/' meaning an absolute path.
     parts.absolute = segments.size() >= 1 && segments.at(0).size() == 0;
     parts.segments = std::move(segments);
-    normalize_url_parts(parts);
+    normalize_url_path(parts);
 }
 
 static void parse_path_split(url_parts &parts, std::string_view path, char sep='/') noexcept
@@ -296,7 +296,7 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept
 }
 
 
-void normalize_url_parts(url_parts &parts) noexcept
+void normalize_url_path(url_parts &parts) noexcept
 {
     auto &segments = parts.segments;
     
@@ -332,28 +332,50 @@ std::string normalize_url(std::string_view url) noexcept
     return generate_url(parse_url(url));
 }
 
-url_parts concatenate_url_parts(url_parts const &lhs, url_parts const &rhs) noexcept
+url_parts concatenate_url_path(url_parts lhs, url_parts const &rhs) noexcept
 {
-    auto parts = lhs;
-
     if (rhs.absolute) {
         // Replace the segments.
-        parts.segments = rhs.segments;
+        lhs.segments = rhs.segments;
     } else {
-        std::copy(rhs.segments.begin(), rhs.segments.end(), std::back_inserter(parts.segments));
+        std::copy(rhs.segments.begin(), rhs.segments.end(), std::back_inserter(lhs.segments));
     }
 
     // Normalize the path.
-    normalize_url_parts(parts);
-    return parts;
+    normalize_url_path(lhs);
+    return lhs;
 }
 
-std::string concatenate_url(std::string_view const lhs, std::string_view const rhs) noexcept
+std::string concatenate_url_path(std::string_view const lhs, std::string_view const rhs) noexcept
 {
     ttlet lhs_parts = parse_url(lhs);
     ttlet rhs_parts = parse_url(rhs);
-    ttlet merged_parts = concatenate_url_parts(lhs_parts, rhs_parts);
+    ttlet merged_parts = concatenate_url_path(lhs_parts, rhs_parts);
     return generate_url(merged_parts);
+}
+
+std::string concatenate_url_filename(url_parts lhs, std::string_view rhs) noexcept
+{
+    std::string filename;
+    if (lhs.segments.empty()) {
+        filename = std::string{};
+    } else {
+        filename = lhs.segments.back();
+        lhs.segments.pop_back();
+    }
+
+    filename += rhs;
+    lhs.segments.emplace_back(filename);
+
+    // Normalize the path.
+    normalize_url_path(lhs);
+    return generate_url(lhs);
+}
+
+std::string concatenate_url_filename(std::string_view lhs, std::string_view rhs) noexcept
+{
+    ttlet lhs_parts = parse_url(lhs);
+    return concatenate_url_filename(lhs_parts, rhs);
 }
 
 std::string filename_from_path(std::string_view path) noexcept
