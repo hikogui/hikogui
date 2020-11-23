@@ -141,6 +141,7 @@ void timer::loop() noexcept
             (*callback_ptr_)(current_time, true);
         }
     }
+    callback_list.clear();
 
     LOG_INFO("Timer {}: finished", name);
 }

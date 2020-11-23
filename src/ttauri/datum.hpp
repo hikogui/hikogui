@@ -2448,6 +2448,16 @@ public:
 
         return result;
     }
+
+    template<typename Alternative>
+    friend bool holds_alternative(datum_impl const &rhs) noexcept
+    {
+        if constexpr (std::is_same_v<Alternative, std::string>) {
+            return rhs.is_string();
+        } else {
+            return false;
+        }
+    }
 };
 
 template<typename T, bool HasLargeObjects>

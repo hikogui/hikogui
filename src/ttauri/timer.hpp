@@ -27,55 +27,9 @@ public:
     using callback_type = std::function<void(time_point,bool)>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
-private:
-    struct callback_entry {
-        duration interval;
-        time_point next_wakeup;
-        std::weak_ptr<callback_type> callback_ptr;
-
-        callback_entry(duration interval, time_point next_wakeup, std::shared_ptr<callback_type> const &callback_ptr) noexcept :
-            interval(interval), next_wakeup(next_wakeup), callback_ptr(callback_ptr) {}
-    };
-
-    /** Name of the timer.
+    /** Global maintenance timer.
      */
-    std::string name;
-
-    mutable std::mutex mutex;
-    std::thread thread;
-    std::vector<callback_entry> callback_list;
-    size_t callback_count = 0;
-
-    /** Set to true to ask the thread to exit.
-     */
-    bool stop_thread;
-
-    /** Find the callbacks that have triggered.
-     * This function will also update the wakup times of triggered callbacks.
-     *
-     * @return List of triggered callbacks, Time to wakeup to trigger on the next callback.
-     */
-    [[nodiscard]] std::pair<std::vector<callback_ptr_type>,timer::time_point> find_triggered_callbacks(
-        timer::time_point current_time
-    ) noexcept;
-
-    /** The thread procedure.
-     */
-    void loop() noexcept;
-
-    /** Start the timer thread.
-    * Normally it is not needed to call this yourself. If there
-    * are no callbacks registered the thread will exit itself.
-    */
-    void start_with_lock_held() noexcept;
-
-    /** Stop the timer thread.
-    * Maybe called to emergency stop the timer thread, this will
-    * cause all callbacks to be called with last=true.
-    */
-    void stop_with_lock_held() noexcept;
-
-    [[nodiscard]] static time_point calculate_next_wakeup(time_point current_time, duration interval) noexcept;
+    inline static std::unique_ptr<timer> global;
 
 public:
     timer(std::string name) noexcept;
@@ -128,10 +82,57 @@ public:
      */
     void remove_callback(callback_ptr_type const &callback_ptr) noexcept;
 
+private:
+    struct callback_entry {
+        duration interval;
+        time_point next_wakeup;
+        std::weak_ptr<callback_type> callback_ptr;
+
+        callback_entry(duration interval, time_point next_wakeup, std::shared_ptr<callback_type> const &callback_ptr) noexcept :
+            interval(interval), next_wakeup(next_wakeup), callback_ptr(callback_ptr)
+        {
+        }
+    };
+
+    /** Name of the timer.
+     */
+    std::string name;
+
+    mutable std::mutex mutex;
+    std::thread thread;
+    std::vector<callback_entry> callback_list;
+    size_t callback_count = 0;
+
+    /** Set to true to ask the thread to exit.
+     */
+    bool stop_thread;
+
+    /** Find the callbacks that have triggered.
+     * This function will also update the wakup times of triggered callbacks.
+     *
+     * @return List of triggered callbacks, Time to wakeup to trigger on the next callback.
+     */
+    [[nodiscard]] std::pair<std::vector<callback_ptr_type>, timer::time_point>
+    find_triggered_callbacks(timer::time_point current_time) noexcept;
+
+    /** The thread procedure.
+     */
+    void loop() noexcept;
+
+    /** Start the timer thread.
+     * Normally it is not needed to call this yourself. If there
+     * are no callbacks registered the thread will exit itself.
+     */
+    void start_with_lock_held() noexcept;
+
+    /** Stop the timer thread.
+     * Maybe called to emergency stop the timer thread, this will
+     * cause all callbacks to be called with last=true.
+     */
+    void stop_with_lock_held() noexcept;
+
+    [[nodiscard]] static time_point calculate_next_wakeup(time_point current_time, duration interval) noexcept;
 };
 
-/** Global maintenance timer.
- */
-inline timer maintenance_timer = {"MaintenanceThread"};
 
 }

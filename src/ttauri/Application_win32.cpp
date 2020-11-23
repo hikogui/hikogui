@@ -91,7 +91,7 @@ void Application_win32::quit()
 
 bool Application_win32::initializeApplication()
 {
-    languages_maintenance_callback = maintenance_timer.add_callback(1s, [this](auto...) {
+    languages_maintenance_callback = timer::global->add_callback(1s, [this](auto...) {
         ttlet current_language_tags = language::read_os_preferred_languages();
         static auto previous_language_tags = current_language_tags;
         

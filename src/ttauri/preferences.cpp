@@ -4,14 +4,19 @@
 #include "preferences.hpp"
 #include "encoding/JSON.hpp"
 #include "file.hpp"
+#include "timer.hpp"
 
 namespace tt {
 
 preferences::preferences(URL location) noexcept :
-    _location(location), loading(false), modified(false)
+    _location(location), _deserializing(0), _modified(false)
 {
     _set_modified_ptr = std::make_shared<std::function<void()>>([this]() {
         this->set_modified();
+    });
+
+    _check_modified_ptr = timer::global->add_callback(5s, [this](auto...) {
+        this->check_modified();
     });
 }
 
@@ -36,12 +41,14 @@ void preferences::save() const noexcept
     } catch (io_error &e) {
         LOG_ERROR("Could not save preferences to file: {}", to_string(e));
     }
+
+    _modified = false;
 }
 
 void preferences::load() noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-    loading = true;
+    ++_deserializing;
 
     reset();
     
@@ -50,15 +57,15 @@ void preferences::load() noexcept
         auto text = file.read_string();
         auto data = parseJSON(text);
         deserialize(data);
-        loading = false;
+        --_deserializing;
 
     } catch (io_error &e) {
         LOG_WARNING("Could not read preferences file: {}", to_string(e));
-        loading = false;
+        --_deserializing = false;
 
     } catch (parse_error &e) {
         LOG_ERROR("Could not parse preferences file: {}", to_string(e));
-        loading = false;
+        --_deserializing = false;
     }
 }
 

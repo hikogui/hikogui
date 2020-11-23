@@ -81,6 +81,8 @@ Application_base::~Application_base()
 
 void Application_base::foundationStart()
 {
+    timer::global = std::make_unique<timer>("Maintenance Timer");
+
     mainThreadID = std::this_thread::get_id();
 
     logger.minimum_log_level = static_cast<log_level>(static_cast<int>(configuration["log-level"]));
@@ -103,7 +105,7 @@ void Application_base::foundationStart()
     sync_clock_calibration<hires_utc_clock,cpu_counter_clock> =
         new sync_clock_calibration_type<hires_utc_clock,cpu_counter_clock>("cpu_utc");
 
-    logger_maintenance_callback = maintenance_timer.add_callback(100ms, [](auto current_time, auto last) {
+    logger_maintenance_callback = timer::global->add_callback(100ms, [](auto current_time, auto last) {
         struct logger_maintenance_tag {};
         ttlet t2 = trace<logger_maintenance_tag>{};
 
@@ -111,7 +113,7 @@ void Application_base::foundationStart()
         logger.logger_tick();
     });
 
-    clock_maintenance_callback = maintenance_timer.add_callback(100ms, [](auto...) {
+    clock_maintenance_callback = timer::global->add_callback(100ms, [](auto...) {
         struct clock_maintenance_tag {};
         ttlet t2 = trace<clock_maintenance_tag>{};
 
@@ -122,9 +124,10 @@ void Application_base::foundationStart()
 void Application_base::foundationStop()
 {
     // Force all timers to finish.
-    maintenance_timer.stop();
-    maintenance_timer.remove_callback(clock_maintenance_callback);
-    maintenance_timer.remove_callback(logger_maintenance_callback);
+    timer::global->stop();
+    timer::global->remove_callback(clock_maintenance_callback);
+    timer::global->remove_callback(logger_maintenance_callback);
+    timer::global = {};
 
     delete sync_clock_calibration<hires_utc_clock,cpu_counter_clock>;
 }

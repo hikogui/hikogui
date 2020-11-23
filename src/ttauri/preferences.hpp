@@ -3,6 +3,7 @@
 
 #include "URL.hpp"
 #include "datum.hpp"
+#include <typeinfo>
 
 #pragma once
 
@@ -31,9 +32,7 @@ public:
 
     /** Reset data members to their default value.
      */
-    [[nodiscard]] virtual void reset() noexcept
-    {
-    }
+    [[nodiscard]] virtual void reset() noexcept {}
 
     /** Save the preferences.
      */
@@ -56,7 +55,7 @@ public:
     }
 
     /** Deserialize the preferences.
-     * The deserialize method is called when the preferences are loade.
+     * The deserialize method is called when the preferences are loaded.
      * A subclass should implement the deserialize() to read the data and
      * rebuild its members. It should ignore any data it does not know about.
      *
@@ -64,6 +63,11 @@ public:
      */
     virtual void deserialize(datum const &data) noexcept
     {
+        ttlet lock = std::scoped_lock(mutex);
+        tt_assume(_deserializing >= 0);
+        ++_deserializing;
+
+        --_deserializing;
     }
 
 protected:
@@ -73,30 +77,59 @@ protected:
      */
     std::shared_ptr<std::function<void()>> _set_modified_ptr;
 
-private:
-    URL _location;
-
     /** Preferences are loading.
-     * During loading, deserializing and resetting this flag should be set to true
+     * During deserializing this flag should be incremented
      * to prevent reactions to modification of the data.
      */
-    bool loading;
+    int _deserializing = 0;
+
+    template<typename T, typename Observable, typename Key>
+    static void deserialize_value(Observable &obj, datum const &data, Key const &key) noexcept
+    {
+        if (data.contains(key)) {
+            auto const &data_value = data[key];
+            if (holds_alternative<T>(data_value)) {
+                obj = static_cast<T>(data_value);
+            } else {
+                LOG_ERROR(
+                    "Could not deserialize '{}' for key '{}' to a '{}' type.",
+                    to_string(data_value),
+                    key,
+                    typeid(T).name());
+            }
+        }
+    }
+
+private:
+    URL _location;
 
     /** The data was modified.
      * When this flag is true the preferences should be saved.
      */
-    bool modified;
+    mutable bool _modified = false;
+
+    timer::callback_ptr_type _check_modified_ptr;
 
     /** This function is called whenever data is modified.
      */
     void set_modified() noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
-        if (!loading) {
-            modified = true;
+        tt_assume(_deserializing >= 0);
+        if (_deserializing == 0) {
+            _modified = true;
+        }
+    }
+
+    void check_modified() noexcept
+    {
+        ttlet lock = std::scoped_lock(mutex);
+        tt_assume(_deserializing >= 0);
+
+        if (_modified) {
+            save();
         }
     }
 };
 
-
-}
+} // namespace tt
