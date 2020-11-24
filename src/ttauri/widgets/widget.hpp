@@ -289,7 +289,12 @@ public:
             window.request_redraw(_window_clipping_rectangle);
 
             _window_rectangle = window_rectangle;
-            _window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
+            _request_relayout = true;
+        }
+
+        ttlet window_clipping_rectangle_clean = intersect(window_clipping_rectangle, expand(_window_rectangle, Theme::borderWidth));
+        if (_window_clipping_rectangle != window_clipping_rectangle_clean) {
+            _window_clipping_rectangle = window_clipping_rectangle_clean;
             _request_relayout = true;
         }
 
@@ -313,7 +318,7 @@ public:
      *
      * @pre `mutex` must be locked by current thread.
      */
-    [[nodiscard]] aarect window_clipping_rectangle() const noexcept
+    [[nodiscard]] virtual aarect window_clipping_rectangle() const noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         return _window_clipping_rectangle;

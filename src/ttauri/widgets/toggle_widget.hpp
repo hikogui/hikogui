@@ -94,7 +94,7 @@ public:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_window_clipping_rectangle)) {
+        if (overlaps(context, this->window_clipping_rectangle())) {
             draw_rail(context);
             draw_slider(context);
             draw_label(context);
@@ -135,7 +135,7 @@ private:
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(_animation_duration);
         if (animationProgress < 1.0f) {
-            window.request_redraw(_window_clipping_rectangle);
+            window.request_redraw(window_clipping_rectangle());
         }
 
         ttlet animatedValue = to_float(value, _animation_duration);

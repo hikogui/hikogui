@@ -96,7 +96,7 @@ public:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_window_clipping_rectangle) && visible()) {
+        if (overlaps(context, this->window_clipping_rectangle()) && visible()) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -108,7 +108,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
         ttlet position = _from_window_transform * window_position;
 
-        if (_window_clipping_rectangle.contains(window_position) && slider_rectangle.contains(position) && visible()) {
+        if (window_clipping_rectangle().contains(window_position) && slider_rectangle.contains(position) && visible()) {
             return HitBox{weak_from_this(), _draw_layer};
         } else {
             return HitBox{};

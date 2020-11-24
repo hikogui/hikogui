@@ -23,7 +23,7 @@ widget::widget(gui_window &_window, std::shared_ptr<widget> _parent) noexcept :
     }
 
     _enabled_callback = enabled.subscribe([this](auto...) {
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
     });
 
     _preferred_size = {
@@ -59,7 +59,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
 
         // Used by draw().
         _to_window_transform = mat::T(_window_rectangle.x(), _window_rectangle.y(), _draw_layer);
@@ -123,12 +123,12 @@ bool widget::handle_mouse_event(MouseEvent const &event) noexcept {
     if (event.type == MouseEvent::Type::Entered) {
         handled = true;
         _hover = true;
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
 
     } else if (event.type == MouseEvent::Type::Exited) {
         handled = true;
         _hover = false;
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
     }
     return handled;
 }
@@ -141,13 +141,13 @@ bool widget::handle_keyboard_event(KeyboardEvent const &event) noexcept {
     case KeyboardEvent::Type::Entered:
         handled = true;
         _focus = true;
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
         break;
 
     case KeyboardEvent::Type::Exited:
         handled = true;
         _focus = false;
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
         break;
 
     default:;

@@ -108,7 +108,7 @@ public:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_window_clipping_rectangle)) {
+        if (overlaps(context, this->window_clipping_rectangle())) {
             context.fill_color = theme->fillColor(_semantic_layer + 1);
             context.draw_filled_quad(rectangle());
         }

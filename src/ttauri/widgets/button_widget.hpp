@@ -67,7 +67,7 @@ public:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_window_clipping_rectangle)) {
+        if (overlaps(context, this->window_clipping_rectangle())) {
             context.corner_shapes = vec{Theme::roundingRadius};
             if (*this->value) {
                 context.fill_color = theme->accentColor;
@@ -90,7 +90,7 @@ public:
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         if (compare_then_assign(this->value, !this->value)) {
-            this->window.request_redraw(this->_window_clipping_rectangle);
+            this->window.request_redraw(this->window_clipping_rectangle());
         }
     }
 

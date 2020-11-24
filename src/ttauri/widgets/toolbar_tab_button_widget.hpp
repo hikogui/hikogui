@@ -50,6 +50,16 @@ public:
         });
     }
 
+    /** The tab button widget will draw beyond the normal clipping rectangle.
+     */
+    [[nodiscard]] aarect window_clipping_rectangle() const noexcept override
+    {
+        tt_assume(gui_system_mutex.recurse_lock_count());
+
+        ttlet parent_ = this->parent.lock();
+        return parent_->window_clipping_rectangle();
+    }
+
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
@@ -76,6 +86,9 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
+            // A tab button widget draws beyond its clipping rectangle.
+            this->window.request_redraw(this->window_clipping_rectangle());
+
             ttlet offset = Theme::margin + Theme::borderWidth;
             _button_rectangle = aarect{
                 this->rectangle().x(),
@@ -93,12 +106,12 @@ public:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_window_clipping_rectangle)) {
+        if (overlaps(context, this->window_clipping_rectangle())) {
             draw_button(context);
             draw_label(context);
+            draw_focus_line(context);
         }
 
-        draw_focus_line(context);
         super::draw(std::move(context), display_time_point);
     }
 
@@ -110,8 +123,7 @@ private:
     void draw_focus_line(draw_context const &context) noexcept
     {
         if (this->_focus && this->window.active && *this->value == this->true_value) {
-            auto parent_ = this->parent.lock();
-            tt_assume(std::dynamic_pointer_cast<class toolbar_widget>(parent_) != nullptr);
+            ttlet parent_ = this->parent.lock();
 
             // Draw the focus line over the full width of the window at the bottom
             // of the toolbar.
@@ -137,8 +149,10 @@ private:
             context.transform = mat::T(0.0f, 0.0f, 0.6f) * context.transform;
         }
 
-        // Override the clipping rectangle to match the toolbar.
-        context.clipping_rectangle = this->parent.lock()->window_rectangle();
+        // Override the clipping rectangle to match the toolbar rectangle exactly
+        // so that the bottom border of the tab button is not drawn.
+        ttlet parent_ = this->parent.lock();
+        context.clipping_rectangle = parent_->window_rectangle();
 
         if (this->_hover || *this->value == this->true_value) {
             context.fill_color = theme->fillColor(this->_semantic_layer - 1);

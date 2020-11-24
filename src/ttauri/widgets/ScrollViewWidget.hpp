@@ -240,7 +240,7 @@ public:
 
         auto r = HitBox{};
 
-        if (_window_clipping_rectangle.contains(window_position)) {
+        if (window_clipping_rectangle().contains(window_position)) {
             // Claim mouse events for scrolling.
             r = std::max(r, HitBox{weak_from_this(), _draw_layer});
         }

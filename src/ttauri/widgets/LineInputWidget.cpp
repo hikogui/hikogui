@@ -41,7 +41,7 @@ void LineInputWidget::update_layout(hires_utc_clock::time_point display_time_poi
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     if (_focus && display_time_point >= nextRedrawTimePoint) {
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
     }
 
     need_layout |= std::exchange(_request_relayout, false);
@@ -50,7 +50,7 @@ void LineInputWidget::update_layout(hires_utc_clock::time_point display_time_poi
 
         // Set the clipping rectangle to within the border of the input field.
         // Add another border width, so glyphs do not touch the border.
-        textClippingRectangle = intersect(_window_clipping_rectangle, shrink(_window_rectangle, Theme::borderWidth * 2.0f));
+        textClippingRectangle = intersect(window_clipping_rectangle(), shrink(_window_rectangle, Theme::borderWidth * 2.0f));
 
         field.setStyleOfAll(theme->labelStyle);
 
@@ -88,7 +88,7 @@ void LineInputWidget::scrollText() noexcept
         dragSelect();
 
         // Once we are scrolling, don't stop.
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
 
     } else if (dragClickCount == 0) {
         // The following is for scrolling based on keyboard input, ignore mouse drags.
@@ -164,7 +164,7 @@ void LineInputWidget::draw(draw_context context, hires_utc_clock::time_point dis
 
     nextRedrawTimePoint = display_time_point + blinkInterval;
 
-    if (overlaps(context, this->_window_clipping_rectangle)) {
+    if (overlaps(context, this->window_clipping_rectangle())) {
         scrollText();
 
         drawBackgroundBox(context);
@@ -281,7 +281,7 @@ bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
                 // Record the last time the cursor is moved, so that the caret remains lit.
                 lastUpdateTimePoint = event.timePoint;
 
-                window.request_redraw(_window_clipping_rectangle);
+                window.request_redraw(window_clipping_rectangle());
             }
             break;
 
@@ -305,7 +305,7 @@ bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
 
             dragSelect();
 
-            window.request_redraw(_window_clipping_rectangle);
+            window.request_redraw(window_clipping_rectangle());
             break;
 
         default:;
@@ -318,7 +318,7 @@ HitBox LineInputWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    if (_window_clipping_rectangle.contains(window_position)) {
+    if (window_clipping_rectangle().contains(window_position)) {
         return HitBox{weak_from_this(), _draw_layer, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};

@@ -156,7 +156,7 @@ public:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_window_clipping_rectangle)) {
+        if (overlaps(context, this->window_clipping_rectangle())) {
             draw_outline(context);
             draw_left_box(context);
             draw_chevrons(context);
@@ -238,7 +238,7 @@ public:
             r = std::max(r, _overlay_widget->hitbox_test(window_position));
         }
 
-        if (_window_clipping_rectangle.contains(window_position)) {
+        if (window_clipping_rectangle().contains(window_position)) {
             r = std::max(r, HitBox{weak_from_this(), _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default});
         }
 

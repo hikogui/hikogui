@@ -216,7 +216,7 @@ void WindowTrafficLightsWidget::draw(draw_context context, hires_utc_clock::time
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    if (overlaps(context, this->_window_clipping_rectangle)) {
+    if (overlaps(context, this->window_clipping_rectangle())) {
         if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
             drawMacOS(context, display_time_point);
 
@@ -243,7 +243,7 @@ bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noex
     stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(position));
     stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(position));
     if (stateHasChanged) {
-        window.request_redraw(_window_clipping_rectangle);
+        window.request_redraw(window_clipping_rectangle());
     }
 
     if (event.cause.leftButton) {
@@ -268,14 +268,14 @@ bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noex
                 }
             }
 
-            window.request_redraw(_window_clipping_rectangle);
+            window.request_redraw(window_clipping_rectangle());
             pressedClose = false;
             pressedMinimize = false;
             pressedMaximize = false;
             break;
 
         case ButtonDown:
-            window.request_redraw(_window_clipping_rectangle);
+            window.request_redraw(window_clipping_rectangle());
             pressedClose = hoverClose;
             pressedMinimize = hoverMinimize;
             pressedMaximize = hoverMaximize;

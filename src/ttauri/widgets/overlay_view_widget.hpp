@@ -69,7 +69,7 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(child);
 
-        if (overlaps(context, this->_window_clipping_rectangle)) {
+        if (overlaps(context, this->window_clipping_rectangle())) {
             draw_background(context);
         }
 

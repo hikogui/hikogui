@@ -73,7 +73,7 @@ public:
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_window_clipping_rectangle)) {
+        if (overlaps(context, this->window_clipping_rectangle())) {
             if (*enabled) {
                 context.color = theme->labelStyle.color;
             }

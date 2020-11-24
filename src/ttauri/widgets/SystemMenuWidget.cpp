@@ -60,7 +60,7 @@ void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point di
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    if (overlaps(context, this->_window_clipping_rectangle)) {
+    if (overlaps(context, this->window_clipping_rectangle())) {
         _icon_stencil->draw(context);
     }
 
@@ -71,7 +71,7 @@ HitBox SystemMenuWidget::hitbox_test(vec window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    if (_window_clipping_rectangle.contains(window_position)) {
+    if (window_clipping_rectangle().contains(window_position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
         return HitBox{weak_from_this(), _draw_layer, HitBox::Type::ApplicationIcon};
