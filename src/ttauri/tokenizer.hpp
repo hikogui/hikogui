@@ -106,7 +106,7 @@ struct token_t {
 
     explicit operator long double () const {
         try {
-            return std::stold(value);
+           return std::stold(value);
         } catch(...) {
             TTAURI_THROW(parse_error("Could not convert token {} to long double", *this));
         }
@@ -128,84 +128,13 @@ struct token_t {
         }
     }
 
-    explicit operator signed long long () const {
+    template<std::integral T>
+    explicit operator T () const {
         try {
-            return std::stoll(value);
+            return tt::from_string<T>(value);
         } catch(...) {
-            TTAURI_THROW(parse_error("Could not convert token {} to signed long long", *this));
+            TTAURI_THROW(parse_error("Could not convert token {} to {}", *this, typeid(T).name()));
         }
-    }
-
-    explicit operator signed long () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < std::numeric_limits<signed long>::min() || v > std::numeric_limits<signed long>::max()) {
-            TTAURI_THROW(parse_error("Could not convert token {} to signed long", *this))
-        }
-        return static_cast<signed long>(v);
-    }
-
-    explicit operator signed int () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < std::numeric_limits<signed int>::min() || v > std::numeric_limits<signed int>::max()) {
-            TTAURI_THROW(parse_error("Could not convert token {} to signed int", *this))
-        }
-        return static_cast<signed int>(v);
-    }
-
-    explicit operator signed short () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < std::numeric_limits<signed short>::min() || v > std::numeric_limits<signed short>::max()) {
-            TTAURI_THROW(parse_error("Could not convert token {} to signed short", *this))
-        }
-        return static_cast<signed short>(v);
-    }
-
-    explicit operator signed char () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < std::numeric_limits<signed char>::min() || v > std::numeric_limits<signed char>::max()) {
-            TTAURI_THROW(parse_error("Could not convert token {} to signed char", *this))
-        }
-        return static_cast<signed char>(v);
-    }
-
-    explicit operator unsigned long long () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < 0) {
-            TTAURI_THROW(parse_error("Could not convert token {} to unsigned long long", *this))
-        }
-        return static_cast<unsigned long long>(v);
-    }
-
-    explicit operator unsigned long () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < 0 || v > std::numeric_limits<unsigned long>::max()) {
-            TTAURI_THROW(parse_error("Could not convert token {} to unsigned long", *this))
-        }
-        return static_cast<unsigned long>(v);
-    }
-
-    explicit operator unsigned int () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < 0 || v > std::numeric_limits<unsigned int>::max()) {
-            TTAURI_THROW(parse_error("Could not convert token {} to unsigned int", *this))
-        }
-        return static_cast<unsigned int>(v);
-    }
-
-    explicit operator unsigned short () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < 0 || v > std::numeric_limits<unsigned short>::max()) {
-            TTAURI_THROW(parse_error("Could not convert token {} to unsigned short", *this))
-        }
-        return static_cast<unsigned short>(v);
-    }
-
-    explicit operator unsigned char () const {
-        auto v = static_cast<signed long long>(*this);
-        if (v < 0 || v > std::numeric_limits<unsigned char>::max()) {
-            TTAURI_THROW(parse_error("Could not convert token {} to unsigned char", *this))
-        }
-        return static_cast<unsigned char>(v);
     }
 
     explicit operator std::string () const noexcept {

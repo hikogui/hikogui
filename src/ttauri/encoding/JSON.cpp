@@ -186,7 +186,7 @@ struct parse_context_t {
     return parseJSON(url.loadView()->string_view());
 }
 
-static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
+static void dumpJSON_impl(datum const &value, std::string &result, tt::indent indent={})
 {
     bool first_item = true;
 
@@ -200,11 +200,11 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         break;
 
     case datum_type_t::Integer:
-        result += fmt::format("{}", static_cast<long long>(value));
+        result += tt::to_string(static_cast<long long>(value));
         break;
 
     case datum_type_t::Float:
-        result += fmt::format("{}", static_cast<double>(value));
+        result += tt::to_string(static_cast<double>(value));
         break;
 
     case datum_type_t::String:
@@ -224,34 +224,36 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         break;
 
     case datum_type_t::Vector:
-        result.append(indent, ' ');
+        result += indent;
         result += '[';
+        result += '\n';
 
         for (auto i = value.vector_begin(); i != value.vector_end(); i++, first_item = true) {
             if (!first_item) {
                 result += ',';
                 result += '\n';
             }
-            result.append(indent + 1, ' ');
+            result += indent + 1;
 
             dumpJSON_impl(*i, result, indent + 1);
         }
 
         result += '\n';
-        result.append(indent, ' ');
+        result += indent;
         result += ']';
         break;
 
     case datum_type_t::Map:
-        result.append(indent, ' ');
+        result += indent;
         result += '{';
+        result += '\n';
 
         for (auto i = value.map_begin(); i != value.map_end(); i++, first_item = true) {
             if (!first_item) {
                 result += ',';
                 result += '\n';
             }
-            result.append(indent + 1, ' ');
+            result += indent + 1;
 
             dumpJSON_impl(i->first, result, indent + 1);
             result += ':';
@@ -260,7 +262,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         }
 
         result += '\n';
-        result.append(indent, ' ');
+        result += indent;
         result += '}';
         break;
 
