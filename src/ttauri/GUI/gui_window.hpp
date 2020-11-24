@@ -71,9 +71,13 @@ public:
      */
     std::atomic<bool> requestLayout = true;
 
-    /** When set to true the widgets will be redrawn.
-    */
-    std::atomic<bool> requestRedraw = true;
+    /** Request a rectangle on the window to be redrawn
+     */
+    void request_redraw(aarect rectangle = aarect::infinity()) noexcept
+    {
+        tt_assume(gui_system_mutex.recurse_lock_count());
+        _request_redraw_rectangle |= rectangle;
+    }
 
     /** When set to true the window will resize to the size of the contained widget.
      */
@@ -135,7 +139,7 @@ public:
      * Must be called directly after the constructor on the same thread,
      * before another thread can send messages to the window.
      * 
-     * `initialize()` shoudl not take locks on window::mutex.
+     * `initialize()` should not take locks on window::mutex.
      */
     virtual void initialize();
 
@@ -219,6 +223,8 @@ protected:
     iaarect OSWindowRectangle;
 
     bool _request_setting_change = true;
+
+    aarect _request_redraw_rectangle = aarect{};
 
     /** Let the operating system create the actual window.
      * @param title The title of the window.

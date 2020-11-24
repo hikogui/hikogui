@@ -41,6 +41,7 @@ public:
     std::vector<vk::Image> swapchainImages;
     std::vector<vk::ImageView> swapchainImageViews;
     std::vector<vk::Framebuffer> swapchainFramebuffers;
+    std::vector<aarect> swapchainRedrawRectangle;
 
     static const vk::Format depthImageFormat = vk::Format::eD32Sfloat;
     VmaAllocation depthImageAllocation;
@@ -93,7 +94,7 @@ private:
     std::optional<uint32_t> acquireNextImageFromSwapchain();
     void presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
 
-    void fillCommandBuffer(vk::Framebuffer frameBuffer);
+    void fillCommandBuffer(vk::Framebuffer frameBuffer, aarect scissor_rectangle);
     void submitCommandBuffer();
 
     bool readSurfaceExtent();

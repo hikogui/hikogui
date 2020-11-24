@@ -43,12 +43,12 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(child);
 
-        auto need_redraw = need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             // The p_window_rectangle, is not allowed to be beyond the edges of the actual window.
             // Change p_window_rectangle to fit the window.
@@ -60,8 +60,8 @@ public:
             child->set_layout_parameters(_window_rectangle, _window_clipping_rectangle);
         }
 
-        need_redraw |= child->update_layout(display_time_point, need_layout);
-        return super::update_layout(display_time_point, need_layout) || need_redraw;
+        child->update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -69,7 +69,10 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(child);
 
-        draw_background(context);
+        if (overlaps(context, this->_window_clipping_rectangle)) {
+            draw_background(context);
+        }
+
         child->draw(child->make_draw_context(context), display_time_point);
         super::draw(std::move(context), display_time_point);
     }

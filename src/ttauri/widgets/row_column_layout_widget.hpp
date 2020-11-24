@@ -50,7 +50,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -65,7 +65,7 @@ public:
 
             tt_assume(index == std::ssize(_children));
         }
-        return abstract_container_widget::update_layout(display_time_point, need_layout);
+        abstract_container_widget::update_layout(display_time_point, need_layout);
     }
 
 private:

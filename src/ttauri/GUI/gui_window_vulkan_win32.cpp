@@ -374,7 +374,7 @@ void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 
     // Force a redraw, so that the swapchain is used and causes out-of-date results on window resize,
     // which in turn will cause a forceLayout.
-    requestRedraw = true;
+    request_redraw();
 }
 
 void gui_window_vulkan_win32::setCursor(Cursor cursor) noexcept

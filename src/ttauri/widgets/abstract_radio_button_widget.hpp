@@ -25,7 +25,7 @@ public:
         super(window, parent, std::move(true_value), std::forward<Value>(value))
     {
         _value_callback = this->value.subscribe([this](auto...) {
-            this->window.requestRedraw = true;
+            this->window.request_redraw(this->_window_clipping_rectangle);
         });
         _callback = this->subscribe([this]() {
             this->select();
@@ -39,7 +39,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (compare_then_assign(this->value, this->true_value)) {
-            this->window.requestRedraw = true;
+            this->window.request_redraw(this->_window_clipping_rectangle);
         }
     }
 

@@ -106,7 +106,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -128,7 +128,7 @@ public:
 
                 _overlay_widget->set_layout_parameters(overlay_rectangle, overlay_rectangle);
             }
-            need_layout |= _overlay_widget->update_layout(display_time_point, need_layout);
+            _overlay_widget->update_layout(display_time_point, need_layout);
         }
 
         if (need_layout) {
@@ -149,17 +149,19 @@ public:
 
             _text_stencil->set_layout_parameters(_option_rectangle, base_line());
         }
-        return widget::update_layout(display_time_point, need_layout);
+        widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        draw_outline(context);
-        draw_left_box(context);
-        draw_chevrons(context);
-        draw_value(context);
+        if (overlaps(context, this->_window_clipping_rectangle)) {
+            draw_outline(context);
+            draw_left_box(context);
+            draw_chevrons(context);
+            draw_value(context);
+        }
 
         if (_selecting) {
             _overlay_widget->draw(_overlay_widget->make_draw_context(context), display_time_point);
@@ -191,7 +193,7 @@ public:
 
         if (*enabled) {
             switch (command) {
-            using enum tt::command;
+                using enum tt::command;
             case gui_activate:
                 handled = true;
                 if (!_selecting) {
@@ -220,7 +222,7 @@ public:
         tt_assume(_overlay_widget);
 
         auto handled = false;
-        handled |= _overlay_widget->handle_command_recursive(command, reject_list); 
+        handled |= _overlay_widget->handle_command_recursive(command, reject_list);
         handled |= super::handle_command_recursive(command, reject_list);
         return handled;
     }
@@ -327,7 +329,6 @@ private:
         _selecting = false;
     }
 
-
     /** Populate the scroll view with menu items corresponding to the options.
      */
     void repopulate_options() noexcept
@@ -337,7 +338,7 @@ private:
 
         // If any of the options has a an icon, all of the options should show the icon.
         auto show_icon = false;
-        for (ttlet &[tag, label] : option_list_) {
+        for (ttlet & [ tag, label ] : option_list_) {
             show_icon |= label.has_icon();
         }
 
@@ -363,7 +364,7 @@ private:
             _max_option_label_height = std::max(
                 _max_option_label_height,
                 stencil::make_unique(alignment::middle_left, text, theme->labelStyle)->preferred_extent().height());
-        }        
+        }
     }
 
     void draw_outline(draw_context context) noexcept

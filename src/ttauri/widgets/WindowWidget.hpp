@@ -22,7 +22,7 @@ public:
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
     [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
 
     [[nodiscard]] vec backgroundColor() noexcept {

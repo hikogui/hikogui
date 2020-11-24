@@ -27,8 +27,7 @@ bool LineInputWidget::update_constraints(hires_utc_clock::time_point display_tim
 
         _preferred_size = {
             vec{100.0f, Theme::smallSize + Theme::margin * 2.0f},
-            vec{std::numeric_limits<float>::infinity(), Theme::smallSize + Theme::margin * 2.0f}
-        };
+            vec{std::numeric_limits<float>::infinity(), Theme::smallSize + Theme::margin * 2.0f}};
         _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
         _width_resistance = 2;
         return true;
@@ -37,12 +36,15 @@ bool LineInputWidget::update_constraints(hires_utc_clock::time_point display_tim
     }
 }
 
-bool LineInputWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void LineInputWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    auto need_redraw = need_layout |= std::exchange(_request_relayout, false);
-    need_redraw |= _focus && display_time_point >= nextRedrawTimePoint;
+    if (_focus && display_time_point >= nextRedrawTimePoint) {
+        window.request_redraw(_window_clipping_rectangle);
+    }
+
+    need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         textRectangle = shrink(rectangle(), Theme::margin);
 
@@ -63,7 +65,7 @@ bool LineInputWidget::update_layout(hires_utc_clock::time_point display_time_poi
         lastUpdateTimePoint = display_time_point;
     }
 
-    return widget::update_layout(display_time_point, need_layout) || need_redraw;
+    widget::update_layout(display_time_point, need_layout);
 }
 
 void LineInputWidget::dragSelect() noexcept
@@ -86,7 +88,7 @@ void LineInputWidget::scrollText() noexcept
         dragSelect();
 
         // Once we are scrolling, don't stop.
-        window.requestRedraw = true;
+        window.request_redraw(_window_clipping_rectangle);
 
     } else if (dragClickCount == 0) {
         // The following is for scrolling based on keyboard input, ignore mouse drags.
@@ -161,20 +163,23 @@ void LineInputWidget::draw(draw_context context, hires_utc_clock::time_point dis
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     nextRedrawTimePoint = display_time_point + blinkInterval;
-    scrollText();
 
-    drawBackgroundBox(context);
+    if (overlaps(context, this->_window_clipping_rectangle)) {
+        scrollText();
 
-    // After drawing the border around the input field make sure any other
-    // drawing remains inside this border. And change the transform to account
-    // for how much the text has scrolled.
-    context.clipping_rectangle = textClippingRectangle;
-    context.transform = (mat::T(0.0, 0.0, 0.1f) * textTranslate) * context.transform;
+        drawBackgroundBox(context);
 
-    drawSelectionRectangles(context);
-    drawPartialGraphemeCaret(context);
-    drawCaret(context, display_time_point);
-    drawText(context);
+        // After drawing the border around the input field make sure any other
+        // drawing remains inside this border. And change the transform to account
+        // for how much the text has scrolled.
+        context.clipping_rectangle = textClippingRectangle;
+        context.transform = (mat::T(0.0, 0.0, 0.1f) * textTranslate) * context.transform;
+
+        drawSelectionRectangles(context);
+        drawPartialGraphemeCaret(context);
+        drawCaret(context, display_time_point);
+        drawText(context);
+    }
 
     widget::draw(std::move(context), display_time_point);
 }
@@ -202,8 +207,7 @@ bool LineInputWidget::handle_command(command command) noexcept
             window.setTextOnClipboard(field.handleCut());
             break;
 
-        default:
-            handled |= field.handle_command(command);
+        default: handled |= field.handle_command(command);
         }
     }
 
@@ -256,7 +260,7 @@ bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
         }
 
         switch (event.type) {
-        using enum MouseEvent::Type;
+            using enum MouseEvent::Type;
         case ButtonDown:
             if (textRectangle.contains(position)) {
                 ttlet mouseInTextPosition = textInvTranslate * position;
@@ -277,8 +281,7 @@ bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
                 // Record the last time the cursor is moved, so that the caret remains lit.
                 lastUpdateTimePoint = event.timePoint;
 
-                window.requestRedraw = true;
-
+                window.request_redraw(_window_clipping_rectangle);
             }
             break;
 
@@ -302,7 +305,7 @@ bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
 
             dragSelect();
 
-            window.requestRedraw = true;
+            window.request_redraw(_window_clipping_rectangle);
             break;
 
         default:;

@@ -70,7 +70,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -89,14 +89,14 @@ public:
             }
         }
 
-        return widget::update_layout(display_time_point, need_layout);
+        widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (visible()) {
+        if (overlaps(context, this->_window_clipping_rectangle) && visible()) {
             draw_rails(context);
             draw_slider(context);
         }

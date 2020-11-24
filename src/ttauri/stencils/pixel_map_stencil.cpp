@@ -38,7 +38,7 @@ void pixel_map_stencil::draw(draw_context context, bool use_context_color) noexc
     context.transform = context.transform * _pixel_map_transform;
 
     switch (_backing.state) {
-    case PipelineImage::Image::State::Drawing: context.window().requestRedraw = true; break;
+    case PipelineImage::Image::State::Drawing: context.window().request_redraw(context.clipping_rectangle); break;
     case PipelineImage::Image::State::Uploaded: context.draw_image(_backing); break;
     default:;
     }

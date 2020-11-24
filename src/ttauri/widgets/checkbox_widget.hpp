@@ -90,7 +90,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -106,23 +106,28 @@ public:
 
             _check_glyph = to_FontGlyphIDs(ElusiveIcon::Ok);
             ttlet check_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
-            _check_glyph_rectangle = align(_checkbox_rectangle, scale(check_glyph_bb, Theme::small_icon_size), alignment::middle_center);
+            _check_glyph_rectangle =
+                align(_checkbox_rectangle, scale(check_glyph_bb, Theme::small_icon_size), alignment::middle_center);
 
             _minus_glyph = to_FontGlyphIDs(ElusiveIcon::Minus);
             ttlet minus_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_minus_glyph);
-            _minus_glyph_rectangle = align(_checkbox_rectangle, scale(minus_glyph_bb, Theme::small_icon_size), alignment::middle_center);
+            _minus_glyph_rectangle =
+                align(_checkbox_rectangle, scale(minus_glyph_bb, Theme::small_icon_size), alignment::middle_center);
         }
 
-        return super::update_layout(displayTimePoint, need_layout);
+        super::update_layout(displayTimePoint, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        draw_check_box(context);
-        draw_check_mark(context);
-        draw_label(context);
+        if (overlaps(context, this->_window_clipping_rectangle)) {
+            draw_check_box(context);
+            draw_check_mark(context);
+            draw_label(context);
+        }
+
         super::draw(std::move(context), display_time_point);
     }
 
@@ -180,8 +185,9 @@ private:
             context.color = theme->labelStyle.color;
         }
 
-        ttlet &labelCell =
-            this->value == this->true_value ? _true_label_stencil : this->value == this->false_value ? _false_label_stencil : _other_label_stencil;
+        ttlet &labelCell = this->value == this->true_value ?
+            _true_label_stencil :
+            this->value == this->false_value ? _false_label_stencil : _other_label_stencil;
 
         labelCell->draw(context, true);
     }

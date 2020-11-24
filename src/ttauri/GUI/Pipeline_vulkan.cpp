@@ -227,6 +227,15 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         narrow_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()), pipelineColorBlendAttachmentStates.data()
     };
 
+    ttlet dynamicStates = std::array{
+        vk::DynamicState::eScissor
+    };
+
+    ttlet pipelineDynamicStateInfo = vk::PipelineDynamicStateCreateInfo{
+        vk::PipelineDynamicStateCreateFlags(),
+        narrow_cast<uint32_t>(dynamicStates.size()), dynamicStates.data()
+    };
+
     const vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {
         vk::PipelineCreateFlags(),
         narrow_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
@@ -238,7 +247,7 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         &pipelineMultisampleStateCreateInfo,
         &pipelineDepthStencilStateCreateInfo,
         &pipelineColorBlendStateCreateInfo,
-        nullptr, // pipelineDynamicsStateCreateInfo
+        &pipelineDynamicStateInfo,
         pipelineLayout,
         renderPass,
         renderSubpass, // subpass

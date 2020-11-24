@@ -66,11 +66,13 @@ public:
 
     draw_context(
         gui_window &window,
+        aarect scissor_rectangle,
         vspan<PipelineFlat::Vertex> &flatVertices,
         vspan<PipelineBox::Vertex> &boxVertices,
         vspan<PipelineImage::Vertex> &imageVertices,
         vspan<PipelineSDF::Vertex> &sdfVertices) noexcept :
         _window(&window),
+        _scissor_rectangle(scissor_rectangle),
         _flat_vertices(&flatVertices),
         _box_vertices(&boxVertices),
         _image_vertices(&imageVertices),
@@ -248,7 +250,8 @@ public:
         tt_assume(_sdf_vertices != nullptr);
 
         if (useContextColor) {
-            narrow_cast<gui_device_vulkan&>(device()).SDFPipeline->placeVertices(*_sdf_vertices, text, transform, clipping_rectangle, color);
+            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
+                *_sdf_vertices, text, transform, clipping_rectangle, color);
         } else {
             narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
                 *_sdf_vertices, text, transform, clipping_rectangle);
@@ -263,8 +266,16 @@ public:
             *_sdf_vertices, glyph, transform * box, color, clipping_rectangle);
     }
 
+    [[nodiscard]] friend bool overlaps(draw_context const &context, aarect const &rectangle) noexcept
+    {
+        return overlaps(context._scissor_rectangle, rectangle);
+    }
+
 private:
     gui_window *_window;
+public:
+    aarect _scissor_rectangle;
+private:
     vspan<PipelineFlat::Vertex> *_flat_vertices;
     vspan<PipelineBox::Vertex> *_box_vertices;
     vspan<PipelineImage::Vertex> *_image_vertices;

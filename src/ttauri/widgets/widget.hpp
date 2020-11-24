@@ -278,14 +278,24 @@ public:
         float window_base_line = std::numeric_limits<float>::infinity()
     ) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        _window_rectangle = window_rectangle;
-        _window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
-
         if (std::isinf(window_base_line)) {
-            _window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
-        } else {
+            window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
+        }
+
+        tt_assume(gui_system_mutex.recurse_lock_count());
+
+        if (_window_rectangle != window_rectangle) {
+            // The previous position needs to be redrawn.
+            window.request_redraw(_window_clipping_rectangle);
+
+            _window_rectangle = window_rectangle;
+            _window_clipping_rectangle = intersect(window_clipping_rectangle, expand(window_rectangle, Theme::borderWidth));
+            _request_relayout = true;
+        }
+
+        if (_window_base_line != window_base_line) {
             _window_base_line = window_base_line;
+            _request_relayout = true;
         }
     }
 
@@ -413,9 +423,8 @@ public:
      * @pre `mutex` must be locked by current thread.
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_layout Force the widget to layout
-     * @retrun True if the widget, or any of the children requires the window to be redrawn.
      */
-    [[nodiscard]] virtual bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] virtual void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
 
     /** Make a draw context for this widget.
      * This function will make a draw context with the correct transformation

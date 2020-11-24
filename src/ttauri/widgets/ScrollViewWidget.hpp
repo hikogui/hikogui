@@ -92,12 +92,12 @@ public:
         return has_updated_contraints;
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(content);
 
-        auto need_redraw = need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             // Calculate the width and height of the scroll-bars, make the infinity thin when they don't exist.
             ttlet vertical_scroll_bar_width =
@@ -185,15 +185,15 @@ public:
             content->set_layout_parameters(mat::T2{_window_rectangle} * content_rectangle, window_aperture_clipping_rectangle);
         }
 
-        need_redraw |= content->update_layout(display_time_point, need_layout);
+        content->update_layout(display_time_point, need_layout);
         if constexpr (can_scroll_horizontally) {
-            need_redraw |= horizontal_scroll_bar->update_layout(display_time_point, need_layout);
+            horizontal_scroll_bar->update_layout(display_time_point, need_layout);
         }
         if constexpr (can_scroll_vertically) {
-            need_redraw |= vertical_scroll_bar->update_layout(display_time_point, need_layout);
+            vertical_scroll_bar->update_layout(display_time_point, need_layout);
         }
 
-        return super::update_layout(display_time_point, need_layout) || need_redraw;
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

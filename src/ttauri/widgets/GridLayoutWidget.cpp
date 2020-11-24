@@ -99,7 +99,7 @@ bool GridLayoutWidget::update_constraints(hires_utc_clock::time_point display_ti
     }
 }
 
-bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -121,7 +121,7 @@ bool GridLayoutWidget::update_layout(hires_utc_clock::time_point display_time_po
         }
     }
 
-    return abstract_container_widget::update_layout(display_time_point, need_layout);
+    abstract_container_widget::update_layout(display_time_point, need_layout);
 }
 
 } // namespace tt

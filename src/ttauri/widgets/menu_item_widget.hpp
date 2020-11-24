@@ -142,7 +142,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -176,15 +176,19 @@ public:
 
             _label_stencil->set_layout_parameters(label_rectangle);
         }
-        return super::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
-        draw_background(context);
-        draw_check_mark(context);
-        draw_label(context);
+
+        if (overlaps(context, this->_window_clipping_rectangle)) {
+            draw_background(context);
+            draw_check_mark(context);
+            draw_label(context);
+        }
+
         super::draw(std::move(context), display_time_point);
     }
 

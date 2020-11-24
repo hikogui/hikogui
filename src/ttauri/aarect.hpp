@@ -106,6 +106,15 @@ public:
         return aarect::p0p3(p0.xy00() + p3._00xy());
     }
 
+    [[nodiscard]] static aarect infinity() noexcept
+    {
+        return aarect::p0p3(
+            vec{-std::numeric_limits<float>::infinity(),
+                -std::numeric_limits<float>::infinity(),
+                std::numeric_limits<float>::infinity(),
+                std::numeric_limits<float>::infinity()});
+    }
+
     /** Make sure p0 is left/bottom from p3.
      * @return True is p0 is left and below p3.
      */
@@ -364,12 +373,17 @@ public:
         }
 
         ttlet rhs_swap = rhs.v.zwxy();
-        if ((gt(lhs.v, rhs_swap) & 0x0011) != 0) {
+
+        // lhs.p0.x > rhs.p3.x | lhs.p0.y > rhs.p3.y
+        if ((gt(lhs.v, rhs_swap) & 0b0011) != 0) {
             return false;
         }
-        if ((lt(lhs.v, rhs_swap) & 0x1100) != 0) {
+
+        // lhs.p3.x < rhs.p0.x | lhs.p3.y < rhs.p0.y
+        if ((lt(lhs.v, rhs_swap) & 0b1100) != 0) {
             return false;
         }
+
         return true;
     }
 
@@ -480,6 +494,24 @@ public:
     [[nodiscard]] friend aarect round(aarect const &rhs) noexcept
     {
         return aarect::p0p3(round(rhs.v));
+    }
+
+    /** Round rectangle by expanding to pixel edge.
+     */
+    [[nodiscard]] friend aarect ceil(aarect const &rhs) noexcept
+    {
+        auto p0 = floor(rhs.p0());
+        auto p3 = ceil(rhs.p3());
+        return aarect::p0p3(p0, p3);
+    }
+
+    /** Round rectangle by shrinking to pixel edge.
+     */
+    [[nodiscard]] friend aarect floor(aarect const &rhs) noexcept
+    {
+        auto p0 = ceil(rhs.p0());
+        auto p3 = floor(rhs.p3());
+        return aarect::p0p3(p0, p3);
     }
 
     /** Return the overlapping part of two rectangles.

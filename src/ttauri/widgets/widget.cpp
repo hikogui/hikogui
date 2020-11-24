@@ -23,7 +23,7 @@ widget::widget(gui_window &_window, std::shared_ptr<widget> _parent) noexcept :
     }
 
     _enabled_callback = enabled.subscribe([this](auto...) {
-        window.requestRedraw = true;
+        window.request_redraw(_window_clipping_rectangle);
     });
 
     _preferred_size = {
@@ -53,20 +53,20 @@ bool widget::update_constraints(hires_utc_clock::time_point display_time_point, 
     return need_reconstrain;
 }
 
-bool widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
+        window.request_redraw(_window_clipping_rectangle);
+
         // Used by draw().
         _to_window_transform = mat::T(_window_rectangle.x(), _window_rectangle.y(), _draw_layer);
 
         // Used by handle_mouse_event()
         _from_window_transform = ~_to_window_transform;
     }
-
-    return need_layout;
 }
 
 draw_context widget::make_draw_context(draw_context context) const noexcept
@@ -123,12 +123,12 @@ bool widget::handle_mouse_event(MouseEvent const &event) noexcept {
     if (event.type == MouseEvent::Type::Entered) {
         handled = true;
         _hover = true;
-        window.requestRedraw = true;
+        window.request_redraw(_window_clipping_rectangle);
 
     } else if (event.type == MouseEvent::Type::Exited) {
         handled = true;
         _hover = false;
-        window.requestRedraw = true;
+        window.request_redraw(_window_clipping_rectangle);
     }
     return handled;
 }
@@ -141,13 +141,13 @@ bool widget::handle_keyboard_event(KeyboardEvent const &event) noexcept {
     case KeyboardEvent::Type::Entered:
         handled = true;
         _focus = true;
-        window.requestRedraw = true;
+        window.request_redraw(_window_clipping_rectangle);
         break;
 
     case KeyboardEvent::Type::Exited:
         handled = true;
         _focus = false;
-        window.requestRedraw = true;
+        window.request_redraw(_window_clipping_rectangle);
         break;
 
     default:;

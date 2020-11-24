@@ -73,7 +73,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -87,16 +87,18 @@ public:
 
             _pip_rectangle = shrink(_outline_rectangle, 1.5f);
         }
-        return widget::update_layout(display_time_point, need_layout);
+        widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        draw_outline(context);
-        draw_pip(context);
-        draw_label(context);
+        if (overlaps(context, this->_window_clipping_rectangle)) {
+            draw_outline(context);
+            draw_pip(context);
+            draw_label(context);
+        }
         widget::draw(std::move(context), display_time_point);
     }
 

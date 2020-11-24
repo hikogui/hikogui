@@ -56,7 +56,7 @@ WindowWidget::update_constraints(hires_utc_clock::time_point display_time_point,
     }
 }
 
-bool WindowWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void WindowWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -72,7 +72,7 @@ bool WindowWidget::update_layout(hires_utc_clock::time_point display_time_point,
         _content->set_layout_parameters(mat::T2{_window_rectangle} * content_rectangle, _window_clipping_rectangle);
     }
 
-    return abstract_container_widget::update_layout(display_time_point, need_layout);
+    abstract_container_widget::update_layout(display_time_point, need_layout);
 }
 
 HitBox WindowWidget::hitbox_test(vec window_position) const noexcept

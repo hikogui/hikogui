@@ -42,7 +42,7 @@ WindowTrafficLightsWidget::update_constraints(hires_utc_clock::time_point displa
     }
 }
 
-[[nodiscard]] bool
+[[nodiscard]] void
 WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
@@ -105,7 +105,7 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
             align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), alignment::middle_center);
         restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), alignment::middle_center);
     }
-    return widget::update_layout(display_time_point, need_layout);
+    widget::update_layout(display_time_point, need_layout);
 }
 
 void WindowTrafficLightsWidget::drawMacOS(draw_context const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
@@ -162,7 +162,9 @@ void WindowTrafficLightsWidget::drawMacOS(draw_context const &drawContext, hires
     }
 }
 
-void WindowTrafficLightsWidget::drawWindows(draw_context const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+void WindowTrafficLightsWidget::drawWindows(
+    draw_context const &drawContext,
+    hires_utc_clock::time_point displayTimePoint) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -214,14 +216,16 @@ void WindowTrafficLightsWidget::draw(draw_context context, hires_utc_clock::time
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        drawMacOS(context, display_time_point);
+    if (overlaps(context, this->_window_clipping_rectangle)) {
+        if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+            drawMacOS(context, display_time_point);
 
-    } else if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        drawWindows(context, display_time_point);
+        } else if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+            drawWindows(context, display_time_point);
 
-    } else {
-        tt_no_default();
+        } else {
+            tt_no_default();
+        }
     }
 
     widget::draw(std::move(context), display_time_point);
@@ -239,14 +243,14 @@ bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noex
     stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(position));
     stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(position));
     if (stateHasChanged) {
-        window.requestRedraw = true;
+        window.request_redraw(_window_clipping_rectangle);
     }
 
     if (event.cause.leftButton) {
         handled = true;
-        
+
         switch (event.type) {
-        using enum MouseEvent::Type;
+            using enum MouseEvent::Type;
         case ButtonUp:
             if (pressedClose && hoverClose) {
                 window.closeWindow();
@@ -264,14 +268,14 @@ bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noex
                 }
             }
 
-            window.requestRedraw = true;
+            window.request_redraw(_window_clipping_rectangle);
             pressedClose = false;
             pressedMinimize = false;
             pressedMaximize = false;
             break;
 
         case ButtonDown:
-            window.requestRedraw = true;
+            window.request_redraw(_window_clipping_rectangle);
             pressedClose = hoverClose;
             pressedMinimize = hoverMinimize;
             pressedMaximize = hoverMaximize;
@@ -288,8 +292,7 @@ HitBox WindowTrafficLightsWidget::hitbox_test(vec window_position) const noexcep
     ttlet position = _from_window_transform * window_position;
 
     if (_window_clipping_rectangle.contains(window_position)) {
-        if (closeRectangle.contains(position) || minimizeRectangle.contains(position) ||
-            maximizeRectangle.contains(position)) {
+        if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
             return HitBox{weak_from_this(), _draw_layer, HitBox::Type::Button};
         } else {
             return HitBox{};

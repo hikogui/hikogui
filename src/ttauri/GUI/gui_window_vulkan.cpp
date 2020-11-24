@@ -25,9 +25,7 @@ gui_window_vulkan::gui_window_vulkan(gui_system &system, WindowDelegate *delegat
 {
 }
 
-gui_window_vulkan::~gui_window_vulkan()
-{
-}
+gui_window_vulkan::~gui_window_vulkan() {}
 
 gui_device_vulkan &gui_window_vulkan::vulkan_device() const noexcept
 {
@@ -57,7 +55,7 @@ void gui_window_vulkan::waitIdle()
 
     tt_assert(_device);
     if (renderFinishedFence) {
-        vulkan_device().waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vulkan_device().waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
     }
     vulkan_device().waitIdle();
     LOG_INFO("/waitIdle");
@@ -69,14 +67,13 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
 
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
-    //LOG_DEBUG("acquireNextImage '{}'", title);
+    // LOG_DEBUG("acquireNextImage '{}'", title);
 
     ttlet result = vulkan_device().acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
-    //LOG_DEBUG("acquireNextImage {}", frameBufferIndex);
+    // LOG_DEBUG("acquireNextImage {}", frameBufferIndex);
 
     switch (result) {
-    case vk::Result::eSuccess:
-        return {frameBufferIndex};
+    case vk::Result::eSuccess: return {frameBufferIndex};
 
     case vk::Result::eSuboptimalKHR:
         LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
@@ -98,10 +95,7 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
         LOG_INFO("acquireNextImageKHR() eTimeout");
         return {};
 
-    default:
-        TTAURI_THROW(gui_error("Unknown result from acquireNextImageKHR()")
-            .set<vk_result_tag>(to_string(result))
-        );
+    default: TTAURI_THROW(gui_error("Unknown result from acquireNextImageKHR()").set<vk_result_tag>(to_string(result)));
     }
 }
 
@@ -111,41 +105,36 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
 
     tt_assume(_device);
 
-    std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { semaphore };
-    std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
-    std::array<uint32_t, 1> const presentImageIndices = { frameBufferIndex };
+    std::array<vk::Semaphore, 1> const renderFinishedSemaphores = {semaphore};
+    std::array<vk::SwapchainKHR, 1> const presentSwapchains = {swapchain};
+    std::array<uint32_t, 1> const presentImageIndices = {frameBufferIndex};
     tt_assume(presentSwapchains.size() == presentImageIndices.size());
 
     try {
-        //LOG_DEBUG("presentQueue {}", presentImageIndices.at(0));
+        // LOG_DEBUG("presentQueue {}", presentImageIndices.at(0));
         ttlet result = vulkan_device().presentQueue.presentKHR(
-            {
-            narrow_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
-            narrow_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
-        });
+            {narrow_cast<uint32_t>(renderFinishedSemaphores.size()),
+             renderFinishedSemaphores.data(),
+             narrow_cast<uint32_t>(presentSwapchains.size()),
+             presentSwapchains.data(),
+             presentImageIndices.data()});
 
         switch (result) {
-        case vk::Result::eSuccess:
-            return;
+        case vk::Result::eSuccess: return;
 
         case vk::Result::eSuboptimalKHR:
             LOG_INFO("presentKHR() eSuboptimalKHR");
             state = State::SwapchainLost;
             return;
 
-        default:
-            TTAURI_THROW(gui_error("Unknown result from presentKHR()")
-                .set<vk_result_tag>(to_string(result))
-            );
+        default: TTAURI_THROW(gui_error("Unknown result from presentKHR()").set<vk_result_tag>(to_string(result)));
         }
 
-    }
-    catch (const vk::OutOfDateKHRError&) {
+    } catch (const vk::OutOfDateKHRError &) {
         LOG_INFO("presentKHR() eErrorOutOfDateKHR");
         state = State::SwapchainLost;
         return;
-    }
-    catch (const vk::SurfaceLostKHRError&) {
+    } catch (const vk::SurfaceLostKHRError &) {
         LOG_INFO("presentKHR() eErrorSurfaceLostKHR");
         state = State::SurfaceLost;
         return;
@@ -209,10 +198,7 @@ void gui_window_vulkan::build()
         SDFPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
         toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
 
-        windowChangedSize({
-            narrow_cast<float>(swapchainImageExtent.width),
-            narrow_cast<float>(swapchainImageExtent.height)
-        });
+        windowChangedSize({narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
         state = State::ReadyToRender;
     }
 }
@@ -318,15 +304,16 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    auto need_redraw = widget->update_layout(displayTimePoint, need_layout);
-    need_redraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
+    widget->update_layout(displayTimePoint, need_layout);
 
-    if (!need_redraw) {
+    if (!static_cast<bool>(_request_redraw_rectangle)) {
         return;
     }
 
-    struct window_render_tag {};
-    struct frame_buffer_index_tag {};
+    struct window_render_tag {
+    };
+    struct frame_buffer_index_tag {
+    };
     auto tr = trace<window_render_tag, frame_buffer_index_tag>();
 
     ttlet optionalFrameBufferIndex = acquireNextImageFromSwapchain();
@@ -346,20 +333,31 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     vulkan_device().resetFences({renderFinishedFence});
 
+    // Record which part of the image will be redrawn on the current swapchain image.
+    swapchainRedrawRectangle.at(frameBufferIndex) = _request_redraw_rectangle;
+
+    // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
+    // We need to do this so that old redraws are also executed in the current swapchain image.
+    ttlet scissor_rectangle = ceil(std::accumulate(
+        swapchainRedrawRectangle.cbegin(), swapchainRedrawRectangle.cend(), aarect{}, [](ttlet &sum, ttlet &item) {
+            return sum | item;
+        }));
+
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
     auto drawContext = draw_context(
         *this,
+        scissor_rectangle,
         flatPipeline->vertexBufferData,
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
-        SDFPipeline->vertexBufferData
-    );
+        SDFPipeline->vertexBufferData);
     drawContext.transform = drawContext.transform * mat::T{0.5, 0.5};
 
+    _request_redraw_rectangle = aarect{};
     widget->draw(drawContext, displayTimePoint);
 
-    fillCommandBuffer(frameBuffer);
+    fillCommandBuffer(frameBuffer, scissor_rectangle);
     submitCommandBuffer();
 
     // Signal the fence when all rendering has finished on the graphics queue.
@@ -372,36 +370,41 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     teardown();
 }
 
-void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
+void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect scissor_rectangle)
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    struct fill_command_buffer_tag {};
+
+    struct fill_command_buffer_tag {
+    };
     auto t = trace<fill_command_buffer_tag>{};
 
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    ttlet colorClearValue = vk::ClearColorValue{
-        static_cast<std::array<float,4>>(widget->backgroundColor())
-    };
+    ttlet colorClearValue = vk::ClearColorValue{static_cast<std::array<float, 4>>(widget->backgroundColor())};
     ttlet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
-    ttlet clearValues = std::array{
-        vk::ClearValue{ colorClearValue },
-        vk::ClearValue{ colorClearValue },
-        vk::ClearValue{ depthClearValue }
-    };
+    ttlet clearValues =
+        std::array{vk::ClearValue{colorClearValue}, vk::ClearValue{colorClearValue}, vk::ClearValue{depthClearValue}};
 
-    ttlet renderArea = vk::Rect2D{vk::Offset2D{ 0, 0 }, swapchainImageExtent};
+    // Clamp the scissor rectangle to the size of the window.
+    scissor_rectangle = intersect(scissor_rectangle, aarect{0.0f, 0.0f, swapchainImageExtent.width, swapchainImageExtent.height});
 
-    commandBuffer.beginRenderPass({
-        renderPass, 
-        frameBuffer,
-        renderArea, 
-        narrow_cast<uint32_t>(clearValues.size()),
-        clearValues.data()
-        }, vk::SubpassContents::eInline
-    );
+    ttlet scissors = std::array{vk::Rect2D{
+        vk::Offset2D(scissor_rectangle.x(), swapchainImageExtent.height - scissor_rectangle.y() - scissor_rectangle.height()),
+        vk::Extent2D(scissor_rectangle.width(), scissor_rectangle.height())}};
+
+    // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.
+    commandBuffer.setScissor(0, scissors);
+
+    ttlet renderArea = scissors.at(0);
+
+    //ttlet renderArea = vk::Rect2D{
+    //    vk::Offset2D(0, 0), vk::Extent2D(swapchainImageExtent.width, swapchainImageExtent.height)};
+
+    commandBuffer.beginRenderPass(
+        {renderPass, frameBuffer, renderArea, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
+        vk::SubpassContents::eInline);
 
     flatPipeline->drawInCommandBuffer(commandBuffer);
 
@@ -425,26 +428,23 @@ void gui_window_vulkan::submitCommandBuffer()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    ttlet waitSemaphores = std::array{
-        imageAvailableSemaphore
-    };
+    ttlet waitSemaphores = std::array{imageAvailableSemaphore};
 
-    ttlet waitStages = std::array{
-        vk::PipelineStageFlags{vk::PipelineStageFlagBits::eColorAttachmentOutput}
-    };
+    ttlet waitStages = std::array{vk::PipelineStageFlags{vk::PipelineStageFlagBits::eColorAttachmentOutput}};
 
     tt_assume(waitSemaphores.size() == waitStages.size());
 
-    ttlet signalSemaphores = std::array{ renderFinishedSemaphore };
-    ttlet commandBuffersToSubmit = std::array{ commandBuffer };
+    ttlet signalSemaphores = std::array{renderFinishedSemaphore};
+    ttlet commandBuffersToSubmit = std::array{commandBuffer};
 
-    ttlet submitInfo = std::array{
-        vk::SubmitInfo{
-            narrow_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
-            narrow_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
-            narrow_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
-        }
-    };
+    ttlet submitInfo = std::array{vk::SubmitInfo{
+        narrow_cast<uint32_t>(waitSemaphores.size()),
+        waitSemaphores.data(),
+        waitStages.data(),
+        narrow_cast<uint32_t>(commandBuffersToSubmit.size()),
+        commandBuffersToSubmit.data(),
+        narrow_cast<uint32_t>(signalSemaphores.size()),
+        signalSemaphores.data()}};
 
     vulkan_device().graphicsQueue.submit(submitInfo, vk::Fence());
 }
@@ -456,14 +456,16 @@ std::tuple<uint32_t, vk::Extent2D> gui_window_vulkan::getImageCountAndExtent()
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     surfaceCapabilities = vulkan_device().getSurfaceCapabilitiesKHR(intrinsic);
 
-    LOG_INFO("minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {})",
-        surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height,
-        surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height,
-        surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height
-    );
+    LOG_INFO(
+        "minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {})",
+        surfaceCapabilities.minImageExtent.width,
+        surfaceCapabilities.minImageExtent.height,
+        surfaceCapabilities.maxImageExtent.width,
+        surfaceCapabilities.maxImageExtent.height,
+        surfaceCapabilities.currentExtent.width,
+        surfaceCapabilities.currentExtent.height);
 
-    ttlet currentExtentSet =
-        (surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) &&
+    ttlet currentExtentSet = (surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) &&
         (surfaceCapabilities.currentExtent.height != std::numeric_limits<uint32_t>::max());
 
     if (!currentExtentSet) {
@@ -475,8 +477,8 @@ std::tuple<uint32_t, vk::Extent2D> gui_window_vulkan::getImageCountAndExtent()
     ttlet minImageCount = surfaceCapabilities.minImageCount;
     ttlet maxImageCount = surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 10;
     ttlet imageCount = std::clamp(defaultNumberOfSwapchainImages, minImageCount, maxImageCount);
-
-    return { imageCount, surfaceCapabilities.currentExtent };
+    LOG_INFO("minImageCount={}, maxImageCount={}, currentImageCount={}", minImageCount, maxImageCount, imageCount);
+    return {imageCount, surfaceCapabilities.currentExtent};
 }
 
 bool gui_window_vulkan::readSurfaceExtent()
@@ -486,7 +488,7 @@ bool gui_window_vulkan::readSurfaceExtent()
     try {
         std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
 
-    } catch (const vk::SurfaceLostKHRError&) {
+    } catch (const vk::SurfaceLostKHRError &) {
         state = State::SurfaceLost;
         return false;
     }
@@ -497,13 +499,12 @@ bool gui_window_vulkan::readSurfaceExtent()
     ttlet maximum_widget_size = widget_size.maximum();
 
     if (narrow_cast<int>(swapchainImageExtent.width) < minimum_widget_size.width() ||
-        narrow_cast<int>(swapchainImageExtent.height) < minimum_widget_size.height()
-    ) {
+        narrow_cast<int>(swapchainImageExtent.height) < minimum_widget_size.height()) {
         // Due to vulkan surface being extended across the window decoration;
         // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
         // it is 160x28 pixels.
 
-        //LOG_INFO("Window too small to draw current=({}, {}), minimum=({}, {})",
+        // LOG_INFO("Window too small to draw current=({}, {}), minimum=({}, {})",
         //    swapchainImageExtent.width, swapchainImageExtent.height,
         //    minimumWindowExtent.width(), minimumWindowExtent.height()
         //);
@@ -511,12 +512,12 @@ bool gui_window_vulkan::readSurfaceExtent()
     }
 
     if (narrow_cast<int>(swapchainImageExtent.width) > maximum_widget_size.width() ||
-        narrow_cast<int>(swapchainImageExtent.height) > maximum_widget_size.height()
-        ) {
-        LOG_ERROR("Window too large to draw current=({}, {}), maximum=({})",
-            swapchainImageExtent.width, swapchainImageExtent.height,
-            maximum_widget_size
-        );
+        narrow_cast<int>(swapchainImageExtent.height) > maximum_widget_size.height()) {
+        LOG_ERROR(
+            "Window too large to draw current=({}, {}), maximum=({})",
+            swapchainImageExtent.width,
+            swapchainImageExtent.height,
+            maximum_widget_size);
         return false;
     }
 
@@ -528,10 +529,10 @@ bool gui_window_vulkan::checkSurfaceExtent()
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     try {
-        ttlet [nrImages, extent] = getImageCountAndExtent();
+        ttlet[nrImages, extent] = getImageCountAndExtent();
         return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent == swapchainImageExtent);
 
-    } catch (const vk::SurfaceLostKHRError&) {
+    } catch (const vk::SurfaceLostKHRError &) {
         state = State::SurfaceLost;
         return false;
     }
@@ -580,28 +581,25 @@ gui_window::State gui_window_vulkan::buildSwapchain()
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
         vulkan_device().bestSurfacePresentMode,
         VK_TRUE, // clipped
-        nullptr
-    };
-        
+        nullptr};
+
     vk::Result const result = vulkan_device().createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
     switch (result) {
-    case vk::Result::eSuccess:
-        break;
+    case vk::Result::eSuccess: break;
 
-    case vk::Result::eErrorSurfaceLostKHR:
-        return State::SurfaceLost;
+    case vk::Result::eErrorSurfaceLostKHR: return State::SurfaceLost;
 
-    default:
-        TTAURI_THROW(gui_error("Unknown result from createSwapchainKHR()")
-            .set<vk_result_tag>(to_string(result))
-        );
+    default: TTAURI_THROW(gui_error("Unknown result from createSwapchainKHR()").set<vk_result_tag>(to_string(result)));
     }
-
 
     LOG_INFO("Finished building swap chain");
     LOG_INFO(" - extent=({}, {})", swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height);
-    LOG_INFO(" - colorSpace={}, format={}", vk::to_string(swapchainCreateInfo.imageColorSpace), vk::to_string(swapchainCreateInfo.imageFormat));
-    LOG_INFO(" - presentMode={}, imageCount={}", vk::to_string(swapchainCreateInfo.presentMode), swapchainCreateInfo.minImageCount);
+    LOG_INFO(
+        " - colorSpace={}, format={}",
+        vk::to_string(swapchainCreateInfo.imageColorSpace),
+        vk::to_string(swapchainCreateInfo.imageFormat));
+    LOG_INFO(
+        " - presentMode={}, imageCount={}", vk::to_string(swapchainCreateInfo.presentMode), swapchainCreateInfo.minImageCount);
 
     // Create depth matching the swapchain.
     vk::ImageCreateInfo const depthImageCreateInfo = {
@@ -615,9 +613,9 @@ gui_window::State gui_window_vulkan::buildSwapchain()
         vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eDepthStencilAttachment | vulkan_device().transientImageUsageFlags,
         vk::SharingMode::eExclusive,
-        0, nullptr,
-        vk::ImageLayout::eUndefined
-    };
+        0,
+        nullptr,
+        vk::ImageLayout::eUndefined};
 
     VmaAllocationCreateInfo depthAllocationCreateInfo = {};
     depthAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
@@ -636,14 +634,14 @@ gui_window::State gui_window_vulkan::buildSwapchain()
         vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment |
             vulkan_device().transientImageUsageFlags,
         vk::SharingMode::eExclusive,
-        0, nullptr,
-        vk::ImageLayout::eUndefined
-    };
-    
+        0,
+        nullptr,
+        vk::ImageLayout::eUndefined};
+
     VmaAllocationCreateInfo colorAllocationCreateInfo = {};
     colorAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
     std::tie(colorImage, colorImageAllocation) = vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
-    
+
     return State::ReadyToRender;
 }
 
@@ -661,50 +659,36 @@ void gui_window_vulkan::buildFramebuffers()
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     depthImageView = vulkan_device().createImageView(
-        {
-        vk::ImageViewCreateFlags(),
-        depthImage,
-        vk::ImageViewType::e2D,
-        depthImageFormat,
-        vk::ComponentMapping(),
-        { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 }
-    });
+        {vk::ImageViewCreateFlags(),
+         depthImage,
+         vk::ImageViewType::e2D,
+         depthImageFormat,
+         vk::ComponentMapping(),
+         {vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1}});
 
     colorImageView = vulkan_device().createImageView(
-        {
-        vk::ImageViewCreateFlags(),
-        colorImage,
-        vk::ImageViewType::e2D,
-        colorImageFormat,
-        vk::ComponentMapping(),
-        { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
-    });
+        {vk::ImageViewCreateFlags(),
+         colorImage,
+         vk::ImageViewType::e2D,
+         colorImageFormat,
+         vk::ComponentMapping(),
+         {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
 
-    colorDescriptorImageInfo = {
-        vk::Sampler(),
-        colorImageView,
-        vk::ImageLayout::eShaderReadOnlyOptimal
-    };
+    colorDescriptorImageInfo = {vk::Sampler(), colorImageView, vk::ImageLayout::eShaderReadOnlyOptimal};
 
     swapchainImages = vulkan_device().getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
         ttlet swapchainImageView = vulkan_device().createImageView(
-            {
-            vk::ImageViewCreateFlags(),
-            image,
-            vk::ImageViewType::e2D,
-            swapchainImageFormat.format,
-            vk::ComponentMapping(),
-            { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
-        });
+            {vk::ImageViewCreateFlags(),
+             image,
+             vk::ImageViewType::e2D,
+             swapchainImageFormat.format,
+             vk::ComponentMapping(),
+             {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
 
         swapchainImageViews.push_back(swapchainImageView);
 
-        ttlet attachments = std::array{
-            swapchainImageView,
-            colorImageView,
-            depthImageView
-        };
+        ttlet attachments = std::array{swapchainImageView, colorImageView, depthImageView};
 
         ttlet framebuffer = vulkan_device().createFramebuffer({
             vk::FramebufferCreateFlags(),
@@ -716,15 +700,20 @@ void gui_window_vulkan::buildFramebuffers()
             1 // layers
         });
         swapchainFramebuffers.push_back(framebuffer);
+
+        swapchainRedrawRectangle.emplace_back();
     }
 
     tt_assume(swapchainImageViews.size() == swapchainImages.size());
     tt_assume(swapchainFramebuffers.size() == swapchainImages.size());
+    tt_assume(swapchainRedrawRectangle.size() == swapchainImages.size());
 }
 
 void gui_window_vulkan::teardownFramebuffers()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
+
+    swapchainRedrawRectangle.clear();
 
     for (auto frameBuffer : swapchainFramebuffers) {
         vulkan_device().destroy(frameBuffer);
@@ -745,7 +734,8 @@ void gui_window_vulkan::buildRenderPasses()
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     ttlet attachmentDescriptions = std::array{
-        vk::AttachmentDescription{ // Swapchain attachment.
+        vk::AttachmentDescription{
+            // Swapchain attachment.
             vk::AttachmentDescriptionFlags(),
             swapchainImageFormat.format,
             vk::SampleCountFlagBits::e1,
@@ -753,10 +743,12 @@ void gui_window_vulkan::buildRenderPasses()
             vk::AttachmentStoreOp::eStore,
             vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
-            vk::ImageLayout::eUndefined, // initialLayout
+            vk::ImageLayout::ePresentSrcKHR, // initialLayout
             vk::ImageLayout::ePresentSrcKHR // finalLayout
 
-        }, vk::AttachmentDescription{ // Color attachment
+        },
+        vk::AttachmentDescription{
+            // Color attachment
             vk::AttachmentDescriptionFlags(),
             colorImageFormat,
             vk::SampleCountFlagBits::e1,
@@ -767,7 +759,9 @@ void gui_window_vulkan::buildRenderPasses()
             vk::ImageLayout::eUndefined, // initialLayout
             vk::ImageLayout::eColorAttachmentOptimal // finalLayout
 
-        }, vk::AttachmentDescription{ // Depth attachment
+        },
+        vk::AttachmentDescription{
+            // Depth attachment
             vk::AttachmentDescriptionFlags(),
             depthImageFormat,
             vk::SampleCountFlagBits::e1,
@@ -777,133 +771,125 @@ void gui_window_vulkan::buildRenderPasses()
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
             vk::ImageLayout::eUndefined, // initialLayout
             vk::ImageLayout::eDepthStencilAttachmentOptimal // finalLayout
-        }
-    };
+        }};
 
-    ttlet colorAttachmentReferences = std::array{
-        vk::AttachmentReference{ 1, vk::ImageLayout::eColorAttachmentOptimal }
-    };
+    ttlet colorAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
 
-    ttlet colorInputAttachmentReferences = std::array{
-        vk::AttachmentReference{ 1, vk::ImageLayout::eShaderReadOnlyOptimal }
-    };
+    ttlet colorInputAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
 
-    ttlet swapchainAttachmentReferences = std::array{
-        vk::AttachmentReference{ 0, vk::ImageLayout::eColorAttachmentOptimal }
-    };
+    ttlet swapchainAttachmentReferences = std::array{vk::AttachmentReference{0, vk::ImageLayout::eColorAttachmentOptimal}};
 
-    ttlet depthAttachmentReference = vk::AttachmentReference{
-        2, vk::ImageLayout::eDepthStencilAttachmentOptimal
-    };
+    ttlet depthAttachmentReference = vk::AttachmentReference{2, vk::ImageLayout::eDepthStencilAttachmentOptimal};
 
     ttlet subpassDescriptions = std::array{
-        vk::SubpassDescription{ // Subpass 0
-            vk::SubpassDescriptionFlags(),
-            vk::PipelineBindPoint::eGraphics,
-            0, // inputAttchmentReferencesCount
-            nullptr, // inputAttachmentReferences
-            narrow_cast<uint32_t>(colorAttachmentReferences.size()),
-            colorAttachmentReferences.data(),
-            nullptr, //resolveAttachments
-            &depthAttachmentReference
+        vk::SubpassDescription{// Subpass 0
+                               vk::SubpassDescriptionFlags(),
+                               vk::PipelineBindPoint::eGraphics,
+                               0, // inputAttchmentReferencesCount
+                               nullptr, // inputAttachmentReferences
+                               narrow_cast<uint32_t>(colorAttachmentReferences.size()),
+                               colorAttachmentReferences.data(),
+                               nullptr, // resolveAttachments
+                               &depthAttachmentReference
 
-        }, vk::SubpassDescription{ // Subpass 1
-            vk::SubpassDescriptionFlags(),
-            vk::PipelineBindPoint::eGraphics,
-            0, // inputAttchmentReferencesCount
-            nullptr, // inputAttachmentReferences
-            narrow_cast<uint32_t>(colorAttachmentReferences.size()),
-            colorAttachmentReferences.data(),
-            nullptr, //resolveAttachments
-            &depthAttachmentReference
+        },
+        vk::SubpassDescription{// Subpass 1
+                               vk::SubpassDescriptionFlags(),
+                               vk::PipelineBindPoint::eGraphics,
+                               0, // inputAttchmentReferencesCount
+                               nullptr, // inputAttachmentReferences
+                               narrow_cast<uint32_t>(colorAttachmentReferences.size()),
+                               colorAttachmentReferences.data(),
+                               nullptr, // resolveAttachments
+                               &depthAttachmentReference
 
-        }, vk::SubpassDescription{ // Subpass 2
-            vk::SubpassDescriptionFlags(),
-            vk::PipelineBindPoint::eGraphics,
-            0, // inputAttchmentReferencesCount
-            nullptr, // inputAttachmentReferences
-            narrow_cast<uint32_t>(colorAttachmentReferences.size()),
-            colorAttachmentReferences.data(),
-            nullptr, //resolveAttachments
-            &depthAttachmentReference
+        },
+        vk::SubpassDescription{// Subpass 2
+                               vk::SubpassDescriptionFlags(),
+                               vk::PipelineBindPoint::eGraphics,
+                               0, // inputAttchmentReferencesCount
+                               nullptr, // inputAttachmentReferences
+                               narrow_cast<uint32_t>(colorAttachmentReferences.size()),
+                               colorAttachmentReferences.data(),
+                               nullptr, // resolveAttachments
+                               &depthAttachmentReference
 
-        }, vk::SubpassDescription{ // Subpass 3
-            vk::SubpassDescriptionFlags(),
-            vk::PipelineBindPoint::eGraphics,
-            narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
-            colorInputAttachmentReferences.data(),
-            narrow_cast<uint32_t>(colorAttachmentReferences.size()),
-            colorAttachmentReferences.data(),
-            nullptr, // resolveAttachments
-            &depthAttachmentReference
+        },
+        vk::SubpassDescription{// Subpass 3
+                               vk::SubpassDescriptionFlags(),
+                               vk::PipelineBindPoint::eGraphics,
+                               narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
+                               colorInputAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(colorAttachmentReferences.size()),
+                               colorAttachmentReferences.data(),
+                               nullptr, // resolveAttachments
+                               &depthAttachmentReference
 
-        }, vk::SubpassDescription{ // Subpass 4 tone-mapper
-            vk::SubpassDescriptionFlags(),
-            vk::PipelineBindPoint::eGraphics,
-            narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
-            colorInputAttachmentReferences.data(),
-            narrow_cast<uint32_t>(swapchainAttachmentReferences.size()),
-            swapchainAttachmentReferences.data(),
-            nullptr,
-            nullptr
-        }
-    };
+        },
+        vk::SubpassDescription{// Subpass 4 tone-mapper
+                               vk::SubpassDescriptionFlags(),
+                               vk::PipelineBindPoint::eGraphics,
+                               narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
+                               colorInputAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(swapchainAttachmentReferences.size()),
+                               swapchainAttachmentReferences.data(),
+                               nullptr,
+                               nullptr}};
 
     ttlet subpassDependency = std::array{
         vk::SubpassDependency{
-            VK_SUBPASS_EXTERNAL, 0,
+            VK_SUBPASS_EXTERNAL,
+            0,
             vk::PipelineStageFlagBits::eBottomOfPipe,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::AccessFlagBits::eMemoryRead,
             vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::DependencyFlagBits::eByRegion
-        },
+            vk::DependencyFlagBits::eByRegion},
         // Subpass 0: Render single color polygons to color+depth attachment.
         vk::SubpassDependency{
-            0, 1,
+            0,
+            1,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eColorAttachmentRead,
-            vk::DependencyFlagBits::eByRegion
-        },
+            vk::DependencyFlagBits::eByRegion},
         // Subpass 1: Render shaded polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
-            1, 2,
+            1,
+            2,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eColorAttachmentRead,
-            vk::DependencyFlagBits::eByRegion
-        },
+            vk::DependencyFlagBits::eByRegion},
         // Subpass 2: Render texture mapped polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
-            2, 3,
+            2,
+            3,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eShaderRead,
-            vk::DependencyFlagBits::eByRegion
-        },
+            vk::DependencyFlagBits::eByRegion},
         // Subpass 3: Render SDF-texture mapped polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
-            3, 4,
+            3,
+            4,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eShaderRead,
-            vk::DependencyFlagBits::eByRegion
-        },
+            vk::DependencyFlagBits::eByRegion},
         // Subpass 4: Tone mapping color to swapchain.
         vk::SubpassDependency{
-            4, VK_SUBPASS_EXTERNAL,
+            4,
+            VK_SUBPASS_EXTERNAL,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eBottomOfPipe,
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eMemoryRead,
-            vk::DependencyFlagBits::eByRegion
-        }
-    };
+            vk::DependencyFlagBits::eByRegion}};
 
     vk::RenderPassCreateInfo const renderPassCreateInfo = {
         vk::RenderPassCreateFlags(),
@@ -952,10 +938,7 @@ void gui_window_vulkan::buildCommandBuffers()
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     ttlet commandBuffers =
-        vulkan_device().allocateCommandBuffers({vulkan_device().graphicsCommandPool, 
-        vk::CommandBufferLevel::ePrimary, 
-        1
-    });
+        vulkan_device().allocateCommandBuffers({vulkan_device().graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1});
 
     commandBuffer = commandBuffers.at(0);
 }
@@ -972,7 +955,7 @@ void gui_window_vulkan::teardownSurface()
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    narrow_cast<gui_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
+    narrow_cast<gui_system_vulkan &>(system).destroySurfaceKHR(intrinsic);
 }
 
 void gui_window_vulkan::teardownDevice()
@@ -982,4 +965,4 @@ void gui_window_vulkan::teardownDevice()
     _device = nullptr;
 }
 
-}
+} // namespace tt

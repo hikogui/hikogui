@@ -69,17 +69,17 @@ public:
         return has_constrainted;
     }
 
-    bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+    void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        auto need_redraw = need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
         for (auto &&child : _children) {
             tt_assume(child->parent.lock().get() == this);
-            need_redraw |= child->update_layout(display_time_point, need_layout);
+            child->update_layout(display_time_point, need_layout);
         }
 
-        return super::update_layout(display_time_point, need_layout) || need_redraw;
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept

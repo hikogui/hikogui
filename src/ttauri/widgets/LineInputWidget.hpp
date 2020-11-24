@@ -30,7 +30,7 @@ public:
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
     bool handle_command(command command) noexcept override;
     bool handle_mouse_event(MouseEvent const &event) noexcept override;

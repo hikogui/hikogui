@@ -57,19 +57,19 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         auto &child = selected_child();
 
-        auto need_redraw = need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             child.set_layout_parameters(_window_rectangle, _window_clipping_rectangle, _window_base_line);
         }
 
-        need_redraw |= child.update_layout(display_time_point, need_layout);
-        return super::update_layout(display_time_point, need_layout) || need_redraw;
+        child.update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

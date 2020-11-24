@@ -59,7 +59,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -67,17 +67,20 @@ public:
         if (need_layout) {
             labelCell->set_layout_parameters(rectangle(), base_line());
         }
-        return super::update_layout(displayTimePoint, need_layout);
+        super::update_layout(displayTimePoint, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        if (*enabled) {
-            context.color = theme->labelStyle.color;
+        if (overlaps(context, this->_window_clipping_rectangle)) {
+            if (*enabled) {
+                context.color = theme->labelStyle.color;
+            }
+
+            labelCell->draw(context, true);
         }
 
-        labelCell->draw(context, true);
         widget::draw(std::move(context), display_time_point);
     }
 

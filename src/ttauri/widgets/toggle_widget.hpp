@@ -24,8 +24,7 @@ public:
     observable<label> off_label;
 
     template<typename Value = observable<bool>>
-    toggle_widget(gui_window &window, std::shared_ptr<widget> parent,
-        Value &&value = observable<bool>{}) noexcept :
+    toggle_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value = observable<bool>{}) noexcept :
         super(window, parent, std::forward<Value>(value))
     {
         _on_label_callback = this->on_label.subscribe([this](auto...) {
@@ -46,10 +45,13 @@ public:
             _on_label_stencil = stencil::make_unique(alignment::top_left, *on_label, theme->labelStyle);
             _off_label_stencil = stencil::make_unique(alignment::top_left, *off_label, theme->labelStyle);
 
-            ttlet minimumHeight =
-                std::max({_on_label_stencil->preferred_extent().height(), _off_label_stencil->preferred_extent().height(), Theme::smallSize});
+            ttlet minimumHeight = std::max(
+                {_on_label_stencil->preferred_extent().height(),
+                 _off_label_stencil->preferred_extent().height(),
+                 Theme::smallSize});
 
-            ttlet minimumWidth = std::max({_on_label_stencil->preferred_extent().width(), _off_label_stencil->preferred_extent().width()}) +
+            ttlet minimumWidth =
+                std::max({_on_label_stencil->preferred_extent().width(), _off_label_stencil->preferred_extent().width()}) +
                 Theme::smallSize * 2.0f + Theme::margin;
 
             _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
@@ -61,7 +63,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -78,21 +80,26 @@ public:
             _on_label_stencil->set_layout_parameters(_label_rectangle, base_line());
             _off_label_stencil->set_layout_parameters(_label_rectangle, base_line());
 
-            _slider_rectangle = shrink(aarect{0.0f, _rail_rectangle.y(), _rail_rectangle.height(), _rail_rectangle.height()}, 1.5f);
+            _slider_rectangle =
+                shrink(aarect{0.0f, _rail_rectangle.y(), _rail_rectangle.height(), _rail_rectangle.height()}, 1.5f);
 
             ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (_slider_rectangle.x() * 2.0f);
             _slider_move_range = sliderMoveWidth - _slider_rectangle.width();
         }
 
-        return widget::update_layout(display_time_point, need_layout);
+        widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
-        draw_rail(context);
-        draw_slider(context);
-        draw_label(context);
+
+        if (overlaps(context, this->_window_clipping_rectangle)) {
+            draw_rail(context);
+            draw_slider(context);
+            draw_label(context);
+        }
+
         widget::draw(std::move(context), display_time_point);
     }
 
@@ -128,7 +135,7 @@ private:
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(_animation_duration);
         if (animationProgress < 1.0f) {
-            window.requestRedraw = true;
+            window.request_redraw(_window_clipping_rectangle);
         }
 
         ttlet animatedValue = to_float(value, _animation_duration);

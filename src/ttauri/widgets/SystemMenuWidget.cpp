@@ -34,19 +34,14 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
     }
 }
 
-[[nodiscard]] bool SystemMenuWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void SystemMenuWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         ttlet icon_height = rectangle().height() < Theme::toolbarHeight * 1.2f ? rectangle().height() : Theme::toolbarHeight;
-        ttlet icon_rectangle = aarect{
-            rectangle().x(),
-            rectangle().top() - icon_height,
-            rectangle().width(),
-            icon_height
-        };
+        ttlet icon_rectangle = aarect{rectangle().x(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
         _icon_stencil->set_layout_parameters(icon_rectangle);
 
@@ -58,14 +53,17 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
             rectangle().height() - Theme::margin};
     }
 
-    return widget::update_layout(display_time_point, need_layout);
+    widget::update_layout(display_time_point, need_layout);
 }
 
 void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-    _icon_stencil->draw(context);
+    if (overlaps(context, this->_window_clipping_rectangle)) {
+        _icon_stencil->draw(context);
+    }
+
     widget::draw(std::move(context), display_time_point);
 }
 
