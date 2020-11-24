@@ -7,6 +7,7 @@
 #include "../datum.hpp"
 #include "../exceptions.hpp"
 #include "../ResourceView.hpp"
+#include "../indent.hpp"
 #include <vector>
 #include <optional>
 
@@ -275,6 +276,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, tt::indent in
 {
     auto r = std::string{};
     dumpJSON_impl(root, r);
+    r += '\n';
     return r;
 }
 

@@ -30,6 +30,7 @@ public:
         _space = other._space;
         _spaces = other._spaces;
         _depth = other._depth;
+        return *this;
     }
 
     [[nodiscard]] constexpr indent &operator=(indent &&other) noexcept
@@ -37,13 +38,14 @@ public:
         _space = other._space;
         _spaces = other._spaces;
         _depth = other._depth;
+        return *this;
     }
 
     /** String conversion operator.
      */
-    [[nodiscard]] constexpr operator std::string () const noexcept
+    [[nodiscard]] operator std::string () const noexcept
     {
-        return std::string{_depth * _spaces, _space};
+        return std::string(_depth * _spaces, _space);
     }
 
     /** Increase the depth of this indentation.

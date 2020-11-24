@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <concept>
+#include <concepts>
 #include <charconv>
 
 namespace tt {
@@ -20,11 +20,33 @@ template<std::integral T>
     ttlet first = buffer.data();
     ttlet last = first + std::size(buffer);
 
-    ttlet [new_last, ec] = std::to_char(first, last, value);
+    ttlet [new_last, ec] = std::to_chars(first, last, value);
     tt_assert(ec != std::errc{});
     
     auto r = std::string{};
-    std::copy(first, new_last, std::back_inserter{r});
+    std::copy(first, new_last, std::back_inserter(r));
+    return r;
+}
+
+/** Convert floating point to string.
+ * This function bypasses std::locale.
+ *
+ * @param value The signed or unsigned integer value.
+ * @return The integer converted to a decimal string.
+ */
+template<std::floating_point T>
+[[nodiscard]] std::string to_string(T const &value) noexcept
+{
+    std::array<char, 128> buffer;
+
+    ttlet first = buffer.data();
+    ttlet last = first + std::size(buffer);
+
+    ttlet[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
+    tt_assert(ec != std::errc{});
+
+    auto r = std::string{};
+    std::copy(first, new_last, std::back_inserter(r));
     return r;
 }
 
@@ -40,9 +62,12 @@ template<std::integral T>
 {
     T value;
 
-    ttlet [new_last, ec] = std::from_chars(str.begin(), str.end(), value);
+    ttlet first = str.data();
+    ttlet last = first + std::ssize(str);
+
+    ttlet [new_last, ec] = std::from_chars(first, last, value);
     if (ec != std::errc{}) {
-        throw parse_error{};
+        throw parse_error("Can not convert string to integer");
     }
 
     return value;
