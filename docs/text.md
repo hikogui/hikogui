@@ -1,144 +1,173 @@
-# How Unicode is used in ttauri
+# Text handling.
 
-## Source file character set (ASCII)
-Since Visual Studio currently requires "UTF-8 with BOM" to handle UTF-8 files, we
-currently require the source code to be pure ASCII.
+## FontBook initialization
+When the application is started a global FontBook is instanced.
+During the FontBook's instantiation it will fast-parse each TrueType
+font in the operating system's font folder.
 
-## Execution character set (UTF-8)
-This is the character set how to compiler will write string and character literals
-in memory.
+During the fast-parse the 'name', 'OS/2' and optionally other tables
+are read and then the font files are closed and memory is freed. This
+fast-parse is designed to be very fast to reduce impact on application
+startup time.
 
-MSVC, gcc and clang can configure the execution character set for `char const *` to UTF-8,
-which is what is used for TTauri.
+The following information gleamed during the fast-parse:
+ * 'name' Prefered Font family name; code-16 if available, otherwise code-1
+ * 'name' Prefered Font subfamily name: code-17 if available, otherwide code-2
+ * 'OS/2' Font weight
+ * 'OS/2' Regular/Italic
+ * 'OS/2' Serif/Sans-serif
+ * 'OS/2' Variable/Monospace
+ * 'OS/2' Regular/Condensed
+ * 'OS/2' Unicode ranges (as backup the 'cmap' table may be parsed)
+ * 'OS/2' The height of 'x' and 'H' (as back the 'glyf' table may be parsed)
 
-This means the default encoding for `char`, `char const *` and `std::string` will be
-UTF-8.
+Each font family is assigned a FamilyID.
+Each font is assigned a FontID.
 
-## Locale character set
-When printing and reading from console, strings should be converted to/from the current
-locale and UTF-8.
+There is a list of fallback font families for well known fonts, in case certain
+font families are not available on the system.
 
-## Wide strings
-Wide string should only be used when communicating with the win32 API.
-TTauri compiles against the win32 API using UNICODE. It is recommended to explicitly
-use the `W` suffix functions of win32.
+Each font will be assigned a list of fallback fonts for missing glyph lookup.
+Priority is given for fonts that start with the same font family name. For
+example "Arial Arabic" will be prioritized when the current font is "Arial"
 
-win32 API will handle proper UTF-16 with surrogate pairs, there are some odd situation
-in the win32 API where incomplete surrogate pairs are allowed, such as in file names.
+## Font selection
+A FontVariant consists of a FontWeight+serif-flag. This allows a user to select a font
+family to draw a text with and emphesize fragments of the text using italic and bold.
 
-The wide string literal execution sert for `wchar_t const *` cannot be configured
-for all compilers. Therefor `wchar_t const *` string literals should not be used.
+There are a total of maximum 20 FontVariants for each FontFamilyID.
 
-## Text formatting characters
-Limitted formatting may be possible in a label to show on the display.
+Selecting a font to render a text is done in several steps:
+ * A user select a font family name and a FontVariant.
+ * The font family name is looked up in the FontBook and a FontFamilyID is
+   returned for a font that exists on the system which closely matches the
+   requested family.
+ * The FontFamilyID + FontVariant is looked up in the FontBook and a FontID
+   is returned for the variant the closely matches the requested variant that
+   is available for that family.
+ * A grapheme + FontID is looked up in the FontBook and a FontGlyphIDs is returned.
+   The returned FontID may be of another font than requested if the glyphs where
+   not available in the requested fonts.
 
- ----------:| ------------ |
-   U+101b00 | Text decoration none
-   U+101b01 | Text decoration overline
-   U+101b02 | Text decoration underline
-   U+101b03 | Text decoration strikethrough
-   U+101b04 | Text decoration style solid
-   U+101b05 | Text decoration style double
-   U+101b06 | Text decoration style dotted
-   U+101b07 | Text decoration style dashed
-   U+101b08 | Text decoration style wavy
+## Rich text
+The text shaper will handle Unicode strings together with a default text style.
+The Unicode string may also contain special codes to change the text style inside the text.
 
-   U+101b10 | Text decoration color foreground
-   U+101b11 | Text decoration color accent
-   U+101b17 | Text decoration color blue
-   U+101b18 | Text decoration color green
-   U+101b19 | Text decoration color indigo
-   U+101b1a | Text decoration color orange
-   U+101b1b | Text decoration color pink
-   U+101b1c | Text decoration color purple
-   U+101b1d | Text decoration color red
-   U+101b1e | Text decoration color teal
-   U+101b1f | Text decoration color yellow
-    
-   U+101b20 | Text color foreground
-   U+101b21 | Text color accent
-   U+101b27 | Text color blue
-   U+101b28 | Text color green
-   U+101b29 | Text color indigo
-   U+101b2a | Text color orange
-   U+101b2b | Text color pink
-   U+101b2c | Text color purple
-   U+101b2d | Text color red
-   U+101b2e | Text color teal
-   U+101b2f | Text color yellow
+The special codes are non-character 0xFDD0 - 0xFDEF. Non-characters are application
+pecific private codes that should not be used outside the application.
 
-### Font size
-There are 16 different font sizes following the traditional English point-sizes.
+  1st Code | Description
+ :---------|:---------- 
+  0xFDD0   | Reset to default text-style
+  0xFDD1   | Font Family
+  0xFDD2   | Font Variant
+  0xFDD3   | Font Size
+  0xFDD4   | Text Decoration
+  0xFDD5   | Text Color
 
-   U+101b30 | Font size 6, Nonpareil
-   U+101b31 | Font size 7, Minion
-   U+101b32 | Font size 8, Brevier
-   U+101b33 | Font size 9, Bourgeois
-   U+101b34 | Font size 10, Long Prier
-   U+101b35 | Font size 11, Small Pica
-   U+101b36 | Font size 12, Pica
-   U+101b37 | Font size 14, English
-   U+101b38 | Font size 18, Greap Primer
-   U+101b39 | Font size 20, Paragon
-   U+101b3a | Font size 24, Double Pica
-   U+101b3b | Font size 28, Double English
-   U+101b3c | Font size 36, Double Great Primer, Three-line pica
-   U+101b3d | Font size 48, Canon, Four-line pica
-   U+101b3e | Font size 60, Five-line pica
-   U+101b3f | Font size 72, Six-line pica
+### Font Variant
 
-### Font weight
-There are 10 different font weights.
-
-   U+101b40 | Font weight 100, Thin, Hairline
-   U+101b41 | Font weight 200, Extra-Light, Ultra-Light
-   U+101b42 | Font weight 300, Light
-   U+101b43 | Font weight 400, Regular, Normal
-   U+101b44 | Font weight 500, Medium
-   U+101b45 | Font weight 600, Semi-Bold, Demi-Bold
-   U+101b46 | Font weight 700, Bold
-   U+101b47 | Font weight 800, Extra-Bold, Ultra-Bold
-   U+101b48 | Font weight 900, Heavy, Black
-   U+101b49 | Font weight 950, Extra-Black, Ultra-Black
-
-   U+101b4a | Font upright
-   U+101b4b | Font italic
-   U+101b4c | Font small-caps
-
-### Font types
-   U+101b50 | Font serif
-   U+101b51 | Font "Georgia"
-   U+101b52 | Font "Palatino Linotype", "Palatino"
-   U+101b53 | Font "Book Antique"
-   U+101b54 | Font "Times New Roman", "Times"
-   U+101b55 | Font "Didot"
-   U+101b56 | Font "American Typewriter"
-   U+101b57 | Font "noto serif"
-
-   U+101b60 | Font sans-serif
-   U+101b61 | Font "Helvetica"
-   U+101b62 | Font "Arial"
-   U+101b63 | Font "Impact"
-   U+101b64 | Font "Charcoal"
-   U+101b65 | Font "Lucida Sans Unicode", "Lucia Grande"
-   U+101b66 | Font "Tahoma"
-   U+101b67 | Font "Geneva"
-   U+101b68 | Font "Trebuchet MS",
-   U+101b69 | Font "Verdana",
-   U+101b6a | Font "noto sans"
-
-   U+101b70 | Font monospace
-   U+101b71 | Font "Courier New", "Courier"
-   U+101b72 | Font "Lucia Console"
-   U+101b73 | Font "Monaco"
-   U+101b74 | Font "Andale Mono"
-
-   U+101b78 | Font fantasy
-   U+101b79 | Font "Bradley Hand"
-   U+101b7a | Font "Brush Script MT"
-   U+101b7b | Font "Luminari"
-   U+101b7c | Font "Comic Sans"
+  2nd Code | Description
+ :---------|:--------------
+  0xFDE0   | Reset to default variant
+  0xFDE1   | Set font weight to Thin (100)
+  0xFDE2   | Set font weight to ExtraLight (200)
+  0xFDE3   | Set font weight to Light (300)
+  0xFDE4   | Set font weight to Regular (400)
+  0xFDE5   | Set font weight to Medium (500)
+  0xFDE6   | Set font weight to SemiBold (600)
+  0xFDE7   | Set font weight to Bold (700)
+  0xFDE8   | Set font weight to ExtraBold (800)
+  0xFDE9   | Set font weight to Black (900)
+  0xFDEA   | Set font weight to ExtraBlack (950)
+  0xFDEB   | reserved
+  0xFDEC   | reserved
+  0xFDED   | reserved
+  0xFDEE   | Switch to italic
+  0xFDEF   | Switch to upright
 
 
-   U+101b5f | Font mono
+### Font Size
+
+  2nd Code | Description
+ :---------|:--------------
+  0xFDE0   | Reset to default font size
+  0xFDE1   | Set font size to 8
+  0xFDE2   | Set font size to 9
+  0xFDE3   | Set font size to 10
+  0xFDE4   | Set font size to 11
+  0xFDE5   | Set font size to 12
+  0xFDE6   | Set font size to 14
+  0xFDE7   | Set font size to 16
+  0xFDE8   | Set font size to 18
+  0xFDE9   | Set font size to 20
+  0xFDEA   | Set font size to 24
+  0xFDEB   | Set font size to 28
+  0xFDEC   | Set font size to 32
+  0xFDED   | Set font size to 40
+  0xFDEE   | Set font size to 50
+  0xFDEF   | Set font size to 60
+
+### Font Family
+
+  2nd Code | Description
+ :---------|:--------------
+  0xFDE0   | Reset to default font family
+  0xFDE1   | Set family to Sans Serif
+  0xFDE2   | Set family to Serif
+  0xFDE3   | Set family to Mono space
+  0xFDE4   | Set family to Arial / Helvetica
+  0xFDE5   | Set family to Times New Roman / Times
+  0xFDE6   | Set family to Courier New / Courier
+  0xFDE7   | Set family to Palatino
+  0xFDE8   | Set family to Garamond
+  0xFDE9   | Set family to Bookman
+  0xFDEA   | Set family to Avant Garde
+  0xFDEB   | Set family to Verdana
+  0xFDEC   | Set family to Georgia
+  0xFDED   | Set family to Comic Sans
+  0xFDEE   | Set family to Trebuchet
+  0xFDEF   | Set family to Impact
+
+### Text Decoration
+
+  2nd Code | Description
+ :---------|:--------------
+  0xFDE0   | Reset to default text decoration
+  0xFDE1   | 
+  0xFDE2   | 
+  0xFDE3   | 
+  0xFDE4   | 
+  0xFDE5   | 
+  0xFDE6   | 
+  0xFDE7   | 
+  0xFDE8   | 
+  0xFDE9   | 
+  0xFDEA   | 
+  0xFDEB   | 
+  0xFDEC   | 
+  0xFDED   | 
+  0xFDEE   | 
+  0xFDEF   | 
+
+### Text Color
+
+  2nd Code | Description
+ :---------|:--------------
+  0xFDE0   | Reset to default text color
+  0xFDE1   | Set text color to Foreground
+  0xFDE2   | Set text color to Accent
+  0xFDE3   | Set text color to Error
+  0xFDE4   | Set text color to Warning
+  0xFDE5   | Set text color to Help
+  0xFDE6   | Set text color to 
+  0xFDE7   | Set text color to Blue
+  0xFDE8   | Set text color to Green
+  0xFDE9   | Set text color to Indigo
+  0xFDEA   | Set text color to Orange
+  0xFDEB   | Set text color to Pink
+  0xFDEC   | Set text color to Purple
+  0xFDED   | Set text color to Red
+  0xFDEE   | Set text color to Teal
+  0xFDEF   | Set text color to Yellow
 
