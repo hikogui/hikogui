@@ -72,12 +72,14 @@ void main()
 
     } else if (pushConstants.subpixelOrientation == 0) {
         // Normal anti-aliasing.
+        vec4 background_color = subpassLoad(inputColor);
+
         float coverage = clamp(greenRadius + 0.5, 0.0, 1.0);
-        float alpha = coverage_to_alpha(coverage, inColor.g > 0.7) * inColor.a;
+        float alpha = coverage_to_alpha(coverage, inColor.g > background_color.g) * inColor.a;
 
         // Output alpha is always 1.0
         outColor = vec4(
-            inColor.rgb * alpha + subpassLoad(inputColor).rgb * (1.0 - alpha),
+            inColor.rgb * alpha + background_color.rgb * (1.0 - alpha),
             1.0 
         );
 
@@ -111,12 +113,14 @@ void main()
         vec2 blueCoordinate = inTextureCoord.xy + blueOffset;
         float blueRadius  = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), blueCoordinate).r * distanceMultiplier;
 
+        vec4 background_color = subpassLoad(inputColor);
+
         vec3 RGBCoverage = clamp(vec3(redRadius, greenRadius, blueRadius) + 0.5, 0.0, 1.0);
-        vec3 RGBAlpha = coverage_to_alpha(RGBCoverage, lessThan(RGBCoverage, inColor.rgb)) * inColor.a;
+        vec3 RGBAlpha = coverage_to_alpha(RGBCoverage, greaterThan(inColor.rgb, background_color.rgb)) * inColor.a;
 
         // Output alpha is always 1.0
         outColor = vec4(
-            inColor.rgb * RGBAlpha + subpassLoad(inputColor).rgb * (1.0 - RGBAlpha),
+            inColor.rgb * RGBAlpha + background_color.rgb * (1.0 - RGBAlpha),
             1.0 
         );
     }
