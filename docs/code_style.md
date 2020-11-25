@@ -40,4 +40,14 @@ These "global" static-member-variables should be allocated and initiaized in the
 of the tt::application class. Using tt::application as the owner of the global instance of
 these classes will make sure that these instances are cleaned up before main() has finished.
 
+It is recommended that the "global" static-member-variables are unique\_ptr and
+shared\_ptr.
+
+If it is not possible to add a static-member-variable due to circular dependencies than
+nameing a global variable as the name of the followed by the name of the global variable with
+and underscore "\_" as separator.
+
+Another interesting global variable, either as a static-member-variable or as a global
+variable would be a mutex named "mutex".
+
 

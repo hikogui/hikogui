@@ -4,7 +4,7 @@
 For code analysis with Visual Studio you want to add the following system environment variable, (I did
 not find a way to include this environment variable in the CMakeSettings.json):
 ```
-CAExcludePath=C:\VulkanSDK;C:\Program Files;C:\Users\Tjienta\Projects\TTauri\ThirdPartyLibraries
+CAExcludePath=C:\VulkanSDK;C:\Program Files
 ```
 
 
@@ -22,12 +22,3 @@ Make sure to install it for all users and add Python to the path.
 
 ## Doxygen
 
-## Sphynx
-### Windows
-Sphinx must be installed as Administrator otherwise the sphinx-build executable
-is not installed.
-
-pip install sphinx==2.4.4
-pip install sphinx_rtd_theme
-pip install breathe==4.13.0
-pip install exhale
