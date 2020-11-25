@@ -6,6 +6,9 @@
 #include "gui_window_vulkan.hpp"
 #include <unordered_map>
 
+class HWND__;
+using HWND = HWND__ *;
+
 namespace tt {
 class Application_win32;
 }
@@ -14,7 +17,7 @@ namespace tt {
 
 class gui_window_vulkan_win32 final : public gui_window_vulkan {
 public:
-    void *win32Window = nullptr;
+    HWND win32Window = nullptr;
 
     gui_window_vulkan_win32(gui_system &system, WindowDelegate *delegate, label const &title);
     ~gui_window_vulkan_win32();

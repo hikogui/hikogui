@@ -473,13 +473,33 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         setOSWindowRectangleFromRECT(rect);
     } break;
 
+    case WM_ERASEBKGND:
+        return 1;
+
     case WM_PAINT: {
-        ttlet lock = std::scoped_lock();
-        requestLayout = true;
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        
+        PAINTSTRUCT ps;
+        BeginPaint(win32Window, &ps);
+
+        ttlet update_rectangle = aarect{
+            ps.rcPaint.left,
+            currentWindowExtent.height() - ps.rcPaint.bottom,
+            ps.rcPaint.right - ps.rcPaint.left,
+            ps.rcPaint.bottom - ps.rcPaint.top
+        };
+
+        request_redraw(update_rectangle);
+        EndPaint(win32Window, &ps);
+    } break;
+
+    case WM_NCPAINT: {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        request_redraw(aarect::infinity());
     } break;
 
     case WM_SIZE: {
-        ttlet lock = std::scoped_lock();
+        ttlet lock = std::scoped_lock(gui_system_mutex);
         switch (wParam) {
         case SIZE_MAXIMIZED: size = Size::Maximized; break;
         case SIZE_MINIMIZED: size = Size::Minimized; break;
