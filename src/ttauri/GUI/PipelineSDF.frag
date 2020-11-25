@@ -2,126 +2,112 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 layout(push_constant) uniform PushConstants {
-    vec2 windowExtent;
-    vec2 viewportScale;
-    int subpixelOrientation; // 0:Unknown, 1:BlueRight, 2:BlueLeft, 3:BlueTop, 4:BlueBottom
+    vec2 window_extent;
+    vec2 viewport_scale;
+    int subpixel_orientation; // 0:Unknown, 1:BlueRight, 2:BlueLeft, 3:BlueTop, 4:BlueBottom
 } pushConstants;
 
-layout(constant_id = 0) const float SDFmaxDistance = 1.0;
-layout(constant_id = 1) const float atlastImageWidth = 1.0;
+layout(constant_id = 0) const float sdf_max_distance = 1.0;
+layout(constant_id = 1) const float atlas_image_width = 1.0;
 
-layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput inputColor;
-layout(set = 0, binding = 1) uniform sampler biLinearSampler;
-layout(set = 0, binding = 2) uniform texture2D textures[16];
+layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput in_background_color;
+layout(set = 0, binding = 1) uniform sampler in_sampler;
+layout(set = 0, binding = 2) uniform texture2D in_textures[16];
 
-layout(location = 0) in flat vec4 inClippingRectangle;
-layout(location = 1) in vec3 inTextureCoord;
-layout(location = 2) in flat vec4 inColor;
+layout(location = 0) in flat vec4 in_clipping_rectangle;
+layout(location = 1) in vec3 in_texture_coord;
+layout(location = 2) in flat vec4 in_color;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
-layout(location = 0) out vec4 outColor;
+layout(location = 0) out vec4 out_color;
 
-bool isClipped()
+bool is_clipped()
 {
-    return greaterThanEqual(gl_FragCoord.xyxy, inClippingRectangle) != bvec4(true, true, false, false);
+    return greaterThanEqual(gl_FragCoord.xyxy, in_clipping_rectangle) != bvec4(true, true, false, false);
 }
 
-
-// Use a perceptional curve of gamma 2.0.
-float coverage_to_alpha(float x, bool light_to_dark)
+vec3 mix_perceptual(vec3 x, vec3 y, vec3 a)
 {
-    if (light_to_dark) {
-        return x * x;
-    } else {
-        x = 1.0 - x;
-        return 1.0 - (x * x);
-    }
+    vec3 r = mix(sqrt(x), sqrt(y), a);
+    return r * r;
 }
 
-// Use a perceptional curve of gamma 2.0.
-vec3 coverage_to_alpha(vec3 coverage, bvec3 light_to_dark)
+vec3 mix_perceptual(vec3 x, vec3 y, float a)
 {
-    return vec3(
-        coverage_to_alpha(coverage.r, light_to_dark.r),
-        coverage_to_alpha(coverage.g, light_to_dark.g),
-        coverage_to_alpha(coverage.b, light_to_dark.b)
-    );
+    vec3 r = mix(sqrt(x), sqrt(y), a);
+    return r * r;
 }
 
 void main()
 {
-    if (isClipped()) {
+    if (is_clipped()) {
         discard;
     }
 
     // The amount of distance and direction covered in 2D inside the texture when
     // stepping one fragment to the right.
-    vec2 horizontalTextureStride = dFdxFine(inTextureCoord.xy);
-    vec2 verticalTextureStride = vec2(-horizontalTextureStride.y, horizontalTextureStride.x);
-    float pixelDistance = length(horizontalTextureStride);
+    vec2 horizontal_texture_stride = dFdxFine(in_texture_coord.xy);
+    vec2 vertical_texture_stride = vec2(-horizontal_texture_stride.y, horizontal_texture_stride.x);
+    float pixel_distance = length(horizontal_texture_stride);
 
-    float distanceMultiplier = SDFmaxDistance / (pixelDistance * atlastImageWidth);
+    float distance_multiplier = sdf_max_distance / (pixel_distance * atlas_image_width);
 
-    float greenRadius = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), inTextureCoord.xy).r * distanceMultiplier;
+    float green_radius = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), in_texture_coord.xy).r * distance_multiplier;
 
-    if (greenRadius < -0.7071067811865476) {
+    if (green_radius < -0.5) {
         // Fully outside the fragment, early exit.
         discard;
-        //outColor = vec4(1.0, 1.0, 0.0, 1.0);
-        //return;
 
-    } else if (pushConstants.subpixelOrientation == 0) {
-        // Normal anti-aliasing.
-        vec4 background_color = subpassLoad(inputColor);
-
-        float coverage = clamp(greenRadius + 0.5, 0.0, 1.0);
-        float alpha = coverage_to_alpha(coverage, inColor.g > background_color.g) * inColor.a;
-
-        // Output alpha is always 1.0
-        outColor = vec4(
-            inColor.rgb * alpha + background_color.rgb * (1.0 - alpha),
-            1.0 
-        );
+    } else if (green_radius >= 0.5) {
+        // Fully inside the fragment.
+        out_color = in_color;
 
     } else {
-        vec2 redOffset;
-        vec2 blueOffset;
+        // Normal anti-aliasing.
+        vec4 background_color = clamp(subpassLoad(in_background_color), vec4(0.0, 0.0, 0.0, 0.0), vec4(1.0, 1.0, 1.0, 1.0));
+        vec4 foreground_color = clamp(in_color, vec4(0.0, 0.0, 0.0, 0.0), vec4(1.0, 1.0, 1.0, 1.0));
 
-        switch (pushConstants.subpixelOrientation) {
-        case 1: // Red-left, Blue-right
-            redOffset = horizontalTextureStride / -3.0;
-            blueOffset = horizontalTextureStride / 3.0;
-            break;
-        case 2: // Blue-left, Red-right
-            blueOffset = horizontalTextureStride / -3.0;
-            redOffset = horizontalTextureStride / 3.0;
-            break;
-        case 3: // Red-bottom, Blue-top
-            redOffset = verticalTextureStride / -3.0;
-            blueOffset = verticalTextureStride / 3.0;
-            break;
-        case 4: // Blue-bottom, Red-top
-            blueOffset = verticalTextureStride / -3.0;
-            redOffset = verticalTextureStride / 3.0;
-            break;
+        if (pushConstants.subpixel_orientation == 0) {
+            // Normal anti-aliasing.
+            float coverage = clamp(green_radius + 0.5, 0.0, 1.0);
+
+            // Output alpha is always 1.0
+            out_color = vec4(mix_perceptual(background_color.rgb, foreground_color.rgb, coverage), 1.0);
+        
+        } else {
+            // Subpixel anti-aliasing
+
+            vec2 red_offset;
+            vec2 blue_offset;
+            switch (pushConstants.subpixel_orientation) {
+            case 1: // Red-left, Blue-right
+                red_offset = horizontal_texture_stride / -3.0;
+                blue_offset = horizontal_texture_stride / 3.0;
+                break;
+            case 2: // Blue-left, Red-right
+                blue_offset = horizontal_texture_stride / -3.0;
+                red_offset = horizontal_texture_stride / 3.0;
+                break;
+            case 3: // Red-bottom, Blue-top
+                red_offset = vertical_texture_stride / -3.0;
+                blue_offset = vertical_texture_stride / 3.0;
+                break;
+            case 4: // Blue-bottom, Red-top
+                blue_offset = vertical_texture_stride / -3.0;
+                red_offset = vertical_texture_stride / 3.0;
+                break;
+            }
+
+            vec2 red_coord = in_texture_coord.xy + red_offset;
+            float red_radius = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), red_coord).r * distance_multiplier;
+
+            vec2 blue_coord = in_texture_coord.xy + blue_offset;
+            float blue_radius = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), blue_coord).r * distance_multiplier;
+
+            vec3 coverage = clamp(vec3(red_radius, green_radius, blue_radius) + 0.5, 0.0, 1.0);
+
+            // Output alpha is always 1.0
+            out_color = vec4(mix_perceptual(background_color.rgb, foreground_color.rgb, coverage), 1.0);
         }
-
-        // Subpixel anti-aliasing
-        vec2 redCoordinate = inTextureCoord.xy + redOffset;
-        float redRadius   = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), redCoordinate).r * distanceMultiplier;
-
-        vec2 blueCoordinate = inTextureCoord.xy + blueOffset;
-        float blueRadius  = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), blueCoordinate).r * distanceMultiplier;
-
-        vec4 background_color = subpassLoad(inputColor);
-
-        vec3 RGBCoverage = clamp(vec3(redRadius, greenRadius, blueRadius) + 0.5, 0.0, 1.0);
-        vec3 RGBAlpha = coverage_to_alpha(RGBCoverage, greaterThan(inColor.rgb, background_color.rgb)) * inColor.a;
-
-        // Output alpha is always 1.0
-        outColor = vec4(
-            inColor.rgb * RGBAlpha + background_color.rgb * (1.0 - RGBAlpha),
-            1.0 
-        );
     }
 }
