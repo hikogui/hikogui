@@ -25,21 +25,17 @@ public:
         margins.clear();
         margins.push_back(0.0f);
         items.clear();
-        cache_extent = {};
     }
 
-    [[nodiscard]] size_t size() const noexcept
+    [[nodiscard]] size_t nr_items() const noexcept
     {
         return items.size();
     }
 
     void
-    update(ssize_t index, finterval extent, ranged_int<3> resistance, float margin, relative_base_line base_line) noexcept
+    update(ssize_t index, float extent, ranged_int<3> resistance, float margin, relative_base_line base_line) noexcept
     {
         tt_assume(index >= 0);
-
-        cache_extent = {};
-
         tt_assume(index < std::ssize(items));
         tt_assume(index + 1 < std::ssize(margins));
         items[index].update(extent, resistance, base_line);
@@ -47,36 +43,19 @@ public:
         margins[index+1] = std::max(margins[index+1], margin);
     }
 
-    /** Calculate the size of the combined items in the layout.
-     */
-    [[nodiscard]] finterval extent() const noexcept {
-        if (cache_extent) {
-            return *cache_extent;
-        }
-
-        auto r = finterval{0.0f};
-
-        for (ttlet &margin: margins) {
-            r += margin;
-        }
-        for (ttlet &item: items) {
-            r += item.extent();
-        }
-
-        cache_extent = r;
-        return r;
+    [[nodiscard]] float minimum_size() const noexcept
+    {
+        auto a = std::accumulate(margins.cbegin(), margins.cend(), 0.0f);
+        return std::accumulate(items.cbegin(), items.cend(), a, [](ttlet &acc, ttlet &item) {
+            return acc + item.minimum_size();
+        });
     }
 
-    
-
-    /** Update the layout of all items based based on the total size.
+    /** Update the layout of all items based on the total size.
      */
-    void update_layout(float total_size) noexcept {
-        tt_assume(cache_extent);
-        auto minimum_size = extent().minimum();
-        auto extra_size = total_size - minimum_size;
-
+    void set_size(float total_size) noexcept {
         set_items_to_minimum_size();
+        auto extra_size = total_size - size();
 
         for (ttlet resistance : ranged_int<3>::range()) {
             auto nr_can_grow = number_of_items_that_can_grow(resistance);
@@ -85,10 +64,22 @@ public:
             }
         }
 
-        calculate_positions();
+        calculate_offset_and_size();
     }
 
-   
+    /** Calculate the size of the combined items in the layout.
+     * @pre `set_size()` must be called.
+     */
+    [[nodiscard]] float size() const noexcept
+    {
+        if (items.empty()) {
+            return margins.back();
+        } else {
+            tt_assume(items.back().offset >= 0.0f);
+            return items.back().offset + items.back().size + margins.back();
+        }
+    }
+
     /**
      * @param first The first index
      * @param last The index one beyond the last.
@@ -112,7 +103,7 @@ public:
     [[nodiscard]] relative_base_line get_base_line(ssize_t index) const noexcept
     {
         tt_assume(index >= 0 && index < ssize(items));
-        return items[index].base_line;
+        return items[index].base_line();
     }
 
     /** Grow layout to include upto new_size of items.
@@ -132,42 +123,56 @@ public:
 
 private:
     struct flow_layout_item {
-        constexpr flow_layout_item() noexcept : _extent(0.0f, std::numeric_limits<float>::max()), resistance(1), base_line() {}
+        constexpr flow_layout_item() noexcept : _minimum_size(0.0f), _resistance(1), _base_line(), offset(-1.0f), size(-1.0f) {}
 
         constexpr flow_layout_item(flow_layout_item const &rhs) noexcept = default;
         constexpr flow_layout_item(flow_layout_item &&rhs) noexcept = default;
         constexpr flow_layout_item &operator=(flow_layout_item const &rhs) noexcept = default;
         constexpr flow_layout_item &operator=(flow_layout_item &&rhs) noexcept = default;
 
-        constexpr void update(finterval a_extent, ranged_int<3> _resistance, relative_base_line _base_line) noexcept
+        constexpr void update(float minimum_size, ranged_int<3> resistance, relative_base_line base_line) noexcept
         {
-            _extent = intersect(_extent, a_extent);
-            switch (static_cast<int>(_resistance)) {
+            _minimum_size = std::max(_minimum_size, minimum_size);
+            switch (static_cast<int>(resistance)) {
             case 0: // No resistance has lower priority than strong resistance.
-                resistance = resistance == 2 ? 2 : 0;
+                _resistance = _resistance == 2 ? 2 : 0;
                 break;
             case 1: // Normal resistance will not change the value.
                 break;
             case 2: // Strong resistance overrides all
-                resistance = 2;
+                _resistance = 2;
                 break;
             default:
                 tt_no_default();
             }
-            base_line = std::max(base_line, _base_line);
+            _base_line = std::max(_base_line, base_line);
         }
 
-        constexpr finterval extent() const noexcept
+        [[nodiscard]] float minimum_size() const noexcept {
+            return _minimum_size;
+        }
+
+        [[nodiscard]] float maximum_size() const noexcept {
+            return std::numeric_limits<float>::infinity();
+        }
+
+        [[nodiscard]] ranged_int<3> resistance() const noexcept
         {
-            return _extent;
+            return _resistance;
         }
 
-        finterval _extent;
-        ranged_int<3> resistance;
-        relative_base_line base_line;
+        [[nodiscard]] relative_base_line base_line() const noexcept
+        {
+            return _base_line;
+        }
 
         float offset;
         float size;
+
+    private:
+        float _minimum_size;
+        ranged_int<3> _resistance;
+        relative_base_line _base_line;
     };
 
     /* The margin between the items, margin[0] is the margin
@@ -177,14 +182,12 @@ private:
     std::vector<float> margins;
     std::vector<flow_layout_item> items;
 
-    mutable std::optional<finterval> cache_extent;
-
-    
     void set_items_to_minimum_size() noexcept
     {
         for (auto &&item : items) {
-            item.size = std::ceil(item.extent().minimum());
+            item.size = std::ceil(item.minimum_size());
         }
+        calculate_offset_and_size();
     }
 
     [[nodiscard]] ssize_t number_of_items_that_can_grow(ranged_int<3> resistance) const noexcept
@@ -192,7 +195,7 @@ private:
         auto nr_non_max = ssize_t{0};
 
         for (auto &&item : items) {
-            if (item.resistance == resistance && item.size < item.extent()) {
+            if (item.resistance() == resistance && item.size < item.maximum_size()) {
                 ++nr_non_max;
             }
         }
@@ -205,15 +208,15 @@ private:
 
         nr_non_max = 0;
         for (auto &&item : items) {
-            if (item.resistance == resistance) {
+            if (item.resistance() == resistance) {
                 auto old_size = item.size;
 
                 ttlet extra_size_this_item = std::min(extra_size, extra_size_per_item);
 
-                item.size = std::ceil(clamp(item.size + extra_size_this_item, item.extent()));
+                item.size = std::ceil(item.size + extra_size_this_item);
                 extra_size -= item.size - old_size;
 
-                if (item.size < item.extent()) {
+                if (item.size < item.maximum_size()) {
                     ++nr_non_max;
                 }
             }
@@ -221,7 +224,7 @@ private:
         return nr_non_max;
     }
 
-    void calculate_positions() noexcept
+    void calculate_offset_and_size() noexcept
     {
         auto offset = 0.0f;
         for (ssize_t i = 0; i != std::ssize(items); ++i) {

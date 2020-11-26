@@ -25,7 +25,7 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
-            auto shared_thickness = finterval{};
+            auto shared_thickness = 0.0f;
 
             _layout.clear();
             _layout.reserve(std::ssize(_children));
@@ -38,10 +38,10 @@ public:
             tt_assume(index == std::ssize(_children));
 
             if constexpr (arrangement == arrangement::row) {
-                _preferred_size = {_layout.extent(), shared_thickness};
+                _preferred_size = {_layout.minimum_size(), shared_thickness};
                 _preferred_base_line = shared_base_line;
             } else {
-                _preferred_size = {shared_thickness, _layout.extent()};
+                _preferred_size = {shared_thickness, _layout.minimum_size()};
                 _preferred_base_line = relative_base_line{};
             }
             return true;
@@ -56,7 +56,7 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _layout.update_layout(arrangement == arrangement::row ? rectangle().width() : rectangle().height());
+            _layout.set_size(arrangement == arrangement::row ? rectangle().width() : rectangle().height());
 
             ssize_t index = 0;
             for (ttlet &child : _children) {
@@ -75,19 +75,21 @@ private:
         widget const &child,
         ssize_t index,
         relative_base_line &shared_base_line,
-        finterval &shared_thickness) noexcept
+        float &shared_thickness) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        ttlet length = arrangement == arrangement::row ? child.preferred_size().width() : child.preferred_size().height();
-        ttlet thickness = arrangement == arrangement::row ? child.preferred_size().height() : child.preferred_size().width();
+        ttlet length = arrangement == arrangement::row ? child.preferred_size().minimum().width() :
+                                                         child.preferred_size().minimum().height();
+        ttlet thickness = arrangement == arrangement::row ? child.preferred_size().minimum().height() :
+                                                            child.preferred_size().minimum().width();
 
         ttlet length_resistance = arrangement == arrangement::row ? child.width_resistance() : child.height_resistance();
 
         _layout.update(index, length, length_resistance, child.margin(), child.preferred_base_line());
 
         shared_base_line = std::max(shared_base_line, child.preferred_base_line());
-        shared_thickness = intersect(shared_thickness, thickness + child.margin() * 2.0f);
+        shared_thickness = std::max(shared_thickness, thickness + child.margin() * 2.0f);
     }
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept

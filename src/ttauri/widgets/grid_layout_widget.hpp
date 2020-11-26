@@ -17,10 +17,12 @@ class grid_layout_widget : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    grid_layout_widget(gui_window &window, std::shared_ptr<widget> parent, std::weak_ptr<grid_layout_delegate> delegate = {}) noexcept :
+    grid_layout_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        std::weak_ptr<grid_layout_delegate> delegate = {}) noexcept :
         abstract_container_widget(window, parent), _delegate(delegate)
     {
-        
     }
 
     ~grid_layout_widget()
@@ -76,10 +78,10 @@ private:
 
         [[nodiscard]] aarect rectangle(flow_layout const &columns, flow_layout const &rows) const noexcept
         {
-            ttlet first_column_nr = address.column.begin(std::ssize(columns));
-            ttlet last_column_nr = address.column.end(std::ssize(columns));
-            ttlet first_row_nr = address.row.begin(std::ssize(rows));
-            ttlet last_row_nr = address.row.end(std::ssize(rows));
+            ttlet first_column_nr = address.column.begin(columns.nr_items());
+            ttlet last_column_nr = address.column.end(columns.nr_items());
+            ttlet first_row_nr = address.row.begin(rows.nr_items());
+            ttlet last_row_nr = address.row.end(rows.nr_items());
 
             ttlet[x, width] = columns.get_offset_and_size(first_column_nr, last_column_nr);
             ttlet[y, height] = rows.get_offset_and_size(first_row_nr, last_row_nr);
@@ -89,7 +91,7 @@ private:
 
         [[nodiscard]] relative_base_line base_line(flow_layout const &rows) const noexcept
         {
-            ttlet aligned_row_nr = address.row.aligned_to(std::ssize(rows));
+            ttlet aligned_row_nr = address.row.aligned_to(rows.nr_items());
             return rows.get_base_line(aligned_row_nr);
         }
     };
@@ -103,8 +105,8 @@ private:
     flow_layout _columns;
 
     [[nodiscard]] static std::pair<int, int> calculate_grid_size(std::vector<cell> const &cells) noexcept;
-    [[nodiscard]] static interval_vec2
-    calculate_cell_min_max_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
+    [[nodiscard]] static vec
+    calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
 };
 
 } // namespace tt

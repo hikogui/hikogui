@@ -48,7 +48,7 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
-            auto shared_height = finterval{};
+            auto shared_height = 0.0f;
 
             _layout.clear();
             _layout.reserve(std::ssize(_left_children) + 1 + std::ssize(_right_children));
@@ -61,8 +61,8 @@ public:
             // Add a space between the left and right widgets.
             _layout.update(
                 index++,
-                finterval{Theme::width, std::numeric_limits<float>::max()},
-                ranged_int<3>{1},
+                Theme::width,
+                ranged_int<3>{0},
                 0.0f,
                 relative_base_line{});
 
@@ -71,7 +71,7 @@ public:
             }
 
             tt_assume(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-            _preferred_size = {_layout.extent(), finterval{shared_height.minimum()}};
+            _preferred_size = {vec{_layout.minimum_size(), shared_height}, vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             _preferred_base_line = shared_base_line;
             return true;
         } else {
@@ -85,7 +85,7 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _layout.update_layout(rectangle().width());
+            _layout.set_size(rectangle().width());
 
             ssize_t index = 0;
             for (ttlet &child : _left_children) {
@@ -151,14 +151,14 @@ private:
         widget const &child,
         ssize_t index,
         relative_base_line &shared_base_line,
-        finterval &shared_height) noexcept
+        float &shared_height) noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        _layout.update(index, child.preferred_size().width(), child.width_resistance(), child.margin(), relative_base_line{});
+        _layout.update(index, child.preferred_size().minimum().width(), child.width_resistance(), child.margin(), relative_base_line{});
 
         shared_base_line = std::max(shared_base_line, child.preferred_base_line());
-        shared_height = intersect(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
+        shared_height = std::max(shared_height, child.preferred_size().minimum().height() + child.margin() * 2.0f);
     }
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept

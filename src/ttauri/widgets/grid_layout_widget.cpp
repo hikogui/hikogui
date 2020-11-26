@@ -30,8 +30,8 @@ namespace tt {
     return {nr_left + nr_right, nr_bottom + nr_top};
 }
 
-[[nodiscard]] interval_vec2
-grid_layout_widget::calculate_cell_min_max_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
+[[nodiscard]] vec
+grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
@@ -49,7 +49,7 @@ grid_layout_widget::calculate_cell_min_max_size(std::vector<cell> const &cells, 
 
             rows.update(
                 index,
-                cell.widget->preferred_size().height(),
+                cell.widget->preferred_size().minimum().height(),
                 cell.widget->height_resistance(),
                 cell.widget->margin(),
                 cell.widget->preferred_base_line());
@@ -61,14 +61,14 @@ grid_layout_widget::calculate_cell_min_max_size(std::vector<cell> const &cells, 
 
             columns.update(
                 index,
-                cell.widget->preferred_size().width(),
+                cell.widget->preferred_size().minimum().width(),
                 cell.widget->width_resistance(),
                 cell.widget->margin(),
                 relative_base_line{});
         }
     }
 
-    return {columns.extent(), rows.extent()};
+    return {columns.minimum_size(), rows.minimum_size()};
 }
 
 std::shared_ptr<widget> grid_layout_widget::add_widget(cell_address address, std::shared_ptr<widget> widget) noexcept
@@ -92,7 +92,9 @@ bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        _preferred_size = calculate_cell_min_max_size(_cells, _rows, _columns);
+        _preferred_size = {
+            calculate_cell_min_size(_cells, _rows, _columns),
+            vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
         return true;
     } else {
         return false;
@@ -105,8 +107,8 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        _columns.update_layout(rectangle().width());
-        _rows.update_layout(rectangle().height());
+        _columns.set_size(rectangle().width());
+        _rows.set_size(rectangle().height());
 
         for (auto &&cell : _cells) {
             auto &&child = cell.widget;

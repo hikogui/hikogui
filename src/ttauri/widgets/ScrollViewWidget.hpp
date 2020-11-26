@@ -140,8 +140,8 @@ public:
             scroll_aperture_width = aperture_width;
             scroll_aperture_height = aperture_height;
 
-            ttlet scroll_offset_x_max = *scroll_content_width - aperture_width;
-            ttlet scroll_offset_y_max = *scroll_content_height - aperture_height;
+            ttlet scroll_offset_x_max = std::max(*scroll_content_width - aperture_width, 0.0f);
+            ttlet scroll_offset_y_max = std::max(*scroll_content_height - aperture_height, 0.0f);
 
             scroll_offset_x = std::clamp(std::round(*scroll_offset_x), 0.0f, scroll_offset_x_max);
             scroll_offset_y = std::clamp(std::round(*scroll_offset_y), 0.0f, scroll_offset_y_max);
@@ -151,11 +151,7 @@ public:
             auto content_width = *scroll_content_width;
             auto content_height = *scroll_content_height;
 
-            // Visual hack, to extend the aperture over the invisible scrollbars.
-            ttlet content_can_extent_vertically = content->preferred_size().maximum().height() >= rectangle().height();
-            ttlet content_can_extent_horizontally = content->preferred_size().maximum().width() >= rectangle().width();
-
-            if (can_scroll_horizontally && !horizontal_scroll_bar->visible() && content_can_extent_vertically) {
+            if (can_scroll_horizontally && !horizontal_scroll_bar->visible()) {
                 ttlet delta_height = horizontal_scroll_bar_rectangle.height();
                 aperture_height += delta_height;
                 aperture_y -= delta_height;
@@ -163,7 +159,7 @@ public:
                 content_y -= delta_height;
             }
 
-            if (can_scroll_vertically && !vertical_scroll_bar->visible() && content_can_extent_horizontally) {
+            if (can_scroll_vertically && !vertical_scroll_bar->visible()) {
                 ttlet delta_width = vertical_scroll_bar_rectangle.width();
                 aperture_width += delta_width;
                 content_width += delta_width;
