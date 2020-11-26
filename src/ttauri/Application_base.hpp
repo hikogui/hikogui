@@ -36,7 +36,7 @@ class Application_base
 public:
     /*! Application delegate
     */
-    application_delegate &delegate;
+    std::weak_ptr<application_delegate> delegate;
 
     /*! Command line arguments.
      */
@@ -68,13 +68,13 @@ public:
      * @param delegate A pointer to an application delegate.
      */
     Application_base(
-        application_delegate &delegate,
+        std::weak_ptr<application_delegate> const &delegate,
         std::vector<std::string> const &arguments
     );
 
     /** Two phase construction.
      */
-    virtual void initialize();
+    virtual void init();
 
     virtual ~Application_base();
     Application_base(const Application_base &) = delete;
@@ -87,7 +87,7 @@ public:
     virtual void run_from_main_loop(std::function<void()> function) = 0;
 
     /*! Run the operating system's main loop.
-     * Must be called after initialize().
+     * Must be called after init().
      */
     virtual int loop() = 0;
 

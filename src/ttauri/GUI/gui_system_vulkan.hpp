@@ -45,7 +45,7 @@ public:
      * \param extensions a list of Vulkan extensions required. Most useful
      *      for including operating system specific surface extensions.
      */
-    gui_system_vulkan(gui_system_delegate *delegate, const std::vector<const char *> extensions);
+    gui_system_vulkan(std::weak_ptr<gui_system_delegate> const &delegate, const std::vector<const char *> extensions);
     ~gui_system_vulkan();
 
     gui_system_vulkan(const gui_system_vulkan &) = delete;
@@ -53,7 +53,7 @@ public:
     gui_system_vulkan(gui_system_vulkan &&) = delete;
     gui_system_vulkan &operator=(gui_system_vulkan &&) = delete;
 
-    void initialize() noexcept(false) override;
+    void init() noexcept(false) override;
 
     vk::DispatchLoaderDynamic loader() const noexcept {
         ttlet lock = std::scoped_lock(gui_system_mutex);

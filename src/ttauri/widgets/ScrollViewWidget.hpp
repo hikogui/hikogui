@@ -4,7 +4,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "GridLayoutWidget.hpp"
+#include "grid_layout_widget.hpp"
 #include "ScrollBarWidget.hpp"
 
 namespace tt {
@@ -30,17 +30,17 @@ public:
 
     ~ScrollViewWidget() {}
 
-    void initialize() noexcept override
+    void init() noexcept override
     {
         if constexpr (can_scroll_horizontally) {
             horizontal_scroll_bar = std::make_shared<ScrollBarWidget<false>>(
                 window, shared_from_this(), scroll_content_width, scroll_aperture_width, scroll_offset_x);
-            horizontal_scroll_bar->initialize();
+            horizontal_scroll_bar->init();
         }
         if constexpr (can_scroll_vertically) {
             vertical_scroll_bar = std::make_shared<ScrollBarWidget<true>>(
                 window, shared_from_this(), scroll_content_height, scroll_aperture_height, scroll_offset_y);
-            vertical_scroll_bar->initialize();
+            vertical_scroll_bar->init();
         }
     }
 
@@ -264,13 +264,13 @@ public:
         return content->next_keyboard_widget(currentKeyboardWidget, reverse);
     }
 
-    template<typename WidgetType = GridLayoutWidget, typename... Args>
+    template<typename WidgetType = grid_layout_widget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(Args const &... args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         auto widget = std::make_shared<WidgetType>(window, shared_from_this(), args...);
-        widget->initialize();
+        widget->init();
 
         content = widget;
         _request_reconstrain = true;

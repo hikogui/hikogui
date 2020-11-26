@@ -7,11 +7,14 @@
 
 namespace tt {
 
-class audio_system_aggregate : public audio_system, public audio_system_delegate {
+class audio_system_aggregate :
+    public std::enable_shared_from_this<audio_system_aggregate>,
+    public audio_system,
+    public audio_system_delegate {
 public:
     using super = audio_system;
 
-    audio_system_aggregate(audio_system_delegate *delegate) : super(delegate) {}
+    audio_system_aggregate(std::weak_ptr<audio_system_delegate> const &delegate) : super(delegate) {}
 
     [[nodiscard]] std::vector<std::shared_ptr<audio_device>> devices() noexcept override
     {
@@ -36,16 +39,18 @@ public:
     {
         ttlet lock = std::scoped_lock(audio_system::mutex);
 
-        auto new_audio_system = std::make_shared<T>(this, std::forward<Args>(args)...);
-        new_audio_system->initialize();
+        auto new_audio_system = std::make_shared<T>(weak_from_this(), std::forward<Args>(args)...);
+        new_audio_system->init();
         add_audio_system(new_audio_system);
         audio_device_list_changed(*this);
         return new_audio_system;
     }
 
-    void audio_device_list_changed(tt::audio_system &system) override
+    void audio_device_list_changed(tt::audio_system &self) override
     {
-        return _delegate->audio_device_list_changed(*this);
+        if (auto delegate_ = this->_delegate.lock()) {
+            delegate_->audio_device_list_changed(*this);
+        }
     }
 
 private:

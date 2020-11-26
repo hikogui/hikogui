@@ -114,7 +114,7 @@ static void createWindowClass()
 
 void gui_window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
 {
-    // This function should be called during initialize(), and therefor should not have a lock on the window.
+    // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
     tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
@@ -177,7 +177,10 @@ void gui_window_vulkan_win32::createWindow(const std::u8string &_title, vec exte
     dpi = narrow_cast<float>(_dpi);
 }
 
-gui_window_vulkan_win32::gui_window_vulkan_win32(gui_system &system, WindowDelegate *delegate, label const &title) :
+gui_window_vulkan_win32::gui_window_vulkan_win32(
+    gui_system &system,
+    std::weak_ptr<gui_window_delegate> const &delegate,
+    label const &title) :
     gui_window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
 {
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;

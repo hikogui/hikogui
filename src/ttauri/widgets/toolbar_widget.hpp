@@ -138,7 +138,7 @@ public:
     std::shared_ptr<T> make_widget(Args &&... args)
     {
         auto widget = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
-        widget->initialize();
+        widget->init();
         return std::static_pointer_cast<T>(add_widget(Alignment, std::move(widget)));
     }
 

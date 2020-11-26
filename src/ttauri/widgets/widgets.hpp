@@ -22,7 +22,7 @@
 #include "toolbar_tab_button_widget.hpp"
 #include "WindowWidget.hpp"
 #include "row_column_layout_widget.hpp"
-#include "GridLayoutWidget.hpp"
+#include "grid_layout_widget.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../cell_address.hpp"
 

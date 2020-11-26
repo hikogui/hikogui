@@ -43,7 +43,7 @@ public:
 
     ~toolbar_tab_button_widget() {}
 
-    void initialize() noexcept override
+    void init() noexcept override
     {
         _label_callback = label.subscribe([this](auto...) {
             this->_request_reconstrain = true;

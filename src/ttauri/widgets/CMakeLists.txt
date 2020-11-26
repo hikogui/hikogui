@@ -7,9 +7,9 @@ target_sources(ttauri PRIVATE
     boolean_checkbox_widget.hpp
     button_widget.hpp
     checkbox_widget.hpp
-    GridLayoutWidget.cpp
-    GridLayoutWidget.hpp
-    GridLayoutDelegate.hpp
+    grid_layout_widget.cpp
+    grid_layout_widget.hpp
+    grid_layout_delegate.hpp
     LabelWidget.hpp
     LineInputWidget.cpp
     LineInputWidget.hpp

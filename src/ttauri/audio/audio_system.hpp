@@ -15,7 +15,7 @@ namespace tt {
  */
 class audio_system {
 public:
-    audio_system(audio_system_delegate *delegate);
+    audio_system(std::weak_ptr<audio_system_delegate> const &delegate);
     virtual ~audio_system();
     audio_system(audio_system const &) = delete;
     audio_system(audio_system &&) = delete;
@@ -24,10 +24,10 @@ public:
 
     [[nodiscard]] virtual std::vector<std::shared_ptr<audio_device>> devices() noexcept = 0;
 
-    virtual void initialize() noexcept;
+    virtual void init() noexcept;
 
 protected:
-    audio_system_delegate *_delegate;
+    std::weak_ptr<audio_system_delegate> _delegate;
 
 public:
     static inline unfair_recursive_mutex mutex;

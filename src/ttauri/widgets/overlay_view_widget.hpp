@@ -4,7 +4,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "GridLayoutWidget.hpp"
+#include "grid_layout_widget.hpp"
 
 namespace tt {
 
@@ -105,13 +105,13 @@ public:
         return child->next_keyboard_widget(currentKeyboardWidget, reverse);
     }
 
-    template<typename WidgetType = GridLayoutWidget, typename... Args>
+    template<typename WidgetType = grid_layout_widget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(Args const &... args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         auto widget = std::make_shared<WidgetType>(window, shared_from_this(), args...);
-        widget->initialize();
+        widget->init();
 
         child = widget;
         _request_reconstrain = true;

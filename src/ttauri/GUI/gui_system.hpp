@@ -23,7 +23,7 @@ namespace tt {
  */
 class gui_system {
 public:
-    gui_system_delegate *delegate;
+    std::weak_ptr<gui_system_delegate> delegate;
 
     std::unique_ptr<VerticalSync> verticalSync;
 
@@ -35,7 +35,7 @@ public:
      */
     ssize_t previousNumberOfWindows = 0;
 
-    gui_system(gui_system_delegate *delegate) noexcept :
+    gui_system(std::weak_ptr<gui_system_delegate> const &delegate) noexcept :
         delegate(delegate)
     {
         verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync, this);
@@ -51,7 +51,7 @@ public:
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
      */
-    virtual void initialize() = 0;
+    virtual void init() = 0;
 
     template<typename... Args>
     gui_window *makeWindow(Args &&... args)
@@ -63,7 +63,7 @@ public:
 
         auto window = std::make_shared<gui_window_vulkan_win32>(static_cast<gui_system &>(*this), std::forward<Args>(args)...);
         auto window_ptr = window.get();
-        window->initialize();
+        window->init();
 
         ttlet lock = std::scoped_lock(gui_system_mutex);
         auto device = findBestDeviceForWindow(*window);
@@ -88,7 +88,9 @@ public:
         ttlet currentNumberOfWindows = getNumberOfWindows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
             application->run_from_main_loop([this]{
-                this->delegate->last_window_closed();
+                if (auto delegate_ = this->delegate.lock()) {
+                    delegate_->last_window_closed(*this);
+                }
             });
         }
         previousNumberOfWindows = currentNumberOfWindows;

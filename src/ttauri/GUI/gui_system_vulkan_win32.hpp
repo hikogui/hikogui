@@ -10,7 +10,7 @@ namespace tt {
 
 class gui_system_vulkan_win32 final: public gui_system_vulkan {
 public:
-    gui_system_vulkan_win32(gui_system_delegate *delegate);
+    gui_system_vulkan_win32(std::weak_ptr<gui_system_delegate> const &delegate);
     ~gui_system_vulkan_win32();
 
     gui_system_vulkan_win32(const gui_system_vulkan_win32 &) = delete;

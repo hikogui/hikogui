@@ -49,10 +49,10 @@ public:
 
     ~selection_widget() {}
 
-    void initialize() noexcept override
+    void init() noexcept override
     {
         _overlay_widget = std::make_shared<overlay_view_widget>(window, shared_from_this());
-        _overlay_widget->initialize();
+        _overlay_widget->init();
 
         _scroll_widget = _overlay_widget->make_widget<VerticalScrollViewWidget<>>();
         _column_widget = _scroll_widget->make_widget<column_layout_widget>();

@@ -30,9 +30,9 @@ public:
         this->_margin = 0.0f;
     }
 
-    void initialize() noexcept override
+    void init() noexcept override
     {
-        super::initialize();
+        super::init();
         _label_callback = this->label.subscribe([this](auto...) {
             this->_request_reconstrain = true;
         });

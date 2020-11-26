@@ -4,7 +4,7 @@
 #include "WindowWidget.hpp"
 #include "WindowTrafficLightsWidget.hpp"
 #include "toolbar_widget.hpp"
-#include "GridLayoutWidget.hpp"
+#include "grid_layout_widget.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "SystemMenuWidget.hpp"
 #endif
@@ -14,14 +14,14 @@ namespace tt {
 
 using namespace std;
 
-WindowWidget::WindowWidget(gui_window &window, GridLayoutDelegate *delegate, label title) noexcept :
+WindowWidget::WindowWidget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept :
     abstract_container_widget(window, {}), title(std::move(title)), _content_delegate(delegate)
 {
 }
 
 WindowWidget::~WindowWidget() {}
 
-void WindowWidget::initialize() noexcept
+void WindowWidget::init() noexcept
 {
     _toolbar = make_widget<toolbar_widget>();
 
@@ -36,7 +36,7 @@ void WindowWidget::initialize() noexcept
         tt_no_default();
     }
 
-    _content = make_widget<GridLayoutWidget>(_content_delegate);
+    _content = make_widget<grid_layout_widget>(_content_delegate);
 }
 
 [[nodiscard]] bool

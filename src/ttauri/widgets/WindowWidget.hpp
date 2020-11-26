@@ -9,16 +9,16 @@
 namespace tt {
 
 class toolbar_widget;
-class GridLayoutWidget;
+class grid_layout_widget;
 
 class WindowWidget final : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    WindowWidget(gui_window &window, GridLayoutDelegate *delegate, label title) noexcept;
+    WindowWidget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept;
     ~WindowWidget();
 
-    void initialize() noexcept override;
+    void init() noexcept override;
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
@@ -41,7 +41,7 @@ public:
         top_resize_border_has_priority = top;
     }
 
-    [[nodiscard]] std::shared_ptr<GridLayoutWidget> content() const noexcept
+    [[nodiscard]] std::shared_ptr<grid_layout_widget> content() const noexcept
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
         tt_assume(_content);
@@ -57,8 +57,8 @@ public:
 
 private:
     label title;
-    GridLayoutDelegate *_content_delegate;
-    std::shared_ptr<GridLayoutWidget> _content;
+    std::weak_ptr<grid_layout_delegate> _content_delegate;
+    std::shared_ptr<grid_layout_widget> _content;
     std::shared_ptr<toolbar_widget> _toolbar;
 
     bool left_resize_border_has_priority = true;

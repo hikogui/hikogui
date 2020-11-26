@@ -31,7 +31,7 @@ namespace tt {
     return arguments;
 }
 
-Application_win32::Application_win32(application_delegate &delegate, void *hInstance, int nCmdShow) :
+Application_win32::Application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow) :
     Application_base(delegate, passArguments()), OSMainThreadID(GetCurrentThreadId()), hInstance(hInstance), nCmdShow(nCmdShow)
 {
 }

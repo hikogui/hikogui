@@ -215,7 +215,7 @@ public:
     BidiClass getBidiClass(char32_t codePoint) const noexcept;
 
 private:
-    void initialize();
+    void init();
 
     UnicodeData_Description const *getDescription(char32_t codePoint) const noexcept;
     GraphemeUnitType getGraphemeUnitType(char32_t codePoint) const noexcept;

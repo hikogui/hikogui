@@ -37,17 +37,53 @@ Instead add a static-member-variable to the class, which is a raw-pointer to an 
 of that class. When there is only one such member, call it "global".
 
 These "global" static-member-variables should be allocated and initiaized in the constructor
-of the tt::application class. Using tt::application as the owner of the global instance of
-these classes will make sure that these instances are cleaned up before main() has finished.
+of the `tt::application` class. Using `tt::application` as the owner of the global instance of
+these classes will make sure that these instances are cleaned up before `main()` has finished.
 
-It is recommended that the "global" static-member-variables are unique\_ptr and
-shared\_ptr.
+It is recommended that the `global` static-member-variables are `std::unique\_ptr` and
+`std::shared\_ptr`.
 
 If it is not possible to add a static-member-variable due to circular dependencies than
 nameing a global variable as the name of the followed by the name of the global variable with
 and underscore "\_" as separator.
 
 Another interesting global variable, either as a static-member-variable or as a global
-variable would be a mutex named "mutex".
+variable would be a mutex named `mutex`.
 
+Two phase construction
+----------------------
+When a polymorphic class needs to polymorphic initialization and destruction it should
+add the following two virtual functions:
 
+ - virtual void `init()`
+ - virtual void `deinit()`
+
+`init()` should be called directly after the lifetime of the object has started. It should be called
+from the same thread as its construction and the reference to the object should not have been shared
+with others.
+
+`deinit()` should be called directly before the lifetime of the object is finished. It should be called
+from the same thread as the object's destructor and no reference to the object should exist anymore outside
+of the current function.
+
+This means that like in the constructor and destructor inside `init()` and `deinit()` there is no need
+for handling multithreading issues.
+
+Delegates
+---------
+Delegates are polymorphic class instances that are passed to an object that is being managed.
+The managed object will call into the delegate to send messages and retrieve information.
+
+The managed object should hold a `std::weak_ptr` to the base class of the delegate. This allows the
+delegate to be deallocated with the managed object functioning.
+
+When calling function into the delegate the first argument `self` should be a reference to the managed
+object.
+
+Delegates should at least have the following two function to handle the lifetime of the managed object:
+
+ - virtual void init(managed_object &self)
+ - virtual void deinit(managed_object &self)
+
+The two functions mirror the two phase construction and are often called from `init()` and `deinit()` of the managed
+object. However they may be called from the constructor and destructor of the object as well.

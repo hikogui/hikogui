@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_container_widget.hpp"
-#include "GridLayoutDelegate.hpp"
+#include "grid_layout_delegate.hpp"
 #include "../iaarect.hpp"
 #include "../GUI/Theme.hpp"
 #include "../cell_address.hpp"
@@ -13,27 +13,27 @@
 
 namespace tt {
 
-class GridLayoutWidget : public abstract_container_widget {
+class grid_layout_widget : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    GridLayoutWidget(gui_window &window, std::shared_ptr<widget> parent, GridLayoutDelegate *delegate = nullptr) noexcept :
-        abstract_container_widget(window, parent), delegate(delegate)
+    grid_layout_widget(gui_window &window, std::shared_ptr<widget> parent, std::weak_ptr<grid_layout_delegate> delegate = {}) noexcept :
+        abstract_container_widget(window, parent), _delegate(delegate)
     {
         
     }
 
-    ~GridLayoutWidget()
+    ~grid_layout_widget()
     {
-        if (delegate) {
-            delegate->closingWidget();
+        if (auto delegate_ = _delegate.lock()) {
+            delegate_->deinit(*this);
         }
     }
 
-    void initialize() noexcept override
+    void init() noexcept override
     {
-        if (delegate) {
-            delegate->openingWidget(std::static_pointer_cast<GridLayoutWidget>(shared_from_this()));
+        if (auto delegate_ = _delegate.lock()) {
+            delegate_->init(*this);
         }
     }
 
@@ -53,7 +53,7 @@ public:
     std::shared_ptr<T> make_widget_at_address(cell_address address, Args &&... args)
     {
         auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
-        tmp->initialize();
+        tmp->init();
         return std::static_pointer_cast<T>(add_widget(address, std::move(tmp)));
     }
 
@@ -94,17 +94,17 @@ private:
         }
     };
 
-    std::vector<cell> cells;
-    cell_address current_address = "L0T0"_ca;
+    std::vector<cell> _cells;
+    cell_address _current_address = "L0T0"_ca;
 
-    GridLayoutDelegate *delegate = nullptr;
+    std::weak_ptr<grid_layout_delegate> _delegate;
 
-    flow_layout rows;
-    flow_layout columns;
+    flow_layout _rows;
+    flow_layout _columns;
 
-    [[nodiscard]] static std::pair<int, int> calculateGridSize(std::vector<cell> const &cells) noexcept;
+    [[nodiscard]] static std::pair<int, int> calculate_grid_size(std::vector<cell> const &cells) noexcept;
     [[nodiscard]] static interval_vec2
-    calculateCellMinMaxSize(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
+    calculate_cell_min_max_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
 };
 
 } // namespace tt

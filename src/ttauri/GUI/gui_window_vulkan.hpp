@@ -68,7 +68,7 @@ public:
     std::unique_ptr<PipelineSDF::PipelineSDF> SDFPipeline;
     std::unique_ptr<PipelineToneMapper::PipelineToneMapper> toneMapperPipeline;
 
-    gui_window_vulkan(gui_system &system, WindowDelegate *delegate, label const &title);
+    gui_window_vulkan(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
     ~gui_window_vulkan();
 
     gui_window_vulkan(const gui_window_vulkan &) = delete;
@@ -76,7 +76,7 @@ public:
     gui_window_vulkan(gui_window_vulkan &&) = delete;
     gui_window_vulkan &operator=(gui_window_vulkan &&) = delete;
 
-    void initialize() override;
+    void init() override;
 
     gui_device_vulkan &vulkan_device() const noexcept;
 

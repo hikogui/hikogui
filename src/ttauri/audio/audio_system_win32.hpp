@@ -17,10 +17,10 @@ class audio_system_win32: public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_win32(audio_system_delegate *delegate);
+    audio_system_win32(std::weak_ptr<audio_system_delegate> const &delegate);
     ~audio_system_win32();
 
-    void initialize() noexcept override;
+    void init() noexcept override;
 
     [[nodiscard]] std::vector<std::shared_ptr<audio_device>> devices() noexcept override
     {

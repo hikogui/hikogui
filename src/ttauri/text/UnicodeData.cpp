@@ -154,21 +154,21 @@ struct UnicodeData_Header {
 UnicodeData::UnicodeData(std::span<std::byte const> bytes) :
     bytes(bytes), view()
 {
-    initialize();
+    init();
 }
 
 UnicodeData::UnicodeData(std::unique_ptr<ResourceView> view) :
     bytes(), view(std::move(view))
 {
     bytes = this->view->bytes();
-    initialize();
+    init();
 }
 
 UnicodeData::UnicodeData(URL const &url) :
     UnicodeData(url.loadView()) {}
 
 
-void UnicodeData::initialize()
+void UnicodeData::init()
 {
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<UnicodeData_Header>(bytes, offset);

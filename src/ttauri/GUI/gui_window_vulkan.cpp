@@ -20,7 +20,7 @@ namespace tt {
 
 using namespace std;
 
-gui_window_vulkan::gui_window_vulkan(gui_system &system, WindowDelegate *delegate, label const &title) :
+gui_window_vulkan::gui_window_vulkan(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title) :
     gui_window(system, delegate, title), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
@@ -34,14 +34,14 @@ gui_device_vulkan &gui_window_vulkan::vulkan_device() const noexcept
     return narrow_cast<gui_device_vulkan &>(*_device);
 }
 
-void gui_window_vulkan::initialize()
+void gui_window_vulkan::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock on the window.
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
     tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
-    gui_window::initialize();
+    gui_window::init();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(*this);
     boxPipeline = std::make_unique<PipelineBox::PipelineBox>(*this);
     imagePipeline = std::make_unique<PipelineImage::PipelineImage>(*this);
@@ -254,7 +254,9 @@ void gui_window_vulkan::teardown()
                     boxPipeline->teardownForWindowLost();
                     flatPipeline->teardownForWindowLost();
 
-                    delegate->closingWindow(*this);
+                    if (auto delegate_ = delegate.lock()) {
+                        delegate_->deinit(*this);
+                    }
                     nextState = State::NoWindow;
                 }
             }

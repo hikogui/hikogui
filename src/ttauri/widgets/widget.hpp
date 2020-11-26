@@ -117,7 +117,7 @@ public:
 
     /** Should be called right after allocating and constructing a widget.
      */
-    virtual void initialize() noexcept {}
+    virtual void init() noexcept {}
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such

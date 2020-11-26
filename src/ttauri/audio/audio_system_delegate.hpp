@@ -15,7 +15,7 @@ public:
     /*! Called when the device list has changed.
      * This can happen when external devices are connected or disconnected.
      */
-    virtual void audio_device_list_changed(audio_system &system) = 0;
+    virtual void audio_device_list_changed(audio_system &self) = 0;
 };
 
 }

@@ -161,7 +161,6 @@ void file::rename(URL const &destination, bool overwrite_existing)
     auto dst_filename_wsize = (std::size(dst_filename) + 1) *
         sizeof(WCHAR);
 
-    // The dst_filename terminating null is included in the _FILE_RENAME_INFO struct.
     ttlet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
 
     auto rename_info = reinterpret_cast<PFILE_RENAME_INFO>(std::malloc(rename_info_size));

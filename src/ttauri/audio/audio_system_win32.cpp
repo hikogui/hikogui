@@ -16,10 +16,7 @@ const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 
 class audio_system_win32_notification_client : public IMMNotificationClient {
 public:
-    audio_system_win32_notification_client(audio_system_win32 *system) :
-        IMMNotificationClient(), _system(system)
-    {
-    }
+    audio_system_win32_notification_client(audio_system_win32 *system) : IMMNotificationClient(), _system(system) {}
 
     STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role, LPCWSTR device_id)
     {
@@ -73,7 +70,7 @@ private:
     audio_system_win32 *_system;
 };
 
-audio_system_win32::audio_system_win32(audio_system_delegate *delegate) : audio_system(delegate)
+audio_system_win32::audio_system_win32(std::weak_ptr<audio_system_delegate> const &delegate) : audio_system(delegate)
 {
     hresult_assert_or_throw(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
@@ -93,13 +90,15 @@ audio_system_win32::~audio_system_win32()
     _device_enumerator->Release();
 }
 
-void audio_system_win32::initialize() noexcept
+void audio_system_win32::init() noexcept
 {
     ttlet lock = std::scoped_lock(audio_system::mutex);
 
-    audio_system::initialize();
+    audio_system::init();
     update_device_list();
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate_ = _delegate.lock()) {
+        delegate_->audio_device_list_changed(*this);
+    }
 }
 
 void audio_system_win32::update_device_list() noexcept
@@ -148,23 +147,31 @@ void audio_system_win32::default_device_changed() noexcept {}
 void audio_system_win32::device_added() noexcept
 {
     update_device_list();
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate_ = _delegate.lock()) {
+        delegate_->audio_device_list_changed(*this);
+    }
 }
 
 void audio_system_win32::device_removed(std::string device_id) noexcept
 {
     update_device_list();
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate_ = _delegate.lock()) {
+        delegate_->audio_device_list_changed(*this);
+    }
 }
 
 void audio_system_win32::device_state_changed(std::string device_id) noexcept
 {
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate_ = _delegate.lock()) {
+        delegate_->audio_device_list_changed(*this);
+    }
 }
 
 void audio_system_win32::device_property_value_changed(std::string device_id) noexcept
 {
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate_ = _delegate.lock()) {
+        delegate_->audio_device_list_changed(*this);
+    }
 }
 
 } // namespace tt

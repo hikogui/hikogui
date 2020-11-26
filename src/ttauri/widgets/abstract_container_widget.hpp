@@ -51,7 +51,7 @@ public:
     std::shared_ptr<T> make_widget(Args &&... args)
     {
         auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
-        tmp->initialize();
+        tmp->init();
         return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
     }
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "WindowDelegate.hpp"
+#include "gui_window_delegate.hpp"
 #include "Cursor.hpp"
 #include "HitBox.hpp"
 #include "MouseEvent.hpp"
@@ -101,7 +101,7 @@ public:
     //! The current window extent as set by the GPU library.
     ivec currentWindowExtent;
 
-    WindowDelegate *delegate;
+    std::weak_ptr<gui_window_delegate> delegate;
 
     label title;
 
@@ -127,7 +127,7 @@ public:
 
     
 
-    gui_window(gui_system &system, WindowDelegate *delegate, label const &title);
+    gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
     virtual ~gui_window();
 
     gui_window(gui_window const &) = delete;
@@ -139,9 +139,9 @@ public:
      * Must be called directly after the constructor on the same thread,
      * before another thread can send messages to the window.
      * 
-     * `initialize()` should not take locks on window::mutex.
+     * `init()` should not take locks on window::mutex.
      */
-    virtual void initialize();
+    virtual void init();
 
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.

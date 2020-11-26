@@ -24,7 +24,9 @@ static bool hasFoundationExtensions(const std::vector<const char *> &requiredExt
     return true;
 }
 
-gui_system_vulkan::gui_system_vulkan(gui_system_delegate *delegate, const std::vector<const char *> extensionNames) :
+gui_system_vulkan::gui_system_vulkan(
+    std::weak_ptr<gui_system_delegate> const &delegate,
+    const std::vector<const char *> extensionNames) :
     gui_system(delegate),
     requiredExtensions(std::move(extensionNames))
 {
@@ -81,7 +83,7 @@ gui_system_vulkan::~gui_system_vulkan()
     }
 }
 
-void gui_system_vulkan::initialize() noexcept(false)
+void gui_system_vulkan::init() noexcept(false)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 

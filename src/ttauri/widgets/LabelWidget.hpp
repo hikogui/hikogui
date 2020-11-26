@@ -40,7 +40,7 @@ public:
     ~LabelWidget() {
     }
 
-    void initialize() noexcept override {
+    void init() noexcept override {
         label_callback = label.subscribe([this](auto...) {
             _request_reconstrain = true;
         });

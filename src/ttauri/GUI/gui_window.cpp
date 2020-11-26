@@ -9,7 +9,7 @@ namespace tt {
 
 using namespace std;
 
-gui_window::gui_window(gui_system &system, WindowDelegate *delegate, label const &title) :
+gui_window::gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title) :
     system(system),
     state(State::Initializing),
     delegate(delegate),
@@ -32,7 +32,7 @@ gui_window::~gui_window()
     }
 }
 
-void gui_window::initialize()
+void gui_window::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock on the window.
@@ -40,11 +40,13 @@ void gui_window::initialize()
     tt_assume(gui_system_mutex.recurse_lock_count() == 0);
 
     widget = std::make_shared<WindowWidget>(*this, delegate, title);
-    widget->initialize();
+    widget->init();
 
     // The delegate will populate the window with widgets.
     // This needs to be done first to figure out the initial size of the window.
-    delegate->openingWindow(*this);
+    if (auto delegate_ = delegate.lock()) {
+        delegate_->init(*this);
+    }
 
     // Execute a constraint check to determine initial window size.
     currentWindowExtent = [this]{

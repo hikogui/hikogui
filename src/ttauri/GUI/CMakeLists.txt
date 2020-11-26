@@ -16,6 +16,14 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_win32.hpp>
     gui_system_delegate.hpp
+    gui_window.cpp
+    gui_window.hpp
+    gui_window_delegate.hpp
+    gui_window_vulkan.cpp
+    gui_window_vulkan.hpp
+    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_win32.hpp>
     HitBox.hpp
     KeyboardBindings.cpp
     KeyboardBindings.hpp
@@ -98,15 +106,6 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_win32.hpp>
     VulkanMemoryAllocator.cpp
-    gui_window.cpp
-    gui_window.hpp
-    gui_window_vulkan.cpp
-    gui_window_vulkan.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_win32.hpp>
-    WindowDelegate.cpp
-    WindowDelegate.hpp
 )
 
 target_precompile_headers(ttauri PRIVATE

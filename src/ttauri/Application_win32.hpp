@@ -25,7 +25,7 @@ public:
      */
     int nCmdShow = 0;
 
-    Application_win32(application_delegate &delegate, void *hInstance, int nCmdShow);
+    Application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow);
     ~Application_win32() = default;
 
     Application_win32(const Application_win32 &) = delete;

@@ -47,7 +47,7 @@ public:
     {
     }
 
-    void initialize() noexcept override
+    void init() noexcept override
     {
         _true_label_callback = true_label.subscribe([this](auto...) {
             this->_request_reconstrain = true;
