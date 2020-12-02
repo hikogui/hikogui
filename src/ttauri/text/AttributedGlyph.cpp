@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "AttributedGlyph.hpp"
-#include "FontBook.hpp"
+#include "font_book.hpp"
 #include "../application.hpp"
 #include "../Path.hpp"
 
@@ -15,13 +15,13 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
     style(attr_grapheme.style)
 {
     // Get the font_id that matches the requested style.
-    ttlet style_font_id = application::global->fonts->find_font(attr_grapheme.style.family_id, attr_grapheme.style.variant);
+    ttlet style_font_id = font_book::global->find_font(attr_grapheme.style.family_id, attr_grapheme.style.variant);
 
     // The end-of-paragraph is represented by a space glyph, which is usefull for
     // producing a correct cursor at an empty line at the end of a paragraph.
     ttlet g = (attr_grapheme.grapheme == '\n') ? Grapheme{0} : attr_grapheme.grapheme;
 
-    glyphs = application::global->fonts->find_glyph(style_font_id, g);
+    glyphs = font_book::global->find_glyph(style_font_id, g);
 
     // Get the font_id that contained the glyph, this may be different if the glyph was not in the
     // style_font and was found in a fallback font. This may happend for text in a different language
@@ -29,7 +29,7 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
     ttlet actual_font_id = glyphs.font_id();
 
     // Load the metrics for this attributed glyph.
-    ttlet font = &(application::global->fonts->get_font(actual_font_id));
+    ttlet font = &(font_book::global->get_font(actual_font_id));
     tt_assume(font != nullptr);
 
     // Get the metrics of the main glyph.

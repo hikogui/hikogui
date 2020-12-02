@@ -6,7 +6,7 @@
 #include "abstract_toggle_button_widget.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/draw_context.hpp"
-#include "../text/FontBook.hpp"
+#include "../text/font_book.hpp"
 #include "../observable.hpp"
 #include "../label.hpp"
 #include <memory>

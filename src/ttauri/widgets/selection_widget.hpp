@@ -11,7 +11,7 @@
 #include "menu_item_widget.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/draw_context.hpp"
-#include "../text/FontBook.hpp"
+#include "../text/font_book.hpp"
 #include "../text/ElusiveIcons.hpp"
 #include "../observable.hpp"
 #include <memory>

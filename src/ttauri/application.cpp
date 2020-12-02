@@ -12,7 +12,7 @@
 #include "text/ElusiveIcons.hpp"
 #include "text/TTauriIcons.hpp"
 #include "text/language.hpp"
-#include "text/FontBook.hpp"
+#include "text/font_book.hpp"
 #include "text/UnicodeData.hpp"
 #include "GUI/RenderDoc.hpp"
 #include "GUI/ThemeBook.hpp"
@@ -167,9 +167,9 @@ void application::textStart()
 
     unicodeData = std::make_unique<UnicodeData>(URL("resource:UnicodeData.bin"));
 
-    application::global->fonts = std::make_unique<FontBook>(std::vector<URL>{URL::urlFromSystemFontDirectory()});
-    ElusiveIcons_font_id = application::global->fonts->register_font(URL("resource:elusiveicons-webfont.ttf"));
-    TTauriIcons_font_id = application::global->fonts->register_font(URL("resource:TTauriIcons.ttf"));
+    font_book::global = std::make_unique<font_book>(std::vector<URL>{URL::urlFromSystemFontDirectory()});
+    ElusiveIcons_font_id = font_book::global->register_font(URL("resource:elusiveicons-webfont.ttf"));
+    TTauriIcons_font_id = font_book::global->register_font(URL("resource:TTauriIcons.ttf"));
 
     language::set_preferred_languages(language::read_os_preferred_languages());
 }
@@ -177,7 +177,7 @@ void application::textStart()
 void application::textStop()
 {
     ElusiveIcons_font_id = FontID{};
-    application::global->fonts = {};
+    font_book::global = {};
     unicodeData = {};
 }
 

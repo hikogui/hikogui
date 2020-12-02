@@ -5,7 +5,7 @@
 
 #include "FontID.hpp"
 #include "FontGlyphIDs.hpp"
-#include "FontBook.hpp"
+#include "font_book.hpp"
 #include "../application.hpp"
 
 namespace tt {
@@ -321,9 +321,9 @@ enum class ElusiveIcon : char32_t {
 
 inline FontGlyphIDs to_FontGlyphIDs(ElusiveIcon rhs) noexcept {
     tt_assume(ElusiveIcons_font_id);
-    tt_assume(application::global->fonts);
+    tt_assume(font_book::global);
 
-    return application::global->fonts->find_glyph(ElusiveIcons_font_id, Grapheme{static_cast<char32_t>(rhs)});
+    return font_book::global->find_glyph(ElusiveIcons_font_id, Grapheme{static_cast<char32_t>(rhs)});
 }
 
 

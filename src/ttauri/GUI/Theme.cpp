@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "Theme.hpp"
-#include "../text/FontBook.hpp"
+#include "../text/font_book.hpp"
 #include "../application.hpp"
 #include "../encoding/JSON.hpp"
 
@@ -180,7 +180,7 @@ Theme::Theme(URL const &url)
 
     TextStyle r;
 
-    r.family_id = application::global->fonts->find_family(parseString(data, "family"));
+    r.family_id = font_book::global->find_family(parseString(data, "family"));
     r.size = parseFloat(data, "size");
 
     if (data.contains("weight")) {

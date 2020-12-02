@@ -233,7 +233,7 @@ struct shape_text_result {
 *
 * The following operations are executed on the text by the `shape_text()` function:
 *  - Put graphemes in left-to-right display order using the application->unicodeData's bidi_algorithm.
-*  - Convert attributed-graphemes into attributes-glyphs using FontBook's find_glyph algorithm.
+*  - Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
 *  - Morph attributed-glyphs using the Font's morph algorithm.
 *  - Calculate advance for each attributed-glyph using the Font's advance and kern algorithms.
 *  - Add line-breaks to the text to fit within the maximum-width.
@@ -263,7 +263,7 @@ struct shape_text_result {
     }
     tt_assume(text.back().bidiClass == BidiClass::B);
 
-    // Convert attributed-graphemes into attributes-glyphs using FontBook's find_glyph algorithm.
+    // Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(text);
 
     // Split the text up in lines, based on line-feeds and line-wrapping.

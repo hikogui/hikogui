@@ -10,8 +10,8 @@ target_sources(ttauri PRIVATE
     ElusiveIcons.hpp
     Font.cpp
     Font.hpp
-    FontBook.cpp
-    FontBook.hpp
+    font_book.cpp
+    font_book.hpp
     FontDescription.hpp
     FontFamilyID.hpp
     FontGlyphIDs.cpp

@@ -19,49 +19,17 @@
 
 namespace tt {
 
-/** FontBook keeps track of multiple fonts.
- * The FontBook is instantiated during application startup
+/** font_book keeps track of multiple fonts.
+ * The font_book is instantiated during application startup
  * and is available through Foundation_globals->font_book.
  *
  * 
  */
-class FontBook {
-    struct FontEntry {
-        URL url;
-        FontDescription description;
-        mutable std::unique_ptr<Font> font;
-        std::vector<FontID> fallbacks;
-
-        FontEntry(URL url, FontDescription description) noexcept : url(std::move(url)), description(std::move(description)), font(), fallbacks() {}
-    };
-
-
-    /** Table of FontFamilyIDs index using the family-name.
-     */
-    std::unordered_map<std::string,FontFamilyID> family_names;
-
-    /** A list of family name -> fallback family name
-     */
-    std::unordered_map<std::string,std::string> family_name_fallback_chain;
-
-    /** Different fonts; variants of a family.
-     */
-    std::vector<std::array<FontID,FontVariant::max()>> font_variants;
-
-    std::vector<FontEntry> font_entries;
-
-    /** Same as family_name, but will also have resolved font families from the fallback_chain.
-    * Must be cleared when a new font family is registered.
-    */
-    mutable std::unordered_map<std::string,FontFamilyID> family_name_cache;
-
-    /**
-    * Must be cleared when a new font is registered.
-    */
-    mutable std::unordered_map<FontGraphemeID, FontGlyphIDs> glyph_cache;
-
+class font_book {
 public:
-    FontBook(std::vector<URL> const &font_directories);
+    static inline std::unique_ptr<font_book> global;
+
+    font_book(std::vector<URL> const &font_directories);
 
     /** Register a font.
      * Duplicate registrations will be ignored.
@@ -76,12 +44,11 @@ public:
      */
     FontID register_font(URL url, bool post_process=true);
 
-    /** Post process FontBook
+    /** Post process font_book
      * Should be called after a set of register_font() calls
      * This calculates font fallbacks.
      */
     void post_process() noexcept;
-
 
     /** Find font family id.
      * This function will always return a valid FontFamilyID by walking the fallback-chain.
@@ -135,7 +102,41 @@ public:
     [[nodiscard]] FontGlyphIDs find_glyph(FontID font_id, Grapheme grapheme) const noexcept;
 
 private:
+    struct FontEntry {
+        URL url;
+        FontDescription description;
+        mutable std::unique_ptr<Font> font;
+        std::vector<FontID> fallbacks;
 
+        FontEntry(URL url, FontDescription description) noexcept :
+            url(std::move(url)), description(std::move(description)), font(), fallbacks()
+        {
+        }
+    };
+
+    /** Table of FontFamilyIDs index using the family-name.
+     */
+    std::unordered_map<std::string, FontFamilyID> family_names;
+
+    /** A list of family name -> fallback family name
+     */
+    std::unordered_map<std::string, std::string> family_name_fallback_chain;
+
+    /** Different fonts; variants of a family.
+     */
+    std::vector<std::array<FontID, FontVariant::max()>> font_variants;
+
+    std::vector<FontEntry> font_entries;
+
+    /** Same as family_name, but will also have resolved font families from the fallback_chain.
+     * Must be cleared when a new font family is registered.
+     */
+    mutable std::unordered_map<std::string, FontFamilyID> family_name_cache;
+
+    /**
+     * Must be cleared when a new font is registered.
+     */
+    mutable std::unordered_map<FontGraphemeID, FontGlyphIDs> glyph_cache;
     void calculate_fallback_fonts(FontEntry &entry, std::function<bool(FontDescription const&,FontDescription const&)> predicate) noexcept;
 
     /** Find the glyph for this specific font.
@@ -163,7 +164,6 @@ private:
     [[nodiscard]] std::string const &find_fallback_family_name(std::string const &name) const noexcept;
 
     void create_family_name_fallback_chain() noexcept;
-
 };
 
 }

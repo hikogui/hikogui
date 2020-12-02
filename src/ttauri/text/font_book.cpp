@@ -1,13 +1,13 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "FontBook.hpp"
+#include "font_book.hpp"
 #include "TrueTypeFont.hpp"
 #include "../trace.hpp"
 
 namespace tt {
 
-FontBook::FontBook(std::vector<URL> const &font_directories)
+font_book::font_book(std::vector<URL> const &font_directories)
 {
     create_family_name_fallback_chain();
 
@@ -28,7 +28,7 @@ FontBook::FontBook(std::vector<URL> const &font_directories)
     post_process();
 }
 
-void FontBook::create_family_name_fallback_chain() noexcept
+void font_book::create_family_name_fallback_chain() noexcept
 {
     family_name_fallback_chain["fallback"] = "sans-serif";
 
@@ -81,7 +81,7 @@ void FontBook::create_family_name_fallback_chain() noexcept
     family_name_fallback_chain["andale mono"] = "monospace";
 }
 
-FontID FontBook::register_font(URL url, bool post_process)
+FontID font_book::register_font(URL url, bool post_process)
 {
     auto font = std::make_unique<TrueTypeFont>(url);
     auto &description = font->description;
@@ -101,7 +101,7 @@ FontID FontBook::register_font(URL url, bool post_process)
     return font_id;
 }
 
-void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(FontDescription const&,FontDescription const&)> predicate) noexcept
+void font_book::calculate_fallback_fonts(FontEntry &entry, std::function<bool(FontDescription const&,FontDescription const&)> predicate) noexcept
 {
     // First calculate total_ranges for the current fallback fonts.
     UnicodeRanges total_ranges = entry.description.unicode_ranges;
@@ -146,7 +146,7 @@ void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fon
     tt_unreachable();
 }
 
-void FontBook::post_process() noexcept
+void font_book::post_process() noexcept
 {
     // Reset caches.
     glyph_cache.clear();
@@ -178,7 +178,7 @@ void FontBook::post_process() noexcept
     }
 }
 
-[[nodiscard]] FontFamilyID FontBook::register_family(std::string_view family_name) noexcept
+[[nodiscard]] FontFamilyID font_book::register_family(std::string_view family_name) noexcept
 {
     auto name = to_lower(family_name);
 
@@ -196,7 +196,7 @@ void FontBook::post_process() noexcept
     }
 }
 
-[[nodiscard]] std::string const &FontBook::find_fallback_family_name(std::string const &name) const noexcept
+[[nodiscard]] std::string const &font_book::find_fallback_family_name(std::string const &name) const noexcept
 {
     auto i = family_name_fallback_chain.find(name);
     if (i != family_name_fallback_chain.end()) {
@@ -209,7 +209,7 @@ void FontBook::post_process() noexcept
     }
 }
 
-[[nodiscard]] FontFamilyID FontBook::find_family(std::string_view family_name) const noexcept
+[[nodiscard]] FontFamilyID font_book::find_family(std::string_view family_name) const noexcept
 {
     ttlet original_name = to_lower(family_name);
 
@@ -230,7 +230,7 @@ void FontBook::post_process() noexcept
     }
 }
 
-[[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, FontVariant variant) const noexcept
+[[nodiscard]] FontID font_book::find_font(FontFamilyID family_id, FontVariant variant) const noexcept
 {
     tt_assert(family_id);
     tt_assume(family_id >= 0 && family_id < std::ssize(font_variants));
@@ -244,17 +244,17 @@ void FontBook::post_process() noexcept
     tt_no_default();
 }
 
-[[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, FontWeight weight, bool italic) const noexcept
+[[nodiscard]] FontID font_book::find_font(FontFamilyID family_id, FontWeight weight, bool italic) const noexcept
 {
     return find_font(family_id, FontVariant(weight, italic));
 }
 
-[[nodiscard]] FontID FontBook::find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept
+[[nodiscard]] FontID font_book::find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept
 {
     return find_font(find_family(family_name), weight, italic);
 }
 
-[[nodiscard]] Font const &FontBook::get_font(FontID font_id) const noexcept
+[[nodiscard]] Font const &font_book::get_font(FontID font_id) const noexcept
 {
     tt_assume(font_id < std::ssize(font_entries));
     ttlet &entry = font_entries[font_id];
@@ -268,7 +268,7 @@ void FontBook::post_process() noexcept
     return *(entry.font);
 }
 
-[[nodiscard]] FontGlyphIDs FontBook::find_glyph_actual(FontID font_id, Grapheme grapheme) const noexcept
+[[nodiscard]] FontGlyphIDs font_book::find_glyph_actual(FontID font_id, Grapheme grapheme) const noexcept
 {
     ttlet &font = get_font(font_id);
 
@@ -277,7 +277,7 @@ void FontBook::post_process() noexcept
     return glyph_ids;
 }
 
-[[nodiscard]] FontGlyphIDs FontBook::find_glyph(FontID font_id, Grapheme g) const noexcept
+[[nodiscard]] FontGlyphIDs font_book::find_glyph(FontID font_id, Grapheme g) const noexcept
 {
     auto i = glyph_cache.find({font_id, g});
     if (i != glyph_cache.end()) {
