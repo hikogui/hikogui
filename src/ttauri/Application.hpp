@@ -7,6 +7,7 @@
 #include "audio/audio_system_delegate.hpp"
 #include "GUI/gui_system_delegate.hpp"
 #include "GUI/gui_system_globals.hpp"
+#include "thread.hpp"
 #include "required.hpp"
 #include "URL.hpp"
 #include "timer.hpp"
@@ -54,7 +55,7 @@ public:
 
     /** Thread id of the main thread.
     */
-    std::thread::id mainThreadID;
+    thread_id main_thread_id;
 
     std::atomic<bool> inLoop;
 

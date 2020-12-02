@@ -60,13 +60,8 @@ Application_macos::~Application_macos()
 
 void Application_macos::runFromMainLoop(std::function<void()> function)
 {
-
     ttlet functionP = new std::function<void()>(std::move(function));
     tt_assert(functionP);
-
-    // XXX post a message to the main thread loop.
-    //auto r = PostThreadMessageW(mainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
-    //tt_assert(r != 0);
 }
 
 int Application_macos::loop()

@@ -15,8 +15,6 @@ constexpr unsigned int WM_APP_CALL_FUNCTION = 0x8000 + 1;
 
 class application_win32 final : public application {
 public:
-    uint32_t OSMainThreadID = 0;
-
     /** Windows GUI-application instance handle.
      */
     void *hInstance = nullptr;

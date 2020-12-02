@@ -32,7 +32,7 @@ namespace tt {
 }
 
 application_win32::application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow) :
-    application(delegate, passArguments()), OSMainThreadID(GetCurrentThreadId()), hInstance(hInstance), nCmdShow(nCmdShow)
+    application(delegate, passArguments()), hInstance(hInstance), nCmdShow(nCmdShow)
 {
 }
 
@@ -43,7 +43,7 @@ void application_win32::run_from_main_loop(std::function<void()> function)
     ttlet functionP = new std::function<void()>(std::move(function));
     tt_assert(functionP);
 
-    auto r = PostThreadMessageW(OSMainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
+    auto r = PostThreadMessageW(main_thread_id, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
     tt_assert(r != 0);
 }
 
@@ -57,7 +57,7 @@ static BOOL CALLBACK win32_windows_EnumThreadWndProc(_In_ HWND hwnd, _In_ LPARAM
 [[nodiscard]] std::vector<void *> application_win32::win32_windows() noexcept
 {
     std::vector<void *> windows;
-    EnumThreadWindows(OSMainThreadID, win32_windows_EnumThreadWndProc, reinterpret_cast<LPARAM>(&windows));
+    EnumThreadWindows(main_thread_id, win32_windows_EnumThreadWndProc, reinterpret_cast<LPARAM>(&windows));
     return windows;
 }
 

@@ -108,7 +108,7 @@ void application::foundationStart()
 {
     timer::global = std::make_unique<timer>("Maintenance Timer");
 
-    mainThreadID = std::this_thread::get_id();
+    main_thread_id = current_thread_id();
 
     logger.minimum_log_level = static_cast<log_level>(static_cast<int>(configuration["log-level"]));
 
