@@ -3,14 +3,14 @@
 
 #include "Grapheme.hpp"
 #include "UnicodeData.hpp"
-#include "../Application.hpp"
+#include "../application.hpp"
 
 namespace tt {
 
 Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
     value(0)
 {
-    ttlet codePoints_ = application->unicodeData->toNFC(codePoints);
+    ttlet codePoints_ = application::global->unicodeData->toNFC(codePoints);
 
     switch (codePoints_.size()) {
     case 3:
@@ -63,15 +63,15 @@ Grapheme& Grapheme::operator+=(char32_t codePoint) noexcept
 }
 
 [[nodiscard]] std::u32string Grapheme::NFD() const noexcept {
-    return application->unicodeData->toNFD(static_cast<std::u32string>(*this));
+    return application::global->unicodeData->toNFD(static_cast<std::u32string>(*this));
 }
 
 [[nodiscard]] std::u32string Grapheme::NFKC() const noexcept {
-    return application->unicodeData->toNFKC(static_cast<std::u32string>(*this));
+    return application::global->unicodeData->toNFKC(static_cast<std::u32string>(*this));
 }
 
 [[nodiscard]] std::u32string Grapheme::NFKD() const noexcept {
-    return application->unicodeData->toNFKD(static_cast<std::u32string>(*this));
+    return application::global->unicodeData->toNFKD(static_cast<std::u32string>(*this));
 }
 
 

@@ -6,7 +6,7 @@
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "gui_window.hpp"
-#include "../Application.hpp"
+#include "../application.hpp"
 #include "../ResourceView.hpp"
 #include <span>
 

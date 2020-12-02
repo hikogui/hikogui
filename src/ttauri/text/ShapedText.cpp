@@ -3,7 +3,7 @@
 
 #include "ShapedText.hpp"
 #include "../small_map.hpp"
-#include "../Application.hpp"
+#include "../application.hpp"
 
 namespace tt {
 
@@ -258,7 +258,7 @@ struct shape_text_result {
     ssize_t logicalIndex = 0;
     for (auto &c: text) {
         c.logicalIndex = logicalIndex++;
-        c.bidiClass = application->unicodeData->getBidiClass(c.grapheme[0]);
+        c.bidiClass = application::global->unicodeData->getBidiClass(c.grapheme[0]);
         c.charClass = to_GeneralCharacterClass(c.bidiClass);
     }
     tt_assume(text.back().bidiClass == BidiClass::B);

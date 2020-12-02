@@ -20,7 +20,7 @@
 namespace tt {
 
 /** FontBook keeps track of multiple fonts.
- * The FontBook is instantiated during Application startup
+ * The FontBook is instantiated during application startup
  * and is available through Foundation_globals->font_book.
  *
  * 

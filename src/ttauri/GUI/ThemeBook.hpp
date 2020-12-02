@@ -13,7 +13,7 @@
 namespace tt {
 
 /** ThemeBook keeps track of multiple themes.
- * The ThemeBook is instantiated during Application startup
+ * The ThemeBook is instantiated during application startup
  * 
  */
 class ThemeBook {

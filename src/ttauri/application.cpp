@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Application.hpp"
+#include "application.hpp"
 #include "StaticResourceView.hpp"
 #include "logger.hpp"
 #include "timer.hpp"
@@ -40,24 +40,23 @@ namespace tt {
 
 using namespace std;
 
-Application_base::Application_base(
-    std::weak_ptr<application_delegate> const &delegate,
-    std::vector<std::string> const &arguments) :
+application::application(std::weak_ptr<application_delegate> const &delegate, std::vector<std::string> const &arguments) :
     delegate(delegate)
 {
 }
 
-void Application_base::init()
+void application::init()
 {
     set_thread_name("Main Thread");
 
-    // Application_base is a singleton.
-    tt_assert(application == nullptr);
-    application = reinterpret_cast<Application *>(this);
+    // application is a singleton.
+    tt_assert(application::global == nullptr);
+    application::global = this;
 
     if (auto delegate_ = delegate.lock()) {
-        application_version.name = delegate_->application_name(narrow_cast<Application &>(*this));
-        configuration = delegate_->configuration(narrow_cast<Application &>(*this), arguments);
+        delegate_->init(*this);
+        application_version.name = delegate_->application_name(narrow_cast<application &>(*this));
+        configuration = delegate_->configuration(narrow_cast<application &>(*this), arguments);
     }
 
     LOG_INFO("Starting application '{}'.", application_version.name);
@@ -68,7 +67,7 @@ void Application_base::init()
     GUIStart();
 }
 
-Application_base::~Application_base()
+application::~application()
 {
     LOG_INFO("Stopping application.");
 
@@ -78,11 +77,34 @@ Application_base::~Application_base()
     foundationStop();
 
     // Remove the singleton.
-    tt_assert(application == this);
-    application = nullptr;
+    tt_assert(application::global == this);
+    application::global = nullptr;
 }
 
-void Application_base::foundationStart()
+void application::deinit()
+{
+    if (auto delegate_ = delegate.lock()) {
+        delegate_->deinit(*this);
+    }
+}
+
+int application::main()
+{
+    init();
+
+    if (auto delegate_ = delegate.lock()) {
+        if (auto exit_value = delegate_->main(*this)) {
+            return *exit_value;
+        }
+    }
+
+    auto exit_value = loop();
+
+    deinit();
+    return exit_value;
+}
+
+void application::foundationStart()
 {
     timer::global = std::make_unique<timer>("Maintenance Timer");
 
@@ -126,7 +148,7 @@ void Application_base::foundationStart()
     });
 }
 
-void Application_base::foundationStop()
+void application::foundationStop()
 {
     // Force all timers to finish.
     timer::global->stop();
@@ -137,7 +159,7 @@ void Application_base::foundationStop()
     delete sync_clock_calibration<hires_utc_clock, cpu_counter_clock>;
 }
 
-void Application_base::textStart()
+void application::textStart()
 {
     addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
     addStaticResource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
@@ -145,24 +167,24 @@ void Application_base::textStart()
 
     unicodeData = std::make_unique<UnicodeData>(URL("resource:UnicodeData.bin"));
 
-    application->fonts = std::make_unique<FontBook>(std::vector<URL>{URL::urlFromSystemFontDirectory()});
-    ElusiveIcons_font_id = application->fonts->register_font(URL("resource:elusiveicons-webfont.ttf"));
-    TTauriIcons_font_id = application->fonts->register_font(URL("resource:TTauriIcons.ttf"));
+    application::global->fonts = std::make_unique<FontBook>(std::vector<URL>{URL::urlFromSystemFontDirectory()});
+    ElusiveIcons_font_id = application::global->fonts->register_font(URL("resource:elusiveicons-webfont.ttf"));
+    TTauriIcons_font_id = application::global->fonts->register_font(URL("resource:TTauriIcons.ttf"));
 
     language::set_preferred_languages(language::read_os_preferred_languages());
 }
 
-void Application_base::textStop()
+void application::textStop()
 {
     ElusiveIcons_font_id = FontID{};
-    application->fonts = {};
+    application::global->fonts = {};
     unicodeData = {};
 }
 
-void Application_base::audioStart()
+void application::audioStart()
 {
     if (auto delegate_ = delegate.lock()) {
-        ttlet audio_system_delegate = delegate_->audio_system_delegate(narrow_cast<Application &>(*this));
+        ttlet audio_system_delegate = delegate_->audio_system_delegate(narrow_cast<application &>(*this));
         if (!audio_system_delegate.expired()) {
             audio_system::global = std::make_shared<audio_system_aggregate>(audio_system_delegate);
             audio_system::global->init();
@@ -170,15 +192,15 @@ void Application_base::audioStart()
     }
 }
 
-void Application_base::audioStop()
+void application::audioStop()
 {
     audio_system::global = {};
 }
 
-void Application_base::GUIStart()
+void application::GUIStart()
 {
     if (auto delegate_ = delegate.lock()) {
-        ttlet gui_delegate = delegate_->gui_system_delegate(narrow_cast<Application &>(*this));
+        ttlet gui_delegate = delegate_->gui_system_delegate(narrow_cast<application &>(*this));
         if (!gui_delegate.expired()) {
             renderDoc = std::make_unique<RenderDoc>();
 
@@ -203,38 +225,25 @@ void Application_base::GUIStart()
                 LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
             }
 
-            _gui_system = std::make_unique<gui_system_vulkan_win32>(gui_delegate);
-            _gui_system->init();
+            gui_system::global = std::make_unique<gui_system_vulkan_win32>(gui_delegate);
+            gui_system::global->init();
         }
     }
 }
 
-void Application_base::GUIStop()
+void application::GUIStop()
 {
-    _gui_system = {};
+    gui_system::global = {};
     themes = {};
     renderDoc = {};
 }
 
-bool Application_base::initializeApplication()
-{
-    try {
-        if (auto delegate_ = delegate.lock()) {
-            return delegate_->initialize_application(narrow_cast<Application &>(*this), _gui_system.get());
-        } else {
-            return false;
-        }
-    } catch (error &e) {
-        LOG_FATAL("Exception during initializeApplication {}", to_string(e));
-    }
-}
-
-void Application_base::addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept
+void application::addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept
 {
     staticResources.try_emplace(key, value);
 }
 
-std::span<std::byte const> Application_base::getStaticResource(std::string const &key)
+std::span<std::byte const> application::getStaticResource(std::string const &key)
 {
     ttlet i = staticResources.find(key);
     if (i == staticResources.end()) {

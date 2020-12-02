@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Application_base.hpp"
+#include "application.hpp"
 #include <thread>
 
 namespace tt {
@@ -13,7 +13,7 @@ namespace tt {
 constexpr unsigned int WM_WIN_LANGUAGE_CHANGE = 0x8000 - 1;
 constexpr unsigned int WM_APP_CALL_FUNCTION = 0x8000 + 1;
 
-class Application_win32 final : public Application_base {
+class application_win32 final : public application {
 public:
     uint32_t OSMainThreadID = 0;
 
@@ -25,13 +25,15 @@ public:
      */
     int nCmdShow = 0;
 
-    Application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow);
-    ~Application_win32() = default;
+    application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow);
+    ~application_win32() = default;
 
-    Application_win32(const Application_win32 &) = delete;
-    Application_win32 &operator=(const Application_win32 &) = delete;
-    Application_win32(Application_win32 &&) = delete;
-    Application_win32 &operator=(Application_win32 &&) = delete;
+    application_win32(const application_win32 &) = delete;
+    application_win32 &operator=(const application_win32 &) = delete;
+    application_win32(application_win32 &&) = delete;
+    application_win32 &operator=(application_win32 &&) = delete;
+
+    void init() override;
 
     void run_from_main_loop(std::function<void()> function) override;
 
@@ -53,8 +55,6 @@ public:
 
 protected:
     typename timer::callback_ptr_type languages_maintenance_callback;
-
-    bool initializeApplication() override;
 
     void audioStart() override;
 };

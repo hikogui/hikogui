@@ -7,7 +7,7 @@
 
 namespace tt {
 
-class Application_macos final : public Application_base {
+class Application_macos final : public application {
 public:
     int argc;
     char const * const *argv;

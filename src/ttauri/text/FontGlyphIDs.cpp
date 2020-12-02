@@ -3,7 +3,7 @@
 
 #include "AttributedGlyph.hpp"
 #include "FontBook.hpp"
-#include "../Application.hpp"
+#include "../application.hpp"
 #include "../Path.hpp"
 
 namespace tt {
@@ -12,7 +12,7 @@ namespace tt {
     Path path;
     auto boundingBox = aarect{};
 
-    ttlet &font = application->fonts->get_font(font_id());
+    ttlet &font = application::global->fonts->get_font(font_id());
     for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 
@@ -41,7 +41,7 @@ namespace tt {
     Path path;
     auto boundingBox = aarect{};
 
-    ttlet &font = application->fonts->get_font(font_id());
+    ttlet &font = application::global->fonts->get_font(font_id());
     for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 

@@ -8,7 +8,7 @@
 #include "../widgets/WindowWidget.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
-#include "../Application.hpp"
+#include "../application_win32.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 
@@ -104,7 +104,7 @@ static void createWindowClass()
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(application->hInstance);
+        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -137,7 +137,7 @@ void gui_window_vulkan_win32::createWindow(const std::u8string &_title, vec exte
 
         NULL, // Parent window
         NULL, // Menu
-        reinterpret_cast<HINSTANCE>(application->hInstance), // Instance handle
+        reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance), // Instance handle
         this);
     if (win32Window == nullptr) {
         LOG_FATAL("Could not open a win32 window: {}", getLastErrorMessage());
@@ -159,7 +159,7 @@ void gui_window_vulkan_win32::createWindow(const std::u8string &_title, vec exte
         SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (!firstWindowHasBeenOpened) {
-        ShowWindow(reinterpret_cast<HWND>(win32Window), application->nCmdShow);
+        ShowWindow(reinterpret_cast<HWND>(win32Window), narrow_cast<application_win32 *>(application::global)->nCmdShow);
         firstWindowHasBeenOpened = true;
     }
 
@@ -364,7 +364,7 @@ vk::SurfaceKHR gui_window_vulkan_win32::getSurface() const
     ttlet lock = std::scoped_lock(gui_system_mutex);
     return narrow_cast<gui_system_vulkan_win32&>(system).createWin32SurfaceKHR(
         {vk::Win32SurfaceCreateFlagsKHR(),
-         reinterpret_cast<HINSTANCE>(application->hInstance),
+         reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance),
          reinterpret_cast<HWND>(win32Window)});
 }
 
@@ -682,7 +682,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
-        application->themes->settheme_mode(read_os_theme_mode());
+        application::global->themes->settheme_mode(read_os_theme_mode());
         _request_setting_change = true;
     } break;
 

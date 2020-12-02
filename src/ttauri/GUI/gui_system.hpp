@@ -17,12 +17,13 @@
 
 namespace tt {
 
-
 /** Vulkan gui_device controller.
  * Manages Vulkan device and a set of Windows.
  */
 class gui_system {
 public:
+    static inline std::unique_ptr<gui_system> global;
+
     std::weak_ptr<gui_system_delegate> delegate;
 
     std::unique_ptr<VerticalSync> verticalSync;
@@ -87,7 +88,7 @@ public:
         }
         ttlet currentNumberOfWindows = getNumberOfWindows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
-            application->run_from_main_loop([this]{
+            application::global->run_from_main_loop([this]{
                 if (auto delegate_ = this->delegate.lock()) {
                     delegate_->last_window_closed(*this);
                 }

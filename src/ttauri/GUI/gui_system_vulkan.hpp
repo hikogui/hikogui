@@ -35,7 +35,7 @@ public:
     //! List of required limits for each device.
     vk::PhysicalDeviceLimits requiredLimits;
 
-    //! Application info passed when the instance was created.
+    //! application info passed when the instance was created.
     vk::ApplicationInfo applicationInfo;
 
     /*! Create an instance of a gui_device.

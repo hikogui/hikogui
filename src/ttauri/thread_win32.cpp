@@ -3,7 +3,7 @@
 
 #include "thread.hpp"
 #include "strings.hpp"
-#include "Application.hpp"
+#include "application.hpp"
 #include "logger.hpp"
 
 #include <Windows.h>
@@ -19,16 +19,16 @@ void set_thread_name(std::string_view name)
 
 bool is_main_thread()
 {
-    tt_assume(application);
-    return std::this_thread::get_id() == application->mainThreadID;
+    tt_assume(application::global);
+    return std::this_thread::get_id() == application::global->mainThreadID;
 }
 
 void run_from_main_loop(std::function<void()> f)
 {
     // Do not optimize by checking if this is called from the main thread
     // the function should be passed to the queue on the main loop.
-    tt_assume(application);
-    application->run_from_main_loop(f);
+    tt_assume(application::global);
+    application::global->run_from_main_loop(f);
 }
 
 }

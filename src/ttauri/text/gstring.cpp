@@ -4,20 +4,20 @@
 #include "gstring.hpp"
 #include "UnicodeData.hpp"
 #include "../strings.hpp"
-#include "../Application.hpp"
+#include "../application.hpp"
 
 namespace tt {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept
 {
-    ttlet normalizedString = application->unicodeData->toNFC(rhs, true, true);
+    ttlet normalizedString = application::global->unicodeData->toNFC(rhs, true, true);
 
     auto r = tt::gstring{};
     auto breakState = tt::GraphemeBreakState{};
     auto cluster = std::u32string{};
 
     for (ttlet codePoint : normalizedString) {
-        if (application->unicodeData->checkGraphemeBreak(codePoint, breakState)) {
+        if (application::global->unicodeData->checkGraphemeBreak(codePoint, breakState)) {
             if (cluster.size() > 0) {
                 r += tt::Grapheme{cluster};
             }

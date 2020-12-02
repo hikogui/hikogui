@@ -3,7 +3,7 @@
 
 #include "thread.hpp"
 #include "strings.hpp"
-#include "Application.hpp"
+#include "application.hpp"
 
 #include <pthread.h>
 

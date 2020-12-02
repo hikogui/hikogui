@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Application_win32.hpp"
+#include "application_win32.hpp"
 #include "audio/audio_system_aggregate.hpp"
 #include "audio/audio_system_win32.hpp"
 #include "strings.hpp"
@@ -31,12 +31,12 @@ namespace tt {
     return arguments;
 }
 
-Application_win32::Application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow) :
-    Application_base(delegate, passArguments()), OSMainThreadID(GetCurrentThreadId()), hInstance(hInstance), nCmdShow(nCmdShow)
+application_win32::application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow) :
+    application(delegate, passArguments()), OSMainThreadID(GetCurrentThreadId()), hInstance(hInstance), nCmdShow(nCmdShow)
 {
 }
 
-void Application_win32::run_from_main_loop(std::function<void()> function)
+void application_win32::run_from_main_loop(std::function<void()> function)
 {
     tt_assert(inLoop);
 
@@ -54,14 +54,14 @@ static BOOL CALLBACK win32_windows_EnumThreadWndProc(_In_ HWND hwnd, _In_ LPARAM
     return true;
 }
 
-[[nodiscard]] std::vector<void *> Application_win32::win32_windows() noexcept
+[[nodiscard]] std::vector<void *> application_win32::win32_windows() noexcept
 {
     std::vector<void *> windows;
     EnumThreadWindows(OSMainThreadID, win32_windows_EnumThreadWndProc, reinterpret_cast<LPARAM>(&windows));
     return windows;
 }
 
-void Application_win32::post_message(void *window, unsigned int Msg, ptrdiff_t wParam, ptrdiff_t lParam) noexcept
+void application_win32::post_message(void *window, unsigned int Msg, ptrdiff_t wParam, ptrdiff_t lParam) noexcept
 {
     ttlet ret = PostMessageW(
         reinterpret_cast<HWND>(window), static_cast<UINT>(Msg), static_cast<WPARAM>(wParam), static_cast<LPARAM>(lParam));
@@ -71,7 +71,7 @@ void Application_win32::post_message(void *window, unsigned int Msg, ptrdiff_t w
     }
 }
 
-void Application_win32::post_message(
+void application_win32::post_message(
     std::vector<void *> const &windows,
     unsigned int Msg,
     ptrdiff_t wParam,
@@ -82,15 +82,17 @@ void Application_win32::post_message(
     }
 }
 
-void Application_win32::quit()
+void application_win32::quit()
 {
     run_from_main_loop([&]() {
         PostQuitMessage(0);
     });
 }
 
-bool Application_win32::initializeApplication()
+void application_win32::init()
 {
+    application::init();
+
     languages_maintenance_callback = timer::global->add_callback(1s, [this](auto...) {
         ttlet current_language_tags = language::read_os_preferred_languages();
         static auto previous_language_tags = current_language_tags;
@@ -100,17 +102,11 @@ bool Application_win32::initializeApplication()
             this->post_message(this->win32_windows(), WM_WIN_LANGUAGE_CHANGE);
         }
     });
-
-    return Application_base::initializeApplication();
 }
 
-int Application_win32::loop()
+int application_win32::loop()
 {
     inLoop = true;
-
-    if (!initializeApplication()) {
-        return 0;
-    }
 
     // Run the message loop.
     MSG msg = {};
@@ -131,9 +127,9 @@ int Application_win32::loop()
     return 0;
 }
 
-void Application_win32::audioStart()
+void application_win32::audioStart()
 {
-    Application_base::audioStart();
+    application::audioStart();
 
     if (audio_system::global) {
         auto audio_system = std::dynamic_pointer_cast<audio_system_aggregate>(audio_system::global);
