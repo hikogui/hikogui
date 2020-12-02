@@ -4,6 +4,7 @@
 #pragma once
 
 #include "gui_window_delegate.hpp"
+#include "gui_system_globals.hpp"
 #include "Cursor.hpp"
 #include "HitBox.hpp"
 #include "MouseEvent.hpp"

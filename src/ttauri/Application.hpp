@@ -3,13 +3,8 @@
 
 #pragma once
 
-#include "application_delegate.hpp"
-#include "audio/audio_system_delegate.hpp"
-#include "GUI/gui_system_delegate.hpp"
-#include "GUI/gui_system_globals.hpp"
 #include "thread.hpp"
 #include "required.hpp"
-#include "URL.hpp"
 #include "timer.hpp"
 #include <span>
 #include <memory>
@@ -24,6 +19,8 @@ class font_book;
 class theme_book;
 class RenderDoc;
 class unicode_data;
+class application_delegate;
+class URL;
 
 /*! A singleton that represents the application.
  * An application should be instantiated in a local variable in main.
@@ -88,27 +85,7 @@ public:
      */
     virtual void exit(int exit_code=0) = 0;
 
-    /** Get the data of a static resource.
-     * These are resources that where linked into the exectuable.
-     *
-     * @param key Name of the resource.
-     * @return A span to the constant byte array.
-     * @exception key_error Thrown when static resource could not be found.
-     */
-    std::span<std::byte const> getStaticResource(std::string const &key);
-
 protected:
-    std::unordered_map<std::string,std::span<std::byte const>> staticResources;
-
-    /** Add static resource.
-     * This function should only be called on resources that are linked into the executable
-     * and therefor only be called by the application class.
-     *
-     * @param key Name of the resource.
-     * @param value A span to the constant byte array
-     */
-    void addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept;
-
     /** Two phase construction.
      */
     virtual void init();
@@ -122,14 +99,14 @@ protected:
      */
     virtual int loop() = 0;
 
-    virtual void foundationStart();
-    virtual void foundationStop();
-    virtual void audioStart();
-    virtual void audioStop();
-    virtual void textStart();
-    virtual void textStop();
-    virtual void GUIStart();
-    virtual void GUIStop();
+    virtual void init_foundation();
+    virtual void deinit_foundation();
+    virtual void init_audio();
+    virtual void deinit_audio();
+    virtual void init_text();
+    virtual void deinit_text();
+    virtual void init_gui();
+    virtual void deinit_gui();
 
 private:
     typename timer::callback_ptr_type logger_maintenance_callback;

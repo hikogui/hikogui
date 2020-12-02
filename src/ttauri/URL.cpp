@@ -9,7 +9,7 @@
 #include "Unicode.hpp"
 #include "FileView.hpp"
 #include "exceptions.hpp"
-#include "StaticResourceView.hpp"
+#include "static_resource_view.hpp"
 #include <regex>
 
 namespace tt {
@@ -267,7 +267,7 @@ std::unique_ptr<ResourceView> URL::loadView() const
 {
     if (scheme() == "resource") {
         try {
-            auto view = StaticResourceView::loadView(filename());
+            auto view = static_resource_view::loadView(filename());
             LOG_INFO("Loaded resource {} from executable.", *this);
             return view;
 

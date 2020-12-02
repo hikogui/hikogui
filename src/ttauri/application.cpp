@@ -1,8 +1,9 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #include "application.hpp"
-#include "StaticResourceView.hpp"
+#include "application_delegate.hpp"
+#include "static_resource_view.hpp"
 #include "logger.hpp"
 #include "timer.hpp"
 #include "os_detect.hpp"
@@ -45,48 +46,10 @@ application::application(std::weak_ptr<application_delegate> const &delegate, st
 {
 }
 
-void application::init()
-{
-    set_thread_name("Main Thread");
-
-    // application is a singleton.
-    tt_assert(application::global == nullptr);
-    application::global = this;
-
-    if (auto delegate_ = delegate.lock()) {
-        delegate_->init(*this);
-        application_version.name = delegate_->application_name(narrow_cast<application &>(*this));
-        configuration = delegate_->configuration(narrow_cast<application &>(*this), arguments);
-    }
-
-    LOG_INFO("Starting application '{}'.", application_version.name);
-
-    foundationStart();
-    textStart();
-    audioStart();
-    GUIStart();
-}
-
 application::~application()
 {
-    LOG_INFO("Stopping application.");
-
-    GUIStop();
-    audioStop();
-    textStop();
-    foundationStop();
-
-    // Remove the singleton.
-    tt_assert(application::global == this);
-    application::global = nullptr;
 }
 
-void application::deinit()
-{
-    if (auto delegate_ = delegate.lock()) {
-        delegate_->deinit(*this);
-    }
-}
 
 int application::main()
 {
@@ -104,7 +67,30 @@ int application::main()
     return exit_value;
 }
 
-void application::foundationStart()
+void application::init()
+{
+    set_thread_name("Main Thread");
+
+    // application is a singleton.
+    tt_assert(application::global == nullptr);
+    application::global = this;
+
+    if (auto delegate_ = delegate.lock()) {
+        delegate_->init(*this);
+        application_version.name = delegate_->application_name(narrow_cast<application &>(*this));
+        configuration = delegate_->configuration(narrow_cast<application &>(*this), arguments);
+    }
+
+    init_foundation();
+    init_text();
+    init_audio();
+    init_gui();
+
+    LOG_INFO("Started application '{}'.", application_version.name);
+}
+
+
+void application::init_foundation()
 {
     timer::global = std::make_unique<timer>("Maintenance Timer");
 
@@ -148,22 +134,11 @@ void application::foundationStart()
     });
 }
 
-void application::foundationStop()
+void application::init_text()
 {
-    // Force all timers to finish.
-    timer::global->stop();
-    timer::global->remove_callback(clock_maintenance_callback);
-    timer::global->remove_callback(logger_maintenance_callback);
-    timer::global = {};
-
-    delete sync_clock_calibration<hires_utc_clock, cpu_counter_clock>;
-}
-
-void application::textStart()
-{
-    addStaticResource(unicode_data_bin_filename, unicode_data_bin_bytes);
-    addStaticResource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
-    addStaticResource(TTauriIcons_ttf_filename, TTauriIcons_ttf_bytes);
+    static_resource_view::add_static_resource(unicode_data_bin_filename, unicode_data_bin_bytes);
+    static_resource_view::add_static_resource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
+    static_resource_view::add_static_resource(TTauriIcons_ttf_filename, TTauriIcons_ttf_bytes);
 
     unicode_data::global = std::make_unique<unicode_data>(URL("resource:unicode_data.bin"));
 
@@ -174,14 +149,7 @@ void application::textStart()
     language::set_preferred_languages(language::read_os_preferred_languages());
 }
 
-void application::textStop()
-{
-    ElusiveIcons_font_id = FontID{};
-    font_book::global = {};
-    unicode_data::global = {};
-}
-
-void application::audioStart()
+void application::init_audio()
 {
     if (auto delegate_ = delegate.lock()) {
         ttlet audio_system_delegate = delegate_->audio_system_delegate(narrow_cast<application &>(*this));
@@ -192,12 +160,7 @@ void application::audioStart()
     }
 }
 
-void application::audioStop()
-{
-    audio_system::global = {};
-}
-
-void application::GUIStart()
+void application::init_gui()
 {
     if (auto delegate_ = delegate.lock()) {
         ttlet gui_delegate = delegate_->gui_system_delegate(narrow_cast<application &>(*this));
@@ -207,16 +170,16 @@ void application::GUIStart()
             theme_book::global = std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
             theme_book::global->set_current_theme_mode(read_os_theme_mode());
 
-            addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
-            addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
-            addStaticResource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
-            addStaticResource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
-            addStaticResource(PipelineBox_vert_spv_filename, PipelineBox_vert_spv_bytes);
-            addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
-            addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
-            addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
-            addStaticResource(PipelineToneMapper_vert_spv_filename, PipelineToneMapper_vert_spv_bytes);
-            addStaticResource(PipelineToneMapper_frag_spv_filename, PipelineToneMapper_frag_spv_bytes);
+            static_resource_view::add_static_resource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
+            static_resource_view::add_static_resource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
+            static_resource_view::add_static_resource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
+            static_resource_view::add_static_resource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
+            static_resource_view::add_static_resource(PipelineBox_vert_spv_filename, PipelineBox_vert_spv_bytes);
+            static_resource_view::add_static_resource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
+            static_resource_view::add_static_resource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
+            static_resource_view::add_static_resource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
+            static_resource_view::add_static_resource(PipelineToneMapper_vert_spv_filename, PipelineToneMapper_vert_spv_bytes);
+            static_resource_view::add_static_resource(PipelineToneMapper_frag_spv_filename, PipelineToneMapper_frag_spv_bytes);
 
             try {
                 keyboardBindings.loadSystemBindings();
@@ -230,25 +193,52 @@ void application::GUIStart()
     }
 }
 
-void application::GUIStop()
+void application::deinit()
+{
+    LOG_INFO("Stopping application.");
+
+    deinit_gui();
+    deinit_audio();
+    deinit_text();
+    deinit_foundation();
+
+    if (auto delegate_ = delegate.lock()) {
+        delegate_->deinit(*this);
+    }
+
+    // Remove the singleton.
+    tt_assert(application::global == this);
+    application::global = nullptr;
+}
+
+void application::deinit_foundation()
+{
+    // Force all timers to finish.
+    timer::global->stop();
+    timer::global->remove_callback(clock_maintenance_callback);
+    timer::global->remove_callback(logger_maintenance_callback);
+    timer::global = {};
+
+    delete sync_clock_calibration<hires_utc_clock, cpu_counter_clock>;
+}
+
+void application::deinit_text()
+{
+    ElusiveIcons_font_id = FontID{};
+    font_book::global = {};
+    unicode_data::global = {};
+}
+
+void application::deinit_audio()
+{
+    audio_system::global = {};
+}
+
+void application::deinit_gui()
 {
     gui_system::global = {};
     theme_book::global = {};
     RenderDoc::global = {};
-}
-
-void application::addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept
-{
-    staticResources.try_emplace(key, value);
-}
-
-std::span<std::byte const> application::getStaticResource(std::string const &key)
-{
-    ttlet i = staticResources.find(key);
-    if (i == staticResources.end()) {
-        TTAURI_THROW(key_error("Could not find static resource").set<key_tag>(key));
-    }
-    return i->second;
 }
 
 } // namespace tt

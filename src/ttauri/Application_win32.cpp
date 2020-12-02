@@ -132,9 +132,9 @@ int application_win32::loop()
     return exit_code;
 }
 
-void application_win32::audioStart()
+void application_win32::init_audio()
 {
-    application::audioStart();
+    application::init_audio();
 
     if (audio_system::global) {
         auto audio_system = std::dynamic_pointer_cast<audio_system_aggregate>(audio_system::global);

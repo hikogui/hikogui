@@ -54,7 +54,7 @@ public:
 protected:
     typename timer::callback_ptr_type languages_maintenance_callback;
 
-    void audioStart() override;
+    void init_audio() override;
 };
 
 } // namespace tt
