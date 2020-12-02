@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "UnicodeBidi.hpp"
-#include "UnicodeData.hpp"
+#include "unicode_data.hpp"
 #include "../application.hpp"
 
 namespace tt {
@@ -22,7 +22,7 @@ struct BidiCharacter {
     BidiCharacter(char32_t codePoint) noexcept :
         codePoint(codePoint),
         embeddingLevel(0),
-        bidiClass(application::global->unicodeData->getBidiClass(codePoint)),
+        bidiClass(unicode_data::global->getBidiClass(codePoint)),
         origBidiClass(bidiClass) {}
 };
 
@@ -59,7 +59,7 @@ static void BidiP1_P3(BidiContext &context) noexcept
     auto isolateLevel = 0;
     for (auto &character: context.characters) {
         // Classify each grapheme based on the first code-point.
-        character.bidiClass = application::global->unicodeData->getBidiClass(character.codePoint);
+        character.bidiClass = unicode_data::global->getBidiClass(character.codePoint);
 
         // P2. Find first L, AR or R bidi-class, ignoring isolated sections.
         switch (character.bidiClass) {

@@ -1,7 +1,7 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "UnicodeData.hpp"
+#include "unicode_data.hpp"
 #include "font_book.hpp"
 #include "../placement.hpp"
 #include "../endian.hpp"
@@ -151,24 +151,24 @@ struct UnicodeData_Header {
      */
 };
 
-UnicodeData::UnicodeData(std::span<std::byte const> bytes) :
+unicode_data::unicode_data(std::span<std::byte const> bytes) :
     bytes(bytes), view()
 {
     init();
 }
 
-UnicodeData::UnicodeData(std::unique_ptr<ResourceView> view) :
+unicode_data::unicode_data(std::unique_ptr<ResourceView> view) :
     bytes(), view(std::move(view))
 {
     bytes = this->view->bytes();
     init();
 }
 
-UnicodeData::UnicodeData(URL const &url) :
-    UnicodeData(url.loadView()) {}
+unicode_data::unicode_data(URL const &url) :
+    unicode_data(url.loadView()) {}
 
 
-void UnicodeData::init()
+void unicode_data::init()
 {
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<UnicodeData_Header>(bytes, offset);
@@ -185,7 +185,7 @@ void UnicodeData::init()
     parse_assert(check_placement_array<UnicodeData_Composition>(bytes, offset, compositions_count));
 }
 
-UnicodeData_Description const *UnicodeData::getDescription(char32_t codePoint) const noexcept
+UnicodeData_Description const *unicode_data::getDescription(char32_t codePoint) const noexcept
 {
     ttlet descriptions = unsafe_make_placement_array<UnicodeData_Description>(bytes, copy(descriptions_offset), descriptions_count);
     ttlet i = std::lower_bound(descriptions.begin(), descriptions.end(), codePoint, [](auto &element, auto value) {
@@ -199,7 +199,7 @@ UnicodeData_Description const *UnicodeData::getDescription(char32_t codePoint) c
     }
 }
 
-GraphemeUnitType UnicodeData::getGraphemeUnitType(char32_t codePoint) const noexcept {
+GraphemeUnitType unicode_data::getGraphemeUnitType(char32_t codePoint) const noexcept {
     if (codePoint >= 0x110000) {
         return GraphemeUnitType::Other;
 
@@ -226,7 +226,7 @@ GraphemeUnitType UnicodeData::getGraphemeUnitType(char32_t codePoint) const noex
     }
 }
 
-uint8_t UnicodeData::getDecompositionOrder(char32_t codePoint) const noexcept {
+uint8_t unicode_data::getDecompositionOrder(char32_t codePoint) const noexcept {
     if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
         return 0;
     } else if (
@@ -244,7 +244,7 @@ uint8_t UnicodeData::getDecompositionOrder(char32_t codePoint) const noexcept {
     }
 }
 
-BidiClass UnicodeData::getBidiClass(char32_t codePoint) const noexcept {
+BidiClass unicode_data::getBidiClass(char32_t codePoint) const noexcept {
     if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
         return BidiClass::Unknown;
     } else if (
@@ -287,7 +287,7 @@ static bool isCanonicalLigature(char32_t codePoint)
     }
 }
 
-void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t codePoint, bool decomposeCompatible, bool decomposeLigatures) const noexcept
+void unicode_data::decomposeCodePoint(std::u32string &result, char32_t codePoint, bool decomposeCompatible, bool decomposeLigatures) const noexcept
 {
     ttlet &description = getDescription(codePoint);
     ttlet decompositionLength = description ? description->decompositionLength() : 0;
@@ -354,7 +354,7 @@ void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t codePoint,
 }
 
 
-std::u32string UnicodeData::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures) const noexcept
+std::u32string unicode_data::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures) const noexcept
 {
     auto result = std::u32string{};
     result.reserve(text.size() * 3);
@@ -366,7 +366,7 @@ std::u32string UnicodeData::decompose(std::u32string_view text, bool decomposeCo
     return result;
 }
 
-void UnicodeData::reorder(std::u32string &text) noexcept
+void unicode_data::reorder(std::u32string &text) noexcept
 {
     for_each_cluster(text.begin(), text.end(),
         [](auto x) { return (x >> 21) == 0; },
@@ -378,7 +378,7 @@ void UnicodeData::reorder(std::u32string &text) noexcept
     );
 }
 
-void UnicodeData::clean(std::u32string &text) noexcept
+void unicode_data::clean(std::u32string &text) noexcept
 {
     // clean up the text by removing the upper bits.
     for (auto &codePoint: text) {
@@ -386,7 +386,7 @@ void UnicodeData::clean(std::u32string &text) noexcept
     }
 }
 
-char32_t UnicodeData::compose(char32_t startCodePoint, char32_t composingCodePoint, bool composeCRLF) const noexcept
+char32_t unicode_data::compose(char32_t startCodePoint, char32_t composingCodePoint, bool composeCRLF) const noexcept
 {
     uint64_t searchValue =
         (static_cast<uint64_t>(startCodePoint) << 21) |
@@ -421,7 +421,7 @@ char32_t UnicodeData::compose(char32_t startCodePoint, char32_t composingCodePoi
         }
     }
 }
-void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
+void unicode_data::compose(std::u32string &text, bool composeCRLF) const noexcept
 {
     if (text.size() <= 1) {
         return;
@@ -486,7 +486,7 @@ void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
     text.resize(j);
 }
 
-std::u32string UnicodeData::toNFD(std::u32string_view text, bool decomposeLigatures) const noexcept
+std::u32string unicode_data::toNFD(std::u32string_view text, bool decomposeLigatures) const noexcept
 {
     auto result = decompose(text, false, decomposeLigatures);
     reorder(result);
@@ -494,7 +494,7 @@ std::u32string UnicodeData::toNFD(std::u32string_view text, bool decomposeLigatu
     return result;
 }
 
-std::u32string UnicodeData::toNFC(std::u32string_view text, bool decomposeLigatures, bool composeCRLF) const noexcept
+std::u32string unicode_data::toNFC(std::u32string_view text, bool decomposeLigatures, bool composeCRLF) const noexcept
 {
     auto result = decompose(text, false, decomposeLigatures);
     reorder(result);
@@ -503,7 +503,7 @@ std::u32string UnicodeData::toNFC(std::u32string_view text, bool decomposeLigatu
     return result;
 }
 
-std::u32string UnicodeData::toNFKD(std::u32string_view text) const noexcept
+std::u32string unicode_data::toNFKD(std::u32string_view text) const noexcept
 {
     auto result = decompose(text, true);
     reorder(result);
@@ -511,7 +511,7 @@ std::u32string UnicodeData::toNFKD(std::u32string_view text) const noexcept
     return result;
 }
 
-std::u32string UnicodeData::toNFKC(std::u32string_view text, bool composeCRLF) const noexcept
+std::u32string unicode_data::toNFKC(std::u32string_view text, bool composeCRLF) const noexcept
 {
     auto result = decompose(text, true);
     reorder(result);
@@ -603,7 +603,7 @@ static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakStat
 }
 
 
-bool UnicodeData::checkGraphemeBreak(char32_t codePoint, GraphemeBreakState &state) const noexcept
+bool unicode_data::checkGraphemeBreak(char32_t codePoint, GraphemeBreakState &state) const noexcept
 {
     return checkGraphemeBreak_unitType(getGraphemeUnitType(codePoint), state);
 }

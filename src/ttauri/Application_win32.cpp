@@ -82,10 +82,10 @@ void application_win32::post_message(
     }
 }
 
-void application_win32::quit()
+void application_win32::exit(int exit_code)
 {
-    run_from_main_loop([&]() {
-        PostQuitMessage(0);
+    run_from_main_loop([exit_code]() {
+        PostQuitMessage(exit_code);
     });
 }
 
@@ -109,6 +109,7 @@ int application_win32::loop()
     inLoop = true;
 
     // Run the message loop.
+    int exit_code = 0;
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0)) {
         switch (msg.message) {
@@ -117,6 +118,10 @@ int application_win32::loop()
             (*functionP)();
             delete functionP;
         } break;
+
+        case WM_QUIT:
+            exit_code = narrow_cast<int>(msg.wParam);
+            break;
         }
 
         TranslateMessage(&msg);
@@ -124,7 +129,7 @@ int application_win32::loop()
     }
 
     inLoop = false;
-    return 0;
+    return exit_code;
 }
 
 void application_win32::audioStart()

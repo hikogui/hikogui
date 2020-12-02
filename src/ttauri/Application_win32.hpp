@@ -39,7 +39,7 @@ public:
 
     int loop() override;
 
-    void quit() override;
+    void exit(int exit_code) override;
 
     /** Get a win32 handle to each window of the application.
      */

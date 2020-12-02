@@ -122,37 +122,27 @@ enum GeneralCharacterClass {
 
 /** Unicode Data used for characterizing unicode code-points.
  */
-class UnicodeData {
-private:
-    std::span<std::byte const> bytes;
-
-    /** A view to the binary application->unicodeData.
-     */
-    std::unique_ptr<ResourceView> view;
-
-    size_t descriptions_offset;
-    size_t descriptions_count;
-
-    size_t compositions_offset;
-    size_t compositions_count;
+class unicode_data {
 public:
+    static inline std::unique_ptr<unicode_data> global;
+
     /** Load binary unicode data.
      * The bytes passed into this constructor will need to remain available.
      */
-    UnicodeData(std::span<std::byte const> bytes);
+    unicode_data(std::span<std::byte const> bytes);
 
     /** Load binary unicode data from a resource.
      */
-    UnicodeData(std::unique_ptr<ResourceView> view);
+    unicode_data(std::unique_ptr<ResourceView> view);
 
-    UnicodeData(URL const &url);
+    unicode_data(URL const &url);
 
-    UnicodeData() = delete;
-    UnicodeData(UnicodeData const &other) = delete;
-    UnicodeData &operator=(UnicodeData const &other) = delete;
-    UnicodeData(UnicodeData &&other) = delete;
-    UnicodeData &operator=(UnicodeData &&other) = delete;
-    ~UnicodeData() = default;
+    unicode_data() = delete;
+    unicode_data(unicode_data const &other) = delete;
+    unicode_data &operator=(unicode_data const &other) = delete;
+    unicode_data(unicode_data &&other) = delete;
+    unicode_data &operator=(unicode_data &&other) = delete;
+    ~unicode_data() = default;
 
     /** Convert text to Unicode-NFD normal form.
      * Certain ligatures, which are seen as separate graphemes by the user
@@ -215,6 +205,18 @@ public:
     BidiClass getBidiClass(char32_t codePoint) const noexcept;
 
 private:
+    std::span<std::byte const> bytes;
+
+    /** A view to the binary unicode_data::global.
+     */
+    std::unique_ptr<ResourceView> view;
+
+    size_t descriptions_offset;
+    size_t descriptions_count;
+
+    size_t compositions_offset;
+    size_t compositions_count;
+
     void init();
 
     UnicodeData_Description const *getDescription(char32_t codePoint) const noexcept;

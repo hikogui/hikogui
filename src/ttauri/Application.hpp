@@ -22,7 +22,7 @@ class audio_system;
 class font_book;
 class theme_book;
 class RenderDoc;
-class UnicodeData;
+class unicode_data;
 
 /*! A singleton that represents the application.
  * An application should be instantiated in a local variable in main.
@@ -58,9 +58,6 @@ public:
 
     std::atomic<bool> inLoop;
 
-    std::unique_ptr<RenderDoc> renderDoc;
-    std::unique_ptr<UnicodeData> unicodeData;
-
     /**
      * This function will take ownership of the delegate and delete it
      * during destruction.
@@ -86,9 +83,9 @@ public:
      */
     virtual void run_from_main_loop(std::function<void()> function) = 0;
 
-    /** Quit the main loop and exit the application.
+    /** Exit the main loop and exit the application.
      */
-    virtual void quit() = 0;
+    virtual void exit(int exit_code=0) = 0;
 
     /** Get the data of a static resource.
      * These are resources that where linked into the exectuable.

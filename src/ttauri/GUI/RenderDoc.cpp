@@ -55,12 +55,12 @@ found_dll:
     //    assert(ret == 1);
     //}
 
-    setOverlay(false, false, false);
+    set_overlay(false, false, false);
 #endif
 #endif
 }
 
-void RenderDoc::setOverlay(bool frameRate, bool frameNumber, bool captureList) noexcept {
+void RenderDoc::set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept {
     if (!api) {
         return;
     }

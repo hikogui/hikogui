@@ -13,7 +13,7 @@
 #include "text/TTauriIcons.hpp"
 #include "text/language.hpp"
 #include "text/font_book.hpp"
-#include "text/UnicodeData.hpp"
+#include "text/unicode_data.hpp"
 #include "GUI/RenderDoc.hpp"
 #include "GUI/theme_book.hpp"
 #include "GUI/KeyboardBindings.hpp"
@@ -22,7 +22,7 @@
 #include "audio/audio_system_aggregate.hpp"
 #include <memory>
 
-#include "data/UnicodeData.bin.inl"
+#include "data/unicode_data.bin.inl"
 #include "data/elusiveicons-webfont.ttf.inl"
 #include "data/TTauriIcons.ttf.inl"
 #include "ttauri/GUI/PipelineImage.vert.spv.inl"
@@ -161,11 +161,11 @@ void application::foundationStop()
 
 void application::textStart()
 {
-    addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
+    addStaticResource(unicode_data_bin_filename, unicode_data_bin_bytes);
     addStaticResource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
     addStaticResource(TTauriIcons_ttf_filename, TTauriIcons_ttf_bytes);
 
-    unicodeData = std::make_unique<UnicodeData>(URL("resource:UnicodeData.bin"));
+    unicode_data::global = std::make_unique<unicode_data>(URL("resource:unicode_data.bin"));
 
     font_book::global = std::make_unique<font_book>(std::vector<URL>{URL::urlFromSystemFontDirectory()});
     ElusiveIcons_font_id = font_book::global->register_font(URL("resource:elusiveicons-webfont.ttf"));
@@ -178,7 +178,7 @@ void application::textStop()
 {
     ElusiveIcons_font_id = FontID{};
     font_book::global = {};
-    unicodeData = {};
+    unicode_data::global = {};
 }
 
 void application::audioStart()
@@ -202,7 +202,7 @@ void application::GUIStart()
     if (auto delegate_ = delegate.lock()) {
         ttlet gui_delegate = delegate_->gui_system_delegate(narrow_cast<application &>(*this));
         if (!gui_delegate.expired()) {
-            renderDoc = std::make_unique<RenderDoc>();
+            RenderDoc::global = std::make_unique<RenderDoc>();
 
             theme_book::global = std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
             theme_book::global->set_current_theme_mode(read_os_theme_mode());
@@ -234,7 +234,7 @@ void application::GUIStop()
 {
     gui_system::global = {};
     theme_book::global = {};
-    renderDoc = {};
+    RenderDoc::global = {};
 }
 
 void application::addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept

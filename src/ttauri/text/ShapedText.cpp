@@ -232,7 +232,7 @@ struct shape_text_result {
 * The resulting glyphs are in left-to-right display order.
 *
 * The following operations are executed on the text by the `shape_text()` function:
-*  - Put graphemes in left-to-right display order using the application->unicodeData's bidi_algorithm.
+*  - Put graphemes in left-to-right display order using the unicode_data::global's bidi_algorithm.
 *  - Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
 *  - Morph attributed-glyphs using the Font's morph algorithm.
 *  - Calculate advance for each attributed-glyph using the Font's advance and kern algorithms.
@@ -253,12 +253,12 @@ struct shape_text_result {
 {
     std::vector<AttributedGlyph> attributed_glyphs;
 
-    // Put graphemes in left-to-right display order using the application->unicodeData's bidi_algorithm.
+    // Put graphemes in left-to-right display order using the unicode_data::global's bidi_algorithm.
     //bidi_algorithm(text);
     ssize_t logicalIndex = 0;
     for (auto &c: text) {
         c.logicalIndex = logicalIndex++;
-        c.bidiClass = application::global->unicodeData->getBidiClass(c.grapheme[0]);
+        c.bidiClass = unicode_data::global->getBidiClass(c.grapheme[0]);
         c.charClass = to_GeneralCharacterClass(c.bidiClass);
     }
     tt_assume(text.back().bidiClass == BidiClass::B);

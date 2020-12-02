@@ -45,13 +45,13 @@ target_sources(ttauri PRIVATE
     TTauriIcons.hpp
     UnicodeBidi.cpp
     UnicodeBidi.hpp
-    UnicodeData.cpp
-    UnicodeData.hpp
+    unicode_data.cpp
+    unicode_data.hpp
     UnicodeRanges.cpp
     UnicodeRanges.hpp
 )
 
 
 target_sources(ttauri_tests PRIVATE
-    UnicodeData_tests.cpp
+    unicode_data_tests.cpp
 )

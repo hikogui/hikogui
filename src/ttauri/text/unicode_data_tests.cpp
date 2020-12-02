@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/UnicodeData.hpp"
+#include "ttauri/text/unicode_data.hpp"
 #include "ttauri/FileView.hpp"
 #include "ttauri/strings.hpp"
-#include "data/UnicodeData.bin.inl"
+#include "data/unicode_data.bin.inl"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -151,14 +151,14 @@ std::vector<GraphemeBreakTest> parseGraphemeBreakTests()
     return r;
 }
 
-class UnicodeDataTests : public ::testing::Test {
+class unicode_data_tests : public ::testing::Test {
 protected:
     void SetUp() override {
         normalizationTests = parseNormalizationTests();
     }
 
     std::vector<NormalizationTest> normalizationTests;
-    UnicodeData unicodeData = UnicodeData(UnicodeData_bin_bytes);
+    unicode_data unicodeData = unicode_data(unicode_data_bin_bytes);
 };
 
 // CONFORMANCE:
@@ -184,128 +184,128 @@ protected:
 //
 //      X == toNFC(X) == toNFD(X) == toNFKC(X) == toNFKD(X)
 
-TEST_F(UnicodeDataTests, toNFC_c1) {
+TEST_F(unicode_data_tests, toNFC_c1) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c1), test.c2) << test.comment;
     }
 }
 
 #if TT_BUILD_TYPE == TT_BT_RELEASE
-TEST_F(UnicodeDataTests, toNFC_c2) {
+TEST_F(unicode_data_tests, toNFC_c2) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c2), test.c2) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFC_c3) {
+TEST_F(unicode_data_tests, toNFC_c3) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c3), test.c2) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFC_c4) {
+TEST_F(unicode_data_tests, toNFC_c4) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c4), test.c4) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFC_c5) {
+TEST_F(unicode_data_tests, toNFC_c5) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c5), test.c4) << test.comment;
     }
 }
 #endif
 
-TEST_F(UnicodeDataTests, toNFKC_c1) {
+TEST_F(unicode_data_tests, toNFKC_c1) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c1), test.c4) << test.comment;
     }
 }
 
 #if TT_BUILD_TYPE == TT_BT_RELEASE
-TEST_F(UnicodeDataTests, toNFKC_c2) {
+TEST_F(unicode_data_tests, toNFKC_c2) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c2), test.c4) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFKC_c3) {
+TEST_F(unicode_data_tests, toNFKC_c3) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c3), test.c4) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFKC_c4) {
+TEST_F(unicode_data_tests, toNFKC_c4) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c4), test.c4) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFKC_c5) {
+TEST_F(unicode_data_tests, toNFKC_c5) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c5), test.c4) << test.comment;
     }
 }
 #endif
 
-TEST_F(UnicodeDataTests, toNFD_c1) {
+TEST_F(unicode_data_tests, toNFD_c1) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c1), test.c3) << test.comment;
     }
 }
 
 #if TT_BUILD_TYPE == TT_BT_RELEASE
-TEST_F(UnicodeDataTests, toNFD_c2) {
+TEST_F(unicode_data_tests, toNFD_c2) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c2), test.c3) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFD_c3) {
+TEST_F(unicode_data_tests, toNFD_c3) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c3), test.c3) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFD_c4) {
+TEST_F(unicode_data_tests, toNFD_c4) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c4), test.c5) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFD_c5) {
+TEST_F(unicode_data_tests, toNFD_c5) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c5), test.c5) << test.comment;
     }
 }
 #endif
 
-TEST_F(UnicodeDataTests, toNFKD_c1) {
+TEST_F(unicode_data_tests, toNFKD_c1) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c1), test.c5) << test.comment;
     }
 }
 
 #if TT_BUILD_TYPE == TT_BT_RELEASE
-TEST_F(UnicodeDataTests, toNFKD_c2) {
+TEST_F(unicode_data_tests, toNFKD_c2) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c2), test.c5) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFKD_c3) {
+TEST_F(unicode_data_tests, toNFKD_c3) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c3), test.c5) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFKD_c4) {
+TEST_F(unicode_data_tests, toNFKD_c4) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c4), test.c5) << test.comment;
     }
 }
 
-TEST_F(UnicodeDataTests, toNFKD_c5) {
+TEST_F(unicode_data_tests, toNFKD_c5) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c5), test.c5) << test.comment;
     }
@@ -313,7 +313,7 @@ TEST_F(UnicodeDataTests, toNFKD_c5) {
 #endif
 
 #if TT_BUILD_TYPE == TT_BT_RELEASE
-TEST_F(UnicodeDataTests, Invariant) {
+TEST_F(unicode_data_tests, Invariant) {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
     for (ttlet &test: normalizationTests) {
         for (ttlet &c: test.c1) {
@@ -346,7 +346,7 @@ TEST_F(UnicodeDataTests, Invariant) {
 }
 #endif
 
-TEST_F(UnicodeDataTests, GraphemeBreak) {
+TEST_F(unicode_data_tests, GraphemeBreak) {
     auto tests = parseGraphemeBreakTests();
 
     for (ttlet &test: tests) {
