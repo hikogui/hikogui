@@ -25,12 +25,12 @@ void WindowWidget::init() noexcept
 {
     _toolbar = make_widget<toolbar_widget>();
 
-    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+    if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _toolbar->make_widget<SystemMenuWidget>(this->title.icon());
 #endif
         _toolbar->make_widget<WindowTrafficLightsWidget, horizontal_alignment::right>();
-    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+    } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
         _toolbar->make_widget<WindowTrafficLightsWidget>();
     } else {
         tt_no_default();

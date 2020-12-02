@@ -4,7 +4,7 @@
 #include "gui_window_vulkan_win32.hpp"
 #include "KeyboardVirtualKey.hpp"
 #include "gui_system_vulkan_win32.hpp"
-#include "ThemeBook.hpp"
+#include "theme_book.hpp"
 #include "../widgets/WindowWidget.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
@@ -682,7 +682,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
-        application::global->themes->settheme_mode(read_os_theme_mode());
+        theme_book::global->set_current_theme_mode(read_os_theme_mode());
         _request_setting_change = true;
     } break;
 

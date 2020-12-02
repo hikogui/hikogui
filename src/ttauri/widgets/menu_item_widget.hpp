@@ -120,20 +120,20 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(alignment::middle_left, *label, theme->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::middle_left, *label, theme::global->labelStyle);
             _label_stencil->set_show_icon(_show_icon);
 
             _check_mark_stencil = stencil::make_unique(alignment::middle_center, ElusiveIcon::Ok);
 
-            auto width = _label_stencil->preferred_extent().width() + Theme::margin * 2.0f;
+            auto width = _label_stencil->preferred_extent().width() + theme::global->margin * 2.0f;
             if (_show_check_mark) {
-                width += Theme::small_icon_size + Theme::margin;
+                width += theme::global->small_icon_size + theme::global->margin;
             }
             if (_show_short_cut) {
-                width += Theme::margin + Theme::small_icon_size * 3.0f;
+                width += theme::global->margin + theme::global->small_icon_size * 3.0f;
             }
 
-            ttlet height = _label_stencil->preferred_extent().height() + Theme::margin * 2.0f;
+            ttlet height = _label_stencil->preferred_extent().height() + theme::global->margin * 2.0f;
             this->_preferred_size = {
                 vec{width, height}, vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             return true;
@@ -148,29 +148,29 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            ttlet check_mark_x = this->rectangle().left() + Theme::margin;
-            ttlet check_mark_width = Theme::small_icon_size;
-            ttlet check_mark_height = Theme::small_icon_size;
+            ttlet check_mark_x = this->rectangle().left() + theme::global->margin;
+            ttlet check_mark_width = theme::global->small_icon_size;
+            ttlet check_mark_height = theme::global->small_icon_size;
             ttlet check_mark_y = this->rectangle().middle() - check_mark_height * 0.5f;
             ttlet check_mark_rectangle = aarect{check_mark_x, check_mark_y, check_mark_width, check_mark_height};
             _check_mark_stencil->set_layout_parameters(check_mark_rectangle);
 
-            ttlet short_cut_width = Theme::small_icon_size * 3.0f;
+            ttlet short_cut_width = theme::global->small_icon_size * 3.0f;
             ttlet short_cut_height = this->rectangle().height();
-            ttlet short_cut_x = this->rectangle().right() - Theme::margin - short_cut_width;
+            ttlet short_cut_x = this->rectangle().right() - theme::global->margin - short_cut_width;
             ttlet short_cut_y = this->rectangle().bottom();
             ttlet short_cut_rectangle = aarect{short_cut_x, short_cut_y, short_cut_width, short_cut_height};
 
             ttlet label_height = this->rectangle().height();
             ttlet label_y = this->rectangle().bottom();
-            auto label_width = this->rectangle().width() - Theme::margin * 2.0f;
-            auto label_x = this->rectangle().left() + Theme::margin;
+            auto label_width = this->rectangle().width() - theme::global->margin * 2.0f;
+            auto label_x = this->rectangle().left() + theme::global->margin;
             if (_show_check_mark) {
-                label_width -= (check_mark_width + Theme::margin);
-                label_x += (check_mark_width + Theme::margin);
+                label_width -= (check_mark_width + theme::global->margin);
+                label_x += (check_mark_width + theme::global->margin);
             }
             if (_show_short_cut) {
-                label_width -= (Theme::margin + short_cut_width);
+                label_width -= (theme::global->margin + short_cut_width);
             }
             ttlet label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
@@ -207,7 +207,7 @@ private:
 
         context.color = context.fill_color;
         if (this->_focus && this->window.active) {
-            context.color = theme->accentColor;
+            context.color = theme::global->accentColor;
         }
 
         context.draw_box_with_border_inside(this->rectangle());
@@ -217,7 +217,7 @@ private:
     {
         context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
         if (*this->enabled) {
-            context.color = theme->foregroundColor;
+            context.color = theme::global->foregroundColor;
         }
         _label_stencil->draw(context);
     }
@@ -227,7 +227,7 @@ private:
         if (this->value == this->true_value) {
             context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
             if (*this->enabled) {
-                context.color = theme->foregroundColor;
+                context.color = theme::global->foregroundColor;
             }
             _check_mark_stencil->draw(context);
         }

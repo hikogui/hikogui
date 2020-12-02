@@ -65,15 +65,15 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(alignment::top_center, *label, theme->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::top_center, *label, theme::global->labelStyle);
 
             ttlet minimum_height = _label_stencil->preferred_extent().height();
-            ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * Theme::margin;
+            ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * theme::global->margin;
 
             this->_preferred_size = {
                 vec{minimum_width, minimum_height},
                 vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
-            this->_preferred_base_line = relative_base_line{vertical_alignment::middle, -Theme::margin};
+            this->_preferred_base_line = relative_base_line{vertical_alignment::middle, -theme::global->margin};
             return true;
         } else {
             return false;
@@ -89,7 +89,7 @@ public:
             // A tab button widget draws beyond its clipping rectangle.
             this->window.request_redraw(this->window_clipping_rectangle());
 
-            ttlet offset = Theme::margin + Theme::borderWidth;
+            ttlet offset = theme::global->margin + theme::global->borderWidth;
             _button_rectangle = aarect{
                 this->rectangle().x(),
                 this->rectangle().y() - offset,
@@ -133,7 +133,7 @@ private:
             // the selected-tab (0.6) and unselected-tabs (0.8).
             parent_context.transform = mat::T(0.0f, 0.0f, 1.7f) * parent_context.transform;
 
-            parent_context.fill_color = theme->accentColor;
+            parent_context.fill_color = theme::global->accentColor;
             parent_context.draw_filled_quad(
                 aarect{parent_->rectangle().x(), parent_->rectangle().y(), parent_->rectangle().width(), 1.0f});
         }
@@ -155,18 +155,18 @@ private:
         context.clipping_rectangle = parent_->window_rectangle();
 
         if (this->_hover || *this->value == this->true_value) {
-            context.fill_color = theme->fillColor(this->_semantic_layer - 1);
+            context.fill_color = theme::global->fillColor(this->_semantic_layer - 1);
             context.color = context.fill_color;
         } else {
-            context.fill_color = theme->fillColor(this->_semantic_layer);
+            context.fill_color = theme::global->fillColor(this->_semantic_layer);
             context.color = context.fill_color;
         }
 
         if (this->_focus && this->window.active) {
-            context.color = theme->accentColor;
+            context.color = theme::global->accentColor;
         }
 
-        context.corner_shapes = vec{0.0f, 0.0f, Theme::roundingRadius, Theme::roundingRadius};
+        context.corner_shapes = vec{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
         context.draw_box_with_border_inside(_button_rectangle);
     }
 
@@ -177,7 +177,7 @@ private:
         context.transform = mat::T(0.0f, 0.0f, 0.9f) * context.transform;
 
         if (*this->enabled) {
-            context.color = theme->labelStyle.color;
+            context.color = theme::global->labelStyle.color;
         }
 
         _label_stencil->draw(context, true);

@@ -60,13 +60,13 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (widget::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(alignment::top_left, *label, theme->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::top_left, *label, theme::global->labelStyle);
 
-            ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), Theme::smallSize);
-            ttlet minimum_width = Theme::smallSize + Theme::margin + _label_stencil->preferred_extent().width();
+            ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), theme::global->smallSize);
+            ttlet minimum_width = theme::global->smallSize + theme::global->margin + _label_stencil->preferred_extent().width();
 
             super::_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            super::_preferred_base_line = relative_base_line{vertical_alignment::top, -Theme::smallSize * 0.5f};
+            super::_preferred_base_line = relative_base_line{vertical_alignment::top, -theme::global->smallSize * 0.5f};
             return true;
         } else {
             return false;
@@ -79,9 +79,9 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _outline_rectangle = aarect{0.0f, this->base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
+            _outline_rectangle = aarect{0.0f, this->base_line() - theme::global->smallSize * 0.5f, theme::global->smallSize, theme::global->smallSize};
 
-            ttlet labelX = _outline_rectangle.p3().x() + Theme::margin;
+            ttlet labelX = _outline_rectangle.p3().x() + theme::global->margin;
             _label_rectangle = aarect{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
             _label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 
@@ -125,7 +125,7 @@ private:
         // draw pip
         if (this->value == this->true_value) {
             if (*this->enabled && this->window.active) {
-                context.color = theme->accentColor;
+                context.color = theme::global->accentColor;
             }
             std::swap(context.color, context.fill_color);
             context.corner_shapes = vec{_pip_rectangle.height() * 0.5f};
@@ -138,7 +138,7 @@ private:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (*this->enabled) {
-            context.color = theme->labelStyle.color;
+            context.color = theme::global->labelStyle.color;
         }
 
         _label_stencil->draw(context, true);

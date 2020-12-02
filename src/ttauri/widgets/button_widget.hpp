@@ -44,8 +44,8 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(alignment::middle_center, *label, theme->labelStyle);
-            this->_preferred_size = interval_vec2::make_minimum(_label_stencil->preferred_extent() + Theme::margin2Dx2);
+            _label_stencil = stencil::make_unique(alignment::middle_center, *label, theme::global->labelStyle);
+            this->_preferred_size = interval_vec2::make_minimum(_label_stencil->preferred_extent() + theme::global->margin2Dx2);
             return true;
         } else {
             return false;
@@ -68,16 +68,16 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
-            context.corner_shapes = vec{Theme::roundingRadius};
+            context.corner_shapes = vec{theme::global->roundingRadius};
             if (*this->value) {
-                context.fill_color = theme->accentColor;
+                context.fill_color = theme::global->accentColor;
             }
 
             // Move the border of the button in the middle of a pixel.
             context.draw_box_with_border_inside(this->rectangle());
 
             if (*this->enabled) {
-                context.color = theme->foregroundColor;
+                context.color = theme::global->foregroundColor;
             }
             context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
             _label_stencil->draw(context, true);

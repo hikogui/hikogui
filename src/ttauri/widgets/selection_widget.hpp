@@ -81,21 +81,21 @@ public:
         if (updated) {
             ttlet index = get_value_as_index();
             if (index == -1) {
-                _text_stencil = stencil::make_unique(alignment::middle_left, *unknown_label, theme->placeholderLabelStyle);
-                _text_stencil_color = theme->placeholderLabelStyle.color;
+                _text_stencil = stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle);
+                _text_stencil_color = theme::global->placeholderLabelStyle.color;
             } else {
-                _text_stencil = stencil::make_unique(alignment::middle_left, (*option_list)[index].second, theme->labelStyle);
-                _text_stencil_color = theme->labelStyle.color;
+                _text_stencil = stencil::make_unique(alignment::middle_left, (*option_list)[index].second, theme::global->labelStyle);
+                _text_stencil_color = theme::global->labelStyle.color;
             }
 
             // Calculate the size of the widget based on the largest height of a label and the width of the overlay.
             ttlet unknown_label_size =
-                stencil::make_unique(alignment::middle_left, *unknown_label, theme->placeholderLabelStyle)->preferred_extent();
+                stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle)->preferred_extent();
 
             ttlet overlay_width = _overlay_widget->preferred_size().minimum().width();
-            ttlet option_width = std::max(overlay_width, unknown_label_size.width() + Theme::margin * 2.0f);
-            ttlet option_height = std::max(unknown_label_size.height(), _max_option_label_height) + Theme::margin * 2.0f;
-            ttlet chevron_width = Theme::smallSize;
+            ttlet option_width = std::max(overlay_width, unknown_label_size.width() + theme::global->margin * 2.0f);
+            ttlet option_height = std::max(unknown_label_size.height(), _max_option_label_height) + theme::global->margin * 2.0f;
+            ttlet chevron_width = theme::global->smallSize;
 
             _preferred_size = interval_vec2::make_minimum(vec{chevron_width + option_width, option_height});
             _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
@@ -120,9 +120,9 @@ public:
                 // The overlay should start on the same left edge as the selection box and the same width.
                 // The height of the overlay should be the maximum height, which will show all the options.
 
-                ttlet overlay_width = clamp(rectangle().width() - Theme::smallSize, _overlay_widget->preferred_size().width());
+                ttlet overlay_width = clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
                 ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
-                ttlet overlay_x = _window_rectangle.x() + Theme::smallSize;
+                ttlet overlay_x = _window_rectangle.x() + theme::global->smallSize;
                 ttlet overlay_y = std::round(_window_rectangle.middle() - overlay_height * 0.5f);
                 ttlet overlay_rectangle = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
 
@@ -132,19 +132,19 @@ public:
         }
 
         if (need_layout) {
-            _left_box_rectangle = aarect{0.0f, 0.0f, Theme::smallSize, rectangle().height()};
+            _left_box_rectangle = aarect{0.0f, 0.0f, theme::global->smallSize, rectangle().height()};
             _chevrons_glyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
             ttlet chevrons_glyph_bbox = PipelineSDF::DeviceShared::getBoundingBox(_chevrons_glyph);
             _chevrons_rectangle =
-                align(_left_box_rectangle, scale(chevrons_glyph_bbox, Theme::small_icon_size), alignment::middle_center);
+                align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global->small_icon_size), alignment::middle_center);
             _chevrons_rectangle =
-                align(_left_box_rectangle, scale(chevrons_glyph_bbox, Theme::small_icon_size), alignment::middle_center);
+                align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global->small_icon_size), alignment::middle_center);
 
             // The unknown_label is located to the right of the selection box icon.
             _option_rectangle = aarect{
-                _left_box_rectangle.right() + Theme::margin,
+                _left_box_rectangle.right() + theme::global->margin,
                 0.0f,
-                rectangle().width() - _left_box_rectangle.width() - Theme::margin * 2.0f,
+                rectangle().width() - _left_box_rectangle.width() - theme::global->margin * 2.0f,
                 rectangle().height()};
 
             _text_stencil->set_layout_parameters(_option_rectangle, base_line());
@@ -363,7 +363,7 @@ private:
         for (ttlet & [ tag, text ] : *option_list) {
             _max_option_label_height = std::max(
                 _max_option_label_height,
-                stencil::make_unique(alignment::middle_left, text, theme->labelStyle)->preferred_extent().height());
+                stencil::make_unique(alignment::middle_left, text, theme::global->labelStyle)->preferred_extent().height());
         }
     }
 
@@ -371,7 +371,7 @@ private:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.corner_shapes = Theme::roundingRadius;
+        context.corner_shapes = theme::global->roundingRadius;
         context.draw_box_with_border_inside(rectangle());
     }
 
@@ -381,7 +381,7 @@ private:
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
         context.fill_color = context.color;
-        context.corner_shapes = vec{Theme::roundingRadius, 0.0f, Theme::roundingRadius, 0.0f};
+        context.corner_shapes = vec{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
         context.draw_box_with_border_inside(_left_box_rectangle);
     }
 
@@ -390,7 +390,7 @@ private:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.2f} * context.transform;
-        context.color = *enabled ? theme->foregroundColor : context.fill_color;
+        context.color = *enabled ? theme::global->foregroundColor : context.fill_color;
         context.draw_glyph(_chevrons_glyph, _chevrons_rectangle);
     }
 

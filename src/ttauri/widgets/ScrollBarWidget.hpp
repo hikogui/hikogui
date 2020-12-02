@@ -51,16 +51,16 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            ttlet minimum_length = Theme::width; // even for vertical bars.
+            ttlet minimum_length = theme::global->width; // even for vertical bars.
 
             if constexpr (is_vertical) {
                 _preferred_size = interval_vec2{
-                    vec{Theme::scroll_bar_thickness, minimum_length},
-                    vec{Theme::scroll_bar_thickness, std::numeric_limits<float>::max()}};
+                    vec{theme::global->scroll_bar_thickness, minimum_length},
+                    vec{theme::global->scroll_bar_thickness, std::numeric_limits<float>::max()}};
             } else {
                 _preferred_size = interval_vec2{
-                    vec{minimum_length, Theme::scroll_bar_thickness},
-                    vec{std::numeric_limits<float>::max(), Theme::scroll_bar_thickness}};
+                    vec{minimum_length, theme::global->scroll_bar_thickness},
+                    vec{std::numeric_limits<float>::max(), theme::global->scroll_bar_thickness}};
             }
 
             _preferred_base_line = {};
@@ -182,7 +182,7 @@ private:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         ttlet content_aperture_ratio = *aperture / *content;
-        return std::max(rail_length() * content_aperture_ratio, Theme::smallSize * 2.0f);
+        return std::max(rail_length() * content_aperture_ratio, theme::global->smallSize * 2.0f);
     }
 
     /** The amount of travel that the slider can make.
@@ -229,8 +229,8 @@ private:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.color = theme->fillColor(_semantic_layer);
-        context.fill_color = theme->fillColor(_semantic_layer);
+        context.color = theme::global->fillColor(_semantic_layer);
+        context.fill_color = theme::global->fillColor(_semantic_layer);
         if constexpr (is_vertical) {
             context.corner_shapes = vec{rectangle().width() * 0.5f};
         } else {
@@ -243,8 +243,8 @@ private:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.color = theme->fillColor(_semantic_layer + 1);
-        context.fill_color = theme->fillColor(_semantic_layer + 1);
+        context.color = theme::global->fillColor(_semantic_layer + 1);
+        context.fill_color = theme::global->fillColor(_semantic_layer + 1);
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         if constexpr (is_vertical) {
             context.corner_shapes = vec{slider_rectangle.width() * 0.5f};

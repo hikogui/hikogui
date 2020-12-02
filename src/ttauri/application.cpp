@@ -15,7 +15,7 @@
 #include "text/font_book.hpp"
 #include "text/UnicodeData.hpp"
 #include "GUI/RenderDoc.hpp"
-#include "GUI/ThemeBook.hpp"
+#include "GUI/theme_book.hpp"
 #include "GUI/KeyboardBindings.hpp"
 #include "GUI/gui_system_vulkan_win32.hpp"
 #include "audio/audio_system.hpp"
@@ -204,9 +204,8 @@ void application::GUIStart()
         if (!gui_delegate.expired()) {
             renderDoc = std::make_unique<RenderDoc>();
 
-            themes = std::make_unique<ThemeBook>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
-
-            themes->settheme_mode(read_os_theme_mode());
+            theme_book::global = std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
+            theme_book::global->set_current_theme_mode(read_os_theme_mode());
 
             addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
             addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
@@ -234,7 +233,7 @@ void application::GUIStart()
 void application::GUIStop()
 {
     gui_system::global = {};
-    themes = {};
+    theme_book::global = {};
     renderDoc = {};
 }
 

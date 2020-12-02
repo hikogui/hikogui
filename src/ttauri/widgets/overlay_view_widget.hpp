@@ -123,7 +123,7 @@ private:
 
     void draw_background(draw_context context) noexcept
     {
-        context.clipping_rectangle = expand(context.clipping_rectangle, Theme::borderWidth);
+        context.clipping_rectangle = expand(context.clipping_rectangle, theme::global->borderWidth);
         context.draw_box_with_border_outside(rectangle());
     }
 };

@@ -20,7 +20,7 @@
 namespace tt {
 class audio_system;
 class font_book;
-class ThemeBook;
+class theme_book;
 class RenderDoc;
 class UnicodeData;
 
@@ -58,7 +58,6 @@ public:
 
     std::atomic<bool> inLoop;
 
-    std::unique_ptr<ThemeBook> themes;
     std::unique_ptr<RenderDoc> renderDoc;
     std::unique_ptr<UnicodeData> unicodeData;
 

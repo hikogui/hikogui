@@ -4,7 +4,7 @@
 #pragma once
 
 #include "abstract_container_widget.hpp"
-#include "../GUI/Theme.hpp"
+#include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
 #include "../alignment.hpp"
 #include <memory>

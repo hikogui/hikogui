@@ -25,8 +25,8 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        ttlet width = Theme::toolbarDecorationButtonWidth;
-        ttlet height = Theme::toolbarHeight;
+        ttlet width = theme::global->toolbarDecorationButtonWidth;
+        ttlet height = theme::global->toolbarHeight;
         _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
         return true;
     } else {
@@ -40,17 +40,17 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        ttlet icon_height = rectangle().height() < Theme::toolbarHeight * 1.2f ? rectangle().height() : Theme::toolbarHeight;
+        ttlet icon_height = rectangle().height() < theme::global->toolbarHeight * 1.2f ? rectangle().height() : theme::global->toolbarHeight;
         ttlet icon_rectangle = aarect{rectangle().x(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
         _icon_stencil->set_layout_parameters(icon_rectangle);
 
         // Leave space for window resize handles on the left and top.
         system_menu_rectangle = aarect{
-            rectangle().x() + Theme::margin,
+            rectangle().x() + theme::global->margin,
             rectangle().y(),
-            rectangle().width() - Theme::margin,
-            rectangle().height() - Theme::margin};
+            rectangle().width() - theme::global->margin,
+            rectangle().height() - theme::global->margin};
     }
 
     widget::update_layout(display_time_point, need_layout);

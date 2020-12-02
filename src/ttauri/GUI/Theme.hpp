@@ -11,67 +11,64 @@
 
 namespace tt {
 
-class Theme {
-private:
-    std::vector<vec> fillShades;
-    std::vector<vec> borderShades;
-    std::vector<vec> grayShades;
-
+class theme {
 public:
+    static inline theme *global;
+
     static constexpr OperatingSystem operatingSystem = OperatingSystem::Windows;
 
-    static inline float toolbarHeight =
+    float toolbarHeight =
         (operatingSystem == OperatingSystem::Windows) ? 30.0f : 20.0f;
 
     /** The width of a close, minimize, maximize, system menu button.
      */
-    static inline float toolbarDecorationButtonWidth =
+    float toolbarDecorationButtonWidth =
         (operatingSystem == OperatingSystem::Windows) ? 30.0f : 20.0f;
 
     /** Distance between widgets and between widgets and the border of the container.
      */
-    static constexpr float margin = 6.0f;
+    float margin = 6.0f;
 
-    static inline const vec margin2D = vec{margin, margin};
-    static inline const vec margin2Dx2 = vec{margin * 2.0f, margin * 2.0f};
+    vec margin2D = vec{margin, margin};
+    vec margin2Dx2 = vec{margin * 2.0f, margin * 2.0f};
 
-    static constexpr float scroll_bar_thickness = margin * 2.0f;
+    float scroll_bar_thickness = margin * 2.0f;
 
     /** The line-width of a border.
      */
-    static constexpr float borderWidth = 1.0f;
+    float borderWidth = 1.0f;
 
     /** The rounding radius of boxes with rounded corners.
      */
-    static constexpr float roundingRadius = 5.0f;
+    float roundingRadius = 5.0f;
 
     /** The size of small square widgets.
      */
-    static constexpr float smallSize = 15.0f;
+    float smallSize = 15.0f;
 
     /** The height of the larger widgets like buttons, text-input and drop-down-lists.
      */
-    static constexpr float height = 22.0f;
+    float height = 22.0f;
 
     /** The width of the larger widgets and smaller widgets with included labels.
      */
-    static constexpr float width = 50.0f;
+    float width = 50.0f;
 
     /** Max width of labels in widgets.
      */
-    static constexpr float maxLabelWidth = 300.0f;
+    float maxLabelWidth = 300.0f;
 
     /** Size of icons that represents the size of label's text.
      */
-    static constexpr float small_icon_size = 10.0f;
+    float small_icon_size = 10.0f;
 
     /** Size of icons extending from the ascender to descender of a label's text.
      */
-    static constexpr float icon_size = 20.0f;
+    float icon_size = 20.0f;
 
     /** Size of icons representing the length of am average word of a label's text.
      */
-    static constexpr float large_icon_size = 30.0f;
+    float large_icon_size = 30.0f;
 
 
     std::string name;
@@ -103,15 +100,15 @@ public:
     TextStyle placeholderLabelStyle;
     TextStyle linkLabelStyle;
 
-    Theme() noexcept = delete;
-    Theme(Theme const &) noexcept = delete;
-    Theme(Theme &&) noexcept = delete;
-    Theme &operator=(Theme const &) noexcept = delete;
-    Theme &operator=(Theme &&) noexcept = delete;
+    theme() noexcept = delete;
+    theme(theme const &) noexcept = delete;
+    theme(theme &&) noexcept = delete;
+    theme &operator=(theme const &) noexcept = delete;
+    theme &operator=(theme &&) noexcept = delete;
 
     /** Open and parse a theme file.
      */
-    Theme(URL const &url);
+    theme(URL const &url);
 
     /** Get fill color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
@@ -147,6 +144,10 @@ public:
     }
 
 private:
+    std::vector<vec> fillShades;
+    std::vector<vec> borderShades;
+    std::vector<vec> grayShades;
+
     [[nodiscard]] float parseFloat(datum const &data, char const *name);
     [[nodiscard]] bool parseBool(datum const &data, char const *name);
     [[nodiscard]] std::string parseString(datum const &data, char const *name);
@@ -158,15 +159,13 @@ private:
     [[nodiscard]] TextStyle parseTextStyle(datum const &data, char const *name);
     void parse(datum const &data);
 
-    [[nodiscard]] friend std::string to_string(Theme const &rhs) noexcept {
+    [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {
         return fmt::format("{}:{}", rhs.name, rhs.mode);
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, Theme const &rhs) {
+    friend std::ostream &operator<<(std::ostream &lhs, theme const &rhs) {
         return lhs << to_string(rhs);
     }
 };
-
-inline Theme *theme;
 
 }

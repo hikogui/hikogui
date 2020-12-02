@@ -6,7 +6,7 @@
 
 #include "gui_device_vulkan.hpp"
 #include "gui_window.hpp"
-#include "Theme.hpp"
+#include "theme.hpp"
 #include "PipelineImage_Image.hpp"
 #include "PipelineFlat_DeviceShared.hpp"
 #include "PipelineBox_DeviceShared.hpp"
@@ -79,7 +79,7 @@ public:
         _sdf_vertices(&sdfVertices),
         color(0.0, 1.0, 0.0, 1.0),
         fill_color(1.0, 1.0, 0.0, 1.0),
-        line_width(Theme::borderWidth),
+        line_width(theme::global->borderWidth),
         corner_shapes(),
         clipping_rectangle(static_cast<vec>(window.currentWindowExtent))
     {

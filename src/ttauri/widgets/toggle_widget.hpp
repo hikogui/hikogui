@@ -42,20 +42,20 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _on_label_stencil = stencil::make_unique(alignment::top_left, *on_label, theme->labelStyle);
-            _off_label_stencil = stencil::make_unique(alignment::top_left, *off_label, theme->labelStyle);
+            _on_label_stencil = stencil::make_unique(alignment::top_left, *on_label, theme::global->labelStyle);
+            _off_label_stencil = stencil::make_unique(alignment::top_left, *off_label, theme::global->labelStyle);
 
             ttlet minimumHeight = std::max(
                 {_on_label_stencil->preferred_extent().height(),
                  _off_label_stencil->preferred_extent().height(),
-                 Theme::smallSize});
+                 theme::global->smallSize});
 
             ttlet minimumWidth =
                 std::max({_on_label_stencil->preferred_extent().width(), _off_label_stencil->preferred_extent().width()}) +
-                Theme::smallSize * 2.0f + Theme::margin;
+                theme::global->smallSize * 2.0f + theme::global->margin;
 
             _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-            _preferred_base_line = relative_base_line{vertical_alignment::top, -Theme::smallSize * 0.5f};
+            _preferred_base_line = relative_base_line{vertical_alignment::top, -theme::global->smallSize * 0.5f};
 
             return true;
         } else {
@@ -71,11 +71,11 @@ public:
         if (need_layout) {
             _rail_rectangle = aarect{
                 -0.5f, // Expand horizontally due to rounded shape
-                base_line() - Theme::smallSize * 0.5f,
-                Theme::smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
-                Theme::smallSize};
+                base_line() - theme::global->smallSize * 0.5f,
+                theme::global->smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
+                theme::global->smallSize};
 
-            ttlet labelX = Theme::smallSize * 2.0f + Theme::margin;
+            ttlet labelX = theme::global->smallSize * 2.0f + theme::global->margin;
             _label_rectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
             _on_label_stencil->set_layout_parameters(_label_rectangle, base_line());
             _off_label_stencil->set_layout_parameters(_label_rectangle, base_line());
@@ -83,7 +83,7 @@ public:
             _slider_rectangle =
                 shrink(aarect{0.0f, _rail_rectangle.y(), _rail_rectangle.height(), _rail_rectangle.height()}, 1.5f);
 
-            ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (_slider_rectangle.x() * 2.0f);
+            ttlet sliderMoveWidth = theme::global->smallSize * 2.0f - (_slider_rectangle.x() * 2.0f);
             _slider_move_range = sliderMoveWidth - _slider_rectangle.width();
         }
 
@@ -144,11 +144,12 @@ private:
 
         if (*value) {
             if (*enabled && window.active) {
-                drawContext.color = theme->accentColor;
+                drawContext.color = theme::global->accentColor;
             }
         } else {
             if (*enabled && window.active) {
-                drawContext.color = _hover ? theme->borderColor(_semantic_layer + 1) : theme->borderColor(_semantic_layer);
+                drawContext.color =
+                    _hover ? theme::global->borderColor(_semantic_layer + 1) : theme::global->borderColor(_semantic_layer);
             }
         }
         std::swap(drawContext.color, drawContext.fill_color);
@@ -162,7 +163,7 @@ private:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (*enabled) {
-            drawContext.color = theme->labelStyle.color;
+            drawContext.color = theme::global->labelStyle.color;
         }
 
         ttlet &label_stencil = *value ? _on_label_stencil : _off_label_stencil;

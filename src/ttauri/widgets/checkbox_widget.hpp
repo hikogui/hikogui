@@ -65,24 +65,24 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _true_label_stencil = stencil::make_unique(alignment::top_left, *true_label, theme->labelStyle);
-            _false_label_stencil = stencil::make_unique(alignment::top_left, *false_label, theme->labelStyle);
-            _other_label_stencil = stencil::make_unique(alignment::top_left, *other_label, theme->labelStyle);
+            _true_label_stencil = stencil::make_unique(alignment::top_left, *true_label, theme::global->labelStyle);
+            _false_label_stencil = stencil::make_unique(alignment::top_left, *false_label, theme::global->labelStyle);
+            _other_label_stencil = stencil::make_unique(alignment::top_left, *other_label, theme::global->labelStyle);
 
             ttlet minimum_height = std::max(
                 {_true_label_stencil->preferred_extent().height(),
                  _false_label_stencil->preferred_extent().height(),
                  _other_label_stencil->preferred_extent().height(),
-                 Theme::smallSize});
+                 theme::global->smallSize});
 
             ttlet minimum_width_of_labels = std::max(
                 {_true_label_stencil->preferred_extent().width(),
                  _false_label_stencil->preferred_extent().width(),
                  _other_label_stencil->preferred_extent().width()});
-            ttlet minimum_width = Theme::smallSize + Theme::margin + minimum_width_of_labels;
+            ttlet minimum_width = theme::global->smallSize + theme::global->margin + minimum_width_of_labels;
 
             this->_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            this->_preferred_base_line = relative_base_line{vertical_alignment::top, -Theme::smallSize * 0.5f};
+            this->_preferred_base_line = relative_base_line{vertical_alignment::top, -theme::global->smallSize * 0.5f};
 
             return true;
         } else {
@@ -96,9 +96,9 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _checkbox_rectangle = aarect{0.0f, this->base_line() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
+            _checkbox_rectangle = aarect{0.0f, this->base_line() - theme::global->smallSize * 0.5f, theme::global->smallSize, theme::global->smallSize};
 
-            ttlet label_x = _checkbox_rectangle.p3().x() + Theme::margin;
+            ttlet label_x = _checkbox_rectangle.p3().x() + theme::global->margin;
             _label_rectangle = aarect{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
             _true_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
             _false_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
@@ -107,12 +107,12 @@ public:
             _check_glyph = to_FontGlyphIDs(ElusiveIcon::Ok);
             ttlet check_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
             _check_glyph_rectangle =
-                align(_checkbox_rectangle, scale(check_glyph_bb, Theme::small_icon_size), alignment::middle_center);
+                align(_checkbox_rectangle, scale(check_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
 
             _minus_glyph = to_FontGlyphIDs(ElusiveIcon::Minus);
             ttlet minus_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_minus_glyph);
             _minus_glyph_rectangle =
-                align(_checkbox_rectangle, scale(minus_glyph_bb, Theme::small_icon_size), alignment::middle_center);
+                align(_checkbox_rectangle, scale(minus_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
         }
 
         super::update_layout(displayTimePoint, need_layout);
@@ -164,7 +164,7 @@ private:
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
 
         if (*this->enabled && this->window.active) {
-            context.color = theme->accentColor;
+            context.color = theme::global->accentColor;
         }
 
         // Checkmark or tristate.
@@ -182,7 +182,7 @@ private:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (*this->enabled) {
-            context.color = theme->labelStyle.color;
+            context.color = theme::global->labelStyle.color;
         }
 
         ttlet &labelCell = this->value == this->true_value ?

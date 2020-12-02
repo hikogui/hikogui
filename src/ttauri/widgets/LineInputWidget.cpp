@@ -12,7 +12,7 @@ namespace tt {
 using namespace std::literals;
 
 LineInputWidget::LineInputWidget(gui_window &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept :
-    widget(window, parent), label(std::move(label)), field(theme->labelStyle), shapedText()
+    widget(window, parent), label(std::move(label)), field(theme::global->labelStyle), shapedText()
 {
 }
 
@@ -23,11 +23,11 @@ bool LineInputWidget::update_constraints(hires_utc_clock::time_point display_tim
     tt_assume(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
+        ttlet maximumHeight = shapedText.boundingBox.height() + theme::global->margin * 2.0f;
 
         _preferred_size = {
-            vec{100.0f, Theme::smallSize + Theme::margin * 2.0f},
-            vec{std::numeric_limits<float>::infinity(), Theme::smallSize + Theme::margin * 2.0f}};
+            vec{100.0f, theme::global->smallSize + theme::global->margin * 2.0f},
+            vec{std::numeric_limits<float>::infinity(), theme::global->smallSize + theme::global->margin * 2.0f}};
         _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
         _width_resistance = 2;
         return true;
@@ -46,16 +46,16 @@ void LineInputWidget::update_layout(hires_utc_clock::time_point display_time_poi
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        textRectangle = shrink(rectangle(), Theme::margin);
+        textRectangle = shrink(rectangle(), theme::global->margin);
 
         // Set the clipping rectangle to within the border of the input field.
         // Add another border width, so glyphs do not touch the border.
-        textClippingRectangle = intersect(window_clipping_rectangle(), shrink(_window_rectangle, Theme::borderWidth * 2.0f));
+        textClippingRectangle = intersect(window_clipping_rectangle(), shrink(_window_rectangle, theme::global->borderWidth * 2.0f));
 
-        field.setStyleOfAll(theme->labelStyle);
+        field.setStyleOfAll(theme::global->labelStyle);
 
         if (std::ssize(field) == 0) {
-            shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), alignment::middle_left);
+            shapedText = ShapedText(label, theme::global->placeholderLabelStyle, textRectangle.width(), alignment::middle_left);
         } else {
             field.setWidth(textRectangle.width());
             shapedText = field.shapedText();
@@ -124,7 +124,7 @@ void LineInputWidget::drawSelectionRectangles(draw_context context) const noexce
 {
     ttlet selectionRectangles = field.selectionRectangles();
     for (ttlet selectionRectangle : selectionRectangles) {
-        context.fill_color = theme->textSelectColor;
+        context.fill_color = theme::global->textSelectColor;
         context.draw_filled_quad(selectionRectangle);
     }
 }
@@ -133,7 +133,7 @@ void LineInputWidget::drawPartialGraphemeCaret(draw_context context) const noexc
 {
     ttlet partialGraphemeCaret = field.partialGraphemeCaret();
     if (partialGraphemeCaret) {
-        context.fill_color = theme->incompleteGlyphColor;
+        context.fill_color = theme::global->incompleteGlyphColor;
         context.draw_filled_quad(partialGraphemeCaret);
     }
 }
@@ -147,7 +147,7 @@ void LineInputWidget::drawCaret(draw_context context, hires_utc_clock::time_poin
     auto blinkIsOn = nrHalfBlinks % 2 == 0;
     leftToRightCaret = field.leftToRightCaret();
     if (leftToRightCaret && blinkIsOn && _focus && window.active) {
-        context.fill_color = theme->cursorColor;
+        context.fill_color = theme::global->cursorColor;
         context.draw_filled_quad(leftToRightCaret);
     }
 }

@@ -1,14 +1,14 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "Theme.hpp"
+#include "theme.hpp"
 #include "../text/font_book.hpp"
 #include "../application.hpp"
 #include "../encoding/JSON.hpp"
 
 namespace tt {
 
-Theme::Theme(URL const &url)
+theme::theme(URL const &url)
 {
     try {
         LOG_INFO("Parsing theme at {}", url);
@@ -20,7 +20,7 @@ Theme::Theme(URL const &url)
     }
 }
 
-[[nodiscard]] std::string Theme::parseString(datum const &data, char const *object_name)
+[[nodiscard]] std::string theme::parseString(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -33,7 +33,7 @@ Theme::Theme(URL const &url)
     return static_cast<std::string>(object);
 }
 
-[[nodiscard]] float Theme::parseFloat(datum const &data, char const *object_name)
+[[nodiscard]] float theme::parseFloat(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         TTAURI_THROW(parse_error("Missing '{}'", object_name));
@@ -47,7 +47,7 @@ Theme::Theme(URL const &url)
     return static_cast<float>(object);
 }
 
-[[nodiscard]] bool Theme::parseBool(datum const &data, char const *object_name)
+[[nodiscard]] bool theme::parseBool(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         TTAURI_THROW(parse_error("Missing '{}'", object_name));
@@ -61,7 +61,7 @@ Theme::Theme(URL const &url)
     return static_cast<bool>(object);
 }
 
-[[nodiscard]] vec Theme::parseColorValue(datum const &data)
+[[nodiscard]] vec theme::parseColorValue(datum const &data)
 {
     if (data.is_vector()) {
         if (std::ssize(data) != 3 && std::ssize(data) != 4) {
@@ -117,7 +117,7 @@ Theme::Theme(URL const &url)
     }
 }
 
-[[nodiscard]] vec Theme::parseColor(datum const &data, char const *object_name)
+[[nodiscard]] vec theme::parseColor(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -132,7 +132,7 @@ Theme::Theme(URL const &url)
     }
 }
 
-[[nodiscard]] std::vector<vec> Theme::parseColorList(datum const &data, char const *object_name)
+[[nodiscard]] std::vector<vec> theme::parseColorList(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -156,7 +156,7 @@ Theme::Theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] FontWeight Theme::parseFontWeight(datum const &data, char const *object_name)
+[[nodiscard]] FontWeight theme::parseFontWeight(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         TTAURI_THROW(parse_error("Missing '{}'", object_name));
@@ -172,7 +172,7 @@ Theme::Theme(URL const &url)
     }
 }
 
-[[nodiscard]] TextStyle Theme::parseTextStyleValue(datum const &data)
+[[nodiscard]] TextStyle theme::parseTextStyleValue(datum const &data)
 {
     if (!data.is_map()) {
         TTAURI_THROW(parse_error("Expect a text-style to be an object, got '{}'", data));
@@ -199,7 +199,7 @@ Theme::Theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] TextStyle Theme::parseTextStyle(datum const &data, char const *object_name)
+[[nodiscard]] TextStyle theme::parseTextStyle(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -214,7 +214,7 @@ Theme::Theme(URL const &url)
     }
 }
 
-void Theme::parse(datum const &data)
+void theme::parse(datum const &data)
 {
     tt_assert(data.is_map());
 

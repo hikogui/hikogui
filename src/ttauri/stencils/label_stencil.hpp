@@ -16,7 +16,7 @@ public:
     label_stencil(alignment alignment, label label, TextStyle style) noexcept :
         stencil(alignment),
         _style(style),
-        _icon_size(_alignment == horizontal_alignment::center ? Theme::large_icon_size : Theme::icon_size)
+        _icon_size(_alignment == horizontal_alignment::center ? theme::global->large_icon_size : theme::global->icon_size)
     {
         if (label.has_icon()) {
             _icon_stencil = stencil::make_unique(alignment::middle_center, label.icon());
@@ -42,7 +42,7 @@ public:
         // When center aligned, do not include the icon width. So that the icon may go beyond the margins.
         ttlet width =
             _alignment == horizontal_alignment::center ? _text_stencil->preferred_extent().width() :
-            _icon_size + Theme::margin + _text_stencil->preferred_extent().width();
+            _icon_size + theme::global->margin + _text_stencil->preferred_extent().width();
 
         // When middle aligned, do not include the icon height. So that the icon may go beyond the margins.
         ttlet height =
@@ -109,7 +109,7 @@ public:
             // clang-format off
             ttlet text_width =
                 _alignment == horizontal_alignment::center ? _rectangle.width() :
-                _icon_stencil || _show_icon ? _rectangle.width() - Theme::margin - _icon_size :
+                _icon_stencil || _show_icon ? _rectangle.width() - theme::global->margin - _icon_size :
                 _rectangle.width();
 
             ttlet text_height =

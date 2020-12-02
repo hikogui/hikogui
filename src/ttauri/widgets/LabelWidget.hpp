@@ -51,7 +51,7 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            labelCell = stencil::make_unique(alignment, *label, theme->labelStyle);
+            labelCell = stencil::make_unique(alignment, *label, theme::global->labelStyle);
             _preferred_size = interval_vec2::make_minimum(labelCell->preferred_extent());
             return true;
         } else {
@@ -75,7 +75,7 @@ public:
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             if (*enabled) {
-                context.color = theme->labelStyle.color;
+                context.color = theme::global->labelStyle.color;
             }
 
             labelCell->draw(context, true);

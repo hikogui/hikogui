@@ -29,6 +29,7 @@ public:
         false_value(std::move(false_value))
     {
         _value_callback = this->value.subscribe([this](auto...) {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
             this->window.request_redraw(this->window_clipping_rectangle());
         });
         _callback = this->subscribe([this]() {

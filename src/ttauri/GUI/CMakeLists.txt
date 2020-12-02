@@ -91,10 +91,10 @@ target_sources(ttauri PRIVATE
     RenderDoc.cpp
     RenderDoc.hpp
     SubpixelOrientation.hpp
-    Theme.cpp
-    Theme.hpp
-    ThemeBook.cpp
-    ThemeBook.hpp
+    theme.cpp
+    theme.hpp
+    theme_book.cpp
+    theme_book.hpp
     theme_mode.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_win32.cpp>

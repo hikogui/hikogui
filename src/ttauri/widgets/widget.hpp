@@ -8,7 +8,7 @@
 #include "../GUI/MouseEvent.hpp"
 #include "../GUI/HitBox.hpp"
 #include "../GUI/KeyboardEvent.hpp"
-#include "../GUI/Theme.hpp"
+#include "../GUI/theme.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../text/ShapedText.hpp"
 #include "../alignment.hpp"
@@ -292,7 +292,7 @@ public:
             _request_relayout = true;
         }
 
-        ttlet window_clipping_rectangle_clean = intersect(window_clipping_rectangle, expand(_window_rectangle, Theme::borderWidth));
+        ttlet window_clipping_rectangle_clean = intersect(window_clipping_rectangle, expand(_window_rectangle, theme::global->borderWidth));
         if (_window_clipping_rectangle != window_clipping_rectangle_clean) {
             _window_clipping_rectangle = window_clipping_rectangle_clean;
             _request_relayout = true;
@@ -578,7 +578,7 @@ protected:
     ranged_int<3> _width_resistance = 1;
     ranged_int<3> _height_resistance = 1;
 
-    float _margin = Theme::margin;
+    float _margin = theme::global->margin;
 
     /** The draw layer of the widget.
      * This value translates directly to the z-axis between 0.0 (far) and 100.0 (near)

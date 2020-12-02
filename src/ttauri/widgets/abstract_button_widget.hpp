@@ -34,7 +34,7 @@ public:
         auto new_context = super::make_draw_context(context);
 
         if (_pressed) {
-            new_context.fill_color = theme->fillColor(this->_semantic_layer + 2);
+            new_context.fill_color = theme::global->fillColor(this->_semantic_layer + 2);
         }
 
         return new_context;
