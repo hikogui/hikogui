@@ -53,6 +53,8 @@
 #include "formula_vector_literal_node.hpp"
 #include "../operator.hpp"
 #include "../strings.hpp"
+#include "../exception.hpp"
+#include "../error_info.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <string_view>
@@ -116,7 +118,9 @@ static std::unique_ptr<formula_node> parse_operation_formula(
         case operator_to_int("|="): return std::make_unique<formula_inplace_or_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("^="): return std::make_unique<formula_inplace_xor_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("!"): return std::make_unique<formula_filter_node>(op.location, std::move(lhs), std::move(rhs));
-        default: TTAURI_THROW(parse_error("Unexpected binary operator {}", op).set_location(op.location));
+        default:
+            tt_error_info().set<parse_location_tag>(op.location);
+            throw parse_error(fmt::format("Unexpected binary operator {}", op));
         }
     } else {
         // Unary operator
@@ -127,7 +131,9 @@ static std::unique_ptr<formula_node> parse_operation_formula(
         case operator_to_int("!"): return std::make_unique<formula_logical_not_node>(op.location, std::move(rhs));
         case operator_to_int("++"): return std::make_unique<formula_increment_node>(op.location, std::move(rhs));
         case operator_to_int("--"): return std::make_unique<formula_decrement_node>(op.location, std::move(rhs));
-        default: TTAURI_THROW(parse_error("Unexpected unary operator {}", op).set_location(op.location));
+        default: 
+            tt_error_info().set<parse_location_tag>(op.location);
+            throw parse_error(fmt::format("Unexpected unary operator {}", op));
         }
     }
 }
@@ -184,7 +190,8 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
             if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
                 ++context;
             } else {
-                TTAURI_THROW(parse_error("Expected ')' token for function call got {}", *context).set_location(location));
+                tt_error_info().set<parse_location_tag>(location);
+                throw parse_error(fmt::format("Expected ')' token for function call got {}", *context));
             }
 
             return subformula;
@@ -204,7 +211,8 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
                     ++context;
                     break;
                 } else {
-                    TTAURI_THROW(parse_error("Expected ']' or ',' after a vector sub-formula. got {}", *context).set_location(location));
+                    tt_error_info().set<parse_location_tag>(location);
+                    throw parse_error(fmt::format("Expected ']' or ',' after a vector sub-formula. got {}", *context));
                 }
             }
 
@@ -223,7 +231,8 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
                 if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
                     ++context;
                 } else {
-                    TTAURI_THROW(parse_error("Expected ':' after a map key. got {}", *context).set_location(location));
+                    tt_error_info().set<parse_location_tag>(location);
+                    throw parse_error(fmt::format("Expected ':' after a map key. got {}", *context));
                 }
 
                 values.push_back(parse_formula(context));
@@ -234,7 +243,8 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
                     ++context;
                     break;
                 } else {
-                    TTAURI_THROW(parse_error("Expected ']' or ',' after a vector sub-formula. got {}", *context).set_location(location));
+                    tt_error_info().set<parse_location_tag>(location);
+                    throw parse_error(fmt::format("Expected ']' or ',' after a vector sub-formula. got {}", *context));
                 }
             }
 
@@ -249,7 +259,8 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
         }
 
     default:
-        TTAURI_THROW(parse_error("Unexpected token in primary formula {}", *context).set_location(location));
+        tt_error_info().set<parse_location_tag>(location);
+        throw parse_error(fmt::format("Unexpected token in primary formula {}", *context));
     }
 }
 
@@ -262,7 +273,8 @@ static std::unique_ptr<formula_node> parse_index_formula(formula_parse_context& 
     if ((*context == tokenizer_name_t::Operator) && (*context == "]")) {
         ++context;
     } else {
-        TTAURI_THROW(parse_error("Expected ']' token at end of indexing operator got {}", *context).set_location(context->location));
+        tt_error_info().set<parse_location_tag>(context->location);
+        throw parse_error(fmt::format("Expected ']' token at end of indexing operator got {}", *context));
     }
     return rhs;
 }
@@ -276,7 +288,8 @@ static std::unique_ptr<formula_node> parse_ternary_argument_formula(formula_pars
     if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
         ++context;
     } else {
-        TTAURI_THROW(parse_error("Expected ':' token in ternary formula {}", *context).set_location(context->location));
+        tt_error_info().set<parse_location_tag>(context->location);
+        throw parse_error(fmt::format("Expected ':' token in ternary formula {}", *context));
     }
 
     auto rhs_false = parse_formula(context);
@@ -305,7 +318,8 @@ static std::unique_ptr<formula_node> parse_call_argument_formula(formula_parse_c
             break;
 
         } else {
-            TTAURI_THROW(parse_error("Expected ',' or ')' After a function argument {}", *context).set_location(context->location));
+            tt_error_info().set<parse_location_tag>(context->location);
+            throw parse_error(fmt::format("Expected ',' or ')' After a function argument {}", *context));
         }
     }
 
@@ -319,7 +333,8 @@ static bool parse_formula_is_at_end(formula_parse_context& context)
     }
 
     if (*context != tokenizer_name_t::Operator) {
-        TTAURI_THROW(parse_error("Expecting an operator token got {}", *context).set_location(context->location));
+        tt_error_info().set<parse_location_tag>(context->location);
+        throw parse_error(fmt::format("Expecting an operator token got {}", *context));
     }
 
     return

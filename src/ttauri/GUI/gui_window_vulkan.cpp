@@ -95,7 +95,9 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
         LOG_INFO("acquireNextImageKHR() eTimeout");
         return {};
 
-    default: TTAURI_THROW(gui_error("Unknown result from acquireNextImageKHR()").set<vk_result_tag>(to_string(result)));
+    default:
+        tt_error_info().set<vk_result_tag>(result);
+        throw gui_error("Unknown result from acquireNextImageKHR()");
     }
 }
 
@@ -127,7 +129,9 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
             state = State::SwapchainLost;
             return;
 
-        default: TTAURI_THROW(gui_error("Unknown result from presentKHR()").set<vk_result_tag>(to_string(result)));
+        default:
+            tt_error_info().set<vk_result_tag>(result);
+            throw gui_error("Unknown result from presentKHR()");
         }
 
     } catch (const vk::OutOfDateKHRError &) {
@@ -591,7 +595,9 @@ gui_window::State gui_window_vulkan::buildSwapchain()
 
     case vk::Result::eErrorSurfaceLostKHR: return State::SurfaceLost;
 
-    default: TTAURI_THROW(gui_error("Unknown result from createSwapchainKHR()").set<vk_result_tag>(to_string(result)));
+    default:
+        tt_error_info().set<vk_result_tag>(result);
+        throw gui_error("Unknown result from createSwapchainKHR()");
     }
 
     LOG_INFO("Finished building swap chain");

@@ -87,7 +87,7 @@ public:
         state += static_cast<ptrdiff_t>(code_bit);
 
         if (*state == 0) {
-            TTAURI_THROW(parse_error("Code not in huffman tree."));
+            throw parse_error("Code not in huffman tree.");
         }
 
         auto value = *state;

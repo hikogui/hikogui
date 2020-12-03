@@ -60,7 +60,8 @@ struct skeleton_for_node final: skeleton_node {
         auto list_data = evaluate_formula_without_output(context, *list_expression, location);
 
         if (!list_data.is_vector()) {
-            TTAURI_THROW(invalid_operation_error("Expecting expression returns a vector, got {}", list_data).set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Expecting expression returns a vector, got {}", list_data);
         }
 
         ttlet output_size = context.output_size();
@@ -71,8 +72,13 @@ struct skeleton_for_node final: skeleton_node {
                 ttlet &item = *i;
                 try {
                     name_expression->assign_without_output(context, item);
-                } catch (invalid_operation_error &e) {
-                    e.merge_location(location);
+                } catch (...) {
+                    auto error_location = location;
+                    if (ttlet expression_location = error_info::get<parse_location_tag>()) {
+                        error_location += *expression_location;
+                    }
+                    tt_error_info().set<parse_location_tag>(error_location);
+                    throw;
                 }
 
                 context.loop_push(loop_count++, loop_size);

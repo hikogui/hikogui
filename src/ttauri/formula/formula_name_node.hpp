@@ -17,7 +17,8 @@ struct formula_name_node final : formula_node {
     void resolve_function_pointer(formula_post_process_context& context) override {
         function = context.get_function(name);
         if (!function) {
-            TTAURI_THROW(parse_error("Could not find function {}()", name).set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw parse_error("Could not find function {}()", name);
         }
     }
 
@@ -26,8 +27,8 @@ struct formula_name_node final : formula_node {
 
         try {
             return const_context.get(name);
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            tt_error_info().set<parse_location_tag>(location);
             throw;
         }
     }
@@ -35,8 +36,8 @@ struct formula_name_node final : formula_node {
     datum &evaluate_lvalue(formula_evaluation_context& context) const override {
         try {
             return context.get(name);
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            tt_error_info().set<parse_location_tag>(location);
             throw;
         }
     }
@@ -50,8 +51,8 @@ struct formula_name_node final : formula_node {
     datum const &evaluate_xvalue(formula_evaluation_context const& context) const override {
         try {
             return context.get(name);
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            tt_error_info().set<parse_location_tag>(location);
             throw;
         }
     }
@@ -59,8 +60,8 @@ struct formula_name_node final : formula_node {
     datum &assign(formula_evaluation_context& context, datum const &rhs) const override {
         try {
             return context.set(name, rhs);
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            tt_error_info().set<parse_location_tag>(location);
             throw;
         }
     }

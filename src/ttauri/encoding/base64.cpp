@@ -3,7 +3,7 @@
 
 #include "base64.hpp"
 #include "../required.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 
 namespace tt {
 
@@ -43,7 +43,7 @@ bstring decode_base64(std::string_view src)
     for (ttlet c : src) {
         switch (auto value = decode_base64(c)) {
         case -2:
-            TTAURI_THROW(parse_error("Unexpected character"));
+            throw parse_error("Unexpected character");
         case -1:
             break;
         default:
@@ -65,7 +65,7 @@ bstring decode_base64(std::string_view src)
     case 0:
         return dst;
     case 1:
-        TTAURI_THROW(parse_error("Unexpected number of characters"));
+        throw parse_error("Unexpected number of characters");
     case 2:
         group <<= 12;
         dst.push_back(static_cast<std::byte>(group >> 16));

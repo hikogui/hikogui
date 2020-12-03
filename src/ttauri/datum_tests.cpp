@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "ttauri/datum.hpp"
-#include "ttauri/exceptions.hpp"
+#include "ttauri/exception.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -118,9 +118,9 @@ TEST(Datum, ArrayOperations) {
     ASSERT_EQ(v[2], 13);
     ASSERT_EQ(v[3], 14);
     ASSERT_EQ(v[4], 15);
-    ASSERT_THROW(v[5], invalid_operation_error);
+    ASSERT_THROW(v[5], operation_error);
 
-    ASSERT_THROW(v[-6], invalid_operation_error);
+    ASSERT_THROW(v[-6], operation_error);
     ASSERT_EQ(v[-5], 11);
     ASSERT_EQ(v[-4], 12);
     ASSERT_EQ(v[-3], 13);

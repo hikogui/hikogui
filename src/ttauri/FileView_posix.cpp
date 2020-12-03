@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "FileView.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "logger.hpp"
 #include "memory.hpp"
 #include "URL.hpp"
@@ -12,9 +12,8 @@
 
 namespace tt {
 
-FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t offset, size_t size) :
-    fileMappingObject(fileMappingObject),
-    _offset(offset)
+FileView::FileView(std::shared_ptr<FileMapping> const &fileMappingObject, size_t offset, size_t size) :
+    fileMappingObject(fileMappingObject), _offset(offset)
 {
     if (size == 0) {
         size = fileMappingObject->size - _offset;
@@ -24,24 +23,19 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     int prot;
     if (accessMode() >= (AccessMode::Read | AccessMode::Write)) {
         prot = PROT_WRITE | PROT_READ;
-    }
-    else if (accessMode() >= AccessMode::Read) {
+    } else if (accessMode() >= AccessMode::Read) {
         prot = PROT_READ;
-    }
-    else {
-        TTAURI_THROW(io_error("Illegal access mode write-only when viewing file.")
-            .set<url_tag>(location())
-        );
+    } else {
+        tt_error_info().set<url_tag>(location());
+        throw io_error("Illegal access mode write-only when viewing file.");
     }
 
     int flags = MAP_SHARED;
 
     void *data;
     if ((data = ::mmap(0, size, prot, flags, fileMappingObject->file->fileHandle, _offset)) == MAP_FAILED) {
-        TTAURI_THROW(io_error("Could not map view of file.")
-            .set<error_message_tag>(getLastErrorMessage())
-            .set<url_tag>(location())
-        );
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+        throw io_error("Could not map view of file.");
     }
 
     auto *bytes_ptr = new std::span<std::byte>(static_cast<std::byte *>(data), size);
@@ -49,12 +43,14 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
 }
 
 FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
-    FileView(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size) {}
+    FileView(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size)
+{
+}
 
-FileView::FileView(FileView const &other) noexcept:
-    fileMappingObject(other.fileMappingObject),
-    _bytes(other._bytes),
-    _offset(other._offset) {}
+FileView::FileView(FileView const &other) noexcept :
+    fileMappingObject(other.fileMappingObject), _bytes(other._bytes), _offset(other._offset)
+{
+}
 
 FileView &FileView::operator=(FileView const &other) noexcept
 {
@@ -66,10 +62,10 @@ FileView &FileView::operator=(FileView const &other) noexcept
     return *this;
 }
 
-FileView::FileView(FileView &&other) noexcept:
-    fileMappingObject(std::move(other.fileMappingObject)),
-    _bytes(std::move(other._bytes)),
-    _offset(other._offset) {}
+FileView::FileView(FileView &&other) noexcept :
+    fileMappingObject(std::move(other.fileMappingObject)), _bytes(std::move(other._bytes)), _offset(other._offset)
+{
+}
 
 FileView &FileView::operator=(FileView &&other) noexcept
 {
@@ -93,15 +89,13 @@ void FileView::unmap(std::span<std::byte> *bytes) noexcept
     }
 }
 
-void FileView::flush(void* base, size_t size)
+void FileView::flush(void *base, size_t size)
 {
     int flags = MS_SYNC;
     if (!msync(base, size, flags)) {
-        TTAURI_THROW(io_error("Could not flush file")
-            .set<error_message_tag>(getLastErrorMessage())
-            .set<url_tag>(location())
-        );
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+        throw io_error("Could not flush file");
     }
 }
 
-}
+} // namespace tt

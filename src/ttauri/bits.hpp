@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include <span>
 #include <cstddef>
 

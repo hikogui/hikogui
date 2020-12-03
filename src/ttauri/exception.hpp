@@ -1,4 +1,7 @@
 
+#include "fmt/format.h"
+#include <exception>
+#include <string_view>
 
 #pragma once
 
@@ -12,7 +15,22 @@ namespace tt {
  * specific file name and location inside the file where the error
  * was.
  */
-class parse_error : public std::runtime_error {};
+class parse_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+
+    template<typename FirstArg, typename... Args>
+    parse_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+        parse_error(fmt::format(fmt, arg1, args...)) {}
+};
+
+#define parse_assert(x, ...)\
+    do {\
+        if (!(x)) {\
+            tt_error_info();\
+            throw tt::parse_error(__VA_ARGS__);\
+        }\
+    } while (false)
 
 /** Exception thrown during execution of a dynamic operation.
  * This exception is often thrown on operation between multiple polymorphic objects
@@ -21,7 +39,68 @@ class parse_error : public std::runtime_error {};
  * For example a datum object may contain floating point number for which
  * a shift-right or shift-left would be an invalid operation.
  */
-class operation_error : public std::runtime_error {};
+class operation_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+
+    template<typename FirstArg, typename... Args>
+    operation_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+        operation_error(fmt::format(fmt, arg1, args...))
+    {
+    }
+};
+
+class io_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+
+    template<typename FirstArg, typename... Args>
+    io_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+        io_error(fmt::format(fmt, arg1, args...))
+    {
+    }
+};
+
+#define hresult_assert(x)\
+    ([](HRESULT result) {\
+        if (FAILED(result)) {\
+            throw tt::io_error("Call to '{}' failed with {:08x}", #x, result);\
+        }\
+        return result;\
+    }(x))
+
+class gui_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+
+    template<typename FirstArg, typename... Args>
+    gui_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+        gui_error(fmt::format(fmt, arg1, args...))
+    {
+    }
+};
+
+class key_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+
+    template<typename FirstArg, typename... Args>
+    key_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+        key_error(fmt::format(fmt, arg1, args...))
+    {
+    }
+};
+
+class url_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+
+    template<typename FirstArg, typename... Args>
+    url_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+        url_error(fmt::format(fmt, arg1, args...))
+    {
+    }
+};
 
 }
 

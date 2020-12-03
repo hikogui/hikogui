@@ -15,8 +15,8 @@ struct formula_decrement_node final : formula_unary_operator_node {
         auto &rhs_ = rhs->evaluate_lvalue(context);
         try {
             return --rhs_;
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            tt_error_info().set<parse_location_tag>(location);
             throw;
         }
     }

@@ -3,7 +3,7 @@
 
 #include "required.hpp"
 #include "cast.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "alignment.hpp"
 
 #pragma once
@@ -208,7 +208,8 @@ struct cell_address {
                     // End of the string. Don't consume the nul.
                     consume = false;
                     break;
-                default: TTAURI_THROW(parse_error("Unexpected character"));
+                default:
+                    throw parse_error("Unexpected character");
                 }
                 break;
 
@@ -305,7 +306,7 @@ struct cell_address {
                             break;
 
                         case part_t::Alignment:
-                            TTAURI_THROW(parse_error("Unexpected third ':'"));
+                            throw parse_error("Unexpected third ':'");
 
                         default: tt_no_default();
                         }

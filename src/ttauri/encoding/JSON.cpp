@@ -5,7 +5,8 @@
 #include "../tokenizer.hpp"
 #include "../strings.hpp"
 #include "../datum.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
+#include "../error_info.hpp"
 #include "../ResourceView.hpp"
 #include "../indent.hpp"
 #include <vector>
@@ -41,7 +42,8 @@ struct parse_context_t {
         // Required a value.
         } else if (auto result = parseValue(context, token)) {
             if (!commaAfterValue) {
-                TTAURI_THROW(parse_error("Missing expected ','").set_location(token->location));
+                tt_error_info().set<parse_location_tag>(token->location);
+                throw parse_error("Missing expected ','");
             }
 
             array.push_back(*result);
@@ -55,7 +57,8 @@ struct parse_context_t {
             }
 
         } else {
-            TTAURI_THROW(parse_error("Expecting a value as the next item in an array.").set_location(token->location));
+            tt_error_info().set<parse_location_tag>(token->location);
+            throw parse_error("Expecting a value as the next item in an array.");
         }
     }
 
@@ -83,7 +86,8 @@ struct parse_context_t {
         // Required a string name.
         } else if (*token == tokenizer_name_t::StringLiteral) {
             if (!commaAfterValue) {
-                TTAURI_THROW(parse_error("Missing expected ','").set_location(token->location));
+                tt_error_info().set<parse_location_tag>(token->location);
+                throw parse_error("Missing expected ','");
             }
 
             auto name = static_cast<std::string>(*token++);
@@ -91,7 +95,8 @@ struct parse_context_t {
             if ((*token == tokenizer_name_t::Operator) && (*token == ":")) {
                 token++;
             } else {
-                TTAURI_THROW(parse_error("Missing expected ':'").set_location(token->location));
+                tt_error_info().set<parse_location_tag>(token->location);
+                throw parse_error("Missing expected ':'");
             }
 
             if (auto result = parseValue(context, token)) {
@@ -99,7 +104,8 @@ struct parse_context_t {
                 token = result.next_token;
 
             } else {
-                TTAURI_THROW(parse_error("Missing JSON value").set_location(token->location));
+                tt_error_info().set<parse_location_tag>(token->location);
+                throw parse_error("Missing JSON value");
             }
 
             if ((*token == tokenizer_name_t::Operator) && (*token == ",")) {
@@ -110,7 +116,8 @@ struct parse_context_t {
             }
 
         } else {
-            TTAURI_THROW(parse_error("Unexpected token {}, expected a key or close-brace.", *token).set_location(token->location));
+            tt_error_info().set<parse_location_tag>(token->location);
+            throw parse_error(fmt::format("Unexpected token {}, expected a key or close-brace.", *token));
         }
     }
 
@@ -141,7 +148,8 @@ struct parse_context_t {
         } else if (name == "null") {
             return {datum{datum::null{}}, token};
         } else {
-            TTAURI_THROW(parse_error("Unexpected name '{}'", name).set_location(token->location));
+            tt_error_info().set<parse_location_tag>(token->location);
+            throw parse_error(fmt::format("Unexpected name '{}'", name));
         }
         } break;
     default:
@@ -150,7 +158,8 @@ struct parse_context_t {
         } else if (auto result2 = parseArray(context, token)) {
             return result2;
         } else {
-            TTAURI_THROW(parse_error("Unexpected token '{}'", token->name).set_location(token->location));
+            tt_error_info().set<parse_location_tag>(token->location);
+            throw parse_error(fmt::format("Unexpected token '{}'", token->name));
         }
     }
 }
@@ -172,11 +181,13 @@ struct parse_context_t {
         token = result.next_token;
 
     } else {
-        TTAURI_THROW(parse_error("Missing JSON object").set_location(token->location));
+        tt_error_info().set<parse_location_tag>(token->location);
+        throw parse_error("Missing JSON object");
     }
 
     if (*token != tokenizer_name_t::End) {
-        TTAURI_THROW(parse_error("Unexpected text after JSON root object").set_location(token->location));
+        tt_error_info().set<parse_location_tag>(token->location);
+        throw parse_error("Unexpected text after JSON root object");
     }
 
     return root;

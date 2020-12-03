@@ -43,7 +43,8 @@ namespace tt {
     if ((*token == tokenizer_name_t::Name)) {
         name = static_cast<std::string>(*token++);
     } else {
-        TTAURI_THROW(parse_error("Expecting a name at start of each line").set_location(token->location));
+        tt_error_info().set<parse_location_tag>(token->location);
+        throw parse_error("Expecting a name at start of each line");
     }
 
     int index = 0;
@@ -53,14 +54,16 @@ namespace tt {
         if ((*token == tokenizer_name_t::IntegerLiteral)) {
             index = static_cast<int>(*token++);
         } else {
-            TTAURI_THROW(parse_error("Expecting an integer literal as an index for {}", name).set_location(token->location));
+            tt_error_info().set<parse_location_tag>(token->location);
+            throw parse_error("Expecting an integer literal as an index for {}", name);
         }
 
 
         if ((*token == tokenizer_name_t::Operator) && (*token == "]")) {
             token++;
         } else {
-            TTAURI_THROW(parse_error("The index on {} must terminate with a bracket ']'", name).set_location(token->location));
+            tt_error_info().set<parse_location_tag>(token->location);
+            throw parse_error("The index on {} must terminate with a bracket ']'", name);
         }
     }
 
@@ -68,7 +71,8 @@ namespace tt {
     if ((*token == tokenizer_name_t::StringLiteral)) {
         value = static_cast<std::u8string>(*token++);
     } else {
-        TTAURI_THROW(parse_error("Expecting a value at end of each line").set_location(token->location));
+        tt_error_info().set<parse_location_tag>(token->location);
+        throw parse_error("Expecting a value at end of each line");
     }
 
     while (true) {
@@ -106,7 +110,8 @@ namespace tt {
                     r.msgstr[index] = value;
 
                 } else {
-                    TTAURI_THROW(parse_error("Unexpected line {}", name).set_location(token->location));
+                    tt_error_info().set<parse_location_tag>(token->location);
+                    throw parse_error("Unexpected line {}", name);
                 }
 
             } else {
@@ -143,7 +148,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
 
         auto split_line = split(line, ":");
         if (std::ssize(split_line) < 2) {
-            TTAURI_THROW(parse_error("Unknown header '{}'", line));
+            throw parse_error("Unknown header '{}'", line);
         }
 
         ttlet name = split_line.front();
@@ -177,7 +182,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
                 parse_po_header(r, tt::to_string(result.value.msgstr.front()));
 
             } else {
-                TTAURI_THROW(parse_error("Unknown .po header"));
+                throw parse_error("Unknown .po header");
             }
         }
     }

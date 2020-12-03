@@ -6,7 +6,7 @@
 #include "BezierPoint.hpp"
 #include "BezierCurve.hpp"
 #include "ResourceView.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "vec.hpp"
 #include "aarect.hpp"
 #include "mat.hpp"

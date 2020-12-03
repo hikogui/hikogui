@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include "../strings.hpp"
 #include <cstdint>
 
@@ -46,7 +46,7 @@ constexpr KeyboardModifiers &operator|=(KeyboardModifiers &lhs, KeyboardModifier
 inline KeyboardModifiers to_KeyboardModifiers(std::string_view s)
 {
     if (std::ssize(s) == 0) {
-        TTAURI_THROW(parse_error("Empty keyboard modifier"));       
+        throw parse_error("Empty keyboard modifier");       
     }
 
     // Remove the canonical trailing '+'.
@@ -67,7 +67,7 @@ inline KeyboardModifiers to_KeyboardModifiers(std::string_view s)
     ) {
         return KeyboardModifiers::Super;
     } else {
-        TTAURI_THROW(parse_error("Unknown keyboard modifier '{}'", s));
+        throw parse_error("Unknown keyboard modifier '{}'", s);
     }
 }
 

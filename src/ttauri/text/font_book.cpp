@@ -19,7 +19,7 @@ font_book::font_book(std::vector<URL> const &font_directories)
 
             try {
                 register_font(font_url, false);
-            } catch (error &) {
+            } catch (...) {
                 LOG_ERROR("Failed parsing font at {}", font_url);
             }
         }

@@ -3,7 +3,8 @@
 
 #include "File.hpp"
 #include "logger.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
+#include "error_info.hpp"
 #include "strings.hpp"
 #include "cast.hpp"
 #include <type_traits>
@@ -21,7 +22,8 @@ file::file(URL const &location, access_mode access_mode) : _access_mode(access_m
     } else if (_access_mode >= access_mode::write) {
         desiredAccess = GENERIC_WRITE;
     } else {
-        TTAURI_THROW(io_error("Invalid AccessMode; expecting Readable and/or Writeable.").set<url_tag>(location));
+        tt_error_info().set<url_tag>(location);
+        throw io_error("Invalid AccessMode; expecting Readable and/or Writeable.");
     }
 
     DWORD shareMode;
@@ -53,7 +55,8 @@ file::file(URL const &location, access_mode access_mode) : _access_mode(access_m
         }
 
     } else {
-        TTAURI_THROW(io_error("Invalid AccessMode; expecting CreateFile and/or OpenFile.").set<url_tag>(location));
+        tt_error_info().set<url_tag>(location);
+        throw io_error("Invalid AccessMode; expecting CreateFile and/or OpenFile.");
     }
 
     DWORD flagsAndAttributes = 0;
@@ -91,8 +94,8 @@ file::file(URL const &location, access_mode access_mode) : _access_mode(access_m
             return;
         }
     }
-
-    TTAURI_THROW(io_error("Could not open file").set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location));
+    tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
+    throw io_error("Could not open file");
 }
 
 file::~file() noexcept
@@ -105,7 +108,8 @@ void file::flush()
     tt_assume(_file_handle);
 
     if (!FlushFileBuffers(_file_handle)) {
-        TTAURI_THROW(io_error("Could not flush file").set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location));
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
+        throw io_error("Could not flush file");
     }
 }
 
@@ -113,7 +117,8 @@ void file::close()
 {
     if (_file_handle != INVALID_HANDLE_VALUE) {
         if (!CloseHandle(_file_handle)) {
-            TTAURI_THROW(io_error("Could not close file").set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location));
+            tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
+            throw io_error("Could not close file");
         }
         _file_handle = INVALID_HANDLE_VALUE;
     }
@@ -124,7 +129,8 @@ size_t file::size() const
     BY_HANDLE_FILE_INFORMATION file_information;
 
     if (!GetFileInformationByHandle(_file_handle, &file_information)) {
-        TTAURI_THROW(io_error("Could not get file information").set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location));
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
+        throw io_error("Could not get file information");
     }
 
     return merge_bit_cast<size_t>(file_information.nFileSizeHigh, file_information.nFileSizeLow);
@@ -149,7 +155,8 @@ ssize_t file::seek(ssize_t offset, seek_whence whence)
     offset_lo = SetFilePointer(_file_handle, offset_lo, &offset_hi, whence_);
 
     if (offset_lo == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) {
-        TTAURI_THROW(io_error("Could not seek in file").set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location));
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
+        throw io_error("Could not seek in file");
     }
 
     return merge_bit_cast<ssize_t>(offset_hi, offset_lo);
@@ -173,9 +180,8 @@ void file::rename(URL const &destination, bool overwrite_existing)
     free(rename_info);
 
     if (!r) {
-        TTAURI_THROW(io_error("Could not rename file to {}", destination)
-                         .set<error_message_tag>(getLastErrorMessage())
-                         .set<url_tag>(_location));
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
+        throw io_error(fmt::format("Could not rename file to {}", destination));
     }
 }
 
@@ -198,8 +204,8 @@ ssize_t file::write(std::byte const *data, ssize_t size, ssize_t offset)
         auto overlapped_ptr = offset != -1 ? &overlapped : nullptr;
 
         if (!WriteFile(_file_handle, data, to_write_size, &written_size, overlapped_ptr)) {
-            TTAURI_THROW(
-                io_error("Could not write to file").set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location));
+            tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
+            throw io_error("Could not write to file");
         } else if (written_size == 0) {
             break;
         }
@@ -232,8 +238,8 @@ ssize_t file::read(std::byte *data, ssize_t size, ssize_t offset)
         auto overlapped_ptr = offset != -1 ? &overlapped : nullptr;
 
         if (!ReadFile(_file_handle, data, to_read_size, &read_size, overlapped_ptr)) {
-            TTAURI_THROW(
-                io_error("Could not read from file").set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location));
+            tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
+            throw io_error("Could not read from file");
         } else if (read_size == 0) {
             break;
         }
@@ -269,7 +275,8 @@ std::string file::read_string(ssize_t max_size)
 {
     ttlet size_ = std::ssize(*this);
     if (size_ > max_size) {
-        TTAURI_THROW(io_error("File size is larger than max_size").set<url_tag>(_location));
+        tt_error_info().set<url_tag>(_location);
+        throw io_error("File size is larger than max_size");
     }
 
     auto r = std::string{};
@@ -283,7 +290,8 @@ std::u8string file::read_u8string(ssize_t max_size)
 {
     ttlet size_ = std::ssize(*this);
     if (size_ > max_size) {
-        TTAURI_THROW(io_error("File size is larger than max_size").set<url_tag>(_location));
+        tt_error_info().set<url_tag>(_location);
+        throw io_error("File size is larger than max_size");
     }
 
     auto r = std::u8string{};
@@ -299,7 +307,8 @@ size_t file::file_size(URL const &url)
 
     WIN32_FILE_ATTRIBUTE_DATA attributes;
     if (GetFileAttributesExW(name.data(), GetFileExInfoStandard, &attributes) == 0) {
-        TTAURI_THROW(io_error("Could not retrieve file attributes").set<url_tag>(url));
+        tt_error_info().set<url_tag>(url);
+        throw io_error("Could not retrieve file attributes");
     }
 
     LARGE_INTEGER size;
@@ -311,7 +320,7 @@ size_t file::file_size(URL const &url)
 void file::create_directory(URL const &url, bool hierarchy)
 {
     if (url.isRootDirectory()) {
-        TTAURI_THROW(io_error("Cannot create a root directory."));
+        throw io_error("Cannot create a root directory.");
     }
 
     ttlet directory_name = url.nativeWPath();
@@ -322,8 +331,8 @@ void file::create_directory(URL const &url, bool hierarchy)
     if (hierarchy && GetLastError() == ERROR_PATH_NOT_FOUND) {
         try {
             file::create_directory(url.urlByRemovingFilename(), true);
-        } catch (io_error &e) {
-            e.set<url_tag>(url);
+        } catch (...) {
+            tt_error_info().set<url_tag>(url);
             throw;
         }
 
@@ -332,7 +341,8 @@ void file::create_directory(URL const &url, bool hierarchy)
         }
     }
 
-    TTAURI_THROW(io_error("Could not create directory").set<error_message_tag>(getLastErrorMessage()).set<url_tag>(url));
+    tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(url);
+    throw io_error("Could not create directory");
 }
 
 void file::create_directory_hierarchy(URL const &url)

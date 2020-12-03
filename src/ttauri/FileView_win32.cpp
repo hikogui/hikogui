@@ -2,7 +2,8 @@
 // All rights reserved.
 
 #include "FileView.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
+#include "error_info.hpp"
 #include "logger.hpp"
 #include "memory.hpp"
 #include "URL.hpp"
@@ -29,9 +30,8 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
         desiredAccess = FILE_MAP_READ;
     }
     else {
-        TTAURI_THROW(io_error("Illegal access mode WRONLY/0 when viewing file.")
-            .set<url_tag>(location())
-        );
+        tt_error_info().set<url_tag>(location());
+        throw io_error("Illegal access mode WRONLY/0 when viewing file.");
     }
 
     DWORD fileOffsetHigh = _offset >> 32;
@@ -42,10 +42,8 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
         data = nullptr;
     } else {
         if ((data = MapViewOfFile(fileMappingObject->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
-            TTAURI_THROW(io_error("Could not map view of file.")
-                .set<error_message_tag>(getLastErrorMessage())
-                .set<url_tag>(location())
-            );
+            tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+            throw io_error("Could not map view of file.");
         }
     }
 
@@ -102,10 +100,8 @@ void FileView::unmap(std::span<std::byte> *bytes) noexcept
 void FileView::flush(void* base, size_t size)
 {
     if (!FlushViewOfFile(base, size)) {
-        TTAURI_THROW(io_error("Could not flush file")
-            .set<error_message_tag>(getLastErrorMessage())
-            .set<url_tag>(location())
-        );
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+        throw io_error("Could not flush file");
     }
 }
 

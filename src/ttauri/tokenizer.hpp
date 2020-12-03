@@ -7,7 +7,7 @@
 #include "small_vector.hpp"
 #include "required.hpp"
 #include "decimal.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "parse_location.hpp"
 #include "encoding/UTF.hpp"
 #include "charconv.hpp"
@@ -109,7 +109,7 @@ struct token_t {
         try {
            return std::stold(value);
         } catch(...) {
-            TTAURI_THROW(parse_error("Could not convert token {} to long double", *this));
+            throw parse_error("Could not convert token {} to long double", *this);
         }
     }
 
@@ -117,7 +117,7 @@ struct token_t {
         try {
             return std::stod(value);
         } catch(...) {
-            TTAURI_THROW(parse_error("Could not convert token {} to double", *this));
+            throw parse_error("Could not convert token {} to double", *this);
         }
     }
 
@@ -125,7 +125,7 @@ struct token_t {
         try {
             return std::stof(value);
         } catch(...) {
-            TTAURI_THROW(parse_error("Could not convert token {} to float", *this));
+            throw parse_error("Could not convert token {} to float", *this);
         }
     }
 
@@ -134,7 +134,7 @@ struct token_t {
         try {
             return tt::from_string<T>(value);
         } catch(...) {
-            TTAURI_THROW(parse_error("Could not convert token {} to {}", *this, typeid(T).name()));
+            throw parse_error("Could not convert token {} to {}", *this, typeid(T).name());
         }
     }
 
@@ -153,7 +153,7 @@ struct token_t {
     explicit operator date::year_month_day () const {
         ttlet parts = split(value, "-");
         if (parts.size() != 3) {
-            TTAURI_THROW(parse_error("Expect date to be in the format YYYY-MM-DD"));
+            throw parse_error("Expect date to be in the format YYYY-MM-DD");
         }
 
         ttlet year = date::year{stoi(parts[0])};

@@ -172,7 +172,7 @@ void gui_window_vulkan_win32::createWindow(const std::u8string &_title, vec exte
 
     auto _dpi = GetDpiForWindow(reinterpret_cast<HWND>(win32Window));
     if (_dpi == 0) {
-        TTAURI_THROW(gui_error("Could not retrieve dpi for window."));
+        throw gui_error("Could not retrieve dpi for window.");
     }
     dpi = narrow_cast<float>(_dpi);
 }

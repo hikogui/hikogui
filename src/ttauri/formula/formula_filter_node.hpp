@@ -18,7 +18,8 @@ struct formula_filter_node final : formula_binary_operator_node {
     {
         rhs_name = dynamic_cast<formula_name_node*>(this->rhs.get());
         if (rhs_name == nullptr) {
-            TTAURI_THROW(parse_error("Expecting a name token on the right hand side of a filter operator. got {}.", rhs).set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw parse_error(fmt::format("Expecting a name token on the right hand side of a filter operator. got {}.", rhs));
         }
     }
 
@@ -27,7 +28,8 @@ struct formula_filter_node final : formula_binary_operator_node {
 
         filter = context.get_filter(rhs_name->name);
         if (!filter) {
-            TTAURI_THROW(parse_error("Could not find filter .{}().", rhs_name->name).set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw parse_error("Could not find filter .{}().", rhs_name->name);
         }
     }
 
@@ -35,8 +37,8 @@ struct formula_filter_node final : formula_binary_operator_node {
         auto lhs_ = lhs->evaluate(context);
         try {
             return {filter(static_cast<std::string>(lhs_))};
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            tt_error_info().set<parse_location_tag>(location);
             throw;
         }
     }

@@ -5,7 +5,7 @@
 
 #include "gui_window.hpp"
 #include "gui_system_globals.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include "../cast.hpp"
 #include "../bigint.hpp"
 #include "../unfair_recursive_mutex.hpp"

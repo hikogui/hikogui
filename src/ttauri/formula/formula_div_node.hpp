@@ -16,8 +16,8 @@ struct formula_div_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
         try {
             return lhs_ / rhs_;
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            tt_error_info().set<parse_location_tag>(location);
             throw;
         }
     }

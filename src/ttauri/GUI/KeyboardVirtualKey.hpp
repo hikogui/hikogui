@@ -5,7 +5,7 @@
 
 #include "KeyboardModifiers.hpp"
 #include "../required.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include "../strings.hpp"
 #include <unordered_map>
 
@@ -176,7 +176,7 @@ inline KeyboardVirtualKey to_KeyboardVirtualKey(std::string_view s)
     if (i != string_to_KeyboardVirtualKey_table.cend()) {
         return i->second;
     }
-    TTAURI_THROW(parse_error("Could not find virtual key '{}'", s));
+    throw parse_error("Could not find virtual key '{}'", s);
 }
 
 KeyboardVirtualKey to_KeyboardVirtualKey(int key_code, bool extended, KeyboardModifiers modifiers);

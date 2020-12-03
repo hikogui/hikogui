@@ -6,7 +6,7 @@
 #include "KeyboardModifiers.hpp"
 #include "KeyboardVirtualKey.hpp"
 #include "../hash.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include "../strings.hpp"
 #include <string_view>
 #include <unordered_map>

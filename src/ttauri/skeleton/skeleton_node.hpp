@@ -56,16 +56,19 @@ struct skeleton_node {
     [[nodiscard]] std::string evaluate_output(formula_evaluation_context &context) {
         auto tmp = evaluate(context);
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #break not inside a loop statement.");
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #continue not inside a loop statement.");
 
         } else if (tmp.is_undefined()) {
             return std::move(context.output);
 
         } else {
-            TTAURI_THROW(invalid_operation_error("Found #return not inside a function.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #return not inside a function.");
         }
     }
 
@@ -96,8 +99,12 @@ struct skeleton_node {
     [[nodiscard]] static datum evaluate_formula_without_output(formula_evaluation_context &context, formula_node const &expression, parse_location const &location) {
         try {
             return expression.evaluate_without_output(context);
-        } catch (error &e) {
-            e.merge_location(location);
+        } catch (...) {
+            auto error_location = location;
+            if (ttlet evaluation_location = error_info::get<parse_location_tag>()) {
+                error_location += *evaluation_location;
+            }
+            tt_error_info().set<parse_location_tag>(error_location);
             throw;
         }
     }
@@ -105,8 +112,12 @@ struct skeleton_node {
     [[nodiscard]] static datum evaluate_expression(formula_evaluation_context &context, formula_node const &expression, parse_location const &location) {
         try {
             return expression.evaluate(context);
-        } catch (error &e) {
-            e.merge_location(location);
+        } catch (...) {
+            auto error_location = location;
+            if (ttlet evaluation_location = error_info::get<parse_location_tag>()) {
+                error_location += *evaluation_location;
+            }
+            tt_error_info().set<parse_location_tag>(error_location);
             throw;
         }
     }
@@ -114,8 +125,12 @@ struct skeleton_node {
     static void post_process_expression(formula_post_process_context &context, formula_node &expression, parse_location const &location) {
         try {
             return expression.post_process(context);
-        } catch (error &e) {
-            e.merge_location(location);
+        } catch (...) {
+            auto error_location = location;
+            if (ttlet evaluation_location = error_info::get<parse_location_tag>()) {
+                error_location += *evaluation_location;
+            }
+            tt_error_info().set<parse_location_tag>(error_location);
             throw;
         }
     }

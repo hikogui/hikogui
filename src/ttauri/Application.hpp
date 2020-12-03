@@ -6,6 +6,7 @@
 #include "thread.hpp"
 #include "required.hpp"
 #include "timer.hpp"
+#include "datum.hpp"
 #include <span>
 #include <memory>
 #include <string>

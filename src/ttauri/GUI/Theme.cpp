@@ -14,8 +14,8 @@ theme::theme(URL const &url)
         LOG_INFO("Parsing theme at {}", url);
         ttlet data = parseJSON(url);
         parse(data);
-    } catch (error &e) {
-        e.set<url_tag>(url);
+    } catch (...) {
+        tt_error_info().set<url_tag>(url);
         throw;
     }
 }
@@ -24,11 +24,11 @@ theme::theme(URL const &url)
 {
     // Extract name
     if (!data.contains(object_name)) {
-        TTAURI_THROW(parse_error("Missing '{}'", object_name));
+        throw parse_error("Missing '{}'", object_name);
     }
     ttlet object = data[object_name];
     if (!object.is_string()) {
-        TTAURI_THROW(parse_error("'{}' attribute must be a string, got {}.", object_name, object.type_name()));
+        throw parse_error("'{}' attribute must be a string, got {}.", object_name, object.type_name());
     }
     return static_cast<std::string>(object);
 }
@@ -36,12 +36,12 @@ theme::theme(URL const &url)
 [[nodiscard]] float theme::parseFloat(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
-        TTAURI_THROW(parse_error("Missing '{}'", object_name));
+        throw parse_error("Missing '{}'", object_name);
     }
 
     ttlet object = data[object_name];
     if (!object.is_numeric()) {
-        TTAURI_THROW(parse_error("'{}' attribute must be a number, got {}.", object_name, object.type_name()));
+        throw parse_error("'{}' attribute must be a number, got {}.", object_name, object.type_name());
     }
 
     return static_cast<float>(object);
@@ -50,12 +50,12 @@ theme::theme(URL const &url)
 [[nodiscard]] bool theme::parseBool(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
-        TTAURI_THROW(parse_error("Missing '{}'", object_name));
+        throw parse_error("Missing '{}'", object_name);
     }
 
     ttlet object = data[object_name];
     if (!object.is_bool()) {
-        TTAURI_THROW(parse_error("'{}' attribute must be a boolean, got {}.", object_name, object.type_name()));
+        throw parse_error("'{}' attribute must be a boolean, got {}.", object_name, object.type_name());
     }
 
     return static_cast<bool>(object);
@@ -65,7 +65,7 @@ theme::theme(URL const &url)
 {
     if (data.is_vector()) {
         if (std::ssize(data) != 3 && std::ssize(data) != 4) {
-            TTAURI_THROW(parse_error("Expect 3 or 4 values for a color, got {}.", data));
+            throw parse_error("Expect 3 or 4 values for a color, got {}.", data);
         }
         ttlet r = data[0];
         ttlet g = data[1];
@@ -87,7 +87,7 @@ theme::theme(URL const &url)
                 static_cast<float>(a)
             );
         } else {
-            TTAURI_THROW(parse_error("Expect all integers or all floating point numbers in a color, got {}.", data));
+            throw parse_error("Expect all integers or all floating point numbers in a color, got {}.", data);
         }
 
     } else if (data.is_string()) {
@@ -110,10 +110,10 @@ theme::theme(URL const &url)
         } else if (color_name == "cursor-color") { return cursorColor;
         } else if (color_name == "incomplete-glyph-color") { return incompleteGlyphColor;
         } else {
-            TTAURI_THROW(parse_error("Unable to parse color, got {}.", data));
+            throw parse_error("Unable to parse color, got {}.", data);
         }
     } else {
-        TTAURI_THROW(parse_error("Unable to parse color, got {}.", data));
+        throw parse_error("Unable to parse color, got {}.", data);
     }
 }
 
@@ -121,14 +121,14 @@ theme::theme(URL const &url)
 {
     // Extract name
     if (!data.contains(object_name)) {
-        TTAURI_THROW(parse_error("Missing color '{}'", object_name));
+        throw parse_error("Missing color '{}'", object_name);
     }
 
     ttlet colorObject = data[object_name];
     try {
         return parseColorValue(colorObject);
     } catch (parse_error &e) {
-        TTAURI_THROW(parse_error("Could not parse color '{}'", object_name).caused_by(e));
+        throw parse_error("Could not parse color '{}'\n{}", object_name, e.what());
     }
 }
 
@@ -136,12 +136,12 @@ theme::theme(URL const &url)
 {
     // Extract name
     if (!data.contains(object_name)) {
-        TTAURI_THROW(parse_error("Missing color list '{}'", object_name));
+        throw parse_error("Missing color list '{}'", object_name);
     }
 
     ttlet colorListObject = data[object_name];
     if (!colorListObject.is_vector()) {
-        TTAURI_THROW(parse_error("Expecting color list '{}' to be a list of colors, got {}", object_name, colorListObject.type_name()));
+        throw parse_error("Expecting color list '{}' to be a list of colors, got {}", object_name, colorListObject.type_name());
     }
 
     auto r = std::vector<vec>{};
@@ -150,7 +150,7 @@ theme::theme(URL const &url)
         try {
             r.push_back(parseColorValue(*it));
         } catch (parse_error &e) {
-            TTAURI_THROW(parse_error("Could not parse {}nd entry of color list '{}'", i + 1, name).caused_by(e));
+            throw parse_error("Could not parse {}nd entry of color list '{}'\n{}", i + 1, name, e.what());
         }
     }
     return r;
@@ -159,7 +159,7 @@ theme::theme(URL const &url)
 [[nodiscard]] FontWeight theme::parseFontWeight(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
-        TTAURI_THROW(parse_error("Missing '{}'", object_name));
+        throw parse_error("Missing '{}'", object_name);
     }
 
     ttlet object = data[object_name];
@@ -168,14 +168,14 @@ theme::theme(URL const &url)
     } else if (object.is_string()) {
         return FontWeight_from_string(static_cast<std::string>(object));
     } else {
-        TTAURI_THROW(parse_error("Unable to parse font weight, got {}.", object.type_name()));
+        throw parse_error("Unable to parse font weight, got {}.", object.type_name());
     }
 }
 
 [[nodiscard]] TextStyle theme::parseTextStyleValue(datum const &data)
 {
     if (!data.is_map()) {
-        TTAURI_THROW(parse_error("Expect a text-style to be an object, got '{}'", data));
+        throw parse_error("Expect a text-style to be an object, got '{}'", data);
     }
 
     TextStyle r;
@@ -203,14 +203,14 @@ theme::theme(URL const &url)
 {
     // Extract name
     if (!data.contains(object_name)) {
-        TTAURI_THROW(parse_error("Missing text-style '{}'", object_name));
+        throw parse_error("Missing text-style '{}'", object_name);
     }
 
     ttlet textStyleObject = data[object_name];
     try {
         return parseTextStyleValue(textStyleObject);
     } catch (parse_error &e) {
-        TTAURI_THROW(parse_error("Could not parse text-style '{}'", object_name).caused_by(e));
+        throw parse_error("Could not parse text-style '{}'\n{}", object_name, e.what());
     }
 }
 
@@ -226,7 +226,7 @@ void theme::parse(datum const &data)
     } else if (mode_name == "dark") {
         this->mode = theme_mode::dark;
     } else {
-        TTAURI_THROW(parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name));
+        throw parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name);
     }
 
     this->blue = parseColor(data, "blue");

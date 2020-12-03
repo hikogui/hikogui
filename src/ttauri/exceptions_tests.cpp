@@ -1,7 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/exceptions.hpp"
+#include "ttauri/exception.hpp"
+#include "ttauri/error_info.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -10,20 +11,14 @@ using namespace std;
 using namespace std::literals;
 using namespace tt;
 
-TEST(Exceptions, Default) {
-    ttlet current_count = read_counter<key_error::TAG>();
-
+TEST(error_info, default) {
     try {
-        TTAURI_THROW(key_error("This is a key error").set<key_tag>("foo"s));
-    } catch (error const &e) {
-        ASSERT_TRUE(e.name().find("key_error") != std::string::npos);
+        tt_error_info().set<key_tag>("foo"s);
+        throw key_error("This is a key error");
 
-        ttlet key = e.get<key_tag>();
-        ASSERT_EQ(key, "foo"s);
-
-        ASSERT_TRUE(e.error_info_string().find("key") != std::string::npos);
-        ASSERT_TRUE(e.error_info_string().find("=\"foo\"") != std::string::npos);
+    } catch (...) {
+        ttlet key = error_info::get<key_tag>();
+        ASSERT_TRUE(key);
+        ASSERT_EQ(*key, "foo"s);
     }
-
-    ASSERT_EQ(read_counter<key_error::TAG>(), current_count + 1);
 }

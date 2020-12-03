@@ -411,7 +411,7 @@ public:
         ttlet det = hadd(det_sum1, det_sum1).xxxx();
 
         if (det.x() == 0.0f) {
-            TTAURI_THROW(math_error("Divide by zero"));
+            throw std::domain_error("Divide by zero");
         }
 
         ttlet invdet = reciprocal(det);

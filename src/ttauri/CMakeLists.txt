@@ -55,7 +55,8 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
     endian.hpp
-    exceptions.hpp
+    error_info.hpp
+    exception.hpp
     file.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
@@ -129,6 +130,7 @@ target_sources(ttauri PRIVATE
     ResourceView.hpp
     safe_int.hpp
     SDF8.hpp
+    source_location.hpp
     small_map.hpp
     small_vector.hpp
     sRGB.hpp
@@ -176,7 +178,7 @@ target_precompile_headers(ttauri PRIVATE
     required.hpp
     os_detect.hpp
     assert.hpp
-    exceptions.hpp
+    exception.hpp
     counters.hpp
     logger.hpp
     trace.hpp
@@ -223,7 +225,7 @@ target_precompile_headers(ttauri_tests PRIVATE
     required.hpp
     os_detect.hpp
     assert.hpp
-    exceptions.hpp
+    exception.hpp
     counters.hpp
     logger.hpp
     trace.hpp

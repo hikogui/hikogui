@@ -9,7 +9,7 @@ namespace tt {
 static datum function_float(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for float() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for float() function, got {}", args.size());
     }
 
     return datum{static_cast<double>(args[0])};
@@ -18,7 +18,7 @@ static datum function_float(formula_evaluation_context &context, datum::vector c
 static datum function_integer(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for integer() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for integer() function, got {}", args.size());
     }
 
     return datum{static_cast<long long int>(args[0])};
@@ -27,7 +27,7 @@ static datum function_integer(formula_evaluation_context &context, datum::vector
 static datum function_decimal(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for decimal() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for decimal() function, got {}", args.size());
     }
 
     return datum{static_cast<decimal>(args[0])};
@@ -36,7 +36,7 @@ static datum function_decimal(formula_evaluation_context &context, datum::vector
 static datum function_string(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for string() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for string() function, got {}", args.size());
     }
 
     return datum{static_cast<std::string>(args[0])};
@@ -45,7 +45,7 @@ static datum function_string(formula_evaluation_context &context, datum::vector 
 static datum function_boolean(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for boolean() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for boolean() function, got {}", args.size());
     }
 
     return datum{static_cast<bool>(args[0])};
@@ -54,7 +54,7 @@ static datum function_boolean(formula_evaluation_context &context, datum::vector
 static datum function_url(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for url() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for url() function, got {}", args.size());
     }
 
     return datum{static_cast<URL>(args[0])};
@@ -63,7 +63,7 @@ static datum function_url(formula_evaluation_context &context, datum::vector con
 static datum function_size(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for size() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for size() function, got {}", args.size());
     }
 
     return datum{args[0].size()};
@@ -72,7 +72,7 @@ static datum function_size(formula_evaluation_context &context, datum::vector co
 static datum function_keys(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for keys() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for keys() function, got {}", args.size());
     }
 
     ttlet &arg = args[0];
@@ -87,7 +87,7 @@ static datum function_keys(formula_evaluation_context &context, datum::vector co
 static datum function_values(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for values() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for values() function, got {}", args.size());
     }
 
     ttlet &arg = args[0];
@@ -101,14 +101,14 @@ static datum function_values(formula_evaluation_context &context, datum::vector 
     } else if (arg.is_vector()) {
         return datum{arg};
     } else {
-        TTAURI_THROW(invalid_operation_error("Expecting vector or map argument for values() function, got {}", arg.type_name()));
+        throw operation_error("Expecting vector or map argument for values() function, got {}", arg.type_name());
     }
 }
 
 static datum function_items(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for items() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for items() function, got {}", args.size());
     }
 
     ttlet &arg = args[0];
@@ -121,14 +121,14 @@ static datum function_items(formula_evaluation_context &context, datum::vector c
         return datum{std::move(values)};
 
     } else {
-        TTAURI_THROW(invalid_operation_error("Expecting map argument for items() function, got {}", arg.type_name()));
+        throw operation_error("Expecting map argument for items() function, got {}", arg.type_name());
     }
 }
 
 static datum function_sort(formula_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for sort() function, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for sort() function, got {}", args.size());
     }
 
     ttlet &arg = args[0];
@@ -139,7 +139,7 @@ static datum function_sort(formula_evaluation_context &context, datum::vector co
         return datum{r};
 
     } else {
-        TTAURI_THROW(invalid_operation_error("Expecting vector argument for sort() function, got {}", arg.type_name()));
+        throw operation_error("Expecting vector argument for sort() function, got {}", arg.type_name());
     }
 }
 
@@ -148,21 +148,21 @@ static datum function_sort(formula_evaluation_context &context, datum::vector co
 static datum method_contains(formula_evaluation_context &context, datum &self, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for .contains() method, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for .contains() method, got {}", args.size());
     }
 
     if (self.is_vector() || self.is_map()) {
         return self.contains(args[0]);
 
     } else {
-        TTAURI_THROW(invalid_operation_error("Expecting vector or map on left hand side for .contains() method, got {}", self.type_name()));
+        throw operation_error("Expecting vector or map on left hand side for .contains() method, got {}", self.type_name());
     }
 }
 
 static datum method_append(formula_evaluation_context &context, datum &self, datum::vector const &args)
 {
     if (args.size() != 1) {
-        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for .append() method, got {}", args.size()));
+        throw operation_error("Expecting 1 argument for .append() method, got {}", args.size());
     }
 
     if (self.is_vector()) {
@@ -170,14 +170,14 @@ static datum method_append(formula_evaluation_context &context, datum &self, dat
         return {};
 
     } else {
-        TTAURI_THROW(invalid_operation_error("Expecting vector on left hand side for .append() method, got {}", self.type_name()));
+        throw operation_error("Expecting vector on left hand side for .append() method, got {}", self.type_name());
     }
 }
 
 static datum method_pop(formula_evaluation_context &context, datum &self, datum::vector const &args)
 {
     if (args.size() != 0) {
-        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .pop() method, got {}", args.size()));
+        throw operation_error("Expecting 0 arguments for .pop() method, got {}", args.size());
     }
 
     if (self.is_vector()) {
@@ -186,14 +186,14 @@ static datum method_pop(formula_evaluation_context &context, datum &self, datum:
         return r;
 
     } else {
-        TTAURI_THROW(invalid_operation_error("Expecting vector on left hand side for .pop() method, got {}", self.type_name()));
+        throw operation_error("Expecting vector on left hand side for .pop() method, got {}", self.type_name());
     }
 }
 
 static datum method_year(formula_evaluation_context &context, datum &self, datum::vector const &args)
 {
     if (args.size() != 0) {
-        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .year() method, got {}", args.size()));
+        throw operation_error("Expecting 0 arguments for .year() method, got {}", args.size());
     }
 
     return self.year();
@@ -202,7 +202,7 @@ static datum method_year(formula_evaluation_context &context, datum &self, datum
 static datum method_quarter(formula_evaluation_context &context, datum &self, datum::vector const &args)
 {
     if (args.size() != 0) {
-        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .quarter() method, got {}", args.size()));
+        throw operation_error("Expecting 0 arguments for .quarter() method, got {}", args.size());
     }
 
     return self.quarter();
@@ -211,7 +211,7 @@ static datum method_quarter(formula_evaluation_context &context, datum &self, da
 static datum method_month(formula_evaluation_context &context, datum &self, datum::vector const &args)
 {
     if (args.size() != 0) {
-        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .month() method, got {}", args.size()));
+        throw operation_error("Expecting 0 arguments for .month() method, got {}", args.size());
     }
 
     return self.month();
@@ -220,7 +220,7 @@ static datum method_month(formula_evaluation_context &context, datum &self, datu
 static datum method_day(formula_evaluation_context &context, datum &self, datum::vector const &args)
 {
     if (args.size() != 0) {
-        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .day() method, got {}", args.size()));
+        throw operation_error("Expecting 0 arguments for .day() method, got {}", args.size());
     }
 
     return self.day();

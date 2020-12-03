@@ -17,8 +17,8 @@ struct formula_inplace_div_node final : formula_binary_operator_node {
 
         try {
             return lhs_ /= rhs_;
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            tt_error_info().set<parse_location_tag>(location);
             throw;
         }
     }

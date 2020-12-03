@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include <string>
 #include <unordered_map>
 #include <ostream>
@@ -53,7 +53,7 @@ inline ttlet FontWeight_from_string_table = std::unordered_map<std::string,FontW
 */
 [[nodiscard]] constexpr FontWeight FontWeight_from_int(int rhs) {
     if (rhs < 50 || rhs > 1000) {
-        TTAURI_THROW(parse_error("Unknown font-weight {}", rhs));
+        throw parse_error("Unknown font-weight {}", rhs);
     }
     return static_cast<FontWeight>(((rhs + 50) / 100) - 1);
 }
@@ -61,7 +61,7 @@ inline ttlet FontWeight_from_string_table = std::unordered_map<std::string,FontW
 [[nodiscard]] inline FontWeight FontWeight_from_string(std::string_view rhs) {
     ttlet i = FontWeight_from_string_table.find(to_lower(rhs));
     if (i == FontWeight_from_string_table.end()) {
-        TTAURI_THROW(parse_error("Unknown font-weight {}", rhs));
+        throw parse_error("Unknown font-weight {}", rhs);
     }
     return i->second;
 }

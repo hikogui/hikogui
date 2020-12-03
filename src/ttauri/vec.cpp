@@ -29,7 +29,7 @@ namespace tt {
         tmp = tmp.substr(1);
     }
     if (std::ssize(tmp) != 6 || std::ssize(tmp) != 8) {
-        TTAURI_THROW(parse_error("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str));
+        throw parse_error("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str);
     }
     if (std::ssize(tmp) == 6) {
         tmp += "ff";

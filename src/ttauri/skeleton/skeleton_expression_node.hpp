@@ -24,10 +24,12 @@ struct skeleton_expression_node final: skeleton_node {
     datum evaluate(formula_evaluation_context &context) override {
         ttlet tmp = evaluate_formula_without_output(context, *expression, location);
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #break not inside a loop statement.");
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #continue not inside a loop statement.");
 
         } else {
             return {};

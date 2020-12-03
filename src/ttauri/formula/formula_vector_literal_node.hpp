@@ -29,13 +29,16 @@ struct formula_vector_literal_node final : formula_node {
 
     datum &assign(formula_evaluation_context& context, datum const &rhs) const override {
         if (!rhs.is_vector()) {
-            TTAURI_THROW(invalid_operation_error("Unpacking values can only be done on vectors, got {}.", rhs).set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Unpacking values can only be done on vectors, got {}.", rhs);
         }
         if (values.size() < 1) {
-            TTAURI_THROW(invalid_operation_error("Unpacking can only be done on 1 or more return values.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Unpacking can only be done on 1 or more return values.");
         }
         if (values.size() != rhs.size()) {
-            TTAURI_THROW(invalid_operation_error("Unpacking values can only be done on with a vector of size {} got {}.", values.size(), rhs.size()).set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Unpacking values can only be done on with a vector of size {} got {}.", values.size(), rhs.size());
         }
 
         // Make a copy, in case of self assignment.

@@ -5,7 +5,7 @@
 
 #include "../required.hpp"
 #include "../datum.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include <unordered_map>
 #include <vector>
 #include <string_view>
@@ -115,7 +115,7 @@ struct formula_evaluation_context {
     [[nodiscard]] datum const &loop_get(std::string_view name) const {
         tt_assume(name.size() > 0);
         if (name.back() == '$') {
-            TTAURI_THROW(invalid_operation_error("Invalid loop variable '{}'", name));
+            throw operation_error(fmt::format("Invalid loop variable '{}'", name));
         }
 
         std::string_view short_name = name.substr(1);
@@ -123,7 +123,7 @@ struct formula_evaluation_context {
 
         while (short_name[0] == '$') {
             if (i == loop_stack.crend() || i->count.is_undefined()) {
-                TTAURI_THROW(invalid_operation_error("Accessing loop variable {} while not in loop", name));
+                throw operation_error(fmt::format("Accessing loop variable {} while not in loop", name));
             }
 
             short_name = short_name.substr(1);
@@ -136,16 +136,16 @@ struct formula_evaluation_context {
             return i->first;
         } else if (short_name == "size" || short_name == "length") {
             if (i->size.is_undefined()) {
-                TTAURI_THROW(invalid_operation_error("Accessing loop variable {} only available in #for loops", name));
+                throw operation_error(fmt::format("Accessing loop variable {} only available in #for loops", name));
             }
             return i->size;
         } else if (short_name == "last") {
             if (i->last.is_undefined()) {
-                TTAURI_THROW(invalid_operation_error("Accessing loop variable {} only available in #for loops", name));
+                throw operation_error(fmt::format("Accessing loop variable {} only available in #for loops", name));
             }
             return i->last;
         } else {
-            TTAURI_THROW(invalid_operation_error("Unknown loop variable {}", name));
+            throw operation_error(fmt::format("Unknown loop variable {}", name));
         }
     }
 
@@ -168,7 +168,7 @@ struct formula_evaluation_context {
             return j->second;
         }
 
-        TTAURI_THROW(invalid_operation_error("Could not find {} in local or global scope.", name));
+        throw operation_error(fmt::format("Could not find {} in local or global scope.", name));
     }
 
     [[nodiscard]] datum &get(std::string const &name) {
@@ -186,7 +186,7 @@ struct formula_evaluation_context {
             return j->second;
         }
 
-        TTAURI_THROW(invalid_operation_error("Could not find {} in local or global scope.", name));
+        throw operation_error(fmt::format("Could not find {} in local or global scope.", name));
     }
 
     template<typename T>

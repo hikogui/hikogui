@@ -4,7 +4,7 @@
 #include "ttauri/encoding/base64.hpp"
 #include "ttauri/byte_string.hpp"
 #include "ttauri/required.hpp"
-#include "ttauri/exceptions.hpp"
+#include "ttauri/exception.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

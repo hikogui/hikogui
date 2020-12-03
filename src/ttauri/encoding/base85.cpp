@@ -119,7 +119,7 @@ bstring decode_base85(cbyteptr &ptr, cbyteptr last)
         u32 *= 85;
     }
 
-    parse_assert2(char_count != 1, "Invalid number of base85 characters");
+    parse_assert(char_count != 1, "Invalid number of base85 characters");
 
     if (char_count == 4) {
         r += static_cast<std::byte>(static_cast<uint8_t>(u32 >> 24));

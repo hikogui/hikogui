@@ -69,7 +69,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
         auto device = findBestDeviceForWindow(*window);
         if (!device) {
-            TTAURI_THROW(gui_error("Could not find a vulkan-device matching this window"));
+            throw gui_error("Could not find a vulkan-device matching this window");
         }
 
         device->add(std::move(window));

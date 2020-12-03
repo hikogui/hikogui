@@ -507,7 +507,7 @@ public:
             }
             else
             {
-                TTAURI_THROW_MATH_ERROR("Constructing decimal {} to datum", value);
+                tt_throw_overflow_error("Constructing decimal {} to datum", value);
             }
         } else {
             int e = value.exponent();
@@ -535,7 +535,7 @@ public:
             }
             else
             {
-                TTAURI_THROW_MATH_ERROR("Constructing datum from integer {}, larger than {}", value, maximum_int);
+                tt_throw_overflow_error("Constructing datum from integer {}, larger than {}", value, maximum_int);
             }
         }
     }
@@ -553,7 +553,7 @@ public:
                     auto *const p = new int64_t(value);
                     u64 = make_pointer(integer_ptr_mask, p);
                 } else {
-                    TTAURI_THROW_MATH_ERROR(
+                    tt_throw_overflow_error(
                         "Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int);
                 }
             }
@@ -573,7 +573,7 @@ public:
                 auto *const p = new std::string(value);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
-                TTAURI_THROW_MATH_ERROR("Constructing string {} to datum, larger than 6 characters", value);
+                tt_throw_overflow_error("Constructing string {} to datum, larger than 6 characters", value);
             }
         }
     }
@@ -692,7 +692,7 @@ public:
             }
             else
             {
-                TTAURI_THROW_MATH_ERROR("Constructing decimal {} to datum", rhs);
+                tt_throw_overflow_error("Constructing decimal {} to datum", rhs);
             }
         } else {
             int e = rhs.exponent();
@@ -731,7 +731,7 @@ public:
             }
             else
             {
-                TTAURI_THROW_MATH_ERROR("Assigning integer {} to datum, larger than {}", rhs, maximum_int);
+                tt_throw_overflow_error("Assigning integer {} to datum, larger than {}", rhs, maximum_int);
             }
         }
         return *this;
@@ -768,7 +768,7 @@ public:
             }
             else
             {
-                TTAURI_THROW_MATH_ERROR("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int);
+                tt_throw_overflow_error("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int);
             }
         }
 
@@ -821,7 +821,7 @@ public:
                 auto *const p = new std::string(rhs);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
-                TTAURI_THROW_MATH_ERROR("Assigning string {} to datum, larger than 6 characters", rhs);
+                tt_throw_overflow_error("Assigning string {} to datum, larger than 6 characters", rhs);
             }
         }
         return *this;
@@ -926,7 +926,7 @@ public:
         } else if (is_phy_integer_ptr()) {
             return static_cast<double>(*get_pointer<int64_t>());
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a double", this->repr(), this->type_name());
         }
     }
@@ -950,7 +950,7 @@ public:
         } else if (is_phy_float()) {
             return decimal{static_cast<double>(*this)};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a decimal", this->repr(), this->type_name());
         }
     }
@@ -965,16 +965,16 @@ public:
             ttlet year = static_cast<signed>(i >> 9);
 
             if (day == 0) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR(
+                tt_throw_operation_error(
                     "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
             }
             if (month == 0) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR(
+                tt_throw_operation_error(
                     "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
             }
             return date::year_month_day{date::year{year}, date::month{month}, date::day{day}};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
         }
     }
@@ -993,7 +993,7 @@ public:
             case small_false: return 0;
             }
         }
-        TTAURI_THROW_INVALID_OPERATION_ERROR(
+        tt_throw_operation_error(
             "Value {} of type {} can not be converted to a signed long long", this->repr(), this->type_name());
     }
 
@@ -1001,7 +1001,7 @@ public:
     {
         ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed long>::min() || v > std::numeric_limits<signed long>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a signed long", this->repr(), this->type_name());
         }
         return static_cast<signed long>(v);
@@ -1011,7 +1011,7 @@ public:
     {
         ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed int>::min() || v > std::numeric_limits<signed int>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a signed int", this->repr(), this->type_name());
         }
         return static_cast<signed int>(v);
@@ -1021,7 +1021,7 @@ public:
     {
         ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed short>::min() || v > std::numeric_limits<signed short>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a signed short", this->repr(), this->type_name());
         }
         return static_cast<signed short>(v);
@@ -1031,7 +1031,7 @@ public:
     {
         ttlet v = static_cast<int64_t>(*this);
         if (v < std::numeric_limits<signed char>::min() || v > std::numeric_limits<signed char>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a signed char", this->repr(), this->type_name());
         }
         return static_cast<signed char>(v);
@@ -1041,7 +1041,7 @@ public:
     {
         ttlet v = static_cast<signed long long>(*this);
         if (v < 0) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a unsigned long long", this->repr(), this->type_name());
         }
         return static_cast<unsigned long long>(v);
@@ -1051,7 +1051,7 @@ public:
     {
         ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned long>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a unsigned long", this->repr(), this->type_name());
         }
         return static_cast<unsigned long>(v);
@@ -1061,7 +1061,7 @@ public:
     {
         ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned int>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a unsigned int", this->repr(), this->type_name());
         }
         return static_cast<unsigned int>(v);
@@ -1071,7 +1071,7 @@ public:
     {
         ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned short>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a unsigned short", this->repr(), this->type_name());
         }
         return static_cast<unsigned short>(v);
@@ -1081,7 +1081,7 @@ public:
     {
         ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned char>::max()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a unsigned char", this->repr(), this->type_name());
         }
         return static_cast<unsigned char>(v);
@@ -1118,7 +1118,7 @@ public:
         } else if (is_phy_string_ptr() && size() == 1) {
             return get_pointer<std::string>()->at(0);
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a char", this->repr(), this->type_name());
         }
     }
@@ -1132,7 +1132,7 @@ public:
                 tt_no_default();
             }
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to bytes", this->repr(), this->type_name());
         }
     }
@@ -1260,7 +1260,7 @@ public:
         } else if (is_url()) {
             return *get_pointer<URL>();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a URL", this->repr(), this->type_name());
         }
     }
@@ -1271,7 +1271,7 @@ public:
         if (is_vector()) {
             return *get_pointer<datum_impl::vector>();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a Vector", this->repr(), this->type_name());
         }
     }
@@ -1282,7 +1282,7 @@ public:
         if (is_map()) {
             return *get_pointer<datum_impl::map>();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Value {} of type {} can not be converted to a Map", this->repr(), this->type_name());
         }
     }
@@ -1317,13 +1317,13 @@ public:
             }
 
             if (index < 0 || index >= std::ssize(v)) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR(
+                tt_throw_operation_error(
                     "Index {} out of range to access value in vector of size {}", index, std::ssize(v));
             } else {
                 return v[index];
             }
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
         }
     }
@@ -1342,7 +1342,7 @@ public:
             ttlet &m = *get_pointer<datum_impl::map>();
             ttlet i = m.find(rhs);
             if (i == m.cend()) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Could not find key {} in map of size {}", rhs.repr(), std::ssize(m));
+                tt_throw_operation_error("Could not find key {} in map of size {}", rhs.repr(), std::ssize(m));
             }
             return i->second;
 
@@ -1355,13 +1355,13 @@ public:
             }
 
             if (index < 0 || index >= std::ssize(v)) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR(
+                tt_throw_operation_error(
                     "Index {} out of range to access value in vector of size {}", index, std::ssize(v));
             } else {
                 return v[index];
             }
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
         }
     }
@@ -1417,7 +1417,7 @@ public:
             return v->back();
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot append new item onto type {}", type_name());
+            tt_throw_operation_error("Cannot append new item onto type {}", type_name());
         }
     }
 
@@ -1435,7 +1435,7 @@ public:
             v->emplace_back(std::forward<Args>(args)...);
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot append new item onto type {}", type_name());
+            tt_throw_operation_error("Cannot append new item onto type {}", type_name());
         }
     }
 
@@ -1453,7 +1453,7 @@ public:
             v->push_back(std::forward<Arg>(arg));
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot append new item onto type {}", type_name());
+            tt_throw_operation_error("Cannot append new item onto type {}", type_name());
         }
     }
 
@@ -1464,7 +1464,7 @@ public:
             v->pop_back();
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot pop_back() onto type {}", type_name());
+            tt_throw_operation_error("Cannot pop_back() onto type {}", type_name());
         }
     }
 
@@ -1473,7 +1473,7 @@ public:
         if (is_ymd()) {
             return {static_cast<signed>(static_cast<date::year_month_day>(*this).year())};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get year() from type {}", type_name());
+            tt_throw_operation_error("Cannot get year() from type {}", type_name());
         }
     }
 
@@ -1483,7 +1483,7 @@ public:
             auto month = static_cast<unsigned>(static_cast<date::year_month_day>(*this).month());
             return {((month - 1) / 3) + 1};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get month() from type {}", type_name());
+            tt_throw_operation_error("Cannot get month() from type {}", type_name());
         }
     }
 
@@ -1492,7 +1492,7 @@ public:
         if (is_ymd()) {
             return {static_cast<unsigned>(static_cast<date::year_month_day>(*this).month())};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get month() from type {}", type_name());
+            tt_throw_operation_error("Cannot get month() from type {}", type_name());
         }
     }
 
@@ -1501,7 +1501,7 @@ public:
         if (is_ymd()) {
             return {static_cast<unsigned>(static_cast<date::year_month_day>(*this).day())};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get day() from type {}", type_name());
+            tt_throw_operation_error("Cannot get day() from type {}", type_name());
         }
     }
 
@@ -1512,7 +1512,7 @@ public:
             return v->front();
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot front() onto type {}", type_name());
+            tt_throw_operation_error("Cannot front() onto type {}", type_name());
         }
     }
 
@@ -1523,7 +1523,7 @@ public:
             return v->front();
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot front() onto type {}", type_name());
+            tt_throw_operation_error("Cannot front() onto type {}", type_name());
         }
     }
 
@@ -1534,7 +1534,7 @@ public:
             return v->back();
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot back() onto type {}", type_name());
+            tt_throw_operation_error("Cannot back() onto type {}", type_name());
         }
     }
 
@@ -1545,7 +1545,7 @@ public:
             return v->back();
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot back() onto type {}", type_name());
+            tt_throw_operation_error("Cannot back() onto type {}", type_name());
         }
     }
 
@@ -1610,7 +1610,7 @@ public:
             return next.get_by_path(next_key);
 
         } else if (key.size() > 0) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("type {} does not support get() with '{}'", type_name(), key.at(0));
+            tt_throw_operation_error("type {} does not support get() with '{}'", type_name(), key.at(0));
         } else {
             return *this;
         }
@@ -1629,7 +1629,7 @@ public:
             return next.get_by_path({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("type {} does not support get() with '{}'", type_name(), key.at(0));
+            tt_throw_operation_error("type {} does not support get() with '{}'", type_name(), key.at(0));
         } else {
             return *this;
         }
@@ -1783,7 +1783,7 @@ public:
         case phy_vector_ptr_id: return get_pointer<datum_impl::vector>()->size();
         case phy_map_ptr_id: return get_pointer<datum_impl::map>()->size();
         case phy_bytes_ptr_id: return get_pointer<bstring>()->size();
-        default: TTAURI_THROW_INVALID_OPERATION_ERROR("Can't get size of value {} of type {}.", this->repr(), this->type_name());
+        default: tt_throw_operation_error("Can't get size of value {} of type {}.", this->repr(), this->type_name());
         }
     }
 
@@ -1793,7 +1793,7 @@ public:
         if (is_phy_map_ptr()) {
             return get_pointer<datum_impl::map>()->begin();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("map_begin() expect datum to be a map, but it is a {}.", this->type_name());
+            tt_throw_operation_error("map_begin() expect datum to be a map, but it is a {}.", this->type_name());
         }
     }
 
@@ -1803,7 +1803,7 @@ public:
         if (is_phy_map_ptr()) {
             return get_pointer<datum_impl::map>()->end();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("map_end() expect datum to be a map, but it is a {}.", this->type_name());
+            tt_throw_operation_error("map_end() expect datum to be a map, but it is a {}.", this->type_name());
         }
     }
 
@@ -1813,7 +1813,7 @@ public:
         if (is_phy_vector_ptr()) {
             return get_pointer<datum_impl::vector>()->begin();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "vector_begin() expect datum to be a vector, but it is a {}.", this->type_name());
         }
     }
@@ -1824,7 +1824,7 @@ public:
         if (is_phy_vector_ptr()) {
             return get_pointer<datum_impl::vector>()->end();
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("vector_end() expect datum to be a vector, but it is a {}.", this->type_name());
+            tt_throw_operation_error("vector_end() expect datum to be a vector, but it is a {}.", this->type_name());
         }
     }
 
@@ -1857,7 +1857,7 @@ public:
     datum_impl &operator++()
     {
         if (!this->is_numeric()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '++' value {} of type {}", this->repr(), this->type_name());
+            tt_throw_operation_error("Can't increment '++' value {} of type {}", this->repr(), this->type_name());
         }
 
         return *this += 1;
@@ -1866,7 +1866,7 @@ public:
     datum_impl &operator--()
     {
         if (!this->is_numeric()) {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '--' value {} of type {}", this->repr(), this->type_name());
+            tt_throw_operation_error("Can't increment '--' value {} of type {}", this->repr(), this->type_name());
         }
 
         return *this -= 1;
@@ -1946,7 +1946,7 @@ public:
         if (rhs.is_integer()) {
             return datum_impl{~static_cast<int64_t>(rhs)};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't bit-wise negate '~' value {} of type {}", rhs.repr(), rhs.type_name());
+            tt_throw_operation_error("Can't bit-wise negate '~' value {} of type {}", rhs.repr(), rhs.type_name());
         }
     }
 
@@ -1959,7 +1959,7 @@ public:
         } else if (rhs.is_float()) {
             return datum_impl{-static_cast<double>(rhs)};
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic negate '-' value {} of type {}", rhs.repr(), rhs.type_name());
+            tt_throw_operation_error("Can't arithmetic negate '-' value {} of type {}", rhs.repr(), rhs.type_name());
         }
     }
 
@@ -1968,7 +1968,7 @@ public:
         if (rhs.is_numeric()) {
             return rhs;
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic posgate '+' value {} of type {}", rhs.repr(), rhs.type_name());
+            tt_throw_operation_error("Can't arithmetic posgate '+' value {} of type {}", rhs.repr(), rhs.type_name());
         }
     }
 
@@ -2150,7 +2150,7 @@ public:
             return datum_impl{std::move(rhs_)};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't add '+' value {} of type {} to value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2177,7 +2177,7 @@ public:
             return datum_impl{lhs_ - rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't subtract '-' value {} of type {} from value {} of type {}",
                 rhs.repr(),
                 rhs.type_name(),
@@ -2204,7 +2204,7 @@ public:
             return datum_impl{lhs_ * rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't multiply '*' value {} of type {} with value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2236,7 +2236,7 @@ public:
             return datum_impl{lhs_ / rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't divide '/' value {} of type {} by value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2263,7 +2263,7 @@ public:
             return datum_impl{lhs_ % rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't take modulo '%' value {} of type {} by value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2291,7 +2291,7 @@ public:
             }
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't logical shift-left '<<' value {} of type {} with value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2318,7 +2318,7 @@ public:
             }
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't arithmetic shift-right '>>' value {} of type {} with value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2335,7 +2335,7 @@ public:
             return datum_impl{lhs_ & rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't AND '&' value {} of type {} with value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2352,7 +2352,7 @@ public:
             return datum_impl{lhs_ | rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't OR '|' value {} of type {} with value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2369,7 +2369,7 @@ public:
             return datum_impl{lhs_ ^ rhs_};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't XOR '^' value {} of type {} with value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
@@ -2401,7 +2401,7 @@ public:
             return datum_impl{std::pow(lhs_, rhs_)};
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR(
+            tt_throw_operation_error(
                 "Can't raise to a power '**' value {} of type {} with value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),

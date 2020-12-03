@@ -8,7 +8,7 @@
 #include "glob.hpp"
 #include "Unicode.hpp"
 #include "FileView.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "static_resource_view.hpp"
 #include <regex>
 
@@ -284,9 +284,8 @@ std::unique_ptr<ResourceView> URL::loadView() const
         return view;
 
     } else {
-        TTAURI_THROW(url_error("Unknown scheme for loading a resource")
-            .set<url_tag>(*this)
-        );
+        tt_error_info().set<url_tag>(*this);
+        throw url_error("Unknown scheme for loading a resource");
     }
 }
 

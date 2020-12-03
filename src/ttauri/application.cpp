@@ -183,8 +183,8 @@ void application::init_gui()
 
             try {
                 keyboardBindings.loadSystemBindings();
-            } catch (error &e) {
-                LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
+            } catch (std::exception const &e) {
+                LOG_FATAL("Could not load keyboard bindings {}", e.what());
             }
 
             gui_system::global = std::make_unique<gui_system_vulkan_win32>(gui_delegate);

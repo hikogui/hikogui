@@ -6,7 +6,7 @@
 #include "required.hpp"
 #include "cast.hpp"
 #include "strings.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "float16.hpp"
 #include <fmt/format.h>
 #include <xmmintrin.h>

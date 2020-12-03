@@ -9,7 +9,7 @@
 #include "FontDescription.hpp"
 #include "../Path.hpp"
 #include "../ResourceView.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include "../required.hpp"
 #include "../URL.hpp"
 #include <span>

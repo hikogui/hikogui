@@ -8,6 +8,8 @@
 #include "../required.hpp"
 #include "../parse_location.hpp"
 #include "../datum.hpp"
+#include "../exception.hpp"
+#include "../error_info.hpp"
 #include <vector>
 #include <memory>
 #include <string>
@@ -47,7 +49,8 @@ struct formula_node {
     /** Evaluate an existing lvalue.
     */
     virtual datum &evaluate_lvalue(formula_evaluation_context& context) const {
-        TTAURI_THROW(invalid_operation_error("Expression is not a modifiable value.").set_location(location));
+        tt_error_info().set<parse_location_tag>(location);
+        throw operation_error("Expression is not a modifiable value.");
     }
 
     virtual bool has_evaluate_xvalue() const {
@@ -57,7 +60,8 @@ struct formula_node {
     /** Evaluate an existing xvalue.
     */
     virtual datum const &evaluate_xvalue(formula_evaluation_context const& context) const {
-        TTAURI_THROW(invalid_operation_error("Expression is not a xvalue.").set_location(location));
+        tt_error_info().set<parse_location_tag>(location);
+        throw operation_error("Expression is not a xvalue.");
     }
 
     /** Assign to a non-existing or existing lvalue.
@@ -76,20 +80,23 @@ struct formula_node {
     /** Call a function with a datum::vector as arguments.
     */
     virtual datum call(formula_evaluation_context& context, datum::vector const &arguments) const {
-        TTAURI_THROW(invalid_operation_error("Expression is not callable.").set_location(location));
+        tt_error_info().set<parse_location_tag>(location);
+        throw operation_error("Expression is not callable.");
     }
 
     /** Get the name of a formula_name_node.
     */
     virtual std::string get_name() const {
-        TTAURI_THROW(parse_error("Expect a name got {})", *this).set_location(location));
+        tt_error_info().set<parse_location_tag>(location);
+        throw parse_error("Expect a name got {})", *this);
     }
 
     /** Get name and argument names from a function declaration.
     * This is only implemented on the formula_call_node.
     */
     virtual std::vector<std::string> get_name_and_argument_names() const {
-        TTAURI_THROW(parse_error("Expect a function definition got {})", *this).set_location(location));
+        tt_error_info().set<parse_location_tag>(location);
+        throw parse_error("Expect a function definition got {})", *this);
     }
 
     virtual std::string string() const noexcept = 0;

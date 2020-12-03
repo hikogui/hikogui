@@ -2,7 +2,8 @@
 // All rights reserved.
 
 #include "FileMapping.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
+#include "error_info.hpp"
 #include "logger.hpp"
 #include "memory.hpp"
 #include "required.hpp"
@@ -22,9 +23,8 @@ FileMapping::FileMapping(std::shared_ptr<tt::file> const &file, size_t size) :
         protect = PAGE_READONLY;
     }
     else {
-        TTAURI_THROW(io_error("Illigal access mode WRONLY/0 when mapping file.")
-            .set<url_tag>(location())
-        );
+        tt_error_info().set<url_tag>(location());
+        throw io_error("Illegal access mode WRONLY/0 when mapping file.");
     }
 
     DWORD maximumSizeHigh = this->size >> 32;
@@ -34,10 +34,8 @@ FileMapping::FileMapping(std::shared_ptr<tt::file> const &file, size_t size) :
         mapHandle = nullptr;
     } else {
         if ((mapHandle = CreateFileMappingA(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
-            TTAURI_THROW(io_error("Could not create file mapping")
-                .set<error_message_tag>(getLastErrorMessage())
-                .set<url_tag>(location())
-            );
+            tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+            throw io_error("Could not create file mapping");
         }
     }
 }

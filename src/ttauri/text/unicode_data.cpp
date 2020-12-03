@@ -6,7 +6,7 @@
 #include "../placement.hpp"
 #include "../endian.hpp"
 #include "../algorithm.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include "../strings.hpp"
 #include "../required.hpp"
 #include <algorithm>
@@ -62,19 +62,23 @@ static bool isHangulLVPart(char32_t codePoint)
 struct UnicodeData_Composition {
     little_uint64_buf_t data;
 
-    char32_t startCharacter() const noexcept {
+    char32_t startCharacter() const noexcept
+    {
         return data.value() >> 43;
     }
 
-    char32_t composingCharacter() const noexcept {
+    char32_t composingCharacter() const noexcept
+    {
         return (data.value() >> 22) & UNICODE_MASK;
     }
 
-    char32_t composedCharacter() const noexcept {
+    char32_t composedCharacter() const noexcept
+    {
         return data.value() & UNICODE_MASK;
     }
 
-    uint64_t searchValue() const noexcept {
+    uint64_t searchValue() const noexcept
+    {
         return data.value() >> 22;
     }
 };
@@ -82,35 +86,43 @@ struct UnicodeData_Composition {
 struct UnicodeData_Description {
     little_uint64_buf_t data;
 
-    char32_t codePoint() const noexcept {
+    char32_t codePoint() const noexcept
+    {
         return data.value() >> 43;
     }
 
-    uint8_t decompositionOrder() const noexcept {
+    uint8_t decompositionOrder() const noexcept
+    {
         return (data.value() >> 26) & 0xff;
     }
 
-    bool decompositionIsCanonical() const noexcept {
+    bool decompositionIsCanonical() const noexcept
+    {
         return ((data.value() >> 34) & 1) > 0;
     }
 
-    GraphemeUnitType graphemeUnitType() const noexcept {
+    GraphemeUnitType graphemeUnitType() const noexcept
+    {
         return static_cast<GraphemeUnitType>((data.value() >> 35) & 0xf);
     }
 
-    uint8_t decompositionLength() const noexcept {
+    uint8_t decompositionLength() const noexcept
+    {
         return (data.value() >> 21) & 0x1f;
     }
 
-    size_t decompositionOffset() const noexcept {
+    size_t decompositionOffset() const noexcept
+    {
         return (data.value() & UNICODE_MASK) * sizeof(uint64_t);
     }
 
-    char32_t decompositionCodePoint() const noexcept {
+    char32_t decompositionCodePoint() const noexcept
+    {
         return static_cast<char32_t>(data.value() & UNICODE_MASK);
     }
 
-    BidiClass bidiClass() const noexcept {
+    BidiClass bidiClass() const noexcept
+    {
         switch (codePoint()) {
         case 0x00'202a: return BidiClass::LRE;
         case 0x00'202d: return BidiClass::LRO;
@@ -125,9 +137,6 @@ struct UnicodeData_Description {
         }
     }
 };
-
-
-
 
 struct UnicodeData_Header {
     little_uint32_buf_t magic;
@@ -151,43 +160,44 @@ struct UnicodeData_Header {
      */
 };
 
-unicode_data::unicode_data(std::span<std::byte const> bytes) :
-    bytes(bytes), view()
+unicode_data::unicode_data(std::span<std::byte const> bytes) : bytes(bytes), view()
 {
     init();
 }
 
-unicode_data::unicode_data(std::unique_ptr<ResourceView> view) :
-    bytes(), view(std::move(view))
+unicode_data::unicode_data(std::unique_ptr<ResourceView> view) : bytes(), view(std::move(view))
 {
     bytes = this->view->bytes();
     init();
 }
 
-unicode_data::unicode_data(URL const &url) :
-    unicode_data(url.loadView()) {}
-
+unicode_data::unicode_data(URL const &url) : unicode_data(url.loadView()) {}
 
 void unicode_data::init()
 {
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<UnicodeData_Header>(bytes, offset);
-    parse_assert(header->magic.value() == fourcc("bucd"));
-    parse_assert(header->version.value() == 1);
+    parse_assert(header->magic.value() == fourcc("bucd"), "Binary unicode file must begin with magic 'bucd'");
+    parse_assert(header->version.value() == 1, "Binary unicode file version must be 1");
 
     descriptions_offset = offset;
     descriptions_count = header->nrDescriptions.value();
-    parse_assert(check_placement_array<UnicodeData_Description>(bytes, offset, descriptions_count));
+    parse_assert(
+        check_placement_array<UnicodeData_Description>(bytes, offset, descriptions_count),
+        "Unicode description table is beyond buffer");
     offset += sizeof(UnicodeData_Description) * descriptions_count;
 
     compositions_offset = offset;
     compositions_count = header->nrCompositions.value();
-    parse_assert(check_placement_array<UnicodeData_Composition>(bytes, offset, compositions_count));
+    parse_assert(
+        check_placement_array<UnicodeData_Composition>(bytes, offset, compositions_count),
+        "Unicode composition table is beyond buffer");
 }
 
 UnicodeData_Description const *unicode_data::getDescription(char32_t codePoint) const noexcept
 {
-    ttlet descriptions = unsafe_make_placement_array<UnicodeData_Description>(bytes, copy(descriptions_offset), descriptions_count);
+    ttlet descriptions =
+        unsafe_make_placement_array<UnicodeData_Description>(bytes, copy(descriptions_offset), descriptions_count);
     ttlet i = std::lower_bound(descriptions.begin(), descriptions.end(), codePoint, [](auto &element, auto value) {
         return element.codePoint() < value;
     });
@@ -199,7 +209,8 @@ UnicodeData_Description const *unicode_data::getDescription(char32_t codePoint) 
     }
 }
 
-GraphemeUnitType unicode_data::getGraphemeUnitType(char32_t codePoint) const noexcept {
+GraphemeUnitType unicode_data::getGraphemeUnitType(char32_t codePoint) const noexcept
+{
     if (codePoint >= 0x110000) {
         return GraphemeUnitType::Other;
 
@@ -226,13 +237,11 @@ GraphemeUnitType unicode_data::getGraphemeUnitType(char32_t codePoint) const noe
     }
 }
 
-uint8_t unicode_data::getDecompositionOrder(char32_t codePoint) const noexcept {
+uint8_t unicode_data::getDecompositionOrder(char32_t codePoint) const noexcept
+{
     if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
         return 0;
-    } else if (
-        isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) ||
-        isHangulSyllable(codePoint)
-    ) {
+    } else if (isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) || isHangulSyllable(codePoint)) {
         return 0;
     } else {
         ttlet description = getDescription(codePoint);
@@ -244,13 +253,11 @@ uint8_t unicode_data::getDecompositionOrder(char32_t codePoint) const noexcept {
     }
 }
 
-BidiClass unicode_data::getBidiClass(char32_t codePoint) const noexcept {
+BidiClass unicode_data::getBidiClass(char32_t codePoint) const noexcept
+{
     if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
         return BidiClass::Unknown;
-    } else if (
-        isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) ||
-        isHangulSyllable(codePoint)
-        ) {
+    } else if (isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) || isHangulSyllable(codePoint)) {
         return BidiClass::L;
     } else {
         ttlet description = getDescription(codePoint);
@@ -282,21 +289,21 @@ static bool isCanonicalLigature(char32_t codePoint)
     case 0xfb16: // vew now
     case 0xfb17: // men xeh
         return true;
-    default:
-        return false;
+    default: return false;
     }
 }
 
-void unicode_data::decomposeCodePoint(std::u32string &result, char32_t codePoint, bool decomposeCompatible, bool decomposeLigatures) const noexcept
+void unicode_data::decomposeCodePoint(
+    std::u32string &result,
+    char32_t codePoint,
+    bool decomposeCompatible,
+    bool decomposeLigatures) const noexcept
 {
     ttlet &description = getDescription(codePoint);
     ttlet decompositionLength = description ? description->decompositionLength() : 0;
-    ttlet mustDecompose =
-        (decompositionLength > 0) && (
-            decomposeCompatible ||
-            description->decompositionIsCanonical() ||
-            (decomposeLigatures && isCanonicalLigature(codePoint))
-            );
+    ttlet mustDecompose = (decompositionLength > 0) &&
+        (decomposeCompatible || description->decompositionIsCanonical() ||
+         (decomposeLigatures && isCanonicalLigature(codePoint)));
 
     if (codePoint <= ASCII_MAX || codePoint > UNICODE_MAX) {
         // ASCII characters and code-points above unicode plane-16 are not decomposed.
@@ -323,7 +330,7 @@ void unicode_data::decomposeCodePoint(std::u32string &result, char32_t codePoint
 
             if (check_placement_array<little_uint64_buf_at>(bytes, offset, nrTriplets)) {
                 ttlet decomposition = unsafe_make_placement_array<little_uint64_buf_at>(bytes, copy(offset), nrTriplets);
-                for (size_t tripletIndex = 0, i = 0; tripletIndex < nrTriplets; tripletIndex++, i+=3) {
+                for (size_t tripletIndex = 0, i = 0; tripletIndex < nrTriplets; tripletIndex++, i += 3) {
                     ttlet triplet = decomposition[tripletIndex].value();
                     ttlet codePoint1 = static_cast<char32_t>(triplet >> 43);
                     ttlet codePoint2 = static_cast<char32_t>((triplet >> 22) & UNICODE_MASK);
@@ -353,13 +360,12 @@ void unicode_data::decomposeCodePoint(std::u32string &result, char32_t codePoint
     }
 }
 
-
 std::u32string unicode_data::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures) const noexcept
 {
     auto result = std::u32string{};
     result.reserve(text.size() * 3);
 
-    for (ttlet codePoint: text) {
+    for (ttlet codePoint : text) {
         decomposeCodePoint(result, codePoint, decomposeCompatible, decomposeLigatures);
     }
 
@@ -368,29 +374,30 @@ std::u32string unicode_data::decompose(std::u32string_view text, bool decomposeC
 
 void unicode_data::reorder(std::u32string &text) noexcept
 {
-    for_each_cluster(text.begin(), text.end(),
-        [](auto x) { return (x >> 21) == 0; },
+    for_each_cluster(
+        text.begin(),
+        text.end(),
+        [](auto x) {
+            return (x >> 21) == 0;
+        },
         [](auto s, auto e) {
             std::stable_sort(s, e, [](auto a, auto b) {
                 return (a >> 21) < (b >> 21);
-                });
-        }
-    );
+            });
+        });
 }
 
 void unicode_data::clean(std::u32string &text) noexcept
 {
     // clean up the text by removing the upper bits.
-    for (auto &codePoint: text) {
+    for (auto &codePoint : text) {
         codePoint &= 0x1f'ffff;
     }
 }
 
 char32_t unicode_data::compose(char32_t startCodePoint, char32_t composingCodePoint, bool composeCRLF) const noexcept
 {
-    uint64_t searchValue =
-        (static_cast<uint64_t>(startCodePoint) << 21) |
-        static_cast<uint64_t>(composingCodePoint);
+    uint64_t searchValue = (static_cast<uint64_t>(startCodePoint) << 21) | static_cast<uint64_t>(composingCodePoint);
 
     if (composeCRLF && startCodePoint == UNICODE_CR_CHAR && composingCodePoint == UNICODE_LF_CHAR) {
         return UNICODE_LF_CHAR;
@@ -406,8 +413,8 @@ char32_t unicode_data::compose(char32_t startCodePoint, char32_t composingCodePo
         return startCodePoint + TIndex;
 
     } else {
-        ttlet compositions = unsafe_make_placement_array<UnicodeData_Composition>(bytes, copy(compositions_offset), compositions_count
-        );
+        ttlet compositions =
+            unsafe_make_placement_array<UnicodeData_Composition>(bytes, copy(compositions_offset), compositions_count);
 
         ttlet i = std::lower_bound(compositions.begin(), compositions.end(), searchValue, [](auto &element, auto value) {
             return element.searchValue() < value;
@@ -450,9 +457,7 @@ void unicode_data::compose(std::u32string &text, bool composeCRLF) const noexcep
                 ttlet composingCodePoint = composingCodeUnit & 0x1f'ffff;
                 ttlet composingDecompositionOrder = composingCodeUnit >> 21;
 
-                bool blockingPair =
-                    prevDecompositionOrder != 0 &&
-                    prevDecompositionOrder >= composingDecompositionOrder;
+                bool blockingPair = prevDecompositionOrder != 0 && prevDecompositionOrder >= composingDecompositionOrder;
 
                 bool composingIsStarter = composingDecompositionOrder == 0;
 
@@ -463,7 +468,7 @@ void unicode_data::compose(std::u32string &text, bool composeCRLF) const noexcep
                     // The canonical combined DecompositionOrder is always zero.
                     prevDecompositionOrder = 0;
                     // Snuff out the code-unit.
-                    text[k] = UNICODE_INVALID_CHAR; 
+                    text[k] = UNICODE_INVALID_CHAR;
 
                 } else if (composingIsStarter) {
                     // End after failing to compose with the next start-character.
@@ -533,7 +538,7 @@ static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakStat
 
     state_t breakState = state_t::Unknown;
 
-    bool  GB1 = state.firstCharacter;
+    bool GB1 = state.firstCharacter;
     if ((breakState == state_t::Unknown) & GB1) {
         breakState = state_t::Break;
     }
@@ -551,15 +556,12 @@ static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakStat
         }
     }
 
-    ttlet GB6 =
-        (lhs == GraphemeUnitType::L) &&
-        ((rhs == GraphemeUnitType::L) || (rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::LV) | (rhs == GraphemeUnitType::LVT));
-    ttlet GB7 =
-        ((lhs == GraphemeUnitType::LV) || (lhs == GraphemeUnitType::V)) &&
+    ttlet GB6 = (lhs == GraphemeUnitType::L) &&
+        ((rhs == GraphemeUnitType::L) || (rhs == GraphemeUnitType::V) ||
+         (rhs == GraphemeUnitType::LV) | (rhs == GraphemeUnitType::LVT));
+    ttlet GB7 = ((lhs == GraphemeUnitType::LV) || (lhs == GraphemeUnitType::V)) &&
         ((rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::T));
-    ttlet GB8 =
-        ((lhs == GraphemeUnitType::LVT) || (lhs == GraphemeUnitType::T)) &&
-        (rhs == GraphemeUnitType::T);
+    ttlet GB8 = ((lhs == GraphemeUnitType::LVT) || (lhs == GraphemeUnitType::T)) && (rhs == GraphemeUnitType::T);
     if ((breakState == state_t::Unknown) && (GB6 || GB7 || GB8)) {
         breakState = state_t::DontBreak;
     }
@@ -571,7 +573,8 @@ static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakStat
         breakState = state_t::DontBreak;
     }
 
-    ttlet GB11 = state.inExtendedPictographic && (lhs == GraphemeUnitType::ZWJ) && (rhs == GraphemeUnitType::Extended_Pictographic);
+    ttlet GB11 =
+        state.inExtendedPictographic && (lhs == GraphemeUnitType::ZWJ) && (rhs == GraphemeUnitType::Extended_Pictographic);
     if ((breakState == state_t::Unknown) && GB11) {
         breakState = state_t::DontBreak;
     }
@@ -582,7 +585,8 @@ static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakStat
         state.inExtendedPictographic = false;
     }
 
-    ttlet GB12_13 = (lhs == GraphemeUnitType::Regional_Indicator) && (rhs == GraphemeUnitType::Regional_Indicator) && ((state.RICount % 2) == 1);
+    ttlet GB12_13 = (lhs == GraphemeUnitType::Regional_Indicator) && (rhs == GraphemeUnitType::Regional_Indicator) &&
+        ((state.RICount % 2) == 1);
     if ((breakState == state_t::Unknown) && (GB12_13)) {
         breakState = state_t::DontBreak;
     }
@@ -602,10 +606,9 @@ static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakStat
     return breakState == state_t::Break;
 }
 
-
 bool unicode_data::checkGraphemeBreak(char32_t codePoint, GraphemeBreakState &state) const noexcept
 {
     return checkGraphemeBreak_unitType(getGraphemeUnitType(codePoint), state);
 }
 
-}
+} // namespace tt

@@ -3,7 +3,7 @@
 
 #include "ttauri/encoding/base16.hpp"
 #include "ttauri/required.hpp"
-#include "ttauri/exceptions.hpp"
+#include "ttauri/exception.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

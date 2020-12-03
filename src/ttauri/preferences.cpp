@@ -39,7 +39,7 @@ void preferences::save() const noexcept
         file.rename(_location, true);
 
     } catch (io_error &e) {
-        LOG_ERROR("Could not save preferences to file: {}", to_string(e));
+        LOG_ERROR("Could not save preferences to file: {}", tt::to_string(e));
     }
 
     _modified = false;

@@ -12,16 +12,16 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
     ttlet data = parseJSON(url);
 
     try {
-        parse_assert2(data.contains("bindings"), "Missing key 'bindings' at top level.");
+        parse_assert(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
         ttlet binding_list = data["bindings"];
-        parse_assert2(binding_list.is_vector(), "Expecting array value for key 'bindings' at top level.");
+        parse_assert(binding_list.is_vector(), "Expecting array value for key 'bindings' at top level.");
 
         for (auto i = binding_list.vector_begin(); i != binding_list.vector_end(); ++i) {
             ttlet binding = *i;
-            parse_assert2(binding.is_map(), "Expecting object for a binding, got {}", binding);
+            parse_assert(binding.is_map(), "Expecting object for a binding, got {}", binding);
 
-            parse_assert2(
+            parse_assert(
                 binding.contains("key") && binding.contains("command"),
                 "Expecting required 'key' and 'command' for a binding, got {}", binding
             );
@@ -40,7 +40,7 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
 
             auto command = to_command(command_name);
             if (command == command::unknown) {
-                TTAURI_THROW(parse_error("Could not parse command '{}'", command_name));
+                throw parse_error("Could not parse command '{}'", command_name);
             }
 
             if (ignored_binding) {
@@ -52,8 +52,8 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
             }
         }
 
-    } catch (error &e) {
-        e.set<url_tag>(url);
+    } catch (...) {
+        tt_error_info().set<url_tag>(url);
         throw;
     }
 

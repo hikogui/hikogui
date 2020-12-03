@@ -16,8 +16,12 @@ struct formula_add_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
         try {
             return lhs_ + rhs_;
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            auto error_location = location;
+            if (auto formula_location = error_info::get<parse_location_tag>()) {
+                error_location += *formula_location;
+            }
+            tt_error_info().set<parse_location_tag>(error_location);
             throw;
         }
     }

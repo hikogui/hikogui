@@ -5,7 +5,7 @@
 
 #include "int_overflow.hpp"
 #include "type_traits.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include <system_error>
 #include <type_traits>
 #include <limits>
@@ -48,7 +48,7 @@ T safe_handle_overflow(T value, bool overflow, bool is_positive) noexcept(OnOver
 {
     if constexpr (OnOverflow == on_overflow_t::Throw) {
         if (overflow) {
-            TTAURI_THROW(math_error("safe_int"));
+            throw std::overflow_error("integer overflow");
         }
     } else if constexpr (OnOverflow == on_overflow_t::Assert) {
         tt_assert(!overflow);

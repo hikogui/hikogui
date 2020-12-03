@@ -52,22 +52,29 @@ struct skeleton_block_node final: skeleton_node {
         datum tmp;
         try {
             tmp = function(context, datum::vector{});
-        } catch (invalid_operation_error &e) {
-            e.merge_location(location);
+        } catch (...) {
+            auto error_location = location;
+            if (ttlet location_in_function = error_info::get<parse_location_tag>()) {
+                error_location += *location_in_function;
+            }
+            tt_error_info().set<parse_location_tag>(error_location);
             throw;
         }
 
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #break not inside a loop statement.");
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #continue not inside a loop statement.");
 
         } else if (tmp.is_undefined()) {
             return {};
 
         } else {
-            TTAURI_THROW(invalid_operation_error("Can not use a #return statement inside a #block.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Can not use a #return statement inside a #block.");
         }
     }
 
@@ -77,16 +84,19 @@ struct skeleton_block_node final: skeleton_node {
         context.pop();
 
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #break not inside a loop statement.");
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Found #continue not inside a loop statement.");
 
         } else if (tmp.is_undefined()) {
             return {};
 
         } else {
-            TTAURI_THROW(invalid_operation_error("Can not use a #return statement inside a #block.").set_location(location));
+            tt_error_info().set<parse_location_tag>(location);
+            throw operation_error("Can not use a #return statement inside a #block.");
         }
     }
 

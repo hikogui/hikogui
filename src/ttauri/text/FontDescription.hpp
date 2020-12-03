@@ -7,7 +7,7 @@
 #include "GlyphID.hpp"
 #include "FontWeight.hpp"
 #include "FontVariant.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include "../required.hpp"
 
 namespace tt {

@@ -2,28 +2,38 @@
 #pragma once
 
 #include "source_location.hpp"
-#include <atomic>
+#include <cstdint>
+#include <string>
 
 namespace tt {
 
 /** Location in the source file where an error was thrown.
  */
-class source_location_tag {
+struct source_location_tag {
     using value_type = source_location;
 };
 
-/** Used to define for which URL a io error was thrown.
+/** Used to define for which URL a io_error was thrown.
  */
 class URL;
-class url_tag {
+struct url_tag {
     using value_type = URL;
+};
+
+struct key_tag {
+    using value_type = std::string;
+};
+
+struct error_message_tag {
+    using value_type = std::string;
 };
 
 /** Used to define the location in a text file where there was an error during parsing.
  */
-class parse_location_tag {
+class parse_location;
+struct parse_location_tag {
     using value_type = parse_location;
-}
+};
 
 /** Error information passed alongside an error code or exception.
  *
@@ -47,8 +57,9 @@ class parse_location_tag {
  * ```
  */
 class error_info {
+public:
     /** Open an error info capture transaction.
-     * This will implicently set the source_location_tag information.
+     * This will implicitly set the source_location_tag information.
      */
     error_info(source_location location) noexcept :
         version(++error_info::last_version)
@@ -83,17 +94,17 @@ class error_info {
      * @param value The value to set.
      * @return A reference to the error_info, for chaining of .set() calls.
      */
-    template<typename Tag>
-    error_info &set(Tag::value_type &&value) const noexcept {
+    template<typename Tag, typename Arg>
+    error_info &set(Arg &&value) noexcept {
         tt_assume(error_info::last_version == this->version);
 
         error_info::value_version<Tag> = this->version;
-        error_info::value<Tag,Tag::value_type> = value;
+        error_info::value<Tag,typename Tag::value_type> = std::forward<Arg>(value);
         return *this;
     }
 
     /** Copy a value from the previous commit into the current error_info.
-     * The copy of a value is only done if it was commited by the previous
+     * The copy of a value is only done if it was committed by the previous
      * error_info transaction.
      *
      * @tparam Tag a struct type used as an identifier.
@@ -119,11 +130,11 @@ class error_info {
      * @return The value to if it was set, or empty.
      */
     template<typename Tag>
-    static std::optional<Tag::value_type> get() noexcept {
-        if (error_info::value_version<Tag> == error_info::last_version.load()) {
-            return error_info::value<Tag,Tag::value_type>;
+    static std::optional<typename Tag::value_type> get() noexcept {
+        if (error_info::value_version<Tag> == error_info::last_version) {
+            return *error_info::value<Tag,Tag::value_type>;
         } else {
-            return {}
+            return {};
         }
     }
 
@@ -133,22 +144,29 @@ private:
      */
     uint64_t version;
 
-    /** The version that was last comitted.
+    /** The version that was last committed.
      */
-    static thread_local uint64_t last_version = 0;
+    inline static thread_local uint64_t last_version;
 
-    /** The version where a value was comitted.
+    /** The version where a value was committed.
      */
     template<typename Tag>
-    static thread_local uint64_t value_version = 0;
+    inline static thread_local uint64_t value_version;
 
-    /** The last value that was comitted.
+    /** The last value that was committed.
      */
     template<typename Tag, typename T>
-    static thread_local T value = {};
+    inline static thread_local std::optional<T> value;
 };
+
+/** Create a message including the exception and any error information.
+ */
+[[nodiscard]] inline std::string to_string(std::exception const &e) noexcept
+{
+    return e.what();
+}
 
 }
 
-#define tt_error_info() error_info(tt_source_location())
+#define tt_error_info() tt::error_info(tt_source_location())
 

@@ -17,8 +17,12 @@ struct formula_inplace_and_node final : formula_binary_operator_node {
 
         try {
             return lhs_ &= rhs_;
-        } catch (error &e) {
-            e.set_location(location);
+        } catch (...) {
+            auto error_location = location;
+            if (auto formula_location = error_info::get<parse_location_tag>()) {
+                error_location += *formula_location;
+            }
+            tt_error_info().set<parse_location_tag>(error_location);
             throw;
         }
     }

@@ -557,7 +557,7 @@ private:
             } else if (c == '-') {
                 mantissa_str += c;
             } else {
-                TTAURI_THROW_PARSE_ERROR("Unexpected character in decimal number '{}'", str);
+                tt_throw_parse_error("Unexpected character in decimal number '{}'", str);
             }
         }
 
@@ -568,9 +568,9 @@ private:
         long long mantissa;
         auto result = std::from_chars(first, last, mantissa, 10);
         if (result.ptr == first) {
-            TTAURI_THROW_PARSE_ERROR("Could not parse mantissa '{}'", mantissa_str);
+            tt_throw_parse_error("Could not parse mantissa '{}'", mantissa_str);
         } else if (result.ec == std::errc::result_out_of_range) {
-            TTAURI_THROW_PARSE_ERROR("Mantissa '{}' out of range ", mantissa_str);
+            tt_throw_parse_error("Mantissa '{}' out of range ", mantissa_str);
         } else {
             return {exponent, mantissa};
         }

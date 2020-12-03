@@ -26,7 +26,7 @@ TEST(SafeIntTests, Add) {
     //ttlet low = tint64_t{minimum + 1};
     //ttlet lessLow = tint64_t{minimum + 2};
 
-    ASSERT_THROW(r = minimum + minimum, tt::math_error);
+    ASSERT_THROW(r = minimum + minimum, std::overflow_error);
 
     /*ASSERT_TRUE(add_overflow(minimum, minimum, &r));
     ASSERT_TRUE(add_overflow(minimum, low, &r));

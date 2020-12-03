@@ -3,7 +3,7 @@
 
 #include "File.hpp"
 #include "logger.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "strings.hpp"
 #include <fcntl.h>
 #include <sys/types.h>
@@ -24,9 +24,8 @@ File::File(URL const &location, AccessMode accessMode) :
     } else if (accessMode >= AccessMode::Write) {
         openFlags = O_WRONLY;;
     } else {
-        TTAURI_THROW(io_error("Invalid AccessMode; expecting Readable and/or Writeable.")
-            .set<url_tag>(location)
-        );
+        tt_error_info().set<url_tag>(location());
+        throw io_error("Invalid AccessMode; expecting Readable and/or Writeable.");
     }
 
     if (accessMode >= AccessMode::WriteLock) {
@@ -50,9 +49,8 @@ File::File(URL const &location, AccessMode accessMode) :
         }
 
     } else {
-        TTAURI_THROW(io_error("Invalid AccessMode; expecting CreateFile and/or OpenFile.")
-            .set<url_tag>(location)
-        );
+        tt_error_info().set<url_tag>(location());
+        throw io_error("Invalid AccessMode; expecting CreateFile and/or OpenFile.");
     }
 
     //int advise = 0;
@@ -72,10 +70,8 @@ File::File(URL const &location, AccessMode accessMode) :
 
     ttlet fileName = location.nativePath();
     if ((fileHandle = ::open(fileName.data(), openFlags, permissions)) == -1) {
-        TTAURI_THROW(io_error("Could not open file")
-            .set<error_message_tag>(getLastErrorMessage())
-            .set<url_tag>(location)
-        );
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+        throw io_error("Could not open file");
     }
 }
 
@@ -88,10 +84,8 @@ void File::close()
 {
     if (fileHandle != -1) {
         if (::close(fileHandle) != 0) {
-            TTAURI_THROW(io_error("Could not close file")
-                .set<error_message_tag>(getLastErrorMessage())
-                .set<url_tag>(location)
-            );
+            tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+            throw io_error("Could not close file");
         }
         fileHandle = -1;
     }
@@ -104,7 +98,8 @@ size_t File::fileSize(URL const &url)
     struct ::stat statbuf;
 
     if (::stat(name.data(), &statbuf) == -1) {
-        TTAURI_THROW(io_error("Could not retrieve file attributes").set<url_tag>(url));
+        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+        throw io_error("Could not retrieve file attributes");
     }
 
     return narrow_cast<size_t>(statbuf.st_size);

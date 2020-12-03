@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "FileMapping.hpp"
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "logger.hpp"
 #include "memory.hpp"
 #include "required.hpp"

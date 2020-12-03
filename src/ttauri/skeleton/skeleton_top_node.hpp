@@ -34,8 +34,12 @@ struct skeleton_top_node final: skeleton_node {
         try {
             return evaluate_children(context, children);
 
-        } catch (error &e) {
-            e.merge_location(location);
+        } catch (...) {
+            auto error_location = location;
+            if (auto formula_location = error_info::get<parse_location_tag>()) {
+                error_location += *formula_location;
+            }
+            tt_error_info().set<parse_location_tag>(error_location);
             throw;
         }
     }

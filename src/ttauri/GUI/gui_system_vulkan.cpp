@@ -46,7 +46,7 @@ gui_system_vulkan::gui_system_vulkan(
     }
 
     if (!hasFoundationExtensions(requiredExtensions)) {
-        TTAURI_THROW(gui_error("Vulkan instance does not have the required extensions"));
+        throw gui_error("Vulkan instance does not have the required extensions");
     }
 
     auto instanceCreateInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo);

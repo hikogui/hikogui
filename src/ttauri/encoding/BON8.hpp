@@ -2,7 +2,7 @@
 #include "../byte_string.hpp"
 #include "../required.hpp"
 #include "../datum.hpp"
-#include "../exceptions.hpp"
+#include "../exception.hpp"
 #include "../cast.hpp"
 #include <cstddef>
 
@@ -389,7 +389,7 @@ void BON8_encoder::add(datum const &value) {
     } else if (value.is_map()) {
         add(static_cast<datum::map>(value));
     } else {
-        TTAURI_THROW(invalid_operation_error("Datum value can not be encoded to BON8"));
+        throw operation_error("Datum value can not be encoded to BON8");
     }
 }
 
@@ -408,7 +408,7 @@ void BON8_encoder::add(datum const &value) {
         c0 <= 0xef ? 3 :
         4;
 
-    parse_assert2(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
+    parse_assert(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
 
     ttlet c1 = static_cast<uint8_t>(*(ptr + 1));
     return (c1 < 0x80 || c1 > 0xbf) ? -count : count;
@@ -428,7 +428,7 @@ void BON8_encoder::add(datum const &value) {
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
-        parse_assert2(ptr != last, "Incomplete signed integer at end of buffer");
+        parse_assert(ptr != last, "Incomplete signed integer at end of buffer");
         u64 <<= 8;
         u64 |= static_cast<uint64_t>(*(ptr++));
     }
@@ -449,7 +449,7 @@ void BON8_encoder::add(datum const &value) {
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
-        parse_assert2(ptr != last, "Incomplete signed integer at end of buffer");
+        parse_assert(ptr != last, "Incomplete signed integer at end of buffer");
         u64 <<= 8;
         u64 |= static_cast<uint64_t>(*(ptr++));
     }
@@ -480,7 +480,7 @@ void BON8_encoder::add(datum const &value) {
             r.push_back(decode_BON8(ptr, last));
         }
     }
-    TTAURI_THROW(parse_error("Incomplete array at end of buffer"));
+    throw parse_error("Incomplete array at end of buffer");
 }
 
 [[nodiscard]] datum decode_BON8_object(cbyteptr &ptr, cbyteptr last)
@@ -494,13 +494,13 @@ void BON8_encoder::add(datum const &value) {
 
         } else {
             auto key = decode_BON8(ptr, last);
-            parse_assert2(key.is_string(), "Key in object is not a string");
+            parse_assert(key.is_string(), "Key in object is not a string");
 
             auto value = decode_BON8(ptr, last);
             r.emplace(std::move(key), std::move(value));
         }
     }
-    TTAURI_THROW(parse_error("Incomplete array at end of buffer"));
+    throw parse_error("Incomplete array at end of buffer");
 }
 
 [[nodiscard]] datum decode_BON8_UTF8_like_int(cbyteptr &ptr, cbyteptr last, int count) noexcept
@@ -634,7 +634,7 @@ void BON8_encoder::add(datum const &value) {
                 return decode_BON8_float(ptr, last, 8);
 
             case BON8_code_eoc:
-                TTAURI_THROW(parse_error("Unexpected end-of-container"));
+                throw parse_error("Unexpected end-of-container");
 
             case BON8_code_array:
                 ++ptr;
@@ -649,7 +649,7 @@ void BON8_encoder::add(datum const &value) {
             }
         }
     }
-    TTAURI_THROW(parse_error("Unexpected end-of-buffer"));
+    throw parse_error("Unexpected end-of-buffer");
 }
 } // namespace detail
 

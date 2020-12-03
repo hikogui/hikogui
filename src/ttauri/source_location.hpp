@@ -37,11 +37,11 @@ public:
 private:
     uint_least32_t _line;
     uint_least32_t _column;
-    char const *file_name;
-    char const *function_name;
+    char const *_file_name;
+    char const *_function_name;
 };
 
-#define tt_source_location() tt::source_location(§
+#define tt_source_location() tt::source_location(__LINE__, 0, __FILE__, __func__)
 
 }
 
