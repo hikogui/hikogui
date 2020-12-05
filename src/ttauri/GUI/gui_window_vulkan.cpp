@@ -95,9 +95,7 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
         LOG_INFO("acquireNextImageKHR() eTimeout");
         return {};
 
-    default:
-        tt_error_info().set<vk_result_tag>(result);
-        throw gui_error("Unknown result from acquireNextImageKHR()");
+    default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from acquireNextImageKHR()");
     }
 }
 
@@ -129,9 +127,7 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
             state = State::SwapchainLost;
             return;
 
-        default:
-            tt_error_info().set<vk_result_tag>(result);
-            throw gui_error("Unknown result from presentKHR()");
+        default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from presentKHR()");
         }
 
     } catch (vk::OutOfDateKHRError const &) {
@@ -381,7 +377,6 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 
-
     struct fill_command_buffer_tag {
     };
     auto t = trace<fill_command_buffer_tag>{};
@@ -396,17 +391,20 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
 
     // Clamp the scissor rectangle to the size of the window.
     scissor_rectangle = intersect(scissor_rectangle, aarect{0.0f, 0.0f, swapchainImageExtent.width, swapchainImageExtent.height});
+    scissor_rectangle = ceil(scissor_rectangle);
 
     ttlet scissors = std::array{vk::Rect2D{
-        vk::Offset2D(scissor_rectangle.x(), swapchainImageExtent.height - scissor_rectangle.y() - scissor_rectangle.height()),
-        vk::Extent2D(scissor_rectangle.width(), scissor_rectangle.height())}};
+        vk::Offset2D(
+            narrow_cast<uint32_t>(scissor_rectangle.x()),
+            narrow_cast<uint32_t>(swapchainImageExtent.height - scissor_rectangle.y() - scissor_rectangle.height())),
+        vk::Extent2D(narrow_cast<uint32_t>(scissor_rectangle.width()), narrow_cast<uint32_t>(scissor_rectangle.height()))}};
 
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.
     commandBuffer.setScissor(0, scissors);
 
     ttlet renderArea = scissors.at(0);
 
-    //ttlet renderArea = vk::Rect2D{
+    // ttlet renderArea = vk::Rect2D{
     //    vk::Offset2D(0, 0), vk::Extent2D(swapchainImageExtent.width, swapchainImageExtent.height)};
 
     commandBuffer.beginRenderPass(
@@ -596,9 +594,7 @@ gui_window::State gui_window_vulkan::buildSwapchain()
 
     case vk::Result::eErrorSurfaceLostKHR: return State::SurfaceLost;
 
-    default:
-        tt_error_info().set<vk_result_tag>(result);
-        throw gui_error("Unknown result from createSwapchainKHR()");
+    default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from createSwapchainKHR()");
     }
 
     LOG_INFO("Finished building swap chain");

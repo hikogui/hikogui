@@ -144,8 +144,6 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.hpp
-    throw_exception.cpp
-    throw_exception.hpp
     timer.cpp
     timer.hpp
     tokenizer.cpp

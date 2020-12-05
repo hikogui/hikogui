@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "throw_exception.hpp"
+#include "exception.hpp"
 #include "int_overflow.hpp"
 #include "math.hpp"
 #include <fmt/ostream.h>
@@ -557,7 +557,7 @@ private:
             } else if (c == '-') {
                 mantissa_str += c;
             } else {
-                tt_throw_parse_error("Unexpected character in decimal number '{}'", str);
+                throw parse_error("Unexpected character in decimal number '{}'", str);
             }
         }
 
@@ -568,9 +568,9 @@ private:
         long long mantissa;
         auto result = std::from_chars(first, last, mantissa, 10);
         if (result.ptr == first) {
-            tt_throw_parse_error("Could not parse mantissa '{}'", mantissa_str);
+            throw parse_error("Could not parse mantissa '{}'", mantissa_str);
         } else if (result.ec == std::errc::result_out_of_range) {
-            tt_throw_parse_error("Mantissa '{}' out of range ", mantissa_str);
+            throw parse_error("Mantissa '{}' out of range ", mantissa_str);
         } else {
             return {exponent, mantissa};
         }
