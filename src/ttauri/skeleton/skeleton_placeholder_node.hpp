@@ -24,12 +24,13 @@ struct skeleton_placeholder_node final : skeleton_node {
     {
         try {
             expression->post_process(context);
+
         } catch (...) {
             auto error_location = location;
-            if (ttlet expression_location = error_info::get<parse_location_tag>()) {
+            if (ttlet expression_location = error_info::peek<parse_location_tag>()) {
                 error_location += *expression_location;
             }
-            tt_error_info().set<parse_location_tag>(error_location);
+            error_info(true).set<parse_location_tag>(error_location);
             throw;
         }
     }

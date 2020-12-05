@@ -17,7 +17,7 @@ TEST(error_info, default) {
         throw key_error("This is a key error");
 
     } catch (...) {
-        ttlet key = error_info::get<key_tag>();
+        ttlet key = error_info::pop<key_tag>();
         ASSERT_TRUE(key);
         ASSERT_EQ(*key, "foo"s);
     }

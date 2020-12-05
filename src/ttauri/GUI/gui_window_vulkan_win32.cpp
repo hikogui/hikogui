@@ -193,8 +193,9 @@ gui_window_vulkan_win32::~gui_window_vulkan_win32()
         if (win32Window != nullptr) {
             LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title);
         }
-    } catch (...) {
-        abort();
+
+    } catch (std::exception const &e) {
+        LOG_FATAL("Could not properly destruct gui_window_vulkan_win32 {}", to_string(e));
     }
 }
 

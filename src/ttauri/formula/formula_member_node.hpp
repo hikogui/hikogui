@@ -40,7 +40,7 @@ struct formula_member_node final : formula_binary_operator_node {
             try {
                 return lhs_[rhs_name->name];
             } catch (...) {
-                tt_error_info().set<parse_location_tag>(location);
+                error_info(true).set<parse_location_tag>(location);
                 throw;
             }
 
@@ -54,7 +54,7 @@ struct formula_member_node final : formula_binary_operator_node {
             try {
                 return lhs_[rhs_name->name];
             } catch (...) {
-                tt_error_info().set<parse_location_tag>(location);
+                error_info(true).set<parse_location_tag>(location);
                 throw;
             }
         }
@@ -65,7 +65,7 @@ struct formula_member_node final : formula_binary_operator_node {
         try {
             return lhs_[rhs_name->name];
         } catch (...) {
-            tt_error_info().set<parse_location_tag>(location);
+            error_info(true).set<parse_location_tag>(location);
             throw;
         }
     }
@@ -75,7 +75,7 @@ struct formula_member_node final : formula_binary_operator_node {
         try {
             return method(context, lhs_, arguments);
         } catch (...) {
-            tt_error_info().set<parse_location_tag>(location);
+            error_info(true).set<parse_location_tag>(location);
             throw;
         }
     }

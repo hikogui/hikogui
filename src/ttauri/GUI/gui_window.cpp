@@ -27,8 +27,9 @@ gui_window::~gui_window()
             LOG_FATAL("Window '{}' was not properly teardown before destruction.", title);
         }
         LOG_INFO("Window '{}' has been propertly destructed.", title);
-    } catch (...) {
-        abort();
+
+    } catch (std::exception const &e) {
+        LOG_FATAL("Could not properly destruct gui_window {}", to_string(e));
     }
 }
 

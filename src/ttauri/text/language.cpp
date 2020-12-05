@@ -17,8 +17,9 @@ language::language(language_tag tag) noexcept :
 
     try {
         add_translation(parse_po(po_url), *this);
+
     } catch (std::exception const &e) {
-        LOG_WARNING("Could not load language catalogue: {}", e.what());
+        LOG_WARNING("Could not load language catalogue: {}", tt::to_string(e));
     }
 }
 

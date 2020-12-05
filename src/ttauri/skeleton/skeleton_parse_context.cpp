@@ -30,12 +30,13 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression(std::stri
 
     try {
         expression = parse_formula(context);
+
     } catch (...) {
         auto error_location = location;
-        if (auto formula_location = error_info::get<parse_location_tag>()) {
+        if (auto formula_location = error_info::peek<parse_location_tag>()) {
             error_location += *formula_location;
         }
-        tt_error_info().set<parse_location_tag>(error_location);
+        error_info(true).set<parse_location_tag>(error_location);
         throw;
     }
 

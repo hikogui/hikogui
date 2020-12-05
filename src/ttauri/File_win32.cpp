@@ -332,7 +332,7 @@ void file::create_directory(URL const &url, bool hierarchy)
         try {
             file::create_directory(url.urlByRemovingFilename(), true);
         } catch (...) {
-            tt_error_info().set<url_tag>(url);
+            error_info(true).set<url_tag>(url);
             throw;
         }
 

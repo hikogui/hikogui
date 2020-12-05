@@ -18,10 +18,10 @@ struct formula_add_node final : formula_binary_operator_node {
             return lhs_ + rhs_;
         } catch (...) {
             auto error_location = location;
-            if (auto formula_location = error_info::get<parse_location_tag>()) {
+            if (auto formula_location = error_info::peek<parse_location_tag>()) {
                 error_location += *formula_location;
             }
-            tt_error_info().set<parse_location_tag>(error_location);
+            error_info(true).set<parse_location_tag>(error_location);
             throw;
         }
     }

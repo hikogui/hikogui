@@ -271,7 +271,9 @@ std::unique_ptr<ResourceView> URL::loadView() const
             LOG_INFO("Loaded resource {} from executable.", *this);
             return view;
 
-        } catch (key_error) {
+        } catch (key_error const &) {
+            error_info::close();
+
             ttlet absoluteLocation = URL::urlFromResourceDirectory() / *this;
             auto view = FileView::loadView(absoluteLocation);
             LOG_INFO("Loaded resource {} from filesystem at {}.", *this, absoluteLocation);

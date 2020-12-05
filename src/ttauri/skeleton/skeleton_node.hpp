@@ -99,12 +99,13 @@ struct skeleton_node {
     [[nodiscard]] static datum evaluate_formula_without_output(formula_evaluation_context &context, formula_node const &expression, parse_location const &location) {
         try {
             return expression.evaluate_without_output(context);
+
         } catch (...) {
             auto error_location = location;
-            if (ttlet evaluation_location = error_info::get<parse_location_tag>()) {
+            if (ttlet evaluation_location = error_info::peek<parse_location_tag>()) {
                 error_location += *evaluation_location;
             }
-            tt_error_info().set<parse_location_tag>(error_location);
+            error_info(true).set<parse_location_tag>(error_location);
             throw;
         }
     }
@@ -112,12 +113,13 @@ struct skeleton_node {
     [[nodiscard]] static datum evaluate_expression(formula_evaluation_context &context, formula_node const &expression, parse_location const &location) {
         try {
             return expression.evaluate(context);
+
         } catch (...) {
             auto error_location = location;
-            if (ttlet evaluation_location = error_info::get<parse_location_tag>()) {
+            if (ttlet evaluation_location = error_info::peek<parse_location_tag>()) {
                 error_location += *evaluation_location;
             }
-            tt_error_info().set<parse_location_tag>(error_location);
+            error_info(true).set<parse_location_tag>(error_location);
             throw;
         }
     }
@@ -125,12 +127,13 @@ struct skeleton_node {
     static void post_process_expression(formula_post_process_context &context, formula_node &expression, parse_location const &location) {
         try {
             return expression.post_process(context);
+
         } catch (...) {
             auto error_location = location;
-            if (ttlet evaluation_location = error_info::get<parse_location_tag>()) {
+            if (ttlet evaluation_location = error_info::peek<parse_location_tag>()) {
                 error_location += *evaluation_location;
             }
-            tt_error_info().set<parse_location_tag>(error_location);
+            error_info(true).set<parse_location_tag>(error_location);
             throw;
         }
     }

@@ -106,8 +106,8 @@ void application::init_foundation()
 #endif
     try {
         timeZone = date::current_zone();
-    } catch (std::runtime_error &e) {
-        LOG_ERROR("Could not get the current time zone, all times shown as UTC: '{}'", e.what());
+    } catch (std::runtime_error const &e) {
+        LOG_ERROR("Could not get the current time zone, all times shown as UTC: '{}'", tt::to_string(e));
     }
 
     // First we need a clock, it is used by almost any other service.
@@ -184,7 +184,7 @@ void application::init_gui()
             try {
                 keyboardBindings.loadSystemBindings();
             } catch (std::exception const &e) {
-                LOG_FATAL("Could not load keyboard bindings {}", e.what());
+                LOG_FATAL("Could not load keyboard bindings {}", tt::to_string(e));
             }
 
             gui_system::global = std::make_unique<gui_system_vulkan_win32>(gui_delegate);

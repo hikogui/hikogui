@@ -28,7 +28,7 @@ struct formula_name_node final : formula_node {
         try {
             return const_context.get(name);
         } catch (...) {
-            tt_error_info().set<parse_location_tag>(location);
+            error_info(true).set<parse_location_tag>(location);
             throw;
         }
     }
@@ -37,7 +37,7 @@ struct formula_name_node final : formula_node {
         try {
             return context.get(name);
         } catch (...) {
-            tt_error_info().set<parse_location_tag>(location);
+            error_info(true).set<parse_location_tag>(location);
             throw;
         }
     }
@@ -52,7 +52,7 @@ struct formula_name_node final : formula_node {
         try {
             return context.get(name);
         } catch (...) {
-            tt_error_info().set<parse_location_tag>(location);
+            error_info(true).set<parse_location_tag>(location);
             throw;
         }
     }
@@ -61,7 +61,7 @@ struct formula_name_node final : formula_node {
         try {
             return context.set(name, rhs);
         } catch (...) {
-            tt_error_info().set<parse_location_tag>(location);
+            error_info(true).set<parse_location_tag>(location);
             throw;
         }
     }

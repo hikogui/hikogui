@@ -17,7 +17,7 @@ struct formula_pow_node final : formula_binary_operator_node {
         try {
             return pow(lhs_, rhs_);
         } catch (...) {
-            tt_error_info().set<parse_location_tag>(location);
+            error_info(true).set<parse_location_tag>(location);
             throw;
         }
     }

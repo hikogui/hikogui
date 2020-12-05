@@ -28,9 +28,10 @@ struct skeleton_function_node final: skeleton_node {
             [this,&location](formula_evaluation_context &context, datum::vector const &arguments) {
             try {
                 return this->evaluate_call(context, arguments);
+
             } catch (std::exception const &e) {
-                tt_error_info().set<parse_location_tag>(location);
-                throw operation_error("Failed during handling of function call.\n{}", e.what());
+                error_info(true).set<parse_location_tag>(location);
+                throw operation_error("Failed during handling of function call.\n{}", tt::to_string(e, false));
             }
         }
         );

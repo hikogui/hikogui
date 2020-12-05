@@ -89,8 +89,9 @@ public:
         file_bytes = this->view->bytes();
         try {
             parseFontDirectory();
+
         } catch (...) {
-            tt_error_info().set<url_tag>(url);
+            error_info(true).set<url_tag>(url);
             throw;
         }
     }

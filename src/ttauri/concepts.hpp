@@ -35,5 +35,13 @@ concept strict_base_of = base_of<BaseType,DerivedType> && ! std::same_as<BaseTyp
 template<typename BaseType, typename DerivedType>
 concept strict_derived_from = derived_from<BaseType, DerivedType> && !std::same_as<BaseType, DerivedType>;
 
+template<typename T>
+concept to_stringable = requires(T v)
+{
+    {
+        to_string(v)
+    }
+    ->std::convertible_to<std::string>;
+};
 
 }

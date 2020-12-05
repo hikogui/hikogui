@@ -52,12 +52,13 @@ struct skeleton_block_node final: skeleton_node {
         datum tmp;
         try {
             tmp = function(context, datum::vector{});
+
         } catch (...) {
             auto error_location = location;
-            if (ttlet location_in_function = error_info::get<parse_location_tag>()) {
+            if (ttlet location_in_function = error_info::peek<parse_location_tag>()) {
                 error_location += *location_in_function;
             }
-            tt_error_info().set<parse_location_tag>(error_location);
+            error_info(true).set<parse_location_tag>(error_location);
             throw;
         }
 

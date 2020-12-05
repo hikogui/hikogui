@@ -38,7 +38,7 @@ struct formula_filter_node final : formula_binary_operator_node {
         try {
             return {filter(static_cast<std::string>(lhs_))};
         } catch (...) {
-            tt_error_info().set<parse_location_tag>(location);
+            error_info(true).set<parse_location_tag>(location);
             throw;
         }
     }

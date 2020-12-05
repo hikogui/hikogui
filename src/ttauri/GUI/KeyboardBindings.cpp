@@ -53,7 +53,7 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
         }
 
     } catch (...) {
-        tt_error_info().set<url_tag>(url);
+        error_info(true).set<url_tag>(url);
         throw;
     }
 

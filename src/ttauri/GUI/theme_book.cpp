@@ -17,8 +17,8 @@ theme_book::theme_book(std::vector<URL> const &theme_directories) noexcept :
 
             try {
                 themes.push_back(std::make_unique<theme>(theme_url));
-            } catch (...) {
-                LOG_ERROR("Failed parsing theme at {}", theme_url);
+            } catch (std::exception const &e) {
+                LOG_ERROR("Failed parsing theme at {}\n{}", theme_url, to_string(e));
             }
         }
     }

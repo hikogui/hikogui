@@ -72,12 +72,13 @@ struct skeleton_for_node final: skeleton_node {
                 ttlet &item = *i;
                 try {
                     name_expression->assign_without_output(context, item);
+
                 } catch (...) {
                     auto error_location = location;
-                    if (ttlet expression_location = error_info::get<parse_location_tag>()) {
+                    if (ttlet expression_location = error_info::peek<parse_location_tag>()) {
                         error_location += *expression_location;
                     }
-                    tt_error_info().set<parse_location_tag>(error_location);
+                    error_info(true).set<parse_location_tag>(error_location);
                     throw;
                 }
 

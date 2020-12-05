@@ -134,11 +134,12 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
             throw gui_error("Unknown result from presentKHR()");
         }
 
-    } catch (const vk::OutOfDateKHRError &) {
+    } catch (vk::OutOfDateKHRError const &) {
         LOG_INFO("presentKHR() eErrorOutOfDateKHR");
         state = State::SwapchainLost;
         return;
-    } catch (const vk::SurfaceLostKHRError &) {
+
+    } catch (vk::SurfaceLostKHRError const &) {
         LOG_INFO("presentKHR() eErrorSurfaceLostKHR");
         state = State::SurfaceLost;
         return;
@@ -494,7 +495,7 @@ bool gui_window_vulkan::readSurfaceExtent()
     try {
         std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
 
-    } catch (const vk::SurfaceLostKHRError &) {
+    } catch (vk::SurfaceLostKHRError const &) {
         state = State::SurfaceLost;
         return false;
     }
@@ -538,7 +539,7 @@ bool gui_window_vulkan::checkSurfaceExtent()
         ttlet[nrImages, extent] = getImageCountAndExtent();
         return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent == swapchainImageExtent);
 
-    } catch (const vk::SurfaceLostKHRError &) {
+    } catch (vk::SurfaceLostKHRError const &) {
         state = State::SurfaceLost;
         return false;
     }

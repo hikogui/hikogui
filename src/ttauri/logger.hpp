@@ -152,8 +152,9 @@ struct log_message: public log_message_base {
 
         try {
             return std::apply(f, format_args);
-        } catch (fmt::format_error &e) {
-            return std::string("ERROR: Could not format '") + format_str + std::string("': ") + e.what();
+
+        } catch (fmt::format_error const &e) {
+            return std::string("ERROR: Could not format '") + format_str + "': " + e.what();
         }
     }
 };

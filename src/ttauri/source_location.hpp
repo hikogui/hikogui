@@ -43,5 +43,10 @@ private:
 
 #define tt_source_location() tt::source_location(__LINE__, 0, __FILE__, __func__)
 
+inline std::string to_string(source_location &rhs) noexcept
+{
+    return fmt::format("{}:{}", rhs.file_name(), rhs.line());
+}
+
 }
 

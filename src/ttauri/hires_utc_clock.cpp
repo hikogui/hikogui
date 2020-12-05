@@ -96,6 +96,7 @@ std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time
         return fmt::format("{}:{:02}.{:09}{}", local_timestring, seconds, nanoseconds, tz_offset_string);
 
     } catch (...) {
+        error_info::close();
         return format_iso8601_utc(utc_timestamp);
     }
 }
