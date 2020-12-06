@@ -816,7 +816,7 @@ struct KERNFormat0_entry {
     FWord_buf_t value;
 };
 
-static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
+static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, f32x4 &r) noexcept
 {
     ssize_t offset = 0;
 
@@ -853,14 +853,14 @@ static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t 
     }
 }
 
-static void getKerningFormat3(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
+static void getKerningFormat3(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, f32x4 &r) noexcept
 {
     tt_not_implemented();
 }
 
-[[nodiscard]] static vec getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
+[[nodiscard]] static f32x4 getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
 {
-    auto r = vec(0.0f, 0.0f);
+    auto r = f32x4(0.0f, 0.0f);
     ssize_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNTable_ver0>(bytes, offset), r);
@@ -941,7 +941,7 @@ bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, G
         leftSideBearing = leftSideBearings[static_cast<uint16_t>(glyph_id) - numberOfHMetrics].value(unitsPerEm);
     }
 
-    metrics.advance = vec{advanceWidth, 0.0f};
+    metrics.advance = f32x4{advanceWidth, 0.0f};
     metrics.leftSideBearing = leftSideBearing;
     metrics.rightSideBearing = advanceWidth - (leftSideBearing + metrics.boundingBox.width());
     metrics.ascender = ascender;
@@ -1115,16 +1115,16 @@ bool TrueTypeFont::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, Pat
         Path subGlyph;
         assert_or_return(loadGlyph(GlyphID{subGlyphIndex}, subGlyph), false);
 
-        auto subGlyphOffset = vec{0.0, 0.0};
+        auto subGlyphOffset = f32x4{0.0, 0.0};
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
                 assert_or_return(check_placement_array<FWord_buf_t>(glyph_bytes, offset, 2), false);
                 ttlet tmp = unsafe_make_placement_array<FWord_buf_t>(glyph_bytes, offset, 2);
-                subGlyphOffset = vec{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
+                subGlyphOffset = f32x4{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             } else {
                 assert_or_return(check_placement_array<FByte_buf_t>(glyph_bytes, offset, 2), false);
                 ttlet tmp = unsafe_make_placement_array<FByte_buf_t>(glyph_bytes, offset, 2);
-                subGlyphOffset = vec{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
+                subGlyphOffset = f32x4{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             }
         } else {
             size_t pointNr1;
@@ -1278,8 +1278,8 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
         ttlet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
         ttlet numberOfContours = entry->numberOfContours.value();
 
-        ttlet xyMin = vec::point( entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) );
-        ttlet xyMax = vec::point( entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm) );
+        ttlet xyMin = f32x4::point( entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) );
+        ttlet xyMax = f32x4::point( entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm) );
         metrics.boundingBox = aarect::p0p3(xyMin, xyMax);
 
         if (numberOfContours > 0) {

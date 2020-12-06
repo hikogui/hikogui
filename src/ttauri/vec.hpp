@@ -31,12 +31,12 @@ namespace tt {
  * If the swizzle member function name would start with a '0' or '1' character it
  * will be prefixed with an underscore '_'.
  *
- * Since swizzle member functions always return a 4D vec, the third and forth
+ * Since swizzle member functions always return a 4D f32x4, the third and forth
  * element will default to '0' and 'w'. This allows a 2D vector to maintain its
  * homogeniousness, or a color to maintain its alpha value.
  */
-class vec {
-    /* Intrinsic value of the vec.
+class f32x4 {
+    /* Intrinsic value of the f32x4.
      * Since the __m64 data type is not supported by MSVC on x64 it does
      * not yield a performance improvement to create a seperate 2D vector
      * class.
@@ -50,17 +50,17 @@ class vec {
     __m128 v;
 
 public:
-    /* Create a zeroed out vec.
+    /* Create a zeroed out f32x4.
      */
-    vec() noexcept : vec(_mm_setzero_ps()) {}
-    vec(vec const &rhs) noexcept = default;
-    vec &operator=(vec const &rhs) noexcept = default;
-    vec(vec &&rhs) noexcept = default;
-    vec &operator=(vec &&rhs) noexcept = default;
+    f32x4() noexcept : f32x4(_mm_setzero_ps()) {}
+    f32x4(f32x4 const &rhs) noexcept = default;
+    f32x4 &operator=(f32x4 const &rhs) noexcept = default;
+    f32x4(f32x4 &&rhs) noexcept = default;
+    f32x4 &operator=(f32x4 &&rhs) noexcept = default;
 
-    vec(__m128 rhs) noexcept : v(rhs) {}
+    f32x4(__m128 rhs) noexcept : v(rhs) {}
 
-    vec &operator=(__m128 rhs) noexcept
+    f32x4 &operator=(__m128 rhs) noexcept
     {
         v = rhs;
         return *this;
@@ -71,9 +71,9 @@ public:
         return v;
     }
 
-    explicit vec(std::array<float, 4> const &rhs) noexcept : v(_mm_loadu_ps(rhs.data())) {}
+    explicit f32x4(std::array<float, 4> const &rhs) noexcept : v(_mm_loadu_ps(rhs.data())) {}
 
-    vec &operator=(std::array<float, 4> const &rhs) noexcept
+    f32x4 &operator=(std::array<float, 4> const &rhs) noexcept
     {
         v = _mm_loadu_ps(rhs.data());
         return *this;
@@ -86,12 +86,12 @@ public:
         return r;
     }
 
-    explicit vec(std::array<float, 2> const &rhs) noexcept :
+    explicit f32x4(std::array<float, 2> const &rhs) noexcept :
         v(_mm_loadl_pi(_mm_setzero_ps(), reinterpret_cast<__m64 const *>(rhs.data())))
     {
     }
 
-    vec &operator=(std::array<float, 2> const &rhs) noexcept
+    f32x4 &operator=(std::array<float, 2> const &rhs) noexcept
     {
         v = _mm_loadl_pi(_mm_setzero_ps(), reinterpret_cast<__m64 const *>(rhs.data()));
         return *this;
@@ -104,9 +104,9 @@ public:
         return r;
     }
 
-    explicit vec(std::array<float16, 4> const &rhs) noexcept : v(_mm_cvtph_ps(_mm_loadu_si64(rhs.data()))) {}
+    explicit f32x4(std::array<float16, 4> const &rhs) noexcept : v(_mm_cvtph_ps(_mm_loadu_si64(rhs.data()))) {}
 
-    vec &operator=(std::array<float16, 4> const &rhs) noexcept
+    f32x4 &operator=(std::array<float16, 4> const &rhs) noexcept
     {
         v = _mm_cvtph_ps(_mm_loadu_si64(rhs.data()));
         return *this;
@@ -119,25 +119,25 @@ public:
         return r;
     }
 
-    /** Initialize a vec with all elements set to a value.
+    /** Initialize a f32x4 with all elements set to a value.
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    explicit vec(T rhs) noexcept : vec(_mm_set_ps1(narrow_cast<float>(rhs)))
+    explicit f32x4(T rhs) noexcept : f32x4(_mm_set_ps1(narrow_cast<float>(rhs)))
     {
     }
 
-    /** Initialize a vec with all elements set to a value.
+    /** Initialize a f32x4 with all elements set to a value.
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
      */
-    vec &operator=(float rhs) noexcept
+    f32x4 &operator=(float rhs) noexcept
     {
         return *this = _mm_set_ps1(rhs);
     }
 
-    /** Create a vec out of 2 to 4 values.
+    /** Create a f32x4 out of 2 to 4 values.
      * This vector is used as a homogenious coordinate, meaning:
      *  - vectors have w=0.0 (A direction and distance)
      *  - points have w=1.0 (A position in space)
@@ -146,36 +146,36 @@ public:
      *  - x=Red, y=Green, z=Blue, w=Alpha
      *
      */
-    vec(float x, float y, float z = 0.0f, float w = 0.0f) noexcept : v(_mm_set_ps(w, z, y, x)) {}
+    f32x4(float x, float y, float z = 0.0f, float w = 0.0f) noexcept : v(_mm_set_ps(w, z, y, x)) {}
 
-    vec(double x, double y) noexcept : v(_mm_cvtpd_ps(_mm_set_pd(y, x))) {}
+    f32x4(double x, double y) noexcept : v(_mm_cvtpd_ps(_mm_set_pd(y, x))) {}
 
-    vec(double x, double y, double z, double w = 0.0f) noexcept : v(_mm256_cvtpd_ps(_mm256_set_pd(w, z, y, x))) {}
+    f32x4(double x, double y, double z, double w = 0.0f) noexcept : v(_mm256_cvtpd_ps(_mm256_set_pd(w, z, y, x))) {}
 
-    vec(int x, int y, int z = 0, int w = 0) noexcept : v(_mm_cvtepi32_ps(_mm_set_epi32(w, z, y, x))) {}
+    f32x4(int x, int y, int z = 0, int w = 0) noexcept : v(_mm_cvtepi32_ps(_mm_set_epi32(w, z, y, x))) {}
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    static vec make_x(T x) noexcept
+    static f32x4 make_x(T x) noexcept
     {
-        return vec{_mm_set_ss(narrow_cast<float>(x))};
+        return f32x4{_mm_set_ss(narrow_cast<float>(x))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    static vec make_y(T y) noexcept
+    static f32x4 make_y(T y) noexcept
     {
-        return vec{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(y)), _MM_SHUFFLE(1, 1, 0, 1))};
+        return f32x4{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(y)), _MM_SHUFFLE(1, 1, 0, 1))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    static vec make_z(T z) noexcept
+    static f32x4 make_z(T z) noexcept
     {
-        return vec{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(z)), _MM_SHUFFLE(1, 0, 1, 1))};
+        return f32x4{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(z)), _MM_SHUFFLE(1, 0, 1, 1))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    static vec make_w(T w) noexcept
+    static f32x4 make_w(T w) noexcept
     {
-        return vec{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(w)), _MM_SHUFFLE(0, 1, 1, 1))};
+        return f32x4{_mm_permute_ps(_mm_set_ss(narrow_cast<float>(w)), _MM_SHUFFLE(0, 1, 1, 1))};
     }
 
     /** Create a point out of 2 to 4 values.
@@ -187,14 +187,14 @@ public:
      *  - x=Red, y=Green, z=Blue, w=Alpha
      *
      */
-    [[nodiscard]] static vec point(float x = 0.0f, float y = 0.0f, float z = 0.0f) noexcept
+    [[nodiscard]] static f32x4 point(float x = 0.0f, float y = 0.0f, float z = 0.0f) noexcept
     {
-        return vec{x, y, z, 1.0f};
+        return f32x4{x, y, z, 1.0f};
     }
 
-    [[nodiscard]] static vec point(int x = 0.0f, int y = 0.0f, int z = 0.0f) noexcept
+    [[nodiscard]] static f32x4 point(int x = 0.0f, int y = 0.0f, int z = 0.0f) noexcept
     {
-        return vec{x, y, z, 1};
+        return f32x4{x, y, z, 1};
     }
 
     /** Create a point out of 2 to 4 values.
@@ -206,7 +206,7 @@ public:
      *  - x=Red, y=Green, z=Blue, w=Alpha
      *
      */
-    [[nodiscard]] static vec point(vec rhs) noexcept
+    [[nodiscard]] static f32x4 point(f32x4 rhs) noexcept
     {
         return rhs.xyz1();
     }
@@ -218,9 +218,9 @@ public:
      * baseline and left-side-bearing. Paths have a specific location of the
      * origin.
      */
-    [[nodiscard]] static vec origin() noexcept
+    [[nodiscard]] static f32x4 origin() noexcept
     {
-        return vec{_mm_permute_ps(_mm_set_ss(1.0f), 0b00'01'10'11)};
+        return f32x4{_mm_permute_ps(_mm_set_ss(1.0f), 0b00'01'10'11)};
     }
 
     /** Create a color out of 3 to 4 values.
@@ -236,19 +236,19 @@ public:
      *    Values below 0.0 will cause colours outside the sRGB color gamut
      *    for use with high-gamut displays
      */
-    [[nodiscard]] static vec color(float r, float g, float b, float a = 1.0f) noexcept
+    [[nodiscard]] static f32x4 color(float r, float g, float b, float a = 1.0f) noexcept
     {
-        return vec{r, g, b, a};
+        return f32x4{r, g, b, a};
     }
 
-    [[nodiscard]] static vec colorFromSRGB(float r, float g, float b, float a = 1.0f) noexcept;
+    [[nodiscard]] static f32x4 colorFromSRGB(float r, float g, float b, float a = 1.0f) noexcept;
 
-    [[nodiscard]] static vec colorFromSRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) noexcept;
+    [[nodiscard]] static f32x4 colorFromSRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) noexcept;
 
-    [[nodiscard]] static vec colorFromSRGB(std::string_view str);
+    [[nodiscard]] static f32x4 colorFromSRGB(std::string_view str);
 
     template<size_t I>
-    vec &set(float rhs) noexcept
+    f32x4 &set(float rhs) noexcept
     {
         static_assert(I <= 3);
         ttlet tmp = _mm_set_ss(rhs);
@@ -296,47 +296,47 @@ public:
         return _mm_cvtss_f32(tmp);
     }
 
-    vec &x(float rhs) noexcept
+    f32x4 &x(float rhs) noexcept
     {
         return set<0>(rhs);
     }
-    vec &y(float rhs) noexcept
+    f32x4 &y(float rhs) noexcept
     {
         return set<1>(rhs);
     }
-    vec &z(float rhs) noexcept
+    f32x4 &z(float rhs) noexcept
     {
         return set<2>(rhs);
     }
-    vec &w(float rhs) noexcept
+    f32x4 &w(float rhs) noexcept
     {
         return set<3>(rhs);
     }
-    vec &r(float rhs) noexcept
+    f32x4 &r(float rhs) noexcept
     {
         return set<0>(rhs);
     }
-    vec &g(float rhs) noexcept
+    f32x4 &g(float rhs) noexcept
     {
         return set<1>(rhs);
     }
-    vec &b(float rhs) noexcept
+    f32x4 &b(float rhs) noexcept
     {
         return set<2>(rhs);
     }
-    vec &a(float rhs) noexcept
+    f32x4 &a(float rhs) noexcept
     {
         return set<3>(rhs);
     }
-    vec &width(float rhs) noexcept
+    f32x4 &width(float rhs) noexcept
     {
         return set<0>(rhs);
     }
-    vec &height(float rhs) noexcept
+    f32x4 &height(float rhs) noexcept
     {
         return set<1>(rhs);
     }
-    vec &depth(float rhs) noexcept
+    f32x4 &depth(float rhs) noexcept
     {
         return set<2>(rhs);
     }
@@ -385,79 +385,79 @@ public:
         return get<2>();
     }
 
-    vec &operator+=(vec const &rhs) noexcept
+    f32x4 &operator+=(f32x4 const &rhs) noexcept
     {
         return *this = _mm_add_ps(*this, rhs);
     }
 
-    vec &operator-=(vec const &rhs) noexcept
+    f32x4 &operator-=(f32x4 const &rhs) noexcept
     {
         return *this = _mm_sub_ps(*this, rhs);
     }
 
-    vec &operator*=(vec const &rhs) noexcept
+    f32x4 &operator*=(f32x4 const &rhs) noexcept
     {
         return *this = _mm_mul_ps(*this, rhs);
     }
 
-    vec &operator/=(vec const &rhs) noexcept
+    f32x4 &operator/=(f32x4 const &rhs) noexcept
     {
         return *this = _mm_div_ps(*this, rhs);
     }
 
-    [[nodiscard]] friend vec operator-(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 operator-(f32x4 const &rhs) noexcept
     {
         return _mm_sub_ps(_mm_setzero_ps(), rhs);
     }
 
-    [[nodiscard]] friend vec operator+(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 operator+(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_add_ps(lhs, rhs);
     }
 
-    [[nodiscard]] friend vec operator-(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 operator-(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_sub_ps(lhs, rhs);
     }
 
-    [[nodiscard]] friend vec operator*(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 operator*(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_mul_ps(lhs, rhs);
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    [[nodiscard]] friend vec operator*(vec const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend f32x4 operator*(f32x4 const &lhs, T const &rhs) noexcept
     {
-        return lhs * vec{rhs};
+        return lhs * f32x4{rhs};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    [[nodiscard]] friend vec operator*(T const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 operator*(T const &lhs, f32x4 const &rhs) noexcept
     {
-        return vec{lhs} * rhs;
+        return f32x4{lhs} * rhs;
     }
 
-    [[nodiscard]] friend vec operator/(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 operator/(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_div_ps(lhs, rhs);
     }
 
-    [[nodiscard]] friend vec max(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 max(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_max_ps(lhs, rhs);
     }
 
-    [[nodiscard]] friend vec min(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 min(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_min_ps(lhs, rhs);
     }
 
-    [[nodiscard]] friend vec abs(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 abs(f32x4 const &rhs) noexcept
     {
         return max(rhs, -rhs);
     }
 
-    [[nodiscard]] friend vec clamp(vec const &value, vec const &minimum, vec const &maximum) noexcept
+    [[nodiscard]] friend f32x4 clamp(f32x4 const &value, f32x4 const &minimum, f32x4 const &maximum) noexcept
     {
         return max(minimum, min(value, maximum));
     }
@@ -465,7 +465,7 @@ public:
     /** Equal to.
      * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
      */
-    [[nodiscard]] friend int eq(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend int eq(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_movemask_ps(_mm_cmpeq_ps(lhs, rhs));
     }
@@ -473,7 +473,7 @@ public:
     /** Not equal to.
      * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
      */
-    [[nodiscard]] friend int ne(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend int ne(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_movemask_ps(_mm_cmpneq_ps(lhs, rhs));
     }
@@ -481,7 +481,7 @@ public:
     /** Less than.
      * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
      */
-    [[nodiscard]] friend int lt(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend int lt(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_movemask_ps(_mm_cmplt_ps(lhs, rhs));
     }
@@ -489,7 +489,7 @@ public:
     /** Less than or equal.
      * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
      */
-    [[nodiscard]] friend int le(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend int le(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_movemask_ps(_mm_cmple_ps(lhs, rhs));
     }
@@ -497,7 +497,7 @@ public:
     /** Greater than.
      * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
      */
-    [[nodiscard]] friend int gt(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend int gt(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_movemask_ps(_mm_cmpgt_ps(lhs, rhs));
     }
@@ -505,40 +505,40 @@ public:
     /** Greater than or equal.
      * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
      */
-    [[nodiscard]] friend int ge(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend int ge(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_movemask_ps(_mm_cmpge_ps(lhs, rhs));
     }
 
-    [[nodiscard]] friend bool operator==(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return !ne(lhs, rhs);
     }
 
-    [[nodiscard]] friend bool operator!=(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend bool operator!=(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] friend __m128 _length_squared(vec const &rhs) noexcept
+    [[nodiscard]] friend __m128 _length_squared(f32x4 const &rhs) noexcept
     {
         ttlet tmp1 = _mm_mul_ps(rhs, rhs);
         ttlet tmp2 = _mm_hadd_ps(tmp1, tmp1);
         return _mm_hadd_ps(tmp2, tmp2);
     }
 
-    [[nodiscard]] friend float length_squared(vec const &rhs) noexcept
+    [[nodiscard]] friend float length_squared(f32x4 const &rhs) noexcept
     {
         return _mm_cvtss_f32(_length_squared(rhs));
     }
 
-    [[nodiscard]] friend float length(vec const &rhs) noexcept
+    [[nodiscard]] friend float length(f32x4 const &rhs) noexcept
     {
         ttlet tmp = _mm_sqrt_ps(_length_squared(rhs));
         return _mm_cvtss_f32(tmp);
     }
 
-    [[nodiscard]] friend vec normalize(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 normalize(f32x4 const &rhs) noexcept
     {
         auto ___l = _length_squared(rhs);
         auto llll = _mm_permute_ps(___l, _MM_SHUFFLE(0, 0, 0, 0));
@@ -550,21 +550,21 @@ public:
      * @param rhs The extent to match.
      * @return The extent resized to match rhs, while retaining aspect ratio.
      */
-    [[nodiscard]] vec resize2DRetainingAspectRatio(vec const &rhs) noexcept
+    [[nodiscard]] f32x4 resize2DRetainingAspectRatio(f32x4 const &rhs) noexcept
     {
         ttlet ratio2D = rhs / *this;
         ttlet ratio = std::min(ratio2D.x(), ratio2D.y());
         return *this * ratio;
     }
 
-    [[nodiscard]] friend vec homogeneous_divide(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 homogeneous_divide(f32x4 const &rhs) noexcept
     {
         auto wwww = _mm_permute_ps(rhs, _MM_SHUFFLE(3, 3, 3, 3));
         auto rcp_wwww = _mm_rcp_ps(wwww);
         return _mm_mul_ps(rhs, rcp_wwww);
     }
 
-    [[nodiscard]] friend float dot(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend float dot(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         ttlet tmp1 = _mm_mul_ps(lhs, rhs);
         ttlet tmp2 = _mm_hadd_ps(tmp1, tmp1);
@@ -572,25 +572,25 @@ public:
         return _mm_cvtss_f32(tmp3);
     }
 
-    [[nodiscard]] friend vec reciprocal(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 reciprocal(f32x4 const &rhs) noexcept
     {
         return _mm_rcp_ps(rhs);
     }
 
     template<bool nx, bool ny, bool nz, bool nw>
-    friend vec neg(vec const &rhs) noexcept;
+    friend f32x4 neg(f32x4 const &rhs) noexcept;
 
-    [[nodiscard]] friend vec hadd(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 hadd(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_hadd_ps(lhs, rhs);
     }
 
-    [[nodiscard]] friend vec hsub(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 hsub(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         return _mm_hsub_ps(lhs, rhs);
     }
 
-    [[nodiscard]] friend float viktor_cross(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend float viktor_cross(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         // a.x * b.y - a.y * b.x
         ttlet tmp1 = _mm_permute_ps(rhs, _MM_SHUFFLE(2, 3, 0, 1));
@@ -603,7 +603,7 @@ public:
     // y=a.z*b.x - a.x*b.z
     // z=a.x*b.y - a.y*b.x
     // w=a.w*b.w - a.w*b.w
-    [[nodiscard]] friend vec cross(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 cross(f32x4 const &lhs, f32x4 const &rhs) noexcept
     {
         ttlet a_left = _mm_permute_ps(lhs, _MM_SHUFFLE(3, 0, 2, 1));
         ttlet b_left = _mm_permute_ps(rhs, _MM_SHUFFLE(3, 1, 0, 2));
@@ -617,28 +617,28 @@ public:
 
     /** Calculate the 2D normal on a 2D vector.
      */
-    [[nodiscard]] friend vec normal(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 normal(f32x4 const &rhs) noexcept
     {
         tt_assume(rhs.z() == 0.0f && rhs.w() == 0.0f);
-        return normalize(vec{-rhs.y(), rhs.x()});
+        return normalize(f32x4{-rhs.y(), rhs.x()});
     }
 
-    [[nodiscard]] friend vec ceil(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 ceil(f32x4 const &rhs) noexcept
     {
         return _mm_ceil_ps(rhs);
     }
 
-    [[nodiscard]] friend vec floor(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 floor(f32x4 const &rhs) noexcept
     {
         return _mm_floor_ps(rhs);
     }
 
-    [[nodiscard]] friend vec round(vec const &rhs) noexcept
+    [[nodiscard]] friend f32x4 round(f32x4 const &rhs) noexcept
     {
         return _mm_round_ps(rhs, _MM_FROUND_CUR_DIRECTION);
     }
 
-    [[nodiscard]] friend std::array<vec, 4> transpose(vec col0, vec col1, vec col2, vec col3) noexcept
+    [[nodiscard]] friend std::array<f32x4, 4> transpose(f32x4 col0, f32x4 col1, f32x4 col2, f32x4 col3) noexcept
     {
         _MM_TRANSPOSE4_PS(col0, col1, col2, col3);
         return {col0, col1, col2, col3};
@@ -646,16 +646,16 @@ public:
 
     /** Find a point at the midpoint between two points.
      */
-    [[nodiscard]] friend vec midpoint(vec const &p1, vec const &p2) noexcept
+    [[nodiscard]] friend f32x4 midpoint(f32x4 const &p1, f32x4 const &p2) noexcept
     {
-        return (p1 + p2) * vec{0.5};
+        return (p1 + p2) * f32x4{0.5};
     }
 
-    [[nodiscard]] friend vec desaturate(vec const &color, float brightness) noexcept
+    [[nodiscard]] friend f32x4 desaturate(f32x4 const &color, float brightness) noexcept
     {
         // Use luminance ratios and change the brightness.
         // luminance ratios according to BT.709.
-        ttlet _0BGR = color * vec{0.2126, 0.7152, 0.0722} * vec{brightness};
+        ttlet _0BGR = color * f32x4{0.2126, 0.7152, 0.0722} * f32x4{brightness};
         ttlet __SS = _mm_hadd_ps(_0BGR, _0BGR);
         ttlet ___L = _mm_hadd_ps(__SS, __SS);
         ttlet LLLL = _mm_permute_ps(___L, _MM_SHUFFLE(0, 0, 0, 0));
@@ -663,7 +663,7 @@ public:
         return _mm_blend_ps(LLLL, color, 0b1000);
     }
 
-    [[nodiscard]] friend vec composit(vec const &under, vec const &over) noexcept
+    [[nodiscard]] friend f32x4 composit(f32x4 const &under, f32x4 const &over) noexcept
     {
         if (over.is_transparent()) {
             return under;
@@ -678,30 +678,30 @@ public:
         ttlet over_color = over.xyz1();
         ttlet under_color = under.xyz1();
 
-        ttlet output_color = over_color * over_alpha + under_color * under_alpha * (vec{1.0} - over_alpha);
+        ttlet output_color = over_color * over_alpha + under_color * under_alpha * (f32x4{1.0} - over_alpha);
 
         return output_color / output_color.www1();
     }
 
     /** Find the point on the other side and at the same distance of an anchor-point.
      */
-    [[nodiscard]] friend vec reflect_point(vec const &p, vec const anchor) noexcept
+    [[nodiscard]] friend f32x4 reflect_point(f32x4 const &p, f32x4 const anchor) noexcept
     {
         return anchor - (p - anchor);
     }
 
-    [[nodiscard]] friend std::string to_string(vec const &rhs) noexcept
+    [[nodiscard]] friend std::string to_string(f32x4 const &rhs) noexcept
     {
         return fmt::format("({}, {}, {}, {})", rhs.x(), rhs.y(), rhs.z(), rhs.w());
     }
 
-    std::ostream friend &operator<<(std::ostream &lhs, vec const &rhs) noexcept
+    std::ostream friend &operator<<(std::ostream &lhs, f32x4 const &rhs) noexcept
     {
         return lhs << to_string(rhs);
     }
 
     template<std::size_t I>
-    [[nodiscard]] friend float get(vec const &rhs) noexcept
+    [[nodiscard]] friend float get(f32x4 const &rhs) noexcept
     {
         return rhs.get<I>();
     }
@@ -768,11 +768,11 @@ public:
     }
 
     template<char a, char b, char c, char d>
-    [[nodiscard]] vec swizzle() const noexcept
+    [[nodiscard]] f32x4 swizzle() const noexcept
     {
-        constexpr int permute_mask = vec::swizzle_permute_mask<a, b, c, d>();
-        constexpr int zero_mask = vec::swizzle_zero_mask<a, b, c, d>();
-        constexpr int number_mask = vec::swizzle_number_mask<a, b, c, d>();
+        constexpr int permute_mask = f32x4::swizzle_permute_mask<a, b, c, d>();
+        constexpr int zero_mask = f32x4::swizzle_zero_mask<a, b, c, d>();
+        constexpr int number_mask = f32x4::swizzle_number_mask<a, b, c, d>();
 
         __m128 swizzled;
         // Clang is able to optimize these intrinsics, MSVC is not.
@@ -808,7 +808,7 @@ public:
     }
 
 #define SWIZZLE4(name, A, B, C, D) \
-    [[nodiscard]] vec name() const noexcept \
+    [[nodiscard]] f32x4 name() const noexcept \
     { \
         return swizzle<A, B, C, D>(); \
     }
@@ -845,7 +845,7 @@ public:
     SWIZZLE4_GEN1(w, 'w')
 
 #define SWIZZLE3(name, A, B, C) \
-    [[nodiscard]] vec name() const noexcept \
+    [[nodiscard]] f32x4 name() const noexcept \
     { \
         return swizzle<A, B, C, 'w'>(); \
     }
@@ -874,7 +874,7 @@ public:
     SWIZZLE3_GEN1(w, 'w')
 
 #define SWIZZLE2(name, A, B) \
-    [[nodiscard]] vec name() const noexcept \
+    [[nodiscard]] f32x4 name() const noexcept \
     { \
         return swizzle<A, B, '0', 'w'>(); \
     }
@@ -906,7 +906,7 @@ public:
 };
 
 template<bool nx, bool ny, bool nz, bool nw>
-[[nodiscard]] vec neg(vec const &rhs) noexcept
+[[nodiscard]] f32x4 neg(f32x4 const &rhs) noexcept
 {
     ttlet n_rhs = -rhs;
 
@@ -933,19 +933,19 @@ template<bool nx, bool ny, bool nz, bool nw>
 namespace std {
 
 //template<>
-//tt::vec min(tt::vec const &a, tt::vec const &b)
+//tt::f32x4 min(tt::f32x4 const &a, tt::f32x4 const &b)
 //{
 //    return min_detail(a, b);
 //}
 //
 //template<>
-//tt::vec max(tt::vec const &a, tt::vec const &b) noexcept
+//tt::f32x4 max(tt::f32x4 const &a, tt::f32x4 const &b) noexcept
 //{
 //    return max_detail(a, b);
 //}
 //
 //template<>
-//tt::vec abs(tt::vec const &a) noexcept
+//tt::f32x4 abs(tt::f32x4 const &a) noexcept
 //{
 //    return abs_detail(a);
 //}

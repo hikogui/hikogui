@@ -123,11 +123,11 @@ void gui_window::windowChangedSize(ivec extent) {
     currentWindowExtent = extent;
     tt_assume(widget);
 
-    widget->set_layout_parameters(aarect{vec{currentWindowExtent}}, aarect{vec{currentWindowExtent}});
+    widget->set_layout_parameters(aarect{f32x4{currentWindowExtent}}, aarect{f32x4{currentWindowExtent}});
     requestLayout = true;
 }
 
-void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, vec position) noexcept
+void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, f32x4 position) noexcept
 {
     tt_assume(gui_system_mutex.recurse_lock_count());
 

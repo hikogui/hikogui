@@ -364,7 +364,7 @@ public:
      *                        Use `fromWindowTransform` to convert to widget-local coordinates.
      * @return A HitBox object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual HitBox hitbox_test(vec window_position) const noexcept
+    [[nodiscard]] virtual HitBox hitbox_test(f32x4 window_position) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 

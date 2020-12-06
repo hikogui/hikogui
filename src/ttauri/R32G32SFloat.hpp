@@ -22,16 +22,16 @@ public:
     R32G32SFloat &operator=(R32G32SFloat const &rhs) noexcept = default;
     R32G32SFloat &operator=(R32G32SFloat &&rhs) noexcept = default;
 
-    R32G32SFloat(vec const &rhs) noexcept :
+    R32G32SFloat(f32x4 const &rhs) noexcept :
         v(static_cast<decltype(v)>(rhs)) {}
 
-    R32G32SFloat &operator=(vec const &rhs) noexcept {
+    R32G32SFloat &operator=(f32x4 const &rhs) noexcept {
         v = static_cast<decltype(v)>(rhs);
         return *this;
     }
 
-    operator vec () const noexcept {
-        return vec{v};
+    operator f32x4 () const noexcept {
+        return f32x4{v};
     }
 
     [[nodiscard]] friend bool operator==(R32G32SFloat const &lhs, R32G32SFloat const &rhs) noexcept {

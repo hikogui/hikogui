@@ -7,7 +7,7 @@
 
 namespace tt {
 
-TextStyle::TextStyle(std::string_view family_name, tt::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept :
+TextStyle::TextStyle(std::string_view family_name, tt::FontVariant variant, float size, f32x4 color, TextDecoration decoration) noexcept :
     TextStyle(font_book::global->find_family(family_name), variant, size, color, decoration)
 {
 }

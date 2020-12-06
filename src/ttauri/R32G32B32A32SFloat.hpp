@@ -21,16 +21,16 @@ public:
     R32G32B32A32SFloat &operator=(R32G32B32A32SFloat const &rhs) noexcept = default;
     R32G32B32A32SFloat &operator=(R32G32B32A32SFloat &&rhs) noexcept = default;
 
-    R32G32B32A32SFloat(vec const &rhs) noexcept {
+    R32G32B32A32SFloat(f32x4 const &rhs) noexcept {
         _mm_storeu_ps(v.data(), rhs);
     }
 
-    R32G32B32A32SFloat &operator=(vec const &rhs) noexcept {
+    R32G32B32A32SFloat &operator=(f32x4 const &rhs) noexcept {
         _mm_storeu_ps(v.data(), rhs);
         return *this;
     }
 
-    operator vec () const noexcept {
+    operator f32x4 () const noexcept {
         return _mm_loadu_ps(v.data());
     }
 

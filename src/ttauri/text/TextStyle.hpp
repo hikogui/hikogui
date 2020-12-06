@@ -19,16 +19,16 @@ struct TextStyle {
     FontFamilyID family_id;
     FontVariant variant;
     float size;
-    vec color;
+    f32x4 color;
     TextDecoration decoration;
 
     TextStyle() noexcept :
         family_id(), variant(), size(0.0), color(), decoration(TextDecoration::None) {}
 
-    TextStyle(tt::FontFamilyID family_id, tt::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept :
+    TextStyle(tt::FontFamilyID family_id, tt::FontVariant variant, float size, f32x4 color, TextDecoration decoration) noexcept :
         family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
 
-    TextStyle(std::string_view family_name, tt::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept;
+    TextStyle(std::string_view family_name, tt::FontVariant variant, float size, f32x4 color, TextDecoration decoration) noexcept;
 
     TextStyle(TextStyle const &) noexcept = default;
     TextStyle(TextStyle &&) noexcept = default;

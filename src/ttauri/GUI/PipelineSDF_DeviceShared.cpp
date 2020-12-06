@@ -38,7 +38,7 @@ void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
     teardownAtlas(vulkanDevice);
 }
 
-[[nodiscard]] AtlasRect DeviceShared::allocateRect(vec drawExtent) noexcept
+[[nodiscard]] AtlasRect DeviceShared::allocateRect(f32x4 drawExtent) noexcept
 {
     auto imageWidth = narrow_cast<int>(std::ceil(drawExtent.width()));
     auto imageHeight = narrow_cast<int>(std::ceil(drawExtent.height()));
@@ -141,8 +141,8 @@ AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
 
     // Determine the size of the image in the atlas.
     // This is the bounding box sized to the fixed font size and a border
-    ttlet drawOffset = vec{drawBorder, drawBorder} - scaledBoundingBox.offset();
-    ttlet drawExtent = scaledBoundingBox.extent() + 2.0f * vec{drawBorder, drawBorder};
+    ttlet drawOffset = f32x4{drawBorder, drawBorder} - scaledBoundingBox.offset();
+    ttlet drawExtent = scaledBoundingBox.extent() + 2.0f * f32x4{drawBorder, drawBorder};
     ttlet drawTranslate = mat::T(drawOffset);
 
     // Transform the path to the scale of the fixed font size and drawing the bounding box inside the image.
@@ -176,7 +176,7 @@ aarect DeviceShared::getBoundingBox(FontGlyphIDs const &glyphs) noexcept {
     return expand(glyphs.getBoundingBox(), scaledDrawBorder);
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept
+bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept
 {
     ttlet [atlas_rect, glyph_was_added] = getGlyphFromAtlas(glyphs);
 
@@ -198,7 +198,7 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &g
     return glyph_was_added;
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, vec color) noexcept
+bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, f32x4 color) noexcept
 {
     if (attr_glyph.charClass == GeneralCharacterClass::WhiteSpace || attr_glyph.charClass == GeneralCharacterClass::ParagraphSeparator) {
         return false;
@@ -215,7 +215,7 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const
     return _placeVertices(vertices, attr_glyph, transform, clippingRectangle, attr_glyph.style.color);
 }
 
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept
 {
     if (_placeVertices(vertices, glyphs, box, color, clippingRectangle)) {
         prepareAtlasForRendering();
@@ -236,7 +236,7 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text
     }
 }
 
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle, vec color) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle, f32x4 color) noexcept
 {
     auto atlas_was_updated = false;
 

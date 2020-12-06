@@ -33,7 +33,7 @@ public:
     alignment alignment;
     aarect boundingBox;
     float width;
-    vec preferred_extent;
+    f32x4 preferred_extent;
 
 private:
     std::vector<AttributedGlyphLine> lines;
@@ -201,7 +201,7 @@ public:
     * @param position x is the left position,
     *                 y is where the middle of the line should be.
     */
-    mat::T2 TMiddle(vec position) noexcept {
+    mat::T2 TMiddle(f32x4 position) noexcept {
         return {
             position.x(),
             middleOffset(position.y())
@@ -245,7 +245,7 @@ public:
     * @param logicalIndex The character at logicalIndex.
     * @return logicalIndex of the character to the left.
     */
-    [[nodiscard]] std::optional<ssize_t> indexOfCharAtCoordinate(vec coordinate) const noexcept;
+    [[nodiscard]] std::optional<ssize_t> indexOfCharAtCoordinate(f32x4 coordinate) const noexcept;
 
     /** Return the index of the character to the left.
      * @param logicalIndex The character at logicalIndex.
@@ -294,7 +294,7 @@ public:
      * @param coordinate A coordinate within the box.
      * @return index of the selected grapheme, or -1 if no grapheme was found near the coordinate.
      */
-    [[nodiscard]] int indexFromCoordinate(vec coordinate) const noexcept;
+    [[nodiscard]] int indexFromCoordinate(f32x4 coordinate) const noexcept;
 
     /** Get the index into the text from a coordinate.
      * The index returned is from the text that was used to construct the ShapedText.
@@ -303,7 +303,7 @@ public:
      * @param current The current coordinate of the mouse pointer, during the drag.
      * @return indices of all the graphemes selected during a drag.
      */
-    [[nodiscard]] std::vector<int> indicesFromCoordinates(vec start, vec current) const noexcept;
+    [[nodiscard]] std::vector<int> indicesFromCoordinates(f32x4 start, f32x4 current) const noexcept;
 };
 
 

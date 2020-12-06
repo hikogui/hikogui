@@ -17,9 +17,9 @@ struct AtlasRect {
     ivec atlasPosition;
     ivec atlasExtent;
 
-    std::array<vec,4> textureCoords;
+    std::array<f32x4,4> textureCoords;
 
-    AtlasRect(ivec atlasPosition, vec drawExtent) noexcept;
+    AtlasRect(ivec atlasPosition, f32x4 drawExtent) noexcept;
 };
 
 }

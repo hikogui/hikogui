@@ -71,7 +71,7 @@ public:
             }
 
             tt_assume(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-            _preferred_size = {vec{_layout.minimum_size(), shared_height}, vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            _preferred_size = {f32x4{_layout.minimum_size(), shared_height}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             _preferred_base_line = shared_base_line;
             return true;
         } else {
@@ -116,7 +116,7 @@ public:
         abstract_container_widget::draw(std::move(context), display_time_point);
     }
 
-    HitBox hitbox_test(vec window_position) const noexcept
+    HitBox hitbox_test(f32x4 window_position) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 

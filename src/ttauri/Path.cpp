@@ -88,17 +88,17 @@ ssize_t Path::endLayer(ssize_t layerNr) const noexcept
     return layerEndContours.at(layerNr).first + 1;
 }
 
-vec Path::getColorOfLayer(ssize_t layerNr) const noexcept
+f32x4 Path::getColorOfLayer(ssize_t layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).second;
 }
 
-void Path::setColorOfLayer(ssize_t layerNr, vec fillColor) noexcept
+void Path::setColorOfLayer(ssize_t layerNr, f32x4 fillColor) noexcept
 {
     layerEndContours.at(layerNr).second = fillColor;
 }
 
-std::pair<Path,vec> Path::getLayer(ssize_t layerNr) const noexcept
+std::pair<Path,f32x4> Path::getLayer(ssize_t layerNr) const noexcept
 {
     tt_assert(hasLayers());
 
@@ -193,7 +193,7 @@ bool Path::isLayerOpen() const noexcept
     }
 }
 
-void Path::closeLayer(vec fillColor) noexcept
+void Path::closeLayer(f32x4 fillColor) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
@@ -201,23 +201,23 @@ void Path::closeLayer(vec fillColor) noexcept
     }
 }
 
-vec Path::currentPosition() const noexcept
+f32x4 Path::currentPosition() const noexcept
 {
     if (isContourOpen()) {
         return points.back().p;
     } else {
-        return vec::point(0.0f, 0.0f);
+        return f32x4::point(0.0f, 0.0f);
     }
 }
 
-void Path::moveTo(vec position) noexcept
+void Path::moveTo(f32x4 position) noexcept
 {
     tt_assume(position.is_point());
     closeContour();
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::moveRelativeTo(vec direction) noexcept
+void Path::moveRelativeTo(f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
     tt_assume(direction.is_vector());
@@ -227,7 +227,7 @@ void Path::moveRelativeTo(vec direction) noexcept
     points.emplace_back(lastPosition + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::lineTo(vec position) noexcept
+void Path::lineTo(f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
     tt_assume(position.is_point());
@@ -235,7 +235,7 @@ void Path::lineTo(vec position) noexcept
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::lineRelativeTo(vec direction) noexcept
+void Path::lineRelativeTo(f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
     tt_assume(direction.is_vector());
@@ -243,7 +243,7 @@ void Path::lineRelativeTo(vec direction) noexcept
     points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::quadraticCurveTo(vec controlPosition, vec position) noexcept
+void Path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
     tt_assume(controlPosition.is_point());
@@ -253,7 +253,7 @@ void Path::quadraticCurveTo(vec controlPosition, vec position) noexcept
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::quadraticCurveRelativeTo(vec controlDirection, vec direction) noexcept
+void Path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
     tt_assume(controlDirection.is_vector());
@@ -264,7 +264,7 @@ void Path::quadraticCurveRelativeTo(vec controlDirection, vec direction) noexcep
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::cubicCurveTo(vec controlPosition1, vec controlPosition2, vec position) noexcept
+void Path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
     tt_assume(controlPosition1.is_point());
@@ -276,7 +276,7 @@ void Path::cubicCurveTo(vec controlPosition1, vec controlPosition2, vec position
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::cubicCurveRelativeTo(vec controlDirection1, vec controlDirection2, vec direction) noexcept
+void Path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
     tt_assume(controlDirection1.is_vector());
@@ -289,7 +289,7 @@ void Path::cubicCurveRelativeTo(vec controlDirection1, vec controlDirection2, ve
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::arcTo(float radius, vec position) noexcept
+void Path::arcTo(float radius, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
     tt_assume(position.is_point());
@@ -305,7 +305,7 @@ void Path::arcTo(float radius, vec position) noexcept
     ttlet alpha = std::asin(length(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
-    ttlet C = Pm + normal(Vm2) * vec{std::cos(alpha)} * vec{radius};
+    ttlet C = Pm + normal(Vm2) * f32x4{std::cos(alpha)} * f32x4{radius};
 
     // Calculate vectors from center to end points.
     ttlet VC1 = P1 - C;
@@ -316,11 +316,11 @@ void Path::arcTo(float radius, vec position) noexcept
     ttlet k2 = (4.0f/3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / viktor_cross(VC1, VC2);
 
     // Calculate the control points.
-    ttlet C1 = vec::point(
+    ttlet C1 = f32x4::point(
         (C.x() + VC1.x()) - k2 * VC1.y(),
         (C.y() + VC1.y()) + k2 * VC1.x()
     );
-    ttlet C2 = vec::point(
+    ttlet C2 = f32x4::point(
         (C.x() + VC2.x()) + k2 * VC2.y(),
         (C.y() + VC2.y()) - k2 * VC2.x()
     );
@@ -328,7 +328,7 @@ void Path::arcTo(float radius, vec position) noexcept
     cubicCurveTo(C1, C2, P2);
 }
 
-void Path::addRectangle(aarect r, vec corners) noexcept
+void Path::addRectangle(aarect r, f32x4 corners) noexcept
 {
     tt_assert(!isContourOpen());
 
@@ -339,14 +339,14 @@ void Path::addRectangle(aarect r, vec corners) noexcept
     ttlet tlc = r.corner<2>();
     ttlet trc = r.corner<3>();
 
-    ttlet blc1 = blc + vec{0.0f, radii.x()};
-    ttlet blc2 = blc + vec{radii.x(), 0.0f};
-    ttlet brc1 = brc + vec{-radii.y(), 0.0f};
-    ttlet brc2 = brc + vec{0.0f, radii.y()};
-    ttlet tlc1 = tlc + vec{radii.z(), 0.0f};
-    ttlet tlc2 = tlc + vec{0.0f, -radii.z()};
-    ttlet trc1 = trc + vec{0.0f, -radii.w()};
-    ttlet trc2 = trc + vec{-radii.w(), 0.0f};
+    ttlet blc1 = blc + f32x4{0.0f, radii.x()};
+    ttlet blc2 = blc + f32x4{radii.x(), 0.0f};
+    ttlet brc1 = brc + f32x4{-radii.y(), 0.0f};
+    ttlet brc2 = brc + f32x4{0.0f, radii.y()};
+    ttlet tlc1 = tlc + f32x4{radii.z(), 0.0f};
+    ttlet tlc2 = tlc + f32x4{0.0f, -radii.z()};
+    ttlet trc1 = trc + f32x4{0.0f, -radii.w()};
+    ttlet trc2 = trc + f32x4{-radii.w(), 0.0f};
 
     moveTo(blc1);
     if (corners.x() > 0.0) {
@@ -379,16 +379,16 @@ void Path::addRectangle(aarect r, vec corners) noexcept
     closeContour();
 }
 
-void Path::addCircle(vec position, float radius) noexcept
+void Path::addCircle(f32x4 position, float radius) noexcept
 {
     tt_assert(!isContourOpen());
     tt_assume(position.is_point());
 
-    moveTo(vec::point(position.x(), position.y() - radius));
-    arcTo(radius, vec::point(position.x() + radius, position.y()));
-    arcTo(radius, vec::point(position.x(), position.y() + radius));
-    arcTo(radius, vec::point(position.x() - radius, position.y()));
-    arcTo(radius, vec::point(position.x(), position.y() - radius));
+    moveTo(f32x4::point(position.x(), position.y() - radius));
+    arcTo(radius, f32x4::point(position.x() + radius, position.y()));
+    arcTo(radius, f32x4::point(position.x(), position.y() + radius));
+    arcTo(radius, f32x4::point(position.x() - radius, position.y()));
+    arcTo(radius, f32x4::point(position.x(), position.y() - radius));
     closeContour();
 }
 
@@ -431,13 +431,13 @@ void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
     closeContour();
 }
 
-void Path::addPath(Path const &path, vec fillColor) noexcept
+void Path::addPath(Path const &path, f32x4 fillColor) noexcept
 {
     *this += path;
     closeLayer(fillColor);
 }
 
-void Path::addStroke(Path const &path, vec strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
+void Path::addStroke(Path const &path, f32x4 strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
 {
     *this += path.toStroke(strokeWidth, lineJoinStyle, tolerance);
     closeLayer(strokeColor);
@@ -491,11 +491,11 @@ Path &Path::operator+=(Path const &rhs) noexcept
     return *this;
 }
 
-Path Path::centerScale(vec extent, float padding) const noexcept
+Path Path::centerScale(f32x4 extent, float padding) const noexcept
 {
     tt_assume(extent.is_vector());
 
-    auto max_size = vec{
+    auto max_size = f32x4{
         std::max(1.0f, extent.x() - (padding * 2.0f)),
         std::max(1.0f, extent.y() - (padding * 2.0f))
     };
@@ -511,14 +511,14 @@ Path Path::centerScale(vec extent, float padding) const noexcept
     );
     bbox *= scale;
     
-    ttlet offset = -bbox.offset() + (extent - bbox.extent()) * vec{0.5f};
+    ttlet offset = -bbox.offset() + (extent - bbox.extent()) * f32x4{0.5f};
 
     return (mat::T(offset) * mat::S(scale, scale, 1.0f)) * *this;
 }
 
 
 
-void composit(PixelMap<R16G16B16A16SFloat>& dst, vec color, Path const &path) noexcept
+void composit(PixelMap<R16G16B16A16SFloat>& dst, f32x4 color, Path const &path) noexcept
 {
     tt_assert(!path.hasLayers());
     tt_assert(!path.isContourOpen());

@@ -75,7 +75,7 @@ void WindowWidget::update_layout(hires_utc_clock::time_point display_time_point,
     abstract_container_widget::update_layout(display_time_point, need_layout);
 }
 
-HitBox WindowWidget::hitbox_test(vec window_position) const noexcept
+HitBox WindowWidget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     ttlet position = _from_window_transform * window_position;

@@ -30,10 +30,10 @@ struct BezierCurve {
 
     Type type;
     Color color;
-    vec P1; //!< First point
-    vec C1; //!< Control point
-    vec C2; //!< Control point
-    vec P2; //!< Last point
+    f32x4 P1; //!< First point
+    f32x4 C1; //!< Control point
+    f32x4 C2; //!< Control point
+    f32x4 P2; //!< Last point
 
     BezierCurve() noexcept = delete;
     BezierCurve(BezierCurve const &other) noexcept = default;
@@ -43,28 +43,28 @@ struct BezierCurve {
 
     /*! Construct a linear bezier-curve.
      */
-    BezierCurve(vec const P1, vec const P2, Color color=Color::White) noexcept :
+    BezierCurve(f32x4 const P1, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Linear), color(color), P1(P1), C1(), C2(), P2(P2) {
         tt_assume(P1.is_point() && P2.is_point());    
     }
 
     /*! Construct a quadratic bezier-curve.
      */
-    BezierCurve(vec const P1, vec const C1, vec const P2, Color color=Color::White) noexcept :
+    BezierCurve(f32x4 const P1, f32x4 const C1, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Quadratic), color(color), P1(P1), C1(C1), C2(), P2(P2) {
         tt_assume(P1.is_point() && C1.is_point() && P2.is_point());    
     }
 
     /*! Construct a cubic bezier-curve.
      */
-    BezierCurve(vec const P1, vec const C1, vec const C2, vec const P2, Color color=Color::White) noexcept :
+    BezierCurve(f32x4 const P1, f32x4 const C1, f32x4 const C2, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Cubic), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
         tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());    
     }
 
     /*! Construct a bezier-curve of any type.
     */
-    BezierCurve(Type const type, vec const P1, vec const C1, vec const C2, vec const P2, Color color=Color::White) noexcept :
+    BezierCurve(Type const type, f32x4 const P1, f32x4 const C1, f32x4 const C2, f32x4 const P2, Color color=Color::White) noexcept :
         type(type), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
         switch (type) {
         case Type::Linear:
@@ -104,7 +104,7 @@ struct BezierCurve {
      * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
      * \return the coordinates of the point on the curve.
      */ 
-    [[nodiscard]] vec pointAt(float const t) const noexcept {
+    [[nodiscard]] f32x4 pointAt(float const t) const noexcept {
         switch (type) {
         case Type::Linear: return bezierPointAt(P1, P2, t);
         case Type::Quadratic: return bezierPointAt(P1, C1, P2, t);
@@ -120,7 +120,7 @@ struct BezierCurve {
     * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
     * \return the tangent-vector at point t on the curve
     */ 
-    [[nodiscard]] vec tangentAt(float const t) const noexcept {
+    [[nodiscard]] f32x4 tangentAt(float const t) const noexcept {
         switch (type) {
         case Type::Linear: return bezierTangentAt(P1, P2, t);
         case Type::Quadratic: return bezierTangentAt(P1, C1, P2, t);
@@ -142,7 +142,7 @@ struct BezierCurve {
         }
     }
 
-    [[nodiscard]] results<float,3> solveTForNormalsIntersectingPoint(vec P) const noexcept {
+    [[nodiscard]] results<float,3> solveTForNormalsIntersectingPoint(f32x4 P) const noexcept {
         switch (type) {
         case Type::Linear: return bezierFindTForNormalsIntersectingPoint(P1, P2, P);
         case Type::Quadratic: return bezierFindTForNormalsIntersectingPoint(P1, C1, P2, P);
@@ -153,10 +153,10 @@ struct BezierCurve {
 
     /** Find the distance from the point to the curve.
      */
-    [[nodiscard]] float sdf_distance(vec P) const noexcept {
+    [[nodiscard]] float sdf_distance(f32x4 P) const noexcept {
         auto min_square_distance = std::numeric_limits<float>::max();
         auto min_t = 0.0f;
-        auto min_normal = vec{0.0f, 1.0f};
+        auto min_normal = f32x4{0.0f, 1.0f};
 
         ttlet ts = solveTForNormalsIntersectingPoint(P);
         for (auto t: ts) {

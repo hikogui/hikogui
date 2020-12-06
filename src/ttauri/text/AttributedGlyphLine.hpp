@@ -81,12 +81,12 @@ struct AttributedGlyphLine {
     [[nodiscard]] aarect boundingBox() const noexcept {
         tt_assume(std::ssize(line) >= 1);
 
-        ttlet p0 = vec::point(
+        ttlet p0 = f32x4::point(
             line.front().position.x(),
             line.front().position.y() - descender
         );
 
-        ttlet p3 = vec::point(
+        ttlet p3 = f32x4::point(
             line.back().position.x() + line.back().metrics.advance.x(),
             line.back().position.y() + ascender
         );
@@ -94,11 +94,11 @@ struct AttributedGlyphLine {
         return aarect::p0p3(p0, p3);
     }
 
-    [[nodiscard]] bool contains(vec coordinate) const noexcept {
+    [[nodiscard]] bool contains(f32x4 coordinate) const noexcept {
         return boundingBox().contains(coordinate);            
     }
 
-    [[nodiscard]] const_iterator find(vec coordinate) const noexcept {
+    [[nodiscard]] const_iterator find(f32x4 coordinate) const noexcept {
         auto bbox = boundingBox();
 
         if (coordinate.y() < bbox.y() || coordinate.y() > bbox.p3().y()) {
@@ -128,7 +128,7 @@ struct AttributedGlyphLine {
     [[nodiscard]] const_iterator end() const noexcept { return line.cend(); }
     [[nodiscard]] const_iterator cend() const noexcept { return line.cend(); }
 
-    void positionGlyphs(vec position) noexcept {
+    void positionGlyphs(f32x4 position) noexcept {
         tt_assume(position.is_point());
         y = position.y();
         for (auto &&g: line) {

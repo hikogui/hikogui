@@ -20,7 +20,7 @@
 namespace tt {
 class gui_device_vulkan;
 template<typename T> struct PixelMap;
-class vec;
+class f32x4;
 class mat;
 }
 
@@ -89,7 +89,7 @@ struct DeviceShared final {
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
      */
-    [[nodiscard]] AtlasRect allocateRect(vec drawExtent) noexcept;
+    [[nodiscard]] AtlasRect allocateRect(f32x4 drawExtent) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -121,7 +121,7 @@ struct DeviceShared final {
     * @param color The color of the glyph.
     * @param clippingRectangle The rectangle to clip the glyph.
     */
-    void placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept;
+    void placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -138,7 +138,7 @@ struct DeviceShared final {
     * @param vertices The vertices to draw the glyphs to.
     * @param color Override the color of the text to draw.
     */
-    void placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle, vec color) noexcept;
+    void placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle, f32x4 color) noexcept;
 
 private:
     void buildShaders();
@@ -157,7 +157,7 @@ private:
      * @param clippingRectangle The rectangle to clip the glyph.
      * @return True if the glyph was added to the atlas.
      */
-    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept;
+    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept;
 
     /** Place an single attributed glyph.
     * This function will not execute prepareAtlasForRendering().
@@ -180,7 +180,7 @@ private:
     * @param color Override the color from the glyph style.
     * @return True if the glyph was added to the atlas.
     */
-    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, vec color) noexcept;
+    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, f32x4 color) noexcept;
 
     AtlasRect addGlyphToAtlas(FontGlyphIDs glyph) noexcept;
 

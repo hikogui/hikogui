@@ -445,7 +445,7 @@ void png::data_to_image_line(std::span<std::byte const> bytes, PixelRow<R16G16B1
     for (int x = 0; x != width; ++x) {
         ttlet value = extract_pixel_from_line(bytes, x);
 
-        ttlet linear_color = vec::color(
+        ttlet linear_color = f32x4::color(
             transfer_function[value.x()],
             transfer_function[value.y()],
             transfer_function[value.z()]

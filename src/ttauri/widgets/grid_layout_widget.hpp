@@ -105,7 +105,7 @@ private:
     flow_layout _columns;
 
     [[nodiscard]] static std::pair<int, int> calculate_grid_size(std::vector<cell> const &cells) noexcept;
-    [[nodiscard]] static vec
+    [[nodiscard]] static f32x4
     calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
 };
 

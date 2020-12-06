@@ -112,7 +112,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_vulkan_win32::createWindow(const std::u8string &_title, vec extent)
+void gui_window_vulkan_win32::createWindow(const std::u8string &_title, f32x4 extent)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
@@ -654,8 +654,8 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     case WM_NCHITTEST: {
         gui_system_mutex.lock();
-        ttlet screenPosition = vec{GET_X_LPARAM(lParam), 0 - GET_Y_LPARAM(lParam)};
-        ttlet insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};
+        ttlet screenPosition = f32x4{GET_X_LPARAM(lParam), 0 - GET_Y_LPARAM(lParam)};
+        ttlet insideWindowPosition = screenPosition - f32x4{OSWindowRectangle.offset()};
         ttlet hitbox_type = widget->hitbox_test(insideWindowPosition).type;
         gui_system_mutex.unlock();
 
@@ -735,9 +735,9 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
-    mouseEvent.position = vec::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
+    mouseEvent.position = f32x4::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
 
-    mouseEvent.wheelDelta = vec{};
+    mouseEvent.wheelDelta = f32x4{};
     if (uMsg == WM_MOUSEWHEEL) {
         mouseEvent.wheelDelta.y(static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f);
     } else if (uMsg == WM_MOUSEHWHEEL) {

@@ -17,7 +17,7 @@ text_stencil::text_stencil(alignment alignment, std::u8string text, TextStyle st
 {
 }
 
-vec text_stencil::preferred_extent() noexcept
+f32x4 text_stencil::preferred_extent() noexcept
 {
     return _shaped_text.preferred_extent;
 }
@@ -32,7 +32,7 @@ void text_stencil::draw(draw_context context, bool use_context_color) noexcept
     }
 
     if (std::exchange(_position_is_modified, false)) {
-        _shaped_text_transform = _shaped_text.TMiddle(vec{_rectangle.x(), _base_line_position});
+        _shaped_text_transform = _shaped_text.TMiddle(f32x4{_rectangle.x(), _base_line_position});
     }
 
     context.transform = context.transform * _shaped_text_transform;

@@ -17,13 +17,13 @@ struct MouseEvent {
     hires_utc_clock::time_point timePoint;
 
     //! The current position of the mouse pointer.
-    vec position;
+    f32x4 position;
 
     //! The position the last time a button was pressed.
-    vec downPosition;
+    f32x4 downPosition;
 
     //! Change in wheel rotation, in pixels.
-    vec wheelDelta;
+    f32x4 wheelDelta;
 
     //! Buttons which has caused this event.
     MouseButtons cause;
@@ -45,11 +45,11 @@ struct MouseEvent {
 
     /** Get the location of the mouse relative to the start of a drag.
      */
-    [[nodiscard]] vec delta() const noexcept {
-        return type == Type::Drag ? position - downPosition : vec{};
+    [[nodiscard]] f32x4 delta() const noexcept {
+        return type == Type::Drag ? position - downPosition : f32x4{};
     }
 
-    static MouseEvent entered(vec position=vec::point(0.0f, 0.0f)) noexcept {
+    static MouseEvent entered(f32x4 position=f32x4::point(0.0f, 0.0f)) noexcept {
         MouseEvent event;
         event.position = position;
         event.type = MouseEvent::Type::Entered;
@@ -62,7 +62,7 @@ struct MouseEvent {
         constexpr float far_ = std::numeric_limits<float>::max() * -0.5f;
 
         MouseEvent event;
-        event.position = vec{far_, far_};
+        event.position = f32x4{far_, far_};
         event.type = MouseEvent::Type::Exited;
         return event;
     }

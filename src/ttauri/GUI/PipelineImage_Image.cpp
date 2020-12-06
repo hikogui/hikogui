@@ -72,10 +72,10 @@ iaarect Image::indexToRect(int const pageIndex) const noexcept
     return iaarect::p0p3(p0, p3);
 }
 
-static std::tuple<vec, vec, bool>calculatePosition(int x, int y, int width, int height, mat transform, aarect clippingRectangle)
+static std::tuple<f32x4, f32x4, bool>calculatePosition(int x, int y, int width, int height, mat transform, aarect clippingRectangle)
 {
-    auto p = transform * vec::point(x, y);
-    return {p, vec{width, height}, clippingRectangle.contains(p)};
+    auto p = transform * f32x4::point(x, y);
+    return {p, f32x4{width, height}, clippingRectangle.contains(p)};
 }
 
 void Image::calculateVertexPositions(mat transform, aarect clippingRectangle)
@@ -137,7 +137,7 @@ void Image::placePageVertices(vspan<Vertex> &vertices, int const index, aarect c
     }
 
     ttlet atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
-    ttlet atlasRect = mat::T(vec{atlasPosition.xyz0()}) * aarect{e4};
+    ttlet atlasRect = mat::T(f32x4{atlasPosition.xyz0()}) * aarect{e4};
 
     vertices.emplace_back(p1, atlasRect.corner<0>(), clippingRectangle);
     vertices.emplace_back(p2, atlasRect.corner<1>(), clippingRectangle);

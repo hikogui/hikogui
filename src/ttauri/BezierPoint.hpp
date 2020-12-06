@@ -18,13 +18,13 @@ struct BezierPoint {
     enum class Type { Anchor, QuadraticControl, CubicControl1, CubicControl2 };
 
     Type type;
-    vec p;
+    f32x4 p;
 
-    BezierPoint(vec const p, Type const type) noexcept : type(type), p(p) {
+    BezierPoint(f32x4 const p, Type const type) noexcept : type(type), p(p) {
         tt_assume(p.is_point());
     }
 
-    BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint(vec::point(x, y), type) {}
+    BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint(f32x4::point(x, y), type) {}
 
     /*! Normalize points in a list.
      * The following normalizations are executed:

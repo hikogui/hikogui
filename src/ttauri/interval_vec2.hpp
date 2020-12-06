@@ -21,7 +21,7 @@ public:
     [[nodiscard]] interval_vec2 &operator=(interval_vec2 const &other) noexcept = default;
     [[nodiscard]] interval_vec2 &operator=(interval_vec2 &&other) noexcept = default;
 
-    [[nodiscard]] interval_vec2(vec min, vec max) noexcept : value(-min + max._00xy())
+    [[nodiscard]] interval_vec2(f32x4 min, f32x4 max) noexcept : value(-min + max._00xy())
     {
         tt_assume(min.z() == 0.0f && min.w() == 0.0f);
         tt_assume(max.z() == 0.0f && max.w() == 0.0f);
@@ -30,55 +30,55 @@ public:
     }
 
     [[nodiscard]] interval_vec2(finterval x, finterval y) noexcept :
-        interval_vec2(vec{x.minimum(), y.minimum()}, vec{x.maximum(), y.maximum()}) {}
+        interval_vec2(f32x4{x.minimum(), y.minimum()}, f32x4{x.maximum(), y.maximum()}) {}
 
     [[nodiscard]] interval_vec2() noexcept :
         interval_vec2(
-            vec{-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()},
-            vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()})
+            f32x4{-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()},
+            f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()})
     {
     }
 
-    [[nodiscard]] interval_vec2(vec other) noexcept : interval_vec2(other, other) {}
+    [[nodiscard]] interval_vec2(f32x4 other) noexcept : interval_vec2(other, other) {}
 
-    [[nodiscard]] interval_vec2(float x, float y) noexcept : interval_vec2(vec{x, y}) {}
+    [[nodiscard]] interval_vec2(float x, float y) noexcept : interval_vec2(f32x4{x, y}) {}
 
-    [[nodiscard]] static interval_vec2 make_minimum(vec other) noexcept
+    [[nodiscard]] static interval_vec2 make_minimum(f32x4 other) noexcept
     {
-        return {other, vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+        return {other, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
     }
 
     [[nodiscard]] static interval_vec2 make_minimum(float x, float y) noexcept
     {
-        return make_minimum(vec{x, y});
+        return make_minimum(f32x4{x, y});
     }
 
-    [[nodiscard]] static interval_vec2 make_maximum(vec other) noexcept
+    [[nodiscard]] static interval_vec2 make_maximum(f32x4 other) noexcept
     {
-        return {vec{-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()}, other};
+        return {f32x4{-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()}, other};
     }
 
     [[nodiscard]] static interval_vec2 make_maximum(float x, float y) noexcept
     {
-        return make_maximum(vec{x, y});
+        return make_maximum(f32x4{x, y});
     }
 
-    [[nodiscard]] static interval_vec2 make_zero_to_maximum(vec other) noexcept
+    [[nodiscard]] static interval_vec2 make_zero_to_maximum(f32x4 other) noexcept
     {
-        return {vec{}, other};
+        return {f32x4{}, other};
     }
 
     [[nodiscard]] static interval_vec2 make_zero_to_maximum(float x, float y) noexcept
     {
-        return make_zero_to_maximum(vec{x, y});
+        return make_zero_to_maximum(f32x4{x, y});
     }
 
-    [[nodiscard]] vec minimum() const noexcept
+    [[nodiscard]] f32x4 minimum() const noexcept
     {
         return (-value).xy00();
     }
 
-    [[nodiscard]] vec maximum() const noexcept
+    [[nodiscard]] f32x4 maximum() const noexcept
     {
         return value.zw00();
     }
@@ -142,14 +142,14 @@ public:
 
     /** Check if lhs.x or lhs.y is smaller then rhs.minimum.
      */
-    [[nodiscard]] friend bool operator<<(vec const &lhs, interval_vec2 const &rhs) noexcept
+    [[nodiscard]] friend bool operator<<(f32x4 const &lhs, interval_vec2 const &rhs) noexcept
     {
         return lhs.x() < rhs.minimum().x() || lhs.y() < rhs.minimum().y();
     }
 
     /** Check if lhs.x or lhs.y is larger then rhs.maximum.
      */
-    [[nodiscard]] friend bool operator>>(vec const &lhs, interval_vec2 const &rhs) noexcept
+    [[nodiscard]] friend bool operator>>(f32x4 const &lhs, interval_vec2 const &rhs) noexcept
     {
         return lhs.x() > rhs.maximum().x() || lhs.y() > rhs.maximum().y();
     }
@@ -200,7 +200,7 @@ public:
     }
 
 private:
-    [[nodiscard]] static interval_vec2 make(vec other) noexcept
+    [[nodiscard]] static interval_vec2 make(f32x4 other) noexcept
     {
         tt_assume(-other.x() <= other.z());
         tt_assume(-other.y() <= other.w());
@@ -212,7 +212,7 @@ private:
 
     /** The value as (-x_min, -y_min, y_max, x_max)
      */
-    vec value;
+    f32x4 value;
 };
 
 } // namespace tt

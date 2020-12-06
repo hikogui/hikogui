@@ -26,8 +26,8 @@ bool LineInputWidget::update_constraints(hires_utc_clock::time_point display_tim
         ttlet maximumHeight = shapedText.boundingBox.height() + theme::global->margin * 2.0f;
 
         _preferred_size = {
-            vec{100.0f, theme::global->smallSize + theme::global->margin * 2.0f},
-            vec{std::numeric_limits<float>::infinity(), theme::global->smallSize + theme::global->margin * 2.0f}};
+            f32x4{100.0f, theme::global->smallSize + theme::global->margin * 2.0f},
+            f32x4{std::numeric_limits<float>::infinity(), theme::global->smallSize + theme::global->margin * 2.0f}};
         _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
         _width_resistance = 2;
         return true;
@@ -314,7 +314,7 @@ bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
     return handled;
 }
 
-HitBox LineInputWidget::hitbox_test(vec window_position) const noexcept
+HitBox LineInputWidget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 

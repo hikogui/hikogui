@@ -55,7 +55,7 @@ struct GlyphMetrics {
 
     /*! The distance to the next character.
     */
-    vec advance = {0.0f, 0.0f};
+    f32x4 advance = {0.0f, 0.0f};
 
     /*! The number of graphemes this glyph represents.
     * This may be larger than one when the glyph is a ligature.
@@ -71,10 +71,10 @@ struct GlyphMetrics {
     /*! Get the advanceWidth for the specific grapheme of
     * a potential ligature.
     */
-    vec advanceForGrapheme(int index) const noexcept {
-        ttlet ligatureRatio = vec{1.0f / numberOfGraphemes};
+    f32x4 advanceForGrapheme(int index) const noexcept {
+        ttlet ligatureRatio = f32x4{1.0f / numberOfGraphemes};
 
-        return advance * ligatureRatio * vec{index};
+        return advance * ligatureRatio * f32x4{index};
     }
 
     GlyphMetrics &scale(float rhs) noexcept

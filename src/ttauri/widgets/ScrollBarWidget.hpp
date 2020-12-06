@@ -55,12 +55,12 @@ public:
 
             if constexpr (is_vertical) {
                 _preferred_size = interval_vec2{
-                    vec{theme::global->scroll_bar_thickness, minimum_length},
-                    vec{theme::global->scroll_bar_thickness, std::numeric_limits<float>::max()}};
+                    f32x4{theme::global->scroll_bar_thickness, minimum_length},
+                    f32x4{theme::global->scroll_bar_thickness, std::numeric_limits<float>::max()}};
             } else {
                 _preferred_size = interval_vec2{
-                    vec{minimum_length, theme::global->scroll_bar_thickness},
-                    vec{std::numeric_limits<float>::max(), theme::global->scroll_bar_thickness}};
+                    f32x4{minimum_length, theme::global->scroll_bar_thickness},
+                    f32x4{std::numeric_limits<float>::max(), theme::global->scroll_bar_thickness}};
             }
 
             _preferred_base_line = {};
@@ -103,7 +103,7 @@ public:
         widget::draw(std::move(context), display_time_point);
     }
 
-    HitBox hitbox_test(vec window_position) const noexcept override
+    HitBox hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         ttlet position = _from_window_transform * window_position;
@@ -232,9 +232,9 @@ private:
         context.color = theme::global->fillColor(_semantic_layer);
         context.fill_color = theme::global->fillColor(_semantic_layer);
         if constexpr (is_vertical) {
-            context.corner_shapes = vec{rectangle().width() * 0.5f};
+            context.corner_shapes = f32x4{rectangle().width() * 0.5f};
         } else {
-            context.corner_shapes = vec{rectangle().height() * 0.5f};
+            context.corner_shapes = f32x4{rectangle().height() * 0.5f};
         }
         context.draw_box_with_border_inside(rectangle());
     }
@@ -247,9 +247,9 @@ private:
         context.fill_color = theme::global->fillColor(_semantic_layer + 1);
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         if constexpr (is_vertical) {
-            context.corner_shapes = vec{slider_rectangle.width() * 0.5f};
+            context.corner_shapes = f32x4{slider_rectangle.width() * 0.5f};
         } else {
-            context.corner_shapes = vec{slider_rectangle.height() * 0.5f};
+            context.corner_shapes = f32x4{slider_rectangle.height() * 0.5f};
         }
         context.draw_box_with_border_inside(slider_rectangle);
     }

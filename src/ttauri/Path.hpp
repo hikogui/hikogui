@@ -36,7 +36,7 @@ struct Path {
 
     /*! An color and index into \see contourEndPoints where each layer ends.
      */
-    std::vector<std::pair<ssize_t,vec>> layerEndContours;
+    std::vector<std::pair<ssize_t,f32x4>> layerEndContours;
 
     /** Clear the path.
      */
@@ -90,11 +90,11 @@ struct Path {
 
     [[nodiscard]] std::vector<BezierCurve> getBeziers() const noexcept;
 
-    [[nodiscard]] std::pair<Path,vec> getLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] std::pair<Path,f32x4> getLayer(ssize_t layerNr) const noexcept;
 
-    [[nodiscard]] vec getColorOfLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] f32x4 getColorOfLayer(ssize_t layerNr) const noexcept;
 
-    void setColorOfLayer(ssize_t layerNr, vec fillColor) noexcept;
+    void setColorOfLayer(ssize_t layerNr, f32x4 fillColor) noexcept;
 
     /*! Return true if there is an open contour.
      */
@@ -116,7 +116,7 @@ struct Path {
     /*! Close current contour.
     * No operation if there is no open layer.
     */
-    void closeLayer(vec fillColor) noexcept;
+    void closeLayer(f32x4 fillColor) noexcept;
 
     /** Optimize layers.
      * Merge contiguous layers with the same color.
@@ -126,37 +126,37 @@ struct Path {
     /*! Get the currentPosition of the open contour.
      * Returns {0, 0} when there is no contour open.
      */
-    [[nodiscard]] vec currentPosition() const noexcept;
+    [[nodiscard]] f32x4 currentPosition() const noexcept;
 
     /*! Start a new contour at position.
      * closes current subpath.
      */
-    void moveTo(vec position) noexcept;
+    void moveTo(f32x4 position) noexcept;
 
     /*! Start a new contour relative to current position.
      * closes current subpath.
      */
-    void moveRelativeTo(vec direction) noexcept;
+    void moveRelativeTo(f32x4 direction) noexcept;
 
-    void lineTo(vec position) noexcept;
+    void lineTo(f32x4 position) noexcept;
 
-    void lineRelativeTo(vec direction) noexcept;
+    void lineRelativeTo(f32x4 direction) noexcept;
 
-    void quadraticCurveTo(vec controlPosition, vec position) noexcept;
-
-    /*! Draw curve from the current position to the new direction.
-     * \param controlDirection control point of the curve relative from the start of the curve.
-     * \param direction end point of the curve relative from the start of the curve.
-     */
-    void quadraticCurveRelativeTo(vec controlDirection, vec direction) noexcept;
-
-    void cubicCurveTo(vec controlPosition1, vec controlPosition2, vec position) noexcept;
+    void quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept;
 
     /*! Draw curve from the current position to the new direction.
      * \param controlDirection control point of the curve relative from the start of the curve.
      * \param direction end point of the curve relative from the start of the curve.
      */
-    void cubicCurveRelativeTo(vec controlDirection1, vec controlDirection2, vec direction) noexcept;
+    void quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noexcept;
+
+    void cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept;
+
+    /*! Draw curve from the current position to the new direction.
+     * \param controlDirection control point of the curve relative from the start of the curve.
+     * \param direction end point of the curve relative from the start of the curve.
+     */
+    void cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept;
 
     /*! Draw an circular arc.
      * The arc is drawn from the current position to the position given
@@ -169,20 +169,20 @@ struct Path {
      * \param radius positive radius means positive arc, negative radius is a negative arc.
      * \param position end position of the arc.
      */
-    void arcTo(float radius, vec position) noexcept;
+    void arcTo(float radius, f32x4 position) noexcept;
 
     /*! Draw a rectangle.
      * \param aarect the offset and size of the rectangle.
      * \param corner radius of <bottom-left, bottom-right, top-left, top-right>
      *        positive corner are rounded, negative curves are cut.
      */
-    void addRectangle(aarect r, vec corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
+    void addRectangle(aarect r, f32x4 corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
     /*! Draw a circle.
     * \param position position of the center of the circle.
     * \param radius radius of the circle
     */
-    void addCircle(vec position, float radius) noexcept;
+    void addCircle(f32x4 position, float radius) noexcept;
 
     /*! Contour with the given bezier curves.
     * The first anchor will be ignored.
@@ -201,11 +201,11 @@ struct Path {
 
     /*! Add path and close layer.
      */
-    void addPath(Path const &path, vec fillColor) noexcept;
+    void addPath(Path const &path, f32x4 fillColor) noexcept;
 
     /*! Stroke a path and close layer.
      */
-    void addStroke(Path const &path, vec strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
+    void addStroke(Path const &path, f32x4 strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
 
     /*! Convert path to stroke-path.
      *
@@ -222,7 +222,7 @@ struct Path {
 
     /** Center and scale a path inside the extent with padding.
      */
-    [[nodiscard]] Path centerScale(vec extent, float padding=0.0) const noexcept;
+    [[nodiscard]] Path centerScale(f32x4 extent, float padding=0.0) const noexcept;
 
     Path &operator+=(Path const &rhs) noexcept;
 
@@ -254,7 +254,7 @@ struct Path {
 * \param color color to composit.
 * \param mask mask where the color will be composited on the destination.
 */
-void composit(PixelMap<R16G16B16A16SFloat>& dst, vec color, Path const &mask) noexcept;
+void composit(PixelMap<R16G16B16A16SFloat>& dst, f32x4 color, Path const &mask) noexcept;
 
 /*! Composit color onto the destination image where the mask is solid.
 *

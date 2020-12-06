@@ -28,7 +28,7 @@ struct Vertex {
     //! The color of the glyph.
     R16G16B16A16SFloat color;
 
-    Vertex(vec position, aarect clippingRectangle, vec textureCoord, vec color) noexcept :
+    Vertex(f32x4 position, aarect clippingRectangle, f32x4 textureCoord, f32x4 color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),

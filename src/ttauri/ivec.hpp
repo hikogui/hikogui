@@ -30,12 +30,12 @@ namespace tt {
  * If the swizzle member function name would start with a '0' or '1' character it
  * will be prefixed with an underscore '_'.
  *
- * Since swizzle member functions always return a 4D vec, the third and forth
+ * Since swizzle member functions always return a 4D f32x4, the third and forth
  * element will default to '0' and 'w'. This allows a 2D vector to maintain its
  * homogeniousness.
  */ 
 class ivec {
-    /* Intrinsic value of the vec.
+    /* Intrinsic value of the f32x4.
      * The elements in __m128i are assigned as follows.
      *  - [127:96] w
      *  - [95:64] z
@@ -45,7 +45,7 @@ class ivec {
     __m128i v;
 
 public:
-    /* Create a zeroed out vec.
+    /* Create a zeroed out f32x4.
      */
     ivec() noexcept : ivec(_mm_setzero_si128()) {}
     ivec(ivec const &rhs) = default;
@@ -71,14 +71,14 @@ public:
         return v;
     }
 
-    ivec(vec const &rhs) noexcept :
+    ivec(f32x4 const &rhs) noexcept :
        ivec(_mm_cvtps_epi32(rhs)) {}
 
-    ivec &operator=(vec const &rhs) noexcept {
+    ivec &operator=(f32x4 const &rhs) noexcept {
         return *this = _mm_cvtps_epi32(rhs);
     }
 
-    operator vec () const noexcept {
+    operator f32x4 () const noexcept {
         return _mm_cvtepi32_ps(*this);
     }
 
@@ -288,7 +288,7 @@ public:
 
     template<char a, char b, char c, char d>
     [[nodiscard]] ivec swizzle() const noexcept {
-        constexpr int permute_mask = vec::swizzle_permute_mask<a,b,c,d>();
+        constexpr int permute_mask = f32x4::swizzle_permute_mask<a,b,c,d>();
 
         __m128i swizzled;
         // Clang is able to optimize these intrinsics, MSVC is not.

@@ -27,7 +27,7 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet width = theme::global->toolbarDecorationButtonWidth;
         ttlet height = theme::global->toolbarHeight;
-        _preferred_size = {vec{width, height}, vec{width, std::numeric_limits<float>::infinity()}};
+        _preferred_size = {f32x4{width, height}, f32x4{width, std::numeric_limits<float>::infinity()}};
         return true;
     } else {
         return false;
@@ -67,7 +67,7 @@ void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point di
     widget::draw(std::move(context), display_time_point);
 }
 
-HitBox SystemMenuWidget::hitbox_test(vec window_position) const noexcept
+HitBox SystemMenuWidget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 

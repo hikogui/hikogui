@@ -30,10 +30,10 @@ namespace tt {
 class draw_context {
 public:
     /// Foreground color.
-    vec color = vec::color(1.0, 1.0, 1.0, 1.0);
+    f32x4 color = f32x4::color(1.0, 1.0, 1.0, 1.0);
 
     /// Fill color.
-    vec fill_color = vec::color(0.0, 0.0, 0.0, 0.0);
+    f32x4 fill_color = f32x4::color(0.0, 0.0, 0.0, 0.0);
 
     /// Size of lines.
     float line_width = 1.0;
@@ -50,7 +50,7 @@ public:
      *  - positive: Rounded corner of that radius
      *  - negative: Cur corner of that radius
      */
-    vec corner_shapes = vec{0.0, 0.0, 0.0, 0.0};
+    f32x4 corner_shapes = f32x4{0.0, 0.0, 0.0, 0.0};
 
     /** The clipping rectangle when drawing.
      * The clipping rectangle is passes as-is to the pipelines and
@@ -81,7 +81,7 @@ public:
         fill_color(1.0, 1.0, 0.0, 1.0),
         line_width(theme::global->borderWidth),
         corner_shapes(),
-        clipping_rectangle(static_cast<vec>(window.currentWindowExtent))
+        clipping_rectangle(static_cast<f32x4>(window.currentWindowExtent))
     {
         _flat_vertices->clear();
         _box_vertices->clear();
@@ -115,7 +115,7 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    void draw_filled_quad(vec p1, vec p2, vec p3, vec p4) const noexcept
+    void draw_filled_quad(f32x4 p1, f32x4 p2, f32x4 p3, f32x4 p4) const noexcept
     {
         tt_assume(_flat_vertices != nullptr);
         _flat_vertices->emplace_back(transform * p1, clipping_rectangle, fill_color);
@@ -179,7 +179,7 @@ public:
         ttlet new_rectangle = shrink(rectangle, shrink_value);
 
         ttlet new_corner_shapes =
-            vec{std::max(0.0f, corner_shapes.x() - shrink_value),
+            f32x4{std::max(0.0f, corner_shapes.x() - shrink_value),
                 std::max(0.0f, corner_shapes.y() - shrink_value),
                 std::max(0.0f, corner_shapes.z() - shrink_value),
                 std::max(0.0f, corner_shapes.w() - shrink_value)};
@@ -213,7 +213,7 @@ public:
         ttlet new_rectangle = expand(rectangle, shrink_value);
 
         ttlet new_corner_shapes =
-            vec{std::max(0.0f, corner_shapes.x() - shrink_value),
+            f32x4{std::max(0.0f, corner_shapes.x() - shrink_value),
                 std::max(0.0f, corner_shapes.y() - shrink_value),
                 std::max(0.0f, corner_shapes.z() - shrink_value),
                 std::max(0.0f, corner_shapes.w() - shrink_value)};

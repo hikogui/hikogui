@@ -7,12 +7,12 @@
 
 namespace tt::PipelineSDF {
 
-AtlasRect::AtlasRect(ivec atlasPosition, vec drawExtent) noexcept :
+AtlasRect::AtlasRect(ivec atlasPosition, f32x4 drawExtent) noexcept :
     atlasPosition(atlasPosition),
     atlasExtent(ceil(drawExtent))
 {
     ttlet atlas_px_rect = rect{
-        vec{atlasPosition.xyz1()},
+        f32x4{atlasPosition.xyz1()},
         drawExtent
     };
 

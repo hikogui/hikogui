@@ -28,7 +28,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
 
-    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
+    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override;
 
 private:
     std::unique_ptr<image_stencil> _icon_stencil;

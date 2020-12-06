@@ -135,7 +135,7 @@ public:
 
             ttlet height = _label_stencil->preferred_extent().height() + theme::global->margin * 2.0f;
             this->_preferred_size = {
-                vec{width, height}, vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+                f32x4{width, height}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             return true;
         } else {
             return false;

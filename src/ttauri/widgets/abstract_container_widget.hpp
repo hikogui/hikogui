@@ -107,7 +107,7 @@ public:
         return handled;
     }
 
-    HitBox hitbox_test(vec window_position) const noexcept
+    HitBox hitbox_test(f32x4 window_position) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 

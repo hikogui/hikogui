@@ -21,14 +21,14 @@ public:
     A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
     A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
 
-    //A8B8G8R8SrgbPack32(vec const &rhs) noexcept {
+    //A8B8G8R8SrgbPack32(f32x4 const &rhs) noexcept {
     //}
 
-    //A8B8G8R8SrgbPack32 &operator=(vec const &rhs) noexcept {
+    //A8B8G8R8SrgbPack32 &operator=(f32x4 const &rhs) noexcept {
     //    return *this;
     //}
 
-    //operator vec () const noexcept {
+    //operator f32x4 () const noexcept {
     //}
 
     A8B8G8R8SrgbPack32(uint32_t const &rhs) noexcept : v(rhs) {}

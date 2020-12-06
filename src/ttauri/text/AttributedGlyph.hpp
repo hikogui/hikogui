@@ -24,7 +24,7 @@ struct AttributedGlyph {
 
     /** Position of the glyph.
     */
-    vec position;
+    f32x4 position;
 
     /** Number of graphemes merged (ligature) into this attributed-glyph. */
     int8_t graphemeCount;
@@ -97,7 +97,7 @@ struct AttributedGlyph {
      * For a non-ligature, left of the halfway-point returnes the current logicalIndex,
      * right of the halfway-point return the next logicalIndex.
      */
-    [[nodiscard]] ssize_t relativeIndexAtCoordinate(vec coordinate) const noexcept {
+    [[nodiscard]] ssize_t relativeIndexAtCoordinate(f32x4 coordinate) const noexcept {
         ttlet relativePositionInGlyph = (coordinate.x() - position.x()) / metrics.advance.x();
         ttlet relativePositionPerGrapheme = relativePositionInGlyph * narrow_cast<float>(graphemeCount);
         return narrow_cast<ssize_t>(std::round(relativePositionPerGrapheme));

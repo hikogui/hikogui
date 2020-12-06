@@ -195,7 +195,7 @@ public:
     void next_keyboard_widget(std::shared_ptr<tt::widget> const &currentTargetWidget, bool reverse) noexcept;
 
 
-    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, vec position = vec{0.0f, 0.0f}) noexcept;
+    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, f32x4 position = f32x4{0.0f, 0.0f}) noexcept;
 
     /** Change the keyboard focus to the given widget.
      */
@@ -231,7 +231,7 @@ protected:
      * @param title The title of the window.
      * @param extent The size of the window.
      */
-    virtual void createWindow(const std::u8string &title, vec extent) = 0;
+    virtual void createWindow(const std::u8string &title, f32x4 extent) = 0;
 
     /** By how much graphic elements should be scaled to match a point.
     * The widget should not care much about this value, since the

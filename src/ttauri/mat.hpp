@@ -13,13 +13,13 @@
 namespace tt {
 
 /** A 4x4 matrix.
- * You can use this to transform vec (which has 4 elements)
+ * You can use this to transform f32x4 (which has 4 elements)
  */
 class mat {
-    vec col0;
-    vec col1;
-    vec col2;
-    vec col3;
+    f32x4 col0;
+    f32x4 col1;
+    f32x4 col2;
+    f32x4 col3;
 
 public:
     /** Create an identity matrix.
@@ -32,7 +32,7 @@ public:
 
     /** Create a matrix for 4 vector-columns
      */
-    mat(vec col0, vec col1, vec col2, vec col3=vec{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
+    mat(f32x4 col0, f32x4 col1, f32x4 col2, f32x4 col3=f32x4{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
         col0(col0), col1(col1), col2(col2), col3(col3) {}
 
     /** Construct a matrix from the individual values.
@@ -54,9 +54,9 @@ public:
     /** Optimized scale matrix.
     */
     struct S {
-        vec s;
+        f32x4 s;
 
-        explicit S(vec rhs) noexcept :
+        explicit S(f32x4 rhs) noexcept :
             s(rhs)
         {
             tt_assume(rhs.is_point());
@@ -67,13 +67,13 @@ public:
 
         /** Get a scaling matrix to uniformly scale a needle to fit in the haystack.
          */
-        static S uniform2D(vec haystack, vec needle) noexcept {
+        static S uniform2D(f32x4 haystack, f32x4 needle) noexcept {
             tt_assume(haystack.x() != 0.0f && haystack.y() != 0.0f);
             tt_assume(needle.x() != 0.0f && needle.y() != 0.0f);
 
             ttlet non_uniform_scale = haystack.xyxy() / needle.xyxy();
             ttlet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
-            return S{vec{uniform_scale, uniform_scale, 1.0f, 1.0f}};
+            return S{f32x4{uniform_scale, uniform_scale, 1.0f, 1.0f}};
         }
 
         /** Create a scaling matrix.
@@ -87,8 +87,8 @@ public:
             return S{lhs.s * rhs.s};
         }
 
-        [[nodiscard]] friend vec operator*(S const &lhs, vec const &rhs) noexcept {
-            return vec{lhs.s * rhs};
+        [[nodiscard]] friend f32x4 operator*(S const &lhs, f32x4 const &rhs) noexcept {
+            return f32x4{lhs.s * rhs};
         }
 
         /** Matrix/Vector multiplication.
@@ -117,7 +117,7 @@ public:
     /** Optimized translate matrix.
     */
     struct T {
-        vec t;
+        f32x4 t;
 
         T() noexcept : t() {}
         T(T const &rhs) noexcept = default;
@@ -125,7 +125,7 @@ public:
         T &operator=(T const &rhs) noexcept = default;
         T &operator=(T &&rhs) noexcept = default;
 
-        explicit T(vec rhs) noexcept :
+        explicit T(f32x4 rhs) noexcept :
             t(rhs) { tt_assume(rhs.is_vector()); }
 
         T(float x, float y, float z=0.0f) noexcept :
@@ -148,8 +148,8 @@ public:
             return { lhs.s.x000(), lhs.s._0y00(), lhs.s._00z0(), lhs.s * rhs.t.xyz1() };
         }
 
-        [[nodiscard]] friend vec operator*(T const &lhs, vec const &rhs) noexcept {
-            return vec{lhs.t + rhs};
+        [[nodiscard]] friend f32x4 operator*(T const &lhs, f32x4 const &rhs) noexcept {
+            return f32x4{lhs.t + rhs};
         }
 
         /** Matrix/aarect multiplication.
@@ -182,11 +182,11 @@ public:
     /** Optimized 2D translate matrix.
     */
     struct T2 {
-        vec t;
+        f32x4 t;
 
         T2() noexcept : t() {}
 
-        explicit T2(vec rhs) noexcept : t(rhs) {
+        explicit T2(f32x4 rhs) noexcept : t(rhs) {
             tt_assume(rhs.is_vector());
             tt_assume(rhs.z() == 0.0f);
         }
@@ -228,8 +228,8 @@ public:
             return { lhs.s.x000(), lhs.s._0y00(), lhs.s._00z0(), lhs.s * rhs.t.xyz1() };
         }
 
-        [[nodiscard]] friend vec operator*(T2 const &lhs, vec const &rhs) noexcept {
-            return vec{lhs.t + rhs};
+        [[nodiscard]] friend f32x4 operator*(T2 const &lhs, f32x4 const &rhs) noexcept {
+            return f32x4{lhs.t + rhs};
         }
 
         [[nodiscard]] friend aarect operator*(T2 const &lhs, aarect const &rhs) noexcept {
@@ -257,7 +257,7 @@ public:
     constexpr size_t size() noexcept { return 4; }
 
     template<size_t I>
-    [[nodiscard]] vec &get() noexcept {
+    [[nodiscard]] f32x4 &get() noexcept {
         static_assert(I <= 3);
         if constexpr (I == 0) {
             return col0;
@@ -271,7 +271,7 @@ public:
     }
 
     template<size_t I>
-    [[nodiscard]] vec get() const noexcept {
+    [[nodiscard]] f32x4 get() const noexcept {
         static_assert(I <= 3);
         if constexpr (I == 0) {
             return col0;
@@ -288,14 +288,14 @@ public:
     */
     [[nodiscard]] bool is_z_rot90() const noexcept {
         ttlet xyxy = col0.xy00() + col1._00xy();
-        ttlet result = eq(xyxy, vec{});
+        ttlet result = eq(xyxy, f32x4{});
         return (result == 0b1001) || (result == 0b0110);
     }
 
     /** Matrix/Vector multiplication.
      * Used for transforming vectors.
      */
-    [[nodiscard]] friend vec operator*(mat const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend f32x4 operator*(mat const &lhs, f32x4 const &rhs) noexcept {
         return
             (lhs.col0 * rhs.xxxx() + lhs.col1 * rhs.yyyy()) +
             (lhs.col2 * rhs.zzzz() + lhs.col3 * rhs.wwww());
@@ -485,7 +485,7 @@ public:
     /** Create an identity matrix.
     */
     [[nodiscard]] static mat I() noexcept {
-        vec tmp;
+        f32x4 tmp;
         return { tmp._1000(), tmp._0100(), tmp._0010(), tmp._0001() };
     }
 
@@ -495,13 +495,13 @@ public:
         float gx, float gy,
         float bx, float by) noexcept
     {
-        ttlet w = vec{wx, wy, 1.0f - wx - wy};
-        ttlet r = vec{rx, ry, 1.0f - rx - ry};
-        ttlet g = vec{gx, gy, 1.0f - gx - gy};
-        ttlet b = vec{bx, by, 1.0f - bx - by};
+        ttlet w = f32x4{wx, wy, 1.0f - wx - wy};
+        ttlet r = f32x4{rx, ry, 1.0f - rx - ry};
+        ttlet g = f32x4{gx, gy, 1.0f - gx - gy};
+        ttlet b = f32x4{bx, by, 1.0f - bx - by};
 
         // Calculate whitepoint's tristimulus values from coordinates
-        ttlet W = vec{
+        ttlet W = f32x4{
             1.0f * (w.x() / w.y()),
             1.0f,
             1.0f * (w.z() / w.y())
@@ -511,7 +511,7 @@ public:
         ttlet C = mat{r, g, b};
 
         // solve tristimulus sums.
-        ttlet S = mat::S{vec::point(~C * W)};
+        ttlet S = mat::S{f32x4::point(~C * W)};
 
         return C * S;
     }
@@ -524,8 +524,8 @@ public:
      * @param _11 row 1, col 1
     */
     [[nodiscard]] static mat shear(float _00, float _01, float _10, float _11) noexcept {
-        ttlet c0 = vec{_00, _10};
-        ttlet c1 = vec{_01, _11};
+        ttlet c0 = f32x4{_00, _10};
+        ttlet c1 = f32x4{_01, _11};
         return { c0, c1, c0._0010(), c0._0001() };
     }
 
@@ -537,7 +537,7 @@ public:
     [[nodiscard]] static mat R(T rhs) noexcept {
         ttlet s = sin(narrow_cast<float>(rhs));
         ttlet c = cos(narrow_cast<float>(rhs));
-        ttlet tmp = vec{c, s, -s};
+        ttlet tmp = f32x4{c, s, -s};
 
         if constexpr (N == 0) {
             return { tmp._1000(), tmp._0xy0(), tmp._0zx0(), tmp._0001() };

@@ -81,7 +81,7 @@ struct Image {
 
 private:
     //! Temporary memory used for pre calculating vertices.
-    std::vector<std::tuple<vec, vec, bool>> tmpVertexPositions;
+    std::vector<std::tuple<f32x4, f32x4, bool>> tmpVertexPositions;
 
     void calculateVertexPositions(mat transform, aarect clippingRectangle);
 

@@ -28,7 +28,7 @@ struct Vertex {
     R16G16B16A16SFloat color;
 
 
-    Vertex(vec position, aarect clippingRectangle, vec color) noexcept :
+    Vertex(f32x4 position, aarect clippingRectangle, f32x4 color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         color(color) {}

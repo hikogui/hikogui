@@ -28,7 +28,7 @@ public:
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
+    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override;
 
 private:
     static constexpr float GLYPH_SIZE = 5.0f;

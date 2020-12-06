@@ -71,8 +71,8 @@ public:
             ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * theme::global->margin;
 
             this->_preferred_size = {
-                vec{minimum_width, minimum_height},
-                vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+                f32x4{minimum_width, minimum_height},
+                f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             this->_preferred_base_line = relative_base_line{vertical_alignment::middle, -theme::global->margin};
             return true;
         } else {
@@ -166,7 +166,7 @@ private:
             context.color = theme::global->accentColor;
         }
 
-        context.corner_shapes = vec{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
+        context.corner_shapes = f32x4{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
         context.draw_box_with_border_inside(_button_rectangle);
     }
 

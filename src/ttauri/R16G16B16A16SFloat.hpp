@@ -26,18 +26,18 @@ public:
     R16G16B16A16SFloat &operator=(R16G16B16A16SFloat const &rhs) noexcept = default;
     R16G16B16A16SFloat &operator=(R16G16B16A16SFloat &&rhs) noexcept = default;
 
-    R16G16B16A16SFloat(vec const &rhs) noexcept {
+    R16G16B16A16SFloat(f32x4 const &rhs) noexcept {
         ttlet rhs_fp16 = _mm_cvtps_ph(rhs, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si64(v.data(), rhs_fp16);
     }
 
-    R16G16B16A16SFloat &operator=(vec const &rhs) noexcept {
+    R16G16B16A16SFloat &operator=(f32x4 const &rhs) noexcept {
         ttlet rhs_fp16 = _mm_cvtps_ph(rhs, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si64(v.data(), rhs_fp16);
         return *this;
     }
 
-    operator vec () const noexcept {
+    operator f32x4 () const noexcept {
         ttlet rhs_fp16 = _mm_loadu_si64(v.data());
         return _mm_cvtph_ps(rhs_fp16);
     }
@@ -65,7 +65,7 @@ public:
     }
 };
 
-inline void fill(PixelMap<R16G16B16A16SFloat> &image, vec color) noexcept {
+inline void fill(PixelMap<R16G16B16A16SFloat> &image, f32x4 color) noexcept {
     for (ssize_t y = 0; y != image.height; ++y) {
         auto row = image[y];
         for (ssize_t x = 0; x != image.width; ++x) {
@@ -78,7 +78,7 @@ inline void desaturate(PixelMap<R16G16B16A16SFloat> &image, float brightness) no
     for (ssize_t y = 0; y != image.height; ++y) {
         auto row = image[y];
         for (ssize_t x = 0; x != image.width; ++x) {
-            row[x] = desaturate(static_cast<vec>(row[x]), brightness);
+            row[x] = desaturate(static_cast<f32x4>(row[x]), brightness);
         }
     }
 }
@@ -95,17 +95,17 @@ inline void composit(PixelMap<R16G16B16A16SFloat> &under, PixelMap<R16G16B16A16S
             ttlet &overPixel = overRow[columnNr];
             auto &underPixel = underRow[columnNr];
 
-            underPixel = composit(static_cast<vec>(underPixel), static_cast<vec>(overPixel));
+            underPixel = composit(static_cast<f32x4>(underPixel), static_cast<f32x4>(overPixel));
         }
     }
 }
 
-inline void composit(PixelMap<R16G16B16A16SFloat>& under, vec over, PixelMap<uint8_t> const& mask) noexcept
+inline void composit(PixelMap<R16G16B16A16SFloat>& under, f32x4 over, PixelMap<uint8_t> const& mask) noexcept
 {
     tt_assert(mask.height >= under.height);
     tt_assert(mask.width >= under.width);
 
-    auto maskPixel = vec::color(1.0f, 1.0f, 1.0f, 1.0f);
+    auto maskPixel = f32x4::color(1.0f, 1.0f, 1.0f, 1.0f);
 
     for (ssize_t rowNr = 0; rowNr != under.height; ++rowNr) {
         ttlet maskRow = mask.at(rowNr);

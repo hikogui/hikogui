@@ -124,7 +124,7 @@ private:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        drawContext.corner_shapes = vec{_rail_rectangle.height() * 0.5f};
+        drawContext.corner_shapes = f32x4{_rail_rectangle.height() * 0.5f};
         drawContext.draw_box_with_border_inside(_rail_rectangle);
     }
 
@@ -154,7 +154,7 @@ private:
         }
         std::swap(drawContext.color, drawContext.fill_color);
         drawContext.transform = mat::T{0.0f, 0.0f, 0.1f} * drawContext.transform;
-        drawContext.corner_shapes = vec{positionedSliderRectangle.height() * 0.5f};
+        drawContext.corner_shapes = f32x4{positionedSliderRectangle.height() * 0.5f};
         drawContext.draw_box_with_border_inside(positionedSliderRectangle);
     }
 

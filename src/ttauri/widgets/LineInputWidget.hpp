@@ -35,7 +35,7 @@ public:
     bool handle_command(command command) noexcept override;
     bool handle_mouse_event(MouseEvent const &event) noexcept override;
     bool handle_keyboard_event(KeyboardEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override;
+    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override;
 
     [[nodiscard]] bool accepts_focus() const noexcept override
     {
@@ -61,7 +61,7 @@ private:
      */
     int dragClickCount = 0;
 
-    vec dragSelectPosition = {};
+    f32x4 dragSelectPosition = {};
 
     /** How much the text has scrolled in points.
      */

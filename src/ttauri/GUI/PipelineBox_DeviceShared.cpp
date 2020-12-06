@@ -36,10 +36,10 @@ void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 void DeviceShared::placeVertices(
     vspan<Vertex> &vertices,
     rect box,
-    vec backgroundColor,
+    f32x4 backgroundColor,
     float borderSize,
-    vec borderColor,
-    vec cornerShapes,
+    f32x4 borderColor,
+    f32x4 cornerShapes,
     aarect clippingRectangle
 )
 {

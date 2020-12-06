@@ -97,7 +97,7 @@ public:
             ttlet option_height = std::max(unknown_label_size.height(), _max_option_label_height) + theme::global->margin * 2.0f;
             ttlet chevron_width = theme::global->smallSize;
 
-            _preferred_size = interval_vec2::make_minimum(vec{chevron_width + option_width, option_height});
+            _preferred_size = interval_vec2::make_minimum(f32x4{chevron_width + option_width, option_height});
             _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
             return true;
 
@@ -227,7 +227,7 @@ public:
         return handled;
     }
 
-    [[nodiscard]] HitBox hitbox_test(vec window_position) const noexcept override
+    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         ttlet position = _from_window_transform * window_position;
@@ -275,7 +275,7 @@ private:
     typename decltype(option_list)::callback_ptr_type _option_list_callback;
 
     std::unique_ptr<label_stencil> _text_stencil;
-    vec _text_stencil_color;
+    f32x4 _text_stencil_color;
 
     float _max_option_label_height;
 
@@ -381,7 +381,7 @@ private:
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
         context.fill_color = context.color;
-        context.corner_shapes = vec{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
+        context.corner_shapes = f32x4{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
         context.draw_box_with_border_inside(_left_box_rectangle);
     }
 

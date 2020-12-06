@@ -27,8 +27,8 @@ widget::widget(gui_window &_window, std::shared_ptr<widget> _parent) noexcept :
     });
 
     _preferred_size = {
-        vec{0.0f, 0.0f},
-        vec{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}
+        f32x4{0.0f, 0.0f},
+        f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}
     };
 }
 

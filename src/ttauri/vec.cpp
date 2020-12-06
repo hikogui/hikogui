@@ -4,8 +4,8 @@
 
 namespace tt {
 
-[[nodiscard]] vec vec::colorFromSRGB(float r, float g, float b, float a) noexcept {
-    return vec{
+[[nodiscard]] f32x4 f32x4::colorFromSRGB(float r, float g, float b, float a) noexcept {
+    return f32x4{
         sRGB_gamma_to_linear(narrow_cast<float>(r)),
         sRGB_gamma_to_linear(narrow_cast<float>(g)),
         sRGB_gamma_to_linear(narrow_cast<float>(b)),
@@ -13,7 +13,7 @@ namespace tt {
     };
 }
 
-[[nodiscard]] vec vec::colorFromSRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept {
+[[nodiscard]] f32x4 f32x4::colorFromSRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept {
     return colorFromSRGB(
         r / 255.0f,
         g / 255.0f,
@@ -22,7 +22,7 @@ namespace tt {
     );
 }
 
-[[nodiscard]] vec vec::colorFromSRGB(std::string_view str) {
+[[nodiscard]] f32x4 f32x4::colorFromSRGB(std::string_view str) {
     auto tmp = std::string{str};
 
     if (tmp.starts_with("#"s)) {

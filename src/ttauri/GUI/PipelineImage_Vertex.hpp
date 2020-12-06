@@ -25,7 +25,7 @@ struct Vertex {
     //! The x, y coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
     R32G32B32SFloat atlasPosition;
 
-    Vertex(vec position, vec atlasPosition, aarect clippingRectangle) noexcept :
+    Vertex(f32x4 position, f32x4 atlasPosition, aarect clippingRectangle) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         atlasPosition(atlasPosition) {}

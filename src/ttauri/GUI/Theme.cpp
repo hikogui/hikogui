@@ -61,7 +61,7 @@ theme::theme(URL const &url)
     return static_cast<bool>(object);
 }
 
-[[nodiscard]] vec theme::parseColorValue(datum const &data)
+[[nodiscard]] f32x4 theme::parseColorValue(datum const &data)
 {
     if (data.is_vector()) {
         if (std::ssize(data) != 3 && std::ssize(data) != 4) {
@@ -73,14 +73,14 @@ theme::theme(URL const &url)
         ttlet a = std::ssize(data) == 4 ? data[3] : (r.is_integer() ? datum{255} : datum{1.0});
 
         if (r.is_integer() && g.is_integer() && b.is_integer() && a.is_integer()) {
-            return vec::colorFromSRGB(
+            return f32x4::colorFromSRGB(
                 static_cast<uint8_t>(r),
                 static_cast<uint8_t>(g),
                 static_cast<uint8_t>(b),
                 static_cast<uint8_t>(a)
             );
         } else if (r.is_float() && g.is_float() && b.is_float() && a.is_float()) {
-            return vec::color(
+            return f32x4::color(
                 static_cast<float>(r),
                 static_cast<float>(g),
                 static_cast<float>(b),
@@ -93,7 +93,7 @@ theme::theme(URL const &url)
     } else if (data.is_string()) {
         ttlet color_name = to_lower(static_cast<std::string>(data));
         if (color_name.starts_with("#"s)) {
-            return vec::colorFromSRGB(color_name);
+            return f32x4::colorFromSRGB(color_name);
 
         } else if (color_name == "blue") { return blue;
         } else if (color_name == "green") { return green;
@@ -117,7 +117,7 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] vec theme::parseColor(datum const &data, char const *object_name)
+[[nodiscard]] f32x4 theme::parseColor(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -132,7 +132,7 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] std::vector<vec> theme::parseColorList(datum const &data, char const *object_name)
+[[nodiscard]] std::vector<f32x4> theme::parseColorList(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -144,7 +144,7 @@ theme::theme(URL const &url)
         throw parse_error("Expecting color list '{}' to be a list of colors, got {}", object_name, colorListObject.type_name());
     }
 
-    auto r = std::vector<vec>{};
+    auto r = std::vector<f32x4>{};
     ssize_t i = 0;
     for (auto it = colorListObject.vector_begin(); it != colorListObject.vector_end(); ++it, ++i) {
         try {

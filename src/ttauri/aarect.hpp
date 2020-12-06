@@ -19,7 +19,7 @@ private:
      *  - (x, y) 2D-coordinate of left-bottom corner of the rectangle
      *  - (z, w) 2D-coordinate of right-top corner of the rectangle
      */
-    vec v;
+    f32x4 v;
 
 public:
     aarect() noexcept : v() {}
@@ -45,7 +45,7 @@ public:
             int> = 0>
     aarect(X x, Y y, W width, H height) noexcept :
         v(
-            vec(narrow_cast<float>(x),
+            f32x4(narrow_cast<float>(x),
                 narrow_cast<float>(y),
                 narrow_cast<float>(x) + narrow_cast<float>(width),
                 narrow_cast<float>(y) + narrow_cast<float>(height)))
@@ -58,7 +58,7 @@ public:
      * @param height The height of the box.
      */
     template<typename W, typename H, std::enable_if_t<std::is_arithmetic_v<W> && std::is_arithmetic_v<H>, int> = 0>
-    aarect(W width, H height) noexcept : v(vec(0.0f, 0.0f, narrow_cast<float>(width), narrow_cast<float>(height)))
+    aarect(W width, H height) noexcept : v(f32x4(0.0f, 0.0f, narrow_cast<float>(width), narrow_cast<float>(height)))
     {
     }
 
@@ -67,7 +67,7 @@ public:
      * @param position The position of the left-bottom corner of the box
      * @param extent The size of the box.
      */
-    aarect(vec const &position, vec const &extent) noexcept : v(position.xyxy() + extent._00xy())
+    aarect(f32x4 const &position, f32x4 const &extent) noexcept : v(position.xyxy() + extent._00xy())
     {
         tt_assume(position.is_point());
         tt_assume(position.z() == 0.0);
@@ -79,7 +79,7 @@ public:
      * The rectangle's left bottom corner is at the origin.
      * @param extent The size of the box.
      */
-    explicit aarect(vec const &extent) noexcept : v(extent._00xy())
+    explicit aarect(f32x4 const &extent) noexcept : v(extent._00xy())
     {
         tt_assume(extent.is_vector());
         tt_assume(extent.z() == 0.0);
@@ -88,7 +88,7 @@ public:
     /** Create aarect from packed p0p3 coordinates.
      * @param v p0 = (x, y), p3 = (z, w)
      */
-    [[nodiscard]] static aarect p0p3(vec const &v) noexcept
+    [[nodiscard]] static aarect p0p3(f32x4 const &v) noexcept
     {
         aarect r;
         r.v = v;
@@ -99,7 +99,7 @@ public:
      * @param p0 The left bottom corner.
      * @param p3 The right top corner.
      */
-    [[nodiscard]] static aarect p0p3(vec const &p0, vec const &p3) noexcept
+    [[nodiscard]] static aarect p0p3(f32x4 const &p0, f32x4 const &p3) noexcept
     {
         tt_assume(p0.is_point());
         tt_assume(p3.is_point());
@@ -109,7 +109,7 @@ public:
     [[nodiscard]] static aarect infinity() noexcept
     {
         return aarect::p0p3(
-            vec{-std::numeric_limits<float>::infinity(),
+            f32x4{-std::numeric_limits<float>::infinity(),
                 -std::numeric_limits<float>::infinity(),
                 std::numeric_limits<float>::infinity(),
                 std::numeric_limits<float>::infinity()});
@@ -152,7 +152,7 @@ public:
      *
      * @param rhs The new rectangle to include in the current rectangle.
      */
-    aarect &operator|=(vec const &rhs) noexcept
+    aarect &operator|=(f32x4 const &rhs) noexcept
     {
         return *this = *this | rhs;
     }
@@ -161,7 +161,7 @@ public:
      *
      * @param rhs The vector to add to the coordinates of the rectangle.
      */
-    aarect &operator+=(vec const &rhs) noexcept
+    aarect &operator+=(f32x4 const &rhs) noexcept
     {
         return *this = *this + rhs;
     }
@@ -170,7 +170,7 @@ public:
      *
      * @param rhs The vector to subtract from the coordinates of the rectangle.
      */
-    aarect &operator-=(vec const &rhs) noexcept
+    aarect &operator-=(f32x4 const &rhs) noexcept
     {
         return *this = *this - rhs;
     }
@@ -190,7 +190,7 @@ public:
      * @return The homogeneous coordinate of the corner.
      */
     template<size_t I>
-    [[nodiscard]] vec corner() const noexcept
+    [[nodiscard]] f32x4 corner() const noexcept
     {
         static_assert(I <= 3);
         if constexpr (I == 0) {
@@ -204,12 +204,12 @@ public:
         }
     }
 
-    [[nodiscard]] vec p0() const noexcept
+    [[nodiscard]] f32x4 p0() const noexcept
     {
         return corner<0>();
     }
 
-    [[nodiscard]] vec p3() const noexcept
+    [[nodiscard]] f32x4 p3() const noexcept
     {
         return corner<3>();
     }
@@ -218,7 +218,7 @@ public:
      *
      * @return The homogeneous coordinate of the bottom-left corner.
      */
-    [[nodiscard]] vec offset() const noexcept
+    [[nodiscard]] f32x4 offset() const noexcept
     {
         return v.xy00();
     }
@@ -227,7 +227,7 @@ public:
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
      */
-    [[nodiscard]] vec extent() const noexcept
+    [[nodiscard]] f32x4 extent() const noexcept
     {
         return (v.zwzw() - v).xy00();
     }
@@ -289,14 +289,14 @@ public:
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     aarect &set_width(T newWidth) noexcept
     {
-        v = v.xyxw() + vec::make_z(newWidth);
+        v = v.xyxw() + f32x4::make_z(newWidth);
         return *this;
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
     aarect &set_height(T newHeight) noexcept
     {
-        v = v.xyzy() + vec::make_w(newHeight);
+        v = v.xyzy() + f32x4::make_w(newHeight);
         return *this;
     }
 
@@ -304,7 +304,7 @@ public:
      *
      * @param rhs The coordinate of the point to test.
      */
-    [[nodiscard]] bool contains(vec const &rhs) const noexcept
+    [[nodiscard]] bool contains(f32x4 const &rhs) const noexcept
     {
         // No need to check with empty due to half open range check.
         return ge(rhs.xyxy(), v) == 0b0011;
@@ -346,7 +346,7 @@ public:
             tt_no_default();
         }
 
-        return {vec::point(x, y), needle.extent()};
+        return {f32x4::point(x, y), needle.extent()};
     }
 
     /** Need to call the hiden friend function from within another class.
@@ -398,7 +398,7 @@ public:
         }
     }
 
-    [[nodiscard]] friend aarect operator|(aarect const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend aarect operator|(aarect const &lhs, f32x4 const &rhs) noexcept
     {
         tt_assume(rhs.is_point());
         if (!lhs) {
@@ -408,24 +408,24 @@ public:
         }
     }
 
-    [[nodiscard]] friend aarect operator+(aarect const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend aarect operator+(aarect const &lhs, f32x4 const &rhs) noexcept
     {
         return aarect::p0p3(lhs.v + rhs.xyxy());
     }
 
-    [[nodiscard]] friend aarect operator-(aarect const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] friend aarect operator-(aarect const &lhs, f32x4 const &rhs) noexcept
     {
         return aarect::p0p3(lhs.v - rhs.xyxy());
     }
 
     [[nodiscard]] friend aarect operator*(aarect const &lhs, float rhs) noexcept
     {
-        return aarect::p0p3(lhs.v * vec{rhs});
+        return aarect::p0p3(lhs.v * f32x4{rhs});
     }
 
     /** Get the center of the rectangle.
      */
-    [[nodiscard]] friend vec center(aarect const &rhs) noexcept
+    [[nodiscard]] friend f32x4 center(aarect const &rhs) noexcept
     {
         return (rhs.p0() + rhs.p3()) * 0.5f;
     }
@@ -455,7 +455,7 @@ public:
      */
     [[nodiscard]] friend aarect expand(aarect const &lhs, float rhs) noexcept
     {
-        return aarect::p0p3(lhs.v + neg<1, 1, 0, 0>(vec{rhs}));
+        return aarect::p0p3(lhs.v + neg<1, 1, 0, 0>(f32x4{rhs}));
     }
 
     /** Expand the rectangle for the same amount in all directions.
@@ -464,7 +464,7 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend aarect expand(aarect const &lhs, vec rhs) noexcept
+    [[nodiscard]] friend aarect expand(aarect const &lhs, f32x4 rhs) noexcept
     {
         return aarect::p0p3(lhs.v + neg<1, 1, 0, 0>(rhs.xyxy()));
     }
@@ -486,7 +486,7 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle shrank on each side.
      */
-    [[nodiscard]] friend aarect shrink(aarect const &lhs, vec rhs) noexcept
+    [[nodiscard]] friend aarect shrink(aarect const &lhs, f32x4 rhs) noexcept
     {
         return expand(lhs, -rhs);
     }
@@ -539,8 +539,8 @@ public:
             std::min(rectangle.width(), bounds.width()),
             std::min(rectangle.height(), bounds.height())};
 
-        ttlet translate_from_p0 = max(vec{}, bounds.p0() - resized_rectangle.p0());
-        ttlet translate_from_p3 = min(vec{}, bounds.p3() - resized_rectangle.p3());
+        ttlet translate_from_p0 = max(f32x4{}, bounds.p0() - resized_rectangle.p0());
+        ttlet translate_from_p3 = min(f32x4{}, bounds.p3() - resized_rectangle.p3());
         return resized_rectangle + (translate_from_p0 + translate_from_p3);
     }
 };

@@ -39,12 +39,12 @@ struct Vertex {
     float borderSize;
 
     Vertex(
-        vec position,
-        vec cornerCoordinate,
-        vec backgroundColor,
+        f32x4 position,
+        f32x4 cornerCoordinate,
+        f32x4 backgroundColor,
         float borderSize,
-        vec borderColor,
-        vec cornerShapes,
+        f32x4 borderColor,
+        f32x4 cornerShapes,
         aarect clippingRectangle
     ) noexcept :
         position(position),

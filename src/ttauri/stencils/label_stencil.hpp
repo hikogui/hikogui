@@ -26,7 +26,7 @@ public:
         }
     }
 
-    [[nodiscard]] vec preferred_extent() noexcept override
+    [[nodiscard]] f32x4 preferred_extent() noexcept override
     {
         if (!_text_stencil) {
             // There is only an icon available.

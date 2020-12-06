@@ -17,7 +17,7 @@ public:
     text_stencil(alignment alignment, std::u8string_view text, TextStyle style) noexcept;
     text_stencil(alignment alignment, std::u8string text, TextStyle style) noexcept;
 
-    [[nodiscard]] vec preferred_extent() noexcept override;
+    [[nodiscard]] f32x4 preferred_extent() noexcept override;
 
     void draw(draw_context context, bool use_context_color = false) noexcept override;
 

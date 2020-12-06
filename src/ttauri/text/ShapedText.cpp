@@ -78,23 +78,23 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noe
 /** Calculate the size of the text.
  * @return The extent of the text and the base line position of the middle line.
  */
-[[nodiscard]] static vec calculate_text_size(std::vector<AttributedGlyphLine> const &lines) noexcept
+[[nodiscard]] static f32x4 calculate_text_size(std::vector<AttributedGlyphLine> const &lines) noexcept
 {
-    auto size = vec{0.0f, 0.0f};
+    auto size = f32x4{0.0f, 0.0f};
 
     if (std::ssize(lines) == 0) {
         return size;
     }
 
     // Top of first line.
-    size = vec{
+    size = f32x4{
         lines.front().width,
         lines.front().lineGap + lines.front().ascender
     };
 
     auto nr_lines = std::ssize(lines);
     for (ssize_t i = 1; i != nr_lines; ++i) {
-        size = vec{
+        size = f32x4{
             std::max(size.width(), lines[i].width),
             size.height() + lines[i-1].descender + std::max(lines[i-1].lineGap, lines[i].lineGap) + lines[i].ascender
         };
@@ -191,7 +191,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, alignment a
             first_line = false;
 
             float x = position_x(alignment, line.width, width);
-            line.positionGlyphs(vec::point(x, y));
+            line.positionGlyphs(f32x4::point(x, y));
         }
     }
 
@@ -216,13 +216,13 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, alignment a
             first_line = false;
 
             float x = position_x(alignment, line.width, width);
-            line.positionGlyphs(vec::point(x, y));
+            line.positionGlyphs(f32x4::point(x, y));
         }
     }
 }
 
 struct shape_text_result {
-    vec preferred_extent;
+    f32x4 preferred_extent;
     aarect boundingBox;
     std::vector<AttributedGlyphLine> lines;
 };
@@ -357,8 +357,8 @@ ShapedText::ShapedText(
     ttlet ligature_position_left = i->position + ligature_advance_left;
     ttlet ligature_position_right = i->position + ligature_advance_right;
 
-    ttlet p0 = ligature_position_left - vec(0.0f, line_i->descender);
-    ttlet p3 = ligature_position_right + vec(0.0f, line_i->ascender);
+    ttlet p0 = ligature_position_left - f32x4(0.0f, line_i->descender);
+    ttlet p3 = ligature_position_right + f32x4(0.0f, line_i->ascender);
     return aarect::p0p3(p0, p3);
 }
 
@@ -391,7 +391,7 @@ ShapedText::ShapedText(
 }
 
 
-[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfCharAtCoordinate(vec coordinate) const noexcept
+[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfCharAtCoordinate(f32x4 coordinate) const noexcept
 {
     for (ttlet &line: lines) {
         auto i = line.find(coordinate);

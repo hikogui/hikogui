@@ -29,8 +29,8 @@ public:
      */
     float margin = 6.0f;
 
-    vec margin2D = vec{margin, margin};
-    vec margin2Dx2 = vec{margin * 2.0f, margin * 2.0f};
+    f32x4 margin2D = f32x4{margin, margin};
+    f32x4 margin2Dx2 = f32x4{margin * 2.0f, margin * 2.0f};
 
     float scroll_bar_thickness = margin * 2.0f;
 
@@ -75,22 +75,22 @@ public:
     theme_mode mode;
 
     // Themed bright colors.
-    vec blue;
-    vec green;
-    vec indigo;
-    vec orange;
-    vec pink;
-    vec purple;
-    vec red;
-    vec teal;
-    vec yellow;
+    f32x4 blue;
+    f32x4 green;
+    f32x4 indigo;
+    f32x4 orange;
+    f32x4 pink;
+    f32x4 purple;
+    f32x4 red;
+    f32x4 teal;
+    f32x4 yellow;
 
     // Semantic colors
-    vec foregroundColor;
-    vec accentColor;
-    vec textSelectColor;
-    vec cursorColor;
-    vec incompleteGlyphColor;
+    f32x4 foregroundColor;
+    f32x4 accentColor;
+    f32x4 textSelectColor;
+    f32x4 cursorColor;
+    f32x4 incompleteGlyphColor;
 
     TextStyle labelStyle;
     TextStyle smallLabelStyle;
@@ -113,7 +113,7 @@ public:
     /** Get fill color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
     */
-    [[nodiscard]] vec fillColor(ssize_t nestingLevel) const noexcept {
+    [[nodiscard]] f32x4 fillColor(ssize_t nestingLevel) const noexcept {
         tt_assume(nestingLevel >= 0);
         tt_assume(std::ssize(fillShades) > 0);
         return fillShades[nestingLevel % std::ssize(fillShades)];
@@ -122,7 +122,7 @@ public:
     /** Get border color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
     */
-    [[nodiscard]] vec borderColor(ssize_t nestingLevel) const noexcept {
+    [[nodiscard]] f32x4 borderColor(ssize_t nestingLevel) const noexcept {
         tt_assume(nestingLevel >= 0);
         tt_assume(std::ssize(borderShades) > 0);
         return borderShades[nestingLevel % std::ssize(borderShades)];
@@ -134,7 +134,7 @@ public:
     * @param level Gray level: 0 is background, positive values increase in foregroundness.
     *              -1 is foreground, more negative values go toward background.
     */
-    [[nodiscard]] vec gray(ssize_t level) const noexcept {
+    [[nodiscard]] f32x4 gray(ssize_t level) const noexcept {
         if (level < 0) {
             level = std::ssize(grayShades) + level;
         }
@@ -144,16 +144,16 @@ public:
     }
 
 private:
-    std::vector<vec> fillShades;
-    std::vector<vec> borderShades;
-    std::vector<vec> grayShades;
+    std::vector<f32x4> fillShades;
+    std::vector<f32x4> borderShades;
+    std::vector<f32x4> grayShades;
 
     [[nodiscard]] float parseFloat(datum const &data, char const *name);
     [[nodiscard]] bool parseBool(datum const &data, char const *name);
     [[nodiscard]] std::string parseString(datum const &data, char const *name);
-    [[nodiscard]] vec parseColorValue(datum const &data);
-    [[nodiscard]] std::vector<vec> parseColorList(datum const &data, char const *name);
-    [[nodiscard]] vec parseColor(datum const &data, char const *name);
+    [[nodiscard]] f32x4 parseColorValue(datum const &data);
+    [[nodiscard]] std::vector<f32x4> parseColorList(datum const &data, char const *name);
+    [[nodiscard]] f32x4 parseColor(datum const &data, char const *name);
     [[nodiscard]] TextStyle parseTextStyleValue(datum const &data);
     [[nodiscard]] FontWeight parseFontWeight(datum const &data, char const *name);
     [[nodiscard]] TextStyle parseTextStyle(datum const &data, char const *name);
