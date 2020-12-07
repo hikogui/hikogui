@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../vspan.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../aarect.hpp"
 #include "../R16G16B16A16SFloat.hpp"
 #include "../R32G32B32A32SFloat.hpp"

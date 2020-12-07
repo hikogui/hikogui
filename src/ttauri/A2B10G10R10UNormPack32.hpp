@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include <algorithm>
 
 namespace tt {

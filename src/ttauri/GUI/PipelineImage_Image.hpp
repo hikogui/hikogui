@@ -5,9 +5,8 @@
 
 #include "PipelineImage_Page.hpp"
 #include "../vspan.hpp"
-#include "../ivec.hpp"
-#include "../iaarect.hpp"
-#include "../vec.hpp"
+#include "../aarect.hpp"
+#include "../numeric_array.hpp"
 #include "../aarect.hpp"
 #include "../mat.hpp"
 #include <span>
@@ -37,19 +36,19 @@ struct Image {
 
     /** The size of the image in pixels.
      */
-    ivec extent;
+    i32x4 extent;
 
     /** This size of the image in pages.
      * This value is used to calculate how many quads need to be drawn.
      */
-    ivec pageExtent;
+    i32x4 pageExtent;
 
     std::vector<Page> pages;
 
     Image() noexcept :
         parent(nullptr), extent(), pageExtent(), pages() {}
 
-    Image(DeviceShared *parent, ivec extent, ivec pageExtent, std::vector<Page> &&pages) noexcept :
+    Image(DeviceShared *parent, i32x4 extent, i32x4 pageExtent, std::vector<Page> &&pages) noexcept :
         parent(parent),
         extent(extent),
         pageExtent(pageExtent),

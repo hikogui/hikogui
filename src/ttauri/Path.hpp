@@ -7,7 +7,7 @@
 #include "BezierCurve.hpp"
 #include "ResourceView.hpp"
 #include "exception.hpp"
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include "aarect.hpp"
 #include "mat.hpp"
 #include "R16G16B16A16SFloat.hpp"

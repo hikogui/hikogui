@@ -371,7 +371,7 @@ private:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.corner_shapes = theme::global->roundingRadius;
+        context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
         context.draw_box_with_border_inside(rectangle());
     }
 

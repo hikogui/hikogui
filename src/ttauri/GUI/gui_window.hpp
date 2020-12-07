@@ -12,10 +12,8 @@
 #include "SubpixelOrientation.hpp"
 #include "../text/gstring.hpp"
 #include "../logger.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../aarect.hpp"
-#include "../ivec.hpp"
-#include "../iaarect.hpp"
 #include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
 #include "../cell_address.hpp"
@@ -100,7 +98,7 @@ public:
     Size size = Size::Normal;
 
     //! The current window extent as set by the GPU library.
-    ivec currentWindowExtent;
+    f32x4 currentWindowExtent;
 
     std::weak_ptr<gui_window_delegate> delegate;
 
@@ -187,7 +185,7 @@ public:
     virtual void minimizeWindow() = 0;
     virtual void maximizeWindow() = 0;
     virtual void normalizeWindow() = 0;
-    virtual void setWindowSize(ivec extent) = 0;
+    virtual void setWindowSize(f32x4 extent) = 0;
 
     [[nodiscard]] virtual std::u8string getTextFromClipboard() const noexcept = 0;
     virtual void setTextOnClipboard(std::u8string str) noexcept = 0;
@@ -206,7 +204,7 @@ public:
      * Each window may be on a different virtual screen with different
      * sizes, so retrieve it on a per window basis.
      */
-    [[nodiscard]] virtual ivec virtualScreenSize() const noexcept = 0;
+    [[nodiscard]] virtual f32x4 virtualScreenSize() const noexcept = 0;
 
 protected:
     /** The device the window is assigned to.
@@ -241,7 +239,7 @@ protected:
 
     /*! Called when the GPU library has changed the window size.
      */
-    virtual void windowChangedSize(ivec extent);
+    virtual void windowChangedSize(f32x4 extent);
 
     /*! Teardown Window based on State::*_LOST
      */

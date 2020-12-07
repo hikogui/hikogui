@@ -412,7 +412,7 @@ static int get_sample(std::span<std::byte const> bytes, ssize_t &offset, bool tw
     return value;
 }
 
-ivec png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept
+i32x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept
 {
     tt_assume(bit_depth == 8 || bit_depth == 16);
     tt_assume(!is_palletted);
@@ -452,7 +452,7 @@ void png::data_to_image_line(std::span<std::byte const> bytes, PixelRow<R16G16B1
         );
 
         auto lesRGB_color = color_to_sRGB * linear_color;
-        lesRGB_color.a(static_cast<float>(value.w()) * alpha_mul);
+        lesRGB_color.a() = static_cast<float>(value.w()) * alpha_mul;
 
         line[x] = lesRGB_color;
     }

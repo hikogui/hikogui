@@ -290,14 +290,14 @@ bool LineInputWidget::handle_mouse_event(MouseEvent const &event) noexcept
             // start scrolling the text and select on the edge of the textRectangle.
             if (position.x() > textRectangle.p3().x()) {
                 // The mouse is on the right of the text.
-                dragSelectPosition.x(textRectangle.p3().x());
+                dragSelectPosition.x() = textRectangle.p3().x();
 
                 // Scroll text to the left in points per second.
                 dragScrollSpeedX = 50.0f;
 
             } else if (position.x() < textRectangle.x()) {
                 // The mouse is on the left of the text.
-                dragSelectPosition.x(textRectangle.x());
+                dragSelectPosition.x() = textRectangle.x();
 
                 // Scroll text to the right in points per second.
                 dragScrollSpeedX = -50.0f;

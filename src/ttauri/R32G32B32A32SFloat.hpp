@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -21,30 +21,27 @@ public:
     R32G32B32A32SFloat &operator=(R32G32B32A32SFloat const &rhs) noexcept = default;
     R32G32B32A32SFloat &operator=(R32G32B32A32SFloat &&rhs) noexcept = default;
 
-    R32G32B32A32SFloat(f32x4 const &rhs) noexcept {
-        _mm_storeu_ps(v.data(), rhs);
+    R32G32B32A32SFloat(f32x4 const &rhs) noexcept : v(static_cast<std::array<float,4>>(rhs)) {
     }
 
     R32G32B32A32SFloat &operator=(f32x4 const &rhs) noexcept {
-        _mm_storeu_ps(v.data(), rhs);
+        v = static_cast<std::array<float,4>>(rhs);
         return *this;
     }
 
     operator f32x4 () const noexcept {
-        return _mm_loadu_ps(v.data());
+        return f32x4{v};
     }
 
-    R32G32B32A32SFloat(aarect const &rhs) noexcept {
-        _mm_storeu_ps(v.data(), rhs.v);
-    }
+    R32G32B32A32SFloat(aarect const &rhs) noexcept : R32G32B32A32SFloat(rhs.v) {}
 
     R32G32B32A32SFloat &operator=(aarect const &rhs) noexcept {
-        _mm_storeu_ps(v.data(), rhs.v);
+        *this = rhs.v;
         return *this;
     }
 
     operator aarect () const noexcept {
-        return aarect::p0p3(_mm_loadu_ps(v.data()));
+        return aarect::p0p3(f32x4(v));
     }
 
     [[nodiscard]] friend bool operator==(R32G32B32A32SFloat const &lhs, R32G32B32A32SFloat const &rhs) noexcept {

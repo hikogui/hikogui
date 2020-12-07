@@ -9,6 +9,7 @@ add_subdirectory(formula)
 add_subdirectory(skeleton)
 
 target_sources(ttauri PRIVATE
+    detail/f32x4_sse.hpp
     detail/observable_base.hpp
     detail/observable_not.hpp
     detail/observable_unary.hpp
@@ -26,6 +27,7 @@ target_sources(ttauri PRIVATE
     application_delegate.hpp
     assert.hpp
     atomic.hpp
+    aligned_array.hpp
     alignment.hpp
     audio_counter_clock.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_macos.cpp>
@@ -79,14 +81,12 @@ target_sources(ttauri PRIVATE
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_posix.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_win32.cpp>
     huffman.hpp
-    iaarect.hpp
     icon.cpp
     icon.hpp
     int_carry.hpp
     int_overflow.hpp
     interval.hpp
     interval_vec2.hpp
-    ivec.hpp
     l10n.hpp
     label.hpp
     logger.cpp
@@ -99,6 +99,7 @@ target_sources(ttauri PRIVATE
     meta.hpp
     nested_vector_iterator.hpp
     notifier.hpp
+    numeric_array.hpp
     cast.hpp
     observable.hpp
     operator.hpp
@@ -164,8 +165,6 @@ target_sources(ttauri PRIVATE
     url_parser.cpp
     url_parser.hpp
     utils.hpp
-    vec.cpp
-    vec.hpp
     version.hpp
     vspan.hpp
     wfree_message_queue.hpp
@@ -182,8 +181,7 @@ target_precompile_headers(ttauri PRIVATE
     trace.hpp
     debugger.hpp
     datum.hpp
-    vec.hpp
-    ivec.hpp
+    numeric_array.hpp
     aarect.hpp
     rect.hpp
     mat.hpp
@@ -214,8 +212,8 @@ target_sources(ttauri_tests PRIVATE
     glob_tests.cpp
     decimal_tests.cpp
     math_tests.cpp
-    vec_tests.cpp
     mat_tests.cpp
+    numeric_array_tests.cpp
     Unicode_tests.cpp
 )
 
@@ -229,8 +227,7 @@ target_precompile_headers(ttauri_tests PRIVATE
     trace.hpp
     debugger.hpp
     datum.hpp
-    vec.hpp
-    ivec.hpp
+    numeric_array.hpp
     aarect.hpp
     rect.hpp
     mat.hpp

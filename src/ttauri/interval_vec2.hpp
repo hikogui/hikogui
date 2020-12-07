@@ -4,7 +4,7 @@
 #pragma once
 
 #include "interval.hpp"
-#include "vec.hpp"
+#include "numeric_array.hpp"
 
 namespace tt {
 

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include <fmt/format.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
@@ -34,7 +34,7 @@ namespace tt {
  * element will default to '0' and 'w'. This allows a 2D vector to maintain its
  * homogeniousness.
  */ 
-class ivec {
+class i32x4 {
     /* Intrinsic value of the f32x4.
      * The elements in __m128i are assigned as follows.
      *  - [127:96] w
@@ -47,34 +47,34 @@ class ivec {
 public:
     /* Create a zeroed out f32x4.
      */
-    ivec() noexcept : ivec(_mm_setzero_si128()) {}
-    ivec(ivec const &rhs) = default;
-    ivec &operator=(ivec const &rhs) = default;
-    ivec(ivec &&rhs) = default;
-    ivec &operator=(ivec &&rhs) = default;
+    i32x4() noexcept : i32x4(_mm_setzero_si128()) {}
+    i32x4(i32x4 const &rhs) = default;
+    i32x4 &operator=(i32x4 const &rhs) = default;
+    i32x4(i32x4 &&rhs) = default;
+    i32x4 &operator=(i32x4 &&rhs) = default;
 
-    /** Create a ivec out of a __m128i
+    /** Create a i32x4 out of a __m128i
      */
-    ivec(__m128i rhs) noexcept :
+    i32x4(__m128i rhs) noexcept :
         v(rhs) {}
 
-    /** Create a ivec out of a __m128i
+    /** Create a i32x4 out of a __m128i
      */
-    ivec &operator=(__m128i rhs) noexcept {
+    i32x4 &operator=(__m128i rhs) noexcept {
         v = rhs;
         return *this;
     }
 
-    /** Convert a ivec to a __m128i.
+    /** Convert a i32x4 to a __m128i.
      */
     operator __m128i () const noexcept {
         return v;
     }
 
-    ivec(f32x4 const &rhs) noexcept :
-       ivec(_mm_cvtps_epi32(rhs)) {}
+    i32x4(f32x4 const &rhs) noexcept :
+       i32x4(_mm_cvtps_epi32(rhs)) {}
 
-    ivec &operator=(f32x4 const &rhs) noexcept {
+    i32x4 &operator=(f32x4 const &rhs) noexcept {
         return *this = _mm_cvtps_epi32(rhs);
     }
 
@@ -88,51 +88,51 @@ public:
         return r;
     }
 
-    /** Initialize a ivec with all elements set to a value.
+    /** Initialize a i32x4 with all elements set to a value.
      * Useful as a scalar converter, when combined with an
      * arithmetic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    explicit ivec(T rhs) noexcept:
-        ivec(_mm_set1_epi32(narrow_cast<int32_t>(rhs))) {}
+    explicit i32x4(T rhs) noexcept:
+        i32x4(_mm_set1_epi32(narrow_cast<int32_t>(rhs))) {}
 
-    /** Initialize a ivec with all elements set to a value.
+    /** Initialize a i32x4 with all elements set to a value.
      * Useful as a scalar converter, when combined with an
      * arithmetic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    ivec &operator=(T rhs) noexcept {
+    i32x4 &operator=(T rhs) noexcept {
         return *this = _mm_set1_epi32(narrow_cast<int32_t>(rhs));
     }
 
-    /** Create a ivec out of 2 to 4 values.
+    /** Create a i32x4 out of 2 to 4 values.
     * This vector is used as a homogeneous coordinate, meaning:
     *  - vectors have w=0 (A direction and distance)
     *  - points have w=1 (A position in space)
     */
     template<typename T, typename U, typename V=int, typename W=int,
         std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
-    ivec(T x, U y, V z=0, W w=0) noexcept :
-        ivec(_mm_set_epi32(
+    i32x4(T x, U y, V z=0, W w=0) noexcept :
+        i32x4(_mm_set_epi32(
             narrow_cast<int32_t>(w),
             narrow_cast<int32_t>(z),
             narrow_cast<int32_t>(y),
             narrow_cast<int32_t>(x)
             )) {}
 
-    /** Create a ivec out of 2 to 4 values.
+    /** Create a i32x4 out of 2 to 4 values.
     * This vector is used as a homogeneous coordinate, meaning:
     *  - vectors have w=0 (A direction and distance)
     *  - points have w=1 (A position in space)
     */
     template<typename T, typename U, typename V=int, typename W=int,
     std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
-    [[nodiscard]] static ivec point(T x, U y, V z=0, W w=1) noexcept {
-        return ivec(x, y, z, w);
+    [[nodiscard]] static i32x4 point(T x, U y, V z=0, W w=1) noexcept {
+        return i32x4(x, y, z, w);
     }
 
     template<size_t I, typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    ivec &set(T rhs) noexcept {
+    i32x4 &set(T rhs) noexcept {
         static_assert(I <= 3);
         return *this = _mm_insert_epi32(*this, narrow_cast<int32_t>(rhs), I);
     }
@@ -146,16 +146,16 @@ public:
     constexpr size_t size() const noexcept { return 4; }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    ivec &x(T rhs) noexcept { return set<0>(rhs); }
+    i32x4 &x(T rhs) noexcept { return set<0>(rhs); }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    ivec &y(T rhs) noexcept { return set<1>(rhs); }
+    i32x4 &y(T rhs) noexcept { return set<1>(rhs); }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    ivec &z(T rhs) noexcept { return set<2>(rhs); }
+    i32x4 &z(T rhs) noexcept { return set<2>(rhs); }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    ivec &w(T rhs) noexcept { return set<3>(rhs); }
+    i32x4 &w(T rhs) noexcept { return set<3>(rhs); }
 
     int x() const noexcept { return get<0>(); }
     int y() const noexcept { return get<1>(); }
@@ -164,87 +164,87 @@ public:
     int width() const noexcept { return get<0>(); }
     int height() const noexcept { return get<1>(); }
 
-    ivec &operator+=(ivec const &rhs) noexcept {
+    i32x4 &operator+=(i32x4 const &rhs) noexcept {
         return *this = _mm_add_epi32(*this, rhs);
     }
 
-    ivec &operator-=(ivec const &rhs) noexcept {
+    i32x4 &operator-=(i32x4 const &rhs) noexcept {
         return *this = _mm_sub_epi32(*this, rhs);
     }
 
-    ivec &operator*=(ivec const &rhs) noexcept {
+    i32x4 &operator*=(i32x4 const &rhs) noexcept {
         return *this = _mm_mullo_epi32(*this, rhs);
     }
 
 
-    [[nodiscard]] friend ivec operator+(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend i32x4 operator+(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return _mm_add_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] friend ivec operator-(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend i32x4 operator-(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return _mm_sub_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] friend ivec operator*(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend i32x4 operator*(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return _mm_mullo_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] friend ivec max(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend i32x4 max(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return _mm_max_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] friend ivec min(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend i32x4 min(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return _mm_min_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] friend bool operator==(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         ttlet tmp2 = _mm_movemask_epi8(_mm_cmpeq_epi32(lhs, rhs));
         return tmp2 == 0xffff;
     }
 
-    [[nodiscard]] friend bool operator!=(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
     /** Equal to.
     * @return boolean nibble field, bit [3:0]=x, [7:4]=y, [11:8]=z, [15:12]=w.
     */
-    [[nodiscard]] friend int eq(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int eq(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return _mm_movemask_epi8(_mm_cmpeq_epi32(lhs, rhs));
     }
 
     /** Less than.
     * @return boolean nibble field, bit [3:0]=x, [7:4]=y, [11:8]=z, [15:12]=w.
     */
-    [[nodiscard]] friend int operator<(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int operator<(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return _mm_movemask_epi8(_mm_cmplt_epi32(lhs, rhs));
     }
 
     /** Greater than.
     * @return boolean nibble field, bit [3:0]=x, [7:4]=y, [11:8]=z, [15:12]=w.
     */
-    [[nodiscard]] friend int operator>(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int operator>(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return _mm_movemask_epi8(_mm_cmpgt_epi32(lhs, rhs));
     }
 
-    [[nodiscard]] friend int operator<=(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int operator<=(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return (~(lhs > rhs)) & 0xffff;
     }
 
-    [[nodiscard]] friend int operator>=(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int operator>=(i32x4 const &lhs, i32x4 const &rhs) noexcept {
         return (~(lhs < rhs)) & 0xffff;
     }
 
-    [[nodiscard]] friend std::string to_string(ivec const &rhs) noexcept {
+    [[nodiscard]] friend std::string to_string(i32x4 const &rhs) noexcept {
         return fmt::format("({}, {}, {}, {})", rhs.x(), rhs.y(), rhs.z(), rhs.w());
     }
 
-    std::ostream friend &operator<<(std::ostream &lhs, ivec const &rhs) noexcept {
+    std::ostream friend &operator<<(std::ostream &lhs, i32x4 const &rhs) noexcept {
         return lhs << to_string(rhs);
     }
 
     template<std::size_t I>
-    [[nodiscard]] friend int get(ivec const &rhs) noexcept {
+    [[nodiscard]] friend int get(i32x4 const &rhs) noexcept {
         return rhs.get<I>();
     }
 
@@ -287,7 +287,7 @@ public:
     }
 
     template<char a, char b, char c, char d>
-    [[nodiscard]] ivec swizzle() const noexcept {
+    [[nodiscard]] i32x4 swizzle() const noexcept {
         constexpr int permute_mask = f32x4::swizzle_permute_mask<a,b,c,d>();
 
         __m128i swizzled;
@@ -315,7 +315,7 @@ public:
     }
 
 #define SWIZZLE4(name, A, B, C, D)\
-    [[nodiscard]] ivec name() const noexcept {\
+    [[nodiscard]] i32x4 name() const noexcept {\
         return swizzle<A, B, C, D>();\
     }
 
@@ -351,7 +351,7 @@ public:
     SWIZZLE4_GEN1(w, 'w')
 
 #define SWIZZLE3(name, A, B, C)\
-    [[nodiscard]] ivec name() const noexcept {\
+    [[nodiscard]] i32x4 name() const noexcept {\
         return swizzle<A,B,C,'w'>();\
     }
 
@@ -379,7 +379,7 @@ public:
     SWIZZLE3_GEN1(w, 'w')
 
 #define SWIZZLE2(name, A, B)\
-    [[nodiscard]] ivec name() const noexcept {\
+    [[nodiscard]] i32x4 name() const noexcept {\
         return swizzle<A,B,'0','w'>();\
     }
 

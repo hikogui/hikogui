@@ -24,7 +24,7 @@ public:
     gui_window_vulkan_macos(gui_window_vulkan_macos &&) = delete;
     gui_window_vulkan_macos &operator=(gui_window_vulkan_macos &&) = delete;
 
-    void createWindow(const std::string &title, ivec extent);
+    void createWindow(const std::string &title, i32x4 extent);
     //LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     static void createWindowClass();
@@ -47,7 +47,7 @@ public:
 
     void normalizeWindow() override;
 
-    void setWindowSize(ivec extent) override {}
+    void setWindowSize(i32x4 extent) override {}
 
     [[nodiscard]] std::string getTextFromClipboard() const noexcept override {
         return "<clipboard>";

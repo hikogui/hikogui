@@ -9,7 +9,7 @@
 #include "math.hpp"
 #include "bezier.hpp"
 #include "required.hpp"
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include "mat.hpp"
 #include <tuple>
 #include <limits>
@@ -163,7 +163,7 @@ struct BezierCurve {
             t = std::clamp(t, 0.0f, 1.0f);
 
             ttlet normal = P - pointAt(t);
-            ttlet square_distance = length_squared(normal);
+            ttlet square_distance = length_squared<2>(normal);
             if (square_distance < min_square_distance) {
                 min_square_distance = square_distance;
                 min_t = t;
@@ -173,7 +173,7 @@ struct BezierCurve {
 
         ttlet tangent = tangentAt(min_t);
         ttlet distance = std::sqrt(min_square_distance);
-        ttlet sdistance = viktor_cross(tangent, min_normal) < 0.0 ? distance : -distance;
+        ttlet sdistance = viktor_cross<2>(tangent, min_normal) < 0.0 ? distance : -distance;
         return sdistance;
     }
 

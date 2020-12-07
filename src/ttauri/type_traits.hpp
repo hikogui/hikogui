@@ -152,4 +152,13 @@ struct is_derived_from : public std::is_base_of<BaseType,DerivedType> {};
 template<typename DerivedType, typename BaseType>
 constexpr bool is_derived_from_v = is_derived_from<DerivedType,BaseType>::value;
 
+
+template<typename First, typename Second>
+struct use_first {
+    using type = First;
+};
+
+template<typename First, typename Second>
+using use_first_t = use_first<First,Second>;
+
 }

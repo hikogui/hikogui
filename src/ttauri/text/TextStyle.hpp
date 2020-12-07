@@ -6,7 +6,7 @@
 #include "FontDescription.hpp"
 #include "TextDecoration.hpp"
 #include "FontFamilyID.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include <fmt/format.h>
 #include <ostream>
 

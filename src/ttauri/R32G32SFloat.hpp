@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -12,7 +12,7 @@ namespace tt {
 
 class R32G32SFloat {
     alignas(sizeof(float) * 2)
-    // Red, Green, Blue, Alpha in binary32 (native endian).
+    // Red, Green in binary32 (native endian).
     std::array<float,2> v;
 
 public:

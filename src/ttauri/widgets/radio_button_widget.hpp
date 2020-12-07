@@ -114,7 +114,7 @@ private:
     {
         tt_assume(gui_system_mutex.recurse_lock_count());
 
-        context.corner_shapes = f32x4{_outline_rectangle.height() * 0.5f};
+        context.corner_shapes = f32x4::broadcast(_outline_rectangle.height() * 0.5f);
         context.draw_box_with_border_inside(_outline_rectangle);
     }
 
@@ -128,7 +128,7 @@ private:
                 context.color = theme::global->accentColor;
             }
             std::swap(context.color, context.fill_color);
-            context.corner_shapes = f32x4{_pip_rectangle.height() * 0.5f};
+            context.corner_shapes = f32x4::broadcast(_pip_rectangle.height() * 0.5f);
             context.draw_box_with_border_inside(_pip_rectangle);
         }
     }

@@ -39,10 +39,10 @@ TEST(PixelMapTests, renderMaskFromPath) {
     fill(mask);
 
     auto path = Path();
-    path.moveTo(f32x4::point(1, 1));
-    path.lineTo(f32x4::point(2, 1));
-    path.lineTo(f32x4::point(2, 2));
-    path.lineTo(f32x4::point(1, 2));
+    path.moveTo(f32x4::point({1, 1}));
+    path.lineTo(f32x4::point({2, 1}));
+    path.lineTo(f32x4::point({2, 2}));
+    path.lineTo(f32x4::point({1, 2}));
     path.closeContour();
 
     auto beziers = path.getBeziers();

@@ -7,7 +7,7 @@
 
 namespace tt::PipelineSDF {
 
-AtlasRect::AtlasRect(ivec atlasPosition, f32x4 drawExtent) noexcept :
+AtlasRect::AtlasRect(i32x4 atlasPosition, f32x4 drawExtent) noexcept :
     atlasPosition(atlasPosition),
     atlasExtent(ceil(drawExtent))
 {

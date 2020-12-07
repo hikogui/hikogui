@@ -117,13 +117,13 @@ void gui_window::next_keyboard_widget(std::shared_ptr<tt::widget> const &current
     return std::ceil(dpi / 100.0f);
 }
 
-void gui_window::windowChangedSize(ivec extent) {
+void gui_window::windowChangedSize(f32x4 extent) {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     currentWindowExtent = extent;
     tt_assume(widget);
 
-    widget->set_layout_parameters(aarect{f32x4{currentWindowExtent}}, aarect{f32x4{currentWindowExtent}});
+    widget->set_layout_parameters(aarect{currentWindowExtent}, aarect{currentWindowExtent});
     requestLayout = true;
 }
 

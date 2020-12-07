@@ -16,7 +16,6 @@
 
 namespace tt {
 
-
 using namespace std;
 
 template<typename T>
@@ -104,7 +103,8 @@ static void createWindowClass()
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance);
+        win32WindowClass.hInstance =
+            reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -227,7 +227,7 @@ void gui_window_vulkan_win32::normalizeWindow()
     });
 }
 
-void gui_window_vulkan_win32::setWindowSize(ivec extent)
+void gui_window_vulkan_win32::setWindowSize(f32x4 extent)
 {
     gui_system_mutex.lock();
     ttlet handle = reinterpret_cast<HWND>(win32Window);
@@ -239,20 +239,20 @@ void gui_window_vulkan_win32::setWindowSize(ivec extent)
             HWND_NOTOPMOST,
             0,
             0,
-            extent.x(),
-            extent.y(),
+            narrow_cast<int>(std::ceil(extent.width())),
+            narrow_cast<int>(std::ceil(extent.height())),
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
     });
 }
 
-[[nodiscard]] ivec gui_window_vulkan_win32::virtualScreenSize() const noexcept
+[[nodiscard]] f32x4 gui_window_vulkan_win32::virtualScreenSize() const noexcept
 {
     ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
     ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
     if (width <= 0 || height <= 0) {
         LOG_FATAL("Failed to get virtual screen size");
     }
-    return {width, height};
+    return {narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
 [[nodiscard]] std::u8string gui_window_vulkan_win32::getTextFromClipboard() const noexcept
@@ -363,7 +363,7 @@ done:
 vk::SurfaceKHR gui_window_vulkan_win32::getSurface() const
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    return narrow_cast<gui_system_vulkan_win32&>(system).createWin32SurfaceKHR(
+    return narrow_cast<gui_system_vulkan_win32 &>(system).createWin32SurfaceKHR(
         {vk::Win32SurfaceCreateFlagsKHR(),
          reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance),
          reinterpret_cast<HWND>(win32Window)});
@@ -477,12 +477,11 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         setOSWindowRectangleFromRECT(rect);
     } break;
 
-    case WM_ERASEBKGND:
-        return 1;
+    case WM_ERASEBKGND: return 1;
 
     case WM_PAINT: {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        
+
         PAINTSTRUCT ps;
         BeginPaint(win32Window, &ps);
 
@@ -490,8 +489,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
             ps.rcPaint.left,
             currentWindowExtent.height() - ps.rcPaint.bottom,
             ps.rcPaint.right - ps.rcPaint.left,
-            ps.rcPaint.bottom - ps.rcPaint.top
-        };
+            ps.rcPaint.bottom - ps.rcPaint.top};
 
         request_redraw(update_rectangle);
         EndPaint(win32Window, &ps);
@@ -654,7 +652,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     case WM_NCHITTEST: {
         gui_system_mutex.lock();
-        ttlet screenPosition = f32x4{GET_X_LPARAM(lParam), 0 - GET_Y_LPARAM(lParam)};
+        ttlet screenPosition = f32x4{narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(0 - GET_Y_LPARAM(lParam))};
         ttlet insideWindowPosition = screenPosition - f32x4{OSWindowRectangle.offset()};
         ttlet hitbox_type = widget->hitbox_test(insideWindowPosition).type;
         gui_system_mutex.unlock();
@@ -735,13 +733,14 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
-    mouseEvent.position = f32x4::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
+    mouseEvent.position = f32x4::point(
+        narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(currentWindowExtent.y() - GET_Y_LPARAM(lParam)));
 
     mouseEvent.wheelDelta = f32x4{};
     if (uMsg == WM_MOUSEWHEEL) {
-        mouseEvent.wheelDelta.y(static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f);
+        mouseEvent.wheelDelta.y() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
     } else if (uMsg == WM_MOUSEHWHEEL) {
-        mouseEvent.wheelDelta.x(static_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f);
+        mouseEvent.wheelDelta.x() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
     }
 
     // Track which buttons are down, in case the application wants to track multiple buttons being pressed down.

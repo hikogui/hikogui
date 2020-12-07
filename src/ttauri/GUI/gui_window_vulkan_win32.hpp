@@ -42,9 +42,9 @@ public:
 
     void normalizeWindow() override;
 
-    void setWindowSize(ivec extent) override;
+    void setWindowSize(f32x4 extent) override;
 
-    [[nodiscard]] ivec virtualScreenSize() const noexcept override;
+    [[nodiscard]] f32x4 virtualScreenSize() const noexcept override;
 
     [[nodiscard]] std::u8string getTextFromClipboard() const noexcept override;
 

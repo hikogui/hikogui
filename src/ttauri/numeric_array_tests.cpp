@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/vec.hpp"
+#include "ttauri/numeric_array.hpp"
 #include "ttauri/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -9,7 +9,7 @@
 using namespace std;
 using namespace tt;
 
-TEST(Vec, Compare) {
+TEST(numeric_array, Compare) {
     ttlet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
     ASSERT_FALSE(tmp == f32x4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -17,7 +17,7 @@ TEST(Vec, Compare) {
     ASSERT_TRUE(tmp == f32x4(2.0f, 3.0f, 4.0f, 5.0f));
 }
 
-TEST(Vec, Arithmatic) {
+TEST(numeric_array, Arithmatic) {
     ttlet tmp1 = f32x4{9.0f, 6.0f, 4.0f, 14.0f};
     ttlet tmp2 = f32x4{3.0f, -2.0f, 8.0f, 7.0f};
 
@@ -51,28 +51,28 @@ TEST(Vec, Arithmatic) {
     }
 }
 
-TEST(Vec, Length) {
+TEST(numeric_array, Length) {
     ttlet tmp = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 
-    ASSERT_EQ(length_squared(tmp), 29.0f);
-    ASSERT_NEAR(length(tmp), 5.3851f, 0.001f);
+    ASSERT_EQ(length_squared<3>(tmp), 29.0f);
+    ASSERT_NEAR(length<3>(tmp), 5.3851f, 0.001f);
 }
 
-TEST(Vec, DotProduct) {
+TEST(numeric_array, DotProduct) {
     ttlet a = f32x4(1.0f, 3.0f, -5.0f, 0.0f);
     ttlet b = f32x4(4.0f, -2.0f, -1.0f, 0.0f);
 
-    ASSERT_EQ(dot(a, b), 3.0f);
+    ASSERT_EQ(dot<3>(a, b), 3.0f);
 }
 
-TEST(Vec, CrossProduct) {
+TEST(numeric_array, CrossProduct) {
     ttlet a = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
     ttlet b = f32x4(5.0f, 6.0f, 7.0f, 0.0f);
 
-    ASSERT_EQ(cross(a, b), f32x4(-3.0f, 6.0f, -3.0f));
+    ASSERT_EQ(cross<3>(a, b), f32x4(-3.0f, 6.0f, -3.0f));
 }
 
-TEST(Vec, Getters) {
+TEST(numeric_array, Getters) {
     ttlet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
     ASSERT_EQ(tmp.x(), 2.0f);
@@ -90,295 +90,189 @@ TEST(Vec, Getters) {
 
 }
 
-TEST(Vec, Setters) {
+TEST(numeric_array, Setters) {
     auto tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
-    ASSERT_EQ(tmp.x(12.0f), f32x4(12.0f, 3.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.y(13.0f), f32x4(12.0f, 13.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.z(14.0f), f32x4(12.0f, 13.0f, 14.0f, 5.0f));
-    ASSERT_EQ(tmp.w(15.0f), f32x4(12.0f, 13.0f, 14.0f, 15.0f));
-    ASSERT_EQ(tmp.r(22.0f), f32x4(22.0f, 13.0f, 14.0f, 15.0f));
-    ASSERT_EQ(tmp.g(23.0f), f32x4(22.0f, 23.0f, 14.0f, 15.0f));
-    ASSERT_EQ(tmp.b(24.0f), f32x4(22.0f, 23.0f, 24.0f, 15.0f));
-    ASSERT_EQ(tmp.a(25.0f), f32x4(22.0f, 23.0f, 24.0f, 25.0f));
+    tmp.x() = 12.0f;
+    ASSERT_EQ(tmp, f32x4(12.0f, 3.0f, 4.0f, 5.0f));
+    tmp.y() = 13.0f;
+    ASSERT_EQ(tmp, f32x4(12.0f, 13.0f, 4.0f, 5.0f));
+    tmp.z() = 14.0f;
+    ASSERT_EQ(tmp, f32x4(12.0f, 13.0f, 14.0f, 5.0f));
+    tmp.w() = 15.0f;
+    ASSERT_EQ(tmp, f32x4(12.0f, 13.0f, 14.0f, 15.0f));
+    tmp.r() = 22.0f;
+    ASSERT_EQ(tmp, f32x4(22.0f, 13.0f, 14.0f, 15.0f));
+    tmp.g() = 23.0f;
+    ASSERT_EQ(tmp, f32x4(22.0f, 23.0f, 14.0f, 15.0f));
+    tmp.b() = 24.0f;
+    ASSERT_EQ(tmp, f32x4(22.0f, 23.0f, 24.0f, 15.0f));
+    tmp.a() = 25.0f;
+    ASSERT_EQ(tmp, f32x4(22.0f, 23.0f, 24.0f, 25.0f));
 }
 
 
-TEST(Vec, Swizzle2) {
-    ttlet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
+TEST(numeric_array, Swizzle2) {
+    ttlet tmp = f32x2{2.0f, 3.0f};
 
-    // Returns a homgenious 2D vector, z==0.0, w==w.
-    ASSERT_EQ(tmp.xx(), f32x4(2.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.xy(), f32x4(2.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.xz(), f32x4(2.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.xw(), f32x4(2.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.x0(), f32x4(2.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.x1(), f32x4(2.0f, 1.0f, 0.0f, 5.0f));
+    ASSERT_EQ(tmp.xx(), f32x2(2.0f, 2.0f));
+    ASSERT_EQ(tmp.xy(), f32x2(2.0f, 3.0f));
+    ASSERT_EQ(tmp.x0(), f32x2(2.0f, 0.0f));
+    ASSERT_EQ(tmp.x1(), f32x2(2.0f, 1.0f));
 
-    ASSERT_EQ(tmp.yx(), f32x4(3.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.yy(), f32x4(3.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.yz(), f32x4(3.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.yw(), f32x4(3.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.y0(), f32x4(3.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.y1(), f32x4(3.0f, 1.0f, 0.0f, 5.0f));
+    ASSERT_EQ(tmp.yx(), f32x2(3.0f, 2.0f));
+    ASSERT_EQ(tmp.yy(), f32x2(3.0f, 3.0f));
+    ASSERT_EQ(tmp.y0(), f32x2(3.0f, 0.0f));
+    ASSERT_EQ(tmp.y1(), f32x2(3.0f, 1.0f));
 
-    ASSERT_EQ(tmp.zx(), f32x4(4.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.zy(), f32x4(4.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.zz(), f32x4(4.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.zw(), f32x4(4.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.z0(), f32x4(4.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.z1(), f32x4(4.0f, 1.0f, 0.0f, 5.0f));
-
-    ASSERT_EQ(tmp.wx(), f32x4(5.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.wy(), f32x4(5.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.wz(), f32x4(5.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.ww(), f32x4(5.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.w0(), f32x4(5.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.w1(), f32x4(5.0f, 1.0f, 0.0f, 5.0f));
-
-    ASSERT_EQ(tmp._0x(), f32x4(0.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._0y(), f32x4(0.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._0z(), f32x4(0.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._0w(), f32x4(0.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._00(), f32x4(0.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._01(), f32x4(0.0f, 1.0f, 0.0f, 5.0f));
-
-    ASSERT_EQ(tmp._1x(), f32x4(1.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._1y(), f32x4(1.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._1z(), f32x4(1.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._1w(), f32x4(1.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._10(), f32x4(1.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._11(), f32x4(1.0f, 1.0f, 0.0f, 5.0f));
+    ASSERT_EQ(tmp._0x(), f32x2(0.0f, 2.0f));
+    ASSERT_EQ(tmp._0y(), f32x2(0.0f, 3.0f));
+    ASSERT_EQ(tmp._00(), f32x2(0.0f, 0.0f));
+    ASSERT_EQ(tmp._01(), f32x2(0.0f, 1.0f));
+                             
+    ASSERT_EQ(tmp._1x(), f32x2(1.0f, 2.0f));
+    ASSERT_EQ(tmp._1y(), f32x2(1.0f, 3.0f));
+    ASSERT_EQ(tmp._10(), f32x2(1.0f, 0.0f));
+    ASSERT_EQ(tmp._11(), f32x2(1.0f, 1.0f));
 }
 
-TEST(Vec, Swizzle3) {
-    ttlet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
+TEST(numeric_array, Swizzle3) {
+    using f32x3 = numeric_array<float, 3>;
 
-    // Returns a homgenious 2D vector, z==0.0, w==w.
-    ASSERT_EQ(tmp.xxx(), f32x4(2.0f, 2.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.xxy(), f32x4(2.0f, 2.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.xxz(), f32x4(2.0f, 2.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.xxw(), f32x4(2.0f, 2.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.xx0(), f32x4(2.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.xx1(), f32x4(2.0f, 2.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.xyx(), f32x4(2.0f, 3.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.xyy(), f32x4(2.0f, 3.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.xyz(), f32x4(2.0f, 3.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.xyw(), f32x4(2.0f, 3.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.xy0(), f32x4(2.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.xy1(), f32x4(2.0f, 3.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.xzx(), f32x4(2.0f, 4.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.xzy(), f32x4(2.0f, 4.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.xzz(), f32x4(2.0f, 4.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.xzw(), f32x4(2.0f, 4.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.xz0(), f32x4(2.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.xz1(), f32x4(2.0f, 4.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.xwx(), f32x4(2.0f, 5.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.xwy(), f32x4(2.0f, 5.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.xwz(), f32x4(2.0f, 5.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.xww(), f32x4(2.0f, 5.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.xw0(), f32x4(2.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.xw1(), f32x4(2.0f, 5.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.x0x(), f32x4(2.0f, 0.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.x0y(), f32x4(2.0f, 0.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.x0z(), f32x4(2.0f, 0.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.x0w(), f32x4(2.0f, 0.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.x00(), f32x4(2.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.x01(), f32x4(2.0f, 0.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.x1x(), f32x4(2.0f, 1.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.x1y(), f32x4(2.0f, 1.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.x1z(), f32x4(2.0f, 1.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.x1w(), f32x4(2.0f, 1.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.x10(), f32x4(2.0f, 1.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.x11(), f32x4(2.0f, 1.0f, 1.0f, 5.0f));
+    ttlet tmp = f32x3{2.0f, 3.0f, 4.0f};
 
-    ASSERT_EQ(tmp.yxx(), f32x4(3.0f, 2.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.yxy(), f32x4(3.0f, 2.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.yxz(), f32x4(3.0f, 2.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.yxw(), f32x4(3.0f, 2.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.yx0(), f32x4(3.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.yx1(), f32x4(3.0f, 2.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.yyx(), f32x4(3.0f, 3.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.yyy(), f32x4(3.0f, 3.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.yyz(), f32x4(3.0f, 3.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.yyw(), f32x4(3.0f, 3.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.yy0(), f32x4(3.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.yy1(), f32x4(3.0f, 3.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.yzx(), f32x4(3.0f, 4.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.yzy(), f32x4(3.0f, 4.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.yzz(), f32x4(3.0f, 4.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.yzw(), f32x4(3.0f, 4.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.yz0(), f32x4(3.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.yz1(), f32x4(3.0f, 4.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.ywx(), f32x4(3.0f, 5.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.ywy(), f32x4(3.0f, 5.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.ywz(), f32x4(3.0f, 5.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.yww(), f32x4(3.0f, 5.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.yw0(), f32x4(3.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.yw1(), f32x4(3.0f, 5.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.y0x(), f32x4(3.0f, 0.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.y0y(), f32x4(3.0f, 0.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.y0z(), f32x4(3.0f, 0.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.y0w(), f32x4(3.0f, 0.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.y00(), f32x4(3.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.y01(), f32x4(3.0f, 0.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.y1x(), f32x4(3.0f, 1.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.y1y(), f32x4(3.0f, 1.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.y1z(), f32x4(3.0f, 1.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.y1w(), f32x4(3.0f, 1.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.y10(), f32x4(3.0f, 1.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.y11(), f32x4(3.0f, 1.0f, 1.0f, 5.0f));
+    ASSERT_EQ(tmp.xxx(), f32x3(2.0f, 2.0f, 2.0f));
+    ASSERT_EQ(tmp.xxy(), f32x3(2.0f, 2.0f, 3.0f));
+    ASSERT_EQ(tmp.xxz(), f32x3(2.0f, 2.0f, 4.0f));
+    ASSERT_EQ(tmp.xx0(), f32x3(2.0f, 2.0f, 0.0f));
+    ASSERT_EQ(tmp.xx1(), f32x3(2.0f, 2.0f, 1.0f));
+    ASSERT_EQ(tmp.xyx(), f32x3(2.0f, 3.0f, 2.0f));
+    ASSERT_EQ(tmp.xyy(), f32x3(2.0f, 3.0f, 3.0f));
+    ASSERT_EQ(tmp.xyz(), f32x3(2.0f, 3.0f, 4.0f));
+    ASSERT_EQ(tmp.xy0(), f32x3(2.0f, 3.0f, 0.0f));
+    ASSERT_EQ(tmp.xy1(), f32x3(2.0f, 3.0f, 1.0f));
+    ASSERT_EQ(tmp.xzx(), f32x3(2.0f, 4.0f, 2.0f));
+    ASSERT_EQ(tmp.xzy(), f32x3(2.0f, 4.0f, 3.0f));
+    ASSERT_EQ(tmp.xzz(), f32x3(2.0f, 4.0f, 4.0f));
+    ASSERT_EQ(tmp.xz0(), f32x3(2.0f, 4.0f, 0.0f));
+    ASSERT_EQ(tmp.xz1(), f32x3(2.0f, 4.0f, 1.0f));
+    ASSERT_EQ(tmp.x0x(), f32x3(2.0f, 0.0f, 2.0f));
+    ASSERT_EQ(tmp.x0y(), f32x3(2.0f, 0.0f, 3.0f));
+    ASSERT_EQ(tmp.x0z(), f32x3(2.0f, 0.0f, 4.0f));
+    ASSERT_EQ(tmp.x00(), f32x3(2.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tmp.x01(), f32x3(2.0f, 0.0f, 1.0f));
+    ASSERT_EQ(tmp.x1x(), f32x3(2.0f, 1.0f, 2.0f));
+    ASSERT_EQ(tmp.x1y(), f32x3(2.0f, 1.0f, 3.0f));
+    ASSERT_EQ(tmp.x1z(), f32x3(2.0f, 1.0f, 4.0f));
+    ASSERT_EQ(tmp.x10(), f32x3(2.0f, 1.0f, 0.0f));
+    ASSERT_EQ(tmp.x11(), f32x3(2.0f, 1.0f, 1.0f));
 
-    ASSERT_EQ(tmp.zxx(), f32x4(4.0f, 2.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.zxy(), f32x4(4.0f, 2.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.zxz(), f32x4(4.0f, 2.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.zxw(), f32x4(4.0f, 2.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.zx0(), f32x4(4.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.zx1(), f32x4(4.0f, 2.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.zyx(), f32x4(4.0f, 3.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.zyy(), f32x4(4.0f, 3.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.zyz(), f32x4(4.0f, 3.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.zyw(), f32x4(4.0f, 3.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.zy0(), f32x4(4.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.zy1(), f32x4(4.0f, 3.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.zzx(), f32x4(4.0f, 4.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.zzy(), f32x4(4.0f, 4.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.zzz(), f32x4(4.0f, 4.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.zzw(), f32x4(4.0f, 4.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.zz0(), f32x4(4.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.zz1(), f32x4(4.0f, 4.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.zwx(), f32x4(4.0f, 5.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.zwy(), f32x4(4.0f, 5.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.zwz(), f32x4(4.0f, 5.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.zww(), f32x4(4.0f, 5.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.zw0(), f32x4(4.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.zw1(), f32x4(4.0f, 5.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.z0x(), f32x4(4.0f, 0.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.z0y(), f32x4(4.0f, 0.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.z0z(), f32x4(4.0f, 0.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.z0w(), f32x4(4.0f, 0.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.z00(), f32x4(4.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.z01(), f32x4(4.0f, 0.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.z1x(), f32x4(4.0f, 1.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.z1y(), f32x4(4.0f, 1.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.z1z(), f32x4(4.0f, 1.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.z1w(), f32x4(4.0f, 1.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.z10(), f32x4(4.0f, 1.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.z11(), f32x4(4.0f, 1.0f, 1.0f, 5.0f));
+    ASSERT_EQ(tmp.yxx(), f32x3(3.0f, 2.0f, 2.0f));
+    ASSERT_EQ(tmp.yxy(), f32x3(3.0f, 2.0f, 3.0f));
+    ASSERT_EQ(tmp.yxz(), f32x3(3.0f, 2.0f, 4.0f));
+    ASSERT_EQ(tmp.yx0(), f32x3(3.0f, 2.0f, 0.0f));
+    ASSERT_EQ(tmp.yx1(), f32x3(3.0f, 2.0f, 1.0f));
+    ASSERT_EQ(tmp.yyx(), f32x3(3.0f, 3.0f, 2.0f));
+    ASSERT_EQ(tmp.yyy(), f32x3(3.0f, 3.0f, 3.0f));
+    ASSERT_EQ(tmp.yyz(), f32x3(3.0f, 3.0f, 4.0f));
+    ASSERT_EQ(tmp.yy0(), f32x3(3.0f, 3.0f, 0.0f));
+    ASSERT_EQ(tmp.yy1(), f32x3(3.0f, 3.0f, 1.0f));
+    ASSERT_EQ(tmp.yzx(), f32x3(3.0f, 4.0f, 2.0f));
+    ASSERT_EQ(tmp.yzy(), f32x3(3.0f, 4.0f, 3.0f));
+    ASSERT_EQ(tmp.yzz(), f32x3(3.0f, 4.0f, 4.0f));
+    ASSERT_EQ(tmp.yz0(), f32x3(3.0f, 4.0f, 0.0f));
+    ASSERT_EQ(tmp.yz1(), f32x3(3.0f, 4.0f, 1.0f));
+    ASSERT_EQ(tmp.y0x(), f32x3(3.0f, 0.0f, 2.0f));
+    ASSERT_EQ(tmp.y0y(), f32x3(3.0f, 0.0f, 3.0f));
+    ASSERT_EQ(tmp.y0z(), f32x3(3.0f, 0.0f, 4.0f));
+    ASSERT_EQ(tmp.y00(), f32x3(3.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tmp.y01(), f32x3(3.0f, 0.0f, 1.0f));
+    ASSERT_EQ(tmp.y1x(), f32x3(3.0f, 1.0f, 2.0f));
+    ASSERT_EQ(tmp.y1y(), f32x3(3.0f, 1.0f, 3.0f));
+    ASSERT_EQ(tmp.y1z(), f32x3(3.0f, 1.0f, 4.0f));
+    ASSERT_EQ(tmp.y10(), f32x3(3.0f, 1.0f, 0.0f));
+    ASSERT_EQ(tmp.y11(), f32x3(3.0f, 1.0f, 1.0f));
 
-    ASSERT_EQ(tmp.wxx(), f32x4(5.0f, 2.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.wxy(), f32x4(5.0f, 2.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.wxz(), f32x4(5.0f, 2.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.wxw(), f32x4(5.0f, 2.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.wx0(), f32x4(5.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.wx1(), f32x4(5.0f, 2.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.wyx(), f32x4(5.0f, 3.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.wyy(), f32x4(5.0f, 3.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.wyz(), f32x4(5.0f, 3.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.wyw(), f32x4(5.0f, 3.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.wy0(), f32x4(5.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.wy1(), f32x4(5.0f, 3.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.wzx(), f32x4(5.0f, 4.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.wzy(), f32x4(5.0f, 4.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.wzz(), f32x4(5.0f, 4.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.wzw(), f32x4(5.0f, 4.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.wz0(), f32x4(5.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.wz1(), f32x4(5.0f, 4.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.wwx(), f32x4(5.0f, 5.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.wwy(), f32x4(5.0f, 5.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.wwz(), f32x4(5.0f, 5.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.www(), f32x4(5.0f, 5.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.ww0(), f32x4(5.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.ww1(), f32x4(5.0f, 5.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.w0x(), f32x4(5.0f, 0.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.w0y(), f32x4(5.0f, 0.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.w0z(), f32x4(5.0f, 0.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.w0w(), f32x4(5.0f, 0.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.w00(), f32x4(5.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.w01(), f32x4(5.0f, 0.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp.w1x(), f32x4(5.0f, 1.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp.w1y(), f32x4(5.0f, 1.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp.w1z(), f32x4(5.0f, 1.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.w1w(), f32x4(5.0f, 1.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp.w10(), f32x4(5.0f, 1.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.w11(), f32x4(5.0f, 1.0f, 1.0f, 5.0f));
+    ASSERT_EQ(tmp.zxx(), f32x3(4.0f, 2.0f, 2.0f));
+    ASSERT_EQ(tmp.zxy(), f32x3(4.0f, 2.0f, 3.0f));
+    ASSERT_EQ(tmp.zxz(), f32x3(4.0f, 2.0f, 4.0f));
+    ASSERT_EQ(tmp.zx0(), f32x3(4.0f, 2.0f, 0.0f));
+    ASSERT_EQ(tmp.zx1(), f32x3(4.0f, 2.0f, 1.0f));
+    ASSERT_EQ(tmp.zyx(), f32x3(4.0f, 3.0f, 2.0f));
+    ASSERT_EQ(tmp.zyy(), f32x3(4.0f, 3.0f, 3.0f));
+    ASSERT_EQ(tmp.zyz(), f32x3(4.0f, 3.0f, 4.0f));
+    ASSERT_EQ(tmp.zy0(), f32x3(4.0f, 3.0f, 0.0f));
+    ASSERT_EQ(tmp.zy1(), f32x3(4.0f, 3.0f, 1.0f));
+    ASSERT_EQ(tmp.zzx(), f32x3(4.0f, 4.0f, 2.0f));
+    ASSERT_EQ(tmp.zzy(), f32x3(4.0f, 4.0f, 3.0f));
+    ASSERT_EQ(tmp.zzz(), f32x3(4.0f, 4.0f, 4.0f));
+    ASSERT_EQ(tmp.zz0(), f32x3(4.0f, 4.0f, 0.0f));
+    ASSERT_EQ(tmp.zz1(), f32x3(4.0f, 4.0f, 1.0f));
+    ASSERT_EQ(tmp.z0x(), f32x3(4.0f, 0.0f, 2.0f));
+    ASSERT_EQ(tmp.z0y(), f32x3(4.0f, 0.0f, 3.0f));
+    ASSERT_EQ(tmp.z0z(), f32x3(4.0f, 0.0f, 4.0f));
+    ASSERT_EQ(tmp.z00(), f32x3(4.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tmp.z01(), f32x3(4.0f, 0.0f, 1.0f));
+    ASSERT_EQ(tmp.z1x(), f32x3(4.0f, 1.0f, 2.0f));
+    ASSERT_EQ(tmp.z1y(), f32x3(4.0f, 1.0f, 3.0f));
+    ASSERT_EQ(tmp.z1z(), f32x3(4.0f, 1.0f, 4.0f));
+    ASSERT_EQ(tmp.z10(), f32x3(4.0f, 1.0f, 0.0f));
+    ASSERT_EQ(tmp.z11(), f32x3(4.0f, 1.0f, 1.0f));
 
-    ASSERT_EQ(tmp._0xx(), f32x4(0.0f, 2.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._0xy(), f32x4(0.0f, 2.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._0xz(), f32x4(0.0f, 2.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._0xw(), f32x4(0.0f, 2.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._0x0(), f32x4(0.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._0x1(), f32x4(0.0f, 2.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._0yx(), f32x4(0.0f, 3.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._0yy(), f32x4(0.0f, 3.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._0yz(), f32x4(0.0f, 3.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._0yw(), f32x4(0.0f, 3.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._0y0(), f32x4(0.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._0y1(), f32x4(0.0f, 3.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._0zx(), f32x4(0.0f, 4.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._0zy(), f32x4(0.0f, 4.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._0zz(), f32x4(0.0f, 4.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._0zw(), f32x4(0.0f, 4.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._0z0(), f32x4(0.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._0z1(), f32x4(0.0f, 4.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._0wx(), f32x4(0.0f, 5.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._0wy(), f32x4(0.0f, 5.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._0wz(), f32x4(0.0f, 5.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._0ww(), f32x4(0.0f, 5.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._0w0(), f32x4(0.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._0w1(), f32x4(0.0f, 5.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._00x(), f32x4(0.0f, 0.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._00y(), f32x4(0.0f, 0.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._00z(), f32x4(0.0f, 0.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._00w(), f32x4(0.0f, 0.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._000(), f32x4(0.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._001(), f32x4(0.0f, 0.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._01x(), f32x4(0.0f, 1.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._01y(), f32x4(0.0f, 1.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._01z(), f32x4(0.0f, 1.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._01w(), f32x4(0.0f, 1.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._010(), f32x4(0.0f, 1.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._011(), f32x4(0.0f, 1.0f, 1.0f, 5.0f));
+    ASSERT_EQ(tmp._0xx(), f32x3(0.0f, 2.0f, 2.0f));
+    ASSERT_EQ(tmp._0xy(), f32x3(0.0f, 2.0f, 3.0f));
+    ASSERT_EQ(tmp._0xz(), f32x3(0.0f, 2.0f, 4.0f));
+    ASSERT_EQ(tmp._0x0(), f32x3(0.0f, 2.0f, 0.0f));
+    ASSERT_EQ(tmp._0x1(), f32x3(0.0f, 2.0f, 1.0f));
+    ASSERT_EQ(tmp._0yx(), f32x3(0.0f, 3.0f, 2.0f));
+    ASSERT_EQ(tmp._0yy(), f32x3(0.0f, 3.0f, 3.0f));
+    ASSERT_EQ(tmp._0yz(), f32x3(0.0f, 3.0f, 4.0f));
+    ASSERT_EQ(tmp._0y0(), f32x3(0.0f, 3.0f, 0.0f));
+    ASSERT_EQ(tmp._0y1(), f32x3(0.0f, 3.0f, 1.0f));
+    ASSERT_EQ(tmp._0zx(), f32x3(0.0f, 4.0f, 2.0f));
+    ASSERT_EQ(tmp._0zy(), f32x3(0.0f, 4.0f, 3.0f));
+    ASSERT_EQ(tmp._0zz(), f32x3(0.0f, 4.0f, 4.0f));
+    ASSERT_EQ(tmp._0z0(), f32x3(0.0f, 4.0f, 0.0f));
+    ASSERT_EQ(tmp._0z1(), f32x3(0.0f, 4.0f, 1.0f));
+    ASSERT_EQ(tmp._00x(), f32x3(0.0f, 0.0f, 2.0f));
+    ASSERT_EQ(tmp._00y(), f32x3(0.0f, 0.0f, 3.0f));
+    ASSERT_EQ(tmp._00z(), f32x3(0.0f, 0.0f, 4.0f));
+    ASSERT_EQ(tmp._000(), f32x3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tmp._001(), f32x3(0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(tmp._01x(), f32x3(0.0f, 1.0f, 2.0f));
+    ASSERT_EQ(tmp._01y(), f32x3(0.0f, 1.0f, 3.0f));
+    ASSERT_EQ(tmp._01z(), f32x3(0.0f, 1.0f, 4.0f));
+    ASSERT_EQ(tmp._010(), f32x3(0.0f, 1.0f, 0.0f));
+    ASSERT_EQ(tmp._011(), f32x3(0.0f, 1.0f, 1.0f));
 
-    ASSERT_EQ(tmp._1xx(), f32x4(1.0f, 2.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._1xy(), f32x4(1.0f, 2.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._1xz(), f32x4(1.0f, 2.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._1xw(), f32x4(1.0f, 2.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._1x0(), f32x4(1.0f, 2.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._1x1(), f32x4(1.0f, 2.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._1yx(), f32x4(1.0f, 3.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._1yy(), f32x4(1.0f, 3.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._1yz(), f32x4(1.0f, 3.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._1yw(), f32x4(1.0f, 3.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._1y0(), f32x4(1.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._1y1(), f32x4(1.0f, 3.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._1zx(), f32x4(1.0f, 4.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._1zy(), f32x4(1.0f, 4.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._1zz(), f32x4(1.0f, 4.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._1zw(), f32x4(1.0f, 4.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._1z0(), f32x4(1.0f, 4.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._1z1(), f32x4(1.0f, 4.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._1wx(), f32x4(1.0f, 5.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._1wy(), f32x4(1.0f, 5.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._1wz(), f32x4(1.0f, 5.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._1ww(), f32x4(1.0f, 5.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._1w0(), f32x4(1.0f, 5.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._1w1(), f32x4(1.0f, 5.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._10x(), f32x4(1.0f, 0.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._10y(), f32x4(1.0f, 0.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._10z(), f32x4(1.0f, 0.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._10w(), f32x4(1.0f, 0.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._100(), f32x4(1.0f, 0.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._101(), f32x4(1.0f, 0.0f, 1.0f, 5.0f));
-    ASSERT_EQ(tmp._11x(), f32x4(1.0f, 1.0f, 2.0f, 5.0f));
-    ASSERT_EQ(tmp._11y(), f32x4(1.0f, 1.0f, 3.0f, 5.0f));
-    ASSERT_EQ(tmp._11z(), f32x4(1.0f, 1.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp._11w(), f32x4(1.0f, 1.0f, 5.0f, 5.0f));
-    ASSERT_EQ(tmp._110(), f32x4(1.0f, 1.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp._111(), f32x4(1.0f, 1.0f, 1.0f, 5.0f));
+    ASSERT_EQ(tmp._1xx(), f32x3(1.0f, 2.0f, 2.0f));
+    ASSERT_EQ(tmp._1xy(), f32x3(1.0f, 2.0f, 3.0f));
+    ASSERT_EQ(tmp._1xz(), f32x3(1.0f, 2.0f, 4.0f));
+    ASSERT_EQ(tmp._1x0(), f32x3(1.0f, 2.0f, 0.0f));
+    ASSERT_EQ(tmp._1x1(), f32x3(1.0f, 2.0f, 1.0f));
+    ASSERT_EQ(tmp._1yx(), f32x3(1.0f, 3.0f, 2.0f));
+    ASSERT_EQ(tmp._1yy(), f32x3(1.0f, 3.0f, 3.0f));
+    ASSERT_EQ(tmp._1yz(), f32x3(1.0f, 3.0f, 4.0f));
+    ASSERT_EQ(tmp._1y0(), f32x3(1.0f, 3.0f, 0.0f));
+    ASSERT_EQ(tmp._1y1(), f32x3(1.0f, 3.0f, 1.0f));
+    ASSERT_EQ(tmp._1zx(), f32x3(1.0f, 4.0f, 2.0f));
+    ASSERT_EQ(tmp._1zy(), f32x3(1.0f, 4.0f, 3.0f));
+    ASSERT_EQ(tmp._1zz(), f32x3(1.0f, 4.0f, 4.0f));
+    ASSERT_EQ(tmp._1z0(), f32x3(1.0f, 4.0f, 0.0f));
+    ASSERT_EQ(tmp._1z1(), f32x3(1.0f, 4.0f, 1.0f));
+    ASSERT_EQ(tmp._10x(), f32x3(1.0f, 0.0f, 2.0f));
+    ASSERT_EQ(tmp._10y(), f32x3(1.0f, 0.0f, 3.0f));
+    ASSERT_EQ(tmp._10z(), f32x3(1.0f, 0.0f, 4.0f));
+    ASSERT_EQ(tmp._100(), f32x3(1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tmp._101(), f32x3(1.0f, 0.0f, 1.0f));
+    ASSERT_EQ(tmp._11x(), f32x3(1.0f, 1.0f, 2.0f));
+    ASSERT_EQ(tmp._11y(), f32x3(1.0f, 1.0f, 3.0f));
+    ASSERT_EQ(tmp._11z(), f32x3(1.0f, 1.0f, 4.0f));
+    ASSERT_EQ(tmp._110(), f32x3(1.0f, 1.0f, 0.0f));
+    ASSERT_EQ(tmp._111(), f32x3(1.0f, 1.0f, 1.0f));
 }
 
-TEST(Vec, Swizzle4) {
+TEST(numeric_array, Swizzle4) {
     ttlet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
     // Returns a 4D vector.

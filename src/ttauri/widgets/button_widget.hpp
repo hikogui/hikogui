@@ -68,7 +68,7 @@ public:
         tt_assume(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
-            context.corner_shapes = f32x4{theme::global->roundingRadius};
+            context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
             if (*this->value) {
                 context.fill_color = theme::global->accentColor;
             }

@@ -6,8 +6,7 @@
 #include "../PixelMap.hpp"
 #include "../R16G16B16A16SFloat.hpp"
 #include "../mat.hpp"
-#include "../vec.hpp"
-#include "../ivec.hpp"
+#include "../numeric_array.hpp"
 #include "../URL.hpp"
 #include "../ResourceView.hpp"
 #include "../byte_string.hpp"
@@ -61,8 +60,8 @@ public:
     png(URL const &url) :
         png(url.loadView()) {}
 
-    ivec extent() const noexcept {
-        return ivec{width, height};
+    i32x4 extent() const noexcept {
+        return i32x4{width, height};
     }
 
     void decode_image(PixelMap<R16G16B16A16SFloat> &image) const;
@@ -90,7 +89,7 @@ private:
     void unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void data_to_image(bstring bytes, PixelMap<R16G16B16A16SFloat> &image) const noexcept;
     void data_to_image_line(std::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &row) const noexcept;
-    ivec extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
+    i32x4 extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
 
 };
 

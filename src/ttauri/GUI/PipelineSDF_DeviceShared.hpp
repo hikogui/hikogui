@@ -10,7 +10,7 @@
 #include "../required.hpp"
 #include "../logger.hpp"
 #include "../vspan.hpp"
-#include "../ivec.hpp"
+#include "../numeric_array.hpp"
 #include "../rect.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
@@ -20,7 +20,6 @@
 namespace tt {
 class gui_device_vulkan;
 template<typename T> struct PixelMap;
-class f32x4;
 class mat;
 }
 
@@ -68,7 +67,7 @@ struct DeviceShared final {
     vk::Sampler atlasSampler;
     vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
 
-    ivec atlasAllocationPosition = {};
+    i32x4 atlasAllocationPosition = {};
     /// During allocation on a row, we keep track of the tallest glyph.
     int atlasAllocationMaxHeight = 0;
 

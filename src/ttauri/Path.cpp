@@ -302,28 +302,28 @@ void Path::arcTo(float radius, f32x4 position) noexcept
     ttlet Vm2 = P2 - Pm;
 
     // Calculate the half angle between vectors P0 - C and P2 - C.
-    ttlet alpha = std::asin(length(Vm2) / r);
+    ttlet alpha = std::asin(length<2>(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
-    ttlet C = Pm + normal(Vm2) * f32x4{std::cos(alpha)} * f32x4{radius};
+    ttlet C = Pm + normal<2>(Vm2) * std::cos(alpha) * radius;
 
     // Calculate vectors from center to end points.
     ttlet VC1 = P1 - C;
     ttlet VC2 = P2 - C;
 
-    ttlet q1 = length_squared(VC1);
-    ttlet q2 = q1 + dot(VC1, VC2);
-    ttlet k2 = (4.0f/3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / viktor_cross(VC1, VC2);
+    ttlet q1 = length_squared<2>(VC1);
+    ttlet q2 = q1 + dot<2>(VC1, VC2);
+    ttlet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / viktor_cross<2>(VC1, VC2);
 
     // Calculate the control points.
-    ttlet C1 = f32x4::point(
+    ttlet C1 = f32x4::point({
         (C.x() + VC1.x()) - k2 * VC1.y(),
         (C.y() + VC1.y()) + k2 * VC1.x()
-    );
-    ttlet C2 = f32x4::point(
+    });
+    ttlet C2 = f32x4::point({
         (C.x() + VC2.x()) + k2 * VC2.y(),
         (C.y() + VC2.y()) - k2 * VC2.x()
-    );
+    });
 
     cubicCurveTo(C1, C2, P2);
 }
@@ -511,9 +511,9 @@ Path Path::centerScale(f32x4 extent, float padding) const noexcept
     );
     bbox *= scale;
     
-    ttlet offset = -bbox.offset() + (extent - bbox.extent()) * f32x4{0.5f};
+    ttlet offset = -bbox.offset() + (extent - bbox.extent()) * 0.5;
 
-    return (mat::T(offset) * mat::S(scale, scale, 1.0f)) * *this;
+    return (mat::T(offset) * mat::S(scale, scale, 1.0)) * *this;
 }
 
 

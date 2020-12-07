@@ -9,7 +9,7 @@ gui_system_vulkan_macos::gui_system_vulkan_macos(gui_systemDelegate *delegate) :
     hostFrequency = narrow_cast<uint64_t>(CVGetHostClockFrequency());
 
     // Start update loop.
-    CVDisplayLinkCreateWithActiveCGDisplays(&updateAndRenderThread);
+    CVDisplayLinkCreateWithActi32x4GDisplays(&updateAndRenderThread);
     CVDisplayLinkSetOutputCallback(updateAndRenderThread, &gui_system_vulkan_win32::updateAndRenderLoop, static_cast<void *>(this));
     CVDisplayLinkStart(updateAndRenderThread);
 }

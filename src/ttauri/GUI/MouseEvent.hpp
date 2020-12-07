@@ -4,7 +4,7 @@
 #pragma once
 
 #include "MouseButtons.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../hires_utc_clock.hpp"
 
 namespace tt {
@@ -49,7 +49,7 @@ struct MouseEvent {
         return type == Type::Drag ? position - downPosition : f32x4{};
     }
 
-    static MouseEvent entered(f32x4 position=f32x4::point(0.0f, 0.0f)) noexcept {
+    static MouseEvent entered(f32x4 position=f32x4::point({0.0f, 0.0f})) noexcept {
         MouseEvent event;
         event.position = position;
         event.type = MouseEvent::Type::Entered;

@@ -8,7 +8,7 @@
 #include "../required.hpp"
 #include "../alignment.hpp"
 #include "../Path.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../nested_vector_iterator.hpp"
 #include <string_view>
 #include <optional>

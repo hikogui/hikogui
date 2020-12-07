@@ -5,7 +5,7 @@
 
 #include "required.hpp"
 #include "cast.hpp"
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include "mat.hpp"
 #include <vector>
 
@@ -24,7 +24,7 @@ struct BezierPoint {
         tt_assume(p.is_point());
     }
 
-    BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint(f32x4::point(x, y), type) {}
+    BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint(f32x4::point({x, y}), type) {}
 
     /*! Normalize points in a list.
      * The following normalizations are executed:

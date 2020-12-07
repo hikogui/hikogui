@@ -5,7 +5,7 @@
 
 #include "../required.hpp"
 #include "../aarect.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

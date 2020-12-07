@@ -101,7 +101,7 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noe
     }
 
     // Bottom of last line.
-    size.height(size.height() + lines.back().descender + lines.back().lineGap);
+    size.height() = size.height() + lines.back().descender + lines.back().lineGap;
 
     return size;
 }

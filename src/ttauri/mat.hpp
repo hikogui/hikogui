@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include "aarect.hpp"
 #include "rect.hpp"
 #include <fmt/format.h>
@@ -46,10 +46,10 @@ public:
         float i02, float i12, float i22, float i32,
         float i03, float i13, float i23, float i33
     ) :
-        col0(i00, i01, i02, i03),
-        col1(i10, i11, i12, i13),
-        col2(i20, i21, i22, i23),
-        col3(i30, i31, i32, i33) {}
+        col0({i00, i01, i02, i03}),
+        col1({i10, i11, i12, i13}),
+        col2({i20, i21, i22, i23}),
+        col3({i30, i31, i32, i33}) {}
 
     /** Optimized scale matrix.
     */
@@ -63,7 +63,7 @@ public:
         }
 
         S(float x, float y, float z=1.0f) noexcept :
-            s(x, y, z, 1.0f) {}
+            s({x, y, z, 1}) {}
 
         /** Get a scaling matrix to uniformly scale a needle to fit in the haystack.
          */
@@ -88,7 +88,7 @@ public:
         }
 
         [[nodiscard]] friend f32x4 operator*(S const &lhs, f32x4 const &rhs) noexcept {
-            return f32x4{lhs.s * rhs};
+            return lhs.s * rhs;
         }
 
         /** Matrix/Vector multiplication.
@@ -110,7 +110,7 @@ public:
         /** Invert matrix.
         */
         [[nodiscard]] friend S operator~(S const &rhs) noexcept {
-            return S{reciprocal(rhs.s)};
+            return S{rcp(rhs.s)};
         }
     };
 
@@ -129,7 +129,7 @@ public:
             t(rhs) { tt_assume(rhs.is_vector()); }
 
         T(float x, float y, float z=0.0f) noexcept :
-            t(x, y, z) {}
+            t({x, y, z}) {}
 
         operator mat () const noexcept {
             tt_assume(t.is_vector());
@@ -149,7 +149,7 @@ public:
         }
 
         [[nodiscard]] friend f32x4 operator*(T const &lhs, f32x4 const &rhs) noexcept {
-            return f32x4{lhs.t + rhs};
+            return lhs.t + rhs;
         }
 
         /** Matrix/aarect multiplication.
@@ -197,7 +197,7 @@ public:
         }
 
         T2(float x, float y) noexcept :
-            t(x, y, 0.0f) {}
+            t({x, y, 0.0f}) {}
 
         operator mat::T () const noexcept {
             return mat::T{t};
@@ -229,7 +229,7 @@ public:
         }
 
         [[nodiscard]] friend f32x4 operator*(T2 const &lhs, f32x4 const &rhs) noexcept {
-            return f32x4{lhs.t + rhs};
+            return lhs.t + rhs;
         }
 
         [[nodiscard]] friend aarect operator*(T2 const &lhs, aarect const &rhs) noexcept {
@@ -414,7 +414,7 @@ public:
             throw std::domain_error("Divide by zero");
         }
 
-        ttlet invdet = reciprocal(det);
+        ttlet invdet = rcp(det);
 
         ttlet t = transpose(rhs);
 

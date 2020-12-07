@@ -4,7 +4,7 @@
 #pragma once
 
 #include "PipelineImage_ImageLocation.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../aarect.hpp"
 #include "../R32G32B32SFloat.hpp"
 #include "../R32G32B32A32SFloat.hpp"

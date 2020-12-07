@@ -10,8 +10,8 @@
 #include "../memory.hpp"
 #include "../cast.hpp"
 #include "../BezierCurve.hpp"
-#include "../ivec.hpp"
-#include "../iaarect.hpp"
+#include "../numeric_array.hpp"
+#include "../aarect.hpp"
 #include "../mat.hpp"
 #include <array>
 
@@ -44,9 +44,9 @@ void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
     auto imageHeight = narrow_cast<int>(std::ceil(drawExtent.height()));
 
     if (atlasAllocationPosition.y() + imageHeight > atlasImageHeight) {
-        atlasAllocationPosition.x(0); 
-        atlasAllocationPosition.y(0);
-        atlasAllocationPosition.z(atlasAllocationPosition.z() + 1);
+        atlasAllocationPosition.x() = 0; 
+        atlasAllocationPosition.y() = 0;
+        atlasAllocationPosition.z() = atlasAllocationPosition.z() + 1;
 
         if (atlasAllocationPosition.z() >= atlasMaximumNrImages) {
             LOG_FATAL("PipelineSDF atlas overflow, too many glyphs in use.");
@@ -58,13 +58,13 @@ void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
     }
 
     if (atlasAllocationPosition.x() + imageWidth > atlasImageWidth) {
-        atlasAllocationPosition.x(0);
-        atlasAllocationPosition.y(atlasAllocationPosition.y() + atlasAllocationMaxHeight);
+        atlasAllocationPosition.x() = 0;
+        atlasAllocationPosition.y() = atlasAllocationPosition.y() + atlasAllocationMaxHeight;
     }
 
     auto r = AtlasRect{atlasAllocationPosition, drawExtent};
     
-    atlasAllocationPosition.x(atlasAllocationPosition.x() + imageWidth);
+    atlasAllocationPosition.x() = atlasAllocationPosition.x() + imageWidth;
     atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, imageHeight);
 
     return r;
@@ -151,7 +151,7 @@ AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     prepareStagingPixmapForDrawing();
     auto atlas_rect = allocateRect(drawExtent);
-    auto pixmap = stagingTexture.pixelMap.submap(iaarect{ivec{}, atlas_rect.atlasExtent});
+    auto pixmap = stagingTexture.pixelMap.submap(iaarect{i32x4::point(), atlas_rect.atlasExtent});
     fill(pixmap, drawPath);
     uploadStagingPixmapToAtlas(atlas_rect);
 

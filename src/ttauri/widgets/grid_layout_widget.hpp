@@ -5,7 +5,6 @@
 
 #include "abstract_container_widget.hpp"
 #include "grid_layout_delegate.hpp"
-#include "../iaarect.hpp"
 #include "../GUI/theme.hpp"
 #include "../cell_address.hpp"
 #include "../flow_layout.hpp"

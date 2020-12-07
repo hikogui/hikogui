@@ -16,7 +16,7 @@
 #include "PipelineBox_Vertex.hpp"
 #include "PipelineImage_Vertex.hpp"
 #include "PipelineSDF_Vertex.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../mat.hpp"
 #include "../aarect.hpp"
 #include "../vspan.hpp"

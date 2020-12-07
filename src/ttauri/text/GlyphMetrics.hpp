@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../mat.hpp"
 #include "../aarect.hpp"
 
@@ -72,9 +72,9 @@ struct GlyphMetrics {
     * a potential ligature.
     */
     f32x4 advanceForGrapheme(int index) const noexcept {
-        ttlet ligatureRatio = f32x4{1.0f / numberOfGraphemes};
+        ttlet ligatureRatio = 1.0f / numberOfGraphemes;
 
-        return advance * ligatureRatio * f32x4{index};
+        return advance * ligatureRatio * narrow_cast<float>(index);
     }
 
     GlyphMetrics &scale(float rhs) noexcept

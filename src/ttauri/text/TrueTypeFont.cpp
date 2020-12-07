@@ -839,15 +839,15 @@ static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t 
     if (glyph1_id == i->left.value() && glyph2_id == i->right.value()) {
         // Writing direction is assumed horizontal.
         switch (coverage & 0xf) {
-        case 0x1: r.x(r.x() + i->value.value(unitsPerEm)); break;
-        case 0x3: r.x(std::min(r.x(), i->value.value(unitsPerEm))); break;
-        case 0x5: r.y(r.y() + i->value.value(unitsPerEm)); break;
-        case 0x7: r.y(std::min(r.y(), i->value.value(unitsPerEm))); break;
+        case 0x1: r.x() = r.x() + i->value.value(unitsPerEm); break;
+        case 0x3: r.x() = std::min(r.x(), i->value.value(unitsPerEm)); break;
+        case 0x5: r.y() = r.y() + i->value.value(unitsPerEm); break;
+        case 0x7: r.y() = std::min(r.y(), i->value.value(unitsPerEm)); break;
         // Override
-        case 0x9: r.x(i->value.value(unitsPerEm)); break;
-        case 0xb: r.x(i->value.value(unitsPerEm)); break;
-        case 0xd: r.y(i->value.value(unitsPerEm)); break;
-        case 0xf: r.y(i->value.value(unitsPerEm)); break;
+        case 0x9: r.x() = i->value.value(unitsPerEm); break;
+        case 0xb: r.x() = i->value.value(unitsPerEm); break;
+        case 0xd: r.y() = i->value.value(unitsPerEm); break;
+        case 0xf: r.y() = i->value.value(unitsPerEm); break;
         default:;
         }
     }

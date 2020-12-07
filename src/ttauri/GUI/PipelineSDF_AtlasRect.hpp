@@ -4,8 +4,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../ivec.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../aarect.hpp"
 #include <array>
 
@@ -14,12 +13,12 @@ namespace tt::PipelineSDF {
 /* A location inside the atlas where the character is located.
  */
 struct AtlasRect {
-    ivec atlasPosition;
-    ivec atlasExtent;
+    i32x4 atlasPosition;
+    i32x4 atlasExtent;
 
     std::array<f32x4,4> textureCoords;
 
-    AtlasRect(ivec atlasPosition, f32x4 drawExtent) noexcept;
+    AtlasRect(i32x4 atlasPosition, f32x4 drawExtent) noexcept;
 };
 
 }

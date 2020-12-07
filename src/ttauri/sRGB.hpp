@@ -82,6 +82,40 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
     return sRGB_gamma8_to_linear16_table[u];
 }
 
+[[nodiscard]] inline f32x4 color_from_sRGB(float r, float g, float b, float a) noexcept
+{
+    return f32x4{
+        sRGB_gamma_to_linear(narrow_cast<float>(r)),
+        sRGB_gamma_to_linear(narrow_cast<float>(g)),
+        sRGB_gamma_to_linear(narrow_cast<float>(b)),
+        a};
+}
+
+[[nodiscard]] inline f32x4 color_from_sRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
+{
+    return color_from_sRGB(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+}
+
+[[nodiscard]] inline f32x4 color_from_sRGB(std::string_view str)
+{
+    auto tmp = std::string{str};
+
+    if (tmp.starts_with("#"s)) {
+        tmp = tmp.substr(1);
+    }
+    if (std::ssize(tmp) != 6 || std::ssize(tmp) != 8) {
+        throw parse_error("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str);
+    }
+    if (std::ssize(tmp) == 6) {
+        tmp += "ff";
+    }
+
+    uint8_t r = (char_to_nibble(tmp[0]) << 4) | char_to_nibble(tmp[1]);
+    uint8_t g = (char_to_nibble(tmp[2]) << 4) | char_to_nibble(tmp[3]);
+    uint8_t b = (char_to_nibble(tmp[4]) << 4) | char_to_nibble(tmp[5]);
+    uint8_t a = (char_to_nibble(tmp[6]) << 4) | char_to_nibble(tmp[7]);
+    return color_from_sRGB(r, g, b, a);
+}
 
 }
 

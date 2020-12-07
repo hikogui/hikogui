@@ -5,6 +5,7 @@
 #include "../text/font_book.hpp"
 #include "../application.hpp"
 #include "../encoding/JSON.hpp"
+#include "../sRGB.hpp"
 
 namespace tt {
 
@@ -73,7 +74,7 @@ theme::theme(URL const &url)
         ttlet a = std::ssize(data) == 4 ? data[3] : (r.is_integer() ? datum{255} : datum{1.0});
 
         if (r.is_integer() && g.is_integer() && b.is_integer() && a.is_integer()) {
-            return f32x4::colorFromSRGB(
+            return color_from_sRGB(
                 static_cast<uint8_t>(r),
                 static_cast<uint8_t>(g),
                 static_cast<uint8_t>(b),
@@ -93,7 +94,7 @@ theme::theme(URL const &url)
     } else if (data.is_string()) {
         ttlet color_name = to_lower(static_cast<std::string>(data));
         if (color_name.starts_with("#"s)) {
-            return f32x4::colorFromSRGB(color_name);
+            return color_from_sRGB(color_name);
 
         } else if (color_name == "blue") { return blue;
         } else if (color_name == "green") { return green;

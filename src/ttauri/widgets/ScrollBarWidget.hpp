@@ -232,9 +232,9 @@ private:
         context.color = theme::global->fillColor(_semantic_layer);
         context.fill_color = theme::global->fillColor(_semantic_layer);
         if constexpr (is_vertical) {
-            context.corner_shapes = f32x4{rectangle().width() * 0.5f};
+            context.corner_shapes = f32x4::broadcast(rectangle().width() * 0.5f);
         } else {
-            context.corner_shapes = f32x4{rectangle().height() * 0.5f};
+            context.corner_shapes = f32x4::broadcast(rectangle().height() * 0.5f);
         }
         context.draw_box_with_border_inside(rectangle());
     }
@@ -247,9 +247,9 @@ private:
         context.fill_color = theme::global->fillColor(_semantic_layer + 1);
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         if constexpr (is_vertical) {
-            context.corner_shapes = f32x4{slider_rectangle.width() * 0.5f};
+            context.corner_shapes = f32x4::broadcast(slider_rectangle.width() * 0.5f);
         } else {
-            context.corner_shapes = f32x4{slider_rectangle.height() * 0.5f};
+            context.corner_shapes = f32x4::broadcast(slider_rectangle.height() * 0.5f);
         }
         context.draw_box_with_border_inside(slider_rectangle);
     }

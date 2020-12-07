@@ -4,7 +4,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "iaarect.hpp"
+#include "aarect.hpp"
 #include <span>
 #include <string>
 #include <algorithm>
@@ -145,7 +145,7 @@ struct PixelMap {
     *
     * @param extent The width and height of the image.
     */
-    PixelMap(ivec extent) noexcept : PixelMap(extent.x(), extent.y()) {}
+    PixelMap(i32x4 extent) noexcept : PixelMap(extent.x(), extent.y()) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixel A pointer to pixels received from the API.
@@ -158,14 +158,14 @@ struct PixelMap {
      * @param pixel A pointer to pixels received from the API.
      * @param extent The width and height of the image.
      */
-    PixelMap(T *pixels, ivec extent) noexcept : PixelMap(pixels, extent.x(), extent.y()) {}
+    PixelMap(T *pixels, i32x4 extent) noexcept : PixelMap(pixels, extent.x(), extent.y()) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixel A pointer to pixels received from the API.
      * @param extent The width and height of the image.
      * @param stride Number of pixel elements until the next row.
      */
-    PixelMap(T *pixels, ivec extent, ssize_t stride) noexcept : PixelMap(pixels, extent.x(), extent.y(), stride) {}
+    PixelMap(T *pixels, i32x4 extent, ssize_t stride) noexcept : PixelMap(pixels, extent.x(), extent.y(), stride) {}
 
     ~PixelMap() {
         if (selfAllocated) {
@@ -222,8 +222,8 @@ struct PixelMap {
         return *this;
     }
 
-    ivec extent() const noexcept {
-        return {width, height};
+    i32x4 extent() const noexcept {
+        return {narrow_cast<int>(width), narrow_cast<int>(height)};
     }
 
     /** Get a (smaller) view of the map.
@@ -231,18 +231,10 @@ struct PixelMap {
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
     PixelMap<T> submap(iaarect rect) const noexcept {
-        tt_assert(
-            (rect.x1() >= 0) &&
-            (rect.y2() >= 0) &&
-            (rect.width() >= 0) &&
-            (rect.height() >= 0)
-        );
-        tt_assert(
-            (rect.x2() <= width) &&
-            (rect.y2() <= height)
-        );
+        tt_assume((rect.left() >= 0) && (rect.bottom() >= 0));
+        tt_assert((rect.right() <= width) && (rect.top() <= height));
 
-        ttlet offset = rect.y1() * stride + rect.x1();
+        ttlet offset = rect.bottom() * stride + rect.left();
 
         return { pixels + offset, rect.width(), rect.height(), stride };
     }

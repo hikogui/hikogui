@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/vec.hpp"
+#include "ttauri/numeric_array.hpp"
 #include "ttauri/mat.hpp"
 #include "ttauri/required.hpp"
 #include "ttauri/math.hpp"
@@ -13,7 +13,7 @@ using namespace std;
 using namespace tt;
 
 #define ASSERT_NEAR_VEC(lhs, rhs, abs_err)\
-    ASSERT_TRUE(length(lhs - rhs) < abs_err)
+    ASSERT_TRUE(length<4>(lhs - rhs) < abs_err)
 
 TEST(Mat, Translate) {
     ttlet tmp = f32x4{2.0, 3.0, 4.0, 1.0};
@@ -96,10 +96,10 @@ TEST(Mat, Invert) {
 
     auto sRGB_to_XYZ = ~XYZ_to_sRGB;
 
-    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<0>(), f32x4(0.41239080, 0.21263901, 0.01933082), 0.001);
-    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<1>(), f32x4(0.35758434, 0.71516868, 0.11919478), 0.001);
-    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<2>(), f32x4(0.18048079, 0.07219232, 0.95053215), 0.001);
-    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<3>(), f32x4(0.0, 0.0, 0.0, 1.0), 0.001);
+    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<0>(), f32x4(0.41239080f, 0.21263901f, 0.01933082f), 0.001);
+    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<1>(), f32x4(0.35758434f, 0.71516868f, 0.11919478f), 0.001);
+    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<2>(), f32x4(0.18048079f, 0.07219232f, 0.95053215f), 0.001);
+    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<3>(), f32x4(0.0f, 0.0f, 0.0f, 1.0f), 0.001);
 
 }
 

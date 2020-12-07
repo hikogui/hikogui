@@ -54,9 +54,9 @@ void DeviceShared::freePages(std::vector<Page> const &pages) noexcept
     atlasFreePages.insert(atlasFreePages.end(), pages.begin(), pages.end());
 }
 
-Image DeviceShared::makeImage(const ivec extent) noexcept
+Image DeviceShared::makeImage(const i32x4 extent) noexcept
 {
-    ttlet pageExtent = ivec{
+    ttlet pageExtent = i32x4{
         (extent.x() + (Page::width - 1)) / Page::width,
         (extent.y() + (Page::height - 1)) / Page::height
     };
@@ -78,7 +78,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
     // Start with the actual image inside the stagingImage.
     auto rectangle = iaarect{
-        ivec{Page::border, Page::border},
+        i32x4::point(Page::border, Page::border),
         image.extent
     };
     // Add one pixel of border around the actual image and keep extending
@@ -110,19 +110,19 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 
         ttlet imageRect = image.indexToRect(index);
         // Adjust the position to be inside the stagingImage, excluding its border.
-        ttlet imageRectInStagingImage = imageRect + ivec(Page::border, Page::border);
+        ttlet imageRectInStagingImage = imageRect + i32x4(Page::border, Page::border);
 
         // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbor sampling
         // on the edge of a page.
         ttlet imageRectToCopy = expand(imageRectInStagingImage, Page::border);
 
         // We are copying the border into the atlas as well.
-        ttlet atlasPositionIncludingBorder = getAtlasPositionFromPage(page) - ivec(Page::border, Page::border);
+        ttlet atlasPositionIncludingBorder = getAtlasPositionFromPage(page) - i32x4(Page::border, Page::border);
 
         auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPositionIncludingBorder.z());
         regionsToCopy.push_back({
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { narrow_cast<int32_t>(imageRectToCopy.x1()), narrow_cast<int32_t>(imageRectToCopy.y1()), 0 },
+            { narrow_cast<int32_t>(imageRectToCopy.left()), narrow_cast<int32_t>(imageRectToCopy.bottom()), 0 },
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
             { narrow_cast<int32_t>(atlasPositionIncludingBorder.x()), narrow_cast<int32_t>(atlasPositionIncludingBorder.y()), 0 },
             { narrow_cast<uint32_t>(imageRectToCopy.width()), narrow_cast<uint32_t>(imageRectToCopy.height()), 1}

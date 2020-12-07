@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "vec.hpp"
+#include "numeric_array.hpp"
 #include "aarect.hpp"
 #include "alignment.hpp"
 #include <array>
 
 namespace tt {
 
-/** Class which represents an axis-aligned rectangle.
+/** Class which represents an rectangle.
  */
 class rect {
     /** Intrinsic of the rectangle.
@@ -53,22 +53,22 @@ public:
 
     /** Get the right vector of a rectangle.
      */
-    f32x4 right() const noexcept {
+    f32x4 right_vector() const noexcept {
         return corner<1>() - corner<0>();
     }
 
     /** Get the up vector of a rectangle.
     */
-    f32x4 up() const noexcept {
+    f32x4 up_vector() const noexcept {
         return corner<2>() - corner<0>();
     }
 
     float width() const noexcept {
-        return length(right());
+        return length<3>(right_vector());
     }
 
     float height() const noexcept {
-        return length(up());
+        return length<3>(up_vector());
     }
 
     f32x4 extent() const noexcept {
@@ -92,8 +92,8 @@ public:
     }
 
     [[nodiscard]] friend rect expand(rect const &lhs, float rhs) noexcept {
-        ttlet rightDirection = normalize(lhs.right());
-        ttlet upDirection = normalize(lhs.up());
+        ttlet rightDirection = normalize<3>(lhs.right_vector());
+        ttlet upDirection = normalize<3>(lhs.up_vector());
 
         return {
             lhs.corner<0>() + rhs * -rightDirection + rhs * -upDirection,

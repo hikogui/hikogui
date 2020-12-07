@@ -9,16 +9,13 @@
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../mat.hpp"
-#include "../ivec.hpp"
-#include "../iaarect.hpp"
+#include "../numeric_array.hpp"
+#include "../aarect.hpp"
 
 namespace tt::PipelineImage {
 
 Image::Image(Image &&other) noexcept :
-    parent(other.parent),
-    extent(other.extent),
-    pageExtent(other.pageExtent),
-    pages(std::move(other.pages))
+    parent(other.parent), extent(other.extent), pageExtent(other.pageExtent), pages(std::move(other.pages))
 {
     other.parent = nullptr;
 }
@@ -59,23 +56,21 @@ void Image::upload(PixelMap<R16G16B16A16SFloat> const &image) noexcept
 
 iaarect Image::indexToRect(int const pageIndex) const noexcept
 {
-    ttlet pageWH = ivec{Page::width, Page::height};
+    ttlet pageWH = i32x4{Page::width, Page::height};
 
-    ttlet p0 = ivec::point(
-        pageIndex % pageExtent.x(),
-        pageIndex / pageExtent.x()
-    ) * pageWH;
+    ttlet p0 = i32x4::point(i32x4{pageIndex % pageExtent.x(), pageIndex / pageExtent.x()} * pageWH);
 
     // Limit the rectangle to the size of the image.
-    ttlet p3 = min(p0 + pageWH, extent);
+    ttlet p3 = min(p0 + pageWH, i32x4::point(extent));
 
     return iaarect::p0p3(p0, p3);
 }
 
-static std::tuple<f32x4, f32x4, bool>calculatePosition(int x, int y, int width, int height, mat transform, aarect clippingRectangle)
+static std::tuple<f32x4, f32x4, bool>
+calculatePosition(int x, int y, int width, int height, mat transform, aarect clippingRectangle)
 {
-    auto p = transform * f32x4::point(x, y);
-    return {p, f32x4{width, height}, clippingRectangle.contains(p)};
+    auto p = transform * f32x4::point(narrow_cast<float>(x), narrow_cast<float>(y));
+    return {p, f32x4{narrow_cast<float>(width), narrow_cast<float>(height)}, clippingRectangle.contains(p)};
 }
 
 void Image::calculateVertexPositions(mat transform, aarect clippingRectangle)
@@ -111,7 +106,8 @@ void Image::calculateVertexPositions(mat transform, aarect clippingRectangle)
  *    v   \ |
  *    0 --> 1
  */
-void Image::placePageVertices(vspan<Vertex> &vertices, int const index, aarect clippingRectangle) const {
+void Image::placePageVertices(vspan<Vertex> &vertices, int const index, aarect clippingRectangle) const
+{
     ttlet page = pages.at(index);
 
     if (page.isFullyTransparent()) {
@@ -126,10 +122,10 @@ void Image::placePageVertices(vspan<Vertex> &vertices, int const index, aarect c
     ttlet vertexIndex = vertexY * vertexStride + vertexX;
 
     // Point, Extent, Inside
-    ttlet [p1, e1, i1] = tmpVertexPositions[vertexIndex];
-    ttlet [p2, e2, i2] = tmpVertexPositions[vertexIndex + 1];
-    ttlet [p3, e3, i3] = tmpVertexPositions[vertexIndex + vertexStride];
-    ttlet [p4, e4, i4] = tmpVertexPositions[vertexIndex + vertexStride + 1];
+    ttlet[p1, e1, i1] = tmpVertexPositions[vertexIndex];
+    ttlet[p2, e2, i2] = tmpVertexPositions[vertexIndex + 1];
+    ttlet[p3, e3, i3] = tmpVertexPositions[vertexIndex + vertexStride];
+    ttlet[p4, e4, i4] = tmpVertexPositions[vertexIndex + vertexStride + 1];
 
     if (!(i1 || i2 || i3 || i4)) {
         // Clipped page.
@@ -146,11 +142,12 @@ void Image::placePageVertices(vspan<Vertex> &vertices, int const index, aarect c
 }
 
 /*! Place vertices for this image.
-* An image is build out of atlas pages, that need to be individual rendered.
-*
-* \param position The position (x, y) from the left-top of the window in pixels. Z equals depth.
-* \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
-*/
+ * An image is build out of atlas pages, that need to be individual rendered.
+ *
+ * \param position The position (x, y) from the left-top of the window in pixels. Z equals depth.
+ * \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in
+ * radials.
+ */
 void Image::placeVertices(vspan<Vertex> &vertices, mat transform, aarect clippingRectangle)
 {
     calculateVertexPositions(transform, clippingRectangle);
@@ -160,4 +157,4 @@ void Image::placeVertices(vspan<Vertex> &vertices, mat transform, aarect clippin
     }
 }
 
-}
+} // namespace tt::PipelineImage

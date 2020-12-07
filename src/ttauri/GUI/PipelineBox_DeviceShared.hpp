@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../vec.hpp"
+#include "../numeric_array.hpp"
 #include "../rect.hpp"
 #include "../vspan.hpp"
 #include <vma/vk_mem_alloc.h>

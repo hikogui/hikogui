@@ -181,6 +181,8 @@ constexpr size_t cache_line_size =
     Processor::current == Processor::ARM ? 64 :
     0;
 
+constexpr bool has_sse = Processor::current == Processor::x64;
+
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 using HANDLE = void *;
 using file_handle = HANDLE;
