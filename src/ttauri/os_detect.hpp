@@ -191,7 +191,7 @@ using file_handle = HANDLE;
 using file_handle = int;
 
 #else
-#error "FileHandle Not implemented."
+#error "file_handle Not implemented."
 #endif
 
 }

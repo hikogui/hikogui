@@ -24,11 +24,12 @@ def git_get_describe(g):
     parts = output.strip().split("-")
     version_parts = parts[0].split(".")
 
-    g.major_version = int(version_parts[0])
+    g.major_version = int(version_parts[0][1:])
     if len(version_parts) >= 2:
         g.minor_version = int(version_parts[1])
     if len(version_parts) >= 3:
         g.patch_version = int(version_parts[2])
+
     g.nr_commits = int(parts[1])
     g.commit_sha = parts[2][1:] # Strip of the leading 'g'
     g.is_dirty = len(parts) >= 4 and parts[3] == "dirty"
@@ -46,6 +47,19 @@ class GitInformation:
         self.remote = ""
         self.remote_short = ""
 
+    def __str__(self):
+        s = "v{}.{}.{}".format(self.major_version, self.minor_version, self.patch_version)
+        if self.nr_commits:
+            s += "+" + str(self.nr_commits)
+        if self.is_dirty:
+            s += "D"
+        if self.branch != "master":
+            s += "-" + self.branch
+
+        s += "-" + self.commit_sha
+        
+        return s
+
 
 def git_information(directory):
     os.chdir(directory)
@@ -53,7 +67,7 @@ def git_information(directory):
     g = GitInformation()
     git_get_branch(g)
     git_get_describe(g)
-
+    return g
 
 def main():
     print("branch='{}'".format(git_information(".")))
