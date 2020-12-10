@@ -59,7 +59,7 @@ public:
         explicit S(f32x4 rhs) noexcept :
             s(rhs)
         {
-            tt_assume(rhs.is_point());
+            tt_axiom(rhs.is_point());
         }
 
         S(float x, float y, float z=1.0f) noexcept :
@@ -68,8 +68,8 @@ public:
         /** Get a scaling matrix to uniformly scale a needle to fit in the haystack.
          */
         static S uniform2D(f32x4 haystack, f32x4 needle) noexcept {
-            tt_assume(haystack.x() != 0.0f && haystack.y() != 0.0f);
-            tt_assume(needle.x() != 0.0f && needle.y() != 0.0f);
+            tt_axiom(haystack.x() != 0.0f && haystack.y() != 0.0f);
+            tt_axiom(needle.x() != 0.0f && needle.y() != 0.0f);
 
             ttlet non_uniform_scale = haystack.xyxy() / needle.xyxy();
             ttlet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
@@ -79,7 +79,7 @@ public:
         /** Create a scaling matrix.
         */
         operator mat () const noexcept {
-            tt_assume(s.is_point());
+            tt_axiom(s.is_point());
             return { s.x000(), s._0y00(), s._00z0(), s._000w() };
         }
 
@@ -126,13 +126,13 @@ public:
         T &operator=(T &&rhs) noexcept = default;
 
         explicit T(f32x4 rhs) noexcept :
-            t(rhs) { tt_assume(rhs.is_vector()); }
+            t(rhs) { tt_axiom(rhs.is_vector()); }
 
         T(float x, float y, float z=0.0f) noexcept :
             t({x, y, z}) {}
 
         operator mat () const noexcept {
-            tt_assume(t.is_vector());
+            tt_axiom(t.is_vector());
             return { t._1000(), t._0100(), t._0010(), t.xyz1() };
         }
 
@@ -187,13 +187,13 @@ public:
         T2() noexcept : t() {}
 
         explicit T2(f32x4 rhs) noexcept : t(rhs) {
-            tt_assume(rhs.is_vector());
-            tt_assume(rhs.z() == 0.0f);
+            tt_axiom(rhs.is_vector());
+            tt_axiom(rhs.z() == 0.0f);
         }
 
         explicit T2(aarect rhs) noexcept : t(rhs.offset()) {
-            tt_assume(rhs.offset().is_vector());
-            tt_assume(rhs.offset().z() == 0.0f);
+            tt_axiom(rhs.offset().is_vector());
+            tt_axiom(rhs.offset().z() == 0.0f);
         }
 
         T2(float x, float y) noexcept :
@@ -204,7 +204,7 @@ public:
         }
 
         operator mat () const noexcept {
-            tt_assume(t.is_vector());
+            tt_axiom(t.is_vector());
             return { t._1000(), t._0100(), t._0010(), t.xyz1() };
         }
 

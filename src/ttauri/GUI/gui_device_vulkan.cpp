@@ -245,7 +245,7 @@ void gui_device_vulkan::initializeDevice(gui_window const &window)
 
 void gui_device_vulkan::initializeQuadIndexBuffer()
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     using vertex_index_type = uint16_t;
     constexpr ssize_t maximum_number_of_vertices = 1 << (sizeof(vertex_index_type) * CHAR_BIT);
@@ -327,7 +327,7 @@ void gui_device_vulkan::destroyQuadIndexBuffer()
 
 std::vector<std::pair<uint32_t, uint8_t>> gui_device_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface) const
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     LOG_INFO(" - Scoring QueueFamilies");
 
@@ -382,7 +382,7 @@ std::vector<std::pair<uint32_t, uint8_t>> gui_device_vulkan::findBestQueueFamily
 
 int gui_device_vulkan::score(vk::SurfaceKHR surface) const
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto formats = physicalIntrinsic.getSurfaceFormatsKHR(surface);
     auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
@@ -701,7 +701,7 @@ vk::ShaderModule gui_device_vulkan::loadShader(uint32_t const *data, size_t size
     LOG_INFO("Loading shader");
 
     // Check uint32_t alignment of pointer.
-    tt_assume((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);
+    tt_axiom((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);
 
     return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
 }

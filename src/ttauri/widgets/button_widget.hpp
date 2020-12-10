@@ -41,7 +41,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::middle_center, *label, theme::global->labelStyle);
@@ -54,7 +54,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
@@ -65,7 +65,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);

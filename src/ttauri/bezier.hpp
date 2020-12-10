@@ -34,7 +34,7 @@ inline std::array<T, 4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
 
 inline f32x4 bezierPointAt(f32x4 P1, f32x4 P2, float t) noexcept
 {
-    tt_assume(P1.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && P2.is_point());
 
     ttlet[a, b] = bezierToPolynomial(P1, P2);
     return a * t + b;
@@ -42,7 +42,7 @@ inline f32x4 bezierPointAt(f32x4 P1, f32x4 P2, float t) noexcept
 
 inline f32x4 bezierPointAt(f32x4 P1, f32x4 C, f32x4 P2, float t) noexcept
 {
-    tt_assume(P1.is_point() && C.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && C.is_point() && P2.is_point());
 
     ttlet[a, b, c] = bezierToPolynomial(P1, C, P2);
     return a * t * t + b * t + c;
@@ -50,7 +50,7 @@ inline f32x4 bezierPointAt(f32x4 P1, f32x4 C, f32x4 P2, float t) noexcept
 
 inline f32x4 bezierPointAt(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2, float t) noexcept
 {
-    tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
 
     ttlet[a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     return a * t * t * t + b * t * t + c * t + d;
@@ -58,19 +58,19 @@ inline f32x4 bezierPointAt(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2, float t) noex
 
 inline f32x4 bezierTangentAt(f32x4 P1, f32x4 P2, float t) noexcept
 {
-    tt_assume(P1.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && P2.is_point());
     return P2 - P1;
 }
 
 inline f32x4 bezierTangentAt(f32x4 P1, f32x4 C, f32x4 P2, float t) noexcept
 {
-    tt_assume(P1.is_point() && C.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && C.is_point() && P2.is_point());
     return 2 * t * (P2 - 2 * C + P1) + 2 * (C - P1);
 }
 
 inline f32x4 bezierTangentAt(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2, float t) noexcept
 {
-    tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
     return 3 * t * t * (P2 - 3 * C2 + 3 * C1 - P1) + 6 * t * (C2 - 2 * C1 + P1) + 3 * (C1 - P1);
 }
 
@@ -98,7 +98,7 @@ inline results<float, 3> bezierFindT(float P1, float C1, float C2, float P2, flo
  */
 inline results<float, 1> bezierFindTForNormalsIntersectingPoint(f32x4 P1, f32x4 P2, f32x4 P) noexcept
 {
-    tt_assume(P1.is_point() && P2.is_point() && P.is_point());
+    tt_axiom(P1.is_point() && P2.is_point() && P.is_point());
 
     auto t_above = dot<2>(P - P1, P2 - P1);
     auto t_below = dot<2>(P2 - P1, P2 - P1);
@@ -115,7 +115,7 @@ inline results<float, 1> bezierFindTForNormalsIntersectingPoint(f32x4 P1, f32x4 
  */
 inline results<float, 3> bezierFindTForNormalsIntersectingPoint(f32x4 P1, f32x4 C, f32x4 P2, f32x4 P) noexcept
 {
-    tt_assume(P1.is_point() && C.is_point() && P2.is_point() && P.is_point());
+    tt_axiom(P1.is_point() && C.is_point() && P2.is_point() && P.is_point());
 
     ttlet p = P - P1;
     ttlet p1 = C - P1;
@@ -137,7 +137,7 @@ inline results<float, 3> bezierFindTForNormalsIntersectingPoint(f32x4 P1, f32x4 
  */
 inline results<float, 1> bezierFindX(f32x4 P1, f32x4 P2, float y) noexcept
 {
-    tt_assume(P1.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && P2.is_point());
 
     if (y < std::min({P1.y(), P2.y()}) || y > std::max({P1.y(), P2.y()})) {
         return {};
@@ -162,7 +162,7 @@ inline results<float, 1> bezierFindX(f32x4 P1, f32x4 P2, float y) noexcept
  */
 inline results<float, 2> bezierFindX(f32x4 P1, f32x4 C, f32x4 P2, float y) noexcept
 {
-    tt_assume(P1.is_point() && C.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && C.is_point() && P2.is_point());
 
     results<float, 2> r{};
 
@@ -188,7 +188,7 @@ inline results<float, 2> bezierFindX(f32x4 P1, f32x4 C, f32x4 P2, float y) noexc
  */
 inline results<float, 3> bezierFindX(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2, float y) noexcept
 {
-    tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
 
     results<float, 3> r{};
 
@@ -210,7 +210,7 @@ inline results<float, 3> bezierFindX(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2, flo
  */
 inline float bezierFlatness(f32x4 P1, f32x4 P2) noexcept
 {
-    tt_assume(P1.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && P2.is_point());
 
     return 1.0f;
 }
@@ -221,7 +221,7 @@ inline float bezierFlatness(f32x4 P1, f32x4 P2) noexcept
 
 inline float bezierFlatness(f32x4 P1, f32x4 C, f32x4 P2) noexcept
 {
-    tt_assume(P1.is_point() && C.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && C.is_point() && P2.is_point());
 
     ttlet P1P2 = length<2>(P2 - P1);
     if (P1P2 == 0.0f) {
@@ -239,7 +239,7 @@ inline float bezierFlatness(f32x4 P1, f32x4 C, f32x4 P2) noexcept
 
 inline float bezierFlatness(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2) noexcept
 {
-    tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
 
     ttlet P1P2 = length<2>(P2 - P1);
     if (P1P2 == 0.0f) {
@@ -254,7 +254,7 @@ inline float bezierFlatness(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2) noexcept
 
 inline std::pair<f32x4, f32x4> parrallelLine(f32x4 P1, f32x4 P2, float distance) noexcept
 {
-    tt_assume(P1.is_point() && P2.is_point());
+    tt_axiom(P1.is_point() && P2.is_point());
 
     ttlet v = P2 - P1;
     ttlet n = normal<2>(v);
@@ -265,7 +265,7 @@ inline std::pair<f32x4, f32x4> parrallelLine(f32x4 P1, f32x4 P2, float distance)
  */
 inline std::optional<f32x4> getIntersectionPoint(f32x4 A1, f32x4 A2, f32x4 B1, f32x4 B2) noexcept
 {
-    tt_assume(A1.is_point() && A2.is_point() && B1.is_point() && B2.is_point());
+    tt_axiom(A1.is_point() && A2.is_point() && B1.is_point() && B2.is_point());
 
     // convert points to vectors.
     ttlet p = A1;
@@ -298,7 +298,7 @@ inline std::optional<f32x4> getIntersectionPoint(f32x4 A1, f32x4 A2, f32x4 B1, f
  */
 inline std::optional<f32x4> getExtrapolatedIntersectionPoint(f32x4 A1, f32x4 A2, f32x4 B1, f32x4 B2) noexcept
 {
-    tt_assume(A1.is_point() && A2.is_point() && B1.is_point() && B2.is_point());
+    tt_axiom(A1.is_point() && A2.is_point() && B1.is_point() && B2.is_point());
 
     // convert points to vectors.
     ttlet p = A1;

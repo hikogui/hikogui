@@ -39,7 +39,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _on_label_stencil = stencil::make_unique(alignment::top_left, *on_label, theme::global->labelStyle);
@@ -65,7 +65,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -92,7 +92,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             draw_rail(context);
@@ -122,7 +122,7 @@ private:
 
     void draw_rail(draw_context drawContext) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         drawContext.corner_shapes = f32x4::broadcast(_rail_rectangle.height() * 0.5f);
         drawContext.draw_box_with_border_inside(_rail_rectangle);
@@ -130,7 +130,7 @@ private:
 
     void draw_slider(draw_context drawContext) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(_animation_duration);
@@ -160,7 +160,7 @@ private:
 
     void draw_label(draw_context drawContext) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (*enabled) {
             drawContext.color = theme::global->labelStyle.color;

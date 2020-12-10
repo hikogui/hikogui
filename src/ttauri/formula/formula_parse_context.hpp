@@ -31,8 +31,8 @@ struct formula_parse_context {
     }
 
     formula_parse_context& operator++() noexcept {
-        tt_assume(token_it != tokens.end());
-        tt_assume(*token_it != tokenizer_name_t::End);
+        tt_axiom(token_it != tokens.end());
+        tt_axiom(*token_it != tokenizer_name_t::End);
         ++token_it;
         return *this;
     }

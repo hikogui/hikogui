@@ -44,7 +44,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
@@ -70,7 +70,7 @@ public:
                 update_constraints_for_child(*child, index++, shared_base_line, shared_height);
             }
 
-            tt_assume(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
+            tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
             _preferred_size = {f32x4{_layout.minimum_size(), shared_height}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             _preferred_base_line = shared_base_line;
             return true;
@@ -81,7 +81,7 @@ public:
 
     void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -99,14 +99,14 @@ public:
                 update_layout_for_child(*child, index++);
             }
 
-            tt_assume(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
+            tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
         }
         abstract_container_widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             context.fill_color = theme::global->fillColor(_semantic_layer + 1);
@@ -153,7 +153,7 @@ private:
         relative_base_line &shared_base_line,
         float &shared_height) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         _layout.update(index, child.preferred_size().minimum().width(), child.width_resistance(), child.margin(), relative_base_line{});
 
@@ -163,7 +163,7 @@ private:
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
 

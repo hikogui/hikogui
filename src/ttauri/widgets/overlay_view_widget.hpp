@@ -28,12 +28,12 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
 
         // Recurse into the selected widget.
-        tt_assume(child);
+        tt_axiom(child);
         if (child->update_constraints(display_time_point, need_reconstrain) || has_updated_contraints) {
             _preferred_size = child->preferred_size();
             _preferred_base_line = child->preferred_base_line();
@@ -45,8 +45,8 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(child);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(child);
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -66,8 +66,8 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(child);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(child);
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             draw_background(context);
@@ -79,9 +79,9 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(child);
-        tt_assume(child->parent.lock().get() == this);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(child);
+        tt_axiom(child->parent.lock().get() == this);
 
         auto handled = false;
         handled |= child->handle_command_recursive(command, reject_list);
@@ -93,7 +93,7 @@ public:
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        tt_assume(child);
+        tt_axiom(child);
         return child->hitbox_test(window_position);
     }
 
@@ -101,7 +101,7 @@ public:
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        tt_assume(child);
+        tt_axiom(child);
         return child->next_keyboard_widget(currentKeyboardWidget, reverse);
     }
 

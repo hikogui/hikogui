@@ -65,7 +65,7 @@ struct skeleton_if_node final: skeleton_node {
     }
 
     datum evaluate(formula_evaluation_context &context) override {
-        tt_assume(std::ssize(expressions) == std::ssize(formula_locations));
+        tt_axiom(std::ssize(expressions) == std::ssize(formula_locations));
         for (ssize_t i = 0; i != std::ssize(expressions); ++i) {
             if (evaluate_formula_without_output(context, *expressions[i], formula_locations[i])) {
                 return evaluate_children(context, children_groups[i]);

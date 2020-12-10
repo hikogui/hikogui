@@ -12,6 +12,7 @@
 #include "math.hpp"
 #include "algorithm.hpp"
 #include "byte_string.hpp"
+#include "codec/base_n.hpp"
 #include <date/date.h>
 #include <vector>
 #include <unordered_map>
@@ -1234,7 +1235,7 @@ public:
 
         case phy_bytes_ptr_id:
             if constexpr (HasLargeObjects) {
-                return to_pretty_string(*get_pointer<bstring>());
+                return base16::encode(*get_pointer<bstring>());
             } else {
                 tt_no_default();
             }

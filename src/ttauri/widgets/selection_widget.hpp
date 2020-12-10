@@ -73,7 +73,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto updated = super::update_constraints(display_time_point, need_reconstrain);
         updated |= _overlay_widget->update_constraints(display_time_point, need_reconstrain);
@@ -108,7 +108,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
 
@@ -154,7 +154,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             draw_outline(context);
@@ -218,8 +218,8 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(_overlay_widget);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(_overlay_widget);
 
         auto handled = false;
         handled |= _overlay_widget->handle_command_recursive(command, reject_list);
@@ -247,7 +247,7 @@ public:
 
     [[nodiscard]] bool accepts_focus() const noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return *enabled;
     }
 
@@ -257,7 +257,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (_selecting) {
-            tt_assume(_overlay_widget);
+            tt_axiom(_overlay_widget);
             if (current_keyboard_widget == shared_from_this()) {
                 return _overlay_widget->next_keyboard_widget({}, reverse);
             } else {
@@ -369,7 +369,7 @@ private:
 
     void draw_outline(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
         context.draw_box_with_border_inside(rectangle());
@@ -377,7 +377,7 @@ private:
 
     void draw_left_box(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
         context.fill_color = context.color;
@@ -387,7 +387,7 @@ private:
 
     void draw_chevrons(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.2f} * context.transform;
         context.color = *enabled ? theme::global->foregroundColor : context.fill_color;
@@ -396,7 +396,7 @@ private:
 
     void draw_value(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
         context.color = *enabled ? _text_stencil_color : context.color;

@@ -61,7 +61,7 @@ void png::read_header(std::span<std::byte const> bytes, ssize_t &offset)
         png_header->signature[6] == 26 &&
         png_header->signature[7] == 10;
 
-    parse_assert(valid_signature, "invalid PNG file signature");
+    tt_parse_check(valid_signature, "invalid PNG file signature");
 }
 
 void png::generate_sRGB_transfer_function() noexcept
@@ -110,18 +110,18 @@ void png::read_IHDR(std::span<std::byte const> bytes)
     filter_method = ihdr->filter_method;
     interlace_method = ihdr->interlace_method;
 
-    parse_assert(width <= 16384, "PNG width too large.");
-    parse_assert(height <= 16384, "PNG height too large.");
-    parse_assert(bit_depth == 8 || bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
-    parse_assert(compression_method == 0, "Only deflate/inflate compression is allowed.");
-    parse_assert(filter_method == 0, "Only adaptive filtering is allowed.");
-    parse_assert(interlace_method == 0, "Only non interlaced PNG are implemented.");
+    tt_parse_check(width <= 16384, "PNG width too large.");
+    tt_parse_check(height <= 16384, "PNG height too large.");
+    tt_parse_check(bit_depth == 8 || bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
+    tt_parse_check(compression_method == 0, "Only deflate/inflate compression is allowed.");
+    tt_parse_check(filter_method == 0, "Only adaptive filtering is allowed.");
+    tt_parse_check(interlace_method == 0, "Only non interlaced PNG are implemented.");
 
     is_palletted = (color_type & 1) != 0;
     is_color = (color_type & 2) != 0;
     has_alpha = (color_type & 4) != 0;
-    parse_assert((color_type & 0xf8) == 0, "Invalid color type");
-    parse_assert(!is_palletted, "Paletted images are not supported");
+    tt_parse_check((color_type & 0xf8) == 0, "Invalid color type");
+    tt_parse_check(!is_palletted, "Paletted images are not supported");
 
     if (is_palletted) {
         samples_per_pixel = 1;
@@ -161,7 +161,7 @@ void png::read_gAMA(std::span<std::byte const> bytes)
 {
     ttlet gama = make_placement_ptr<gAMA>(bytes);
     ttlet gamma = narrow_cast<float>(gama->gamma.value()) / 100'000.0f;
-    parse_assert(gamma != 0.0f, "Gamma value can not be zero");
+    tt_parse_check(gamma != 0.0f, "Gamma value can not be zero");
      
     generate_gamma_transfer_function(1.0f / gamma);
 }
@@ -170,7 +170,7 @@ void png::read_sRGB(std::span<std::byte const> bytes)
 {
     ttlet srgb = make_placement_ptr<sRGB>(bytes);
     ttlet rendering_intent = srgb->rendering_intent;
-    parse_assert(rendering_intent <= 3, "Invalid rendering intent");
+    tt_parse_check(rendering_intent <= 3, "Invalid rendering intent");
 
     color_to_sRGB = mat::I();
     generate_sRGB_transfer_function();
@@ -217,8 +217,8 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
     while (!has_IEND) {
         ttlet header = make_placement_ptr<ChunkHeader>(bytes, offset);
         ttlet length = narrow_cast<ssize_t>(header->length.value());
-        parse_assert(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
-        parse_assert(offset + length + ssizeof(uint32_t) <= std::ssize(bytes), "Chuck extents beyond file.");
+        tt_parse_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
+        tt_parse_check(offset + length + ssizeof(uint32_t) <= std::ssize(bytes), "Chuck extents beyond file.");
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"):
@@ -257,7 +257,7 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
         [[maybe_unused]] ttlet crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
     }
 
-    parse_assert(!IHDR_bytes.empty(), "Missing IHDR chunk.");
+    tt_parse_check(!IHDR_bytes.empty(), "Missing IHDR chunk.");
     read_IHDR(IHDR_bytes);
     if (!cHRM_bytes.empty()) {
         read_cHRM(cHRM_bytes);
@@ -414,8 +414,8 @@ static int get_sample(std::span<std::byte const> bytes, ssize_t &offset, bool tw
 
 i32x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept
 {
-    tt_assume(bit_depth == 8 || bit_depth == 16);
-    tt_assume(!is_palletted);
+    tt_axiom(bit_depth == 8 || bit_depth == 16);
+    tt_axiom(!is_palletted);
 
     int r = 0;
     int g = 0;
@@ -477,7 +477,7 @@ void png::decode_image(PixelMap<R16G16B16A16SFloat> &image) const
     ttlet image_data_size = stride * height;
 
     auto image_data = decompress_IDATs(image_data_size);
-    parse_assert(std::ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
+    tt_parse_check(std::ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
 
     unfilter_lines(image_data);
 

@@ -37,7 +37,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
         if (has_updated_contraints) {
@@ -59,7 +59,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto &child = selected_child();
 
@@ -74,7 +74,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         draw_child(context, display_time_point, selected_child());
         super::draw(std::move(context), display_time_point);
@@ -88,11 +88,11 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto handled = false;
         for (auto &[tag, child] : _children) {
-            tt_assume(child->parent.lock().get() == this);
+            tt_axiom(child->parent.lock().get() == this);
             handled |= child->handle_command_recursive(command, reject_list);
         }
         handled |= super::handle_command_recursive(command, reject_list);
@@ -127,7 +127,7 @@ private:
 
     [[nodiscard]] const_iterator find_child(value_type index) const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return std::find_if(_children.cbegin(), _children.cend(), [&index](ttlet &x) {
             return x.first == index;
         });
@@ -135,7 +135,7 @@ private:
 
     [[nodiscard]] iterator find_child(value_type index) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return std::find_if(_children.begin(), _children.end(), [&index](ttlet &x) {
             return x.first == index;
         });
@@ -143,20 +143,20 @@ private:
 
     [[nodiscard]] const_iterator find_selected_child() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return find_child(*value);
     }
 
     [[nodiscard]] iterator find_selected_child() noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return find_child(*value);
     }
 
     [[nodiscard]] widget const &selected_child() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(std::ssize(_children) != 0);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(std::ssize(_children) != 0);
 
         auto i = find_selected_child();
         if (i != _children.cend()) {
@@ -168,8 +168,8 @@ private:
 
     [[nodiscard]] widget &selected_child() noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(std::ssize(_children) != 0);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(std::ssize(_children) != 0);
 
         auto i = find_selected_child();
         if (i != _children.cend()) {
@@ -181,7 +181,7 @@ private:
 
     void draw_child(draw_context context, hires_utc_clock::time_point displayTimePoint, widget &child) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         child.draw(child.make_draw_context(context), displayTimePoint);
     }
 };

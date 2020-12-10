@@ -4,9 +4,11 @@
 #pragma once
 
 #include "required.hpp"
+#include "assert.hpp"
 #include <algorithm>
 #include <tuple>
 #include <cmath>
+#include <iterator>
 
 namespace tt {
 

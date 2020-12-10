@@ -5,6 +5,7 @@
 
 #include "required.hpp"
 #include "thread.hpp"
+#include "assert.hpp"
 #include <atomic>
 #include <memory>
 #include <thread>
@@ -37,7 +38,7 @@ public:
 
     void lock() noexcept
     {
-        tt_assume(semaphore.load() <= 2);
+        tt_axiom(semaphore.load() <= 2);
 
         // Switch to 1 means there are no waiters.
         uint32_t expected = 0;
@@ -47,7 +48,7 @@ public:
 #if TT_BUILD_TYPE == TT_BT_DEBUG
         locking_thread = current_thread_id();
 #endif
-        tt_assume(semaphore.load() <= 2);
+        tt_axiom(semaphore.load() <= 2);
     }
 
     /**
@@ -58,23 +59,23 @@ public:
      * meaning that no priority inversion will take place.
      */
     bool try_lock() noexcept {
-        tt_assume(semaphore.load() <= 2);
+        tt_axiom(semaphore.load() <= 2);
 
         // Switch to 1 means there are no waiters.
         uint32_t expected = 0;
         if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::memory_order_acquire)) {
-            tt_assume(semaphore.load() <= 2);
+            tt_axiom(semaphore.load() <= 2);
             [[unlikely]] return false;
         }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
         locking_thread = current_thread_id();
 #endif
-        tt_assume(semaphore.load() <= 2);
+        tt_axiom(semaphore.load() <= 2);
         return true;
     }
 
     void unlock() noexcept {
-        tt_assume(semaphore.load() <= 2);
+        tt_axiom(semaphore.load() <= 2);
 
         if (semaphore.fetch_sub(1, std::memory_order::memory_order_relaxed) != 1) {
             [[unlikely]] semaphore.store(0, std::memory_order::memory_order_release);
@@ -87,7 +88,7 @@ public:
         locking_thread = 0;
 #endif
 
-        tt_assume(semaphore.load() <= 2);
+        tt_axiom(semaphore.load() <= 2);
     }
 
 private:
@@ -105,7 +106,7 @@ private:
 
     tt_no_inline void lock_contented(uint32_t expected) noexcept
     {
-        tt_assume(semaphore.load() <= 2);
+        tt_axiom(semaphore.load() <= 2);
 
         do {
             ttlet should_wait = expected == 2;
@@ -118,11 +119,11 @@ private:
                 // thread id. It is either the thread that made the lock, or it is zero.
                 tt_assert(locking_thread != current_thread_id());
 #endif
-                tt_assume(semaphore.load() <= 2);
+                tt_axiom(semaphore.load() <= 2);
                 semaphore.wait(2);
             }
 
-            tt_assume(semaphore.load() <= 2);
+            tt_axiom(semaphore.load() <= 2);
             // Set to 2 when acquiring the lock, so that during unlock we wake other waiting threads.
             expected = 0;
         } while (!semaphore.compare_exchange_strong(expected, 2));

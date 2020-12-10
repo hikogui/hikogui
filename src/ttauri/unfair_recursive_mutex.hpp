@@ -51,7 +51,7 @@ public:
     unfair_recursive_mutex() = default;
     ~unfair_recursive_mutex() = default;
 
-    /** This function should be used in tt_assume() to check if the lock is held by current thread.
+    /** This function should be used in tt_axiom() to check if the lock is held by current thread.
      *
      * @return The number of recursive locks the current thread has taken.
      * @retval 0 The current thread does not have a lock, or no-thread have a lock.
@@ -82,7 +82,7 @@ public:
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
         if (owner.load(std::memory_order::memory_order_acquire) == thread_id) {
             // FIRST | OWNER
-            tt_assume(count != 0);
+            tt_axiom(count != 0);
             ++count;
 
             // OWNER
@@ -90,9 +90,9 @@ public:
 
         } else if (mutex.try_lock()) { // OTHER (inside the if expression)
             // FIRST
-            tt_assume(count == 0);
+            tt_axiom(count == 0);
             count = 1;
-            tt_assume(owner == 0);
+            tt_axiom(owner == 0);
             owner.store(thread_id, std::memory_order::memory_order_release);
 
             return true;
@@ -128,7 +128,7 @@ public:
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
         if (owner.load(std::memory_order::memory_order_acquire) == thread_id) {
             // FIRST | OWNER
-            tt_assume(count != 0);
+            tt_axiom(count != 0);
             ++count;
 
             // OWNER
@@ -138,16 +138,16 @@ public:
             mutex.lock();
 
             // FIRST
-            tt_assume(count == 0);
+            tt_axiom(count == 0);
             count = 1;
-            tt_assume(owner == 0);
+            tt_axiom(owner == 0);
             owner.store(thread_id, std::memory_order::memory_order_release);
         }
     }
 
     void unlock() noexcept {
         // FIRST | OWNER
-        tt_assume2(recurse_lock_count(), "Unlock must be called on the thread that locked the mutex");
+        tt_axiom(recurse_lock_count(), "Unlock must be called on the thread that locked the mutex");
 
         if (--count == 0) {
             // FIRST

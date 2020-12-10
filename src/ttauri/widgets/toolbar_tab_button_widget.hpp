@@ -54,7 +54,7 @@ public:
      */
     [[nodiscard]] aarect window_clipping_rectangle() const noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         ttlet parent_ = this->parent.lock();
         return parent_->window_clipping_rectangle();
@@ -62,7 +62,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::top_center, *label, theme::global->labelStyle);
@@ -82,7 +82,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
@@ -104,7 +104,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             draw_button(context);
@@ -141,7 +141,7 @@ private:
 
     void draw_button(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         if (this->_focus && this->window.active) {
             // The focus line will be placed at 0.7.
             context.transform = mat::T(0.0f, 0.0f, 0.8f) * context.transform;
@@ -172,7 +172,7 @@ private:
 
     void draw_label(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T(0.0f, 0.0f, 0.9f) * context.transform;
 

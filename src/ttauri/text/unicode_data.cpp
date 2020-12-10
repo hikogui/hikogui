@@ -177,19 +177,19 @@ void unicode_data::init()
 {
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<UnicodeData_Header>(bytes, offset);
-    parse_assert(header->magic.value() == fourcc("bucd"), "Binary unicode file must begin with magic 'bucd'");
-    parse_assert(header->version.value() == 1, "Binary unicode file version must be 1");
+    tt_parse_check(header->magic.value() == fourcc("bucd"), "Binary unicode file must begin with magic 'bucd'");
+    tt_parse_check(header->version.value() == 1, "Binary unicode file version must be 1");
 
     descriptions_offset = offset;
     descriptions_count = header->nrDescriptions.value();
-    parse_assert(
+    tt_parse_check(
         check_placement_array<UnicodeData_Description>(bytes, offset, descriptions_count),
         "Unicode description table is beyond buffer");
     offset += sizeof(UnicodeData_Description) * descriptions_count;
 
     compositions_offset = offset;
     compositions_count = header->nrCompositions.value();
-    parse_assert(
+    tt_parse_check(
         check_placement_array<UnicodeData_Composition>(bytes, offset, compositions_count),
         "Unicode composition table is beyond buffer");
 }

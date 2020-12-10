@@ -1,4 +1,4 @@
-#include "ttauri/encoding/gzip.hpp"
+#include "ttauri/codec/gzip.hpp"
 #include "ttauri/FileView.hpp"
 #include "ttauri/required.hpp"
 #include <gtest/gtest.h>

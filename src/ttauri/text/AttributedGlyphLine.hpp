@@ -29,7 +29,7 @@ struct AttributedGlyphLine {
     AttributedGlyphLine(iterator first, iterator last) noexcept :
         line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f), capHeight(0.0f), xHeight(0.0f)
     {
-        tt_assume(std::distance(first, last) > 0);
+        tt_axiom(std::distance(first, last) > 0);
 
         line.reserve(std::distance(first, last));
         std::move(first, last, std::back_inserter(line));
@@ -37,14 +37,14 @@ struct AttributedGlyphLine {
     }
 
     [[nodiscard]] bool shouldWrap(float maximum_width) noexcept {
-        tt_assume(std::ssize(line) >= 1);
+        tt_axiom(std::ssize(line) >= 1);
         return
             width > maximum_width &&
             std::ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
     }
 
     [[nodiscard]] AttributedGlyphLine wrap(float maximum_width) noexcept {
-        tt_assume(shouldWrap(maximum_width));
+        tt_axiom(shouldWrap(maximum_width));
 
         auto word_end = line.begin();
         auto line_width = 0.0f;
@@ -79,7 +79,7 @@ struct AttributedGlyphLine {
     }
 
     [[nodiscard]] aarect boundingBox() const noexcept {
-        tt_assume(std::ssize(line) >= 1);
+        tt_axiom(std::ssize(line) >= 1);
 
         ttlet p0 = f32x4::point(
             line.front().position.x(),
@@ -129,7 +129,7 @@ struct AttributedGlyphLine {
     [[nodiscard]] const_iterator cend() const noexcept { return line.cend(); }
 
     void positionGlyphs(f32x4 position) noexcept {
-        tt_assume(position.is_point());
+        tt_axiom(position.is_point());
         y = position.y();
         for (auto &&g: line) {
             g.position = position;

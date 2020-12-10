@@ -125,7 +125,7 @@ public:
     [[nodiscard]] std::u8string text() const noexcept
     {
         auto fmt = get_translation(_msgid);
-        tt_assume(_args);
+        tt_axiom(_args);
         return _args->format(fmt);
     }
 

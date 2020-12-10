@@ -58,11 +58,11 @@ struct audio_block {
      */
     [[nodiscard]] std::span<float> samples_for_channel(ssize_t index) noexcept
     {
-        tt_assume(index >= 0 && index < number_of_channels);
+        tt_axiom(index >= 0 && index < number_of_channels);
         if (samples.empty()) {
             return {};
         } else {
-            tt_assume(ssize(samples) == number_of_channels * number_of_samples());
+            tt_axiom(ssize(samples) == number_of_channels * number_of_samples());
             return samples.subspan(index * number_of_samples(), number_of_samples());
         }
     }

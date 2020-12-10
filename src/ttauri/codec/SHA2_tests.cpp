@@ -1,7 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/encoding/SHA2.hpp"
+#include "ttauri/codec/SHA2.hpp"
+#include "ttauri/codec/base_n.hpp"
 #include "ttauri/required.hpp"
 #include "ttauri/strings.hpp"
 #include <gtest/gtest.h>
@@ -16,7 +17,7 @@ std::string test_sha2(bstring value)
     auto hash = T();
     hash.add(value);
 
-    return encode_base16(hash.get_bytes());
+    return base16::encode(hash.get_bytes());
 }
 
 template<typename T>
@@ -80,7 +81,7 @@ TEST(SHA2, NESSIE256Set1) {
     }
     h.add(to_bstring("aaaaaaaaaa"));
     ASSERT_CASEEQ(
-        encode_base16(h.get_bytes()),
+        base16::encode(h.get_bytes()),
         "CDC76E5C9914FB9281A1C7E284D73E67F1809A48A497200E046D39CCC7112CD0");
 }
 
@@ -155,7 +156,7 @@ TEST(SHA2, NESSIE512Set1) {
     }
     h.add(to_bstring("aaaaaaaaaa"));
     ASSERT_CASEEQ(
-        encode_base16(h.get_bytes()),
+        base16::encode(h.get_bytes()),
         "E718483D0CE769644E2E42C7BC15B463"
         "8E1F98B13B2044285632A803AFA973EB"
         "DE0FF244877EA60A4CB0432CE577C31B"

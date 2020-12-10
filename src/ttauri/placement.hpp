@@ -74,7 +74,7 @@ bool check_placement_ptr(std::span<Byte> bytes, ssize_t offset = 0)
 template<typename T,typename Byte>
 placement_ptr<T,Byte> make_placement_ptr(std::span<Byte> bytes, ssize_t &offset)
 {
-    parse_assert(check_placement_ptr<T>(bytes, offset), "Parsing beyond end of buffer");
+    tt_parse_check(check_placement_ptr<T>(bytes, offset), "Parsing beyond end of buffer");
     return placement_ptr<T,Byte>(bytes, offset);
 }
 
@@ -187,7 +187,7 @@ bool check_placement_array(std::span<Byte> bytes, ssize_t offset)
 template<typename T,typename Byte>
 placement_array<T,Byte> make_placement_array(std::span<Byte> bytes, ssize_t &offset, ssize_t n)
 {
-    parse_assert(check_placement_array<T>(bytes, offset, n), "Parsing beyond end of buffer");
+    tt_parse_check(check_placement_array<T>(bytes, offset, n), "Parsing beyond end of buffer");
     return placement_array<T,Byte>(bytes, offset, n);
 }
 

@@ -88,7 +88,7 @@ inline ttlet FontWeight_from_string_table = std::unordered_map<std::string,FontW
 
 [[nodiscard]] inline char to_char(FontWeight const &x) noexcept {
     ttlet x_ = static_cast<int>(x);
-    tt_assume(x_ >= 0 && x_ <= 9);
+    tt_axiom(x_ >= 0 && x_ <= 9);
     return static_cast<char>('0' + x_);
 }
 
@@ -142,9 +142,9 @@ inline bool almost_equal(FontWeight const &lhs, FontWeight const &rhs) noexcept 
 constexpr auto FontWeight_alternative_table = FontWeight_alternative_table_generator();
 
 [[nodiscard]] constexpr FontWeight FontWeight_alterative(FontWeight weight, int i) noexcept {
-    tt_assume(i >= 0 && i < 10);
+    tt_axiom(i >= 0 && i < 10);
     auto w = static_cast<int>(weight);
-    tt_assume(w >= 0 && w < 10);
+    tt_axiom(w >= 0 && w < 10);
     return FontWeight_alternative_table[(w * 10) + i];
 }
 

@@ -41,7 +41,7 @@ struct state {
     }
 
     [[nodiscard]] constexpr std::byte get_byte(size_t i) const noexcept {
-        tt_assume(i < 8 * sizeof(T));
+        tt_axiom(i < 8 * sizeof(T));
         ttlet word_nr = i / sizeof(T);
         ttlet byte_nr = i % sizeof(T);
         ttlet word = get_word(word_nr);
@@ -256,7 +256,7 @@ class SHA2 {
     }
 
     constexpr void pad() noexcept {
-        tt_assume(overflow_it != overflow.end());
+        tt_axiom(overflow_it != overflow.end());
 
         // Add the terminating '1' bit.
         *(overflow_it++) = std::byte{0x80};

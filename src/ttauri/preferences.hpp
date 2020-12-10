@@ -64,7 +64,7 @@ public:
     virtual void deserialize(datum const &data) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
-        tt_assume(_deserializing >= 0);
+        tt_axiom(_deserializing >= 0);
         ++_deserializing;
 
         --_deserializing;
@@ -115,7 +115,7 @@ private:
     void set_modified() noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
-        tt_assume(_deserializing >= 0);
+        tt_axiom(_deserializing >= 0);
         if (_deserializing == 0) {
             _modified = true;
         }
@@ -124,7 +124,7 @@ private:
     void check_modified() noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
-        tt_assume(_deserializing >= 0);
+        tt_axiom(_deserializing >= 0);
 
         if (_modified) {
             save();

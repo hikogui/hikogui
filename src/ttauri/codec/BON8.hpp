@@ -408,7 +408,7 @@ void BON8_encoder::add(datum const &value) {
         c0 <= 0xef ? 3 :
         4;
 
-    parse_assert(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
+    tt_parse_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
 
     ttlet c1 = static_cast<uint8_t>(*(ptr + 1));
     return (c1 < 0x80 || c1 > 0xbf) ? -count : count;
@@ -424,11 +424,11 @@ void BON8_encoder::add(datum const &value) {
  */
 [[nodiscard]] datum decode_BON8_int(cbyteptr &ptr, cbyteptr last, int count)
 {
-    tt_assume(count == 4 || count == 8);
+    tt_axiom(count == 4 || count == 8);
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
-        parse_assert(ptr != last, "Incomplete signed integer at end of buffer");
+        tt_parse_check(ptr != last, "Incomplete signed integer at end of buffer");
         u64 <<= 8;
         u64 |= static_cast<uint64_t>(*(ptr++));
     }
@@ -445,11 +445,11 @@ void BON8_encoder::add(datum const &value) {
 
 [[nodiscard]] datum decode_BON8_float(cbyteptr &ptr, cbyteptr last, int count)
 {
-    tt_assume(count == 4 || count == 8);
+    tt_axiom(count == 4 || count == 8);
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
-        parse_assert(ptr != last, "Incomplete signed integer at end of buffer");
+        tt_parse_check(ptr != last, "Incomplete signed integer at end of buffer");
         u64 <<= 8;
         u64 |= static_cast<uint64_t>(*(ptr++));
     }
@@ -494,7 +494,7 @@ void BON8_encoder::add(datum const &value) {
 
         } else {
             auto key = decode_BON8(ptr, last);
-            parse_assert(key.is_string(), "Key in object is not a string");
+            tt_parse_check(key.is_string(), "Key in object is not a string");
 
             auto value = decode_BON8(ptr, last);
             r.emplace(std::move(key), std::move(value));
@@ -505,8 +505,8 @@ void BON8_encoder::add(datum const &value) {
 
 [[nodiscard]] datum decode_BON8_UTF8_like_int(cbyteptr &ptr, cbyteptr last, int count) noexcept
 {
-    tt_assume(count >= 2 && count <= 4);
-    tt_assume(ptr != last);
+    tt_axiom(count >= 2 && count <= 4);
+    tt_axiom(ptr != last);
     ttlet c0 = static_cast<uint8_t>(*(ptr++));
 
     ttlet mask = int{0b0111'1111} >> count;
@@ -515,7 +515,7 @@ void BON8_encoder::add(datum const &value) {
         value -= 2;
     }
 
-    tt_assume(ptr != last);
+    tt_axiom(ptr != last);
     ttlet c1 = static_cast<uint8_t>(*(ptr++));
     ttlet is_positive = c1 <= 0x7f;
     if (is_positive) {
@@ -528,12 +528,12 @@ void BON8_encoder::add(datum const &value) {
 
     switch (count) {
     case 4:
-        tt_assume(ptr != last);
+        tt_axiom(ptr != last);
         value <<= 8;
         value |= static_cast<int>(*(ptr++));
         [[fallthrough]];
     case 3:
-        tt_assume(ptr != last);
+        tt_axiom(ptr != last);
         value <<= 8;
         value |= static_cast<int>(*(ptr++));
         [[fallthrough]];

@@ -47,7 +47,7 @@ constexpr long long pow10_table[20] {
 };
 
 constexpr long long pow10ll(int x) noexcept {
-    tt_assume(x >= 0 && x <= 18);
+    tt_axiom(x >= 0 && x <= 18);
     return pow10_table[x];
 }
 

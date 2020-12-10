@@ -105,7 +105,7 @@ file::~file() noexcept
 
 void file::flush()
 {
-    tt_assume(_file_handle);
+    tt_axiom(_file_handle);
 
     if (!FlushFileBuffers(_file_handle)) {
         tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(_location);
@@ -138,7 +138,7 @@ size_t file::size() const
 
 ssize_t file::seek(ssize_t offset, seek_whence whence)
 {
-    tt_assume(_file_handle);
+    tt_axiom(_file_handle);
 
     DWORD whence_;
     switch (whence) {
@@ -189,8 +189,8 @@ void file::rename(URL const &destination, bool overwrite_existing)
  */
 ssize_t file::write(std::byte const *data, ssize_t size, ssize_t offset)
 {
-    tt_assume(size >= 0);
-    tt_assume(_file_handle != INVALID_HANDLE_VALUE);
+    tt_axiom(size >= 0);
+    tt_axiom(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_written_size = 0;
     while (size) {
@@ -223,8 +223,8 @@ ssize_t file::write(std::byte const *data, ssize_t size, ssize_t offset)
 
 ssize_t file::read(std::byte *data, ssize_t size, ssize_t offset)
 {
-    tt_assume(size >= 0);
-    tt_assume(_file_handle != INVALID_HANDLE_VALUE);
+    tt_axiom(size >= 0);
+    tt_axiom(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_read_size = 0;
     while (size) {

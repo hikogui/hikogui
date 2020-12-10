@@ -48,7 +48,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             labelCell = stencil::make_unique(alignment, *label, theme::global->labelStyle);
@@ -61,7 +61,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
@@ -71,7 +71,7 @@ public:
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             if (*enabled) {

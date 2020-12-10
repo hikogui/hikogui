@@ -33,7 +33,7 @@ namespace tt {
 [[nodiscard]] f32x4
 grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     rows.clear();
     columns.clear();
@@ -43,7 +43,7 @@ grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow
     columns.reserve(nr_columns);
 
     for (auto &&cell : cells) {
-        tt_assume(cell.address.row.is_absolute);
+        tt_axiom(cell.address.row.is_absolute);
         if (cell.address.row.span == 1) {
             auto index = cell.address.row.begin(nr_rows);
 
@@ -55,7 +55,7 @@ grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow
                 cell.widget->preferred_base_line());
         }
 
-        tt_assume(cell.address.column.is_absolute);
+        tt_axiom(cell.address.column.is_absolute);
         if (cell.address.column.span == 1) {
             auto index = cell.address.column.begin(nr_columns);
 
@@ -89,7 +89,7 @@ std::shared_ptr<widget> grid_layout_widget::add_widget(cell_address address, std
 
 bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         _preferred_size = {
@@ -103,7 +103,7 @@ bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_
 
 void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {

@@ -27,7 +27,7 @@ namespace tt {
 [[nodiscard]] static std::vector<AttributedGlyph> graphemes_to_glyphs(std::vector<AttributedGrapheme> const &text) noexcept
 {
     // The end-of-paragraph (linefeed) must end text.
-    tt_assume(std::ssize(text) >= 1 && text.back().grapheme == '\n');
+    tt_axiom(std::ssize(text) >= 1 && text.back().grapheme == '\n');
 
     std::vector<AttributedGlyph> glyphs;
     glyphs.reserve(size(text));
@@ -261,7 +261,7 @@ struct shape_text_result {
         c.bidiClass = unicode_data::global->getBidiClass(c.grapheme[0]);
         c.charClass = to_GeneralCharacterClass(c.bidiClass);
     }
-    tt_assume(text.back().bidiClass == BidiClass::B);
+    tt_axiom(text.back().bidiClass == BidiClass::B);
 
     // Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(text);
@@ -341,7 +341,7 @@ ShapedText::ShapedText(
     // The shaped text will always end with a paragraph separator '\n'.
     // Therefor even if the index points beyond the last character, it will still
     // be on the paragraph separator.
-    tt_assume(i != cend());
+    tt_axiom(i != cend());
 
     // We need the line to figure out the ascender/descender height of the line so that
     // the caret does not jump up and down as we walk the text.
@@ -448,7 +448,7 @@ ShapedText::ShapedText(
 
 [[nodiscard]] std::pair<ssize_t,ssize_t> ShapedText::indicesOfParagraph(ssize_t logicalIndex) const noexcept
 {
-    tt_assume(size() != 0);
+    tt_axiom(size() != 0);
     if (size() == 1) {
         // One line with only a paragraph separator means this is empty.
         return {0,0};
@@ -474,10 +474,10 @@ ShapedText::ShapedText(
             break;
         }
         ++endOfParagraph;
-        tt_assume(endOfParagraph != cend());
+        tt_axiom(endOfParagraph != cend());
     }
 
-    tt_assume(beginOfParagraph != endOfParagraph);
+    tt_axiom(beginOfParagraph != endOfParagraph);
     auto lastCharacter = endOfParagraph - 1;
     return {beginOfParagraph->logicalIndex, lastCharacter->logicalIndex + lastCharacter->graphemeCount};
 }
@@ -515,7 +515,7 @@ ShapedText::ShapedText(
         return x.selectionWordClusterID();
     });
 
-    tt_assume(e != i);
+    tt_axiom(e != i);
     --e;
     return {s->logicalIndex, e->logicalIndex + e->graphemeCount};
 }

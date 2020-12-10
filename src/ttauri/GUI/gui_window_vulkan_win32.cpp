@@ -73,7 +73,7 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 
     auto *const window = find_win32_window(hwnd);
     if (window != nullptr) {
-        tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+        tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
         LRESULT result = window->windowProc(uMsg, wParam, lParam);
 
         if (uMsg == WM_DESTROY) {
@@ -115,8 +115,8 @@ static void createWindowClass()
 void gui_window_vulkan_win32::createWindow(const std::u8string &_title, f32x4 extent)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
-    tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
-    tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+    tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
+    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
     createWindowClass();
 
@@ -383,7 +383,7 @@ void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 
 void gui_window_vulkan_win32::setCursor(Cursor cursor) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -557,7 +557,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     case WM_GETMINMAXINFO: {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        tt_assume(widget);
+        tt_axiom(widget);
         ttlet widget_size = widget->preferred_size();
         ttlet minimum_widget_size = widget_size.minimum();
         ttlet maximum_widget_size = widget_size.maximum();
@@ -706,7 +706,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
 [[nodiscard]] char32_t gui_window_vulkan_win32::handleSuragates(char32_t c) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     if (c >= 0xd800 && c <= 0xdbff) {
@@ -725,7 +725,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     // We have to do manual locking, since we don't want this
     // function or its caller to hold a lock while calling the windows API.
     // This function should only return once, to make it easier.
-    tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
     gui_system_mutex.lock();
 
     auto mouseEvent = MouseEvent{};
@@ -794,7 +794,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
         if (!a_button_is_pressed) {
             gui_system_mutex.unlock();
-            tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+            tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
             ReleaseCapture();
             gui_system_mutex.lock();
         }
@@ -809,11 +809,11 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         mouseEvent.clickCount = (mouseEvent.timePoint < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
 
         // Track draging past the window borders.
-        tt_assume(win32Window != 0);
+        tt_axiom(win32Window != 0);
         ttlet window_handle = reinterpret_cast<HWND>(win32Window);
 
         gui_system_mutex.unlock();
-        tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+        tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
         SetCapture(window_handle);
         gui_system_mutex.lock();
     } break;
@@ -859,7 +859,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     if (!trackingMouseLeaveEvent && uMsg != WM_MOUSELEAVE) {
         auto *track_mouse_leave_event_parameters_p = &trackMouseLeaveEventParameters;
         gui_system_mutex.unlock();
-        tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+        tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
         if (!TrackMouseEvent(track_mouse_leave_event_parameters_p)) {
             LOG_ERROR("Could not track leave event '{}'", getLastErrorMessage());
         }
@@ -875,7 +875,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     }
 
     gui_system_mutex.unlock();
-    tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
     return mouseEvent;
 }
 

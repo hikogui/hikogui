@@ -38,64 +38,64 @@ public:
 
     [[nodiscard]] constexpr ranged_numeric(signed long long rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(unsigned long long rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(signed long rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(unsigned long rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(signed int rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(unsigned int rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(signed short rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(unsigned short rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(signed char rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric(unsigned char rhs) noexcept : value(narrow_cast<T>(rhs))
     {
-        tt_assume(value >= value_min && value < value_max);
+        tt_axiom(value >= value_min && value < value_max);
     }
 
     [[nodiscard]] constexpr ranged_numeric &operator++() noexcept
     {
-        tt_assume(value < value_max - 1);
+        tt_axiom(value < value_max - 1);
         ++value;
         return *this;
     }
 
     [[nodiscard]] constexpr ranged_numeric &operator--() noexcept
     {
-        tt_assume(value > value_min);
+        tt_axiom(value > value_min);
         --value;
         return *this;
     }
@@ -132,7 +132,7 @@ public:
 
     [[nodiscard]] static constexpr auto range() noexcept
     {
-        tt_assert2(value_max - value_min < 10, "Don't use this until std::views::iota() is implemented");
+        tt_assert(value_max - value_min < 10, "Don't use this until std::views::iota() is implemented");
 
         std::vector<ranged_numeric> r;
         r.reserve(value_max - value_min);

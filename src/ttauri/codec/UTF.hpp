@@ -33,9 +33,9 @@ template<typename Iterator>
         return first;
 
     } else {
-        tt_assume2(first <= 0xdbff, "Expecting the high surrogate");
+        tt_axiom(first <= 0xdbff, "Expecting the high surrogate");
         ttlet second = *(++it);
-        tt_assume2(second >= 0xdc00 && second <= 0xdfff, "Expecting the low surrogate");
+        tt_axiom(second >= 0xdc00 && second <= 0xdfff, "Expecting the low surrogate");
 
         return ((static_cast<char32_t>(first - 0xd800) << 10) | (static_cast<char32_t>(second - 0xdc00))) + 0x01'0000;
     }
@@ -64,27 +64,27 @@ template<typename Iterator>
         return cu;
 
     } else if (cu <= 0xdf) {
-        tt_assume2(cu >= 0xc0, "UTF-8 encoded code-point can not start with continuation code-units");
+        tt_axiom(cu >= 0xc0, "UTF-8 encoded code-point can not start with continuation code-units");
         cp = static_cast<char32_t>(cu & 0x1f) << 6;
         cp |= *(++it) & 0x3f;
-        tt_assume2(cp >= 0x0080 && cp < 0x07ff, "UTF-8 Overlong encoding");
+        tt_axiom(cp >= 0x0080 && cp < 0x07ff, "UTF-8 Overlong encoding");
         return cp;
 
     } else if (cu <= 0xef) {
         cp = static_cast<char32_t>(cu & 0x0f) << 6;
         cp |= static_cast<char32_t>(*(++it) & 0x3f) << 6;
         cp |= *(++it) & 0x3f;
-        tt_assume2(cp >= 0x0800 && cp < 0xffff, "UTF-8 Overlong encoding");
-        tt_assume2(!(cp >= 0xd800 && cp <= 0xdfff), "UTF-8 Must not encode surrogates");
+        tt_axiom(cp >= 0x0800 && cp < 0xffff, "UTF-8 Overlong encoding");
+        tt_axiom(!(cp >= 0xd800 && cp <= 0xdfff), "UTF-8 Must not encode surrogates");
         return cp;
 
     } else {
-        tt_assume2(cu <= 0xf7, "UTF8 encoded code-point must have a valid start code-unit");
+        tt_axiom(cu <= 0xf7, "UTF8 encoded code-point must have a valid start code-unit");
         cp = static_cast<char32_t>(cu & 0x07) << 6;
         cp |= static_cast<char32_t>(*(++it) & 0x3f) << 6;
         cp |= static_cast<char32_t>(*(++it) & 0x3f) << 6;
         cp |= *(++it) & 0x3f;
-        tt_assume2(cp >= 0x100000 && cp < 0x10ffff, "UTF-8 Overlong encoding");
+        tt_axiom(cp >= 0x100000 && cp < 0x10ffff, "UTF-8 Overlong encoding");
         return cp;
     }
 }
@@ -178,11 +178,11 @@ constexpr void utf32_to_utf16(char32_t code_point, Iterator &it) noexcept
     static_assert(std::is_same_v<value_type, char16_t>, "Iterator must point to a char16_t");
 
     if (code_point <= 0xffff) {
-        tt_assume2(!(code_point >= 0xd800 && code_point <= 0xdfff), "Code Point must not be a surrogate-code");
+        tt_axiom(!(code_point >= 0xd800 && code_point <= 0xdfff), "Code Point must not be a surrogate-code");
         *(it++) = static_cast<char16_t>(code_point);
 
     } else {
-        tt_assume2(code_point <= 0x10ffff, "Code Point must be in range of the 17 planes");
+        tt_axiom(code_point <= 0x10ffff, "Code Point must be in range of the 17 planes");
 
         code_point -= 0x10000;
         *(it++) = static_cast<char16_t>(code_point >> 10) | 0xd800;
@@ -209,13 +209,13 @@ constexpr void utf32_to_utf8(char32_t code_point, Iterator &it) noexcept
         *(it++) = static_cast<char8_t>(code_point) & 0x3f | 0x80;
 
     } else if (code_point <= 0xffff) {
-        tt_assume2(!(code_point >= 0xd800 && code_point <= 0xdfff), "Code Point must not be a surrogate");
+        tt_axiom(!(code_point >= 0xd800 && code_point <= 0xdfff), "Code Point must not be a surrogate");
         *(it++) = static_cast<char8_t>(code_point >> 12) | 0xe0;
         *(it++) = static_cast<char8_t>(code_point >> 6) & 0x3f | 0x80;
         *(it++) = static_cast<char8_t>(code_point) & 0x3f | 0x80;
 
     } else {
-        tt_assume2(code_point <= 0x10ffff, "Code Point must be in range of the 17 planes");
+        tt_axiom(code_point <= 0x10ffff, "Code Point must be in range of the 17 planes");
         *(it++) = static_cast<char8_t>(code_point >> 18) | 0xf0;
         *(it++) = static_cast<char8_t>(code_point >> 12) & 0x3f | 0x80;
         *(it++) = static_cast<char8_t>(code_point >> 6) & 0x3f | 0x80;

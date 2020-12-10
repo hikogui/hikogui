@@ -97,14 +97,14 @@ public:
 
     gui_window &window() const noexcept
     {
-        tt_assume(_window);
+        tt_axiom(_window);
         return *_window;
     }
 
     gui_device &device() const noexcept
     {
         auto device = window().device();
-        tt_assume(device);
+        tt_axiom(device);
         return *device;
     }
 
@@ -117,7 +117,7 @@ public:
      */
     void draw_filled_quad(f32x4 p1, f32x4 p2, f32x4 p3, f32x4 p4) const noexcept
     {
-        tt_assume(_flat_vertices != nullptr);
+        tt_axiom(_flat_vertices != nullptr);
         _flat_vertices->emplace_back(transform * p1, clipping_rectangle, fill_color);
         _flat_vertices->emplace_back(transform * p2, clipping_rectangle, fill_color);
         _flat_vertices->emplace_back(transform * p3, clipping_rectangle, fill_color);
@@ -149,7 +149,7 @@ public:
      */
     void draw_box(aarect box) const noexcept
     {
-        tt_assume(_box_vertices != nullptr);
+        tt_axiom(_box_vertices != nullptr);
 
         PipelineBox::DeviceShared::placeVertices(
             *_box_vertices, transform * box, fill_color, line_width, color, corner_shapes, clipping_rectangle);
@@ -172,7 +172,7 @@ public:
      */
     void draw_box_with_border_inside(aarect rectangle) const noexcept
     {
-        tt_assume(_box_vertices != nullptr);
+        tt_axiom(_box_vertices != nullptr);
 
         ttlet shrink_value = line_width * 0.5f;
 
@@ -206,7 +206,7 @@ public:
      */
     void draw_box_with_border_outside(aarect rectangle) const noexcept
     {
-        tt_assume(_box_vertices != nullptr);
+        tt_axiom(_box_vertices != nullptr);
 
         ttlet shrink_value = line_width * 0.5f;
 
@@ -230,7 +230,7 @@ public:
      */
     void draw_image(PipelineImage::Image &image) const noexcept
     {
-        tt_assume(_image_vertices != nullptr);
+        tt_axiom(_image_vertices != nullptr);
 
         image.placeVertices(*_image_vertices, transform, clipping_rectangle);
     }
@@ -247,7 +247,7 @@ public:
      */
     void draw_text(ShapedText const &text, bool useContextColor = false) const noexcept
     {
-        tt_assume(_sdf_vertices != nullptr);
+        tt_axiom(_sdf_vertices != nullptr);
 
         if (useContextColor) {
             narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
@@ -260,7 +260,7 @@ public:
 
     void draw_glyph(FontGlyphIDs const &glyph, aarect box) const noexcept
     {
-        tt_assume(_sdf_vertices != nullptr);
+        tt_axiom(_sdf_vertices != nullptr);
 
         narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
             *_sdf_vertices, glyph, transform * box, color, clipping_rectangle);

@@ -19,4 +19,10 @@ template<typename T, typename U>
     }
 }
 
+template<typename... Args>
+[[nodiscard]] constexpr size_t nr_arguments(Args const &...args) noexcept
+{
+    return sizeof...(Args);
+}
+
 }

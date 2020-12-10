@@ -49,7 +49,7 @@ public:
 
     ~observable()
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
     }
 
     observable() noexcept :
@@ -78,7 +78,7 @@ public:
 
     [[nodiscard]] value_type previous_value() const noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->previous_value();
     }
 
@@ -86,7 +86,7 @@ public:
      */
     [[nodiscard]] time_point time_when_last_modified() const noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->time_when_last_modified();
     }
 
@@ -94,7 +94,7 @@ public:
      */
     [[nodiscard]] duration duration_since_last_modified() const noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->duration_since_last_modified();
     }
 
@@ -105,37 +105,37 @@ public:
      */
     [[nodiscard]] float animation_progress(duration animation_duration) const noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->animation_progress(animation_duration);
     }
 
     [[nodiscard]] bool animating(duration animation_duration) const noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->animation_progress(animation_duration) < 1.0f;
     }
 
     [[nodiscard]] value_type load() const noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->load();
     }
 
     [[nodiscard]] value_type operator*() const noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->load();
     }
 
     [[nodiscard]] value_type load(duration animation_duration) const noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->load(animation_duration);
     }
 
     bool store(value_type const &new_value) noexcept
     {
-        tt_assume(pimpl);
+        tt_axiom(pimpl);
         return pimpl->store(new_value);
     }
 

@@ -30,11 +30,11 @@ public:
     ~vspan_iterator() = default;
 
     vspan_iterator(value_type *ptr) noexcept : ptr(ptr) {
-        tt_assume(ptr != nullptr);
+        tt_axiom(ptr != nullptr);
     }
 
     vspan_iterator &operator=(value_type *ptr) noexcept {
-        tt_assume(ptr != nullptr);
+        tt_axiom(ptr != nullptr);
         this->ptr = ptr;
         return *this;
     }
@@ -87,7 +87,7 @@ public:
     vspan(value_type *buffer, ssize_t nr_elements) noexcept :
         _begin(buffer), _end(buffer), _max(buffer + nr_elements)
     {
-        tt_assume(nr_elements >= 0);
+        tt_axiom(nr_elements >= 0);
     }
 
     vspan(std::span<value_type> span) noexcept :
@@ -109,13 +109,13 @@ public:
 
     [[nodiscard]] size_t size() const noexcept { return std::distance(_begin, _end); }
 
-    [[nodiscard]] value_type &operator[](size_t i) noexcept { tt_assume(i < size()); return *std::launder(_begin + i); }
-    [[nodiscard]] value_type const &operator[](size_t i) const noexcept { tt_assume(i < size()); return *std::launder(_begin + i); }
+    [[nodiscard]] value_type &operator[](size_t i) noexcept { tt_axiom(i < size()); return *std::launder(_begin + i); }
+    [[nodiscard]] value_type const &operator[](size_t i) const noexcept { tt_axiom(i < size()); return *std::launder(_begin + i); }
 
-    value_type &front() noexcept { tt_assume(_end != _begin); return *std::launder(_begin); }
-    value_type const &front() const noexcept { tt_assume(_end != _begin); return *std::launder(_begin); }
-    value_type &back() noexcept { tt_assume(_end != _begin); return *std::launder(_end - 1); }
-    value_type const &back() const noexcept { tt_assume(_end != _begin); return *std::launder(_end - 1); }
+    value_type &front() noexcept { tt_axiom(_end != _begin); return *std::launder(_begin); }
+    value_type const &front() const noexcept { tt_axiom(_end != _begin); return *std::launder(_begin); }
+    value_type &back() noexcept { tt_axiom(_end != _begin); return *std::launder(_end - 1); }
+    value_type const &back() const noexcept { tt_axiom(_end != _begin); return *std::launder(_end - 1); }
 
     vspan &clear() noexcept {
         for (auto i = _begin; i != _end; ++i) {
@@ -126,14 +126,14 @@ public:
     }
 
     void push_back(value_type const &rhs) noexcept {
-        tt_assume(_end != _max);
+        tt_axiom(_end != _max);
         // Since we throw away the pointer, we have to std::launder all access to this object.
         [[maybe_unused]] value_type *ptr = new (_end) value_type(rhs);
         ++_end;
     }
 
     void push_back(value_type &&rhs) noexcept {
-        tt_assume(_end != _max);
+        tt_axiom(_end != _max);
         // Since we throw away the pointer, we have to std::launder all access to this object.
         [[maybe_unused]] value_type *ptr = new (_end) value_type(std::move(rhs));
         ++_end;
@@ -141,14 +141,14 @@ public:
 
     template<typename... Args>
     void emplace_back(Args &&... args) noexcept {
-        tt_assume(_end != _max);
+        tt_axiom(_end != _max);
         // Since we throw away the pointer, we have to std::launder all access to this object.
         [[maybe_unused]] value_type *ptr = new (_end) value_type(std::forward<Args>(args)...);
         ++_end;
     }
 
     void pop_back() noexcept {
-        tt_assume(_end != _begin);
+        tt_axiom(_end != _begin);
         --_end;
         std::destroy_at(std::launder(_end));
     }

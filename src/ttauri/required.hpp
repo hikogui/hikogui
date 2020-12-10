@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include "os_detect.hpp"
-#include "assert.hpp"
-#include <type_traits>
-#include <cstdint>
+#include <cstddef>
+#include <string>
+#include <chrono>
 
 namespace tt {
 
@@ -24,8 +23,6 @@ using namespace std::literals;
 /*! Signed size/index into an array.
  */
 using ssize_t = std::ptrdiff_t;
-
-
 
 #define ssizeof(x) (static_cast<ssize_t>(sizeof(x)))
 

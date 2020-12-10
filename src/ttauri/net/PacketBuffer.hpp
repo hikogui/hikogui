@@ -109,7 +109,7 @@ public:
         ssize_t byteNr = 0;
         ssize_t i = 0;
         while (packetNr < nrPackets()) {
-            parse_assert(byteNr < nrBytes, "New-line not found within {} bytes", nrBytes);
+            tt_parse_check(byteNr < nrBytes, "New-line not found within {} bytes", nrBytes);
 
             if (i == std::ssize(packets[packetNr])) {
                 // Advance to next packet.
@@ -146,7 +146,7 @@ public:
                 packets.pop_front();
             } else {
                 packets.front().read(nrBytes);
-                tt_assume(std::ssize(packets.front()) > 0);
+                tt_axiom(std::ssize(packets.front()) > 0);
             }
             nrBytes -= std::ssize(packets_size);
         }

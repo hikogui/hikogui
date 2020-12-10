@@ -74,7 +74,7 @@ public:
      */
     void write(ssize_t nrBytes) noexcept {
         last += nrBytes;
-        tt_assume(last <= data_end);
+        tt_axiom(last <= data_end);
     }
 
     /** Consume a read.
@@ -82,7 +82,7 @@ public:
      */
     void read(ssize_t nrBytes) noexcept {
         first += nrBytes;
-        tt_assume(first <= last);
+        tt_axiom(first <= last);
     }
 };
 

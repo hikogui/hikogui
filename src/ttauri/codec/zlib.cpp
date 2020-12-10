@@ -20,11 +20,11 @@ bstring zlib_decompress(std::span<std::byte const> bytes, ssize_t max_size)
     ttlet header = make_placement_ptr<zlib_header>(bytes, offset);
 
     ttlet header_chksum = header->CMF * 256 + header->FLG;
-    parse_assert(header_chksum % 31 == 0, "zlib header checksum failed.");
+    tt_parse_check(header_chksum % 31 == 0, "zlib header checksum failed.");
 
-    parse_assert((header->CMF & 0xf) == 8, "zlib compression method must be 8");
-    parse_assert(((header->CMF >> 4) & 0xf) <= 7, "zlib LZ77 window too large");
-    parse_assert((header->FLG & 0x20) == 0, "zlib must not use a preset dicationary");
+    tt_parse_check((header->CMF & 0xf) == 8, "zlib compression method must be 8");
+    tt_parse_check(((header->CMF >> 4) & 0xf) <= 7, "zlib LZ77 window too large");
+    tt_parse_check((header->FLG & 0x20) == 0, "zlib must not use a preset dicationary");
 
     if (header->FLG & 0x20) {
         [[maybe_unused]] auto FDICT = make_placement_ptr<big_uint32_buf_t>(bytes, offset);

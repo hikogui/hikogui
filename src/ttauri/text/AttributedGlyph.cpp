@@ -30,7 +30,7 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
 
     // Load the metrics for this attributed glyph.
     ttlet font = &(font_book::global->get_font(actual_font_id));
-    tt_assume(font != nullptr);
+    tt_axiom(font != nullptr);
 
     // Get the metrics of the main glyph.
     ttlet this_glyph = glyphs.front();

@@ -325,7 +325,7 @@ public:
     [[nodiscard]] friend decimal operator/(decimal lhs, decimal rhs) noexcept
     {
         auto rhs_m = rhs.mantissa();
-        tt_assume(rhs_m != 0);
+        tt_axiom(rhs_m != 0);
         auto rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
@@ -337,7 +337,7 @@ public:
     [[nodiscard]] friend decimal operator%(decimal lhs, decimal rhs) noexcept
     {
         auto rhs_m = rhs.mantissa();
-        tt_assume(rhs_m != 0);
+        tt_axiom(rhs_m != 0);
         auto rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();

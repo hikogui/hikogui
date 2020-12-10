@@ -59,8 +59,8 @@ public:
     {
         // This function should be called from the main thread from the main loop,
         // and therefor should not have a lock on the window.
-        tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
-        tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+        tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
+        tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
         auto window = std::make_shared<gui_window_vulkan_win32>(static_cast<gui_system &>(*this), std::forward<Args>(args)...);
         auto window_ptr = window.get();

@@ -48,7 +48,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             ttlet minimum_length = theme::global->width; // even for vertical bars.
@@ -72,11 +72,11 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            tt_assume(*content != 0.0f);
+            tt_axiom(*content != 0.0f);
 
             // Calculate the position of the slider.
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
@@ -94,7 +94,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle()) && visible()) {
             draw_rails(context);
@@ -154,7 +154,7 @@ public:
      * the scrollbar becomes invisible.
      */
     [[nodiscard]] bool visible() const noexcept {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return hidden_content() >= 1.0f;
     }
 
@@ -173,13 +173,13 @@ private:
 
     [[nodiscard]] float rail_length() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return is_vertical ? rectangle().height() : rectangle().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         ttlet content_aperture_ratio = *aperture / *content;
         return std::max(rail_length() * content_aperture_ratio, theme::global->smallSize * 2.0f);
@@ -189,7 +189,7 @@ private:
      */
     [[nodiscard]] float slider_travel_range() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return rail_length() - slider_length();
     }
 
@@ -197,7 +197,7 @@ private:
      */
     [[nodiscard]] float hidden_content() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return *content - *aperture;
     }
 
@@ -207,7 +207,7 @@ private:
      */
     [[nodiscard]] float hidden_content_vs_travel_ratio() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         ttlet _slider_travel_range = slider_travel_range();
         return _slider_travel_range != 0.0f ? hidden_content() / _slider_travel_range : 0.0f;
@@ -219,7 +219,7 @@ private:
      */
     [[nodiscard]] float travel_vs_hidden_content_ratio() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         ttlet _hidden_content = hidden_content();
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
@@ -227,7 +227,7 @@ private:
 
     void draw_rails(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.color = theme::global->fillColor(_semantic_layer);
         context.fill_color = theme::global->fillColor(_semantic_layer);
@@ -241,7 +241,7 @@ private:
 
     void draw_slider(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.color = theme::global->fillColor(_semantic_layer + 1);
         context.fill_color = theme::global->fillColor(_semantic_layer + 1);

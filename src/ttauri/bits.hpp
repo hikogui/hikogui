@@ -20,7 +20,7 @@ namespace tt {
     auto bit_index = static_cast<uint8_t>(index & 7);
     ++index;
 
-    tt_assume(byte_index < std::ssize(buffer));
+    tt_axiom(byte_index < std::ssize(buffer));
     return static_cast<bool>(
         static_cast<int>(buffer[byte_index] >> bit_index) & 1
     );
@@ -52,7 +52,7 @@ namespace tt {
     while (todo) {
         auto byte_index = index >> 3;
         auto bit_index = static_cast<int>(index & 7);
-        tt_assume(byte_index < std::ssize(buffer));
+        tt_axiom(byte_index < std::ssize(buffer));
 
         auto available_bits = 8 - bit_index;
         auto nr_bits = std::min(available_bits, todo);

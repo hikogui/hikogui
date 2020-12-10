@@ -35,15 +35,15 @@ class FontGlyphIDs_long {
     }
 
     FontGlyphIDs_long operator+=(GlyphID rhs) noexcept {
-        tt_assume(nr_glyphs >= 0);
-        tt_assume(nr_glyphs < std::ssize(glyph_ids));
+        tt_axiom(nr_glyphs >= 0);
+        tt_axiom(nr_glyphs < std::ssize(glyph_ids));
         glyph_ids[nr_glyphs++] = rhs;
         return *this;
     }
 
     [[nodiscard]] size_t hash() const noexcept {
-        tt_assume(nr_glyphs > 3);
-        tt_assume(nr_glyphs < std::ssize(glyph_ids));
+        tt_axiom(nr_glyphs > 3);
+        tt_axiom(nr_glyphs < std::ssize(glyph_ids));
 
         uint64_t r = 0;
         for (int8_t i = 0; i != nr_glyphs; ++i) {
@@ -54,10 +54,10 @@ class FontGlyphIDs_long {
     }
 
     [[nodiscard]] friend bool operator==(FontGlyphIDs_long const &lhs, FontGlyphIDs_long const &rhs) noexcept {
-        tt_assume(lhs.nr_glyphs > 3);
-        tt_assume(rhs.nr_glyphs > 3);
-        tt_assume(lhs.nr_glyphs < std::ssize(lhs.glyph_ids));
-        tt_assume(rhs.nr_glyphs < std::ssize(rhs.glyph_ids));
+        tt_axiom(lhs.nr_glyphs > 3);
+        tt_axiom(rhs.nr_glyphs > 3);
+        tt_axiom(lhs.nr_glyphs < std::ssize(lhs.glyph_ids));
+        tt_axiom(rhs.nr_glyphs < std::ssize(rhs.glyph_ids));
 
         if (lhs.nr_glyphs == rhs.nr_glyphs) {
             for (int8_t i = 0; i != lhs.nr_glyphs; ++i) {
@@ -169,7 +169,7 @@ public:
 
     [[nodiscard]] GlyphID operator[](size_t index) const noexcept {
         if (has_pointer()) {
-            tt_assume(index < 18);
+            tt_axiom(index < 18);
             return get_pointer()->glyph_ids[index];
         } else {
             switch (index) {
@@ -212,12 +212,12 @@ private:
     }
 
     [[nodiscard]] FontGlyphIDs_long const *get_pointer() const noexcept {
-        tt_assume(has_pointer());
+        tt_axiom(has_pointer());
         return std::launder(reinterpret_cast<FontGlyphIDs_long const *>(static_cast<ptrdiff_t>(value) >> 16));
     }
 
     [[nodiscard]] FontGlyphIDs_long *get_pointer() noexcept {
-        tt_assume(has_pointer());
+        tt_axiom(has_pointer());
         return std::launder(reinterpret_cast<FontGlyphIDs_long *>(static_cast<ptrdiff_t>(value) >> 16));
     }
 
@@ -243,7 +243,7 @@ public:
                 return lhs.value == rhs.value;
             }
         } else {
-            tt_assume(lhs.size() != rhs.size());
+            tt_axiom(lhs.size() != rhs.size());
             return false;
         }
     }

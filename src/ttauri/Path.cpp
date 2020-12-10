@@ -212,7 +212,7 @@ f32x4 Path::currentPosition() const noexcept
 
 void Path::moveTo(f32x4 position) noexcept
 {
-    tt_assume(position.is_point());
+    tt_axiom(position.is_point());
     closeContour();
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
@@ -220,7 +220,7 @@ void Path::moveTo(f32x4 position) noexcept
 void Path::moveRelativeTo(f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
-    tt_assume(direction.is_vector());
+    tt_axiom(direction.is_vector());
 
     ttlet lastPosition = currentPosition();
     closeContour();
@@ -230,7 +230,7 @@ void Path::moveRelativeTo(f32x4 direction) noexcept
 void Path::lineTo(f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
-    tt_assume(position.is_point());
+    tt_axiom(position.is_point());
 
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
@@ -238,7 +238,7 @@ void Path::lineTo(f32x4 position) noexcept
 void Path::lineRelativeTo(f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
-    tt_assume(direction.is_vector());
+    tt_axiom(direction.is_vector());
 
     points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
 }
@@ -246,8 +246,8 @@ void Path::lineRelativeTo(f32x4 direction) noexcept
 void Path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
-    tt_assume(controlPosition.is_point());
-    tt_assume(position.is_point());
+    tt_axiom(controlPosition.is_point());
+    tt_axiom(position.is_point());
 
     points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
     points.emplace_back(position, BezierPoint::Type::Anchor);
@@ -256,8 +256,8 @@ void Path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
 void Path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
-    tt_assume(controlDirection.is_vector());
-    tt_assume(direction.is_vector());
+    tt_axiom(controlDirection.is_vector());
+    tt_axiom(direction.is_vector());
 
     ttlet p = currentPosition();
     points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
@@ -267,9 +267,9 @@ void Path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noe
 void Path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
-    tt_assume(controlPosition1.is_point());
-    tt_assume(controlPosition2.is_point());
-    tt_assume(position.is_point());
+    tt_axiom(controlPosition1.is_point());
+    tt_axiom(controlPosition2.is_point());
+    tt_axiom(position.is_point());
 
     points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
     points.emplace_back(controlPosition2, BezierPoint::Type::CubicControl2);
@@ -279,9 +279,9 @@ void Path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 po
 void Path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
-    tt_assume(controlDirection1.is_vector());
-    tt_assume(controlDirection2.is_vector());
-    tt_assume(direction.is_vector());
+    tt_axiom(controlDirection1.is_vector());
+    tt_axiom(controlDirection2.is_vector());
+    tt_axiom(direction.is_vector());
 
     ttlet p = currentPosition();
     points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
@@ -292,7 +292,7 @@ void Path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2
 void Path::arcTo(float radius, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
-    tt_assume(position.is_point());
+    tt_axiom(position.is_point());
 
     ttlet r = std::abs(radius);
     ttlet P1 = currentPosition();
@@ -382,7 +382,7 @@ void Path::addRectangle(aarect r, f32x4 corners) noexcept
 void Path::addCircle(f32x4 position, float radius) noexcept
 {
     tt_assert(!isContourOpen());
-    tt_assume(position.is_point());
+    tt_axiom(position.is_point());
 
     moveTo(f32x4::point(position.x(), position.y() - radius));
     arcTo(radius, f32x4::point(position.x() + radius, position.y()));
@@ -493,7 +493,7 @@ Path &Path::operator+=(Path const &rhs) noexcept
 
 Path Path::centerScale(f32x4 extent, float padding) const noexcept
 {
-    tt_assume(extent.is_vector());
+    tt_axiom(extent.is_vector());
 
     auto max_size = f32x4{
         std::max(1.0f, extent.x() - (padding * 2.0f)),

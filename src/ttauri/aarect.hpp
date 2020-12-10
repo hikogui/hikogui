@@ -69,10 +69,10 @@ public:
      */
     axis_aligned_rectangle(numeric_array<T,4> const &position, numeric_array<T,4> const &extent) noexcept : v(position.xyxy() + extent._00xy())
     {
-        tt_assume(position.is_point());
-        tt_assume(position.z() == 0.0);
-        tt_assume(extent.is_vector());
-        tt_assume(extent.z() == 0.0);
+        tt_axiom(position.is_point());
+        tt_axiom(position.z() == 0.0);
+        tt_axiom(extent.is_vector());
+        tt_axiom(extent.z() == 0.0);
     }
 
     /** Create a rectangle from the size.
@@ -81,8 +81,8 @@ public:
      */
     explicit axis_aligned_rectangle(numeric_array<T,4> const &extent) noexcept : v(extent._00xy())
     {
-        tt_assume(extent.is_vector());
-        tt_assume(extent.z() == 0.0);
+        tt_axiom(extent.is_vector());
+        tt_axiom(extent.z() == 0.0);
     }
 
     /** Create axis_aligned_rectangle from packed p0p3 coordinates.
@@ -101,8 +101,8 @@ public:
      */
     [[nodiscard]] static axis_aligned_rectangle p0p3(numeric_array<T,4> const &p0, numeric_array<T,4> const &p3) noexcept
     {
-        tt_assume(p0.is_point());
-        tt_assume(p3.is_point());
+        tt_axiom(p0.is_point());
+        tt_axiom(p3.is_point());
         return axis_aligned_rectangle::p0p3(p0.xy00() + p3._00xy());
     }
 
@@ -398,7 +398,7 @@ public:
 
     [[nodiscard]] friend axis_aligned_rectangle operator|(axis_aligned_rectangle const &lhs, numeric_array<T,4> const &rhs) noexcept
     {
-        tt_assume(rhs.is_point());
+        tt_axiom(rhs.is_point());
         if (!lhs) {
             return axis_aligned_rectangle::p0p3(rhs, rhs);
         } else {

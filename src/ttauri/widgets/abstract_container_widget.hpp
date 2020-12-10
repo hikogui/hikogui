@@ -38,7 +38,7 @@ public:
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        tt_assume(widget->parent.lock().get() == this);
+        tt_axiom(widget->parent.lock().get() == this);
         _children.push_back(widget);
         _request_reconstrain = true;
         window.requestLayout = true;
@@ -57,12 +57,12 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto has_constrainted = super::update_constraints(display_time_point, need_reconstrain);
 
         for (auto &&child : _children) {
-            tt_assume(child->parent.lock() == shared_from_this());
+            tt_axiom(child->parent.lock() == shared_from_this());
             has_constrainted |= child->update_constraints(display_time_point, need_reconstrain);
         }
 
@@ -71,11 +71,11 @@ public:
 
     void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
         for (auto &&child : _children) {
-            tt_assume(child->parent.lock().get() == this);
+            tt_axiom(child->parent.lock().get() == this);
             child->update_layout(display_time_point, need_layout);
         }
 
@@ -84,10 +84,10 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         for (auto &child : _children) {
-            tt_assume(child->parent.lock().get() == this);
+            tt_axiom(child->parent.lock().get() == this);
             child->draw(child->make_draw_context(context), display_time_point);
         }
 
@@ -96,11 +96,11 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto handled = false;
         for (auto &child : _children) {
-            tt_assume(child->parent.lock().get() == this);
+            tt_axiom(child->parent.lock().get() == this);
             handled |= child->handle_command_recursive(command, reject_list);
         }
         handled |= super::handle_command_recursive(command, reject_list);
@@ -113,7 +113,7 @@ public:
 
         auto r = HitBox{};
         for (ttlet &child : _children) {
-            tt_assume(child->parent.lock().get() == this);
+            tt_axiom(child->parent.lock().get() == this);
             r = std::max(r, child->hitbox_test(window_position));
         }
         return r;

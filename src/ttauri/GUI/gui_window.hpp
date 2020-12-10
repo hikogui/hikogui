@@ -74,7 +74,7 @@ public:
      */
     void request_redraw(aarect rectangle = aarect::infinity()) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         _request_redraw_rectangle |= rectangle;
     }
 
@@ -153,7 +153,7 @@ public:
 
     gui_device *device() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _device;
     }
 

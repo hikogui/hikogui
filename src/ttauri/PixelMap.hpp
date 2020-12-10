@@ -196,7 +196,7 @@ struct PixelMap {
     }
 
     PixelMap(PixelMap &&other) noexcept : pixels(other.pixels), width(other.width), height(other.height), stride(other.stride), selfAllocated(other.selfAllocated) {
-        tt_assume(this != &other);
+        tt_axiom(this != &other);
         other.selfAllocated = false;
     }
 
@@ -231,7 +231,7 @@ struct PixelMap {
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
     PixelMap<T> submap(iaarect rect) const noexcept {
-        tt_assume((rect.left() >= 0) && (rect.bottom() >= 0));
+        tt_axiom((rect.left() >= 0) && (rect.bottom() >= 0));
         tt_assert((rect.right() <= width) && (rect.top() <= height));
 
         ttlet offset = rect.bottom() * stride + rect.left();

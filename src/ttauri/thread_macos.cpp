@@ -18,7 +18,7 @@ void set_thread_name(std::string_view name)
 
 bool is_main_thread()
 {
-    tt_assume(application);
+    tt_axiom(application);
     return current_thread_id == application::global->main_thread_id;
 }
 
@@ -28,7 +28,7 @@ void run_from_main_loop(std::function<void()> f)
         return f();
 
     } else {
-        tt_assume(application);
+        tt_axiom(application);
         application->runFromMainLoop(f);
     }
 }

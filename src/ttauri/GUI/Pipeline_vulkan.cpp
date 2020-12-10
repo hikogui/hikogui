@@ -21,7 +21,7 @@ pipeline_vulkan::~pipeline_vulkan()
 gui_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
 {
     auto device = window.device();
-    tt_assume(device != nullptr);
+    tt_axiom(device != nullptr);
     return narrow_cast<gui_device_vulkan&>(*device);
 }
 

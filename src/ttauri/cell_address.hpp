@@ -27,13 +27,13 @@ struct cell_address_axis {
      */
     [[nodiscard]] ssize_t begin(ssize_t size) const noexcept
     {
-        tt_assume(is_absolute);
-        tt_assume(span >= 1);
-        tt_assume(index >= 0);
+        tt_axiom(is_absolute);
+        tt_axiom(span >= 1);
+        tt_axiom(index >= 0);
 
         ttlet index_ = (size == 0 || !is_opposite) ? index : size - index - span;
 
-        tt_assume(index_ >= 0 && index_ < size);
+        tt_axiom(index_ >= 0 && index_ < size);
         return index_;
     }
 
@@ -43,13 +43,13 @@ struct cell_address_axis {
      */
     [[nodiscard]] ssize_t end(ssize_t size) const noexcept
     {
-        tt_assume(is_absolute);
-        tt_assume(span >= 1);
-        tt_assume(index >= 0);
+        tt_axiom(is_absolute);
+        tt_axiom(span >= 1);
+        tt_axiom(index >= 0);
 
         ttlet index_span = (size == 0 || !is_opposite) ? index + span : size - index;
         
-        tt_assume(index_span >= 1 && index_span <= size);
+        tt_axiom(index_span >= 1 && index_span <= size);
         return index_span;
     }
 
@@ -59,20 +59,20 @@ struct cell_address_axis {
      */
     [[nodiscard]] ssize_t aligned_to(ssize_t size) const noexcept
     {
-        tt_assume(alignment >= 0 && alignment < span);
+        tt_axiom(alignment >= 0 && alignment < span);
 
         ttlet aligned_to_ = begin(size) + alignment;
 
-        tt_assume(aligned_to_ >= 0 && aligned_to_ < size);
+        tt_axiom(aligned_to_ >= 0 && aligned_to_ < size);
         return aligned_to_;
     }
 
     [[nodiscard]] constexpr bool operator==(cell_address_axis const &rhs) const noexcept
     {
-        tt_assume(span >= 1);
-        tt_assume(alignment >= 0);
-        tt_assume(rhs.span >= 1);
-        tt_assume(rhs.alignment >= 0);
+        tt_axiom(span >= 1);
+        tt_axiom(alignment >= 0);
+        tt_axiom(rhs.span >= 1);
+        tt_axiom(rhs.alignment >= 0);
 
         return
             is_absolute == rhs.is_absolute &&
@@ -88,10 +88,10 @@ struct cell_address_axis {
     {
         cell_address_axis r;
 
-        tt_assume(lhs.span >= 1);
+        tt_axiom(lhs.span >= 1);
         r.span = lhs.span;
 
-        tt_assume(lhs.alignment >= 0);
+        tt_axiom(lhs.alignment >= 0);
         r.alignment = lhs.alignment;
 
         if (lhs.is_absolute) {
@@ -126,14 +126,14 @@ struct cell_address_axis {
             r += fmt::format("{}{}", axis, rhs.index);
         }
 
-        tt_assume(rhs.span >= 1);
+        tt_axiom(rhs.span >= 1);
         if (rhs.span != 1) {
             if (std::ssize(r) == 0) {
                 r += axis;
             }
             r += fmt::format(":{}", rhs.span);
 
-            tt_assume(rhs.alignment >= 0);
+            tt_axiom(rhs.alignment >= 0);
             if (rhs.alignment != 0) {
                 r += fmt::format(":{}", rhs.alignment);
             }

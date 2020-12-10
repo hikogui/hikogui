@@ -46,9 +46,9 @@ public:
             corner0 + extent.xy00()
         })
     {
-        tt_assume(corner0.is_point());
-        tt_assume(extent.is_vector());
-        tt_assume(extent.z() == 0.0);
+        tt_axiom(corner0.is_point());
+        tt_axiom(extent.is_vector());
+        tt_axiom(extent.z() == 0.0);
     }
 
     /** Get the right vector of a rectangle.

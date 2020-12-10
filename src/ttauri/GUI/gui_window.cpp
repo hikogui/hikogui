@@ -37,8 +37,8 @@ void gui_window::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock on the window.
-    tt_assert2(is_main_thread(), "createWindow should be called from the main thread.");
-    tt_assume(gui_system_mutex.recurse_lock_count() == 0);
+    tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
+    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
     widget = std::make_shared<WindowWidget>(*this, delegate, title);
     widget->init();
@@ -72,7 +72,7 @@ void gui_window::init()
 
 void gui_window::setDevice(gui_device *new_device)
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (_device == new_device) {
         return;
@@ -121,7 +121,7 @@ void gui_window::windowChangedSize(f32x4 extent) {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     currentWindowExtent = extent;
-    tt_assume(widget);
+    tt_axiom(widget);
 
     widget->set_layout_parameters(aarect{currentWindowExtent}, aarect{currentWindowExtent});
     requestLayout = true;
@@ -129,7 +129,7 @@ void gui_window::windowChangedSize(f32x4 extent) {
 
 void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, f32x4 position) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto current_target_widget = mouseTargetWidget.lock();
     if (new_target_widget != current_target_widget) {
@@ -166,7 +166,7 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
 void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    tt_assume(widget);
+    tt_axiom(widget);
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 

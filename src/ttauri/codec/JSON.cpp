@@ -170,7 +170,7 @@ struct parse_context_t {
 
     datum root;
 
-    tt_assume(tokens.back() == tokenizer_name_t::End);
+    tt_axiom(tokens.back() == tokenizer_name_t::End);
     parse_context_t context;
     context.text_begin = text.begin();
 

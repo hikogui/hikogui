@@ -3,7 +3,7 @@
 
 #include "text_stencil.hpp"
 #include "../GUI/draw_context.hpp"
-#include "../encoding/png.hpp"
+#include "../codec/png.hpp"
 
 namespace tt {
 

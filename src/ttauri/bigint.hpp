@@ -318,7 +318,7 @@ struct bigint {
         auto product = bigint<T,3*N>{0};
         bigint_multiply(product, quotient, rhs);
 
-        tt_assume(product <= lhs);
+        tt_axiom(product <= lhs);
         auto remainder = lhs - product;
 
         int retry = 0;

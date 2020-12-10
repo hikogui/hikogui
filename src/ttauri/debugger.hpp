@@ -9,10 +9,10 @@ namespace tt {
 
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 void _debugger_break();
-#define debugger_break _debugger_break()
+#define tt_debugger_break() _debugger_break()
 
 #elif TT_COMPILER == TT_CC_GCC || TT_COMPILER == TT_CC_CLANG
-#define debugger_break __builtin_trap()
+#define tt_debugger_break __builtin_trap()
 
 #else
 #error "Not implemented"
@@ -86,19 +86,19 @@ void debugger_dialogue(std::string caption, std::string fmt, Args... args) noexc
 * @param args Rest arguments to formatter
 */
 template<typename... Args>
-[[noreturn]] tt_no_inline void _debugger_abort(char const *source_file, int source_line, char const *fmt, Args &&... args)
+[[noreturn]] tt_no_inline void debugger_abort(char const *source_file, int source_line, std::string_view fmt, Args &&... args)
 {
     std::string message;
 
     if constexpr (sizeof...(Args) == 0) {
-        message = fmt;    
+        message = fmt;
     } else {
         message = fmt::format(fmt, std::forward<Args>(args)...);
     }
 
     if (debugger_is_present()) {
         debugger_log("{}:{} {}", source_file, source_line, message);
-        debugger_break;
+        tt_debugger_break();
     } else {
         debugger_dialogue("Aborting", "{}:{} {}", source_file, source_line, message);
     }
@@ -106,6 +106,11 @@ template<typename... Args>
     std::abort();
 }
 
-#define debugger_abort(...) ::tt::_debugger_abort(__FILE__, __LINE__, __VA_ARGS__)
+[[noreturn]] tt_no_inline inline void debugger_abort(char const *source_file, int source_line)
+{
+    debugger_abort(source_file, source_line, "<unknown>");
+}
+
+#define tt_debugger_abort(...) ::tt::debugger_abort(__FILE__, __LINE__, __VA_ARGS__)
 
 }

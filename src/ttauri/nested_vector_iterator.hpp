@@ -44,7 +44,7 @@ public:
     nested_vector_iterator(ParentCIt parent_it_end, ParentIt parent_it) noexcept :
         parent_it_end(parent_it_end), parent_it(parent_it)
     {
-        tt_assume(parent_it_end == parent_it);
+        tt_axiom(parent_it_end == parent_it);
     }
 
     /** Get the current parent iterator.

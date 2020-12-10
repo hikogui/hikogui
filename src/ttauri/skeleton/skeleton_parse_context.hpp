@@ -50,7 +50,7 @@ struct skeleton_parse_context {
     }
 
     skeleton_parse_context& operator++() noexcept {
-        tt_assume(!atEOF());
+        tt_axiom(!atEOF());
         location += *index;
         ++index;
         return *this;

@@ -20,7 +20,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(gui_window &window, std::sh
 [[nodiscard]] bool
 WindowTrafficLightsWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
@@ -45,7 +45,7 @@ WindowTrafficLightsWidget::update_constraints(hires_utc_clock::time_point displa
 [[nodiscard]] void
 WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -110,7 +110,7 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
 
 void WindowTrafficLightsWidget::drawMacOS(draw_context const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto context = drawContext;
     context.corner_shapes = f32x4{RADIUS, RADIUS, RADIUS, RADIUS};
@@ -166,7 +166,7 @@ void WindowTrafficLightsWidget::drawWindows(
     draw_context const &drawContext,
     hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto context = drawContext;
 
@@ -214,7 +214,7 @@ void WindowTrafficLightsWidget::drawWindows(
 
 void WindowTrafficLightsWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (overlaps(context, this->window_clipping_rectangle())) {
         if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {

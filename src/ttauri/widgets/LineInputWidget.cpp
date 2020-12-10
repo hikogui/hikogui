@@ -20,7 +20,7 @@ LineInputWidget::~LineInputWidget() {}
 
 bool LineInputWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet maximumHeight = shapedText.boundingBox.height() + theme::global->margin * 2.0f;
@@ -38,7 +38,7 @@ bool LineInputWidget::update_constraints(hires_utc_clock::time_point display_tim
 
 void LineInputWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (_focus && display_time_point >= nextRedrawTimePoint) {
         window.request_redraw(window_clipping_rectangle());
@@ -70,7 +70,7 @@ void LineInputWidget::update_layout(hires_utc_clock::time_point display_time_poi
 
 void LineInputWidget::dragSelect() noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     ttlet mouseInTextPosition = textInvTranslate * dragSelectPosition;
     switch (dragClickCount) {
@@ -160,7 +160,7 @@ void LineInputWidget::drawText(draw_context context) const noexcept
 
 void LineInputWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     nextRedrawTimePoint = display_time_point + blinkInterval;
 

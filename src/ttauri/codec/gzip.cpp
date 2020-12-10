@@ -22,11 +22,11 @@ static bstring gzip_decompress_member(std::span<std::byte const> bytes, ssize_t 
 {
     ttlet header = make_placement_ptr<GZIPMemberHeader>(bytes, offset);
 
-    parse_assert(header->ID1 == 31, "GZIP Member header ID1 must be 31");
-    parse_assert(header->ID2 == 139, "GZIP Member header ID2 must be 139");
-    parse_assert(header->CM == 8, "GZIP Member header CM must be 8");
-    parse_assert((header->FLG & 0xe0) == 0, "GZIP Member header FLG reserved bits must be 0");
-    parse_assert(header->XFL == 2 || header->XFL == 4, "GZIP Member header XFL must be 2 or 4");
+    tt_parse_check(header->ID1 == 31, "GZIP Member header ID1 must be 31");
+    tt_parse_check(header->ID2 == 139, "GZIP Member header ID2 must be 139");
+    tt_parse_check(header->CM == 8, "GZIP Member header CM must be 8");
+    tt_parse_check((header->FLG & 0xe0) == 0, "GZIP Member header FLG reserved bits must be 0");
+    tt_parse_check(header->XFL == 2 || header->XFL == 4, "GZIP Member header XFL must be 2 or 4");
     [[maybe_unused]] ttlet FTEXT = static_cast<bool>(header->FLG & 1);
     ttlet FHCRC = static_cast<bool>(header->FLG & 2);
     ttlet FEXTRA = static_cast<bool>(header->FLG & 4);
@@ -41,7 +41,7 @@ static bstring gzip_decompress_member(std::span<std::byte const> bytes, ssize_t 
     if (FNAME) {
         std::byte c;
         do {
-            parse_assert(offset < std::ssize(bytes), "GZIP Member header FNAME reading beyond end of buffer");
+            tt_parse_check(offset < std::ssize(bytes), "GZIP Member header FNAME reading beyond end of buffer");
             c = bytes[offset++];
         } while (c != std::byte{0});
     }
@@ -49,7 +49,7 @@ static bstring gzip_decompress_member(std::span<std::byte const> bytes, ssize_t 
     if (FCOMMENT) {
         std::byte c;
         do {
-            parse_assert(offset < std::ssize(bytes), "GZIP Member header FCOMMENT reading beyond end of buffer");
+            tt_parse_check(offset < std::ssize(bytes), "GZIP Member header FCOMMENT reading beyond end of buffer");
             c = bytes[offset++];
         } while (c != std::byte{0});
     }
@@ -63,7 +63,7 @@ static bstring gzip_decompress_member(std::span<std::byte const> bytes, ssize_t 
     [[maybe_unused]] auto CRC32 = make_placement_ptr<little_uint32_buf_t>(bytes, offset);
     [[maybe_unused]] auto ISIZE = make_placement_ptr<little_uint32_buf_t>(bytes, offset);
 
-    parse_assert(
+    tt_parse_check(
         ISIZE->value() == (size(r) & 0xffffffff),
         "GZIP Member header ISIZE must be same as the lower 32 bits of the inflated size.");
     return r;

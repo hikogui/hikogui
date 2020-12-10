@@ -20,7 +20,7 @@ static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
     PROPVARIANT textProperty;
     PropVariantInit(&textProperty);
 
-    hresult_assert(propertyStore_->GetValue(key, &textProperty));
+    tt_hresult_check(propertyStore_->GetValue(key, &textProperty));
     auto textWString = std::wstring_view(textProperty.pwszVal);
     auto textString = to_string(textWString);
 
@@ -32,8 +32,8 @@ audio_device_win32::audio_device_win32(IMMDevice *device) :
     audio_device(), _device(device)
 {
     tt_assert(_device != nullptr);
-    hresult_assert(_device->QueryInterface(&_endpoint));
-    hresult_assert(_device->OpenPropertyStore(STGM_READ, &_property_store));
+    tt_hresult_check(_device->QueryInterface(&_endpoint));
+    tt_hresult_check(_device->OpenPropertyStore(STGM_READ, &_property_store));
 }
 
 audio_device_win32::~audio_device_win32()
@@ -47,7 +47,7 @@ std::string audio_device_win32::get_id_from_device(IMMDevice *device) noexcept
 {
     // Get the cross-reboot-unique-id-string of the device.
     LPWSTR id_wcharstr;
-    hresult_assert(device->GetId(&id_wcharstr));
+    tt_hresult_check(device->GetId(&id_wcharstr));
 
     ttlet id_wstring = std::wstring_view(id_wcharstr);
     auto id = to_string(id_wstring);
@@ -74,7 +74,7 @@ tt::label audio_device_win32::label() const noexcept
 audio_device_state audio_device_win32::state() const noexcept
 {
     DWORD state;
-    hresult_assert(_device->GetState(&state));
+    tt_hresult_check(_device->GetState(&state));
 
     switch (state) {
     case DEVICE_STATE_ACTIVE:
@@ -93,7 +93,7 @@ audio_device_state audio_device_win32::state() const noexcept
 audio_device_flow_direction audio_device_win32::direction() const noexcept
 {
     EDataFlow data_flow;
-    hresult_assert(_endpoint->GetDataFlow(&data_flow));
+    tt_hresult_check(_endpoint->GetDataFlow(&data_flow));
 
     switch (data_flow) {
     case eRender: return audio_device_flow_direction::output;

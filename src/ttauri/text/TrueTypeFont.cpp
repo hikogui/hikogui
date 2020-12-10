@@ -127,7 +127,7 @@ static GlyphID searchCharacterMapFormat4(std::span<std::byte const> bytes, char3
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
     ttlet length = header->length.value();
-    parse_assert(length <= bytes.size(), "CMAP header length is larger than table.");
+    tt_parse_check(length <= bytes.size(), "CMAP header length is larger than table.");
     ttlet segCount = header->segCountX2.value() / 2;
 
     ttlet endCode = make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
@@ -288,7 +288,7 @@ static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte
     ssize_t offset = 0;
 
     ttlet header = make_placement_ptr<CMAPHeader>(bytes, offset);
-    parse_assert(header->version.value() == 0, "CMAP version is not 0");
+    tt_parse_check(header->version.value() == 0, "CMAP version is not 0");
 
     uint16_t numTables = header->numTables.value();
     ttlet entries = make_placement_array<CMAPEntry>(bytes, offset, numTables);
@@ -336,10 +336,10 @@ static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte
     }
 
     // There must be a bestEntry because a unicode table is required by the true-type standard.
-    parse_assert(bestEntry != nullptr, "Missing Unicode CMAP entry");
+    tt_parse_check(bestEntry != nullptr, "Missing Unicode CMAP entry");
 
     ttlet entry_offset = bestEntry->offset.value();
-    parse_assert(entry_offset < bytes.size(), "CMAP entry is located beyond buffer");
+    tt_parse_check(entry_offset < bytes.size(), "CMAP entry is located beyond buffer");
 
     return bytes.subspan(entry_offset, bytes.size() - entry_offset);
 }
@@ -369,7 +369,7 @@ void TrueTypeFont::parseHheaTable(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HHEATable>(table_bytes);
 
-    parse_assert(table->majorVersion.value() == 1 && table->minorVersion.value() == 0, "HHEA version is not 1.0");
+    tt_parse_check(table->majorVersion.value() == 1 && table->minorVersion.value() == 0, "HHEA version is not 1.0");
     ascender = table->ascender.value(unitsPerEm);
     descender = table->descender.value(unitsPerEm);
     lineGap = table->lineGap.value(unitsPerEm);
@@ -401,11 +401,11 @@ void TrueTypeFont::parseHeadTable(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HEADTable>(table_bytes);
 
-    parse_assert(table->majorVersion.value() == 1 && table->minorVersion.value() == 0, "HEAD version is not 1.0");
-    parse_assert(table->magicNumber.value() == 0x5f0f3cf5, "HEAD magic is not 0x5f0f3cf5");
+    tt_parse_check(table->majorVersion.value() == 1 && table->minorVersion.value() == 0, "HEAD version is not 1.0");
+    tt_parse_check(table->magicNumber.value() == 0x5f0f3cf5, "HEAD magic is not 0x5f0f3cf5");
 
     ttlet indexToLocFormat = table->indexToLocFormat.value();
-    parse_assert(indexToLocFormat <= 1, "HEAD indexToLocFormat must be 0 or 1");
+    tt_parse_check(indexToLocFormat <= 1, "HEAD indexToLocFormat must be 0 or 1");
     locaTableIsOffset32 = indexToLocFormat == 1;
 
     unitsPerEm = table->unitsPerEm.value();
@@ -429,14 +429,14 @@ struct NAMERecord {
 
 static std::optional<std::string> getStringFromNameTable(std::span<std::byte const> bytes, size_t offset, size_t lengthInBytes, uint16_t platformID, uint16_t platformSpecificID, uint16_t languageID)
 {
-    parse_assert(offset + lengthInBytes <= std::size(bytes), "Requesting name at offset beyond name table");
+    tt_parse_check(offset + lengthInBytes <= std::size(bytes), "Requesting name at offset beyond name table");
 
     switch (platformID) {
     case 2: // Deprecated, but compatible with unicode.
         [[fallthrough]];
     case 0: // Unicode, encoded as UTF-16LE or UTF-16BE (BE is default guess).
         if (languageID == 0 || languageID == 0xffff) { // Language independent.
-            parse_assert(lengthInBytes % 2 == 0, "Length in bytes of a name must be multiple of two");
+            tt_parse_check(lengthInBytes % 2 == 0, "Length in bytes of a name must be multiple of two");
             ttlet lengthInWords = lengthInBytes / 2;
 
             std::byte const *src = bytes.data() + offset;
@@ -468,7 +468,7 @@ static std::optional<std::string> getStringFromNameTable(std::span<std::byte con
 
     case 3: // Windows
         if (platformSpecificID == 1 && languageID == 0x409) { // UTF-16BE, English - United States.
-            parse_assert(lengthInBytes % 2 == 0, "Length in bytes of a name must be multiple of two");
+            tt_parse_check(lengthInBytes % 2 == 0, "Length in bytes of a name must be multiple of two");
             ttlet lengthInWords = lengthInBytes / 2;
 
             std::byte const *src = bytes.data() + offset;
@@ -501,7 +501,7 @@ void TrueTypeFont::parseNameTable(std::span<std::byte const> table_bytes)
     ssize_t offset = 0;
 
     ttlet table = make_placement_ptr<NAMETable>(table_bytes, offset);
-    parse_assert(table->format.value() == 0 || table->format.value() == 1, "Name table format must be 0 or 1");
+    tt_parse_check(table->format.value() == 0 || table->format.value() == 1, "Name table format must be 0 or 1");
     size_t storageAreaOffset = table->stringOffset.value();
 
     uint16_t numRecords = table->count.value();
@@ -649,7 +649,7 @@ void TrueTypeFont::parseOS2Table(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<OS2Table0>(table_bytes);
     ttlet version = table->version.value();
-    parse_assert(version <= 5, "OS2 table version must be 0-5");
+    tt_parse_check(version <= 5, "OS2 table version must be 0-5");
 
     ttlet weight_value = table->usWeightClass.value();
     if (weight_value >= 1 && weight_value <= 1000) {
@@ -743,11 +743,11 @@ struct MAXPTable10 {
 
 void TrueTypeFont::parseMaxpTable(std::span<std::byte const> table_bytes)
 {
-    parse_assert(ssizeof(MAXPTable05) <= std::ssize(table_bytes), "MAXP table is larger than buffer");
+    tt_parse_check(ssizeof(MAXPTable05) <= std::ssize(table_bytes), "MAXP table is larger than buffer");
     ttlet table = make_placement_ptr<MAXPTable05>(table_bytes);
 
     ttlet version = table->version.value();
-    parse_assert(version == 0x00010000 || version == 0x00005000, "MAXP version must be 0.5 or 1.0");
+    tt_parse_check(version == 0x00010000 || version == 0x00005000, "MAXP version must be 0.5 or 1.0");
 
     numGlyphs = table->numGlyphs.value();
 }

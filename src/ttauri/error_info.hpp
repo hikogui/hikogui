@@ -1,12 +1,17 @@
 
+#ifndef ERROR_INFO_HPP
+#define ERROR_INFO_HPP
+
 #pragma once
 
 #include "source_location.hpp"
 #include "tag.hpp"
 #include "concepts.hpp"
+#include "check.hpp"
 #include <cstdint>
 #include <string>
 #include <type_traits>
+#include <optional>
 
 namespace tt {
 
@@ -99,8 +104,8 @@ public:
     error_info(source_location location) noexcept
     {
         ++version;
-        tt_assume(state == state::closed);
-        tt_assume(version != 0);
+        tt_axiom(state == state::closed);
+        tt_axiom(version != 0);
 
         state = state::writing;
         set<source_location_tag>(location);
@@ -115,25 +120,25 @@ public:
      */
     error_info(bool reopen) noexcept
     {
-        tt_assume(reopen == true);
+        tt_axiom(reopen == true);
         if (state == state::closed) {
             // Start a new transaction if it wasn't already opened.
             // This may happen on a catch statement from a traditional exception.
             ++version;
 
         } else {
-            tt_assume(state == state::reading);
+            tt_axiom(state == state::reading);
         }
 
-        tt_assume(version != 0);
+        tt_axiom(version != 0);
 
         state = state::writing;
     }
 
     ~error_info()
     {
-        tt_assume(state == state::writing);
-        tt_assume(version != 0);
+        tt_axiom(state == state::writing);
+        tt_axiom(version != 0);
 
         state = state::reading;
     }
@@ -155,8 +160,8 @@ public:
     template<typename Tag, typename Arg>
     error_info &set(Arg &&value) noexcept
     {
-        tt_assume(state == state::writing);
-        tt_assume(version != 0);
+        tt_axiom(state == state::writing);
+        tt_axiom(version != 0);
 
         auto &e = entry<Tag>;
         if (e.version == 0) {
@@ -178,7 +183,7 @@ public:
      */
     static void close() noexcept
     {
-        tt_assume(state == state::closed || state == state::reading);
+        tt_axiom(state == state::closed || state == state::reading);
 
         state = state::closed;
     }
@@ -197,7 +202,7 @@ public:
     static std::optional<typename Tag::value_type> pop() noexcept
     {
         close();
-        tt_assume(state == state::closed);
+        tt_axiom(state == state::closed);
 
         auto &e = entry<Tag>;
         if (version != 0 && e.version == version) {
@@ -289,3 +294,5 @@ private:
 } // namespace tt
 
 #define tt_error_info() tt::error_info(tt_source_location())
+
+#endif

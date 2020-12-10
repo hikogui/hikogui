@@ -19,14 +19,14 @@ public:
 
     language_tag &operator=(language_tag const &other) noexcept
     {
-        tt_assume(this != &other);
+        tt_axiom(this != &other);
         tag = other.tag;
         return *this;
     }
 
     language_tag &operator=(language_tag &&other) noexcept
     {
-        tt_assume(this != &other);
+        tt_axiom(this != &other);
         tag = std::move(other.tag);
         return *this;
     }

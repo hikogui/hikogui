@@ -4,7 +4,7 @@
 #include "theme.hpp"
 #include "../text/font_book.hpp"
 #include "../application.hpp"
-#include "../encoding/JSON.hpp"
+#include "../codec/JSON.hpp"
 #include "../sRGB.hpp"
 
 namespace tt {

@@ -52,7 +52,7 @@ public:
             *(dst++) = *(src++);
         }
 
-        tt_assume2(
+        tt_axiom(
             dst != std::end(v) || src == std::end(rhs),
             "Expecting the std:initializer_list size to be <= to the size of the numeric array");
 
@@ -109,7 +109,7 @@ public:
             r.v.back() = T{1};
         }
 
-        tt_assume2(r.v.back() != T{}, "Last element of a point should be non-zero");
+        tt_axiom(r.v.back() != T{}, "Last element of a point should be non-zero");
         return r;
     }
 
@@ -147,7 +147,7 @@ public:
             *(dst++) = T{};
         }
         while (src != src_last) {
-            tt_assume(*(src++) == U{});
+            tt_axiom(*(src++) == U{});
         }
     }
 
@@ -166,7 +166,7 @@ public:
             *(dst++) = T{};
         }
         while (src != src_last) {
-            tt_assume(*(src++) == U{});
+            tt_axiom(*(src++) == U{});
         }
     }
 
@@ -221,7 +221,7 @@ public:
 
         // Check if the rest of the data are zeros, or one in homogeneous coordinates.
         while (src != src_last) {
-            tt_assume(*src == T{} || *src == T{1});
+            tt_axiom(*src == T{} || *src == T{1});
             ++src;
         }
 
@@ -245,7 +245,7 @@ public:
             *(dst++) = U{};
         }
         while (src != src_last) {
-            tt_assume(*(src++) == T{});
+            tt_axiom(*(src++) == T{});
         }
 
         return r;
@@ -285,13 +285,13 @@ public:
 
     [[nodiscard]] constexpr T const &operator[](ssize_t i) const noexcept
     {
-        tt_assume(i < N);
+        tt_axiom(i < N);
         return v[i];
     }
 
     [[nodiscard]] constexpr T &operator[](ssize_t i) noexcept
     {
-        tt_assume(i < N);
+        tt_axiom(i < N);
         return v[i];
     }
 
@@ -815,7 +815,7 @@ public:
     template<ssize_t D>
     [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const &rhs) noexcept
     {
-        tt_assume(rhs.is_vector());
+        tt_axiom(rhs.is_vector());
         return rhs * rcp_length<D>(rhs);
     }
 
@@ -957,7 +957,7 @@ public:
             return numeric_array{f32x4_sse_hadd(lhs.v, rhs.v)};
 
         } else {
-            tt_assume(N % 2 == 0);
+            tt_axiom(N % 2 == 0);
 
             auto r = numeric_array{};
 
@@ -985,7 +985,7 @@ public:
             return numeric_array{f32x4_sse_hsub(lhs.v, rhs.v)};
 
         } else {
-            tt_assume(N % 2 == 0);
+            tt_axiom(N % 2 == 0);
 
             auto r = numeric_array{};
 
@@ -1152,7 +1152,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array normal(numeric_array const &rhs) noexcept requires(N >= 2)
     {
         static_assert(D == 2, "Normal on a single vector can only be calculated in two dimensions");
-        tt_assume(rhs.z() == 0.0f && rhs.is_vector());
+        tt_axiom(rhs.z() == 0.0f && rhs.is_vector());
         return normalize<D>(numeric_array{-rhs.y(), rhs.x()});
     }
 
@@ -1197,8 +1197,8 @@ public:
      */
     [[nodiscard]] friend constexpr numeric_array midpoint(numeric_array const &p1, numeric_array const &p2) noexcept
     {
-        tt_assume(p1.is_point());
-        tt_assume(p2.is_point());
+        tt_axiom(p1.is_point());
+        tt_axiom(p2.is_point());
         return (p1 + p2) * 0.5f;
     }
 
@@ -1206,8 +1206,8 @@ public:
      */
     [[nodiscard]] friend constexpr numeric_array reflect_point(numeric_array const &p, numeric_array const anchor) noexcept
     {
-        tt_assume(p.is_point());
-        tt_assume(anchor.is_point());
+        tt_axiom(p.is_point());
+        tt_axiom(anchor.is_point());
         return anchor - (p - anchor);
     }
 

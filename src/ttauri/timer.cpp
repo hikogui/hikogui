@@ -19,7 +19,7 @@ namespace tt {
     ttlet next_wakeup_ = (intervals_since_epoch + 1) * interval_;
     ttlet next_wakeup = timer::time_point{timer::duration{next_wakeup_}};
 
-    tt_assume(next_wakeup <= current_time + interval);
+    tt_axiom(next_wakeup <= current_time + interval);
     return next_wakeup;
 }
 

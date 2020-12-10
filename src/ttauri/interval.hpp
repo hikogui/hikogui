@@ -30,7 +30,7 @@ public:
     {
         v[0] = -_minimum;
         v[1] = _maximum;
-        tt_assume(minimum() <= maximum());
+        tt_axiom(minimum() <= maximum());
     }
 
     [[nodiscard]] constexpr interval(value_type rhs) noexcept : interval(rhs, rhs) {}
@@ -67,7 +67,7 @@ public:
         for (int i = 0; i != 2; ++i) {
             r.v[i] = lhs.v[i] + rhs.v[i];
         }
-        tt_assume(r.minimum() <= r.maximum());
+        tt_axiom(r.minimum() <= r.maximum());
         return r;
     }
 
@@ -77,7 +77,7 @@ public:
         for (int i = 0; i != 2; ++i) {
             r.v[i] = lhs.v[i] - rhs.v[1 - i];
         }
-        tt_assume(r.minimum() <= r.maximum());
+        tt_axiom(r.minimum() <= r.maximum());
         return r;
     }
 
@@ -128,7 +128,7 @@ public:
         auto r = interval{};
         r.v[0] = lhs.v[0] < rhs.v[0] ? lhs.v[0] : rhs.v[0]; // std::min()
         r.v[1] = lhs.v[1] > rhs.v[1] ? lhs.v[1] : rhs.v[1]; // std::max()
-        tt_assume(r.minimum() <= r.maximum());
+        tt_axiom(r.minimum() <= r.maximum());
         return r;
     }
 
@@ -137,7 +137,7 @@ public:
         auto r = interval{};
         r.v[0] = lhs.v[0] > rhs.v[0] ? lhs.v[0] : rhs.v[0]; // std::max()
         r.v[1] = lhs.v[1] < rhs.v[1] ? lhs.v[1] : rhs.v[1]; // std::min()
-        tt_assume(r.minimum() <= r.maximum());
+        tt_axiom(r.minimum() <= r.maximum());
         return r;
     }
 
@@ -147,7 +147,7 @@ public:
         for (int i = 0; i != 2; ++i) {
             r.v[i] = lhs.v[i] < rhs.v[i] ? lhs.v[i] : rhs.v[i]; // std::min()
         }
-        tt_assume(r.minimum() <= r.maximum());
+        tt_axiom(r.minimum() <= r.maximum());
         return r;
     }
 
@@ -157,13 +157,13 @@ public:
         for (int i = 0; i != 2; ++i) {
             r.v[i] = lhs.v[i] > rhs.v[i] ? lhs.v[i] : rhs.v[i]; // std::max()
         }
-        tt_assume(r.minimum() <= r.maximum());
+        tt_axiom(r.minimum() <= r.maximum());
         return r;
     }
 
     [[nodiscard]] friend constexpr value_type clamp(value_type const &lhs, interval const &rhs) noexcept
     {
-        tt_assume(rhs.minimum() <= rhs.maximum());
+        tt_axiom(rhs.minimum() <= rhs.maximum());
         return std::clamp(lhs, rhs.minimum(), rhs.maximum());
     }
 

@@ -142,6 +142,9 @@ elseif (MSVC)
 
         # -sdl forces deprecated warnings as errors so also not useful during development.
         #target_compile_options(ttauri PUBLIC -sdl)
+
+        # Just my code
+        target_compile_options(ttauri PUBLIC -JMC)
     endif()
 endif()
 

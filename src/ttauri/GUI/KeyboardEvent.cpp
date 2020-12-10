@@ -8,7 +8,7 @@ namespace tt {
 
 std::vector<command> const &KeyboardEvent::getCommands() const noexcept
 {
-    tt_assume(type == Type::Key);
+    tt_axiom(type == Type::Key);
     return keyboardBindings.translate(key);
 }
 

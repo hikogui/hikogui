@@ -33,9 +33,9 @@ void memswap(T &dst, U &src) {
 template<typename T>
 T *placement_copy(T *src, T *dst)
 {
-    tt_assume(src != nullptr);
-    tt_assume(dst != nullptr);
-    tt_assume(src != dst);
+    tt_axiom(src != nullptr);
+    tt_axiom(dst != nullptr);
+    tt_axiom(src != dst);
 
     return new (dst) T(*src);
 }
@@ -50,8 +50,8 @@ T *placement_copy(T *src, T *dst)
 template<typename T>
 void placement_copy(T *src_first, T *src_last, T *dst_first)
 {
-    tt_assume(src_first != dst_first);
-    tt_assume(src_last >= src_first);
+    tt_axiom(src_first != dst_first);
+    tt_axiom(src_last >= src_first);
 
     if (src_first < dst_first) {
         auto dst_last = dst_first + (src_last - src_first);
@@ -85,9 +85,9 @@ void placement_copy(T *src_first, T *src_last, T *dst_first)
 template<typename T>
 T *placement_move(T *src, T *dst)
 {
-    tt_assume(src != nullptr);
-    tt_assume(dst != nullptr);
-    tt_assume(src != dst);
+    tt_axiom(src != nullptr);
+    tt_axiom(dst != nullptr);
+    tt_axiom(src != dst);
 
     auto dst_ = new (dst) T(std::move(*src));
     std::destroy_at(src);
@@ -104,8 +104,8 @@ T *placement_move(T *src, T *dst)
 template<typename T>
 void placement_move(T *src_first, T *src_last, T *dst_first)
 {
-    tt_assume(src_first != dst_first);
-    tt_assume(src_last >= src_first);
+    tt_axiom(src_first != dst_first);
+    tt_axiom(src_last >= src_first);
 
     if (src_first < dst_first) {
         auto dst_last = dst_first + (src_last - src_first);

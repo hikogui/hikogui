@@ -4,7 +4,7 @@ add_subdirectory(GUI)
 add_subdirectory(widgets)
 add_subdirectory(stencils)
 add_subdirectory(audio)
-add_subdirectory(encoding)
+add_subdirectory(codec)
 add_subdirectory(formula)
 add_subdirectory(skeleton)
 
@@ -41,6 +41,7 @@ target_sources(ttauri PRIVATE
     bits.hpp
     byte_string.hpp
     cell_address.hpp
+    check.hpp
     concepts.hpp
     command.hpp
     CommandLineParser.hpp

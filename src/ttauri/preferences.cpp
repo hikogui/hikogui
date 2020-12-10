@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "preferences.hpp"
-#include "encoding/JSON.hpp"
+#include "codec/JSON.hpp"
 #include "file.hpp"
 #include "timer.hpp"
 

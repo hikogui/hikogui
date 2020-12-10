@@ -46,10 +46,10 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(content);
-        tt_assume(!can_scroll_horizontally || horizontal_scroll_bar);
-        tt_assume(!can_scroll_vertically || vertical_scroll_bar);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(content);
+        tt_axiom(!can_scroll_horizontally || horizontal_scroll_bar);
+        tt_axiom(!can_scroll_vertically || vertical_scroll_bar);
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
         has_updated_contraints |= content->update_constraints(display_time_point, need_reconstrain);
@@ -94,8 +94,8 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(content);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(content);
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -194,8 +194,8 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
-        tt_assume(content);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(content);
 
         if constexpr (can_scroll_horizontally) {
             horizontal_scroll_bar->draw(horizontal_scroll_bar->make_draw_context(context), display_time_point);
@@ -211,17 +211,17 @@ public:
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto handled = false;
-        tt_assume(content->parent.lock().get() == this);
+        tt_axiom(content->parent.lock().get() == this);
         handled |= content->handle_command_recursive(command, reject_list);
         if constexpr (can_scroll_horizontally) {
-            tt_assume(horizontal_scroll_bar->parent.lock().get() == this);
+            tt_axiom(horizontal_scroll_bar->parent.lock().get() == this);
             handled |= horizontal_scroll_bar->handle_command_recursive(command, reject_list);
         }
         if constexpr (can_scroll_vertically) {
-            tt_assume(vertical_scroll_bar->parent.lock().get() == this);
+            tt_axiom(vertical_scroll_bar->parent.lock().get() == this);
             handled |= vertical_scroll_bar->handle_command_recursive(command, reject_list);
         }
 
@@ -232,7 +232,7 @@ public:
     [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        tt_assume(content);
+        tt_axiom(content);
 
         auto r = HitBox{};
 
@@ -254,7 +254,7 @@ public:
     std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        tt_assume(content);
+        tt_axiom(content);
 
         // Scrollbars are never keyboard focus targets.
         return content->next_keyboard_widget(currentKeyboardWidget, reverse);

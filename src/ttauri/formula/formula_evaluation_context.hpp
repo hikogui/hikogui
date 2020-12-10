@@ -103,17 +103,17 @@ struct formula_evaluation_context {
     }
 
     scope const& locals() const {
-        tt_assume(has_locals());
+        tt_axiom(has_locals());
         return local_stack.back();
     }
 
     scope& locals() {
-        tt_assume(has_locals());
+        tt_axiom(has_locals());
         return local_stack.back();
     }
 
     [[nodiscard]] datum const &loop_get(std::string_view name) const {
-        tt_assume(name.size() > 0);
+        tt_axiom(name.size() > 0);
         if (name.back() == '$') {
             throw operation_error(fmt::format("Invalid loop variable '{}'", name));
         }

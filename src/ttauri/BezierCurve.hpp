@@ -45,21 +45,21 @@ struct BezierCurve {
      */
     BezierCurve(f32x4 const P1, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Linear), color(color), P1(P1), C1(), C2(), P2(P2) {
-        tt_assume(P1.is_point() && P2.is_point());    
+        tt_axiom(P1.is_point() && P2.is_point());    
     }
 
     /*! Construct a quadratic bezier-curve.
      */
     BezierCurve(f32x4 const P1, f32x4 const C1, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Quadratic), color(color), P1(P1), C1(C1), C2(), P2(P2) {
-        tt_assume(P1.is_point() && C1.is_point() && P2.is_point());    
+        tt_axiom(P1.is_point() && C1.is_point() && P2.is_point());    
     }
 
     /*! Construct a cubic bezier-curve.
      */
     BezierCurve(f32x4 const P1, f32x4 const C1, f32x4 const C2, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Cubic), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
-        tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());    
+        tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());    
     }
 
     /*! Construct a bezier-curve of any type.
@@ -68,15 +68,15 @@ struct BezierCurve {
         type(type), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
         switch (type) {
         case Type::Linear:
-            tt_assume(P1.is_point() && P2.is_point());
+            tt_axiom(P1.is_point() && P2.is_point());
             break;
 
         case Type::Quadratic:
-            tt_assume(P1.is_point() && C1.is_point() && P2.is_point());
+            tt_axiom(P1.is_point() && C1.is_point() && P2.is_point());
             break;
 
         case Type::Cubic:
-            tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
+            tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
             break;
 
         default:

@@ -62,7 +62,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _true_label_stencil = stencil::make_unique(alignment::top_left, *true_label, theme::global->labelStyle);
@@ -92,7 +92,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
@@ -120,7 +120,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             draw_check_box(context);
@@ -152,14 +152,14 @@ private:
 
     void draw_check_box(draw_context const &context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.draw_box_with_border_inside(_checkbox_rectangle);
     }
 
     void draw_check_mark(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
 
@@ -179,7 +179,7 @@ private:
 
     void draw_label(draw_context context) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (*this->enabled) {
             context.color = theme::global->labelStyle.color;

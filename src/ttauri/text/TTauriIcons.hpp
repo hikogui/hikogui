@@ -22,8 +22,8 @@ enum class TTauriIcon : char32_t {
 };
 
 inline FontGlyphIDs to_FontGlyphIDs(TTauriIcon rhs) noexcept {
-    tt_assume(TTauriIcons_font_id);
-    tt_assume(font_book::global);
+    tt_axiom(TTauriIcons_font_id);
+    tt_axiom(font_book::global);
 
     return font_book::global->find_glyph(TTauriIcons_font_id, Grapheme{static_cast<char32_t>(rhs)});
 }

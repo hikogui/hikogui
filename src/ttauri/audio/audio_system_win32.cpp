@@ -72,9 +72,9 @@ private:
 
 audio_system_win32::audio_system_win32(std::weak_ptr<audio_system_delegate> const &delegate) : audio_system(delegate)
 {
-    hresult_assert(CoInitializeEx(NULL, COINIT_MULTITHREADED));
+    tt_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
-    hresult_assert(CoCreateInstance(
+    tt_hresult_check(CoCreateInstance(
         CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, reinterpret_cast<LPVOID *>(&_device_enumerator)));
     tt_assert(_device_enumerator != nullptr);
 
@@ -106,17 +106,17 @@ void audio_system_win32::update_device_list() noexcept
     ttlet lock = std::scoped_lock(audio_system::mutex);
 
     IMMDeviceCollection *device_collection;
-    hresult_assert(_device_enumerator->EnumAudioEndpoints(eAll, DEVICE_STATEMASK_ALL, &device_collection));
+    tt_hresult_check(_device_enumerator->EnumAudioEndpoints(eAll, DEVICE_STATEMASK_ALL, &device_collection));
     tt_assert(device_collection != nullptr);
 
     UINT number_of_devices;
-    hresult_assert(device_collection->GetCount(&number_of_devices));
+    tt_hresult_check(device_collection->GetCount(&number_of_devices));
 
     auto old_devices = _devices;
     _devices.clear();
     for (UINT i = 0; i < number_of_devices; i++) {
         IMMDevice *win32_device;
-        hresult_assert(device_collection->Item(i, &win32_device));
+        tt_hresult_check(device_collection->Item(i, &win32_device));
 
         ttlet device_id = audio_device_win32::get_id_from_device(win32_device);
 

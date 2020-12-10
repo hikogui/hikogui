@@ -234,7 +234,7 @@ void font_book::post_process() noexcept
 [[nodiscard]] FontID font_book::find_font(FontFamilyID family_id, FontVariant variant) const noexcept
 {
     tt_assert(family_id);
-    tt_assume(family_id >= 0 && family_id < std::ssize(font_variants));
+    tt_axiom(family_id >= 0 && family_id < std::ssize(font_variants));
     ttlet &variants = font_variants[family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font_id = variants[variant.alternative(i)]) {
@@ -257,7 +257,7 @@ void font_book::post_process() noexcept
 
 [[nodiscard]] Font const &font_book::get_font(FontID font_id) const noexcept
 {
-    tt_assume(font_id < std::ssize(font_entries));
+    tt_axiom(font_id < std::ssize(font_entries));
     ttlet &entry = font_entries[font_id];
 
     if (!entry.font) {

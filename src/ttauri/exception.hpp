@@ -24,14 +24,6 @@ public:
         parse_error(fmt::format(fmt, arg1, args...)) {}
 };
 
-#define parse_assert(x, ...)\
-    do {\
-        if (!(x)) {\
-            tt_error_info();\
-            throw tt::parse_error(__VA_ARGS__);\
-        }\
-    } while (false)
-
 /** Exception thrown during execution of a dynamic operation.
  * This exception is often thrown on operation between multiple polymorphic objects
  * which do not support the combined operation.
@@ -60,14 +52,6 @@ public:
     {
     }
 };
-
-#define hresult_assert(x)\
-    ([](HRESULT result) {\
-        if (FAILED(result)) {\
-            throw tt::io_error("Call to '{}' failed with {:08x}", #x, result);\
-        }\
-        return result;\
-    }(x))
 
 class gui_error : public std::runtime_error {
 public:

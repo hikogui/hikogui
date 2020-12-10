@@ -93,7 +93,7 @@ static void BidiP1_P3(BidiContext &context) noexcept
     // P1. Split text in paragraphs, the paragraph delimiter comes at the end of the previous paragraph.
     // We will not physically split the paragraphs, but make sure the text does end in a paragraph.
     // We can not ourselves add the paragraph separator, because we do not know the text-style of an empty text.
-    tt_assume(std::ssize(context.characters) > 0 && context.characters.back().bidiClass == BidiClass::B);
+    tt_axiom(std::ssize(context.characters) > 0 && context.characters.back().bidiClass == BidiClass::B);
 }
 
 
@@ -133,7 +133,7 @@ static void BidiX1_X8(BidiContext &context) noexcept
         validIsolateCount = 0;
 
         for (; i->bidiClass != BidiClass::B; ++i) {
-            tt_assume(i != context.characters.cend());
+            tt_axiom(i != context.characters.cend());
 
             ttlet currentEmbedingLevel = stack.back().embeddingLevel;
             ttlet currentOverrideStatus = stack.back().overrideStatus;

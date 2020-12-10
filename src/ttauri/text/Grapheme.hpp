@@ -165,11 +165,11 @@ public:
     [[nodiscard]] char32_t operator[](size_t i) const noexcept
     {
         if (has_pointer()) {
-            tt_assume(i < std::tuple_size_v<long_Grapheme>);
+            tt_axiom(i < std::tuple_size_v<long_Grapheme>);
             return (*get_pointer())[i];
 
         } else {
-            tt_assume(i < 3);
+            tt_axiom(i < 3);
             return (value >> ((i * 21) + 1)) & 0x1f'ffff;
         }
     }

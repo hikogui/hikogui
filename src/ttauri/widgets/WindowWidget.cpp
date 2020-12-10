@@ -42,7 +42,7 @@ void WindowWidget::init() noexcept
 [[nodiscard]] bool
 WindowWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet toolbar_size = _toolbar->preferred_size();
@@ -58,7 +58,7 @@ WindowWidget::update_constraints(hires_utc_clock::time_point display_time_point,
 
 void WindowWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {

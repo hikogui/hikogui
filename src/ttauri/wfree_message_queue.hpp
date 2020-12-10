@@ -32,7 +32,7 @@ public:
     wfree_message_queue_operation(wfree_message_queue_operation && other) :
         parent(other.parent), index(other.index)
     {
-        tt_assume(this != &other);
+        tt_axiom(this != &other);
         other.parent = nullptr;
     }
 
@@ -53,7 +53,7 @@ public:
 
     wfree_message_queue_operation& operator=(wfree_message_queue_operation && other)
     {
-        tt_assume(this != &other);
+        tt_axiom(this != &other);
         std::swap(index, other.index);
         std::swap(parent, other.parent);
     }

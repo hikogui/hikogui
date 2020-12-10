@@ -68,12 +68,12 @@ public:
     }
 
     [[nodiscard]] UndoElement const &undo() noexcept {
-        tt_assume(undoPosition != 0);
+        tt_axiom(undoPosition != 0);
         return stack[--undoPosition];
     }
 
     [[nodiscard]] UndoElement const &redo() noexcept {
-        tt_assume(undoPosition < std::ssize(stack));
+        tt_axiom(undoPosition < std::ssize(stack));
         return stack[undoPosition++];
     }
 

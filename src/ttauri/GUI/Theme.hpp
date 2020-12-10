@@ -114,8 +114,8 @@ public:
     * @param nestingLevel The nesting level.
     */
     [[nodiscard]] f32x4 fillColor(ssize_t nestingLevel) const noexcept {
-        tt_assume(nestingLevel >= 0);
-        tt_assume(std::ssize(fillShades) > 0);
+        tt_axiom(nestingLevel >= 0);
+        tt_axiom(std::ssize(fillShades) > 0);
         return fillShades[nestingLevel % std::ssize(fillShades)];
     }
 
@@ -123,8 +123,8 @@ public:
     * @param nestingLevel The nesting level.
     */
     [[nodiscard]] f32x4 borderColor(ssize_t nestingLevel) const noexcept {
-        tt_assume(nestingLevel >= 0);
-        tt_assume(std::ssize(borderShades) > 0);
+        tt_axiom(nestingLevel >= 0);
+        tt_axiom(std::ssize(borderShades) > 0);
         return borderShades[nestingLevel % std::ssize(borderShades)];
     }
 

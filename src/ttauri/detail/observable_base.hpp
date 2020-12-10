@@ -75,7 +75,7 @@ public:
      */
     [[nodiscard]] float animation_progress(duration animation_duration) const noexcept
     {
-        tt_assume(animation_duration.count() != 0);
+        tt_axiom(animation_duration.count() != 0);
 
         return std::clamp(
             narrow_cast<float>(duration_since_last_modified().count()) / narrow_cast<float>(animation_duration.count()),

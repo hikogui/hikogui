@@ -36,7 +36,7 @@ Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
 
 Grapheme& Grapheme::operator+=(char32_t codePoint) noexcept
 {
-    tt_assume(size() < std::tuple_size_v<long_Grapheme>);
+    tt_axiom(size() < std::tuple_size_v<long_Grapheme>);
     switch (size()) {
     case 0:
         value |= (static_cast<uint64_t>(codePoint & 0x1f'ffff) << 1);

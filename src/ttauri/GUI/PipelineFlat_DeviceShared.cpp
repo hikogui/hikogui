@@ -25,7 +25,7 @@ DeviceShared::~DeviceShared()
 
 void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
 {
-    tt_assume(vulkanDevice);
+    tt_axiom(vulkanDevice);
     teardownShaders(vulkanDevice);
 }
 
@@ -47,7 +47,7 @@ void DeviceShared::buildShaders()
 
 void DeviceShared::teardownShaders(gui_device_vulkan *vulkanDevice)
 {
-    tt_assume(vulkanDevice);
+    tt_axiom(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);
     vulkanDevice->destroy(fragmentShaderModule);
 }

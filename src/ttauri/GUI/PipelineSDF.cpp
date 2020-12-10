@@ -24,7 +24,7 @@ void PipelineSDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
-    tt_assume(tmpVertexBuffers.size() == tmpOffsets.size());
+    tt_axiom(tmpVertexBuffers.size() == tmpOffsets.size());
 
     vulkan_device().SDFPipeline->drawInCommandBuffer(commandBuffer);
 

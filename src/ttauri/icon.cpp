@@ -4,7 +4,7 @@
 #include "icon.hpp"
 #include "stencils/pixel_map_stencil.hpp"
 #include "stencils/glyph_stencil.hpp"
-#include "encoding/png.hpp"
+#include "codec/png.hpp"
 
 namespace tt {
 

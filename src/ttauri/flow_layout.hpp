@@ -35,9 +35,9 @@ public:
     void
     update(ssize_t index, float extent, ranged_int<3> resistance, float margin, relative_base_line base_line) noexcept
     {
-        tt_assume(index >= 0);
-        tt_assume(index < std::ssize(items));
-        tt_assume(index + 1 < std::ssize(margins));
+        tt_axiom(index >= 0);
+        tt_axiom(index < std::ssize(items));
+        tt_axiom(index + 1 < std::ssize(margins));
         items[index].update(extent, resistance, base_line);
         margins[index] = std::max(margins[index], margin);
         margins[index+1] = std::max(margins[index+1], margin);
@@ -75,7 +75,7 @@ public:
         if (items.empty()) {
             return margins.back();
         } else {
-            tt_assume(items.back().offset >= 0.0f);
+            tt_axiom(items.back().offset >= 0.0f);
             return items.back().offset + items.back().size + margins.back();
         }
     }
@@ -86,8 +86,8 @@ public:
      */
     [[nodiscard]] std::pair<float, float> get_offset_and_size(ssize_t first, ssize_t last) const noexcept
     {
-        tt_assume(first >= 0 && first < std::ssize(items));
-        tt_assume(last > 0 && last <= std::ssize(items));
+        tt_axiom(first >= 0 && first < std::ssize(items));
+        tt_axiom(last > 0 && last <= std::ssize(items));
 
         auto offset = items[first].offset;
         auto size = (items[last - 1].offset + items[last - 1].size) - offset;
@@ -102,7 +102,7 @@ public:
 
     [[nodiscard]] relative_base_line get_base_line(ssize_t index) const noexcept
     {
-        tt_assume(index >= 0 && index < ssize(items));
+        tt_axiom(index >= 0 && index < ssize(items));
         return items[index].base_line();
     }
 
@@ -118,7 +118,7 @@ public:
             margins.push_back(0.0f);
         }
 
-        tt_assume(margins.size() == items.size() + 1);
+        tt_axiom(margins.size() == items.size() + 1);
     }
 
 private:

@@ -46,7 +46,7 @@ std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp)
 std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone)
 {
     if (time_zone == nullptr) {
-        tt_assume(application::global);
+        tt_axiom(application::global);
         time_zone = application::global->timeZone;
     }
 

@@ -128,7 +128,7 @@ public:
      */
     [[nodiscard]] float margin() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _margin;
     }
 
@@ -149,7 +149,7 @@ public:
      */
     [[nodiscard]] float draw_layer() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _draw_layer;
     }
 
@@ -165,7 +165,7 @@ public:
      */
     [[nodiscard]] int logical_layer() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _logical_layer;
     }
 
@@ -189,7 +189,7 @@ public:
      */
     [[nodiscard]] int semantic_layer() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _semantic_layer;
     }
 
@@ -204,7 +204,7 @@ public:
      */
     [[nodiscard]] ranged_int<3> width_resistance() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _width_resistance;
     }
 
@@ -219,7 +219,7 @@ public:
      */
     [[nodiscard]] ranged_int<3> height_resistance() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _height_resistance;
     }
 
@@ -233,7 +233,7 @@ public:
      */
     [[nodiscard]] interval_vec2 preferred_size() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _preferred_size;
     }
 
@@ -252,7 +252,7 @@ public:
      */
     [[nodiscard]] relative_base_line preferred_base_line() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _preferred_base_line;
     }
 
@@ -282,7 +282,7 @@ public:
             window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
         }
 
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (_window_rectangle != window_rectangle) {
             // The previous position needs to be redrawn.
@@ -310,7 +310,7 @@ public:
      */
     [[nodiscard]] aarect window_rectangle() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _window_rectangle;
     }
 
@@ -320,7 +320,7 @@ public:
      */
     [[nodiscard]] virtual aarect window_clipping_rectangle() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _window_clipping_rectangle;
     }
 
@@ -330,7 +330,7 @@ public:
      */
     [[nodiscard]] float window_base_line() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _window_base_line;
     }
 
@@ -340,7 +340,7 @@ public:
      */
     [[nodiscard]] aarect rectangle() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return aarect{_window_rectangle.extent()};
     }
 
@@ -350,7 +350,7 @@ public:
      */
     [[nodiscard]] float base_line() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _window_base_line - _window_rectangle.y();
     }
 
@@ -381,7 +381,7 @@ public:
      */
     [[nodiscard]] virtual bool accepts_focus() const noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return false;
     }
 
@@ -460,7 +460,7 @@ public:
      */
     virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
     }
 
     /** Handle command.

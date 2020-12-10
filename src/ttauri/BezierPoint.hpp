@@ -21,7 +21,7 @@ struct BezierPoint {
     f32x4 p;
 
     BezierPoint(f32x4 const p, Type const type) noexcept : type(type), p(p) {
-        tt_assume(p.is_point());
+        tt_axiom(p.is_point());
     }
 
     BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint(f32x4::point({x, y}), type) {}

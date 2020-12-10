@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "assert.hpp"
 #include "strings.hpp"
 #include <string>
 #include <string_view>

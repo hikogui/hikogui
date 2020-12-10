@@ -46,7 +46,7 @@ public:
      * @return this instance.
      */
     Trigger &add(time_point time_point, int level) noexcept {
-        tt_assume(level > 0);
+        tt_axiom(level > 0);
 
         auto old_event = event.load();
         trigger_t new_event;

@@ -22,7 +22,7 @@ SystemMenuWidget::SystemMenuWidget(gui_window &window, std::shared_ptr<widget> p
 [[nodiscard]] bool
 SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet width = theme::global->toolbarDecorationButtonWidth;
@@ -36,7 +36,7 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
 
 [[nodiscard]] void SystemMenuWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -58,7 +58,7 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
 
 void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (overlaps(context, this->window_clipping_rectangle())) {
         _icon_stencil->draw(context);

@@ -42,7 +42,7 @@ public:
 
     [[nodiscard]] bool accepts_focus() const noexcept final
     {
-        tt_assume(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return *enabled;
     }
 

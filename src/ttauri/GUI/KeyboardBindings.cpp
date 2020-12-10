@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "KeyboardBindings.hpp"
-#include "../encoding/JSON.hpp"
+#include "../codec/JSON.hpp"
 #include "../command.hpp"
 
 namespace tt {
@@ -12,16 +12,16 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
     ttlet data = parseJSON(url);
 
     try {
-        parse_assert(data.contains("bindings"), "Missing key 'bindings' at top level.");
+        tt_parse_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
         ttlet binding_list = data["bindings"];
-        parse_assert(binding_list.is_vector(), "Expecting array value for key 'bindings' at top level.");
+        tt_parse_check(binding_list.is_vector(), "Expecting array value for key 'bindings' at top level.");
 
         for (auto i = binding_list.vector_begin(); i != binding_list.vector_end(); ++i) {
             ttlet binding = *i;
-            parse_assert(binding.is_map(), "Expecting object for a binding, got {}", binding);
+            tt_parse_check(binding.is_map(), "Expecting object for a binding, got {}", binding);
 
-            parse_assert(
+            tt_parse_check(
                 binding.contains("key") && binding.contains("command"),
                 "Expecting required 'key' and 'command' for a binding, got {}", binding
             );

@@ -38,7 +38,7 @@ widget::~widget()
 
 gui_device *widget::device() const noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto device = window.device();
     tt_assert(device);
@@ -47,7 +47,7 @@ gui_device *widget::device() const noexcept
 
 bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_reconstrain |= std::exchange(_request_reconstrain, false);
     return need_reconstrain;
@@ -55,7 +55,7 @@ bool widget::update_constraints(hires_utc_clock::time_point display_time_point, 
 
 void widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -71,7 +71,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 draw_context widget::make_draw_context(draw_context context) const noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     context.clipping_rectangle = _window_clipping_rectangle;
     context.transform = _to_window_transform;
@@ -107,7 +107,7 @@ bool widget::handle_command(command command) noexcept
 
 bool widget::handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept
 {
-    tt_assume(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (!std::ranges::any_of(reject_list, [this](ttlet &x) { return x.get() == this; })) {
         return handle_command(command);

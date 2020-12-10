@@ -23,10 +23,10 @@ public:
 
     [[nodiscard]] interval_vec2(f32x4 min, f32x4 max) noexcept : value(-min + max._00xy())
     {
-        tt_assume(min.z() == 0.0f && min.w() == 0.0f);
-        tt_assume(max.z() == 0.0f && max.w() == 0.0f);
-        tt_assume(min.x() <= max.x());
-        tt_assume(min.y() <= max.y());
+        tt_axiom(min.z() == 0.0f && min.w() == 0.0f);
+        tt_axiom(max.z() == 0.0f && max.w() == 0.0f);
+        tt_axiom(min.x() <= max.x());
+        tt_axiom(min.y() <= max.y());
     }
 
     [[nodiscard]] interval_vec2(finterval x, finterval y) noexcept :
@@ -202,8 +202,8 @@ public:
 private:
     [[nodiscard]] static interval_vec2 make(f32x4 other) noexcept
     {
-        tt_assume(-other.x() <= other.z());
-        tt_assume(-other.y() <= other.w());
+        tt_axiom(-other.x() <= other.z());
+        tt_axiom(-other.y() <= other.w());
 
         interval_vec2 r;
         r.value = other;

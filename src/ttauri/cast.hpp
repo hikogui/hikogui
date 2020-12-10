@@ -5,6 +5,7 @@
 
 #include "required.hpp"
 #include "concepts.hpp"
+#include "assert.hpp"
 #include <type_traits>
 #include <concepts>
 #include <limits>
@@ -20,7 +21,7 @@ template<typename T>
 template<std::signed_integral OutType, std::floating_point InType>
 [[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
 {
-    tt_assume(value >= std::numeric_limits<OutType>::lowest() && value <= std::numeric_limits<OutType>::max());
+    tt_axiom(value >= std::numeric_limits<OutType>::lowest() && value <= std::numeric_limits<OutType>::max());
     return static_cast<OutType>(value);
 }
 
@@ -29,7 +30,7 @@ template<std::signed_integral OutType, std::signed_integral InType>
 {
     constexpr auto smin = static_cast<long long>(std::numeric_limits<OutType>::lowest());
     constexpr auto smax = static_cast<long long>(std::numeric_limits<OutType>::max());
-    tt_assume(value >= smin && value <= smax);
+    tt_axiom(value >= smin && value <= smax);
     return static_cast<OutType>(value);
 }
 
@@ -37,25 +38,25 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
 [[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
 {
     constexpr auto umax = static_cast<unsigned long long>(std::numeric_limits<OutType>::max());
-    tt_assume(value <= umax);
+    tt_axiom(value <= umax);
     return static_cast<OutType>(value);
 }
 
 template<std::unsigned_integral OutType, std::floating_point InType>
 [[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
 {
-    tt_assume(value >= InType{0});
-    tt_assume(value <= std::numeric_limits<OutType>::max());
+    tt_axiom(value >= InType{0});
+    tt_axiom(value <= std::numeric_limits<OutType>::max());
     return static_cast<OutType>(value);
 }
 
 template<std::unsigned_integral OutType, std::signed_integral InType>
 [[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
 {
-    tt_assume(value >= InType{0});
+    tt_axiom(value >= InType{0});
     if constexpr (sizeof(OutType) < sizeof(InType)) {
         constexpr auto smax = static_cast<long long>(std::numeric_limits<OutType>::max());
-        tt_assume(value <= smax);
+        tt_axiom(value <= smax);
     }
     return static_cast<OutType>(value);
 }
@@ -64,7 +65,7 @@ template<std::unsigned_integral OutType, std::unsigned_integral InType>
 [[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
 {
     constexpr auto umax = static_cast<unsigned long long>(std::numeric_limits<OutType>::max());
-    tt_assume(value <= umax);
+    tt_axiom(value <= umax);
     return static_cast<OutType>(value);
 }
 
@@ -89,7 +90,7 @@ template<tt::lvalue_reference DerivedType, tt::strict_base_of<std::remove_refere
     static_assert(
         !std::is_const_v<BaseType> || std::is_const_v<std::remove_reference_t<DerivedType>>,
         "narrow_cast must not cast away const");
-    tt_assume(dynamic_cast<std::remove_reference_t<DerivedType> *>(&value) != nullptr);
+    tt_axiom(dynamic_cast<std::remove_reference_t<DerivedType> *>(&value) != nullptr);
     return static_cast<DerivedType>(value);
 }
 
@@ -108,7 +109,7 @@ template<tt::pointer DerivedType, tt::strict_base_of<std::remove_pointer_t<Deriv
     static_assert(
         !std::is_const_v<BaseType> || std::is_const_v<std::remove_pointer_t<DerivedType>>,
         "narrow_cast must not cast away const");
-    tt_assume(dynamic_cast<DerivedType>(value) != nullptr);
+    tt_axiom(dynamic_cast<DerivedType>(value) != nullptr);
     return static_cast<DerivedType>(value);
 }
 
