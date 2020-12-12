@@ -26,48 +26,31 @@ void memswap(T &dst, U &src) {
  *
  * If you want to access the object in dst, you should use the return value.
  *
- * @param src A pointer to an object.
+ * @param src An interator to an object.
  * @param dst A pointer to allocated memory.
  * @return The dst pointer with the new object who's lifetime was started.
  */
-template<typename T>
-T *placement_copy(T *src, T *dst)
+template<typename InputIt, typename T>
+T *placement_copy(InputIt src, T *dst)
 {
-    tt_axiom(src != nullptr);
     tt_axiom(dst != nullptr);
-    tt_axiom(src != dst);
-
     return new (dst) T(*src);
 }
 
-/** Copy objects from one memory location to another memory location.
+/** Copy objects into a memory location.
  * This function will placement_copy an array of objects
- * between two memory locations.
- * 
- * The objects may overlap: copying takes place as if the objects were copied
- * to a temporary object array and then the objects were copied from the array to dst.
+ * to a memory location.
  */
-template<typename T>
-void placement_copy(T *src_first, T *src_last, T *dst_first)
+template<typename InputIt, typename T>
+void placement_copy(InputIt src_first, InputIt src_last, T *dst_first)
 {
     tt_axiom(src_first != dst_first);
     tt_axiom(src_last >= src_first);
 
-    if (src_first < dst_first) {
-        auto dst_last = dst_first + (src_last - src_first);
-
-        auto src = src_last;
-        auto dst = dst_last;
-        while (src != src_first) {
-            placement_copy(--src, --dst);
-        }
-
-    } else {
-        auto src = src_first;
-        auto dst = dst_first;
-        while (src != src_last) {
-            placement_copy(src++, dst++);
-        }
+    auto src = src_first;
+    auto dst = dst_first;
+    while (src != src_last) {
+        placement_copy(src++, dst++);
     }
 }
 
@@ -77,7 +60,9 @@ void placement_copy(T *src_first, T *src_last, T *dst_first)
  * in the source memory location is destroyed.
  *
  * If you want to access the object in dst, you should use the return value.
- *
+ * It is undefined behavior when src and dst point to the same object.
+ * It is undefined behavior if either or both src and dst are nullptr.
+ * 
  * @param src A pointer to an object.
  * @param dst A pointer to allocated memory.
  * @return The dst pointer with the new object who's lifetime was started.
@@ -87,7 +72,6 @@ T *placement_move(T *src, T *dst)
 {
     tt_axiom(src != nullptr);
     tt_axiom(dst != nullptr);
-    tt_axiom(src != dst);
 
     auto dst_ = new (dst) T(std::move(*src));
     std::destroy_at(src);
@@ -98,11 +82,14 @@ T *placement_move(T *src, T *dst)
  * This function will placement_move an array of objects
  * between two memory locations.
  * 
+ * It is undefined behavior when src_first and dst_first are not part of the same array.
+ * It is undefined behavior when src_first and dst_first point to the same object.
+ * 
  * The objects may overlap: copying takes place as if the objects were copied
  * to a temporary object array and then the objects were copied from the array to dst.
  */
 template<typename T>
-void placement_move(T *src_first, T *src_last, T *dst_first)
+void placement_move_within_array(T *src_first, T *src_last, T *dst_first)
 {
     tt_axiom(src_first != dst_first);
     tt_axiom(src_last >= src_first);
@@ -122,6 +109,23 @@ void placement_move(T *src_first, T *src_last, T *dst_first)
         while (src != src_last) {
             placement_move(src++, dst++);
         }
+    }
+}
+
+/** Move an objects between two memory locations.
+ * This function will placement_move an array of objects
+ * between two memory locations.
+ *
+ * WARNING: if moving objects within an array use `placement_move_within_array`
+ * to handle overlapping regions.
+ */
+template<typename T>
+void placement_move(T *src, T *src_last, T *dst)
+{
+    tt_axiom(src_last >= src);
+
+    while (src != src_last) {
+        placement_move(src++, dst++);
     }
 }
 

@@ -1,61 +1,91 @@
 
 #include "required.hpp"
 #include <memory>
+#include <algorithm>
+#include <string>
+#include <type_traits>
 
 namespace tt {
 
+template<typename T, typename Allocator>
+class gap_buffer;
+
 template<typename T>
-class gab_buffer_iterator;
+class gap_buffer_iterator;
+
+template<typename T, typename Allocator>
+gap_buffer_iterator<T> make_gap_buffer_iterator(gap_buffer<T, Allocator> *buffer, ptrdiff_t index);
+
+template<typename T, typename Allocator>
+gap_buffer_iterator<T const> make_gap_buffer_iterator(gap_buffer<T, Allocator> const *buffer, ptrdiff_t index);
 
 /** Gap Buffer
- * This container is simular to a std::vector, optimized
+ * This container is similar to a std::vector, optimized
  * for repeated insertions and deletion at the same position.
  *
  * This container is especially useful for text editing where
- * inserts and deletes are hapening at a cursor.
+ * inserts and deletes are happening at a cursor.
  *
  * Like a std::vector a gap_buffer has extra capacity to do
  * insertion without needing to reallocate, however this capacity
  * can be located anywhere in the allocated memory in a single
  * continues region called the gap.
  *
- * When inserting/deleting data in the gab_buffer the gap will
+ * When inserting/deleting data in the gap_buffer the gap will
  * move to this location.
  */
-template<typename T, typename Allocator=std::allocator<T>>
-class gab_buffer {
+template<typename T, typename Allocator = std::allocator<T>>
+class gap_buffer {
 public:
+    static_assert(
+        !std::is_const_v<T> && !std::is_volatile_v<T> && !std::is_reference_v<T>,
+        "Type of a managing container can not be const, volatile nor a reference");
     using value_type = T;
     using allocator_type = Allocator;
-    using size_type = typename std::vector<T>::size_type; 
-    using difference_type = typename std::vector<T>::difference_type; 
-    using reference = typename std::vector<T>::reference; 
-    using const_reference = typename std::vector<T>::const_reference; 
-    using pointer = typename std::vector<T>::pointer; 
-    using const_pointer = typename std::vector<T>::const_pointer; 
-    using iterator = gab_buffer_iterator<T>;
-    using const_iterator = gab_buffer_iterator<T> const;
-
-    // By how much the buffer should grow when size() == capacity().
-    static constexpr ssize_t grow_size = 256;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
+    using reference = T &;
+    using const_reference = T const &;
+    using pointer = T *;
+    using const_pointer = T const *;
+    using iterator = gap_buffer_iterator<T>;
+    using const_iterator = gap_buffer_iterator<T const>;
 
     /** Construct an empty buffer.
      */
     gap_buffer(allocator_type const &allocator = allocator_type{}) noexcept :
-        _allocator(allocator), _ptr(nullptr), _size(0), _gap_offset(0), _gap_size(0) { }
+        _allocator(allocator), _ptr(nullptr), _size(0), _gap_offset(0), _gap_size(0)
+    {
+    }
+
+    /** Construct a buffer with the given initializer list.
+     */
+    gap_buffer(std::initializer_list<T> init, allocator_type const &allocator = allocator_type{}) :
+        _allocator(allocator),
+        _ptr(_allocator.allocate(init.size() + _grow_size)),
+        _size(init.size() + _grow_size),
+        _gap_offset(init.size()),
+        _gap_size(_grow_size)
+    {
+        placement_copy(std::begin(init), std::end(init), left_begin());
+    }
 
     /** Copy constructor.
      * Allocates memory and copies all items from other into this.
      */
     gap_buffer(gap_buffer const &other) noexcept :
-        _allocator(other._allocator), _ptr(nullptr), _size(other._size), _gap_offset(other._gap_offset), _gap_size(other._gap_size)
+        _allocator(other._allocator),
+        _ptr(nullptr),
+        _size(other._size),
+        _gap_offset(other._gap_offset),
+        _gap_size(other._gap_size)
     {
-        tt_assume(&other != this);
+        tt_axiom(&other != this);
 
         if (other._ptr != nullptr) {
             _ptr = _allocator.allocate(_size);
-            placement_copy(other.left_begin(), other.left_end(), left_begin());        
-            placement_copy(other.right_begin(), other.right_end(), right_begin());        
+            placement_copy(other.left_begin(), other.left_end(), left_begin());
+            placement_copy(other.right_begin(), other.right_end(), right_begin());
         }
     }
 
@@ -65,9 +95,9 @@ public:
      *
      * Complexity is linear with the number of items in other.
      */
-    gap_buffer &operator=(gap_buffer const &other) noexcept :
+    gap_buffer &operator=(gap_buffer const &other) noexcept
     {
-        tt_assume(&other != this);
+        tt_axiom(&other != this);
 
         clear();
         if (_size >= other.size()) {
@@ -90,13 +120,13 @@ public:
 
             // Allocate and copy date.
             if (other._ptr != nullptr) {
-                _size = other.size() + grow_size;
+                _size = other.size() + _grow_size;
                 _ptr = _allocator.allocate(_size);
                 _gap_offset = other._gap_offset;
-                _gap_size = other._gap_size + grow_size;
+                _gap_size = other._gap_size + _grow_size;
 
-                placement_copy(other.left_begin(), other.left_end(), left_begin());        
-                placement_copy(other.right_begin(), other.right_end(), right_begin());        
+                placement_copy(other.left_begin(), other.left_end(), left_begin());
+                placement_copy(other.right_begin(), other.right_end(), right_begin());
             }
         }
     }
@@ -105,7 +135,11 @@ public:
      * This constructor will move the allocation of the other gap_buffer.
      */
     gap_buffer(gap_buffer &&other) noexcept :
-        _allocator(other._allocator), _ptr(other._ptr), _size(other._size), _gap_offset(other._gap_offset), _gap_size(other._gap_size)
+        _allocator(other._allocator),
+        _ptr(other._ptr),
+        _size(other._size),
+        _gap_offset(other._gap_offset),
+        _gap_size(other._gap_size)
     {
         other._ptr = nullptr;
         other._size = 0;
@@ -113,12 +147,12 @@ public:
         other._gap_size = 0;
     }
 
-    /** Move assignement operator.
+    /** Move assignment operator.
      * This functional will allocate its own buffer and move the items from other.
      */
     gap_buffer &operator=(gap_buffer &&other) noexcept
     {
-        tt_assume(&other != this);
+        tt_axiom(&other != this);
 
         clear();
         if (_size >= other.size()) {
@@ -141,13 +175,13 @@ public:
 
             // Allocate and copy date.
             if (other._ptr != nullptr) {
-                _size = other.size() + grow_size;
+                _size = other.size() + _grow_size;
                 _ptr = _allocator.allocate(_size);
                 _gap_offset = other._gap_offset;
-                _gap_size = other._gap_size + grow_size;
+                _gap_size = other._gap_size + _grow_size;
 
-                placement_move(other.left_begin(), other.left_end(), left_begin());        
-                placement_move(other.right_begin(), other.right_end(), right_begin());        
+                placement_move(other.left_begin(), other.left_end(), left_begin());
+                placement_move(other.right_begin(), other.right_end(), right_begin());
             }
         }
 
@@ -159,10 +193,10 @@ public:
     /** Destructor.
      * Destroys all items and deallocates the buffer.
      */
-    ~gab_buffer()
+    ~gap_buffer()
     {
         clear();
-        if (_ptr) {
+        if (_ptr != nullptr) {
             _allocator.deallocate(_ptr, _size);
         }
     }
@@ -173,7 +207,7 @@ public:
      * @param index The index in the buffer.
      * @return A reference to the item in the buffer.
      */
-    reference operator[](size_t index) noexcept
+    [[nodiscard]] reference operator[](size_type index) noexcept
     {
         return *get_pointer(index);
     }
@@ -184,18 +218,18 @@ public:
      * @param index The index in the buffer.
      * @return A reference to the item in the buffer.
      */
-    const_reference operator[](size_t index) const noexcept
+    [[nodiscard]] const_reference operator[](size_type index) const noexcept
     {
         return *get_pointer(index);
     }
 
     /** Get item to reference at.
-     * 
+     *
      * @throw std::out_of_range Thrown when index is out of range.
      * @param index The index in the buffer.
      * @return A reference to the item in the buffer.
      */
-    reference at(size_t index)
+    [[nodiscard]] reference at(size_type index)
     {
         if (index < size()) {
             throw std::out_of_range("gap_buffer::at");
@@ -204,52 +238,52 @@ public:
     }
 
     /** Get item to reference at.
-     * 
+     *
      * @throw std::out_of_range Thrown when index is out of range.
      * @param index The index in the buffer.
      * @return A reference to the item in the buffer.
      */
-    const_reference at(size_t index) const
+    [[nodiscard]] const_reference at(size_type index) const
     {
-        if (i < size()) {
+        if (index < size()) {
             throw std::out_of_range("gap_buffer::at");
         }
         return (*this)[index];
     }
 
-    reference front() noexcept
+    [[nodiscard]] reference front() noexcept
     {
-        tt_assume(size() != 0);
+        tt_axiom(size() != 0);
         return *(this)[0];
     }
 
-    const_reference front() const noexcept
+    [[nodiscard]] const_reference front() const noexcept
     {
-        tt_assume(size() != 0);
+        tt_axiom(size() != 0);
         return *(this)[0];
     }
 
-    reference back() noexcept
+    [[nodiscard]] reference back() noexcept
     {
-        tt_assume(size() != 0);
+        tt_axiom(size() != 0);
         return *(this)[size() - 1];
     }
 
-    const_reference back() const noexcept
+    [[nodiscard]] const_reference back() const noexcept
     {
-        tt_assume(size() != 0);
+        tt_axiom(size() != 0);
         return *(this)[size() - 1];
     }
 
     void pop_back() noexcept
     {
-        tt_assume(size() != 0);
+        tt_axiom(size() != 0);
         erase(end() - 1);
     }
 
     void pop_front() noexcept
     {
-        tt_assume(size() != 0);
+        tt_axiom(size() != 0);
         erase(begin());
     }
 
@@ -300,7 +334,7 @@ public:
             auto new_right_begin = new_ptr + new_gap_offset + new_gap_size;
             placement_move(left_begin(), left_end(), new_left_begin);
             placement_move(right_begin(), right_end(), new_right_begin);
-            _allocate.deallocate();
+            _allocator.deallocate();
         }
 
         _ptr = new_ptr;
@@ -309,31 +343,38 @@ public:
         _size = new_size;
     }
 
-    size_t size() const noexcept
+    [[nodiscard]] iterator begin() noexcept
     {
-        return left_size() + right_size();
+        return make_gap_buffer_iterator(this, 0);
     }
 
-    iterator begin() noexcept;
-
-    const_iterator begin() const noexcept;
-
-    iterator cbegin() const noexcept
+    [[nodiscard]] const_iterator begin() const noexcept
     {
-        return begin();
+        return make_gap_buffer_iterator(this, 0);
     }
 
-    iterator end() noexcept;
-    
-    const_iterator end() const noexcept;
-
-    iterator cend() const noexcept
+    [[nodiscard]] iterator cbegin() const noexcept
     {
-        return end();
+        return make_gap_buffer_iterator(this, 0);
+    }
+
+    [[nodiscard]] iterator end() noexcept
+    {
+        return make_gap_buffer_iterator(this, narrow_cast<difference_type>(size()));
+    }
+
+    [[nodiscard]] const_iterator end() const noexcept
+    {
+        return make_gap_buffer_iterator(this, narrow_cast<difference_type>(size()));
+    }
+
+    [[nodiscard]] iterator cend() const noexcept
+    {
+        return make_gap_buffer_iterator(this, narrow_cast<difference_type>(size()));
     }
 
     template<typename... Args>
-    void emplace_back(Args &&... args) noexcept
+    void emplace_back(Args &&...args) noexcept
     {
         set_gap_offset(_size);
         grow_to_insert(1);
@@ -355,7 +396,7 @@ public:
     }
 
     template<typename... Args>
-    void emplace_front(Args &&... args) noexcept
+    void emplace_front(Args &&...args) noexcept
     {
         set_gap_offset(0);
         grow_to_insert(1);
@@ -378,64 +419,85 @@ public:
     /** Place the gap before the position and emplace at the end of the gap.
      */
     template<typename... Args>
-    iterator emplace_before(iterator pos, Args &&... args) noexcept;
-
-    iterator insert_before(iterator pos, value_type const &value) noexcept
+    iterator emplace_before(iterator position, Args &&...args) noexcept
     {
-        emplace_before(value_type(value));
+        tt_axiom(position._buffer == this);
+        set_gap_offset(position._index);
+        grow_to_insert(1);
+
+        auto p = _ptr + _gap_offset + _gap_size - 1;
+        auto p_ = new (p) value_type(std::forward<Args>(args)...);
+        --_gap_size;
+        return gap_buffer_iterator<T>(this, _gap_offset + _gap_size);
     }
 
-    iterator insert_before(iterator pos, value_type &&value) noexcept
+    iterator insert_before(iterator position, value_type const &value) noexcept
     {
-        emplace_before(std::move(value));
+        emplace_before(position, value_type(value));
+    }
+
+    iterator insert_before(iterator position, value_type &&value) noexcept
+    {
+        emplace_before(position, std::move(value));
     }
 
     /** Insert items
-     * 
-     * @param pos Location to insert before.
+     *
+     * @param position Location to insert before.
      * @param first The first item to insert.
      * @param last The one beyond last item to insert.
      * @return The iterator pointing to the first item inserted.
      */
     template<typename It>
-    iterator insert_before(iterator pos, It first, It last) noexcept
+    iterator insert_before(iterator position, It first, It last) noexcept
     {
         auto it = last;
         while (it != first) {
-            pos = insert_before(pos, *(--it));
+            position = insert_before(position, *(--it));
         }
-        return pos;
+        return position;
     }
 
     /** Place the gap after the position and emplace at the beginning of the gap.
      */
     template<typename... Args>
-    iterator emplace_after(iterator pos, Args &&... args) noexcept;
-
-    iterator insert_after(iterator pos, value_type const &value) noexcept
+    iterator emplace_after(iterator position, Args &&...args) noexcept
     {
-        emplace_after(value_type(value));
+        tt_axiom(position._buffer == this);
+        set_gap_offset(position._index + 1);
+        grow_to_insert(1);
+
+        auto p = _ptr + _gap_offset;
+        auto p_ = new (p) value_type(std::forward<Args>(args)...);
+        ++_gap_offset;
+        --_gap_size;
+        return gap_buffer_iterator<T>(this, _gap_offset);
     }
 
-    iterator insert_after(iterator pos, value_type &&value) noexcept
+    iterator insert_after(iterator position, value_type const &value) noexcept
     {
-        emplace_after(std::move(value));
+        emplace_after(position, value_type(value));
+    }
+
+    iterator insert_after(iterator position, value_type &&value) noexcept
+    {
+        emplace_after(position, std::move(value));
     }
 
     /** Insert items
-     * 
-     * @param pos Location to insert after.
+     *
+     * @param position Location to insert after.
      * @param first The first item to insert.
      * @param last The one beyond last item to insert.
      * @return The iterator pointing to the last item inserted.
      */
     template<typename It>
-    iterator insert_after(iterator pos, It first, It last) noexcept
+    iterator insert_after(iterator position, It first, It last) noexcept
     {
         for (auto it = first; it != last; ++it) {
-            pos = insert_after(pos, *it);
+            position = insert_after(position, *it);
         }
-        return pos;
+        return position;
     }
 
     /** Erase items
@@ -443,31 +505,61 @@ public:
      * @param last Location beyond last item to remove.
      * @return iterator pointing to the element past the removed item, or end().
      */
-    iterator erase(iterator first, iterator last) noexcept;
-
-    /** Erase item
-     * @param pos Location of item to remove
-     * @return iterator pointing to the element past the removed item, or end().
-     */
-    iterator erase(iterator pos) noexcept
+    iterator erase(iterator first, iterator last) noexcept
     {
-        return erase(pos, pos + 1);
+        // place the gap before the first iterator, so that we can extend it.
+        tt_axiom(first._buffer == this);
+        tt_axiom(last._buffer == this);
+
+        set_gap_offset(first._index);
+        ttlet first_p = get_pointer(first._index);
+        ttlet last_p = get_pointer(last._index);
+        std::destroy(first_p, last_p);
+        _gap_size += last_p - first_p;
     }
 
+    /** Erase item
+     * @param position Location of item to remove
+     * @return iterator pointing to the element past the removed item, or end().
+     */
+    iterator erase(iterator position) noexcept
+    {
+        return erase(position, position + 1);
+    }
+
+    [[nodiscard]] friend bool operator==(gap_buffer const &lhs, gap_buffer const &rhs) noexcept
+    {
+        if (lhs.size() != rhs.size()) {
+            return false;
+        } else {
+            return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
+        }
+    }
 
 private:
+    // By how much the buffer should grow when size() == capacity().
+    static constexpr difference_type _grow_size = 256;
+
     allocator_type _allocator;
     value_type *_ptr;
-    ssize_t _size;
-    ssize_t _gap_offset;
-    ssize_t _gap_size;
+    difference_type _size;
+    difference_type _gap_offset;
+    difference_type _gap_size;
+
+    [[nodiscard]] bool is_valid() const noexcept
+    {
+        return _size >= 0 && _gap_offset >= 0 && _gap_size >= 0 && _gap_offset + _gap_size <= _size &&
+            (_ptr != nullptr || (_size == 0 && _gap_offset == 0 && _gap_size == 0));
+    }
 
     /** Grow the gap_buffer based on the size to be inserted.
      */
-    void grow_to_insert(ssize_t n) const noexcept
+    void grow_to_insert(difference_type n) const noexcept
     {
+        tt_axiom(is_valid());
+        tt_axiom(n >= 0);
         if (capacity() - _size < n) {
-            reserve(capacity() + n + grow_size);
+            reserve(capacity() + n + _grow_size);
         }
     }
 
@@ -476,9 +568,10 @@ private:
      * @param index The index of an item.
      * @return offset from _ptr to the item in memory.
      */
-    [[nodiscard]] ssize_t get_offset(size_t index) const noexcept
+    [[nodiscard]] difference_type get_offset(difference_type index) const noexcept
     {
-        tt_assume(index < size());
+        tt_axiom(is_valid());
+        tt_axiom(index >= 0 && index < std::ssize(*this));
         if (index > _gap_offset) {
             index += _gap_size;
         }
@@ -486,22 +579,26 @@ private:
     }
 
     /** Get a pointer to the item.
-     * 
+     *
      * @param index The index of an item.
      * @return Pointer to the item in memory.
      */
-    pointer get_pointer(size_t index) noexcept
+    pointer get_pointer(difference_type index) noexcept
     {
+        tt_axiom(is_valid());
+        tt_axiom(index >= 0);
         return std::launder(_ptr + get_offset(index));
     }
 
     /** Get a pointer to the item.
-     * 
+     *
      * @param index The index of an item.
      * @return Pointer to the item in memory.
      */
-    const_pointer get_pointer(size_t i) const noexcept
+    const_pointer get_pointer(difference_type index) const noexcept
     {
+        tt_axiom(is_valid());
+        tt_axiom(index >= 0);
         return std::launder(_ptr + get_offset(index));
     }
 
@@ -517,302 +614,282 @@ private:
 
     [[nodiscard]] value_type const *left_end() const noexcept
     {
+        tt_axiom(is_valid());
         return _ptr + _gap_offset;
     }
 
     [[nodiscard]] value_type *left_end() noexcept
     {
+        tt_axiom(is_valid());
         return _ptr + _gap_offset;
     }
 
     [[nodiscard]] value_type const *right_begin() const noexcept
     {
-        return _pre + _gap_offset + _gap_size;
+        tt_axiom(is_valid());
+        return _ptr + _gap_offset + _gap_size;
     }
 
     [[nodiscard]] value_type *right_begin() noexcept
     {
-        return _pre + _gap_offset + _gap_size;
+        tt_axiom(is_valid());
+        return _ptr + _gap_offset + _gap_size;
     }
 
     [[nodiscard]] value_type const *right_end() const noexcept
     {
+        tt_axiom(is_valid());
         return _ptr + _size;
     }
 
     [[nodiscard]] value_type *right_end() noexcept
     {
+        tt_axiom(is_valid());
         return _ptr + _size;
     }
 
     [[nodiscard]] value_type const *gap_begin() const noexcept
     {
+        tt_axiom(is_valid());
         return _ptr + _gap_offset;
     }
 
     [[nodiscard]] value_type *gap_begin() noexcept
     {
+        tt_axiom(is_valid());
         return _ptr + _gap_offset;
     }
 
     [[nodiscard]] value_type const *gap_end() const noexcept
     {
+        tt_axiom(is_valid());
         return _ptr + _gap_offset + _gap_size;
     }
 
     [[nodiscard]] value_type *gap_end() noexcept
     {
+        tt_axiom(is_valid());
         return _ptr + _gap_offset + _gap_size;
     }
 
     /** Move the start of the gap to a new location.
      */
-    void set_gap_offset(ssize_t new_gap_offset) noexcept
+    void set_gap_offset(difference_type new_gap_offset) noexcept
     {
+        ttlet new_gap_begin = _ptr + new_gap_offset;
+        ttlet new_gap_end = new_gap_begin + _gap_size;
+
         if (new_gap_offset < _gap_offset) {
             // Move data left of the original gap to the end of the new gap.
             // LLL...RRR
             // LL...LRRR
-            auto new_gap_begin = _ptr + new_gap_offset;
-            placement_move(new_gap_begin, gap_begin(), new_gap_end());
+            placement_move_within_array(new_gap_begin, gap_begin(), new_gap_end);
 
-        } else if (new_gap_offset > _gap_offset) {{
-            // Move data right of the original gap to the begining of the new gap.
+        } else if (new_gap_offset > _gap_offset) {
+            // Move data right of the original gap to the beginning of the new gap.
             // LLL...RRR
             // LLLR...RR
-            auto new_gap_end = _ptr + new_gap_offset + _gap_size;
-            placement_move(gap_end(), new_gap_end, gap_begin());
+            placement_move_within_array(gap_end(), new_gap_end, gap_begin());
         }
+
         _gap_offset = new_gap_offset;
     }
 
-    friend gab_buffer_iterator<T>;
+    friend gap_buffer_iterator<T>;
 };
 
 /** A continues iterator over a gap_buffer.
  */
 template<typename T>
-class gab_buffer_iterator {
+class gap_buffer_iterator {
 public:
-    using difference_type typename gab_buffer<T>::difference_type;
-    using value_type = typename gab_buffer<T>::value_type;
-    using pointer = typename gab_buffer<T>::pointer;
-    using reference = typename gab_buffer<T>::reference;
-    using const_reference = typename gab_buffer<T>::reference const;
+    static_assert(
+        !std::is_volatile_v<T> && !std::is_reference_v<T>,
+        "Type of a managing container iterator can not be volatile nor a reference");
+
+    using value_type = std::remove_cv_t<T>;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
+    using pointer = T *;
+    using const_pointer = T const *;
+    using reference = T &;
+    using const_reference = T const &;
     using iterator_category = std::random_access_iterator_tag;
 
-    ~iterator() noexcept = default;
-    iterator(iterator const &) noexcept = default;
-    iterator(iterator &&) noexcept = default;
-    iterator &operator=(iterator const &) noexcept = default;
-    iterator &operator=(iterator &&) noexcept = default;
+    using gap_buffer_type = std::conditional_t<std::is_const_v<T>, gap_buffer<value_type> const, gap_buffer<value_type>>;
 
-    iterator(gab_buffer<value_type> *buffer, value_type *it) noexcept :
-        _buffer(buffer), _ptr(it)
-    {
-    }
+    ~gap_buffer_iterator() noexcept = default;
+    gap_buffer_iterator(gap_buffer_iterator const &) noexcept = default;
+    gap_buffer_iterator(gap_buffer_iterator &&) noexcept = default;
+    gap_buffer_iterator &operator=(gap_buffer_iterator const &) noexcept = default;
+    gap_buffer_iterator &operator=(gap_buffer_iterator &&) noexcept = default;
+
+    gap_buffer_iterator(gap_buffer_type *buffer, difference_type index) noexcept : _buffer(buffer), _index(index) {}
 
     reference operator*() noexcept
     {
-        return _buffer[_index];
-    };
+        return (*_buffer)[narrow_cast<size_type>(_index)];
+    }
 
     const_reference operator*() const noexcept
-    { 
-        return _buffer[_index];
-    };
-
-    reference operator[](size_t i) noexcept
     {
-        return *(_ptr + i)
+        tt_axiom(is_valid());
+        return (*_buffer)[narrow_cast<size_type>(_index)];
     }
 
-    const_reference operator[](size_t i) const noexcept
+    reference operator[](difference_type index) noexcept
     {
-        return *(_ptr + i)
+        return (*_buffer)[narrow_cast<size_type>(_index + index)];
     }
 
-    iterator &operator++() noexcept
+    const_reference operator[](difference_type index) const noexcept
+    {
+        return (*_buffer)[narrow_cast<size_type>(_index + index)];
+    }
+
+    gap_buffer_iterator &operator++() noexcept
     {
         ++_index;
-        tt_assume(valid());
-        return *this; 
+        tt_axiom(is_valid());
+        return *this;
     }
 
-    iterator operator++(int) noexcept
+    gap_buffer_iterator operator++(int) noexcept
     {
         auto tmp = *this;
         ++_index;
-        tt_assume(valid());
-        return tmp; 
+        tt_axiom(is_valid());
+        return tmp;
     }
 
-    iterator &operator--() noexcept
+    gap_buffer_iterator &operator--() noexcept
     {
         --_index;
-        tt_assume(valid());
-        return *this; 
+        tt_axiom(is_valid());
+        return *this;
     }
 
-    iterator &operator--(int) noexcept
+    gap_buffer_iterator &operator--(int) noexcept
     {
         auto tmp = *this;
         --_index;
-        tt_assume(valid());
-        return tmp; 
+        tt_axiom(is_valid());
+        return tmp;
     }
 
-    iterator &operator+=(ssize_t n) noexcept
+    gap_buffer_iterator &operator+=(difference_type n) noexcept
     {
         _index += n;
-        tt_assume(valid());
-        return *this; 
+        tt_axiom(is_valid());
+        return *this;
     }
 
-    iterator &operator-=(ssize_t n) noexcept
+    gap_buffer_iterator &operator-=(difference_type n) noexcept
     {
         _index -= n;
-        tt_assume(valid());
-        return *this; 
+        tt_axiom(is_valid());
+        return *this;
     }
 
-    iterator operator-(ssize_t n) const noexcept
+    gap_buffer_iterator operator-(difference_type n) const noexcept
     {
         auto tmp = *this;
         return tmp -= n;
     }
 
-    friend difference_type operator-(iterator const &lhs, iterator const &rhs) noexcept
-    {
-        tt_assume(lhs.valid(rhs));
-        return lhs._index - rhs._index;
-    }
-
-    friend iterator operator+(iterator lhs, ssize_t rhs) noexcept
+    friend gap_buffer_iterator operator+(gap_buffer_iterator lhs, difference_type rhs) noexcept
     {
         return lhs += rhs;
     }
 
-    friend iterator operator+(size_t lhs, iterator rhs) noexcept
+    friend gap_buffer_iterator operator+(difference_type lhs, gap_buffer_iterator rhs) noexcept
     {
         return rhs += lhs;
     }
 
-    friend bool operator==(iterator const &lhs, iterator const &rhs) noexcept
+    template<typename L, typename R>
+    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend difference_type
+    operator-(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
-        tt_assume(lhs.valid(rhs));
+        tt_axiom(lhs.is_valid(rhs));
+        return lhs._index - rhs._index;
+    }
+
+    template<typename L, typename R>
+    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
+    operator==(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
+    {
+        tt_axiom(lhs.is_valid(rhs));
         return lhs._index == rhs._index;
     }
 
-    friend bool operator!=(iterator const &lhs, iterator const &rhs) noexcept
+    template<typename L, typename R>
+    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
+    operator!=(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
-        tt_assume(lhs.valid(rhs));
+        tt_axiom(lhs.is_valid(rhs));
         return lhs._index != rhs._index;
     }
 
-    friend bool operator<(iterator const &lhs, iterator const &rhs) noexcept
+    template<typename L, typename R>
+    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
+    operator<(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
-        tt_assume(lhs.valid(rhs));
+        tt_axiom(lhs.is_valid(rhs));
         return lhs._index < rhs._index;
     }
 
-    friend bool operator>(iterator const &lhs, iterator const &rhs) noexcept
+    template<typename L, typename R>
+    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
+    operator>(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
-        tt_assume(lhs.valid(rhs));
+        tt_axiom(lhs.is_valid(rhs));
         return lhs._index < rhs._index;
     }
 
-    friend bool operator<=(iterator const &lhs, iterator const &rhs) noexcept
+    template<typename L, typename R>
+    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
+    operator<=(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
-        tt_assume(lhs.valid(rhs));
+        tt_axiom(lhs.is_valid(rhs));
         return lhs._index <= rhs._index;
     }
 
-    friend bool operator>=(iterator const &lhs, iterator const &rhs) noexcept
+    template<typename L, typename R>
+    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
+    operator>=(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
-        tt_assume(lhs.valid(rhs));
+        tt_axiom(lhs.is_valid(rhs));
         return lhs._index >= rhs._index;
     }
 
 private:
-    gap_buffer<value_type> *_buffer;
-    ssize_t _index;
+    gap_buffer_type *_buffer;
+    difference_type _index;
 
-    [[nodiscard]] bool valid() const noexcept
+    [[nodiscard]] bool is_valid() const noexcept
     {
-        return _buffer != nullptr && _index >= 0 && _index < std::ssize(_buffer);
+        return _buffer != nullptr && _index >= 0 && _index <= std::ssize(*_buffer);
     }
 
-    [[nodiscard]] bool valid(iterator const &other) const noexcept
+    template<typename O>
+    requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<O>>)
+        [[nodiscard]] bool is_valid(gap_buffer_iterator<O> const &other) const noexcept
     {
-        return valid() && other.valid() && _buffer == other._buffer;
+        return is_valid() && other.is_valid() && _buffer == other._buffer;
     }
 };
 
-template<typename T>
-[[nodiscard]] inline gab_buffer_iterator<T> gab_buffer<T>::begin() noexcept 
+template<typename T, typename Allocator>
+gap_buffer_iterator<T> make_gap_buffer_iterator(gap_buffer<T, Allocator> *buffer, ptrdiff_t index)
 {
-    return gab_buffer_iterator<T>(this, 0);
+    return {buffer, index};
 }
 
-template<typename T>
-[[nodiscard]] inline gab_buffer_iterator<T> const gab_buffer<T>::begin() const noexcept 
+template<typename T, typename Allocator>
+gap_buffer_iterator<T const> make_gap_buffer_iterator(gap_buffer<T, Allocator> const *buffer, ptrdiff_t index)
 {
-    return gab_buffer_iterator<T>(this, 0);
+    return {buffer, index};
 }
 
-template<typename T>
-[[nodiscard]] gab_buffer_iterator<T> gab_buffer<T>::end() noexcept 
-{
-    return gab_buffer_iterator<T>(this, _size);
-}
-
-template<typename T>
-[[nodiscard]] gab_buffer_iterator<T> const gab_buffer<T>::end() const noexcept 
-{
-    return gab_buffer_iterator<T>(this, _size);
-}
-
-template<typename T, typename... Args>
-gab_buffer_iterator<T> gab_buffer<T>::emplace_before(iterator pos, Args &&... args) noexcept;
-{
-    tt_assume(pos._buffer == this);
-    set_gap_offset(pos._index);
-    grow_to_insert(1);
-
-    auto p = _ptr + _gap_offset + _gap_size - 1;
-    auto p_ = new (p) value_type(std::forward<Args>(args)...);
-    --_gap_size;
-    return gap_buffer_iterator<T>(this, _gap_offset + _gap_size);
-}
-
-template<typename T, typename... Args>
-gab_buffer_iterator<T> gab_buffer<T>::emplace_after(iterator pos, Args &&... args) noexcept;
-{
-    tt_assume(pos._buffer == this);
-    set_gap_offset(pos._index + 1);
-    grow_to_insert(1);
-
-    auto p = _ptr + _gap_offset;
-    auto p_ = new (p) value_type(std::forward<Args>(args)...);
-    ++_gap_offset;
-    --_gap_size;
-    return gap_buffer_iterator<T>(this, _gap_offset);
-}
-
-template<typename T>
-gab_buffer_iterator<T> gab_buffer<T>::erase(iterator first, iterator last) noexcept
-{
-    // place the gap before the first iterator, so that we can extend it.
-    tt_assume(first._buffer == this);
-    tt_assume(last._buffer == this);
-
-    set_gap_offset(first._index)
-    auto first_p = get_pointer(first._index);
-    auto last_p = get_pointer(last._index);
-    std::destroy(first_p, last_p);
-    _gap_size += last_p - first_p;
-}
-
-}
-
+} // namespace tt

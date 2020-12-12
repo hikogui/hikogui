@@ -75,7 +75,7 @@ target_sources(ttauri PRIVATE
     float16.hpp
     flow_layout.hpp
     format.hpp
-    gab_buffer.hpp
+    gap_buffer.hpp
     glob.hpp
     hash.hpp
     hires_utc_clock.cpp
@@ -204,7 +204,7 @@ target_sources(ttauri_tests PRIVATE
     datum_tests.cpp
     exceptions_tests.cpp
     FileView_tests.cpp
-    gab_buffer_tests.cpp
+    gap_buffer_tests.cpp
     polynomial_tests.cpp
     small_map_tests.cpp
     safe_int_tests.cpp

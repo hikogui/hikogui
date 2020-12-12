@@ -46,7 +46,7 @@ void main()
 
     // The amount of distance and direction covered in 2D inside the texture when
     // stepping one fragment to the right.
-    vec2 horizontal_texture_stride = dFdxFine(in_texture_coord.xy);
+    vec2 horizontal_texture_stride = dFdxCoarse(in_texture_coord.xy);
     vec2 vertical_texture_stride = vec2(-horizontal_texture_stride.y, horizontal_texture_stride.x);
     float pixel_distance = length(horizontal_texture_stride);
 
