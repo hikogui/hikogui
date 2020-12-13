@@ -1,5 +1,8 @@
 
 #include "required.hpp"
+#include "assert.hpp"
+#include "memory.hpp"
+#include "cast.hpp"
 #include <memory>
 #include <algorithm>
 #include <string>

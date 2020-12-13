@@ -174,66 +174,66 @@ target_sources(ttauri PRIVATE
 )
 
 target_precompile_headers(ttauri PRIVATE
-    required.hpp
-    os_detect.hpp
-    assert.hpp
-    exception.hpp
-    counters.hpp
-    logger.hpp
-    trace.hpp
-    debugger.hpp
-    datum.hpp
-    numeric_array.hpp
     aarect.hpp
-    rect.hpp
+    assert.hpp
+    counters.hpp
+    datum.hpp
+    debugger.hpp
+    exception.hpp
+    logger.hpp
     mat.hpp
+    numeric_array.hpp
+    os_detect.hpp
+    rect.hpp
+    required.hpp
     strings.hpp
+    trace.hpp
     URL.hpp
 )
 
 target_sources(ttauri_tests PRIVATE
-    polymorphic_value_tests.cpp
-    strings_tests.cpp
-    url_parser_tests.cpp
-    URL_tests.cpp
+    BezierCurve_tests.cpp
     bigint_tests.cpp
-    int_overflow_tests.cpp
-    interval_vec2_tests.cpp
     cell_address_tests.cpp
     counters_tests.cpp
     datum_tests.cpp
+    decimal_tests.cpp
     exceptions_tests.cpp
     FileView_tests.cpp
     gap_buffer_tests.cpp
-    polynomial_tests.cpp
-    small_map_tests.cpp
-    safe_int_tests.cpp
-    BezierCurve_tests.cpp
+    glob_tests.cpp
+    int_overflow_tests.cpp
+    interval_vec2_tests.cpp
+    mat_tests.cpp
+    math_tests.cpp
+    numeric_array_tests.cpp
     Path_tests.cpp
     PixelMap_tests.cpp
+    polymorphic_value_tests.cpp
+    polynomial_tests.cpp
+    safe_int_tests.cpp
+    small_map_tests.cpp
+    strings_tests.cpp
     tokenizer_tests.cpp
-    glob_tests.cpp
-    decimal_tests.cpp
-    math_tests.cpp
-    mat_tests.cpp
-    numeric_array_tests.cpp
     Unicode_tests.cpp
+    url_parser_tests.cpp
+    URL_tests.cpp
 )
 
 target_precompile_headers(ttauri_tests PRIVATE
-    required.hpp
-    os_detect.hpp
-    assert.hpp
-    exception.hpp
-    counters.hpp
-    logger.hpp
-    trace.hpp
-    debugger.hpp
-    datum.hpp
-    numeric_array.hpp
     aarect.hpp
-    rect.hpp
+    assert.hpp
+    counters.hpp
+    datum.hpp
+    debugger.hpp
+    exception.hpp
+    logger.hpp
     mat.hpp
+    numeric_array.hpp
+    os_detect.hpp
+    rect.hpp
+    required.hpp
     strings.hpp
+    trace.hpp
     URL.hpp
 )

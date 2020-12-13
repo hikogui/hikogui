@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <type_traits>
 #include <bit>
+#include <stdexcept>
 
 namespace tt {
 
