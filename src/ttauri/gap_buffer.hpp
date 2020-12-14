@@ -1,3 +1,7 @@
+// Copyright 2020 Pokitec
+// All rights reserved.
+
+#pragma once
 
 #include "required.hpp"
 #include "assert.hpp"
@@ -156,6 +160,8 @@ public:
     gap_buffer &operator=(gap_buffer &&other) noexcept
     {
         tt_axiom(&other != this);
+
+        // XXX Steal allocation with the allocators of this and other are equal.
 
         clear();
         if (_size >= other.size()) {
@@ -317,9 +323,9 @@ public:
         return _size;
     }
 
-    void reserve(size_t new_capacity) const noexcept
+    void reserve(size_t new_capacity) noexcept
     {
-        auto extra_capacity = static_cast<ssize_t>(new_capacity) - capacity();
+        ttlet extra_capacity = static_cast<ssize_t>(new_capacity) - capacity();
         if (extra_capacity <= 0) {
             return;
         }
@@ -327,17 +333,17 @@ public:
         // Add the extra_capacity to the end of the gap.
         // LLL...RRR
         // LLL....RRR
-        auto new_ptr = _allocator.allocate(new_capacity);
-        auto new_size = _size + extra_capacity;
-        auto new_gap_offset = _gap_offset;
-        auto new_gap_size = _gap_size + extra_capacity;
+        ttlet new_ptr = _allocator.allocate(new_capacity);
+        ttlet new_size = _size + extra_capacity;
+        ttlet new_gap_offset = _gap_offset;
+        ttlet new_gap_size = _gap_size + extra_capacity;
 
         if (_ptr != nullptr) {
-            auto new_left_begin = new_ptr;
-            auto new_right_begin = new_ptr + new_gap_offset + new_gap_size;
+            ttlet new_left_begin = new_ptr;
+            ttlet new_right_begin = new_ptr + new_gap_offset + new_gap_size;
             placement_move(left_begin(), left_end(), new_left_begin);
             placement_move(right_begin(), right_end(), new_right_begin);
-            _allocator.deallocate();
+            _allocator.deallocate(_ptr, _size);
         }
 
         _ptr = new_ptr;
@@ -379,11 +385,11 @@ public:
     template<typename... Args>
     void emplace_back(Args &&...args) noexcept
     {
-        set_gap_offset(_size);
+        set_gap_offset(size());
         grow_to_insert(1);
 
         auto p = _ptr + _gap_offset;
-        auto p_ = new (p) value_type(std::forward<Args>(args)...);
+        new (p) value_type(std::forward<Args>(args)...);
         ++_gap_offset;
         --_gap_size;
     }
@@ -405,7 +411,7 @@ public:
         grow_to_insert(1);
 
         auto p = _ptr + _gap_offset + _gap_size - 1;
-        auto p_ = new (p) value_type(std::forward<Args>(args)...);
+        new (p) value_type(std::forward<Args>(args)...);
         --_gap_size;
     }
 
@@ -424,24 +430,24 @@ public:
     template<typename... Args>
     iterator emplace_before(iterator position, Args &&...args) noexcept
     {
-        tt_axiom(position._buffer == this);
-        set_gap_offset(position._index);
+        tt_axiom(position.buffer() == this);
+        set_gap_offset(position.index());
         grow_to_insert(1);
 
         auto p = _ptr + _gap_offset + _gap_size - 1;
-        auto p_ = new (p) value_type(std::forward<Args>(args)...);
+        new (p) value_type(std::forward<Args>(args)...);
         --_gap_size;
         return gap_buffer_iterator<T>(this, _gap_offset + _gap_size);
     }
 
     iterator insert_before(iterator position, value_type const &value) noexcept
     {
-        emplace_before(position, value_type(value));
+        return emplace_before(position, value_type(value));
     }
 
     iterator insert_before(iterator position, value_type &&value) noexcept
     {
-        emplace_before(position, std::move(value));
+        return emplace_before(position, std::move(value));
     }
 
     /** Insert items
@@ -466,12 +472,12 @@ public:
     template<typename... Args>
     iterator emplace_after(iterator position, Args &&...args) noexcept
     {
-        tt_axiom(position._buffer == this);
-        set_gap_offset(position._index + 1);
+        tt_axiom(position.buffer() == this);
+        set_gap_offset(position.index() + 1);
         grow_to_insert(1);
 
         auto p = _ptr + _gap_offset;
-        auto p_ = new (p) value_type(std::forward<Args>(args)...);
+        new (p) value_type(std::forward<Args>(args)...);
         ++_gap_offset;
         --_gap_size;
         return gap_buffer_iterator<T>(this, _gap_offset);
@@ -479,12 +485,12 @@ public:
 
     iterator insert_after(iterator position, value_type const &value) noexcept
     {
-        emplace_after(position, value_type(value));
+        return emplace_after(position, value_type(value));
     }
 
     iterator insert_after(iterator position, value_type &&value) noexcept
     {
-        emplace_after(position, std::move(value));
+        return emplace_after(position, std::move(value));
     }
 
     /** Insert items
@@ -539,6 +545,26 @@ public:
         }
     }
 
+    template<typename Container>
+    [[nodiscard]] friend bool operator==(gap_buffer const &lhs, Container const &rhs) noexcept
+    {
+        if (lhs.size() != rhs.size()) {
+            return false;
+        } else {
+            return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
+        }
+    }
+
+    template<typename Container>
+    [[nodiscard]] friend bool operator==(Container const &lhs, gap_buffer const &rhs) noexcept
+    {
+        if (lhs.size() != rhs.size()) {
+            return false;
+        } else {
+            return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
+        }
+    }
+
 private:
     // By how much the buffer should grow when size() == capacity().
     static constexpr difference_type _grow_size = 256;
@@ -557,12 +583,13 @@ private:
 
     /** Grow the gap_buffer based on the size to be inserted.
      */
-    void grow_to_insert(difference_type n) const noexcept
+    void grow_to_insert(size_type n) noexcept
     {
         tt_axiom(is_valid());
         tt_axiom(n >= 0);
-        if (capacity() - _size < n) {
-            reserve(capacity() + n + _grow_size);
+        if (n > narrow_cast<size_type>(_gap_size)) [[unlikely]] {
+            auto new_capacity = size() + n + narrow_cast<size_type>(_grow_size);
+            reserve(ceil(new_capacity, hardware_constructive_interference_size));
         }
     }
 
@@ -575,7 +602,7 @@ private:
     {
         tt_axiom(is_valid());
         tt_axiom(index >= 0 && index < std::ssize(*this));
-        if (index > _gap_offset) {
+        if (index >= _gap_offset) {
             index += _gap_size;
         }
         return index;
@@ -729,6 +756,16 @@ public:
 
     gap_buffer_iterator(gap_buffer_type *buffer, difference_type index) noexcept : _buffer(buffer), _index(index) {}
 
+    gap_buffer_type *buffer() const noexcept
+    {
+        return _buffer;
+    }
+
+    difference_type index() const noexcept
+    {
+        return _index;
+    }
+
     reference operator*() noexcept
     {
         return (*_buffer)[narrow_cast<size_type>(_index)];
@@ -740,14 +777,14 @@ public:
         return (*_buffer)[narrow_cast<size_type>(_index)];
     }
 
-    reference operator[](difference_type index) noexcept
+    reference operator[](std::integral auto index) noexcept
     {
-        return (*_buffer)[narrow_cast<size_type>(_index + index)];
+        return (*_buffer)[narrow_cast<size_type>(_index + narrow_cast<difference_type>(index))];
     }
 
-    const_reference operator[](difference_type index) const noexcept
+    const_reference operator[](std::integral auto index) const noexcept
     {
-        return (*_buffer)[narrow_cast<size_type>(_index + index)];
+        return (*_buffer)[narrow_cast<size_type>(_index + narrow_cast<difference_type>(index))];
     }
 
     gap_buffer_iterator &operator++() noexcept
@@ -780,87 +817,87 @@ public:
         return tmp;
     }
 
-    gap_buffer_iterator &operator+=(difference_type n) noexcept
+    gap_buffer_iterator &operator+=(std::integral auto n) noexcept
     {
-        _index += n;
+        _index += narrow_cast<difference_type>(n);
         tt_axiom(is_valid());
         return *this;
     }
 
-    gap_buffer_iterator &operator-=(difference_type n) noexcept
+    gap_buffer_iterator &operator-=(std::integral auto n) noexcept
     {
-        _index -= n;
+        _index -= narrow_cast<difference_type>(n);
         tt_axiom(is_valid());
         return *this;
     }
 
-    gap_buffer_iterator operator-(difference_type n) const noexcept
+    gap_buffer_iterator operator-(std::integral auto n) const noexcept
     {
         auto tmp = *this;
         return tmp -= n;
     }
 
-    friend gap_buffer_iterator operator+(gap_buffer_iterator lhs, difference_type rhs) noexcept
+    friend gap_buffer_iterator operator+(gap_buffer_iterator lhs, std::integral auto rhs) noexcept
     {
         return lhs += rhs;
     }
 
-    friend gap_buffer_iterator operator+(difference_type lhs, gap_buffer_iterator rhs) noexcept
+    friend gap_buffer_iterator operator+(std::integral auto lhs, gap_buffer_iterator rhs) noexcept
     {
         return rhs += lhs;
     }
 
-    template<typename L, typename R>
-    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend difference_type
-    operator-(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
+    template<typename R>
+    requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<R>>) friend difference_type
+    operator-(gap_buffer_iterator const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid(rhs));
         return lhs._index - rhs._index;
     }
 
-    template<typename L, typename R>
-    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
-    operator==(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
+    template<typename R>
+    requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<R>>) friend bool
+    operator==(gap_buffer_iterator const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid(rhs));
         return lhs._index == rhs._index;
     }
 
-    template<typename L, typename R>
-    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
-    operator!=(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
+    template<typename R>
+    requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<R>>) friend bool
+    operator!=(gap_buffer_iterator const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid(rhs));
         return lhs._index != rhs._index;
     }
 
-    template<typename L, typename R>
-    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
-    operator<(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
+    template<typename R>
+    requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<R>>) friend bool
+    operator<(gap_buffer_iterator const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid(rhs));
         return lhs._index < rhs._index;
     }
 
-    template<typename L, typename R>
-    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
-    operator>(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
+    template<typename R>
+    requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<R>>) friend bool
+    operator>(gap_buffer_iterator const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid(rhs));
         return lhs._index < rhs._index;
     }
 
-    template<typename L, typename R>
-    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
-    operator<=(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
+    template<typename R>
+    requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<R>>) friend bool
+    operator<=(gap_buffer_iterator const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid(rhs));
         return lhs._index <= rhs._index;
     }
 
-    template<typename L, typename R>
-    requires(std::is_same_v<std::remove_cv_t<L>, std::remove_cv_t<R>>) friend bool
-    operator>=(gap_buffer_iterator<L> const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
+    template<typename R>
+    requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<R>>) friend bool
+    operator>=(gap_buffer_iterator const &lhs, gap_buffer_iterator<R> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid(rhs));
         return lhs._index >= rhs._index;

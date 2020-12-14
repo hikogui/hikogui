@@ -167,10 +167,29 @@ enum class Processor {
 
 #endif
 
-constexpr size_t cache_line_size =
-    Processor::current == Processor::x64 ? 128 :
-    Processor::current == Processor::ARM ? 64 :
-    0;
+#if TT_PROCESSOR == TT_CPU_X64
+/** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
+ * Part of c++17 but never implemented by clang or gcc.
+ */
+constexpr size_t hardware_destructive_interference_size = 128;
+
+/** Maximum size of contiguous memory to promote true sharing. Guaranteed to be at least alignof(std::max_align_t)
+ * Part of c++17 but never implemented by clang or gcc.
+ */
+constexpr size_t hardware_constructive_interference_size = 64;
+#elif TT_PROCESSOR == TT_CPU_ARM
+/** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
+ * Part of c++17 but never implemented by clang or gcc.
+ */
+constexpr size_t hardware_destructive_interference_size = 64;
+
+/** Maximum size of contiguous memory to promote true sharing. Guaranteed to be at least alignof(std::max_align_t)
+ * Part of c++17 but never implemented by clang or gcc.
+ */
+constexpr size_t hardware_constructive_interference_size = 64;
+#else
+#error "Missing implementation of hardware_destructive_interference_size and hardware_constructive_interference_size"
+#endif
 
 constexpr bool has_sse = Processor::current == Processor::x64;
 

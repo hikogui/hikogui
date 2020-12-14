@@ -4,6 +4,7 @@
 #pragma once
 
 #include "required.hpp"
+#include "concepts"
 #include <memory>
 #include <vector>
 #include <map>
@@ -83,7 +84,6 @@ T *placement_move(T *src, T *dst)
  * between two memory locations.
  * 
  * It is undefined behavior when src_first and dst_first are not part of the same array.
- * It is undefined behavior when src_first and dst_first point to the same object.
  * 
  * The objects may overlap: copying takes place as if the objects were copied
  * to a temporary object array and then the objects were copied from the array to dst.
@@ -91,7 +91,6 @@ T *placement_move(T *src, T *dst)
 template<typename T>
 void placement_move_within_array(T *src_first, T *src_last, T *dst_first)
 {
-    tt_axiom(src_first != dst_first);
     tt_axiom(src_last >= src_first);
 
     if (src_first < dst_first) {
@@ -103,12 +102,16 @@ void placement_move_within_array(T *src_first, T *src_last, T *dst_first)
             placement_move(--src, --dst);
         }
 
-    } else {
+    } else if (src_first > dst_first) {
         auto src = src_first;
         auto dst = dst_first;
         while (src != src_last) {
             placement_move(src++, dst++);
         }
+
+    } else {
+        // When src_first and dst_first are equal then no movement is necessary.
+        ;
     }
 }
 
@@ -134,8 +137,20 @@ bool is_aligned(T* p){
     return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
 }
 
+template<std::unsigned_integral T>
+constexpr T floor(T value, T alignment) noexcept
+{
+    return (value / alignment) * alignment;
+}
+
+template<std::unsigned_integral T>
+constexpr T ceil(T value, T alignment) noexcept
+{
+    return floor(value + (alignment - 1), alignment);
+}
+
 template<typename R, typename T>
-inline R align(T ptr, size_t alignment) noexcept
+R align(T ptr, size_t alignment) noexcept
 {
     ttlet byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
     ttlet alignedByteOffset = ((byteOffset + alignment - 1) / alignment) * alignment;

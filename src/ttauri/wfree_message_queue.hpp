@@ -92,8 +92,8 @@ class wfree_message_queue {
     static_assert(capacity > (slack * 2), "The capacity of the message queue should be much larger than its slack.");
 
     std::array<message_type,capacity> messages;
-    alignas(cache_line_size) std::atomic<index_type> head = 0;
-    alignas(cache_line_size) std::atomic<index_type> tail = 0;
+    alignas(hardware_destructive_interference_size) std::atomic<index_type> head = 0;
+    alignas(hardware_destructive_interference_size) std::atomic<index_type> tail = 0;
 
 public:
     wfree_message_queue() = default;
