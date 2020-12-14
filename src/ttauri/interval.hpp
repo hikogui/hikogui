@@ -4,9 +4,11 @@
 #pragma once
 
 #include "required.hpp"
+#include "assert.hpp"
 #include <type_traits>
 #include <limits>
 #include <concepts>
+#include <algorithm>
 
 namespace tt {
 

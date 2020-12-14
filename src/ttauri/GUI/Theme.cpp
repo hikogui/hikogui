@@ -6,6 +6,8 @@
 #include "../application.hpp"
 #include "../codec/JSON.hpp"
 #include "../sRGB.hpp"
+#include "../logger.hpp"
+#include "../URL.hpp"
 
 namespace tt {
 

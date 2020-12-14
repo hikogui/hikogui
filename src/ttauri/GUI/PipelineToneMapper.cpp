@@ -4,6 +4,7 @@
 #include "PipelineToneMapper.hpp"
 #include "PipelineToneMapper_DeviceShared.hpp"
 #include "gui_window_vulkan.hpp"
+#include "gui_device_vulkan.hpp"
 
 namespace tt::PipelineToneMapper {
 

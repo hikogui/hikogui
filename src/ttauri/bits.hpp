@@ -4,6 +4,7 @@
 #pragma once
 
 #include "exception.hpp"
+#include "assert.hpp"
 #include <span>
 #include <cstddef>
 

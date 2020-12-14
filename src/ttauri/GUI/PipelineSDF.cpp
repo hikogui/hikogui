@@ -4,6 +4,7 @@
 #include "PipelineSDF.hpp"
 #include "PipelineSDF_DeviceShared.hpp"
 #include "gui_window_vulkan.hpp"
+#include "gui_device_vulkan.hpp"
 
 namespace tt::PipelineSDF {
 

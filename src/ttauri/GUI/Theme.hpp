@@ -7,6 +7,9 @@
 #include "../required.hpp"
 #include "../mat.hpp"
 #include "../text/TextStyle.hpp"
+#include "../URL.hpp"
+#include "../numeric_array.hpp"
+#include "../datum.hpp"
 #include <array>
 
 namespace tt {

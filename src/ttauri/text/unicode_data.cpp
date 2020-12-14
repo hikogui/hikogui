@@ -9,6 +9,7 @@
 #include "../exception.hpp"
 #include "../strings.hpp"
 #include "../required.hpp"
+#include "../check.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <string>

@@ -861,8 +861,6 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initia
 constexpr size_t TRANSITION_TABLE_SIZE = NR_TOKENIZER_STATES * 256;
 using transitionTable_t = std::array<tokenizer_transition_t,TRANSITION_TABLE_SIZE>;
 
-
-
 constexpr transitionTable_t calculateTransitionTable()
 {
 #define CALCULATE_SUB_TABLE(x)\

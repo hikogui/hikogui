@@ -5,6 +5,8 @@
 #include "../placement.hpp"
 #include "../strings.hpp"
 #include "../endian.hpp"
+#include "../codec/UTF.hpp"
+#include "../logger.hpp"
 #include <cstddef>
 
 

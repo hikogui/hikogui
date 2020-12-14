@@ -173,6 +173,7 @@ target_sources(ttauri PRIVATE
     wfree_unordered_map.hpp
 )
 
+if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
 target_precompile_headers(ttauri PRIVATE
     aarect.hpp
     assert.hpp
@@ -190,6 +191,7 @@ target_precompile_headers(ttauri PRIVATE
     trace.hpp
     URL.hpp
 )
+endif()
 
 target_sources(ttauri_tests PRIVATE
     BezierCurve_tests.cpp
@@ -220,6 +222,7 @@ target_sources(ttauri_tests PRIVATE
     URL_tests.cpp
 )
 
+if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
 target_precompile_headers(ttauri_tests PRIVATE
     aarect.hpp
     assert.hpp
@@ -237,3 +240,4 @@ target_precompile_headers(ttauri_tests PRIVATE
     trace.hpp
     URL.hpp
 )
+endif()

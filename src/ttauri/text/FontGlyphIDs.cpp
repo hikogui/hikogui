@@ -5,6 +5,7 @@
 #include "font_book.hpp"
 #include "../application.hpp"
 #include "../Path.hpp"
+#include "../logger.hpp"
 
 namespace tt {
 

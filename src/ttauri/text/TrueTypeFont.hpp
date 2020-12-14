@@ -6,6 +6,8 @@
 #include "Font.hpp"
 #include "../Path.hpp"
 #include "../ResourceView.hpp"
+#include "../URL.hpp"
+#include "../error_info.hpp"
 #include <memory>
 
 namespace tt {

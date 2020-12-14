@@ -19,27 +19,17 @@
                     "type": "STRING"
                 },
                 {
-                    "name": "GLM_TEST_ENABLE_CXX_17",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
                     "name": "BUILD_SHARED_LIBS",
                     "value": "OFF",
                     "type": "STRING"
                 },
                 {
-                    "name": "GLM_TEST_ENABLE",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "GLM_TEST_ENABLE_SIMD_AVX2",
+                    "name": "gtest_force_shared_crt",
                     "value": "ON",
                     "type": "STRING"
                 },
                 {
-                    "name": "gtest_force_shared_crt",
+                    "name": "BUILD_TZ_LIB",
                     "value": "ON",
                     "type": "STRING"
                 },
@@ -69,27 +59,17 @@
             ],
             "variables": [
                 {
-                    "name": "GLM_TEST_ENABLE_CXX_17",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
                     "name": "BUILD_SHARED_LIBS",
                     "value": "OFF",
                     "type": "STRING"
                 },
                 {
-                    "name": "GLM_TEST_ENABLE",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "GLM_TEST_ENABLE_SIMD_AVX2",
+                    "name": "gtest_force_shared_crt",
                     "value": "ON",
                     "type": "STRING"
                 },
                 {
-                    "name": "gtest_force_shared_crt",
+                    "name": "BUILD_TZ_LIB",
                     "value": "ON",
                     "type": "STRING"
                 },
@@ -120,27 +100,17 @@
             ],
             "variables": [
                 {
-                    "name": "GLM_TEST_ENABLE_CXX_17",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
                     "name": "BUILD_SHARED_LIBS",
                     "value": "OFF",
                     "type": "STRING"
                 },
                 {
-                    "name": "GLM_TEST_ENABLE",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "GLM_TEST_ENABLE_SIMD_AVX2",
+                    "name": "gtest_force_shared_crt",
                     "value": "ON",
                     "type": "STRING"
                 },
                 {
-                    "name": "gtest_force_shared_crt",
+                    "name": "BUILD_TZ_LIB",
                     "value": "ON",
                     "type": "STRING"
                 },
@@ -170,27 +140,17 @@
             ],
             "variables": [
                 {
-                    "name": "GLM_TEST_ENABLE_CXX_17",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
                     "name": "BUILD_SHARED_LIBS",
                     "value": "OFF",
                     "type": "STRING"
                 },
                 {
-                    "name": "GLM_TEST_ENABLE",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "GLM_TEST_ENABLE_SIMD_AVX2",
+                    "name": "gtest_force_shared_crt",
                     "value": "ON",
                     "type": "STRING"
                 },
                 {
-                    "name": "gtest_force_shared_crt",
+                    "name": "BUILD_TZ_LIB",
                     "value": "ON",
                     "type": "STRING"
                 },
@@ -220,27 +180,17 @@
             ],
             "variables": [
                 {
-                    "name": "GLM_TEST_ENABLE_CXX_17",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
                     "name": "BUILD_SHARED_LIBS",
                     "value": "OFF",
                     "type": "STRING"
                 },
                 {
-                    "name": "GLM_TEST_ENABLE",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "GLM_TEST_ENABLE_SIMD_AVX2",
+                    "name": "gtest_force_shared_crt",
                     "value": "ON",
                     "type": "STRING"
                 },
                 {
-                    "name": "gtest_force_shared_crt",
+                    "name": "BUILD_TZ_LIB",
                     "value": "ON",
                     "type": "STRING"
                 },

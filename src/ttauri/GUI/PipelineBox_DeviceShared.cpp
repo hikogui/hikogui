@@ -3,7 +3,7 @@
 
 #include "PipelineBox.hpp"
 #include "PipelineBox_DeviceShared.hpp"
-#include "gui_device.hpp"
+#include "gui_device_vulkan.hpp"
 #include "../PixelMap.hpp"
 #include "../URL.hpp"
 #include <array>

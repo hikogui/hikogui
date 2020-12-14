@@ -171,6 +171,11 @@ void file::rename(URL const &destination, bool overwrite_existing)
     ttlet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
 
     auto rename_info = reinterpret_cast<PFILE_RENAME_INFO>(std::malloc(rename_info_size));
+    if (rename_info == nullptr) {
+        tt_error_info();
+        throw std::bad_alloc();
+    }
+
     rename_info->ReplaceIfExists = overwrite_existing;
     rename_info->RootDirectory = nullptr;
     rename_info->FileNameLength = narrow_cast<DWORD>(dst_filename_wsize);

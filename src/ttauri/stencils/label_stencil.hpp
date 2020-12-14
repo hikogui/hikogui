@@ -7,6 +7,8 @@
 #include "text_stencil.hpp"
 #include "image_stencil.hpp"
 #include "../label.hpp"
+#include "../GUI/theme.hpp"
+#include "../GUI/draw_context.hpp"
 #include <string_view>
 
 namespace tt {

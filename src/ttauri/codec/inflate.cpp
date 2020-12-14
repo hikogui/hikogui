@@ -5,6 +5,7 @@
 #include "../bits.hpp"
 #include "../placement.hpp"
 #include "../huffman.hpp"
+#include <array>
 
 namespace tt {
 

@@ -6,7 +6,14 @@
 clang_suppress("-Wunused-variable")
 clang_suppress("-Wreorder")
 clang_suppress("-Wunused-private-field")
+
 msvc_suppress(4127)
+msvc_suppress(6011)
+msvc_suppress(6386)
+msvc_suppress(6387)
+msvc_suppress(4701)
+msvc_suppress(4703)
+msvc_suppress(4189)
 
 #define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>

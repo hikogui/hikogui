@@ -5,6 +5,7 @@
 
 #include "../hires_utc_clock.hpp"
 #include "../required.hpp"
+#include "../assert.hpp"
 #include <span>
 
 namespace tt {

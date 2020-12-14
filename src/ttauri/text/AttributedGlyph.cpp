@@ -3,6 +3,7 @@
 
 #include "AttributedGlyph.hpp"
 #include "font_book.hpp"
+#include "../logger.hpp"
 #include "../application.hpp"
 #include "../Path.hpp"
 

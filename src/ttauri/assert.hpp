@@ -37,11 +37,17 @@ namespace tt {
     } while (false)
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-/** In debug mode, replace tt_axiom() with an tt_assert().
+/** Specify an axiom; an expression that is true.
+ * An axiom is checked in debug mode, and is used as an optimization
+ * in release mode.
  */
 #define tt_axiom(expression, ...) tt_assert(expression, __VA_ARGS__)
 #else
-#define tt_axiom(expression, ...) tt_assume(expression, __VA_ARGS__)
+/** Specify an axiom; an expression that is true.
+ * An axiom is checked in debug mode, and is used as an optimization
+ * in release mode.
+ */
+#define tt_axiom(expression, ...) tt_assume(expression)
 #endif
 
 } // namespace tt

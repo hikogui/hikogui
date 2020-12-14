@@ -5,6 +5,7 @@
 
 #include "os_detect.hpp"
 #include "memory.hpp"
+#include "assert.hpp"
 
 #if TT_COMPILER == TT_CC_MSVC
 #include <stdlib.h>

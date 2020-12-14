@@ -35,6 +35,8 @@ target_sources(ttauri PRIVATE
     WindowWidget.hpp
 )
 
+if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
 target_precompile_headers(ttauri PRIVATE
     Widget.hpp
 )
+endif()

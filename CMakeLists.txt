@@ -87,9 +87,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # POPCNT is supported by Steamroller through he SSE4A instruction set.
     target_compile_options(ttauri PUBLIC -mf16c -mfsgsbase -mavx -maes -mpclmul -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mpopcnt)
 
-    # clang bug does not recognize functions without side-effects in __builtin_assume()
-    target_compile_options(ttauri PUBLIC -Wno-assume)
-
     # The Microsoft version of clang does not implement all clang command line arguments.
     if (NOT MSVC)
         # The TTauri generic tokenizer uses large constexpr tables.
@@ -135,6 +132,19 @@ elseif (MSVC)
     # Therefor this warning is useless.
     target_compile_options(ttauri PUBLIC -wd4127)
 
+    # "C6326: Potential comparison of a constant with another constant."
+    # Should never have been a warning. This is caused by normal constexpr use since c++11.
+    target_compile_options(ttauri PUBLIC -wd6326)
+
+    # "C6239: (<non-zero constant> && <expression>) always evaluates to the result of <expression>.
+    # Did you intend to use the bitwise-and operator?"
+    # Should never have been a warning. This is caused by normal constexpr use since c++11.
+    target_compile_options(ttauri PUBLIC -wd6239)
+
+    # "C6262: Function uses 'x' bytes of stack: exceeds /analyze:stacksize 'x'. Consider moving some data to heap.
+    # False positives when returning data from a function in constexpr context since c++11.
+    target_compile_options(ttauri PUBLIC -wd6262)
+
     if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
         # Enable Security Development Lifecycle checks.
         # This includes run-time checks, don't include this in the Release type
@@ -149,7 +159,9 @@ elseif (MSVC)
 endif()
 
 if (WIN32)
+    if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE <Windows.h>)
+    endif()
 
     # Add vulkan win32 surface support.
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
@@ -233,19 +245,49 @@ add_custom_command(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-#set(TTauri_do_not_analyze
-#    ${TTauriTests_srcs}
-#)
+set(TTauri_do_not_analyze
+    src/ttauri/GUI/PipelineFlat.cpp
+    src/ttauri/GUI/gui_window_vulkan.cpp
+    src/ttauri/GUI/gui_device_vulkan.cpp
+    src/ttauri/GUI/gui_system_vulkan.cpp
+    src/ttauri/GUI/gui_system.cpp
+    src/ttauri/GUI/gui_system_vulkan_win32.cpp
+    src/ttauri/GUI/gui_window.cpp
+    src/ttauri/GUI/gui_window_vulkan_win32.cpp
+    src/ttauri/GUI/PipelineFlat_DeviceShared.cpp
+    src/ttauri/GUI/PipelineImage.cpp
+    src/ttauri/GUI/PipelineToneMapper.cpp
+    src/ttauri/GUI/PipelineImage_TextureMap.cpp
+    src/ttauri/GUI/PipelineSDF_TextureMap.cpp
+    src/ttauri/GUI/PipelineBox_DeviceShared.cpp
+    src/ttauri/GUI/PipelineImage_DeviceShared.cpp
+    src/ttauri/GUI/PipelineToneMapper_DeviceShared.cpp
+    src/ttauri/GUI/PipelineImage_Image.cpp
+    src/ttauri/GUI/PipelineSDF_DeviceShared.cpp
+    src/ttauri/GUI/PipelineSDF_AtlasRect.cpp
+    src/ttauri/GUI/PipelineSDF.cpp
+    src/ttauri/GUI/pipeline_vulkan.cpp
+    src/ttauri/GUI/PipelineBox.cpp
+    src/ttauri/widgets/WindowWidget.cpp
+    src/ttauri/widgets/SystemMenuWidget.cpp
+    src/ttauri/widgets/grid_layout_widget.cpp
+    src/ttauri/widgets/WindowTrafficLightsWidget.cpp
+    src/ttauri/widgets/LineInputWidget.cpp
+    src/ttauri/widgets/widget.cpp
+    src/ttauri/stencils/glyph_stencil.cpp
+    src/ttauri/stencils/pixel_map_stencil.cpp
+    src/ttauri/stencils/text_stencil.cpp
+    src/ttauri/stencils/stencil.cpp
+    src/ttauri/application.cpp
+)
 
-#if(MSVC)
-#    add_compile_options(/wd4996 /wd4005)
-#    if(TTAURI_ENABLE_CODE_ANALYSIS)
-#        set_source_files_properties(${TTauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
-#        add_compile_options(/analyze /analyze:plugin EspXEngine.dll)
-#        add_compile_options(/wd26447)
-#       add_compile_options(/wd26486) # lifetime.3 tooooooo many false positives.
-#   endif()
-#endif()
+if(MSVC)
+    if(TTAURI_ENABLE_CODE_ANALYSIS)
+        set_source_files_properties(${TTauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
+        target_compile_options(ttauri PUBLIC -analyze)
+        #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
+   endif()
+endif()
 
 
 

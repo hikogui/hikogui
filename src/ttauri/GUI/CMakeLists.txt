@@ -108,7 +108,9 @@ target_sources(ttauri PRIVATE
     VulkanMemoryAllocator.cpp
 )
 
+if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
 target_precompile_headers(ttauri PRIVATE
     gui_window_vulkan_win32.hpp
     gui_device_vulkan.hpp
 )
+endif()

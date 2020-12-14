@@ -5,6 +5,7 @@
 #include "codec/JSON.hpp"
 #include "file.hpp"
 #include "timer.hpp"
+#include "logger.hpp"
 
 namespace tt {
 

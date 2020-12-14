@@ -9,6 +9,7 @@
 #include <vector>
 
 namespace tt {
+class gui_device_vulkan;
 
 class pipeline_vulkan : public pipeline {
 public:

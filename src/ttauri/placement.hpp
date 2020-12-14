@@ -7,6 +7,7 @@
 #include "type_traits.hpp"
 #include "cast.hpp"
 #include "exception.hpp"
+#include "check.hpp"
 #include <span>
 
 namespace tt {

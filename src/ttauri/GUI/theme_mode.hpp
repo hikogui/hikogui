@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../required.hpp"
+#include "../assert.hpp"
 #include <string>
 #include <ostream>
 

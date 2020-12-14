@@ -119,7 +119,7 @@ struct bigint {
 
     template<int O>
     explicit operator bigint<T,O> () const noexcept {
-        bigint<T,O> r;
+        auto r = bigint<T,O>{};
 
         for (auto i = 0; i < O; i++) {
             r.digits[i] = i < N ? digits[i] : 0;
@@ -445,7 +445,7 @@ struct bigint {
         if (&o != &lhs || digit_count > 0) { 
             auto i = 0;
             for (; i != (N - digit_count); ++i) {
-                o.digits[i] = lhs.digits[i + digit_count];
+                o.digits[i] = lhs.digits[narrow_cast<size_t>(i + digit_count)];
             }
             for (; i != N; ++i) {
                 o.digits[i] = 0;

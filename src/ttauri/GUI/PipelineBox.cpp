@@ -3,6 +3,7 @@
 
 #include "PipelineBox.hpp"
 #include "PipelineBox_DeviceShared.hpp"
+#include "gui_device_vulkan.hpp"
 
 namespace tt::PipelineBox {
 

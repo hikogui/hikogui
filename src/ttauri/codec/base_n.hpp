@@ -40,27 +40,27 @@ struct base_n_alphabet {
         }
 
         // Mark white-space in the int_from_char_table as white-space.
-        int_from_char_table[static_cast<size_t>(' ')] = -1;
-        int_from_char_table[static_cast<size_t>('\t')] = -1;
-        int_from_char_table[static_cast<size_t>('\r')] = -1;
-        int_from_char_table[static_cast<size_t>('\n')] = -1;
-        int_from_char_table[static_cast<size_t>('\f')] = -1;
+        int_from_char_table[narrow_cast<size_t>(' ')] = -1;
+        int_from_char_table[narrow_cast<size_t>('\t')] = -1;
+        int_from_char_table[narrow_cast<size_t>('\r')] = -1;
+        int_from_char_table[narrow_cast<size_t>('\n')] = -1;
+        int_from_char_table[narrow_cast<size_t>('\f')] = -1;
 
         if (padding_char != 0) {
-            int_from_char_table[static_cast<size_t>(padding_char)] = -1;
+            int_from_char_table[narrow_cast<size_t>(padding_char)] = -1;
         }
 
         for (long long i = 0; i != radix; ++i) {
             auto c = str[i];
             char_from_int_table[i] = c;
 
-            int_from_char_table[static_cast<size_t>(c)] = static_cast<int8_t>(i);
+            int_from_char_table[narrow_cast<size_t>(c)] = narrow_cast<int8_t>(i);
             if constexpr (StringLength <= 33) {
                 // Add an extra entry for case folded form.
                 if (c >= 'a' && c <= 'z') {
-                    int_from_char_table[static_cast<size_t>((c - 'a') + 'A')] = static_cast<int8_t>(i);
+                    int_from_char_table[narrow_cast<size_t>((c - 'a') + 'A')] = narrow_cast<int8_t>(i);
                 } else if (c >= 'A' && c <= 'Z') {
-                    int_from_char_table[static_cast<size_t>((c - 'A') + 'a')] = static_cast<int8_t>(i);
+                    int_from_char_table[narrow_cast<size_t>((c - 'A') + 'a')] = narrow_cast<int8_t>(i);
                 }
             }
         }
@@ -77,7 +77,7 @@ struct base_n_alphabet {
 
     constexpr long long int_from_char(char c) const noexcept
     {
-        return int_from_char_table[static_cast<size_t>(c)];
+        return int_from_char_table[narrow_cast<size_t>(c)];
     }
 };
 

@@ -3,7 +3,7 @@
 
 #include "PipelineFlat.hpp"
 #include "PipelineFlat_DeviceShared.hpp"
-#include "gui_device.hpp"
+#include "gui_device_vulkan.hpp"
 
 namespace tt::PipelineFlat {
 

@@ -485,7 +485,7 @@ public:
     /** Create an identity matrix.
     */
     [[nodiscard]] static mat I() noexcept {
-        f32x4 tmp;
+        auto tmp = f32x4{};
         return { tmp._1000(), tmp._0100(), tmp._0010(), tmp._0001() };
     }
 

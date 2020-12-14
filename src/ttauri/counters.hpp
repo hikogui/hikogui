@@ -4,6 +4,7 @@
 #pragma once
 
 #include "wfree_unordered_map.hpp"
+#include "os_detect.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>

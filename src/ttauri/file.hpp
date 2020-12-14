@@ -4,9 +4,12 @@
 #pragma once
 
 #include "URL.hpp"
+#include "byte_string.hpp"
+#include "os_detect.hpp"
 #include <mutex>
 #include <cstdint>
 #include <map>
+#include <span>
 
 namespace tt {
 

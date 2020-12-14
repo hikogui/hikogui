@@ -3,6 +3,7 @@
 
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
+#include "gui_device_vulkan.hpp"
 
 namespace tt::PipelineImage {
 

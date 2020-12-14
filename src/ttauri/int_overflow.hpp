@@ -6,6 +6,8 @@
 #include "required.hpp"
 #include "os_detect.hpp"
 #include "type_traits.hpp"
+#include "assert.hpp"
+
 #include <type_traits>
 #include <cmath>
 
