@@ -218,6 +218,7 @@ public:
      */
     [[nodiscard]] reference operator[](size_type index) noexcept
     {
+        tt_axiom(index < size());
         return *get_pointer(index);
     }
 
@@ -229,6 +230,7 @@ public:
      */
     [[nodiscard]] const_reference operator[](size_type index) const noexcept
     {
+        tt_axiom(index < size());
         return *get_pointer(index);
     }
 
@@ -316,6 +318,11 @@ public:
     [[nodiscard]] size_t size() const noexcept
     {
         return _size - _gap_size;
+    }
+
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return size() == 0;
     }
 
     [[nodiscard]] size_t capacity() const noexcept
@@ -517,14 +524,15 @@ public:
     iterator erase(iterator first, iterator last) noexcept
     {
         // place the gap before the first iterator, so that we can extend it.
-        tt_axiom(first._buffer == this);
-        tt_axiom(last._buffer == this);
+        tt_axiom(first.buffer() == this);
+        tt_axiom(last.buffer() == this);
 
-        set_gap_offset(first._index);
-        ttlet first_p = get_pointer(first._index);
-        ttlet last_p = get_pointer(last._index);
+        set_gap_offset(first.index());
+        ttlet first_p = get_pointer(first.index());
+        ttlet last_p = get_pointer(last.index());
         std::destroy(first_p, last_p);
         _gap_size += last_p - first_p;
+        return make_gap_buffer_iterator(this, _gap_offset);
     }
 
     /** Erase item
@@ -601,7 +609,7 @@ private:
     [[nodiscard]] difference_type get_offset(difference_type index) const noexcept
     {
         tt_axiom(is_valid());
-        tt_axiom(index >= 0 && index < std::ssize(*this));
+        tt_axiom(index >= 0 && index <= std::ssize(*this));
         if (index >= _gap_offset) {
             index += _gap_size;
         }
