@@ -50,13 +50,24 @@ Selecting a font to render a text is done in several steps:
    not available in the requested fonts.
 
 ## Rich text
-The text shaper will handle Unicode strings together with a default text style.
-The Unicode string may also contain special codes to change the text style inside the text.
+The text shaper will handle Unicode strings together with inline text style directives.
+The default text style in absent of initial text style directives is as follows:
+ - Font Family GID = 1 (Sans-Serif)
+ - Font Weight = 500 (Medium)
+ - Font Slant = upright
+ - Font size = 12
+ - Text decoriation = no-decoration
+ - Text color = semantic-foreground
 
-The special codes are non-character 0xFDD0 - 0xFDEF. Non-characters are application
-pecific private codes that should not be used outside the application.
+The text style directives are encoded as follows:
+ 1. U+91 (PU1: Private Use)
+ 2. One or more alphabetical characters case sensitive denoted the parameter
+ 3. Zero or more values seperated using U+1F, U+1E or U+1D for the different
+    levels. The values themselves are integer or decimal numbers encoded as digits
+    '0' to '9' and an optional single decimal seperator '.'.
+ 4. U+1C (FS: File Separator) To mark the end of the style directive.
 
-  1st Code | Description
+
  :---------|:---------- 
   0xFDD0   | Reset to default text-style
   0xFDD1   | Font Family
@@ -65,109 +76,33 @@ pecific private codes that should not be used outside the application.
   0xFDD4   | Text Decoration
   0xFDD5   | Text Color
 
-### Font Variant
+Below are the encodings:
 
-  2nd Code | Description
- :---------|:--------------
-  0xFDE0   | Reset to default variant
-  0xFDE1   | Set font weight to Thin (100)
-  0xFDE2   | Set font weight to ExtraLight (200)
-  0xFDE3   | Set font weight to Light (300)
-  0xFDE4   | Set font weight to Regular (400)
-  0xFDE5   | Set font weight to Medium (500)
-  0xFDE6   | Set font weight to SemiBold (600)
-  0xFDE7   | Set font weight to Bold (700)
-  0xFDE8   | Set font weight to ExtraBold (800)
-  0xFDE9   | Set font weight to Black (900)
-  0xFDEA   | Set font weight to ExtraBlack (950)
-  0xFDEB   | reserved
-  0xFDEC   | reserved
-  0xFDED   | reserved
-  0xFDEE   | Switch to italic
-  0xFDEF   | Switch to upright
+  Coding                                                   | Description
+ :-------------------------------------------------------- | ---------------------------
+  U+91 'ff' int U+1C                                       | Font family global unique id
+  U+91 'fw' int U+1C                                       | Font weight from 100 to 950.
+  U+91 'fi' int U+1C                                       | Font slant: 0=Upright, 1=Italic
+  U+91 'ts' int U+1C                                       | Text size
+  U+91 'tc' int U+1C                                       | Text color with semantic id
+  U+91 'tc' int U+1F int U+1F int (U+1F int)? U+1C         | Text color sRGBA 0-255
+  U+91 'tc' float U+1F float U+1F float (U+1F float)? U+1C | Text color linear extended sRGB
+  U+91 'lt' int U+1C                                       | Line type
+  U+91 'lc' int U+1C                                       | Line color with semantic id
+  U+91 'lc' int U+1F int U+1F int (U+1F int)? U+1C         | Line color sRGBA 0-255
+  U+91 'lc' float U+1F float U+1F float (U+1F float)? U+1C | Line color linear extended sRGB
 
 
-### Font Size
-
-  2nd Code | Description
- :---------|:--------------
-  0xFDE0   | Reset to default font size
-  0xFDE1   | Set font size to 8
-  0xFDE2   | Set font size to 9
-  0xFDE3   | Set font size to 10
-  0xFDE4   | Set font size to 11
-  0xFDE5   | Set font size to 12
-  0xFDE6   | Set font size to 14
-  0xFDE7   | Set font size to 16
-  0xFDE8   | Set font size to 18
-  0xFDE9   | Set font size to 20
-  0xFDEA   | Set font size to 24
-  0xFDEB   | Set font size to 28
-  0xFDEC   | Set font size to 32
-  0xFDED   | Set font size to 40
-  0xFDEE   | Set font size to 50
-  0xFDEF   | Set font size to 60
-
-### Font Family
-
-  2nd Code | Description
- :---------|:--------------
-  0xFDE0   | Reset to default font family
-  0xFDE1   | Set family to Sans Serif
-  0xFDE2   | Set family to Serif
-  0xFDE3   | Set family to Mono space
-  0xFDE4   | Set family to Arial / Helvetica
-  0xFDE5   | Set family to Times New Roman / Times
-  0xFDE6   | Set family to Courier New / Courier
-  0xFDE7   | Set family to Palatino
-  0xFDE8   | Set family to Garamond
-  0xFDE9   | Set family to Bookman
-  0xFDEA   | Set family to Avant Garde
-  0xFDEB   | Set family to Verdana
-  0xFDEC   | Set family to Georgia
-  0xFDED   | Set family to Comic Sans
-  0xFDEE   | Set family to Trebuchet
-  0xFDEF   | Set family to Impact
-
-### Text Decoration
-
-  2nd Code | Description
- :---------|:--------------
-  0xFDE0   | Reset to default text decoration
-  0xFDE1   | 
-  0xFDE2   | 
-  0xFDE3   | 
-  0xFDE4   | 
-  0xFDE5   | 
-  0xFDE6   | 
-  0xFDE7   | 
-  0xFDE8   | 
-  0xFDE9   | 
-  0xFDEA   | 
-  0xFDEB   | 
-  0xFDEC   | 
-  0xFDED   | 
-  0xFDEE   | 
-  0xFDEF   | 
-
-### Text Color
-
-  2nd Code | Description
- :---------|:--------------
-  0xFDE0   | Reset to default text color
-  0xFDE1   | Set text color to Foreground
-  0xFDE2   | Set text color to Accent
-  0xFDE3   | Set text color to Error
-  0xFDE4   | Set text color to Warning
-  0xFDE5   | Set text color to Help
-  0xFDE6   | Set text color to 
-  0xFDE7   | Set text color to Blue
-  0xFDE8   | Set text color to Green
-  0xFDE9   | Set text color to Indigo
-  0xFDEA   | Set text color to Orange
-  0xFDEB   | Set text color to Pink
-  0xFDEC   | Set text color to Purple
-  0xFDED   | Set text color to Red
-  0xFDEE   | Set text color to Teal
-  0xFDEF   | Set text color to Yellow
+  Code | Description
+ :---- |:--------------
+  0    | Set text color to Foreground
+  100  | Set text color to Blue (Accent)
+  101  | Set text color to Green (Good)
+  102  | Set text color to Indigo
+  103  | Set text color to Orange (Warning)
+  104  | Set text color to Pink
+  105  | Set text color to Purple
+  106  | Set text color to Red (Error)
+  107  | Set text color to Teal
+  108  | Set text color to Yellow
 
