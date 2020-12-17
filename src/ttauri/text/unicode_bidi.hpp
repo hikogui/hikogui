@@ -6,6 +6,7 @@
 #include "unicode_bidi_class.hpp"
 
 namespace tt {
+namespace detail {
 
 struct unicode_bidi_char_info {
     /** Index from the first character in the original list.
@@ -15,6 +16,10 @@ struct unicode_bidi_char_info {
     /** Code point.
      */
     char32_t code_point;
+
+    /** Code point for a optionally mirrored character, or 0xffff.
+     */
+    char32_t mirror_code_point;
 
     /** Current bidirectional class of the code-point.
      */
@@ -35,6 +40,9 @@ struct unicode_bidi_char_info {
         original_bidi_class(bidi_class),
         embedding_level(0) {}
 };
+
+using unicode_bidi_char_info_vector = std::vector<unicode_bidi_char_info>;
+using unicode_bidi_char_info_iterator = unicode_bidi_char_info_vector::iterator;
 
 struct unicode_bidi_paragraph {
     using characters_type = std::vector<unicode_bidi_char_info>;
@@ -60,27 +68,10 @@ struct unicode_bidi_context {
     }
 };
 
-void unicode_bidi_P1(unicode_bidi_paragraph &paragraph);
 
-template<typename It, typename GetChar, typename SetChar>
-void unicode_bidi_P1(unicode_bidi_context &context, It first, It last, GetChar get_char)
-{
-    size_t index = 0;
-    context.add_paragraph()
+[[nodiscard]] unicode_bidi_char_info_iterator
+unicode_bidi_P1(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_iterator last) noexcept;
 
-    auto paragraph = unicode_bid_paragraph{};
-    for (auto it = first; it != last; ++it) {
-        auto code_point = get_char(*it);
-        auto bidi_class = unicode_data::global->get_bidi_class(code_point)
-
-        paragraph->emplace_character(index++, code_point, bidi_class);
-
-        if (bidi_class == unicode_bidi_class::B) {
-            unicode_bidi_P1(paragraph);
-        }
-    }
-
-    unicode_bidi_P1(paragraph);
 }
 
 /** Reorder a given range of characters based on the unicode_bidi algorithm.
@@ -109,15 +100,16 @@ void unicode_bidi_P1(unicode_bidi_context &context, It first, It last, GetChar g
 template<typename It, typename GetChar, typename SetChar>
 void unicode_bidi(It first, It last, GetChar get_char, SetChar set_char)
 {
-    auto context = unicode_bidi_context{first, last, get_char};
+    auto text = detail::unicode_bidi_char_info_vector{};
+    text.reserve(std::distance(first, last));
 
-    unicode_bidi_P1_P3(context);
-    unicode_bidi_X1_X8(context);
-    unicode_bidi_X10(context);
-    unicode_bidi_W(context);
-    unicode_bidi_N(context);
-    unicode_bidi_I1_I2(context);
-    unicode_bidi_L(context);
+    size_t index = 0;
+    for (auto it = first; it != last; ++it) {
+        text.emplace_back(index++, get_char(it));
+    }
+
+    detail::unicode_bidi_P1(std::begin(text), std::end(text));
+    
 }
 
 }

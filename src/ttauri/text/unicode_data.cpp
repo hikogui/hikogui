@@ -122,19 +122,19 @@ struct UnicodeData_Description {
         return static_cast<char32_t>(data.value() & UNICODE_MASK);
     }
 
-    BidiClass bidiClass() const noexcept
+    unicode_bidi_class bidi_class() const noexcept
     {
         switch (codePoint()) {
-        case 0x00'202a: return BidiClass::LRE;
-        case 0x00'202d: return BidiClass::LRO;
-        case 0x00'202b: return BidiClass::RLE;
-        case 0x00'202e: return BidiClass::RLO;
-        case 0x00'202c: return BidiClass::PDF;
-        case 0x00'2066: return BidiClass::LRI;
-        case 0x00'2067: return BidiClass::RLI;
-        case 0x00'2068: return BidiClass::FSI;
-        case 0x00'2069: return BidiClass::PDI;
-        default: return static_cast<BidiClass>((data.value() >> 39) & 0x0f);
+        case 0x00'202a: return unicode_bidi_class::LRE;
+        case 0x00'202d: return unicode_bidi_class::LRO;
+        case 0x00'202b: return unicode_bidi_class::RLE;
+        case 0x00'202e: return unicode_bidi_class::RLO;
+        case 0x00'202c: return unicode_bidi_class::PDF;
+        case 0x00'2066: return unicode_bidi_class::LRI;
+        case 0x00'2067: return unicode_bidi_class::RLI;
+        case 0x00'2068: return unicode_bidi_class::FSI;
+        case 0x00'2069: return unicode_bidi_class::PDI;
+        default: return static_cast<unicode_bidi_class>((data.value() >> 39) & 0x0f);
         }
     }
 };
@@ -254,18 +254,18 @@ uint8_t unicode_data::getDecompositionOrder(char32_t codePoint) const noexcept
     }
 }
 
-BidiClass unicode_data::getBidiClass(char32_t codePoint) const noexcept
+unicode_bidi_class unicode_data::get_bidi_class(char32_t codePoint) const noexcept
 {
     if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
-        return BidiClass::Unknown;
+        return unicode_bidi_class::unknown;
     } else if (isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) || isHangulSyllable(codePoint)) {
-        return BidiClass::L;
+        return unicode_bidi_class::L;
     } else {
         ttlet description = getDescription(codePoint);
         if (description) {
-            return description->bidiClass();
+            return description->bidi_class();
         } else {
-            return BidiClass::Unknown;
+            return unicode_bidi_class::unknown;
         }
     }
 }

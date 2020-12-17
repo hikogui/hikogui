@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Grapheme.hpp"
-#include "UnicodeBidi.hpp"
+#include "unicode_bidi_class.hpp"
 #include "../ResourceView.hpp"
 #include "../math.hpp"
 #include "../URL.hpp"
@@ -47,36 +47,7 @@ struct GraphemeBreakState {
 };
 
 
-/** Bidirectional class
- * Unicode Standard Annex #9: https://unicode.org/reports/tr9/
- */
-enum class BidiClass : uint8_t {
-    Unknown = 0,
-    L = 1, ///< Left-to-Right
-    R = 2, ///< Right-to-Left
-    AL = 3, ///< Right-to-Left Arabic
-    EN = 4, ///< European Number
-    ES = 5, ///< European Number Separator
-    ET = 6, ///< European Number Terminator
-    AN = 7, ///< Arabic Number
-    CS = 8, ///< Common Number Separator
-    NSM = 9, ///< Nonspacing Mark
-    BN = 10, ///< Boundary Neutral
-    B = 11, ///< Paragraph Separator
-    S = 12, ///< Segment Separator
-    WS = 13, ///< Whitespace
-    ON = 14, ///< Other Neutrals
-    // Explicit values.
-    LRE, ///< Left-to-Right Embedding
-    LRO, ///< Left-to-Right Override
-    RLE, ///< Right-to-Left Embedding
-    RLO, ///< Right-to-left Override
-    PDF, ///< Pop Directional Format
-    LRI, ///< Left-to-Right Isolate
-    RLI, ///< Right-to-Left Isolate
-    FSI, ///< First Strong Isolate
-    PDI ///< Pop Directional Isolate
-};
+
 
 /** General Character class.
 */
@@ -90,32 +61,33 @@ enum GeneralCharacterClass {
 
 /** This function should be called before reclassification by the bidi-algorithm.
 */
-[[nodiscard]] constexpr GeneralCharacterClass to_GeneralCharacterClass(BidiClass bidiClass) noexcept {
+[[nodiscard]] constexpr GeneralCharacterClass to_GeneralCharacterClass(unicode_bidi_class bidiClass) noexcept {
     switch (bidiClass) {
-    case BidiClass::Unknown: return GeneralCharacterClass::Unknown;
-    case BidiClass::L: return GeneralCharacterClass::Letter;
-    case BidiClass::R: return GeneralCharacterClass::Letter;
-    case BidiClass::AL: return GeneralCharacterClass::Letter;
-    case BidiClass::EN: return GeneralCharacterClass::Digit;
-    case BidiClass::ES: return GeneralCharacterClass::Unknown;
-    case BidiClass::ET: return GeneralCharacterClass::Unknown;
-    case BidiClass::AN: return GeneralCharacterClass::Digit;
-    case BidiClass::CS: return GeneralCharacterClass::Unknown;
-    case BidiClass::NSM: return GeneralCharacterClass::Unknown;
-    case BidiClass::BN: return GeneralCharacterClass::Unknown;
-    case BidiClass::B: return GeneralCharacterClass::ParagraphSeparator;
-    case BidiClass::S: return GeneralCharacterClass::Unknown;
-    case BidiClass::WS: return GeneralCharacterClass::WhiteSpace;
-    case BidiClass::ON: return GeneralCharacterClass::Unknown;
-    case BidiClass::LRE: return GeneralCharacterClass::Unknown;
-    case BidiClass::LRO: return GeneralCharacterClass::Unknown;
-    case BidiClass::RLE: return GeneralCharacterClass::Unknown;
-    case BidiClass::RLO: return GeneralCharacterClass::Unknown;
-    case BidiClass::PDF: return GeneralCharacterClass::Unknown;
-    case BidiClass::LRI: return GeneralCharacterClass::Unknown;
-    case BidiClass::RLI: return GeneralCharacterClass::Unknown;
-    case BidiClass::FSI: return GeneralCharacterClass::Unknown;
-    case BidiClass::PDI: return GeneralCharacterClass::Unknown;
+    using enum unicode_bidi_class;
+    case unknown: return GeneralCharacterClass::Unknown;
+    case L: return GeneralCharacterClass::Letter;
+    case R: return GeneralCharacterClass::Letter;
+    case AL: return GeneralCharacterClass::Letter;
+    case EN: return GeneralCharacterClass::Digit;
+    case ES: return GeneralCharacterClass::Unknown;
+    case ET: return GeneralCharacterClass::Unknown;
+    case AN: return GeneralCharacterClass::Digit;
+    case CS: return GeneralCharacterClass::Unknown;
+    case NSM: return GeneralCharacterClass::Unknown;
+    case BN: return GeneralCharacterClass::Unknown;
+    case B: return GeneralCharacterClass::ParagraphSeparator;
+    case S: return GeneralCharacterClass::Unknown;
+    case WS: return GeneralCharacterClass::WhiteSpace;
+    case ON: return GeneralCharacterClass::Unknown;
+    case LRE: return GeneralCharacterClass::Unknown;
+    case LRO: return GeneralCharacterClass::Unknown;
+    case RLE: return GeneralCharacterClass::Unknown;
+    case RLO: return GeneralCharacterClass::Unknown;
+    case PDF: return GeneralCharacterClass::Unknown;
+    case LRI: return GeneralCharacterClass::Unknown;
+    case RLI: return GeneralCharacterClass::Unknown;
+    case FSI: return GeneralCharacterClass::Unknown;
+    case PDI: return GeneralCharacterClass::Unknown;
     default: tt_no_default();
     }
 }
@@ -202,7 +174,7 @@ public:
      * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
      * Code units between 0x11'0000 and 0x1f'ffff will be treated as BidiClass::Unknown. 
      */
-    BidiClass getBidiClass(char32_t codePoint) const noexcept;
+    unicode_bidi_class get_bidi_class(char32_t code_point) const noexcept;
 
 private:
     std::span<std::byte const> bytes;

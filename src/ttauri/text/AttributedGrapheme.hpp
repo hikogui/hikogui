@@ -22,7 +22,7 @@ struct AttributedGrapheme {
 
     /** The bidirectional classification.
      */
-    BidiClass bidiClass;
+    unicode_bidi_class bidiClass;
 
     /** Embedding level needed by the bidi-algorithm.
      */
@@ -32,7 +32,10 @@ struct AttributedGrapheme {
 
     AttributedGrapheme(Grapheme grapheme, TextStyle style, ssize_t logicalIndex=0) :
         grapheme(std::move(grapheme)), style(std::move(style)), logicalIndex(logicalIndex),
-        bidiClass(BidiClass::Unknown), charClass(GeneralCharacterClass::Unknown) {}
+        bidiClass(unicode_bidi_class::unknown),
+        charClass(GeneralCharacterClass::Unknown)
+    {
+    }
 };
 
 }

@@ -43,10 +43,12 @@ target_sources(ttauri PRIVATE
     TrueTypeFont.cpp
     TrueTypeFont.hpp
     TTauriIcons.hpp
-    UnicodeBidi.cpp
-    UnicodeBidi.hpp
+    unicode_bidi.cpp
+    unicode_bidi.hpp
     unicode_data.cpp
     unicode_data.hpp
+    unicode_db.cpp
+    unicode_db.hpp
     UnicodeRanges.cpp
     UnicodeRanges.hpp
 )

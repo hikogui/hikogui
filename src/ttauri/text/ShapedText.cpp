@@ -258,10 +258,10 @@ struct shape_text_result {
     ssize_t logicalIndex = 0;
     for (auto &c: text) {
         c.logicalIndex = logicalIndex++;
-        c.bidiClass = unicode_data::global->getBidiClass(c.grapheme[0]);
+        c.bidiClass = unicode_data::global->get_bidi_class(c.grapheme[0]);
         c.charClass = to_GeneralCharacterClass(c.bidiClass);
     }
-    tt_axiom(text.back().bidiClass == BidiClass::B);
+    tt_axiom(text.back().bidiClass == unicode_bidi_class::B);
 
     // Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(text);
