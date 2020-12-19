@@ -200,7 +200,7 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &g
 
 bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, f32x4 color) noexcept
 {
-    if (attr_glyph.charClass == GeneralCharacterClass::WhiteSpace || attr_glyph.charClass == GeneralCharacterClass::ParagraphSeparator) {
+    if (!is_visible(attr_glyph.general_category)) {
         return false;
     }
 

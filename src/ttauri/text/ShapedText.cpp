@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "ShapedText.hpp"
+#include "unicode_description.hpp"
 #include "../small_map.hpp"
 #include "../application.hpp"
 
@@ -17,8 +18,8 @@ namespace tt {
         r.emplace_back(grapheme, style, index++);
     }
 
-    if (std::ssize(text) == 0 || text.back() != '\n') {
-        r.emplace_back(Grapheme{'\n'}, style, index++);
+    if (std::ssize(text) == 0 || text.back() != Grapheme::PS()) {
+        r.emplace_back(Grapheme::PS(), style, index++);
     }
 
     return r;
@@ -26,8 +27,8 @@ namespace tt {
 
 [[nodiscard]] static std::vector<AttributedGlyph> graphemes_to_glyphs(std::vector<AttributedGrapheme> const &text) noexcept
 {
-    // The end-of-paragraph (linefeed) must end text.
-    tt_axiom(std::ssize(text) >= 1 && text.back().grapheme == '\n');
+    // The end-of-paragraph must end text.
+    tt_axiom(std::ssize(text) >= 1 && text.back().grapheme == Grapheme::PS());
 
     std::vector<AttributedGlyph> glyphs;
     glyphs.reserve(size(text));
@@ -53,8 +54,8 @@ namespace tt {
     auto line_start = glyphs.begin();
 
     for (auto i = line_start; i != glyphs.end(); ++i) {
-        if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
-            // The paragraph seperator stays with the line.
+        if (i->general_category == unicode_general_category::Zp) {
+            // The paragraph separator stays with the line.
             lines.emplace_back(line_start, i + 1);
             line_start = i + 1;
         }
@@ -257,11 +258,12 @@ struct shape_text_result {
     //bidi_algorithm(text);
     ssize_t logicalIndex = 0;
     for (auto &c: text) {
+        ttlet &description = unicode_description_find(c.grapheme[0]);
         c.logicalIndex = logicalIndex++;
-        c.bidiClass = unicode_data::global->get_bidi_class(c.grapheme[0]);
-        c.charClass = to_GeneralCharacterClass(c.bidiClass);
+        c.bidi_class = description.bidi_class();
+        c.general_category = description.general_category();
     }
-    tt_axiom(text.back().bidiClass == unicode_bidi_class::B);
+    tt_axiom(text.back().general_category == unicode_general_category::Zp);
 
     // Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(text);

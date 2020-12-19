@@ -24,6 +24,7 @@ constexpr char32_t UNICODE_REPLACEMENT_CHAR = 0x00'fffd;
 constexpr char32_t UNICODE_INVALID_CHAR = 0x00'ffff;
 constexpr char32_t UNICODE_CR_CHAR = 0x00'000a;
 constexpr char32_t UNICODE_LF_CHAR = 0x00'000d;
+constexpr char32_t UNICODE_PARAGRAPH_SEPARATOR_CHAR = 0x00'2029;
 
 constexpr char32_t HANGUL_SBASE = 0xac00;
 constexpr char32_t HANGUL_LBASE = 0x1100;
@@ -221,22 +222,6 @@ uint8_t unicode_data::getDecompositionOrder(char32_t codePoint) const noexcept
     }
 }
 
-unicode_bidi_class unicode_data::get_bidi_class(char32_t codePoint) const noexcept
-{
-    if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
-        return unicode_bidi_class::unknown;
-    } else if (isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) || isHangulSyllable(codePoint)) {
-        return unicode_bidi_class::L;
-    } else {
-        ttlet description = getDescription(codePoint);
-        if (description) {
-            return description->bidi_class();
-        } else {
-            return unicode_bidi_class::unknown;
-        }
-    }
-}
-
 /*! Detect canonical ligature.
  * A canonical ligatures will have the same meaning in the text
  * when it is in composed or decomposed form.
@@ -265,7 +250,8 @@ void unicode_data::decomposeCodePoint(
     std::u32string &result,
     char32_t codePoint,
     bool decomposeCompatible,
-    bool decomposeLigatures) const noexcept
+    bool decomposeLigatures,
+    bool decomposeLF) const noexcept
 {
     ttlet &description = getDescription(codePoint);
     ttlet decompositionLength = description ? description->decompositionLength() : 0;
@@ -273,7 +259,10 @@ void unicode_data::decomposeCodePoint(
         (decomposeCompatible || description->decompositionIsCanonical() ||
          (decomposeLigatures && isCanonicalLigature(codePoint)));
 
-    if (codePoint <= ASCII_MAX || codePoint > UNICODE_MAX) {
+    if (decomposeLF && codePoint == UNICODE_LF_CHAR) {
+        result += UNICODE_PARAGRAPH_SEPARATOR_CHAR;
+
+    } else if (codePoint <= ASCII_MAX || codePoint > UNICODE_MAX) {
         // ASCII characters and code-points above unicode plane-16 are not decomposed.
         result += codePoint;
 
@@ -290,7 +279,8 @@ void unicode_data::decomposeCodePoint(
 
     } else if (mustDecompose) {
         if (decompositionLength == 1) {
-            decomposeCodePoint(result, description->decompositionCodePoint(), decomposeCompatible, decomposeLigatures);
+            decomposeCodePoint(
+                result, description->decompositionCodePoint(), decomposeCompatible, decomposeLigatures, decomposeLF);
 
         } else {
             ttlet offset = description->decompositionOffset();
@@ -304,12 +294,12 @@ void unicode_data::decomposeCodePoint(
                     ttlet codePoint2 = static_cast<char32_t>((triplet >> 22) & UNICODE_MASK);
                     ttlet codePoint3 = static_cast<char32_t>(triplet & UNICODE_MASK);
 
-                    decomposeCodePoint(result, codePoint1, decomposeCompatible, decomposeLigatures);
+                    decomposeCodePoint(result, codePoint1, decomposeCompatible, decomposeLigatures, decomposeLF);
                     if (i + 1 < decompositionLength) {
-                        decomposeCodePoint(result, codePoint2, decomposeCompatible, decomposeLigatures);
+                        decomposeCodePoint(result, codePoint2, decomposeCompatible, decomposeLigatures, decomposeLF);
                     }
                     if (i + 2 < decompositionLength) {
-                        decomposeCodePoint(result, codePoint3, decomposeCompatible, decomposeLigatures);
+                        decomposeCodePoint(result, codePoint3, decomposeCompatible, decomposeLigatures, decomposeLF);
                     }
                 }
 
@@ -328,13 +318,13 @@ void unicode_data::decomposeCodePoint(
     }
 }
 
-std::u32string unicode_data::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures) const noexcept
+std::u32string unicode_data::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures, bool decomposeLF) const noexcept
 {
     auto result = std::u32string{};
     result.reserve(text.size() * 3);
 
     for (ttlet codePoint : text) {
-        decomposeCodePoint(result, codePoint, decomposeCompatible, decomposeLigatures);
+        decomposeCodePoint(result, codePoint, decomposeCompatible, decomposeLigatures, decomposeLF);
     }
 
     return result;
@@ -368,6 +358,9 @@ char32_t unicode_data::compose(char32_t startCodePoint, char32_t composingCodePo
     uint64_t searchValue = (static_cast<uint64_t>(startCodePoint) << 21) | static_cast<uint64_t>(composingCodePoint);
 
     if (composeCRLF && startCodePoint == UNICODE_CR_CHAR && composingCodePoint == UNICODE_LF_CHAR) {
+        return UNICODE_LF_CHAR;
+
+    } else if (composeCRLF && startCodePoint == UNICODE_PARAGRAPH_SEPARATOR_CHAR && composingCodePoint == UNICODE_LF_CHAR) {
         return UNICODE_LF_CHAR;
 
     } else if (isHangulLPart(startCodePoint) && isHangulVPart(composingCodePoint)) {
@@ -459,17 +452,17 @@ void unicode_data::compose(std::u32string &text, bool composeCRLF) const noexcep
     text.resize(j);
 }
 
-std::u32string unicode_data::toNFD(std::u32string_view text, bool decomposeLigatures) const noexcept
+std::u32string unicode_data::toNFD(std::u32string_view text, bool decomposeLigatures, bool decomposeLF) const noexcept
 {
-    auto result = decompose(text, false, decomposeLigatures);
+    auto result = decompose(text, false, decomposeLigatures, decomposeLF);
     reorder(result);
     clean(result);
     return result;
 }
 
-std::u32string unicode_data::toNFC(std::u32string_view text, bool decomposeLigatures, bool composeCRLF) const noexcept
+std::u32string unicode_data::toNFC(std::u32string_view text, bool decomposeLigatures, bool decomposeLF, bool composeCRLF) const noexcept
 {
-    auto result = decompose(text, false, decomposeLigatures);
+    auto result = decompose(text, false, decomposeLigatures, decomposeLF);
     reorder(result);
     compose(result, composeCRLF);
     clean(result);
@@ -492,7 +485,5 @@ std::u32string unicode_data::toNFKC(std::u32string_view text, bool composeCRLF) 
     clean(result);
     return result;
 }
-
-
 
 } // namespace tt

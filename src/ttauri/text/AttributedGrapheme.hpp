@@ -5,7 +5,8 @@
 
 #include "Grapheme.hpp"
 #include "TextStyle.hpp"
-#include "unicode_data.hpp"
+#include "unicode_bidi_class.hpp"
+#include "unicode_general_category.hpp"
 
 namespace tt {
 
@@ -22,18 +23,18 @@ struct AttributedGrapheme {
 
     /** The bidirectional classification.
      */
-    unicode_bidi_class bidiClass;
+    unicode_bidi_class bidi_class;
 
     /** Embedding level needed by the bidi-algorithm.
      */
     int8_t embeddingLevel;
 
-    GeneralCharacterClass charClass;
+    unicode_general_category general_category;
 
     AttributedGrapheme(Grapheme grapheme, TextStyle style, ssize_t logicalIndex=0) :
         grapheme(std::move(grapheme)), style(std::move(style)), logicalIndex(logicalIndex),
-        bidiClass(unicode_bidi_class::unknown),
-        charClass(GeneralCharacterClass::Unknown)
+        bidi_class(unicode_bidi_class::unknown),
+        general_category(unicode_general_category::unknown)
     {
     }
 };

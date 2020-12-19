@@ -65,14 +65,14 @@ public:
         uint8_t decomposition_length,
         uint32_t decomposition_index
     ) noexcept :
-        general_info((static_cast<uint32_t>(code_point) << 10) | (static_cast<uint32_t>(general_category) << 5) | (static_cast<uint32_t>(grapheme_cluster_break) << 1)),
-        bidi_class(static_cast<uint32_t>(bidi_class)),
-        bidi_bracket_type(static_cast<uint32_t>(bidi_bracket_type)),
-        bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
-        decomposition_canonical(static_cast<uint32_t>(decomposition_canonical)),
-        decomposition_combining_class(static_cast<uint32_t>(decomposition_combining_class)),
-        decomposition_index(static_cast<uint32_t>(decomposition_index)),
-        decomposition_length(static_cast<uint32_t>(decomposition_length))
+        _general_info((static_cast<uint32_t>(code_point) << 10) | (static_cast<uint32_t>(general_category) << 5) | (static_cast<uint32_t>(grapheme_cluster_break) << 1)),
+        _bidi_class(static_cast<uint32_t>(bidi_class)),
+        _bidi_bracket_type(static_cast<uint32_t>(bidi_bracket_type)),
+        _bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
+        _decomposition_canonical(static_cast<uint32_t>(decomposition_canonical)),
+        _decomposition_combining_class(static_cast<uint32_t>(decomposition_combining_class)),
+        _decomposition_index(static_cast<uint32_t>(decomposition_index)),
+        _decomposition_length(static_cast<uint32_t>(decomposition_length))
     {
         tt_axiom(code_point <= 0x10ffff);
         tt_axiom(static_cast<uint32_t>(general_category) <= 0x1f);
@@ -87,12 +87,22 @@ public:
 
     [[nodiscard]] constexpr char32_t code_point() const noexcept
     {
-        return static_cast<char32_t>(general_info >> 10);
+        return static_cast<char32_t>(_general_info >> 10);
     }
 
     [[nodiscard]] constexpr unicode_grapheme_cluster_break grapheme_cluster_break() const noexcept
     {
-        return static_cast<unicode_grapheme_cluster_break>((general_info >> 1) & 0xf);
+        return static_cast<unicode_grapheme_cluster_break>((_general_info >> 1) & 0xf);
+    }
+
+    [[nodiscard]] constexpr unicode_general_category general_category() const noexcept
+    {
+        return static_cast<unicode_general_category>((_general_info >> 5) & 0x1f);
+    }
+
+    [[nodiscard]] constexpr unicode_bidi_class bidi_class() const noexcept
+    {
+        return static_cast<unicode_bidi_class>(_bidi_class);
     }
 
 private:
@@ -102,23 +112,23 @@ private:
     // [9:5] general category
     // [4:1] grapheme cluster break
     // [0:0] reserved
-    uint32_t general_info;
+    uint32_t _general_info;
 
     // 2nd dword
-    uint32_t bidi_class:5;
-    uint32_t bidi_bracket_type:2;
-    uint32_t bidi_mirrored_glyph : 21;
-    uint32_t bidi_reserved : 4 = 0;
+    uint32_t _bidi_class:5;
+    uint32_t _bidi_bracket_type:2;
+    uint32_t _bidi_mirrored_glyph : 21;
+    uint32_t _bidi_reserved : 4 = 0;
 
     // 3rd dword
-    uint32_t decomposition_canonical:1;
-    uint32_t decomposition_combining_class : 8;
-    uint32_t decomposition_index : 21;
-    uint32_t decomposition_reserved1 : 2 = 0;
+    uint32_t _decomposition_canonical:1;
+    uint32_t _decomposition_combining_class : 8;
+    uint32_t _decomposition_index : 21;
+    uint32_t _decomposition_reserved1 : 2 = 0;
 
     // 4th dword
-    uint32_t decomposition_length : 5;
-    uint32_t decomposition_reserved2 : 27 = 0;
+    uint32_t _decomposition_length : 5;
+    uint32_t _decomposition_reserved2 : 27 = 0;
 
     template<typename It>
     friend constexpr It unicode_description_find(It first, It last, char32_t code_point) noexcept;
@@ -133,7 +143,7 @@ template<typename It>
     uint32_t general_info = static_cast<uint32_t>(code_point) << 10;
 
     auto it = std::lower_bound(first, last, general_info, [](auto const &item, auto const &value) {
-        return item.general_info < value;
+        return item._general_info < value;
     });
 
     if (it == last || it->code_point() != code_point) {
