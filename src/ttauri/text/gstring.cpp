@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "gstring.hpp"
-#include "unicode_data.hpp"
+#include "unicode_text_segmentation.hpp"
 #include "../strings.hpp"
 #include "../application.hpp"
 
@@ -13,11 +13,11 @@ namespace tt {
     ttlet normalizedString = unicode_data::global->toNFC(rhs, true, true);
 
     auto r = tt::gstring{};
-    auto breakState = tt::GraphemeBreakState{};
+    auto breakState = tt::grapheme_break_state{};
     auto cluster = std::u32string{};
 
     for (ttlet codePoint : normalizedString) {
-        if (unicode_data::global->checkGraphemeBreak(codePoint, breakState)) {
+        if (breaks_grapheme(codePoint, breakState)) {
             if (cluster.size() > 0) {
                 r += tt::Grapheme{cluster};
             }

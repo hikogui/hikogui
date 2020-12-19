@@ -158,17 +158,6 @@ public:
      */
     std::u32string toNFKC(std::u32string_view text, bool composeCRLF=false) const noexcept;
 
-    /** Check if for a graphemeBreak before the character.
-     * Code-units must be tested in order, starting at the beginning of the text.
-     *
-     * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
-     * Code units between 0x11'0000 and 0x1f'ffff will be treated as GraphemeUnitType::Other. 
-     *
-     * \param codeUnit Current code-unit to test.
-     * \param state Current state of the grapheme-break algorithm.
-     * \return true when a grapheme break exists before the current code-unit.
-     */
-    bool checkGraphemeBreak(char32_t codeUnit, GraphemeBreakState &state) const noexcept;
 
     /** Get the bidirectional class for a code-point.
      * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
