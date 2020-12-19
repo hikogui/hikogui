@@ -29,7 +29,7 @@ struct AttributedGlyph {
     /** Number of graphemes merged (ligature) into this attributed-glyph. */
     int8_t graphemeCount;
 
-    GeneralCharacterClass charClass;
+    unicode_general_category general_category;
 
     /** Copied from the original attributed-grapheme. */
     TextStyle style;
@@ -60,28 +60,48 @@ struct AttributedGlyph {
         return index >= first && index < last;
     }
 
-    [[nodiscard]] bool isLetter() const noexcept { return charClass == GeneralCharacterClass::Letter; }
-    [[nodiscard]] bool isDigit() const noexcept { return charClass == GeneralCharacterClass::Digit; }
-    [[nodiscard]] bool isWord() const noexcept { return isLetter() || isDigit(); }
-    [[nodiscard]] bool isWhiteSpace() const noexcept { return charClass == GeneralCharacterClass::WhiteSpace; }
-    [[nodiscard]] bool isParagraphSeparator() const noexcept { return charClass == GeneralCharacterClass::ParagraphSeparator; }
-    [[nodiscard]] bool isVisible() const noexcept { return isWord() || charClass == GeneralCharacterClass::Unknown; }
+    [[nodiscard]] bool isLetter() const noexcept
+    {
+        return is_L(general_category);
+    }
+
+    [[nodiscard]] bool isDigit() const noexcept
+    {
+        return is_N(general_category);
+    }
+
+    [[nodiscard]] bool isIdentifier() const noexcept { return isLetter() || isDigit(); }
+
+    [[nodiscard]] bool isWhiteSpace() const noexcept
+    {
+        return general_category == unicode_general_category::Zs || general_category == unicode_general_category::Zl;
+    }
+
+    [[nodiscard]] bool isParagraphSeparator() const noexcept
+    {
+        return general_category == unicode_general_category::Zp;
+    }
+    [[nodiscard]] bool isVisible() const noexcept
+    {
+        return is_visible(general_category);
+    }
     
     /** return a cluster id for word selection.
      * This makes clusters of:
-     *  - words (letter and digits),
-     *  - visibiles (other visible letters)
-     *  - whitespace
      *  - paragraph separator.
+     *  - identifiers (letter and digits),
+     *  - visibiles (other marks and symbols)
+     *  - whitespace
      */
     [[nodiscard]] int selectionWordClusterID() const noexcept {
-        switch (charClass) {
-        case GeneralCharacterClass::ParagraphSeparator: return 0;
-        case GeneralCharacterClass::Digit:
-        case GeneralCharacterClass::Letter: return 1;
-        case GeneralCharacterClass::Unknown: return 2;
-        case GeneralCharacterClass::WhiteSpace: return 3;
-        default: tt_no_default();
+        if (isParagraphSeparator()) {
+            return 0;
+        } else if (isIdentifier()) {
+            return 1;
+        } else if (isVisible()) {
+            return 2;
+        } else {
+            return 3;
         }
     }
 

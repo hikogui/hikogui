@@ -53,9 +53,9 @@ public:
         // Make sure there is an end-paragraph marker in the text.
         // This allows the shapedText to figure out the style of the text of an empty paragraph.
         if (std::ssize(text) == 0) {
-            text_.emplace_back(Grapheme('\n'), currentStyle, 0);
+            text_.emplace_back(Grapheme::PS(), currentStyle, 0);
         } else {
-            text_.emplace_back(Grapheme('\n'), text_.back().style, 0);
+            text_.emplace_back(Grapheme::PS(), text_.back().style, 0);
         }
 
         _shapedText = ShapedText(text_, width, alignment::top_left, false);

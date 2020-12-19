@@ -4,7 +4,7 @@
 #pragma once
 
 #include "code_point_iterator.hpp"
-#include "unicode_data.hpp"
+#include "unicode_text_segmentation.hpp"
 #include "Grapheme.hpp"
 #include "../required.hpp"
 #include <type_traits>
@@ -36,7 +36,7 @@ public:
 
     grapheme_iterator &operator++() noexcept
     {
-        while (!checkGraphemeBreak(*(++it), forward_break_state)) {}
+        while (!breaks_grapheme(*(++it), forward_break_state)) {}
         return *this;
     }
 
@@ -59,7 +59,7 @@ public:
 
 private:
     iterator it;
-    GraphemeBreakState forward_break_state;
+    grapheme_break_state forward_break_state;
 };
 
 } // namespace tt

@@ -12,7 +12,7 @@ namespace tt {
 AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, AttributedGlyph const *next_attr_glyph) noexcept :
     logicalIndex(attr_grapheme.logicalIndex),
     graphemeCount(1),
-    charClass(attr_grapheme.charClass),
+    general_category(attr_grapheme.general_category),
     style(attr_grapheme.style)
 {
     // Get the font_id that matches the requested style.

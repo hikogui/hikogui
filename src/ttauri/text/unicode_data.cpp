@@ -24,6 +24,7 @@ constexpr char32_t UNICODE_REPLACEMENT_CHAR = 0x00'fffd;
 constexpr char32_t UNICODE_INVALID_CHAR = 0x00'ffff;
 constexpr char32_t UNICODE_CR_CHAR = 0x00'000a;
 constexpr char32_t UNICODE_LF_CHAR = 0x00'000d;
+constexpr char32_t UNICODE_PARAGRAPH_SEPARATOR_CHAR = 0x00'2029;
 
 constexpr char32_t HANGUL_SBASE = 0xac00;
 constexpr char32_t HANGUL_LBASE = 0x1100;
@@ -100,11 +101,6 @@ struct UnicodeData_Description {
     bool decompositionIsCanonical() const noexcept
     {
         return ((data.value() >> 34) & 1) > 0;
-    }
-
-    GraphemeUnitType graphemeUnitType() const noexcept
-    {
-        return static_cast<GraphemeUnitType>((data.value() >> 35) & 0xf);
     }
 
     uint8_t decompositionLength() const noexcept
@@ -210,34 +206,6 @@ UnicodeData_Description const *unicode_data::getDescription(char32_t codePoint) 
     }
 }
 
-GraphemeUnitType unicode_data::getGraphemeUnitType(char32_t codePoint) const noexcept
-{
-    if (codePoint >= 0x110000) {
-        return GraphemeUnitType::Other;
-
-    } else if (isHangulSyllable(codePoint)) {
-        ttlet SIndex = codePoint - HANGUL_SBASE;
-        return (SIndex % HANGUL_TCOUNT) == 0 ? GraphemeUnitType::LV : GraphemeUnitType::LVT;
-
-    } else if (isHangulLPart(codePoint)) {
-        return GraphemeUnitType::L;
-
-    } else if (isHangulVPart(codePoint)) {
-        return GraphemeUnitType::V;
-
-    } else if (isHangulTPart(codePoint)) {
-        return GraphemeUnitType::T;
-
-    } else {
-        ttlet description = getDescription(codePoint);
-        if (description) {
-            return description->graphemeUnitType();
-        } else {
-            return GraphemeUnitType::Other;
-        }
-    }
-}
-
 uint8_t unicode_data::getDecompositionOrder(char32_t codePoint) const noexcept
 {
     if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
@@ -250,22 +218,6 @@ uint8_t unicode_data::getDecompositionOrder(char32_t codePoint) const noexcept
             return description->decompositionOrder();
         } else {
             return 0;
-        }
-    }
-}
-
-unicode_bidi_class unicode_data::get_bidi_class(char32_t codePoint) const noexcept
-{
-    if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
-        return unicode_bidi_class::unknown;
-    } else if (isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) || isHangulSyllable(codePoint)) {
-        return unicode_bidi_class::L;
-    } else {
-        ttlet description = getDescription(codePoint);
-        if (description) {
-            return description->bidi_class();
-        } else {
-            return unicode_bidi_class::unknown;
         }
     }
 }
@@ -298,7 +250,8 @@ void unicode_data::decomposeCodePoint(
     std::u32string &result,
     char32_t codePoint,
     bool decomposeCompatible,
-    bool decomposeLigatures) const noexcept
+    bool decomposeLigatures,
+    bool decomposeLF) const noexcept
 {
     ttlet &description = getDescription(codePoint);
     ttlet decompositionLength = description ? description->decompositionLength() : 0;
@@ -306,7 +259,10 @@ void unicode_data::decomposeCodePoint(
         (decomposeCompatible || description->decompositionIsCanonical() ||
          (decomposeLigatures && isCanonicalLigature(codePoint)));
 
-    if (codePoint <= ASCII_MAX || codePoint > UNICODE_MAX) {
+    if (decomposeLF && codePoint == UNICODE_LF_CHAR) {
+        result += UNICODE_PARAGRAPH_SEPARATOR_CHAR;
+
+    } else if (codePoint <= ASCII_MAX || codePoint > UNICODE_MAX) {
         // ASCII characters and code-points above unicode plane-16 are not decomposed.
         result += codePoint;
 
@@ -323,7 +279,8 @@ void unicode_data::decomposeCodePoint(
 
     } else if (mustDecompose) {
         if (decompositionLength == 1) {
-            decomposeCodePoint(result, description->decompositionCodePoint(), decomposeCompatible, decomposeLigatures);
+            decomposeCodePoint(
+                result, description->decompositionCodePoint(), decomposeCompatible, decomposeLigatures, decomposeLF);
 
         } else {
             ttlet offset = description->decompositionOffset();
@@ -337,12 +294,12 @@ void unicode_data::decomposeCodePoint(
                     ttlet codePoint2 = static_cast<char32_t>((triplet >> 22) & UNICODE_MASK);
                     ttlet codePoint3 = static_cast<char32_t>(triplet & UNICODE_MASK);
 
-                    decomposeCodePoint(result, codePoint1, decomposeCompatible, decomposeLigatures);
+                    decomposeCodePoint(result, codePoint1, decomposeCompatible, decomposeLigatures, decomposeLF);
                     if (i + 1 < decompositionLength) {
-                        decomposeCodePoint(result, codePoint2, decomposeCompatible, decomposeLigatures);
+                        decomposeCodePoint(result, codePoint2, decomposeCompatible, decomposeLigatures, decomposeLF);
                     }
                     if (i + 2 < decompositionLength) {
-                        decomposeCodePoint(result, codePoint3, decomposeCompatible, decomposeLigatures);
+                        decomposeCodePoint(result, codePoint3, decomposeCompatible, decomposeLigatures, decomposeLF);
                     }
                 }
 
@@ -361,13 +318,13 @@ void unicode_data::decomposeCodePoint(
     }
 }
 
-std::u32string unicode_data::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures) const noexcept
+std::u32string unicode_data::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures, bool decomposeLF) const noexcept
 {
     auto result = std::u32string{};
     result.reserve(text.size() * 3);
 
     for (ttlet codePoint : text) {
-        decomposeCodePoint(result, codePoint, decomposeCompatible, decomposeLigatures);
+        decomposeCodePoint(result, codePoint, decomposeCompatible, decomposeLigatures, decomposeLF);
     }
 
     return result;
@@ -401,6 +358,9 @@ char32_t unicode_data::compose(char32_t startCodePoint, char32_t composingCodePo
     uint64_t searchValue = (static_cast<uint64_t>(startCodePoint) << 21) | static_cast<uint64_t>(composingCodePoint);
 
     if (composeCRLF && startCodePoint == UNICODE_CR_CHAR && composingCodePoint == UNICODE_LF_CHAR) {
+        return UNICODE_LF_CHAR;
+
+    } else if (composeCRLF && startCodePoint == UNICODE_PARAGRAPH_SEPARATOR_CHAR && composingCodePoint == UNICODE_LF_CHAR) {
         return UNICODE_LF_CHAR;
 
     } else if (isHangulLPart(startCodePoint) && isHangulVPart(composingCodePoint)) {
@@ -492,17 +452,17 @@ void unicode_data::compose(std::u32string &text, bool composeCRLF) const noexcep
     text.resize(j);
 }
 
-std::u32string unicode_data::toNFD(std::u32string_view text, bool decomposeLigatures) const noexcept
+std::u32string unicode_data::toNFD(std::u32string_view text, bool decomposeLigatures, bool decomposeLF) const noexcept
 {
-    auto result = decompose(text, false, decomposeLigatures);
+    auto result = decompose(text, false, decomposeLigatures, decomposeLF);
     reorder(result);
     clean(result);
     return result;
 }
 
-std::u32string unicode_data::toNFC(std::u32string_view text, bool decomposeLigatures, bool composeCRLF) const noexcept
+std::u32string unicode_data::toNFC(std::u32string_view text, bool decomposeLigatures, bool decomposeLF, bool composeCRLF) const noexcept
 {
-    auto result = decompose(text, false, decomposeLigatures);
+    auto result = decompose(text, false, decomposeLigatures, decomposeLF);
     reorder(result);
     compose(result, composeCRLF);
     clean(result);
@@ -524,92 +484,6 @@ std::u32string unicode_data::toNFKC(std::u32string_view text, bool composeCRLF) 
     compose(result, composeCRLF);
     clean(result);
     return result;
-}
-
-static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakState &state) noexcept
-{
-    ttlet lhs = state.previous;
-    ttlet rhs = type;
-
-    enum class state_t {
-        Unknown,
-        Break,
-        DontBreak,
-    };
-
-    state_t breakState = state_t::Unknown;
-
-    bool GB1 = state.firstCharacter;
-    if ((breakState == state_t::Unknown) & GB1) {
-        breakState = state_t::Break;
-    }
-
-    state.firstCharacter = false;
-
-    ttlet GB3 = (lhs == GraphemeUnitType::CR) && (rhs == GraphemeUnitType::LF);
-    ttlet GB4 = (lhs == GraphemeUnitType::Control) || (lhs == GraphemeUnitType::CR) || (lhs == GraphemeUnitType::LF);
-    ttlet GB5 = (rhs == GraphemeUnitType::Control) || (rhs == GraphemeUnitType::CR) || (rhs == GraphemeUnitType::LF);
-    if (breakState == state_t::Unknown) {
-        if (GB3) {
-            breakState = state_t::DontBreak;
-        } else if (GB4 || GB5) {
-            breakState = state_t::Break;
-        }
-    }
-
-    ttlet GB6 = (lhs == GraphemeUnitType::L) &&
-        ((rhs == GraphemeUnitType::L) || (rhs == GraphemeUnitType::V) ||
-         (rhs == GraphemeUnitType::LV) | (rhs == GraphemeUnitType::LVT));
-    ttlet GB7 = ((lhs == GraphemeUnitType::LV) || (lhs == GraphemeUnitType::V)) &&
-        ((rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::T));
-    ttlet GB8 = ((lhs == GraphemeUnitType::LVT) || (lhs == GraphemeUnitType::T)) && (rhs == GraphemeUnitType::T);
-    if ((breakState == state_t::Unknown) && (GB6 || GB7 || GB8)) {
-        breakState = state_t::DontBreak;
-    }
-
-    ttlet GB9 = ((rhs == GraphemeUnitType::Extend) || (rhs == GraphemeUnitType::ZWJ));
-    ttlet GB9a = (rhs == GraphemeUnitType::SpacingMark);
-    ttlet GB9b = (lhs == GraphemeUnitType::Prepend);
-    if ((breakState == state_t::Unknown) & (GB9 || GB9a || GB9b)) {
-        breakState = state_t::DontBreak;
-    }
-
-    ttlet GB11 =
-        state.inExtendedPictographic && (lhs == GraphemeUnitType::ZWJ) && (rhs == GraphemeUnitType::Extended_Pictographic);
-    if ((breakState == state_t::Unknown) && GB11) {
-        breakState = state_t::DontBreak;
-    }
-
-    if (rhs == GraphemeUnitType::Extended_Pictographic) {
-        state.inExtendedPictographic = true;
-    } else if (!((rhs == GraphemeUnitType::Extend) || (rhs == GraphemeUnitType::ZWJ))) {
-        state.inExtendedPictographic = false;
-    }
-
-    ttlet GB12_13 = (lhs == GraphemeUnitType::Regional_Indicator) && (rhs == GraphemeUnitType::Regional_Indicator) &&
-        ((state.RICount % 2) == 1);
-    if ((breakState == state_t::Unknown) && (GB12_13)) {
-        breakState = state_t::DontBreak;
-    }
-
-    if (rhs == GraphemeUnitType::Regional_Indicator) {
-        state.RICount++;
-    } else {
-        state.RICount = 0;
-    }
-
-    // GB999
-    if (breakState == state_t::Unknown) {
-        breakState = state_t::Break;
-    }
-
-    state.previous = type;
-    return breakState == state_t::Break;
-}
-
-bool unicode_data::checkGraphemeBreak(char32_t codePoint, GraphemeBreakState &state) const noexcept
-{
-    return checkGraphemeBreak_unitType(getGraphemeUnitType(codePoint), state);
 }
 
 } // namespace tt

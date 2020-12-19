@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "unicode_data.hpp"
 #include "unicode_bidi_class.hpp"
+#include "unicode_description.hpp"
 
 namespace tt {
 namespace detail {
@@ -36,9 +36,12 @@ struct unicode_bidi_char_info {
     [[nodiscard]] unicode_bidi_char_info(size_t index, char32_t code_point) noexcept :
         index(index),
         code_point(code_point),
-        bidi_class(unicode_data::global->get_bidi_class(code_point)),
         original_bidi_class(bidi_class),
-        embedding_level(0) {}
+        embedding_level(0)
+    {
+        ttlet &description = unicode_description_find(code_point);
+        bidi_class = description.bidi_class();
+    }
 };
 
 using unicode_bidi_char_info_vector = std::vector<unicode_bidi_char_info>;

@@ -8,6 +8,7 @@
 namespace tt {
 
 enum class unicode_general_category : uint8_t {
+    unknown,
     Lu,
     Ll,
     Lt,
@@ -86,6 +87,11 @@ enum class unicode_general_category : uint8_t {
 {
     using enum unicode_general_category;
     return rhs == Cc || rhs == Cf || rhs == Cs || rhs == Co || rhs == Cn;
+}
+
+[[nodiscard]] constexpr bool is_visible(unicode_general_category const &rhs) noexcept
+{
+    return is_L(rhs) | is_M(rhs) | is_N(rhs) | is_N(rhs) | is_S(rhs);
 }
 
 } // namespace tt

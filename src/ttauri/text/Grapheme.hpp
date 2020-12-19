@@ -190,6 +190,20 @@ public:
 
     [[nodiscard]] std::u32string NFKD() const noexcept;
 
+    /** Paragraph separator.
+     */
+    static Grapheme PS() noexcept
+    {
+        return Grapheme(U'\u2029');
+    }
+
+    /** Line separator.
+     */
+    static Grapheme LS() noexcept
+    {
+        return Grapheme(U'\u2028');
+    }
+
     [[nodiscard]] friend std::string to_string(Grapheme const &g) noexcept
     {
         return tt::to_string(g.NFC());
@@ -265,6 +279,11 @@ private:
             }
         }
         return true;
+    }
+
+    [[nodiscard]] friend bool operator!=(Grapheme const &a, Grapheme const &b) noexcept
+    {
+        return !(a == b);
     }
 
     [[nodiscard]] friend bool operator==(Grapheme const &lhs, char32_t const &rhs) noexcept
