@@ -61,18 +61,18 @@ public:
     /** Construct an empty buffer.
      */
     gap_buffer(allocator_type const &allocator = allocator_type{}) noexcept :
-        _allocator(allocator), _ptr(nullptr), _size(0), _gap_offset(0), _gap_size(0)
+        _ptr(nullptr), _size(0), _gap_offset(0), _gap_size(0), _allocator(allocator)
     {
     }
 
     /** Construct a buffer with the given initializer list.
      */
     gap_buffer(std::initializer_list<T> init, allocator_type const &allocator = allocator_type{}) :
-        _allocator(allocator),
         _ptr(_allocator.allocate(init.size() + _grow_size)),
         _size(init.size() + _grow_size),
         _gap_offset(init.size()),
-        _gap_size(_grow_size)
+        _gap_size(_grow_size),
+        _allocator(allocator)
     {
         placement_copy(std::begin(init), std::end(init), left_begin());
     }
@@ -81,11 +81,11 @@ public:
      * Allocates memory and copies all items from other into this.
      */
     gap_buffer(gap_buffer const &other) noexcept :
-        _allocator(other._allocator),
         _ptr(nullptr),
         _size(other._size),
         _gap_offset(other._gap_offset),
-        _gap_size(other._gap_size)
+        _gap_size(other._gap_size),
+        _allocator(other._allocator)
     {
         tt_axiom(&other != this);
 
@@ -142,11 +142,11 @@ public:
      * This constructor will move the allocation of the other gap_buffer.
      */
     gap_buffer(gap_buffer &&other) noexcept :
-        _allocator(other._allocator),
         _ptr(other._ptr),
         _size(other._size),
         _gap_offset(other._gap_offset),
-        _gap_size(other._gap_size)
+        _gap_size(other._gap_size),
+        _allocator(other._allocator)
     {
         other._ptr = nullptr;
         other._size = 0;
@@ -161,9 +161,18 @@ public:
     {
         tt_axiom(&other != this);
 
-        // XXX Steal allocation with the allocators of this and other are equal.
-
+        // Clear the data inside this.
         clear();
+
+        if (allocator == other.allocator) {
+            // When allocators are the same we can simply swap.
+            std::swap(_allocator, other._allocator);
+            std::swap(_size, other._size);
+            std::swap(_gap_offset, other._gap_pffset);
+            std::swap(_gap_size, other._size);
+            return *this;
+        }
+
         if (_size >= other.size()) {
             // Reuse memory.
             _gap_offset = other._gap_offset;
@@ -577,11 +586,11 @@ private:
     // By how much the buffer should grow when size() == capacity().
     static constexpr difference_type _grow_size = 256;
 
-    allocator_type _allocator;
     value_type *_ptr;
     difference_type _size;
     difference_type _gap_offset;
     difference_type _gap_size;
+    [[no_unique_address]] allocator_type _allocator;
 
     [[nodiscard]] bool is_valid() const noexcept
     {
