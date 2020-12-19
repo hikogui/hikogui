@@ -14,41 +14,6 @@
 namespace tt {
 struct UnicodeData_Description;
 
-enum class GraphemeUnitType : uint8_t {
-    Other = 0,
-    CR = 1,
-    LF = 2,
-    Control = 3,
-    Extend = 4,
-    ZWJ = 5,
-    Regional_Indicator = 6,
-    Prepend = 7,
-    SpacingMark = 8,
-    L = 9,
-    V = 10,
-    T = 11,
-    LV = 12,
-    LVT = 13,
-    Extended_Pictographic = 14
-};
-
-struct GraphemeBreakState {
-    GraphemeUnitType previous = GraphemeUnitType::Other;
-    int RICount = 0;
-    bool firstCharacter = true;
-    bool inExtendedPictographic = false;
-
-    void reset() noexcept {
-        previous = GraphemeUnitType::Other;
-        RICount = 0;
-        firstCharacter = true;
-        inExtendedPictographic = false;
-    }
-};
-
-
-
-
 /** General Character class.
 */
 enum GeneralCharacterClass {
@@ -181,7 +146,6 @@ private:
     void init();
 
     UnicodeData_Description const *getDescription(char32_t codePoint) const noexcept;
-    GraphemeUnitType getGraphemeUnitType(char32_t codePoint) const noexcept;
     uint8_t getDecompositionOrder(char32_t codePoint) const noexcept;
 
     char32_t compose(char32_t startCharacter, char32_t composingCharacter, bool composeCRLF) const noexcept;

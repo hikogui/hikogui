@@ -102,11 +102,6 @@ struct UnicodeData_Description {
         return ((data.value() >> 34) & 1) > 0;
     }
 
-    GraphemeUnitType graphemeUnitType() const noexcept
-    {
-        return static_cast<GraphemeUnitType>((data.value() >> 35) & 0xf);
-    }
-
     uint8_t decompositionLength() const noexcept
     {
         return (data.value() >> 21) & 0x1f;
@@ -207,34 +202,6 @@ UnicodeData_Description const *unicode_data::getDescription(char32_t codePoint) 
         return nullptr;
     } else {
         return &(*i);
-    }
-}
-
-GraphemeUnitType unicode_data::getGraphemeUnitType(char32_t codePoint) const noexcept
-{
-    if (codePoint >= 0x110000) {
-        return GraphemeUnitType::Other;
-
-    } else if (isHangulSyllable(codePoint)) {
-        ttlet SIndex = codePoint - HANGUL_SBASE;
-        return (SIndex % HANGUL_TCOUNT) == 0 ? GraphemeUnitType::LV : GraphemeUnitType::LVT;
-
-    } else if (isHangulLPart(codePoint)) {
-        return GraphemeUnitType::L;
-
-    } else if (isHangulVPart(codePoint)) {
-        return GraphemeUnitType::V;
-
-    } else if (isHangulTPart(codePoint)) {
-        return GraphemeUnitType::T;
-
-    } else {
-        ttlet description = getDescription(codePoint);
-        if (description) {
-            return description->graphemeUnitType();
-        } else {
-            return GraphemeUnitType::Other;
-        }
     }
 }
 
