@@ -91,7 +91,7 @@ enum class unicode_general_category : uint8_t {
 
 [[nodiscard]] constexpr bool is_visible(unicode_general_category const &rhs) noexcept
 {
-    return is_L(rhs) | is_M(rhs) | is_N(rhs) | is_N(rhs) | is_S(rhs);
+    return is_L(rhs) | is_M(rhs) | is_N(rhs) | is_P(rhs) | is_S(rhs);
 }
 
 } // namespace tt

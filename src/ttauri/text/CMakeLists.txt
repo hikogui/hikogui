@@ -47,15 +47,14 @@ target_sources(ttauri PRIVATE
     unicode_bidi.hpp
     unicode_bidi_bracket_type.hpp
     unicode_bidi_class.hpp
+    unicode_composition.cpp
     unicode_composition.hpp
-    unicode_data.cpp
-    unicode_data.hpp
-    unicode_db.cpp
-    unicode_db.hpp
     unicode_description.cpp
     unicode_description.hpp
     unicode_general_category.hpp
     unicode_grapheme_cluster_break.hpp
+    unicode_normalization.cpp
+    unicode_normalization.hpp
     unicode_text_segmentation.cpp
     unicode_text_segmentation.hpp
     UnicodeRanges.cpp
@@ -64,6 +63,6 @@ target_sources(ttauri PRIVATE
 
 
 target_sources(ttauri_tests PRIVATE
-    unicode_data_tests.cpp
     unicode_text_segmentation_tests.cpp
+    unicode_normalization_tests.cpp
 )

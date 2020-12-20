@@ -164,7 +164,7 @@ public:
         // Clear the data inside this.
         clear();
 
-        if (allocator == other.allocator) {
+        if (_allocator == other._allocator) {
             // When allocators are the same we can simply swap.
             std::swap(_allocator, other._allocator);
             std::swap(_size, other._size);

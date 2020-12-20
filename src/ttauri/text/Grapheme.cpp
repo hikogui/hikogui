@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "Grapheme.hpp"
-#include "unicode_data.hpp"
+#include "unicode_normalization.hpp"
 #include "../application.hpp"
 
 namespace tt {
@@ -10,7 +10,7 @@ namespace tt {
 Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
     value(0)
 {
-    ttlet codePoints_ = unicode_data::global->toNFC(codePoints);
+    ttlet codePoints_ = unicode_NFC(codePoints);
 
     switch (codePoints_.size()) {
     case 3:
@@ -63,15 +63,15 @@ Grapheme& Grapheme::operator+=(char32_t codePoint) noexcept
 }
 
 [[nodiscard]] std::u32string Grapheme::NFD() const noexcept {
-    return unicode_data::global->toNFD(static_cast<std::u32string>(*this));
+    return unicode_NFD(static_cast<std::u32string>(*this));
 }
 
 [[nodiscard]] std::u32string Grapheme::NFKC() const noexcept {
-    return unicode_data::global->toNFKC(static_cast<std::u32string>(*this));
+    return unicode_NFKC(static_cast<std::u32string>(*this));
 }
 
 [[nodiscard]] std::u32string Grapheme::NFKD() const noexcept {
-    return unicode_data::global->toNFKD(static_cast<std::u32string>(*this));
+    return unicode_NFKD(static_cast<std::u32string>(*this));
 }
 
 

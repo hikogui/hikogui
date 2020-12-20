@@ -3,7 +3,7 @@
 
 #include "gstring.hpp"
 #include "unicode_text_segmentation.hpp"
-#include "unicode_data.hpp"
+#include "unicode_normalization.hpp"
 #include "../strings.hpp"
 #include "../application.hpp"
 
@@ -11,7 +11,7 @@ namespace tt {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept
 {
-    ttlet normalizedString = unicode_data::global->toNFC(rhs, true, true, true);
+    ttlet normalizedString = unicode_NFC(rhs, true, true, true);
 
     auto r = tt::gstring{};
     auto breakState = tt::grapheme_break_state{};

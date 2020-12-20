@@ -14,7 +14,6 @@
 #include "text/TTauriIcons.hpp"
 #include "text/language.hpp"
 #include "text/font_book.hpp"
-#include "text/unicode_data.hpp"
 #include "GUI/RenderDoc.hpp"
 #include "GUI/theme_book.hpp"
 #include "GUI/KeyboardBindings.hpp"
@@ -140,8 +139,6 @@ void application::init_text()
     static_resource_view::add_static_resource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
     static_resource_view::add_static_resource(TTauriIcons_ttf_filename, TTauriIcons_ttf_bytes);
 
-    unicode_data::global = std::make_unique<unicode_data>(URL("resource:unicode_data.bin"));
-
     font_book::global = std::make_unique<font_book>(std::vector<URL>{URL::urlFromSystemFontDirectory()});
     ElusiveIcons_font_id = font_book::global->register_font(URL("resource:elusiveicons-webfont.ttf"));
     TTauriIcons_font_id = font_book::global->register_font(URL("resource:TTauriIcons.ttf"));
@@ -226,7 +223,6 @@ void application::deinit_text()
 {
     ElusiveIcons_font_id = FontID{};
     font_book::global = {};
-    unicode_data::global = {};
 }
 
 void application::deinit_audio()

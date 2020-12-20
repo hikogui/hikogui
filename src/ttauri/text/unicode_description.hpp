@@ -68,7 +68,8 @@ public:
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirrored_glyph,
         bool decomposition_canonical,
-        uint8_t decomposition_combining_class,
+        bool composition_canonical,
+        uint8_t combining_class,
         uint8_t decomposition_length,
         uint32_t decomposition_index
     ) noexcept :
@@ -77,7 +78,8 @@ public:
         _bidi_bracket_type(static_cast<uint32_t>(bidi_bracket_type)),
         _bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
         _decomposition_canonical(static_cast<uint32_t>(decomposition_canonical)),
-        _decomposition_combining_class(static_cast<uint32_t>(decomposition_combining_class)),
+        _composition_canonical(static_cast<uint32_t>(composition_canonical)),
+        _combining_class(static_cast<uint32_t>(combining_class)),
         _decomposition_index(static_cast<uint32_t>(decomposition_index)),
         _decomposition_length(static_cast<uint32_t>(decomposition_length))
     {
@@ -87,7 +89,7 @@ public:
         tt_axiom(static_cast<uint32_t>(bidi_class) <= 0x1f);
         tt_axiom(static_cast<uint32_t>(bidi_bracket_type) <= 0x03);
         tt_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
-        tt_axiom(static_cast<uint32_t>(decomposition_combining_class) <= 0xff);
+        tt_axiom(static_cast<uint32_t>(combining_class) <= 0xff);
         tt_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
         tt_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
     }
@@ -126,29 +128,36 @@ public:
      */
     [[nodiscard]] constexpr char32_t bidi_mirrored_glyph() const noexcept
     {
-        return static_cast<unicode_bidi_bracket_type>(_bidi_bracket_type);
+        return static_cast<char32_t>(_bidi_bracket_type);
     }
 
     [[nodiscard]] constexpr bool decomposition_canonical() const noexcept
     {
+        return static_cast<bool>(_decomposition_canonical);
+    }
+
+    /** This character has a canonical composition.
+     * When this flag is true the decomposition_index() points into the
+     * composition table.
+     */
+    [[nodiscard]] constexpr bool composition_canonical() const noexcept
+    {
         return static_cast<bool>(_composition_canonical);
     }
 
-    [[nodiscard]] constexpr uint8_t decomposition_combining_class() const noexcept
+    [[nodiscard]] constexpr uint8_t combining_class() const noexcept
     {
-        return static_cast<uint8_t>(_decomposition_combining_class);
+        return static_cast<uint8_t>(_combining_class);
+    }
+
+    [[nodiscard]] constexpr size_t decomposition_length() const noexcept
+    {
+        return static_cast<size_t>(_decomposition_length);
     }
 
     [[nodiscard]] constexpr size_t decomposition_index() const noexcept
     {
-        tt_axiom(decomposition_length() > 1);
         return static_cast<size_t>(_decomposition_index);
-    }
-
-    [[nodiscard]] constexpr char32_t decomposition_single_char() const noexcept
-    {
-        tt_axiom(decomposition_length() == 1);
-        return static_cast<char32_t>(_decomposition_index);
     }
 
 private:
@@ -167,14 +176,16 @@ private:
     uint32_t _bidi_reserved : 4 = 0;
 
     // 3rd dword
-    uint32_t _decomposition_canonical:1;
-    uint32_t _decomposition_combining_class : 8;
+    uint32_t _decomposition_canonical : 1;
+    uint32_t _composition_canonical : 1;
+    uint32_t _combining_class : 8;
     uint32_t _decomposition_index : 21;
-    uint32_t _decomposition_reserved1 : 2 = 0;
+    uint32_t _decomposition_reserved1 : 1 = 0;
 
     // 4th dword
     uint32_t _decomposition_length : 5;
     uint32_t _decomposition_reserved2 : 27 = 0;
+
 
     template<typename It>
     friend constexpr It unicode_description_find(It first, It last, char32_t code_point) noexcept;

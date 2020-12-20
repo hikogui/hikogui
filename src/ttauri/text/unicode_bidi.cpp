@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "unicode_bidi.hpp"
-#include "unicode_data.hpp"
 #include "../application.hpp"
 #include <algorithm>
 

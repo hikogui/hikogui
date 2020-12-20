@@ -62,4 +62,9 @@ template<typename It>
     return unicode_composition_find(first, last, unicode_composition{first_cp, second_cp});
 }
 
+/** Find a composition of two code-points.
+ * @return The combined character or 0xffff.
+ */
+[[nodiscard]] char32_t unicode_composition_find(char32_t first, char32_t second) noexcept;
+
 }

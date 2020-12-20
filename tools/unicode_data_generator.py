@@ -65,6 +65,7 @@ class UnicodeDescription (object):
         self.bidiMirroredGlyph = 0xffff
         self.decomposition = decomposition
         self.decompositionIsCanonical = decompositionIsCanonical
+        self.compositionIsCanonical = False
         self.decompositionOrder = decompositionOrder
         self.decompositionIndex = None
 
@@ -91,6 +92,8 @@ class UnicodeDescription (object):
 
         # Composition / Decomposition
         s += ", true" if self.decompositionIsCanonical else ", false"
+        # compositionIsCanonical the decomposition is available in the composition table.
+        s += ", true" if self.compositionIsCanonical else ", false"
         s += ", {}".format(self.decompositionOrder)
         s += ", {}".format(len(self.decomposition))
 
@@ -225,6 +228,7 @@ def extractCompositions(descriptions, composition_exclusions):
     compositions = []
     for description in descriptions:
         if isCanonicalComposition(description, composition_exclusions):
+            description.compositionIsCanonical = True;
             composition = Composition(
                 description=description,
                 startCodePoint=description.decomposition[0],

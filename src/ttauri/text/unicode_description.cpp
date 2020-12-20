@@ -35,8 +35,6 @@ constexpr unicode_description const &CJK_Ideograph_Extension_F_unicode_descripti
 constexpr unicode_description const &Plane_15_Private_Use_unicode_description = *_unicode_description_find(U'\U000f0000');
 constexpr unicode_description const &Plane_16_Private_Use_unicode_description = *_unicode_description_find(U'\U00100000');
 
-
-
 [[nodiscard]] unicode_description const &unicode_description_find(char32_t code_point) noexcept
 {
     auto last = std::end(detail::unicode_db_description_table);
@@ -101,5 +99,9 @@ constexpr unicode_description const &Plane_16_Private_Use_unicode_description = 
         return *it;
     }
 }
+
+
+
+
 
 } // namespace tt
