@@ -10,7 +10,7 @@
 #include "../required.hpp"
 
 namespace tt {
-
+namespace detail {
 constexpr char32_t unicode_hangul_S_base = U'\uac00';
 constexpr char32_t unicode_hangul_L_base = U'\u1100';
 constexpr char32_t unicode_hangul_V_base = U'\u1161';
@@ -20,37 +20,44 @@ constexpr char32_t unicode_hangul_V_count = 21;
 constexpr char32_t unicode_hangul_T_count = 28;
 constexpr char32_t unicode_hangul_N_count = unicode_hangul_V_count * unicode_hangul_T_count;
 constexpr char32_t unicode_hangul_S_count = unicode_hangul_L_count * unicode_hangul_N_count;
+}
 
 [[nodiscard]] constexpr bool is_hangul_L_part(char32_t code_point) noexcept
 {
-    return code_point >= unicode_hangul_L_base && code_point < (unicode_hangul_L_base + unicode_hangul_L_count);
+    return code_point >= detail::unicode_hangul_L_base && code_point < (detail::unicode_hangul_L_base + detail::unicode_hangul_L_count);
 }
 
 [[nodiscard]] constexpr bool is_hangul_V_part(char32_t code_point) noexcept
 {
-    return code_point >= unicode_hangul_V_base && code_point < (unicode_hangul_V_base + unicode_hangul_V_count);
+    return code_point >= detail::unicode_hangul_V_base && code_point < (detail::unicode_hangul_V_base + detail::unicode_hangul_V_count);
 }
 
 [[nodiscard]] constexpr bool is_hangul_T_part(char32_t code_point) noexcept
 {
-    return code_point >= unicode_hangul_T_base && code_point < (unicode_hangul_T_base + unicode_hangul_T_count);
+    return code_point >= detail::unicode_hangul_T_base && code_point < (detail::unicode_hangul_T_base + detail::unicode_hangul_T_count);
 }
 
 [[nodiscard]] constexpr bool is_hangul_syllable(char32_t code_point) noexcept
 {
-    return code_point >= unicode_hangul_S_base && code_point < (unicode_hangul_S_base + unicode_hangul_S_count);
+    return code_point >= detail::unicode_hangul_S_base && code_point < (detail::unicode_hangul_S_base + detail::unicode_hangul_S_count);
 }
 
 [[nodiscard]] constexpr bool is_hangul_LV_part(char32_t code_point) noexcept
 {
-    return is_hangul_syllable(code_point) && ((code_point - unicode_hangul_S_base) % unicode_hangul_T_count) == 0;
+    return is_hangul_syllable(code_point) && ((code_point - detail::unicode_hangul_S_base) % detail::unicode_hangul_T_count) == 0;
 }
 
 [[nodiscard]] constexpr bool is_hangul_LVT_part(char32_t code_point) noexcept
 {
-    return is_hangul_syllable(code_point) && ((code_point - unicode_hangul_S_base) % unicode_hangul_T_count) != 0;
+    return is_hangul_syllable(code_point) && ((code_point - detail::unicode_hangul_S_base) % detail::unicode_hangul_T_count) != 0;
 }
 
+/** Description of a unicode code point.
+ * This class holds information of a unicode code point.
+ *
+ * The information is compressed to use bit-fields to reduce memory usage
+ * of the unicode database.
+ */
 class unicode_description {
 public:
     [[nodiscard]] constexpr unicode_description(
@@ -103,6 +110,45 @@ public:
     [[nodiscard]] constexpr unicode_bidi_class bidi_class() const noexcept
     {
         return static_cast<unicode_bidi_class>(_bidi_class);
+    }
+
+    /** Get the bidi bracket type.
+     * The returned type combined the bracket type and is-bidi-mirrored property.
+     * @return n = no-mirror, o = open-bracket, c = close-bracket, m = bidi-mirrored.
+     */
+    [[nodiscard]] constexpr unicode_bidi_bracket_type bidi_bracket_type() const noexcept
+    {
+        return static_cast<unicode_bidi_bracket_type>(_bidi_bracket_type);
+    }
+
+    /** Get the mirrored glyph.
+     * @return The mirrored glyph or U+ffff when there is no mirrored glyph.
+     */
+    [[nodiscard]] constexpr char32_t bidi_mirrored_glyph() const noexcept
+    {
+        return static_cast<unicode_bidi_bracket_type>(_bidi_bracket_type);
+    }
+
+    [[nodiscard]] constexpr bool decomposition_canonical() const noexcept
+    {
+        return static_cast<bool>(_composition_canonical);
+    }
+
+    [[nodiscard]] constexpr uint8_t decomposition_combining_class() const noexcept
+    {
+        return static_cast<uint8_t>(_decomposition_combining_class);
+    }
+
+    [[nodiscard]] constexpr size_t decomposition_index() const noexcept
+    {
+        tt_axiom(decomposition_length() > 1);
+        return static_cast<size_t>(_decomposition_index);
+    }
+
+    [[nodiscard]] constexpr char32_t decomposition_single_char() const noexcept
+    {
+        tt_axiom(decomposition_length() == 1);
+        return static_cast<char32_t>(_decomposition_index);
     }
 
 private:

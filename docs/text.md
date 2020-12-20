@@ -1,6 +1,8 @@
-# Text handling.
+Text
+====
 
-## FontBook initialization
+FontBook initialization
+-----------------------
 When the application is started a global FontBook is instanced.
 During the FontBook's instantiation it will fast-parse each TrueType
 font in the operating system's font folder.
@@ -31,7 +33,8 @@ Each font will be assigned a list of fallback fonts for missing glyph lookup.
 Priority is given for fonts that start with the same font family name. For
 example "Arial Arabic" will be prioritized when the current font is "Arial"
 
-## Font selection
+Font selection
+--------------
 A FontVariant consists of a FontWeight+serif-flag. This allows a user to select a font
 family to draw a text with and emphesize fragments of the text using italic and bold.
 
@@ -49,60 +52,37 @@ Selecting a font to render a text is done in several steps:
    The returned FontID may be of another font than requested if the glyphs where
    not available in the requested fonts.
 
-## Rich text
-The text shaper will handle Unicode strings together with inline text style directives.
-The default text style in absent of initial text style directives is as follows:
- - Font Family GID = 1 (Sans-Serif)
- - Font Weight = 500 (Medium)
- - Font Slant = upright
- - Font size = 12
- - Text decoriation = no-decoration
- - Text color = semantic-foreground
+Text shaping
+------------
 
-The text style directives are encoded as follows:
- 1. U+91 (PU1: Private Use)
- 2. One or more alphabetical characters case sensitive denoted the parameter
- 3. Zero or more values seperated using U+1F, U+1E or U+1D for the different
-    levels. The values themselves are integer or decimal numbers encoded as digits
-    '0' to '9' and an optional single decimal seperator '.'.
- 4. U+1C (FS: File Separator) To mark the end of the style directive.
+### Phases
 
+ 1. Given a text and a text-style; calculate the natual size of the text
+    - Lookup the glyphs and their width.
+ 2. Given a maximum width fold the text; shape the text.
+    - Line wrap the text to fit the maximum width.
+    - Execute the Unicode bidrectional algorithm.
+    - Lookup glyphs that have been replaced.
+    - Morph glyphs such as font ligatures
+    - Calculate position of each glyph
+ 3. Draw the text, possibly replacing the color
+ 4. Given draw coordinates find character in the original text.
+ 5. Given a character in the original text find a neighbouring character on the screen.
 
- :---------|:---------- 
-  0xFDD0   | Reset to default text-style
-  0xFDD1   | Font Family
-  0xFDD2   | Font Variant
-  0xFDD3   | Font Size
-  0xFDD4   | Text Decoration
-  0xFDD5   | Text Color
+### Sub-styles
+Sub-styles can be selected inline in the text using the following Unicode code-points:
 
-Below are the encodings:
+  Code   | Name      | Common Style        | Description
+ :-------|:--------- |:------------------- |:--------------------------
+  U+FDD0 | Regular   | Regular             | This is the default regular text
+  U+FDD1 | Emphasis  | Italic              | For different but not more or less imporant than regular text.
+  U+FDD2 | Strong    | Bold or red         | For important text like warnings.
+  U+FDD3 | Light     | Light or gray       | For less important text, like long explanations.
+  U+FDD4 | Code      | Monospaced          | For data, or examples of data.
+  U+FDD5 | Link      | Underlined and blue | For clickable links.
 
-  Coding                                                   | Description
- :-------------------------------------------------------- | ---------------------------
-  U+91 'ff' int U+1C                                       | Font family global unique id
-  U+91 'fw' int U+1C                                       | Font weight from 100 to 950.
-  U+91 'fi' int U+1C                                       | Font slant: 0=Upright, 1=Italic
-  U+91 'ts' int U+1C                                       | Text size
-  U+91 'tc' int U+1C                                       | Text color with semantic id
-  U+91 'tc' int U+1F int U+1F int (U+1F int)? U+1C         | Text color sRGBA 0-255
-  U+91 'tc' float U+1F float U+1F float (U+1F float)? U+1C | Text color linear extended sRGB
-  U+91 'lt' int U+1C                                       | Line type
-  U+91 'lc' int U+1C                                       | Line color with semantic id
-  U+91 'lc' int U+1F int U+1F int (U+1F int)? U+1C         | Line color sRGBA 0-255
-  U+91 'lc' float U+1F float U+1F float (U+1F float)? U+1C | Line color linear extended sRGB
+These code-points are noncharacter code-point and are used internally of the TTauri library.
 
 
-  Code | Description
- :---- |:--------------
-  0    | Set text color to Foreground
-  100  | Set text color to Blue (Accent)
-  101  | Set text color to Green (Good)
-  102  | Set text color to Indigo
-  103  | Set text color to Orange (Warning)
-  104  | Set text color to Pink
-  105  | Set text color to Purple
-  106  | Set text color to Red (Error)
-  107  | Set text color to Teal
-  108  | Set text color to Yellow
+
 
