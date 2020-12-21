@@ -596,6 +596,33 @@ static void unicode_bidi_N0(unicode_bidi_isolated_run_sequence &isolated_run_seq
     }
 }
 
+static void unicode_bidi_N1(unicode_bidi_isolated_run_sequence &isolated_run_sequence)
+{
+    tt_not_implemented();
+
+    ttlet embedding_direction = isolated_run_sequence.embedding_direction();
+
+    auto prev_direction = isolated_run_sequence.sos;
+
+    for (auto &run : isolated_run_sequence) {
+        for (auto &character : run) {
+        }
+    }
+}
+
+static void unicode_bidi_N2(unicode_bidi_isolated_run_sequence &isolated_run_sequence)
+{
+    ttlet embedding_direction = isolated_run_sequence.embedding_direction();
+
+    for (auto &run: isolated_run_sequence) {
+        for (auto &character: run) {
+            if (is_NI(character.direction)) {
+                character.direction = embedding_direction;
+            }
+        }
+    }
+}
+
 static void unicode_bidi_X10(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
@@ -664,6 +691,9 @@ static void unicode_bidi_X10(
         unicode_bidi_W5(isolated_run_sequence);
         unicode_bidi_W6(isolated_run_sequence);
         unicode_bidi_W7(isolated_run_sequence);
+        unicode_bidi_N0(isolated_run_sequence);
+        unicode_bidi_N1(isolated_run_sequence);
+        unicode_bidi_N2(isolated_run_sequence);
     }
 }
 
