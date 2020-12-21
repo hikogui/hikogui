@@ -13,34 +13,32 @@ struct unicode_bidi_char_info {
      */
     size_t index;
 
-    /** Code point.
+    /** The current code point.
+     * The value may change during the execution of the bidi algorithm.
      */
     char32_t code_point;
 
-    /** Code point for a optionally mirrored character, or 0xffff.
+    /** Current computed direction of the code-point.
+     * The value may change during the execution of the bidi algorithm.
      */
-    char32_t mirror_code_point;
-
-    /** Current bidirectional class of the code-point.
-     */
-    unicode_bidi_class bidi_class;
-
-    /** Original bidirectional class of the code-point used by L1.
-     */
-    unicode_bidi_class original_bidi_class;
+    unicode_bidi_class direction;
 
     /** The embedding level.
+     * The value may change during the execution of the bidi algorithm.
      */
     int8_t embedding_level;
+
+    /** Description of the code-point.
+     */
+    unicode_description const *description;
 
     [[nodiscard]] unicode_bidi_char_info(size_t index, char32_t code_point) noexcept :
         index(index),
         code_point(code_point),
-        original_bidi_class(bidi_class),
         embedding_level(0)
     {
-        ttlet &description = unicode_description_find(code_point);
-        bidi_class = description.bidi_class();
+        description = &unicode_description_find(code_point);
+        direction = description->bidi_class();
     }
 };
 

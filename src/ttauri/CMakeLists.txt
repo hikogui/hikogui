@@ -137,6 +137,7 @@ target_sources(ttauri PRIVATE
     small_map.hpp
     small_vector.hpp
     sRGB.hpp
+    stack.hpp
     static_resource_view.cpp
     static_resource_view.hpp
     strings.hpp

@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "unicode_bidi.hpp"
-#include "../application.hpp"
+#include "../stack.hpp"
 #include <algorithm>
 
 namespace tt::detail {
@@ -46,7 +46,7 @@ static void unicode_bidi_X1(
     long long valid_isolate_count = 0;
 
     // X1.
-    auto stack = std::vector<unicode_bidi_stack_element>{{paragraph_embedding_level, unknown, false}};
+    auto stack = tt::stack<unicode_bidi_stack_element, max_depth + 2>{{paragraph_embedding_level, unknown, false}};
 
     for (auto it = first; it != last; ++it) {
         ttlet current_embedding_level = stack.back().embedding_level;
@@ -54,7 +54,7 @@ static void unicode_bidi_X1(
         ttlet next_odd_embedding_level = next_odd(current_embedding_level);
         ttlet next_even_embedding_level = next_even(current_embedding_level);
 
-        switch (it->bidi_class) {
+        switch (it->direction) {
         case RLE: // X2. Explicit embeddings
             if (next_odd_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
                 stack.emplace_back(next_odd_embedding_level, unknown, false);
@@ -91,7 +91,7 @@ static void unicode_bidi_X1(
 RLI:
             it->embedding_level = current_embedding_level;
             if (current_override_status != unknown) {
-                it->bidi_class = current_override_status;
+                it->direction = current_override_status;
             }
 
             if (next_odd_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
@@ -106,7 +106,7 @@ RLI:
 LRI:
             it->embedding_level = current_embedding_level;
             if (current_override_status != unknown) {
-                it->bidi_class = current_override_status;
+                it->direction = current_override_status;
             }
 
             if (next_even_embedding_level <= max_depth && overflow_isolate_count == 0 && overflow_embedding_count == 0) {
@@ -144,7 +144,7 @@ LRI:
 
             it->embedding_level = stack.back().embedding_level;
             if (stack.back().override_status != unknown) {
-                it->bidi_class = stack.back().override_status;
+                it->direction = stack.back().override_status;
             }
             break;
 
@@ -171,7 +171,7 @@ LRI:
         default: // X6
             it->embedding_level = current_embedding_level;
             if (current_override_status != unknown) {
-                it->bidi_class = current_override_status;
+                it->direction = current_override_status;
             }
         }
     }
@@ -183,8 +183,8 @@ unicode_bidi_X9(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_it
     return std::remove_if(first, last, [](ttlet &character) {
         using enum unicode_bidi_class;
 
-        return character.bidi_class == RLE && character.bidi_class == LRE && character.bidi_class == RLO &&
-            character.bidi_class == LRO && character.bidi_class == PDF && character.bidi_class == BN;
+        return character.direction == RLE && character.direction == LRE && character.direction == RLO &&
+            character.direction == LRO && character.direction == PDF && character.direction == BN;
     });
 }
 
@@ -216,13 +216,13 @@ public:
 
         tt_axiom(_begin != _end);
         ttlet &last_char = *(_end - 1);
-        return last_char.bidi_class == LRI || last_char.bidi_class == RLI || last_char.bidi_class == FSI;
+        return last_char.direction == LRI || last_char.direction == RLI || last_char.direction == FSI;
     }
 
     [[nodiscard]] bool starts_with_PDI() const noexcept
     {
         tt_axiom(_begin != _end);
-        return _begin->bidi_class == unicode_bidi_class::PDI;
+        return _begin->direction == unicode_bidi_class::PDI;
     }
 
 private:
@@ -250,6 +250,16 @@ struct unicode_bidi_isolated_run_sequence {
         return std::end(runs);
     }
 
+    auto begin() const noexcept
+    {
+        return std::begin(runs);
+    }
+
+    auto end() const noexcept
+    {
+        return std::end(runs);
+    }
+
     void add_run(unicode_bidi_level_run const &run) noexcept
     {
         runs.push_back(run);
@@ -259,6 +269,11 @@ struct unicode_bidi_isolated_run_sequence {
     {
         tt_axiom(!runs.empty());
         return runs.front().embedding_level();
+    }
+
+    [[nodiscard]] unicode_bidi_class embedding_direction() const noexcept
+    {
+        return (embedding_level() % 2) == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
     }
 
     [[nodiscard]] bool ends_with_isolate_initiator() const noexcept
@@ -275,17 +290,17 @@ static void unicode_bidi_W1(unicode_bidi_isolated_run_sequence &sequence) noexce
     auto previous_bidi_class = sequence.sos;
     for (auto &run : sequence) {
         for (auto &char_info : run) {
-            if (char_info.bidi_class == NSM) {
+            if (char_info.direction == NSM) {
                 switch (previous_bidi_class) {
                 case LRI:
                 case RLI:
                 case FSI:
-                case PDI: char_info.bidi_class = ON; break;
-                default: char_info.bidi_class = previous_bidi_class; break;
+                case PDI: char_info.direction = ON; break;
+                default: char_info.direction = previous_bidi_class; break;
                 }
             }
 
-            previous_bidi_class = char_info.bidi_class;
+            previous_bidi_class = char_info.direction;
         }
     }
 }
@@ -297,13 +312,13 @@ static void unicode_bidi_W2(unicode_bidi_isolated_run_sequence &sequence) noexce
     auto last_strong_direction = sequence.sos;
     for (auto &run : sequence) {
         for (auto &char_info : run) {
-            switch (char_info.bidi_class) {
+            switch (char_info.direction) {
             case R:
             case L:
-            case AL: last_strong_direction = char_info.bidi_class; break;
+            case AL: last_strong_direction = char_info.direction; break;
             case EN:
                 if (last_strong_direction == AL) {
-                    char_info.bidi_class = AN;
+                    char_info.direction = AN;
                 }
                 break;
             default:;
@@ -318,8 +333,8 @@ static void unicode_bidi_W3(unicode_bidi_isolated_run_sequence &sequence) noexce
 
     for (auto &run : sequence) {
         for (auto &char_info : run) {
-            if (char_info.bidi_class == AL) {
-                char_info.bidi_class = R;
+            if (char_info.direction == AL) {
+                char_info.direction = R;
             }
         }
     }
@@ -333,13 +348,13 @@ static void unicode_bidi_W4(unicode_bidi_isolated_run_sequence &sequence) noexce
     unicode_bidi_char_info *back2 = nullptr;
     for (auto &run : sequence) {
         for (auto &char_info : run) {
-            if (char_info.bidi_class == EN && back2 != nullptr && back2->bidi_class == EN && back1 != nullptr &&
-                (back1->bidi_class == ES || back1->bidi_class == CS)) {
-                back1->bidi_class = EN;
+            if (char_info.direction == EN && back2 != nullptr && back2->direction == EN && back1 != nullptr &&
+                (back1->direction == ES || back1->direction == CS)) {
+                back1->direction = EN;
             }
-            if (char_info.bidi_class == AN && back2 != nullptr && back2->bidi_class == AN && back1 != nullptr &&
-                back1->bidi_class == CS) {
-                back1->bidi_class = AN;
+            if (char_info.direction == AN && back2 != nullptr && back2->direction == AN && back1 != nullptr &&
+                back1->direction == CS) {
+                back1->direction = AN;
             }
 
             back2 = std::exchange(back1, &char_info);
@@ -356,16 +371,16 @@ static void unicode_bidi_W5(unicode_bidi_isolated_run_sequence &sequence) noexce
 
     for (auto &run : sequence) {
         for (auto &char_info : run) {
-            if (char_info.bidi_class == ET) {
+            if (char_info.direction == ET) {
                 if (previous_bidi_class == EN) {
-                    char_info.bidi_class = EN;
+                    char_info.direction = EN;
                 } else {
                     ETs.push_back(&char_info);
                 }
 
-            } else if (char_info.bidi_class == EN) {
+            } else if (char_info.direction == EN) {
                 std::for_each(std::begin(ETs), std::end(ETs), [](auto x) {
-                    x->bidi_class = unicode_bidi_class::EN;
+                    x->direction = unicode_bidi_class::EN;
                 });
                 ETs.clear();
 
@@ -373,7 +388,7 @@ static void unicode_bidi_W5(unicode_bidi_isolated_run_sequence &sequence) noexce
                 ETs.clear();
             }
 
-            previous_bidi_class = char_info.bidi_class;
+            previous_bidi_class = char_info.direction;
         }
     }
 }
@@ -384,8 +399,8 @@ static void unicode_bidi_W6(unicode_bidi_isolated_run_sequence &sequence) noexce
 
     for (auto &run : sequence) {
         for (auto &char_info : run) {
-            if (char_info.bidi_class == ET || char_info.bidi_class == ES || char_info.bidi_class == CS) {
-                char_info.bidi_class = ON;
+            if (char_info.direction == ET || char_info.direction == ES || char_info.direction == CS) {
+                char_info.direction = ON;
             }
         }
     }
@@ -398,16 +413,185 @@ static void unicode_bidi_W7(unicode_bidi_isolated_run_sequence &sequence) noexce
     auto last_strong_direction = sequence.sos;
     for (auto &run : sequence) {
         for (auto &char_info : run) {
-            switch (char_info.bidi_class) {
+            switch (char_info.direction) {
             case R:
-            case L: last_strong_direction = char_info.bidi_class; break;
+            case L: last_strong_direction = char_info.direction; break;
             case EN:
                 if (last_strong_direction == L) {
-                    char_info.bidi_class = L;
+                    char_info.direction = L;
                 }
                 break;
             default:;
             }
+        }
+    }
+}
+
+struct unicode_bidi_bracket_pair {
+    size_t first;
+    size_t second;
+    unicode_bidi_class preceding_strong;
+    bool has_inside_strong;
+    bool inside_strong_matches_embedding;
+
+    unicode_bidi_class direction = unicode_bidi_class::unknown;
+
+    unicode_bidi_bracket_pair(
+        size_t first,
+        size_t second,
+        unicode_bidi_class preceding_strong,
+        bool has_inside_strong,
+        bool inside_strong_matches_embedding) :
+        first(first),
+        second(second),
+        preceding_strong(preceding_strong),
+        has_inside_strong(has_inside_strong),
+        inside_strong_matches_embedding(inside_strong_matches_embedding)
+    {
+    }
+
+    [[nodiscard]] friend bool operator<(unicode_bidi_bracket_pair const &lhs, unicode_bidi_bracket_pair const &rhs) noexcept
+    {
+        return lhs.first < rhs.first;
+    }
+};
+
+static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_isolated_run_sequence const &isolated_run_sequence)
+{
+    struct bracket_start {
+        char32_t mirrored_bracket;
+        size_t index;
+        unicode_bidi_class last_strong;
+
+        bool has_inside_strong = false;
+        bool inside_strong_matches_embedding = false;
+
+        bracket_start(char32_t mirrored_bracket, size_t index, unicode_bidi_class last_strong) noexcept :
+            mirrored_bracket(mirrored_bracket), index(index), last_strong(last_strong)
+        {
+        }
+    };
+
+    auto stack = tt::stack<bracket_start, 63>{};
+    auto pairs = std::vector<unicode_bidi_bracket_pair>{};
+    auto last_strong = isolated_run_sequence.sos;
+    ttlet embedding_direction = isolated_run_sequence.embedding_direction();
+
+    size_t index = 0;
+    for (ttlet &run : isolated_run_sequence) {
+        for (ttlet &character : run) {
+            if (character.description->bidi_bracket_type() == unicode_bidi_bracket_type::o) {
+                if (stack.full()) {
+                    goto finished;
+                } else {
+                    stack.emplace_back(character.description->bidi_mirrored_glyph(), index, last_strong);
+                }
+
+            } else if (character.description->bidi_bracket_type() == unicode_bidi_bracket_type::c) {
+                for (auto it = stack.end() - 1; it >= stack.begin(); --it) {
+                    if (it->mirrored_bracket == character.code_point) {
+                        pairs.emplace_back(
+                            it->index, index, it->last_strong, it->has_inside_strong, it->inside_strong_matches_embedding);
+                        stack.pop_back(it);
+                        break;
+                    }
+                }
+            }
+
+            if (character.description->bidi_class() == unicode_bidi_class::L ||
+                character.description->bidi_class() == unicode_bidi_class::R) {
+                last_strong = character.description->bidi_class();
+
+                for (auto &item : stack) {
+                    item.has_inside_strong = true;
+                    item.inside_strong_matches_embedding |= character.description->bidi_class() == embedding_direction;
+                }
+            }
+
+            ++index;
+        }
+    }
+
+finished:
+    std::sort(std::begin(pairs), std::end(pairs));
+    return pairs;
+}
+
+static void unicode_bidi_N0(unicode_bidi_isolated_run_sequence &isolated_run_sequence)
+{
+    auto bracket_pairs = unicode_bidi_BD16(isolated_run_sequence);
+    ttlet embedding_direction = isolated_run_sequence.embedding_direction();
+
+    for (auto &pair : bracket_pairs) {
+        if (pair.inside_strong_matches_embedding) {
+            // N0.b.
+            pair.direction = embedding_direction;
+
+        } else if (pair.has_inside_strong) {
+            // N0.c.
+            if (pair.preceding_strong != embedding_direction) {
+                // B0.c.1.
+                pair.direction = pair.preceding_strong;
+            } else {
+                // B0.c.2.
+                pair.direction = embedding_direction;
+            }
+        } else {
+            // B0.d.
+            pair.direction = unicode_bidi_class::unknown;
+        }
+    }
+
+    size_t index = 0;
+    bool last_bracket_changed_from_L_to_R = false;
+    for (auto &run : isolated_run_sequence) {
+        for (auto &character : run) {
+            if (character.description->bidi_bracket_type() == unicode_bidi_bracket_type::o) {
+                last_bracket_changed_from_L_to_R = false;
+
+                for (ttlet &pair : bracket_pairs) {
+                    if (pair.first == index) {
+                        if (pair.direction == unicode_bidi_class::L) {
+                            character.direction = unicode_bidi_class::L;
+                        } else if (pair.direction == unicode_bidi_class::R) {
+                            if (character.direction == unicode_bidi_class::L) {
+                                last_bracket_changed_from_L_to_R = true;
+                            }
+                            character.direction = unicode_bidi_class::R;
+                        }
+                        break;
+                    }
+                }
+
+            } else if (character.description->bidi_bracket_type() == unicode_bidi_bracket_type::c) {
+                last_bracket_changed_from_L_to_R = false;
+
+                for (ttlet &pair : bracket_pairs) {
+                    if (pair.second == index) {
+                        if (pair.direction == unicode_bidi_class::L) {
+                            character.direction = unicode_bidi_class::L;
+                        } else if (pair.direction == unicode_bidi_class::R) {
+                            if (character.direction == unicode_bidi_class::L) {
+                                last_bracket_changed_from_L_to_R = true;
+                            }
+                            character.direction = unicode_bidi_class::R;
+                        }
+                        break;
+                    }
+                }
+
+            } else if (character.description->bidi_class() == unicode_bidi_class::NSM) {
+                if (last_bracket_changed_from_L_to_R) {
+                    character.direction = unicode_bidi_class::R;
+                }
+
+                last_bracket_changed_from_L_to_R = false;
+
+            } else {
+                last_bracket_changed_from_L_to_R = false;
+            }
+
+            ++index;
         }
     }
 }
@@ -417,7 +601,7 @@ static void unicode_bidi_X10(
     unicode_bidi_char_info_iterator last,
     int8_t paragraph_embedding_level) noexcept
 {
-    tt_axiom(first != last);
+    tt_axiom (first != last);
 
     // Determine the runs of characters with equal embedding levels.
     std::vector<unicode_bidi_level_run> level_runs;
@@ -689,12 +873,12 @@ unicode_bidi_P2(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_it
 
     long long isolate_level = 0;
     for (auto it = first; it != last; ++it) {
-        switch (it->bidi_class) {
+        switch (it->direction) {
         case L:
         case AL:
         case R:
             if (isolate_level == 0) {
-                return it->bidi_class;
+                return it->direction;
             }
             break;
         case LRI:
@@ -735,7 +919,7 @@ unicode_bidi_P1(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_it
     auto it = first;
     auto paragraph_begin = it;
     while (it != last) {
-        if (it->bidi_class == unicode_bidi_class::B) {
+        if (it->direction == unicode_bidi_class::B) {
             ttlet paragraph_end = it + 1;
             it = unicode_bidi_P1_paragraph(paragraph_begin, paragraph_end);
 
