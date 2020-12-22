@@ -99,7 +99,6 @@ target_sources(ttauri PRIVATE
     math.hpp
     memory.hpp
     meta.hpp
-    nested_vector_iterator.hpp
     notifier.hpp
     numeric_array.hpp
     cast.hpp
@@ -126,6 +125,7 @@ target_sources(ttauri PRIVATE
     range_map.hpp
     Rec2020.hpp
     Rec2100.hpp
+    recursive_iterator.hpp
     rect.hpp
     required.hpp
     range_map.hpp

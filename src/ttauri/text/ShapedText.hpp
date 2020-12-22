@@ -9,7 +9,7 @@
 #include "../alignment.hpp"
 #include "../Path.hpp"
 #include "../numeric_array.hpp"
-#include "../nested_vector_iterator.hpp"
+#include "../recursive_iterator.hpp"
 #include <string_view>
 #include <optional>
 
@@ -20,15 +20,9 @@ namespace tt {
  */
 class ShapedText {
 public:
-    using iterator = nested_vector_iterator<
-        std::vector<AttributedGlyphLine>::const_iterator,
-        std::vector<AttributedGlyphLine>::iterator,
-        AttributedGlyphLine::iterator>;
+    using iterator = recursive_iterator<std::vector<AttributedGlyphLine>::iterator>;
 
-    using const_iterator = nested_vector_iterator<
-        std::vector<AttributedGlyphLine>::const_iterator,
-        std::vector<AttributedGlyphLine>::const_iterator,
-        AttributedGlyphLine::const_iterator>;
+    using const_iterator = recursive_iterator<std::vector<AttributedGlyphLine>::const_iterator>;
 
     alignment alignment;
     aarect boundingBox;
@@ -117,13 +111,13 @@ public:
         return narrow_cast<size_t>(count);
     }
 
-    [[nodiscard]] iterator begin() noexcept { return nested_vector_iterator_begin(lines); }
-    [[nodiscard]] const_iterator begin() const noexcept { return nested_vector_iterator_cbegin(lines); }
-    [[nodiscard]] const_iterator cbegin() const noexcept { return nested_vector_iterator_cbegin(lines); }
+    [[nodiscard]] iterator begin() noexcept { return recursive_iterator_begin(lines); }
+    [[nodiscard]] const_iterator begin() const noexcept { return recursive_iterator_begin(lines); }
+    [[nodiscard]] const_iterator cbegin() const noexcept { return recursive_iterator_begin(lines); }
 
-    [[nodiscard]] iterator end() noexcept { return nested_vector_iterator_end(lines); }
-    [[nodiscard]] const_iterator end() const noexcept { return nested_vector_iterator_cend(lines); }
-    [[nodiscard]] const_iterator cend() const noexcept { return nested_vector_iterator_cend(lines); }
+    [[nodiscard]] iterator end() noexcept { return recursive_iterator_end(lines); }
+    [[nodiscard]] const_iterator end() const noexcept { return recursive_iterator_end(lines); }
+    [[nodiscard]] const_iterator cend() const noexcept { return recursive_iterator_end(lines); }
 
     float topAccender() const noexcept {
         return lines.front().ascender;

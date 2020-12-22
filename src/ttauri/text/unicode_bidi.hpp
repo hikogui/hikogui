@@ -44,6 +44,7 @@ struct unicode_bidi_char_info {
 
 using unicode_bidi_char_info_vector = std::vector<unicode_bidi_char_info>;
 using unicode_bidi_char_info_iterator = unicode_bidi_char_info_vector::iterator;
+using unicode_bidi_char_info_const_iterator = unicode_bidi_char_info_vector::const_iterator;
 
 struct unicode_bidi_paragraph {
     using characters_type = std::vector<unicode_bidi_char_info>;

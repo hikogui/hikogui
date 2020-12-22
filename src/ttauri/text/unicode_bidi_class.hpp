@@ -38,6 +38,18 @@ enum class unicode_bidi_class : uint8_t {
     PDI ///< Pop Directional Isolate
 };
 
+constexpr bool is_isolate_starter(unicode_bidi_class const &rhs) noexcept
+{
+    using enum unicode_bidi_class;
+    return rhs == LRI || rhs == RLI || rhs == FSI;
+}
+
+constexpr bool is_isolate_formatter(unicode_bidi_class const &rhs) noexcept
+{
+    using enum unicode_bidi_class;
+    return is_isolate_starter(rhs) || rhs == PDI;
+}
+
 constexpr bool is_NI(unicode_bidi_class const &rhs) noexcept
 {
     using enum unicode_bidi_class;
