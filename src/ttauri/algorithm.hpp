@@ -5,6 +5,7 @@
 
 #include "required.hpp"
 #include "assert.hpp"
+#include "cast.hpp"
 #include <algorithm>
 #include <tuple>
 #include <cmath>
@@ -59,7 +60,6 @@ inline void erase_if(T &v, F predicate)
     }
 }
 
-
 template<typename It, typename UnaryPredicate>
 constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
 {
@@ -76,21 +76,25 @@ constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
 template<typename It, typename UnaryPredicate>
 constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicate)
 {
-    return rfind_if(first, last, [&](ttlet &x) { return !predicate(x); });
+    return rfind_if(first, last, [&](ttlet &x) {
+        return !predicate(x);
+    });
 }
 
 template<typename It, typename T>
 constexpr It rfind(It const first, It const last, T const &value)
 {
-    return rfind_if(first, last, [&](ttlet &x) { return x == value; });
+    return rfind_if(first, last, [&](ttlet &x) {
+        return x == value;
+    });
 }
 
 /** Find the start of the current cluster.
-* @param last The last iterator, where this function will stop iterating.
-* @param start Where to start the search
-* @param predicate A function returning the identifier of the cluster.
-* @return One beyond the last iterator where the cluster is the same as start.
-*/
+ * @param last The last iterator, where this function will stop iterating.
+ * @param start Where to start the search
+ * @param predicate A function returning the identifier of the cluster.
+ * @return One beyond the last iterator where the cluster is the same as start.
+ */
 template<typename ConstIt, typename It, typename UnaryPredicate>
 constexpr It find_cluster(ConstIt last, It start, UnaryPredicate predicate)
 {
@@ -134,19 +138,16 @@ constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
 }
 
 /** Find the begin and end of the current cluster.
-* @param first The first iterator, where this function will stop iterating.
-* @param first The last iterator, where this function will stop iterating.
-* @param start Where to start the search
-* @param predicate A function returning the identifier of the cluster.
-* @return The first and one beyond last iterator where the cluster is the same as start.
-*/
+ * @param first The first iterator, where this function will stop iterating.
+ * @param first The last iterator, where this function will stop iterating.
+ * @param start Where to start the search
+ * @param predicate A function returning the identifier of the cluster.
+ * @return The first and one beyond last iterator where the cluster is the same as start.
+ */
 template<typename ConstIt, typename It, typename UnaryPredicate>
-constexpr std::pair<It,It> bifind_cluster(ConstIt first, ConstIt last, It start, UnaryPredicate predicate)
+constexpr std::pair<It, It> bifind_cluster(ConstIt first, ConstIt last, It start, UnaryPredicate predicate)
 {
-    return {
-        rfind_cluster(first, start, predicate),
-        find_cluster(last, start, predicate)
-    };
+    return {rfind_cluster(first, start, predicate), find_cluster(last, start, predicate)};
 }
 
 /*! For each cluster.
@@ -178,7 +179,7 @@ inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function
 template<typename InputIt1, typename InputIt2>
 inline bool starts_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
 {
-    ttlet [haystack_result, needle_result] = std::mismatch(haystack_first, haystack_last, needle_first, needle_last);
+    ttlet[haystack_result, needle_result] = std::mismatch(haystack_first, haystack_last, needle_first, needle_last);
     return needle_result == needle_last;
 }
 
@@ -189,7 +190,8 @@ inline bool starts_with(Container1 haystack, Container2 needle) noexcept
 }
 
 template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
-inline std::pair<InputIt1,InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, BinaryPredicate predicate) noexcept
+inline std::pair<InputIt1, InputIt2>
+rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, BinaryPredicate predicate) noexcept
 {
     auto i1 = last1;
     auto i2 = last2;
@@ -210,20 +212,24 @@ inline std::pair<InputIt1,InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, I
 }
 
 template<typename InputIt1, typename InputIt2>
-inline std::pair<InputIt1,InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) noexcept
+inline std::pair<InputIt1, InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) noexcept
 {
-    return rmismatch(first1, last1, first2, last2, [&](auto a, auto b) { return a == b; });  
+    return rmismatch(first1, last1, first2, last2, [&](auto a, auto b) {
+        return a == b;
+    });
 }
 
 template<typename T>
-T smoothstep(T x) noexcept {
+T smoothstep(T x) noexcept
+{
     x = std::clamp(x, T{0.0}, T{1.0});
     return x * x * (3 - 2 * x);
 }
 
 template<typename T>
-T inverse_smoothstep(T x) {
-  return T{0.5} - std::sin(std::asin(T{1.0} - T{2.0} * x) / T{3.0});
+T inverse_smoothstep(T x)
+{
+    return T{0.5} - std::sin(std::asin(T{1.0} - T{2.0} * x) / T{3.0});
 }
 
 /** Mix between two values.
@@ -243,6 +249,70 @@ T mix(MixType mix_value, T const &lhs, T const &rhs) noexcept
     }
 }
 
+/** Shuffle a container based on a list of indices.
+ * It is undefined behavior for an index to point beyond `last`.
+ * It is undefined behavior for an index to repeat.
+ *
+ * Complexity is O(n) swaps, where n is the number of indices.
+ *
+ * @param first An iterator pointing to the first item in a container to be shuffled (index = 0)
+ * @param last An iterator pointing beyond the last item in a container to be shuffled.
+ * @param indices_first An iterator pointing to the first index.
+ * @param indices_last An iterator pointing beyond the last index.
+ * @param index_op A function returning the `size` index from indices.
+ *                 The default returns the index item it self.
+ * @return An iterator pointing beyond the last element that was added by the indices.
+ *         first + std::distance(indices_first, indices_last)
+ */
+auto shuffle_by_index(
+    auto first,
+    auto last,
+    auto indices_first,
+    auto indices_last,
+    auto index_op) noexcept
+{
+    size_t size = std::distance(first, last);
 
+    // Keep track of index locations during shuffling of items.
+    auto src_indices = std::vector<size_t>{};
+    src_indices.reserve(size);
+    for (size_t i = 0; i != size; ++i) {
+        src_indices.push_back(i);
+    }
+
+    size_t dst = 0;
+    for (auto it = indices_first; it != indices_last; ++it, ++dst) {
+        ttlet index = index_op(*it);
+        tt_axiom(index < std::size(src_indices));
+        auto src = src_indices[index];
+
+        if (src != dst) {
+            std::iter_swap(first + src, first + dst);
+            std::iter_swap(std::begin(src_indices) + src, std::begin(src_indices) + dst);
+        }
+    }
+
+    return first + dst;
 }
 
+/** Shuffle a container based on a list of indices.
+ * It is undefined behavior for an index to point beyond `last`.
+ * It is undefined behavior for an index to repeat.
+ *
+ * Complexity is O(n) swaps, where n is the number of indices.
+ *
+ * @param first An iterator pointing to the first item in a container to be shuffled (index = 0)
+ * @param last An iterator pointing beyond the last item in a container to be shuffled.
+ * @param indices_first An iterator pointing to the first index.
+ * @param indices_last An iterator pointing beyond the last index.
+ * @return An iterator pointing beyond the last element that was added by the indices.
+ *         first + std::distance(indices_first, indices_last)
+ */
+auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_last) noexcept
+{
+    return shuffle_by_index(first, last, indices_first, indices_last, [](ttlet &x) {
+        return narrow_cast<size_t>(x);
+    });
+}
+
+} // namespace tt

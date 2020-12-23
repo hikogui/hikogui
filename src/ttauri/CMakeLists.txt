@@ -195,6 +195,7 @@ target_precompile_headers(ttauri PRIVATE
 endif()
 
 target_sources(ttauri_tests PRIVATE
+    algorithm_tests.cpp
     BezierCurve_tests.cpp
     bigint_tests.cpp
     cell_address_tests.cpp
