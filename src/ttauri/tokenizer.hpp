@@ -176,7 +176,7 @@ struct token_t {
 
     explicit operator date::year_month_day() const
     {
-        ttlet parts = split(value, "-");
+        ttlet parts = split(value, '-');
         if (parts.size() != 3) {
             throw parse_error("Expect date to be in the format YYYY-MM-DD");
         }

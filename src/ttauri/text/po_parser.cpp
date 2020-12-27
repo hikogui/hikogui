@@ -140,13 +140,13 @@ namespace tt {
 
 static void parse_po_header(po_translations &r, std::string const &header)
 {
-    for (ttlet &line : split(header, "\n")) {
+    for (ttlet &line : split(header, '\n')) {
         if (std::ssize(line) == 0) {
             // Skip empty header lines.
             continue;
         }
 
-        auto split_line = split(line, ":");
+        auto split_line = split(line, ':');
         if (std::ssize(split_line) < 2) {
             throw parse_error("Unknown header '{}'", line);
         }
@@ -158,7 +158,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
         if (name == "Language") {
             r.language = language_tag{value};
         } else if (name == "Plural-Forms") {
-            ttlet plural_split = split(value, ";");
+            ttlet plural_split = split(value, ';');
         }
     }
 }

@@ -1,6 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
+#include "codec/base_n.hpp"
 #include "required.hpp"
 #include "url_parser.hpp"
 #include "strings.hpp"
@@ -25,8 +26,8 @@ std::string url_encode_part(std::string_view const input, std::function<bool(cha
             s += c;
         } else {
             s += '%';
-            s += nibble_to_char((c >> 4) & 0xf);
-            s += nibble_to_char(c & 0xf);
+            s += base16::char_from_int((c >> 4) & 0xf);
+            s += base16::char_from_int(c & 0xf);
         }
     }
     return s;
@@ -60,7 +61,7 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
             break;
 
         case state_t::FirstNibble:
-            nibble_result = char_to_nibble(c);
+            nibble_result = base16::int_from_char<int8_t>(c);
             if (nibble_result == -1) {
                 // Not a nibble, pretent that there was no encoding.
                 s += '%';
@@ -73,11 +74,11 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
             break;
 
         case state_t::SecondNibble:
-            nibble_result = char_to_nibble(c);
+            nibble_result = base16::int_from_char<int8_t>(c);
             if (nibble_result == -1) {
-                // Not a nibble, pretent that there was no encoding.
+                // Not a nibble, pretend that there was no encoding.
                 s += '%';
-                s += nibble_to_char(value >> 4);
+                s += base16::char_from_int(value >> 4);
                 s += c;
                 state = state_t::Idle;
             } else {
@@ -152,7 +153,7 @@ static void parse_path_split(url_parts &parts, std::string_view path, char sep='
         return parse_path_split(parts, std::vector<std::string_view>{});
 
     } else {
-        return parse_path_split(parts, split(path, sep));
+        return parse_path_split(parts, split_view(path, sep));
     }
 }
 

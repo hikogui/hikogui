@@ -38,22 +38,77 @@ enum class unicode_bidi_class : uint8_t {
     PDI ///< Pop Directional Isolate
 };
 
-constexpr bool is_isolate_starter(unicode_bidi_class const &rhs) noexcept
+[[nodiscard]] constexpr bool is_isolate_starter(unicode_bidi_class const &rhs) noexcept
 {
     using enum unicode_bidi_class;
     return rhs == LRI || rhs == RLI || rhs == FSI;
 }
 
-constexpr bool is_isolate_formatter(unicode_bidi_class const &rhs) noexcept
+[[nodiscard]] constexpr bool is_isolate_formatter(unicode_bidi_class const &rhs) noexcept
 {
     using enum unicode_bidi_class;
     return is_isolate_starter(rhs) || rhs == PDI;
 }
 
-constexpr bool is_NI(unicode_bidi_class const &rhs) noexcept
+[[nodiscard]] constexpr bool is_NI(unicode_bidi_class const &rhs) noexcept
 {
     using enum unicode_bidi_class;
     return rhs == B || rhs == S || rhs == WS || rhs == ON || rhs == FSI || rhs == LRI || rhs == RLI || rhs == PDI;
 }
 
+[[nodiscard]] constexpr unicode_bidi_class unicode_bidi_class_from_string(std::string_view str) noexcept
+{
+    using enum unicode_bidi_class;
+
+    if (str == "L") {
+        return L;
+    } else if (str == "R") {
+        return R;
+    } else if (str == "AL") {
+        return AL;
+    } else if (str == "EN") {
+        return EN;
+    } else if (str == "ES") {
+        return ES;
+    } else if (str == "ET") {
+        return ET;
+    } else if (str == "AN") {
+        return AN;
+    } else if (str == "CS") {
+        return CS;
+    } else if (str == "NSM") {
+        return NSM;
+    } else if (str == "BN") {
+        return BN;
+    } else if (str == "B") {
+        return B;
+    } else if (str == "S") {
+        return S;
+    } else if (str == "WS") {
+        return WS;
+    } else if (str == "ON") {
+        return ON;
+    } else if (str == "LRE") {
+        return LRE;
+    } else if (str == "LRO") {
+        return LRO;
+    } else if (str == "RLE") {
+        return RLE;
+    } else if (str == "RLO") {
+        return RLO;
+    } else if (str == "PDF") {
+        return PDF;
+    } else if (str == "LRI") {
+        return LRI;
+    } else if (str == "RLI") {
+        return RLI;
+    } else if (str == "FSI") {
+        return FSI;
+    } else if (str == "PDI") {
+        return PDI;
+    } else {
+        tt_no_default();
+    }
 }
+
+} // namespace tt

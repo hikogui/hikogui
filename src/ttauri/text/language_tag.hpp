@@ -47,7 +47,7 @@ public:
 
     [[nodiscard]] language_tag short_tag() const noexcept
     {
-        return language_tag{split(tag, "-").front()};
+        return language_tag{split(tag, '-').front()};
     }
 
     [[nodiscard]] bool operator==(language_tag const &rhs) const noexcept

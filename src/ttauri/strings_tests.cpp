@@ -10,7 +10,7 @@ using namespace std;
 using namespace tt;
 
 TEST(String, Split) {
-    ttlet result = split(std::string{"path1/path2"}, '/');
+    ttlet result = split("path1/path2", '/');
     ttlet check_value = std::vector<std::string>{"path1", "path2"};
     ASSERT_EQ(result, check_value);
 }

@@ -803,16 +803,6 @@ static void unicode_bidi_L3(
 {
 }
 
-static void unicode_bidi_L4(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_iterator last) noexcept
-{
-    for (auto it = first; it != last; ++it) {
-        if (it->direction == unicode_bidi_class::R && it->description->bidi_bracket_type() != unicode_bidi_bracket_type::n) {
-            it->code_point = it->description->bidi_mirrored_glyph();
-        }
-    }
-}
-
-
 [[nodiscard]] static unicode_bidi_class
 unicode_bidi_P2(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_iterator last) noexcept
 {
@@ -856,7 +846,7 @@ static void unicode_bidi_P1_line(
     ttlet [lowest_odd, highest] = unicode_bidi_L1(first, last, paragraph_embedding_level);
     unicode_bidi_L2(first, last, lowest_odd, highest);
     unicode_bidi_L3(first, last);
-    unicode_bidi_L4(first, last);
+    // L4 is delayed after the original array has been shuffled.
 }
 
 [[nodiscard]] static unicode_bidi_char_info_iterator
@@ -869,7 +859,6 @@ unicode_bidi_P1_paragraph(unicode_bidi_char_info_iterator first, unicode_bidi_ch
     last = unicode_bidi_X9(first, last);
     unicode_bidi_X10(first, last, paragraph_embedding_level);
 
-    // XXX Split paragraph into lines and run L1-L4.
     auto line_begin = first;
     for (auto it = first; it != last; ++it) {
         if (it->description->general_category() == unicode_general_category::Zl) {

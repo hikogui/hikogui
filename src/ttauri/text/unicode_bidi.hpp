@@ -33,9 +33,7 @@ struct unicode_bidi_char_info {
     unicode_description const *description;
 
     [[nodiscard]] unicode_bidi_char_info(size_t index, char32_t code_point) noexcept :
-        index(index),
-        code_point(code_point),
-        embedding_level(0)
+        index(index), code_point(code_point), embedding_level(0)
     {
         description = &unicode_description_find(code_point);
         direction = description->bidi_class();
@@ -52,7 +50,7 @@ struct unicode_bidi_paragraph {
     characters_type characters;
 
     template<typename... Args>
-    void emplace_character(Args &&... args) noexcept
+    void emplace_character(Args &&...args) noexcept
     {
         characters.emplace_back(std::forward<Args>(args)...);
     }
@@ -70,11 +68,24 @@ struct unicode_bidi_context {
     }
 };
 
+template<typename OutputIt, typename SetCodePoint>
+static void unicode_bidi_L4(
+    unicode_bidi_char_info_iterator first,
+    unicode_bidi_char_info_iterator last,
+    OutputIt output_it,
+    SetCodePoint set_code_point) noexcept
+{
+    for (auto it = first; it != last; ++it, ++output_it) {
+        if (it->direction == unicode_bidi_class::R && it->description->bidi_bracket_type() != unicode_bidi_bracket_type::n) {
+            set_code_point(*output_it, it->description->bidi_mirrored_glyph());
+        }
+    }
+}
 
 [[nodiscard]] unicode_bidi_char_info_iterator
 unicode_bidi_P1(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_iterator last) noexcept;
 
-}
+} // namespace detail
 
 /** Reorder a given range of characters based on the unicode_bidi algorithm.
  * This algorithm will:
@@ -96,23 +107,27 @@ unicode_bidi_P1(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_it
  * @tparam SetChar function of the form: `(auto &, char32_t) -> void`.
  * @param first The first iterator
  * @param last The last iterator
- * @param get_char A function to get the character from an item. 
- * @param set_char A function to set the character in an item. 
+ * @param get_char A function to get the character from an item.
+ * @param set_char A function to set the character in an item.
  */
-template<typename It, typename GetChar, typename SetChar>
-void unicode_bidi(It first, It last, GetChar get_char, SetChar set_char)
+template<typename It, typename GetCodePoint, typename SetCodePoint>
+It unicode_bidi(It first, It last, GetCodePoint get_code_point, SetCodePoint set_code_point)
 {
-    auto text = detail::unicode_bidi_char_info_vector{};
-    text.reserve(std::distance(first, last));
+    auto proxy = detail::unicode_bidi_char_info_vector{};
+    proxy.reserve(std::distance(first, last));
 
     size_t index = 0;
     for (auto it = first; it != last; ++it) {
-        text.emplace_back(index++, get_char(it));
+        proxy.emplace_back(index++, get_code_point(it));
     }
 
-    detail::unicode_bidi_P1(std::begin(text), std::end(text));
-    
+    auto proxy_last = detail::unicode_bidi_P1(std::begin(proxy), std::end(proxy));
+    last = shuffle_by_index(first, last, std::begin(proxy), proxy_last, [](ttlet &item) {
+        return item.index;
+    });
+
+    detail::unicode_bidi_L4(std::begin(proxy), proxy_last, first, set_code_point);
+    return last;
 }
 
-}
-
+} // namespace tt

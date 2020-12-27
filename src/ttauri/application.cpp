@@ -22,7 +22,6 @@
 #include "audio/audio_system_aggregate.hpp"
 #include <memory>
 
-#include "data/unicode_data.bin.inl"
 #include "data/elusiveicons-webfont.ttf.inl"
 #include "data/TTauriIcons.ttf.inl"
 #include "ttauri/GUI/PipelineImage.vert.spv.inl"
@@ -135,7 +134,6 @@ void application::init_foundation()
 
 void application::init_text()
 {
-    static_resource_view::add_static_resource(unicode_data_bin_filename, unicode_data_bin_bytes);
     static_resource_view::add_static_resource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
     static_resource_view::add_static_resource(TTauriIcons_ttf_filename, TTauriIcons_ttf_bytes);
 

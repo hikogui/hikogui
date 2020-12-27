@@ -51,7 +51,7 @@ std::u32string parseNormalizationTest_column(std::string_view column)
 {
     std::u32string r;
 
-    auto codePointStrings = split(column, " ");
+    auto codePointStrings = split(column);
     for (ttlet codePointString : codePointStrings) {
         auto codePoint = static_cast<char32_t>(std::stoi(std::string(codePointString), nullptr, 16));
         r += codePoint;
@@ -61,11 +61,11 @@ std::u32string parseNormalizationTest_column(std::string_view column)
 
 std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view line)
 {
-    ttlet split_line = split(line, "#");
+    ttlet split_line = split(line, '#');
     if (split_line.size() < 2) {
         return {};
     }
-    ttlet columns = split(split_line[0], ";");
+    ttlet columns = split(split_line[0], ';');
     if (columns.size() < 6) {
         return {};
     }
@@ -87,7 +87,7 @@ std::vector<NormalizationTest> parseNormalizationTests()
     ttlet test_data = view.string_view();
 
     std::vector<NormalizationTest> r;
-    for (ttlet line : split(test_data, "\n")) {
+    for (ttlet line : split(test_data, '\n')) {
         if (ttlet optionalTest = parseNormalizationTest_line(line)) {
             r.push_back(*optionalTest);
         }
@@ -128,7 +128,7 @@ protected:
 //
 //      X == toNFC(X) == toNFD(X) == toNFKC(X) == toNFKD(X)
 
-TEST(unicode_normalization, unicode_NFC_colon)
+TEST_F(unicode_normalization, unicode_NFC_colon)
 {
     ASSERT_EQ(unicode_NFC(tt::to_u32string("Audio device:")), tt::to_u32string("Audio device:"));
     ASSERT_EQ(unicode_NFD(tt::to_u32string("Audio device:")), tt::to_u32string("Audio device:"));

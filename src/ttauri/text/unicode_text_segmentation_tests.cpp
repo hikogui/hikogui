@@ -30,7 +30,7 @@ std::optional<GraphemeBreakTest> parseGraphemeBreakTests_line(std::string_view l
     r.comment = fmt::format("{}: {}", lineNr, split_line[1]);
     r.lineNr = lineNr;
 
-    ttlet columns = split(split_line[0], " ");
+    ttlet columns = split(split_line[0]);
     if (columns.size() < 2) {
         return {};
     }
@@ -58,7 +58,7 @@ std::vector<GraphemeBreakTest> parseGraphemeBreakTests()
 
     std::vector<GraphemeBreakTest> r;
     int lineNr = 1;
-    for (ttlet line : split(test_data, "\n")) {
+    for (ttlet line : split(test_data, '\n')) {
         if (ttlet optionalTest = parseGraphemeBreakTests_line(line, lineNr)) {
             r.push_back(*optionalTest);
         }

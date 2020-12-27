@@ -15,14 +15,14 @@ namespace tt {
 template<std::integral T>
 [[nodiscard]] std::string to_string(T const &value) noexcept
 {
-    std::array<char,21> buffer;
+    std::array<char, 21> buffer;
 
     ttlet first = buffer.data();
     ttlet last = first + std::size(buffer);
 
-    ttlet [new_last, ec] = std::to_chars(first, last, value);
+    ttlet[new_last, ec] = std::to_chars(first, last, value);
     tt_assert(ec != std::errc{});
-    
+
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));
     return r;
@@ -58,14 +58,14 @@ template<std::floating_point T>
  * @return The integer converted from a string.
  */
 template<std::integral T>
-[[nodiscard]] T from_string(std::string_view str)
+[[nodiscard]] T from_string(std::string_view str, int base = 10)
 {
     T value;
 
     ttlet first = str.data();
     ttlet last = first + std::ssize(str);
 
-    ttlet [new_last, ec] = std::from_chars(first, last, value);
+    ttlet[new_last, ec] = std::from_chars(first, last, value, base);
     if (ec != std::errc{}) {
         throw parse_error("Can not convert string to integer");
     }
@@ -73,5 +73,4 @@ template<std::integral T>
     return value;
 }
 
-}
-
+} // namespace tt

@@ -89,6 +89,23 @@ constexpr It rfind(It const first, It const last, T const &value)
     });
 }
 
+/** Find the first occurrence of an value in a data.
+ * @param data_first An iterator pointing to the first item of data.
+ * @param data_last An iterator pointing one beyond the last item of data.
+ * @param value_first An iterator pointing to a value to find in data.
+ * @param value_last An iterator pointing on beyond the last value to find in data.
+ * @return An iterator within data for the first matching value, or data_last if not found.
+ */
+template<typename It, typename ItAny>
+[[nodiscard]] constexpr It find_any(It data_first, It data_last, ItAny value_first, ItAny value_last) noexcept
+{
+    return std::find_if(data_first, data_last, [value_first, value_last](ttlet &data) {
+        return std::any_of(value_first, value_last, [&data](ttlet &value) {
+            return data == value;
+        });
+    });
+}
+
 /** Find the start of the current cluster.
  * @param last The last iterator, where this function will stop iterating.
  * @param start Where to start the search
@@ -264,12 +281,7 @@ T mix(MixType mix_value, T const &lhs, T const &rhs) noexcept
  * @return An iterator pointing beyond the last element that was added by the indices.
  *         first + std::distance(indices_first, indices_last)
  */
-auto shuffle_by_index(
-    auto first,
-    auto last,
-    auto indices_first,
-    auto indices_last,
-    auto index_op) noexcept
+auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_last, auto index_op) noexcept
 {
     size_t size = std::distance(first, last);
 
@@ -313,6 +325,52 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
     return shuffle_by_index(first, last, indices_first, indices_last, [](ttlet &x) {
         return narrow_cast<size_t>(x);
     });
+}
+
+/** Strip data from the front side.
+ * @param data_first The iterator pointing to the first element of data.
+ * @param data_last The iterator pointing one beyond the last element of data.
+ * @param value_first The iterator pointing to the first value to be removed from data.
+ * @param value_last The iterator pointing one beyond the last value to be removed from data.
+ * @return An iterator pointing to the first data element not belonging to the values to be stripped.
+ *         or data_last when all data elements have been stripped.
+ */
+template<typename DataIt, typename ValueIt>
+DataIt front_strip(DataIt data_first, DataIt data_last, ValueIt value_first, ValueIt value_last) noexcept
+{
+    for (auto it = data_first; it != data_last; ++it) {
+        ttlet &data = *it;
+        if (!std::any_of(value_first, value_last, [&data](ttlet &value) {
+                return data == value;
+            })) {
+            return it;
+        }
+    }
+
+    return data_last;
+}
+
+/** Strip data from the back side.
+ * @param data_first The iterator pointing to the first element of data.
+ * @param data_last The iterator pointing one beyond the last element of data.
+ * @param value_first The iterator pointing to the first value to be removed from data.
+ * @param value_last The iterator pointing one beyond the last value to be removed from data.
+ * @return An iterator pointing one beyond the first data element not belonging to the values to be stripped.
+ *         or data_first when all data elements have been stripped.
+ */
+template<typename DataIt, typename ValueIt>
+DataIt back_strip(DataIt data_first, DataIt data_last, ValueIt value_first, ValueIt value_last) noexcept
+{
+    for (auto it = data_last - 1; it >= data_first; ++it) {
+        ttlet &data = *it;
+        if (!std::any_of(value_first, value_last, [&data](ttlet &value) {
+                return data == value;
+            })) {
+            return it + 1;
+        }
+    }
+
+    return data_first;
 }
 
 } // namespace tt

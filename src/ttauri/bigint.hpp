@@ -6,6 +6,7 @@
 #include "strings.hpp"
 #include "math.hpp"
 #include "int_carry.hpp"
+#include "codec/base_n.hpp"
 #include <fmt/format.h>
 #include <type_traits>
 #include <ostream>
@@ -90,7 +91,7 @@ struct bigint {
         bigint(0)
     {
         for (auto i = 0; i < str.size(); i++) {
-            auto nibble = char_to_nibble(str[i]);
+            auto nibble = base16::int_from_char<int>(str[i]);
             (*this) *= base;
             (*this) += nibble;
         }

@@ -236,7 +236,10 @@ add_custom_command(
         ${CMAKE_BINARY_DIR}/data
 )
 
+if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
 target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
+endif()
+
 target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(ttauri_tests PRIVATE gtest_main ttauri)
 gtest_discover_tests(ttauri_tests)

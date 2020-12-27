@@ -48,4 +48,13 @@ concept to_stringable = requires(T v)
     ->std::convertible_to<std::string>;
 };
 
+template<typename T>
+concept sizeable = requires(T v)
+{
+    {
+        size(v)
+    }
+    ->std::convertible_to<size_t>;
+};
+
 }

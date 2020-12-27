@@ -9,6 +9,7 @@
 #include "assert.hpp"
 #include "os_detect.hpp"
 #include "Unicode.hpp"
+#include "concepts.hpp"
 #include <string>
 #include <string_view>
 #include <iterator>
@@ -185,84 +186,77 @@ namespace tt {
     return {c_str};
 }
 
-[[nodiscard]] constexpr char nibble_to_char(uint8_t nibble) noexcept
+constexpr size_t string_size(sizeable auto str) noexcept
 {
-    if (nibble <= 9) {
-        return '0' + nibble;
-    } else if (nibble <= 15) {
-        return 'a' + nibble - 10;
-    } else {
-        tt_no_default();
-    }
+    return std::size(str);
 }
 
-/*!
- * \return value between 0-15, or -1 on error.
- */
-[[nodiscard]] inline int8_t char_to_nibble(char c) noexcept
-{
-    if (c >= '0' && c <= '9') {
-        return c - '0';
-    } else if (c >= 'a' && c <= 'f') {
-        return (c - 'a') + 10;
-    } else if (c >= 'A' && c <= 'F') {
-        return (c - 'A') + 10;
-    } else {
-        return -1;
-    }
-}
-
-[[nodiscard]] inline std::string_view
-make_string_view(typename std::string::const_iterator b, typename std::string::const_iterator e) noexcept
-{
-    return (b != e) ? std::string_view{&(*b), narrow_cast<size_t>(std::distance(b, e))} : std::string_view{};
-}
-
-template<typename Needle>
-[[nodiscard]] size_t split_needle_size(Needle const &needle) noexcept
-{
-    return size(needle);
-}
-
-template<>
-[[nodiscard]] inline size_t split_needle_size(char const &needle) noexcept
+constexpr size_t string_size(auto str) noexcept
 {
     return 1;
 }
 
-template<int N>
-[[nodiscard]] inline size_t split_needle_size(char const (&needle)[N]) noexcept
+template<typename FirstNeedle, typename... Needles>
+[[nodiscard]] std::pair<size_t, size_t>
+    string_find_any(std::string_view haystack, size_t pos, FirstNeedle const &first_needle, Needles const &...needles) noexcept
 {
-    return N - 1;
-}
+    using std::size;
 
-template<typename Haystack, typename... Needles>
-[[nodiscard]] auto split_find_needle(size_t offset, Haystack const &haystack, Needles const &... needles) noexcept
-{
-    return std::min({std::pair{haystack.find(needles, offset), split_needle_size(needles)}...}, [](ttlet &a, ttlet &b) {
-        return a.first < b.first;
-    });
-}
+    size_t first = haystack.find(first_needle, pos);
+    size_t last = first + string_size(first_needle);
 
-template<typename Haystack, typename... Needles>
-[[nodiscard]] auto split(Haystack const &haystack, Needles const &... needles) noexcept
-{
-    std::vector<std::remove_cvref_t<Haystack>> r;
-
-    size_t offset = 0;
-    size_t needle_pos;
-    size_t needle_size;
-
-    std::tie(needle_pos, needle_size) = split_find_needle(offset, haystack, needles...);
-    while (needle_pos != haystack.npos) {
-        r.push_back(haystack.substr(offset, needle_pos - offset));
-
-        offset = needle_pos + needle_size;
-        std::tie(needle_pos, needle_size) = split_find_needle(offset, haystack, needles...);
+    if (first == std::string_view::npos) {
+        first = size(haystack);
+        last = size(haystack);
     }
 
-    r.push_back(haystack.substr(offset));
+    if constexpr (sizeof...(Needles) != 0) {
+        ttlet [other_first, other_last] = string_find_any(haystack, pos, needles...);
+        if (other_first < first) {
+            first = other_first;
+            last = other_last;
+        }
+    }
+
+    return {first, last};
+}
+
+template<typename StringType, typename... Needles>
+[[nodiscard]] std::vector<StringType> _split(std::string_view haystack, Needles const &...needles) noexcept
+{
+    auto r = std::vector<StringType>{};
+
+    std::string_view::size_type current_pos = 0;
+
+    while (current_pos < std::size(haystack)) {
+        ttlet [needle_first, needle_last] = string_find_any(haystack, current_pos, needles...);
+        r.push_back(StringType{haystack.substr(current_pos, needle_first - current_pos)});
+        current_pos = needle_last;
+    }
+
     return r;
+}
+
+template<typename... Needles>
+[[nodiscard]] std::vector<std::string> split(std::string_view haystack, Needles const &...needles) noexcept
+{
+    return _split<std::string>(haystack, needles...);
+}
+
+[[nodiscard]] inline std::vector<std::string> split(std::string_view haystack) noexcept
+{
+    return split(haystack, ' ');
+}
+
+template<typename... Needles>
+[[nodiscard]] std::vector<std::string_view> split_view(std::string_view haystack, Needles const &...needles) noexcept
+{
+    return _split<std::string_view>(haystack, needles...);
+}
+
+[[nodiscard]] inline std::vector<std::string_view> split_view(std::string_view haystack) noexcept
+{
+    return split_view(haystack, ' ');
 }
 
 template<typename CharT>
@@ -290,7 +284,8 @@ join(std::vector<std::basic_string<CharT>> const &list, std::basic_string_view<C
 }
 
 template<typename CharT>
-[[nodiscard]] std::basic_string<CharT> join(std::vector<std::basic_string<CharT>> const &list, std::basic_string<CharT> const &joiner) noexcept
+[[nodiscard]] std::basic_string<CharT>
+join(std::vector<std::basic_string<CharT>> const &list, std::basic_string<CharT> const &joiner) noexcept
 {
     return join(list, std::basic_string_view<CharT>{joiner});
 }
@@ -359,13 +354,32 @@ constexpr auto to_array_without_last(T (&rhs)[N]) noexcept
  * Useful for copying a string literal without the nul-termination
  */
 template<typename T, size_t N>
-constexpr auto to_array_without_last(T (&&rhs)[N]) noexcept
+constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
 {
     auto r = std::array<std::remove_cv_t<T>, N - 1>{};
     for (size_t i = 0; i != (N - 1); ++i) {
         r[i] = std::move(rhs[i]);
     }
     return r;
+}
+
+[[nodiscard]] inline std::string lstrip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
+{
+    auto first = front_strip(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle));
+    return std::string{first, std::end(haystack)};
+}
+
+[[nodiscard]] inline std::string rstrip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
+{
+    auto last = back_strip(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle));
+    return std::string{std::begin(haystack), last};
+}
+
+[[nodiscard]] inline std::string strip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
+{
+    auto first = front_strip(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle));
+    auto last = back_strip(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle));
+    return std::string{first, last};
 }
 
 } // namespace tt

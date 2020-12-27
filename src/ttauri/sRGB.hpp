@@ -5,6 +5,7 @@
 
 #include "float16.hpp"
 #include "mat.hpp"
+#include "codec/base_n.hpp"
 #include <cmath>
 #include <array>
 
@@ -110,10 +111,10 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
         tmp += "ff";
     }
 
-    uint8_t r = (char_to_nibble(tmp[0]) << 4) | char_to_nibble(tmp[1]);
-    uint8_t g = (char_to_nibble(tmp[2]) << 4) | char_to_nibble(tmp[3]);
-    uint8_t b = (char_to_nibble(tmp[4]) << 4) | char_to_nibble(tmp[5]);
-    uint8_t a = (char_to_nibble(tmp[6]) << 4) | char_to_nibble(tmp[7]);
+    uint8_t r = (base16::int_from_char<uint8_t>(tmp[0]) << 4) | base16::int_from_char<uint8_t>(tmp[1]);
+    uint8_t g = (base16::int_from_char<uint8_t>(tmp[2]) << 4) | base16::int_from_char<uint8_t>(tmp[3]);
+    uint8_t b = (base16::int_from_char<uint8_t>(tmp[4]) << 4) | base16::int_from_char<uint8_t>(tmp[5]);
+    uint8_t a = (base16::int_from_char<uint8_t>(tmp[6]) << 4) | base16::int_from_char<uint8_t>(tmp[7]);
     return color_from_sRGB(r, g, b, a);
 }
 

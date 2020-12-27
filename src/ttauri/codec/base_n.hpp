@@ -69,13 +69,13 @@ struct base_n_alphabet {
     /** Get a character from an integer.
      * The integer must be in range of 0 to modula (exlusive).
      */
-    constexpr char char_from_int(long long x) const noexcept
+    constexpr char char_from_int(int8_t x) const noexcept
     {
         tt_axiom(x < radix);
         return char_from_int_table[x];
     }
 
-    constexpr long long int_from_char(char c) const noexcept
+    constexpr int8_t int_from_char(char c) const noexcept
     {
         return int_from_char_table[narrow_cast<size_t>(c)];
     }
@@ -117,6 +117,18 @@ public:
     static constexpr long long chars_per_block = CharsPerBlock;
     static_assert(bytes_per_block != 0, "radix must be 16, 32, 64 or 85");
     static_assert(chars_per_block != 0, "radix must be 16, 32, 64 or 85");
+
+    template<typename T>
+    static constexpr T int_from_char(char c) noexcept
+    {
+        return narrow_cast<T>(alphabet.int_from_char(c));
+    }
+
+    template<typename T>
+    static constexpr char char_from_int(T x) noexcept
+    {
+        return alphabet.char_from_int(narrow_cast<int8_t>(x));
+    }
 
     /** Encode bytes into a string.
      *
@@ -180,7 +192,7 @@ public:
         long long block = 0;
 
         for (; ptr != last; ++ptr) {
-            ttlet digit = alphabet.int_from_char(*ptr);
+            ttlet digit = int_from_char<long long>(*ptr);
             if (digit == -1) {
                 // Whitespace is ignored.
                 continue;
@@ -237,7 +249,7 @@ private:
                     char_block += padding_char;
                 }
             } else {
-                char_block += alphabet.char_from_int(v);
+                char_block += char_from_int(v);
             }
         }
 
