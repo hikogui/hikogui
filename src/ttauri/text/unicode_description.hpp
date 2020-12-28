@@ -94,28 +94,51 @@ public:
         tt_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
     }
 
+    /** The code point of the description.
+     * @return The code_point of the description.
+     */
     [[nodiscard]] constexpr char32_t code_point() const noexcept
     {
         return static_cast<char32_t>(_general_info >> 10);
     }
 
+    /** The grapheme cluster break of this code-point.
+     * This function is used to determine where to break a string of code-points
+     * into grapheme clusters.
+     *
+     * @return The grapheme cluster break of this code-point
+     */
     [[nodiscard]] constexpr unicode_grapheme_cluster_break grapheme_cluster_break() const noexcept
     {
         return static_cast<unicode_grapheme_cluster_break>((_general_info >> 1) & 0xf);
     }
 
+    /** The general category of this code-point.
+     * This function is used to determine what kind of code-point this,
+     * this allows you to determine if the code-point is a letter, number, punctuation, white-space, etc.
+     *
+     * @return The general category of this code-point
+     */
     [[nodiscard]] constexpr unicode_general_category general_category() const noexcept
     {
         return static_cast<unicode_general_category>((_general_info >> 5) & 0x1f);
     }
 
+    /** The bidi class of this code-point
+     * This function is used by the bidirectional algorithm to figure out if the code-point
+     * represents a character that is written left-to-right or right-to-left.
+     *
+     * @return the bidi class of this code-point.
+     */
     [[nodiscard]] constexpr unicode_bidi_class bidi_class() const noexcept
     {
         return static_cast<unicode_bidi_class>(_bidi_class);
     }
 
     /** Get the bidi bracket type.
-     * The returned type combined the bracket type and is-bidi-mirrored property.
+     * This function is used by the bidirectional algorithm for mirroring characters
+     * when needing to reverse the writing direction.
+     *
      * @return n = no-mirror, o = open-bracket, c = close-bracket, m = bidi-mirrored.
      */
     [[nodiscard]] constexpr unicode_bidi_bracket_type bidi_bracket_type() const noexcept
@@ -131,30 +154,63 @@ public:
         return static_cast<char32_t>(_bidi_bracket_type);
     }
 
+    /** This character has a canonical decomposition.
+     * @return When true you can decompose the character canonically.
+     */
     [[nodiscard]] constexpr bool decomposition_canonical() const noexcept
     {
         return static_cast<bool>(_decomposition_canonical);
     }
 
     /** This character has a canonical composition.
-     * When this flag is true the decomposition_index() points into the
-     * composition table.
+     * @return When true the decomposition_index() points into the composition table.
      */
     [[nodiscard]] constexpr bool composition_canonical() const noexcept
     {
         return static_cast<bool>(_composition_canonical);
     }
 
+    /** Get the combining class.
+     * The combing class describes how a code-point combines with other code-points.
+     * Specifically the value 0 means that the code-point is a starter character,
+     * and the numeric value of the combing class determines the order of the
+     * the code-points after a starter before trying to look up composition in the
+     * composition table.
+     *
+     * @return The numeric combining class of this code point.
+     */
     [[nodiscard]] constexpr uint8_t combining_class() const noexcept
     {
         return static_cast<uint8_t>(_combining_class);
     }
 
+    /** The number of code-points the decomposed grapheme has.
+     *
+     * @retval 0 There is no decomposition
+     * @retval 1 Decomposition is a single code-point, the `decomposition_index()` is
+     *           the numeric value of the code point.
+     * @retval 2 Decomposition is has two code-point. When composition_canonical is set the
+     *           `decomposition_index()` points in the composition table. Otherwise the
+     *           index points into the decomposition table.
+     * @return Values 3 and above are the number of code points in the decomposition table
+     *          pointed to from the `decomposition_index()`.
+     */
     [[nodiscard]] constexpr size_t decomposition_length() const noexcept
     {
         return static_cast<size_t>(_decomposition_length);
     }
 
+    /** A multi-use value representing the decomposition of this code-point.
+     * To compress the data for decomposition:
+     *  - For single code-point decomposition the index itself is the code-point value.
+     *  - For double code-point decomposition, if it is equal to the composition it points
+     *    into the composition table, otherwise it points into the decomposition table
+     *  - Anything else points into the decomposition table.
+     *
+     * @see decomposition_length
+     * @return A code-point value, or a index into the composition table, or an index into the
+     *         decomposition table.
+     */
     [[nodiscard]] constexpr size_t decomposition_index() const noexcept
     {
         return static_cast<size_t>(_decomposition_index);
@@ -193,6 +249,12 @@ private:
 
 static_assert(sizeof(unicode_description) == 16);
 
+/** Find a code-point in a unicode_description table using a binary-search algorithm.
+ * @param first The iterator pointing to the first element of a sorted container of unicode_description objects.
+ * @param last The iterator pointing to one beyond the last element of a sorted container of unicode_description objects.
+ * @param code_point The code point to look up.
+ * @return An iterator pointing the found unicode_description, or the last iterator when not found.
+ */
 template<typename It>
 [[nodiscard]] constexpr It unicode_description_find(It first, It last, char32_t code_point) noexcept
 {
@@ -210,6 +272,18 @@ template<typename It>
     }
 }
 
+/** Find a code-point in the global unicode_description table.
+ * For any valid unicode code point this function will return a reference to
+ * the unicode_description. It may return a unicode_description to the
+ * U+fffd 'REPLACEMENT CHARACTER' if the code-point could not be found in the
+ * table. Or it may return unicode_description to a single element in a range
+ * of code-points, such as for hangul-syllables, or private use areas.. 
+ *
+ * Passing an invalid unicode value causes undefined behaviour.
+ *
+ * @param code-point The code point to look up.
+ * @return a const reference to the unicode_description entry.
+ */
 [[nodiscard]] unicode_description const &unicode_description_find(char32_t code_point) noexcept;
 
 }

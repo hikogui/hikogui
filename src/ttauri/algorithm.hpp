@@ -193,19 +193,6 @@ inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function
     }
 }
 
-template<typename InputIt1, typename InputIt2>
-inline bool starts_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
-{
-    ttlet[haystack_result, needle_result] = std::mismatch(haystack_first, haystack_last, needle_first, needle_last);
-    return needle_result == needle_last;
-}
-
-template<typename Container1, typename Container2>
-inline bool starts_with(Container1 haystack, Container2 needle) noexcept
-{
-    return starts_with(haystack.begin(), haystack.end(), needle.begin(), needle.end());
-}
-
 template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
 inline std::pair<InputIt1, InputIt2>
 rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, BinaryPredicate predicate) noexcept

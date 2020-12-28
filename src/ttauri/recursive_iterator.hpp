@@ -56,12 +56,28 @@ public:
     {
     }
 
+    /** Get the current parent iterator.
+     */
     [[nodiscard]] parent_iterator parent() const noexcept
     {
         return _parent_it;
     }
 
-    /** Don't need to check the child_it at end.
+    /** Get the current child iterator.
+     * It is undefined behaviour to use this function on an iterator that is at_end().
+     */
+    [[nodiscard]] child_iterator child() const noexcept
+    {
+        tt_axiom(!at_end());
+        return _child_it;
+    }
+
+    /** Check if the iterator is at end.
+     * This iterator must maintain the parent_end value, to make sure
+     * not to dereference the parent iterator at end.
+     * This function is used to check if the iterator is at end.
+     *
+     * @return True if the iterator can no longer advance.
      */
     [[nodiscard]] bool at_end() const noexcept
     {
@@ -228,24 +244,32 @@ private:
     child_iterator _child_it;
 };
 
+/** Get a recursive iterator from the begin of a recursive container.
+ */
 template<typename Container>
 [[nodiscard]] auto recursive_iterator_begin(Container &rhs) noexcept
 {
     return recursive_iterator(std::begin(rhs), std::end(rhs));
 }
 
+/** Get a recursive iterator from one beyond the end of a recursive container.
+ */
 template<typename Container>
 [[nodiscard]] auto recursive_iterator_end(Container &rhs) noexcept
 {
     return recursive_iterator(std::end(rhs), std::end(rhs));
 }
 
+/** Get a recursive iterator from the begin of a recursive container.
+ */
 template<typename Container>
 [[nodiscard]] auto recursive_iterator_begin(Container const &rhs) noexcept
 {
     return recursive_iterator(std::begin(rhs), std::end(rhs));
 }
 
+/** Get a recursive iterator from one beyond the end of a recursive container.
+ */
 template<typename Container>
 [[nodiscard]] auto recursive_iterator_end(Container const &rhs) noexcept
 {

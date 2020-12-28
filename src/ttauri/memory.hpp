@@ -226,4 +226,75 @@ inline std::shared_ptr<Value> try_make_shared(Map &map, Key key, Args... args) {
     return value;
 }
 
+constexpr int compressed_pointer_bits = 48;
+
+/** Compress a pointer inside an integer.
+ *
+ * On x64 the virtual address is 48 bits, and the top 16 bit are signed extended from bit 47.
+ * The Itanium ABI guaranties allocations are aligned to 16 bytes.
+ *
+ * On arm the virtual address is 48 or 52 bits, and the top bit are sign extended. The top 8
+ * bit may be ignored by the CPU to implement tagged addressing, of which the bottom 4 bits
+ * of those may used as a hardware-key. The ARM64 ABI requires the stack to be aligned to
+ * 16 bytes, I am expecting heap allocation to be also aligned to 16 bytes.
+ */
+inline uint64_t compress_pointer(auto *ptr) noexcept
+{
+    tt_axiom(static_cast<uint64_t>(ptr) % 16 == 0);
+
+    if constexpr (Processor::current == Processor::x64) {
+        // Only the bottom 48 bits are needed.
+        tt_axiom(
+            (static_cast<uint64_t>(ptr) >> 47) == 0x0'0000
+            (static_cast<uint64_t>(ptr) >> 47) == 0x1'ffff ||
+        );
+        return (static_cast<uint64_t>(ptr) << 16) >> 16;
+
+    } else if constexpr (Processor::current == Processor::ARM) {{
+        // The top 8 bits may contain a tag.
+        tt_axiom(
+            (static_cast<uint64_t>(ptr) >> 47) == 0x000
+            (static_cast<uint64_t>(ptr) >> 47) == 0x1ff ||
+        );
+
+        // Take the 4 sign bits + 44 msb bits of address.
+        auto u64 = (static_cast<uint64_t>(ptr) << 12) >> 16;
+
+        // Extract the 4 bit key.
+        auto key = (static_cast<uint64_t>(ptr) >> 56) << 44;
+
+        // XOR the key with the sign bits in the upper part of the 48 bit result.
+        return key ^ u64;
+
+    } else {
+        tt_no_default;
+    }
+}
+
+template<typename T>
+T *decompress_pointer(uint64_t x) noexcept
+{
+    tt_axiom((x >> 48) == 0)
+
+    if constexpr (Processor::current == Processor::x64) {
+        // Shift the upper bits away and sign extend the upper 16 bits.
+        auto i64 = (static_cast<int64_t>(x) << 16) >> 16;
+        return reinterpret_cast<T*>(i64);
+
+    } else if constexpr (Processor::current == Processor::ARM) {{
+        // Get 4 bit key (xor-ed with the sign bits).
+        auto key = (static_cast<uint64_t>(x) >> 44) << 56; 
+
+        // Sign extend the address and make the bottom 4 bits zero.
+        auto i64 = ((static_cast<int64_t>(x) << 20) >> 16;
+
+        // Add the original key by XOR with the sign.
+        return reinterpret_cast<T *>(key ^ static_cast<uint64_t>(i64));
+
+    } else {
+        tt_no_default;
+    }
+}
+
+
 }

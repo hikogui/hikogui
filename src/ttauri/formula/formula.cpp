@@ -436,7 +436,7 @@ std::string_view::const_iterator find_end_of_formula(
                         bracket_stack.pop_back();
                     }
 
-                } else if (starts_with(i, last, terminating_string.begin(), terminating_string.end())) {
+                } else if (std::string_view{i, last}.starts_with(terminating_string)) {
                     return i;
                 }
             }
