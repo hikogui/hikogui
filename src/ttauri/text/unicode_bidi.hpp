@@ -38,6 +38,12 @@ struct unicode_bidi_char_info {
         description = &unicode_description_find(code_point);
         direction = description->bidi_class();
     }
+
+    /** Constructor for testing to bypass normal initialization.
+     * WARNING: DO NOT USE EXCEPT IN UNIT TESTS.
+     */
+    [[nodiscard]] unicode_bidi_char_info(size_t index, unicode_bidi_class direction) noexcept :
+        index(index), code_point(U'\ufffd'), direction(direction), embedding_level(0), description(nullptr) {}
 };
 
 using unicode_bidi_char_info_vector = std::vector<unicode_bidi_char_info>;
@@ -53,18 +59,6 @@ struct unicode_bidi_paragraph {
     void emplace_character(Args &&...args) noexcept
     {
         characters.emplace_back(std::forward<Args>(args)...);
-    }
-};
-
-struct unicode_bidi_context {
-    using paragraphs_type = std::vector<unicode_bidi_paragraph>;
-
-    paragraphs_type paragraphs;
-
-    unicode_bidi_paragraph &add_paragraph() noexcept
-    {
-        paragraphs.emplace_back();
-        return paragraphs.back();
     }
 };
 

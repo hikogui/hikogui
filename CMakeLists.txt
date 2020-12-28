@@ -103,7 +103,7 @@ elseif (MSVC)
 
     # language_win32 requires RT and RT needs specifically the non-c++20
     # experimental-and-incompatible coroutine support.
-    target_compile_options(ttauri PUBLIC -await)
+    #target_compile_options(ttauri PUBLIC -await)
 
     # Support Intel's IvyBridge and AMD's Steamroller
     target_compile_options(ttauri PUBLIC -arch:AVX)

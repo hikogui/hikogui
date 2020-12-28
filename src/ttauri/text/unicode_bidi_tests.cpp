@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/unicode_bidi.hpp"
+#include "ttauri/text/unicode_bidi.cpp"
 #include "ttauri/FileView.hpp"
 #include "ttauri/charconv.hpp"
 #include <gtest/gtest.h>
@@ -11,6 +11,7 @@
 #include <fmt/format.h>
 
 using namespace tt;
+using namespace tt::detail;
 using namespace std;
 
 struct unicode_bidi_test {
@@ -25,6 +26,33 @@ struct unicode_bidi_test {
 
     [[nodiscard]] unicode_bidi_test(std::vector<int> const &levels, std::vector<int> const &reorder, int line_nr) noexcept :
         levels(levels), reorder(reorder), line_nr(line_nr) {}
+
+    [[nodiscard]] std::vector<detail::unicode_bidi_char_info> get_input() const noexcept
+    {
+        auto r = std::vector<detail::unicode_bidi_char_info>{};
+        auto index = 0;
+        for (auto cls : input) {
+            r.emplace_back(index++, cls);
+        }
+        return r;
+    }
+
+    [[nodiscard]] std::vector<int> get_paragraph_embedding_levels() const noexcept
+    {
+        auto r = std::vector<int>{};
+
+        if (test_for_LTR) {
+            r.push_back(0);
+        }
+        if (test_for_RTL) {
+            r.push_back(1);
+        }
+        if (test_for_auto) {
+            r.push_back(-1);
+        }
+
+        return r;
+    }
 };
 
 [[nodiscard]] static std::vector<int> parse_bidi_test_levels(std::string_view line) noexcept
@@ -95,11 +123,49 @@ std::vector<unicode_bidi_test> parse_bidi_test()
         }
 
         line_nr++;
+        if (line_nr == 128) {
+            break;
+        }
     }
     return r;
 }
 
 TEST(unicode_bidi, first)
 {
+    auto tests = parse_bidi_test();
 
+    for (auto test : tests) {
+        for (auto paragraph_embedding_level : test.get_paragraph_embedding_levels()) {
+            auto input = test.get_input();
+            auto first = std::begin(input);
+            auto last = std::end(input);
+
+            if (paragraph_embedding_level == -1) {
+                auto paragraph_bidi_class = unicode_bidi_P2(first, last);
+                paragraph_embedding_level = unicode_bidi_P3(paragraph_bidi_class);
+            }
+
+            unicode_bidi_X1(first, last, 0);
+            last = unicode_bidi_X9(first, last);
+            unicode_bidi_X10(first, last, 0);
+            ttlet[lowest_odd, highest] = unicode_bidi_L1(first, last, 0);
+
+            {
+                auto it = first;
+                for (auto embedding_level: test.levels) {
+                    ASSERT_EQ(it->embedding_level, embedding_level);
+                    ++it;
+                }
+            }
+
+            unicode_bidi_L2(first, last, lowest_odd, highest);
+
+            {
+                auto it = first;
+                for (auto index : test.reorder) {
+                    ASSERT_EQ(it->index, index);
+                }
+            }
+        }
+    }
 }

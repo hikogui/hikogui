@@ -34,6 +34,8 @@ public:
     language_tag() noexcept : tag() {}
 
     explicit language_tag(std::string tag) noexcept : tag(std::move(tag)) {}
+    explicit language_tag(std::string_view tag) noexcept : tag(tag) {}
+    explicit language_tag(char const *tag) noexcept : tag(tag) {}
 
     [[nodiscard]] size_t hash() const noexcept
     {

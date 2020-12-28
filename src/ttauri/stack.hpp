@@ -114,7 +114,7 @@ public:
      */
     [[nodiscard]] bool full() const noexcept
     {
-        return _top == end();
+        return _top == (begin() + max_size());
     }
 
     /** Check if the stack is empty.

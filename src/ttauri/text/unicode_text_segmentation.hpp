@@ -4,6 +4,7 @@
 #pragma once
 
 #include "unicode_grapheme_cluster_break.hpp"
+#include "unicode_description.hpp"
 
 namespace tt {
 
@@ -49,6 +50,8 @@ struct grapheme_break_state {
  */
 void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get_code_point, auto set_code_point) noexcept
 {
+    using enum unicode_general_category;
+
     auto it_at_last_space = last;
     float width_at_last_space = 0.0;
     float current_width = 0.0;

@@ -13,7 +13,8 @@
 namespace tt {
 
 template<typename T, typename U>
-void memswap(T &dst, U &src) {
+void memswap(T &dst, U &src)
+{
     static_assert(sizeof(T) == sizeof(U), "memswap requires both objects of equal size");
     std::byte tmp[sizeof(T)];
     memcpy(tmp, &src, sizeof(T));
@@ -63,7 +64,7 @@ void placement_copy(InputIt src_first, InputIt src_last, T *dst_first)
  * If you want to access the object in dst, you should use the return value.
  * It is undefined behavior when src and dst point to the same object.
  * It is undefined behavior if either or both src and dst are nullptr.
- * 
+ *
  * @param src A pointer to an object.
  * @param dst A pointer to allocated memory.
  * @return The dst pointer with the new object who's lifetime was started.
@@ -82,9 +83,9 @@ T *placement_move(T *src, T *dst)
 /** Move an objects between two memory locations.
  * This function will placement_move an array of objects
  * between two memory locations.
- * 
+ *
  * It is undefined behavior when src_first and dst_first are not part of the same array.
- * 
+ *
  * The objects may overlap: copying takes place as if the objects were copied
  * to a temporary object array and then the objects were copied from the array to dst.
  */
@@ -133,7 +134,8 @@ void placement_move(T *src, T *src_last, T *dst)
 }
 
 template<typename T>
-bool is_aligned(T* p){
+bool is_aligned(T *p)
+{
     return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
 }
 
@@ -159,8 +161,8 @@ R align(T ptr, size_t alignment) noexcept
 }
 
 /*! Align an end iterator.
-* This lowers the end interator so that it the last read is can be done fully.
-*/
+ * This lowers the end interator so that it the last read is can be done fully.
+ */
 template<typename R, typename T>
 inline R align_end(T ptr, size_t alignment) noexcept
 {
@@ -169,7 +171,6 @@ inline R align_end(T ptr, size_t alignment) noexcept
 
     return reinterpret_cast<R>(alignedByteOffset);
 }
-
 
 template<typename T>
 inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v) noexcept
@@ -185,7 +186,7 @@ inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v) noexcept
 }
 
 template<typename K, typename T>
-inline void cleanupWeakPointers(std::unordered_map<K,std::weak_ptr<T>> &v) noexcept
+inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>> &v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -198,7 +199,7 @@ inline void cleanupWeakPointers(std::unordered_map<K,std::weak_ptr<T>> &v) noexc
 }
 
 template<typename K, typename T>
-inline void cleanupWeakPointers(std::unordered_map<K,std::vector<std::weak_ptr<T>>> &v) noexcept
+inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<T>>> &v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -212,15 +213,15 @@ inline void cleanupWeakPointers(std::unordered_map<K,std::vector<std::weak_ptr<T
 }
 
 template<typename Value, typename Map, typename Key, typename... Args>
-inline std::shared_ptr<Value> try_make_shared(Map &map, Key key, Args... args) {
+inline std::shared_ptr<Value> try_make_shared(Map &map, Key key, Args... args)
+{
     std::shared_ptr<Value> value;
 
     ttlet i = map.find(key);
     if (i == map.end()) {
         value = std::make_shared<Value>(std::forward<Args>(args)...);
         map.insert_or_assign(key, value);
-    }
-    else {
+    } else {
         value = i->second;
     }
     return value;
@@ -245,17 +246,15 @@ inline uint64_t compress_pointer(auto *ptr) noexcept
     if constexpr (Processor::current == Processor::x64) {
         // Only the bottom 48 bits are needed.
         tt_axiom(
-            (static_cast<uint64_t>(ptr) >> 47) == 0x0'0000
-            (static_cast<uint64_t>(ptr) >> 47) == 0x1'ffff ||
-        );
+            (static_cast<uint64_t>(ptr) & 0xffff'8000'0000'0000) == 0 ||
+            (static_cast<uint64_t>(ptr) & 0xffff'8000'0000'0000) == 0xffff'8000'0000'0000);
         return (static_cast<uint64_t>(ptr) << 16) >> 16;
 
-    } else if constexpr (Processor::current == Processor::ARM) {{
+    } else if constexpr (Processor::current == Processor::ARM) {
         // The top 8 bits may contain a tag.
         tt_axiom(
-            (static_cast<uint64_t>(ptr) >> 47) == 0x000
-            (static_cast<uint64_t>(ptr) >> 47) == 0x1ff ||
-        );
+            (static_cast<uint64_t>(ptr) & 0x00ff'8000'0000'0000) == 0 ||
+            (static_cast<uint64_t>(ptr) & 0x00ff'8000'0000'0000) == 0x00ff'8000'0000'0000);
 
         // Take the 4 sign bits + 44 msb bits of address.
         auto u64 = (static_cast<uint64_t>(ptr) << 12) >> 16;
@@ -267,34 +266,33 @@ inline uint64_t compress_pointer(auto *ptr) noexcept
         return key ^ u64;
 
     } else {
-        tt_no_default;
+        tt_static_no_default();
     }
 }
 
 template<typename T>
 T *decompress_pointer(uint64_t x) noexcept
 {
-    tt_axiom((x >> 48) == 0)
+    tt_axiom((x >> 48) == 0);
 
     if constexpr (Processor::current == Processor::x64) {
         // Shift the upper bits away and sign extend the upper 16 bits.
         auto i64 = (static_cast<int64_t>(x) << 16) >> 16;
-        return reinterpret_cast<T*>(i64);
+        return reinterpret_cast<T *>(i64);
 
-    } else if constexpr (Processor::current == Processor::ARM) {{
+    } else if constexpr (Processor::current == Processor::ARM) {
         // Get 4 bit key (xor-ed with the sign bits).
-        auto key = (static_cast<uint64_t>(x) >> 44) << 56; 
+        auto key = (static_cast<uint64_t>(x) >> 44) << 56;
 
         // Sign extend the address and make the bottom 4 bits zero.
-        auto i64 = ((static_cast<int64_t>(x) << 20) >> 16;
+        auto i64 = (static_cast<int64_t>(x) << 20) >> 16;
 
         // Add the original key by XOR with the sign.
         return reinterpret_cast<T *>(key ^ static_cast<uint64_t>(i64));
 
     } else {
-        tt_no_default;
+        tt_static_no_default();
     }
 }
 
-
-}
+} // namespace tt

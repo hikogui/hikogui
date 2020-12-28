@@ -19,6 +19,8 @@ namespace tt {
 #define tt_no_default() [[unlikely]] tt_debugger_abort("tt_no_default()")
 #endif
 
+#define tt_static_no_default() []<bool Flag = false>(){ static_assert(Flag); }()
+
 #define tt_not_implemented() [[unlikely]] tt_debugger_abort("tt_not_implemented()")
 
 /** Assert if expression is true.

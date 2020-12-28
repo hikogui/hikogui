@@ -64,7 +64,7 @@ struct skeleton_parse_context {
     }
 
     bool starts_with(std::string_view text) const noexcept {
-        return ::tt::starts_with(index, last, text.begin(), text.end());
+        return std::string_view{index, last}.starts_with(text);
     }
 
     bool starts_with_and_advance_over(std::string_view text) noexcept {
