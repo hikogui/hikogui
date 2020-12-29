@@ -4,6 +4,7 @@
 #include "ttauri/text/unicode_bidi.cpp"
 #include "ttauri/FileView.hpp"
 #include "ttauri/charconv.hpp"
+#include "ttauri/ranges.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -100,7 +101,7 @@ parse_bidi_test_data_line(std::string_view line, std::vector<int> const &levels,
     return r;
 }
 
-std::vector<unicode_bidi_test> parse_bidi_test()
+generator<unicode_bidi_test> parse_bidi_test()
 {
     ttlet view = FileView(URL("file:BidiTest.txt"));
     ttlet test_data = view.string_view();
@@ -108,9 +109,8 @@ std::vector<unicode_bidi_test> parse_bidi_test()
     auto levels = std::vector<int>{};
     auto reorder = std::vector<int>{};
 
-    std::vector<unicode_bidi_test> r;
     int line_nr = 1;
-    for (ttlet line : split(test_data, "\n")) {
+    for (ttlet line : tt::views::split(test_data, "\n")) {
         if (line.empty() || line.starts_with("#")) {
             // Comment and empty lines.
         } else if (line.starts_with("@Levels:")) {
@@ -119,7 +119,7 @@ std::vector<unicode_bidi_test> parse_bidi_test()
             reorder = parse_bidi_test_reorder(line.substr(9));
         } else {
             auto data = parse_bidi_test_data_line(line, levels, reorder, line_nr);
-            r.push_back(data);
+            co_yield data;
         }
 
         line_nr++;
@@ -127,14 +127,11 @@ std::vector<unicode_bidi_test> parse_bidi_test()
             break;
         }
     }
-    return r;
 }
 
 TEST(unicode_bidi, first)
 {
-    auto tests = parse_bidi_test();
-
-    for (auto test : tests) {
+    for (auto test : parse_bidi_test()) {
         for (auto paragraph_embedding_level : test.get_paragraph_embedding_levels()) {
             auto input = test.get_input();
             auto first = std::begin(input);

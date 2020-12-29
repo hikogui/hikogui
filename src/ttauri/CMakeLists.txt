@@ -43,6 +43,7 @@ target_sources(ttauri PRIVATE
     cell_address.hpp
     check.hpp
     concepts.hpp
+    coroutine.hpp
     command.hpp
     CommandLineParser.hpp
     counters.hpp
@@ -123,6 +124,8 @@ target_sources(ttauri PRIVATE
     R8SNorm.hpp
     random_pcg.hpp
     range_map.hpp
+    ranged_numeric.hpp
+    ranges.hpp
     Rec2020.hpp
     Rec2100.hpp
     recursive_iterator.hpp
@@ -199,6 +202,7 @@ target_sources(ttauri_tests PRIVATE
     BezierCurve_tests.cpp
     bigint_tests.cpp
     cell_address_tests.cpp
+    coroutine_tests.cpp
     counters_tests.cpp
     datum_tests.cpp
     decimal_tests.cpp
@@ -215,6 +219,7 @@ target_sources(ttauri_tests PRIVATE
     PixelMap_tests.cpp
     polymorphic_value_tests.cpp
     polynomial_tests.cpp
+    ranges_tests.cpp
     safe_int_tests.cpp
     small_map_tests.cpp
     strings_tests.cpp

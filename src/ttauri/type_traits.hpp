@@ -3,9 +3,12 @@
 
 #include <cstdint>
 #include <type_traits>
+#include <string>
+#include <string_view>
 
 namespace tt {
 
+// clang-format off
 template<typename T> struct is_numeric_integer : std::false_type {}; 
 template<> struct is_numeric_integer<signed char> : std::true_type {};
 template<> struct is_numeric_integer<unsigned char> : std::true_type {};
@@ -27,15 +30,35 @@ inline constexpr bool is_numeric_integer_v = is_numeric_integer<T>::value;
 template<typename T> struct is_character : std::false_type {}; 
 template<> struct is_character<char> : std::true_type {};
 template<> struct is_character<wchar_t> : std::true_type {};
+template<> struct is_character<char8_t> : std::true_type {};
 template<> struct is_character<char16_t> : std::true_type {};
 template<> struct is_character<char32_t> : std::true_type {};
 
 /*! True is the supplied type is a character integer.
-* This distingueses between integer characters and integer numbers.
+* This distinguishes between integer characters and integer numbers.
 */
 template<typename T>
 inline constexpr bool is_character_v = is_character<T>::value;
 
+template<typename T> struct make_string { };
+template<> struct make_string<char> { using type = std::string; };
+template<> struct make_string<wchar_t> { using type = std::wstring; };
+template<> struct make_string<char8_t> { using type = std::u8string; };
+template<> struct make_string<char16_t> { using type = std::u16string; };
+template<> struct make_string<char32_t> { using type = std::u32string; };
+
+template<typename T>
+using make_string_t = typename make_string<T>::type;
+
+template<typename T> struct make_string_view { using type = void; };
+template<> struct make_string_view<char> { using type = std::string_view; };
+template<> struct make_string_view<wchar_t> { using type = std::wstring_view; };
+template<> struct make_string_view<char8_t> { using type = std::u8string_view; };
+template<> struct make_string_view<char16_t> { using type = std::u16string_view; };
+template<> struct make_string_view<char32_t> { using type = std::u32string_view; };
+
+template<typename T>
+using make_string_view_t = typename make_string_view<T>::type;
 
 template<typename T, typename U>
 struct make_promote {

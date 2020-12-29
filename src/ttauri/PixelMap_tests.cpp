@@ -10,7 +10,6 @@
 
 using namespace std;
 using namespace tt;
-using namespace tt;
 
 TEST(PixelMapTests, rotate90) {
     auto mask = PixelMap<uint8_t>(2, 2);
