@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "PixelMap.hpp"
+#include "pixel_map.hpp"
 
 namespace tt {
 
 template<int KERNEL_SIZE, typename KERNEL>
-inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) noexcept
+inline void horizontalFilterRow(pixel_row<uint8_t> row, KERNEL kernel) noexcept
 {
     constexpr auto LOOK_AHEAD_SIZE = KERNEL_SIZE / 2;
 
@@ -50,7 +50,7 @@ inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) noexcept
 }
 
 template<int KERNEL_SIZE, typename T, typename KERNEL>
-inline void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel) noexcept
+inline void horizontalFilter(pixel_map<T>& pixels, KERNEL kernel) noexcept
 {
     for (int rowNr = 0; rowNr < pixels.height; rowNr++) {
         auto row = pixels.at(rowNr);
@@ -59,17 +59,17 @@ inline void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel) noexcept
 }
 
 template<typename T>
-inline void fill(PixelMap<T> &dst) noexcept
+inline void fill(pixel_map<T> &dst) noexcept
 {
-    for (int rowNr = 0; rowNr < dst.height; rowNr++) {
+    for (int rowNr = 0; rowNr < dst.height(); rowNr++) {
         auto row = dst.at(rowNr);
         void *data = row.data();
-        memset(data, 0, row.width * sizeof(T));
+        memset(data, 0, row.width() * sizeof(T));
     }
 }
 
 template<typename T>
-inline void fill(PixelMap<T> &dst, T color) noexcept
+inline void fill(pixel_map<T> &dst, T color) noexcept
 {
     for (int rowNr = 0; rowNr < dst.height; rowNr++) {
         auto row = dst.at(rowNr);
@@ -80,61 +80,62 @@ inline void fill(PixelMap<T> &dst, T color) noexcept
 }
 
 template<typename T>
-inline void rotate90(PixelMap<T> &dst, PixelMap<T> const &src) noexcept
+inline void rotate90(pixel_map<T> &dst, pixel_map<T> const &src) noexcept
 {
-    assert(dst.width >= src.height);
-    assert(dst.height >= src.width);
+    assert(dst.width() >= src.height());
+    assert(dst.height() >= src.width());
 
-    for (int rowNr = 0; rowNr < src.height; rowNr++) {
+    for (int rowNr = 0; rowNr < src.height(); rowNr++) {
         ttlet row = src.at(rowNr);
-        ttlet dstColumnNr = src.height - rowNr - 1;
+        ttlet dstColumnNr = src.height() - rowNr - 1;
         auto dstRowNr = 0;
-        for (int columnNr = 0; columnNr < row.width; columnNr++) {
+        for (int columnNr = 0; columnNr < row.width(); columnNr++) {
             dst[dstRowNr++][dstColumnNr] = row[columnNr];
         }
     }
 }
 
 template<typename T>
-inline void rotate270(PixelMap<T> &dst, PixelMap<T> const &src) noexcept
+inline void rotate270(pixel_map<T> &dst, pixel_map<T> const &src) noexcept
 {
-    assert(dst.width >= src.height);
-    assert(dst.height >= src.width);
+    assert(dst.width() >= src.height());
+    assert(dst.height() >= src.width());
 
-    for (int rowNr = 0; rowNr < src.height; rowNr++) {
+    for (int rowNr = 0; rowNr < src.height(); rowNr++) {
         ttlet row = src.at(rowNr);
         ttlet dstColumnNr = rowNr;
-        auto dstRowNr = row.width - 1;
-        for (int columnNr = 0; columnNr < row.width; columnNr++) {
+        auto dstRowNr = row.width() - 1;
+        for (int columnNr = 0; columnNr < row.width(); columnNr++) {
             dst[dstRowNr--][dstColumnNr] = row[columnNr];
         }
     }
 }
 
 template<typename T>
-inline void makeTransparentBorder(PixelMap<T> & pixelMap) noexcept
+inline void makeTransparentBorder(pixel_map<T> & pixel_map) noexcept
 {
-    auto topBorder = pixelMap.at(0);
-    ttlet topRow = pixelMap.at(1);
-    ttlet bottomRow = pixelMap.at(pixelMap.height - 2);
-    auto bottomBorder = pixelMap.at(pixelMap.height - 1);
-    for (auto x = 1; x < pixelMap.width - 1; x++) {
+    auto topBorder = pixel_map.at(0);
+    ttlet topRow = pixel_map.at(1);
+    ttlet bottomRow = pixel_map.at(pixel_map.height() - 2);
+    auto bottomBorder = pixel_map.at(pixel_map.height() - 1);
+    for (auto x = 1; x < pixel_map.width() - 1; x++) {
         topBorder[x] = makeTransparent(topRow[x]);
         bottomBorder[x] = makeTransparent(bottomRow[x]);
     }
 
-    ttlet rightBorderY = pixelMap.width - 1;
-    ttlet rightY = pixelMap.width - 2;
-    for (auto y = 1; y < pixelMap.height - 1; y++) {
-        auto row = pixelMap[y];
+    ttlet rightBorderY = pixel_map.width() - 1;
+    ttlet rightY = pixel_map.width() - 2;
+    for (auto y = 1; y < pixel_map.height() - 1; y++) {
+        auto row = pixel_map[y];
         row[0] = makeTransparent(row[1]);
         row[rightBorderY] = makeTransparent(row[rightY]);
     }
 
-    pixelMap[0][0] = makeTransparent(pixelMap[1][1]);
-    pixelMap[0][pixelMap.width - 1] = makeTransparent(pixelMap[1][pixelMap.width - 2]);
-    pixelMap[pixelMap.height - 1][0] = makeTransparent(pixelMap[pixelMap.height - 2][1]);
-    pixelMap[pixelMap.height - 1][pixelMap.width - 1] = makeTransparent(pixelMap[pixelMap.height - 2][pixelMap.width - 2]);
+    pixel_map[0][0] = makeTransparent(pixel_map[1][1]);
+    pixel_map[0][pixel_map.width() - 1] = makeTransparent(pixel_map[1][pixel_map.width() - 2]);
+    pixel_map[pixel_map.height() - 1][0] = makeTransparent(pixel_map[pixel_map.height() - 2][1]);
+    pixel_map[pixel_map.height() - 1][pixel_map.width() - 1] =
+        makeTransparent(pixel_map[pixel_map.height() - 2][pixel_map.width() - 2]);
 }
 
 }

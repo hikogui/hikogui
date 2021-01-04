@@ -136,7 +136,7 @@ void placement_move(T *src, T *src_last, T *dst)
 /** Check if a pointer is properly aligned for the object it is pointing at.
  */
 template<typename T>
-bool is_aligned(T *p)
+constexpr bool is_aligned(T *p)
 {
     return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
 }
@@ -163,21 +163,18 @@ constexpr T ceil(T value, T alignment) noexcept
     return floor(value + (alignment - 1), alignment);
 }
 
-template<typename R, typename T>
-[[deprecated]] R align(T ptr, size_t alignment) noexcept
+template<typename T>
+constexpr T *ceil(T *ptr, size_t alignment) noexcept
 {
-    ttlet aligned_byte_offset = ceil(static_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
-    return reinterpret_cast<R>(aligned_byte_offset);
+    ttlet aligned_byte_offset = ceil(reinterpret_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
+    return reinterpret_cast<T *>(aligned_byte_offset);
 }
 
-/*! Align an end iterator.
- * This lowers the end interator so that it the last read is can be done fully.
- */
-template<typename R, typename T>
-[[deprecated]] inline R align_end(T ptr, size_t alignment) noexcept
+template<typename T>
+constexpr T *floor(T *ptr, size_t alignment) noexcept
 {
-    ttlet aligned_byte_offset = floor(static_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
-    return reinterpret_cast<R>(aligned_byte_offset);
+    ttlet aligned_byte_offset = floor(reinterpret_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
+    return reinterpret_cast<T *>(aligned_byte_offset);
 }
 
 template<typename T>

@@ -12,7 +12,6 @@
 
 namespace tt {
 class gui_device_vulkan;
-template<typename T> struct PixelMap;
 }
 
 namespace tt::PipelineToneMapper {

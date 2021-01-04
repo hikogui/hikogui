@@ -223,13 +223,13 @@ inline float bezierFlatness(f32x4 P1, f32x4 C, f32x4 P2) noexcept
 {
     tt_axiom(P1.is_point() && C.is_point() && P2.is_point());
 
-    ttlet P1P2 = length<2>(P2 - P1);
+    ttlet P1P2 = hypot<2>(P2 - P1);
     if (P1P2 == 0.0f) {
         return 1.0;
     }
 
-    ttlet P1C1 = length<2>(C - P1);
-    ttlet C1P2 = length<2>(P2 - C);
+    ttlet P1C1 = hypot<2>(C - P1);
+    ttlet C1P2 = hypot<2>(P2 - C);
     return P1P2 / (P1C1 + C1P2);
 }
 
@@ -241,14 +241,14 @@ inline float bezierFlatness(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2) noexcept
 {
     tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
 
-    ttlet P1P2 = length<2>(P2 - P1);
+    ttlet P1P2 = hypot<2>(P2 - P1);
     if (P1P2 == 0.0f) {
         return 1.0;
     }
 
-    ttlet P1C1 = length<2>(C1 - P1);
-    ttlet C1C2 = length<2>(C2 - C1);
-    ttlet C2P2 = length<2>(P2 - C2);
+    ttlet P1C1 = hypot<2>(C1 - P1);
+    ttlet C1C2 = hypot<2>(C2 - C1);
+    ttlet C2P2 = hypot<2>(P2 - C2);
     return P1P2 / (P1C1 + C1C2 + C2P2);
 }
 

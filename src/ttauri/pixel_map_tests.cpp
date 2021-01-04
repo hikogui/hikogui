@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/PixelMap.inl"
+#include "ttauri/pixel_map.inl"
 #include "ttauri/Path.hpp"
 #include "ttauri/BezierCurve.hpp"
 #include <gtest/gtest.h>
@@ -11,30 +11,30 @@
 using namespace std;
 using namespace tt;
 
-TEST(PixelMapTests, rotate90) {
-    auto mask = PixelMap<uint8_t>(2, 2);
+TEST(pixel_map_tests, rotate90) {
+    auto mask = pixel_map<uint8_t>(2, 2);
     mask[1][0] = 3; mask[1][1] = 4;
     mask[0][0] = 1; mask[0][1] = 2;
 
-    auto r = PixelMap<uint8_t>(2, 2);
+    auto r = pixel_map<uint8_t>(2, 2);
     rotate90(r, mask);
     ASSERT_EQ(r[1][0], 4); ASSERT_EQ(r[1][1], 2);
     ASSERT_EQ(r[0][0], 3); ASSERT_EQ(r[0][1], 1);
 }
 
-TEST(PixelMapTests, rotate270) {
-    auto mask = PixelMap<uint8_t>(2, 2);
+TEST(pixel_map_tests, rotate270) {
+    auto mask = pixel_map<uint8_t>(2, 2);
     mask[1][0] = 3; mask[1][1] = 4;
     mask[0][0] = 1; mask[0][1] = 2;
 
-    auto r = PixelMap<uint8_t>(2, 2);
+    auto r = pixel_map<uint8_t>(2, 2);
     rotate270(r, mask);
     ASSERT_EQ(r[1][0], 1); ASSERT_EQ(r[1][1], 3);
     ASSERT_EQ(r[0][0], 2); ASSERT_EQ(r[0][1], 4);
 }
 
-TEST(PixelMapTests, renderMaskFromPath) {
-    auto mask = PixelMap<uint8_t>(9, 3);
+TEST(pixel_map_tests, renderMaskFromPath) {
+    auto mask = pixel_map<uint8_t>(9, 3);
     fill(mask);
 
     auto path = Path();

@@ -4,7 +4,7 @@
 #include "PipelineFlat.hpp"
 #include "PipelineFlat_DeviceShared.hpp"
 #include "gui_device_vulkan.hpp"
-#include "../PixelMap.hpp"
+#include "../pixel_map.hpp"
 #include "../URL.hpp"
 #include <array>
 

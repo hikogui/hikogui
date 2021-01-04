@@ -10,7 +10,7 @@ namespace tt {
 
 icon::icon() noexcept : image(std::monostate{}) {}
 
-icon::icon(PixelMap<R16G16B16A16SFloat> &&image) noexcept : image(std::move(image)) {}
+icon::icon(pixel_map<R16G16B16A16SFloat> &&image) noexcept : image(std::move(image)) {}
 
 icon::icon(FontGlyphIDs const &image) noexcept : image(image) {}
 
@@ -25,7 +25,7 @@ icon::icon(icon const &other) noexcept
     if (auto font_glyph_id = std::get_if<FontGlyphIDs>(&other.image)) {
         image = *font_glyph_id;
 
-    } else if (auto pixmap = std::get_if<PixelMap<R16G16B16A16SFloat>>(&other.image)) {
+    } else if (auto pixmap = std::get_if<pixel_map<R16G16B16A16SFloat>>(&other.image)) {
         image = pixmap->copy();
 
     } else if (std::holds_alternative<std::monostate>(other.image)) {
@@ -41,7 +41,7 @@ icon &icon::operator=(icon const &other) noexcept
     if (auto font_glyph_id = std::get_if<FontGlyphIDs>(&other.image)) {
         image = *font_glyph_id;
 
-    } else if (auto pixmap = std::get_if<PixelMap<R16G16B16A16SFloat>>(&other.image)) {
+    } else if (auto pixmap = std::get_if<pixel_map<R16G16B16A16SFloat>>(&other.image)) {
         image = pixmap->copy();
 
     } else if (std::holds_alternative<std::monostate>(other.image)) {

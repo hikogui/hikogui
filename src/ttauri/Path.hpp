@@ -17,7 +17,7 @@
 namespace tt {
 
 struct BezierCurve;
-template<typename T> struct PixelMap;
+template<typename T> class pixel_map;
 
 /** A path is a vector graphics object.
  * It represents:
@@ -255,19 +255,19 @@ struct Path {
 * \param color color to composit.
 * \param mask mask where the color will be composited on the destination.
 */
-void composit(PixelMap<R16G16B16A16SFloat>& dst, f32x4 color, Path const &mask) noexcept;
+void composit(pixel_map<R16G16B16A16SFloat>& dst, f32x4 color, Path const &mask) noexcept;
 
 /** Composit color onto the destination image where the mask is solid.
 *
 * \param dst destination image.
 * \param mask mask where the color will be composited on the destination.
 */
-void composit(PixelMap<R16G16B16A16SFloat>& dst, Path const &mask) noexcept;
+void composit(pixel_map<R16G16B16A16SFloat>& dst, Path const &mask) noexcept;
 
 /** Fill a signed distance field image from the given path.
 * @param image An signed-distance-field which show distance toward the closest curve
 * @param path A path.
 */
-void fill(PixelMap<SDF8> &dst, Path const &path) noexcept;
+void fill(pixel_map<SDF8> &dst, Path const &path) noexcept;
 
 }

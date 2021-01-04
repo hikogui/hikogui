@@ -439,7 +439,7 @@ i32x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) cons
     return {r, g, b, a};
 }
 
-void png::data_to_image_line(std::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &line) const noexcept
+void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<R16G16B16A16SFloat> &line) const noexcept
 {
     ttlet alpha_mul = bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
     for (int x = 0; x != width; ++x) {
@@ -458,7 +458,7 @@ void png::data_to_image_line(std::span<std::byte const> bytes, PixelRow<R16G16B1
     }
 }
 
-void png::data_to_image(bstring bytes, PixelMap<R16G16B16A16SFloat> &image) const noexcept
+void png::data_to_image(bstring bytes, pixel_map<R16G16B16A16SFloat> &image) const noexcept
 {
     auto bytes_span = std::span(bytes);
 
@@ -471,7 +471,7 @@ void png::data_to_image(bstring bytes, PixelMap<R16G16B16A16SFloat> &image) cons
     }
 }
 
-void png::decode_image(PixelMap<R16G16B16A16SFloat> &image) const
+void png::decode_image(pixel_map<R16G16B16A16SFloat> &image) const
 {
     // There is a filter selection byte in front of every line.
     ttlet image_data_size = stride * height;
@@ -485,10 +485,10 @@ void png::decode_image(PixelMap<R16G16B16A16SFloat> &image) const
 
 }
 
-PixelMap<R16G16B16A16SFloat> png::load(URL const &url)
+pixel_map<R16G16B16A16SFloat> png::load(URL const &url)
 {
     ttlet png_data = png(url);
-    auto image = PixelMap<R16G16B16A16SFloat>{png_data.extent()};
+    auto image = pixel_map<R16G16B16A16SFloat>{png_data.extent()};
     png_data.decode_image(image);
     return image;
 }

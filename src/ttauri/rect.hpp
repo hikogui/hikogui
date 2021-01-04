@@ -64,11 +64,11 @@ public:
     }
 
     float width() const noexcept {
-        return length<3>(right_vector());
+        return hypot<3>(right_vector());
     }
 
     float height() const noexcept {
-        return length<3>(up_vector());
+        return hypot<3>(up_vector());
     }
 
     f32x4 extent() const noexcept {

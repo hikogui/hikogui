@@ -784,12 +784,6 @@ public:
         }
     }
 
-    template<ssize_t D>
-    [[deprecated]] [[nodiscard]] friend constexpr T length(numeric_array const &rhs) noexcept
-    {
-        return hypot<D>(rhs);
-    }
-
     /** Take the squared length of the vector
      * @tparam D Number of dimensions to calculate the length over.
      */
@@ -797,12 +791,6 @@ public:
     [[nodiscard]] friend constexpr T hypot_squared(numeric_array const &rhs) noexcept
     {
         return dot<D>(rhs, rhs);
-    }
-
-    template<ssize_t D>
-    [[deprecated]] [[nodiscard]] friend constexpr T length_squared(numeric_array const &rhs) noexcept
-    {
-        return hypot_squared<D>(rhs);
     }
 
     /** Take a reciprocal of the length.
@@ -825,16 +813,10 @@ public:
     }
 
     template<ssize_t D>
-    [[deprecated]] [[nodiscard]] friend constexpr T rcp_length(numeric_array const &rhs) noexcept
-    {
-        return rcp_hypot<D>(rhs);
-    }
-
-    template<ssize_t D>
     [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const &rhs) noexcept
     {
         tt_axiom(rhs.is_vector());
-        return rhs * rcp_length<D>(rhs);
+        return rhs * rcp_hypot<D>(rhs);
     }
 
     [[nodiscard]] friend constexpr unsigned int eq(numeric_array const &lhs, numeric_array const &rhs) noexcept

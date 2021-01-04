@@ -15,7 +15,7 @@
 
 namespace tt {
 
-template<typename T> struct PixelMap;
+template<typename T> class pixel_map;
 class R16G16B16A16SFloat;
 };
 
@@ -76,7 +76,7 @@ struct Image {
 
     /** Upload image to atlas.
      */
-    void upload(PixelMap<R16G16B16A16SFloat> const &image) noexcept;
+    void upload(pixel_map<R16G16B16A16SFloat> const &image) noexcept;
 
 private:
     //! Temporary memory used for pre calculating vertices.

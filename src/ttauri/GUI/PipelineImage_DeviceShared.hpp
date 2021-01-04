@@ -13,7 +13,7 @@
 
 namespace tt {
 class gui_device_vulkan;
-template<typename T> struct PixelMap;
+template<typename T> class pixel_map;
 }
 
 namespace tt::PipelineImage {
@@ -90,12 +90,12 @@ struct DeviceShared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    tt::PixelMap<R16G16B16A16SFloat> getStagingPixelMap();
+    tt::pixel_map<R16G16B16A16SFloat> getStagingPixelMap();
 
     void prepareAtlasForRendering();
 
 private:
-    tt::PixelMap<R16G16B16A16SFloat> getStagingPixelMap(i32x4 extent) {
+    tt::pixel_map<R16G16B16A16SFloat> getStagingPixelMap(i32x4 extent) {
         return getStagingPixelMap().submap({i32x4::point(0,0), extent});
     }
 

@@ -76,7 +76,7 @@ public:
 
 
 
-inline void fill(PixelMap<A8B8G8R8SrgbPack32>& dst, PixelMap<R16G16B16A16SFloat> const& src) noexcept
+inline void fill(pixel_map<A8B8G8R8SrgbPack32>& dst, pixel_map<R16G16B16A16SFloat> const& src) noexcept
 {
     tt_assert(dst.width >= src.width);
     tt_assert(dst.height >= src.height);

@@ -5,7 +5,7 @@
 
 #include "numeric_array.hpp"
 #include "float16.hpp"
-#include "PixelMap.hpp"
+#include "pixel_map.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -65,33 +65,33 @@ public:
     }
 };
 
-inline void fill(PixelMap<R16G16B16A16SFloat> &image, f32x4 color) noexcept {
-    for (ssize_t y = 0; y != image.height; ++y) {
+inline void fill(pixel_map<R16G16B16A16SFloat> &image, f32x4 color) noexcept {
+    for (ssize_t y = 0; y != image.height(); ++y) {
         auto row = image[y];
-        for (ssize_t x = 0; x != image.width; ++x) {
+        for (ssize_t x = 0; x != image.width(); ++x) {
             row[x] = color;
         }
     }
 }
 
-inline void desaturate(PixelMap<R16G16B16A16SFloat> &image, float brightness) noexcept {
-    for (ssize_t y = 0; y != image.height; ++y) {
+inline void desaturate(pixel_map<R16G16B16A16SFloat> &image, float brightness) noexcept {
+    for (ssize_t y = 0; y != image.height(); ++y) {
         auto row = image[y];
-        for (ssize_t x = 0; x != image.width; ++x) {
+        for (ssize_t x = 0; x != image.width(); ++x) {
             row[x] = desaturate(static_cast<f32x4>(row[x]), brightness);
         }
     }
 }
 
-inline void composit(PixelMap<R16G16B16A16SFloat> &under, PixelMap<R16G16B16A16SFloat> const &over) noexcept
+inline void composit(pixel_map<R16G16B16A16SFloat> &under, pixel_map<R16G16B16A16SFloat> const &over) noexcept
 {
-    tt_assert(over.height >= under.height);
-    tt_assert(over.width >= under.width);
+    tt_assert(over.height() >= under.height());
+    tt_assert(over.width() >= under.width());
 
-    for (ssize_t rowNr = 0; rowNr != under.height; ++rowNr) {
+    for (ssize_t rowNr = 0; rowNr != under.height(); ++rowNr) {
         ttlet overRow = over.at(rowNr);
         auto underRow = under.at(rowNr);
-        for (ssize_t columnNr = 0; columnNr != under.width; ++columnNr) {
+        for (ssize_t columnNr = 0; columnNr != under.width(); ++columnNr) {
             ttlet &overPixel = overRow[columnNr];
             auto &underPixel = underRow[columnNr];
 
@@ -100,17 +100,17 @@ inline void composit(PixelMap<R16G16B16A16SFloat> &under, PixelMap<R16G16B16A16S
     }
 }
 
-inline void composit(PixelMap<R16G16B16A16SFloat>& under, f32x4 over, PixelMap<uint8_t> const& mask) noexcept
+inline void composit(pixel_map<R16G16B16A16SFloat>& under, f32x4 over, pixel_map<uint8_t> const& mask) noexcept
 {
-    tt_assert(mask.height >= under.height);
-    tt_assert(mask.width >= under.width);
+    tt_assert(mask.height() >= under.height());
+    tt_assert(mask.width() >= under.width());
 
     auto maskPixel = f32x4::color({1.0f, 1.0f, 1.0f, 1.0f});
 
-    for (ssize_t rowNr = 0; rowNr != under.height; ++rowNr) {
+    for (ssize_t rowNr = 0; rowNr != under.height(); ++rowNr) {
         ttlet maskRow = mask.at(rowNr);
         auto underRow = under.at(rowNr);
-        for (ssize_t columnNr = 0; columnNr != under.width; ++columnNr) {
+        for (ssize_t columnNr = 0; columnNr != under.width(); ++columnNr) {
             ttlet maskValue = maskRow[columnNr] / 255.0f;
             maskPixel.a() = maskValue;
 

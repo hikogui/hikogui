@@ -54,8 +54,8 @@ TEST(numeric_array, Arithmatic) {
 TEST(numeric_array, Length) {
     ttlet tmp = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 
-    ASSERT_EQ(length_squared<3>(tmp), 29.0f);
-    ASSERT_NEAR(length<3>(tmp), 5.3851f, 0.001f);
+    ASSERT_EQ(hypot_squared<3>(tmp), 29.0f);
+    ASSERT_NEAR(hypot<3>(tmp), 5.3851f, 0.001f);
 }
 
 TEST(numeric_array, DotProduct) {

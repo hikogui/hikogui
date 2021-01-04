@@ -3,7 +3,7 @@
 
 #include "BezierCurve.hpp"
 #include "BezierPoint.hpp"
-#include "PixelMap.inl"
+#include "pixel_map.inl"
 #include "memory.hpp"
 #include <optional>
 
@@ -185,7 +185,7 @@ static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::v
     return r;
 }
 
-static void fillPartialPixels(PixelRow<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
+static void fillPartialPixels(pixel_row<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
 {
     ttlet pixelCoverage =
         std::clamp(endX, i + 0.0f, i + 1.0f) -
@@ -195,7 +195,7 @@ static void fillPartialPixels(PixelRow<uint8_t> row, ssize_t const i, float cons
     pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
 }
 
-static void fillFullPixels(PixelRow<uint8_t> row, ssize_t const start, ssize_t const size) noexcept
+static void fillFullPixels(pixel_row<uint8_t> row, ssize_t const start, ssize_t const size) noexcept
 {
     if (size < 16) {
         ttlet end = start + size;
@@ -207,14 +207,14 @@ static void fillFullPixels(PixelRow<uint8_t> row, ssize_t const start, ssize_t c
         ttlet u8end = u8p + size;
 
         // First add 51 to all pixels up to the alignment.
-        ttlet alignedStart = tt::align<uint8_t*>(u8p, sizeof(uint64_t));
+        ttlet alignedStart = tt::ceil(u8p, sizeof(uint64_t));
         while (u8p < alignedStart) {
             *(u8p++) += 0x33;
         }
 
         // add 51 for each pixel, 8 pixels at a time.
         auto u64p = reinterpret_cast<uint64_t*>(u8p);
-        ttlet u64end = tt::align_end<uint64_t*>(u8end, sizeof(uint64_t));
+        ttlet u64end = reinterpret_cast<uint64_t *>(tt::floor(u8end, sizeof(uint64_t)));
         while (u64p < u64end) {
             *(u64p++) += 0x3333333333333333ULL;
         }
@@ -230,9 +230,9 @@ static void fillFullPixels(PixelRow<uint8_t> row, ssize_t const start, ssize_t c
 /*! Render pixels in a row between two x values.
  * Fully covered sub-pixel will have the value 51.
  */
-static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const endX) noexcept
+static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const endX) noexcept
 {
-    if (startX >= row.width || endX < 0.0f) {
+    if (startX >= row.width() || endX < 0.0f) {
         return;
     }
 
@@ -240,7 +240,7 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
     ttlet endXplusOne = endX + 1.0f;
     ttlet endX_int = narrow_cast<ssize_t>(endXplusOne);
     ttlet startColumn = std::max(startX_int, ssize_t{0});
-    ttlet endColumn = std::min(endX_int, row.width);
+    ttlet endColumn = std::min(endX_int, row.width());
     ttlet nrColumns = endColumn - startColumn;
 
     if (nrColumns == 1) {
@@ -252,7 +252,7 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
     }
 }
 
-static void fillRow(PixelRow<uint8_t> row, int const rowY, std::vector<BezierCurve> const& curves) noexcept
+static void fillRow(pixel_row<uint8_t> row, int const rowY, std::vector<BezierCurve> const& curves) noexcept
 {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
@@ -272,9 +272,9 @@ static void fillRow(PixelRow<uint8_t> row, int const rowY, std::vector<BezierCur
     }
 }
 
-void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noexcept
+void fill(pixel_map<uint8_t> &image, std::vector<BezierCurve> const &curves) noexcept
 {
-    for (int rowNr = 0; rowNr < image.height; rowNr++) {
+    for (int rowNr = 0; rowNr < image.height(); rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);
     }
 }
@@ -298,11 +298,11 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
     return min_distance;
 }
 
-static void bad_pixels_edges(PixelMap<SDF8> &image) noexcept
+static void bad_pixels_edges(pixel_map<SDF8> &image) noexcept
 {
     // Bottom edge.
     auto row = image[0];
-    for (ssize_t column_nr = 0; column_nr != image.width; ++column_nr) {
+    for (ssize_t column_nr = 0; column_nr != image.width(); ++column_nr) {
         auto &pixel = row[column_nr];
         if (static_cast<float>(pixel) > 0.0) {
             pixel.repair();
@@ -310,8 +310,8 @@ static void bad_pixels_edges(PixelMap<SDF8> &image) noexcept
     }
 
     // Top edge
-    row = image[image.height - 1];
-    for (ssize_t column_nr = 0; column_nr != image.width; ++column_nr) {
+    row = image[image.height() - 1];
+    for (ssize_t column_nr = 0; column_nr != image.width(); ++column_nr) {
         auto &pixel = row[column_nr];
         if (static_cast<float>(pixel) > 0.0) {
             pixel.repair();
@@ -319,7 +319,7 @@ static void bad_pixels_edges(PixelMap<SDF8> &image) noexcept
     }
 
     // Left and right edge
-    for (ssize_t row_nr = 0; row_nr != image.height; ++row_nr) {
+    for (ssize_t row_nr = 0; row_nr != image.height(); ++row_nr) {
         row = image[row_nr];
 
         auto &left_pixel = row[0];
@@ -327,20 +327,20 @@ static void bad_pixels_edges(PixelMap<SDF8> &image) noexcept
             left_pixel.repair();
         }
 
-        auto &right_pixel = row[image.width - 1];
+        auto &right_pixel = row[image.width() - 1];
         if (static_cast<float>(right_pixel) > 0.0) {
             right_pixel.repair();
         }
     }
 }
 
-static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
+static void bad_pixels_horizontally(pixel_map<SDF8> &image) noexcept
 {
-    for (ssize_t row_nr = 0; row_nr != image.height; ++row_nr) {
+    for (ssize_t row_nr = 0; row_nr != image.height(); ++row_nr) {
         auto row = image[row_nr];
         // The left edge of the signed distance field should be outside of the glyph -float_max
         auto prev_pixel_value = SDF8(-std::numeric_limits<float>::max());
-        for (ssize_t column_nr = 0; column_nr != image.width; ++column_nr) {
+        for (ssize_t column_nr = 0; column_nr != image.width(); ++column_nr) {
             auto &pixel = row[column_nr];
             ttlet pixel_value = static_cast<float>(pixel);
 
@@ -357,7 +357,7 @@ static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
     }
 }
 
-[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels_homogenious(PixelMap<SDF8> const &image) noexcept
+[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels_homogenious(pixel_map<SDF8> const &image) noexcept
 {
     constexpr float threshold = 0.075f;
 
@@ -365,12 +365,12 @@ static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
 
     auto row = image.at(0);
     auto next_row = image.at(1);
-    for (int row_nr = 1; row_nr != (image.height - 1); ++row_nr) {
+    for (int row_nr = 1; row_nr != (image.height() - 1); ++row_nr) {
         auto prev_row = row;
         row = next_row;
         next_row = image.at(row_nr + 1);
 
-        for (int column_nr = 1; column_nr != (image.width - 1); ++column_nr) {
+        for (int column_nr = 1; column_nr != (image.width() - 1); ++column_nr) {
             ttlet &pixel = row[column_nr];
 
             auto area = std::array{
@@ -404,12 +404,12 @@ static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
 }
 
 
-void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcept
+void fill(pixel_map<SDF8> &image, std::vector<BezierCurve> const &curves) noexcept
 {
-    for (int row_nr = 0; row_nr != image.height; ++row_nr) {
+    for (int row_nr = 0; row_nr != image.height(); ++row_nr) {
         auto row = image.at(row_nr);
         auto y = static_cast<float>(row_nr);
-        for (int column_nr = 0; column_nr != image.width; ++column_nr) {
+        for (int column_nr = 0; column_nr != image.width(); ++column_nr) {
             auto x = static_cast<float>(column_nr);
             row[column_nr] = generate_SDF8_pixel(f32x4::point(x, y), curves);
         }

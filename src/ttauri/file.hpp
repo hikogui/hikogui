@@ -152,7 +152,7 @@ public:
      */
     ssize_t write(std::span<std::byte const> bytes, ssize_t offset = -1)
     {
-        return write(text.data(), std::ssize(text), offset);
+        return write(bytes.data(), std::ssize(bytes), offset);
     }
 
     /** Write data to a file.

@@ -5,7 +5,7 @@
 #include "PipelineSDF_DeviceShared.hpp"
 #include "gui_device_vulkan.hpp"
 #include "../text/ShapedText.hpp"
-#include "../PixelMap.hpp"
+#include "../pixel_map.hpp"
 #include "../URL.hpp"
 #include "../memory.hpp"
 #include "../cast.hpp"
@@ -75,9 +75,7 @@ void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
 {
     // Flush the given image, included the border.
     device.flushAllocation(
-        stagingTexture.allocation,
-        0,
-        (stagingTexture.pixelMap.height * stagingTexture.pixelMap.stride) * sizeof (SDF8)
+        stagingTexture.allocation, 0, (stagingTexture.pixel_map.height() * stagingTexture.pixel_map.stride()) * sizeof(SDF8)
     );
     
     stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferSrcOptimal);
@@ -151,7 +149,7 @@ AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     prepareStagingPixmapForDrawing();
     auto atlas_rect = allocateRect(drawExtent);
-    auto pixmap = stagingTexture.pixelMap.submap(iaarect{i32x4::point(), atlas_rect.atlasExtent});
+    auto pixmap = stagingTexture.pixel_map.submap(iaarect{i32x4::point(), atlas_rect.atlasExtent});
     fill(pixmap, drawPath);
     uploadStagingPixmapToAtlas(atlas_rect);
 
@@ -373,7 +371,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        tt::PixelMap<SDF8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
+        tt::pixel_map<SDF8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

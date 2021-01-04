@@ -4,7 +4,7 @@
 #pragma once
 
 #include "SDF8.hpp"
-#include "PixelMap.hpp"
+#include "pixel_map.hpp"
 #include "alignment.hpp"
 #include "math.hpp"
 #include "bezier.hpp"
@@ -163,7 +163,7 @@ struct BezierCurve {
             t = std::clamp(t, 0.0f, 1.0f);
 
             ttlet normal = P - pointAt(t);
-            ttlet square_distance = length_squared<2>(normal);
+            ttlet square_distance = hypot_squared<2>(normal);
             if (square_distance < min_square_distance) {
                 min_square_distance = square_distance;
                 min_t = t;
@@ -361,12 +361,12 @@ struct BezierCurve {
  * @param image An alpha-channel image to make opaque where pixel is inside the contours
  * @param curves All curves of path, in no particular order.
  */
-void fill(PixelMap<uint8_t>& image, std::vector<BezierCurve> const& curves) noexcept;
+void fill(pixel_map<uint8_t>& image, std::vector<BezierCurve> const& curves) noexcept;
 
 /** Fill a signed distance field image from the given contour.
 * @param image An signed-distance-field which show distance toward the closest curve
 * @param curves All curves of path, in no particular order.
 */
-void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcept;
+void fill(pixel_map<SDF8> &image, std::vector<BezierCurve> const &curves) noexcept;
 
 }

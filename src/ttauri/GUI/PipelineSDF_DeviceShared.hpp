@@ -19,7 +19,7 @@
 
 namespace tt {
 class gui_device_vulkan;
-template<typename T> struct PixelMap;
+template<typename T> class pixel_map;
 class mat;
 }
 

@@ -5,8 +5,8 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
 #include "gui_device_vulkan.hpp"
-#include "../PixelMap.hpp"
-#include "../PixelMap.inl"
+#include "../pixel_map.hpp"
+#include "../pixel_map.inl"
 #include "../URL.hpp"
 #include "../memory.hpp"
 #include "../cast.hpp"
@@ -64,11 +64,11 @@ Image DeviceShared::makeImage(const i32x4 extent) noexcept
     return Image{this, extent, pageExtent, allocatePages(pageExtent.x() * pageExtent.y())};
 }
 
-tt::PixelMap<R16G16B16A16SFloat> DeviceShared::getStagingPixelMap()
+tt::pixel_map<R16G16B16A16SFloat> DeviceShared::getStagingPixelMap()
 {
     stagingTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
-    return stagingTexture.pixelMap.submap(
+    return stagingTexture.pixel_map.submap(
         Page::border, Page::border,
         stagingImageWidth - 2 * Page::border, stagingImageHeight - 2 * Page::border
     );
@@ -86,15 +86,15 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     for (int b = 0; b < Page::border; b++) {
         rectangle = expand(rectangle, 1);
 
-        auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
-        makeTransparentBorder(pixelMap);
+        auto pixel_map = stagingTexture.pixel_map.submap(rectangle);
+        makeTransparentBorder(pixel_map);
     }
 
     // Flush the given image, included the border.
     device.flushAllocation(
         stagingTexture.allocation,
         0,
-        ((image.extent.x() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
+        ((image.extent.x() + 2 * Page::border) * stagingTexture.pixel_map.stride()) * sizeof (uint32_t)
     );
     
     stagingTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
@@ -258,7 +258,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        tt::PixelMap<R16G16B16A16SFloat>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
+        tt::pixel_map<R16G16B16A16SFloat>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

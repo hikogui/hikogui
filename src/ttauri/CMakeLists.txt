@@ -111,9 +111,9 @@ target_sources(ttauri PRIVATE
     preferences.hpp
     Path.cpp
     Path.hpp
-    PixelMap.cpp
-    PixelMap.hpp
-    PixelMap.inl
+    pixel_map.cpp
+    pixel_map.hpp
+    pixel_map.inl
     placement.hpp
     polymorphic_value.hpp
     polynomial.hpp
@@ -216,7 +216,7 @@ target_sources(ttauri_tests PRIVATE
     math_tests.cpp
     numeric_array_tests.cpp
     Path_tests.cpp
-    PixelMap_tests.cpp
+    pixel_map_tests.cpp
     polymorphic_value_tests.cpp
     polynomial_tests.cpp
     ranges_tests.cpp

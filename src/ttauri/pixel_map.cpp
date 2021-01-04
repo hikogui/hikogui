@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PixelMap.inl"
+#include "pixel_map.inl"
 #include "endian.hpp"
 #include <algorithm>
 
@@ -11,15 +11,15 @@ namespace tt {
 
 
 
-void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept
+void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexcept
 {
-    tt_assert(src.width >= dst.width);
-    tt_assert(src.height >= dst.height);
+    tt_assert(src.width() >= dst.width());
+    tt_assert(src.height() >= dst.height());
 
-    for (auto rowNr = 0; rowNr < dst.height; rowNr++) {
+    for (auto rowNr = 0; rowNr < dst.height(); rowNr++) {
         auto dstRow = dst[rowNr];
         ttlet srcRow = src[rowNr];
-        for (auto columnNr = 0; columnNr < dstRow.width; columnNr++) {
+        for (auto columnNr = 0; columnNr < dstRow.width(); columnNr++) {
             auto &dstPixel = dstRow[columnNr];
             ttlet srcPixel = srcRow[columnNr];
             dstPixel = std::max(dstPixel, srcPixel);

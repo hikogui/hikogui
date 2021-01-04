@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../PixelMap.hpp"
+#include "../pixel_map.hpp"
 #include "../R16G16B16A16SFloat.hpp"
 #include "../mat.hpp"
 #include "../numeric_array.hpp"
@@ -64,9 +64,9 @@ public:
         return i32x4{width, height};
     }
 
-    void decode_image(PixelMap<R16G16B16A16SFloat> &image) const;
+    void decode_image(pixel_map<R16G16B16A16SFloat> &image) const;
 
-    static PixelMap<R16G16B16A16SFloat> load(URL const &url);
+    static pixel_map<R16G16B16A16SFloat> load(URL const &url);
 
 private:
     void read_header(std::span<std::byte const> bytes, ssize_t &offset);
@@ -87,8 +87,8 @@ private:
     void unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
-    void data_to_image(bstring bytes, PixelMap<R16G16B16A16SFloat> &image) const noexcept;
-    void data_to_image_line(std::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &row) const noexcept;
+    void data_to_image(bstring bytes, pixel_map<R16G16B16A16SFloat> &image) const noexcept;
+    void data_to_image_line(std::span<std::byte const> bytes, pixel_row<R16G16B16A16SFloat> &row) const noexcept;
     i32x4 extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
 
 };

@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "Path.hpp"
-#include "PixelMap.inl"
+#include "pixel_map.inl"
 #include "BezierCurve.hpp"
-#include "PixelMap.hpp"
+#include "pixel_map.hpp"
 #include "required.hpp"
 
 namespace tt {
@@ -302,7 +302,7 @@ void Path::arcTo(float radius, f32x4 position) noexcept
     ttlet Vm2 = P2 - Pm;
 
     // Calculate the half angle between vectors P0 - C and P2 - C.
-    ttlet alpha = std::asin(length<2>(Vm2) / r);
+    ttlet alpha = std::asin(hypot<2>(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
     ttlet C = Pm + normal<2>(Vm2) * std::cos(alpha) * radius;
@@ -311,7 +311,7 @@ void Path::arcTo(float radius, f32x4 position) noexcept
     ttlet VC1 = P1 - C;
     ttlet VC2 = P2 - C;
 
-    ttlet q1 = length_squared<2>(VC1);
+    ttlet q1 = hypot_squared<2>(VC1);
     ttlet q2 = q1 + dot<2>(VC1, VC2);
     ttlet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / viktor_cross<2>(VC1, VC2);
 
@@ -518,12 +518,12 @@ Path Path::centerScale(f32x4 extent, float padding) const noexcept
 
 
 
-void composit(PixelMap<R16G16B16A16SFloat>& dst, f32x4 color, Path const &path) noexcept
+void composit(pixel_map<R16G16B16A16SFloat>& dst, f32x4 color, Path const &path) noexcept
 {
     tt_assert(!path.hasLayers());
     tt_assert(!path.isContourOpen());
 
-    auto mask = PixelMap<uint8_t>(dst.width, dst.height);
+    auto mask = pixel_map<uint8_t>(dst.width(), dst.height());
     fill(mask);
 
     ttlet curves = path.getBeziers();
@@ -532,7 +532,7 @@ void composit(PixelMap<R16G16B16A16SFloat>& dst, f32x4 color, Path const &path) 
     composit(dst, color, mask);
 }
 
-void composit(PixelMap<R16G16B16A16SFloat>& dst, Path const &src) noexcept
+void composit(pixel_map<R16G16B16A16SFloat>& dst, Path const &src) noexcept
 {
     tt_assert(src.hasLayers() && !src.isLayerOpen());
 
@@ -543,7 +543,7 @@ void composit(PixelMap<R16G16B16A16SFloat>& dst, Path const &src) noexcept
     }
 }
 
-void fill(PixelMap<SDF8> &dst, Path const &path) noexcept
+void fill(pixel_map<SDF8> &dst, Path const &path) noexcept
 {
     fill(dst, path.getBeziers());
 }

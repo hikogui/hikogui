@@ -10,5 +10,5 @@
 #include "draw_context.hpp"
 #include "theme.hpp"
 #include "../text/ShapedText.hpp"
-#include "../PixelMap.inl"
+#include "../pixel_map.inl"
 #include "../alignment.hpp"

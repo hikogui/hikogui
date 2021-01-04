@@ -5,6 +5,7 @@
 
 #include "numeric_array.hpp"
 #include "alignment.hpp"
+#include "concepts.hpp"
 #include <concepts>
 
 namespace tt {
@@ -37,7 +38,7 @@ public:
      * @param width The width of the box.
      * @param height The height of the box.
      */
-    axis_aligned_rectangle(std::arithmetic auto x, std::arithmetic auto y, std::arithmetic auto width, std::arithmetic auto height) noexcept :
+    axis_aligned_rectangle(tt::arithmetic auto x, tt::arithmetic auto y, tt::arithmetic auto width, tt::arithmetic auto height) noexcept :
         v({narrow_cast<T>(x),
            narrow_cast<T>(y),
            narrow_cast<T>(x) + narrow_cast<T>(width),
@@ -50,8 +51,8 @@ public:
      * @param width The width of the box.
      * @param height The height of the box.
      */
-    template<typename W, typename H, std::enable_if_t<std::is_arithmetic_v<W> && std::is_arithmetic_v<H>, int> = 0>
-    axis_aligned_rectangle(W width, H height) noexcept : v(numeric_array<T,4>(0.0f, 0.0f, narrow_cast<T>(width), narrow_cast<T>(height)))
+    axis_aligned_rectangle(tt::arithmetic auto width, tt::arithmetic auto height) noexcept :
+        v(numeric_array<T, 4>(0.0f, 0.0f, narrow_cast<T>(width), narrow_cast<T>(height)))
     {
     }
 
