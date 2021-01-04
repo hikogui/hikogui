@@ -143,7 +143,7 @@ public:
         do {
             ttlet left_in_child = std::distance(_child_it, std::end(*_parent_it));
 
-            if (left_in_child < rhs) {
+            if (left_in_child <= rhs) {
                 ++_parent_it;
                 if (!at_end()) {
                     _child_it = std::begin(*_parent_it);
@@ -169,7 +169,7 @@ public:
         do {
             ttlet left_in_child = std::distance(std::begin(*_parent_it), _child_it) + 1;
 
-            if (left_in_child < rhs) {
+            if (left_in_child <= rhs) {
                 --_parent_it;
                 _child_it = std::end(*_parent_it) - 1;
                 rhs -= left_in_child;

@@ -38,18 +38,18 @@ struct unicode_bidi_test {
         return r;
     }
 
-    [[nodiscard]] std::vector<int> get_paragraph_embedding_levels() const noexcept
+    [[nodiscard]] std::vector<unicode_bidi_class> get_paragraph_directions() const noexcept
     {
-        auto r = std::vector<int>{};
+        auto r = std::vector<unicode_bidi_class>{};
 
         if (test_for_LTR) {
-            r.push_back(0);
+            r.push_back(unicode_bidi_class::L);
         }
         if (test_for_RTL) {
-            r.push_back(1);
+            r.push_back(unicode_bidi_class::R);
         }
         if (test_for_auto) {
-            r.push_back(-1);
+            r.push_back(unicode_bidi_class::unknown);
         }
 
         return r;
@@ -101,7 +101,7 @@ parse_bidi_test_data_line(std::string_view line, std::vector<int> const &levels,
     return r;
 }
 
-generator<unicode_bidi_test> parse_bidi_test()
+generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 {
     ttlet view = FileView(URL("file:BidiTest.txt"));
     ttlet test_data = view.string_view();
@@ -119,49 +119,49 @@ generator<unicode_bidi_test> parse_bidi_test()
             reorder = parse_bidi_test_reorder(line.substr(9));
         } else {
             auto data = parse_bidi_test_data_line(line, levels, reorder, line_nr);
-            co_yield data;
+            if (test_line_nr == -1 || line_nr == test_line_nr) {
+                co_yield data;
+            }
+        }
+
+        if (line_nr == test_line_nr) {
+            break;
         }
 
         line_nr++;
-        if (line_nr == 128) {
-            break;
-        }
     }
 }
 
 TEST(unicode_bidi, first)
 {
     for (auto test : parse_bidi_test()) {
-        for (auto paragraph_embedding_level : test.get_paragraph_embedding_levels()) {
+        for (auto paragraph_direction : test.get_paragraph_directions()) {
+            auto test_parameters = unicode_bidi_test_parameters{};
+            test_parameters.enable_mirrored_brackets = false;
+            test_parameters.enable_line_separator = false;
+            test_parameters.force_paragraph_direction = paragraph_direction;
+
             auto input = test.get_input();
             auto first = std::begin(input);
             auto last = std::end(input);
 
-            if (paragraph_embedding_level == -1) {
-                auto paragraph_bidi_class = unicode_bidi_P2(first, last);
-                paragraph_embedding_level = unicode_bidi_P3(paragraph_bidi_class);
+            last = unicode_bidi_P1(first, last, test_parameters);
+
+            // We are using the index from the iterator to find embedded levels
+            // in input-order. We ignore all elements that where removed by X9.
+            for (auto it = first; it != last; ++it) {
+                ttlet expected_embedding_level = test.levels[it->index];
+
+                ASSERT_TRUE(expected_embedding_level == -1 || expected_embedding_level == it->embedding_level);
             }
 
-            unicode_bidi_X1(first, last, 0);
-            last = unicode_bidi_X9(first, last);
-            unicode_bidi_X10(first, last, 0);
-            ttlet[lowest_odd, highest] = unicode_bidi_L1(first, last, 0);
+            ASSERT_EQ(std::distance(first, last), std::ssize(test.reorder));
 
-            {
-                auto it = first;
-                for (auto embedding_level: test.levels) {
-                    ASSERT_EQ(it->embedding_level, embedding_level);
-                    ++it;
-                }
-            }
+            auto index = 0;
+            for (auto it = first; it != last; ++it, ++index) {
+                ttlet expected_input_index = test.reorder[index];
 
-            unicode_bidi_L2(first, last, lowest_odd, highest);
-
-            {
-                auto it = first;
-                for (auto index : test.reorder) {
-                    ASSERT_EQ(it->index, index);
-                }
+                ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
             }
         }
     }

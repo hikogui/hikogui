@@ -23,6 +23,11 @@ struct unicode_bidi_char_info {
      */
     unicode_bidi_class direction;
 
+    /** The original bidi class of the code-point.
+     * The value will NOT change during the execution of the bidi algorithm.
+     */
+    unicode_bidi_class bidi_class;
+
     /** The embedding level.
      * The value may change during the execution of the bidi algorithm.
      */
@@ -36,14 +41,17 @@ struct unicode_bidi_char_info {
         index(index), code_point(code_point), embedding_level(0)
     {
         description = &unicode_description_find(code_point);
-        direction = description->bidi_class();
+        bidi_class = description->bidi_class();
+        direction = bidi_class;
     }
 
     /** Constructor for testing to bypass normal initialization.
      * WARNING: DO NOT USE EXCEPT IN UNIT TESTS.
      */
-    [[nodiscard]] unicode_bidi_char_info(size_t index, unicode_bidi_class direction) noexcept :
-        index(index), code_point(U'\ufffd'), direction(direction), embedding_level(0), description(nullptr) {}
+    [[nodiscard]] unicode_bidi_char_info(size_t index, unicode_bidi_class bidi_class) noexcept :
+        index(index), code_point(U'\ufffd'), direction(bidi_class), bidi_class(bidi_class), embedding_level(0), description(nullptr)
+    {
+    }
 };
 
 using unicode_bidi_char_info_vector = std::vector<unicode_bidi_char_info>;
@@ -76,8 +84,16 @@ static void unicode_bidi_L4(
     }
 }
 
-[[nodiscard]] unicode_bidi_char_info_iterator
-unicode_bidi_P1(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_iterator last) noexcept;
+struct unicode_bidi_test_parameters {
+    unicode_bidi_class force_paragraph_direction = unicode_bidi_class::unknown;
+    bool enable_mirrored_brackets = true;
+    bool enable_line_separator = true;
+};
+
+[[nodiscard]] unicode_bidi_char_info_iterator unicode_bidi_P1(
+    unicode_bidi_char_info_iterator first,
+    unicode_bidi_char_info_iterator last,
+    unicode_bidi_test_parameters test_parameters = {}) noexcept;
 
 } // namespace detail
 
