@@ -35,15 +35,11 @@ public:
 
     /** Construct a location.
     * @param file An URL to the file where the token was found.
-    * @param line Line number where the token was found.
-    * @param column Column where the token was found.
     */
     parse_location(std::shared_ptr<URL> const &file) noexcept : _file(file), _line(0), _column(0) {}
 
     /** Construct a location.
     * @param file An URL to the file where the token was found.
-    * @param line Line number where the token was found.
-    * @param column Column where the token was found.
     */
     parse_location(URL const &file) noexcept : _file(std::make_shared<URL>(std::move(file))), _line(0), _column(0) {}
 

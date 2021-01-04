@@ -18,8 +18,8 @@ namespace tt {
  * and complete UTF-16 encoded code-point.
  *
  * @tparam Iterator A LegacyInputIterator
- * @param [in,out] An iterator pointing to the first UTF-16 code unit of a code point.
- *                 After the call the iterator points beyond the code point.
+ * @param [in,out] it An iterator pointing to the first UTF-16 code unit of a code point.
+ *                    After the call the iterator points beyond the code point.
  * @return The encoded code point
  */
 template<typename Iterator>
@@ -47,8 +47,8 @@ template<typename Iterator>
  * and complete UTF-8 encoded code-point.
  *
  * @tparam Iterator A LegacyInputIterator
- * @param [in,out] An iterator pointing to the first UTF-8 code unit of a code point.
- *                 After the call the iterator points beyond the code point.
+ * @param [in,out] it An iterator pointing to the first UTF-8 code unit of a code point.
+ *                    After the call the iterator points beyond the code point.
  * @return The encoded code point
  */
 template<typename Iterator>

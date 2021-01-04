@@ -133,18 +133,30 @@ void placement_move(T *src, T *src_last, T *dst)
     }
 }
 
+/** Check if a pointer is properly aligned for the object it is pointing at.
+ */
 template<typename T>
 bool is_aligned(T *p)
 {
     return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
 }
 
+/** The greatest multiple of alignment less than or equal to value.
+ * @param value The unsigned value to round.
+ * @param alignment The alignment.
+ * @return The greatest multiple of alignment less than or equal to value.
+ */
 template<std::unsigned_integral T>
 constexpr T floor(T value, T alignment) noexcept
 {
     return (value / alignment) * alignment;
 }
 
+/** The smallest multiple of alignment greater than or equal to value.
+ * @param value The unsigned value to round.
+ * @param alignment The alignment.
+ * @return The smallest multiple of alignment greater than or equal to value.
+ */
 template<std::unsigned_integral T>
 constexpr T ceil(T value, T alignment) noexcept
 {
@@ -152,24 +164,20 @@ constexpr T ceil(T value, T alignment) noexcept
 }
 
 template<typename R, typename T>
-R align(T ptr, size_t alignment) noexcept
+[[deprecated]] R align(T ptr, size_t alignment) noexcept
 {
-    ttlet byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
-    ttlet alignedByteOffset = ((byteOffset + alignment - 1) / alignment) * alignment;
-
-    return reinterpret_cast<R>(alignedByteOffset);
+    ttlet aligned_byte_offset = ceil(static_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
+    return reinterpret_cast<R>(aligned_byte_offset);
 }
 
 /*! Align an end iterator.
  * This lowers the end interator so that it the last read is can be done fully.
  */
 template<typename R, typename T>
-inline R align_end(T ptr, size_t alignment) noexcept
+[[deprecated]] inline R align_end(T ptr, size_t alignment) noexcept
 {
-    ttlet byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
-    ttlet alignedByteOffset = (byteOffset / alignment) * alignment;
-
-    return reinterpret_cast<R>(alignedByteOffset);
+    ttlet aligned_byte_offset = floor(static_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
+    return reinterpret_cast<R>(aligned_byte_offset);
 }
 
 template<typename T>
@@ -227,9 +235,7 @@ inline std::shared_ptr<Value> try_make_shared(Map &map, Key key, Args... args)
     return value;
 }
 
-constexpr int compressed_pointer_bits = 48;
-
-/** Compress a pointer inside an integer.
+/** Compress a pointer to a 48 bit unsigned integer.
  *
  * On x64 the virtual address is 48 bits, and the top 16 bit are signed extended from bit 47.
  * The Itanium ABI guaranties allocations are aligned to 16 bytes.
@@ -239,7 +245,7 @@ constexpr int compressed_pointer_bits = 48;
  * of those may used as a hardware-key. The ARM64 ABI requires the stack to be aligned to
  * 16 bytes, I am expecting heap allocation to be also aligned to 16 bytes.
  */
-inline uint64_t compress_pointer(auto *ptr) noexcept
+inline uint64_t ptr_to_uint48(auto *ptr) noexcept
 {
     tt_axiom(static_cast<uint64_t>(ptr) % 16 == 0);
 
@@ -270,8 +276,18 @@ inline uint64_t compress_pointer(auto *ptr) noexcept
     }
 }
 
+/** Uncompress a 48 bit unsigned integer into a pointer.
+ *
+ * On x64 the virtual address is 48 bits, and the top 16 bit are signed extended from bit 47.
+ * The Itanium ABI guaranties allocations are aligned to 16 bytes.
+ *
+ * On arm the virtual address is 48 or 52 bits, and the top bit are sign extended. The top 8
+ * bit may be ignored by the CPU to implement tagged addressing, of which the bottom 4 bits
+ * of those may used as a hardware-key. The ARM64 ABI requires the stack to be aligned to
+ * 16 bytes, I am expecting heap allocation to be also aligned to 16 bytes.
+ */
 template<typename T>
-T *decompress_pointer(uint64_t x) noexcept
+T *uint48_to_ptr(uint64_t x) noexcept
 {
     tt_axiom((x >> 48) == 0);
 

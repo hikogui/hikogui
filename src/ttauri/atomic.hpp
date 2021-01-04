@@ -45,7 +45,8 @@ contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_ord
  * This function is for the non-contended state. The code emitted on x86 should
  * be MOV,CMP,JNE. The JNE is taken on contended state.
  *
- * @param CounterTag tag to increment if the transition was contended.
+ * @tparam CounterTag tag to increment if the transition was contended.
+ * @tparam T The underlying type of the atomic.
  * @param state variable to monitor.
  * @param to The value the state needs to be before this function returns.
  */

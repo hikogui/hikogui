@@ -13,6 +13,11 @@
 
 namespace tt::ranges::views {
 
+/** Split a range of values into sub-ranges.
+ * @param haystack The range of values to split
+ * @param needle A range of values to find in the haystack and use as a separator.
+ * @return A generator yielding sub-ranges of haystack.
+ */
 template<
     std::ranges::range Haystack,
     std::ranges::range Needle,
@@ -40,6 +45,12 @@ template<
     }
 }
 
+/** Split a string.
+ * @param haystack The string to be split.
+ * @param needle The string to separate the haystack with.
+ * @return a generator of sub-strings of haystack.
+ */
+///@{
 [[nodiscard]] inline generator<std::string_view> split(std::string_view haystack, char const *needle = " ") noexcept
 {
     return split(haystack, std::string{needle});
@@ -89,6 +100,7 @@ template<
 {
     return split(haystack, std::u32string{needle});
 }
+///@}
 
 } // namespace tt::ranges::views
 

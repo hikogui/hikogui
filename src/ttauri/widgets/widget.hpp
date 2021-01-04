@@ -265,12 +265,12 @@ public:
      * layout parameters for each frame.
      *
      * @pre `mutex` must be locked by current thread.
-     * @param _window_rectangle The location and size of the widget inside the window.
-     * @param _window_clipping_rectangle The location and size of the clipping rectangle,
-     *                                   beyond which not to draw or accept mouse events.
-     * @param _window_base_line The position of the text base-line from the bottom of the window. When not given
-     *                          the middle of the _window_rectangle is used together with the preferred
-     *                          relative base-line.
+     * @param window_rectangle The location and size of the widget inside the window.
+     * @param window_clipping_rectangle The location and size of the clipping rectangle,
+     *                                  beyond which not to draw or accept mouse events.
+     * @param window_base_line The position of the text base-line from the bottom of the window. When not given
+     *                         the middle of the _window_rectangle is used together with the preferred
+     *                         relative base-line.
      */
     void set_layout_parameters(
         aarect const &window_rectangle,
@@ -455,8 +455,8 @@ public:
      * order.
      *
      * @pre `mutex` must be locked by current thread.
-     * @param drawContext The context to where the widget will draw.
-     * @param displayTimePoint The time point when the widget will be shown on the screen.
+     * @param context The context to where the widget will draw.
+     * @param display_time_point The time point when the widget will be shown on the screen.
      */
     virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {

@@ -24,12 +24,14 @@ struct base_n_alphabet {
 
     /** Construct an alphabet.
      * @param str A null terminated string as a char array.
+     * @param case_insensitive The alphabet is case incensitive for decoding.
+     * @param padding_char The character used to complete the last block during encoding.
      */
     template<size_t StringLength>
     constexpr base_n_alphabet(
         char const (&str)[StringLength],
         bool case_insensitive = StringLength <= 33,
-        char padding_char = 0) noexcept :
+        char padding_char = '\0') noexcept :
         radix(narrow_cast<long long>(StringLength - 1)), case_insensitive(case_insensitive), padding_char(padding_char)
     {
         static_assert(StringLength < 128);
@@ -183,7 +185,7 @@ public:
      * @param ptr An iterator inside a UTF-8 string to the start of a base-n encoded data.
      * @param last An iterator beyond the encoded data.
      * @param output An output iterator to a std::byte buffer.
-     * @retrun An iterator pointing on the first invalid character or last.
+     * @return An iterator pointing on the first invalid character or last.
      */
     template<typename ItIn, typename ItOut>
     static constexpr ItIn decode(ItIn ptr, ItIn last, ItOut output) noexcept

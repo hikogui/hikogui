@@ -55,7 +55,7 @@ public:
     }
 
     /** And a signed integer.
-     * @param A signed integer.
+     * @param value A signed integer.
      */
     void add(signed long long value) noexcept {
         open_string = false;
@@ -127,70 +127,70 @@ public:
     }
 
     /** And a unsigned integer.
-     * @param A unsigned integer.
+     * @param value A unsigned integer.
      */
     void add(unsigned long long value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
-     * @param A signed integer.
+     * @param value A signed integer.
      */
     void add(signed long value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
-     * @param A unsigned integer.
+     * @param value A unsigned integer.
      */
     void add(unsigned long value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
-     * @param A signed integer.
+     * @param value A signed integer.
      */
     void add(signed int value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
-     * @param A unsigned integer.
+     * @param value A unsigned integer.
      */
     void add(unsigned int value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
-     * @param A signed integer.
+     * @param value A signed integer.
      */
     void add(signed short value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
-     * @param A unsigned integer.
+     * @param value A unsigned integer.
      */
     void add(unsigned short value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
-     * @param A signed integer.
+     * @param value A signed integer.
      */
     void add(signed char value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
-     * @param A unsigned integer.
+     * @param value A unsigned integer.
      */
     void add(unsigned char value) noexcept {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** Add a floating point number.
-     * @param A floating point number.
+     * @param value A floating point number.
      */
     void add(double value) noexcept {
         open_string = false;
@@ -228,14 +228,14 @@ public:
     }
 
     /** Add a floating point number.
-     * @param A floating point number.
+     * @param value A floating point number.
      */
     void add(float value) noexcept {
         return add(narrow_cast<double>(value));
     }
 
     /** Add a boolean.
-     * @param A boolean value.
+     * @param value A boolean value.
      */
     void add(bool value) noexcept {
         open_string = false;
@@ -243,7 +243,7 @@ public:
     }
 
     /** Add a null.
-     * @param A null pointer.
+     * @param value A null pointer.
      */
     void add(nullptr_t value) noexcept {
         open_string = false;
@@ -253,7 +253,7 @@ public:
     /** Add a UTF-8 string.
      * It is important that the UTF-8 string is valid.
      *
-     * @param A null pointer.
+     * @param value A UTF-8 string.
      */
     void add(std::u8string_view value) noexcept {
         if (open_string) {
@@ -300,7 +300,7 @@ public:
     /** Add a UTF-8 string.
      * It is important that the UTF-8 string is valid.
      *
-     * @param A null pointer.
+     * @param value A UTF-8 string
      */
     void add(std::u8string const &value) noexcept {
         return add(std::u8string_view{value});
@@ -309,20 +309,20 @@ public:
     /** Add a UTF-8 string.
      * It is important that the UTF-8 string is valid.
      *
-     * @param A null pointer.
+     * @param value A UTF-8 string.
      */
     void add(char8_t const *value) noexcept {
         return add(std::u8string_view{value});
     }
 
     /** Add a datum.
-     * @param A datum value.
+     * @param value A datum.
      */
     void add(datum const &value);
 
-    /** Add a vector of values of the same type..
+    /** Add a vector of values of the same type.
      * @tparam T Type of the values.
-     * @param A vector of values.
+     * @param items A vector of values.
      */
     template<typename T>
     void add(std::vector<T> const &items) {

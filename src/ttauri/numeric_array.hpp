@@ -769,11 +769,11 @@ public:
      * @tparam D Number of dimensions to calculate the length over.
      */
     template<ssize_t D>
-    [[nodiscard]] friend constexpr T length(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr T hypot(numeric_array const &rhs) noexcept
     {
         static_assert(D <= N);
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            return f32x4_sse_length<D>(rhs.v);
+            return f32x4_sse_hypot<D>(rhs.v);
 
         } else {
             auto r = T{};
@@ -784,24 +784,36 @@ public:
         }
     }
 
+    template<ssize_t D>
+    [[deprecated]] [[nodiscard]] friend constexpr T length(numeric_array const &rhs) noexcept
+    {
+        return hypot<D>(rhs);
+    }
+
     /** Take the squared length of the vector
      * @tparam D Number of dimensions to calculate the length over.
      */
     template<ssize_t D>
-    [[nodiscard]] friend constexpr T length_squared(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr T hypot_squared(numeric_array const &rhs) noexcept
     {
         return dot<D>(rhs, rhs);
+    }
+
+    template<ssize_t D>
+    [[deprecated]] [[nodiscard]] friend constexpr T length_squared(numeric_array const &rhs) noexcept
+    {
+        return hypot_squared<D>(rhs);
     }
 
     /** Take a reciprocal of the length.
      * @tparam D Number of dimensions to calculate the length over.
      */
     template<ssize_t D>
-    [[nodiscard]] friend constexpr T rcp_length(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const &rhs) noexcept
     {
         static_assert(D <= N);
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            return f32x4_sse_rcp_length<D>(rhs.v);
+            return f32x4_sse_rcp_hypot<D>(rhs.v);
 
         } else {
             auto r = T{};
@@ -810,6 +822,12 @@ public:
             }
             return 1.0f / std::sqrt(r);
         }
+    }
+
+    template<ssize_t D>
+    [[deprecated]] [[nodiscard]] friend constexpr T rcp_length(numeric_array const &rhs) noexcept
+    {
+        return rcp_hypot<D>(rhs);
     }
 
     template<ssize_t D>

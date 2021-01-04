@@ -145,19 +145,19 @@ public:
 
     /** Write data to a file.
      *
-     * @param data The byte string to write
+     * @param bytes The byte string to write
      * @param offset The offset in the file to write, or -1 when writing in the current seek location.
      * @return The number of bytes written.
      * @throw io_error
      */
-    ssize_t write(std::span<std::byte const> text, ssize_t offset = -1)
+    ssize_t write(std::span<std::byte const> bytes, ssize_t offset = -1)
     {
         return write(text.data(), std::ssize(text), offset);
     }
 
     /** Write data to a file.
      *
-     * @param data The byte string to write
+     * @param text The byte string to write
      * @param offset The offset in the file to write, or -1 when writing in the current seek location.
      * @return The number of bytes written.
      * @throw io_error
@@ -169,7 +169,7 @@ public:
 
     /** Write data to a file.
      *
-     * @param data The UTF-8 string to write
+     * @param text The UTF-8 string to write
      * @return The number of bytes written.
      * @throw io_error
      */

@@ -148,20 +148,20 @@ struct PixelMap {
     PixelMap(i32x4 extent) noexcept : PixelMap(extent.x(), extent.y()) {}
 
     /** Construct an pixel-map from memory received from an API.
-     * @param pixel A pointer to pixels received from the API.
+     * @param pixels A pointer to pixels received from the API.
      * @param width The width of the image.
      * @param height The height of the image.
      */
     PixelMap(T *pixels, ssize_t width, ssize_t height) noexcept : PixelMap(pixels, width, height, width) {}
 
     /** Construct an pixel-map from memory received from an API.
-     * @param pixel A pointer to pixels received from the API.
+     * @param pixels A pointer to pixels received from the API.
      * @param extent The width and height of the image.
      */
     PixelMap(T *pixels, i32x4 extent) noexcept : PixelMap(pixels, extent.x(), extent.y()) {}
 
     /** Construct an pixel-map from memory received from an API.
-     * @param pixel A pointer to pixels received from the API.
+     * @param pixels A pointer to pixels received from the API.
      * @param extent The width and height of the image.
      * @param stride Number of pixel elements until the next row.
      */
@@ -246,8 +246,8 @@ struct PixelMap {
      * @param height height of the returned image.
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
-    PixelMap<T> submap(ssize_t x, ssize_t y, ssize_t _width, ssize_t _height) const noexcept {
-        return submap(iaarect{x, y, _width, _height});
+    PixelMap<T> submap(ssize_t x, ssize_t y, ssize_t width, ssize_t height) const noexcept {
+        return submap(iaarect{x, y, width, height});
     }
 
     PixelRow<T> const operator[](ssize_t rowNr) const noexcept {

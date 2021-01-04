@@ -530,7 +530,7 @@ public:
     }
 
     /** Create a rotation matrix.
-     * @param N 0 = rotate around x-axis, 1=rotate around y-axis, 2=rotate around z-axis
+     * @tparam N 0 = rotate around x-axis, 1=rotate around y-axis, 2=rotate around z-axis
      * @param rhs Angle in radials counter-clockwise.
      */
     template<int N=2, typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>

@@ -49,7 +49,7 @@ template<size_t D>
 }
 
 template<size_t D>
-[[nodiscard]] float f32x4_sse_length(f32x4_raw const &rhs) noexcept
+[[nodiscard]] float f32x4_sse_hypot(f32x4_raw const &rhs) noexcept
 {
     static_assert(D <= 4);
     constexpr int imm8 = 0xff >> (4 - D);
@@ -60,7 +60,7 @@ template<size_t D>
 }
 
 template<size_t D>
-[[nodiscard]] float f32x4_sse_rcp_length(f32x4_raw const &rhs) noexcept
+[[nodiscard]] float f32x4_sse_rcp_hypot(f32x4_raw const &rhs) noexcept
 {
     static_assert(D <= 4);
     constexpr int imm8 = 0xff >> (4 - D);

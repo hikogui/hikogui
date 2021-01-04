@@ -42,11 +42,12 @@ public:
     //! application info passed when the instance was created.
     vk::ApplicationInfo applicationInfo;
 
-    /*! Create an instance of a gui_device.
+    /** Create an instance of a gui_device.
      * After the constructor is completed it may be used to get a
      * Vulkan surface and passed to `Window` constructors.
      *
-     * \param extensions a list of Vulkan extensions required. Most useful
+     * @param delegate The delegate for the gui-system.
+     * @param extensions a list of Vulkan extensions required. Most useful
      *      for including operating system specific surface extensions.
      */
     gui_system_vulkan(std::weak_ptr<gui_system_delegate> const &delegate, const std::vector<const char *> extensions);

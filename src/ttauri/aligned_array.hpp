@@ -102,6 +102,11 @@ public:
         return _mm256_load_si256(reinterpret_cast<__m256i *>(data()));
     }
 
+    /** Select item at pos.
+     * @param pos The position in the array.
+     * @return A reference to the item.
+     * @throws std::out_of_range When pos is out of range.
+     */
     [[nodiscard]] constexpr reference at(size_t pos)
     {
         if (pos < size()) {

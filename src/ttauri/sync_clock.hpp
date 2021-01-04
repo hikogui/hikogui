@@ -46,8 +46,8 @@ class sync_clock_calibration_type {
     std::string name;
 
 public:
-    /*! Construct a sync clock.
-     * \param create_thread can be set to false when testing.
+    /** Construct a sync clock.
+     * @param name The name of the calibrated clock.
      */
     sync_clock_calibration_type(std::string name) noexcept :
         name(std::move(name))

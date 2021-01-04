@@ -62,6 +62,10 @@ public:
      * during destruction.
      * 
      * @param delegate A pointer to an application delegate.
+     * @param arguments A list of command line arguments.
+     *                  On posix this is simply each argument,
+     *                  for win32 it needs to be processed to process quotes and
+     *                  escaping correctly..
      */
     application(
         std::weak_ptr<application_delegate> const &delegate,

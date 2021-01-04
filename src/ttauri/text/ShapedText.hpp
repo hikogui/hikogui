@@ -41,7 +41,7 @@ public:
     ShapedText &operator=(ShapedText &&other) noexcept = default;
     ~ShapedText() = default;
 
-    /** Create shaped text from attributed text..
+    /** Create shaped text from attributed text.
      * This function is used to draw rich-text.
      * Each grapheme comes with its own text-style.
      *
@@ -58,8 +58,8 @@ public:
      *  * Center -> middle of the visible text at x=maximum_width/2
      *
      * @param text The text to draw.
-     * @param alignment The alignment of the text within the extent.
      * @param width The width into which the text is horizontally aligned.
+     * @param alignment The alignment of the text within the extent.
      * @param wrap True when text should be wrapped to fit inside the given width.
      */
     ShapedText(
@@ -74,7 +74,7 @@ public:
      *
      * @param text The text to draw.
      * @param style The text style.
-     * @param extent The size of the box to draw in.
+     * @param width The maximum a width of the text.
      * @param alignment The alignment of the text within the extent.
      * @param wrap When fitting the text in the extent wrap lines when needed.
      */
@@ -91,7 +91,7 @@ public:
      *
      * @param text The text to draw.
      * @param style The text style.
-     * @param extent The size of the box to draw in.
+     * @param width The maximum width of the text.
      * @param alignment The alignment of the text within the extent.
      * @param wrap When fitting the text in the extent wrap lines when needed.
      */
@@ -235,47 +235,53 @@ public:
      */
     [[nodiscard]] std::vector<aarect> selectionRectangles(ssize_t first, ssize_t last) const noexcept;
 
-    /** Return the index of the character .
-    * @param logicalIndex The character at logicalIndex.
-    * @return logicalIndex of the character to the left.
+    /** Get the character close to a coordinate.
+    * @param coordinate The coordinate of the mouse pointer.
+    * @return The logical index of the character closest to the coordinate
     */
     [[nodiscard]] std::optional<ssize_t> indexOfCharAtCoordinate(f32x4 coordinate) const noexcept;
 
-    /** Return the index of the character to the left.
-     * @param logicalIndex The character at logicalIndex.
-     * @return logicalIndex of the character to the left.
-     */
-    [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheLeft(ssize_t logicalIndex) const noexcept;
-
-    /** Return the index of the character to the right.
-    * @param logicalIndex The character at logicalIndex.
-    * @return logicalIndex of the character to the right.
+    /** Get the character left of the given character
+    * @param logical_index The index of the logical character pointed to.
+    * @return The logical index of the character left-closest to the given character.
     */
-    [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheRight(ssize_t logicalIndex) const noexcept;
+    [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheLeft(ssize_t logical_index) const noexcept;
 
-    /** Return the index at the left side and right side of a word
-     */
-    [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfWord(ssize_t logicalIndex) const noexcept;
-
-    /** Return the index at the left side and right side of a paragraph
+    /** Get the character right of the given character
+    * @param logical_index The index of the logical character pointed to.
+    * @return The logical index of the character right-closest to the given character.
     */
-    [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfParagraph(ssize_t logicalIndex) const noexcept;
+    [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheRight(ssize_t logical_index) const noexcept;
 
-    /** Return the index at the left side of a word
+    /** Get the word with the given character
+    * @param logical_index The index of the logical character pointed to.
+    * @return The logical indices of the first and last character of a word.
     */
-    [[nodiscard]] ssize_t indexAtRightSideOfWord(ssize_t logicalIndex) const noexcept;
+    [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfWord(ssize_t logical_index) const noexcept;
 
-    /** Return the index of the word to the left.
-    * @param logicalIndex The character at logicalIndex.
-    * @return logicalIndex of the character at the start of the word to the left.
+    /** Get the character right of the given character
+    * @param logical_index The index of the logical character pointed to.
+    * @return The logical indices of the first and last character of a paragraph.
     */
-    [[nodiscard]] std::optional<ssize_t> indexOfWordOnTheLeft(ssize_t logicalIndex) const noexcept;
+    [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfParagraph(ssize_t logical_index) const noexcept;
 
-    /** Return the index of the word to the right.
-    * @param logicalIndex The character at logicalIndex.
-    * @return logicalIndex of the character at the start of the next word to the right.
+    /** Get the character right of the given character
+    * @param logical_index The index of the logical character pointed to.
+    * @return The logical indices beyond the last character of a word.
     */
-    [[nodiscard]] std::optional<ssize_t> indexOfWordOnTheRight(ssize_t logicalIndex) const noexcept;
+    [[nodiscard]] ssize_t indexAtRightSideOfWord(ssize_t logical_index) const noexcept;
+
+    /** Get the first character of the word on the left.
+    * @param logical_index The index of the logical character pointed to.
+    * @return The logical index of a first letter of the word on the left
+    */
+    [[nodiscard]] std::optional<ssize_t> indexOfWordOnTheLeft(ssize_t logical_index) const noexcept;
+
+    /** Get the last character of the word on the right.
+    * @param logical_index The index of the logical character pointed to.
+    * @return The logical index of a last letter of the word on the right
+    */
+    [[nodiscard]] std::optional<ssize_t> indexOfWordOnTheRight(ssize_t logical_index) const noexcept;
 
     /** Convert the whole shaped text into a layered path.
      */

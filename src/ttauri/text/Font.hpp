@@ -48,7 +48,7 @@ public:
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
     * 
-    * \param glyphIndex the index of a glyph inside the font.
+    * \param glyph_id the id of a glyph inside the font.
     * \param path The path constructed by the loader.
     * \return empty on failure, or the glyphID of the metrics to use.
     */
@@ -57,8 +57,9 @@ public:
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
     * 
-    * \param glyphIndex the index of a glyph inside the font.
+    * \param glyph_id the id of a glyph inside the font.
     * \param metrics The metrics constructed by the loader.
+    * \param lookahead_glyph_id The id of a glyph to the right, needed for kerning.
     * \return true on success, false on error.
     */
     virtual bool loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID lookahead_glyph_id=GlyphID{}) const noexcept = 0;

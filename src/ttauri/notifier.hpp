@@ -81,9 +81,11 @@ public:
     }
 
     /** Call the subscribed callbacks with the given arguments.
+     *
      * @param args The arguments to pass with the invocation of the callback.
+     * @param init The start value of the accumulator.
      * @param op The binary operation to accumulate the results of the callbacks.
-     * @return The result of the callback, reduced.
+     * @return The result of the callback, reduced by the given operator.
      */
     template<typename BinaryOp, typename Result_ = Result>
     requires(!std::is_same_v<Result_, void>) Result_

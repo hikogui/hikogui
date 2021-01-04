@@ -82,10 +82,10 @@ public:
     /** Find a font closest to the variant.
      * This function will always return a valid FontID.
      *
-     * @param family_id a valid family id.
+     * @param family_name A name of a font family, which may be invalid.
      * @param weight The weight of the font to select.
      * @param italic If the font to select should be italic or not.
-     * @return a valid font id.
+     * @return a font id, possibly from a fallback font.
      */
     [[nodiscard]] FontID find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept;
 

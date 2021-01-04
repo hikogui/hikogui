@@ -19,22 +19,22 @@ namespace tt {
 struct BezierCurve;
 template<typename T> struct PixelMap;
 
-/*! A path is a vector graphics object.
+/** A path is a vector graphics object.
  * It represents:
  *  - a set of layers each with a different color.
  *  - a layer is a set of contours
  *  - a contour is a set of bezier point describing a closed set of bezier curves.
  */
 struct Path {
-    /*! A set of all bezier points describing all bezier curves, contours and layers.
+    /** A set of all bezier points describing all bezier curves, contours and layers.
      */
     std::vector<BezierPoint> points;
 
-    /*! An index into \see points where each contour ends.
+    /** An index into \see points where each contour ends.
      */
     std::vector<ssize_t> contourEndPoints;
 
-    /*! An color and index into \see contourEndPoints where each layer ends.
+    /** An color and index into \see contourEndPoints where each layer ends.
      */
     std::vector<std::pair<ssize_t,f32x4>> layerEndContours;
 
@@ -46,15 +46,15 @@ struct Path {
         layerEndContours.clear();
     }
 
-    /*! Return the number of closed contours.
+    /** Return the number of closed contours.
     */
     [[nodiscard]] ssize_t numberOfContours() const noexcept;
 
-    /*! Return the number of closed layers.
+    /** Return the number of closed layers.
     */
     [[nodiscard]] ssize_t numberOfLayers() const noexcept;
 
-    /*! Check if all layers have the same color.
+    /** Check if all layers have the same color.
      */
     [[nodiscard]] bool allLayersHaveSameColor() const noexcept;
 
@@ -62,13 +62,13 @@ struct Path {
      */
     [[nodiscard]] aarect boundingBox() const noexcept;
 
-    /*! Try to move the layers in a path.
+    /** Try to move the layers in a path.
      * Layers are removed if there are layers, and all the layers have
      * the same color.
      */
     void tryRemoveLayers() noexcept;
 
-    /*! Return an iterator to the start point of a contour.
+    /** Return an iterator to the start point of a contour.
      */
     [[nodiscard]] std::vector<BezierPoint>::const_iterator beginContour(ssize_t contourNr) const noexcept;
 
@@ -96,24 +96,24 @@ struct Path {
 
     void setColorOfLayer(ssize_t layerNr, f32x4 fillColor) noexcept;
 
-    /*! Return true if there is an open contour.
+    /** Return true if there is an open contour.
      */
     [[nodiscard]] bool isContourOpen() const noexcept;
 
-    /*! Close current contour.
+    /** Close current contour.
     * No operation if there is no open contour.
     */
     void closeContour() noexcept;
 
-    /*! This path has layers.
+    /** This path has layers.
      */
     [[nodiscard]] bool hasLayers() const noexcept;
 
-    /*! Return true if there is an open layer.
+    /** Return true if there is an open layer.
     */
     [[nodiscard]] bool isLayerOpen() const noexcept;
 
-    /*! Close current contour.
+    /** Close current contour.
     * No operation if there is no open layer.
     */
     void closeLayer(f32x4 fillColor) noexcept;
@@ -123,17 +123,17 @@ struct Path {
      */
     void optimizeLayers() noexcept;
 
-    /*! Get the currentPosition of the open contour.
+    /** Get the currentPosition of the open contour.
      * Returns {0, 0} when there is no contour open.
      */
     [[nodiscard]] f32x4 currentPosition() const noexcept;
 
-    /*! Start a new contour at position.
+    /** Start a new contour at position.
      * closes current subpath.
      */
     void moveTo(f32x4 position) noexcept;
 
-    /*! Start a new contour relative to current position.
+    /** Start a new contour relative to current position.
      * closes current subpath.
      */
     void moveRelativeTo(f32x4 direction) noexcept;
@@ -144,7 +144,7 @@ struct Path {
 
     void quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept;
 
-    /*! Draw curve from the current position to the new direction.
+    /** Draw curve from the current position to the new direction.
      * \param controlDirection control point of the curve relative from the start of the curve.
      * \param direction end point of the curve relative from the start of the curve.
      */
@@ -152,13 +152,14 @@ struct Path {
 
     void cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept;
 
-    /*! Draw curve from the current position to the new direction.
-     * \param controlDirection control point of the curve relative from the start of the curve.
-     * \param direction end point of the curve relative from the start of the curve.
+    /** Draw curve from the current position to the new direction.
+     * @param controlDirection1 The first control point of the curve relative from the start of the curve.
+     * @param controlDirection2 The second control point of the curve relative from the start of the curve.
+     * @param direction end point of the curve relative from the start of the curve.
      */
     void cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept;
 
-    /*! Draw an circular arc.
+    /** Draw an circular arc.
      * The arc is drawn from the current position to the position given
      * in this method. A positive arc is drawn counter-clockwise.
      *
@@ -171,43 +172,43 @@ struct Path {
      */
     void arcTo(float radius, f32x4 position) noexcept;
 
-    /*! Draw a rectangle.
+    /** Draw a rectangle.
      * \param aarect the offset and size of the rectangle.
-     * \param corner radius of <bottom-left, bottom-right, top-left, top-right>
+     * \param corners The radius of the (bottom-left, bottom-right, top-left, top-right)
      *        positive corner are rounded, negative curves are cut.
      */
     void addRectangle(aarect r, f32x4 corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
-    /*! Draw a circle.
+    /** Draw a circle.
     * \param position position of the center of the circle.
     * \param radius radius of the circle
     */
     void addCircle(f32x4 position, float radius) noexcept;
 
-    /*! Contour with the given bezier curves.
+    /** Contour with the given bezier curves.
     * The first anchor will be ignored.
     */
     void addContour(std::vector<BezierCurve> const &contour) noexcept;
 
-    /*! Curve with the given bezier curve.
+    /** Curve with the given bezier curve.
     * The first anchor will be ignored.
     */
     void addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end) noexcept;
 
-    /*! Curve with the given bezier curve.
+    /** Curve with the given bezier curve.
     * The first anchor will be ignored.
     */
     void addContour(std::vector<BezierPoint> const &contour) noexcept;
 
-    /*! Add path and close layer.
+    /** Add path and close layer.
      */
     void addPath(Path const &path, f32x4 fillColor) noexcept;
 
-    /*! Stroke a path and close layer.
+    /** Stroke a path and close layer.
      */
     void addStroke(Path const &path, f32x4 strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
 
-    /*! Convert path to stroke-path.
+    /** Convert path to stroke-path.
      *
      * This function will create contours that are offset from the original path
      * which creates a stroke. The path will first be subdivided until the curves
@@ -248,7 +249,7 @@ struct Path {
 
 
 
-/*! Composit color onto the destination image where the mask is solid.
+/** Composit color onto the destination image where the mask is solid.
 *
 * \param dst destination image.
 * \param color color to composit.
@@ -256,7 +257,7 @@ struct Path {
 */
 void composit(PixelMap<R16G16B16A16SFloat>& dst, f32x4 color, Path const &mask) noexcept;
 
-/*! Composit color onto the destination image where the mask is solid.
+/** Composit color onto the destination image where the mask is solid.
 *
 * \param dst destination image.
 * \param mask mask where the color will be composited on the destination.

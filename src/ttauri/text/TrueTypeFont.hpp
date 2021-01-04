@@ -21,53 +21,52 @@ private:
     uint16_t OS2_xHeight = 0;
     uint16_t OS2_HHeight = 0;
 
-
-    //! 'cmap' character to glyph mapping
+    /// 'cmap' character to glyph mapping
     std::span<std::byte const> cmapTableBytes;
 
-    //! The bytes of a Unicode character map.
+    /// The bytes of a Unicode character map.
     std::span<std::byte const> cmapBytes;
 
-    //! 'glyf' glyph data
+    /// 'glyf' glyph data
     std::span<std::byte const> glyfTableBytes;
 
-    //! 'head' font header
+    /// 'head' font header
     std::span<std::byte const> headTableBytes;
     float unitsPerEm;
     float emScale;
     bool locaTableIsOffset32;
 
-    //! 'hhea' horizontal header
+    /// 'hhea' horizontal header
     std::span<std::byte const> hheaTableBytes;
     float ascender;
     float descender;
     float lineGap;
     uint16_t numberOfHMetrics;
 
-    //! 'hmtx' horizontal metrics
+    /// 'hmtx' horizontal metrics
     std::span<std::byte const> hmtxTableBytes;
 
-    //! 'loca' index to location
+    /// 'loca' index to location
     std::span<std::byte const> locaTableBytes;
 
-    //! 'maxp' maximum profile
+    /// 'maxp' maximum profile
     std::span<std::byte const> maxpTableBytes;
     int numGlyphs;
 
-    //! 'name' naming (not needed)
+    /// 'name' naming (not needed)
     std::span<std::byte const> nameTableBytes;
 
-    //! 'post' PostScript (not needed)
+    /// 'post' PostScript (not needed)
     std::span<std::byte const> postTableBytes;
 
-    //! 'OS/2' OS/2 (not needed)
+    /// 'OS/2' OS/2 (not needed)
     std::span<std::byte const> os2TableBytes;
 
-    //! 'kern' Kerning tables (optional)
+    /// 'kern' Kerning tables (optional)
     std::span<std::byte const> kernTableBytes;
 
 public:
-    /*! Load a true type font.
+    /** Load a true type font.
      * The methods in this class will parse the true-type font at run time.
      * This also means that the bytes passed into this constructor will need to
      * remain available.
@@ -110,33 +109,33 @@ public:
     */
     [[nodiscard]] GlyphID find_glyph(char32_t c) const noexcept override;
     
-    /*! Load a glyph into a path.
+    /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.
      * 
-     * \param glyph_id the index of a glyph inside the font.
-     * \param path The path constructed by the loader.
-     * \return empty on failure, or the glyphID of the metrics to use.
+     * @param glyph_id the index of a glyph inside the font.
+     * @param path The path constructed by the loader.
+     * @return empty on failure, or the glyphID of the metrics to use.
      */
     std::optional<GlyphID> loadGlyph(GlyphID glyph_id, Path &path) const noexcept override;
 
-    /*! Load a glyphMetrics into a path.
+    /** Load a glyphMetrics into a path.
     * The glyph is directly loaded from the font file.
     * 
-    * \param glyphIndex the index of a glyph inside the font.
-    * \param metrics The metrics constructed by the loader.
-    * \param lookahead_glyph_id The next glyph, used for determining kerning.
-    * \return 1 on success, 0 on not implemented
+    * @param glyph_id the index of a glyph inside the font.
+    * @param metrics The metrics constructed by the loader.
+    * @param lookahead_glyph_id The next glyph, used for determining kerning.
+    * @return 1 on success, 0 on not implemented
     */
     bool loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID lookahead_glyph_id=GlyphID{}) const noexcept override;
 
 private:
-    /*! Parses the directory table of the font file.
+    /** Parses the directory table of the font file.
      * This function is called by the constructor to set up references
      * inside the file for each table.
      */
     void parseFontDirectory();
 
-    /*! Parses the head table of the font file.
+    /** Parses the head table of the font file.
      * This function is called by parseFontDirectory().
      */
     void parseHeadTable(std::span<std::byte const> headTableBytes);
@@ -152,24 +151,24 @@ private:
     [[nodiscard]] UnicodeRanges parseCharacterMap();
 
 
-    /*! Parses the maxp table of the font file.
+    /** Parses the maxp table of the font file.
     * This function is called by parseFontDirectory().
     */
     void parseMaxpTable(std::span<std::byte const> bytes);
 
-    /*! Find the glyph in the loca table.
+    /** Find the glyph in the loca table.
      * called by loadGlyph()
      */
     bool getGlyphBytes(GlyphID glyph_id, std::span<std::byte const> &bytes) const noexcept;
 
-    /*! Update the glyph metrics from the font tables.
+    /** Update the glyph metrics from the font tables.
      * called by loadGlyph()
      */
     bool updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID kern_glyph1_id=GlyphID{}, GlyphID kern_glyph2_id=GlyphID{}) const noexcept;
 
     bool loadSimpleGlyph(std::span<std::byte const> bytes, Path &glyph) const noexcept;
 
-    /*! Load a compound glyph.
+    /** Load a compound glyph.
      * This will call loadGlyph() recursively.
      *
      * \param bytes Bytes inside the glyf table of this specific compound glyph.
@@ -179,7 +178,7 @@ private:
      */
     bool loadCompoundGlyph(std::span<std::byte const> bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept;
 
-    /*! Load a compound glyph.
+    /** Load a compound glyph.
     * This will call loadGlyph() recursively.
     *
     * \param bytes Bytes inside the glyf table of this specific compound glyph.

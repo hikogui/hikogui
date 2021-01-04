@@ -101,7 +101,8 @@ public:
     /** The relative time since the start of the animation.
      * The relative time since the start of the animation according to the duration of the animation.
      *
-     * @param A relative value between 0.0 and 1.0.
+     * @param animation_duration The duration of the full animation.
+     * @return The relative animation progress between 0.0 and 1.0.
      */
     [[nodiscard]] float animation_progress(duration animation_duration) const noexcept
     {

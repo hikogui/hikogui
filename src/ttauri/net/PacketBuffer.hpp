@@ -135,7 +135,7 @@ public:
      * This function will consume the data read using `peek()` and
      * `peekLine()`.
      *
-     * @param nrByted The number of bytes to consume.
+     * @param nrBytes The number of bytes to consume.
      */
     void read(ssize_t nrBytes) noexcept {
         peekBuffer.clear();

@@ -5,6 +5,7 @@
 
 #include "numeric_array.hpp"
 #include "alignment.hpp"
+#include <concepts>
 
 namespace tt {
 
@@ -36,15 +37,7 @@ public:
      * @param width The width of the box.
      * @param height The height of the box.
      */
-    template<
-        typename X,
-        typename Y,
-        typename W,
-        typename H,
-        std::enable_if_t<
-            std::is_arithmetic_v<X> && std::is_arithmetic_v<Y> && std::is_arithmetic_v<W> && std::is_arithmetic_v<H>,
-            int> = 0>
-    axis_aligned_rectangle(X x, Y y, W width, H height) noexcept :
+    axis_aligned_rectangle(std::arithmetic auto x, std::arithmetic auto y, std::arithmetic auto width, std::arithmetic auto height) noexcept :
         v({narrow_cast<T>(x),
            narrow_cast<T>(y),
            narrow_cast<T>(x) + narrow_cast<T>(width),

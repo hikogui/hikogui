@@ -9,6 +9,16 @@
 
 namespace tt {
 
+/** A return value for a generator-function.
+ * A generator-function is a coroutine which co_yields zero or more values.
+ *
+ * The generator object returned from the generator-function is used to retrieve
+ * the yielded values through an forward-iterator returned by the
+ * `begin()` and `end()` member functions.
+ *
+ * The incrementing the iterator will resume the generator-function until
+ * the generator-function co_yields another value.
+ */
 template<typename T>
 class generator {
 public:
@@ -93,22 +103,29 @@ public:
         return *this;
     }
 
-    // Range-based for loop support.
+    /** A forward iterator which iterates through values co_yieled by the generator-function.
+     */ 
     class iterator {
     public:
         explicit iterator(handle_type coroutine) : _coroutine{coroutine} {}
 
+        /** Resume the generator-function.
+         */
         iterator &operator++()
         {
             _coroutine.resume();
             return *this;
         }
 
+        /** Retrieve the value co_yielded by the generator-function.
+         */
         value_type const &operator*() const
         {
             return _coroutine.promise().value();
         }
 
+        /** Check if the generator-function has finished.
+         */
         [[nodiscard]] bool operator==(std::default_sentinel_t) const
         {
             return !_coroutine || _coroutine.done();
@@ -119,6 +136,8 @@ public:
         handle_type _coroutine;
     };
 
+    /** Start the generator-function and return an iterator.
+     */
     iterator begin()
     {
         if (_coroutine) {
@@ -127,6 +146,8 @@ public:
         return iterator{_coroutine};
     }
 
+    /** Return a sentinal for the iterator.
+     */
     std::default_sentinel_t end()
     {
         return {};
@@ -137,3 +158,4 @@ private:
 };
 
 } // namespace tt
+

@@ -55,7 +55,9 @@ public:
      * Since there is only a single thread, please make sure the callback executes quickly.
      *
      * @param interval The interval to execute the callback at.
-     * @return An identifier for the callback to be able to remove it.
+     * @param callback The callback function.
+     * @return An shared_ptr to retain the callback function, when the shared_ptr is removed then
+     *         the callback can no longer be called.
      */
     template<typename Callback>
     [[nodiscard]] std::shared_ptr<callback_type> add_callback(duration interval, Callback callback) noexcept

@@ -82,9 +82,9 @@ public:
         return std::string_view{reinterpret_cast<char const *>(data()), size()};
     }
 
-    /*! Flush changes in memory to the open file.
-     * \param base start location of the memory to flush.
-     * \param Number of bytes from the base of the memory region to flush.
+    /** Flush changes in memory to the open file.
+     * \param base Start location of the memory to flush.
+     * \param size Number of bytes from the base of the memory region to flush.
      */
     void flush(void* base, size_t size);
 
