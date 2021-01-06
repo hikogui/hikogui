@@ -4,6 +4,7 @@
 #include "unicode_bidi.hpp"
 #include "../stack.hpp"
 #include "../recursive_iterator.hpp"
+#include "../coroutine.hpp"
 #include <algorithm>
 
 namespace tt::detail {
@@ -400,28 +401,33 @@ static void unicode_bidi_W5(unicode_bidi_isolated_run_sequence &sequence) noexce
 {
     using enum unicode_bidi_class;
 
-    auto ETs = std::vector<unicode_bidi_char_info *>{};
-    auto previous_bidi_class = sequence.sos;
+    auto ET_start = std::end(sequence);
+    auto starts_with_EN = false;
 
-    for (auto &char_info : sequence) {
-        if (char_info.direction == ET) {
-            if (previous_bidi_class == EN) {
+    for (auto it = std::begin(sequence); it != std::end(sequence); ++it) {
+        auto &char_info = *it;
+
+        switch (char_info.direction) {
+        case ET:
+            if (starts_with_EN) {
                 char_info.direction = EN;
-            } else {
-                ETs.push_back(&char_info);
+            } else if (ET_start == std::end(sequence)) {
+                ET_start = it;
             }
+            break;
 
-        } else if (char_info.direction == EN) {
-            std::for_each(std::begin(ETs), std::end(ETs), [](auto x) {
-                x->direction = unicode_bidi_class::EN;
-            });
-            ETs.clear();
+        case EN:
+            starts_with_EN = true;
+            if (ET_start != std::end(sequence)) {
+                for (auto jt = ET_start; jt != it; ++jt) {
+                    jt->direction = EN;
+                }
+                ET_start = std::end(sequence);
+            }
+            break;
 
-        } else {
-            ETs.clear();
+        default: starts_with_EN = false; ET_start = std::end(sequence);
         }
-
-        previous_bidi_class = char_info.direction;
     }
 }
 
@@ -692,22 +698,20 @@ unicode_bidi_BD7(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_i
 [[nodiscard]] static std::vector<unicode_bidi_isolated_run_sequence>
 unicode_bidi_BD13(std::vector<unicode_bidi_level_run> level_runs) noexcept
 {
-    // Create a list of isolated run sequences, where level_runs with isolated initiators are
-    // linked to level_runs with their matching PDI.
-    std::vector<unicode_bidi_isolated_run_sequence> isolated_run_sequence_set;
+    std::vector<unicode_bidi_isolated_run_sequence> r;
 
     std::reverse(std::begin(level_runs), std::end(level_runs));
     while (!level_runs.empty()) {
-        isolated_run_sequence_set.emplace_back(level_runs.back());
+        auto isolated_run_sequence = unicode_bidi_isolated_run_sequence(level_runs.back());
         level_runs.pop_back();
 
-        while (isolated_run_sequence_set.back().ends_with_isolate_initiator() && !level_runs.empty()) {
+        while (isolated_run_sequence.ends_with_isolate_initiator() && !level_runs.empty()) {
             // Search for matching PDI in the run_levels. This should have the same embedding level.
             auto isolation_level = 1;
             for (auto it = std::rbegin(level_runs); it != std::rend(level_runs); ++it) {
                 if (it->starts_with_PDI() && --isolation_level == 0) {
-                    tt_axiom(it->embedding_level() == isolated_run_sequence_set.back().embedding_level());
-                    isolated_run_sequence_set.back().add_run(*it);
+                    tt_axiom(it->embedding_level() == isolated_run_sequence.embedding_level());
+                    isolated_run_sequence.add_run(*it);
                     level_runs.erase(std::next(it).base());
                     break;
                 }
@@ -721,9 +725,44 @@ unicode_bidi_BD13(std::vector<unicode_bidi_level_run> level_runs) noexcept
                 break;
             }
         }
+
+        r.push_back(std::move(isolated_run_sequence));
     }
 
-    return isolated_run_sequence_set;
+    return r;
+}
+
+[[nodiscard]] static std::pair<unicode_bidi_class, unicode_bidi_class> unicode_bidi_X10_sos_eos(
+    unicode_bidi_isolated_run_sequence &isolated_run_sequence,
+    unicode_bidi_char_info_iterator first,
+    unicode_bidi_char_info_iterator last,
+    int8_t paragraph_embedding_level) noexcept
+{
+    if (std::begin(isolated_run_sequence) != std::end(isolated_run_sequence)) {
+        // The calculations on the iterator for last_char_it is required because
+        // calling child() on an end iterator is undefined behavior.
+        ttlet first_char_it = std::begin(isolated_run_sequence).child();
+        ttlet last_char_it = (std::end(isolated_run_sequence) - 1).child() + 1;
+
+        ttlet has_char_before = first_char_it != first;
+        ttlet has_char_after = last_char_it != last;
+
+        ttlet start_embedding_level = std::max(
+            isolated_run_sequence.embedding_level(),
+            has_char_before ? (first_char_it - 1)->embedding_level : paragraph_embedding_level);
+        ttlet end_embedding_level = std::max(
+            isolated_run_sequence.embedding_level(),
+            has_char_after && !isolated_run_sequence.ends_with_isolate_initiator() ? last_char_it->embedding_level :
+                                                                                     paragraph_embedding_level);
+
+        return {
+            (start_embedding_level % 2) == 1 ? unicode_bidi_class::R : unicode_bidi_class::L,
+            (end_embedding_level % 2) == 1 ? unicode_bidi_class::R : unicode_bidi_class::L};
+    } else {
+        return {
+            (paragraph_embedding_level % 2) == 1 ? unicode_bidi_class::R : unicode_bidi_class::L,
+            (paragraph_embedding_level % 2) == 1 ? unicode_bidi_class::R : unicode_bidi_class::L};
+    }
 }
 
 static void unicode_bidi_X10(
@@ -732,34 +771,14 @@ static void unicode_bidi_X10(
     int8_t paragraph_embedding_level,
     unicode_bidi_test_parameters test_parameters) noexcept
 {
-    // Determine the runs of characters with equal embedding levels.
     auto isolated_run_sequence_set = unicode_bidi_BD13(unicode_bidi_BD7(first, last));
 
-    // Compute the sos and eos of each isolation run sequence.
+    // All sos and eos calculations must be done before W*, N*, I* parts are executed,
+    // since those will change the embedding levels of the characters outside of the
+    // current isolated_run_sequence that the unicode_bidi_X10_sos_eos() depends on.
     for (auto &isolated_run_sequence : isolated_run_sequence_set) {
-        if (std::begin(isolated_run_sequence) != std::end(isolated_run_sequence)) {
-            // The calculations on the iterator for last_char_it is required because
-            // calling child() on an end iterator is undefined behavior.
-            ttlet first_char_it = std::begin(isolated_run_sequence).child();
-            ttlet last_char_it = (std::end(isolated_run_sequence) - 1).child() + 1;
-
-            ttlet has_char_before = first_char_it != first;
-            ttlet has_char_after = last_char_it != last;
-
-            ttlet start_embedding_level = std::max(
-                isolated_run_sequence.embedding_level(),
-                has_char_before ? (first_char_it - 1)->embedding_level : paragraph_embedding_level);
-            ttlet end_embedding_level = std::max(
-                isolated_run_sequence.embedding_level(),
-                has_char_after && !isolated_run_sequence.ends_with_isolate_initiator() ? last_char_it->embedding_level :
-                                                                                         paragraph_embedding_level);
-
-            isolated_run_sequence.sos = (start_embedding_level % 2) == 1 ? unicode_bidi_class::R : unicode_bidi_class::L;
-            isolated_run_sequence.eos = (end_embedding_level % 2) == 1 ? unicode_bidi_class::R : unicode_bidi_class::L;
-        } else {
-            isolated_run_sequence.sos = (paragraph_embedding_level % 2) == 1 ? unicode_bidi_class::R : unicode_bidi_class::L;
-            isolated_run_sequence.eos = (paragraph_embedding_level % 2) == 1 ? unicode_bidi_class::R : unicode_bidi_class::L;
-        }
+        std::tie(isolated_run_sequence.sos, isolated_run_sequence.eos) =
+            unicode_bidi_X10_sos_eos(isolated_run_sequence, first, last, paragraph_embedding_level);
     }
 
     for (auto &isolated_run_sequence : isolated_run_sequence_set) {

@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/unicode_bidi.cpp"
+#include "ttauri/text/unicode_bidi.hpp"
 #include "ttauri/FileView.hpp"
 #include "ttauri/charconv.hpp"
 #include "ttauri/ranges.hpp"
