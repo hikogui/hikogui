@@ -18,6 +18,11 @@ struct unicode_bidi_char_info {
      */
     char32_t code_point;
 
+    /** The embedding level.
+     * The value may change during the execution of the bidi algorithm.
+     */
+    int8_t embedding_level;
+
     /** Current computed direction of the code-point.
      * The value may change during the execution of the bidi algorithm.
      */
@@ -27,11 +32,6 @@ struct unicode_bidi_char_info {
      * The value will NOT change during the execution of the bidi algorithm.
      */
     unicode_bidi_class bidi_class;
-
-    /** The embedding level.
-     * The value may change during the execution of the bidi algorithm.
-     */
-    int8_t embedding_level;
 
     /** Description of the code-point.
      */
@@ -49,7 +49,12 @@ struct unicode_bidi_char_info {
      * WARNING: DO NOT USE EXCEPT IN UNIT TESTS.
      */
     [[nodiscard]] unicode_bidi_char_info(size_t index, unicode_bidi_class bidi_class) noexcept :
-        index(index), code_point(U'\ufffd'), direction(bidi_class), bidi_class(bidi_class), embedding_level(0), description(nullptr)
+        index(index),
+        code_point(U'\ufffd'),
+        direction(bidi_class),
+        bidi_class(bidi_class),
+        embedding_level(0),
+        description(nullptr)
     {
     }
 };
@@ -121,17 +126,22 @@ struct unicode_bidi_test_parameters {
  * @param set_char A function to set the character in an item.
  */
 template<typename It, typename GetCodePoint, typename SetCodePoint>
-It unicode_bidi(It first, It last, GetCodePoint get_code_point, SetCodePoint set_code_point)
+It unicode_bidi(
+    It first,
+    It last,
+    GetCodePoint get_code_point,
+    SetCodePoint set_code_point,
+    detail::unicode_bidi_test_parameters test_parameters = {})
 {
     auto proxy = detail::unicode_bidi_char_info_vector{};
     proxy.reserve(std::distance(first, last));
 
     size_t index = 0;
     for (auto it = first; it != last; ++it) {
-        proxy.emplace_back(index++, get_code_point(it));
+        proxy.emplace_back(index++, get_code_point(*it));
     }
 
-    auto proxy_last = detail::unicode_bidi_P1(std::begin(proxy), std::end(proxy));
+    auto proxy_last = detail::unicode_bidi_P1(std::begin(proxy), std::end(proxy), test_parameters);
     last = shuffle_by_index(first, last, std::begin(proxy), proxy_last, [](ttlet &item) {
         return item.index;
     });

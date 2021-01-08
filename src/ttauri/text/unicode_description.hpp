@@ -151,7 +151,7 @@ public:
      */
     [[nodiscard]] constexpr char32_t bidi_mirrored_glyph() const noexcept
     {
-        return static_cast<char32_t>(_bidi_bracket_type);
+        return static_cast<char32_t>(_bidi_mirrored_glyph);
     }
 
     /** This character has a canonical decomposition.
@@ -214,6 +214,21 @@ public:
     [[nodiscard]] constexpr size_t decomposition_index() const noexcept
     {
         return static_cast<size_t>(_decomposition_index);
+    }
+
+    /** Get the canonical equivalent of this code-point.
+     * The canonical equivalent is the code-point after NFC-normalization.
+     * This is equal to canonical decomposition to a single code-point.
+     * 
+     * @return The canonical equivalent code-point or U+ffff if there is not equivalent.
+     */
+    [[nodiscard]] constexpr char32_t canonical_equivalent() const noexcept
+    {
+        if (_decomposition_canonical && _decomposition_length == 1) {
+            return static_cast<char32_t>(_decomposition_index);
+        } else {
+            return U'\uffff';
+        }
     }
 
 private:

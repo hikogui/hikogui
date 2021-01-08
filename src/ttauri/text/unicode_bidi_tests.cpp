@@ -13,7 +13,6 @@
 
 using namespace tt;
 using namespace tt::detail;
-using namespace std;
 
 struct unicode_bidi_test {
     std::vector<int> levels;
@@ -26,7 +25,9 @@ struct unicode_bidi_test {
     bool test_for_auto = false;
 
     [[nodiscard]] unicode_bidi_test(std::vector<int> const &levels, std::vector<int> const &reorder, int line_nr) noexcept :
-        levels(levels), reorder(reorder), line_nr(line_nr) {}
+        levels(levels), reorder(reorder), line_nr(line_nr)
+    {
+    }
 
     [[nodiscard]] std::vector<detail::unicode_bidi_char_info> get_input() const noexcept
     {
@@ -82,13 +83,16 @@ struct unicode_bidi_test {
     return r;
 }
 
-[[nodiscard]] static unicode_bidi_test
-parse_bidi_test_data_line(std::string_view line, std::vector<int> const &levels, std::vector<int> const &reorder, int level_nr) noexcept
+[[nodiscard]] static unicode_bidi_test parse_bidi_test_data_line(
+    std::string_view line,
+    std::vector<int> const &levels,
+    std::vector<int> const &reorder,
+    int level_nr) noexcept
 {
     auto r = unicode_bidi_test{levels, reorder, level_nr};
 
     auto line_s = split(line, ';');
-    
+
     for (auto bidi_class_str : split(strip(line_s[0]))) {
         r.input.push_back(unicode_bidi_class_from_string(bidi_class_str));
     }
@@ -132,7 +136,7 @@ generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
     }
 }
 
-TEST(unicode_bidi, first)
+TEST(unicode_bidi, bidi_test)
 {
     for (auto test : parse_bidi_test()) {
         for (auto paragraph_direction : test.get_paragraph_directions()) {
@@ -163,6 +167,138 @@ TEST(unicode_bidi, first)
 
                 ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
             }
+        }
+    }
+}
+
+struct unicode_bidi_character_test {
+    int line_nr;
+    std::vector<char32_t> characters;
+    unicode_bidi_class paragraph_direction;
+    unicode_bidi_class resolved_paragraph_direction;
+    std::vector<int> resolved_levels;
+    std::vector<int> resolved_order;
+
+    struct input_character {
+        char32_t code_point;
+        int index;
+    };
+
+    [[nodiscard]] std::vector<input_character> get_input() const noexcept
+    {
+        auto r = std::vector<input_character>{};
+
+        int index = 0;
+        for (ttlet c : characters) {
+            r.emplace_back(c, index++);
+        }
+
+        return r;
+    }
+};
+
+[[nodiscard]] static unicode_bidi_character_test parse_bidi_character_test_line(std::string_view line, int line_nr)
+{
+    ttlet split_line = split(line, ';');
+    ttlet hex_characters = split(split_line[0]);
+    ttlet paragraph_direction = tt::from_string<int>(split_line[1]);
+    ttlet resolved_paragraph_direction = tt::from_string<int>(split_line[2]);
+    ttlet int_resolved_levels = split(split_line[3]);
+    ttlet int_resolved_order = split(split_line[4]);
+
+    auto r = unicode_bidi_character_test{};
+    r.line_nr = line_nr;
+    std::transform(std::begin(hex_characters), std::end(hex_characters), std::back_inserter(r.characters), [](ttlet &x) {
+        return static_cast<char32_t>(tt::from_string<uint32_t>(x, 16));
+    });
+
+    r.paragraph_direction = paragraph_direction == 0 ? unicode_bidi_class::L :
+        paragraph_direction == 1                     ? unicode_bidi_class::R :
+                                                       unicode_bidi_class::unknown;
+
+    r.resolved_paragraph_direction = resolved_paragraph_direction == 0 ? unicode_bidi_class::L :
+        resolved_paragraph_direction == 1                              ? unicode_bidi_class::R :
+                                                                         unicode_bidi_class::unknown;
+
+    std::transform(
+        std::begin(int_resolved_levels), std::end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](ttlet &x) {
+            if (x == "x") {
+                return -1;
+            } else {
+                return tt::from_string<int>(x);
+            }
+        });
+
+    std::transform(
+        std::begin(int_resolved_order), std::end(int_resolved_order), std::back_inserter(r.resolved_order), [](ttlet &x) {
+            return tt::from_string<int>(x);
+        });
+
+    return r;
+}
+
+generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
+{
+    ttlet view = FileView(URL("file:BidiCharacterTest.txt"));
+    ttlet test_data = view.string_view();
+
+    int line_nr = 1;
+    for (ttlet line : tt::views::split(test_data, "\n")) {
+        if (line.empty() || line.starts_with("#")) {
+            // Comment and empty lines.
+        } else {
+            auto data = parse_bidi_character_test_line(line, line_nr);
+            if (test_line_nr == -1 || line_nr == test_line_nr) {
+                co_yield data;
+            }
+        }
+
+        if (line_nr == test_line_nr) {
+            break;
+        }
+
+        line_nr++;
+    }
+}
+
+TEST(unicode_bidi, bidi_character_test)
+{
+    for (auto test : parse_bidi_character_test()) {
+        auto test_parameters = unicode_bidi_test_parameters{};
+        test_parameters.enable_mirrored_brackets = true;
+        test_parameters.enable_line_separator = true;
+        test_parameters.force_paragraph_direction = test.paragraph_direction;
+
+        auto input = test.get_input();
+        auto first = std::begin(input);
+        auto last = std::end(input);
+
+        last = unicode_bidi(
+            first,
+            last,
+            [](ttlet &x) {
+                return x.code_point;
+            },
+            [](auto &x, ttlet &code_point) {
+                x.code_point = code_point;
+            },
+            test_parameters);
+
+        // We are using the index from the iterator to find embedded levels
+        // in input-order. We ignore all elements that where removed by X9.
+        // for (auto it = first; it != last; ++it) {
+        //    ttlet expected_embedding_level = test.levels[it->index];
+        //
+        //    ASSERT_TRUE(expected_embedding_level == -1 || expected_embedding_level == it->embedding_level);
+        //}
+
+        ASSERT_EQ(std::distance(first, last), std::ssize(test.resolved_order));
+
+        auto index = 0;
+        for (auto it = first; it != last; ++it, ++index) {
+            ttlet expected_input_index = test.resolved_order[index];
+
+            ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
         }
     }
 }

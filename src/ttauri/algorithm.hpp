@@ -283,7 +283,14 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
     for (auto it = indices_first; it != indices_last; ++it, ++dst) {
         ttlet index = index_op(*it);
         tt_axiom(index < std::size(src_indices));
-        auto src = src_indices[index];
+
+        auto src = [&src_indices,index]() {
+            auto src = index;
+            do {
+                src = src_indices[src];
+            } while (src_indices[src] != index);
+            return src;
+        }();
 
         if (src != dst) {
             std::iter_swap(first + src, first + dst);

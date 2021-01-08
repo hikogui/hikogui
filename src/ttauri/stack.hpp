@@ -45,6 +45,11 @@ public:
         }
     }
 
+    ~stack() noexcept
+    {
+        clear();
+    }
+
     /** Get an iterator to the first element on the stack.
      * @return An iterator to the first element on the stack.
      */

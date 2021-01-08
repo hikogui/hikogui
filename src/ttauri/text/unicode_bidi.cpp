@@ -32,6 +32,7 @@ class unicode_bidi_level_run {
 public:
     using iterator = unicode_bidi_char_info_iterator;
     using const_iterator = unicode_bidi_char_info_const_iterator;
+    using reference = std::iterator_traits<iterator>::reference;
 
     unicode_bidi_level_run(iterator begin, iterator end) noexcept : _begin(begin), _end(end) {}
 
@@ -73,8 +74,8 @@ private:
 
 struct unicode_bidi_isolated_run_sequence {
     using run_container_type = std::vector<unicode_bidi_level_run>;
-    using iterator = recursive_iterator<run_container_type>;
-    using const_iterator = recursive_iterator<run_container_type const>;
+    using iterator = recursive_iterator<run_container_type::iterator>;
+    using const_iterator = recursive_iterator<run_container_type::const_iterator>;
 
     run_container_type runs;
     unicode_bidi_class sos;
@@ -129,31 +130,19 @@ struct unicode_bidi_isolated_run_sequence {
 };
 
 struct unicode_bidi_bracket_pair {
-    size_t first;
-    size_t second;
-    unicode_bidi_class preceding_strong;
-    bool has_inside_strong;
-    bool inside_strong_matches_embedding;
-
-    unicode_bidi_class direction = unicode_bidi_class::unknown;
+    unicode_bidi_isolated_run_sequence::iterator open;
+    unicode_bidi_isolated_run_sequence::iterator close;
 
     unicode_bidi_bracket_pair(
-        size_t first,
-        size_t second,
-        unicode_bidi_class preceding_strong,
-        bool has_inside_strong,
-        bool inside_strong_matches_embedding) :
-        first(first),
-        second(second),
-        preceding_strong(preceding_strong),
-        has_inside_strong(has_inside_strong),
-        inside_strong_matches_embedding(inside_strong_matches_embedding)
+        unicode_bidi_isolated_run_sequence::iterator open,
+        unicode_bidi_isolated_run_sequence::iterator close) :
+        open(std::move(open)), close(std::move(close))
     {
     }
 
     [[nodiscard]] friend bool operator<(unicode_bidi_bracket_pair const &lhs, unicode_bidi_bracket_pair const &rhs) noexcept
     {
-        return lhs.first < rhs.first;
+        return lhs.open < rhs.open;
     }
 };
 
@@ -461,67 +450,122 @@ static void unicode_bidi_W7(unicode_bidi_isolated_run_sequence &sequence) noexce
     }
 }
 
-static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_isolated_run_sequence const &isolated_run_sequence)
+static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_isolated_run_sequence &isolated_run_sequence)
 {
     struct bracket_start {
+        unicode_bidi_isolated_run_sequence::iterator it;
         char32_t mirrored_bracket;
-        size_t index;
-        unicode_bidi_class last_strong;
 
-        bool has_inside_strong = false;
-        bool inside_strong_matches_embedding = false;
-
-        bracket_start(char32_t mirrored_bracket, size_t index, unicode_bidi_class last_strong) noexcept :
-            mirrored_bracket(mirrored_bracket), index(index), last_strong(last_strong)
+        bracket_start(unicode_bidi_isolated_run_sequence::iterator it, char32_t mirrored_bracket) noexcept :
+            it(std::move(it)), mirrored_bracket(mirrored_bracket)
         {
         }
     };
 
+    using enum unicode_bidi_class;
+
     auto pairs = std::vector<unicode_bidi_bracket_pair>{};
     auto stack = tt::stack<bracket_start, 63>{};
-    auto last_strong = isolated_run_sequence.sos;
-    ttlet embedding_direction = isolated_run_sequence.embedding_direction();
 
-    size_t index = 0;
-    for (ttlet &char_info : isolated_run_sequence) {
-        if (char_info.description->bidi_bracket_type() == unicode_bidi_bracket_type::o) {
-            if (stack.full()) {
-                break;
-            } else {
-                stack.emplace_back(char_info.description->bidi_mirrored_glyph(), index, last_strong);
-            }
+    for (auto it = std::begin(isolated_run_sequence); it != std::end(isolated_run_sequence); ++it) {
+        if (it->direction == ON) {
+            switch (it->description->bidi_bracket_type()) {
+            case unicode_bidi_bracket_type::o:
+                if (stack.full()) {
+                    goto stop_processing;
 
-        } else if (char_info.description->bidi_bracket_type() == unicode_bidi_bracket_type::c) {
-            for (auto it = stack.end() - 1; it >= stack.begin(); --it) {
-                if (it->mirrored_bracket == char_info.code_point) {
-                    pairs.emplace_back(
-                        it->index, index, it->last_strong, it->has_inside_strong, it->inside_strong_matches_embedding);
-                    stack.pop_back(it);
-                    break;
+                } else {
+                    // If there is a canonical equivalent of the opening bracket, find it's mirrored glyph
+                    // to compare with the closing bracket.
+                    auto mirrored_glyph = it->description->bidi_mirrored_glyph();
+                    auto canonical_equivalent = it->description->canonical_equivalent();
+                    if (canonical_equivalent != U'\uffff') {
+                        ttlet &canonical_equivalent_description = unicode_description_find(canonical_equivalent);
+                        tt_axiom(canonical_equivalent_description.bidi_bracket_type() == unicode_bidi_bracket_type::o);
+                        mirrored_glyph = canonical_equivalent_description.bidi_mirrored_glyph();
+                    }
+
+                    stack.emplace_back(it, mirrored_glyph);
                 }
+                break;
+
+            case unicode_bidi_bracket_type::c:
+                for (auto jt = stack.end() - 1; jt >= stack.begin(); --jt) {
+                    if (jt->mirrored_bracket == it->code_point ||
+                        jt->mirrored_bracket == it->description->canonical_equivalent()) {
+                        pairs.emplace_back(jt->it, it);
+                        stack.pop_back(jt);
+                        break;
+                    }
+                }
+                break;
+
+            default:;
             }
         }
-
-        if (char_info.description->bidi_class() == unicode_bidi_class::L ||
-            char_info.description->bidi_class() == unicode_bidi_class::R) {
-            last_strong = char_info.description->bidi_class();
-
-            for (auto &item : stack) {
-                item.has_inside_strong = true;
-                item.inside_strong_matches_embedding |= char_info.description->bidi_class() == embedding_direction;
-            }
-        }
-
-        ++index;
     }
 
+stop_processing:
     std::sort(std::begin(pairs), std::end(pairs));
     return pairs;
+}
+
+[[nodiscard]] static unicode_bidi_class unicode_bidi_N0_strong(unicode_bidi_class direction)
+{
+    using enum unicode_bidi_class;
+
+    switch (direction) {
+    case L: return L;
+    case R:
+    case EN:
+    case AN: return R;
+    default: return ON;
+    }
+}
+
+[[nodiscard]] static unicode_bidi_class unicode_bidi_N0_preceding_strong_type(
+    unicode_bidi_isolated_run_sequence &isolated_run_sequence,
+    unicode_bidi_isolated_run_sequence::iterator &open_bracket) noexcept
+{
+    using enum unicode_bidi_class;
+
+    auto it = open_bracket;
+    while (it != std::begin(isolated_run_sequence)) {
+        --it;
+
+        if (ttlet direction = unicode_bidi_N0_strong(it->direction); direction != ON) {
+            return direction;
+        }
+    }
+
+    return isolated_run_sequence.sos;
+}
+
+[[nodiscard]] static unicode_bidi_class
+unicode_bidi_N0_enclosed_strong_type(unicode_bidi_bracket_pair const &pair, unicode_bidi_class embedding_direction) noexcept
+{
+    using enum unicode_bidi_class;
+
+    auto opposite_direction = ON;
+    for (auto it = pair.open + 1; it != pair.close; ++it) {
+        ttlet direction = unicode_bidi_N0_strong(it->direction);
+        if (direction == ON) {
+            continue;
+        }
+        if (direction == embedding_direction) {
+            return direction;
+        }
+        opposite_direction = direction;
+    }
+
+    return opposite_direction;
 }
 
 static void
 unicode_bidi_N0(unicode_bidi_isolated_run_sequence &isolated_run_sequence, unicode_bidi_test_parameters test_parameters)
 {
+    using enum unicode_bidi_class;
+
     if (!test_parameters.enable_mirrored_brackets) {
         return;
     }
@@ -530,74 +574,36 @@ unicode_bidi_N0(unicode_bidi_isolated_run_sequence &isolated_run_sequence, unico
     ttlet embedding_direction = isolated_run_sequence.embedding_direction();
 
     for (auto &pair : bracket_pairs) {
-        if (pair.inside_strong_matches_embedding) {
-            // N0.b.
-            pair.direction = embedding_direction;
+        auto pair_direction = unicode_bidi_N0_enclosed_strong_type(pair, embedding_direction);
 
-        } else if (pair.has_inside_strong) {
-            // N0.c.
-            if (pair.preceding_strong != embedding_direction) {
-                // B0.c.1.
-                pair.direction = pair.preceding_strong;
-            } else {
-                // B0.c.2.
-                pair.direction = embedding_direction;
-            }
-        } else {
-            // B0.d.
-            pair.direction = unicode_bidi_class::unknown;
-        }
-    }
-
-    size_t index = 0;
-    bool last_bracket_changed_from_L_to_R = false;
-    for (auto &char_info : isolated_run_sequence) {
-        if (char_info.description->bidi_bracket_type() == unicode_bidi_bracket_type::o) {
-            last_bracket_changed_from_L_to_R = false;
-
-            for (ttlet &pair : bracket_pairs) {
-                if (pair.first == index) {
-                    if (pair.direction == unicode_bidi_class::L) {
-                        char_info.direction = unicode_bidi_class::L;
-                    } else if (pair.direction == unicode_bidi_class::R) {
-                        if (char_info.direction == unicode_bidi_class::L) {
-                            last_bracket_changed_from_L_to_R = true;
-                        }
-                        char_info.direction = unicode_bidi_class::R;
-                    }
-                    break;
-                }
-            }
-
-        } else if (char_info.description->bidi_bracket_type() == unicode_bidi_bracket_type::c) {
-            last_bracket_changed_from_L_to_R = false;
-
-            for (ttlet &pair : bracket_pairs) {
-                if (pair.second == index) {
-                    if (pair.direction == unicode_bidi_class::L) {
-                        char_info.direction = unicode_bidi_class::L;
-                    } else if (pair.direction == unicode_bidi_class::R) {
-                        if (char_info.direction == unicode_bidi_class::L) {
-                            last_bracket_changed_from_L_to_R = true;
-                        }
-                        char_info.direction = unicode_bidi_class::R;
-                    }
-                    break;
-                }
-            }
-
-        } else if (char_info.description->bidi_class() == unicode_bidi_class::NSM) {
-            if (last_bracket_changed_from_L_to_R) {
-                char_info.direction = unicode_bidi_class::R;
-            }
-
-            last_bracket_changed_from_L_to_R = false;
-
-        } else {
-            last_bracket_changed_from_L_to_R = false;
+        if (pair_direction == ON) {
+            continue;
         }
 
-        ++index;
+        if (pair_direction != embedding_direction) {
+            pair_direction = unicode_bidi_N0_preceding_strong_type(isolated_run_sequence, pair.open);
+
+            if (pair_direction == embedding_direction || pair_direction == ON) {
+                pair_direction = embedding_direction;
+            }
+        }
+
+        pair.open->direction = pair_direction;
+        pair.close->direction = pair_direction;
+
+        for (auto it = pair.open + 1; it != pair.close; ++it) {
+            if (it->description->bidi_class() != NSM) {
+                break;
+            }
+            it->direction = pair_direction;
+        }
+
+        for (auto it = pair.close + 1; it != std::end(isolated_run_sequence); ++it) {
+            if (it->description->bidi_class() != NSM) {
+                break;
+            }
+            it->direction = pair_direction;
+        }
     }
 }
 

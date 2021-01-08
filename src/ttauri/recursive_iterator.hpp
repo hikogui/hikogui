@@ -201,12 +201,12 @@ public:
     operator<=>(recursive_iterator const &lhs, recursive_iterator const &rhs) noexcept
     {
         if (lhs._parent_it != rhs._parent_it) {
-            return lhs._parent_it <=> rhs._parent_it;
+            return (lhs._parent_it - rhs._parent_it) <=> 0;
         } else if (lhs.at_end()) {
             tt_axiom(rhs.at_end());
             return std::strong_ordering::equal;
         } else {
-            return lhs._child_it <=> rhs._child_it;
+            return (lhs._child_it - rhs._child_it) <=> 0;
         }
     }
 
