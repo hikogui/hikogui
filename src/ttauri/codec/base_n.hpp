@@ -163,19 +163,24 @@ public:
 
     /** Encode bytes into a string.
      *
-     * @param ptr Pointer
-     * @param last Beyond the last byte.
-     * @param output
+     * @param first An iterator pointing to the first byte to encode.
+     * @param last An iterator pointing to one beyond the last byte to encode.
+     * @return The data encoded as a string.
      */
     template<typename ItIn>
-    static constexpr std::string encode(ItIn ptr, ItIn last) noexcept
+    static constexpr std::string encode(ItIn first, ItIn last) noexcept
     {
         std::string r;
-        encode(ptr, last, std::back_inserter(r));
+        encode(first, last, std::back_inserter(r));
         return r;
     }
 
-    static constexpr std::string encode(std::span<const std::byte> bytes) noexcept
+    /** Encode bytes into a string.
+     *
+     * @param bytes A span of bytes to encode.
+     * @return The data encoded as a string.
+     */
+    static constexpr std::string encode(std::span<std::byte const> bytes) noexcept
     {
         return encode(begin(bytes), end(bytes));
     }

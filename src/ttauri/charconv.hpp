@@ -55,6 +55,7 @@ template<std::floating_point T>
  *
  * @tparam T The integer type.
  * @param str The string is an integer.
+ * @param base The base radix of the string encoded integer.
  * @return The integer converted from a string.
  */
 template<std::integral T>

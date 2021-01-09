@@ -10,6 +10,7 @@
 #include <limits>
 #include <span>
 #include <tuple>
+#include <concepts>
 
 #if TT_COMPILER == TT_CC_MSVC
 #include <intrin.h>
@@ -20,37 +21,39 @@
 
 namespace tt {
 
-/*! Shift logical left with carry chain.
- * \param carry_in The bits received from a previous shl().
- * \param count number of bits to shift, must be less than the number of bits in T.
- * \param carry_out The bits that have been shifted out.
+/** Shift logical left with carry chain.
+* @param lhs The original value
+* @param rhs The count by how much to shift lhs left.
+* @param carry The carry data to or with the lower bits.
+* @return The result, followed by the carry which can be used to pass into the next iteration.
  */
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
-constexpr std::pair<T, T> shift_left_carry(T a, unsigned int count, T carry = 0) noexcept
+template<typename T> requires (std::unsigned_integral<T>)
+constexpr std::pair<T, T> shift_left_carry(T lhs, unsigned int rhs, T carry = 0) noexcept
 {
     constexpr unsigned int nr_bits = sizeof(T) * 8;
-    unsigned int reverse_count = nr_bits - count;
+    unsigned int reverse_count = nr_bits - rhs;
 
     return {
-        (a << count) | carry,
-        a >> reverse_count
+        (lhs << rhs) | carry,
+        lhs >> reverse_count
     };
 }
 
-/*! Shift logical right with carry chain.
-* \param carry_in The bits received from a previous shr().
-* \param count number of bits to shift, must be less than the number of bits in T.
-* \param carry_out The bits that have been shifted out.
+/** Shift logical right with carry chain.
+* @param lhs The original value
+* @param rhs The count by how much to shift lhs right.
+* @param carry The carry data to or with the lower bits.
+* @return The result, followed by the carry which can be used to pass into the next iteration.
 */
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, int> = 0>
-constexpr std::pair<T, T> shift_right_carry(T a, unsigned int count, T carry = 0) noexcept
+template<typename T> requires (std::unsigned_integral<T>)
+constexpr std::pair<T, T> shift_right_carry(T lhs, unsigned int rhs, T carry = 0) noexcept
 {
     constexpr unsigned int nr_bits = sizeof(T) * 8;
-    unsigned int reverse_count = nr_bits - count;
+    unsigned int reverse_count = nr_bits - rhs;
 
     return {
-        (a >> count) | carry,
-        a << reverse_count
+        (lhs >> rhs) | carry,
+        lhs << reverse_count
     };
 }
 
@@ -59,7 +62,7 @@ constexpr std::pair<T, T> shift_right_carry(T a, unsigned int count, T carry = 0
 * \param carry either 0 or 1.
 * \return a + b + carry_in
 */
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
+template<typename T> requires (std::unsigned_integral<T>)
 constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
 {
     if constexpr (sizeof(T) == 1) {
@@ -88,7 +91,7 @@ constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
     }
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
+template<typename T> requires (std::unsigned_integral<T>)
 constexpr std::pair<T, T> wide_multiply(T a, T b) noexcept
 {
     if constexpr (sizeof(T) == 1) {
@@ -118,7 +121,7 @@ constexpr std::pair<T, T> wide_multiply(T a, T b) noexcept
     }
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
+template<typename T> requires (std::unsigned_integral<T>)
 constexpr std::pair<T, T> multiply_carry(T a, T b, T carry = 0, T accumulator = 0) noexcept
 {
     if constexpr (sizeof(T) == 1) {

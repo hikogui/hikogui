@@ -68,7 +68,7 @@ public:
     }
 
     /** Remove a callback from the notifier.
-     * @param id The id returned from `add()` and `add_and_call()`.
+     * @param callback_ptr A share_ptr to the callback function to unsubscribe.
      */
     void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
     {

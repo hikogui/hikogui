@@ -156,7 +156,7 @@ constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
 
 /** Find the begin and end of the current cluster.
  * @param first The first iterator, where this function will stop iterating.
- * @param first The last iterator, where this function will stop iterating.
+ * @param last The last iterator, where this function will stop iterating.
  * @param start Where to start the search
  * @param predicate A function returning the identifier of the cluster.
  * @return The first and one beyond last iterator where the cluster is the same as start.

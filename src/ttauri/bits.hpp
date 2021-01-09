@@ -13,6 +13,7 @@ namespace tt {
 /** Read a single bit of span of bytes
  * Bits are ordered LSB first.
  *
+ * @param buffer The buffer of bytes to extract the bit from.
  * @param index The index of the bit in the byte span.
  */
 [[nodiscard]] inline bool get_bit(std::span<std::byte const> buffer, ssize_t &index) noexcept
@@ -41,6 +42,7 @@ namespace tt {
  *           +-+-+-+-+-+
  *            4 3 2 1 0
  *
+ * @param buffer The buffer of bytes to extract bits from.
  * @param index The index of the bit in the byte span.
  * @param length the number of bits to return.
  */

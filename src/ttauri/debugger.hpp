@@ -81,8 +81,7 @@ void debugger_dialogue(std::string caption, std::string fmt, Args... args) noexc
 /** Abort the application.
 * @param source_file __FILE__
 * @param source_line __LINE__
-* @param message Message to display.
-* @param arg1 First argument to formatter
+* @param fmt Message to display.
 * @param args Rest arguments to formatter
 */
 template<typename... Args>
