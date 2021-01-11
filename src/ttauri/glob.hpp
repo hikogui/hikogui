@@ -82,7 +82,7 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs) {
  *  - '?' matches one character.
  *  - '[\<range\>]' matches one character inside the range.
  *  - '[^\<range\>]' matches one character that is not within the range, the path separator '/'
- *    is implicitly included in <range>.
+ *    is implicitly included in \<range\>.
  *  - '{\<list\>}' matches one string in the list. The list is a comma ',' separated list
  *    of strings.
  *

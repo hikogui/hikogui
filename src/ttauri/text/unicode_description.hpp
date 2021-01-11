@@ -296,7 +296,7 @@ template<typename It>
  *
  * Passing an invalid unicode value causes undefined behaviour.
  *
- * @param code-point The code point to look up.
+ * @param code_point The code point to look up.
  * @return a const reference to the unicode_description entry.
  */
 [[nodiscard]] unicode_description const &unicode_description_find(char32_t code_point) noexcept;

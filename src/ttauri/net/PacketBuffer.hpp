@@ -62,7 +62,7 @@ public:
      * This function will write the data added into the buffers returned
      * by `getNewPacket()` and `getPacket()`.
      *
-     * @param nrByted The number of bytes written into the packet.
+     * @param nrBytes The number of bytes written into the packet.
      * @param push Push the data through the socket, bypass Nagel algorithm.
      */
     void write(ssize_t nrBytes, bool push=true) noexcept {

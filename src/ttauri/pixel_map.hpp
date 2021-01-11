@@ -102,7 +102,7 @@ public:
     pixel_map() noexcept : _pixels(nullptr), _width(0), _height(0), _stride(0) {}
 
     /** Construct an pixel-map from memory received from an API.
-     * @param pixel A pointer to pixels received from the API.
+     * @param pixels A pointer to pixels received from the API.
      * @param width The width of the image.
      * @param height The height of the image.
      * @param stride Number of pixel elements until the next row.

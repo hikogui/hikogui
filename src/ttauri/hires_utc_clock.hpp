@@ -10,7 +10,7 @@
 
 namespace tt {
 
-/*! Timestamp
+/** Timestamp
  */
 struct hires_utc_clock {
     using rep = int64_t;
@@ -35,12 +35,14 @@ struct hires_utc_clock {
 
 std::string format_engineering(hires_utc_clock::duration duration);
 
-/*! Return a ISO-8601 formated date-time.
+/** Return a ISO-8601 formated date-time.
+* @param utc_timestamp The time_point to format.
 */
 std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp);
 
-/*! Return a ISO-8601 formated date-time.
-* \param time_zone If time_zone is a nullptr then the current timezone is used.
+/** Return a ISO-8601 formated date-time.
+* @param utc_timestamp The time_point to format.
+* @param time_zone If time_zone is a nullptr then the current timezone is used.
 */
 std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone=nullptr);
 

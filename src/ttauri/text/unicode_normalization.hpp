@@ -35,6 +35,7 @@ unicode_NFC(std::u32string_view text, bool ligatures = false, bool paragraph = f
  * Code point 0x00'ffff is used internally, do not pass in text.
  *
  * @param text to normalize, in-place.
+ * @param paragraph line-feed characters are converted to paragraph separators.
  */
 std::u32string unicode_NFKD(std::u32string_view text, bool paragraph = false) noexcept;
 
@@ -42,6 +43,7 @@ std::u32string unicode_NFKD(std::u32string_view text, bool paragraph = false) no
  * Code point 0x00'ffff is used internally, do not pass in text.
  *
  * @param text to normalize, in-place.
+ * @param paragraph line-feed characters are converted to paragraph separators.
  * @param composeCRLF Compose CR-LF combinations to LF.
  */
 std::u32string unicode_NFKC(std::u32string_view text, bool paragraph = false, bool composeCRLF = false) noexcept;

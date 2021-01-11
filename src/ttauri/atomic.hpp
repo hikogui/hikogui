@@ -18,6 +18,7 @@ namespace tt {
  *
  * @param state variable to monitor.
  * @param to The value the state needs to be before this function returns.
+ * @param order The memory order to use during atomic loads.
  */
 template<typename CounterTag, typename T>
 tt_no_inline void
@@ -49,6 +50,7 @@ contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_ord
  * @tparam T The underlying type of the atomic.
  * @param state variable to monitor.
  * @param to The value the state needs to be before this function returns.
+ * @param order The memory order to use for the load atomic.
  */
 template<typename CounterTag, typename T>
 void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order_seq_cst)

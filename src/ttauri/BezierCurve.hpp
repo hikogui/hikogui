@@ -326,8 +326,8 @@ struct BezierCurve {
 /*! Make a contour of Bezier curves from a list of points.
  * The contour is also colorized to be used for creating multichannel-signed-distance-fields.
  *
- * \param first The first point in a list
- * \param first The last point in a list
+ * \param first Iterator to the first point in a list
+ * \param last Iterator one beyond the last point in a list
  */
 [[nodiscard]] std::vector<BezierCurve> makeContourFromPoints(
     std::vector<BezierPoint>::const_iterator first,

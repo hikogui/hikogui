@@ -173,11 +173,11 @@ struct Path {
     void arcTo(float radius, f32x4 position) noexcept;
 
     /** Draw a rectangle.
-     * \param aarect the offset and size of the rectangle.
+     * \param rectangle the offset and size of the rectangle.
      * \param corners The radius of the (bottom-left, bottom-right, top-left, top-right)
      *        positive corner are rounded, negative curves are cut.
      */
-    void addRectangle(aarect r, f32x4 corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
+    void addRectangle(aarect rectangle, f32x4 corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
     /** Draw a circle.
     * \param position position of the center of the circle.
@@ -265,7 +265,7 @@ void composit(pixel_map<R16G16B16A16SFloat>& dst, f32x4 color, Path const &mask)
 void composit(pixel_map<R16G16B16A16SFloat>& dst, Path const &mask) noexcept;
 
 /** Fill a signed distance field image from the given path.
-* @param image An signed-distance-field which show distance toward the closest curve
+* @param dst An signed-distance-field which show distance toward the closest curve
 * @param path A path.
 */
 void fill(pixel_map<SDF8> &dst, Path const &path) noexcept;

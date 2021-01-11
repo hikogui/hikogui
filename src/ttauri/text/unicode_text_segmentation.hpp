@@ -26,7 +26,7 @@ struct grapheme_break_state {
 /** Check if for a grapheme break before the given code-point.
  * Code points must be tested in order, starting at the beginning of the text.
  *
- * @param code point Current code point to test.
+ * @param code_point Current code point to test.
  * @param state Current state of the grapheme-break algorithm.
  * @return true when a grapheme break exists before the current code-point.
  */
