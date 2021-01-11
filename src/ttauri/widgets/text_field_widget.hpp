@@ -20,7 +20,7 @@ public:
     using super = widget;
 
     text_field_widget(gui_window &window, std::shared_ptr<widget> parent, std::u8string const label) noexcept :
-        widget(window, parent), label(std::move(label)), field(theme::global->labelStyle), shapedText()
+        widget(window, parent), _label(std::move(label)), _field(theme::global->labelStyle), _shaped_text()
     {
     }
 
@@ -36,7 +36,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            ttlet maximumHeight = shapedText.boundingBox.height() + theme::global->margin * 2.0f;
+            ttlet maximum_height = _shaped_text.boundingBox.height() + theme::global->margin * 2.0f;
 
             _preferred_size = {
                 f32x4{100.0f, theme::global->smallSize + theme::global->margin * 2.0f},
@@ -53,31 +53,31 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (_focus && display_time_point >= nextRedrawTimePoint) {
+        if (_focus && display_time_point >= _next_redraw_time_point) {
             window.request_redraw(window_clipping_rectangle());
         }
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            textRectangle = shrink(rectangle(), theme::global->margin);
+            _text_rectangle = shrink(rectangle(), theme::global->margin);
 
             // Set the clipping rectangle to within the border of the input field.
             // Add another border width, so glyphs do not touch the border.
-            textClippingRectangle =
+            _text_clipping_rectangle =
                 intersect(window_clipping_rectangle(), shrink(_window_rectangle, theme::global->borderWidth * 2.0f));
 
-            field.setStyleOfAll(theme::global->labelStyle);
+            _field.setStyleOfAll(theme::global->labelStyle);
 
-            if (std::ssize(field) == 0) {
-                shapedText =
-                    ShapedText(label, theme::global->placeholderLabelStyle, textRectangle.width(), alignment::middle_left);
+            if (std::ssize(_field) == 0) {
+                _shaped_text =
+                    ShapedText(_label, theme::global->placeholderLabelStyle, _text_rectangle.width(), alignment::middle_left);
             } else {
-                field.setWidth(textRectangle.width());
-                shapedText = field.shapedText();
+                _field.setWidth(_text_rectangle.width());
+                _shaped_text = _field.shapedText();
             }
 
             // Record the last time the text is modified, so that the caret remains lit.
-            lastUpdateTimePoint = display_time_point;
+            _last_update_time_point = display_time_point;
         }
 
         widget::update_layout(display_time_point, need_layout);
@@ -87,23 +87,23 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        nextRedrawTimePoint = display_time_point + blinkInterval;
+        _next_redraw_time_point = display_time_point + _blink_interval;
 
         if (overlaps(context, this->window_clipping_rectangle())) {
-            scrollText();
+            scroll_text();
 
-            drawBackgroundBox(context);
+            draw_background_box(context);
 
             // After drawing the border around the input field make sure any other
             // drawing remains inside this border. And change the transform to account
             // for how much the text has scrolled.
-            context.clipping_rectangle = textClippingRectangle;
-            context.transform = (mat::T(0.0, 0.0, 0.1f) * textTranslate) * context.transform;
+            context.clipping_rectangle = _text_clipping_rectangle;
+            context.transform = (mat::T(0.0, 0.0, 0.1f) * _text_translate) * context.transform;
 
-            drawSelectionRectangles(context);
-            drawPartialGraphemeCaret(context);
-            drawCaret(context, display_time_point);
-            drawText(context);
+            draw_selection_rectangles(context);
+            draw_partial_grapheme_caret(context);
+            draw_caret(context, display_time_point);
+            draw_text(context);
         }
 
         widget::draw(std::move(context), display_time_point);
@@ -117,22 +117,23 @@ public:
         LOG_DEBUG("text_field_widget: Received command: {}", command);
         if (*enabled) {
             switch (command) {
-            case command::text_edit_paste:
+                using enum command;
+            case text_edit_paste:
                 handled = true;
-                field.handlePaste(window.getTextFromClipboard());
+                _field.handlePaste(window.getTextFromClipboard());
                 break;
 
-            case command::text_edit_copy:
+            case text_edit_copy:
                 handled = true;
-                window.setTextOnClipboard(field.handleCopy());
+                window.setTextOnClipboard(_field.handleCopy());
                 break;
 
-            case command::text_edit_cut:
+            case text_edit_cut:
                 handled = true;
-                window.setTextOnClipboard(field.handleCut());
+                window.setTextOnClipboard(_field.handleCut());
                 break;
 
-            default: handled |= field.handle_command(command);
+            default: handled |= _field.handle_command(command);
             }
         }
 
@@ -147,9 +148,9 @@ public:
 
         // Make sure we only scroll when dragging outside the widget.
         ttlet position = _from_window_transform * event.position;
-        dragScrollSpeedX = 0.0f;
-        dragClickCount = event.clickCount;
-        dragSelectPosition = position;
+        _drag_scroll_speed_x = 0.0f;
+        _drag_click_count = event.clickCount;
+        _drag_select_position = position;
 
         if (event.cause.leftButton) {
             handled = true;
@@ -161,24 +162,24 @@ public:
             switch (event.type) {
                 using enum MouseEvent::Type;
             case ButtonDown:
-                if (textRectangle.contains(position)) {
-                    ttlet mouseInTextPosition = textInvTranslate * position;
+                if (_text_rectangle.contains(position)) {
+                    ttlet mouseInTextPosition = _text_inv_translate * position;
 
                     switch (event.clickCount) {
                     case 1:
                         if (event.down.shiftKey) {
-                            field.dragCursorAtCoordinate(mouseInTextPosition);
+                            _field.dragCursorAtCoordinate(mouseInTextPosition);
                         } else {
-                            field.setCursorAtCoordinate(mouseInTextPosition);
+                            _field.setCursorAtCoordinate(mouseInTextPosition);
                         }
                         break;
-                    case 2: field.selectWordAtCoordinate(mouseInTextPosition); break;
-                    case 3: field.selectParagraphAtCoordinate(mouseInTextPosition); break;
+                    case 2: _field.selectWordAtCoordinate(mouseInTextPosition); break;
+                    case 3: _field.selectParagraphAtCoordinate(mouseInTextPosition); break;
                     default:;
                     }
 
                     // Record the last time the cursor is moved, so that the caret remains lit.
-                    lastUpdateTimePoint = event.timePoint;
+                    _last_update_time_point = event.timePoint;
 
                     window.request_redraw(window_clipping_rectangle());
                 }
@@ -187,22 +188,22 @@ public:
             case Drag:
                 // When the mouse is dragged beyond the line input,
                 // start scrolling the text and select on the edge of the textRectangle.
-                if (position.x() > textRectangle.p3().x()) {
+                if (position.x() > _text_rectangle.p3().x()) {
                     // The mouse is on the right of the text.
-                    dragSelectPosition.x() = textRectangle.p3().x();
+                    _drag_select_position.x() = _text_rectangle.p3().x();
 
                     // Scroll text to the left in points per second.
-                    dragScrollSpeedX = 50.0f;
+                    _drag_scroll_speed_x = 50.0f;
 
-                } else if (position.x() < textRectangle.x()) {
+                } else if (position.x() < _text_rectangle.x()) {
                     // The mouse is on the left of the text.
-                    dragSelectPosition.x() = textRectangle.x();
+                    _drag_select_position.x() = _text_rectangle.x();
 
                     // Scroll text to the right in points per second.
-                    dragScrollSpeedX = -50.0f;
+                    _drag_scroll_speed_x = -50.0f;
                 }
 
-                dragSelect();
+                drag_select();
 
                 window.request_redraw(window_clipping_rectangle());
                 break;
@@ -221,14 +222,15 @@ public:
 
         if (*enabled) {
             switch (event.type) {
-            case KeyboardEvent::Type::Grapheme:
+                using enum KeyboardEvent::Type;
+            case Grapheme:
                 handled = true;
-                field.insertGrapheme(event.grapheme);
+                _field.insertGrapheme(event.grapheme);
                 break;
 
-            case KeyboardEvent::Type::PartialGrapheme:
+            case PartialGrapheme:
                 handled = true;
-                field.insertPartialGrapheme(event.grapheme);
+                _field.insertPartialGrapheme(event.grapheme);
                 break;
 
             default:;
@@ -257,124 +259,124 @@ public:
     }
 
 private:
-    std::u8string label = u8"<unknown>";
+    std::u8string _label = u8"<unknown>";
 
-    EditableText field;
-    ShapedText shapedText;
-    aarect textRectangle = {};
-    aarect textClippingRectangle = {};
-    aarect leftToRightCaret = {};
+    EditableText _field;
+    ShapedText _shaped_text;
+    aarect _text_rectangle = {};
+    aarect _text_clipping_rectangle = {};
+    aarect _left_to_right_caret = {};
 
     /** Scroll speed in points per second.
      * This is used when dragging outside of the widget.
      */
-    float dragScrollSpeedX = 0.0f;
+    float _drag_scroll_speed_x = 0.0f;
 
     /** Number of mouse clicks that caused the drag.
      */
-    int dragClickCount = 0;
+    int _drag_click_count = 0;
 
-    f32x4 dragSelectPosition = {};
+    f32x4 _drag_select_position = {};
 
     /** How much the text has scrolled in points.
      */
-    float textScrollX = 0.0f;
+    float _text_scroll_x = 0.0f;
 
-    mat::T2 textTranslate;
-    mat::T2 textInvTranslate;
+    mat::T2 _text_translate;
+    mat::T2 _text_inv_translate;
 
-    static constexpr hires_utc_clock::duration blinkInterval = 500ms;
-    hires_utc_clock::time_point nextRedrawTimePoint;
-    hires_utc_clock::time_point lastUpdateTimePoint;
+    static constexpr hires_utc_clock::duration _blink_interval = 500ms;
+    hires_utc_clock::time_point _next_redraw_time_point;
+    hires_utc_clock::time_point _last_update_time_point;
 
-    void dragSelect() noexcept
+    void drag_select() noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        ttlet mouseInTextPosition = textInvTranslate * dragSelectPosition;
-        switch (dragClickCount) {
-        case 1: field.dragCursorAtCoordinate(mouseInTextPosition); break;
-        case 2: field.dragWordAtCoordinate(mouseInTextPosition); break;
-        case 3: field.dragParagraphAtCoordinate(mouseInTextPosition); break;
+        ttlet mouseInTextPosition = _text_inv_translate * _drag_select_position;
+        switch (_drag_click_count) {
+        case 1: _field.dragCursorAtCoordinate(mouseInTextPosition); break;
+        case 2: _field.dragWordAtCoordinate(mouseInTextPosition); break;
+        case 3: _field.dragParagraphAtCoordinate(mouseInTextPosition); break;
         default:;
         }
     }
 
-    void scrollText() noexcept
+    void scroll_text() noexcept
     {
-        if (dragScrollSpeedX != 0.0f) {
-            textScrollX += dragScrollSpeedX * (1.0f / 60.0f);
-            dragSelect();
+        if (_drag_scroll_speed_x != 0.0f) {
+            _text_scroll_x += _drag_scroll_speed_x * (1.0f / 60.0f);
+            drag_select();
 
             // Once we are scrolling, don't stop.
             window.request_redraw(window_clipping_rectangle());
 
-        } else if (dragClickCount == 0) {
+        } else if (_drag_click_count == 0) {
             // The following is for scrolling based on keyboard input, ignore mouse drags.
 
             // Scroll the text a quarter width to the left until the cursor is within the width
             // of the text field
-            if (leftToRightCaret.x() - textScrollX > textRectangle.width()) {
-                textScrollX = leftToRightCaret.x() - textRectangle.width() * 0.75f;
+            if (_left_to_right_caret.x() - _text_scroll_x > _text_rectangle.width()) {
+                _text_scroll_x = _left_to_right_caret.x() - _text_rectangle.width() * 0.75f;
             }
 
             // Scroll the text a quarter width to the right until the cursor is within the width
             // of the text field
-            while (leftToRightCaret.x() - textScrollX < 0.0f) {
-                textScrollX = leftToRightCaret.x() - textRectangle.width() * 0.25f;
+            while (_left_to_right_caret.x() - _text_scroll_x < 0.0f) {
+                _text_scroll_x = _left_to_right_caret.x() - _text_rectangle.width() * 0.25f;
             }
         }
 
         // cap how far we scroll.
-        ttlet maxScrollWidth = std::max(0.0f, shapedText.preferred_extent.width() - textRectangle.width());
-        textScrollX = std::clamp(textScrollX, 0.0f, maxScrollWidth);
+        ttlet max_scroll_width = std::max(0.0f, _shaped_text.preferred_extent.width() - _text_rectangle.width());
+        _text_scroll_x = std::clamp(_text_scroll_x, 0.0f, max_scroll_width);
 
         // Calculate how much we need to translate the text.
-        textTranslate = mat::T2(-textScrollX, 0.0f) * shapedText.T(textRectangle);
-        textInvTranslate = ~textTranslate;
+        _text_translate = mat::T2(-_text_scroll_x, 0.0f) * _shaped_text.T(_text_rectangle);
+        _text_inv_translate = ~_text_translate;
     }
 
-    void drawBackgroundBox(draw_context const &context) const noexcept
+    void draw_background_box(draw_context const &context) const noexcept
     {
         context.draw_box_with_border_inside(rectangle());
     }
 
-    void drawSelectionRectangles(draw_context context) const noexcept
+    void draw_selection_rectangles(draw_context context) const noexcept
     {
-        ttlet selectionRectangles = field.selectionRectangles();
-        for (ttlet selectionRectangle : selectionRectangles) {
+        ttlet selection_rectangles = _field.selectionRectangles();
+        for (ttlet selection_rectangle : selection_rectangles) {
             context.fill_color = theme::global->textSelectColor;
-            context.draw_filled_quad(selectionRectangle);
+            context.draw_filled_quad(selection_rectangle);
         }
     }
 
-    void drawPartialGraphemeCaret(draw_context context) const noexcept
+    void draw_partial_grapheme_caret(draw_context context) const noexcept
     {
-        ttlet partialGraphemeCaret = field.partialGraphemeCaret();
-        if (partialGraphemeCaret) {
+        ttlet partial_grapheme_caret = _field.partialGraphemeCaret();
+        if (partial_grapheme_caret) {
             context.fill_color = theme::global->incompleteGlyphColor;
-            context.draw_filled_quad(partialGraphemeCaret);
+            context.draw_filled_quad(partial_grapheme_caret);
         }
     }
 
-    void drawCaret(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+    void draw_caret(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
         // Display the caret and handle blinking.
-        auto durationSinceLastUpdate = display_time_point - lastUpdateTimePoint;
-        auto nrHalfBlinks = static_cast<int64_t>(durationSinceLastUpdate / blinkInterval);
+        ttlet duration_since_last_update = display_time_point - _last_update_time_point;
+        ttlet nr_half_blinks = static_cast<int64_t>(duration_since_last_update / _blink_interval);
 
-        auto blinkIsOn = nrHalfBlinks % 2 == 0;
-        leftToRightCaret = field.leftToRightCaret();
-        if (leftToRightCaret && blinkIsOn && _focus && window.active) {
+        ttlet blink_is_on = nr_half_blinks % 2 == 0;
+        _left_to_right_caret = _field.leftToRightCaret();
+        if (_left_to_right_caret && blink_is_on && _focus && window.active) {
             context.fill_color = theme::global->cursorColor;
-            context.draw_filled_quad(leftToRightCaret);
+            context.draw_filled_quad(_left_to_right_caret);
         }
     }
 
-    void drawText(draw_context context) const noexcept
+    void draw_text(draw_context context) const noexcept
     {
         context.transform = mat::T(0.0f, 0.0f, 0.2f) * context.transform;
-        context.draw_text(shapedText);
+        context.draw_text(_shaped_text);
     }
 };
 
