@@ -10,7 +10,7 @@
 #include "button_widget.hpp"
 #include "checkbox_widget.hpp"
 #include "LabelWidget.hpp"
-#include "LineInputWidget.hpp"
+#include "text_field_widget.hpp"
 #include "ScrollViewWidget.hpp"
 #include "selection_widget.hpp"
 #include "toggle_widget.hpp"
