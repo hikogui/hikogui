@@ -45,10 +45,10 @@
 
     // Colors used by widgets for internal elements and disabled icons.
     "border-shades": [
-        [ 58,  58,  60],
         [ 72,  72,  74],
         [ 99,  99, 102],
-        [142, 142, 147]
+        [142, 142, 147],
+        [174, 174, 178]
     ],
 
     // Color for textual or primary elements like icons.
@@ -63,44 +63,44 @@
     "small-label-style": {
         "family": "Arial",
         "weight": "Normal",
-        "size": 8.0,
+        "size": 10.0,
         "color": "foreground-color"
     },
 
     "label-style": {
         "family": "Arial",
         "weight": "Normal",
-        "size": 10.0,
+        "size": 12.0,
         "color": "foreground-color"
     },
     "warning-label-style": {
         "family": "Times New Roman",
         "weight": "Normal",
-        "size": 10.0,
+        "size": 12.0,
         "color": "foreground-color"
     },
     "error-label-style": {
         "family": "Arial",
         "weight": "Normal",
-        "size": 10.0,
+        "size": 12.0,
         "color": [255, 59, 48]
     },
     "help-label-style": {
         "family": "Arial",
         "weight": "Normal",
-        "size": 10.0,
+        "size": 12.0,
         "color": [88, 86, 214]
     },
     "placeholder-label-style": {
         "family": "Arial",
         "weight": "Normal",
-        "size": 10.0,
+        "size": 12.0,
         "color": [142, 142, 147]
     },
     "link-label-style": {
         "family": "Arial",
         "weight": "Normal",
-        "size": 10.0,
+        "size": 12.0,
         "color": [0, 122, 255]
     }
 }

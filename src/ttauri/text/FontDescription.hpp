@@ -27,7 +27,7 @@ struct FontDescription {
 
     float xHeight = 0.0;
     float HHeight = 0.0;
-
+    float DigitWidth = 0.0;
 
     [[nodiscard]] FontVariant font_variant() const noexcept {
         return {weight, italic};

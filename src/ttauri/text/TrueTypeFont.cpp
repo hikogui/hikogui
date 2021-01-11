@@ -1415,6 +1415,13 @@ void TrueTypeFont::parseFontDirectory()
             description.HHeight = metrics.boundingBox.height();
         }
     }
+
+    ttlet glyph_id = find_glyph('8');
+    if (glyph_id) {
+        GlyphMetrics metrics;
+        loadGlyphMetrics(glyph_id, metrics);
+        description.DigitWidth = metrics.advance.x();
+    }
 }
 
 }
