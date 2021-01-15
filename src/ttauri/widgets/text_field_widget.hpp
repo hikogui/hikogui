@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "text_field_delegate.hpp"
 #include "widget.hpp"
 #include "../text/EditableText.hpp"
 #include "../format.hpp"
@@ -37,19 +38,61 @@ namespace tt {
  *
  * The maximum width of the text field is defined in the number of EM of the current selected font.
  */
+template<typename T>
 class text_field_widget final : public widget {
 public:
+    using value_type = T;
+    using delegate_type = text_field_delegate<value_type>;
     using super = widget;
 
-    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, ssize_t text_width_in_characters = 20) noexcept :
+    observable<value_type> value;
+
+    template<typename Value = observable<value_type>>
+    text_field_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        std::weak_ptr<delegate_type> delegate,
+        Value &&value = {}) noexcept :
         super(window, parent),
+        value(std::forward<Value>(value)),
+        _delegate(delegate),
         _field(theme::global->labelStyle),
-        _shaped_text(),
-        _text_width_in_characters(text_width_in_characters)
+        _shaped_text()
+    {
+        _value_callback = this->value.subscribe([this](auto...) {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+            _request_relayout = true;
+        });
+    }
+
+    template<typename Value = observable<value_type>>
+    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value = {}) noexcept :
+        text_field_widget(window, parent, text_field_delegate_default<value_type>(), std::forward<Value>(value))
     {
     }
 
     ~text_field_widget() {}
+
+    /** Set the delegate
+     * The delegate is used to convert between the value type and the string the user sees and enters.
+     *
+     * @param delegate The delegate for this text field
+     */
+    void set_delegate(std::weak_ptr<delegate_type> &&delegate) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        _delegate = delegate;
+    }
+
+    /** Set or unset continues mode.
+     * @param flag If true then the value will update on every edit of the text field.
+     *             If false then the value will only update when the focus changes.
+     */
+    void set_continues(bool flag) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        _continues = flag;
+    }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
@@ -61,7 +104,11 @@ public:
             ttlet &text_font = font_book::global->get_font(text_font_id);
             ttlet text_digit_width = text_font.description.DigitWidth * text_style.scaled_size();
 
-            _text_width = std::ceil(text_digit_width * narrow_cast<float>(_text_width_in_characters));
+            if (auto delegate = _delegate.lock()) {
+                _text_width = std::ceil(text_digit_width * narrow_cast<float>(delegate->text_width()));
+            } else {
+                _text_width = 100.0;
+            }
 
             _preferred_size = {
                 f32x4{_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f},
@@ -85,12 +132,8 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _text_field_rectangle = aarect{
-                    rectangle().x(),
-                    rectangle().y(),
-                    _text_width + theme::global->margin * 2.0f,
-                    rectangle().height()
-            };
+            _text_field_rectangle =
+                aarect{rectangle().x(), rectangle().y(), _text_width + theme::global->margin * 2.0f, rectangle().height()};
             auto _text_field_window_rectangle = aarect{
                 _window_rectangle.x() + theme::global->borderWidth * 2.0f,
                 _window_rectangle.y(),
@@ -102,7 +145,26 @@ public:
             _text_field_clipping_rectangle = intersect(window_clipping_rectangle(), _text_field_window_rectangle);
 
             _text_rectangle = shrink(_text_field_rectangle, theme::global->margin);
-            
+
+            ttlet field_str = static_cast<std::string>(_field);
+
+            if (auto delegate = _delegate.lock()) {
+                if (_focus) {
+                    // Update the optional error value from the string conversion when the
+                    // field has keyboard focus.
+                    delegate->from_string(field_str, _error);
+
+                } else {
+                    // When field is not focused, simply follow the observed_value.
+                    _field = delegate->to_string(*value);
+                    _error = {};
+                }
+
+            } else {
+                _field = {};
+                _error = l10n("system error: delegate missing");
+            }
+
             _field.setStyleOfAll(theme::global->labelStyle);
             _field.setWidth(std::numeric_limits<float>::infinity());
             _shaped_text = _field.shapedText();
@@ -148,23 +210,23 @@ public:
         LOG_DEBUG("text_field_widget: Received command: {}", command);
         if (*enabled) {
             switch (command) {
-                using enum command;
-            case text_edit_paste:
+            case command::text_edit_paste:
                 handled = true;
                 _field.handlePaste(window.getTextFromClipboard());
+                commit(false);
                 break;
 
-            case text_edit_copy:
+            case command::text_edit_copy:
                 handled = true;
                 window.setTextOnClipboard(_field.handleCopy());
                 break;
 
-            case text_edit_cut:
+            case command::text_edit_cut:
                 handled = true;
                 window.setTextOnClipboard(_field.handleCut());
                 break;
 
-            default: handled |= _field.handle_command(command);
+            default: handled |= _field.handle_command(command); commit(false);
             }
         }
 
@@ -254,14 +316,22 @@ public:
         if (*enabled) {
             switch (event.type) {
                 using enum KeyboardEvent::Type;
+
+            case Exited:
+                // Do not modify `handled`; continue further processing of exit event.
+                commit(true);
+                break;
+
             case Grapheme:
                 handled = true;
                 _field.insertGrapheme(event.grapheme);
+                commit(false);
                 break;
 
             case PartialGrapheme:
                 handled = true;
                 _field.insertPartialGrapheme(event.grapheme);
+                commit(false);
                 break;
 
             default:;
@@ -290,8 +360,17 @@ public:
     }
 
 private:
-    size_t _text_width_in_characters;
-    float _text_width;
+    typename decltype(value)::callback_ptr_type _value_callback;
+
+    std::weak_ptr<delegate_type> _delegate;
+
+    bool _continues = false;
+
+    /** An error string to show to the user.
+     */
+    l10n _error;
+
+    float _text_width = 0.0f;
     aarect _text_rectangle = {};
 
     aarect _text_field_rectangle;
@@ -322,6 +401,19 @@ private:
     static constexpr hires_utc_clock::duration _blink_interval = 500ms;
     hires_utc_clock::time_point _next_redraw_time_point;
     hires_utc_clock::time_point _last_update_time_point;
+
+    void commit(bool force) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        if (_continues || force) {
+            if (auto delegate = _delegate.lock()) {
+                auto optional_value = delegate->from_string(static_cast<std::string>(_field), _error);
+                if (optional_value) {
+                    value = *optional_value;
+                }
+            }
+        }
+    }
 
     void drag_select() noexcept
     {
@@ -380,7 +472,11 @@ private:
 
         ttlet line_rectangle = aarect{_text_field_rectangle.p0(), f32x4{_text_field_rectangle.width(), context.line_width}};
         context.transform = context.transform * mat::T(0.0f, 0.0f, 0.1f);
-        context.fill_color = line_color;
+        if (_error && window.active) {
+            context.fill_color = theme::global->errorLabelStyle.color;
+        } else {
+            context.fill_color = line_color;
+        }
         context.draw_filled_quad(line_rectangle);
     }
 

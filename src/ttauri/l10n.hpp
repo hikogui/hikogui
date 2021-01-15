@@ -16,6 +16,11 @@ public:
     l10n &operator=(l10n const &) noexcept = default;
     l10n &operator=(l10n &&) noexcept = default;
 
+    [[nodiscard]] operator bool() const noexcept
+    {
+        return !msgid.empty();
+    }
+
     l10n(std::u8string_view msgid) noexcept : msgid(msgid) {}
     l10n(std::string_view msgid) noexcept
     {

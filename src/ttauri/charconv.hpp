@@ -67,7 +67,7 @@ template<std::integral T>
     ttlet last = first + std::ssize(str);
 
     ttlet[new_last, ec] = std::from_chars(first, last, value, base);
-    if (ec != std::errc{}) {
+    if (ec != std::errc{} || new_last != last) {
         throw parse_error("Can not convert string to integer");
     }
 

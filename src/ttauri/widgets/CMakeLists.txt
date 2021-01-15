@@ -11,6 +11,7 @@ target_sources(ttauri PRIVATE
     grid_layout_widget.hpp
     grid_layout_delegate.hpp
     LabelWidget.hpp
+    text_field_delegate.hpp
     text_field_widget.hpp
     overlay_view_widget.hpp
     radio_button_widget.hpp

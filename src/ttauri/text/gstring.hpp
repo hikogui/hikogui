@@ -76,6 +76,10 @@ struct gstring {
     return to_gstring(tt::to_u32string(rhs));
 }
 
+[[nodiscard]] inline gstring to_gstring(std::string_view rhs) noexcept
+{
+    return to_gstring(tt::to_u32string(rhs));
+}
 
 
 }

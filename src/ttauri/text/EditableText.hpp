@@ -45,6 +45,39 @@ public:
     {
     }
 
+    [[nodiscard]] operator std::string() const noexcept
+    {
+        auto r = std::string{};
+        
+        for (ttlet &c : text) {
+            r += to_string(c.grapheme.NFC());
+        }
+
+        return r;
+    }
+
+    EditableText &operator=(std::string_view str) noexcept
+    {
+        cancelPartialGrapheme();
+
+        gstring gstr = to_gstring(str);
+
+        text.clear();
+        text.reserve(std::ssize(gstr));
+        for (ttlet &g : gstr) {
+            text.emplace_back(g, currentStyle);
+        }
+
+        selectionIndex = cursorIndex = 0;
+        tt_axiom(selectionIndex >= 0);
+        tt_axiom(selectionIndex <= std::ssize(text));
+        tt_axiom(cursorIndex >= 0);
+        tt_axiom(cursorIndex <= std::ssize(text));
+
+        updateShapedText();
+        return *this;
+    }
+
     /** Update the shaped text after changed to text.
      */
     void updateShapedText() noexcept {
