@@ -127,6 +127,79 @@ public:
         }
     }
 
+    [[nodiscard]] bool handle_command(tt::command command) noexcept override
+    {
+        switch (command) {
+        case command::gui_menu_next:
+            if (!_parent_is_toolbar) {
+                this->window.update_keyboard_target(
+                    this->shared_from_this(), keyboard_focus_group::menu, keyboard_focus_direction::forward);
+                return true;
+            }
+            break;
+
+        case command::gui_menu_prev:
+            if (!_parent_is_toolbar) {
+                this->window.update_keyboard_target(
+                    this->shared_from_this(), keyboard_focus_group::menu, keyboard_focus_direction::backward);
+                return true;
+            }
+            break;
+
+        case command::gui_toolbar_next:
+            if (_parent_is_toolbar) {
+                this->window.update_keyboard_target(
+                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+                return true;
+            }
+            break;
+
+        case command::gui_toolbar_prev:
+            if (_parent_is_toolbar) {
+                this->window.update_keyboard_target(
+                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+                return true;
+            }
+            break;
+
+        case command::gui_activate:
+            if (!_parent_is_toolbar) {
+                // We need to find the backward widget of the parent, before the menu is closed. 
+                auto focus_parent_backward= this->window.widget->find_next_widget(
+                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
+
+                ttlet handled = super::handle_command(command::gui_activate);
+                tt_axiom(handled);
+
+                // Now that the window is closed, we can find the parent.
+                auto focus_parent = this->window.widget->find_next_widget(
+                    focus_parent_backward, keyboard_focus_group::normal, keyboard_focus_direction::forward);
+
+                this->window.update_keyboard_target(focus_parent);
+                return handled;
+            }
+            break;
+
+        case command::gui_enter:
+            if (!_parent_is_toolbar) {
+                // We need to find the forward widget of the parent, before the menu is closed. 
+                auto focus_parent_forward = this->window.widget->find_next_widget(
+                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+
+                ttlet handled = super::handle_command(command::gui_activate);
+                tt_axiom(handled);
+
+                this->window.update_keyboard_target(focus_parent_forward);
+                return handled;
+            }
+            break;
+
+        default:;
+        }
+
+        return super::handle_command(command);
+    }
+
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());

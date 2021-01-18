@@ -216,33 +216,32 @@ public:
     bool handle_command(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = super::handle_command(command);
+        _request_relayout = true;
 
-        LOG_DEBUG("text_field_widget: Received command: {}", command);
         if (*enabled) {
             switch (command) {
             case command::text_edit_paste:
-                handled = true;
                 _field.handlePaste(window.getTextFromClipboard());
                 commit(false);
-                break;
+                return true;
 
             case command::text_edit_copy:
-                handled = true;
                 window.setTextOnClipboard(_field.handleCopy());
-                break;
+                return true;
 
             case command::text_edit_cut:
-                handled = true;
                 window.setTextOnClipboard(_field.handleCut());
-                break;
+                return true;
 
-            default: handled |= _field.handle_command(command); commit(false);
+            default:
+                if (_field.handle_command(command)) {
+                    commit(false);
+                    return true;
+                }
             }
         }
 
-        _request_relayout = true;
-        return handled;
+        return super::handle_command(command);
     }
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override

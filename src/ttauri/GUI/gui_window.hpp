@@ -262,6 +262,11 @@ protected:
      */
     virtual void build() = 0;
 
+    /** Handle command.
+     * This function is called when no widget has handled the command.
+     */
+    bool handle_command(tt::command command) noexcept;
+
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.

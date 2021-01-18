@@ -36,48 +36,50 @@ enum class command {
     text_redo,
     gui_widget_next,
     gui_widget_prev,
+    gui_menu_next,
+    gui_menu_prev,
+    gui_toolbar_next,
+    gui_toolbar_prev,
     gui_activate,
+    gui_enter,
     gui_escape,
-    gui_down,
-    gui_up,
-    gui_left,
-    gui_right
 };
 
 constexpr char const *to_const_string(command rhs) noexcept
 {
     switch (rhs) {
     case command::unknown: return "unknown";
-    case command::text_cursor_char_left: return "text.cursor.char.left";
-    case command::text_cursor_char_right: return "text.cursor.char.right";
-    case command::text_cursor_word_left: return "text.cursor.word.left";
-    case command::text_cursor_word_right: return "text.cursor.word.right";
-    case command::text_cursor_line_begin: return "text.cursor.line.begin";
-    case command::text_cursor_line_end: return "text.cursor.line.end";
-    case command::text_select_char_left: return "text.select.char.left";
-    case command::text_select_char_right: return "text.select.char.right";
-    case command::text_select_word: return "text.select.word";
-    case command::text_select_word_left: return "text.select.word.left";
-    case command::text_select_word_right: return "text.select.word.right";
-    case command::text_select_line_begin: return "text.select.line.begin";
-    case command::text_select_line_end: return "text.select.line.end";
-    case command::text_select_document: return "text.select.document";
-    case command::text_mode_insert: return "text.mode.insert";
-    case command::text_delete_char_prev: return "text.delete.char.prev";
-    case command::text_delete_char_next: return "text.delete.char.next";
-    case command::text_edit_paste: return "text.edit.paste";
-    case command::text_edit_copy: return "text.edit.copy";
-    case command::text_edit_cut: return "text.edit.cut";
-    case command::text_undo: return "text.undo";
-    case command::text_redo: return "text.redo";
-    case command::gui_widget_next: return "gui.widget.next";
-    case command::gui_widget_prev: return "gui.widget.prev";
-    case command::gui_activate: return "gui.activate";
-    case command::gui_escape: return "gui.escape";
-    case command::gui_up: return "gui.up";
-    case command::gui_down: return "gui.down";
-    case command::gui_left: return "gui.left";
-    case command::gui_right: return "gui.right";
+    case command::text_cursor_char_left: return "text_cursor_char_left";
+    case command::text_cursor_char_right: return "text_cursor_char_right";
+    case command::text_cursor_word_left: return "text_cursor_word_left";
+    case command::text_cursor_word_right: return "text_cursor_word_right";
+    case command::text_cursor_line_begin: return "text_cursor_line_begin";
+    case command::text_cursor_line_end: return "text_cursor_line_end";
+    case command::text_select_char_left: return "text_select_char_left";
+    case command::text_select_char_right: return "text_select_char_right";
+    case command::text_select_word: return "text_select_word";
+    case command::text_select_word_left: return "text_select_word_left";
+    case command::text_select_word_right: return "text_select_word_right";
+    case command::text_select_line_begin: return "text_select_line_begin";
+    case command::text_select_line_end: return "text_select_line_end";
+    case command::text_select_document: return "text_select_document";
+    case command::text_mode_insert: return "text_mode_insert";
+    case command::text_delete_char_prev: return "text_delete_char_prev";
+    case command::text_delete_char_next: return "text_delete_char_next";
+    case command::text_edit_paste: return "text_edit_paste";
+    case command::text_edit_copy: return "text_edit_copy";
+    case command::text_edit_cut: return "text_edit_cut";
+    case command::text_undo: return "text_undo";
+    case command::text_redo: return "text_redo";
+    case command::gui_widget_next: return "gui_widget_next";
+    case command::gui_widget_prev: return "gui_widget_prev";
+    case command::gui_menu_next: return "gui_menu_next";
+    case command::gui_menu_prev: return "gui_menu_prev";
+    case command::gui_toolbar_next: return "gui_toolbar_next";
+    case command::gui_toolbar_prev: return "gui_toolbar_prev";
+    case command::gui_activate: return "gui_activate";
+    case command::gui_enter: return "gui_enter";
+    case command::gui_escape: return "gui_escape";
     default:
         tt_no_default();
     }
@@ -93,66 +95,68 @@ inline std::ostream &operator<<(std::ostream &lhs, command const &rhs) {
 
 constexpr command to_command(std::string_view name) noexcept
 {
-    if (name == "text.cursor.char.left") {
+    if (name == "text_cursor_char_left") {
         return command::text_cursor_char_left;
-    } else if (name == "text.cursor.char.right") {
+    } else if (name == "text_cursor_char_right") {
         return command::text_cursor_char_right;
-    } else if (name == "text.cursor.word.left") {
+    } else if (name == "text_cursor_word_left") {
         return command::text_cursor_word_left;
-    } else if (name == "text.cursor.word.right") {
+    } else if (name == "text_cursor_word_right") {
         return command::text_cursor_word_right;
-    } else if (name == "text.cursor.line.begin") {
+    } else if (name == "text_cursor_line_begin") {
         return command::text_cursor_line_begin;
-    } else if (name == "text.cursor.line.end") {
+    } else if (name == "text_cursor_line_end") {
         return command::text_cursor_line_end;
-    } else if (name == "text.select.char.left") {
+    } else if (name == "text_select_char_left") {
         return command::text_select_char_left;
-    } else if (name == "text.select.char.right") {
+    } else if (name == "text_select_char_right") {
         return command::text_select_char_right;
-    } else if (name == "text.select.word") {
+    } else if (name == "text_select_word") {
         return command::text_select_word;
-    } else if (name == "text.select.word.left") {
+    } else if (name == "text_select_word_left") {
         return command::text_select_word_left;
-    } else if (name == "text.select.word.right") {
+    } else if (name == "text_select_word_right") {
         return command::text_select_word_right;
-    } else if (name == "text.select.line.begin") {
+    } else if (name == "text_select_line_begin") {
         return command::text_select_line_begin;
-    } else if (name == "text.select.line.end") {
+    } else if (name == "text_select_line_end") {
         return command::text_select_line_end;
-    } else if (name == "text.select.document") {
+    } else if (name == "text_select_document") {
         return command::text_select_document;
-    } else if (name == "text.mode.insert") {
+    } else if (name == "text_mode_insert") {
         return command::text_mode_insert;
-    } else if (name == "text.delete.char.prev") {
+    } else if (name == "text_delete_char_prev") {
         return command::text_delete_char_prev;
-    } else if (name == "text.delete.char.next") {
+    } else if (name == "text_delete_char_next") {
         return command::text_delete_char_next;
-    } else if (name == "text.edit.paste") {
+    } else if (name == "text_edit_paste") {
         return command::text_edit_paste;
-    } else if (name == "text.edit.copy") {
+    } else if (name == "text_edit_copy") {
         return command::text_edit_copy;
-    } else if (name == "text.edit.cut") {
+    } else if (name == "text_edit_cut") {
         return command::text_edit_cut;
-    } else if (name == "text.undo") {
+    } else if (name == "text_undo") {
         return command::text_undo;
-    } else if (name == "text.redo") {
+    } else if (name == "text_redo") {
         return command::text_redo;
-    } else if (name == "gui.widget.next") {
+    } else if (name == "gui_widget_next") {
         return command::gui_widget_next;
-    } else if (name == "gui.widget.prev") {
+    } else if (name == "gui_widget_prev") {
         return command::gui_widget_prev;
-    } else if (name == "gui.activate") {
+    } else if (name == "gui_menu_next") {
+        return command::gui_menu_next;
+    } else if (name == "gui_menu_prev") {
+        return command::gui_menu_prev;
+    } else if (name == "gui_toolbar_next") {
+        return command::gui_toolbar_next;
+    } else if (name == "gui_toolbar_prev") {
+        return command::gui_toolbar_prev;
+    } else if (name == "gui_activate") {
         return command::gui_activate;
-    } else if (name == "gui.escape") {
+    } else if (name == "gui_enter") {
+        return command::gui_enter;
+    } else if (name == "gui_escape") {
         return command::gui_escape;
-    } else if (name == "gui.up") {
-        return command::gui_up;
-    } else if (name == "gui.down") {
-        return command::gui_down;
-    } else if (name == "gui.left") {
-        return command::gui_left;
-    } else if (name == "gui.right") {
-        return command::gui_right;
     } else {
         return command::unknown;
     }

@@ -193,31 +193,31 @@ public:
     bool handle_command(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = widget::handle_command(command);
+        _request_relayout = true;
 
         if (*enabled) {
             switch (command) {
                 using enum tt::command;
             case gui_activate:
-                handled = true;
+            case gui_enter:
                 if (!_selecting) {
                     start_selecting();
                 } else {
                     stop_selecting();
                 }
-                break;
+                return true;
+
             case gui_escape:
                 if (_selecting) {
-                    handled = true;
                     stop_selecting();
                 }
-                break;
+                return true;
+
             default:;
             }
         }
 
-        _request_relayout = true;
-        return handled;
+        return super::handle_command(command);
     }
 
     bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
@@ -326,13 +326,15 @@ private:
     {
         _selecting = true;
         if (auto selected_menu_item = get_selected_menu_item()) {
-            this->window.update_keyboard_target(selected_menu_item);
+            this->window.update_keyboard_target(selected_menu_item, keyboard_focus_group::menu);
         }
     }
 
     void stop_selecting() noexcept
     {
         _selecting = false;
+        window.request_redraw(_overlay_widget->window_rectangle());
+        window.request_redraw(window_rectangle());
     }
 
     /** Populate the scroll view with menu items corresponding to the options.
@@ -377,6 +379,9 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
+        if (_selecting) {
+            context.color = theme::global->accentColor;
+        }
         context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
         context.draw_box_with_border_inside(rectangle());
     }
@@ -387,6 +392,9 @@ private:
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
         context.fill_color = context.color;
+        if (_selecting) {
+            context.fill_color = theme::global->accentColor;
+        }
         context.corner_shapes = f32x4{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
         context.draw_box_with_border_inside(_left_box_rectangle);
     }

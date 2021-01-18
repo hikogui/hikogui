@@ -209,6 +209,20 @@ bool gui_window::handle_mouse_event(MouseEvent event) noexcept
     return false;
 }
 
+bool gui_window::handle_command(tt::command command) noexcept
+{
+    switch (command) {
+    case command::gui_widget_next:
+        update_keyboard_target(keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+        return true;
+    case command::gui_widget_prev:
+        update_keyboard_target(keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
+        return true;
+    default:;
+    }
+    return false;
+}
+
 bool gui_window::handle_keyboard_event(KeyboardEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -244,18 +258,9 @@ bool gui_window::handle_keyboard_event(KeyboardEvent const &event) noexcept
             }
         }
 
-        // If no widgets handle the commands, handle the keyboard focus change commands.
-        for (ttlet command : commands) {
-            switch (command) {
-            case command::gui_widget_next:
-                update_keyboard_target(
-                    keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+        for (auto command : commands) {
+            if (handle_command(command)) {
                 return true;
-            case command::gui_widget_prev:
-                update_keyboard_target(
-                    keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
-                return true;
-            default:;
             }
         }
     }

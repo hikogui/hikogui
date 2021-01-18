@@ -25,12 +25,17 @@ public:
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
 
     template<typename Value = observable<value_type>>
-    [[nodiscard]] abstract_button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) :
+    [[nodiscard]] abstract_button_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        value_type true_value,
+        Value &&value = {}) :
         widget(window, parent), true_value(std::move(true_value)), value(std::forward<Value>(value))
     {
     }
 
-    draw_context make_draw_context(draw_context context) const noexcept override {
+    draw_context make_draw_context(draw_context context) const noexcept override
+    {
         auto new_context = super::make_draw_context(context);
 
         if (_pressed) {
@@ -46,29 +51,29 @@ public:
         return is_normal(group) && *enabled;
     }
 
-    [[nodiscard]] bool handle_command(command command) noexcept final
+    [[nodiscard]] bool handle_command(command command) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = widget::handle_command(command);
 
         if (*enabled) {
-            if (command == command::gui_activate) {
-                handled = true;
-
-                // Run the callbacks from the main loop so that recursion is eliminated.
-                run_from_main_loop([this]() {
-                    this->_notifier();
-                });
+            switch (command) {
+            case command::gui_activate: this->_notifier(); return true;
+            case command::gui_enter:
+                this->_notifier();
+                this->window.update_keyboard_target(
+                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                return true;
+            default:;
             }
         }
 
-        return handled;
+        return super::handle_command(command);
     }
 
     [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept final
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = widget::handle_mouse_event(event);
+        auto handled = super::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
             handled = true;
@@ -122,4 +127,4 @@ private:
     notifier_type _notifier;
 };
 
-}
+} // namespace tt

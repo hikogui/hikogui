@@ -466,7 +466,8 @@ public:
     }
 
     /** Handle command.
-     * If a widget does not fully handle a command it should pass the command to the super class' `handleCommand()`.
+     * If a widget does not fully handle a command it should pass the
+     * command to the super class' `handle_command()`.
      */
     virtual bool handle_command(command command) noexcept;
 
