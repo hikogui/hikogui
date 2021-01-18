@@ -6,6 +6,7 @@
 #include "type_traits.hpp"
 #include <type_traits>
 #include <string>
+#include <concepts>
 
 namespace tt {
 

@@ -18,6 +18,17 @@ namespace tt {
 
 /** A single line text field.
  *
+ * A text field has the following visual elements:
+ *  - A text field box which surrounds the user-editable text.
+ *    It will use a color to show when the text-field has keyboard focus.
+ *    It will use another color to show when the editable text is incorrect.
+ *    Inside this box are the following elements:
+ *     + Prefix: an icon describing the meaning, such as a search icon, or password, or popup-chevron.
+ *     + Editable text
+ *     + Suffix: text that follows the editable text, such as a SI base units like " kg" or " Hz".
+ *  - Outside the text field box is an optional error message.
+ *  - A popup window can be used to select between suggestions.
+ *
  * Two commit modes:
  *  - on-activate: When pressing enter or changing keyboard focus using tab or clicking in another
  *                 field; as long as the text value can be validly converted.
