@@ -60,6 +60,12 @@ public:
         return parent_->window_clipping_rectangle();
     }
 
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return is_toolbar(group) && *this->enabled;
+    }
+
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());

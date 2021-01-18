@@ -10,6 +10,8 @@
 #include "MouseEvent.hpp"
 #include "KeyboardEvent.hpp"
 #include "SubpixelOrientation.hpp"
+#include "keyboard_focus_direction.hpp"
+#include "keyboard_focus_group.hpp"
 #include "../text/gstring.hpp"
 #include "../logger.hpp"
 #include "../numeric_array.hpp"
@@ -47,11 +49,7 @@ public:
         WindowLost, //!< The window was destroyed, need to cleanup.
     };
 
-    enum class Size {
-        Normal,
-        Minimized,
-        Maximized
-    };
+    enum class Size { Normal, Minimized, Maximized };
 
     gui_system &system;
 
@@ -117,14 +115,13 @@ public:
     /** By how much the font needs to be scaled compared to current windowScale.
      * Widgets should pass this value to the text-shaper.
      */
-    [[nodiscard]] float fontScale() const noexcept {
+    [[nodiscard]] float fontScale() const noexcept
+    {
         return dpi / (windowScale() * 72.0f);
     }
 
     //! The widget covering the complete window.
     std::shared_ptr<WindowWidget> widget;
-
-    
 
     gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
     virtual ~gui_window();
@@ -137,7 +134,7 @@ public:
     /** 2 phase constructor.
      * Must be called directly after the constructor on the same thread,
      * before another thread can send messages to the window.
-     * 
+     *
      * `init()` should not take locks on window::mutex.
      */
     virtual void init();
@@ -149,7 +146,10 @@ public:
 
     /*! Remove the GPU device from the window, making it an orphan.
      */
-    void unsetDevice() { setDevice({}); }
+    void unsetDevice()
+    {
+        setDevice({});
+    }
 
     gui_device *device() const noexcept
     {
@@ -167,14 +167,14 @@ public:
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
-    template<typename T, cell_address CellAddress,typename... Args>
-    std::shared_ptr<T> make_widget(Args &&... args);
+    template<typename T, cell_address CellAddress, typename... Args>
+    std::shared_ptr<T> make_widget(Args &&...args);
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
-    template<typename T, horizontal_alignment Alignment=horizontal_alignment::left, typename... Args>
-    std::shared_ptr<T> make_toolbar_widget(Args &&... args);
+    template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
+    std::shared_ptr<T> make_toolbar_widget(Args &&...args);
 
     virtual void setCursor(Cursor cursor) = 0;
 
@@ -190,15 +190,28 @@ public:
     [[nodiscard]] virtual std::u8string getTextFromClipboard() const noexcept = 0;
     virtual void setTextOnClipboard(std::u8string str) noexcept = 0;
 
-    void next_keyboard_widget(std::shared_ptr<tt::widget> const &currentTargetWidget, bool reverse) noexcept;
-
-
     void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, f32x4 position = f32x4{0.0f, 0.0f}) noexcept;
 
     /** Change the keyboard focus to the given widget.
+     * If the group of the widget is incorrect then no widget will be in focus.
+     * 
+     * @param widget The new widget to focus, or empty to remove all keyboard focus.
+     * @param group The group the widget must belong to.
      */
-    void update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget) noexcept;
+    void update_keyboard_target(std::shared_ptr<tt::widget> widget, keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
 
+    /** Change the keyboard focus to the given, previous or next widget.
+     * This function will find the closest widget from the given widget wich belong to the given
+     * group; if none is found, or if the original selected widget is found, then no widget will be in focus.
+     * 
+     * @param widget The widget to use as the start point for a new widget to select.
+     * @param group The group the widget must belong to.
+     * @param direction The direction to search in, or current to select the current widget.
+     */
+    void update_keyboard_target(
+        std::shared_ptr<tt::widget> const &widget,
+        keyboard_focus_group group,
+        keyboard_focus_direction direction) noexcept;
 
     /** Get the size of the virtual-screen.
      * Each window may be on a different virtual screen with different
@@ -232,9 +245,9 @@ protected:
     virtual void createWindow(const std::u8string &title, f32x4 extent) = 0;
 
     /** By how much graphic elements should be scaled to match a point.
-    * The widget should not care much about this value, since the
-    * transformation matrix will match the window scaling.
-    */
+     * The widget should not care much about this value, since the
+     * transformation matrix will match the window scaling.
+     */
     [[nodiscard]] float windowScale() const noexcept;
 
     /*! Called when the GPU library has changed the window size.
@@ -257,16 +270,16 @@ protected:
     bool handle_mouse_event(MouseEvent event) noexcept;
 
     /*! Handle keyboard event.
-    * Called by the operating system to show the character that was entered
-    * or special key that was used.
-    */
+     * Called by the operating system to show the character that was entered
+     * or special key that was used.
+     */
     bool handle_keyboard_event(KeyboardEvent const &event) noexcept;
 
     bool handle_keyboard_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
 
-    bool handle_keyboard_event(Grapheme grapheme, bool full=true) noexcept;
+    bool handle_keyboard_event(Grapheme grapheme, bool full = true) noexcept;
 
-    bool handle_keyboard_event(char32_t c, bool full=true) noexcept;
+    bool handle_keyboard_event(char32_t c, bool full = true) noexcept;
 
 private:
     /** Target of the mouse
@@ -292,4 +305,4 @@ private:
     std::weak_ptr<tt::widget> lastKeyboardWidget = {};
 };
 
-}
+} // namespace tt

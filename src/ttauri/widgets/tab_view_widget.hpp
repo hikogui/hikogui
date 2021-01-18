@@ -47,7 +47,7 @@ public:
 
         // Recurse into the selected widget.
         auto &child = selected_child();
-        
+
         if (child.update_constraints(display_time_point, need_reconstrain) || has_updated_contraints) {
             _preferred_size = child.preferred_size();
             _preferred_base_line = child.preferred_base_line();
@@ -99,14 +99,17 @@ public:
         return handled;
     }
 
-    std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept
+    std::shared_ptr<widget> find_next_widget(
+        std::shared_ptr<widget> const &current_widget,
+        keyboard_focus_group group,
+        keyboard_focus_direction direction) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        return selected_child().next_keyboard_widget(currentKeyboardWidget, reverse);
+        return selected_child().find_next_widget(current_widget, group, direction);
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(value_type value, Args const &... args) noexcept
+    std::shared_ptr<WidgetType> make_widget(value_type value, Args const &...args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 

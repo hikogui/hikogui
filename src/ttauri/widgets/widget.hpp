@@ -10,6 +10,8 @@
 #include "../GUI/KeyboardEvent.hpp"
 #include "../GUI/theme.hpp"
 #include "../GUI/draw_context.hpp"
+#include "../GUI/keyboard_focus_direction.hpp"
+#include "../GUI/keyboard_focus_group.hpp"
 #include "../text/ShapedText.hpp"
 #include "../alignment.hpp"
 #include "../Path.hpp"
@@ -156,7 +158,7 @@ public:
     /** The logical layer of the widget.
      * The logical layer can be used to determine how for away
      * from the window-widget (root) the current widget is.
-     * 
+     *
      * Logical layers start at 0 for the window-widget.
      * Each child widget increases the logical layer by 1.
      *
@@ -174,10 +176,10 @@ public:
      * The semantic layer is used mostly by the `draw()` function
      * for selecting colors from the theme, to denote nesting widgets
      * inside other widgets.
-     * 
+     *
      * Semantic layers start at 0 for the window-widget and for any pop-up
      * widgets.
-     * 
+     *
      * The semantic layer is increased by one, whenever a user of the
      * user-interface would understand the next layer to begin.
      *
@@ -245,7 +247,7 @@ public:
      * you will get the highest priority relative-base-line. The container
      * can then use the `relative_base_line::position()` method to get the
      * base-line position that should be used for all widgets in a row.
-     * 
+     *
      * @pre `mutex` must be locked by current thread.
      * @pre `updateConstraint()` must be called first.
      * @return A relative base-line position preferred by this widget.
@@ -275,8 +277,7 @@ public:
     void set_layout_parameters(
         aarect const &window_rectangle,
         aarect const &window_clipping_rectangle,
-        float window_base_line = std::numeric_limits<float>::infinity()
-    ) noexcept
+        float window_base_line = std::numeric_limits<float>::infinity()) noexcept
     {
         if (std::isinf(window_base_line)) {
             window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
@@ -292,7 +293,8 @@ public:
             _request_relayout = true;
         }
 
-        ttlet window_clipping_rectangle_clean = intersect(window_clipping_rectangle, expand(_window_rectangle, theme::global->borderWidth));
+        ttlet window_clipping_rectangle_clean =
+            intersect(window_clipping_rectangle, expand(_window_rectangle, theme::global->borderWidth));
         if (_window_clipping_rectangle != window_clipping_rectangle_clean) {
             _window_clipping_rectangle = window_clipping_rectangle_clean;
             _request_relayout = true;
@@ -359,7 +361,7 @@ public:
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
-     * 
+     *
      * @param window_position The coordinate of the mouse on the window.
      *                        Use `fromWindowTransform` to convert to widget-local coordinates.
      * @return A HitBox object with the cursor-type and a reference to the widget.
@@ -379,7 +381,7 @@ public:
      *
      * @pre `mutex` must be locked by current thread.
      */
-    [[nodiscard]] virtual bool accepts_focus() const noexcept
+    [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return false;
@@ -389,20 +391,20 @@ public:
      * This function is called on each vertical sync, even if no drawing is to be done.
      * It should recursively call `updateConstraints()` on each of the visible children,
      * so they get a chance to update.
-     * 
+     *
      * This function may be used for expensive calculations, such as text-shaping, which
      * should only be done when the data changes. Because this function is called on every
      * vertical sync it should cache these calculations.
-     * 
+     *
      * Subclasses should call `updateConstraints()` on its base-class to check if the constraints where
      * changed. `Widget::update_constraints()` will check if `requestConstraints` was set.
      * `Container::update_constraints()` will check if any of the children changed constraints.
-     * 
+     *
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
      * it should set window.requestResize to true.
-     * 
+     *
      * This function will change what is returned by `preferred_size()` and `preferred_base_line()`.
-     * 
+     *
      * @pre `mutex` must be locked by current thread.
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_reconstrain Force the widget to re-constrain.
@@ -421,10 +423,10 @@ public:
      *
      * This function will likely call `set_window_rectangle()` and `set_window_base_line()` on
      * its children, before calling `updateLayout()` on that child.
-     * 
+     *
      * Subclasses should call `updateLayout()` on its children, call `updateLayout()` on its
      * base class with `forceLayout` argument to the result of `layoutRequest.exchange(false)`.
-     * 
+     *
      * @pre `mutex` must be locked by current thread.
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_layout Force the widget to layout
@@ -434,7 +436,7 @@ public:
     /** Make a draw context for this widget.
      * This function will make a draw context with the correct transformation
      * and default color values.
-     * 
+     *
      * @pre `mutex` must be locked by current thread.
      * @param context A template drawing context. This template may be taken
      *                from the parent's draw call.
@@ -470,7 +472,7 @@ public:
 
     /** Handle command recursive.
      * Handle a command and pass it to each child.
-     * 
+     *
      * @param command The command to handle by this widget.
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
@@ -484,10 +486,10 @@ public:
      *
      * In most cased overriding methods should call the super's `handle_mouse_event()` at the
      * start of the function, to detect `hover`.
-     * 
+     *
      * When this method does not handle the event the window will call `handle_mouse_event()`
      * on the widget's parent.
-     * 
+     *
      * @param event The mouse event, positions are in window coordinates.
      * @return If this widget has handled the mouse event.
      */
@@ -503,17 +505,20 @@ public:
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget
-     * that returns true from `acceptsFocus()`.
-     * 
+     * that returns true from `accepts_keyboard_focus()`.
+     *
      * @param current_keyboard_widget The widget that currently has focus; or empty to get the first widget
      *                              that accepts focus.
-     * @param reverse Walk the widget tree in reverse order.
+     * @param group The group to which the widget must belong.
+     * @param direction The direction in which to walk the widget tree.
      * @return A pointer to the next widget.
      * @retval currentKeyboardWidget when currentKeyboardWidget was found but no next widget was found.
      * @retval empty when currentKeyboardWidget is not found in this Widget.
      */
-    [[nodiscard]] virtual std::shared_ptr<widget>
-    next_keyboard_widget(std::shared_ptr<widget> const &current_keyboard_widget, bool reverse) const noexcept;
+    [[nodiscard]] virtual std::shared_ptr<widget> find_next_widget(
+        std::shared_ptr<widget> const &current_keyboard_widget,
+        keyboard_focus_group group,
+        keyboard_focus_direction direction) const noexcept;
 
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
@@ -583,10 +588,10 @@ protected:
     /** The draw layer of the widget.
      * This value translates directly to the z-axis between 0.0 (far) and 100.0 (near)
      * of the clipping volume.
-     * 
+     *
      * This value is discontinues to handle overlay-panels which should be drawn on top
      * of widgets which may have a high `_logical_layer`.
-     * 
+     *
      * @sa draw_layer() const
      */
     float _draw_layer;
@@ -594,14 +599,14 @@ protected:
     /** The draw layer of the widget.
      * This value increments for each visible child-layer in the widget tree
      * and resets on overlay-panels.
-     * 
+     *
      * @sa semantic_layer() const
      */
     int _semantic_layer;
 
     /** The logical layer of the widget.
      * This value increments for each child-layer in the widget tree.
-     * 
+     *
      * @sa logical_layer() const
      */
     int _logical_layer;

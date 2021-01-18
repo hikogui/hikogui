@@ -251,17 +251,20 @@ public:
         return r;
     }
 
-    std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept
+    std::shared_ptr<widget> find_next_widget(
+        std::shared_ptr<widget> const &current_widget,
+        keyboard_focus_group group,
+        keyboard_focus_direction direction) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         tt_axiom(content);
 
         // Scrollbars are never keyboard focus targets.
-        return content->next_keyboard_widget(currentKeyboardWidget, reverse);
+        return content->find_next_widget(current_widget, group, direction);
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args const &... args) noexcept
+    std::shared_ptr<WidgetType> make_widget(Args const &...args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 

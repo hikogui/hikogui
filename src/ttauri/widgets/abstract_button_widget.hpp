@@ -40,10 +40,10 @@ public:
         return new_context;
     }
 
-    [[nodiscard]] bool accepts_focus() const noexcept final
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return *enabled;
+        return is_normal(group) && *enabled;
     }
 
     [[nodiscard]] bool handle_command(command command) noexcept final

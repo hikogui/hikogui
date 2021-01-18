@@ -144,7 +144,7 @@ public:
         return handled;
     }
 
-    [[nodiscard]] bool accepts_focus() const noexcept override
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         return false;
     }

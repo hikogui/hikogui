@@ -119,34 +119,36 @@ public:
         return r;
     }
 
-    std::shared_ptr<widget> next_keyboard_widget(
+    std::shared_ptr<widget> find_next_widget(
         std::shared_ptr<widget> const &current_keyboard_widget,
-        bool reverse) const noexcept
+        keyboard_focus_group group,
+        keyboard_focus_direction direction) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(direction != keyboard_focus_direction::current);
 
         // If current_keyboard_widget is empty, then we need to find the first widget that accepts focus.
         auto found = !current_keyboard_widget;
 
         // The container widget itself accepts focus.
-        if (found && !reverse && accepts_focus()) {
+        if (found && direction == keyboard_focus_direction::forward && accepts_keyboard_focus(group)) {
             return std::const_pointer_cast<widget>(shared_from_this());
         }
 
-        ssize_t first = reverse ? ssize(_children) - 1 : 0;
-        ssize_t last = reverse ? -1 : ssize(_children);
-        ssize_t step = reverse ? -1 : 1;
+        ssize_t first = direction == keyboard_focus_direction::forward ? 0 : ssize(_children) - 1;
+        ssize_t last = direction == keyboard_focus_direction::forward ? ssize(_children) : - 1;
+        ssize_t step = direction == keyboard_focus_direction::forward ? 1 : -1;
         for (ssize_t i = first; i != last; i += step) {
             auto &&child = _children[i];
 
             if (found) {
                 // Find the first focus accepting widget.
-                if (auto tmp = child->next_keyboard_widget({}, reverse)) {
+                if (auto tmp = child->find_next_widget({}, group, direction)) {
                     return tmp;
                 }
 
             } else {
-                auto tmp = child->next_keyboard_widget(current_keyboard_widget, reverse);
+                auto tmp = child->find_next_widget(current_keyboard_widget, group, direction);
                 if (tmp == current_keyboard_widget) {
                     // The current widget was found, but no next widget available in the child.
                     found = true;
@@ -158,7 +160,7 @@ public:
         }
 
         // The container widget itself accepts focus.
-        if (found && reverse && accepts_focus()) {
+        if (found && direction == keyboard_focus_direction::backward && accepts_keyboard_focus(group)) {
             return std::const_pointer_cast<widget>(shared_from_this());
         }
 

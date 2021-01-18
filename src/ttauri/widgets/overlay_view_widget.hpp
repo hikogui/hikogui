@@ -97,16 +97,19 @@ public:
         return child->hitbox_test(window_position);
     }
 
-    std::shared_ptr<widget> next_keyboard_widget(std::shared_ptr<widget> const &currentKeyboardWidget, bool reverse) const noexcept
+    std::shared_ptr<widget> find_next_widget(
+        std::shared_ptr<widget> const &currentKeyboardWidget,
+        keyboard_focus_group group,
+        keyboard_focus_direction direction) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         tt_axiom(child);
-        return child->next_keyboard_widget(currentKeyboardWidget, reverse);
+        return child->find_next_widget(currentKeyboardWidget, group, direction);
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args const &... args) noexcept
+    std::shared_ptr<WidgetType> make_widget(Args const &...args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 

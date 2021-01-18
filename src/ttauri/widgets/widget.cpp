@@ -157,16 +157,17 @@ bool widget::handle_keyboard_event(KeyboardEvent const &event) noexcept {
 }
 
 std::shared_ptr<widget>
-widget::next_keyboard_widget(std::shared_ptr<widget> const &current_keyboard_widget, bool reverse) const noexcept
+widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget, keyboard_focus_group group, keyboard_focus_direction direction) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(direction != keyboard_focus_direction::current);
 
     auto this_ = shared_from_this();
     if (current_keyboard_widget == this_) {
         // This is the current widget, this widget does not have any children, so return this.
         return std::const_pointer_cast<widget>(this_);
 
-    } else if (!current_keyboard_widget && accepts_focus()) {
+    } else if (!current_keyboard_widget && accepts_keyboard_focus(group)) {
         // If the current_keyboard_widget is empty, then return the first widget
         // that accepts focus.
         return std::const_pointer_cast<widget>(this_);

@@ -33,6 +33,8 @@ target_sources(ttauri PRIVATE
     KeyboardModifiers.hpp
     KeyboardVirtualKey.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/KeyboardVirtualKey_win32.cpp>
+    keyboard_focus_direction.hpp
+    keyboard_focus_group.hpp
     MouseButtons.hpp
     MouseEvent.hpp
     pipeline.cpp

@@ -81,16 +81,19 @@ public:
         if (updated) {
             ttlet index = get_value_as_index();
             if (index == -1) {
-                _text_stencil = stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle);
+                _text_stencil =
+                    stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle);
                 _text_stencil_color = theme::global->placeholderLabelStyle.color;
             } else {
-                _text_stencil = stencil::make_unique(alignment::middle_left, (*option_list)[index].second, theme::global->labelStyle);
+                _text_stencil =
+                    stencil::make_unique(alignment::middle_left, (*option_list)[index].second, theme::global->labelStyle);
                 _text_stencil_color = theme::global->labelStyle.color;
             }
 
             // Calculate the size of the widget based on the largest height of a label and the width of the overlay.
             ttlet unknown_label_size =
-                stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle)->preferred_extent();
+                stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle)
+                    ->preferred_extent();
 
             ttlet overlay_width = _overlay_widget->preferred_size().minimum().width();
             ttlet option_width = std::max(overlay_width, unknown_label_size.width() + theme::global->margin * 2.0f);
@@ -120,7 +123,8 @@ public:
                 // The overlay should start on the same left edge as the selection box and the same width.
                 // The height of the overlay should be the maximum height, which will show all the options.
 
-                ttlet overlay_width = clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
+                ttlet overlay_width =
+                    clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
                 ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
                 ttlet overlay_x = _window_rectangle.x() + theme::global->smallSize;
                 ttlet overlay_y = std::round(_window_rectangle.middle() - overlay_height * 0.5f);
@@ -245,27 +249,29 @@ public:
         return r;
     }
 
-    [[nodiscard]] bool accepts_focus() const noexcept override
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return *enabled;
+        return is_normal(group) && *enabled;
     }
 
-    std::shared_ptr<widget>
-    next_keyboard_widget(std::shared_ptr<widget> const &current_keyboard_widget, bool reverse) const noexcept
+    std::shared_ptr<widget> find_next_widget(
+        std::shared_ptr<widget> const &current_widget,
+        keyboard_focus_group group,
+        keyboard_focus_direction direction) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (_selecting) {
             tt_axiom(_overlay_widget);
-            if (current_keyboard_widget == shared_from_this()) {
-                return _overlay_widget->next_keyboard_widget({}, reverse);
+            if (current_widget == shared_from_this()) {
+                return _overlay_widget->find_next_widget({}, group, direction);
             } else {
-                return _overlay_widget->next_keyboard_widget(current_keyboard_widget, reverse);
+                return _overlay_widget->find_next_widget(current_widget, group, direction);
             }
 
         } else {
-            return super::next_keyboard_widget(current_keyboard_widget, reverse);
+            return super::find_next_widget(current_widget, group, direction);
         }
     }
 

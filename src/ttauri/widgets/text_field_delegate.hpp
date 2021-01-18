@@ -13,19 +13,21 @@
 #include "../concepts.hpp"
 
 namespace tt {
+template<typename T>
 class text_field_widget;
 
 template<typename T>
 class text_field_delegate {
 public:
     using value_type = T;
+    using sender_type = text_field_widget<value_type>;
 
     /** The width of the text field in characters.
      *
      * @param self The widget controlled by this delegate.
-     * @return The width of the text field box (exclusing prefix and suffix) in characters.
+     * @return The width of the text field box (excluding prefix and suffix) in characters.
      */
-    size_t text_width(text_field_widget &self) const noexcept
+    size_t text_width(sender_type &sender) const noexcept
     {
         return 20;
     }
@@ -35,7 +37,7 @@ public:
      * @param self The widget controlled by this delegate.
      * @return A list of suffestion to show in the popup box.
      */
-    std::vector<std::string> suggestions(text_field_widget &self) const noexcept
+    std::vector<std::string> suggestions(sender_type &sender) const noexcept
     {
         return {};
     }
@@ -46,7 +48,7 @@ public:
      * @param value The original value before editing.
      * @return The string to be shown inside the text field box.
      */
-    virtual std::string to_string(text_field_widget &self, value_type const &value) noexcept
+    virtual std::string to_string(sender_type &sender, value_type const &value) noexcept
     {
         // XXX Need to pass the current local to format.
         return fmt::format("{}", value);
@@ -60,7 +62,7 @@ public:
      * @return value_type The value if the string conversion was successful. empty when the string
      *         conversion was NOT successful.
      */
-    virtual std::optional<value_type> from_string(text_field_widget &self, std::string_view text, l10n &error) noexcept
+    virtual std::optional<value_type> from_string(sender_type &sender, std::string_view text, l10n &error) noexcept
     {
         try {
             error = {};

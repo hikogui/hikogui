@@ -4,6 +4,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
+#include "toolbar_widget.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../Path.hpp"
 #include "../GUI/draw_context.hpp"
@@ -24,9 +25,10 @@ public:
 
     template<typename Value = observable<value_type>>
     menu_item_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :
-        super(window, parent, std::move(true_value), std::forward<Value>(value))
+        super(window, parent, std::move(true_value), std::forward<Value>(value)),
+        _parent_is_toolbar(dynamic_cast<toolbar_widget *>(parent.get()) != nullptr)
     {
-        // Toolbar buttons hug the toolbar and neighbor widgets.
+        // menu item buttons hug the container-border and neighbor widgets.
         this->_margin = 0.0f;
     }
 
@@ -115,6 +117,16 @@ public:
         return _show_short_cut;
     }
 
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        if (_parent_is_toolbar) {
+            return is_toolbar(group) && *this->enabled;
+        } else {
+            return is_menu(group) && *this->enabled;
+        }
+    }
+
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -197,6 +209,7 @@ private:
     std::unique_ptr<label_stencil> _label_stencil;
     std::unique_ptr<image_stencil> _check_mark_stencil;
 
+    bool _parent_is_toolbar;
     bool _show_check_mark = false;
     bool _show_icon = false;
     bool _show_short_cut = false;

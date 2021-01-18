@@ -116,7 +116,7 @@ public:
             ttlet text_digit_width = text_font.description.DigitWidth * text_style.scaled_size();
 
             if (auto delegate = _delegate.lock()) {
-                _text_width = std::ceil(text_digit_width * narrow_cast<float>(delegate->text_width()));
+                _text_width = std::ceil(text_digit_width * narrow_cast<float>(delegate->text_width(*this)));
             } else {
                 _text_width = 100.0;
             }
@@ -163,11 +163,11 @@ public:
                 if (_focus) {
                     // Update the optional error value from the string conversion when the
                     // field has keyboard focus.
-                    delegate->from_string(field_str, _error);
+                    delegate->from_string(*this, field_str, _error);
 
                 } else {
                     // When field is not focused, simply follow the observed_value.
-                    _field = delegate->to_string(*value);
+                    _field = delegate->to_string(*this, *value);
                     _error = {};
                 }
 
@@ -364,10 +364,10 @@ public:
         }
     }
 
-    [[nodiscard]] bool accepts_focus() const noexcept override
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return *enabled;
+        return is_normal(group) && *enabled;
     }
 
 private:
@@ -418,7 +418,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
         if (_continues || force) {
             if (auto delegate = _delegate.lock()) {
-                auto optional_value = delegate->from_string(static_cast<std::string>(_field), _error);
+                auto optional_value = delegate->from_string(*this, static_cast<std::string>(_field), _error);
                 if (optional_value) {
                     value = *optional_value;
                 }
