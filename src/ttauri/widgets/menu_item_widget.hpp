@@ -30,7 +30,7 @@ public:
         value_type true_value,
         Value &&value = {}) noexcept :
         super(window, parent, std::move(true_value), std::forward<Value>(value)),
-        _parent_is_toolbar(dynamic_cast<toolbar_widget *>(parent.get()) != nullptr)
+        _parent_is_toolbar(parent->is_toolbar())
     {
         // menu item buttons hug the container-border and neighbor widgets.
         this->_margin = 0.0f;

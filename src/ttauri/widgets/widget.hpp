@@ -99,10 +99,6 @@ public:
      */
     gui_window &window;
 
-    /** Pointer to the parent widget.
-     * May be a nullptr only when this is the top level widget.
-     */
-    std::weak_ptr<abstract_container_widget> parent;
 
     /** The widget is enabled.
      */
@@ -522,12 +518,35 @@ public:
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept;
 
+    /** Get a shared_ptr to the parent.
+     */
+    [[nodiscard]] std::shared_ptr<abstract_container_widget const> shared_parent() const noexcept;
+
+    /** Get a shared_ptr to the parent.
+     */
+    [[nodiscard]] std::shared_ptr<abstract_container_widget> shared_parent() noexcept;
+
+    /** Get a reference to the parent.
+     * It is undefined behavior to call this function when the widget does not have a parent.
+     */
+    [[nodiscard]] abstract_container_widget const &parent() const noexcept;
+
+    /** Get a reference to the parent.
+     * It is undefined behavior to call this function when the widget does not have a parent.
+     */
+    [[nodiscard]] abstract_container_widget &parent() noexcept;
+
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
     static std::vector<std::shared_ptr<widget>> parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
 
 protected:
+    /** Pointer to the parent widget.
+     * May be a nullptr only when this is the top level widget.
+     */
+    std::weak_ptr<abstract_container_widget> _parent;
+
     /** Mouse cursor is hovering over the widget.
      */
     bool _hover = false;

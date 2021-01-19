@@ -8,19 +8,19 @@
 
 namespace tt {
 
-widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> _parent) noexcept :
+widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> parent) noexcept :
     enabled(true),
     window(_window),
-    parent(_parent),
+    _parent(parent),
     _draw_layer(0.0f),
     _logical_layer(0),
     _semantic_layer(0)
 {
-    if (_parent) {
+    if (parent) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        _draw_layer = _parent->draw_layer() + 1.0f;
-        _logical_layer = _parent->logical_layer() + 1;
-        _semantic_layer = _parent->semantic_layer() + 1;
+        _draw_layer = parent->draw_layer() + 1.0f;
+        _logical_layer = parent->logical_layer() + 1;
+        _semantic_layer = parent->semantic_layer() + 1;
     }
 
     _enabled_callback = enabled.subscribe([this](auto...) {
@@ -178,6 +178,38 @@ widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget,
     }
 }
 
+/** Get a shared_ptr to the parent.
+ */
+[[nodiscard]] std::shared_ptr<abstract_container_widget const> widget::shared_parent() const noexcept
+{
+    return _parent.lock();
+}
+
+/** Get a shared_ptr to the parent.
+ */
+[[nodiscard]] std::shared_ptr<abstract_container_widget> widget::shared_parent() noexcept
+{
+    return _parent.lock();
+}
+
+[[nodiscard]] abstract_container_widget const &widget::parent() const noexcept
+{
+    if (ttlet parent_ = shared_parent()) {
+        return *parent_;
+    } else {
+        tt_no_default();
+    }
+}
+
+[[nodiscard]] abstract_container_widget &widget::parent() noexcept
+{
+    if (ttlet parent_ = shared_parent()) {
+        return *parent_;
+    } else {
+        tt_no_default();
+    }
+}
+
 /** Get a list of parents of a given widget.
  * The chain includes the given widget.
  */
@@ -189,7 +221,7 @@ std::vector<std::shared_ptr<widget>> widget::parent_chain(std::shared_ptr<tt::wi
 
     if (auto w = child_widget) {
         chain.push_back(w);
-        while (w = std::static_pointer_cast<widget>(w->parent.lock())) {
+        while (w = std::static_pointer_cast<widget>(w->shared_parent())) {
             chain.push_back(w);
         }
     }

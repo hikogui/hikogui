@@ -203,7 +203,7 @@ bool gui_window::handle_mouse_event(MouseEvent event) noexcept
         }
 
         // Forward the mouse event to the parent of the target.
-        target = target->parent.lock();
+        target = target->shared_parent();
     }
 
     return false;
@@ -235,7 +235,7 @@ bool gui_window::handle_keyboard_event(KeyboardEvent const &event) noexcept
                 return true;
             }
             // Forward the keyboard event to the parent of the target.
-            target = target->parent.lock();
+            target = target->shared_parent();
         }
     }
 
@@ -254,7 +254,7 @@ bool gui_window::handle_keyboard_event(KeyboardEvent const &event) noexcept
                     }
                 }
                 // Forward the keyboard event to the parent of the target.
-                target = target->parent.lock();
+                target = target->shared_parent();
             }
         }
 

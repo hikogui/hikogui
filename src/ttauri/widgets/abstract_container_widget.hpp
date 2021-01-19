@@ -39,7 +39,7 @@ public:
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        tt_axiom(widget->parent.lock().get() == this);
+        tt_axiom(&widget->parent() == this);
         _children.push_back(widget);
         _request_reconstrain = true;
         window.requestLayout = true;
@@ -67,6 +67,11 @@ public:
         return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
     }
 
+    [[nodiscard]] virtual bool is_toolbar() const noexcept
+    {
+        return parent().is_toolbar();
+    }
+
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -75,7 +80,7 @@ public:
 
         for (auto &&child : _children) {
             tt_axiom(child);
-            tt_axiom(child->parent.lock().get() == this);
+            tt_axiom(&child->parent() == this);
             has_constrainted |= child->update_constraints(display_time_point, need_reconstrain);
         }
 
@@ -89,7 +94,7 @@ public:
         need_layout |= std::exchange(_request_relayout, false);
         for (auto &&child : _children) {
             tt_axiom(child);
-            tt_axiom(child->parent.lock().get() == this);
+            tt_axiom(&child->parent() == this);
             child->update_layout(display_time_point, need_layout);
         }
 
@@ -102,7 +107,7 @@ public:
 
         for (auto &child : _children) {
             tt_axiom(child);
-            tt_axiom(child->parent.lock().get() == this);
+            tt_axiom(&child->parent() == this);
             child->draw(child->make_draw_context(context), display_time_point);
         }
 
@@ -116,7 +121,7 @@ public:
         auto handled = false;
         for (auto &child : _children) {
             tt_axiom(child);
-            tt_axiom(child->parent.lock().get() == this);
+            tt_axiom(&child->parent() == this);
             handled |= child->handle_command_recursive(command, reject_list);
         }
         handled |= super::handle_command_recursive(command, reject_list);
@@ -130,7 +135,7 @@ public:
         auto r = HitBox{};
         for (ttlet &child : _children) {
             tt_axiom(child);
-            tt_axiom(child->parent.lock().get() == this);
+            tt_axiom(&child->parent() == this);
             r = std::max(r, child->hitbox_test(window_position));
         }
         return r;

@@ -55,9 +55,7 @@ public:
     [[nodiscard]] aarect window_clipping_rectangle() const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        ttlet parent_ = this->parent.lock();
-        return parent_->window_clipping_rectangle();
+        return this->parent().window_clipping_rectangle();
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
@@ -129,11 +127,11 @@ private:
     void draw_focus_line(draw_context const &context) noexcept
     {
         if (this->_focus && this->window.active && *this->value == this->true_value) {
-            ttlet parent_ = this->parent.lock();
+            ttlet &parent_ = this->parent();
 
             // Draw the focus line over the full width of the window at the bottom
             // of the toolbar.
-            auto parent_context = parent_->make_draw_context(context);
+            auto parent_context = parent_.make_draw_context(context);
 
             // Draw the line above every other direct child of the toolbar, and between
             // the selected-tab (0.6) and unselected-tabs (0.8).
@@ -141,7 +139,7 @@ private:
 
             parent_context.fill_color = theme::global->accentColor;
             parent_context.draw_filled_quad(
-                aarect{parent_->rectangle().x(), parent_->rectangle().y(), parent_->rectangle().width(), 1.0f});
+                aarect{parent_.rectangle().x(), parent_.rectangle().y(), parent_.rectangle().width(), 1.0f});
         }
     }
 
@@ -157,8 +155,7 @@ private:
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
         // so that the bottom border of the tab button is not drawn.
-        ttlet parent_ = this->parent.lock();
-        context.clipping_rectangle = parent_->window_rectangle();
+        context.clipping_rectangle = this->parent().window_rectangle();
 
         if (this->_hover || *this->value == this->true_value) {
             context.fill_color = theme::global->fillColor(this->_semantic_layer - 1);
