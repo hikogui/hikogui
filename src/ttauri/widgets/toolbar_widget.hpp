@@ -12,7 +12,7 @@ class toolbar_widget final : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    toolbar_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    toolbar_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The toolbar widget does draw itself.
@@ -137,7 +137,7 @@ public:
     template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
     std::shared_ptr<T> make_widget(Args &&... args)
     {
-        auto widget = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        auto widget = std::make_shared<T>(window, parent_from_this(), std::forward<Args>(args)...);
         widget->init();
         return std::static_pointer_cast<T>(add_widget(Alignment, std::move(widget)));
     }

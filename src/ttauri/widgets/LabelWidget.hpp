@@ -23,7 +23,11 @@ public:
     observable<label> label;
 
     template<typename Label>
-    LabelWidget(gui_window &window, std::shared_ptr<widget> parent, alignment alignment, Label &&label) noexcept
+    LabelWidget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        alignment alignment,
+        Label &&label) noexcept
         :
         super(window, parent),
         alignment(alignment),
@@ -32,7 +36,7 @@ public:
     }
 
     template<typename Label>
-    LabelWidget(gui_window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
+    LabelWidget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Label &&label) noexcept :
         super(window, parent), alignment(alignment::top_right), label(std::forward<Label>(label))
     {
     }
@@ -81,7 +85,7 @@ public:
             labelCell->draw(context, true);
         }
 
-        widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
 private:

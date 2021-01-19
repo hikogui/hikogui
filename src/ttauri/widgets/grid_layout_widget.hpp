@@ -18,7 +18,7 @@ public:
 
     grid_layout_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        std::shared_ptr<abstract_container_widget> parent,
         std::weak_ptr<grid_layout_delegate> delegate = {}) noexcept :
         abstract_container_widget(window, parent), _delegate(delegate)
     {
@@ -51,9 +51,9 @@ public:
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget_at_address(cell_address address, Args &&... args)
+    std::shared_ptr<T> make_widget_at_address(cell_address address, Args &&...args)
     {
-        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        auto tmp = std::make_shared<T>(window, parent_from_this(), std::forward<Args>(args)...);
         tmp->init();
         return std::static_pointer_cast<T>(add_widget(address, std::move(tmp)));
     }
@@ -63,7 +63,7 @@ public:
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, cell_address CellAddress, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&... args)
+    std::shared_ptr<T> make_widget(Args &&...args)
     {
         return make_widget_at_address<T>(CellAddress, std::forward<Args>(args)...);
     }

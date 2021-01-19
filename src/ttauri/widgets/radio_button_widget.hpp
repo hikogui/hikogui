@@ -26,7 +26,7 @@ public:
     template<typename Value, typename Label>
     radio_button_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        std::shared_ptr<abstract_container_widget> parent,
         value_type true_value,
         Value &&value,
         Label &&label) noexcept :
@@ -36,12 +36,16 @@ public:
     }
 
     template<typename Value>
-    radio_button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value) noexcept :
+    radio_button_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        value_type true_value,
+        Value &&value) noexcept :
         radio_button_widget(window, parent, std::move(true_value), std::forward<Value>(value), observable<tt::label>{})
     {
     }
 
-    radio_button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
+    radio_button_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, value_type true_value) noexcept :
         radio_button_widget(window, parent, std::move(true_value), observable<value_type>{}, observable<tt::label>{})
     {
     }
@@ -59,7 +63,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (widget::update_constraints(display_time_point, need_reconstrain)) {
+        if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::top_left, *label, theme::global->labelStyle);
 
             ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), theme::global->smallSize);
@@ -87,7 +91,7 @@ public:
 
             _pip_rectangle = shrink(_outline_rectangle, 1.5f);
         }
-        widget::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -99,7 +103,7 @@ public:
             draw_pip(context);
             draw_label(context);
         }
-        widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
 private:

@@ -24,7 +24,7 @@ public:
     template<typename Content, typename Aperture, typename Offset>
     scroll_bar_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        std::shared_ptr<abstract_container_widget> parent,
         Content &&content,
         Aperture &&aperture,
         Offset &&offset) noexcept :
@@ -89,7 +89,7 @@ public:
             }
         }
 
-        widget::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -100,7 +100,7 @@ public:
             draw_rails(context);
             draw_slider(context);
         }
-        widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
     HitBox hitbox_test(f32x4 window_position) const noexcept override
@@ -118,7 +118,7 @@ public:
     [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = widget::handle_mouse_event(event);
+        auto handled = super::handle_mouse_event(event);
         
         if (event.cause.leftButton) {
             handled = true;

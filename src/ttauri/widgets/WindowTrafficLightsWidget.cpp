@@ -10,7 +10,9 @@
 
 namespace tt {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(gui_window &window, std::shared_ptr<widget> parent) noexcept :
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(
+    gui_window &window,
+    std::shared_ptr<abstract_container_widget> parent) noexcept :
     super(window, parent)
 {
     // Toolbar buttons hug the toolbar and neighbor widgets.
@@ -105,7 +107,7 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
             align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), alignment::middle_center);
         restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), alignment::middle_center);
     }
-    widget::update_layout(display_time_point, need_layout);
+    super::update_layout(display_time_point, need_layout);
 }
 
 void WindowTrafficLightsWidget::drawMacOS(draw_context const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
@@ -228,13 +230,13 @@ void WindowTrafficLightsWidget::draw(draw_context context, hires_utc_clock::time
         }
     }
 
-    widget::draw(std::move(context), display_time_point);
+    super::draw(std::move(context), display_time_point);
 }
 
 bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    auto handled = widget::handle_mouse_event(event);
+    auto handled = super::handle_mouse_event(event);
 
     // Check the hover states of each button.
     auto stateHasChanged = false;

@@ -24,7 +24,11 @@ public:
     observable<label> label;
 
     template<typename Value = observable<value_type>>
-    menu_item_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value, Value &&value = {}) noexcept :
+    menu_item_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        value_type true_value,
+        Value &&value = {}) noexcept :
         super(window, parent, std::move(true_value), std::forward<Value>(value)),
         _parent_is_toolbar(dynamic_cast<toolbar_widget *>(parent.get()) != nullptr)
     {
@@ -163,33 +167,19 @@ public:
             break;
 
         case command::gui_activate:
-            if (!_parent_is_toolbar) {
-                // We need to find the backward widget of the parent, before the menu is closed. 
-                auto focus_parent_backward= this->window.widget->find_next_widget(
-                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
-
-                ttlet handled = super::handle_command(command::gui_activate);
-                tt_axiom(handled);
-
-                // Now that the window is closed, we can find the parent.
-                auto focus_parent = this->window.widget->find_next_widget(
-                    focus_parent_backward, keyboard_focus_group::normal, keyboard_focus_direction::forward);
-
-                this->window.update_keyboard_target(focus_parent);
-                return handled;
-            }
-            break;
-
         case command::gui_enter:
             if (!_parent_is_toolbar) {
-                // We need to find the forward widget of the parent, before the menu is closed. 
-                auto focus_parent_forward = this->window.widget->find_next_widget(
-                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                ttlet direction =
+                    command == command::gui_enter ? keyboard_focus_direction::forward : keyboard_focus_direction::backward;
+
+                // We need to find the backward widget of the parent, before the menu is closed. 
+                ttlet focus_widget_after_commit = this->window.widget->find_next_widget(
+                    this->shared_from_this(), keyboard_focus_group::normal, direction);
 
                 ttlet handled = super::handle_command(command::gui_activate);
                 tt_axiom(handled);
 
-                this->window.update_keyboard_target(focus_parent_forward);
+                this->window.update_keyboard_target(focus_widget_after_commit);
                 return handled;
             }
             break;

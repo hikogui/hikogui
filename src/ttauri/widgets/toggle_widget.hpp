@@ -24,7 +24,10 @@ public:
     observable<label> off_label;
 
     template<typename Value = observable<bool>>
-    toggle_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value = observable<bool>{}) noexcept :
+    toggle_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        Value &&value = observable<bool>{}) noexcept :
         super(window, parent, std::forward<Value>(value))
     {
         _on_label_callback = this->on_label.subscribe([this](auto...) {
@@ -87,7 +90,7 @@ public:
             _slider_move_range = sliderMoveWidth - _slider_rectangle.width();
         }
 
-        widget::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -100,7 +103,7 @@ public:
             draw_label(context);
         }
 
-        widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
 private:

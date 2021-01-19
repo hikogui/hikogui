@@ -12,7 +12,10 @@
 
 namespace tt {
 
-SystemMenuWidget::SystemMenuWidget(gui_window &window, std::shared_ptr<widget> parent, icon const &icon) noexcept :
+SystemMenuWidget::SystemMenuWidget(
+    gui_window &window,
+    std::shared_ptr<abstract_container_widget> parent,
+    icon const &icon) noexcept :
     super(window, parent), _icon_stencil(stencil::make_unique(alignment::middle_center, icon))
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.
@@ -53,7 +56,7 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
             rectangle().height() - theme::global->margin};
     }
 
-    widget::update_layout(display_time_point, need_layout);
+    super::update_layout(display_time_point, need_layout);
 }
 
 void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
@@ -64,7 +67,7 @@ void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point di
         _icon_stencil->draw(context);
     }
 
-    widget::draw(std::move(context), display_time_point);
+    super::draw(std::move(context), display_time_point);
 }
 
 HitBox SystemMenuWidget::hitbox_test(f32x4 window_position) const noexcept

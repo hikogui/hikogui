@@ -3,21 +3,21 @@
 
 #pragma once
 
-#include "widget.hpp"
+#include "abstract_container_widget.hpp"
 #include "grid_layout_widget.hpp"
 
 namespace tt {
 
 template<typename T>
-class tab_view_widget final : public widget {
+class tab_view_widget final : public abstract_container_widget {
 public:
-    using super = widget;
+    using super = abstract_container_widget;
     using value_type = T;
 
     observable<value_type> value = 0;
 
     template<typename Value>
-    tab_view_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
+    tab_view_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Value &&value) noexcept :
         super(window, parent), value(std::forward<Value>(value))
     {
         if (parent) {
@@ -41,34 +41,30 @@ public:
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
         if (has_updated_contraints) {
-            // The value has changed, so resize the window.
-            window.requestResize = true;
-        }
 
-        // Recurse into the selected widget.
-        auto &child = selected_child();
-
-        if (child.update_constraints(display_time_point, need_reconstrain) || has_updated_contraints) {
-            _preferred_size = child.preferred_size();
+            ttlet &child = selected_child();
             _preferred_base_line = child.preferred_base_line();
-            return true;
-        } else {
-            return false;
+            if (compare_then_assign(_preferred_size, child.preferred_size())) {
+                // The size of the selected child has changed, resize the window.
+                window.requestResize = true;
+            }
         }
+
+        return has_updated_contraints;
     }
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        auto &child = selected_child();
-
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            child.set_layout_parameters(_window_rectangle, _window_clipping_rectangle, _window_base_line);
+            for (auto &child : _children) {
+                tt_axiom(child);
+                child->set_layout_parameters(_window_rectangle, _window_clipping_rectangle, _window_base_line);
+            }
         }
 
-        child.update_layout(display_time_point, need_layout);
         super::update_layout(display_time_point, need_layout);
     }
 
@@ -77,26 +73,13 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         draw_child(context, display_time_point, selected_child());
-        super::draw(std::move(context), display_time_point);
+        // Do not call super::draw, only the selected child should be drawn.
     }
 
     [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         return selected_child().hitbox_test(window_position);
-    }
-
-    bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        auto handled = false;
-        for (auto &[tag, child] : _children) {
-            tt_axiom(child->parent.lock().get() == this);
-            handled |= child->handle_command_recursive(command, reject_list);
-        }
-        handled |= super::handle_command_recursive(command, reject_list);
-        return handled;
     }
 
     std::shared_ptr<widget> find_next_widget(
@@ -109,48 +92,55 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(value_type value, Args const &...args) noexcept
+    std::shared_ptr<WidgetType> make_widget(value_type value, Args &&... args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        auto widget = std::make_shared<WidgetType>(window, shared_from_this(), args...);
-        widget->init();
-
-        _children.emplace_back(std::move(value), widget);
-        _request_reconstrain = true;
+        auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
+        _children_keys.push_back(std::move(value));
         return widget;
     }
 
 private:
     typename decltype(value)::callback_ptr_type _value_callback;
 
-    std::vector<std::pair<value_type, std::shared_ptr<widget>>> _children;
-    using const_iterator = typename decltype(_children)::const_iterator;
-    using iterator = typename decltype(_children)::iterator;
+    std::vector<value_type> _children_keys;
 
-    [[nodiscard]] const_iterator find_child(value_type index) const noexcept
+    [[nodiscard]] auto find_child(value_type index) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return std::find_if(_children.cbegin(), _children.cend(), [&index](ttlet &x) {
-            return x.first == index;
-        });
+        tt_axiom(std::size(_children_keys) == std::size(_children));        
+
+        ttlet child_key_it = std::find(_children_keys.cbegin(), _children_keys.cend(), index);
+        if (child_key_it != _children_keys.cend()) {
+            ttlet child_index = std::distance(_children_keys.cbegin(), child_key_it);
+            return _children.begin() + child_index;
+        } else {
+            return _children.cend();
+        }
     }
 
-    [[nodiscard]] iterator find_child(value_type index) noexcept
+    [[nodiscard]] auto find_child(value_type index) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return std::find_if(_children.begin(), _children.end(), [&index](ttlet &x) {
-            return x.first == index;
-        });
+        tt_axiom(std::size(_children_keys) == std::size(_children));
+
+        ttlet child_key_it = std::find(_children_keys.cbegin(), _children_keys.cend(), index);
+        if (child_key_it != _children_keys.cend()) {
+            ttlet child_index = std::distance(_children_keys.cbegin(), child_key_it);
+            return _children.cbegin() + child_index;
+        } else {
+            return _children.cend();
+        }
     }
 
-    [[nodiscard]] const_iterator find_selected_child() const noexcept
+    [[nodiscard]] auto find_selected_child() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return find_child(*value);
     }
 
-    [[nodiscard]] iterator find_selected_child() noexcept
+    [[nodiscard]] auto find_selected_child() noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return find_child(*value);
@@ -163,9 +153,9 @@ private:
 
         auto i = find_selected_child();
         if (i != _children.cend()) {
-            return *i->second;
+            return *(*i);
         } else {
-            return *_children.front().second;
+            return *_children.front();
         }
     }
 
@@ -176,9 +166,9 @@ private:
 
         auto i = find_selected_child();
         if (i != _children.cend()) {
-            return *i->second;
+            return *(*i);
         } else {
-            return *_children.front().second;
+            return *_children.front();
         }
     }
 

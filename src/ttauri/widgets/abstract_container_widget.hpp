@@ -11,7 +11,8 @@ class abstract_container_widget : public widget {
 public:
     using super = widget;
 
-    abstract_container_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    abstract_container_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept :
+        super(window, parent)
     {
         if (parent) {
             // Most containers will not draw itself, only its children.
@@ -45,12 +46,23 @@ public:
         return widget;
     }
 
+    [[nodiscard]] std::shared_ptr<abstract_container_widget const> parent_from_this() const noexcept
+    {
+        return std::static_pointer_cast<abstract_container_widget const>(shared_from_this());
+    }
+
+    [[nodiscard]] std::shared_ptr<abstract_container_widget> parent_from_this() noexcept
+    {
+        return std::static_pointer_cast<abstract_container_widget>(shared_from_this());
+    }
+
     /** Add a widget directly to this widget.
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&... args)
+    std::shared_ptr<T> make_widget(Args &&...args)
     {
-        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        auto tmp = std::make_shared<T>(
+            window, parent_from_this(), std::forward<Args>(args)...);
         tmp->init();
         return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
     }
@@ -141,7 +153,7 @@ public:
         }
 
         ssize_t first = direction == keyboard_focus_direction::forward ? 0 : ssize(_children) - 1;
-        ssize_t last = direction == keyboard_focus_direction::forward ? ssize(_children) : - 1;
+        ssize_t last = direction == keyboard_focus_direction::forward ? ssize(_children) : -1;
         ssize_t step = direction == keyboard_focus_direction::forward ? 1 : -1;
         for (ssize_t i = first; i != last; i += step) {
             auto &&child = _children[i];

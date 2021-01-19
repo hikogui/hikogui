@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "widget.hpp"
-#include "WindowWidget.hpp"
+#include "abstract_container_widget.hpp"
 #include "overlay_view_widget.hpp"
 #include "scroll_view_widget.hpp"
 #include "row_column_layout_widget.hpp"
@@ -23,9 +22,9 @@
 namespace tt {
 
 template<typename T>
-class selection_widget final : public widget {
+class selection_widget final : public abstract_container_widget {
 public:
-    using super = widget;
+    using super = abstract_container_widget;
     using value_type = T;
     using option_list_type = std::vector<std::pair<value_type, label>>;
 
@@ -36,11 +35,11 @@ public:
     template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = label>
     selection_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        std::shared_ptr<abstract_container_widget> parent,
         Value &&value = value_type{},
         OptionList &&option_list = option_list_type{},
         UnknownLabel &&unknown_label = label{l10n("<unknown>")}) noexcept :
-        widget(window, parent),
+        super(window, parent),
         value(std::forward<Value>(value)),
         option_list(std::forward<OptionList>(option_list)),
         unknown_label(std::forward<UnknownLabel>(unknown_label))
@@ -51,9 +50,7 @@ public:
 
     void init() noexcept override
     {
-        _overlay_widget = std::make_shared<overlay_view_widget>(window, shared_from_this());
-        _overlay_widget->init();
-
+        _overlay_widget = super::make_widget<overlay_view_widget>();
         _scroll_widget = _overlay_widget->make_widget<vertical_scroll_view_widget<>>();
         _column_widget = _scroll_widget->make_widget<column_layout_widget>();
 
@@ -76,7 +73,6 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto updated = super::update_constraints(display_time_point, need_reconstrain);
-        updated |= _overlay_widget->update_constraints(display_time_point, need_reconstrain);
 
         if (updated) {
             ttlet index = get_value_as_index();
@@ -132,7 +128,6 @@ public:
 
                 _overlay_widget->set_layout_parameters(overlay_rectangle, overlay_rectangle);
             }
-            _overlay_widget->update_layout(display_time_point, need_layout);
         }
 
         if (need_layout) {
@@ -153,7 +148,7 @@ public:
 
             _text_stencil->set_layout_parameters(_option_rectangle, base_line());
         }
-        widget::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -168,16 +163,14 @@ public:
         }
 
         if (_selecting) {
-            _overlay_widget->draw(_overlay_widget->make_draw_context(context), display_time_point);
+            super::draw(std::move(context), display_time_point);
         }
-
-        widget::draw(std::move(context), display_time_point);
     }
 
     bool handle_mouse_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = widget::handle_mouse_event(event);
+        auto handled = super::handle_mouse_event(event);
 
         if (event.cause.leftButton) {
             handled = true;
@@ -220,17 +213,6 @@ public:
         return super::handle_command(command);
     }
 
-    bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept override
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_axiom(_overlay_widget);
-
-        auto handled = false;
-        handled |= _overlay_widget->handle_command_recursive(command, reject_list);
-        handled |= super::handle_command_recursive(command, reject_list);
-        return handled;
-    }
-
     [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -239,7 +221,7 @@ public:
         auto r = HitBox{};
 
         if (_selecting) {
-            r = std::max(r, _overlay_widget->hitbox_test(window_position));
+            r = super::hitbox_test(window_position);
         }
 
         if (window_clipping_rectangle().contains(window_position)) {
@@ -263,17 +245,20 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (_selecting) {
-            tt_axiom(_overlay_widget);
-            if (current_widget == shared_from_this()) {
-                return _overlay_widget->find_next_widget({}, group, direction);
-            } else {
-                return _overlay_widget->find_next_widget(current_widget, group, direction);
-            }
+            return super::find_next_widget(current_widget, group, direction);
 
         } else {
-            return super::find_next_widget(current_widget, group, direction);
+            // Bypass the abstract_container_widget and directly use the widget implementation.
+            return widget::find_next_widget(current_widget, group, direction);
         }
     }
+
+    template<typename T, typename... Args>
+    std::shared_ptr<T> make_widget(Args &&...args)
+    {
+        tt_no_default();
+    }
+
 
 private:
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;

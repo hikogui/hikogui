@@ -116,19 +116,21 @@ public:
     /** Get fill color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
     */
-    [[nodiscard]] f32x4 fillColor(ssize_t nestingLevel) const noexcept {
-        tt_axiom(nestingLevel >= 0);
+    [[nodiscard]] f32x4 fillColor(ssize_t nesting_level) const noexcept
+    {
+        nesting_level = std::max(ssize_t{0}, nesting_level);
         tt_axiom(std::ssize(fillShades) > 0);
-        return fillShades[nestingLevel % std::ssize(fillShades)];
+        return fillShades[nesting_level % std::ssize(fillShades)];
     }
 
     /** Get border color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
     */
-    [[nodiscard]] f32x4 borderColor(ssize_t nestingLevel) const noexcept {
-        tt_axiom(nestingLevel >= 0);
+    [[nodiscard]] f32x4 borderColor(ssize_t nesting_level) const noexcept
+    {
+        nesting_level = std::max(ssize_t{0}, nesting_level);
         tt_axiom(std::ssize(borderShades) > 0);
-        return borderShades[nestingLevel % std::ssize(borderShades)];
+        return borderShades[nesting_level % std::ssize(borderShades)];
     }
 
 

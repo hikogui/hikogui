@@ -12,7 +12,7 @@ class overlay_view_widget final : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    overlay_view_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    overlay_view_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The overlay-widget will reset the semantic_layer as it is the bottom
@@ -47,8 +47,8 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            // The p_window_rectangle, is not allowed to be beyond the edges of the actual window.
-            // Change p_window_rectangle to fit the window.
+            // The _window_rectangle, is not allowed to be beyond the edges of the actual window.
+            // Change _window_rectangle to fit the window.
             ttlet window_rectangle_and_margin = expand(_window_rectangle, _margin);
             ttlet new_window_rectangle_and_margin = fit(aarect{f32x4{window.currentWindowExtent}}, window_rectangle_and_margin);
             _window_rectangle = shrink(new_window_rectangle_and_margin, _margin);
@@ -73,11 +73,11 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args const &...args) noexcept
+    std::shared_ptr<WidgetType> make_widget(Args &&... args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        auto widget = super::make_widget<WidgetType>(args...);
+        auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         tt_axiom(!_content);
         _content = widget;
         return widget;

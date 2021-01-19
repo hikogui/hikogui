@@ -26,7 +26,7 @@ public:
     template<typename Value, typename Label = observable<tt::label>>
     toolbar_tab_button_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        std::shared_ptr<abstract_container_widget> parent,
         value_type true_value,
         Value &&value,
         Label &&label = {}) noexcept :

@@ -34,7 +34,7 @@ public:
     template<typename Value = observable<value_type>>
     checkbox_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        std::shared_ptr<abstract_container_widget> parent,
         value_type true_value,
         value_type false_value,
         Value &&value = {}) noexcept :

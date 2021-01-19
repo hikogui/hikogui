@@ -27,10 +27,10 @@ public:
     template<typename Value = observable<value_type>>
     [[nodiscard]] abstract_button_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        std::shared_ptr<abstract_container_widget> parent,
         value_type true_value,
         Value &&value = {}) :
-        widget(window, parent), true_value(std::move(true_value)), value(std::forward<Value>(value))
+        super(window, parent), true_value(std::move(true_value)), value(std::forward<Value>(value))
     {
     }
 

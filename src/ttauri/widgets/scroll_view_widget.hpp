@@ -18,7 +18,7 @@ public:
     static constexpr bool can_scroll_vertically = CanScrollVertically;
     static constexpr bool controls_window = ControlsWindow;
 
-    scroll_view_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    scroll_view_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
@@ -191,11 +191,11 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args const &...args) noexcept
+    std::shared_ptr<WidgetType> make_widget(Args &&... args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        auto widget = super::make_widget<WidgetType>(args...);
+        auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         tt_axiom(!_content);
         _content = widget;
         return widget;

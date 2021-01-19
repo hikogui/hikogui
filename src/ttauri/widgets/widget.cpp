@@ -2,12 +2,13 @@
 // All rights reserved.
 
 #include "widget.hpp"
+#include "abstract_container_widget.hpp"
 #include "../GUI/utils.hpp"
 #include <ranges>
 
 namespace tt {
 
-widget::widget(gui_window &_window, std::shared_ptr<widget> _parent) noexcept :
+widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> _parent) noexcept :
     enabled(true),
     window(_window),
     parent(_parent),
@@ -175,6 +176,25 @@ widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget,
     } else {
         return {};
     }
+}
+
+/** Get a list of parents of a given widget.
+ * The chain includes the given widget.
+ */
+std::vector<std::shared_ptr<widget>> widget::parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept
+{
+    ttlet lock = std::scoped_lock(gui_system_mutex);
+
+    std::vector<std::shared_ptr<widget>> chain;
+
+    if (auto w = child_widget) {
+        chain.push_back(w);
+        while (w = std::static_pointer_cast<widget>(w->parent.lock())) {
+            chain.push_back(w);
+        }
+    }
+
+    return chain;
 }
 
 }

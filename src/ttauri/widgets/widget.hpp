@@ -49,6 +49,7 @@ struct Vertex;
 }
 
 namespace tt {
+class abstract_container_widget;
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
@@ -101,7 +102,7 @@ public:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    std::weak_ptr<widget> parent;
+    std::weak_ptr<abstract_container_widget> parent;
 
     /** The widget is enabled.
      */
@@ -109,7 +110,7 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    widget(gui_window &window, std::shared_ptr<widget> parent) noexcept;
+    widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept;
 
     virtual ~widget();
     widget(const widget &) = delete;
@@ -524,21 +525,7 @@ public:
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
-    static std::vector<std::shared_ptr<widget>> parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-
-        std::vector<std::shared_ptr<widget>> chain;
-
-        if (auto w = child_widget) {
-            chain.push_back(w);
-            while (w = w->parent.lock()) {
-                chain.push_back(w);
-            }
-        }
-
-        return chain;
-    }
+    static std::vector<std::shared_ptr<widget>> parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
 
 protected:
     /** Mouse cursor is hovering over the widget.
