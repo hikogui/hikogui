@@ -33,9 +33,9 @@ public:
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
 
         if (has_updated_contraints) {
-            tt_axiom(!this->_children.empty());
-            _preferred_size = this->_children.front()->preferred_size();
-            _preferred_base_line = this->_children.front()->preferred_base_line();
+            tt_axiom(_content);
+            _preferred_size = _content->preferred_size();
+            _preferred_base_line = _content->preferred_base_line();
         }
 
         return has_updated_contraints;
@@ -54,9 +54,8 @@ public:
             _window_rectangle = shrink(new_window_rectangle_and_margin, _margin);
             _window_clipping_rectangle = _window_rectangle;
 
-            for (ttlet &child : this->_children) {
-                child->set_layout_parameters(_window_rectangle, _window_clipping_rectangle);
-            }
+            tt_axiom(_content);
+            _content->set_layout_parameters(_window_rectangle, _window_clipping_rectangle);
         }
 
         super::update_layout(display_time_point, need_layout);
@@ -73,7 +72,20 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
+    template<typename WidgetType = grid_layout_widget, typename... Args>
+    std::shared_ptr<WidgetType> make_widget(Args const &...args) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+
+        auto widget = super::make_widget<WidgetType>(args...);
+        tt_axiom(!_content);
+        _content = widget;
+        return widget;
+    }
+
 private:
+    std::shared_ptr<widget> _content;
+
     void draw_background(draw_context context) noexcept
     {
         context.clipping_rectangle = expand(context.clipping_rectangle, theme::global->borderWidth);

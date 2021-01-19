@@ -15,14 +15,14 @@
 namespace tt {
 
 template<bool IsVertical>
-class ScrollBarWidget final : public widget {
+class scroll_bar_widget final : public widget {
 public:
     using super = widget;
 
     static constexpr bool is_vertical = IsVertical;
 
     template<typename Content, typename Aperture, typename Offset>
-    ScrollBarWidget(
+    scroll_bar_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
         Content &&content,
@@ -44,7 +44,7 @@ public:
         });
     }
 
-    ~ScrollBarWidget() {}
+    ~scroll_bar_widget() {}
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {

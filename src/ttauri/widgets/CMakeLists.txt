@@ -16,8 +16,8 @@ target_sources(ttauri PRIVATE
     overlay_view_widget.hpp
     radio_button_widget.hpp
     row_column_layout_widget.hpp
-    ScrollViewWidget.hpp
-    ScrollBarWidget.hpp
+    scroll_view_widget.hpp
+    scroll_bar_widget.hpp
     selection_widget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>

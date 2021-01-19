@@ -11,7 +11,7 @@
 #include "checkbox_widget.hpp"
 #include "LabelWidget.hpp"
 #include "text_field_widget.hpp"
-#include "ScrollViewWidget.hpp"
+#include "scroll_view_widget.hpp"
 #include "selection_widget.hpp"
 #include "toggle_widget.hpp"
 #include "overlay_view_widget.hpp"

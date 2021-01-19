@@ -6,7 +6,7 @@
 #include "widget.hpp"
 #include "WindowWidget.hpp"
 #include "overlay_view_widget.hpp"
-#include "ScrollViewWidget.hpp"
+#include "scroll_view_widget.hpp"
 #include "row_column_layout_widget.hpp"
 #include "menu_item_widget.hpp"
 #include "../stencils/label_stencil.hpp"
@@ -54,7 +54,7 @@ public:
         _overlay_widget = std::make_shared<overlay_view_widget>(window, shared_from_this());
         _overlay_widget->init();
 
-        _scroll_widget = _overlay_widget->make_widget<VerticalScrollViewWidget<>>();
+        _scroll_widget = _overlay_widget->make_widget<vertical_scroll_view_widget<>>();
         _column_widget = _scroll_widget->make_widget<column_layout_widget>();
 
         repopulate_options();
@@ -293,7 +293,7 @@ private:
 
     bool _selecting = false;
     std::shared_ptr<overlay_view_widget> _overlay_widget;
-    std::shared_ptr<VerticalScrollViewWidget<>> _scroll_widget;
+    std::shared_ptr<vertical_scroll_view_widget<>> _scroll_widget;
     std::shared_ptr<column_layout_widget> _column_widget;
 
     std::vector<std::shared_ptr<menu_item_widget<value_type>>> _menu_item_widgets;
