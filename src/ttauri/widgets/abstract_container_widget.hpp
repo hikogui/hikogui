@@ -62,7 +62,8 @@ public:
         auto has_constrainted = super::update_constraints(display_time_point, need_reconstrain);
 
         for (auto &&child : _children) {
-            tt_axiom(child->parent.lock() == shared_from_this());
+            tt_axiom(child);
+            tt_axiom(child->parent.lock().get() == this);
             has_constrainted |= child->update_constraints(display_time_point, need_reconstrain);
         }
 
@@ -75,6 +76,7 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         for (auto &&child : _children) {
+            tt_axiom(child);
             tt_axiom(child->parent.lock().get() == this);
             child->update_layout(display_time_point, need_layout);
         }
@@ -87,6 +89,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         for (auto &child : _children) {
+            tt_axiom(child);
             tt_axiom(child->parent.lock().get() == this);
             child->draw(child->make_draw_context(context), display_time_point);
         }
@@ -100,6 +103,7 @@ public:
 
         auto handled = false;
         for (auto &child : _children) {
+            tt_axiom(child);
             tt_axiom(child->parent.lock().get() == this);
             handled |= child->handle_command_recursive(command, reject_list);
         }
@@ -113,6 +117,7 @@ public:
 
         auto r = HitBox{};
         for (ttlet &child : _children) {
+            tt_axiom(child);
             tt_axiom(child->parent.lock().get() == this);
             r = std::max(r, child->hitbox_test(window_position));
         }
@@ -140,6 +145,7 @@ public:
         ssize_t step = direction == keyboard_focus_direction::forward ? 1 : -1;
         for (ssize_t i = first; i != last; i += step) {
             auto &&child = _children[i];
+            tt_axiom(child);
 
             if (found) {
                 // Find the first focus accepting widget.
