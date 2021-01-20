@@ -15,6 +15,20 @@
 
 namespace tt {
 
+
+/** Menu item widget.
+ *
+ * Visual:
+ *  - Zero margins, so that menu items will share the border with other menu items
+ *    and with its container.
+ *  - The border around the menu item is square so that it will fit inside a square container.
+ *    The border shows the keyboard focus.
+ *  - Inside the box is the label (optional-icon + optional-text)
+ *  - An optional checkbox is shown before the label inside the border.
+ *    The checkbox indicates the current selected item inside a selection box, or it
+ *    will be used as toggle in other menus.
+ *  - An optional short-cut symbol is displayed after the label inside the border.
+ */
 template<typename T>
 class menu_item_widget final : public abstract_button_widget<T> {
 public:
