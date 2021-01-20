@@ -536,10 +536,18 @@ public:
      */
     [[nodiscard]] abstract_container_widget &parent() noexcept;
 
+    /** Is this widget the first widget in the parent container.
+     */
+    [[nodiscard]] bool is_first(keyboard_focus_group group) const noexcept;
+
+    /** Is this widget the last widget in the parent container.
+     */
+    [[nodiscard]] bool is_last(keyboard_focus_group group) const noexcept;
+
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
-    static std::vector<std::shared_ptr<widget>> parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
+    [[nodiscard]] static std::vector<std::shared_ptr<widget>> parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
 
 protected:
     /** Pointer to the parent widget.

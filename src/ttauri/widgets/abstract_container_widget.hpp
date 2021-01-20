@@ -46,14 +46,34 @@ public:
         return widget;
     }
 
-    [[nodiscard]] std::shared_ptr<abstract_container_widget const> parent_from_this() const noexcept
+    [[nodiscard]] widget &front() noexcept
     {
-        return std::static_pointer_cast<abstract_container_widget const>(shared_from_this());
+        return *_children.front();
     }
 
-    [[nodiscard]] std::shared_ptr<abstract_container_widget> parent_from_this() noexcept
+    [[nodiscard]] widget const &front() const noexcept
     {
-        return std::static_pointer_cast<abstract_container_widget>(shared_from_this());
+        return *_children.front();
+    }
+
+    [[nodiscard]] widget &back() noexcept
+    {
+        return *_children.back();
+    }
+
+    [[nodiscard]] widget const &back() const noexcept
+    {
+        return *_children.back();
+    }
+
+    [[nodiscard]] std::shared_ptr<abstract_container_widget const> shared_from_this() const noexcept
+    {
+        return std::static_pointer_cast<abstract_container_widget const>(super::shared_from_this());
+    }
+
+    [[nodiscard]] std::shared_ptr<abstract_container_widget> shared_from_this() noexcept
+    {
+        return std::static_pointer_cast<abstract_container_widget>(super::shared_from_this());
     }
 
     /** Add a widget directly to this widget.
@@ -62,7 +82,7 @@ public:
     std::shared_ptr<T> make_widget(Args &&...args)
     {
         auto tmp = std::make_shared<T>(
-            window, parent_from_this(), std::forward<Args>(args)...);
+            window, shared_from_this(), std::forward<Args>(args)...);
         tmp->init();
         return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
     }
@@ -141,6 +161,26 @@ public:
         return r;
     }
 
+    std::shared_ptr<widget const> find_first_widget(keyboard_focus_group group) const noexcept
+    {
+        for (ttlet child : _children) {
+            if (child->accepts_keyboard_focus(group)) {
+                return child;
+            }
+        }
+        return {};
+    }
+
+    std::shared_ptr<widget const> find_last_widget(keyboard_focus_group group) const noexcept
+    {
+        for (ttlet child : std::views::reverse(_children)) {
+            if (child->accepts_keyboard_focus(group)) {
+                return child;
+            }
+        }
+        return {};
+    }
+
     std::shared_ptr<widget> find_next_widget(
         std::shared_ptr<widget> const &current_keyboard_widget,
         keyboard_focus_group group,
@@ -154,7 +194,7 @@ public:
 
         // The container widget itself accepts focus.
         if (found && direction == keyboard_focus_direction::forward && accepts_keyboard_focus(group)) {
-            return std::const_pointer_cast<widget>(shared_from_this());
+            return std::const_pointer_cast<widget>(super::shared_from_this());
         }
 
         ssize_t first = direction == keyboard_focus_direction::forward ? 0 : ssize(_children) - 1;
@@ -184,7 +224,7 @@ public:
 
         // The container widget itself accepts focus.
         if (found && direction == keyboard_focus_direction::backward && accepts_keyboard_focus(group)) {
-            return std::const_pointer_cast<widget>(shared_from_this());
+            return std::const_pointer_cast<widget>(super::shared_from_this());
         }
 
         return found ? current_keyboard_widget : std::shared_ptr<widget>{};

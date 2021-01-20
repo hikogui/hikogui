@@ -364,9 +364,6 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (_selecting) {
-            context.color = theme::global->accentColor;
-        }
         context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
         context.draw_box_with_border_inside(rectangle());
     }
@@ -376,10 +373,10 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
-        context.fill_color = context.color;
         if (_selecting) {
-            context.fill_color = theme::global->accentColor;
+            context.color = theme::global->accentColor;
         }
+        context.fill_color = context.color;
         context.corner_shapes = f32x4{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
         context.draw_box_with_border_inside(_left_box_rectangle);
     }

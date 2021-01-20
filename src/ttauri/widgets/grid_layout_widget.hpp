@@ -53,7 +53,7 @@ public:
     template<typename T, typename... Args>
     std::shared_ptr<T> make_widget_at_address(cell_address address, Args &&...args)
     {
-        auto tmp = std::make_shared<T>(window, parent_from_this(), std::forward<Args>(args)...);
+        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
         tmp->init();
         return std::static_pointer_cast<T>(add_widget(address, std::move(tmp)));
     }

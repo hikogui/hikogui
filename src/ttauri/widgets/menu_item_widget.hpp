@@ -149,7 +149,7 @@ public:
     {
         switch (command) {
         case command::gui_menu_next:
-            if (!_parent_is_toolbar) {
+            if (!_parent_is_toolbar && !this->is_last(keyboard_focus_group::menu)) {
                 this->window.update_keyboard_target(
                     this->shared_from_this(), keyboard_focus_group::menu, keyboard_focus_direction::forward);
                 return true;
@@ -157,7 +157,7 @@ public:
             break;
 
         case command::gui_menu_prev:
-            if (!_parent_is_toolbar) {
+            if (!_parent_is_toolbar && !this->is_first(keyboard_focus_group::menu)) {
                 this->window.update_keyboard_target(
                     this->shared_from_this(), keyboard_focus_group::menu, keyboard_focus_direction::backward);
                 return true;
@@ -165,7 +165,7 @@ public:
             break;
 
         case command::gui_toolbar_next:
-            if (_parent_is_toolbar) {
+            if (_parent_is_toolbar && !this->is_last(keyboard_focus_group::toolbar)) {
                 this->window.update_keyboard_target(
                     this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
                 return true;
@@ -173,7 +173,7 @@ public:
             break;
 
         case command::gui_toolbar_prev:
-            if (_parent_is_toolbar) {
+            if (_parent_is_toolbar && !this->is_first(keyboard_focus_group::toolbar)) {
                 this->window.update_keyboard_target(
                     this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
                 return true;

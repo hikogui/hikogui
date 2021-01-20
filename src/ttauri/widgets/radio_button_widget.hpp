@@ -83,7 +83,8 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _outline_rectangle = aarect{0.0f, this->base_line() - theme::global->smallSize * 0.5f, theme::global->smallSize, theme::global->smallSize};
+            _outline_rectangle = aarect{
+                0.0f, this->base_line() - theme::global->smallSize * 0.5f, theme::global->smallSize, theme::global->smallSize};
 
             ttlet labelX = _outline_rectangle.p3().x() + theme::global->margin;
             _label_rectangle = aarect{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};

@@ -119,6 +119,29 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
+    [[nodiscard]] bool handle_command(tt::command command) noexcept override
+    {
+        switch (command) {
+        case command::gui_toolbar_next:
+            if (!this->is_last(keyboard_focus_group::toolbar)) {
+                this->window.update_keyboard_target(
+                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+            }
+            return true;
+
+        case command::gui_toolbar_prev:
+            if (!this->is_first(keyboard_focus_group::toolbar)) {
+                this->window.update_keyboard_target(
+                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+            }
+            return true;
+
+        default:;
+        }
+
+        return super::handle_command(command);
+    }
+
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
     aarect _button_rectangle;

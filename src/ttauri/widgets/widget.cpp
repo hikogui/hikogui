@@ -103,6 +103,7 @@ draw_context widget::make_draw_context(draw_context context) const noexcept
 
 bool widget::handle_command(command command) noexcept
 {
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     return false;
 }
 
@@ -182,6 +183,7 @@ widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget,
  */
 [[nodiscard]] std::shared_ptr<abstract_container_widget const> widget::shared_parent() const noexcept
 {
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     return _parent.lock();
 }
 
@@ -189,11 +191,13 @@ widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget,
  */
 [[nodiscard]] std::shared_ptr<abstract_container_widget> widget::shared_parent() noexcept
 {
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     return _parent.lock();
 }
 
 [[nodiscard]] abstract_container_widget const &widget::parent() const noexcept
 {
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     if (ttlet parent_ = shared_parent()) {
         return *parent_;
     } else {
@@ -203,6 +207,7 @@ widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget,
 
 [[nodiscard]] abstract_container_widget &widget::parent() noexcept
 {
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     if (ttlet parent_ = shared_parent()) {
         return *parent_;
     } else {
@@ -210,10 +215,22 @@ widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget,
     }
 }
 
+[[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+    return parent().find_first_widget(group).get() == this;
+}
+
+[[nodiscard]] bool widget::is_last(keyboard_focus_group group) const noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+    return parent().find_last_widget(group).get() == this;
+}
+
 /** Get a list of parents of a given widget.
  * The chain includes the given widget.
  */
-std::vector<std::shared_ptr<widget>> widget::parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept
+[[nodiscard]] std::vector<std::shared_ptr<widget>> widget::parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
