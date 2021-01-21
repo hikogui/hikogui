@@ -42,7 +42,7 @@ void gui_device::add(std::shared_ptr<gui_window> window)
         initializeDevice(*window);
     }
 
-    window->setDevice(this);
+    window->set_device(this);
     windows.push_back(std::move(window));
 }
 
@@ -50,7 +50,7 @@ void gui_device::remove(gui_window &window) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    window.unsetDevice();
+    window.unset_device();
     windows.erase(std::find_if(windows.begin(), windows.end(), [&](auto &x) {
         return x.get() == &window;
     }));

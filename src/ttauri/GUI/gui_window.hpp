@@ -68,14 +68,6 @@ public:
      */
     std::atomic<bool> requestLayout = true;
 
-    /** Request a rectangle on the window to be redrawn
-     */
-    void request_redraw(aarect rectangle = aarect::infinity()) noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        _request_redraw_rectangle |= rectangle;
-    }
-
     /** When set to true the window will resize to the size of the contained widget.
      */
     std::atomic<bool> requestResize = true;
@@ -96,7 +88,7 @@ public:
     Size size = Size::Normal;
 
     //! The current window extent as set by the GPU library.
-    f32x4 currentWindowExtent;
+    f32x4 current_window_extent;
 
     std::weak_ptr<gui_window_delegate> delegate;
 
@@ -104,21 +96,13 @@ public:
 
     /*! Orientation of the RGB subpixels.
      */
-    SubpixelOrientation subpixelOrientation = SubpixelOrientation::BlueRight;
+    SubpixelOrientation subpixel_orientation = SubpixelOrientation::BlueRight;
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
      * the source for the DPI value.
      */
     float dpi = 72.0;
-
-    /** By how much the font needs to be scaled compared to current windowScale.
-     * Widgets should pass this value to the text-shaper.
-     */
-    [[nodiscard]] float fontScale() const noexcept
-    {
-        return dpi / (windowScale() * 72.0f);
-    }
 
     //! The widget covering the complete window.
     std::shared_ptr<WindowWidget> widget;
@@ -139,16 +123,32 @@ public:
      */
     virtual void init();
 
+    /** Request a rectangle on the window to be redrawn
+     */
+    void request_redraw(aarect rectangle = aarect::infinity()) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        _request_redraw_rectangle |= rectangle;
+    }
+
+    /** By how much the font needs to be scaled compared to current windowScale.
+     * Widgets should pass this value to the text-shaper.
+     */
+    [[nodiscard]] float fontScale() const noexcept
+    {
+        return dpi / (window_scale() * 72.0f);
+    }
+
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      */
-    void setDevice(gui_device *device);
+    void set_device(gui_device *device);
 
     /*! Remove the GPU device from the window, making it an orphan.
      */
-    void unsetDevice()
+    void unset_device()
     {
-        setDevice({});
+        set_device({});
     }
 
     gui_device *device() const noexcept
@@ -157,12 +157,14 @@ public:
         return _device;
     }
 
-    /*! Update window.
+    /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
     virtual void render(hires_utc_clock::time_point displayTimePoint) = 0;
 
-    bool isClosed();
+    /** Check if the window was closed by the operating system.
+     */
+    bool is_closed();
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
@@ -176,19 +178,39 @@ public:
     template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
     std::shared_ptr<T> make_toolbar_widget(Args &&...args);
 
-    virtual void setCursor(Cursor cursor) = 0;
+    /** Set the mouse cursor icon.
+     */
+    virtual void set_cursor(Cursor cursor) = 0;
 
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
 
-    virtual void closeWindow() = 0;
+    /** Ask the operating system to close this window.
+     */
+    virtual void close_window() = 0;
 
-    virtual void minimizeWindow() = 0;
-    virtual void maximizeWindow() = 0;
-    virtual void normalizeWindow() = 0;
-    virtual void setWindowSize(f32x4 extent) = 0;
+    /** Ask the operating system to minimize this window.
+     */
+    virtual void minimize_window() = 0;
 
-    [[nodiscard]] virtual std::u8string getTextFromClipboard() const noexcept = 0;
-    virtual void setTextOnClipboard(std::u8string str) noexcept = 0;
+    /** Ask the operating system to maximize this window.
+     */
+    virtual void maximize_window() = 0;
+
+    /** Ask the operating system to normalize this window.
+     */
+    virtual void normalize_window() = 0;
+
+    /** Ask the operating system to set the size of this window.
+     */
+    virtual void set_window_size(f32x4 extent) = 0;
+
+    /** Retrieve a text string from the operating system's clip-board.
+     */
+    [[nodiscard]] virtual std::string get_text_from_clipboard() const noexcept = 0;
+
+    /** Place a text string on the operating system's clip-board.
+     */
+    virtual void set_text_on_clipboard(std::string str) noexcept = 0;
 
     void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, f32x4 position = f32x4{0.0f, 0.0f}) noexcept;
 
@@ -219,7 +241,7 @@ public:
      * Each window may be on a different virtual screen with different
      * sizes, so retrieve it on a per window basis.
      */
-    [[nodiscard]] virtual f32x4 virtualScreenSize() const noexcept = 0;
+    [[nodiscard]] virtual f32x4 virtual_screen_size() const noexcept = 0;
 
 protected:
     /** The device the window is assigned to.
@@ -228,13 +250,18 @@ protected:
      */
     gui_device *_device = nullptr;
 
-    /*! The current rectangle which has been set by the operating system.
-     * This value may lag behind the actual window extent as seen by the GPU
-     * library. This value should only be read by the GPU library during
-     * resize to determine the extent of the surface when the GPU library can
-     * not figure this out by itself.
+    /*! The current rectangle of the window relative to the screen.
+     * The screen rectangle is set by the operating system event loop and
+     * the extent of the rectangle may lag behind the actual window extent as seen
+     * by the GPU library.
+     *
+     * This rectangle is used by the operating system event loop hit-testing
+     * to determine the position of screen coordinates to window coordinates.
+     * 
+     * It may also be used for the extent of the window when the GPU
+     * library is unable to determine the extent of the surface.
      */
-    iaarect OSWindowRectangle;
+    iaarect _screen_rectangle;
 
     bool _request_setting_change = true;
 
@@ -244,17 +271,17 @@ protected:
      * @param title The title of the window.
      * @param extent The size of the window.
      */
-    virtual void createWindow(const std::u8string &title, f32x4 extent) = 0;
+    virtual void create_window(const std::u8string &title, f32x4 extent) = 0;
 
     /** By how much graphic elements should be scaled to match a point.
      * The widget should not care much about this value, since the
      * transformation matrix will match the window scaling.
      */
-    [[nodiscard]] float windowScale() const noexcept;
+    [[nodiscard]] float window_scale() const noexcept;
 
     /*! Called when the GPU library has changed the window size.
      */
-    virtual void windowChangedSize(f32x4 extent);
+    virtual void window_changed_size(f32x4 extent);
 
     /*! Teardown Window based on State::*_LOST
      */
@@ -295,17 +322,6 @@ protected:
         return false;
     }
 
-    /** Send event to a target widget.
-     *
-     * The commands are send in order, until the command is handled, then processing stops immediately.
-     * All commands are tried in a batch to the following handlers:
-     *  - The target widget
-     *  - The parents of the widget up to and including the root widget.
-     *  - The window itself.
-     */
-    template<typename Event>
-    bool send_event_to_widget(std::shared_ptr<tt::widget> target_widget, Event const &event) noexcept;
-
     /*! Mouse mouse event.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.
@@ -330,23 +346,23 @@ private:
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
      */
-    std::weak_ptr<tt::widget> mouseTargetWidget = {};
+    std::weak_ptr<tt::widget> _mouse_target_widget = {};
 
     /** Target of the keyboard
      * widget where keyboard events are sent to.
      */
-    std::weak_ptr<tt::widget> keyboardTargetWidget = {};
+    std::weak_ptr<tt::widget> _keyboard_target_widget = {};
 
-    /** The first widget in the window that needs to be selected.
-     * This widget is selected when the window is opened and when
-     * pressing tab when no other widget is selected.
+    /** Send event to a target widget.
+     *
+     * The commands are send in order, until the command is handled, then processing stops immediately.
+     * All commands are tried in a batch to the following handlers:
+     *  - The target widget
+     *  - The parents of the widget up to and including the root widget.
+     *  - The window itself.
      */
-    std::weak_ptr<tt::widget> firstKeyboardWidget = {};
-
-    /** The first widget in the window that needs to be selected.
-     * This widget is selected when pressing shift-tab when no other widget is selected.
-     */
-    std::weak_ptr<tt::widget> lastKeyboardWidget = {};
+    template<typename Event>
+    bool send_event_to_widget(std::shared_ptr<tt::widget> target_widget, Event const &event) noexcept;
 };
 
 } // namespace tt

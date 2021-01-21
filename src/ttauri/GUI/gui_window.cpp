@@ -66,7 +66,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    currentWindowExtent = [this] {
+    current_window_extent = [this] {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         static_cast<void>(widget->update_constraints({}, true));
         return widget->preferred_size().minimum();
@@ -83,10 +83,10 @@ void gui_window::init()
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
-    createWindow(title.text(), currentWindowExtent);
+    create_window(title.text(), current_window_extent);
 }
 
-void gui_window::setDevice(gui_device *new_device)
+void gui_window::set_device(gui_device *new_device)
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -107,27 +107,27 @@ void gui_window::setDevice(gui_device *new_device)
     _device = new_device;
 }
 
-bool gui_window::isClosed()
+bool gui_window::is_closed()
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     return state == State::NoWindow;
 }
 
-[[nodiscard]] float gui_window::windowScale() const noexcept
+[[nodiscard]] float gui_window::window_scale() const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     return std::ceil(dpi / 100.0f);
 }
 
-void gui_window::windowChangedSize(f32x4 extent)
+void gui_window::window_changed_size(f32x4 extent)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    currentWindowExtent = extent;
+    current_window_extent = extent;
     tt_axiom(widget);
 
-    widget->set_layout_parameters(aarect{currentWindowExtent}, aarect{currentWindowExtent});
+    widget->set_layout_parameters(aarect{current_window_extent}, aarect{current_window_extent});
     requestLayout = true;
 }
 
@@ -142,14 +142,14 @@ void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widg
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    auto current_target_widget = mouseTargetWidget.lock();
+    auto current_target_widget = _mouse_target_widget.lock();
     if (new_target_widget != current_target_widget) {
         if (current_target_widget) {
             if (!send_event_to_widget(current_target_widget, MouseEvent::exited())) {
                 send_event_to_widget(current_target_widget, std::vector{command::gui_mouse_exit});
             }
         }
-        mouseTargetWidget = new_target_widget;
+        _mouse_target_widget = new_target_widget;
         if (new_target_widget) {
             if (!send_event_to_widget(new_target_widget, MouseEvent::entered(position))) {
                 send_event_to_widget(new_target_widget, std::vector{command::gui_mouse_enter});
@@ -170,7 +170,7 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
     }
 
     // Check if the keyboard focus changed.
-    ttlet current_target_widget = keyboardTargetWidget.lock();
+    ttlet current_target_widget = _keyboard_target_widget.lock();
     if (new_target_widget == current_target_widget) {
         return;
     }
@@ -185,7 +185,7 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
     widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
-    keyboardTargetWidget = new_target_widget;
+    _keyboard_target_widget = new_target_widget;
     if (new_target_widget) {
         send_event_to_widget(new_target_widget, std::vector{command::gui_keyboard_enter});
     }
@@ -215,10 +215,10 @@ bool gui_window::handle_event(tt::command command) noexcept
 {
     switch (command) {
     case command::gui_widget_next:
-        update_keyboard_target(keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+        update_keyboard_target(_keyboard_target_widget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
         return true;
     case command::gui_widget_prev:
-        update_keyboard_target(keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
+        update_keyboard_target(_keyboard_target_widget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
         return true;
     default:;
     }
@@ -264,7 +264,7 @@ bool gui_window::send_event(MouseEvent const &event) noexcept
     default:;
     }
 
-    auto target = mouseTargetWidget.lock();
+    auto target = _mouse_target_widget.lock();
 
     if (send_event_to_widget(target, event)) {
         return true;
@@ -277,7 +277,7 @@ bool gui_window::send_event(KeyboardEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    auto target = keyboardTargetWidget.lock();
+    auto target = _keyboard_target_widget.lock();
 
     if (send_event_to_widget(target, event)) {
         return true;

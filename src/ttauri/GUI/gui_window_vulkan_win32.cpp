@@ -112,7 +112,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_vulkan_win32::createWindow(const std::u8string &_title, f32x4 extent)
+void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 extent)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
@@ -199,35 +199,35 @@ gui_window_vulkan_win32::~gui_window_vulkan_win32()
     }
 }
 
-void gui_window_vulkan_win32::closeWindow()
+void gui_window_vulkan_win32::close_window()
 {
     run_from_main_loop([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
-void gui_window_vulkan_win32::minimizeWindow()
+void gui_window_vulkan_win32::minimize_window()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
-void gui_window_vulkan_win32::maximizeWindow()
+void gui_window_vulkan_win32::maximize_window()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
-void gui_window_vulkan_win32::normalizeWindow()
+void gui_window_vulkan_win32::normalize_window()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
 
-void gui_window_vulkan_win32::setWindowSize(f32x4 extent)
+void gui_window_vulkan_win32::set_window_size(f32x4 extent)
 {
     gui_system_mutex.lock();
     ttlet handle = reinterpret_cast<HWND>(win32Window);
@@ -245,7 +245,7 @@ void gui_window_vulkan_win32::setWindowSize(f32x4 extent)
     });
 }
 
-[[nodiscard]] f32x4 gui_window_vulkan_win32::virtualScreenSize() const noexcept
+[[nodiscard]] f32x4 gui_window_vulkan_win32::virtual_screen_size() const noexcept
 {
     ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
     ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
@@ -255,9 +255,9 @@ void gui_window_vulkan_win32::setWindowSize(f32x4 extent)
     return {narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
-[[nodiscard]] std::u8string gui_window_vulkan_win32::getTextFromClipboard() const noexcept
+[[nodiscard]] std::string gui_window_vulkan_win32::get_text_from_clipboard() const noexcept
 {
-    auto r = std::u8string{};
+    auto r = std::string{};
 
     gui_system_mutex.lock();
     ttlet handle = reinterpret_cast<HWND>(win32Window);
@@ -288,8 +288,8 @@ void gui_window_vulkan_win32::setWindowSize(f32x4 extent)
             }
 
             ttlet wstr = std::wstring_view(wstr_c);
-            r = tt::to_u8string(wstr);
-            LOG_DEBUG("getTextFromClipboad '{}'", tt::to_string(r));
+            r = tt::to_string(wstr);
+            LOG_DEBUG("getTextFromClipboad '{}'", r);
 
             if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
                 LOG_ERROR("Could not unlock clipboard data: '{}'", getLastErrorMessage());
@@ -312,7 +312,7 @@ done:
     return r;
 }
 
-void gui_window_vulkan_win32::setTextOnClipboard(std::u8string str) noexcept
+void gui_window_vulkan_win32::set_text_on_clipboard(std::string str) noexcept
 {
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
         LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());
@@ -373,15 +373,16 @@ void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
-    OSWindowRectangle = iaarect{rect.left, 0 - rect.bottom, rect.right - rect.left, rect.bottom - rect.top};
+    auto screen_extent = virtual_screen_size();
+
+    _screen_rectangle = iaarect{rect.left, screen_extent.height() - rect.bottom, rect.right - rect.left, rect.bottom - rect.top};
 
     // Force a redraw, so that the swapchain is used and causes out-of-date results on window resize,
     // which in turn will cause a forceLayout.
     request_redraw();
 }
 
-void gui_window_vulkan_win32::setCursor(Cursor cursor) noexcept
+void gui_window_vulkan_win32::set_cursor(Cursor cursor) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
@@ -487,7 +488,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
         ttlet update_rectangle = aarect{
             ps.rcPaint.left,
-            currentWindowExtent.height() - ps.rcPaint.bottom,
+            current_window_extent.height() - ps.rcPaint.bottom,
             ps.rcPaint.right - ps.rcPaint.left,
             ps.rcPaint.bottom - ps.rcPaint.top};
 
@@ -652,26 +653,29 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     case WM_NCHITTEST: {
         gui_system_mutex.lock();
-        ttlet screenPosition = f32x4{narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(0 - GET_Y_LPARAM(lParam))};
-        ttlet insideWindowPosition = screenPosition - f32x4{OSWindowRectangle.offset()};
-        ttlet hitbox_type = widget->hitbox_test(insideWindowPosition).type;
+        ttlet screen_extent = virtual_screen_size();
+        ttlet screen_position =
+            f32x4{narrow_cast<float>(GET_X_LPARAM(lParam)), screen_extent.height() - narrow_cast<float>(GET_Y_LPARAM(lParam))};
+
+        ttlet window_position = screen_position - f32x4{_screen_rectangle.offset()};
+        ttlet hitbox_type = widget->hitbox_test(window_position).type;
         gui_system_mutex.unlock();
 
         switch (hitbox_type) {
-        case HitBox::Type::BottomResizeBorder: setCursor(Cursor::None); return HTBOTTOM;
-        case HitBox::Type::TopResizeBorder: setCursor(Cursor::None); return HTTOP;
-        case HitBox::Type::LeftResizeBorder: setCursor(Cursor::None); return HTLEFT;
-        case HitBox::Type::RightResizeBorder: setCursor(Cursor::None); return HTRIGHT;
-        case HitBox::Type::BottomLeftResizeCorner: setCursor(Cursor::None); return HTBOTTOMLEFT;
-        case HitBox::Type::BottomRightResizeCorner: setCursor(Cursor::None); return HTBOTTOMRIGHT;
-        case HitBox::Type::TopLeftResizeCorner: setCursor(Cursor::None); return HTTOPLEFT;
-        case HitBox::Type::TopRightResizeCorner: setCursor(Cursor::None); return HTTOPRIGHT;
-        case HitBox::Type::ApplicationIcon: setCursor(Cursor::None); return HTSYSMENU;
-        case HitBox::Type::MoveArea: setCursor(Cursor::None); return HTCAPTION;
-        case HitBox::Type::TextEdit: setCursor(Cursor::TextEdit); return HTCLIENT;
-        case HitBox::Type::Button: setCursor(Cursor::Button); return HTCLIENT;
-        case HitBox::Type::Default: setCursor(Cursor::Default); return HTCLIENT;
-        case HitBox::Type::Outside: setCursor(Cursor::None); return HTCLIENT;
+        case HitBox::Type::BottomResizeBorder: set_cursor(Cursor::None); return HTBOTTOM;
+        case HitBox::Type::TopResizeBorder: set_cursor(Cursor::None); return HTTOP;
+        case HitBox::Type::LeftResizeBorder: set_cursor(Cursor::None); return HTLEFT;
+        case HitBox::Type::RightResizeBorder: set_cursor(Cursor::None); return HTRIGHT;
+        case HitBox::Type::BottomLeftResizeCorner: set_cursor(Cursor::None); return HTBOTTOMLEFT;
+        case HitBox::Type::BottomRightResizeCorner: set_cursor(Cursor::None); return HTBOTTOMRIGHT;
+        case HitBox::Type::TopLeftResizeCorner: set_cursor(Cursor::None); return HTTOPLEFT;
+        case HitBox::Type::TopRightResizeCorner: set_cursor(Cursor::None); return HTTOPRIGHT;
+        case HitBox::Type::ApplicationIcon: set_cursor(Cursor::None); return HTSYSMENU;
+        case HitBox::Type::MoveArea: set_cursor(Cursor::None); return HTCAPTION;
+        case HitBox::Type::TextEdit: set_cursor(Cursor::TextEdit); return HTCLIENT;
+        case HitBox::Type::Button: set_cursor(Cursor::Button); return HTCLIENT;
+        case HitBox::Type::Default: set_cursor(Cursor::Default); return HTCLIENT;
+        case HitBox::Type::Outside: set_cursor(Cursor::None); return HTCLIENT;
         default: tt_no_default();
         }
     } break;
@@ -734,7 +738,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
     mouseEvent.position = f32x4::point(
-        narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(currentWindowExtent.y() - GET_Y_LPARAM(lParam)));
+        narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(current_window_extent.y() - GET_Y_LPARAM(lParam)));
 
     mouseEvent.wheelDelta = f32x4{};
     if (uMsg == WM_MOUSEWHEEL) {

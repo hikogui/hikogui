@@ -27,28 +27,28 @@ public:
     gui_window_vulkan_win32(gui_window_vulkan_win32 &&) = delete;
     gui_window_vulkan_win32 &operator=(gui_window_vulkan_win32 &&) = delete;
 
-    void createWindow(const std::u8string &title, f32x4 extent) override;
+    void create_window(const std::u8string &title, f32x4 extent) override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     vk::SurfaceKHR getSurface() const override;
 
-    void setCursor(Cursor cursor) noexcept override;
+    void set_cursor(Cursor cursor) noexcept override;
 
-    void closeWindow() override;
+    void close_window() override;
 
-    void minimizeWindow() override;
+    void minimize_window() override;
 
-    void maximizeWindow() override;
+    void maximize_window() override;
 
-    void normalizeWindow() override;
+    void normalize_window() override;
 
-    void setWindowSize(f32x4 extent) override;
+    void set_window_size(f32x4 extent) override;
 
-    [[nodiscard]] f32x4 virtualScreenSize() const noexcept override;
+    [[nodiscard]] f32x4 virtual_screen_size() const noexcept override;
 
-    [[nodiscard]] std::u8string getTextFromClipboard() const noexcept override;
+    [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
 
-    void setTextOnClipboard(std::u8string str) noexcept override;
+    void set_text_on_clipboard(std::string str) noexcept override;
 
 private:
     void setOSWindowRectangleFromRECT(RECT aarect) noexcept;

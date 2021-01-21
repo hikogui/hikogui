@@ -37,23 +37,23 @@ public:
 
     vk::SurfaceKHR getSurface() const override;
 
-    void setCursor(Cursor cursor) noexcept override;
+    void set_cursor(Cursor cursor) noexcept override;
 
-    void closeWindow() override;
+    void close_window() override;
 
-    void minimizeWindow() override;
+    void minimize_window() override;
 
-    void maximizeWindow() override;
+    void maximize_window() override;
 
-    void normalizeWindow() override;
+    void normalize_window() override;
 
-    void setWindowSize(i32x4 extent) override {}
+    void set_window_size(i32x4 extent) override {}
 
-    [[nodiscard]] std::string getTextFromClipboard() const noexcept override {
+    [[nodiscard]] std::string get_text_from_clipboard() const noexcept override {
         return "<clipboard>";
     }
 
-    void setTextOnClipboard(std::string str) noexcept override { }
+    void set_text_on_clipboard(std::string str) noexcept override { }
 
 
 private:

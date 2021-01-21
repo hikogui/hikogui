@@ -75,7 +75,7 @@ public:
             window->render(displayTimePoint);
         }
 
-        ttlet new_end = std::remove_if(windows.begin(), windows.end(), [](ttlet &window) { return window->isClosed(); });
+        ttlet new_end = std::remove_if(windows.begin(), windows.end(), [](ttlet &window) { return window->is_closed(); });
         windows.erase(new_end, windows.end());
     }
 

@@ -199,7 +199,7 @@ void gui_window_vulkan::build()
         SDFPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
         toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
 
-        windowChangedSize({narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
+        window_changed_size({narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
         state = State::ReadyToRender;
     }
 }
@@ -296,12 +296,12 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
     ttlet preferred_size = widget->preferred_size();
-    if (requestResize.exchange(false) || currentWindowExtent << preferred_size) {
-        setWindowSize(currentWindowExtent = preferred_size.minimum());
-    } else if (currentWindowExtent >> preferred_size) {
-        setWindowSize(currentWindowExtent = preferred_size.maximum());
+    if (requestResize.exchange(false) || current_window_extent << preferred_size) {
+        set_window_size(current_window_extent = preferred_size.minimum());
+    } else if (current_window_extent >> preferred_size) {
+        set_window_size(current_window_extent = preferred_size.maximum());
     }
-    widget->set_layout_parameters(aarect{currentWindowExtent}, aarect{currentWindowExtent});
+    widget->set_layout_parameters(aarect{current_window_extent}, aarect{current_window_extent});
 
     // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
     ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;

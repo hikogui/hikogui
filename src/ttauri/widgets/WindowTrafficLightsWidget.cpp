@@ -255,17 +255,17 @@ bool WindowTrafficLightsWidget::handle_event(MouseEvent const &event) noexcept
             using enum MouseEvent::Type;
         case ButtonUp:
             if (pressedClose && hoverClose) {
-                window.closeWindow();
+                window.close_window();
             }
 
             if (pressedMinimize && hoverMinimize) {
-                window.minimizeWindow();
+                window.minimize_window();
             }
 
             if (pressedMaximize && hoverMaximize) {
                 switch (window.size) {
-                case gui_window::Size::Normal: window.maximizeWindow(); break;
-                case gui_window::Size::Maximized: window.normalizeWindow(); break;
+                case gui_window::Size::Normal: window.maximize_window(); break;
+                case gui_window::Size::Maximized: window.normalize_window(); break;
                 default: tt_no_default();
                 }
             }

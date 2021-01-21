@@ -221,21 +221,15 @@ public:
         if (*enabled) {
             switch (command) {
             case command::text_edit_paste:
-                _field.handlePaste(window.getTextFromClipboard());
+                _field.handlePaste(window.get_text_from_clipboard());
                 commit(false);
                 return true;
 
-            case command::text_edit_copy:
-                window.setTextOnClipboard(_field.handleCopy());
-                return true;
+            case command::text_edit_copy: window.set_text_on_clipboard(_field.handleCopy()); return true;
 
-            case command::text_edit_cut:
-                window.setTextOnClipboard(_field.handleCut());
-                return true;
+            case command::text_edit_cut: window.set_text_on_clipboard(_field.handleCut()); return true;
 
-            case command::gui_escape:
-                revert(true);
-                return true;
+            case command::gui_escape: revert(true); return true;
 
             case command::gui_enter:
                 commit(true);

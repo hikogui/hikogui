@@ -345,7 +345,7 @@ public:
         updateShapedText();
     }
 
-    void handlePaste(std::u8string str) noexcept {
+    void handlePaste(std::string str) noexcept {
         cancelPartialGrapheme();
         deleteSelection();
 
@@ -367,24 +367,24 @@ public:
         updateShapedText();
     }
 
-    std::u8string handleCopy() noexcept {
-        auto r = std::u8string{};
+    std::string handleCopy() noexcept {
+        auto r = std::string{};
         
         if (selectionIndex < cursorIndex) {
             r.reserve(cursorIndex - selectionIndex);
             for (auto i = cit(selectionIndex); i != cit(cursorIndex); ++i) {
-                r += to_u8string(i->grapheme);
+                r += to_string(i->grapheme);
             }
         } else if (selectionIndex > cursorIndex) {
             r.reserve(selectionIndex - cursorIndex);
             for (auto i = cit(cursorIndex); i != cit(selectionIndex); ++i) {
-                r += to_u8string(i->grapheme);
+                r += to_string(i->grapheme);
             }
         } 
         return r;
     }
 
-    std::u8string handleCut() noexcept {
+    std::string handleCut() noexcept {
         auto r = handleCopy();
         cancelPartialGrapheme();
         deleteSelection();
