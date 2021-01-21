@@ -267,6 +267,31 @@ protected:
      */
     bool handle_command(tt::command command) noexcept;
 
+    /** Send command to a target widget.
+     *
+     * The commands are send in order, until the command is handled, then processing stops immediately.
+     * All commands are tried in a batch to the following handlers:
+     *  - The target widget
+     *  - The parents of the widget up to and including the root widget.
+     *  - The window itself.
+     */
+    [[nodiscard]] bool
+    send_to_widget(std::vector<tt::command> const &commands, std::shared_ptr<tt::widget> target_widget) noexcept;
+
+    /** Send keyboard event to a target widget.
+     *
+     * The event is send to the target widget and parent widgets up to and including the root window
+     * until one has handled the keyboard event, then processing stops immediately.
+     */
+    [[nodiscard]] bool send_to_widget(KeyboardEvent const &event, std::shared_ptr<tt::widget> target_widget) noexcept;
+
+    /** Send mouse event to a target widget.
+     *
+     * The event is send to the target widget and parent widgets up to and including the root window
+     * until one has handled the keyboard event, then processing stops immediately.
+     */
+    [[nodiscard]] bool send_to_widget(MouseEvent const &event, std::shared_ptr<tt::widget> target_widget) noexcept;
+
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.

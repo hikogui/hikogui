@@ -34,6 +34,10 @@ enum class command {
     text_edit_cut,
     text_undo,
     text_redo,
+    gui_keyboard_enter,
+    gui_keyboard_exit,
+    gui_mouse_enter,
+    gui_mouse_exit,
     gui_widget_next,
     gui_widget_prev,
     gui_menu_next,
@@ -71,6 +75,10 @@ constexpr char const *to_const_string(command rhs) noexcept
     case command::text_edit_cut: return "text_edit_cut";
     case command::text_undo: return "text_undo";
     case command::text_redo: return "text_redo";
+    case command::gui_keyboard_enter: return "gui_keyboard_enter";
+    case command::gui_keyboard_exit: return "gui_keyboard_exit";
+    case command::gui_mouse_enter: return "gui_mouse_enter";
+    case command::gui_mouse_exit: return "gui_mouse_exit";
     case command::gui_widget_next: return "gui_widget_next";
     case command::gui_widget_prev: return "gui_widget_prev";
     case command::gui_menu_next: return "gui_menu_next";
@@ -139,6 +147,14 @@ constexpr command to_command(std::string_view name) noexcept
         return command::text_undo;
     } else if (name == "text_redo") {
         return command::text_redo;
+    } else if (name == "gui_keyboard_enter") {
+        return command::gui_keyboard_enter;
+    } else if (name == "gui_keyboard_exit") {
+        return command::gui_keyboard_exit;
+    } else if (name == "gui_mouse_enter") {
+        return command::gui_mouse_enter;
+    } else if (name == "gui_mouse_exit") {
+        return command::gui_mouse_exit;
     } else if (name == "gui_widget_next") {
         return command::gui_widget_next;
     } else if (name == "gui_widget_prev") {

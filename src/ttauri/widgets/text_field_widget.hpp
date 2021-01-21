@@ -233,6 +233,26 @@ public:
                 window.setTextOnClipboard(_field.handleCut());
                 return true;
 
+            case command::gui_escape:
+                revert(true);
+                return true;
+
+            case command::gui_enter:
+                commit(true);
+                this->window.update_keyboard_target(
+                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                return true;
+
+            case command::gui_keyboard_enter:
+                revert(true);
+                // More processing of the gui_keyboard_enter command is required.
+                break;
+
+            case command::gui_keyboard_exit:
+                commit(true);
+                // More processing of the gui_keyboard_exit command is required.
+                break;
+
             default:
                 if (_field.handle_command(command)) {
                     commit(false);
@@ -327,11 +347,6 @@ public:
             switch (event.type) {
                 using enum KeyboardEvent::Type;
 
-            case Exited:
-                // Do not modify `handled`; continue further processing of exit event.
-                commit(true);
-                break;
-
             case Grapheme:
                 handled = true;
                 _field.insertGrapheme(event.grapheme);
@@ -411,6 +426,17 @@ private:
     static constexpr hires_utc_clock::duration _blink_interval = 500ms;
     hires_utc_clock::time_point _next_redraw_time_point;
     hires_utc_clock::time_point _last_update_time_point;
+
+    void revert(bool force) noexcept
+    {
+        if (auto delegate = _delegate.lock()) {
+            _field = delegate->to_string(*this, *value);
+            _error = {};
+        } else {
+            _field = std::string{};
+            _error = l10n("missing delegate");
+        }
+    }
 
     void commit(bool force) noexcept
     {

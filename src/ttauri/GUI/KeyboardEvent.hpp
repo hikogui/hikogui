@@ -38,8 +38,6 @@ constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexc
 struct KeyboardEvent {
     enum class Type : uint8_t {
         Idle,
-        Entered, ///< Keyboard focus was given.
-        Exited, ///< Keyboard focus was taken away.
         PartialGrapheme, ///< The user is combining a grapheme.
         Grapheme, ///< The user has finished entering a grapheme.
         Key, ///< Key (+modifiers) was used to send a key.
@@ -62,14 +60,6 @@ struct KeyboardEvent {
     KeyboardEvent(Grapheme grapheme, bool full=true) noexcept :
         type(full ? Type::Grapheme : Type::PartialGrapheme), state(), grapheme(std::move(grapheme)), key() {}
 
-    [[nodiscard]] static KeyboardEvent entered() noexcept {
-        return KeyboardEvent(Type::Entered);
-    }
-
-    [[nodiscard]] static KeyboardEvent exited() noexcept {
-        return KeyboardEvent(Type::Exited);
-    }
-
     [[nodiscard]] std::vector<command> const &getCommands() const noexcept;
 
     [[nodiscard]] friend std::string to_string(KeyboardEvent const &rhs) noexcept {
@@ -77,8 +67,6 @@ struct KeyboardEvent {
 
         switch (rhs.type) {
         case Type::Idle: r += "Idle"; break;
-        case Type::Entered: r += "Entered"; break;
-        case Type::Exited: r += "Exited"; break;
         case Type::PartialGrapheme: r += "PartialGrapheme="; break;
         case Type::Grapheme: r += "Grapheme="; break;
         case Type::Key: r += "Key="; break;

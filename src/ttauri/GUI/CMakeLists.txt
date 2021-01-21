@@ -27,7 +27,6 @@ target_sources(ttauri PRIVATE
     HitBox.hpp
     KeyboardBindings.cpp
     KeyboardBindings.hpp
-    KeyboardEvent.cpp
     KeyboardEvent.hpp
     KeyboardKey.hpp
     KeyboardModifiers.hpp

@@ -3,6 +3,7 @@
 
 #include "gui_window.hpp"
 #include "gui_device.hpp"
+#include "KeyboardBindings.hpp"
 #include "../widgets/WindowWidget.hpp"
 
 namespace tt {
@@ -126,11 +127,15 @@ void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widg
     auto current_target_widget = mouseTargetWidget.lock();
     if (new_target_widget != current_target_widget) {
         if (current_target_widget) {
-            current_target_widget->handle_mouse_event(MouseEvent::exited());
+            if (!send_to_widget(MouseEvent::exited(), current_target_widget)) {
+                send_to_widget({command::gui_mouse_exit}, current_target_widget);
+            }
         }
         mouseTargetWidget = new_target_widget;
         if (new_target_widget) {
-            new_target_widget->handle_mouse_event(MouseEvent::entered(position));
+            if (!send_to_widget(MouseEvent::entered(position), new_target_widget)) {
+                send_to_widget({command::gui_mouse_enter}, new_target_widget);
+            }
         }
     }
 }
@@ -139,19 +144,32 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
+    // If the new target widget does not accept focus, for example when clicking
+    // on a disabled widget, or empty part of a window.
+    // In that case no widget will get focus.
+    if (!new_target_widget || !new_target_widget->accepts_keyboard_focus(group)) {
+        new_target_widget = {};
+    }
+
+    // Check if the keyboard focus changed.
+    ttlet current_target_widget = keyboardTargetWidget.lock();
+    if (new_target_widget == current_target_widget) {
+        return;
+    }
+
+    // Tell the current widget that the keyboard focus was exited.
+    if (current_target_widget) {
+        send_to_widget({command::gui_keyboard_exit}, current_target_widget);
+    }
+
     // Send a gui_cancel command to any widget that is not in the new_target_widget-parent-chain.
     auto new_target_parent_chain = tt::widget::parent_chain(new_target_widget);
     widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
 
-    auto current_target_widget = keyboardTargetWidget.lock();
-    if ((!new_target_widget || new_target_widget->accepts_keyboard_focus(group)) && new_target_widget != current_target_widget) {
-        if (current_target_widget) {
-            current_target_widget->handle_keyboard_event(KeyboardEvent::exited());
-        }
-        keyboardTargetWidget = new_target_widget;
-        if (new_target_widget) {
-            new_target_widget->handle_keyboard_event(KeyboardEvent::entered());
-        }
+    // Tell the new widget that keyboard focus was entered.
+    keyboardTargetWidget = new_target_widget;
+    if (new_target_widget) {
+        send_to_widget({command::gui_keyboard_enter}, new_target_widget);
     }
 }
 
@@ -173,6 +191,69 @@ void gui_window::update_keyboard_target(
         }
         update_keyboard_target(std::move(tmp), group);
     }
+}
+
+bool gui_window::handle_command(tt::command command) noexcept
+{
+    switch (command) {
+    case command::gui_widget_next:
+        update_keyboard_target(keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+        return true;
+    case command::gui_widget_prev:
+        update_keyboard_target(keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
+        return true;
+    default:;
+    }
+    return false;
+}
+
+[[nodiscard]] bool
+gui_window::send_to_widget(std::vector<tt::command> const &commands, std::shared_ptr<tt::widget> target_widget) noexcept
+{
+    while (target_widget) {
+        for (auto command : commands) {
+            // Send a command in priority order to the widget.
+            if (target_widget->handle_command(command)) {
+                return true;
+            }
+        }
+        // Forward the keyboard event to the parent of the target.
+        target_widget = target_widget->shared_parent();
+    }
+
+    // If non of the widget has handled the command, let the window handle the command.
+    for (auto command : commands) {
+        if (handle_command(command)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+[[nodiscard]] bool gui_window::send_to_widget(KeyboardEvent const &event, std::shared_ptr<tt::widget> target_widget) noexcept
+{
+    while (target_widget) {
+        // Send a command in priority order to the widget.
+        if (target_widget->handle_keyboard_event(event)) {
+            return true;
+        }
+        // Forward the keyboard event to the parent of the target.
+        target_widget = target_widget->shared_parent();
+    }
+    return false;
+}
+
+[[nodiscard]] bool gui_window::send_to_widget(MouseEvent const &event, std::shared_ptr<tt::widget> target_widget) noexcept
+{
+    while (target_widget) {
+        // Send a command in priority order to the widget.
+        if (target_widget->handle_mouse_event(event)) {
+            return true;
+        }
+        // Forward the keyboard event to the parent of the target.
+        target_widget = target_widget->shared_parent();
+    }
+    return false;
 }
 
 bool gui_window::handle_mouse_event(MouseEvent event) noexcept
@@ -197,29 +278,11 @@ bool gui_window::handle_mouse_event(MouseEvent event) noexcept
     }
 
     auto target = mouseTargetWidget.lock();
-    while (target) {
-        if (target->handle_mouse_event(event)) {
-            return true;
-        }
 
-        // Forward the mouse event to the parent of the target.
-        target = target->shared_parent();
+    if (send_to_widget(event, target)) {
+        return true;
     }
 
-    return false;
-}
-
-bool gui_window::handle_command(tt::command command) noexcept
-{
-    switch (command) {
-    case command::gui_widget_next:
-        update_keyboard_target(keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
-        return true;
-    case command::gui_widget_prev:
-        update_keyboard_target(keyboardTargetWidget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
-        return true;
-    default:;
-    }
     return false;
 }
 
@@ -227,42 +290,29 @@ bool gui_window::handle_keyboard_event(KeyboardEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    // Let the widget or its parent handle the keyboard event directly.
-    {
-        auto target = keyboardTargetWidget.lock();
-        while (target) {
-            if (target->handle_keyboard_event(event)) {
-                return true;
-            }
-            // Forward the keyboard event to the parent of the target.
-            target = target->shared_parent();
-        }
+    auto target = keyboardTargetWidget.lock();
+
+    if (send_to_widget(event, target)) {
+        return true;
     }
 
     // If the keyboard event is not handled directly, convert the key event to a command.
     if (event.type == KeyboardEvent::Type::Key) {
-        ttlet commands = event.getCommands();
+        ttlet commands = keyboardBindings.translate(event.key);
 
-        // Send the commands to the widget and its parents, until the command is handled.
-        {
-            auto target = keyboardTargetWidget.lock();
-            while (target) {
-                for (auto command : commands) {
-                    // Send a command in priority order to the widget.
-                    if (target->handle_command(command)) {
-                        return true;
-                    }
-                }
-                // Forward the keyboard event to the parent of the target.
-                target = target->shared_parent();
+        ttlet handled = send_to_widget(commands, target);
+
+        for (ttlet command : commands) {
+            // Intercept the keyboard generated escape.
+            // A keyboard generated escape should always remove keyboard focus.
+            // The update_keyboard_target() function will send gui_keyboard_exit and a
+            // potential duplicate gui_escape messages to all widgets that need it.
+            if (command == command::gui_escape) {
+                update_keyboard_target({}, keyboard_focus_group::any);
             }
         }
 
-        for (auto command : commands) {
-            if (handle_command(command)) {
-                return true;
-            }
-        }
+        return handled;
     }
 
     return false;

@@ -9,12 +9,7 @@
 namespace tt {
 
 widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> parent) noexcept :
-    enabled(true),
-    window(_window),
-    _parent(parent),
-    _draw_layer(0.0f),
-    _logical_layer(0),
-    _semantic_layer(0)
+    enabled(true), window(_window), _parent(parent), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
 {
     if (parent) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -27,15 +22,10 @@ widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> p
         window.request_redraw(window_clipping_rectangle());
     });
 
-    _preferred_size = {
-        f32x4{0.0f, 0.0f},
-        f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}
-    };
+    _preferred_size = {f32x4{0.0f, 0.0f}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
 }
 
-widget::~widget()
-{
-}
+widget::~widget() {}
 
 gui_device *widget::device() const noexcept
 {
@@ -104,6 +94,32 @@ draw_context widget::make_draw_context(draw_context context) const noexcept
 bool widget::handle_command(command command) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
+
+    switch (command) {
+        using enum tt::command;
+    case gui_keyboard_enter:
+        _focus = true;
+        window.request_redraw(window_clipping_rectangle());
+        return true;
+
+    case gui_keyboard_exit:
+        _focus = false;
+        window.request_redraw(window_clipping_rectangle());
+        return true;
+
+    case gui_mouse_enter:
+        _hover = true;
+        window.request_redraw(window_clipping_rectangle());
+        return true;
+
+    case gui_mouse_exit:
+        _hover = false;
+        window.request_redraw(window_clipping_rectangle());
+        return true;
+
+    default:;
+    }
+
     return false;
 }
 
@@ -111,55 +127,31 @@ bool widget::handle_command_recursive(command command, std::vector<std::shared_p
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (!std::ranges::any_of(reject_list, [this](ttlet &x) { return x.get() == this; })) {
+    if (!std::ranges::any_of(reject_list, [this](ttlet &x) {
+            return x.get() == this;
+        })) {
         return handle_command(command);
     } else {
         return false;
     }
 }
 
-bool widget::handle_mouse_event(MouseEvent const &event) noexcept {
+bool widget::handle_mouse_event(MouseEvent const &event) noexcept
+{
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    auto handled = false;
-
-    if (event.type == MouseEvent::Type::Entered) {
-        handled = true;
-        _hover = true;
-        window.request_redraw(window_clipping_rectangle());
-
-    } else if (event.type == MouseEvent::Type::Exited) {
-        handled = true;
-        _hover = false;
-        window.request_redraw(window_clipping_rectangle());
-    }
-    return handled;
+    return false;
 }
 
-bool widget::handle_keyboard_event(KeyboardEvent const &event) noexcept {
+bool widget::handle_keyboard_event(KeyboardEvent const &event) noexcept
+{
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    auto handled = false;
-
-    switch (event.type) {
-    case KeyboardEvent::Type::Entered:
-        handled = true;
-        _focus = true;
-        window.request_redraw(window_clipping_rectangle());
-        break;
-
-    case KeyboardEvent::Type::Exited:
-        handled = true;
-        _focus = false;
-        window.request_redraw(window_clipping_rectangle());
-        break;
-
-    default:;
-    }
-
-    return handled;
+    return false;
 }
 
-std::shared_ptr<widget>
-widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget, keyboard_focus_group group, keyboard_focus_direction direction) const noexcept
+std::shared_ptr<widget> widget::find_next_widget(
+    std::shared_ptr<widget> const &current_keyboard_widget,
+    keyboard_focus_group group,
+    keyboard_focus_direction direction) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     tt_axiom(direction != keyboard_focus_direction::current);
@@ -246,4 +238,4 @@ widget::find_next_widget(std::shared_ptr<widget> const &current_keyboard_widget,
     return chain;
 }
 
-}
+} // namespace tt
