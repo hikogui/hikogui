@@ -55,7 +55,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
         // Used by draw().
         _to_window_transform = mat::T(_window_rectangle.x(), _window_rectangle.y(), _draw_layer);
 
-        // Used by handle_mouse_event()
+        // Used by handle_event()
         _from_window_transform = ~_to_window_transform;
     }
 }
@@ -91,7 +91,7 @@ draw_context widget::make_draw_context(draw_context context) const noexcept
     return context;
 }
 
-bool widget::handle_command(command command) noexcept
+bool widget::handle_event(command command) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -130,19 +130,19 @@ bool widget::handle_command_recursive(command command, std::vector<std::shared_p
     if (!std::ranges::any_of(reject_list, [this](ttlet &x) {
             return x.get() == this;
         })) {
-        return handle_command(command);
+        return handle_event(command);
     } else {
         return false;
     }
 }
 
-bool widget::handle_mouse_event(MouseEvent const &event) noexcept
+bool widget::handle_event(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     return false;
 }
 
-bool widget::handle_keyboard_event(KeyboardEvent const &event) noexcept
+bool widget::handle_event(KeyboardEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     return false;

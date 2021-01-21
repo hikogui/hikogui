@@ -119,7 +119,7 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
-    [[nodiscard]] bool handle_command(tt::command command) noexcept override
+    [[nodiscard]] bool handle_event(tt::command command) noexcept override
     {
         switch (command) {
         case command::gui_toolbar_next:
@@ -139,7 +139,7 @@ public:
         default:;
         }
 
-        return super::handle_command(command);
+        return super::handle_event(command);
     }
 
 private:

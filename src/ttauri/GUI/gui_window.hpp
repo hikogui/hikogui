@@ -194,16 +194,18 @@ public:
 
     /** Change the keyboard focus to the given widget.
      * If the group of the widget is incorrect then no widget will be in focus.
-     * 
+     *
      * @param widget The new widget to focus, or empty to remove all keyboard focus.
      * @param group The group the widget must belong to.
      */
-    void update_keyboard_target(std::shared_ptr<tt::widget> widget, keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
+    void update_keyboard_target(
+        std::shared_ptr<tt::widget> widget,
+        keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
 
     /** Change the keyboard focus to the given, previous or next widget.
      * This function will find the closest widget from the given widget wich belong to the given
      * group; if none is found, or if the original selected widget is found, then no widget will be in focus.
-     * 
+     *
      * @param widget The widget to use as the start point for a new widget to select.
      * @param group The group the widget must belong to.
      * @param direction The direction to search in, or current to select the current widget.
@@ -262,12 +264,38 @@ protected:
      */
     virtual void build() = 0;
 
-    /** Handle command.
+    /** Handle command event.
      * This function is called when no widget has handled the command.
      */
-    bool handle_command(tt::command command) noexcept;
+    [[nodiscard]] virtual bool handle_event(tt::command command) noexcept;
 
-    /** Send command to a target widget.
+    [[nodiscard]] virtual bool handle_event(std::vector<tt::command> const &commands) noexcept
+    {
+        for (ttlet command : commands) {
+            if (handle_event(command)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Handle mouse event.
+     * This function is called when no widget has handled the mouse event.
+     */
+    [[nodiscard]] virtual bool handle_event(MouseEvent const &event) noexcept
+    {
+        return false;
+    }
+
+    /** Handle keyboard event.
+     * This function is called when no widget has handled the keyboard event.
+     */
+    [[nodiscard]] virtual bool handle_event(KeyboardEvent const &event) noexcept
+    {
+        return false;
+    }
+
+    /** Send event to a target widget.
      *
      * The commands are send in order, until the command is handled, then processing stops immediately.
      * All commands are tried in a batch to the following handlers:
@@ -275,41 +303,27 @@ protected:
      *  - The parents of the widget up to and including the root widget.
      *  - The window itself.
      */
-    [[nodiscard]] bool
-    send_to_widget(std::vector<tt::command> const &commands, std::shared_ptr<tt::widget> target_widget) noexcept;
+    template<typename Event>
+    bool send_event_to_widget(std::shared_ptr<tt::widget> target_widget, Event const &event) noexcept;
 
-    /** Send keyboard event to a target widget.
-     *
-     * The event is send to the target widget and parent widgets up to and including the root window
-     * until one has handled the keyboard event, then processing stops immediately.
-     */
-    [[nodiscard]] bool send_to_widget(KeyboardEvent const &event, std::shared_ptr<tt::widget> target_widget) noexcept;
-
-    /** Send mouse event to a target widget.
-     *
-     * The event is send to the target widget and parent widgets up to and including the root window
-     * until one has handled the keyboard event, then processing stops immediately.
-     */
-    [[nodiscard]] bool send_to_widget(MouseEvent const &event, std::shared_ptr<tt::widget> target_widget) noexcept;
-
-    /*! Mouse moved.
+    /*! Mouse mouse event.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    bool handle_mouse_event(MouseEvent event) noexcept;
+    bool send_event(MouseEvent const &event) noexcept;
 
     /*! Handle keyboard event.
      * Called by the operating system to show the character that was entered
      * or special key that was used.
      */
-    bool handle_keyboard_event(KeyboardEvent const &event) noexcept;
+    bool send_event(KeyboardEvent const &event) noexcept;
 
-    bool handle_keyboard_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
+    bool send_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
 
-    bool handle_keyboard_event(Grapheme grapheme, bool full = true) noexcept;
+    bool send_event(Grapheme grapheme, bool full = true) noexcept;
 
-    bool handle_keyboard_event(char32_t c, bool full = true) noexcept;
+    bool send_event(char32_t c, bool full = true) noexcept;
 
 private:
     /** Target of the mouse

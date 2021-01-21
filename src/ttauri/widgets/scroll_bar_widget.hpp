@@ -115,10 +115,10 @@ public:
         }
     }
 
-    [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept
+    [[nodiscard]] bool handle_event(MouseEvent const &event) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = super::handle_mouse_event(event);
+        auto handled = super::handle_event(event);
         
         if (event.cause.leftButton) {
             handled = true;

@@ -51,7 +51,7 @@ public:
         return is_normal(group) && *enabled;
     }
 
-    [[nodiscard]] bool handle_command(command command) noexcept
+    [[nodiscard]] bool handle_event(command command) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -67,13 +67,13 @@ public:
             }
         }
 
-        return super::handle_command(command);
+        return super::handle_event(command);
     }
 
-    [[nodiscard]] bool handle_mouse_event(MouseEvent const &event) noexcept final
+    [[nodiscard]] bool handle_event(MouseEvent const &event) noexcept final
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = super::handle_mouse_event(event);
+        auto handled = super::handle_event(event);
 
         if (event.cause.leftButton) {
             handled = true;
@@ -83,7 +83,7 @@ public:
                 }
 
                 if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
-                    handled |= handle_command(command::gui_activate);
+                    handled |= handle_event(command::gui_activate);
                 }
             }
         }

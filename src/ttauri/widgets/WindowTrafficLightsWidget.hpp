@@ -27,7 +27,7 @@ public:
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
 
-    bool handle_mouse_event(MouseEvent const &event) noexcept override;
+    bool handle_event(MouseEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override;
 
 private:

@@ -145,7 +145,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool handle_command(tt::command command) noexcept override
+    [[nodiscard]] bool handle_event(tt::command command) noexcept override
     {
         switch (command) {
         case command::gui_menu_next:
@@ -190,7 +190,7 @@ public:
                 ttlet focus_widget_after_commit = this->window.widget->find_next_widget(
                     this->shared_from_this(), keyboard_focus_group::normal, direction);
 
-                ttlet handled = super::handle_command(command::gui_activate);
+                ttlet handled = super::handle_event(command::gui_activate);
                 tt_axiom(handled);
 
                 this->window.update_keyboard_target(focus_widget_after_commit);
@@ -201,7 +201,7 @@ public:
         default:;
         }
 
-        return super::handle_command(command);
+        return super::handle_event(command);
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override

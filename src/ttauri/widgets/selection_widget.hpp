@@ -167,23 +167,23 @@ public:
         }
     }
 
-    bool handle_mouse_event(MouseEvent const &event) noexcept override
+    bool handle_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = super::handle_mouse_event(event);
+        auto handled = super::handle_event(event);
 
         if (event.cause.leftButton) {
             handled = true;
             if (*enabled) {
                 if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
-                    handle_command(command::gui_activate);
+                    handle_event(command::gui_activate);
                 }
             }
         }
         return handled;
     }
 
-    bool handle_command(command command) noexcept override
+    bool handle_event(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         _request_relayout = true;
@@ -210,7 +210,7 @@ public:
             }
         }
 
-        return super::handle_command(command);
+        return super::handle_event(command);
     }
 
     [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override

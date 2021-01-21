@@ -464,9 +464,19 @@ public:
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
-     * command to the super class' `handle_command()`.
+     * command to the super class' `handle_event()`.
      */
-    virtual bool handle_command(command command) noexcept;
+    [[nodiscard]] virtual bool handle_event(command command) noexcept;
+
+    [[nodiscard]] virtual bool handle_event(std::vector<command> const &commands) noexcept
+    {
+        for (ttlet command : commands) {
+            if (handle_event(command)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /** Handle command recursive.
      * Handle a command and pass it to each child.
@@ -475,23 +485,24 @@ public:
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
      */
-    virtual bool handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept;
+    [[nodiscard]] virtual bool
+    handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept;
 
     /*! Handle mouse event.
      * Called by the operating system to show the position and button state of the mouse.
      * This is called very often so it must be made efficient.
      * This function is also used to determine the mouse cursor.
      *
-     * In most cased overriding methods should call the super's `handle_mouse_event()` at the
+     * In most cased overriding methods should call the super's `handle_event()` at the
      * start of the function, to detect `hover`.
      *
-     * When this method does not handle the event the window will call `handle_mouse_event()`
+     * When this method does not handle the event the window will call `handle_event()`
      * on the widget's parent.
      *
      * @param event The mouse event, positions are in window coordinates.
      * @return If this widget has handled the mouse event.
      */
-    virtual bool handle_mouse_event(MouseEvent const &event) noexcept;
+    [[nodiscard]] virtual bool handle_event(MouseEvent const &event) noexcept;
 
     /** Handle keyboard event.
      * Called by the operating system when editing text, or entering special keys
@@ -499,7 +510,7 @@ public:
      * @param event The keyboard event.
      * @return If this widget has handled the keyboard event.
      */
-    virtual bool handle_keyboard_event(KeyboardEvent const &event) noexcept;
+    [[nodiscard]] virtual bool handle_event(KeyboardEvent const &event) noexcept;
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget

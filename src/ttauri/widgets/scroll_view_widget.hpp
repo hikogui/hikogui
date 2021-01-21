@@ -201,10 +201,10 @@ public:
         return widget;
     }
 
-    bool handle_mouse_event(MouseEvent const &event) noexcept override
+    bool handle_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = super::handle_mouse_event(event);
+        auto handled = super::handle_event(event);
 
         if (event.type == MouseEvent::Type::Wheel) {
             handled = true;

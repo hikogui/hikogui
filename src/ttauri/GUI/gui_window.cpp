@@ -8,7 +8,25 @@
 
 namespace tt {
 
-using namespace std;
+template<typename Event>
+bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget, Event const &event) noexcept
+{
+    while (target_widget) {
+        // Send a command in priority order to the widget.
+        if (target_widget->handle_event(event)) {
+            return true;
+        }
+
+        // Forward the keyboard event to the parent of the target.
+        target_widget = target_widget->shared_parent();
+    }
+
+    // If non of the widget has handled the command, let the window handle the command.
+    if (handle_event(event)) {
+        return true;
+    }
+    return false;
+}
 
 gui_window::gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title) :
     system(system), state(State::Initializing), delegate(delegate), title(title)
@@ -127,14 +145,14 @@ void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widg
     auto current_target_widget = mouseTargetWidget.lock();
     if (new_target_widget != current_target_widget) {
         if (current_target_widget) {
-            if (!send_to_widget(MouseEvent::exited(), current_target_widget)) {
-                send_to_widget({command::gui_mouse_exit}, current_target_widget);
+            if (!send_event_to_widget(current_target_widget, MouseEvent::exited())) {
+                send_event_to_widget(current_target_widget, std::vector{command::gui_mouse_exit});
             }
         }
         mouseTargetWidget = new_target_widget;
         if (new_target_widget) {
-            if (!send_to_widget(MouseEvent::entered(position), new_target_widget)) {
-                send_to_widget({command::gui_mouse_enter}, new_target_widget);
+            if (!send_event_to_widget(new_target_widget, MouseEvent::entered(position))) {
+                send_event_to_widget(new_target_widget, std::vector{command::gui_mouse_enter});
             }
         }
     }
@@ -159,7 +177,7 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
 
     // Tell the current widget that the keyboard focus was exited.
     if (current_target_widget) {
-        send_to_widget({command::gui_keyboard_exit}, current_target_widget);
+        send_event_to_widget(current_target_widget, std::vector{command::gui_keyboard_exit});
     }
 
     // Send a gui_cancel command to any widget that is not in the new_target_widget-parent-chain.
@@ -169,7 +187,7 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
     // Tell the new widget that keyboard focus was entered.
     keyboardTargetWidget = new_target_widget;
     if (new_target_widget) {
-        send_to_widget({command::gui_keyboard_enter}, new_target_widget);
+        send_event_to_widget(new_target_widget, std::vector{command::gui_keyboard_enter});
     }
 }
 
@@ -193,7 +211,7 @@ void gui_window::update_keyboard_target(
     }
 }
 
-bool gui_window::handle_command(tt::command command) noexcept
+bool gui_window::handle_event(tt::command command) noexcept
 {
     switch (command) {
     case command::gui_widget_next:
@@ -207,56 +225,25 @@ bool gui_window::handle_command(tt::command command) noexcept
     return false;
 }
 
+
+
+/*[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, MouseEvent const &event) noexcept
+{
+    tt::send_event(target_widget, event);
+}
+
+[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, KeyboardEvent const &event) noexcept
+{
+    tt::send_event(target_widget, event);
+}
+
 [[nodiscard]] bool
-gui_window::send_to_widget(std::vector<tt::command> const &commands, std::shared_ptr<tt::widget> target_widget) noexcept
+gui_window::send_event(std::shared_ptr<tt::widget> target_widget, std::vector<tt::command> const &event) noexcept
 {
-    while (target_widget) {
-        for (auto command : commands) {
-            // Send a command in priority order to the widget.
-            if (target_widget->handle_command(command)) {
-                return true;
-            }
-        }
-        // Forward the keyboard event to the parent of the target.
-        target_widget = target_widget->shared_parent();
-    }
+    tt::send_event(target_widget, event);
+}*/
 
-    // If non of the widget has handled the command, let the window handle the command.
-    for (auto command : commands) {
-        if (handle_command(command)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-[[nodiscard]] bool gui_window::send_to_widget(KeyboardEvent const &event, std::shared_ptr<tt::widget> target_widget) noexcept
-{
-    while (target_widget) {
-        // Send a command in priority order to the widget.
-        if (target_widget->handle_keyboard_event(event)) {
-            return true;
-        }
-        // Forward the keyboard event to the parent of the target.
-        target_widget = target_widget->shared_parent();
-    }
-    return false;
-}
-
-[[nodiscard]] bool gui_window::send_to_widget(MouseEvent const &event, std::shared_ptr<tt::widget> target_widget) noexcept
-{
-    while (target_widget) {
-        // Send a command in priority order to the widget.
-        if (target_widget->handle_mouse_event(event)) {
-            return true;
-        }
-        // Forward the keyboard event to the parent of the target.
-        target_widget = target_widget->shared_parent();
-    }
-    return false;
-}
-
-bool gui_window::handle_mouse_event(MouseEvent event) noexcept
+bool gui_window::send_event(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -279,20 +266,20 @@ bool gui_window::handle_mouse_event(MouseEvent event) noexcept
 
     auto target = mouseTargetWidget.lock();
 
-    if (send_to_widget(event, target)) {
+    if (send_event_to_widget(target, event)) {
         return true;
     }
 
     return false;
 }
 
-bool gui_window::handle_keyboard_event(KeyboardEvent const &event) noexcept
+bool gui_window::send_event(KeyboardEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     auto target = keyboardTargetWidget.lock();
 
-    if (send_to_widget(event, target)) {
+    if (send_event_to_widget(target, event)) {
         return true;
     }
 
@@ -300,7 +287,7 @@ bool gui_window::handle_keyboard_event(KeyboardEvent const &event) noexcept
     if (event.type == KeyboardEvent::Type::Key) {
         ttlet commands = keyboardBindings.translate(event.key);
 
-        ttlet handled = send_to_widget(commands, target);
+        ttlet handled = send_event_to_widget(target, commands);
 
         for (ttlet command : commands) {
             // Intercept the keyboard generated escape.
@@ -318,19 +305,19 @@ bool gui_window::handle_keyboard_event(KeyboardEvent const &event) noexcept
     return false;
 }
 
-bool gui_window::handle_keyboard_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept
+bool gui_window::send_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept
 {
-    return handle_keyboard_event(KeyboardEvent(_state, modifiers, key));
+    return send_event(KeyboardEvent(_state, modifiers, key));
 }
 
-bool gui_window::handle_keyboard_event(Grapheme grapheme, bool full) noexcept
+bool gui_window::send_event(Grapheme grapheme, bool full) noexcept
 {
-    return handle_keyboard_event(KeyboardEvent(grapheme, full));
+    return send_event(KeyboardEvent(grapheme, full));
 }
 
-bool gui_window::handle_keyboard_event(char32_t c, bool full) noexcept
+bool gui_window::send_event(char32_t c, bool full) noexcept
 {
-    return handle_keyboard_event(Grapheme(c), full);
+    return send_event(Grapheme(c), full);
 }
 
 } // namespace tt

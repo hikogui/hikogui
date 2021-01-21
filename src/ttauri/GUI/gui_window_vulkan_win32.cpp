@@ -579,21 +579,21 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
             auto keyboardEvent = KeyboardEvent();
             keyboardEvent.type = KeyboardEvent::Type::Grapheme;
             keyboardEvent.grapheme = c;
-            handle_keyboard_event(keyboardEvent);
+            send_event(keyboardEvent);
         }
     } break;
 
     case WM_DEADCHAR: {
         auto c = handleSuragates(narrow_cast<char32_t>(wParam));
         if (c != 0) {
-            handle_keyboard_event(c, false);
+            send_event(c, false);
         }
     } break;
 
     case WM_CHAR: {
         auto c = handleSuragates(narrow_cast<char32_t>(wParam));
         if (c >= 0x20) {
-            handle_keyboard_event(c);
+            send_event(c);
         }
     } break;
 
@@ -614,7 +614,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         ttlet key_modifiers = getKeyboardModifiers();
         ttlet virtual_key = to_KeyboardVirtualKey(key_code, extended, key_modifiers);
         if (virtual_key != KeyboardVirtualKey::Nul) {
-            handle_keyboard_event(key_state, key_modifiers, virtual_key);
+            send_event(key_state, key_modifiers, virtual_key);
         }
     } break;
 
@@ -633,7 +633,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     case WM_MOUSEMOVE:
-    case WM_MOUSELEAVE: handle_mouse_event(createMouseEvent(uMsg, wParam, lParam)); break;
+    case WM_MOUSELEAVE: send_event(createMouseEvent(uMsg, wParam, lParam)); break;
 
     case WM_NCCALCSIZE:
         if (wParam == TRUE) {

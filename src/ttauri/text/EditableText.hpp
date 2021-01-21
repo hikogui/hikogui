@@ -333,7 +333,7 @@ public:
         deleteSelection();
 
         if (!insertMode) {
-            handle_command(command::text_delete_char_next);
+            handle_event(command::text_delete_char_next);
         }
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
@@ -391,7 +391,7 @@ public:
         return r;
     }
 
-    bool handle_command(command command) noexcept {
+    bool handle_event(command command) noexcept {
         auto handled = false;
 
         tt_axiom(cursorIndex <= std::ssize(text));

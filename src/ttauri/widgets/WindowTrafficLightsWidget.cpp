@@ -233,10 +233,10 @@ void WindowTrafficLightsWidget::draw(draw_context context, hires_utc_clock::time
     super::draw(std::move(context), display_time_point);
 }
 
-bool WindowTrafficLightsWidget::handle_mouse_event(MouseEvent const &event) noexcept
+bool WindowTrafficLightsWidget::handle_event(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    auto handled = super::handle_mouse_event(event);
+    auto handled = super::handle_event(event);
 
     // Check the hover states of each button.
     auto stateHasChanged = false;

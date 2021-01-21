@@ -213,7 +213,7 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
-    bool handle_command(command command) noexcept override
+    bool handle_event(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         _request_relayout = true;
@@ -254,20 +254,20 @@ public:
                 break;
 
             default:
-                if (_field.handle_command(command)) {
+                if (_field.handle_event(command)) {
                     commit(false);
                     return true;
                 }
             }
         }
 
-        return super::handle_command(command);
+        return super::handle_event(command);
     }
 
-    bool handle_mouse_event(MouseEvent const &event) noexcept override
+    bool handle_event(MouseEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        auto handled = super::handle_mouse_event(event);
+        auto handled = super::handle_event(event);
 
         // Make sure we only scroll when dragging outside the widget.
         ttlet position = _from_window_transform * event.position;
@@ -337,11 +337,11 @@ public:
         return handled;
     }
 
-    bool handle_keyboard_event(KeyboardEvent const &event) noexcept override
+    bool handle_event(KeyboardEvent const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        auto handled = super::handle_keyboard_event(event);
+        auto handled = super::handle_event(event);
 
         if (*enabled) {
             switch (event.type) {
