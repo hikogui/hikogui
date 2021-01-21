@@ -29,7 +29,7 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
 }
 
 gui_window::gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title) :
-    system(system), state(State::Initializing), delegate(delegate), title(title)
+    system(system), state(gui_window_state::initializing), delegate(delegate), title(title)
 {
 }
 
@@ -39,7 +39,7 @@ gui_window::~gui_window()
     widget = {};
 
     try {
-        if (state != State::NoWindow) {
+        if (state != gui_window_state::no_window) {
             LOG_FATAL("Window '{}' was not properly teardown before destruction.", title);
         }
         LOG_INFO("Window '{}' has been propertly destructed.", title);
@@ -66,7 +66,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    current_window_extent = [this] {
+    extent = [this] {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         static_cast<void>(widget->update_constraints({}, true));
         return widget->preferred_size().minimum();
@@ -79,11 +79,11 @@ void gui_window::init()
     update_keyboard_target({});
 
     // Finished initializing the window.
-    state = State::NoDevice;
+    state = gui_window_state::no_device;
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
-    create_window(title.text(), current_window_extent);
+    create_window(title.text(), extent);
 }
 
 void gui_window::set_device(gui_device *new_device)
@@ -100,7 +100,7 @@ void gui_window::set_device(gui_device *new_device)
     }
 
     if (_device) {
-        state = State::DeviceLost;
+        state = gui_window_state::device_lost;
         teardown();
     }
 
@@ -110,7 +110,7 @@ void gui_window::set_device(gui_device *new_device)
 bool gui_window::is_closed()
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    return state == State::NoWindow;
+    return state == gui_window_state::no_window;
 }
 
 [[nodiscard]] float gui_window::window_scale() const noexcept
@@ -120,14 +120,14 @@ bool gui_window::is_closed()
     return std::ceil(dpi / 100.0f);
 }
 
-void gui_window::window_changed_size(f32x4 extent)
+void gui_window::window_changed_size(f32x4 new_extent)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    current_window_extent = extent;
+    extent = new_extent;
     tt_axiom(widget);
 
-    widget->set_layout_parameters(aarect{current_window_extent}, aarect{current_window_extent});
+    widget->set_layout_parameters(aarect{extent}, aarect{extent});
     requestLayout = true;
 }
 

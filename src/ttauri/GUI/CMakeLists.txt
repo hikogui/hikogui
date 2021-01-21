@@ -19,6 +19,8 @@ target_sources(ttauri PRIVATE
     gui_window.cpp
     gui_window.hpp
     gui_window_delegate.hpp
+    gui_window_size.hpp
+    gui_window_state.hpp
     gui_window_vulkan.cpp
     gui_window_vulkan.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>

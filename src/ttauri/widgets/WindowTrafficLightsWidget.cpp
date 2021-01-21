@@ -156,7 +156,7 @@ void WindowTrafficLightsWidget::drawMacOS(draw_context const &drawContext, hires
         context.draw_glyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
 
         context.color = f32x4::color(0.0f, 0.133f, 0.0f);
-        if (window.size == gui_window::Size::Maximized) {
+        if (window.size_state == gui_window_size::maximized) {
             context.draw_glyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
         } else {
             context.draw_glyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
@@ -207,7 +207,7 @@ void WindowTrafficLightsWidget::drawWindows(
     context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
     context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle);
     context.draw_glyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
-    if (window.size == gui_window::Size::Maximized) {
+    if (window.size_state == gui_window_size::maximized) {
         context.draw_glyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
     } else {
         context.draw_glyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
@@ -263,9 +263,9 @@ bool WindowTrafficLightsWidget::handle_event(MouseEvent const &event) noexcept
             }
 
             if (pressedMaximize && hoverMaximize) {
-                switch (window.size) {
-                case gui_window::Size::Normal: window.maximize_window(); break;
-                case gui_window::Size::Maximized: window.normalize_window(); break;
+                switch (window.size_state) {
+                case gui_window_size::normal: window.maximize_window(); break;
+                case gui_window_size::maximized: window.normalize_window(); break;
                 default: tt_no_default();
                 }
             }

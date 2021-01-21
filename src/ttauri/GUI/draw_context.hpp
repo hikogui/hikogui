@@ -81,7 +81,7 @@ public:
         fill_color(1.0, 1.0, 0.0, 1.0),
         line_width(theme::global->borderWidth),
         corner_shapes(),
-        clipping_rectangle(static_cast<f32x4>(window.current_window_extent))
+        clipping_rectangle(static_cast<f32x4>(window.extent))
     {
         _flat_vertices->clear();
         _box_vertices->clear();

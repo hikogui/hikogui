@@ -77,17 +77,17 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
 
     case vk::Result::eSuboptimalKHR:
         LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
-        state = State::SwapchainLost;
+        state = gui_window_state::swapchain_lost;
         return {};
 
     case vk::Result::eErrorOutOfDateKHR:
         LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
-        state = State::SwapchainLost;
+        state = gui_window_state::swapchain_lost;
         return {};
 
     case vk::Result::eErrorSurfaceLostKHR:
         LOG_INFO("acquireNextImageKHR() eErrorSurfaceLostKHR");
-        state = State::SurfaceLost;
+        state = gui_window_state::surface_lost;
         return {};
 
     case vk::Result::eTimeout:
@@ -124,7 +124,7 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
 
         case vk::Result::eSuboptimalKHR:
             LOG_INFO("presentKHR() eSuboptimalKHR");
-            state = State::SwapchainLost;
+            state = gui_window_state::swapchain_lost;
             return;
 
         default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from presentKHR()");
@@ -132,12 +132,12 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
 
     } catch (vk::OutOfDateKHRError const &) {
         LOG_INFO("presentKHR() eErrorOutOfDateKHR");
-        state = State::SwapchainLost;
+        state = gui_window_state::swapchain_lost;
         return;
 
     } catch (vk::SurfaceLostKHRError const &) {
         LOG_INFO("presentKHR() eErrorSurfaceLostKHR");
-        state = State::SurfaceLost;
+        state = gui_window_state::surface_lost;
         return;
     }
 }
@@ -146,20 +146,20 @@ void gui_window_vulkan::build()
 {
     auto lock = std::scoped_lock(gui_system_mutex);
 
-    if (state == State::NoDevice) {
+    if (state == gui_window_state::no_device) {
         if (_device) {
             flatPipeline->buildForNewDevice();
             boxPipeline->buildForNewDevice();
             imagePipeline->buildForNewDevice();
             SDFPipeline->buildForNewDevice();
             toneMapperPipeline->buildForNewDevice();
-            state = State::NoSurface;
+            state = gui_window_state::no_surface;
         }
     }
 
-    if (state == State::NoSurface) {
+    if (state == gui_window_state::no_surface) {
         if (!buildSurface()) {
-            state = State::DeviceLost;
+            state = gui_window_state::device_lost;
             return;
         }
         flatPipeline->buildForNewSurface();
@@ -167,18 +167,18 @@ void gui_window_vulkan::build()
         imagePipeline->buildForNewSurface();
         SDFPipeline->buildForNewSurface();
         toneMapperPipeline->buildForNewSurface();
-        state = State::NoSwapchain;
+        state = gui_window_state::no_swapchain;
     }
 
-    if (state == State::NoSwapchain) {
+    if (state == gui_window_state::no_swapchain) {
         if (!readSurfaceExtent()) {
             // Minimized window, can not build a new swap chain.
-            state = State::NoSwapchain;
+            state = gui_window_state::no_swapchain;
             return;
         }
 
         ttlet s = buildSwapchain();
-        if (s != State::ReadyToRender) {
+        if (s != gui_window_state::ready_to_render) {
             state = s;
             return;
         }
@@ -200,7 +200,7 @@ void gui_window_vulkan::build()
         toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
 
         window_changed_size({narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
-        state = State::ReadyToRender;
+        state = gui_window_state::ready_to_render;
     }
 }
 
@@ -210,7 +210,7 @@ void gui_window_vulkan::teardown()
 
     auto nextState = state;
 
-    if (state >= State::SwapchainLost) {
+    if (state >= gui_window_state::swapchain_lost) {
         LOG_INFO("Tearing down because the window lost the swapchain.");
         waitIdle();
         toneMapperPipeline->teardownForSwapchainLost();
@@ -223,9 +223,9 @@ void gui_window_vulkan::teardown()
         teardownFramebuffers();
         teardownRenderPasses();
         teardownSwapchain();
-        nextState = State::NoSwapchain;
+        nextState = gui_window_state::no_swapchain;
 
-        if (state >= State::SurfaceLost) {
+        if (state >= gui_window_state::surface_lost) {
             LOG_INFO("Tearing down because the window lost the drawable surface.");
             toneMapperPipeline->teardownForSurfaceLost();
             SDFPipeline->teardownForSurfaceLost();
@@ -233,9 +233,9 @@ void gui_window_vulkan::teardown()
             boxPipeline->teardownForSurfaceLost();
             flatPipeline->teardownForSurfaceLost();
             teardownSurface();
-            nextState = State::NoSurface;
+            nextState = gui_window_state::no_surface;
 
-            if (state >= State::DeviceLost) {
+            if (state >= gui_window_state::device_lost) {
                 LOG_INFO("Tearing down because the window lost the vulkan device.");
 
                 toneMapperPipeline->teardownForDeviceLost();
@@ -244,9 +244,9 @@ void gui_window_vulkan::teardown()
                 boxPipeline->teardownForDeviceLost();
                 flatPipeline->teardownForDeviceLost();
                 teardownDevice();
-                nextState = State::NoDevice;
+                nextState = gui_window_state::no_device;
 
-                if (state >= State::WindowLost) {
+                if (state >= gui_window_state::window_lost) {
                     LOG_INFO("Tearing down because the window doesn't exist anymore.");
 
                     toneMapperPipeline->teardownForWindowLost();
@@ -258,7 +258,7 @@ void gui_window_vulkan::teardown()
                     if (auto delegate_ = delegate.lock()) {
                         delegate_->deinit(*this);
                     }
-                    nextState = State::NoWindow;
+                    nextState = gui_window_state::no_window;
                 }
             }
         }
@@ -275,7 +275,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     build();
 
     // Bail out when the window is not yet ready to be rendered.
-    if (state != State::ReadyToRender) {
+    if (state != gui_window_state::ready_to_render) {
         return;
     }
 
@@ -296,12 +296,12 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
     ttlet preferred_size = widget->preferred_size();
-    if (requestResize.exchange(false) || current_window_extent << preferred_size) {
-        set_window_size(current_window_extent = preferred_size.minimum());
-    } else if (current_window_extent >> preferred_size) {
-        set_window_size(current_window_extent = preferred_size.maximum());
+    if (requestResize.exchange(false) || extent << preferred_size) {
+        set_window_size(extent = preferred_size.minimum());
+    } else if (extent >> preferred_size) {
+        set_window_size(extent = preferred_size.maximum());
     }
-    widget->set_layout_parameters(aarect{current_window_extent}, aarect{current_window_extent});
+    widget->set_layout_parameters(aarect{extent}, aarect{extent});
 
     // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
     ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;
@@ -494,7 +494,7 @@ bool gui_window_vulkan::readSurfaceExtent()
         std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
 
     } catch (vk::SurfaceLostKHRError const &) {
-        state = State::SurfaceLost;
+        state = gui_window_state::surface_lost;
         return false;
     }
 
@@ -534,11 +534,11 @@ bool gui_window_vulkan::checkSurfaceExtent()
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     try {
-        ttlet[nrImages, extent] = getImageCountAndExtent();
-        return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent == swapchainImageExtent);
+        ttlet[nrImages, extent_] = getImageCountAndExtent();
+        return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent_ == swapchainImageExtent);
 
     } catch (vk::SurfaceLostKHRError const &) {
-        state = State::SurfaceLost;
+        state = gui_window_state::surface_lost;
         return false;
     }
 }
@@ -556,7 +556,7 @@ bool gui_window_vulkan::buildSurface()
     return vulkan_device().score(intrinsic) > 0;
 }
 
-gui_window::State gui_window_vulkan::buildSwapchain()
+gui_window_state gui_window_vulkan::buildSwapchain()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -592,7 +592,7 @@ gui_window::State gui_window_vulkan::buildSwapchain()
     switch (result) {
     case vk::Result::eSuccess: break;
 
-    case vk::Result::eErrorSurfaceLostKHR: return State::SurfaceLost;
+    case vk::Result::eErrorSurfaceLostKHR: return gui_window_state::surface_lost;
 
     default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from createSwapchainKHR()");
     }
@@ -647,7 +647,7 @@ gui_window::State gui_window_vulkan::buildSwapchain()
     colorAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
     std::tie(colorImage, colorImageAllocation) = vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
 
-    return State::ReadyToRender;
+    return gui_window_state::ready_to_render;
 }
 
 void gui_window_vulkan::teardownSwapchain()

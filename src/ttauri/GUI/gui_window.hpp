@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "gui_window_state.hpp"
+#include "gui_window_size.hpp"
 #include "gui_window_delegate.hpp"
 #include "gui_system_globals.hpp"
 #include "Cursor.hpp"
@@ -36,24 +38,9 @@ class WindowWidget;
  */
 class gui_window {
 public:
-    enum class State {
-        Initializing, //!< The window has not been initialized yet.
-        NoWindow, //!< The window was destroyed, the device will drop the window on the next render cycle.
-        NoDevice, //!< No device is associated with the Window and can therefor not be rendered on.
-        NoSurface, //!< Need to request a new surface before building a swapchain
-        NoSwapchain, //! Need to request a swapchain before rendering.
-        ReadyToRender, //!< The swapchain is ready drawing is allowed.
-        SwapchainLost, //!< The window was resized, the swapchain needs to be rebuild and can not be rendered on.
-        SurfaceLost, //!< The Vulkan surface on the window was destroyed.
-        DeviceLost, //!< The device was lost, but the window could move to a new device, or the device can be recreated.
-        WindowLost, //!< The window was destroyed, need to cleanup.
-    };
-
-    enum class Size { Normal, Minimized, Maximized };
-
     gui_system &system;
 
-    State state = State::NoDevice;
+    gui_window_state state = gui_window_state::no_device;
 
     /** The current cursor.
      * Used for optimizing when the operating system cursor is updated.
@@ -85,10 +72,10 @@ public:
 
     /*! Current size state of the window.
      */
-    Size size = Size::Normal;
+    gui_window_size size_state = gui_window_size::normal;
 
     //! The current window extent as set by the GPU library.
-    f32x4 current_window_extent;
+    f32x4 extent;
 
     std::weak_ptr<gui_window_delegate> delegate;
 
@@ -257,7 +244,7 @@ protected:
      *
      * This rectangle is used by the operating system event loop hit-testing
      * to determine the position of screen coordinates to window coordinates.
-     * 
+     *
      * It may also be used for the extent of the window when the GPU
      * library is unable to determine the extent of the surface.
      */
@@ -281,7 +268,7 @@ protected:
 
     /*! Called when the GPU library has changed the window size.
      */
-    virtual void window_changed_size(f32x4 extent);
+    virtual void window_changed_size(f32x4 new_extent);
 
     /*! Teardown Window based on State::*_LOST
      */

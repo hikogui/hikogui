@@ -112,7 +112,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 extent)
+void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 new_extent)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
@@ -132,8 +132,8 @@ void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 e
         // Size and position
         500,
         500,
-        narrow_cast<int>(extent.x()),
-        narrow_cast<int>(extent.y()),
+        narrow_cast<int>(new_extent.x()),
+        narrow_cast<int>(new_extent.y()),
 
         NULL, // Parent window
         NULL, // Menu
@@ -227,7 +227,7 @@ void gui_window_vulkan_win32::normalize_window()
     });
 }
 
-void gui_window_vulkan_win32::set_window_size(f32x4 extent)
+void gui_window_vulkan_win32::set_window_size(f32x4 new_extent)
 {
     gui_system_mutex.lock();
     ttlet handle = reinterpret_cast<HWND>(win32Window);
@@ -239,8 +239,8 @@ void gui_window_vulkan_win32::set_window_size(f32x4 extent)
             HWND_NOTOPMOST,
             0,
             0,
-            narrow_cast<int>(std::ceil(extent.width())),
-            narrow_cast<int>(std::ceil(extent.height())),
+            narrow_cast<int>(std::ceil(new_extent.width())),
+            narrow_cast<int>(std::ceil(new_extent.height())),
             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
     });
 }
@@ -465,7 +465,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_DESTROY: {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         win32Window = nullptr;
-        state = State::WindowLost;
+        state = gui_window_state::window_lost;
     } break;
 
     case WM_CREATE: {
@@ -488,7 +488,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
         ttlet update_rectangle = aarect{
             ps.rcPaint.left,
-            current_window_extent.height() - ps.rcPaint.bottom,
+            extent.height() - ps.rcPaint.bottom,
             ps.rcPaint.right - ps.rcPaint.left,
             ps.rcPaint.bottom - ps.rcPaint.top};
 
@@ -504,9 +504,9 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_SIZE: {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         switch (wParam) {
-        case SIZE_MAXIMIZED: size = Size::Maximized; break;
-        case SIZE_MINIMIZED: size = Size::Minimized; break;
-        case SIZE_RESTORED: size = Size::Normal; break;
+        case SIZE_MAXIMIZED: size_state = gui_window_size::maximized; break;
+        case SIZE_MINIMIZED: size_state = gui_window_size::minimized; break;
+        case SIZE_RESTORED: size_state = gui_window_size::normal; break;
         default: break;
         }
     } break;
@@ -738,7 +738,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
     mouseEvent.position = f32x4::point(
-        narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(current_window_extent.y() - GET_Y_LPARAM(lParam)));
+        narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(extent.y() - GET_Y_LPARAM(lParam)));
 
     mouseEvent.wheelDelta = f32x4{};
     if (uMsg == WM_MOUSEWHEEL) {

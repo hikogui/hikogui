@@ -50,7 +50,7 @@ public:
             // The _window_rectangle, is not allowed to be beyond the edges of the actual window.
             // Change _window_rectangle to fit the window.
             ttlet window_rectangle_and_margin = expand(_window_rectangle, _margin);
-            ttlet new_window_rectangle_and_margin = fit(aarect{f32x4{window.current_window_extent}}, window_rectangle_and_margin);
+            ttlet new_window_rectangle_and_margin = fit(aarect{f32x4{window.extent}}, window_rectangle_and_margin);
             _window_rectangle = shrink(new_window_rectangle_and_margin, _margin);
             _window_clipping_rectangle = _window_rectangle;
 

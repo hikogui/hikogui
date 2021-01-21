@@ -103,7 +103,7 @@ private:
     void buildDevice();
     void buildSemaphores();
     void teardownSemaphores();
-    State buildSwapchain();
+    gui_window_state buildSwapchain();
     void teardownSwapchain();
     void buildCommandBuffers();
     void teardownCommandBuffers();
