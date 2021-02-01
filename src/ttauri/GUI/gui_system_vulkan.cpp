@@ -4,6 +4,7 @@
 #include "gui_system_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
 #include <chrono>
+#include <cstring>
 
 namespace tt {
 
@@ -24,11 +25,32 @@ static bool hasFoundationExtensions(const std::vector<const char *> &requiredExt
     return true;
 }
 
+static std::vector<const char *> filter_available_layers(std::vector<const char *> const &requested_layers)
+{
+    auto available_layers = vk::enumerateInstanceLayerProperties();
+
+    LOG_INFO("Available vulkan layers:");
+    auto r = std::vector<const char *>{};
+    for (ttlet &available_layer : available_layers) {
+        ttlet layer_name = std::string{available_layer.layerName};
+
+        ttlet it = std::find(std::begin(requested_layers), std::end(requested_layers), layer_name);
+
+        if (it != std::end(requested_layers)) {
+            // Use the *it, because the lifetime of its `char const *` is still available after the function call.
+            r.push_back(*it);
+            LOG_INFO("  * {}", layer_name);
+        } else {
+            LOG_INFO("    {}", layer_name);
+        }
+    }
+    return r;
+}
+
 gui_system_vulkan::gui_system_vulkan(
     std::weak_ptr<gui_system_delegate> const &delegate,
     const std::vector<const char *> extensionNames) :
-    gui_system(delegate),
-    requiredExtensions(std::move(extensionNames))
+    gui_system(delegate), requiredExtensions(std::move(extensionNames))
 {
     applicationInfo = vk::ApplicationInfo(
         "TTauri App", VK_MAKE_VERSION(0, 1, 0), "TTauri Engine", VK_MAKE_VERSION(0, 1, 0), VK_API_VERSION_1_0);
@@ -58,8 +80,12 @@ gui_system_vulkan::gui_system_vulkan(
     }
 
     if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
-        requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-        //requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");
+        ttlet requested_layers = std::vector<char const *>{
+            "VK_LAYER_KHRONOS_validation",
+            //"VK_LAYER_LUNARG_api_dump"
+        };
+
+        requiredLayers = filter_available_layers(requested_layers);
     }
 
     instanceCreateInfo.setEnabledLayerCount(narrow_cast<uint32_t>(requiredLayers.size()));
@@ -73,7 +99,6 @@ gui_system_vulkan::gui_system_vulkan(
 #else
     _loader = vk::DispatchLoaderDynamic(intrinsic, vkGetInstanceProcAddr);
 #endif
-    
 }
 
 gui_system_vulkan::~gui_system_vulkan()
@@ -88,18 +113,17 @@ void gui_system_vulkan::init() noexcept(false)
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
-        debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
-            vk::DebugUtilsMessengerCreateFlagsEXT(),
-            vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-            //vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
-            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-            vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-            vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-            vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-            debugUtilsMessageCallback,
-            this
-        }, nullptr, loader());
+        debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT(
+            {vk::DebugUtilsMessengerCreateFlagsEXT(),
+             vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+                 // vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
+                 vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+             vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+                 vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+             debugUtilsMessageCallback,
+             this},
+            nullptr,
+            loader());
     }
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
@@ -110,27 +134,18 @@ void gui_system_vulkan::init() noexcept(false)
 VkBool32 gui_system_vulkan::debugUtilsMessageCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-    void* pUserData)
+    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+    void *pUserData)
 {
     switch (messageSeverity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        LOG_DEBUG("Vulkan: {}", pCallbackData->pMessage);
-        break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        LOG_INFO("Vulkan: {}", pCallbackData->pMessage);
-        break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        LOG_WARNING("Vulkan: {}", pCallbackData->pMessage);
-        std::abort();
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        LOG_ERROR("Vulkan: {}", pCallbackData->pMessage);
-        std::abort();
-    default:
-        tt_no_default();
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: LOG_DEBUG("Vulkan: {}", pCallbackData->pMessage); break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: LOG_INFO("Vulkan: {}", pCallbackData->pMessage); break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: LOG_WARNING("Vulkan: {}", pCallbackData->pMessage); std::abort();
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: LOG_ERROR("Vulkan: {}", pCallbackData->pMessage); std::abort();
+    default: tt_no_default();
     }
 
     return VK_FALSE;
 }
 
-}
+} // namespace tt
