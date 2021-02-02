@@ -62,13 +62,11 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr numeric_array(T const &first) noexcept requires (N == 1) :
-        numeric_array({first})
-    {
-    }
+    [[nodiscard]] constexpr numeric_array(T const &first) noexcept requires(N == 1) : numeric_array({first}) {}
 
     template<arithmetic... Rest>
-    requires(sizeof...(Rest) + 2 <= N) [[nodiscard]] constexpr numeric_array(T const &first, T const &second, Rest const &... rest) noexcept :
+    requires(sizeof...(Rest) + 2 <= N)
+        [[nodiscard]] constexpr numeric_array(T const &first, T const &second, Rest const &...rest) noexcept :
         numeric_array({first, second, narrow_cast<T>(rest)...})
     {
     }
@@ -114,8 +112,7 @@ public:
     }
 
     template<arithmetic... Rest>
-    [[nodiscard]] static constexpr numeric_array point(T const &first, Rest const &... rest) noexcept
-        requires(sizeof...(Rest) < N)
+    [[nodiscard]] static constexpr numeric_array point(T const &first, Rest const &...rest) noexcept requires(sizeof...(Rest) < N)
     {
         return point({first, narrow_cast<T>(rest)...});
     }
@@ -126,8 +123,7 @@ public:
     }
 
     template<arithmetic... Rest>
-    [[nodiscard]] static constexpr numeric_array color(T const &first, Rest const &... rest) noexcept
-        requires(sizeof...(Rest) < N)
+    [[nodiscard]] static constexpr numeric_array color(T const &first, Rest const &...rest) noexcept requires(sizeof...(Rest) < N)
     {
         return color({first, narrow_cast<T>(rest)...});
     }
@@ -639,7 +635,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && has_sse) {
-                return numeric_array{f32x4_sse_zero<Mask & 0xf>(lhs.v, rhs.v)};
+                return numeric_array{f32x4_sse_zero<Mask & 0xf>(rhs.v)};
             }
         }
 
@@ -663,27 +659,19 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && has_sse) {
-                return numeric_array{f32x4_sse_neg<Mask & 0xf>(lhs.v, rhs.v)};
+                return numeric_array{f32x4_sse_neg<Mask & 0xf>(rhs.v)};
             }
         }
 
         auto r = numeric_array{};
         for (ssize_t i = 0; i != N; ++i) {
-            if ((Mask >> i) & 1 == 1) {
+            if (((Mask >> i) & 1) == 1) {
                 r.v[i] = -rhs.v[i];
             } else {
                 r.v[i] = rhs.v[i];
             }
         }
         return r;
-    }
-
-    /** Add or Subtract idividual elements.
-     */
-    template<bool... AddElement>
-    [[nodiscard]] friend constexpr numeric_array sum(numeric_array const &lhs, numeric_array const &rhs) noexcept
-    {
-
     }
 
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &rhs) noexcept
@@ -711,166 +699,174 @@ public:
     {
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
             return numeric_array{f32x4_sse_rcp(rhs.v)};
-
-        } else {
-            auto r = numeric_array{};
-            for (ssize_t i = 0; i != N; ++i) {
-                r[i] = 1.0f / rhs.v[i];
-            }
-            return r;
         }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            r[i] = 1.0f / rhs.v[i];
+        }
+        return r;
     }
 
     [[nodiscard]] friend constexpr numeric_array sqrt(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
             return numeric_array{f32x4_sse_sqrt(rhs.v)};
-
-        } else {
-            auto r = numeric_array{};
-            for (ssize_t i = 0; i != N; ++i) {
-                r[i] = std::sqrt(rhs.v[i]);
-            }
-            return r;
         }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            r[i] = std::sqrt(rhs.v[i]);
+        }
+        return r;
     }
 
     [[nodiscard]] friend constexpr numeric_array rcp_sqrt(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
             return numeric_array{f32x4_sse_rcp_sqrt(rhs.v)};
-
-        } else {
-            auto r = numeric_array{};
-            for (ssize_t i = 0; i != N; ++i) {
-                r[i] = 1.0f / std::sqrt(rhs.v[i]);
-            }
-            return r;
         }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            r[i] = 1.0f / std::sqrt(rhs.v[i]);
+        }
+        return r;
     }
 
     [[nodiscard]] friend constexpr numeric_array floor(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
             return numeric_array{f32x4_sse_floor(rhs.v)};
-
-        } else {
-            auto r = numeric_array{};
-            for (ssize_t i = 0; i != N; ++i) {
-                r[i] = std::floor(rhs.v[i]);
-            }
-            return r;
         }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            r[i] = std::floor(rhs.v[i]);
+        }
+        return r;
     }
 
     [[nodiscard]] friend constexpr numeric_array ceil(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
             return numeric_array{f32x4_sse_ceil(rhs.v)};
-
-        } else {
-            auto r = numeric_array{};
-            for (ssize_t i = 0; i != N; ++i) {
-                r[i] = std::ceil(rhs.v[i]);
-            }
-            return r;
         }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            r[i] = std::ceil(rhs.v[i]);
+        }
+        return r;
     }
 
     [[nodiscard]] friend constexpr numeric_array round(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
             return numeric_array{f32x4_sse_round(rhs.v)};
-
-        } else {
-            auto r = numeric_array{};
-            for (ssize_t i = 0; i != N; ++i) {
-                r[i] = std::round(rhs.v[i]);
-            }
-            return r;
         }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            r[i] = std::round(rhs.v[i]);
+        }
+        return r;
     }
 
     /** Take a dot product.
-     * @tparam D Number of dimensions to calculate the dot product over.
+     *
+     * @tparam Mask A mask for which elements participate in the dot product.
+     * @param lhs The left hand side.
+     * @param rhs The right hand side.
+     * @return Result of the dot product.
      */
-    template<ssize_t D>
+    template<ssize_t Mask>
     [[nodiscard]] friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
-        static_assert(D <= N);
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            constexpr unsigned int Mask = (1 << D) - 1;
             return f32x4_sse_dot<Mask>(lhs.v, rhs.v);
+        }
 
-        } else {
-            auto r = T{};
-            for (ssize_t i = 0; i != D; ++i) {
+        auto r = T{};
+        for (ssize_t i = 0; i != N; ++i) {
+            if (static_cast<bool>(Mask & (1_uz << i))) {
                 r += lhs.v[i] * rhs.v[i];
             }
-            return r;
         }
+        return r;
     }
 
     /** Take the length of the vector
-     * @tparam D Number of dimensions to calculate the length over.
+     *
+     * @tparam Mask A mask for which elements participate in the hypot calculation.
+     * @param lhs The left hand side.
+     * @param rhs The right hand side.
+     * @return Result of the hypot calculation.
      */
-    template<size_t D>
+    template<ssize_t Mask>
     [[nodiscard]] friend constexpr T hypot(numeric_array const &rhs) noexcept
     {
-        static_assert(D <= N);
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            constexpr unsigned int Mask = (1 << D) - 1;
             return f32x4_sse_hypot<Mask>(rhs.v);
-
-        } else {
-            auto r = T{};
-            for (ssize_t i = 0; i != D; ++i) {
-                r += rhs.v[i] * rhs.v[i];
-            }
-            return std::sqrt(r);
         }
+        return std::sqrt(dot<Mask>(rhs, rhs));
     }
 
-    /** Take the squared length of the vector
-     * @tparam D Number of dimensions to calculate the length over.
+    /** Take the squared length of the vector.
+     *
+     * @tparam Mask A mask for which elements participate in the hypot calculation.
+     * @param lhs The left hand side.
+     * @param rhs The right hand side.
+     * @return Result of the hypot-squared calculation.
      */
-    template<ssize_t D>
+    template<ssize_t Mask>
     [[nodiscard]] friend constexpr T hypot_squared(numeric_array const &rhs) noexcept
     {
-        return dot<D>(rhs, rhs);
+        return dot<Mask>(rhs, rhs);
     }
 
     /** Take a reciprocal of the length.
-     * @tparam D Number of dimensions to calculate the length over.
+     * @tparam Mask A mask for which elements participate in the hypot calculation.
+     * @param lhs The left hand side.
+     * @param rhs The right hand side.
+     * @return Result of the hypot-squared calculation.
      */
-    template<ssize_t D>
+    template<ssize_t Mask>
     [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const &rhs) noexcept
     {
-        static_assert(D <= N);
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            constexpr unsigned int Mask = (1 << D) - 1;
             return f32x4_sse_rcp_hypot<Mask>(rhs.v);
-
-        } else {
-            auto r = T{};
-            for (ssize_t i = 0; i != D; ++i) {
-                r += rhs.v[i] * rhs.v[i];
-            }
-            return 1.0f / std::sqrt(r);
         }
+
+        return 1.0f / hypot<Mask>(rhs);
     }
 
-    template<ssize_t D>
+    /** Normalize a vector.
+     * All elements that do not participate in the normalization will be set to zero.
+     * 
+     * @tparam Mask A mask for which elements participate in the normalization calculation.
+     * @param lhs The left hand side.
+     * @param rhs The right hand side.
+     * @return The normalized vector.
+     */
+    template<ssize_t Mask>
     [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const &rhs) noexcept
     {
         tt_axiom(rhs.is_vector());
 
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            return f32x4_sse_normalize<0b0111>(rhs.v);
+            return numeric_array{f32x4_sse_normalize<Mask>(rhs.v)};
         }
 
-        constexpr unsigned int Mask = (1 << D) - 1;
-        return rhs * rcp_hypot<Mask>(rhs);
+        ttlet rcp_hypot_ = rcp_hypot<Mask>(rhs);
+
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            if (static_cast<bool>(Mask & (1_uz << i))) {
+                r.v[i] = rhs.v[i] * rcp_hypot_;
+            }
+        }
+        return r;
     }
 
     [[nodiscard]] friend constexpr unsigned int eq(numeric_array const &lhs, numeric_array const &rhs) noexcept
@@ -1278,8 +1274,9 @@ public:
     // + (w1*y2 - x1*z2 + y1*w2 + z1*x2)j
     // + (w1*z2 + x1*y2 - y1*x2 + z1*w2)k
     // + (w1*w2 - x1*x2 - y1*y2 - z1*z2)
-    template<int D> requires (D == 4)
-    [[nodiscard]] friend numeric_array hamilton_cross(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    template<int D>
+    requires(D == 4) [[nodiscard]] friend numeric_array
+        hamilton_cross(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         ttlet col0 = lhs.wwww() * rhs;
         ttlet col1 = lhs.xxxx() * rhs.wzyx();
@@ -1288,8 +1285,6 @@ public:
 
         ttlet col01 = addsub(col0, col1);
         ttlet col012 = addsub(col01.xzyw(), col2.xzyw()).xzyw();
-
-
 
         return numeric_array{
 
@@ -1315,7 +1310,7 @@ public:
     }
 
     template<typename... Columns>
-    [[nodiscard]] friend constexpr std::array<numeric_array, N> transpose(Columns const &... columns) noexcept
+    [[nodiscard]] friend constexpr std::array<numeric_array, N> transpose(Columns const &...columns) noexcept
     {
         static_assert(sizeof...(Columns) == N, "Can only transpose square matrices");
 
@@ -1490,7 +1485,7 @@ private:
 
     template<int I, typename First, typename... Rest>
     [[nodiscard]] friend constexpr void
-    transpose_detail(First const &first, Rest const &... rest, std::array<numeric_array, N> &r) noexcept
+    transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
     {
         for (ssize_t j = 0; j != N; ++j) {
             r[j][I] = first[j];

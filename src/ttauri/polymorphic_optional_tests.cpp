@@ -36,6 +36,8 @@ struct C: public A {
 TEST(polymorphic_optional, assignment) {
     std::array<polymorphic_optional<A,sizeof(C)>, 3> values;
 
+    static_assert(is_decayed_derived_from_v<B,A>);
+
     values[0] = A{};
     values[1] = B{};
     values[2] = C{};

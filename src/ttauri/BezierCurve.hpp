@@ -163,7 +163,7 @@ struct BezierCurve {
             t = std::clamp(t, 0.0f, 1.0f);
 
             ttlet normal = P - pointAt(t);
-            ttlet square_distance = hypot_squared<2>(normal);
+            ttlet square_distance = hypot_squared<0b0011>(normal);
             if (square_distance < min_square_distance) {
                 min_square_distance = square_distance;
                 min_t = t;

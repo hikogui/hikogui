@@ -9,7 +9,8 @@
 using namespace std;
 using namespace tt;
 
-TEST(numeric_array, Compare) {
+TEST(numeric_array, Compare)
+{
     ttlet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
     ASSERT_FALSE(tmp == f32x4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -17,7 +18,8 @@ TEST(numeric_array, Compare) {
     ASSERT_TRUE(tmp == f32x4(2.0f, 3.0f, 4.0f, 5.0f));
 }
 
-TEST(numeric_array, Arithmatic) {
+TEST(numeric_array, Arithmatic)
+{
     ttlet tmp1 = f32x4{9.0f, 6.0f, 4.0f, 14.0f};
     ttlet tmp2 = f32x4{3.0f, -2.0f, 8.0f, 7.0f};
 
@@ -51,28 +53,32 @@ TEST(numeric_array, Arithmatic) {
     }
 }
 
-TEST(numeric_array, Length) {
+TEST(numeric_array, Length)
+{
     ttlet tmp = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 
-    ASSERT_EQ(hypot_squared<3>(tmp), 29.0f);
-    ASSERT_NEAR(hypot<3>(tmp), 5.3851f, 0.001f);
+    ASSERT_EQ(hypot_squared<0b0111>(tmp), 29.0f);
+    ASSERT_NEAR(hypot<0b0111>(tmp), 5.3851f, 0.001f);
 }
 
-TEST(numeric_array, DotProduct) {
+TEST(numeric_array, DotProduct)
+{
     ttlet a = f32x4(1.0f, 3.0f, -5.0f, 0.0f);
     ttlet b = f32x4(4.0f, -2.0f, -1.0f, 0.0f);
 
-    ASSERT_EQ(dot<3>(a, b), 3.0f);
+    ASSERT_EQ(dot<0b0111>(a, b), 3.0f);
 }
 
-TEST(numeric_array, CrossProduct) {
+TEST(numeric_array, CrossProduct)
+{
     ttlet a = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
     ttlet b = f32x4(5.0f, 6.0f, 7.0f, 0.0f);
 
     ASSERT_EQ(cross<3>(a, b), f32x4(-3.0f, 6.0f, -3.0f));
 }
 
-TEST(numeric_array, Getters) {
+TEST(numeric_array, Getters)
+{
     ttlet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
     ASSERT_EQ(tmp.x(), 2.0f);
@@ -87,10 +93,19 @@ TEST(numeric_array, Getters) {
     ASSERT_EQ(tmp[1], 3.0f);
     ASSERT_EQ(tmp[2], 4.0f);
     ASSERT_EQ(tmp[3], 5.0f);
-
 }
 
-TEST(numeric_array, Setters) {
+TEST(numeric_array, normalize)
+{
+    auto tmp = f32x4{2.0f, 3.0f, 4.0f, 0.0f};
+    auto r = normalize<0b0111>(tmp);
+    ASSERT_NEAR(r[0], 0.3713906763541037, 0.001);
+    ASSERT_NEAR(r[1], 0.5570860145311556, 0.001);
+    ASSERT_NEAR(r[2], 0.7427813527082074, 0.001);
+    ASSERT_EQ(r[3], 0.0);
+}
+TEST(numeric_array, Setters)
+{
     auto tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
     tmp.x() = 12.0f;
@@ -111,8 +126,8 @@ TEST(numeric_array, Setters) {
     ASSERT_EQ(tmp, f32x4(22.0f, 23.0f, 24.0f, 25.0f));
 }
 
-
-TEST(numeric_array, Swizzle2) {
+TEST(numeric_array, Swizzle2)
+{
     ttlet tmp = f32x2{2.0f, 3.0f};
 
     ASSERT_EQ(tmp.xx(), f32x2(2.0f, 2.0f));
@@ -129,14 +144,15 @@ TEST(numeric_array, Swizzle2) {
     ASSERT_EQ(tmp._0y(), f32x2(0.0f, 3.0f));
     ASSERT_EQ(tmp._00(), f32x2(0.0f, 0.0f));
     ASSERT_EQ(tmp._01(), f32x2(0.0f, 1.0f));
-                             
+
     ASSERT_EQ(tmp._1x(), f32x2(1.0f, 2.0f));
     ASSERT_EQ(tmp._1y(), f32x2(1.0f, 3.0f));
     ASSERT_EQ(tmp._10(), f32x2(1.0f, 0.0f));
     ASSERT_EQ(tmp._11(), f32x2(1.0f, 1.0f));
 }
 
-TEST(numeric_array, Swizzle3) {
+TEST(numeric_array, Swizzle3)
+{
     using f32x3 = numeric_array<float, 3>;
 
     ttlet tmp = f32x3{2.0f, 3.0f, 4.0f};
@@ -272,7 +288,8 @@ TEST(numeric_array, Swizzle3) {
     ASSERT_EQ(tmp._111(), f32x3(1.0f, 1.0f, 1.0f));
 }
 
-TEST(numeric_array, Swizzle4) {
+TEST(numeric_array, Swizzle4)
+{
     ttlet tmp = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
 
     // Returns a 4D vector.
@@ -1287,7 +1304,7 @@ TEST(numeric_array, Swizzle4) {
     ASSERT_EQ(tmp.ywwy(), f32x4(3.0f, 5.0f, 5.0f, 3.0f));
     ASSERT_EQ(tmp.ywwz(), f32x4(3.0f, 5.0f, 5.0f, 4.0f));
     ASSERT_EQ(tmp.ywww(), f32x4(3.0f, 5.0f, 5.0f, 5.0f));
-                              
+
     ASSERT_EQ(tmp.z000(), f32x4(4.0f, 0.0f, 0.0f, 0.0f));
     ASSERT_EQ(tmp.z001(), f32x4(4.0f, 0.0f, 0.0f, 1.0f));
     ASSERT_EQ(tmp.z00x(), f32x4(4.0f, 0.0f, 0.0f, 2.0f));

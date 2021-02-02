@@ -64,11 +64,11 @@ public:
     }
 
     float width() const noexcept {
-        return hypot<3>(right_vector());
+        return hypot<0b0111>(right_vector());
     }
 
     float height() const noexcept {
-        return hypot<3>(up_vector());
+        return hypot<0b0111>(up_vector());
     }
 
     f32x4 extent() const noexcept {
@@ -92,8 +92,8 @@ public:
     }
 
     [[nodiscard]] friend rect expand(rect const &lhs, float rhs) noexcept {
-        ttlet rightDirection = normalize<3>(lhs.right_vector());
-        ttlet upDirection = normalize<3>(lhs.up_vector());
+        ttlet rightDirection = normalize<0b0111>(lhs.right_vector());
+        ttlet upDirection = normalize<0b0111>(lhs.up_vector());
 
         return {
             lhs.corner<0>() + rhs * -rightDirection + rhs * -upDirection,

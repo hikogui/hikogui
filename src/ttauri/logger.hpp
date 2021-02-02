@@ -117,6 +117,8 @@ struct log_message_base {
     log_message_base(cpu_counter_clock::time_point timestamp, char const *format) noexcept :
         timestamp(timestamp), format(format) {}
 
+    virtual ~log_message_base() {}
+
     std::string string() const noexcept;
     virtual std::string message() const noexcept = 0;
     virtual log_level level() const noexcept = 0;

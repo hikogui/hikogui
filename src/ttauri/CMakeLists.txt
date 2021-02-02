@@ -224,6 +224,7 @@ target_sources(ttauri_tests PRIVATE
     small_map_tests.cpp
     strings_tests.cpp
     tokenizer_tests.cpp
+    type_traits_tests.cpp
     Unicode_tests.cpp
     url_parser_tests.cpp
     URL_tests.cpp

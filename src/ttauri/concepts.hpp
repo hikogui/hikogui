@@ -31,8 +31,14 @@ concept rvalue_reference = std::is_rvalue_reference_v<T>;
 template<typename BaseType, typename DerivedType>
 concept base_of = std::is_base_of_v<BaseType, DerivedType>;
 
+template<typename BaseType, typename DerivedType>
+concept decayed_base_of = is_decayed_base_of_v<BaseType, DerivedType>;
+
 template<typename DerivedType, typename BaseType>
 concept derived_from = tt::is_derived_from_v<DerivedType, BaseType>;
+
+template<typename DerivedType, typename BaseType>
+concept decayed_derived_from = tt::is_decayed_derived_from_v<DerivedType, BaseType>;
 
 template<typename BaseType, typename DerivedType>
 concept strict_base_of = base_of<BaseType, DerivedType> && !std::same_as<BaseType, DerivedType>;

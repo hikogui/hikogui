@@ -26,4 +26,19 @@ using ssize_t = std::ptrdiff_t;
 
 #define ssizeof(x) (static_cast<ssize_t>(sizeof(x)))
 
+constexpr size_t operator"" _uz(unsigned long long lhs) noexcept
+{
+    return static_cast<size_t>(lhs);
+}
+
+constexpr size_t operator"" _zu(unsigned long long lhs) noexcept
+{
+    return static_cast<size_t>(lhs);
+}
+
+constexpr ssize_t operator"" _z(unsigned long long lhs) noexcept
+{
+    return static_cast<ssize_t>(lhs);
+}
+
 } // namespace tt

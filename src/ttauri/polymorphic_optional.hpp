@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "os_detect.hpp"
 #include "assert.hpp"
+#include "concepts.hpp"
 #include <array>
 #include <memory>
 #include <type_traits>
@@ -16,7 +16,7 @@ namespace tt {
  *
  * If the assigned sub-class is larger than the internal buffer
  * the object will be allocated on the heap.
- * 
+ *
  * @tparam BaseType The base type of the polymorphic value.
  * @tparam Capacity The size in bytes of the internal buffer to store
  *                  the polymorphic value.
@@ -34,7 +34,8 @@ public:
 
     /** Destroy any contained value.
      */
-    ~polymorphic_optional() {
+    ~polymorphic_optional()
+    {
         reset();
     }
 
@@ -45,14 +46,14 @@ public:
 
     /** Construct an empty value.
      */
-    [[nodiscard]] constexpr polymorphic_optional() noexcept : state(state_type::empty) {}
+    [[nodiscard]] constexpr polymorphic_optional() noexcept : _state(state::empty) {}
 
     /** Construct an object as value.
      *
      * @param other An object of a sub-class of the value_type.
      */
-    template<typename Other> requires (is_different_v<Other,value_type>)
-    [[nodiscard]] polymorphic_optional(Other &&other) noexcept
+    template<typename Other>
+    requires(is_different_v<Other, value_type>) [[nodiscard]] polymorphic_optional(Other &&other) noexcept
     {
         static_assert(std::is_base_of_v<value_type, std::remove_cvref_t<Other>>);
         _state = state::empty;
@@ -64,11 +65,10 @@ public:
      * @param other An object of a sub-class of the value_type.
      * @return reference to this.
      */
-    template<typename Other> requires (is_different_v<Other,value_type>)
+    template<decayed_derived_from<value_type> Other>
     polymorphic_optional &operator=(Other &&other) noexcept
     {
-        static_assert(std::is_base_of_v<value_type, std::remove_cvref_t<Other>>);
-        emplace<std::remove_cvref_t<Other>>(std:forward<Other>(other));
+        emplace<std::remove_cvref_t<Other>>(std::forward<Other>(other));
         return *this;
     }
 
@@ -78,19 +78,22 @@ public:
      * @param args The arguments used to construct the object of type O.
      * @return reference to the constructed object.
      */
-    template<typename T, typename... Args> requires (std::is_base_of_v<value_type, T>)
-    reference emplace(Args &&... args) noexcept
+    template<derived_from<value_type> T, typename... Args>
+    reference emplace(Args &&...args) noexcept
     {
         reset();
 
+        pointer r;
         if (sizeof(T) <= capacity) {
-            new(_value.buffer.data()) T(std::forward<Args>(args)...);
+            r = new (_value.buffer.data()) T(std::forward<Args>(args)...);
             _state = state::internal;
 
         } else {
-            _value.pointer = new T(std::move(other));
+            r = _value.pointer = new T(std::forward<Args>(args)...);
             _state = state::external;
         }
+        tt_axiom(r != nullptr);
+        return *r;
     }
 
     /** Check whether the object contains a value.
@@ -115,13 +118,9 @@ public:
      */
     void reset() noexcept
     {
-        switch (state) {
-        case state::internal:
-            std::destroy_at(internal_pointer());
-            break;
-        case state::external:
-            delete external_pointer();
-            break;
+        switch (_state) {
+        case state::internal: std::destroy_at(internal_pointer()); break;
+        case state::external: delete external_pointer(); break;
         default:;
         }
         _state = state::empty;
@@ -132,7 +131,7 @@ public:
      * @throws std::bad_optional_access when this does not contain a value.
      * @return A reference to the contained value.
      */
-    [[nodiscard]] const_reference value() & const noexcept
+    [[nodiscard]] const_reference value() const &noexcept
     {
         if (_state == state::empty) {
             throw std::bad_optional_access();
@@ -145,7 +144,7 @@ public:
      * @throws std::bad_optional_access when this does not contain a value.
      * @return A reference to the contained value.
      */
-    [[nodiscard]] reference value() & noexcept
+    [[nodiscard]] reference value() &noexcept
     {
         if (_state == state::empty) {
             throw std::bad_optional_access();
@@ -199,8 +198,8 @@ private:
     enum state { empty, internal, external };
 
     union {
-        std::array<std::byte,capacity> buffer;
-        T *pointer;
+        std::array<std::byte, capacity> buffer;
+        pointer pointer;
     } _value;
     state _state;
 
@@ -219,13 +218,15 @@ private:
     [[nodiscard]] const_pointer external_pointer() const noexcept
     {
         tt_axiom(_state == state::external);
-        return std::launder(_value.pointer);;
+        return std::launder(_value.pointer);
+        ;
     }
 
     [[nodiscard]] pointer external_pointer() noexcept
     {
         tt_axiom(_state == state::external);
-        return std::launder(_value.pointer);;
+        return std::launder(_value.pointer);
+        ;
     }
 
     /** Get a pointer to the contained value.
@@ -257,4 +258,4 @@ private:
     }
 };
 
-}
+} // namespace tt

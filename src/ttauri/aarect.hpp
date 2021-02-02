@@ -447,7 +447,7 @@ public:
      */
     [[nodiscard]] friend axis_aligned_rectangle expand(axis_aligned_rectangle const &lhs, T rhs) noexcept
     {
-        return axis_aligned_rectangle::p0p3(lhs.v + neg<1, 1, 0, 0>(numeric_array<T,4>{rhs, rhs, rhs, rhs}));
+        return axis_aligned_rectangle::p0p3(lhs.v + neg<0b0011>(numeric_array<T,4>{rhs, rhs, rhs, rhs}));
     }
 
     /** Expand the rectangle for the same amount in all directions.

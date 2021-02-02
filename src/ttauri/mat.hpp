@@ -403,8 +403,8 @@ public:
         ttlet c5432 = s4c4s5c5.wy00() + s2c2s3c3._00wy();
         ttlet c10__ = s0c0s1c1.wy00();
 
-        ttlet det_prod_half0 = neg<0,1,0,0>(s0123 * c5432);
-        ttlet det_prod_half1 = neg<1,0,0,0>(s45__ * c10__);
+        ttlet det_prod_half0 = neg<0b0010>(s0123 * c5432);
+        ttlet det_prod_half1 = neg<0b0001>(s45__ * c10__);
 
         ttlet det_sum0 = hadd(det_prod_half0, det_prod_half1);
         ttlet det_sum1 = hadd(det_sum0, det_sum0);
@@ -423,9 +423,9 @@ public:
         //m.i10 = (i10 * -c5 + i12 *  c2 + i13 * -c1) * invdet;
         //m.i20 = (i10 *  c4 + i11 * -c2 + i13 *  c0) * invdet;
         //m.i30 = (i10 * -c3 + i11 *  c1 + i12 * -c0) * invdet;
-        auto tmp_c5543 = neg<0,1,0,1>(c5432.xxyz());
-        auto tmp_c4221 = neg<1,0,1,0>(c5432.yww0() + c10__._000x());
-        auto tmp_c3100 = neg<0,1,0,1>(c5432.z000() + c10__._0xyy());
+        auto tmp_c5543 = neg<0b1010>(c5432.xxyz());
+        auto tmp_c4221 = neg<0b0101>(c5432.yww0() + c10__._000x());
+        auto tmp_c3100 = neg<0b1010>(c5432.z000() + c10__._0xyy());
         ttlet inv_col0 = (
             (t.col1.yxxx() * tmp_c5543) +
             (t.col1.zzyy() * tmp_c4221) +
@@ -449,9 +449,9 @@ public:
         //m.i12 = (i30 * -s5 + i32 *  s2 + i33 * -s1) * invdet;
         //m.i22 = (i30 *  s4 + i31 * -s2 + i33 *  s0) * invdet;
         //m.i32 = (i30 * -s3 + i31 *  s1 + i32 * -s0) * invdet;
-        auto tmp_s5543 = neg<0,1,0,1>(s45__.yyx0() + s0123._000w());
-        auto tmp_s4221 = neg<1,0,1,0>(s45__.x000() + s0123._0zzy());
-        auto tmp_s3100 = neg<0,1,0,1>(s0123.wyxx());
+        auto tmp_s5543 = neg<0b1010>(s45__.yyx0() + s0123._000w());
+        auto tmp_s4221 = neg<0b0101>(s45__.x000() + s0123._0zzy());
+        auto tmp_s3100 = neg<0b1010>(s0123.wyxx());
         ttlet inv_col2 = (
             (t.col3.yxxx() * tmp_s5543) +
             (t.col3.zzyy() * tmp_s4221) +

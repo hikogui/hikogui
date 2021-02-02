@@ -13,7 +13,7 @@ using namespace std;
 using namespace tt;
 
 #define ASSERT_NEAR_VEC(lhs, rhs, abs_err)\
-    ASSERT_TRUE(hypot<4>(lhs - rhs) < abs_err)
+    ASSERT_TRUE(hypot<0b1111>(lhs - rhs) < abs_err)
 
 TEST(Mat, Translate) {
     ttlet tmp = f32x4{2.0, 3.0, 4.0, 1.0};

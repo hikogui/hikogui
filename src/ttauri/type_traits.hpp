@@ -165,11 +165,23 @@ template <typename T> struct has_add_callback
 template<typename T>
 inline constexpr bool has_add_callback_v = has_add_callback<T>::value;
 
+template<typename BaseType, typename DerivedType>
+struct is_decayed_base_of : public std::is_base_of<std::decay_t<BaseType>,std::decay_t<DerivedType>> {};
+
+template<typename BaseType, typename DerivedType>
+constexpr bool is_decayed_base_of_v = is_decayed_base_of<BaseType,DerivedType>::value;
+
 template<typename DerivedType, typename BaseType>
 struct is_derived_from : public std::is_base_of<BaseType,DerivedType> {};
 
 template<typename DerivedType, typename BaseType>
 constexpr bool is_derived_from_v = is_derived_from<DerivedType,BaseType>::value;
+
+template<typename DerivedType, typename BaseType>
+struct is_decayed_derived_from : public is_decayed_base_of<BaseType,DerivedType> {};
+
+template<typename DerivedType, typename BaseType>
+constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,BaseType>::value;
 
 template<typename T1, typename T2>
 constexpr bool is_different_v = !is_same_v<T1,T2>;

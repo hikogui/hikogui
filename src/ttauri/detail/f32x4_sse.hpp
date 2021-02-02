@@ -62,7 +62,7 @@ template<unsigned int Mask>
 template<unsigned int Mask>
 [[nodiscard]] inline f32x4_raw f32x4_sse_make_sign() noexcept
 {
-    static_assert(Mask ^ (Mask & 0xf) == 0);
+    static_assert((Mask ^ (Mask & 0xf)) == 0);
 
     if constexpr (Mask == 0b0000) {
         return f32x4_raw{_mm_setzero_ps()};
@@ -78,7 +78,7 @@ template<unsigned int Mask>
         constexpr float y = (Mask & 0b0010) == 0 ? 0.0f : -0.0f;
         constexpr float z = (Mask & 0b0100) == 0 ? 0.0f : -0.0f;
         constexpr float w = (Mask & 0b1000) == 0 ? 0.0f : -0.0f;
-        return f32x4_raw{_mm_set_epi32(w, z, y, x)};
+        return f32x4_raw{_mm_set_ps(w, z, y, x)};
     }
 }
 
@@ -89,7 +89,7 @@ template<unsigned int Mask>
 template<unsigned int Mask>
 [[nodiscard]] inline f32x4_raw f32x4_sse_neg(f32x4_raw const &rhs) noexcept
 {
-    static_assert(Mask ^ (Mask & 0xf) == 0);
+    static_assert((Mask ^ (Mask & 0xf)) == 0);
 
     if constexpr (Mask == 0b0000) {
         return rhs;
@@ -148,7 +148,7 @@ f32x4_sse_hsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 template<unsigned int Mask>
 [[nodiscard]] inline f32x4_raw f32x4_sse_addsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    static_assert(Mask ^ (Mask & 0xf) == 0, "Only bottom 4 lsb may be set");
+    static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
 
     ttlet lhs_ = static_cast<__m128>(lhs);
     ttlet rhs_ = static_cast<__m128>(rhs);
@@ -182,7 +182,7 @@ template<unsigned int Mask>
 template<unsigned int Mask>
 [[nodiscard]] float f32x4_sse_dot(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    static_assert(Mask ^ (Mask & 0xf) == 0, "Only bottom 4 lsb may be set");
+    static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
     auto tmp = f32x4_raw{_mm_dp_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs), imm8)};
@@ -200,7 +200,7 @@ template<unsigned int Mask>
 template<unsigned int Mask>
 [[nodiscard]] float f32x4_sse_hypot(f32x4_raw const &rhs) noexcept
 {
-    static_assert(Mask ^ (Mask & 0xf) == 0, "Only bottom 4 lsb may be set");
+    static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
     auto _rhs = static_cast<__m128>(rhs);
@@ -219,7 +219,7 @@ template<unsigned int Mask>
 template<unsigned int Mask>
 [[nodiscard]] float f32x4_sse_rcp_hypot(f32x4_raw const &rhs) noexcept
 {
-    static_assert(Mask ^ (Mask & 0xf) == 0, "Only bottom 4 lsb may be set");
+    static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
     auto _rhs = static_cast<__m128>(rhs);
@@ -239,12 +239,14 @@ template<unsigned int Mask>
 template<unsigned int Mask>
 [[nodiscard]] f32x4_raw f32x4_sse_normalize(f32x4_raw const &rhs) noexcept
 {
-    static_assert(Mask ^ (Mask & 0xf) == 0, "Only bottom 4 lsb may be set");
-    constexpr int imm8 = (Mask << 4) | Mask;
+    static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
+    constexpr int dp_imm8 = (Mask << 4) | Mask;
+    constexpr int zero_imm8 = ~Mask & 0xf;
 
-    auto rhs_ = static_cast<__m128>(rhs);
-    auto rcp_length = f32x4_raw{_mm_rsqrt_ps(_mm_dp_ps(rhs_, rhs_, imm8))};
-    return _mm_mul_ps(rhs_, rcp_length);
+    ttlet rhs_ = static_cast<__m128>(rhs);
+    ttlet rcp_length = _mm_rsqrt_ps(_mm_dp_ps(rhs_, rhs_, dp_imm8));
+    ttlet rcp_length_ = _mm_insert_ps(rcp_length, rcp_length, zero_imm8);
+    return f32x4_raw{_mm_mul_ps(rhs_, rcp_length_)};
 }
 
 /** Compare if equal elements of two SSE registers and return a mask.
@@ -363,7 +365,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 
     ttlet s0 = f32x4_sse_addsub<0b0101>(f32x4_raw{w}, f32x4_raw{x});
     ttlet s1 = f32x4_sse_addsub<0b0011>(s0, f32x4_raw{y});
-    return f32x4_sse_addsub<0b0110>(sl, f32x4_raw{z});
+    return f32x4_sse_addsub<0b0110>(s1, f32x4_raw{z});
 }
 
 

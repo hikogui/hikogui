@@ -100,8 +100,8 @@ inline results<float, 1> bezierFindTForNormalsIntersectingPoint(f32x4 P1, f32x4 
 {
     tt_axiom(P1.is_point() && P2.is_point() && P.is_point());
 
-    auto t_above = dot<2>(P - P1, P2 - P1);
-    auto t_below = dot<2>(P2 - P1, P2 - P1);
+    auto t_above = dot<0b0011>(P - P1, P2 - P1);
+    auto t_below = dot<0b0011>(P2 - P1, P2 - P1);
     if (t_below == 0.0) {
         [[unlikely]] return {};
     } else {
@@ -121,10 +121,10 @@ inline results<float, 3> bezierFindTForNormalsIntersectingPoint(f32x4 P1, f32x4 
     ttlet p1 = C - P1;
     ttlet p2 = P2 - (2 * C) + P1;
 
-    ttlet a = dot<2>(p2, p2);
-    ttlet b = 3 * dot<2>(p1, p2);
-    ttlet c = dot<2>(2 * p1, p1) - dot<2>(p2, p);
-    ttlet d = -dot<2>(p1, p);
+    ttlet a = dot<0b0011>(p2, p2);
+    ttlet b = 3 * dot<0b0011>(p1, p2);
+    ttlet c = dot<0b0011>(2 * p1, p1) - dot<0b0011>(p2, p);
+    ttlet d = -dot<0b0011>(p1, p);
     return solvePolynomial(a, b, c, d);
 }
 
@@ -223,13 +223,13 @@ inline float bezierFlatness(f32x4 P1, f32x4 C, f32x4 P2) noexcept
 {
     tt_axiom(P1.is_point() && C.is_point() && P2.is_point());
 
-    ttlet P1P2 = hypot<2>(P2 - P1);
+    ttlet P1P2 = hypot<0b0011>(P2 - P1);
     if (P1P2 == 0.0f) {
         return 1.0;
     }
 
-    ttlet P1C1 = hypot<2>(C - P1);
-    ttlet C1P2 = hypot<2>(P2 - C);
+    ttlet P1C1 = hypot<0b0011>(C - P1);
+    ttlet C1P2 = hypot<0b0011>(P2 - C);
     return P1P2 / (P1C1 + C1P2);
 }
 
@@ -241,14 +241,14 @@ inline float bezierFlatness(f32x4 P1, f32x4 C1, f32x4 C2, f32x4 P2) noexcept
 {
     tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
 
-    ttlet P1P2 = hypot<2>(P2 - P1);
+    ttlet P1P2 = hypot<0b0011>(P2 - P1);
     if (P1P2 == 0.0f) {
         return 1.0;
     }
 
-    ttlet P1C1 = hypot<2>(C1 - P1);
-    ttlet C1C2 = hypot<2>(C2 - C1);
-    ttlet C2P2 = hypot<2>(P2 - C2);
+    ttlet P1C1 = hypot<0b0011>(C1 - P1);
+    ttlet C1C2 = hypot<0b0011>(C2 - C1);
+    ttlet C2P2 = hypot<0b0011>(P2 - C2);
     return P1P2 / (P1C1 + C1C2 + C2P2);
 }
 
