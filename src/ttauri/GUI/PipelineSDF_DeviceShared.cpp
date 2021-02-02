@@ -19,16 +19,13 @@ namespace tt::PipelineSDF {
 
 using namespace std;
 
-DeviceShared::DeviceShared(gui_device_vulkan const &device) :
-    device(device)
+DeviceShared::DeviceShared(gui_device_vulkan const &device) : device(device)
 {
     buildShaders();
     buildAtlas();
 }
 
-DeviceShared::~DeviceShared()
-{
-}
+DeviceShared::~DeviceShared() {}
 
 void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
 {
@@ -44,7 +41,7 @@ void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
     auto imageHeight = narrow_cast<int>(std::ceil(drawExtent.height()));
 
     if (atlasAllocationPosition.y() + imageHeight > atlasImageHeight) {
-        atlasAllocationPosition.x() = 0; 
+        atlasAllocationPosition.x() = 0;
         atlasAllocationPosition.y() = 0;
         atlasAllocationPosition.z() = atlasAllocationPosition.z() + 1;
 
@@ -63,37 +60,39 @@ void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
     }
 
     auto r = AtlasRect{atlasAllocationPosition, drawExtent};
-    
+
     atlasAllocationPosition.x() = atlasAllocationPosition.x() + imageWidth;
     atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, imageHeight);
 
     return r;
 }
 
-
 void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
 {
     // Flush the given image, included the border.
     device.flushAllocation(
-        stagingTexture.allocation, 0, (stagingTexture.pixel_map.height() * stagingTexture.pixel_map.stride()) * sizeof(SDF8)
-    );
-    
+        stagingTexture.allocation, 0, (stagingTexture.pixel_map.height() * stagingTexture.pixel_map.stride()) * sizeof(SDF8));
+
     stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferSrcOptimal);
 
-    array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
+    array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture;
 
     auto regionsToCopy = std::vector{vk::ImageCopy{
-        { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-        { 0, 0, 0 },
-        { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-        { narrow_cast<int32_t>(location.atlasPosition.x()), narrow_cast<int32_t>(location.atlasPosition.y()), 0 },
-        { narrow_cast<uint32_t>(location.atlasExtent.x()), narrow_cast<uint32_t>(location.atlasExtent.y()), 1}
-    }};
+        {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+        {0, 0, 0},
+        {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+        {narrow_cast<int32_t>(location.atlasPosition.x()), narrow_cast<int32_t>(location.atlasPosition.y()), 0},
+        {narrow_cast<uint32_t>(location.atlasExtent.x()), narrow_cast<uint32_t>(location.atlasExtent.y()), 1}}};
 
     auto &atlasTexture = atlasTextures.at(location.atlasPosition.z());
     atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
-    device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, std::move(regionsToCopy));
+    device.copyImage(
+        stagingTexture.image,
+        vk::ImageLayout::eTransferSrcOptimal,
+        atlasTexture.image,
+        vk::ImageLayout::eTransferDstOptimal,
+        std::move(regionsToCopy));
 }
 
 void DeviceShared::prepareStagingPixmapForDrawing()
@@ -103,13 +102,10 @@ void DeviceShared::prepareStagingPixmapForDrawing()
 
 void DeviceShared::prepareAtlasForRendering()
 {
-    for (auto &atlasTexture: atlasTextures) {
+    for (auto &atlasTexture : atlasTextures) {
         atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
-
-
-
 
 /** Prepare the atlas for drawing a text.
  *
@@ -126,10 +122,10 @@ void DeviceShared::prepareAtlasForRendering()
  *  |  +---------------+  |
  *  |                     |
  *  O---------------------+
-*/
+ */
 AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
 {
-    ttlet [glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
+    ttlet[glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
 
     ttlet drawScale = mat::S(drawFontSize, drawFontSize);
     ttlet scaledBoundingBox = drawScale * glyphBoundingBox;
@@ -156,7 +152,7 @@ AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
     return atlas_rect;
 }
 
-std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(FontGlyphIDs glyph) noexcept
+std::pair<AtlasRect, bool> DeviceShared::getGlyphFromAtlas(FontGlyphIDs glyph) noexcept
 {
     ttlet i = glyphs_in_atlas.find(glyph);
     if (i != glyphs_in_atlas.cend()) {
@@ -169,14 +165,20 @@ std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(FontGlyphIDs glyph) no
     }
 }
 
-aarect DeviceShared::getBoundingBox(FontGlyphIDs const &glyphs) noexcept {
+aarect DeviceShared::getBoundingBox(FontGlyphIDs const &glyphs) noexcept
+{
     // Adjust bounding box by adding a border based on 1EM.
     return expand(glyphs.getBoundingBox(), scaledDrawBorder);
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept
+bool DeviceShared::_placeVertices(
+    vspan<Vertex> &vertices,
+    FontGlyphIDs const &glyphs,
+    rect box,
+    f32x4 color,
+    aarect clippingRectangle) noexcept
 {
-    ttlet [atlas_rect, glyph_was_added] = getGlyphFromAtlas(glyphs);
+    ttlet[atlas_rect, glyph_was_added] = getGlyphFromAtlas(glyphs);
 
     ttlet v0 = box.corner<0>();
     ttlet v1 = box.corner<1>();
@@ -196,7 +198,12 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &g
     return glyph_was_added;
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, f32x4 color) noexcept
+bool DeviceShared::_placeVertices(
+    vspan<Vertex> &vertices,
+    AttributedGlyph const &attr_glyph,
+    mat transform,
+    aarect clippingRectangle,
+    f32x4 color) noexcept
 {
     if (!is_visible(attr_glyph.general_category)) {
         return false;
@@ -208,23 +215,36 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const
     return _placeVertices(vertices, attr_glyph.glyphs, bounding_box, color, clippingRectangle);
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept
+bool DeviceShared::_placeVertices(
+    vspan<Vertex> &vertices,
+    AttributedGlyph const &attr_glyph,
+    mat transform,
+    aarect clippingRectangle) noexcept
 {
     return _placeVertices(vertices, attr_glyph, transform, clippingRectangle, attr_glyph.style.color);
 }
 
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept
+void DeviceShared::placeVertices(
+    vspan<Vertex> &vertices,
+    FontGlyphIDs const &glyphs,
+    rect box,
+    f32x4 color,
+    aarect clippingRectangle) noexcept
 {
     if (_placeVertices(vertices, glyphs, box, color, clippingRectangle)) {
         prepareAtlasForRendering();
     }
 }
 
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle) noexcept
+void DeviceShared::placeVertices(
+    vspan<Vertex> &vertices,
+    ShapedText const &text,
+    mat transform,
+    aarect clippingRectangle) noexcept
 {
     auto atlas_was_updated = false;
 
-    for (ttlet &attr_glyph: text) {
+    for (ttlet &attr_glyph : text) {
         ttlet glyph_added = _placeVertices(vertices, attr_glyph, transform, clippingRectangle);
         atlas_was_updated = atlas_was_updated || glyph_added;
     }
@@ -234,11 +254,16 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text
     }
 }
 
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle, f32x4 color) noexcept
+void DeviceShared::placeVertices(
+    vspan<Vertex> &vertices,
+    ShapedText const &text,
+    mat transform,
+    aarect clippingRectangle,
+    f32x4 color) noexcept
 {
     auto atlas_was_updated = false;
 
-    for (ttlet &attr_glyph: text) {
+    for (ttlet &attr_glyph : text) {
         ttlet glyph_added = _placeVertices(vertices, attr_glyph, transform, clippingRectangle, color);
         atlas_was_updated = atlas_was_updated || glyph_added;
     }
@@ -264,14 +289,16 @@ void DeviceShared::buildShaders()
     vertexShaderModule = device.loadShader(URL("resource:GUI/PipelineSDF.vert.spv"));
     fragmentShaderModule = device.loadShader(URL("resource:GUI/PipelineSDF.frag.spv"));
 
-
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main", &fragmentShaderSpecializationInfo}
-    };
+        {vk::PipelineShaderStageCreateFlags(),
+         vk::ShaderStageFlagBits::eFragment,
+         fragmentShaderModule,
+         "main",
+         &fragmentShaderSpecializationInfo}};
 }
 
-void DeviceShared::teardownShaders(gui_device_vulkan * vulkanDevice)
+void DeviceShared::teardownShaders(gui_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
 
@@ -281,7 +308,7 @@ void DeviceShared::teardownShaders(gui_device_vulkan * vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    //ttlet currentImageIndex = std::ssize(atlasTextures);
+    // ttlet currentImageIndex = std::ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -295,42 +322,36 @@ void DeviceShared::addAtlasImage()
         vk::ImageTiling::eOptimal,
         vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
         vk::SharingMode::eExclusive,
-        0, nullptr,
-        vk::ImageLayout::eUndefined
-    };
+        0,
+        nullptr,
+        vk::ImageLayout::eUndefined};
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    ttlet [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    ttlet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
 
     ttlet clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
-    ttlet clearRange = std::array{
-        vk::ImageSubresourceRange{
-            vk::ImageAspectFlagBits::eColor,
-            0,
-            1,
-            0,
-            1
-        }
-    };
+    ttlet clearRange = std::array{vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
+
+    device.transitionLayout(
+        atlasImage, imageCreateInfo.format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
     device.clearColorImage(atlasImage, vk::ImageLayout::eTransferDstOptimal, clearValue, clearRange);
 
-    ttlet atlasImageView = device.createImageView({
-        vk::ImageViewCreateFlags(),
-        atlasImage,
-        vk::ImageViewType::e2D,
-        imageCreateInfo.format,
-        vk::ComponentMapping(),
-        {
-            vk::ImageAspectFlagBits::eColor,
-            0, // baseMipLevel
-            1, // levelCount
-            0, // baseArrayLayer
-            1 // layerCount
-        }
-    });
+    ttlet atlasImageView = device.createImageView(
+        {vk::ImageViewCreateFlags(),
+         atlasImage,
+         vk::ImageViewType::e2D,
+         imageCreateInfo.format,
+         vk::ComponentMapping(),
+         {
+             vk::ImageAspectFlagBits::eColor,
+             0, // baseMipLevel
+             1, // levelCount
+             0, // baseArrayLayer
+             1 // layerCount
+         }});
 
-    atlasTextures.push_back({ atlasImage, atlasImageAllocation, atlasImageView });
+    atlasTextures.push_back({atlasImage, atlasImageAllocation, atlasImageView});
 
     // Build image descriptor info.
     for (int i = 0; i < std::ssize(atlasDescriptorImageInfos); i++) {
@@ -339,10 +360,8 @@ void DeviceShared::addAtlasImage()
         atlasDescriptorImageInfos.at(i) = {
             vk::Sampler(),
             i < atlasTextures.size() ? atlasTextures.at(i).view : atlasTextures.at(0).view,
-            vk::ImageLayout::eShaderReadOnlyOptimal
-        };
+            vk::ImageLayout::eShaderReadOnlyOptimal};
     }
-
 }
 
 void DeviceShared::buildAtlas()
@@ -359,20 +378,19 @@ void DeviceShared::buildAtlas()
         vk::ImageTiling::eLinear,
         vk::ImageUsageFlagBits::eTransferSrc,
         vk::SharingMode::eExclusive,
-        0, nullptr,
-        vk::ImageLayout::ePreinitialized
-    };
+        0,
+        nullptr,
+        vk::ImageLayout::ePreinitialized};
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    ttlet [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    ttlet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     ttlet data = device.mapMemory<SDF8>(allocation);
 
     stagingTexture = {
         image,
         allocation,
         vk::ImageView(),
-        tt::pixel_map<SDF8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
-    };
+        tt::pixel_map<SDF8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),
@@ -394,11 +412,7 @@ void DeviceShared::buildAtlas()
     };
     atlasSampler = device.createSampler(samplerCreateInfo);
 
-    atlasSamplerDescriptorImageInfo = {
-        atlasSampler,
-        vk::ImageView(),
-        vk::ImageLayout::eUndefined
-    };
+    atlasSamplerDescriptorImageInfo = {atlasSampler, vk::ImageView(), vk::ImageLayout::eUndefined};
 
     // There needs to be at least one atlas image, so the array of samplers can point to
     // the single image.
@@ -411,7 +425,7 @@ void DeviceShared::teardownAtlas(gui_device_vulkan *vulkanDevice)
 
     vulkanDevice->destroy(atlasSampler);
 
-    for (const auto &atlasImage: atlasTextures) {
+    for (const auto &atlasImage : atlasTextures) {
         vulkanDevice->destroy(atlasImage.view);
         vulkanDevice->destroyImage(atlasImage.image, atlasImage.allocation);
     }
@@ -421,4 +435,4 @@ void DeviceShared::teardownAtlas(gui_device_vulkan *vulkanDevice)
     vulkanDevice->destroyImage(stagingTexture.image, stagingTexture.allocation);
 }
 
-}
+} // namespace tt::PipelineSDF

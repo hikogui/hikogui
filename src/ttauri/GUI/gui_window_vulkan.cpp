@@ -385,9 +385,13 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
     ttlet colorClearValue = vk::ClearColorValue{static_cast<std::array<float, 4>>(widget->backgroundColor())};
+    ttlet sdfClearValue = vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 0.0f}};
     ttlet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
-    ttlet clearValues =
-        std::array{vk::ClearValue{colorClearValue}, vk::ClearValue{colorClearValue}, vk::ClearValue{depthClearValue}};
+    ttlet clearValues = std::array{
+        vk::ClearValue{depthClearValue},
+        vk::ClearValue{colorClearValue},
+        vk::ClearValue{sdfClearValue},
+        vk::ClearValue{colorClearValue}};
 
     // Clamp the scissor rectangle to the size of the window.
     scissor_rectangle = intersect(scissor_rectangle, aarect{0.0f, 0.0f, swapchainImageExtent.width, swapchainImageExtent.height});
@@ -645,7 +649,10 @@ gui_window_state gui_window_vulkan::buildSwapchain()
 
     VmaAllocationCreateInfo colorAllocationCreateInfo = {};
     colorAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
-    std::tie(colorImage, colorImageAllocation) = vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
+    std::tie(colorImages[0], colorImageAllocations[0]) =
+        vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
+    std::tie(colorImages[1], colorImageAllocations[1]) =
+        vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
 
     return gui_window_state::ready_to_render;
 }
@@ -656,7 +663,10 @@ void gui_window_vulkan::teardownSwapchain()
 
     vulkan_device().destroy(swapchain);
     vulkan_device().destroyImage(depthImage, depthImageAllocation);
-    vulkan_device().destroyImage(colorImage, colorImageAllocation);
+
+    for (size_t i = 0; i != std::size(colorImages); ++i) {
+        vulkan_device().destroyImage(colorImages[i], colorImageAllocations[i]);
+    }
 }
 
 void gui_window_vulkan::buildFramebuffers()
@@ -671,15 +681,17 @@ void gui_window_vulkan::buildFramebuffers()
          vk::ComponentMapping(),
          {vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1}});
 
-    colorImageView = vulkan_device().createImageView(
-        {vk::ImageViewCreateFlags(),
-         colorImage,
-         vk::ImageViewType::e2D,
-         colorImageFormat,
-         vk::ComponentMapping(),
-         {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
+    for (size_t i = 0; i != std::size(colorImageViews); ++i) {
+        colorImageViews[i] = vulkan_device().createImageView(
+            {vk::ImageViewCreateFlags(),
+             colorImages[i],
+             vk::ImageViewType::e2D,
+             colorImageFormat,
+             vk::ComponentMapping(),
+             {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
 
-    colorDescriptorImageInfo = {vk::Sampler(), colorImageView, vk::ImageLayout::eShaderReadOnlyOptimal};
+        colorDescriptorImageInfos[i] = {vk::Sampler(), colorImageViews[i], vk::ImageLayout::eShaderReadOnlyOptimal};
+    }
 
     swapchainImages = vulkan_device().getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
@@ -693,7 +705,7 @@ void gui_window_vulkan::buildFramebuffers()
 
         swapchainImageViews.push_back(swapchainImageView);
 
-        ttlet attachments = std::array{swapchainImageView, colorImageView, depthImageView};
+        ttlet attachments = std::array{depthImageView, colorImageViews[0], colorImageViews[1], swapchainImageView};
 
         ttlet framebuffer = vulkan_device().createFramebuffer({
             vk::FramebufferCreateFlags(),
@@ -731,7 +743,9 @@ void gui_window_vulkan::teardownFramebuffers()
     swapchainImageViews.clear();
 
     vulkan_device().destroy(depthImageView);
-    vulkan_device().destroy(colorImageView);
+    for (size_t i = 0; i != std::size(colorImageViews); ++i) {
+        vulkan_device().destroy(colorImageViews[i]);
+    }
 }
 
 void gui_window_vulkan::buildRenderPasses()
@@ -739,32 +753,6 @@ void gui_window_vulkan::buildRenderPasses()
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     ttlet attachmentDescriptions = std::array{
-        vk::AttachmentDescription{
-            // Swapchain attachment.
-            vk::AttachmentDescriptionFlags(),
-            swapchainImageFormat.format,
-            vk::SampleCountFlagBits::e1,
-            vk::AttachmentLoadOp::eDontCare,
-            vk::AttachmentStoreOp::eStore,
-            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
-            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
-            vk::ImageLayout::ePresentSrcKHR, // initialLayout
-            vk::ImageLayout::ePresentSrcKHR // finalLayout
-
-        },
-        vk::AttachmentDescription{
-            // Color attachment
-            vk::AttachmentDescriptionFlags(),
-            colorImageFormat,
-            vk::SampleCountFlagBits::e1,
-            vk::AttachmentLoadOp::eClear,
-            vk::AttachmentStoreOp::eDontCare,
-            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
-            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
-            vk::ImageLayout::eUndefined, // initialLayout
-            vk::ImageLayout::eColorAttachmentOptimal // finalLayout
-
-        },
         vk::AttachmentDescription{
             // Depth attachment
             vk::AttachmentDescriptionFlags(),
@@ -776,15 +764,56 @@ void gui_window_vulkan::buildRenderPasses()
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
             vk::ImageLayout::eUndefined, // initialLayout
             vk::ImageLayout::eDepthStencilAttachmentOptimal // finalLayout
+        },
+        vk::AttachmentDescription{
+            // Color1 attachment
+            vk::AttachmentDescriptionFlags(),
+            colorImageFormat,
+            vk::SampleCountFlagBits::e1,
+            vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eDontCare,
+            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
+            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
+            vk::ImageLayout::eUndefined, // initialLayout
+            vk::ImageLayout::eColorAttachmentOptimal // finalLayout
+        },
+        vk::AttachmentDescription{
+            // Color2 attachment
+            vk::AttachmentDescriptionFlags(),
+            colorImageFormat,
+            vk::SampleCountFlagBits::e1,
+            vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eDontCare,
+            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
+            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
+            vk::ImageLayout::eUndefined, // initialLayout
+            vk::ImageLayout::eColorAttachmentOptimal // finalLayout
+        },
+        vk::AttachmentDescription{
+            // Swapchain attachment.
+            vk::AttachmentDescriptionFlags(),
+            swapchainImageFormat.format,
+            vk::SampleCountFlagBits::e1,
+            vk::AttachmentLoadOp::eDontCare,
+            vk::AttachmentStoreOp::eStore,
+            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
+            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
+            vk::ImageLayout::ePresentSrcKHR, // initialLayout
+            vk::ImageLayout::ePresentSrcKHR // finalLayout
         }};
 
-    ttlet colorAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
+    ttlet depthAttachmentReference = vk::AttachmentReference{0, vk::ImageLayout::eDepthStencilAttachmentOptimal};
 
-    ttlet colorInputAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
+    ttlet color1AttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
+    ttlet color2AttachmentReferences = std::array{vk::AttachmentReference{2, vk::ImageLayout::eColorAttachmentOptimal}};
 
-    ttlet swapchainAttachmentReferences = std::array{vk::AttachmentReference{0, vk::ImageLayout::eColorAttachmentOptimal}};
+    ttlet color1InputAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
+    ttlet color2InputAttachmentReferences = std::array{vk::AttachmentReference{2, vk::ImageLayout::eShaderReadOnlyOptimal}};
+    ttlet color12InputAttachmentReferences = std::array{
+        vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal},
+        vk::AttachmentReference{2, vk::ImageLayout::eShaderReadOnlyOptimal}};
 
-    ttlet depthAttachmentReference = vk::AttachmentReference{2, vk::ImageLayout::eDepthStencilAttachmentOptimal};
+    ttlet swapchainAttachmentReferences = std::array{vk::AttachmentReference{3, vk::ImageLayout::eColorAttachmentOptimal}};
 
     ttlet subpassDescriptions = std::array{
         vk::SubpassDescription{// Subpass 0
@@ -792,8 +821,8 @@ void gui_window_vulkan::buildRenderPasses()
                                vk::PipelineBindPoint::eGraphics,
                                0, // inputAttchmentReferencesCount
                                nullptr, // inputAttachmentReferences
-                               narrow_cast<uint32_t>(colorAttachmentReferences.size()),
-                               colorAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color1AttachmentReferences.size()),
+                               color1AttachmentReferences.data(),
                                nullptr, // resolveAttachments
                                &depthAttachmentReference
 
@@ -803,8 +832,8 @@ void gui_window_vulkan::buildRenderPasses()
                                vk::PipelineBindPoint::eGraphics,
                                0, // inputAttchmentReferencesCount
                                nullptr, // inputAttachmentReferences
-                               narrow_cast<uint32_t>(colorAttachmentReferences.size()),
-                               colorAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color1AttachmentReferences.size()),
+                               color1AttachmentReferences.data(),
                                nullptr, // resolveAttachments
                                &depthAttachmentReference
 
@@ -814,8 +843,8 @@ void gui_window_vulkan::buildRenderPasses()
                                vk::PipelineBindPoint::eGraphics,
                                0, // inputAttchmentReferencesCount
                                nullptr, // inputAttachmentReferences
-                               narrow_cast<uint32_t>(colorAttachmentReferences.size()),
-                               colorAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color1AttachmentReferences.size()),
+                               color1AttachmentReferences.data(),
                                nullptr, // resolveAttachments
                                &depthAttachmentReference
 
@@ -823,10 +852,10 @@ void gui_window_vulkan::buildRenderPasses()
         vk::SubpassDescription{// Subpass 3
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
-                               narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
-                               colorInputAttachmentReferences.data(),
-                               narrow_cast<uint32_t>(colorAttachmentReferences.size()),
-                               colorAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color1InputAttachmentReferences.size()),
+                               color1InputAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color2AttachmentReferences.size()),
+                               color2AttachmentReferences.data(),
                                nullptr, // resolveAttachments
                                &depthAttachmentReference
 
@@ -834,8 +863,8 @@ void gui_window_vulkan::buildRenderPasses()
         vk::SubpassDescription{// Subpass 4 tone-mapper
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
-                               narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
-                               colorInputAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color12InputAttachmentReferences.size()),
+                               color12InputAttachmentReferences.data(),
                                narrow_cast<uint32_t>(swapchainAttachmentReferences.size()),
                                swapchainAttachmentReferences.data(),
                                nullptr,
@@ -855,7 +884,7 @@ void gui_window_vulkan::buildRenderPasses()
             0,
             1,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eColorAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
@@ -864,7 +893,7 @@ void gui_window_vulkan::buildRenderPasses()
             1,
             2,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eColorAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
@@ -875,7 +904,7 @@ void gui_window_vulkan::buildRenderPasses()
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eShaderRead,
+            vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
         // Subpass 3: Render SDF-texture mapped polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
@@ -884,7 +913,7 @@ void gui_window_vulkan::buildRenderPasses()
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eShaderRead,
+            vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
         // Subpass 4: Tone mapping color to swapchain.
         vk::SubpassDependency{
@@ -892,7 +921,7 @@ void gui_window_vulkan::buildRenderPasses()
             VK_SUBPASS_EXTERNAL,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eBottomOfPipe,
-            vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eMemoryRead,
             vk::DependencyFlagBits::eByRegion}};
 

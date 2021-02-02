@@ -11,43 +11,41 @@ namespace tt::PipelineToneMapper {
 using namespace tt;
 using namespace std;
 
-PipelineToneMapper::PipelineToneMapper(gui_window const &window) :
-    pipeline_vulkan(window)
-{
-}
+PipelineToneMapper::PipelineToneMapper(gui_window const &window) : pipeline_vulkan(window) {}
 
 void PipelineToneMapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
     pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
-
     vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
 
-    commandBuffer.draw(
-        3,
-        1,
-        0,
-        0
-    );
+    commandBuffer.draw(3, 1, 0, 0);
 }
 
-std::vector<vk::PipelineShaderStageCreateInfo> PipelineToneMapper::createShaderStages() const {
+std::vector<vk::PipelineShaderStageCreateInfo> PipelineToneMapper::createShaderStages() const
+{
     return vulkan_device().toneMapperPipeline->shaderStages;
 }
 
-std::vector<vk::DescriptorSetLayoutBinding> PipelineToneMapper::createDescriptorSetLayoutBindings() const {
+std::vector<vk::DescriptorSetLayoutBinding> PipelineToneMapper::createDescriptorSetLayoutBindings() const
+{
+    // ttlet &color_descriptor_image_infos = narrow_cast<gui_window_vulkan const &>(window).colorDescriptorImageInfos;
+
     return {
-        {
-            0, // binding
-            vk::DescriptorType::eInputAttachment,
-            1, // descriptorCount
-            vk::ShaderStageFlagBits::eFragment
-        }
-    };
+        {0, // binding
+         vk::DescriptorType::eInputAttachment,
+         1, // descriptorCount
+         vk::ShaderStageFlagBits::eFragment},
+        {1, // binding
+         vk::DescriptorType::eInputAttachment,
+         1, // descriptorCount
+         vk::ShaderStageFlagBits::eFragment}};
 }
 
 vector<vk::WriteDescriptorSet> PipelineToneMapper::createWriteDescriptorSet() const
 {
+    ttlet &color_descriptor_image_infos = narrow_cast<gui_window_vulkan const &>(window).colorDescriptorImageInfos;
+
     return {
         {
             descriptorSet,
@@ -55,11 +53,20 @@ vector<vk::WriteDescriptorSet> PipelineToneMapper::createWriteDescriptorSet() co
             0, // arrayElement
             1, // descriptorCount
             vk::DescriptorType::eInputAttachment,
-            &(narrow_cast<gui_window_vulkan const&>(window).colorDescriptorImageInfo),
+            &color_descriptor_image_infos[0],
             nullptr, // bufferInfo
             nullptr // texelBufferView
-        } 
-    };
+        },
+        {
+            descriptorSet,
+            1, // destBinding
+            0, // arrayElement
+            1, // descriptorCount
+            vk::DescriptorType::eInputAttachment,
+            &color_descriptor_image_infos[1],
+            nullptr, // bufferInfo
+            nullptr // texelBufferView
+        }};
 }
 
 ssize_t PipelineToneMapper::getDescriptorSetVersion() const
@@ -84,4 +91,4 @@ vk::PipelineDepthStencilStateCreateInfo PipelineToneMapper::getPipelineDepthSten
     };
 }
 
-}
+} // namespace tt::PipelineToneMapper
