@@ -6,7 +6,7 @@
 #include "counters.hpp"
 #include "cpu_counter_clock.hpp"
 #include "hires_utc_clock.hpp"
-#include "polymorphic_value.hpp"
+#include "polymorphic_optional.hpp"
 #include "wfree_message_queue.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"
@@ -168,7 +168,7 @@ class logger_type {
     static constexpr size_t MESSAGE_ALIGNMENT = 256;
     static constexpr size_t MAX_NR_MESSAGES = 4096;
 
-    using message_type = polymorphic_value<log_message_base,MAX_MESSAGE_SIZE>;
+    using message_type = polymorphic_optional<log_message_base,MAX_MESSAGE_SIZE>;
     using message_queue_type = wfree_message_queue<message_type,MAX_NR_MESSAGES>;
 
     //! the message queue must work correctly before main() is executed.
@@ -192,7 +192,7 @@ public:
             // * Will make sure everything gets logged.
             // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
             auto message = message_queue.write<logger_blocked_tag>();
-            // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
+            // derefence the message so that we get the polymorphic_optional, so this assignment will work correctly.
             message->emplace<log_message<Level, Args...>>(timestamp, format, std::forward<Args>(args)...);
 
             if constexpr (Level >= log_level::Fatal) {

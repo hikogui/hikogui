@@ -40,6 +40,8 @@ template<> struct is_character<char32_t> : std::true_type {};
 template<typename T>
 inline constexpr bool is_character_v = is_character<T>::value;
 
+/** type-trait to convert a character to a string type.
+ */
 template<typename T> struct make_string { };
 template<> struct make_string<char> { using type = std::string; };
 template<> struct make_string<wchar_t> { using type = std::wstring; };
@@ -47,9 +49,13 @@ template<> struct make_string<char8_t> { using type = std::u8string; };
 template<> struct make_string<char16_t> { using type = std::u16string; };
 template<> struct make_string<char32_t> { using type = std::u32string; };
 
+/** type-trait to convert a character to a string type.
+ */
 template<typename T>
 using make_string_t = typename make_string<T>::type;
 
+/** type-trait to convert a character to a string_view type.
+ */
 template<typename T> struct make_string_view { using type = void; };
 template<> struct make_string_view<char> { using type = std::string_view; };
 template<> struct make_string_view<wchar_t> { using type = std::wstring_view; };
@@ -57,6 +63,8 @@ template<> struct make_string_view<char8_t> { using type = std::u8string_view; }
 template<> struct make_string_view<char16_t> { using type = std::u16string_view; };
 template<> struct make_string_view<char32_t> { using type = std::u32string_view; };
 
+/** type-trait to convert a character to a string_view type.
+ */
 template<typename T>
 using make_string_view_t = typename make_string_view<T>::type;
 
@@ -86,6 +94,8 @@ struct make_intmax<T,std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<
 template<typename T>
 using make_intmax_t = typename make_intmax<T>::type;
 
+/** Type-trait to increase the size of an integral type.
+ */
 template<typename T> struct make_larger { using type = T; };
 template<> struct make_larger<signed long> { using type = signed long long; };
 template<> struct make_larger<signed int> { using type = signed long; };
@@ -98,9 +108,13 @@ template<> struct make_larger<unsigned char> { using type = unsigned short; };
 template<> struct make_larger<double> { using type = long double; };
 template<> struct make_larger<float> { using type = double; };
 
+/** Type-trait to increase the size of an integral type.
+ */
 template<typename T>
 using make_larger_t = typename make_larger<T>::type;
 
+/** Type-trait to copy const volitile qualifiers from one type to another.
+ */
 template<typename To, typename From, typename Ei=void>
 struct copy_cv {};
 
@@ -124,16 +138,10 @@ struct copy_cv<To,From,std::enable_if_t<std::is_const_v<From> && std::is_volatil
     using type = std::remove_cv_t<To> const volatile;
 };
 
+/** Type-trait to copy const volitile qualifiers from one type to another.
+ */
 template<typename To, typename From>
 using copy_cv_t = typename copy_cv<To,From>::type;
-
-//template<typename T>
-//struct remove_cvref {
-//    using type = std::remove_cv_t<std::remove_reference_t<T>>;
-//};
-//
-//template<typename T>
-//using remove_cvref_t = typename remove_cvref<T>::type;
 
 template <typename T> struct has_value_type 
 {
@@ -157,23 +165,14 @@ template <typename T> struct has_add_callback
 template<typename T>
 inline constexpr bool has_add_callback_v = has_add_callback<T>::value;
 
-template<typename T, typename Enable=void>
-struct make_value_type {};
-
-template<typename T>
-struct make_value_type<T, std::enable_if_t<!has_value_type_v<T>>> { using type = T; };
-
-template<typename T>
-struct make_value_type<T, std::enable_if_t<has_value_type_v<T>>> { using type = typename T::value_type; };
-
-template<typename T>
-using make_value_type_t = typename make_value_type<T>::type;
-
 template<typename DerivedType, typename BaseType>
 struct is_derived_from : public std::is_base_of<BaseType,DerivedType> {};
 
 template<typename DerivedType, typename BaseType>
 constexpr bool is_derived_from_v = is_derived_from<DerivedType,BaseType>::value;
+
+template<typename T1, typename T2>
+constexpr bool is_different_v = !is_same_v<T1,T2>;
 
 
 template<typename First, typename Second>

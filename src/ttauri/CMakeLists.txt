@@ -115,7 +115,7 @@ target_sources(ttauri PRIVATE
     pixel_map.hpp
     pixel_map.inl
     placement.hpp
-    polymorphic_value.hpp
+    polymorphic_optional.hpp
     polynomial.hpp
     R16G16B16A16SFloat.hpp
     R32G32B32A32SFloat.hpp
@@ -217,7 +217,7 @@ target_sources(ttauri_tests PRIVATE
     numeric_array_tests.cpp
     Path_tests.cpp
     pixel_map_tests.cpp
-    polymorphic_value_tests.cpp
+    polymorphic_optional_tests.cpp
     polynomial_tests.cpp
     ranges_tests.cpp
     safe_int_tests.cpp

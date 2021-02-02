@@ -194,10 +194,11 @@ constexpr size_t hardware_constructive_interference_size = 64;
 constexpr bool has_sse = Processor::current == Processor::x64;
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-using HANDLE = void *;
-using file_handle = HANDLE;
+using os_handle = void *;
+using file_handle = os_handle;
 
 #elif TT_OPERATING_SYSTEM == TT_OS_MACOS
+using os_handle = int;
 using file_handle = int;
 
 #else

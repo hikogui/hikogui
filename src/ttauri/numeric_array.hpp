@@ -630,15 +630,60 @@ public:
         }
     }
 
+    /** Set individual elements to zero.
+     *
+     * @tparam Mask bit mask where '1' means to negate, '0' to keep original.
+     */
+    template<size_t Mask = ~size_t{0}>
+    [[nodiscard]] friend constexpr numeric_array zero(numeric_array rhs) noexcept
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_f32x4 && has_sse) {
+                return numeric_array{f32x4_sse_zero<Mask & 0xf>(lhs.v, rhs.v)};
+            }
+        }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            if ((Mask >> i) & 1 == 1) {
+                r.v[i] = T{0};
+            } else {
+                r.v[i] = rhs.v[i];
+            }
+        }
+        return r;
+    }
+
     /** Negate individual elements.
      *
-     * @tparam NegateElement A list of which element to negate.
+     * @tparam Mask bit mask where '1' means to negate, '0' to keep original.
      */
-    template<bool... NegateElement>
+    template<size_t Mask = ~size_t{0}>
     [[nodiscard]] friend constexpr numeric_array neg(numeric_array rhs) noexcept
     {
-        neg_detail<0, NegateElement...>(rhs);
-        return rhs;
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_f32x4 && has_sse) {
+                return numeric_array{f32x4_sse_neg<Mask & 0xf>(lhs.v, rhs.v)};
+            }
+        }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            if ((Mask >> i) & 1 == 1) {
+                r.v[i] = -rhs.v[i];
+            } else {
+                r.v[i] = rhs.v[i];
+            }
+        }
+        return r;
+    }
+
+    /** Add or Subtract idividual elements.
+     */
+    template<bool... AddElement>
+    [[nodiscard]] friend constexpr numeric_array sum(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+
     }
 
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &rhs) noexcept
@@ -754,7 +799,8 @@ public:
     {
         static_assert(D <= N);
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            return f32x4_sse_dot<D>(lhs.v, rhs.v);
+            constexpr unsigned int Mask = (1 << D) - 1;
+            return f32x4_sse_dot<Mask>(lhs.v, rhs.v);
 
         } else {
             auto r = T{};
@@ -768,12 +814,13 @@ public:
     /** Take the length of the vector
      * @tparam D Number of dimensions to calculate the length over.
      */
-    template<ssize_t D>
+    template<size_t D>
     [[nodiscard]] friend constexpr T hypot(numeric_array const &rhs) noexcept
     {
         static_assert(D <= N);
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            return f32x4_sse_hypot<D>(rhs.v);
+            constexpr unsigned int Mask = (1 << D) - 1;
+            return f32x4_sse_hypot<Mask>(rhs.v);
 
         } else {
             auto r = T{};
@@ -801,7 +848,8 @@ public:
     {
         static_assert(D <= N);
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
-            return f32x4_sse_rcp_hypot<D>(rhs.v);
+            constexpr unsigned int Mask = (1 << D) - 1;
+            return f32x4_sse_rcp_hypot<Mask>(rhs.v);
 
         } else {
             auto r = T{};
@@ -816,7 +864,13 @@ public:
     [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const &rhs) noexcept
     {
         tt_axiom(rhs.is_vector());
-        return rhs * rcp_hypot<D>(rhs);
+
+        if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
+            return f32x4_sse_normalize<0b0111>(rhs.v);
+        }
+
+        constexpr unsigned int Mask = (1 << D) - 1;
+        return rhs * rcp_hypot<Mask>(rhs);
     }
 
     [[nodiscard]] friend constexpr unsigned int eq(numeric_array const &lhs, numeric_array const &rhs) noexcept
@@ -1025,6 +1079,30 @@ public:
         return r;
     }
 
+    /** Add or subtract individual elements.
+     *
+     * @tparam Mask bit mask where '1' means to add, '0' means to subtract.
+     */
+    template<size_t Mask = ~size_t{0}>
+    [[nodiscard]] friend constexpr numeric_array addsub(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_f32x4 && has_sse) {
+                return numeric_array{f32x4_sse_addsub<Mask & 0xf>(lhs.v, rhs.v)};
+            }
+        }
+
+        auto r = numeric_array{};
+        for (ssize_t i = 0; i != N; ++i) {
+            if ((Mask >> i) & 1 == 1) {
+                r.v[i] = lhs.v[i] + rhs.v[i];
+            } else {
+                r.v[i] = lhs.v[i] - rhs.v[i];
+            }
+        }
+        return r;
+    }
+
     [[nodiscard]] friend constexpr numeric_array operator-(T const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
@@ -1193,6 +1271,31 @@ public:
             lhs.x() * rhs.y() - lhs.y() * rhs.x(),
             0.0f};
     }
+
+    // w + x*i + y*j + z*k
+    //
+    //   (w1*x2 + x1*w2 + y1*z2 - z1*y2)i
+    // + (w1*y2 - x1*z2 + y1*w2 + z1*x2)j
+    // + (w1*z2 + x1*y2 - y1*x2 + z1*w2)k
+    // + (w1*w2 - x1*x2 - y1*y2 - z1*z2)
+    template<int D> requires (D == 4)
+    [[nodiscard]] friend numeric_array hamilton_cross(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+        ttlet col0 = lhs.wwww() * rhs;
+        ttlet col1 = lhs.xxxx() * rhs.wzyx();
+        ttlet col2 = lhs.yyyy() * rhs.zwxy();
+        ttlet col3 = lhs.zzzz() * rhs.yxwz();
+
+        ttlet col01 = addsub(col0, col1);
+        ttlet col012 = addsub(col01.xzyw(), col2.xzyw()).xzyw();
+
+
+
+        return numeric_array{
+
+        };
+    }
+
     /** Find a point at the midpoint between two points.
      */
     [[nodiscard]] friend constexpr numeric_array midpoint(numeric_array const &p1, numeric_array const &p2) noexcept
@@ -1384,18 +1487,6 @@ public:
 
 private:
     container_type v;
-
-    template<int I, bool FirstNegate, bool... RestNegate>
-    [[nodiscard]] friend constexpr void neg_detail(numeric_array &rhs) noexcept
-    {
-        if constexpr (FirstNegate) {
-            get<I>(rhs.v) = -get<I>(rhs.v);
-        }
-
-        if constexpr (sizeof...(RestNegate) != 0) {
-            neg_detail<I + 1, RestNegate...>(rhs);
-        }
-    }
 
     template<int I, typename First, typename... Rest>
     [[nodiscard]] friend constexpr void

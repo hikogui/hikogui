@@ -12,7 +12,7 @@ void _debugger_break();
 #define tt_debugger_break() _debugger_break()
 
 #elif TT_COMPILER == TT_CC_GCC || TT_COMPILER == TT_CC_CLANG
-#define tt_debugger_break __builtin_trap()
+#define tt_debugger_break() __builtin_trap()
 
 #else
 #error "Not implemented"

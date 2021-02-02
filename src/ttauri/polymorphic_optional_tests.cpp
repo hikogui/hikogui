@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/polymorphic_value.hpp"
+#include "ttauri/polymorphic_optional.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -33,8 +33,8 @@ struct C: public A {
     }
 };
 
-TEST(PolymorphicValue, Assignment) {
-    std::array<polymorphic_value<A,sizeof(C)>, 3> values;
+TEST(polymorphic_optional, assignment) {
+    std::array<polymorphic_optional<A,sizeof(C)>, 3> values;
 
     values[0] = A{};
     values[1] = B{};

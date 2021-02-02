@@ -28,6 +28,20 @@ namespace tt {
  *    The checkbox indicates the current selected item inside a selection box, or it
  *    will be used as toggle in other menus.
  *  - An optional short-cut symbol is displayed after the label inside the border.
+ *
+ * Control:
+ *  - When the menu-item is a top-level toolbar button, then the left / right arrow
+ *    keys will change focus to the next / previous toolbar-widget,
+ *    menu-item widgets inside a toolbar are toolbar-widgets.
+ *  - When the menu-item is NOT a top-level toolbar button, then the down / up arrow
+ *    keys will change focus to the next / previous menu-widget,
+ *    menu-item widgets outside a toolbar are menu-widgets.
+ *  - Tab / Shift-Tab would change keyboard focus to the next normal widget.
+ *    menu-item widgets are not normal widgets.
+ *  - Space and click will activate the menu widget.
+ *  - Enter will activate the widget and change focus to the next normal widget.
+ *
+ *
  */
 template<typename T>
 class menu_item_widget final : public abstract_button_widget<T> {

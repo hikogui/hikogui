@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 
 namespace tt::ranges::views {
 
@@ -106,4 +107,26 @@ template<
 
 namespace tt {
 namespace views = tt::ranges::views;
+
+/** Make a vector from a view.
+ * This function will make a vector with a copy of the elements of a view.
+ */
+template<typename View>
+[[nodiscard]] std::vector<View::value_type> make_vector(View &view)
+{
+    auto r = std::vector<View::value_type>{};
+    std::copy(std::begin(view), std::end(view), std::back_inserter(r));
+    return r;
+}
+
+/** Make a vector from a view.
+ * This function will make a vector with a by moving the elements of a view.
+ */
+template<typename View>
+[[nodiscard]] std::vector<View::value_type> make_vector(View &&view)
+{
+    auto r = std::vector<View::value_type>{};
+    std::move(std::begin(view), std::end(view), std::back_inserter(r));
+    return r;
+
 }
