@@ -23,26 +23,26 @@ RenderDoc::RenderDoc() noexcept {
 
     HMODULE mod = nullptr;
     for (ttlet &dll_url: dll_urls) {
-        LOG_DEBUG("Trying to load renderdoc.dll at: {}", dll_url.nativePath());
+        tt_log_debug("Trying to load renderdoc.dll at: {}", dll_url.nativePath());
         
         if ((mod = LoadLibraryW(dll_url.nativeWPath().c_str()))) {
             goto found_dll;
         }
     }
-    LOG_WARNING("Could not load renderdoc.dll");
+    tt_log_warning("Could not load renderdoc.dll");
     return;
 
 found_dll:
     pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
 
     if (RENDERDOC_GetAPI == nullptr) {
-        LOG_ERROR("Could not find RENDERDOC_GetAPI in renderdoc.dll");
+        tt_log_error("Could not find RENDERDOC_GetAPI in renderdoc.dll");
         return;
     }
 
     int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_4_1, &api);
     if (ret != 1) {
-        LOG_ERROR("RENDERDOC_GetAPI returns invalid value {}", ret);
+        tt_log_error("RENDERDOC_GetAPI returns invalid value {}", ret);
         api = nullptr;
     }
 

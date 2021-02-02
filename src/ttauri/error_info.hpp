@@ -91,7 +91,7 @@ struct error_info_entry : public error_info_entry_base {
  * } catch (runtime_error const &e) {
  *     auto error_url = *tt::error_info::pop<url_tag>();
  *     auto error_errno = *tt::error_info::pop<errno_tag>();
- *     LOG_ERROR("Config file error in file {}, errno={}", error_url, error_errno);
+ *     tt_log_error("Config file error in file {}, errno={}", error_url, error_errno);
  * }
  * ```
  */
@@ -293,6 +293,6 @@ private:
 
 } // namespace tt
 
-#define tt_error_info() tt::error_info(tt_source_location())
+#define tt_error_info() tt::error_info(tt_source_location_current())
 
 #endif

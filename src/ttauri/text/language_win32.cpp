@@ -42,13 +42,13 @@ std::vector<language_tag> language::read_os_preferred_languages() noexcept
     case ERROR_BAD_PATHNAME:
     case ERROR_FILE_NOT_FOUND: {
         auto reg_path = "HKEY_CURRENT_USER\\" + tt::to_string(subkey) + "\\" + tt::to_string(name);
-        LOG_ERROR("Missing {} registry entry: 0x{:08x}", reg_path, status);
+        tt_log_error("Missing {} registry entry: 0x{:08x}", reg_path, status);
         return {language_tag{"en"}};
     }
 
     default:
         auto reg_path = "HKEY_CURRENT_USER\\" + tt::to_string(subkey) + "\\" + tt::to_string(name);
-        LOG_ERROR("Unknown error when getting {} registry value. {:08x}", reg_path, status);
+        tt_log_error("Unknown error when getting {} registry value. {:08x}", reg_path, status);
         return {language_tag{"en"}};
     }
 }

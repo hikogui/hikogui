@@ -14,7 +14,7 @@ namespace tt {
 theme::theme(URL const &url)
 {
     try {
-        LOG_INFO("Parsing theme at {}", url);
+        tt_log_info("Parsing theme at {}", url);
         ttlet data = parseJSON(url);
         parse(data);
     } catch (...) {

@@ -19,13 +19,13 @@ namespace tt {
 
         Path glyph_path;
         if (!font.loadGlyph(glyph_id, glyph_path)) {
-            LOG_ERROR("Could not load glyph {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
+            tt_log_error("Could not load glyph {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
         }
         path += glyph_path;
 
         GlyphMetrics glyph_metrics;
         if (!font.loadGlyphMetrics(glyph_id, glyph_metrics)) {
-            LOG_ERROR("Could not load glyph-metrics {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
+            tt_log_error("Could not load glyph-metrics {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
         }
 
         if (i == 0) {
@@ -48,7 +48,7 @@ namespace tt {
 
         GlyphMetrics glyph_metrics;
         if (!font.loadGlyphMetrics(glyph_id, glyph_metrics)) {
-            LOG_ERROR("Could not load glyph-metrics {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
+            tt_log_error("Could not load glyph-metrics {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
         }
 
         if (i == 0) {

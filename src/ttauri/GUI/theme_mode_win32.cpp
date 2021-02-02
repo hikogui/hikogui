@@ -41,11 +41,11 @@ namespace tt {
     case ERROR_FILE_NOT_FOUND: {
         auto reg_path = "HKEY_CURRENT_USER\\" + tt::to_string(subkey) + "\\" + tt::to_string(name);
 
-        LOG_ERROR("Missing {} registry entry: 0x{:08x}", reg_path, status);
+        tt_log_error("Missing {} registry entry: 0x{:08x}", reg_path, status);
         } return theme_mode::light;
 
     default:
-        LOG_FATAL("Could get AppsUseLightTheme registry value. {:08x}", status);
+        tt_log_fatal("Could get AppsUseLightTheme registry value. {:08x}", status);
     }
 
 }

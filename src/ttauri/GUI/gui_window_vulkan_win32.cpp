@@ -140,7 +140,7 @@ void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 n
         reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance), // Instance handle
         this);
     if (win32Window == nullptr) {
-        LOG_FATAL("Could not open a win32 window: {}", getLastErrorMessage());
+        tt_log_fatal("Could not open a win32 window: {}", getLastErrorMessage());
     }
 
     // Now we extend the drawable area over the titlebar and and border, excluding the drop shadow.
@@ -184,18 +184,18 @@ gui_window_vulkan_win32::gui_window_vulkan_win32(
     gui_window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
 {
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
-    LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
+    tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 }
 
 gui_window_vulkan_win32::~gui_window_vulkan_win32()
 {
     try {
         if (win32Window != nullptr) {
-            LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title);
+            tt_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
         }
 
     } catch (std::exception const &e) {
-        LOG_FATAL("Could not properly destruct gui_window_vulkan_win32 {}", to_string(e));
+        tt_log_fatal("Could not properly destruct gui_window_vulkan_win32 {}", to_string(e));
     }
 }
 
@@ -250,7 +250,7 @@ void gui_window_vulkan_win32::set_window_size(f32x4 new_extent)
     ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
     ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
     if (width <= 0 || height <= 0) {
-        LOG_FATAL("Failed to get virtual screen size");
+        tt_log_fatal("Failed to get virtual screen size");
     }
     return {narrow_cast<float>(width), narrow_cast<float>(height)};
 }
@@ -264,7 +264,7 @@ void gui_window_vulkan_win32::set_window_size(f32x4 new_extent)
     gui_system_mutex.unlock();
 
     if (!OpenClipboard(handle)) {
-        LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());
+        tt_log_error("Could not open win32 clipboard '{}'", getLastErrorMessage());
         return r;
     }
 
@@ -277,22 +277,22 @@ void gui_window_vulkan_win32::set_window_size(f32x4 new_extent)
         case CF_UNICODETEXT: {
             ttlet cb_data = GetClipboardData(CF_UNICODETEXT);
             if (cb_data == nullptr) {
-                LOG_ERROR("Could not get clipboard data: '{}'", getLastErrorMessage());
+                tt_log_error("Could not get clipboard data: '{}'", getLastErrorMessage());
                 goto done;
             }
 
             ttlet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
             if (wstr_c == nullptr) {
-                LOG_ERROR("Could not lock clipboard data: '{}'", getLastErrorMessage());
+                tt_log_error("Could not lock clipboard data: '{}'", getLastErrorMessage());
                 goto done;
             }
 
             ttlet wstr = std::wstring_view(wstr_c);
             r = tt::to_string(wstr);
-            LOG_DEBUG("getTextFromClipboad '{}'", r);
+            tt_log_debug("getTextFromClipboad '{}'", r);
 
             if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
-                LOG_ERROR("Could not unlock clipboard data: '{}'", getLastErrorMessage());
+                tt_log_error("Could not unlock clipboard data: '{}'", getLastErrorMessage());
                 goto done;
             }
         }
@@ -303,7 +303,7 @@ void gui_window_vulkan_win32::set_window_size(f32x4 new_extent)
     }
 
     if (GetLastError() != ERROR_SUCCESS) {
-        LOG_ERROR("Could not enumerator clipboard formats: '{}'", getLastErrorMessage());
+        tt_log_error("Could not enumerator clipboard formats: '{}'", getLastErrorMessage());
     }
 
 done:
@@ -315,12 +315,12 @@ done:
 void gui_window_vulkan_win32::set_text_on_clipboard(std::string str) noexcept
 {
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
-        LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());
+        tt_log_error("Could not open win32 clipboard '{}'", getLastErrorMessage());
         return;
     }
 
     if (!EmptyClipboard()) {
-        LOG_ERROR("Could not empty win32 clipboard '{}'", getLastErrorMessage());
+        tt_log_error("Could not empty win32 clipboard '{}'", getLastErrorMessage());
         goto done;
     }
 
@@ -329,13 +329,13 @@ void gui_window_vulkan_win32::set_text_on_clipboard(std::string str) noexcept
 
         auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (std::ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {
-            LOG_ERROR("Could not allocate clipboard data '{}'", getLastErrorMessage());
+            tt_log_error("Could not allocate clipboard data '{}'", getLastErrorMessage());
             goto done;
         }
 
         auto wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(wstr_handle));
         if (wstr_c == nullptr) {
-            LOG_ERROR("Could not lock clipboard data '{}'", getLastErrorMessage());
+            tt_log_error("Could not lock clipboard data '{}'", getLastErrorMessage());
             GlobalFree(wstr_handle);
             goto done;
         }
@@ -343,14 +343,14 @@ void gui_window_vulkan_win32::set_text_on_clipboard(std::string str) noexcept
         std::memcpy(wstr_c, wstr.c_str(), (std::ssize(wstr) + 1) * sizeof(wchar_t));
 
         if (!GlobalUnlock(wstr_handle) && GetLastError() != ERROR_SUCCESS) {
-            LOG_ERROR("Could not unlock clipboard data '{}'", getLastErrorMessage());
+            tt_log_error("Could not unlock clipboard data '{}'", getLastErrorMessage());
             GlobalFree(wstr_handle);
             goto done;
         }
 
         auto handle = SetClipboardData(CF_UNICODETEXT, wstr_handle);
         if (handle == nullptr) {
-            LOG_ERROR("Could not set clipboard data '{}'", getLastErrorMessage());
+            tt_log_error("Could not set clipboard data '{}'", getLastErrorMessage());
             GlobalFree(wstr_handle);
             goto done;
         }
@@ -551,7 +551,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         case 0: // WA_INACTIVE
             active = false;
             break;
-        default: LOG_ERROR("Unknown WM_ACTIVE value.");
+        default: tt_log_error("Unknown WM_ACTIVE value.");
         }
         requestLayout = true;
     } break;
@@ -609,7 +609,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
         auto key_code = narrow_cast<int>(wParam);
 
-        LOG_ERROR("Key 0x{:x} extended={}", key_code, extended);
+        tt_log_error("Key 0x{:x} extended={}", key_code, extended);
 
         ttlet key_state = getKeyboardState();
         ttlet key_modifiers = getKeyboardModifiers();
@@ -683,7 +683,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_SETTINGCHANGE: {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
-        LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
+        tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
         theme_book::global->set_current_theme_mode(read_os_theme_mode());
         _request_setting_change = true;
@@ -865,7 +865,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         gui_system_mutex.unlock();
         tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
         if (!TrackMouseEvent(track_mouse_leave_event_parameters_p)) {
-            LOG_ERROR("Could not track leave event '{}'", getLastErrorMessage());
+            tt_log_error("Could not track leave event '{}'", getLastErrorMessage());
         }
         gui_system_mutex.lock();
         trackingMouseLeaveEvent = true;

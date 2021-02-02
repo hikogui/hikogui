@@ -92,7 +92,7 @@ protected:
             if (holds_alternative<T>(data_value)) {
                 obj = static_cast<T>(data_value);
             } else {
-                LOG_ERROR(
+                tt_log_error(
                     "Could not deserialize '{}' for key '{}' to a '{}' type.",
                     to_string(data_value),
                     key,

@@ -29,7 +29,7 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
 {
     auto available_layers = vk::enumerateInstanceLayerProperties();
 
-    LOG_INFO("Available vulkan layers:");
+    tt_log_info("Available vulkan layers:");
     auto r = std::vector<const char *>{};
     for (ttlet &available_layer : available_layers) {
         ttlet layer_name = std::string{available_layer.layerName};
@@ -39,9 +39,9 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
         if (it != std::end(requested_layers)) {
             // Use the *it, because the lifetime of its `char const *` is still available after the function call.
             r.push_back(*it);
-            LOG_INFO("  * {}", layer_name);
+            tt_log_info("  * {}", layer_name);
         } else {
-            LOG_INFO("    {}", layer_name);
+            tt_log_info("    {}", layer_name);
         }
     }
     return r;
@@ -91,7 +91,7 @@ gui_system_vulkan::gui_system_vulkan(
     instanceCreateInfo.setEnabledLayerCount(narrow_cast<uint32_t>(requiredLayers.size()));
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
 
-    LOG_INFO("Creating Vulkan instance.");
+    tt_log_info("Creating Vulkan instance.");
     intrinsic = vk::createInstance(instanceCreateInfo);
 
 #if (VK_HEADER_VERSION == 97)
@@ -138,10 +138,10 @@ VkBool32 gui_system_vulkan::debugUtilsMessageCallback(
     void *pUserData)
 {
     switch (messageSeverity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: LOG_DEBUG("Vulkan: {}", pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: LOG_INFO("Vulkan: {}", pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: LOG_WARNING("Vulkan: {}", pCallbackData->pMessage); std::abort();
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: LOG_ERROR("Vulkan: {}", pCallbackData->pMessage); std::abort();
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: tt_log_debug("Vulkan: {}", pCallbackData->pMessage); break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: tt_log_info("Vulkan: {}", pCallbackData->pMessage); break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: tt_log_warning("Vulkan: {}", pCallbackData->pMessage); std::abort();
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: tt_log_error("Vulkan: {}", pCallbackData->pMessage); std::abort();
     default: tt_no_default();
     }
 

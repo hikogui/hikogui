@@ -55,7 +55,7 @@ VerticalSync_win32::VerticalSync_win32(std::function<void(void*,hires_utc_clock:
 
     gdi = LoadLibraryW(L"Gdi32.dll");
     if (!gdi) {
-        LOG_FATAL("Error opening Gdi32.dll {}", getLastErrorMessage());
+        tt_log_fatal("Error opening Gdi32.dll {}", getLastErrorMessage());
     }
 
     pfnD3DKMTWaitForVerticalBlankEvent = (PFND3DKMT_WAITFORVERTICALBLANKEVENT) GetProcAddress(reinterpret_cast<HMODULE>(gdi), "D3DKMTWaitForVerticalBlankEvent");
@@ -63,22 +63,22 @@ VerticalSync_win32::VerticalSync_win32(std::function<void(void*,hires_utc_clock:
     pfnD3DKMTCloseAdapter = (PFND3DKMT_CLOSEADAPTER)GetProcAddress(reinterpret_cast<HMODULE>(gdi), "D3DKMTCloseAdapter");
 
     if (!pfnD3DKMTOpenAdapterFromHdc) {
-        LOG_FATAL("Error locating function D3DKMTOpenAdapterFromHdc");
+        tt_log_fatal("Error locating function D3DKMTOpenAdapterFromHdc");
     }
 
     if (!pfnD3DKMTCloseAdapter) {
-        LOG_FATAL("Error locating function D3DKMTCloseAdapter");
+        tt_log_fatal("Error locating function D3DKMTCloseAdapter");
     }
 
     if (!pfnD3DKMTWaitForVerticalBlankEvent) {
-        LOG_FATAL("Error locating function D3DKMTWaitForVerticalBlankEvent!");
+        tt_log_fatal("Error locating function D3DKMTWaitForVerticalBlankEvent!");
     }
 
     verticalSyncThreadID = std::thread([=]() {
         set_thread_name("VerticalSync");
-        LOG_INFO("Started: vertical-sync thread.");
+        tt_log_info("Started: vertical-sync thread.");
         this->verticalSyncThread();
-        LOG_INFO("Finished: vertical-sync thread.");
+        tt_log_info("Finished: vertical-sync thread.");
     });
 }
 
@@ -101,11 +101,11 @@ void VerticalSync_win32::openAdapter() noexcept
         }
     }
 
-    LOG_INFO("Found primary display device '{}'.", to_string(wstring(dd.DeviceName)));
+    tt_log_info("Found primary display device '{}'.", to_string(wstring(dd.DeviceName)));
 
     HDC hdc = CreateDCW(NULL, dd.DeviceName, NULL, NULL);
     if (hdc == NULL) {
-        LOG_ERROR("Could not get handle to primary display device.");
+        tt_log_error("Could not get handle to primary display device.");
         state = State::FALLBACK;
         return;
     }
@@ -116,7 +116,7 @@ void VerticalSync_win32::openAdapter() noexcept
 
     NTSTATUS status = pfnD3DKMTOpenAdapterFromHdc(&oa);
     if (status != STATUS_SUCCESS) {
-        LOG_ERROR("Could not open adapter.");
+        tt_log_error("Could not open adapter.");
         state = State::FALLBACK;
 
     } else {
@@ -134,7 +134,7 @@ void VerticalSync_win32::closeAdapter() noexcept
 
     NTSTATUS status = pfnD3DKMTCloseAdapter(&ca);
     if (status != STATUS_SUCCESS) {
-        LOG_ERROR("Could not close adapter '{}'.", getLastErrorMessage());
+        tt_log_error("Could not close adapter '{}'.", getLastErrorMessage());
         state = State::FALLBACK;
     } else {
         state = State::ADAPTER_CLOSED;
@@ -172,11 +172,11 @@ hires_utc_clock::time_point VerticalSync_win32::wait() noexcept
         case STATUS_SUCCESS:
             break;
         case STATUS_DEVICE_REMOVED:
-            LOG_WARNING("gui_device for vertical sync removed.");
+            tt_log_warning("gui_device for vertical sync removed.");
             closeAdapter();
             break;
         default:
-            LOG_ERROR("Failed waiting for vertical sync. '{}'", getLastErrorMessage());
+            tt_log_error("Failed waiting for vertical sync. '{}'", getLastErrorMessage());
             closeAdapter();
             state = State::FALLBACK;
             break;

@@ -18,13 +18,13 @@ theme_book::theme_book(std::vector<URL> const &theme_directories) noexcept :
             try {
                 themes.push_back(std::make_unique<theme>(theme_url));
             } catch (std::exception const &e) {
-                LOG_ERROR("Failed parsing theme at {}\n{}", theme_url, to_string(e));
+                tt_log_error("Failed parsing theme at {}\n{}", theme_url, to_string(e));
             }
         }
     }
 
     if (std::ssize(themes) == 0) {
-        LOG_FATAL("Could not parse any themes.");
+        tt_log_fatal("Could not parse any themes.");
     }
 
     update_theme();
@@ -95,7 +95,7 @@ void theme_book::update_theme() noexcept
         tt_no_default();
     }
 
-    LOG_INFO("theme changed to {}, operating system mode {}", to_string(*theme::global), _current_theme_mode);
+    tt_log_info("theme changed to {}, operating system mode {}", to_string(*theme::global), _current_theme_mode);
 }
 
 

@@ -24,7 +24,7 @@ namespace tt {
 //        } else if (result.is_integer()) {
 //            return static_cast<ssize_t>(result);
 //        } else {
-//            LOG_ERROR("Language {}: plurality expression with value {} results in non-bool or non-integer type but {}",
+//            tt_log_error("Language {}: plurality expression with value {} results in non-bool or non-integer type but {}",
 //                name, n, result.type_name()
 //            );
 //            // Plural expression failure, use english rules.

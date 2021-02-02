@@ -118,12 +118,9 @@ public:
      */
     void reset() noexcept
     {
-        switch (_state) {
-        case state::internal: std::destroy_at(internal_pointer()); break;
-        case state::external: delete external_pointer(); break;
-        default:;
+        if (_state != state::empty) {
+            [[unlikely]] reset_deep();
         }
-        _state = state::empty;
     }
 
     /** Returns the contained value.
@@ -202,6 +199,16 @@ private:
         pointer pointer;
     } _value;
     state _state;
+
+    tt_no_inline void reset_deep() noexcept
+    {
+        if (_state == state::internal) {
+            std::destroy_at(internal_pointer());
+        } else if (_state == state::external) {
+            delete external_pointer();
+        }
+        _state = state::empty;
+    }
 
     [[nodiscard]] const_pointer internal_pointer() const noexcept
     {

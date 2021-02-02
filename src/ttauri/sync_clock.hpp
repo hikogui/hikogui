@@ -185,15 +185,15 @@ private:
 
         // XXX implement leap second testing.
         if (leap_adjustment != 0ns) {
-            LOG_INFO("Clock '{}' detected leap-second {} s", name, leap_adjustment / 1s);
+            tt_log_info("Clock '{}' detected leap-second {} s", name, leap_adjustment / 1s);
         }
 
         if (do_gain_calibration) {
-            LOG_INFO("Clock '{}' calibration {}: drift={:+} ns/s gain={:+.15} ns/tick",
+            tt_log_info("Clock '{}' calibration {}: drift={:+} ns/s gain={:+.15} ns/tick",
                 name, calibration_nr, drift * 1000000000.0, new_gain / gainMultiplier
             );
         } else {
-            LOG_INFO("Clock '{}' calibration {}: drift={:+} ns/s",
+            tt_log_info("Clock '{}' calibration {}: drift={:+} ns/s",
                 name, calibration_nr, drift * 1000000000.0
             );
         }

@@ -90,7 +90,7 @@ void FileView::unmap(std::span<std::byte> *bytes) noexcept
         if (bytes->size() > 0) {
             void *data = bytes->data();
             if (!UnmapViewOfFile(data)) {
-                LOG_ERROR("Could not unmap view on file '{}'", getLastErrorMessage());
+                tt_log_error("Could not unmap view on file '{}'", getLastErrorMessage());
             }
         }
         delete bytes;

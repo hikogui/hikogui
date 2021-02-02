@@ -132,7 +132,7 @@ void audio_system_win32::update_device_list() noexcept
 
         } else {
             auto device = std::make_shared<audio_device_win32>(win32_device);
-            LOG_INFO("Found audio device {} state={}", device->name(), device->state());
+            tt_log_info("Found audio device {} state={}", device->name(), device->state());
             _devices.push_back(std::move(device));
         }
     }

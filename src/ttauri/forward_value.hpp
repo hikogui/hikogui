@@ -1,5 +1,7 @@
 
-#include <fmt/format.h>
+#include <type_traits>
+#include <string>
+#include <string_view>
 
 #pragma once
 
@@ -22,15 +24,17 @@ namespace tt {
  */
 template<typename T>
 struct forward_value {
-    using type = std::remove_cv_ref_t<T>;
+    using type = std::remove_cvref_t<T>;
 
-    [[nodiscard]] constexpr T &&operator()(std::remove_reference_t<T> &t) {
-        return static_cast<T&&>(t);
+    [[nodiscard]] constexpr T &&operator()(std::remove_reference_t<T> &t) const noexcept
+    {
+        return static_cast<T &&>(t);
     }
 
-    [[nodiscard]] constexpr T &&operator()(std::remove_reference_t<T> &&t) {
+    [[nodiscard]] constexpr T &&operator()(std::remove_reference_t<T> &&t) const noexcept
+    {
         static_assert(!std::is_lvalue_reference_v<T>, "Can not forward an rvalue as an lvalue.");
-        return static_cast<T&&>(t);
+        return static_cast<T &&>(t);
     }
 };
 
@@ -38,7 +42,8 @@ template<size_t N>
 struct forward_value<char const (&)[N]> {
     using type = char const *;
 
-    [[nodiscard]] constexpr char const *operator()(char const (&t)[N]) {
+    [[nodiscard]] constexpr char const *operator()(char const (&t)[N]) const noexcept
+    {
         return static_cast<char const *>(t);
     }
 };
@@ -47,16 +52,17 @@ template<>
 struct forward_value<std::string_view> {
     using type = std::string;
 
-    [[nodiscard]] constexpr std::string operator()(std::string_view t) {
-        return static_cast<char const *>(t);
+    [[nodiscard]] std::string operator()(std::string_view t) const noexcept
+    {
+        return std::string{t};
     }
-}
+};
 
 /** Get the storage type of the `forward_value` functor.
  * Use this type for the variables that are assigned with the return
  * value of the `forward_value` functor.
  */
 template<typename T>
-using forward_value_t = forward_value<T>::type;
+using forward_value_t = typename forward_value<T>::type;
 
-}
+} // namespace tt

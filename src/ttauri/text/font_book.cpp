@@ -21,7 +21,7 @@ font_book::font_book(std::vector<URL> const &font_directories)
                 register_font(font_url, false);
 
             } catch (std::exception const &e) {
-                LOG_ERROR("Failed parsing font at {}", font_url, tt::to_string(e));
+                tt_log_error("Failed parsing font at {}", font_url, tt::to_string(e));
             }
         }
     }
@@ -87,7 +87,7 @@ FontID font_book::register_font(URL url, bool post_process)
     auto font = std::make_unique<TrueTypeFont>(url);
     auto &description = font->description;
 
-    LOG_INFO("Parsed font {}: {}", url, to_string(description));
+    tt_log_info("Parsed font {}: {}", url, description);
 
     ttlet font_id = FontID(std::ssize(font_entries));
     font_entries.emplace_back(url, description);
@@ -136,7 +136,7 @@ void font_book::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fo
         // Add the new best fallback font, or stop.
         if (max_font_id >= 0) {
             ttlet &fallback_entry = font_entries[max_font_id];
-            //LOG_DEBUG("   {} - {}", fallback_entry.description.family_name, fallback_entry.description.sub_family_name);
+            //tt_log_debug("   {} - {}", fallback_entry.description.family_name, fallback_entry.description.sub_family_name);
 
             entry.fallbacks.push_back(FontID{max_font_id});
             total_ranges |= fallback_entry.description.unicode_ranges;
@@ -158,7 +158,7 @@ void font_book::post_process() noexcept
         auto &entry = font_entries[i];
         entry.fallbacks.clear();
 
-        //LOG_DEBUG("Looking for fallback fonts for: {}", to_string(entry.description));
+        //tt_log_debug("Looking for fallback fonts for: {}", to_string(entry.description));
         calculate_fallback_fonts(entry, [](ttlet &current, ttlet &fallback) {
             return
                 fallback.family_name.starts_with(current.family_name) &&

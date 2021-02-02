@@ -1,5 +1,6 @@
 
 #include <fmt/format.h>
+#include <tuple>
 #include "forward_value.hpp"
 
 #pragma once
@@ -14,14 +15,14 @@ public:
      *
      * @return The formatted message.
      */
-    [[nodiscard]] virtual std::string operator() const noexcept = 0;
+    [[nodiscard]] virtual std::string operator()() const noexcept = 0;
 
     /** Format the message.
      *
      * @param loc The locale to use for formatting.
      * @return The formatted message.
      */
-    [[nodiscard]] virtual std::string operator(std::locale const &loc) const noexcept = 0;
+    //[[nodiscard]] virtual std::string operator()(std::locale const &loc) const noexcept = 0;
 };
 
 /** Delayed formatting.
@@ -29,7 +30,7 @@ public:
  * to another thread. Then call the function operator to do the actual formatting.
  */
 template<typename... Values>
-class delayed_format : public delayed_format_base {
+class delayed_format {
 public:
     delayed_format(delayed_format &&) noexcept = default;
     delayed_format(delayed_format const &) noexcept = default;
@@ -50,36 +51,36 @@ public:
      *             but excluding the locale.
      */
     template<typename... Args>
-    delayed_format(Args &&... args) noexcept :
-        _values(forward_value<Args>{}(args)...) {}
+    delayed_format(Args &&...args) noexcept : _values(forward_value<Args>{}(args)...)
+    {
+    }
 
     /** Format now.
      * @return The formatted string.
      */
-    [[nodiscard]] std::string operator() const noexcept override
+    [[nodiscard]] std::string operator()() const noexcept
     {
-        return std::apply(fmt::format, _values);
+        return std::apply(fmt::format<Values const &...>, _values);
     }
 
     /** Format now.
      * @param loc The locale to use for formatting.
      * @return The formatted string.
      */
-    [[nodiscard]] std::string operator(std::locale const &loc) const noexcept override
-    {
-        // XXX Add locale to format.
-        //auto locale_ = std::tuple<std::locale>(loc);
-        //auto locale_and_values = tuple_cat(locale_, _values);
-        //return std::apply(fmt::format, locale_and_values);
-        return std::apply(fmt::format, _values);
-    }
+    //[[nodiscard]] std::string operator()(std::locale const &loc) const noexcept override
+    //{
+    //    // XXX Add locale to format.
+    //    // auto locale_ = std::tuple<std::locale>(loc);
+    //    // auto locale_and_values = tuple_cat(locale_, _values);
+    //    // return std::apply(fmt::format, locale_and_values);
+    //    return std::apply(fmt::format, _values);
+    //}
 
 private:
     std::tuple<Values...> _values;
 };
 
 template<typename... Args>
-delayed_format(Args &&...) -> delayed_format<typename forward_value_t<Args>...>;
+delayed_format(Args &&...) -> delayed_format<forward_value_t<Args>...>;
 
-}
-
+} // namespace tt

@@ -253,7 +253,7 @@ public:
 
         // Send the log to the log thread.
         if (is_recording) {
-            [[unlikely]] logger.log<log_level::Trace>(end_timestamp, "id={} {}", id, std::move(data));
+            [[unlikely]] tt_log_trace("id={} {}", id, std::move(data));
         }
     }
 

@@ -1143,7 +1143,7 @@ bool TrueTypeFont::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, Pat
                 pointNr2 = tmp[1];
             }
             // XXX Implement
-            LOG_WARNING("Reading glyph from font with !FLAG_ARGS_ARE_XY_VALUES");
+            tt_log_warning("Reading glyph from font with !FLAG_ARGS_ARE_XY_VALUES");
             return false;
         }
 

@@ -46,7 +46,7 @@ void DeviceShared::destroy(gui_device_vulkan *vulkanDevice)
         atlasAllocationPosition.z() = atlasAllocationPosition.z() + 1;
 
         if (atlasAllocationPosition.z() >= atlasMaximumNrImages) {
-            LOG_FATAL("PipelineSDF atlas overflow, too many glyphs in use.");
+            tt_log_fatal("PipelineSDF atlas overflow, too many glyphs in use.");
         }
 
         if (atlasAllocationPosition.z() >= size(atlasTextures)) {

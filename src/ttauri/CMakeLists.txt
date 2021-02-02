@@ -76,6 +76,7 @@ target_sources(ttauri PRIVATE
     float16.hpp
     flow_layout.hpp
     format.hpp
+    forward_value.hpp
     gap_buffer.hpp
     glob.hpp
     hash.hpp
@@ -208,6 +209,7 @@ target_sources(ttauri_tests PRIVATE
     decimal_tests.cpp
     exceptions_tests.cpp
     FileView_tests.cpp
+    forward_value_tests.cpp
     gap_buffer_tests.cpp
     glob_tests.cpp
     int_overflow_tests.cpp

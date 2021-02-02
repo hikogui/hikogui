@@ -40,12 +40,12 @@ gui_window::~gui_window()
 
     try {
         if (state != gui_window_state::no_window) {
-            LOG_FATAL("Window '{}' was not properly teardown before destruction.", title);
+            tt_log_fatal("Window '{}' was not properly teardown before destruction.", title);
         }
-        LOG_INFO("Window '{}' has been propertly destructed.", title);
+        tt_log_info("Window '{}' has been propertly destructed.", title);
 
     } catch (std::exception const &e) {
-        LOG_FATAL("Could not properly destruct gui_window {}", to_string(e));
+        tt_log_fatal("Could not properly destruct gui_window {}", to_string(e));
     }
 }
 

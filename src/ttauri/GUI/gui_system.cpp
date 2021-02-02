@@ -18,7 +18,7 @@ gui_device *gui_system::findBestDeviceForWindow(gui_window const &window)
 
     for (ttlet &device : devices) {
         ttlet score = device->score(window);
-        LOG_INFO("gui_device has score={}.", score);
+        tt_log_info("gui_device has score={}.", score);
 
         if (score >= bestScore) {
             bestScore = score;

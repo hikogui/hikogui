@@ -138,7 +138,7 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineC
 
 void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
-    LOG_INFO("buildPipeline previous size ({}, {})", extent.width, extent.height);
+    tt_log_info("buildPipeline previous size ({}, {})", extent.width, extent.height);
     extent = _extent;
 
     const auto pushConstantRanges = createPushConstantRanges();
@@ -256,7 +256,7 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
     };
 
     intrinsic = vulkan_device().createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
-    LOG_INFO("/buildPipeline new size ({}, {})", extent.width, extent.height);
+    tt_log_info("/buildPipeline new size ({}, {})", extent.width, extent.height);
 }
 
 void pipeline_vulkan::teardownPipeline()

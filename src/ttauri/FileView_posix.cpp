@@ -82,7 +82,7 @@ void FileView::unmap(std::span<std::byte> *bytes) noexcept
     if (bytes != nullptr) {
         if (!bytes->empty()) {
             if (!munmap(bytes->data(), bytes->size())) {
-                LOG_ERROR("Could not munmap view on file '{}'", getLastErrorMessage());
+                tt_log_error("Could not munmap view on file '{}'", getLastErrorMessage());
             }
         }
         delete bytes;

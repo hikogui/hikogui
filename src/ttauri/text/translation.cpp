@@ -58,7 +58,7 @@ std::unordered_map<translation_key,std::vector<std::u8string>> translations;
             }
         }
     }
-    LOG_WARNING("No translation found for '{}'", tt::to_string(msgid));
+    tt_log_warning("No translation found for '{}'", tt::to_string(msgid));
     return msgid;
 }
 

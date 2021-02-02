@@ -270,7 +270,7 @@ std::unique_ptr<ResourceView> URL::loadView() const
     if (scheme() == "resource") {
         try {
             auto view = static_resource_view::loadView(filename());
-            LOG_INFO("Loaded resource {} from executable.", *this);
+            tt_log_info("Loaded resource {} from executable.", *this);
             return view;
 
         } catch (key_error const &) {
@@ -278,13 +278,13 @@ std::unique_ptr<ResourceView> URL::loadView() const
 
             ttlet absoluteLocation = URL::urlFromResourceDirectory() / *this;
             auto view = FileView::loadView(absoluteLocation);
-            LOG_INFO("Loaded resource {} from filesystem at {}.", *this, absoluteLocation);
+            tt_log_info("Loaded resource {} from filesystem at {}.", *this, absoluteLocation);
             return view;
         }
 
     } else if (scheme() == "file") {
         auto view = FileView::loadView(*this);
-        LOG_INFO("Loaded resource {} from filesystem.", *this);
+        tt_log_info("Loaded resource {} from filesystem.", *this);
         return view;
 
     } else {

@@ -163,7 +163,7 @@ gui_device_vulkan::~gui_device_vulkan()
         intrinsic.destroy();
 
     } catch (std::exception const &e) {
-        LOG_FATAL("Could not properly destruct gui_device_vulkan {}", to_string(e));
+        tt_log_fatal("Could not properly destruct gui_device_vulkan {}", to_string(e));
     }
 }
 
@@ -329,7 +329,7 @@ std::vector<std::pair<uint32_t, uint8_t>> gui_device_vulkan::findBestQueueFamily
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    LOG_INFO(" - Scoring QueueFamilies");
+    tt_log_info(" - Scoring QueueFamilies");
 
     // Create a sorted list of queueFamilies depending on the scoring.
     std::vector<std::tuple<uint32_t, uint8_t, uint32_t>> queueFamilieScores;
@@ -354,7 +354,7 @@ std::vector<std::pair<uint32_t, uint8_t>> gui_device_vulkan::findBestQueueFamily
             score += capabilities == QUEUE_CAPABILITY_COMPUTE ? 1 : 0;
             score += capabilities == QUEUE_CAPABILITY_PRESENT ? 1 : 0;
 
-            LOG_INFO("    * {}: capabilities={:03b}, score={}", index, capabilities, score);
+            tt_log_info("    * {}: capabilities={:03b}, score={}", index, capabilities, score);
 
             queueFamilieScores.push_back({ index, capabilities, score });
             index++;
@@ -388,19 +388,19 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
     auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
-    LOG_INFO("Scoring device: {}", string());
+    tt_log_info("Scoring device: {}", string());
     if (!hasRequiredFeatures(physicalIntrinsic, narrow_cast<gui_system_vulkan &>(system).requiredFeatures)) {
-        LOG_INFO(" - Does not have the required features.");
+        tt_log_info(" - Does not have the required features.");
         return -1;
     }
 
     if (!meetsRequiredLimits(physicalIntrinsic, narrow_cast<gui_system_vulkan &>(system).requiredLimits)) {
-        LOG_INFO(" - Does not meet the required limits.");
+        tt_log_info(" - Does not meet the required limits.");
         return -1;
     }
 
     if (!hasRequiredExtensions(physicalIntrinsic, requiredExtensions)) {
-        LOG_INFO(" - Does not have the required extensions.");
+        tt_log_info(" - Does not have the required extensions.");
         return -1;
     }
 
@@ -408,24 +408,24 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
     for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
         deviceCapabilities |= queueFamilyIndexAndCapabilities.second;
     }
-    LOG_INFO(" - Capabilities={:03b}", deviceCapabilities);
+    tt_log_info(" - Capabilities={:03b}", deviceCapabilities);
 
     if ((deviceCapabilities & QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT) != QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT) {
-        LOG_INFO(" - Does not have both the graphics and compute queues.");
+        tt_log_info(" - Does not have both the graphics and compute queues.");
         return -1;
 
     } else if (!(deviceCapabilities & QUEUE_CAPABILITY_PRESENT)) {
-        LOG_INFO(" - Does not have a present queue.");
+        tt_log_info(" - Does not have a present queue.");
         return 0;
     }
 
     // Give score based on color quality.
-    LOG_INFO(" - Surface formats:");
+    tt_log_info(" - Surface formats:");
     uint32_t bestSurfaceFormatScore = 0;
     for (auto format : formats) {
         uint32_t score = 0;
 
-        LOG_INFO("    * Found colorSpace={}, format={}", vk::to_string(format.colorSpace), vk::to_string(format.format));
+        tt_log_info("    * Found colorSpace={}, format={}", vk::to_string(format.colorSpace), vk::to_string(format.format));
 
         switch (format.colorSpace) {
         case vk::ColorSpaceKHR::eSrgbNonlinear: score += 1; break;
@@ -449,7 +449,7 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
         default: continue;
         }
 
-        LOG_INFO("    * Valid colorSpace={}, format={}, score={}", vk::to_string(format.colorSpace), vk::to_string(format.format), score);
+        tt_log_info("    * Valid colorSpace={}, format={}, score={}", vk::to_string(format.colorSpace), vk::to_string(format.format), score);
 
         if (score > bestSurfaceFormatScore) {
             bestSurfaceFormatScore = score;
@@ -457,7 +457,7 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
         }
     }
     auto totalScore = bestSurfaceFormatScore;
-    LOG_INFO("    * bestColorSpace={}, bestFormat={}, score={}",
+    tt_log_info("    * bestColorSpace={}, bestFormat={}, score={}",
         vk::to_string(bestSurfaceFormat.colorSpace),
         vk::to_string(bestSurfaceFormat.format),
         bestSurfaceFormatScore
@@ -466,16 +466,16 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
 
 
     if (bestSurfaceFormatScore == 0) {
-        LOG_INFO(" - Does not have a suitable surface format.");
+        tt_log_info(" - Does not have a suitable surface format.");
         return 0;
     }
 
-    LOG_INFO(" - Surface present modes:");
+    tt_log_info(" - Surface present modes:");
     uint32_t bestSurfacePresentModeScore = 0;
     for (ttlet &presentMode : presentModes) {
         uint32_t score = 0;
 
-        LOG_INFO("    * presentMode={}", vk::to_string(presentMode));
+        tt_log_info("    * presentMode={}", vk::to_string(presentMode));
 
         switch (presentMode) {
         case vk::PresentModeKHR::eImmediate: score += 1; break;
@@ -493,13 +493,13 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
     totalScore += bestSurfacePresentModeScore;
 
     if (totalScore < bestSurfacePresentModeScore) {
-        LOG_INFO(" - Does not have a suitable surface present mode.");
+        tt_log_info(" - Does not have a suitable surface present mode.");
         return 0;
     }
 
     // Give score based on the performance of the device.
     ttlet properties = physicalIntrinsic.getProperties();
-    LOG_INFO(" - Type of device: {}", vk::to_string(properties.deviceType));
+    tt_log_info(" - Type of device: {}", vk::to_string(properties.deviceType));
     switch (properties.deviceType) {
     case vk::PhysicalDeviceType::eCpu: totalScore += 1; break;
     case vk::PhysicalDeviceType::eOther: totalScore += 1; break;
@@ -698,7 +698,7 @@ vk::ShaderModule gui_device_vulkan::loadShader(uint32_t const *data, size_t size
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    LOG_INFO("Loading shader");
+    tt_log_info("Loading shader");
 
     // Check uint32_t alignment of pointer.
     tt_axiom((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);

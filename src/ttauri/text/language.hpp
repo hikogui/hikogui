@@ -114,7 +114,7 @@ struct language {
                 }
                 language_order_string += to_string(language->tag);
             }
-            LOG_INFO("Setting preferred language in order: ", language_order_string);
+            tt_log_info("Setting preferred language in order: ", language_order_string);
         }
     }
 

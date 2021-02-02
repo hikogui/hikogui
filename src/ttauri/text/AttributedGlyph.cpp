@@ -42,14 +42,14 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
         GlyphID{};
 
     if (!font->loadGlyphMetrics(this_glyph, metrics, next_glyph)) {
-        LOG_ERROR("Could not load metrics for glyph {} in font {} - {}", static_cast<int>(this_glyph), font->description.family_name, font->description.sub_family_name);
+        tt_log_error("Could not load metrics for glyph {} in font {} - {}", static_cast<int>(this_glyph), font->description.family_name, font->description.sub_family_name);
         // failed to load metrics. Switch to glyph zero and load again.
         glyphs.clear();
         glyphs.set_font_id(style_font_id);
         glyphs += GlyphID{0};
         if (!font->loadGlyphMetrics(glyphs.front(), metrics)) {
             // Using null-metrics when even the null-glyph can not be found.
-            LOG_ERROR("Could not load metrics for null-glyph in font {} - {}", font->description.family_name, font->description.sub_family_name);
+            tt_log_error("Could not load metrics for null-glyph in font {} - {}", font->description.family_name, font->description.sub_family_name);
         }
     }
 

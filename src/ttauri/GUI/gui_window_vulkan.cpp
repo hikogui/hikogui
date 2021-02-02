@@ -58,7 +58,7 @@ void gui_window_vulkan::waitIdle()
         vulkan_device().waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
     }
     vulkan_device().waitIdle();
-    LOG_INFO("/waitIdle");
+    tt_log_info("/waitIdle");
 }
 
 std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
@@ -67,32 +67,32 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
 
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
-    // LOG_DEBUG("acquireNextImage '{}'", title);
+    // tt_log_debug("acquireNextImage '{}'", title);
 
     ttlet result = vulkan_device().acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
-    // LOG_DEBUG("acquireNextImage {}", frameBufferIndex);
+    // tt_log_debug("acquireNextImage {}", frameBufferIndex);
 
     switch (result) {
     case vk::Result::eSuccess: return {frameBufferIndex};
 
     case vk::Result::eSuboptimalKHR:
-        LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
+        tt_log_info("acquireNextImageKHR() eSuboptimalKHR");
         state = gui_window_state::swapchain_lost;
         return {};
 
     case vk::Result::eErrorOutOfDateKHR:
-        LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
+        tt_log_info("acquireNextImageKHR() eErrorOutOfDateKHR");
         state = gui_window_state::swapchain_lost;
         return {};
 
     case vk::Result::eErrorSurfaceLostKHR:
-        LOG_INFO("acquireNextImageKHR() eErrorSurfaceLostKHR");
+        tt_log_info("acquireNextImageKHR() eErrorSurfaceLostKHR");
         state = gui_window_state::surface_lost;
         return {};
 
     case vk::Result::eTimeout:
         // Don't render, we didn't receive an image.
-        LOG_INFO("acquireNextImageKHR() eTimeout");
+        tt_log_info("acquireNextImageKHR() eTimeout");
         return {};
 
     default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from acquireNextImageKHR()");
@@ -111,7 +111,7 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
     tt_axiom(presentSwapchains.size() == presentImageIndices.size());
 
     try {
-        // LOG_DEBUG("presentQueue {}", presentImageIndices.at(0));
+        // tt_log_debug("presentQueue {}", presentImageIndices.at(0));
         ttlet result = vulkan_device().presentQueue.presentKHR(
             {narrow_cast<uint32_t>(renderFinishedSemaphores.size()),
              renderFinishedSemaphores.data(),
@@ -123,7 +123,7 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
         case vk::Result::eSuccess: return;
 
         case vk::Result::eSuboptimalKHR:
-            LOG_INFO("presentKHR() eSuboptimalKHR");
+            tt_log_info("presentKHR() eSuboptimalKHR");
             state = gui_window_state::swapchain_lost;
             return;
 
@@ -131,12 +131,12 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
         }
 
     } catch (vk::OutOfDateKHRError const &) {
-        LOG_INFO("presentKHR() eErrorOutOfDateKHR");
+        tt_log_info("presentKHR() eErrorOutOfDateKHR");
         state = gui_window_state::swapchain_lost;
         return;
 
     } catch (vk::SurfaceLostKHRError const &) {
-        LOG_INFO("presentKHR() eErrorSurfaceLostKHR");
+        tt_log_info("presentKHR() eErrorSurfaceLostKHR");
         state = gui_window_state::surface_lost;
         return;
     }
@@ -211,7 +211,7 @@ void gui_window_vulkan::teardown()
     auto nextState = state;
 
     if (state >= gui_window_state::swapchain_lost) {
-        LOG_INFO("Tearing down because the window lost the swapchain.");
+        tt_log_info("Tearing down because the window lost the swapchain.");
         waitIdle();
         toneMapperPipeline->teardownForSwapchainLost();
         SDFPipeline->teardownForSwapchainLost();
@@ -226,7 +226,7 @@ void gui_window_vulkan::teardown()
         nextState = gui_window_state::no_swapchain;
 
         if (state >= gui_window_state::surface_lost) {
-            LOG_INFO("Tearing down because the window lost the drawable surface.");
+            tt_log_info("Tearing down because the window lost the drawable surface.");
             toneMapperPipeline->teardownForSurfaceLost();
             SDFPipeline->teardownForSurfaceLost();
             imagePipeline->teardownForSurfaceLost();
@@ -236,7 +236,7 @@ void gui_window_vulkan::teardown()
             nextState = gui_window_state::no_surface;
 
             if (state >= gui_window_state::device_lost) {
-                LOG_INFO("Tearing down because the window lost the vulkan device.");
+                tt_log_info("Tearing down because the window lost the vulkan device.");
 
                 toneMapperPipeline->teardownForDeviceLost();
                 SDFPipeline->teardownForDeviceLost();
@@ -247,7 +247,7 @@ void gui_window_vulkan::teardown()
                 nextState = gui_window_state::no_device;
 
                 if (state >= gui_window_state::window_lost) {
-                    LOG_INFO("Tearing down because the window doesn't exist anymore.");
+                    tt_log_info("Tearing down because the window doesn't exist anymore.");
 
                     toneMapperPipeline->teardownForWindowLost();
                     SDFPipeline->teardownForWindowLost();
@@ -465,7 +465,7 @@ std::tuple<uint32_t, vk::Extent2D> gui_window_vulkan::getImageCountAndExtent()
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     surfaceCapabilities = vulkan_device().getSurfaceCapabilitiesKHR(intrinsic);
 
-    LOG_INFO(
+    tt_log_info(
         "minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {})",
         surfaceCapabilities.minImageExtent.width,
         surfaceCapabilities.minImageExtent.height,
@@ -480,13 +480,13 @@ std::tuple<uint32_t, vk::Extent2D> gui_window_vulkan::getImageCountAndExtent()
     if (!currentExtentSet) {
         // XXX On wayland, the window size is based on the size of the swapchain, so I need
         // to build a way of manual resizing the window outside of the operating system.
-        LOG_FATAL("getSurfaceCapabilitiesKHR() does not supply currentExtent");
+        tt_log_fatal("getSurfaceCapabilitiesKHR() does not supply currentExtent");
     }
 
     ttlet minImageCount = surfaceCapabilities.minImageCount;
     ttlet maxImageCount = surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 10;
     ttlet imageCount = std::clamp(defaultNumberOfSwapchainImages, minImageCount, maxImageCount);
-    LOG_INFO("minImageCount={}, maxImageCount={}, currentImageCount={}", minImageCount, maxImageCount, imageCount);
+    tt_log_info("minImageCount={}, maxImageCount={}, currentImageCount={}", minImageCount, maxImageCount, imageCount);
     return {imageCount, surfaceCapabilities.currentExtent};
 }
 
@@ -513,7 +513,7 @@ bool gui_window_vulkan::readSurfaceExtent()
         // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
         // it is 160x28 pixels.
 
-        // LOG_INFO("Window too small to draw current=({}, {}), minimum=({}, {})",
+        // tt_log_info("Window too small to draw current=({}, {}), minimum=({}, {})",
         //    swapchainImageExtent.width, swapchainImageExtent.height,
         //    minimumWindowExtent.width(), minimumWindowExtent.height()
         //);
@@ -522,7 +522,7 @@ bool gui_window_vulkan::readSurfaceExtent()
 
     if (narrow_cast<int>(swapchainImageExtent.width) > maximum_widget_size.width() ||
         narrow_cast<int>(swapchainImageExtent.height) > maximum_widget_size.height()) {
-        LOG_ERROR(
+        tt_log_error(
             "Window too large to draw current=({}, {}), maximum=({})",
             swapchainImageExtent.width,
             swapchainImageExtent.height,
@@ -564,7 +564,7 @@ gui_window_state gui_window_vulkan::buildSwapchain()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    LOG_INFO("Building swap chain");
+    tt_log_info("Building swap chain");
 
     ttlet sharingMode = vulkan_device().graphicsQueueFamilyIndex == vulkan_device().presentQueueFamilyIndex ?
         vk::SharingMode::eExclusive :
@@ -601,13 +601,13 @@ gui_window_state gui_window_vulkan::buildSwapchain()
     default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from createSwapchainKHR()");
     }
 
-    LOG_INFO("Finished building swap chain");
-    LOG_INFO(" - extent=({}, {})", swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height);
-    LOG_INFO(
+    tt_log_info("Finished building swap chain");
+    tt_log_info(" - extent=({}, {})", swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height);
+    tt_log_info(
         " - colorSpace={}, format={}",
         vk::to_string(swapchainCreateInfo.imageColorSpace),
         vk::to_string(swapchainCreateInfo.imageFormat));
-    LOG_INFO(
+    tt_log_info(
         " - presentMode={}, imageCount={}", vk::to_string(swapchainCreateInfo.presentMode), swapchainCreateInfo.minImageCount);
 
     // Create depth matching the swapchain.

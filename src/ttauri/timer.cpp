@@ -109,7 +109,7 @@ void timer::stop() noexcept
 
 void timer::loop() noexcept
 {
-    LOG_INFO("Timer {}: started", name);
+    tt_log_info("Timer {}: started", name);
     while (true) {
         ttlet current_time = hires_utc_clock::now();
 
@@ -131,7 +131,7 @@ void timer::loop() noexcept
             break;
         }
     }
-    LOG_INFO("Timer {}: finishing up", name);
+    tt_log_info("Timer {}: finishing up", name);
 
     ttlet lock = std::scoped_lock(mutex);
     
@@ -143,7 +143,7 @@ void timer::loop() noexcept
     }
     callback_list.clear();
 
-    LOG_INFO("Timer {}: finished", name);
+    tt_log_info("Timer {}: finished", name);
 }
 
 void timer::remove_callback(callback_ptr_type const &callback_ptr) noexcept

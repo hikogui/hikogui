@@ -6,6 +6,7 @@ namespace tt {
 
 class source_location {
 public:
+    constexpr source_location() noexcept = default;
     constexpr source_location(uint_least32_t line, uint_least32_t column, char const *file_name, char const *function_name) noexcept :
         _line(line), _column(column), _file_name(file_name), _function_name(function_name) {}
 
@@ -35,15 +36,15 @@ public:
     }
 
 private:
-    uint_least32_t _line;
-    uint_least32_t _column;
-    char const *_file_name;
-    char const *_function_name;
+    uint_least32_t _line = 0;
+    uint_least32_t _column = 0;
+    char const *_file_name = nullptr;
+    char const *_function_name = nullptr;
 };
 
-#define tt_source_location() tt::source_location(__LINE__, 0, __FILE__, __func__)
+#define tt_source_location_current() tt::source_location(__LINE__, 0, __FILE__, __func__)
 
-inline std::string to_string(source_location &rhs) noexcept
+inline std::string to_string(source_location const &rhs) noexcept
 {
     return fmt::format("{}:{}", rhs.file_name(), rhs.line());
 }
