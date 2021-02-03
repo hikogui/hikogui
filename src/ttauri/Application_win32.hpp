@@ -15,15 +15,7 @@ constexpr unsigned int WM_APP_CALL_FUNCTION = 0x8000 + 1;
 
 class application_win32 final : public application {
 public:
-    /** Windows GUI-application instance handle.
-     */
-    void *hInstance = nullptr;
-
-    /** Windows GUI-application startup command.
-     */
-    int nCmdShow = 0;
-
-    application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow);
+    application_win32(std::weak_ptr<application_delegate> const &delegate, std::vector<std::string> const &arguments, os_handle instance);
     ~application_win32() = default;
 
     application_win32(const application_win32 &) = delete;

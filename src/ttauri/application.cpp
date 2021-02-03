@@ -39,15 +39,14 @@ namespace tt {
 
 using namespace std;
 
-application::application(std::weak_ptr<application_delegate> const &delegate, std::vector<std::string> const &arguments) :
-    delegate(delegate)
+application::application(std::weak_ptr<application_delegate> const &delegate, std::vector<std::string> const &arguments, os_handle instance) :
+    delegate(delegate), arguments(arguments), instance(instance)
 {
 }
 
 application::~application()
 {
 }
-
 
 int application::main()
 {

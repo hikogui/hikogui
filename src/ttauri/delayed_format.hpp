@@ -7,24 +7,6 @@
 
 namespace tt {
 
-/** Base for delayed formatting.
- */
-class delayed_format_base {
-public:
-    /** Format the message.
-     *
-     * @return The formatted message.
-     */
-    [[nodiscard]] virtual std::string operator()() const noexcept = 0;
-
-    /** Format the message.
-     *
-     * @param loc The locale to use for formatting.
-     * @return The formatted message.
-     */
-    //[[nodiscard]] virtual std::string operator()(std::locale const &loc) const noexcept = 0;
-};
-
 /** Delayed formatting.
  * This class will capture all the arguments so that it may be passed
  * to another thread. Then call the function operator to do the actual formatting.
@@ -67,14 +49,10 @@ public:
      * @param loc The locale to use for formatting.
      * @return The formatted string.
      */
-    //[[nodiscard]] std::string operator()(std::locale const &loc) const noexcept override
-    //{
-    //    // XXX Add locale to format.
-    //    // auto locale_ = std::tuple<std::locale>(loc);
-    //    // auto locale_and_values = tuple_cat(locale_, _values);
-    //    // return std::apply(fmt::format, locale_and_values);
-    //    return std::apply(fmt::format, _values);
-    //}
+    [[nodiscard]] std::string operator()(std::locale const &loc) const noexcept
+    {
+        tt_not_implemented();
+    }
 
 private:
     std::tuple<Values...> _values;

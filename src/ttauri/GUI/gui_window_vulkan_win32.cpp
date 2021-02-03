@@ -103,8 +103,7 @@ static void createWindowClass()
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance =
-            reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance);
+        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(application::global->instance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -137,7 +136,7 @@ void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 n
 
         NULL, // Parent window
         NULL, // Menu
-        reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance), // Instance handle
+        reinterpret_cast<HINSTANCE>(application::global->instance), // Instance handle
         this);
     if (win32Window == nullptr) {
         tt_log_fatal("Could not open a win32 window: {}", getLastErrorMessage());
@@ -159,7 +158,13 @@ void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 n
         SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (!firstWindowHasBeenOpened) {
-        ShowWindow(reinterpret_cast<HWND>(win32Window), narrow_cast<application_win32 *>(application::global)->nCmdShow);
+        ttlet win32_window_ = reinterpret_cast<HWND>(win32Window);
+        switch (application::global->initial_window_size) {
+        case gui_window_size::normal: ShowWindow(win32_window_, SW_SHOWNORMAL); break;
+        case gui_window_size::minimized: ShowWindow(win32_window_, SW_SHOWMINIMIZED); break;
+        case gui_window_size::maximized: ShowWindow(win32_window_, SW_SHOWMAXIMIZED); break;
+        default: tt_no_default();
+        }
         firstWindowHasBeenOpened = true;
     }
 
@@ -365,7 +370,7 @@ vk::SurfaceKHR gui_window_vulkan_win32::getSurface() const
     ttlet lock = std::scoped_lock(gui_system_mutex);
     return narrow_cast<gui_system_vulkan_win32 &>(system).createWin32SurfaceKHR(
         {vk::Win32SurfaceCreateFlagsKHR(),
-         reinterpret_cast<HINSTANCE>(narrow_cast<application_win32 *>(application::global)->hInstance),
+         reinterpret_cast<HINSTANCE>(application::global->instance),
          reinterpret_cast<HWND>(win32Window)});
 }
 
@@ -737,8 +742,8 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
-    mouseEvent.position = f32x4::point(
-        narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(extent.y() - GET_Y_LPARAM(lParam)));
+    mouseEvent.position =
+        f32x4::point(narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(extent.y() - GET_Y_LPARAM(lParam)));
 
     mouseEvent.wheelDelta = f32x4{};
     if (uMsg == WM_MOUSEWHEEL) {
