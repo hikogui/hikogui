@@ -7,6 +7,7 @@
 #include "required.hpp"
 #include "timer.hpp"
 #include "datum.hpp"
+#include "GUI/gui_window_size.hpp"
 #include <span>
 #include <memory>
 #include <string>
@@ -43,6 +44,14 @@ public:
      */
     std::vector<std::string> arguments;
 
+    /** Handle to the operating system's application-instance.
+     */
+    os_handle instance;
+
+    /** The initial window size for the first application window.
+     */
+    gui_window_size initial_window_size = gui_window_size::normal;
+
     /** The global configuration.
     */
     datum configuration;
@@ -69,7 +78,8 @@ public:
      */
     application(
         std::weak_ptr<application_delegate> const &delegate,
-        std::vector<std::string> const &arguments
+        std::vector<std::string> const &arguments,
+        os_handle instance
     );
 
     /** Start the application.

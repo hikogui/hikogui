@@ -18,7 +18,14 @@
 #include "os_detect.hpp"
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#include "application_win32.hpp"
+#define tt_application(...) tt::application_win32(__VA_ARGS__)
+
 #include <Windows.h>
+#elif TT_OPERATING_SYSTEM == TT_OS_MACOS
+#include "application_macos.hpp"
+#define tt_application(...) tt::application_macos(__VA_ARGS__)
+
 #endif
 
 #pragma once
@@ -44,11 +51,11 @@ int tt_main(std::vector<std::string> arguments, tt::os_handle instance);
  *  - 3: --window-state=maximize
  *  - 0,2,6,7,11: --window-state=minimize
  */
-int __clrcall WinMain(
-    HINSTANCE hInstance,
-    [[maybe_unused]] HINSTANCE hPrevInstance,
-    [[maybe_unused]] LPSTR lpCmdLine,
-    int nShowCmd)
+int WINAPI WinMain(
+    _In_ HINSTANCE hInstance,
+    [[maybe_unused]] _In_opt_ HINSTANCE hPrevInstance,
+    [[maybe_unused]] _In_ LPSTR lpCmdLine,
+    _In_ int nShowCmd)
 {
     int argc;
     auto argv = CommandLineToArgvW(GetCommandLineW(), &argc);
@@ -68,21 +75,20 @@ int __clrcall WinMain(
 
     switch (nShowCmd) {
     case 3:
-        argument.insert(std::next(std::begin(argument)), "--window-state=maximize");
+        arguments.insert(std::next(std::begin(arguments)), "--window-state=maximize");
         break;
     case 0:
     case 2:
     case 6:
     case 7:
     case 11:
-        argument.insert(std::next(std::begin(argument)), "--window-state=minimize");
+        arguments.insert(std::next(std::begin(arguments)), "--window-state=minimize");
         break;
     default:;
     }
 
-    return tt_main(arguments, hInstance);
+    return tt_main(std::move(arguments), hInstance);
 }
-
 
 #else
 

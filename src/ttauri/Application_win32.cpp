@@ -31,8 +31,11 @@ namespace tt {
     return arguments;
 }
 
-application_win32::application_win32(std::weak_ptr<application_delegate> const &delegate, void *hInstance, int nCmdShow) :
-    application(delegate, passArguments()), hInstance(hInstance), nCmdShow(nCmdShow)
+application_win32::application_win32(
+    std::weak_ptr<application_delegate> const &delegate,
+    std::vector<std::string> const &arguments,
+    os_handle instance) :
+    application(delegate, arguments, instance)
 {
 }
 
