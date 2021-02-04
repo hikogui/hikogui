@@ -305,7 +305,7 @@ void Path::arcTo(float radius, f32x4 position) noexcept
     ttlet alpha = std::asin(hypot<0b0011>(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
-    ttlet C = Pm + normal<2>(Vm2) * std::cos(alpha) * radius;
+    ttlet C = Pm + normal_2D(Vm2) * std::cos(alpha) * radius;
 
     // Calculate vectors from center to end points.
     ttlet VC1 = P1 - C;
@@ -313,7 +313,7 @@ void Path::arcTo(float radius, f32x4 position) noexcept
 
     ttlet q1 = hypot_squared<0b0011>(VC1);
     ttlet q2 = q1 + dot<0b0011>(VC1, VC2);
-    ttlet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / viktor_cross<2>(VC1, VC2);
+    ttlet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / cross_2D(VC1, VC2);
 
     // Calculate the control points.
     ttlet C1 = f32x4::point({

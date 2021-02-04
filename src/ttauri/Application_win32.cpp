@@ -13,24 +13,6 @@
 
 namespace tt {
 
-[[nodiscard]] static std::vector<std::string> passArguments() noexcept
-{
-    std::vector<std::string> arguments;
-
-    ttlet commandLine = GetCommandLineW();
-
-    int argc = 0;
-    ttlet argv = CommandLineToArgvW(commandLine, &argc);
-    tt_assert(argv != nullptr);
-
-    for (int i = 0; i < argc; i++) {
-        arguments.push_back(to_string(std::wstring(argv[i])));
-    }
-
-    LocalFree(argv);
-    return arguments;
-}
-
 application_win32::application_win32(
     std::weak_ptr<application_delegate> const &delegate,
     std::vector<std::string> const &arguments,

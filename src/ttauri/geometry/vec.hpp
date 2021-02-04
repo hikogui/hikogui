@@ -1,21 +1,24 @@
-
+// Copyright 2021 Pokitec
+// All rights reserved.
 
 #pragma once
 
-#include "numeric_array.hpp"
+#include "../numeric_array.hpp"
 
 namespace tt {
 
-/** A geometric vector
- * Part of the vec, point, matrix and color types.
+/** A high-level geometric vector
+ * Part of the high-level vec, point, mat and color types.
  *
  * A vector, for both 2D or 3D is internally represented
  * as a 4D homogeneous vector. Which can be efficiently implemented
  * as a __m128 SSE register.
  */
-template<int D> requires (D == 2 || D == 3)
+template<int D>
 class vec {
 public:
+    static_assert(D == 2 || D == 3, "Only 2D or 3D vectors are supported");
+
     constexpr vec(vec const &) noexcept = default;
     constexpr vec(vec &&) noexcept = default;
     constexpr vec &operator=(vec const &) noexcept = default;
@@ -23,16 +26,15 @@ public:
 
     /** Construct a vector from a lower dimension vector.
      */
-    template<int E> requires(E < D)
-    [[nodiscard]] constexpr vec(vec<E> other) noexcept :
-        _v(other._v)
+    template<int E>
+    requires(E < D) [[nodiscard]] constexpr vec(vec<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
         tt_axiom(is_valid());
     }
 
     /** Convert a vector to its f32x4-nummeric_array.
      */
-    [[nodiscard]] constexpr explicit operator f32x4 () const noexcept
+    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
         return _v;
     }
@@ -46,23 +48,20 @@ public:
 
     /** Construct a empty vector / zero length.
      */
-    [[nodiscard]] constexpr vec() noexcept :
-        _v(0.0f, 0.0f, 0.0f, 0.0f) {}
+    [[nodiscard]] constexpr vec() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f) {}
 
     /** Construct a 2D vector from x and y elements.
      * @param x The x element.
      * @param y The y element.
      */
-    [[nodiscard]] constexpr vec(float x, float y) noexcept requires (D == 2) :
-        _v(x, y, 0.0f, 0.0f) {}
+    [[nodiscard]] constexpr vec(float x, float y) noexcept requires(D == 2) : _v(x, y, 0.0f, 0.0f) {}
 
-    /** Construct a 3D vector from x and y elements.
+    /** Construct a 3D vector from x, y and z elements.
      * @param x The x element.
      * @param y The y element.
      * @param z The z element.
      */
-    [[nodiscard]] constexpr vec(float x, float y, float z=0.0f) noexcept requires (D == 3) :
-        _v(x, y, z, 0.0f) {}
+    [[nodiscard]] constexpr vec(float x, float y, float z = 0.0f) noexcept requires(D == 3) : _v(x, y, z, 0.0f) {}
 
     /** Access the x element from the vector.
      * @return a reference to the x element.
@@ -83,7 +82,7 @@ public:
     /** Access the z element from the vector.
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr float &z() noexcept requires (D == 3)
+    [[nodiscard]] constexpr float &z() noexcept requires(D == 3)
     {
         return _v.z();
     }
@@ -107,7 +106,7 @@ public:
     /** Access the z element from the vector.
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr float const &z() const noexcept requires (D == 3)
+    [[nodiscard]] constexpr float const &z() const noexcept requires(D == 3)
     {
         return _v.z();
     }
@@ -140,7 +139,7 @@ public:
      *
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr float &depth() noexcept requires (D == 3)
+    [[nodiscard]] constexpr float &depth() noexcept requires(D == 3)
     {
         return _v.z();
     }
@@ -173,7 +172,7 @@ public:
      *
      * @return a reference to the z element.
      */
-    [[nodiscard]] constexpr float const &depth() const noexcept requires (D == 3)
+    [[nodiscard]] constexpr float const &depth() const noexcept requires(D == 3)
     {
         return _v.z();
     }
@@ -181,10 +180,10 @@ public:
     /** Mirror this vector.
      * @return The mirrored vector.
      */
-    [[nodiscard]] constexpr friend vec operator-() noexcept
+    [[nodiscard]] constexpr vec operator-() const noexcept
     {
         tt_axiom(is_valid());
-        return { -_v };
+        return vec{-_v};
     }
 
     /** Add two vectors from each other.
@@ -194,7 +193,7 @@ public:
      */
     [[nodiscard]] constexpr friend vec operator+(vec const &lhs, vec const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid);
+        tt_axiom(lhs.is_valid() && rhs.is_valid());
         return vec{lhs._v + rhs._v};
     }
 
@@ -205,7 +204,7 @@ public:
      */
     [[nodiscard]] constexpr friend vec operator-(vec const &lhs, vec const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid);
+        tt_axiom(lhs.is_valid() && rhs.is_valid());
         return vec{lhs._v - rhs._v};
     }
 
@@ -218,6 +217,17 @@ public:
     {
         tt_axiom(lhs.is_valid());
         return vec{lhs._v * rhs};
+    }
+
+    /** Compare if two vectors are equal.
+     * @param lhs The first vector.
+     * @param rhs The second vector.
+     * @return True if both vectors are completely equal to each other.
+     */
+    [[nodiscard]] constexpr friend bool operator==(vec const &lhs, vec const &rhs) noexcept
+    {
+        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        return lhs._v == rhs._v;
     }
 
     /** Get the length of the vector.
@@ -247,7 +257,7 @@ public:
     [[nodiscard]] constexpr friend vec normalize(vec const &rhs) noexcept
     {
         tt_axiom(rhs.is_valid());
-        return normalize<element_mask>(rhs._v};
+        return vec{normalize<element_mask>(rhs._v)};
     }
 
     /** Get the dot product between two vectors.
@@ -258,45 +268,59 @@ public:
     [[nodiscard]] constexpr friend float dot(vec const &lhs, vec const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
-        return dot<element_mask>{lhs._v, rhs._v};
+        return dot<element_mask>(lhs._v, rhs._v);
     }
 
-    /** Get the cross product between two 2D vectors.
-     * @param lhs The first vector.
-     * @param rhs The second vector.
-     * @return A scaler representing the sharpness of the corner between the two vectors.
+    /** Check if the vector is valid.
+     * This function will check if w is zero, and with 2D vector is z is zero.
      */
-    [[nodiscard]] constexpr friend float cross(vec const &lhs, vec const &rhs) noexcept requires (D == 2)
+    [[nodiscard]] constexpr bool is_valid() const noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
-        return viktor_cross<2>{lhs._v, rhs._v};
-    }
-
-    /** Get the cross product between two 3D vectors.
-     * @param lhs The first vector.
-     * @param rhs The second vector.
-     * @return A vector that is perpedicular to the given vector.
-     */
-    [[nodiscard]] constexpr friend vec cross(vec const &lhs, vec const &rhs) noexcept requires (D == 3)
-    {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
-        return vec{cross<3>{lhs._v, rhs._v}};
+        return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
     }
 
 private:
     f32x4 _v;
 
-    constexpr auto element_mask = (1_uz << D) - 1;
-
-    /** Check if the vector is valid.
-     */
-    [[nodiscard]] bool is_valid() const noexcept {
-        return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
-    }
-
-    template<int D>
-    friend class point;
+    static constexpr size_t element_mask = (1_uz << D) - 1;
 };
 
+/** Get the cross product of one 2D vectors.
+ * @param rhs The vector.
+ * @return A vector perpendicular to the given vector.
+ */
+[[nodiscard]] constexpr vec<2> cross(vec<2> const &rhs) noexcept
+{
+    tt_axiom(rhs.is_valid());
+    return vec<2>{cross_2D(static_cast<f32x4>(rhs))};
 }
 
+/** Get the cross product between two 2D vectors.
+ * This function is useful for finding the winding direction of the vectors,
+ * when doing ray casting.
+ *
+ * @param lhs The first vector.
+ * @param rhs The second vector.
+ * @return A scaler representing the sharpness of the corner between the two vectors.
+ */
+[[nodiscard]] constexpr float cross(vec<2> const &lhs, vec<2> const &rhs) noexcept
+{
+    tt_axiom(lhs.is_valid() && rhs.is_valid());
+    return cross_2D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs));
+}
+
+/** Get the cross product between two 3D vectors.
+ * @param lhs The first vector.
+ * @param rhs The second vector.
+ * @return A vector that is perpendicular to the given vectors.
+ */
+[[nodiscard]] constexpr vec<3> cross(vec<3> const &lhs, vec<3> const &rhs) noexcept
+{
+    tt_axiom(lhs.is_valid() && rhs.is_valid());
+    return vec<3>{cross_3D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+}
+
+using vec2 = vec<2>;
+using vec3 = vec<3>;
+
+} // namespace tt

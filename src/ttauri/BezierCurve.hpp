@@ -173,7 +173,7 @@ struct BezierCurve {
 
         ttlet tangent = tangentAt(min_t);
         ttlet distance = std::sqrt(min_square_distance);
-        ttlet sdistance = viktor_cross<2>(tangent, min_normal) < 0.0 ? distance : -distance;
+        ttlet sdistance = cross_2D(tangent, min_normal) < 0.0 ? distance : -distance;
         return sdistance;
     }
 

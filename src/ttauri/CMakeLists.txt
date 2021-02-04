@@ -1,5 +1,6 @@
 
 add_subdirectory(text)
+add_subdirectory(geometry)
 add_subdirectory(GUI)
 add_subdirectory(widgets)
 add_subdirectory(stencils)

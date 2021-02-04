@@ -74,7 +74,7 @@ TEST(numeric_array, CrossProduct)
     ttlet a = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
     ttlet b = f32x4(5.0f, 6.0f, 7.0f, 0.0f);
 
-    ASSERT_EQ(cross<3>(a, b), f32x4(-3.0f, 6.0f, -3.0f));
+    ASSERT_EQ(cross_3D(a, b), f32x4(-3.0f, 6.0f, -3.0f));
 }
 
 TEST(numeric_array, Getters)

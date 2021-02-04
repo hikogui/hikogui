@@ -257,7 +257,7 @@ inline std::pair<f32x4, f32x4> parrallelLine(f32x4 P1, f32x4 P2, float distance)
     tt_axiom(P1.is_point() && P2.is_point());
 
     ttlet v = P2 - P1;
-    ttlet n = normal<2>(v);
+    ttlet n = normal_2D(v);
     return {P1 + n * distance, P2 + n * distance};
 }
 
@@ -275,15 +275,15 @@ inline std::optional<f32x4> getIntersectionPoint(f32x4 A1, f32x4 A2, f32x4 B1, f
 
     // find t and u in:
     // p + t*r == q + us
-    ttlet crossRS = viktor_cross<2>(r, s);
+    ttlet crossRS = cross_2D(r, s);
     if (crossRS == 0.0f) {
         // Parallel, other non, or a range of points intersect.
         return {};
 
     } else {
         ttlet q_min_p = q - p;
-        ttlet t = viktor_cross<2>(q_min_p, s) / crossRS;
-        ttlet u = viktor_cross<2>(q_min_p, r) / crossRS;
+        ttlet t = cross_2D(q_min_p, s) / crossRS;
+        ttlet u = cross_2D(q_min_p, r) / crossRS;
 
         if (t >= 0.0f && t <= 1.0f && u >= 0.0f && u <= 1.0f) {
             return bezierPointAt(A1, A2, t);
@@ -308,14 +308,14 @@ inline std::optional<f32x4> getExtrapolatedIntersectionPoint(f32x4 A1, f32x4 A2,
 
     // find t and u in:
     // p + t*r == q + us
-    ttlet crossRS = viktor_cross<2>(r, s);
+    ttlet crossRS = cross_2D(r, s);
     if (crossRS == 0.0f) {
         // Parallel, other non, or a range of points intersect.
         return {};
 
     } else {
         ttlet q_min_p = q - p;
-        ttlet t = viktor_cross<2>(q_min_p, s) / crossRS;
+        ttlet t = cross_2D(q_min_p, s) / crossRS;
 
         return bezierPointAt(A1, A2, t);
     }

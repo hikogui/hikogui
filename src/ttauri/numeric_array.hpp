@@ -1222,22 +1222,24 @@ public:
 
     /** Calculate the 2D normal on a 2D vector.
      */
-    template<int D>
-    [[nodiscard]] friend constexpr numeric_array normal(numeric_array const &rhs) noexcept requires(N >= 2)
+    [[nodiscard]] friend constexpr numeric_array cross_2D(numeric_array const &rhs) noexcept requires(N >= 2)
     {
-        static_assert(D == 2, "Normal on a single vector can only be calculated in two dimensions");
         tt_axiom(rhs.z() == 0.0f && rhs.is_vector());
-        return normalize<D>(numeric_array{-rhs.y(), rhs.x()});
+        return numeric_array{-rhs.y(), rhs.x()};
+    }
+
+    /** Calculate the 2D unit-normal on a 2D vector.
+     */
+    [[nodiscard]] friend constexpr numeric_array normal_2D(numeric_array const &rhs) noexcept requires(N >= 2)
+    {
+        return normalize<0b0011>(cross_2D(rhs));
     }
 
     /** Calculate the cross-product between two 2D vectors.
      */
-    template<int D>
-    [[nodiscard]] friend constexpr float viktor_cross(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr float cross_2D(numeric_array const &lhs, numeric_array const &rhs) noexcept
         requires(N >= 2)
     {
-        static_assert(D == 2, "A cross-product must be done in two dimensions");
-
         if (is_f32x4 && has_sse && !std::is_constant_evaluated()) {
             return f32x4_sse_viktor_cross(lhs.v, rhs.v);
 
@@ -1250,11 +1252,8 @@ public:
     // y=a.z*b.x - a.x*b.z
     // z=a.x*b.y - a.y*b.x
     // w=a.w*b.w - a.w*b.w
-    template<int D>
-    [[nodiscard]] friend numeric_array cross(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] constexpr friend numeric_array cross_3D(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
-        static_assert(D == 3 || D == 4, "A cross-product must be done in three or four dimensions");
-
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && has_sse) {
                 return numeric_array{f32x4_sse_cross(lhs.v, rhs.v)};
@@ -1405,7 +1404,7 @@ public:
     }
 
 #define SWIZZLE(swizzle_name, D, ...) \
-    [[nodiscard]] numeric_array swizzle_name() const noexcept requires(D == N) \
+    [[nodiscard]] constexpr numeric_array swizzle_name() const noexcept requires(D == N) \
     { \
         return swizzle<__VA_ARGS__>(); \
     }
