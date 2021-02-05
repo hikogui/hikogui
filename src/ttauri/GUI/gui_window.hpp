@@ -18,7 +18,6 @@
 #include "../logger.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
-#include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
 #include "../cell_address.hpp"
 #include "../label.hpp"

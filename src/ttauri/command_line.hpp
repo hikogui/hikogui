@@ -5,119 +5,26 @@
 #pragma once
 
 namespace tt {
-namespace detail {
 
-struct command_line_parsed_option {
-    /** Name of the option.
-     * The string is not empty when is_option is true.
-     * The string is empty when is_option is false.
-     * With a short-option the string contains a single unicode code-point, but may
-     * be multiple UTF-8 code units.
-     */
-    std::string name = {};
-
-    /** Argument for the option.
-     * For a short-option with required argument the string is not empty.
-     * For a long-option with an argument the string may be empty.
-     * For a long-option without an argument the string is empty.
-     * For a non-option
-     */
-    std::string argument = {};
-
-    /** This is an option.
-     * When true this is an option, when false this is a non-option.
-     */
-    bool is_option = false;
-
-    /** This is a long option.
-     * When true this is a long-option, when false this is a short-option.
-     * Should be set to false when this is a non-option.
-     */
-    bool is_long = false;
-
-    /** Option has an argument.
-     * When this is an option:
-     *   True when the option has an argument.
-     * WHen this is a non-option:
-     *   False when this is the name of the executable
-     *   True if this is a non-option.
-     */
-    bool has_argument = false;
-
-    /** Factory for a short option with required argument.
-     * The argument can not be empty.
-     *
-     * @param name A single character short-option name
-     * @param argument The required argument.
-     */
-    [[nodiscard]] static constexpr command_line_parsed_option short_option(char32_t name, std::string argument) noexcept
-    {
-        tt_axiom(!argument.empty());
-
-        auto r = command_line_parsed_option{};
-        r.name = tt::to_string(std::u32string{1, name});
-        r.argument = std::move(argument);
-        r.is_option = true;
-        r.is_long = false;
-        r.has_argument = true;
-        return r;
-    }
-
-    /** Factory for a short option.
-     *
-     * @param name A single character short-option name
-     */
-    [[nodiscard]] static constexpr command_line_parsed_option short_option(char32_t name) noexcept
-    {
-        auto r = command_line_parsed_option{};
-        r.name = tt::to_string(std::u32string{1, c});
-        r.is_option = true;
-        r.is_long = false;
-        r.has_argument = false;
-        return r;
-    }
-
-    [[nodiscard]] static constexpr command_line_parsed_option long_option(std::string name, std::string argument) noexcept
-    {
-        auto r = command_line_parsed_option{};
-        r.name = std::move(name);
-        r.argument = std::move(argument);
-        r.is_option = true;
-        r.is_long = true;
-        r.has_argument = true;
-        return r;
-    }
-    
-    [[nodiscard]] static constexpr command_line_parsed_option long_option(std::string name) noexcept
-    {
-        auto r = command_line_parsed_option{};
-        r.name = std::move(name);
-        r.is_option = true;
-        r.is_long = true;
-        r.has_argument = false;
-        return r;
-    }
-    
-    [[nodiscard]] static constexpr command_line_parsed_option non_option(std::string argument) noexcept
-    {
-        auto r = command_line_parsed_option{};
-        r.argument = std::move(argument);
-        r.is_option = false;
-        r.is_long = false;
-        r.has_argument = true;
-        return r;
-    }
-    
-    [[nodiscard]] static constexpr command_line_parsed_option executable(std::string name) noexcept
-    {
-        auto r = command_line_parsed_option{};
-        r.name = std::move(name);
-        r.is_option = false;
-        r.is_long = false;
-        r.has_argument = false;
-        return r;
-    }
+struct cmdline_short_option {
+    char32_t option;
+    std::option<std::string> argument;
 };
+
+struct cmdline_long_option {
+    std::string option;
+    std::option<std::string> argument;
+};
+
+struct cmdline_executable {
+    std::string executable;
+};
+
+struct cmdline_non_option {
+    std::string argument;
+};
+
+using cmdline_option = std::variant<cmline_executable, cmdline_short_option, cmdline_long_option, cmdline_argument>;
 
 /** A POSIX command line parser.
  * The command line tokens passed to this function are the strings passed in via main,
@@ -153,7 +60,7 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
     auto it = first;
 
     if (it != last) {
-        co_yield cmdln_option::executable(*it);
+        co_yield cmdln_option::executable{*it};
         ++it;
     }
 
@@ -161,7 +68,7 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
     for (; it != last; ++it) {
         if (short_option_name) {
             // Add the argument to the option.
-            co_yield cmdln_option::short_option(short_option_name, *it);
+            co_yield cmdln_short_option{short_option_name, *it};
             short_option_name = 0;
 
         } else if (*it == "--") {
@@ -172,13 +79,13 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
             ttlet eq_index = it->find('=');
             if (eq_index == std::string::npos) {
                 // Long-option without argument
-                co_yield cmdln_option::long_option(it->substr(2));
+                co_yield cmdln_long_option{it->substr(2), {}};
 
             } else {
                 // Long-option with argument in same token.
                 tt_axiom(eq_index >= 2);
                 ttlet name_length = eq_index - 2;
-                co_yield cmdln_option::long_option(it->substr(2, name_length), it->substr(eq_index + 1));
+                co_yield cmdln_long_option(it->substr(2, name_length), it->substr(eq_index + 1));
             }
 
         } else if (it.front() == '-' || it.front() == '+') {
@@ -195,7 +102,7 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
 
                 if (options_with_arguments_.find(c) == std::u32string::npos) {
                     // Option without argument
-                    co_yield cmdln_option::short_option(c);
+                    co_yield cmdln_short_option(c, {});
 
                 } else if (std::next(jt) == last) {
                     // Option with the argument in the next token.
@@ -204,27 +111,25 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
                 } else {
                     // Option with argument, where the argument is inside this token
                     auto argument = tt::to_string(std::u32string(std::next(jt), last_c));
-                    co_yield cmdln_option::short_option(c, std::move(argument));
+                    co_yield cmdln_short_option(c, std::move(argument));
                     break;
                 }
             }
 
         } else {
             // Anything not looking like an option is a non-option
-            co_yield cmdln_option::non_option(*it);
+            co_yield cmdln_non_option{*it};
         }
     }
 
     // All tokens after double hyphen '--' are non-options.
     for (;it != last; ++it) {
-        co_yield cmdln_option::non_option(*it);
+        co_yield cmdln_non_option{*it};
     }
 
     if (short_option_name) {
         throw parse_error("Missing argument for option -{}", short_option_name);
     }
-}
-
 }
 
 class command_line_option {

@@ -20,7 +20,6 @@
 #include "../URL.hpp"
 #include "../vspan.hpp"
 #include "../utils.hpp"
-#include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
 #include "../observable.hpp"
 #include "../command.hpp"

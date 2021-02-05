@@ -159,9 +159,7 @@ target_sources(ttauri PRIVATE
     tokenizer.hpp
     trace.cpp
     trace.hpp
-    Trigger.hpp
     type_traits.hpp
-    UndoStack.hpp
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
     Unicode.hpp
