@@ -65,14 +65,14 @@ target_sources(ttauri PRIVATE
     file.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
-    FileMapping.cpp
-    FileMapping.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/FileMapping_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/FileMapping_win32.cpp>
-    FileView.cpp
-    FileView.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/FileView_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/FileView_win32.cpp>
+    file_mapping.cpp
+    file_mapping.hpp
+    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_posix.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_win32.cpp>
+    file_view.cpp
+    file_view.hpp
+    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_posix.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
     fixed.hpp
     float16.hpp
     flow_layout.hpp
@@ -135,7 +135,7 @@ target_sources(ttauri PRIVATE
     required.hpp
     range_map.hpp
     ranged_numeric.hpp
-    ResourceView.hpp
+    resource_view.hpp
     safe_int.hpp
     SDF8.hpp
     source_location.hpp
@@ -207,7 +207,7 @@ target_sources(ttauri_tests PRIVATE
     datum_tests.cpp
     decimal_tests.cpp
     exceptions_tests.cpp
-    FileView_tests.cpp
+    file_view_tests.cpp
     forward_value_tests.cpp
     gap_buffer_tests.cpp
     glob_tests.cpp

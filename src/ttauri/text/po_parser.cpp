@@ -2,7 +2,6 @@
 #include "po_parser.hpp"
 #include "language.hpp"
 #include "translation.hpp"
-#include "../ResourceView.hpp"
 #include "../tokenizer.hpp"
 
 namespace tt {

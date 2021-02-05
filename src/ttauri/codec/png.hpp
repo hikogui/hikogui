@@ -8,7 +8,7 @@
 #include "../mat.hpp"
 #include "../numeric_array.hpp"
 #include "../URL.hpp"
-#include "../ResourceView.hpp"
+#include "../resource_view.hpp"
 #include "../byte_string.hpp"
 #include <span>
 #include <vector>
@@ -50,12 +50,12 @@ class png {
 
     /** Take ownership of the view.
      */
-    std::unique_ptr<ResourceView> view;
+    std::unique_ptr<resource_view> view;
 public:
 
     png(std::span<std::byte const> bytes);
 
-    png(std::unique_ptr<ResourceView> view);
+    png(std::unique_ptr<resource_view> view);
 
     png(URL const &url) :
         png(url.loadView()) {}

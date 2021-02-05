@@ -5,7 +5,6 @@
 
 #include "BezierPoint.hpp"
 #include "BezierCurve.hpp"
-#include "ResourceView.hpp"
 #include "exception.hpp"
 #include "numeric_array.hpp"
 #include "aarect.hpp"

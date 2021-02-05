@@ -15,7 +15,7 @@
 
 namespace tt {
 struct url_parts;
-class ResourceView;
+class resource_view;
 
 /*! Universal Resource Locator.
  *
@@ -109,7 +109,7 @@ public:
     /** Load a resource.
     * @return A pointer to a resource view.
     */
-    [[nodiscard]] std::unique_ptr<ResourceView> loadView() const;
+    [[nodiscard]] std::unique_ptr<resource_view> loadView() const;
 
     /*! Return new URLs by finding matching files.
      * Currently only works for file: scheme urls.

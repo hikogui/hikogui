@@ -7,7 +7,7 @@
 #include "url_parser.hpp"
 #include "glob.hpp"
 #include "Unicode.hpp"
-#include "FileView.hpp"
+#include "file_view.hpp"
 #include "exception.hpp"
 #include "static_resource_view.hpp"
 #include "logger.hpp"
@@ -265,7 +265,7 @@ std::wstring URL::nativeWPathFromPath(std::string_view path) noexcept
     return to_wstring(nativePathFromPath(path));
 }
 
-std::unique_ptr<ResourceView> URL::loadView() const
+std::unique_ptr<resource_view> URL::loadView() const
 {
     if (scheme() == "resource") {
         try {
@@ -277,13 +277,13 @@ std::unique_ptr<ResourceView> URL::loadView() const
             error_info::close();
 
             ttlet absoluteLocation = URL::urlFromResourceDirectory() / *this;
-            auto view = FileView::loadView(absoluteLocation);
+            auto view = file_view::loadView(absoluteLocation);
             tt_log_info("Loaded resource {} from filesystem at {}.", *this, absoluteLocation);
             return view;
         }
 
     } else if (scheme() == "file") {
-        auto view = FileView::loadView(*this);
+        auto view = file_view::loadView(*this);
         tt_log_info("Loaded resource {} from filesystem.", *this);
         return view;
 

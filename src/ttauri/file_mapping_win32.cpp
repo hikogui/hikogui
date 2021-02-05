@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "FileMapping.hpp"
+#include "file_mapping.hpp"
 #include "exception.hpp"
 #include "error_info.hpp"
 #include "logger.hpp"
@@ -12,7 +12,7 @@
 
 namespace tt {
 
-FileMapping::FileMapping(std::shared_ptr<tt::file> const &file, size_t size) :
+file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, size_t size) :
     file(file), size(size > 0 ? size : file::file_size(file->_location))
 {
     DWORD protect;
@@ -33,17 +33,17 @@ FileMapping::FileMapping(std::shared_ptr<tt::file> const &file, size_t size) :
     if (this->size == 0) {
         mapHandle = nullptr;
     } else {
-        if ((mapHandle = CreateFileMappingA(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
+        if ((mapHandle = Createfile_mappingA(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
             tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
             throw io_error("Could not create file mapping");
         }
     }
 }
 
-FileMapping::FileMapping(URL const &location, access_mode accessMode, size_t size) :
-    FileMapping(findOrOpenFile(location, accessMode), size) {}
+file_mapping::file_mapping(URL const &location, access_mode accessMode, size_t size) :
+    file_mapping(findOrOpenFile(location, accessMode), size) {}
 
-FileMapping::~FileMapping()
+file_mapping::~file_mapping()
 {
     if (!CloseHandle(mapHandle)) {
         tt_log_error("Could not close file mapping object on file '{}'", getLastErrorMessage());

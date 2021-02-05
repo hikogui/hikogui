@@ -14,14 +14,14 @@ class URL;
 
 /** A read-only memory mapping of a resource.
  */
-class ResourceView {
+class resource_view {
 public:
-    ResourceView() = default;
-    virtual ~ResourceView() = default;
-    ResourceView(ResourceView const &other) = default;
-    ResourceView(ResourceView &&other) = default;
-    ResourceView &operator=(ResourceView const &other) = default;
-    ResourceView &operator=(ResourceView &&other) = default;
+    resource_view() = default;
+    virtual ~resource_view() = default;
+    resource_view(resource_view const &other) = default;
+    resource_view(resource_view &&other) = default;
+    resource_view &operator=(resource_view const &other) = default;
+    resource_view &operator=(resource_view &&other) = default;
 
     /** Offset into the resource file.
      * @return offset into the resource file.

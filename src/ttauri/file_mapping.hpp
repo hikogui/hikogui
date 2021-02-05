@@ -13,9 +13,9 @@ namespace tt {
  * A file mapping maps a region of bytes to a handle.
  * This is mostly for Window which has an extra layer of indirection
  * before mapping the file to actual memory.
- * \see FileView on how to map the file into actual memory.
+ * \see file_view on how to map the file into actual memory.
  */
-class FileMapping {
+class file_mapping {
 public:
     /*! A pointer to an open file.
      */
@@ -34,24 +34,24 @@ public:
      * \param file a pointer to an open file.
      * \param size Number of bytes from the start to map.
      */
-    FileMapping(std::shared_ptr<tt::file> const &file, size_t size);
+    file_mapping(std::shared_ptr<tt::file> const &file, size_t size);
 
     /*! Map a file.
      * Map a file up to size bytes.
      * This function will automatically open a file and potentially
-     * share it with other FileMapping objects.
+     * share it with other file_mapping objects.
      *
      * \param path a URL to a file.
      * \param accessMode mode of how to access the file.
      * \param size Number of bytes from the start to map.
      */
-    FileMapping(URL const& path, access_mode accessMode, size_t size);
-    ~FileMapping();
+    file_mapping(URL const& path, access_mode accessMode, size_t size);
+    ~file_mapping();
 
-    FileMapping(FileMapping const &other) = delete;
-    FileMapping(FileMapping &&other) = delete;
-    FileMapping &operator=(FileMapping const &other) = delete;
-    FileMapping &operator=(FileMapping &&other) = delete;
+    file_mapping(file_mapping const &other) = delete;
+    file_mapping(file_mapping &&other) = delete;
+    file_mapping &operator=(file_mapping const &other) = delete;
+    file_mapping &operator=(file_mapping &&other) = delete;
 
     /*! Get access mode of the file object.
      */

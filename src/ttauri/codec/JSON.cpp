@@ -7,7 +7,6 @@
 #include "../datum.hpp"
 #include "../exception.hpp"
 #include "../error_info.hpp"
-#include "../ResourceView.hpp"
 #include "../indent.hpp"
 #include <vector>
 #include <optional>

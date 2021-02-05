@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ResourceView.hpp"
+#include "resource_view.hpp"
 #include "required.hpp"
 #include <span>
 #include <cstddef>
@@ -13,7 +13,7 @@ namespace tt {
 
 /** A resource that was included in the executable.
  */
-class static_resource_view : public ResourceView {
+class static_resource_view : public resource_view {
 public:
     static_resource_view(std::string const &filename);
 
@@ -34,7 +34,7 @@ public:
 
     [[nodiscard]] std::string_view string_view() const noexcept override { return {reinterpret_cast<char const*>(data()), size()}; }
 
-    [[nodiscard]] static std::unique_ptr<ResourceView> loadView(std::string const &location) {
+    [[nodiscard]] static std::unique_ptr<resource_view> loadView(std::string const &location) {
         return std::make_unique<static_resource_view>(location);
     }
 

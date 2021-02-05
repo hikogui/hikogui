@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "ttauri/text/unicode_text_segmentation.hpp"
-#include "ttauri/FileView.hpp"
+#include "ttauri/file_view.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -53,7 +53,7 @@ std::optional<GraphemeBreakTest> parseGraphemeBreakTests_line(std::string_view l
 
 std::vector<GraphemeBreakTest> parseGraphemeBreakTests()
 {
-    ttlet view = FileView(URL("file:GraphemeBreakTest.txt"));
+    ttlet view = file_view(URL("file:GraphemeBreakTest.txt"));
     ttlet test_data = view.string_view();
 
     std::vector<GraphemeBreakTest> r;

@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "ttauri/text/unicode_bidi.hpp"
-#include "ttauri/FileView.hpp"
+#include "ttauri/file_view.hpp"
 #include "ttauri/charconv.hpp"
 #include "ttauri/ranges.hpp"
 #include <gtest/gtest.h>
@@ -107,7 +107,7 @@ struct unicode_bidi_test {
 
 generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 {
-    ttlet view = FileView(URL("file:BidiTest.txt"));
+    ttlet view = file_view(URL("file:BidiTest.txt"));
     ttlet test_data = view.string_view();
 
     auto levels = std::vector<int>{};
@@ -239,7 +239,7 @@ struct unicode_bidi_character_test {
 
 generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
 {
-    ttlet view = FileView(URL("file:BidiCharacterTest.txt"));
+    ttlet view = file_view(URL("file:BidiCharacterTest.txt"));
     ttlet test_data = view.string_view();
 
     int line_nr = 1;

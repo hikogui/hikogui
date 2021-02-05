@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "FileView.hpp"
+#include "file_view.hpp"
 #include "exception.hpp"
 #include "logger.hpp"
 #include "memory.hpp"
@@ -12,13 +12,13 @@
 
 namespace tt {
 
-FileView::FileView(std::shared_ptr<FileMapping> const &fileMappingObject, size_t offset, size_t size) :
-    fileMappingObject(fileMappingObject), _offset(offset)
+file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, size_t offset, size_t size) :
+    _file_mapping_object(_file_mapping_object), _offset(offset)
 {
     if (size == 0) {
-        size = fileMappingObject->size - _offset;
+        size = _file_mapping_object->size - _offset;
     }
-    tt_assert(_offset + size <= fileMappingObject->size);
+    tt_assert(_offset + size <= _file_mapping_object->size);
 
     int prot;
     if (accessMode() >= (AccessMode::Read | AccessMode::Write)) {
@@ -33,51 +33,51 @@ FileView::FileView(std::shared_ptr<FileMapping> const &fileMappingObject, size_t
     int flags = MAP_SHARED;
 
     void *data;
-    if ((data = ::mmap(0, size, prot, flags, fileMappingObject->file->fileHandle, _offset)) == MAP_FAILED) {
+    if ((data = ::mmap(0, size, prot, flags, _file_mapping_object->file->fileHandle, _offset)) == MAP_FAILED) {
         tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
         throw io_error("Could not map view of file.");
     }
 
     auto *bytes_ptr = new std::span<std::byte>(static_cast<std::byte *>(data), size);
-    _bytes = std::shared_ptr<std::span<std::byte>>(bytes_ptr, FileView::unmap);
+    _bytes = std::shared_ptr<std::span<std::byte>>(bytes_ptr, file_view::unmap);
 }
 
-FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
-    FileView(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size)
+file_view::file_view(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
+    file_view(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size)
 {
 }
 
-FileView::FileView(FileView const &other) noexcept :
-    fileMappingObject(other.fileMappingObject), _bytes(other._bytes), _offset(other._offset)
+file_view::file_view(file_view const &other) noexcept :
+    _file_mapping_object(other._file_mapping_object), _bytes(other._bytes), _offset(other._offset)
 {
 }
 
-FileView &FileView::operator=(FileView const &other) noexcept
+file_view &file_view::operator=(file_view const &other) noexcept
 {
     if (this != &other) {
-        fileMappingObject = other.fileMappingObject;
+        _file_mapping_object = other._file_mapping_object;
         _offset = other._offset;
         _bytes = other._bytes;
     }
     return *this;
 }
 
-FileView::FileView(FileView &&other) noexcept :
-    fileMappingObject(std::move(other.fileMappingObject)), _bytes(std::move(other._bytes)), _offset(other._offset)
+file_view::file_view(file_view &&other) noexcept :
+    _file_mapping_object(std::move(other._file_mapping_object)), _bytes(std::move(other._bytes)), _offset(other._offset)
 {
 }
 
-FileView &FileView::operator=(FileView &&other) noexcept
+file_view &file_view::operator=(file_view &&other) noexcept
 {
     if (this != &other) {
-        fileMappingObject = std::move(other.fileMappingObject);
+        _file_mapping_object = std::move(other._file_mapping_object);
         _offset = other._offset;
         _bytes = std::move(other._bytes);
     }
     return *this;
 }
 
-void FileView::unmap(std::span<std::byte> *bytes) noexcept
+void file_view::unmap(std::span<std::byte> *bytes) noexcept
 {
     if (bytes != nullptr) {
         if (!bytes->empty()) {
@@ -89,7 +89,7 @@ void FileView::unmap(std::span<std::byte> *bytes) noexcept
     }
 }
 
-void FileView::flush(void *base, size_t size)
+void file_view::flush(void *base, size_t size)
 {
     int flags = MS_SYNC;
     if (!msync(base, size, flags)) {

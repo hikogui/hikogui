@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "ttauri/text/unicode_normalization.hpp"
-#include "ttauri/FileView.hpp"
+#include "ttauri/file_view.hpp"
 #include "ttauri/strings.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -83,7 +83,7 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
 
 std::vector<NormalizationTest> parseNormalizationTests()
 {
-    ttlet view = FileView(URL("file:NormalizationTest.txt"));
+    ttlet view = file_view(URL("file:NormalizationTest.txt"));
     ttlet test_data = view.string_view();
 
     std::vector<NormalizationTest> r;

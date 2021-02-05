@@ -5,7 +5,7 @@
 
 #include "Font.hpp"
 #include "../Path.hpp"
-#include "../ResourceView.hpp"
+#include "../resource_view.hpp"
 #include "../URL.hpp"
 #include "../error_info.hpp"
 #include <memory>
@@ -14,7 +14,7 @@ namespace tt {
 
 class TrueTypeFont final: public Font {
 private:
-    std::unique_ptr<ResourceView> view;
+    std::unique_ptr<resource_view> view;
 
     std::span<std::byte const> file_bytes;
 
@@ -77,7 +77,7 @@ public:
         parseFontDirectory();
     }
 
-    TrueTypeFont(std::unique_ptr<ResourceView> view) :
+    TrueTypeFont(std::unique_ptr<resource_view> view) :
         view(std::move(view))
     {
         file_bytes = this->view->bytes();

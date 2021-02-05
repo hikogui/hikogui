@@ -5,7 +5,6 @@
 
 #include "skeleton_node.hpp"
 #include "skeleton_parse_context.hpp"
-#include "../ResourceView.hpp"
 
 namespace tt {
 

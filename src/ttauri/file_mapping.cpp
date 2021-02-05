@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "FileMapping.hpp"
+#include "file_mapping.hpp"
 #include "exception.hpp"
 #include "logger.hpp"
 #include "memory.hpp"
@@ -11,7 +11,7 @@
 namespace tt {
 
 
-std::shared_ptr<file> FileMapping::findOrOpenFile(URL const& location, access_mode accessMode)
+std::shared_ptr<file> file_mapping::findOrOpenFile(URL const& location, access_mode accessMode)
 {
     static std::mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<tt::file>>> mappedFiles;

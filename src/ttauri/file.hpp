@@ -252,8 +252,8 @@ private:
      */
     file_handle _file_handle;
 
-    friend class FileMapping;
-    friend class FileView;
+    friend class file_mapping;
+    friend class file_view;
 };
 
 
