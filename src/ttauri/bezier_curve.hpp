@@ -17,14 +17,14 @@
 
 namespace tt {
 
-struct BezierPoint;
+struct bezier_point;
 
 enum class LineJoinStyle { Bevel, Miter, Rounded };
 
 /*! Bezier Curve
  * A linear, quadratic or cubic bezier curve.
  */
-struct BezierCurve {
+struct bezier_curve {
     enum class Type : uint8_t { None, Linear, Quadratic, Cubic };
     enum class Color : uint8_t { Yellow, Magenta, Cyan, White };
 
@@ -35,36 +35,36 @@ struct BezierCurve {
     f32x4 C2; //!< Control point
     f32x4 P2; //!< Last point
 
-    BezierCurve() noexcept = delete;
-    BezierCurve(BezierCurve const &other) noexcept = default;
-    BezierCurve(BezierCurve &&other) noexcept = default;
-    BezierCurve &operator=(BezierCurve const &other) noexcept = default;
-    BezierCurve &operator=(BezierCurve &&other) noexcept = default;
+    bezier_curve() noexcept = delete;
+    bezier_curve(bezier_curve const &other) noexcept = default;
+    bezier_curve(bezier_curve &&other) noexcept = default;
+    bezier_curve &operator=(bezier_curve const &other) noexcept = default;
+    bezier_curve &operator=(bezier_curve &&other) noexcept = default;
 
     /*! Construct a linear bezier-curve.
      */
-    BezierCurve(f32x4 const P1, f32x4 const P2, Color color=Color::White) noexcept :
+    bezier_curve(f32x4 const P1, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Linear), color(color), P1(P1), C1(), C2(), P2(P2) {
         tt_axiom(P1.is_point() && P2.is_point());    
     }
 
     /*! Construct a quadratic bezier-curve.
      */
-    BezierCurve(f32x4 const P1, f32x4 const C1, f32x4 const P2, Color color=Color::White) noexcept :
+    bezier_curve(f32x4 const P1, f32x4 const C1, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Quadratic), color(color), P1(P1), C1(C1), C2(), P2(P2) {
         tt_axiom(P1.is_point() && C1.is_point() && P2.is_point());    
     }
 
     /*! Construct a cubic bezier-curve.
      */
-    BezierCurve(f32x4 const P1, f32x4 const C1, f32x4 const C2, f32x4 const P2, Color color=Color::White) noexcept :
+    bezier_curve(f32x4 const P1, f32x4 const C1, f32x4 const C2, f32x4 const P2, Color color=Color::White) noexcept :
         type(Type::Cubic), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
         tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());    
     }
 
     /*! Construct a bezier-curve of any type.
     */
-    BezierCurve(Type const type, f32x4 const P1, f32x4 const C1, f32x4 const C2, f32x4 const P2, Color color=Color::White) noexcept :
+    bezier_curve(Type const type, f32x4 const P1, f32x4 const C1, f32x4 const C2, f32x4 const P2, Color color=Color::White) noexcept :
         type(type), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
         switch (type) {
         case Type::Linear:
@@ -182,15 +182,15 @@ struct BezierCurve {
      *        where to split the curve.
      * \return two cubic bezier-curves.
      */
-    [[nodiscard]] std::pair<BezierCurve,BezierCurve> cubicSplit(float const t) const noexcept {
-        ttlet outerA = BezierCurve{P1, C1};
-        ttlet outerBridge = BezierCurve{C1, C2};
-        ttlet outerB = BezierCurve{C2, P2};
+    [[nodiscard]] std::pair<bezier_curve,bezier_curve> cubicSplit(float const t) const noexcept {
+        ttlet outerA = bezier_curve{P1, C1};
+        ttlet outerBridge = bezier_curve{C1, C2};
+        ttlet outerB = bezier_curve{C2, P2};
 
-        ttlet innerA = BezierCurve{outerA.pointAt(t), outerBridge.pointAt(t)};
-        ttlet innerB = BezierCurve{outerBridge.pointAt(t), outerB.pointAt(t)};
+        ttlet innerA = bezier_curve{outerA.pointAt(t), outerBridge.pointAt(t)};
+        ttlet innerB = bezier_curve{outerBridge.pointAt(t), outerB.pointAt(t)};
 
-        ttlet newPoint = BezierCurve{innerA.pointAt(t), innerB.pointAt(t)}.pointAt(t);
+        ttlet newPoint = bezier_curve{innerA.pointAt(t), innerB.pointAt(t)}.pointAt(t);
 
         return {{ P1, outerA.pointAt(t), innerA.pointAt(t), newPoint }, { newPoint, innerB.pointAt(t), outerB.pointAt(t), P2 }};
     }
@@ -200,11 +200,11 @@ struct BezierCurve {
      *        where to split the curve.
      * \return two quadratic bezier-curves.
      */
-    [[nodiscard]] std::pair<BezierCurve,BezierCurve> quadraticSplit(float const t) const noexcept {
-        ttlet outerA = BezierCurve{P1, C1};
-        ttlet outerB = BezierCurve{C1, P2};
+    [[nodiscard]] std::pair<bezier_curve,bezier_curve> quadraticSplit(float const t) const noexcept {
+        ttlet outerA = bezier_curve{P1, C1};
+        ttlet outerB = bezier_curve{C1, P2};
 
-        ttlet newPoint = BezierCurve{outerA.pointAt(t), outerB.pointAt(t)}.pointAt(t);
+        ttlet newPoint = bezier_curve{outerA.pointAt(t), outerB.pointAt(t)}.pointAt(t);
 
         return {{ P1, outerA.pointAt(t), newPoint }, { newPoint, outerB.pointAt(t), P2 }};
     }
@@ -214,7 +214,7 @@ struct BezierCurve {
      *        where to split the curve.
      * \return two linear bezier-curves.
      */
-    [[nodiscard]] std::pair<BezierCurve,BezierCurve> linearSplit(float const t) const noexcept {
+    [[nodiscard]] std::pair<bezier_curve,bezier_curve> linearSplit(float const t) const noexcept {
         ttlet newPoint = pointAt(t);
 
         return {{ P1, newPoint }, { newPoint, P2 }};
@@ -225,7 +225,7 @@ struct BezierCurve {
      *        where to split the curve.
      * \return two bezier-curves.
      */
-    [[nodiscard]] std::pair<BezierCurve,BezierCurve> split(float const t) const noexcept {
+    [[nodiscard]] std::pair<bezier_curve,bezier_curve> split(float const t) const noexcept {
         switch (type) {
         case Type::Linear: return linearSplit(t);
         case Type::Quadratic: return quadraticSplit(t);
@@ -238,7 +238,7 @@ struct BezierCurve {
      * \param r resulting list of linear segments.
      * \param minimumFlatness minimum amount of flatness of the resulting curve segments.
      */
-    void subdivideUntilFlat_impl(std::vector<BezierCurve> &r, float const minimumFlatness) const noexcept {
+    void subdivideUntilFlat_impl(std::vector<bezier_curve> &r, float const minimumFlatness) const noexcept {
         if (flatness() >= minimumFlatness) {
             r.push_back(*this);
         } else {
@@ -252,8 +252,8 @@ struct BezierCurve {
      * \param tolerance maximum amount of curviness.
      * \return resulting list of curve segments.
      */
-    [[nodiscard]] std::vector<BezierCurve> subdivideUntilFlat(float const tolerance) const noexcept {
-        std::vector<BezierCurve> r;
+    [[nodiscard]] std::vector<bezier_curve> subdivideUntilFlat(float const tolerance) const noexcept {
+        std::vector<bezier_curve> r;
         subdivideUntilFlat_impl(r, 1.0f - tolerance);
         return r;
     }
@@ -271,7 +271,7 @@ struct BezierCurve {
     }
 
     template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    BezierCurve &operator*=(M const rhs) noexcept {
+    bezier_curve &operator*=(M const rhs) noexcept {
         P1 = rhs * P1;
         C1 = rhs * C1;
         C2 = rhs * C2;
@@ -283,21 +283,21 @@ struct BezierCurve {
      * \param offset positive means the parallel line will be on the starboard of the curve.
      * \return line segment offset from the curve.
      */
-    [[nodiscard]] BezierCurve toParrallelLine(float const offset) const noexcept {
+    [[nodiscard]] bezier_curve toParrallelLine(float const offset) const noexcept {
         auto [newP1, newP2] = parrallelLine(P1, P2, offset);
         return { newP1, newP2 };
     }
 
-    [[nodiscard]] friend bool operator==(BezierCurve const &lhs, BezierCurve const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(bezier_curve const &lhs, bezier_curve const &rhs) noexcept {
         if (lhs.type != rhs.type) {
             return false;
         }
         switch (lhs.type) {
-        case BezierCurve::Type::Linear:
+        case bezier_curve::Type::Linear:
             return (lhs.P1 == rhs.P1) && (lhs.P2 == rhs.P2);
-        case BezierCurve::Type::Quadratic:
+        case bezier_curve::Type::Quadratic:
             return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.P2 == rhs.P2);
-        case BezierCurve::Type::Cubic:
+        case bezier_curve::Type::Cubic:
             return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.C2 == rhs.C2) && (lhs.P2 == rhs.P2);
         default:
             tt_no_default();
@@ -305,7 +305,7 @@ struct BezierCurve {
     }
 
     template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    [[nodiscard]] friend BezierCurve operator*(M const &lhs, BezierCurve const &rhs) noexcept {
+    [[nodiscard]] friend bezier_curve operator*(M const &lhs, bezier_curve const &rhs) noexcept {
         return {
             rhs.type,
             lhs * rhs.P1,
@@ -317,7 +317,7 @@ struct BezierCurve {
 
     /*! Reverse direction of a curve.
      */
-    [[nodiscard]] friend BezierCurve operator~(BezierCurve const &rhs) noexcept {
+    [[nodiscard]] friend bezier_curve operator~(bezier_curve const &rhs) noexcept {
         return { rhs.type, rhs.P2, rhs.C2, rhs.C1, rhs.P1 };
     }
 };
@@ -329,9 +329,9 @@ struct BezierCurve {
  * \param first Iterator to the first point in a list
  * \param last Iterator one beyond the last point in a list
  */
-[[nodiscard]] std::vector<BezierCurve> makeContourFromPoints(
-    std::vector<BezierPoint>::const_iterator first,
-    std::vector<BezierPoint>::const_iterator last) noexcept;
+[[nodiscard]] std::vector<bezier_curve> makeContourFromPoints(
+    std::vector<bezier_point>::const_iterator first,
+    std::vector<bezier_point>::const_iterator last) noexcept;
 
 /*! Inverse a contour.
  * Reverse the direction of the whole contour, turning it inside out.
@@ -339,7 +339,7 @@ struct BezierCurve {
  * \param contour contour to reverse.
  * \return the reversed contour.
  */
-[[nodiscard]] std::vector<BezierCurve> makeInverseContour(std::vector<BezierCurve> const &contour) noexcept;
+[[nodiscard]] std::vector<bezier_curve> makeInverseContour(std::vector<bezier_curve> const &contour) noexcept;
 
 /*! Make a contour of Bezier curves from another contour of Bezier curves at a offset.
  * Make a new contour made out of line-segments offset from the original curve. After
@@ -351,8 +351,8 @@ struct BezierCurve {
  * \param lineJoinStyle how the gaps between line segments are joined together.
  * \param tolerance to how curved the new contour should look.
  */
-[[nodiscard]] std::vector<BezierCurve> makeParrallelContour(
-    std::vector<BezierCurve> const &contour,
+[[nodiscard]] std::vector<bezier_curve> makeParrallelContour(
+    std::vector<bezier_curve> const &contour,
     float offset,
     LineJoinStyle lineJoinStyle,
     float tolerance) noexcept;
@@ -361,12 +361,12 @@ struct BezierCurve {
  * @param image An alpha-channel image to make opaque where pixel is inside the contours
  * @param curves All curves of path, in no particular order.
  */
-void fill(pixel_map<uint8_t>& image, std::vector<BezierCurve> const& curves) noexcept;
+void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) noexcept;
 
 /** Fill a signed distance field image from the given contour.
 * @param image An signed-distance-field which show distance toward the closest curve
 * @param curves All curves of path, in no particular order.
 */
-void fill(pixel_map<SDF8> &image, std::vector<BezierCurve> const &curves) noexcept;
+void fill(pixel_map<SDF8> &image, std::vector<bezier_curve> const &curves) noexcept;
 
 }

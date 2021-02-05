@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "BezierPoint.hpp"
-#include "BezierCurve.hpp"
+#include "bezier_point.hpp"
+#include "bezier_curve.hpp"
 #include "exception.hpp"
 #include "numeric_array.hpp"
 #include "aarect.hpp"
@@ -15,7 +15,7 @@
 
 namespace tt {
 
-struct BezierCurve;
+struct bezier_curve;
 template<typename T> class pixel_map;
 
 /** A path is a vector graphics object.
@@ -27,7 +27,7 @@ template<typename T> class pixel_map;
 struct Path {
     /** A set of all bezier points describing all bezier curves, contours and layers.
      */
-    std::vector<BezierPoint> points;
+    std::vector<bezier_point> points;
 
     /** An index into \see points where each contour ends.
      */
@@ -69,11 +69,11 @@ struct Path {
 
     /** Return an iterator to the start point of a contour.
      */
-    [[nodiscard]] std::vector<BezierPoint>::const_iterator beginContour(ssize_t contourNr) const noexcept;
+    [[nodiscard]] std::vector<bezier_point>::const_iterator beginContour(ssize_t contourNr) const noexcept;
 
     /* Return and end-iterator beyond the end point of a contour.
      */
-    [[nodiscard]] std::vector<BezierPoint>::const_iterator endContour(ssize_t contourNr) const noexcept;
+    [[nodiscard]] std::vector<bezier_point>::const_iterator endContour(ssize_t contourNr) const noexcept;
 
     /* Return the first contour index of a layer.
      */
@@ -83,11 +83,11 @@ struct Path {
      */
     [[nodiscard]] ssize_t endLayer(ssize_t layerNr) const noexcept;
 
-    [[nodiscard]] std::vector<BezierPoint> getBezierPointsOfContour(ssize_t contourNr) const noexcept;
+    [[nodiscard]] std::vector<bezier_point> getbezier_pointsOfContour(ssize_t contourNr) const noexcept;
 
-    [[nodiscard]] std::vector<BezierCurve> getBeziersOfContour(ssize_t contourNr) const noexcept;
+    [[nodiscard]] std::vector<bezier_curve> getBeziersOfContour(ssize_t contourNr) const noexcept;
 
-    [[nodiscard]] std::vector<BezierCurve> getBeziers() const noexcept;
+    [[nodiscard]] std::vector<bezier_curve> getBeziers() const noexcept;
 
     [[nodiscard]] std::pair<Path,f32x4> getLayer(ssize_t layerNr) const noexcept;
 
@@ -187,17 +187,17 @@ struct Path {
     /** Contour with the given bezier curves.
     * The first anchor will be ignored.
     */
-    void addContour(std::vector<BezierCurve> const &contour) noexcept;
+    void addContour(std::vector<bezier_curve> const &contour) noexcept;
 
     /** Curve with the given bezier curve.
     * The first anchor will be ignored.
     */
-    void addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end) noexcept;
+    void addContour(std::vector<bezier_point>::const_iterator const &begin, std::vector<bezier_point>::const_iterator const &end) noexcept;
 
     /** Curve with the given bezier curve.
     * The first anchor will be ignored.
     */
-    void addContour(std::vector<BezierPoint> const &contour) noexcept;
+    void addContour(std::vector<bezier_point> const &contour) noexcept;
 
     /** Add path and close layer.
      */

@@ -14,17 +14,17 @@ namespace tt {
 /*! A point or control-point on contour of bezier curves.
  * The bezier curves can be linear (a line), quadratic or cubic.
  */
-struct BezierPoint {
+struct bezier_point {
     enum class Type { Anchor, QuadraticControl, CubicControl1, CubicControl2 };
 
     Type type;
     f32x4 p;
 
-    BezierPoint(f32x4 const p, Type const type) noexcept : type(type), p(p) {
+    bezier_point(f32x4 const p, Type const type) noexcept : type(type), p(p) {
         tt_axiom(p.is_point());
     }
 
-    BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint(f32x4::point({x, y}), type) {}
+    bezier_point(float const x, float const y, Type const type) noexcept : bezier_point(f32x4::point({x, y}), type) {}
 
     /*! Normalize points in a list.
      * The following normalizations are executed:
@@ -38,11 +38,11 @@ struct BezierPoint {
      * \param end iterator beyond the end of the bezier point list.
      * \return a vector of bezier point that include all the anchor and control points.
      */
-    [[nodiscard]] static std::vector<BezierPoint> normalizePoints(
-        std::vector<BezierPoint>::const_iterator const begin,
-        std::vector<BezierPoint>::const_iterator const end
+    [[nodiscard]] static std::vector<bezier_point> normalizePoints(
+        std::vector<bezier_point>::const_iterator const begin,
+        std::vector<bezier_point>::const_iterator const end
     ) noexcept {
-        std::vector<BezierPoint> r;
+        std::vector<bezier_point> r;
 
         tt_assert((end - begin) >= 2);
 
@@ -52,32 +52,32 @@ struct BezierPoint {
             ttlet point = *i;
 
             switch (point.type) {
-            case BezierPoint::Type::Anchor:
-                tt_assert(previousPoint.type != BezierPoint::Type::CubicControl1);
+            case bezier_point::Type::Anchor:
+                tt_assert(previousPoint.type != bezier_point::Type::CubicControl1);
                 r.push_back(point);
                 break;
 
-            case BezierPoint::Type::QuadraticControl:
-                if (previousPoint.type == BezierPoint::Type::QuadraticControl) {
-                    r.emplace_back(midpoint(previousPoint.p, point.p), BezierPoint::Type::Anchor);
+            case bezier_point::Type::QuadraticControl:
+                if (previousPoint.type == bezier_point::Type::QuadraticControl) {
+                    r.emplace_back(midpoint(previousPoint.p, point.p), bezier_point::Type::Anchor);
 
                 } else {
-                    tt_assert(previousPoint.type == BezierPoint::Type::Anchor);
+                    tt_assert(previousPoint.type == bezier_point::Type::Anchor);
                 }
                 r.push_back(point);
                 break;
 
-            case BezierPoint::Type::CubicControl1:
+            case bezier_point::Type::CubicControl1:
                 r.push_back(point);
                 break;
 
-            case BezierPoint::Type::CubicControl2:
-                if (previousPoint.type == BezierPoint::Type::Anchor) {
-                    tt_assert(previousPreviousPoint.type == BezierPoint::Type::CubicControl2);
+            case bezier_point::Type::CubicControl2:
+                if (previousPoint.type == bezier_point::Type::Anchor) {
+                    tt_assert(previousPreviousPoint.type == bezier_point::Type::CubicControl2);
 
-                    r.emplace_back(reflect_point(previousPreviousPoint.p, previousPoint.p), BezierPoint::Type::CubicControl1);
+                    r.emplace_back(reflect_point(previousPreviousPoint.p, previousPoint.p), bezier_point::Type::CubicControl1);
                 } else {
-                    tt_assert(previousPoint.type == BezierPoint::Type::CubicControl1);
+                    tt_assert(previousPoint.type == bezier_point::Type::CubicControl1);
                 }
                 r.push_back(point);
                 break;
@@ -91,7 +91,7 @@ struct BezierPoint {
         }
 
         for (ssize_t i = 0; i < std::ssize(r); i++) {
-            if (r[i].type == BezierPoint::Type::Anchor) {
+            if (r[i].type == bezier_point::Type::Anchor) {
                 std::rotate(r.begin(), r.begin() + i, r.end());
                 r.push_back(r.front());
                 return r;
@@ -105,19 +105,19 @@ struct BezierPoint {
     /** Transform the point.
      */
     template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    inline BezierPoint &operator*=(M const &rhs) noexcept {
+    inline bezier_point &operator*=(M const &rhs) noexcept {
         p = rhs * p;
         return *this;
     }
 
-    [[nodiscard]] friend bool operator==(BezierPoint const &lhs, BezierPoint const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(bezier_point const &lhs, bezier_point const &rhs) noexcept {
         return (lhs.p == rhs.p) && (lhs.type == rhs.type);
     }
 
     /** Transform the point.
     */
     template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    [[nodiscard]] friend BezierPoint operator*(M const &lhs, BezierPoint const &rhs) noexcept {
+    [[nodiscard]] friend bezier_point operator*(M const &lhs, bezier_point const &rhs) noexcept {
         return { lhs * rhs.p, rhs.type };
     }
 };

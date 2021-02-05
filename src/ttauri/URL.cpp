@@ -6,7 +6,6 @@
 #include "required.hpp"
 #include "url_parser.hpp"
 #include "glob.hpp"
-#include "Unicode.hpp"
 #include "file_view.hpp"
 #include "exception.hpp"
 #include "static_resource_view.hpp"

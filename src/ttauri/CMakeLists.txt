@@ -35,9 +35,9 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_win32.cpp>
     audio_utc_clock.hpp
     bezier.hpp
-    BezierCurve.cpp
-    BezierCurve.hpp
-    BezierPoint.hpp
+    bezier_curve.cpp
+    bezier_curve.hpp
+    bezier_point.hpp
     bigint.hpp
     bits.hpp
     byte_string.hpp
@@ -162,7 +162,6 @@ target_sources(ttauri PRIVATE
     type_traits.hpp
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
-    Unicode.hpp
     URL.cpp
     URL.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/URL_macos.mm>
@@ -199,7 +198,7 @@ endif()
 
 target_sources(ttauri_tests PRIVATE
     algorithm_tests.cpp
-    BezierCurve_tests.cpp
+    bezier_curve_tests.cpp
     bigint_tests.cpp
     cell_address_tests.cpp
     coroutine_tests.cpp
@@ -226,7 +225,6 @@ target_sources(ttauri_tests PRIVATE
     strings_tests.cpp
     tokenizer_tests.cpp
     type_traits_tests.cpp
-    Unicode_tests.cpp
     url_parser_tests.cpp
     URL_tests.cpp
 )

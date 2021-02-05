@@ -1069,15 +1069,15 @@ bool TrueTypeFont::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, Path 
     int16_t x = 0;
     int16_t y = 0;
     size_t pointNr = 0;
-    std::vector<BezierPoint> points;
+    std::vector<bezier_point> points;
     points.reserve(numberOfPoints);
     for (ttlet flag : flags) {
         x += xCoordinates[pointNr];
         y += yCoordinates[pointNr];
 
         ttlet type = (flag & FLAG_ON_CURVE) > 0 ?
-            BezierPoint::Type::Anchor :
-            BezierPoint::Type::QuadraticControl;
+            bezier_point::Type::Anchor :
+            bezier_point::Type::QuadraticControl;
 
         glyph.points.emplace_back(
             x * emScale,

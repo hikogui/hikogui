@@ -3,7 +3,7 @@
 
 #include "Path.hpp"
 #include "pixel_map.inl"
-#include "BezierCurve.hpp"
+#include "bezier_curve.hpp"
 #include "pixel_map.hpp"
 #include "required.hpp"
 
@@ -68,12 +68,12 @@ void Path::tryRemoveLayers() noexcept
     layerEndContours.clear();
 }
 
-std::vector<BezierPoint>::const_iterator Path::beginContour(ssize_t contourNr) const noexcept
+std::vector<bezier_point>::const_iterator Path::beginContour(ssize_t contourNr) const noexcept
 {
     return points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
 }
 
-std::vector<BezierPoint>::const_iterator Path::endContour(ssize_t contourNr) const noexcept
+std::vector<bezier_point>::const_iterator Path::endContour(ssize_t contourNr) const noexcept
 {
     return points.begin() + contourEndPoints.at(contourNr) + 1;
 }
@@ -137,23 +137,23 @@ void Path::optimizeLayers() noexcept
 }
 
 
-std::vector<BezierPoint> Path::getBezierPointsOfContour(ssize_t subpathNr) const noexcept
+std::vector<bezier_point> Path::getbezier_pointsOfContour(ssize_t subpathNr) const noexcept
 {
     ttlet begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
     ttlet end = points.begin() + contourEndPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
-std::vector<BezierCurve> Path::getBeziersOfContour(ssize_t contourNr) const noexcept
+std::vector<bezier_curve> Path::getBeziersOfContour(ssize_t contourNr) const noexcept
 {
     return makeContourFromPoints(beginContour(contourNr), endContour(contourNr));
 }
 
-std::vector<BezierCurve> Path::getBeziers() const noexcept
+std::vector<bezier_curve> Path::getBeziers() const noexcept
 {
     tt_assert(!hasLayers());
 
-    std::vector<BezierCurve> r;
+    std::vector<bezier_curve> r;
 
     for (auto contourNr = 0; contourNr < numberOfContours(); contourNr++) {
         ttlet beziers = getBeziersOfContour(contourNr);
@@ -214,7 +214,7 @@ void Path::moveTo(f32x4 position) noexcept
 {
     tt_axiom(position.is_point());
     closeContour();
-    points.emplace_back(position, BezierPoint::Type::Anchor);
+    points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
 void Path::moveRelativeTo(f32x4 direction) noexcept
@@ -224,7 +224,7 @@ void Path::moveRelativeTo(f32x4 direction) noexcept
 
     ttlet lastPosition = currentPosition();
     closeContour();
-    points.emplace_back(lastPosition + direction, BezierPoint::Type::Anchor);
+    points.emplace_back(lastPosition + direction, bezier_point::Type::Anchor);
 }
 
 void Path::lineTo(f32x4 position) noexcept
@@ -232,7 +232,7 @@ void Path::lineTo(f32x4 position) noexcept
     tt_assert(isContourOpen());
     tt_axiom(position.is_point());
 
-    points.emplace_back(position, BezierPoint::Type::Anchor);
+    points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
 void Path::lineRelativeTo(f32x4 direction) noexcept
@@ -240,7 +240,7 @@ void Path::lineRelativeTo(f32x4 direction) noexcept
     tt_assert(isContourOpen());
     tt_axiom(direction.is_vector());
 
-    points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
+    points.emplace_back(currentPosition() + direction, bezier_point::Type::Anchor);
 }
 
 void Path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
@@ -249,8 +249,8 @@ void Path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
     tt_axiom(controlPosition.is_point());
     tt_axiom(position.is_point());
 
-    points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
-    points.emplace_back(position, BezierPoint::Type::Anchor);
+    points.emplace_back(controlPosition, bezier_point::Type::QuadraticControl);
+    points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
 void Path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noexcept
@@ -260,8 +260,8 @@ void Path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noe
     tt_axiom(direction.is_vector());
 
     ttlet p = currentPosition();
-    points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
-    points.emplace_back(p + direction, BezierPoint::Type::Anchor);
+    points.emplace_back(p + controlDirection, bezier_point::Type::QuadraticControl);
+    points.emplace_back(p + direction, bezier_point::Type::Anchor);
 }
 
 void Path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept
@@ -271,9 +271,9 @@ void Path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 po
     tt_axiom(controlPosition2.is_point());
     tt_axiom(position.is_point());
 
-    points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
-    points.emplace_back(controlPosition2, BezierPoint::Type::CubicControl2);
-    points.emplace_back(position, BezierPoint::Type::Anchor);
+    points.emplace_back(controlPosition1, bezier_point::Type::CubicControl1);
+    points.emplace_back(controlPosition2, bezier_point::Type::CubicControl2);
+    points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
 void Path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept
@@ -284,9 +284,9 @@ void Path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2
     tt_axiom(direction.is_vector());
 
     ttlet p = currentPosition();
-    points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
-    points.emplace_back(p + controlDirection2, BezierPoint::Type::CubicControl2);
-    points.emplace_back(p + direction, BezierPoint::Type::Anchor);
+    points.emplace_back(p + controlDirection1, bezier_point::Type::CubicControl1);
+    points.emplace_back(p + controlDirection2, bezier_point::Type::CubicControl2);
+    points.emplace_back(p + direction, bezier_point::Type::Anchor);
 }
 
 void Path::arcTo(float radius, f32x4 position) noexcept
@@ -392,36 +392,36 @@ void Path::addCircle(f32x4 position, float radius) noexcept
     closeContour();
 }
 
-void Path::addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end) noexcept
+void Path::addContour(std::vector<bezier_point>::const_iterator const &begin, std::vector<bezier_point>::const_iterator const &end) noexcept
 {
     tt_assert(!isContourOpen());
     points.insert(points.end(), begin, end);
     closeContour();
 }
 
-void Path::addContour(std::vector<BezierPoint> const &contour) noexcept
+void Path::addContour(std::vector<bezier_point> const &contour) noexcept
 {
     addContour(contour.begin(), contour.end());
 }
 
-void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
+void Path::addContour(std::vector<bezier_curve> const &contour) noexcept
 {
     tt_assert(!isContourOpen());
 
     for (ttlet &curve: contour) {
         // Don't emit the first point, the last point of the contour will wrap around.
         switch (curve.type) {
-        case BezierCurve::Type::Linear:
-            points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
+        case bezier_curve::Type::Linear:
+            points.emplace_back(curve.P2, bezier_point::Type::Anchor);
             break;
-        case BezierCurve::Type::Quadratic:
-            points.emplace_back(curve.C1, BezierPoint::Type::QuadraticControl);
-            points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
+        case bezier_curve::Type::Quadratic:
+            points.emplace_back(curve.C1, bezier_point::Type::QuadraticControl);
+            points.emplace_back(curve.P2, bezier_point::Type::Anchor);
             break;
-        case BezierCurve::Type::Cubic:
-            points.emplace_back(curve.C1, BezierPoint::Type::CubicControl1);
-            points.emplace_back(curve.C2, BezierPoint::Type::CubicControl2);
-            points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
+        case bezier_curve::Type::Cubic:
+            points.emplace_back(curve.C1, bezier_point::Type::CubicControl1);
+            points.emplace_back(curve.C2, bezier_point::Type::CubicControl2);
+            points.emplace_back(curve.P2, bezier_point::Type::Anchor);
             break;
         default:
             tt_no_default();

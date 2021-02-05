@@ -9,7 +9,6 @@
 #include "../URL.hpp"
 #include "../memory.hpp"
 #include "../cast.hpp"
-#include "../BezierCurve.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
 #include "../mat.hpp"

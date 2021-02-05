@@ -8,7 +8,6 @@
 #include "required.hpp"
 #include "assert.hpp"
 #include "os_detect.hpp"
-#include "Unicode.hpp"
 #include "concepts.hpp"
 #include "exception.hpp"
 #include <string>
