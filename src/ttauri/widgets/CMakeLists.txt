@@ -10,7 +10,7 @@ target_sources(ttauri PRIVATE
     grid_layout_widget.cpp
     grid_layout_widget.hpp
     grid_layout_delegate.hpp
-    LabelWidget.hpp
+    label_widget.hpp
     text_field_delegate.hpp
     text_field_widget.hpp
     overlay_view_widget.hpp
@@ -19,8 +19,8 @@ target_sources(ttauri PRIVATE
     scroll_view_widget.hpp
     scroll_bar_widget.hpp
     selection_widget.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
     tab_view_widget.hpp
     toggle_widget.hpp
     menu_item_widget.hpp
@@ -29,10 +29,10 @@ target_sources(ttauri PRIVATE
     widget.cpp
     widget.hpp
     widgets.hpp
-    WindowTrafficLightsWidget.cpp
-    WindowTrafficLightsWidget.hpp
-    WindowWidget.cpp
-    WindowWidget.hpp
+    window_traffic_lights_widget.cpp
+    window_traffic_lights_widget.hpp
+    window_widget.cpp
+    window_widget.hpp
 )
 
 if(NOT TTAURI_ENABLE_CODE_ANALYSIS)

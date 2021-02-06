@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "WindowTrafficLightsWidget.hpp"
+#include "window_traffic_lights_widget.hpp"
 #include "../GUI/utils.hpp"
 #include "../text/TTauriIcons.hpp"
 #include "../utils.hpp"
@@ -10,7 +10,7 @@
 
 namespace tt {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(
+window_traffic_lights_widget::window_traffic_lights_widget(
     gui_window &window,
     std::shared_ptr<abstract_container_widget> parent) noexcept :
     super(window, parent)
@@ -20,7 +20,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(
 }
 
 [[nodiscard]] bool
-WindowTrafficLightsWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -45,7 +45,7 @@ WindowTrafficLightsWidget::update_constraints(hires_utc_clock::time_point displa
 }
 
 [[nodiscard]] void
-WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -110,7 +110,7 @@ WindowTrafficLightsWidget::update_layout(hires_utc_clock::time_point display_tim
     super::update_layout(display_time_point, need_layout);
 }
 
-void WindowTrafficLightsWidget::drawMacOS(draw_context const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -164,7 +164,7 @@ void WindowTrafficLightsWidget::drawMacOS(draw_context const &drawContext, hires
     }
 }
 
-void WindowTrafficLightsWidget::drawWindows(
+void window_traffic_lights_widget::drawWindows(
     draw_context const &drawContext,
     hires_utc_clock::time_point displayTimePoint) noexcept
 {
@@ -214,7 +214,7 @@ void WindowTrafficLightsWidget::drawWindows(
     }
 }
 
-void WindowTrafficLightsWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -233,7 +233,7 @@ void WindowTrafficLightsWidget::draw(draw_context context, hires_utc_clock::time
     super::draw(std::move(context), display_time_point);
 }
 
-bool WindowTrafficLightsWidget::handle_event(MouseEvent const &event) noexcept
+bool window_traffic_lights_widget::handle_event(MouseEvent const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     auto handled = super::handle_event(event);
@@ -288,7 +288,7 @@ bool WindowTrafficLightsWidget::handle_event(MouseEvent const &event) noexcept
     return handled;
 }
 
-HitBox WindowTrafficLightsWidget::hitbox_test(f32x4 window_position) const noexcept
+HitBox window_traffic_lights_widget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     ttlet position = _from_window_transform * window_position;

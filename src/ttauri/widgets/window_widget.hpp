@@ -11,12 +11,12 @@ namespace tt {
 class toolbar_widget;
 class grid_layout_widget;
 
-class WindowWidget final : public abstract_container_widget {
+class window_widget final : public abstract_container_widget {
 public:
     using super = abstract_container_widget;
 
-    WindowWidget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept;
-    ~WindowWidget();
+    window_widget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept;
+    ~window_widget();
 
     void init() noexcept override;
 

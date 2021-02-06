@@ -15,12 +15,12 @@ struct Path;
 
 namespace tt {
 
-class WindowTrafficLightsWidget final : public widget {
+class window_traffic_lights_widget final : public widget {
 public:
     using super = widget;
 
-    WindowTrafficLightsWidget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept;
-    ~WindowTrafficLightsWidget() {}
+    window_traffic_lights_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept;
+    ~window_traffic_lights_widget() {}
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;

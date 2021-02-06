@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "SystemMenuWidget.hpp"
+#include "system_menu_widget.hpp"
 #include "../GUI/utils.hpp"
 #include "../text/TTauriIcons.hpp"
 #include "../utils.hpp"
@@ -12,7 +12,7 @@
 
 namespace tt {
 
-SystemMenuWidget::SystemMenuWidget(
+system_menu_widget::system_menu_widget(
     gui_window &window,
     std::shared_ptr<abstract_container_widget> parent,
     icon const &icon) noexcept :
@@ -23,7 +23,7 @@ SystemMenuWidget::SystemMenuWidget(
 }
 
 [[nodiscard]] bool
-SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -37,7 +37,7 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
     }
 }
 
-[[nodiscard]] void SystemMenuWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void system_menu_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -59,7 +59,7 @@ SystemMenuWidget::update_constraints(hires_utc_clock::time_point display_time_po
     super::update_layout(display_time_point, need_layout);
 }
 
-void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void system_menu_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -70,7 +70,7 @@ void SystemMenuWidget::draw(draw_context context, hires_utc_clock::time_point di
     super::draw(std::move(context), display_time_point);
 }
 
-HitBox SystemMenuWidget::hitbox_test(f32x4 window_position) const noexcept
+HitBox system_menu_widget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 

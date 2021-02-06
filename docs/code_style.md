@@ -12,7 +12,11 @@ The following identifiers are in snake\_case:
  - enum values,
  - struct types,
  - union types,
- - enum types.
+ - enum types,
+ - concepts.
+
+The following identifiers are in CamelCase:
+ - template arguments.
 
 Capital letters within a snake\_case identifier are allowed for proper nouns and
 abrivations.
@@ -28,6 +32,7 @@ Macros, because they do not belong to a namespace, are prefixed with "tt\_".
 The suffix "\_" may be used when a new variable needs to be introduced
 when only its type has changed using casting or conversion.
 If more than one such variable is needed the name of the type should be appended.
+
 
 Global variables
 ----------------
@@ -77,13 +82,14 @@ The managed object will call into the delegate to send messages and retrieve inf
 The managed object should hold a `std::weak_ptr` to the base class of the delegate. This allows the
 delegate to be deallocated with the managed object functioning.
 
-When calling function into the delegate the first argument `self` should be a reference to the managed
+When calling function into the delegate the first argument `sender` should be a reference to the managed
 object.
 
 Delegates should at least have the following two function to handle the lifetime of the managed object:
 
- - virtual void init(managed_object &self)
- - virtual void deinit(managed_object &self)
+ - virtual void init(managed\_object &sender)
+ - virtual void deinit(managed\_object &sender)
 
 The two functions mirror the two phase construction and are often called from `init()` and `deinit()` of the managed
 object. However they may be called from the constructor and destructor of the object as well.
+

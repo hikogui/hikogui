@@ -16,36 +16,36 @@
 
 namespace tt {
 
-class LabelWidget final : public widget {
+class label_widget final : public widget {
 public:
     using super = widget;
 
     observable<label> label;
 
     template<typename Label>
-    LabelWidget(
+    label_widget(
         gui_window &window,
         std::shared_ptr<abstract_container_widget> parent,
         alignment alignment,
         Label &&label) noexcept
         :
         super(window, parent),
-        alignment(alignment),
+        _alignment(alignment),
         label(std::forward<Label>(label))
     {
     }
 
     template<typename Label>
-    LabelWidget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Label &&label) noexcept :
-        super(window, parent), alignment(alignment::top_right), label(std::forward<Label>(label))
+    label_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Label &&label) noexcept :
+        super(window, parent), _alignment(alignment::top_right), label(std::forward<Label>(label))
     {
     }
 
-    ~LabelWidget() {
+    ~label_widget() {
     }
 
     void init() noexcept override {
-        label_callback = label.subscribe([this](auto...) {
+        _label_callback = label.subscribe([this](auto...) {
             _request_reconstrain = true;
         });
     }
@@ -55,8 +55,8 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            labelCell = stencil::make_unique(alignment, *label, theme::global->labelStyle);
-            _preferred_size = interval_vec2::make_minimum(labelCell->preferred_extent());
+            _label_cell = stencil::make_unique(_alignment, *label, theme::global->labelStyle);
+            _preferred_size = interval_vec2::make_minimum(_label_cell->preferred_extent());
             return true;
         } else {
             return false;
@@ -69,7 +69,7 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            labelCell->set_layout_parameters(rectangle(), base_line());
+            _label_cell->set_layout_parameters(rectangle(), base_line());
         }
         super::update_layout(displayTimePoint, need_layout);
     }
@@ -82,17 +82,17 @@ public:
                 context.color = theme::global->labelStyle.color;
             }
 
-            labelCell->draw(context, true);
+            _label_cell->draw(context, true);
         }
 
         super::draw(std::move(context), display_time_point);
     }
 
 private:
-    typename decltype(label)::callback_ptr_type label_callback;
+    typename decltype(label)::callback_ptr_type _label_callback;
 
-    std::unique_ptr<label_stencil> labelCell;
-    alignment alignment;
+    std::unique_ptr<label_stencil> _label_cell;
+    alignment _alignment;
 };
 
 }

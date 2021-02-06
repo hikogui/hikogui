@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "WindowWidget.hpp"
+#include "window_widget.hpp"
 #include "WindowTrafficLightsWidget.hpp"
 #include "toolbar_widget.hpp"
 #include "grid_layout_widget.hpp"
@@ -14,14 +14,14 @@ namespace tt {
 
 using namespace std;
 
-WindowWidget::WindowWidget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept :
+window_widget::window_widget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept :
     abstract_container_widget(window, {}), title(std::move(title)), _content_delegate(delegate)
 {
 }
 
-WindowWidget::~WindowWidget() {}
+window_widget::~window_widget() {}
 
-void WindowWidget::init() noexcept
+void window_widget::init() noexcept
 {
     _toolbar = make_widget<toolbar_widget>();
 
@@ -40,7 +40,7 @@ void WindowWidget::init() noexcept
 }
 
 [[nodiscard]] bool
-WindowWidget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+window_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -56,7 +56,7 @@ WindowWidget::update_constraints(hires_utc_clock::time_point display_time_point,
     }
 }
 
-void WindowWidget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void window_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -75,7 +75,7 @@ void WindowWidget::update_layout(hires_utc_clock::time_point display_time_point,
     abstract_container_widget::update_layout(display_time_point, need_layout);
 }
 
-HitBox WindowWidget::hitbox_test(f32x4 window_position) const noexcept
+HitBox window_widget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     ttlet position = _from_window_transform * window_position;

@@ -15,12 +15,12 @@
 
 namespace tt {
 
-class SystemMenuWidget final : public widget {
+class system_menu_widget final : public widget {
 public:
     using super = widget;
 
-    SystemMenuWidget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, icon const &icon) noexcept;
-    ~SystemMenuWidget() {}
+    system_menu_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, icon const &icon) noexcept;
+    ~system_menu_widget() {}
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
