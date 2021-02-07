@@ -287,7 +287,7 @@ png::png(std::span<std::byte const> bytes) :
     read_chunks(bytes, offset);
 }
 
-png::png(std::unique_ptr<ResourceView> view) :
+png::png(std::unique_ptr<resource_view> view) :
     view(std::move(view))
 {
     ssize_t offset = 0;

@@ -2,11 +2,11 @@
 // All rights reserved.
 
 #include "window_widget.hpp"
-#include "WindowTrafficLightsWidget.hpp"
+#include "window_traffic_lights_widget.hpp"
 #include "toolbar_widget.hpp"
 #include "grid_layout_widget.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-#include "SystemMenuWidget.hpp"
+#include "system_menu_widget.hpp"
 #endif
 #include "../GUI/utils.hpp"
 
@@ -27,11 +27,11 @@ void window_widget::init() noexcept
 
     if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-        _toolbar->make_widget<SystemMenuWidget>(this->title.icon());
+        _toolbar->make_widget<system_menu_widget>(this->title.icon());
 #endif
-        _toolbar->make_widget<WindowTrafficLightsWidget, horizontal_alignment::right>();
+        _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
     } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
-        _toolbar->make_widget<WindowTrafficLightsWidget>();
+        _toolbar->make_widget<window_traffic_lights_widget>();
     } else {
         tt_no_default();
     }

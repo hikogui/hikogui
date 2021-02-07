@@ -8,7 +8,7 @@
 #include "gstring.hpp"
 #include "FontDescription.hpp"
 #include "../Path.hpp"
-#include "../ResourceView.hpp"
+#include "../resource_view.hpp"
 #include "../exception.hpp"
 #include "../required.hpp"
 #include "../URL.hpp"

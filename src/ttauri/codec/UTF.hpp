@@ -25,16 +25,16 @@ namespace tt {
 template<typename Iterator>
 [[nodiscard]] constexpr char32_t utf16_to_utf32(Iterator &it) noexcept
 {
-    using value_type = std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>;
+    using value_type = typename std::iterator_traits<Iterator>::value_type;
     static_assert(std::is_same_v<value_type, char16_t>, "Iterator must point to a char16_t");
 
-    ttlet first = *it;
+    ttlet first = *(it++);
     if (first <= 0xd7ff || first >= 0xe000) {
         return first;
 
     } else {
         tt_axiom(first <= 0xdbff, "Expecting the high surrogate");
-        ttlet second = *(++it);
+        ttlet second = *(it++);
         tt_axiom(second >= 0xdc00 && second <= 0xdfff, "Expecting the low surrogate");
 
         return ((static_cast<char32_t>(first - 0xd800) << 10) | (static_cast<char32_t>(second - 0xdc00))) + 0x01'0000;
@@ -54,37 +54,43 @@ template<typename Iterator>
 template<typename Iterator>
 [[nodiscard]] constexpr char32_t utf8_to_utf32(Iterator &it) noexcept
 {
-    using value_type = std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>;
+    using value_type = typename std::iterator_traits<Iterator>::value_type;
     static_assert(std::is_same_v<value_type, char8_t>, "Iterator must point to a char8_t");
 
     auto cp = char32_t{0};
 
-    ttlet cu = *it;
+    ttlet cu = *(it++);
     if (cu <= 0x7f) {
-        return cu;
+        return static_cast<char32_t>(cu);
 
     } else if (cu <= 0xdf) {
         tt_axiom(cu >= 0xc0, "UTF-8 encoded code-point can not start with continuation code-units");
-        cp = static_cast<char32_t>(cu & 0x1f) << 6;
-        cp |= *(++it) & 0x3f;
-        tt_axiom(cp >= 0x0080 && cp < 0x07ff, "UTF-8 Overlong encoding");
+        cp = static_cast<char32_t>(cu & 0x1f);
+        cp <<= 6;
+        cp |= static_cast<char32_t>(*(it++) & 0x3f);
+        tt_axiom(cp >= 0x0080 && cp <= 0x07ff, "UTF-8 Overlong encoding");
         return cp;
 
     } else if (cu <= 0xef) {
-        cp = static_cast<char32_t>(cu & 0x0f) << 6;
-        cp |= static_cast<char32_t>(*(++it) & 0x3f) << 6;
-        cp |= *(++it) & 0x3f;
-        tt_axiom(cp >= 0x0800 && cp < 0xffff, "UTF-8 Overlong encoding");
+        cp = static_cast<char32_t>(cu & 0x0f);
+        cp <<= 6;
+        cp |= static_cast<char32_t>(*(it++) & 0x3f);
+        cp <<= 6;
+        cp |= static_cast<char32_t>(*(it++) & 0x3f);
+        tt_axiom(cp >= 0x0800 && cp <= 0xffff, "UTF-8 Overlong encoding");
         tt_axiom(!(cp >= 0xd800 && cp <= 0xdfff), "UTF-8 Must not encode surrogates");
         return cp;
 
     } else {
         tt_axiom(cu <= 0xf7, "UTF8 encoded code-point must have a valid start code-unit");
-        cp = static_cast<char32_t>(cu & 0x07) << 6;
-        cp |= static_cast<char32_t>(*(++it) & 0x3f) << 6;
-        cp |= static_cast<char32_t>(*(++it) & 0x3f) << 6;
-        cp |= *(++it) & 0x3f;
-        tt_axiom(cp >= 0x100000 && cp < 0x10ffff, "UTF-8 Overlong encoding");
+        cp = static_cast<char32_t>(cu & 0x07);
+        cp <<= 6;
+        cp |= static_cast<char32_t>(*(it++) & 0x3f);
+        cp <<= 6;
+        cp |= static_cast<char32_t>(*(it++) & 0x3f);
+        cp <<= 6;
+        cp |= static_cast<char32_t>(*(it++) & 0x3f);
+        tt_axiom(cp >= 0x100000 && cp <= 0x10ffff, "UTF-8 Overlong encoding");
         return cp;
     }
 }
@@ -104,7 +110,7 @@ template<typename Iterator>
 template<typename Iterator>
 constexpr bool utf8_to_utf32(Iterator &it, Iterator last, char32_t &code_point) noexcept
 {
-    using value_type = std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>;
+    using value_type = typename std::iterator_traits<Iterator>::value_type;
     static_assert(std::is_same_v<value_type, char8_t>, "Iterator must point to a char8_t");
 
     auto continuation_count = 0;
@@ -171,22 +177,22 @@ constexpr bool utf8_to_utf32(Iterator &it, Iterator last, char32_t &code_point) 
  * @param [in,out] it An iterator pointing to where the UTF-16 code units should be inserted.
  *                    After the call the iterator points beyond the code point.
  */
-template<typename Iterator>
-constexpr void utf32_to_utf16(char32_t code_point, Iterator &it) noexcept
+template<typename BackInsertIterator>
+constexpr void utf32_to_utf16(char32_t code_point, BackInsertIterator &it) noexcept
 {
-    using value_type = std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>;
-    static_assert(std::is_same_v<value_type, char16_t>, "Iterator must point to a char16_t");
+    using value_type = typename BackInsertIterator::container_type::value_type;
+    static_assert(sizeof(value_type) == 2, "Iterator must point to a two byte character type");
 
     if (code_point <= 0xffff) {
         tt_axiom(!(code_point >= 0xd800 && code_point <= 0xdfff), "Code Point must not be a surrogate-code");
-        *(it++) = static_cast<char16_t>(code_point);
+        *(it++) = static_cast<value_type>(code_point);
 
     } else {
         tt_axiom(code_point <= 0x10ffff, "Code Point must be in range of the 17 planes");
 
         code_point -= 0x10000;
-        *(it++) = static_cast<char16_t>(code_point >> 10) | 0xd800;
-        *(it++) = static_cast<char16_t>(code_point) & 0x03ff | 0xdc00;
+        *(it++) = static_cast<value_type>(code_point >> 10) | 0xd800;
+        *(it++) = static_cast<value_type>(code_point) & 0x03ff | 0xdc00;
     }
 }
 
@@ -198,29 +204,52 @@ constexpr void utf32_to_utf16(char32_t code_point, Iterator &it) noexcept
  * @param [in,out] it An iterator pointing to where the UTF-8 code units should be inserted.
  *                    After the call the iterator points beyond the code point.
  */
-template<typename Iterator>
-constexpr void utf32_to_utf8(char32_t code_point, Iterator &it) noexcept
+template<typename BackInsertIterator>
+constexpr void utf32_to_utf8(char32_t code_point, BackInsertIterator &it) noexcept
 {
+    using value_type = typename BackInsertIterator::container_type::value_type;
+    static_assert(sizeof(value_type) == 1, "UTF-8 values must be stored in a 1 byte character type");
+
     if (code_point <= 0x7f) {
-        *(it++) = static_cast<char8_t>(code_point);
+        *(it++) = static_cast<value_type>(code_point);
 
     } else if (code_point <= 0x07ff) {
-        *(it++) = static_cast<char8_t>(code_point >> 6) | 0xc0;
-        *(it++) = static_cast<char8_t>(code_point) & 0x3f | 0x80;
+        *(it++) = static_cast<value_type>(code_point >> 6) | 0xc0;
+        *(it++) = static_cast<value_type>(code_point) & 0x3f | 0x80;
 
     } else if (code_point <= 0xffff) {
         tt_axiom(!(code_point >= 0xd800 && code_point <= 0xdfff), "Code Point must not be a surrogate");
-        *(it++) = static_cast<char8_t>(code_point >> 12) | 0xe0;
-        *(it++) = static_cast<char8_t>(code_point >> 6) & 0x3f | 0x80;
-        *(it++) = static_cast<char8_t>(code_point) & 0x3f | 0x80;
+        *(it++) = static_cast<value_type>(code_point >> 12) | 0xe0;
+        *(it++) = static_cast<value_type>(code_point >> 6) & 0x3f | 0x80;
+        *(it++) = static_cast<value_type>(code_point) & 0x3f | 0x80;
 
     } else {
         tt_axiom(code_point <= 0x10ffff, "Code Point must be in range of the 17 planes");
-        *(it++) = static_cast<char8_t>(code_point >> 18) | 0xf0;
-        *(it++) = static_cast<char8_t>(code_point >> 12) & 0x3f | 0x80;
-        *(it++) = static_cast<char8_t>(code_point >> 6) & 0x3f | 0x80;
-        *(it++) = static_cast<char8_t>(code_point) & 0x3f | 0x80;
+        *(it++) = static_cast<value_type>(code_point >> 18) | 0xf0;
+        *(it++) = static_cast<value_type>(code_point >> 12) & 0x3f | 0x80;
+        *(it++) = static_cast<value_type>(code_point >> 6) & 0x3f | 0x80;
+        *(it++) = static_cast<value_type>(code_point) & 0x3f | 0x80;
     }
+}
+
+/** Sanitize a UTF-32 string so it contains only valid encoded Unicode code points.
+ *
+ * This function will replace invalid code units with the unicode-replacement-character 0xfffd.
+ *
+ * @param rhs A string with possibly invalid UTF-32 code units.
+ * @return A valid UTF-32 string.
+ */
+[[nodiscard]] inline std::u32string sanitize_u32string(std::u32string &&rhs) noexcept
+{
+    auto r = std::move(rhs);
+
+    for (char32_t &c : r) {
+        if (c > 0x10'ffff || (c >= 0xd800 && c <= 0xdfff)) {
+            c = U'\ufffd';
+        }
+    }
+
+    return r;
 }
 
 /** Make a u16string from a container containing UTF-16 data.
@@ -256,7 +285,7 @@ template<typename Container, std::endian Endian = std::endian::native>
         }
 
     } else {
-        // An array of 16-bits or large.
+        // An array of 16-bits or larger.
         r.reserve(size(rhs));
         for (auto &&c : rhs) {
             r += Endian == std::endian::native ? static_cast<char16_t>(c) : static_cast<char16_t>(byte_swap(c));
@@ -330,7 +359,7 @@ template<typename Container>
 {
     auto r = std::u8string{};
 
-    // An array of 16-bits or large.
+    // An array of 8-bits.
     r.reserve(size(rhs));
     for (auto &&c : rhs) {
         r += static_cast<char8_t>(c);
@@ -383,6 +412,323 @@ template<typename Container>
 
     std::swap(r, tmp);
     return r;
+}
+
+namespace detail {
+
+template<typename StringT>
+[[nodiscard]] inline StringT to_u8string(std::u16string_view const &rhs) noexcept
+{
+    auto r = StringT{};
+    r.reserve(rhs.size());
+    auto r_it = std::back_inserter(r);
+
+    for (auto it = std::begin(rhs); it != std::end(rhs);) {
+        ttlet c32 = utf16_to_utf32(it);
+        utf32_to_utf8(c32, r_it);
+    }
+    return r;
+}
+
+template<typename StringT>
+[[nodiscard]] inline StringT to_u8string(std::u32string_view const &rhs) noexcept
+{
+    auto r = StringT{};
+    r.reserve(rhs.size());
+    auto r_it = std::back_inserter(r);
+
+    for (auto c32 : rhs) {
+        utf32_to_utf8(c32, r_it);
+    }
+    return r;
+}
+
+template<typename StringT>
+[[nodiscard]] inline StringT to_u8string(std::wstring_view const &rhs) noexcept
+{
+    if constexpr (sizeof(std::wstring::value_type) == 2) {
+        auto s16 = sanitize_u16string(std::u16string{reinterpret_cast<char16_t const *>(rhs.data()), rhs.size()});
+        return to_u8string<StringT>(std::move(s16));
+    } else {
+        auto s32 = sanitize_u32string(std::u32string{reinterpret_cast<char32_t const *>(rhs.data()), rhs.size()});
+        return to_u8string<StringT>(std::move(s32));
+    }
+}
+
+} // namespace detail
+
+/** UTF-8 to string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-8 string.
+ * 
+ * @param rhs The given valid UTF-8 encoded string.
+ * @return A UTF-8 encoded string.
+ */
+[[nodiscard]] inline std::string to_string(std::u8string_view const &rhs) noexcept
+{
+    return std::string{reinterpret_cast<char const *>(rhs.data()), rhs.size()};
+}
+
+/** UTF-16 string to UTF-8 string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-16 string.
+ *
+ * @param rhs The given valid UTF-16 encoded string.
+ * @return A UTF-8 encoded string.
+ */
+[[nodiscard]] inline std::u8string to_u8string(std::u16string_view const &rhs) noexcept
+{
+    return detail::to_u8string<std::u8string>(rhs);
+}
+
+/** UTF-16 string to UTF-8 string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-16 string.
+ *
+ * @param rhs The given valid UTF-16 encoded string.
+ * @return A UTF-8 encoded string.
+ */
+[[nodiscard]] inline std::string to_string(std::u16string_view const &rhs) noexcept
+{
+    return detail::to_u8string<std::string>(rhs);
+}
+
+/** UTF-32 string to UTF-8 string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-32 string.
+ *
+ * @param rhs The given valid UTF-32 encoded string.
+ * @return A UTF-8 encoded string.
+ */
+[[nodiscard]] inline std::u8string to_u8string(std::u32string_view const &rhs) noexcept
+{
+    return detail::to_u8string<std::u8string>(rhs);
+}
+
+/** UTF-32 string to UTF-8 string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-32 string.
+ *
+ * @param rhs The given valid UTF-32 encoded string.
+ * @return A UTF-8 encoded string.
+ */
+[[nodiscard]] inline std::string to_string(std::u32string_view const &rhs) noexcept
+{
+    return detail::to_u8string<std::string>(rhs);
+}
+
+/** UTF-8 string to UTF-16 string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-8 string.
+ *
+ * @param rhs The given valid UTF-8 encoded string.
+ * @return A UTF-16 encoded string.
+ */
+[[nodiscard]] inline std::u16string to_u16string(std::u8string_view const &rhs) noexcept
+{
+    auto r = std::u16string{};
+    r.reserve(rhs.size());
+    auto r_it = std::back_inserter(r);
+
+    for (auto it = std::begin(rhs); it != std::end(rhs);) {
+        ttlet c32 = utf8_to_utf32(it);
+        utf32_to_utf16(c32, r_it);
+    }
+    return r;
+}
+
+/** UTF-32 string to UTF-16 string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-32 string.
+ *
+ * @param rhs The given valid UTF-32 encoded string.
+ * @return A UTF-16 encoded string.
+ */
+[[nodiscard]] inline std::u16string to_u16string(std::u32string_view const &rhs) noexcept
+{
+    auto r = std::u16string{};
+    r.reserve(rhs.size());
+    auto r_it = std::back_inserter(r);
+
+    for (auto c32 : rhs) {
+        utf32_to_utf16(c32, r_it);
+    }
+    return r;
+}
+
+/** UTF-8 string to UTF-32 string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-8 string.
+ *
+ * @param rhs The given valid UTF-8 encoded string.
+ * @return A UTF-32 encoded string.
+ */
+[[nodiscard]] inline std::u32string to_u32string(std::u8string_view const &rhs) noexcept
+{
+    auto r = std::u32string{};
+    r.reserve(rhs.size());
+
+    for (auto it = std::begin(rhs); it != std::end(rhs);) {
+        r += utf8_to_utf32(it);
+    }
+    return r;
+}
+
+/** UTF-16 string to UTF-32 string conversion.
+ * It is undefined behavior if the given string is not a valid UTF-16 string.
+ *
+ * @param rhs The given valid UTF-16 encoded string.
+ * @return A UTF-32 encoded string.
+ */
+[[nodiscard]] inline std::u32string to_u32string(std::u16string_view const &rhs) noexcept
+{
+    auto r = std::u32string{};
+    r.reserve(rhs.size());
+
+    for (auto it = std::begin(rhs); it != std::end(rhs);) {
+        r += utf16_to_utf32(it);
+    }
+    return r;
+}
+
+/** Convert a string to a UTF-8 encoded string.
+ * The given string should be UTF-8 encoded, but may contain invalid code-units.
+ *
+ * @param rhs A UTF-8 encoded string, which may be invalid.
+ * @return A valid UTF-8 encoded string.
+ */
+[[nodiscard]] inline std::u8string to_u8string(std::string_view const &rhs) noexcept
+{
+    return sanitize_u8string(std::u8string{reinterpret_cast<char8_t const *>(rhs.data()), rhs.size()});
+}
+
+/** Convert a string to a UTF-16 encoded string.
+ * The given string should be UTF-8 encoded, but may contain invalid code-units.
+ *
+ * @param rhs A UTF-8 encoded string, which may be invalid.
+ * @return A valid UTF-16 encoded string.
+ */
+[[nodiscard]] inline std::u16string to_u16string(std::string_view const &rhs) noexcept
+{
+    return to_u16string(sanitize_u8string(std::u8string{reinterpret_cast<char8_t const *>(rhs.data()), rhs.size()}));
+}
+
+/** Convert a string to a UTF-32 encoded string.
+ * The given string should be UTF-8 encoded, but may contain invalid code-units.
+ *
+ * @param rhs A UTF-8 encoded string, which may be invalid.
+ * @return A valid UTF-32 encoded string.
+ */
+[[nodiscard]] inline std::u32string to_u32string(std::string_view const &rhs) noexcept
+{
+    return to_u32string(sanitize_u8string(std::u8string{reinterpret_cast<char8_t const *>(rhs.data()), rhs.size()}));
+}
+
+/** Convert a wide-string to a UTF-8 encoded string.
+ * The given string should be UTF-16 or UTF-32 encoded, but may contain invalid code-units.
+ *
+ * @param rhs A UTF-16 or UTF-32 encoded string, which may be invalid.
+ * @return A valid UTF-8 encoded string.
+ */
+[[nodiscard]] inline std::u8string to_u8string(std::wstring_view const &rhs) noexcept
+{
+    return detail::to_u8string<std::u8string>(rhs);
+}
+
+/** Convert a wide-string to a UTF-8 encoded string.
+ * The given string should be UTF-16 or UTF-32 encoded, but may contain invalid code-units.
+ *
+ * @param rhs A UTF-16 or UTF-32 encoded string, which may be invalid.
+ * @return A valid UTF-8 encoded string.
+ */
+[[nodiscard]] inline std::string to_string(std::wstring_view const &rhs) noexcept
+{
+    return detail::to_u8string<std::string>(rhs);
+}
+
+/** Convert a wide-string to a UTF-16 encoded string.
+ * The given string should be UTF-16 or UTF-32 encoded, but may contain invalid code-units.
+ *
+ * @param rhs A UTF-16 or UTF-32 encoded string, which may be invalid.
+ * @return A valid UTF-16 encoded string.
+ */
+[[nodiscard]] inline std::u16string to_u16string(std::wstring_view const &rhs) noexcept
+{
+    if constexpr (sizeof(std::wstring::value_type) == 2) {
+        return sanitize_u16string(std::u16string{reinterpret_cast<char16_t const *>(rhs.data()), rhs.size()});
+    } else {
+        auto s32 = sanitize_u32string(std::u32string{reinterpret_cast<char32_t const *>(rhs.data()), rhs.size()});
+        return to_u16string(std::move(s32));
+    }
+}
+
+/** Convert a wide-string to a UTF-16 encoded string.
+ * The given string should be UTF-16 or UTF-32 encoded, but may contain invalid code-units.
+ *
+ * @param rhs A UTF-16 or UTF-32 encoded string, which may be invalid.
+ * @return A valid UTF-32 encoded string.
+ */
+[[nodiscard]] inline std::u32string to_u32string(std::wstring_view const &rhs) noexcept
+{
+    if constexpr (sizeof(std::wstring::value_type) == 2) {
+        auto s16 = sanitize_u16string(std::u16string{reinterpret_cast<char16_t const *>(rhs.data()), rhs.size()});
+        return to_u32string(std::move(s16));
+    } else {
+        return sanitize_u32string(std::u32string{reinterpret_cast<char32_t const *>(rhs.data()), rhs.size()});
+    }
+}
+
+/** Convert a UTF-8 encoded string to a wide-string.
+ * It is undefined behavior if the given string contains invalid UTF-8 code points.
+ *
+ * @param rhs A UTF-8 encoded string, which may be invalid.
+ * @return A valid wide string.
+ */
+[[nodiscard]] inline std::wstring to_wstring(std::u8string_view const &rhs) noexcept
+{
+    if constexpr (sizeof(std::wstring::value_type) == 2) {
+        auto s16 = to_u16string(rhs);
+        return std::wstring{reinterpret_cast<wchar_t const *>(s16.data()), s16.size()};
+    } else {
+        auto s32 = to_u32string(rhs);
+        return std::wstring{reinterpret_cast<wchar_t const *>(s32.data()), s32.size()};
+    }
+}
+
+/** Convert a UTF-8 encoded string to a wide-string.
+ * The given string should UTF-8 encoded, but may contain invalid code-units.
+ *
+ * @param rhs A UTF-8 encoded string, which may be invalid.
+ * @return A valid wide string.
+ */
+[[nodiscard]] inline std::wstring to_wstring(std::string_view const &rhs) noexcept
+{
+    auto s8 = sanitize_u8string(std::u8string{reinterpret_cast<char8_t const *>(rhs.data()), rhs.size()});
+    return to_wstring(s8);
+}
+
+/** Convert a UTF-16 encoded string to a wide-string.
+ * It is undefined behavior if the given string contains invalid UTF-16 code points.
+ *
+ * @param rhs A UTF-16 encoded string, which may be invalid.
+ * @return A valid wide string.
+ */
+[[nodiscard]] inline std::wstring to_wstring(std::u16string_view const &rhs) noexcept
+{
+    if constexpr (sizeof(std::wstring::value_type) == 2) {
+        return std::wstring{reinterpret_cast<wchar_t const *>(rhs.data()), rhs.size()};
+    } else {
+        auto s32 = to_u32string(rhs);
+        return std::wstring{reinterpret_cast<wchar_t const *>(s32.data()), s32.size()};
+    }
+}
+
+/** Convert a UTF-32 encoded string to a wide-string.
+ * It is undefined behavior if the given string contains invalid UTF-32 code points.
+ *
+ * @param rhs A UTF-32 encoded string, which may be invalid.
+ * @return A valid wide string.
+ */
+[[nodiscard]] inline std::wstring to_wstring(std::u32string_view const &rhs) noexcept
+{
+    if constexpr (sizeof(std::wstring::value_type) == 2) {
+        auto s16 = to_u16string(rhs);
+        return std::wstring{reinterpret_cast<wchar_t const *>(s16.data()), s16.size()};
+    } else {
+        return std::wstring{reinterpret_cast<wchar_t const *>(rhs.data()), rhs.size()};
+    }
 }
 
 } // namespace tt

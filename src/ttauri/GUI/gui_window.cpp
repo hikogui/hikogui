@@ -4,7 +4,7 @@
 #include "gui_window.hpp"
 #include "gui_device.hpp"
 #include "KeyboardBindings.hpp"
-#include "../widgets/WindowWidget.hpp"
+#include "../widgets/window_widget.hpp"
 
 namespace tt {
 
@@ -56,7 +56,7 @@ void gui_window::init()
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
-    widget = std::make_shared<WindowWidget>(*this, delegate, title);
+    widget = std::make_shared<window_widget>(*this, delegate, title);
     widget->init();
 
     // The delegate will populate the window with widgets.

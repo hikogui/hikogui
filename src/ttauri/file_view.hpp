@@ -98,7 +98,7 @@ private:
      * \param size Number of bytes from the start of the file to map.
      * \return A shared-pointer to file mapping object.
      */
-    [[nodiscard]] static std::shared_ptr<file_mapping> findOrCreatefile_mappingObject(URL const& path, access_mode accessMode, size_t size);
+    [[nodiscard]] static std::shared_ptr<file_mapping> findOrCreateFileMappingObject(URL const& path, access_mode accessMode, size_t size);
 
 private:
     /*! pointer to a file mapping object.

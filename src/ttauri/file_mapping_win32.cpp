@@ -33,7 +33,7 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, size_t size) :
     if (this->size == 0) {
         mapHandle = nullptr;
     } else {
-        if ((mapHandle = Createfile_mappingA(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
+        if ((mapHandle = CreateFileMappingW(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
             tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
             throw io_error("Could not create file mapping");
         }

@@ -10,7 +10,7 @@
 #include "PipelineSDF.hpp"
 #include "PipelineToneMapper.hpp"
 #include "draw_context.hpp"
-#include "../widgets/WindowWidget.hpp"
+#include "../widgets/window_widget.hpp"
 #include "../trace.hpp"
 #include "../application.hpp"
 #include "../cast.hpp"
@@ -283,10 +283,10 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     // Like theme or language changes.
     ttlet need_reconstrain = std::exchange(_request_setting_change, false);
 
-    // Update the size constraints of the WindowWidget and it children.
+    // Update the size constraints of the window_widget and it children.
     ttlet constraints_have_changed = widget->update_constraints(displayTimePoint, need_reconstrain);
 
-    // Check if the window size matches the preferred size of the WindowWidget.
+    // Check if the window size matches the preferred size of the window_widget.
     // If not ask the operating system to change the size of the window, which is
     // done asynchronously.
     //

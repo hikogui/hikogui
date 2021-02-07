@@ -10,6 +10,7 @@
 #include "os_detect.hpp"
 #include "concepts.hpp"
 #include "exception.hpp"
+#include "codec/UTF.hpp"
 #include <string>
 #include <string_view>
 #include <iterator>

@@ -5,7 +5,7 @@
 #include "KeyboardVirtualKey.hpp"
 #include "gui_system_vulkan_win32.hpp"
 #include "theme_book.hpp"
-#include "../widgets/WindowWidget.hpp"
+#include "../widgets/window_widget.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
 #include "../application_win32.hpp"

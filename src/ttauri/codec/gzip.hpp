@@ -5,6 +5,7 @@
 
 #include "../URL.hpp"
 #include "../byte_string.hpp"
+#include "../resource_view.hpp"
 #include <cstddef>
 
 namespace tt {

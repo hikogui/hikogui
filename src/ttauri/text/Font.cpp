@@ -3,7 +3,7 @@
 
 #include "Font.hpp"
 #include "TrueTypeFont.hpp"
-#include "../ResourceView.hpp"
+#include "../resource_view.hpp"
 
 namespace tt {
 

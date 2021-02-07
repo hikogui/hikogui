@@ -28,7 +28,7 @@
 namespace tt {
 class gui_device;
 class gui_system;
-class WindowWidget;
+class window_widget;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -91,7 +91,7 @@ public:
     float dpi = 72.0;
 
     //! The widget covering the complete window.
-    std::shared_ptr<WindowWidget> widget;
+    std::shared_ptr<window_widget> widget;
 
     gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
     virtual ~gui_window();

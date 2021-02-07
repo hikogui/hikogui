@@ -3,7 +3,7 @@
 
 #include "ttauri/pixel_map.inl"
 #include "ttauri/Path.hpp"
-#include "ttauri/BezierCurve.hpp"
+#include "ttauri/bezier_curve.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
