@@ -14,6 +14,7 @@
 #include "source_location.hpp"
 #include "os_detect.hpp"
 #include "delayed_format.hpp"
+#include "fixed_string.hpp"
 #include <date/tz.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -129,12 +130,15 @@ public:
     static std::string cpu_utc_clock_as_iso8601(cpu_counter_clock::time_point const timestamp) noexcept;
 };
 
-template<log_level Level, typename... Values>
+template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Values>
 class log_message : public log_message_base {
 public:
+    static_assert(std::is_same_v<decltype(SourceFile)::value_type, char>, "SourceFile must be a basic_fixed_string<char>");
+    static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
+
     template<typename... Args>
-    log_message(cpu_counter_clock::time_point timestamp, char const *source_file_name, int source_line, Args &&...args) noexcept :
-        _timestamp(timestamp), _source_file_name(source_file_name), _source_line(source_line), _what(std::forward<Args>(args)...)
+    log_message(cpu_counter_clock::time_point timestamp, Args &&...args) noexcept :
+        _timestamp(timestamp), _what(std::forward<Args>(args)...)
     {
     }
 
@@ -146,20 +150,18 @@ public:
             return fmt::format("{} {:5} {}", local_timestring, to_const_string(Level), _what());
         } else {
             return fmt::format(
-                "{} {:5} {} ({}:{})", local_timestring, to_const_string(Level), _what(), _source_file_name, _source_line);
+                "{} {:5} {} ({}:{})", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine);
         }
     }
 
 private:
     cpu_counter_clock::time_point _timestamp;
-    char const *_source_file_name;
-    int _source_line;
-    delayed_format<Values...> _what;
+    delayed_format<Fmt, Values...> _what;
 };
 
-template<log_level Level, typename... Args>
-log_message(cpu_counter_clock::time_point, char const *source_file_name, int source_line, Args &&...)
-    -> log_message<Level, forward_value_t<Args>...>;
+template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+log_message(cpu_counter_clock::time_point, Args &&...)
+    -> log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>;
 
 struct logger_blocked_tag {
 };
@@ -185,9 +187,9 @@ public:
     void logger_tick() noexcept;
     void gather_tick(bool last) noexcept;
 
-    template<log_level Level, typename... Args>
+    template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
     void
-    log(typename cpu_counter_clock::time_point timestamp, char const *source_file_name, int source_line, Args &&...args) noexcept
+    log(typename cpu_counter_clock::time_point timestamp, Args &&...args) noexcept
     {
         if (Level >= minimum_log_level) {
             // Add messages in the queue, block when full.
@@ -198,8 +200,8 @@ public:
             auto message = message_queue.write<logger_blocked_tag>();
 
             // dereference the message so that we get the polymorphic_optional, so this assignment will work correctly.
-            message->emplace<log_message<Level, forward_value_t<Args>...>>(
-                timestamp, source_file_name, source_line, std::forward<Args>(args)...);
+            message->emplace<log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
+                timestamp, std::forward<Args>(args)...);
 
             if constexpr (Level >= log_level::Fatal) {
                 // Make sure everything including this message and counters are logged.
@@ -228,20 +230,20 @@ inline logger_type logger = {};
 
 } // namespace tt
 
-#define tt_log(level, ...) \
+#define tt_log(level, fmt, ...) \
     do { \
         ttlet _tt_log_timestamp = ::tt::cpu_counter_clock::now(); \
-        ::tt::logger.log<level>(_tt_log_timestamp, __FILE__, __LINE__, __VA_ARGS__); \
+        ::tt::logger.log<level, __FILE__, __LINE__, fmt>(_tt_log_timestamp, __VA_ARGS__); \
     } while (false)
 
-#define tt_log_debug(...) tt_log(::tt::log_level::Debug, __VA_ARGS__)
-#define tt_log_trace(...) tt_log(::tt::log_level::Trace, __VA_ARGS__)
-#define tt_log_counter(...) tt_log(::tt::log_level::Counter, __VA_ARGS__)
-#define tt_log_info(...) tt_log(::tt::log_level::Info, __VA_ARGS__)
-#define tt_log_audit(...) tt_log(::tt::log_level::Audit, __VA_ARGS__)
-#define tt_log_warning(...) tt_log(::tt::log_level::Warning, __VA_ARGS__)
-#define tt_log_error(...) tt_log(::tt::log_level::Error, __VA_ARGS__)
-#define tt_log_critical(...) tt_log(::tt::log_level::Critical, __VA_ARGS__)
-#define tt_log_fatal(...) \
-    tt_log(::tt::log_level::Fatal, __VA_ARGS__); \
+#define tt_log_debug(fmt, ...) tt_log(::tt::log_level::Debug, fmt, __VA_ARGS__)
+#define tt_log_trace(fmt, ...) tt_log(::tt::log_level::Trace, fmt, __VA_ARGS__)
+#define tt_log_counter(fmt, ...) tt_log(::tt::log_level::Counter, fmt, __VA_ARGS__)
+#define tt_log_info(fmt, ...) tt_log(::tt::log_level::Info, fmt, __VA_ARGS__)
+#define tt_log_audit(fmt, ...) tt_log(::tt::log_level::Audit, fmt, __VA_ARGS__)
+#define tt_log_warning(fmt, ...) tt_log(::tt::log_level::Warning, fmt, __VA_ARGS__)
+#define tt_log_error(fmt, ...) tt_log(::tt::log_level::Error, fmt, __VA_ARGS__)
+#define tt_log_critical(fmt, ...) tt_log(::tt::log_level::Critical, fmt, __VA_ARGS__)
+#define tt_log_fatal(fmt, ...) \
+    tt_log(::tt::log_level::Fatal, fmt, __VA_ARGS__); \
     tt_unreachable()
