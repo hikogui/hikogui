@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "GlyphMetrics.hpp"
+#include "glyph_metrics.hpp"
 #include "font_glyph_ids.hpp"
 #include "gstring.hpp"
-#include "fontDescription.hpp"
+#include "font_description.hpp"
 #include "../Path.hpp"
 #include "../resource_view.hpp"
 #include "../exception.hpp"
@@ -33,17 +33,17 @@ public:
 
     /** The description is filled with information parsed from the font.
      */
-    fontDescription description;
+    font_description description;
 
     /** Get the glyph for a code-point.
      * @return glyph-id, or invalid when not found or error.
      */
-    [[nodiscard]] virtual glyph_id find_glyph(char32_t c) const noexcept = 0;
+    [[nodiscard]] virtual tt::glyph_id find_glyph(char32_t c) const noexcept = 0;
 
     /** Get the glyphs for a grapheme.
     * @return a set of glyph-ids, or invalid when not found or error.
     */
-    [[nodiscard]] font_glyph_ids find_glyph(Grapheme g) const noexcept;
+    [[nodiscard]] font_glyph_ids find_glyph(grapheme g) const noexcept;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
@@ -52,7 +52,7 @@ public:
     * \param path The path constructed by the loader.
     * \return empty on failure, or the glyphID of the metrics to use.
     */
-    virtual std::optional<glyph_id> loadGlyph(glyph_id glyph_id, Path &path) const noexcept = 0;
+    virtual std::optional<tt::glyph_id> loadGlyph(tt::glyph_id glyph_id, Path &path) const noexcept = 0;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
@@ -62,7 +62,11 @@ public:
     * \param lookahead_glyph_id The id of a glyph to the right, needed for kerning.
     * \return true on success, false on error.
     */
-    virtual bool loadGlyphMetrics(glyph_id glyph_id, GlyphMetrics &metrics, glyph_id lookahead_glyph_id=glyph_id{}) const noexcept = 0;
+    virtual bool loadglyph_metrics(
+        tt::glyph_id glyph_id,
+        glyph_metrics &metrics,
+        tt::glyph_id lookahead_glyph_id = tt::glyph_id{})
+        const noexcept = 0;
 };
 
 }

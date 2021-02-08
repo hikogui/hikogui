@@ -1,13 +1,13 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "Grapheme.hpp"
+#include "grapheme.hpp"
 #include "unicode_normalization.hpp"
 #include "../application.hpp"
 
 namespace tt {
 
-Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
+grapheme::grapheme(std::u32string_view codePoints) noexcept :
     value(0)
 {
     ttlet codePoints_ = unicode_NFC(codePoints);
@@ -26,7 +26,7 @@ Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
         value |= 1;
         break;
     default:
-        if (codePoints_.size() <= std::tuple_size_v<long_Grapheme>) {
+        if (codePoints_.size() <= std::tuple_size_v<long_grapheme>) {
             value = create_pointer(codePoints_.data(), codePoints_.size());
         } else {
             value = (0x00'fffdULL << 1) | 1; // Replacement character.
@@ -34,9 +34,9 @@ Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
     }
 }
 
-Grapheme& Grapheme::operator+=(char32_t codePoint) noexcept
+grapheme& grapheme::operator+=(char32_t codePoint) noexcept
 {
-    tt_axiom(size() < std::tuple_size_v<long_Grapheme>);
+    tt_axiom(size() < std::tuple_size_v<long_grapheme>);
     switch (size()) {
     case 0:
         value |= (static_cast<uint64_t>(codePoint & 0x1f'ffff) << 1);
@@ -62,15 +62,15 @@ Grapheme& Grapheme::operator+=(char32_t codePoint) noexcept
     return *this;
 }
 
-[[nodiscard]] std::u32string Grapheme::NFD() const noexcept {
+[[nodiscard]] std::u32string grapheme::NFD() const noexcept {
     return unicode_NFD(static_cast<std::u32string>(*this));
 }
 
-[[nodiscard]] std::u32string Grapheme::NFKC() const noexcept {
+[[nodiscard]] std::u32string grapheme::NFKC() const noexcept {
     return unicode_NFKC(static_cast<std::u32string>(*this));
 }
 
-[[nodiscard]] std::u32string Grapheme::NFKD() const noexcept {
+[[nodiscard]] std::u32string grapheme::NFKD() const noexcept {
     return unicode_NFKD(static_cast<std::u32string>(*this));
 }
 

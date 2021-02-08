@@ -41,10 +41,10 @@ private:
     aarect minimizeRectangle;
     aarect maximizeRectangle;
 
-    FontGlyphIDs closeWindowGlyph;
-    FontGlyphIDs minimizeWindowGlyph;
-    FontGlyphIDs maximizeWindowGlyph;
-    FontGlyphIDs restoreWindowGlyph;
+    font_glyph_ids closeWindowGlyph;
+    font_glyph_ids minimizeWindowGlyph;
+    font_glyph_ids maximizeWindowGlyph;
+    font_glyph_ids restoreWindowGlyph;
 
     aarect closeWindowGlyphRectangle;
     aarect minimizeWindowGlyphRectangle;

@@ -44,5 +44,5 @@ TEST(URLTests, glob2) {
     ttlet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.inl");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return x.path().ends_with("TTauriIcons.ttf.inl"s); }));
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return x.path().ends_with("ttauri_icons.ttf.inl"s); }));
 }

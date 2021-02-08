@@ -20,7 +20,7 @@ namespace tt {
     for (ttlet codePoint : normalizedString) {
         if (breaks_grapheme(codePoint, breakState)) {
             if (cluster.size() > 0) {
-                r += tt::Grapheme{cluster};
+                r += tt::grapheme{cluster};
             }
             cluster.clear();
         }
@@ -28,7 +28,7 @@ namespace tt {
         cluster += codePoint;
     }
     if (std::ssize(cluster) != 0) {
-        r += tt::Grapheme{cluster};
+        r += tt::grapheme{cluster};
     }
     return r;
 }

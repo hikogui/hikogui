@@ -3,27 +3,27 @@
 
 #pragma once
 
-#include "Grapheme.hpp"
+#include "grapheme.hpp"
 #include "../strings.hpp"
 #include <vector>
 
 namespace tt {
 
 struct gstring {
-    std::vector<Grapheme> graphemes;
+    std::vector<grapheme> graphemes;
 
-    using const_iterator = std::vector<Grapheme>::const_iterator;
-    using value_type = Grapheme;
+    using const_iterator = std::vector<grapheme>::const_iterator;
+    using value_type = grapheme;
 
     ssize_t size() const noexcept {
         return std::ssize(graphemes);
     }
 
-    Grapheme const &at(ssize_t i) const {
+    grapheme const &at(ssize_t i) const {
         return graphemes.at(i);
     }
 
-    Grapheme &at(ssize_t i) {
+    grapheme &at(ssize_t i) {
         return graphemes.at(i);
     }
 
@@ -46,7 +46,7 @@ struct gstring {
         return *this;
     }
 
-    gstring &operator+=(Grapheme const &grapheme) noexcept {
+    gstring &operator+=(grapheme const &grapheme) noexcept {
         graphemes.push_back(grapheme);
         return *this;
     }

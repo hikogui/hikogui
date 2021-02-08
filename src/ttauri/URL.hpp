@@ -132,7 +132,7 @@ public:
     [[nodiscard]] static URL urlFromExecutableFile() noexcept;
     [[nodiscard]] static URL urlFromApplicationDataDirectory() noexcept;
     [[nodiscard]] static URL urlFromApplicationLogDirectory() noexcept;
-    [[nodiscard]] static URL urlFromSystemFontDirectory() noexcept;
+    [[nodiscard]] static URL urlFromSystemfontDirectory() noexcept;
 
     /*! Return file names in the directory pointed by the url.
     * \param path path to the directory to scan.

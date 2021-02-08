@@ -6,7 +6,7 @@
 #include "theme_mode.hpp"
 #include "../required.hpp"
 #include "../mat.hpp"
-#include "../text/TextStyle.hpp"
+#include "../text/text_style.hpp"
 #include "../URL.hpp"
 #include "../numeric_array.hpp"
 #include "../datum.hpp"
@@ -95,13 +95,13 @@ public:
     f32x4 cursorColor;
     f32x4 incompleteGlyphColor;
 
-    TextStyle labelStyle;
-    TextStyle smallLabelStyle;
-    TextStyle warningLabelStyle;
-    TextStyle errorLabelStyle;
-    TextStyle helpLabelStyle;
-    TextStyle placeholderLabelStyle;
-    TextStyle linkLabelStyle;
+    text_style labelStyle;
+    text_style smallLabelStyle;
+    text_style warningLabelStyle;
+    text_style errorLabelStyle;
+    text_style helpLabelStyle;
+    text_style placeholderLabelStyle;
+    text_style linkLabelStyle;
 
     theme() noexcept = delete;
     theme(theme const &) noexcept = delete;
@@ -159,9 +159,9 @@ private:
     [[nodiscard]] f32x4 parseColorValue(datum const &data);
     [[nodiscard]] std::vector<f32x4> parseColorList(datum const &data, char const *name);
     [[nodiscard]] f32x4 parseColor(datum const &data, char const *name);
-    [[nodiscard]] TextStyle parseTextStyleValue(datum const &data);
-    [[nodiscard]] FontWeight parseFontWeight(datum const &data, char const *name);
-    [[nodiscard]] TextStyle parseTextStyle(datum const &data, char const *name);
+    [[nodiscard]] text_style parsetext_styleValue(datum const &data);
+    [[nodiscard]] font_weight parsefont_weight(datum const &data, char const *name);
+    [[nodiscard]] text_style parsetext_style(datum const &data, char const *name);
     void parse(datum const &data);
 
     [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {

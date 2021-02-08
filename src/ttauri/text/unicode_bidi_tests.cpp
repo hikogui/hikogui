@@ -168,6 +168,12 @@ TEST(unicode_bidi, bidi_test)
                 ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
             }
         }
+
+        if constexpr (BuildType::current == BuildType::Debug) {
+            if (test.line_nr > 10'000) {
+                break;
+            }
+        }
     }
 }
 
@@ -299,6 +305,12 @@ TEST(unicode_bidi, bidi_character_test)
             ttlet expected_input_index = test.resolved_order[index];
 
             ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
+        }
+
+        if constexpr (BuildType::current == BuildType::Debug) {
+            if (test.line_nr > 10'000) {
+                break;
+            }
         }
     }
 }

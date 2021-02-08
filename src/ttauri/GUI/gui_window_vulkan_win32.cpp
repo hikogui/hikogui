@@ -583,7 +583,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
             return 1;
         } else if (c >= 0x20) {
             auto keyboardEvent = KeyboardEvent();
-            keyboardEvent.type = KeyboardEvent::Type::Grapheme;
+            keyboardEvent.type = KeyboardEvent::Type::grapheme;
             keyboardEvent.grapheme = c;
             send_event(keyboardEvent);
         }

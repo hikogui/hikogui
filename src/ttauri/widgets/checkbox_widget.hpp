@@ -104,12 +104,12 @@ public:
             _false_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
             _other_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 
-            _check_glyph = to_FontGlyphIDs(ElusiveIcon::Ok);
+            _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
             _check_glyph_rectangle =
                 align(_checkbox_rectangle, scale(check_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
 
-            _minus_glyph = to_FontGlyphIDs(ElusiveIcon::Minus);
+            _minus_glyph = to_font_glyph_ids(elusive_icon::Minus);
             ttlet minus_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_minus_glyph);
             _minus_glyph_rectangle =
                 align(_checkbox_rectangle, scale(minus_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
@@ -140,10 +140,10 @@ private:
     std::unique_ptr<label_stencil> _false_label_stencil;
     std::unique_ptr<label_stencil> _other_label_stencil;
 
-    FontGlyphIDs _check_glyph;
+    font_glyph_ids _check_glyph;
     aarect _check_glyph_rectangle;
 
-    FontGlyphIDs _minus_glyph;
+    font_glyph_ids _minus_glyph;
     aarect _minus_glyph_rectangle;
 
     aarect _checkbox_rectangle;

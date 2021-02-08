@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Grapheme.hpp"
+#include "grapheme.hpp"
 #include <cstdint>
 #include <bit>
 
@@ -11,21 +11,21 @@ namespace tt {
 
 /** Unicode Ranges based on the OS/2 table in TrueType fonts.
 */
-struct UnicodeRanges {
+struct unicode_ranges {
     uint32_t value[4];
 
-    UnicodeRanges() noexcept {
+    unicode_ranges() noexcept {
         value[0] = 0;
         value[1] = 0;
         value[2] = 0;
         value[3] = 0;
     }
 
-    UnicodeRanges(char32_t c) noexcept : UnicodeRanges() {
+    unicode_ranges(char32_t c) noexcept : unicode_ranges() {
         add(c);
     }
 
-    UnicodeRanges(Grapheme g) noexcept : UnicodeRanges() {
+    unicode_ranges(grapheme g) noexcept : unicode_ranges() {
         for (ssize_t i = 0; i != std::ssize(g); ++i) {
             add(g[i]);
         }
@@ -49,7 +49,7 @@ struct UnicodeRanges {
     */
     [[nodiscard]] bool contains(char32_t c) const noexcept;
 
-    [[nodiscard]] bool contains(Grapheme g) const noexcept {
+    [[nodiscard]] bool contains(grapheme g) const noexcept {
         for (ssize_t i = 0; i != std::ssize(g); ++i) {
             if (!contains(g[i])) {
                 return false;
@@ -77,20 +77,20 @@ struct UnicodeRanges {
     }
 
 
-    UnicodeRanges &operator|=(UnicodeRanges const &rhs) noexcept {
+    unicode_ranges &operator|=(unicode_ranges const &rhs) noexcept {
         for (int i = 0; i != 4; ++i) {
             value[i] |= rhs.value[i];
         }
         return *this;
     }
 
-    [[nodiscard]] friend std::string to_string(UnicodeRanges const &rhs) noexcept {
+    [[nodiscard]] friend std::string to_string(unicode_ranges const &rhs) noexcept {
         return fmt::format("{:08x}:{:08x}:{:08x}:{:08x}", rhs.value[3], rhs.value[2], rhs.value[1], rhs.value[0]);
     }
 
     /** The lhs has at least all bits on the rhs set.
     */
-    [[nodiscard]] friend bool operator>=(UnicodeRanges const &lhs, UnicodeRanges const &rhs) noexcept {
+    [[nodiscard]] friend bool operator>=(unicode_ranges const &lhs, unicode_ranges const &rhs) noexcept {
         for (int i = 0; i < 4; i++) {
             if (!((lhs.value[i] & rhs.value[i]) == rhs.value[i])) {
                 return false;
@@ -99,13 +99,13 @@ struct UnicodeRanges {
         return true;
     }
 
-    [[nodiscard]] friend UnicodeRanges operator|(UnicodeRanges const &lhs, UnicodeRanges const &rhs) noexcept {
+    [[nodiscard]] friend unicode_ranges operator|(unicode_ranges const &lhs, unicode_ranges const &rhs) noexcept {
         auto r = lhs;
         r |= rhs;
         return r;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, UnicodeRanges const &rhs) {
+    friend std::ostream &operator<<(std::ostream &lhs, unicode_ranges const &rhs) {
         return lhs << to_string(rhs);
     }
 };

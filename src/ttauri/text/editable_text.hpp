@@ -3,17 +3,17 @@
 
 #pragma once
 
-#include "AttributedGrapheme.hpp"
-#include "ShapedText.hpp"
-#include "Font.hpp"
+#include "attributed_grapheme.hpp"
+#include "shaped_text.hpp"
+#include "font.hpp"
 #include <string>
 #include <vector>
 
 namespace tt {
 
 class editable_text {
-    std::vector<AttributedGrapheme> text;
-    ShapedText _shapedText;
+    std::vector<attributed_grapheme> text;
+    shaped_text _shapedText;
 
     /** The maximum width when wrapping text.
      * For single line text editing, we should never wrap.
@@ -33,14 +33,14 @@ class editable_text {
      */
     ssize_t selectionIndex = 0;
 
-    TextStyle currentStyle;
+    text_style currentStyle;
 
     /** Partial grapheme is inserted before cursorIndex.
      */
-    bool hasPartialGrapheme = false;
+    bool hasPartialgrapheme = false;
 
 public:
-    editable_text(TextStyle style) :
+    editable_text(text_style style) :
         text(), _shapedText(), currentStyle(style)
     {
     }
@@ -58,7 +58,7 @@ public:
 
     editable_text &operator=(std::string_view str) noexcept
     {
-        cancelPartialGrapheme();
+        cancelPartialgrapheme();
 
         gstring gstr = to_gstring(str);
 
@@ -74,47 +74,47 @@ public:
         tt_axiom(cursorIndex >= 0);
         tt_axiom(cursorIndex <= std::ssize(text));
 
-        updateShapedText();
+        updateshaped_text();
         return *this;
     }
 
     /** Update the shaped text after changed to text.
      */
-    void updateShapedText() noexcept {
+    void updateshaped_text() noexcept {
         auto text_ = text;
 
         // Make sure there is an end-paragraph marker in the text.
         // This allows the shapedText to figure out the style of the text of an empty paragraph.
         if (std::ssize(text) == 0) {
-            text_.emplace_back(Grapheme::PS(), currentStyle, 0);
+            text_.emplace_back(grapheme::PS(), currentStyle, 0);
         } else {
-            text_.emplace_back(Grapheme::PS(), text_.back().style, 0);
+            text_.emplace_back(grapheme::PS(), text_.back().style, 0);
         }
 
-        _shapedText = ShapedText(text_, width, alignment::top_left, false);
+        _shapedText = shaped_text(text_, width, alignment::top_left, false);
     }
 
-    [[nodiscard]] ShapedText shapedText() const noexcept {
+    [[nodiscard]] shaped_text shapedText() const noexcept {
         return _shapedText;
     }
 
     void setWidth(float _width) noexcept {
         width = _width;
-        updateShapedText();
+        updateshaped_text();
     }
 
-    void setCurrentStyle(TextStyle style) noexcept {
+    void setCurrentStyle(text_style style) noexcept {
         this->currentStyle = style;
     }
 
     /** Change the text style of all graphemes.
      */
-    void setStyleOfAll(TextStyle style) noexcept {
+    void setStyleOfAll(text_style style) noexcept {
         setCurrentStyle(style);
         for (auto &c: text) {
             c.style = style;
         }
-        updateShapedText();
+        updateshaped_text();
     }
 
     size_t size() const noexcept {
@@ -147,8 +147,8 @@ public:
 
     /** Get carets at the cursor position.
     */
-    aarect partialGraphemeCaret() const noexcept {
-        if (hasPartialGrapheme) {
+    aarect partialgraphemeCaret() const noexcept {
+        if (hasPartialgrapheme) {
             tt_axiom(cursorIndex != 0);
             return _shapedText.leftToRightCaret(cursorIndex - 1, false);
         } else {
@@ -182,11 +182,11 @@ public:
         if (selectionIndex < cursorIndex) {
             text.erase(cit(selectionIndex), cit(cursorIndex));
             cursorIndex = selectionIndex;
-            updateShapedText();
+            updateshaped_text();
         } else if (selectionIndex > cursorIndex) {
             text.erase(cit(cursorIndex), cit(selectionIndex));
             selectionIndex = cursorIndex;
-            updateShapedText();
+            updateshaped_text();
         }
     }
 
@@ -288,8 +288,8 @@ public:
         }
     }
 
-    void cancelPartialGrapheme() noexcept {
-        if (hasPartialGrapheme) {
+    void cancelPartialgrapheme() noexcept {
+        if (hasPartialgrapheme) {
             tt_axiom(cursorIndex >= 1);
 
             selectionIndex = --cursorIndex;
@@ -299,9 +299,9 @@ public:
             tt_axiom(cursorIndex <= std::ssize(text));
 
             text.erase(cit(cursorIndex));
-            hasPartialGrapheme = false;
+            hasPartialgrapheme = false;
 
-            updateShapedText();
+            updateshaped_text();
         }
     }
 
@@ -310,8 +310,8 @@ public:
      *
      * Since the insertion has not been completed any selected text should not yet be deleted.
      */
-    void insertPartialGrapheme(Grapheme character) noexcept {
-        cancelPartialGrapheme();
+    void insertPartialgrapheme(grapheme character) noexcept {
+        cancelPartialgrapheme();
         deleteSelection();
 
         text.emplace(cit(cursorIndex), character, currentStyle);
@@ -321,15 +321,15 @@ public:
         tt_axiom(cursorIndex >= 0);
         tt_axiom(cursorIndex <= std::ssize(text));
 
-        hasPartialGrapheme = true;
-        updateShapedText();
+        hasPartialgrapheme = true;
+        updateshaped_text();
     }
 
     /*! insert character at the cursor position.
      * Selected text will be deleted.
      */
-    void insertGrapheme(Grapheme character) noexcept {
-        cancelPartialGrapheme();
+    void insertgrapheme(grapheme character) noexcept {
+        cancelPartialgrapheme();
         deleteSelection();
 
         if (!insertMode) {
@@ -342,16 +342,16 @@ public:
         tt_axiom(cursorIndex >= 0);
         tt_axiom(cursorIndex <= std::ssize(text));
 
-        updateShapedText();
+        updateshaped_text();
     }
 
     void handlePaste(std::string str) noexcept {
-        cancelPartialGrapheme();
+        cancelPartialgrapheme();
         deleteSelection();
 
         gstring gstr = to_gstring(str);
 
-        auto str_attr = std::vector<AttributedGrapheme>{};
+        auto str_attr = std::vector<attributed_grapheme>{};
         str_attr.reserve(std::ssize(gstr));
         for (ttlet &g: gstr) {
             str_attr.emplace_back(g, currentStyle);
@@ -364,7 +364,7 @@ public:
         tt_axiom(cursorIndex >= 0);
         tt_axiom(cursorIndex <= std::ssize(text));
 
-        updateShapedText();
+        updateshaped_text();
     }
 
     std::string handleCopy() noexcept {
@@ -386,7 +386,7 @@ public:
 
     std::string handleCut() noexcept {
         auto r = handleCopy();
-        cancelPartialGrapheme();
+        cancelPartialgrapheme();
         deleteSelection();
         return r;
     }
@@ -395,7 +395,7 @@ public:
         auto handled = false;
 
         tt_axiom(cursorIndex <= std::ssize(text));
-        cancelPartialGrapheme();
+        cancelPartialgrapheme();
 
         switch (command) {
         case command::text_cursor_char_left:
@@ -499,7 +499,7 @@ public:
             } else if (cursorIndex >= 1) {
                 selectionIndex = --cursorIndex;
                 text.erase(cit(cursorIndex));
-                updateShapedText();
+                updateshaped_text();
             }
             break;
 
@@ -511,7 +511,7 @@ public:
             } else if (cursorIndex < (std::ssize(text) - 1)) {
                 // Don't delete the trailing paragraph separator.
                 text.erase(cit(cursorIndex));
-                updateShapedText();
+                updateshaped_text();
             }
         default:;
         }

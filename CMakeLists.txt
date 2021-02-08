@@ -253,7 +253,7 @@ add_shader(ttauri_binary_resources
 )
 set(ttauri_binary_resources ${ttauri_binary_resources}
     data/elusiveicons-webfont.ttf
-    data/TTauriIcons.ttf
+    data/ttauri_icons.ttf
 )
 
 target_static_resource(ttauri ${ttauri_binary_resources})

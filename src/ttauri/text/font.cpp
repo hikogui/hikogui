@@ -2,12 +2,12 @@
 // All rights reserved.
 
 #include "font.hpp"
-#include "TrueTypefont.hpp"
+#include "true_type_font.hpp"
 #include "../resource_view.hpp"
 
 namespace tt {
 
-[[nodiscard]] font_glyph_ids font::find_glyph(Grapheme g) const noexcept
+[[nodiscard]] font_glyph_ids font::find_glyph(grapheme g) const noexcept
 {
     font_glyph_ids r;
 

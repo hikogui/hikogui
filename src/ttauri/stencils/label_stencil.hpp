@@ -15,7 +15,7 @@ namespace tt {
 
 class label_stencil : public stencil {
 public:
-    label_stencil(alignment alignment, label label, TextStyle style) noexcept :
+    label_stencil(alignment alignment, label label, text_style style) noexcept :
         stencil(alignment),
         _style(style),
         _icon_size(_alignment == horizontal_alignment::center ? theme::global->large_icon_size : theme::global->icon_size)
@@ -151,7 +151,7 @@ public:
 
 private:
     bool _show_icon = false;
-    TextStyle _style;
+    text_style _style;
     float _icon_size;
     std::unique_ptr<image_stencil> _icon_stencil;
     std::unique_ptr<text_stencil> _text_stencil;

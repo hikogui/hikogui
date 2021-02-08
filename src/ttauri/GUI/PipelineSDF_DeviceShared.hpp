@@ -6,7 +6,7 @@
 #include "PipelineSDF_TextureMap.hpp"
 #include "PipelineSDF_AtlasRect.hpp"
 #include "PipelineSDF_SpecializationConstants.hpp"
-#include "../text/FontGlyphIDs.hpp"
+#include "../text/font_glyph_ids.hpp"
 #include "../required.hpp"
 #include "../logger.hpp"
 #include "../vspan.hpp"
@@ -24,8 +24,8 @@ class mat;
 }
 
 namespace tt {
-class ShapedText;
-struct AttributedGlyph;
+class shaped_text;
+struct attributed_glyph;
 }
 
 namespace tt::PipelineSDF {
@@ -45,9 +45,9 @@ struct DeviceShared final {
     static constexpr int stagingImageHeight = 128;
 
     static constexpr float atlasTextureCoordinateMultiplier = 1.0f / atlasImageWidth;
-    static constexpr float drawFontSize = 28.0f;
+    static constexpr float drawfontSize = 28.0f;
     static constexpr float drawBorder = SDF8::max_distance;
-    static constexpr float scaledDrawBorder = drawBorder / drawFontSize;
+    static constexpr float scaledDrawBorder = drawBorder / drawfontSize;
 
     gui_device_vulkan const &device;
 
@@ -59,7 +59,7 @@ struct DeviceShared final {
     vk::SpecializationInfo fragmentShaderSpecializationInfo;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-    std::unordered_map<FontGlyphIDs,AtlasRect> glyphs_in_atlas;
+    std::unordered_map<font_glyph_ids,AtlasRect> glyphs_in_atlas;
     TextureMap stagingTexture;
     std::vector<TextureMap> atlasTextures;
 
@@ -107,11 +107,11 @@ struct DeviceShared final {
 
     /** Prepare the atlas for drawing a text.
      */
-    void prepareAtlas(ShapedText const &text) noexcept;
+    void prepareAtlas(shaped_text const &text) noexcept;
 
     /** Get the bounding box, including draw border of a glyph.
      */
-    static aarect getBoundingBox(FontGlyphIDs const &glyphs) noexcept;
+    static aarect getBoundingBox(font_glyph_ids const &glyphs) noexcept;
     
     /** Place vertices for a single glyph.
     * @param vertices The list of vertices to add to.
@@ -120,7 +120,7 @@ struct DeviceShared final {
     * @param color The color of the glyph.
     * @param clippingRectangle The rectangle to clip the glyph.
     */
-    void placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept;
+    void placeVertices(vspan<Vertex> &vertices, font_glyph_ids const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -128,7 +128,7 @@ struct DeviceShared final {
      * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
      * @param vertices The vertices to draw the glyphs to.
      */
-    void placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle) noexcept;
+    void placeVertices(vspan<Vertex> &vertices, shaped_text const &text, mat transform, aarect clippingRectangle) noexcept;
 
     /** Draw the text on the screen.
     * @param text The box of text to draw
@@ -137,7 +137,7 @@ struct DeviceShared final {
     * @param vertices The vertices to draw the glyphs to.
     * @param color Override the color of the text to draw.
     */
-    void placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle, f32x4 color) noexcept;
+    void placeVertices(vspan<Vertex> &vertices, shaped_text const &text, mat transform, aarect clippingRectangle, f32x4 color) noexcept;
 
 private:
     void buildShaders();
@@ -156,7 +156,7 @@ private:
      * @param clippingRectangle The rectangle to clip the glyph.
      * @return True if the glyph was added to the atlas.
      */
-    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept;
+    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, font_glyph_ids const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept;
 
     /** Place an single attributed glyph.
     * This function will not execute prepareAtlasForRendering().
@@ -167,7 +167,7 @@ private:
     * @param clippingRectangle The rectangle to clip the glyph.
     * @return True if the glyph was added to the atlas.
     */
-    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
+    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, attributed_glyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
 
     /** Place an single attributed glyph.
     * This function will not execute prepareAtlasForRendering().
@@ -179,14 +179,14 @@ private:
     * @param color Override the color from the glyph style.
     * @return True if the glyph was added to the atlas.
     */
-    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, f32x4 color) noexcept;
+    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, attributed_glyph const &attr_glyph, mat transform, aarect clippingRectangle, f32x4 color) noexcept;
 
-    AtlasRect addGlyphToAtlas(FontGlyphIDs glyph) noexcept;
+    AtlasRect addGlyphToAtlas(font_glyph_ids glyph) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    std::pair<AtlasRect,bool> getGlyphFromAtlas(FontGlyphIDs glyph) noexcept;
+    std::pair<AtlasRect,bool> getGlyphFromAtlas(font_glyph_ids glyph) noexcept;
 
 };
 

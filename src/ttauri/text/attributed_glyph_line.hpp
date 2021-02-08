@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "AttributedGlyph.hpp"
+#include "attributed_glyph.hpp"
 #include <vector>
 #include <optional>
 
 namespace tt {
 
 struct attributed_glyph_line {
-    using vector_type = std::vector<AttributedGlyph>;
+    using vector_type = std::vector<attributed_glyph>;
     using iterator = vector_type::iterator;
     using const_iterator = vector_type::const_iterator;
     using value_type = vector_type::value_type;

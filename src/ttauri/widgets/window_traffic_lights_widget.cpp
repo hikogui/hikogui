@@ -3,7 +3,7 @@
 
 #include "window_traffic_lights_widget.hpp"
 #include "../GUI/utils.hpp"
-#include "../text/TTauriIcons.hpp"
+#include "../text/ttauri_icon.hpp"
 #include "../utils.hpp"
 #include <cmath>
 #include <typeinfo>
@@ -79,16 +79,16 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
             tt_no_default();
         }
 
-        closeWindowGlyph = to_FontGlyphIDs(TTauriIcon::CloseWindow);
-        minimizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MinimizeWindow);
+        closeWindowGlyph = to_font_glyph_ids(ttauri_icon::CloseWindow);
+        minimizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MinimizeWindow);
 
         if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
-            maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMS);
-            restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMS);
+            maximizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MaximizeWindowMS);
+            restoreWindowGlyph = to_font_glyph_ids(ttauri_icon::RestoreWindowMS);
 
         } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
-            maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMacOS);
-            restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMacOS);
+            maximizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MaximizeWindowMacOS);
+            restoreWindowGlyph = to_font_glyph_ids(ttauri_icon::RestoreWindowMacOS);
         } else {
             tt_no_default();
         }

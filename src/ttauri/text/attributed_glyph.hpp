@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "FontGlyphIDs.hpp"
-#include "AttributedGrapheme.hpp"
-#include "GlyphMetrics.hpp"
+#include "font_glyph_ids.hpp"
+#include "attributed_grapheme.hpp"
+#include "glyph_metrics.hpp"
 #include "../mat.hpp"
 
 namespace tt {
@@ -13,14 +13,14 @@ namespace tt {
 /**
 */
 struct attributed_glyph {
-    FontGlyphIDs glyphs;
+    font_glyph_ids glyphs;
 
     /** The logical index of the grapheme before bidi-algorithm.
     */
     ssize_t logicalIndex;
 
     /** Metrics taken from the font file, pre-scaled to the font-size. */
-    GlyphMetrics metrics;
+    glyph_metrics metrics;
 
     /** Position of the glyph.
     */
@@ -32,7 +32,7 @@ struct attributed_glyph {
     unicode_general_category general_category;
 
     /** Copied from the original attributed-grapheme. */
-    TextStyle style;
+    text_style style;
 
     /** Constructed an attributed glyph from an attributed grapheme.
      * When converting a string of graphemes into a string of glyphs you should
@@ -44,7 +44,7 @@ struct attributed_glyph {
      * @param attr_grapheme The grapheme to turn into a glyph.
      * @param next_attr_glyph The next glyph in display-ordering, used for kerning.
      */
-    attributed_glyph(AttributedGrapheme const &attr_grapheme, attributed_glyph const *next_attr_glyph=nullptr) noexcept;
+    attributed_glyph(attributed_grapheme const &attr_grapheme, attributed_glyph const *next_attr_glyph=nullptr) noexcept;
 
     attributed_glyph(attributed_glyph const &other) = default;
     attributed_glyph(attributed_glyph &&other) noexcept = default;
@@ -119,8 +119,8 @@ struct attributed_glyph {
      */
     [[nodiscard]] ssize_t relativeIndexAtCoordinate(f32x4 coordinate) const noexcept {
         ttlet relativePositionInGlyph = (coordinate.x() - position.x()) / metrics.advance.x();
-        ttlet relativePositionPerGrapheme = relativePositionInGlyph * narrow_cast<float>(graphemeCount);
-        return narrow_cast<ssize_t>(std::round(relativePositionPerGrapheme));
+        ttlet relativePositionPergrapheme = relativePositionInGlyph * narrow_cast<float>(graphemeCount);
+        return narrow_cast<ssize_t>(std::round(relativePositionPergrapheme));
     }
 
     [[nodiscard]] Path get_path() const noexcept;

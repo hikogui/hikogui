@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "ttauri/text/FontDescription.hpp"
-#include "ttauri/text/Grapheme.hpp"
-#include "ttauri/text/Font.hpp"
-#include "ttauri/text/FontFamilyID.hpp"
-#include "ttauri/text/FontID.hpp"
-#include "ttauri/text/FontGraphemeID.hpp"
-#include "ttauri/text/FontGlyphIDs.hpp"
+#include "ttauri/text/font_description.hpp"
+#include "ttauri/text/grapheme.hpp"
+#include "ttauri/text/font.hpp"
+#include "ttauri/text/font_family_id.hpp"
+#include "ttauri/text/font_id.hpp"
+#include "ttauri/text/font_grapheme_id.hpp"
+#include "ttauri/text/font_glyph_ids.hpp"
 #include "ttauri/URL.hpp"
 #include "ttauri/alignment.hpp"
 #include <limits>
@@ -35,14 +35,14 @@ public:
      * Duplicate registrations will be ignored.
      * 
      * When a font file is registered the file will be temporarily opened to read and cache a set of properties:
-     *  - The English Font Family from the 'name' table.
+     *  - The English font Family from the 'name' table.
      *  - The weight, width, slant & design-size from the 'fdsc' table.
      *  - The character map 'cmap' table.
      *
      * @param url Location of font.
      * @param post_process Calculate font fallback
      */
-    FontID register_font(URL url, bool post_process=true);
+    font_id register_font(URL url, bool post_process=true);
 
     /** Post process font_book
      * Should be called after a set of register_font() calls
@@ -51,45 +51,45 @@ public:
     void post_process() noexcept;
 
     /** Find font family id.
-     * This function will always return a valid FontFamilyID by walking the fallback-chain.
+     * This function will always return a valid font_family_id by walking the fallback-chain.
      */
-    [[nodiscard]] FontFamilyID find_family(std::string_view family_name) const noexcept;
+    [[nodiscard]] font_family_id find_family(std::string_view family_name) const noexcept;
 
     /** Register font family id.
      * If the family already exists the existing family_id is returned.
      */
-    [[nodiscard]] FontFamilyID register_family(std::string_view family_name) noexcept;
+    [[nodiscard]] font_family_id register_family(std::string_view family_name) noexcept;
 
     /** Find a font closest to the variant.
-     * This function will always return a valid FontID.
+     * This function will always return a valid font_id.
      *
      * @param family_id a valid family id.
      * @param variant The variant of the font to select.
      * @return a valid font id.
      */
-    [[nodiscard]] FontID find_font(FontFamilyID family_id, FontVariant variant) const noexcept;
+    [[nodiscard]] font_id find_font(font_family_id family_id, font_variant variant) const noexcept;
 
     /** Find a font closest to the variant.
-    * This function will always return a valid FontID.
+    * This function will always return a valid font_id.
     *
     * @param family_id a valid family id.
     * @param weight The weight of the font to select.
     * @param italic If the font to select should be italic or not.
     * @return a valid font id.
     */
-    [[nodiscard]] FontID find_font(FontFamilyID family_id, FontWeight weight, bool italic) const noexcept;
+    [[nodiscard]] font_id find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept;
 
     /** Find a font closest to the variant.
-     * This function will always return a valid FontID.
+     * This function will always return a valid font_id.
      *
      * @param family_name A name of a font family, which may be invalid.
      * @param weight The weight of the font to select.
      * @param italic If the font to select should be italic or not.
      * @return a font id, possibly from a fallback font.
      */
-    [[nodiscard]] FontID find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept;
+    [[nodiscard]] font_id find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept;
 
-    [[nodiscard]] Font const &get_font(FontID font_id) const noexcept;
+    [[nodiscard]] font const &get_font(font_id font_id) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
@@ -99,24 +99,24 @@ public:
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] FontGlyphIDs find_glyph(FontID font_id, Grapheme grapheme) const noexcept;
+    [[nodiscard]] font_glyph_ids find_glyph(font_id font_id, grapheme grapheme) const noexcept;
 
 private:
-    struct FontEntry {
+    struct fontEntry {
         URL url;
-        FontDescription description;
-        mutable std::unique_ptr<Font> font;
-        std::vector<FontID> fallbacks;
+        font_description description;
+        mutable std::unique_ptr<font> font;
+        std::vector<font_id> fallbacks;
 
-        FontEntry(URL url, FontDescription description) noexcept :
+        fontEntry(URL url, font_description description) noexcept :
             url(std::move(url)), description(std::move(description)), font(), fallbacks()
         {
         }
     };
 
-    /** Table of FontFamilyIDs index using the family-name.
+    /** Table of font_family_ids index using the family-name.
      */
-    std::unordered_map<std::string, FontFamilyID> family_names;
+    std::unordered_map<std::string, font_family_id> family_names;
 
     /** A list of family name -> fallback family name
      */
@@ -124,25 +124,25 @@ private:
 
     /** Different fonts; variants of a family.
      */
-    std::vector<std::array<FontID, FontVariant::max()>> font_variants;
+    std::vector<std::array<font_id, font_variant::max()>> font_variants;
 
-    std::vector<FontEntry> font_entries;
+    std::vector<fontEntry> font_entries;
 
     /** Same as family_name, but will also have resolved font families from the fallback_chain.
      * Must be cleared when a new font family is registered.
      */
-    mutable std::unordered_map<std::string, FontFamilyID> family_name_cache;
+    mutable std::unordered_map<std::string, font_family_id> family_name_cache;
 
     /**
      * Must be cleared when a new font is registered.
      */
-    mutable std::unordered_map<FontGraphemeID, FontGlyphIDs> glyph_cache;
-    void calculate_fallback_fonts(FontEntry &entry, std::function<bool(FontDescription const&,FontDescription const&)> predicate) noexcept;
+    mutable std::unordered_map<font_grapheme_id, font_glyph_ids> glyph_cache;
+    void calculate_fallback_fonts(fontEntry &entry, std::function<bool(font_description const&,font_description const&)> predicate) noexcept;
 
     /** Find the glyph for this specific font.
      * This will open the font file if needed.
      */
-    [[nodiscard]] FontGlyphIDs find_glyph_actual(FontID font_id, Grapheme grapheme) const noexcept;
+    [[nodiscard]] font_glyph_ids find_glyph_actual(font_id font_id, grapheme grapheme) const noexcept;
 
     /** Morph the set of glyphs using the font's morph tables.
      */

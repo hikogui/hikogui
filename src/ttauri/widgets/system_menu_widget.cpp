@@ -3,7 +3,7 @@
 
 #include "system_menu_widget.hpp"
 #include "../GUI/utils.hpp"
-#include "../text/TTauriIcons.hpp"
+#include "../text/ttauri_icon.hpp"
 #include "../utils.hpp"
 #include <Windows.h>
 #include <WinUser.h>

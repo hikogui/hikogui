@@ -4,7 +4,7 @@
 #pragma once
 
 #include "KeyboardKey.hpp"
-#include "../text/Grapheme.hpp"
+#include "../text/grapheme.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../command.hpp"
@@ -38,15 +38,15 @@ constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexc
 struct KeyboardEvent {
     enum class Type : uint8_t {
         Idle,
-        PartialGrapheme, ///< The user is combining a grapheme.
-        Grapheme, ///< The user has finished entering a grapheme.
+        Partialgrapheme, ///< The user is combining a grapheme.
+        grapheme, ///< The user has finished entering a grapheme.
         Key, ///< Key (+modifiers) was used to send a key.
     };
 
     Type type;
     KeyboardState state;
 
-    Grapheme grapheme;
+    tt::grapheme grapheme;
     KeyboardKey key;
 
     KeyboardEvent(Type type=Type::Idle) noexcept :
@@ -57,8 +57,8 @@ struct KeyboardEvent {
     KeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept :
         type(Type::Key), state(state), grapheme(), key(modifiers, key) {}
 
-    KeyboardEvent(Grapheme grapheme, bool full=true) noexcept :
-        type(full ? Type::Grapheme : Type::PartialGrapheme), state(), grapheme(std::move(grapheme)), key() {}
+    KeyboardEvent(tt::grapheme grapheme, bool full = true) noexcept :
+        type(full ? Type::grapheme : Type::Partialgrapheme), state(), grapheme(std::move(grapheme)), key() {}
 
     [[nodiscard]] std::vector<command> const &getCommands() const noexcept;
 
@@ -67,13 +67,13 @@ struct KeyboardEvent {
 
         switch (rhs.type) {
         case Type::Idle: r += "Idle"; break;
-        case Type::PartialGrapheme: r += "PartialGrapheme="; break;
-        case Type::Grapheme: r += "Grapheme="; break;
+        case Type::Partialgrapheme: r += "Partialgrapheme="; break;
+        case Type::grapheme: r += "grapheme="; break;
         case Type::Key: r += "Key="; break;
         default: tt_no_default();
         }
 
-        if (rhs.type == Type::PartialGrapheme || rhs.type == Type::Grapheme) {
+        if (rhs.type == Type::Partialgrapheme || rhs.type == Type::grapheme) {
             r += to_string(rhs.grapheme);
         } else if (rhs.type == Type::Key) {
             r += to_string(rhs.key);

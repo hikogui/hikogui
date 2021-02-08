@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "font_book.hpp"
-#include "TrueTypeFont.hpp"
+#include "true_type_font.hpp"
 #include "../trace.hpp"
 
 namespace tt {
@@ -82,14 +82,14 @@ void font_book::create_family_name_fallback_chain() noexcept
     family_name_fallback_chain["andale mono"] = "monospace";
 }
 
-FontID font_book::register_font(URL url, bool post_process)
+font_id font_book::register_font(URL url, bool post_process)
 {
-    auto font = std::make_unique<TrueTypeFont>(url);
+    auto font = std::make_unique<true_type_font>(url);
     auto &description = font->description;
 
     tt_log_info("Parsed font {}: {}", url, description);
 
-    ttlet font_id = FontID(std::ssize(font_entries));
+    ttlet font_id = tt::font_id(std::ssize(font_entries));
     font_entries.emplace_back(url, description);
 
     ttlet font_family_id = register_family(description.family_name);
@@ -102,10 +102,10 @@ FontID font_book::register_font(URL url, bool post_process)
     return font_id;
 }
 
-void font_book::calculate_fallback_fonts(FontEntry &entry, std::function<bool(FontDescription const&,FontDescription const&)> predicate) noexcept
+void font_book::calculate_fallback_fonts(fontEntry &entry, std::function<bool(font_description const&,font_description const&)> predicate) noexcept
 {
     // First calculate total_ranges for the current fallback fonts.
-    UnicodeRanges total_ranges = entry.description.unicode_ranges;
+    unicode_ranges total_ranges = entry.description.unicode_ranges;
     for (ttlet fallback_id: entry.fallbacks) {
         total_ranges |= font_entries[fallback_id].description.unicode_ranges;
     }
@@ -138,7 +138,7 @@ void font_book::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fo
             ttlet &fallback_entry = font_entries[max_font_id];
             //tt_log_debug("   {} - {}", fallback_entry.description.family_name, fallback_entry.description.sub_family_name);
 
-            entry.fallbacks.push_back(FontID{max_font_id});
+            entry.fallbacks.push_back(font_id{max_font_id});
             total_ranges |= fallback_entry.description.unicode_ranges;
         } else {
             return;
@@ -179,13 +179,13 @@ void font_book::post_process() noexcept
     }
 }
 
-[[nodiscard]] FontFamilyID font_book::register_family(std::string_view family_name) noexcept
+[[nodiscard]] font_family_id font_book::register_family(std::string_view family_name) noexcept
 {
     auto name = to_lower(family_name);
 
     auto i = family_names.find(name);
     if (i == family_names.end()) {
-        ttlet family_id = FontFamilyID(std::ssize(font_variants));
+        ttlet family_id = font_family_id(std::ssize(font_variants));
         font_variants.emplace_back();
         family_names[name] = family_id;
 
@@ -210,7 +210,7 @@ void font_book::post_process() noexcept
     }
 }
 
-[[nodiscard]] FontFamilyID font_book::find_family(std::string_view family_name) const noexcept
+[[nodiscard]] font_family_id font_book::find_family(std::string_view family_name) const noexcept
 {
     ttlet original_name = to_lower(family_name);
 
@@ -231,7 +231,7 @@ void font_book::post_process() noexcept
     }
 }
 
-[[nodiscard]] FontID font_book::find_font(FontFamilyID family_id, FontVariant variant) const noexcept
+[[nodiscard]] font_id font_book::find_font(font_family_id family_id, font_variant variant) const noexcept
 {
     tt_assert(family_id);
     tt_axiom(family_id >= 0 && family_id < std::ssize(font_variants));
@@ -245,31 +245,31 @@ void font_book::post_process() noexcept
     tt_no_default();
 }
 
-[[nodiscard]] FontID font_book::find_font(FontFamilyID family_id, FontWeight weight, bool italic) const noexcept
+[[nodiscard]] font_id font_book::find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept
 {
-    return find_font(family_id, FontVariant(weight, italic));
+    return find_font(family_id, font_variant(weight, italic));
 }
 
-[[nodiscard]] FontID font_book::find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept
+[[nodiscard]] font_id font_book::find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept
 {
     return find_font(find_family(family_name), weight, italic);
 }
 
-[[nodiscard]] Font const &font_book::get_font(FontID font_id) const noexcept
+[[nodiscard]] font const &font_book::get_font(font_id font_id) const noexcept
 {
     tt_axiom(font_id < std::ssize(font_entries));
     ttlet &entry = font_entries[font_id];
 
     if (!entry.font) {
         // This font was parsed once before, it must not give an error now.
-        entry.font = std::make_unique<TrueTypeFont>(entry.url);
+        entry.font = std::make_unique<true_type_font>(entry.url);
         tt_assert(entry.font);
     }
 
     return *(entry.font);
 }
 
-[[nodiscard]] FontGlyphIDs font_book::find_glyph_actual(FontID font_id, Grapheme grapheme) const noexcept
+[[nodiscard]] font_glyph_ids font_book::find_glyph_actual(font_id font_id, grapheme grapheme) const noexcept
 {
     ttlet &font = get_font(font_id);
 
@@ -278,7 +278,7 @@ void font_book::post_process() noexcept
     return glyph_ids;
 }
 
-[[nodiscard]] FontGlyphIDs font_book::find_glyph(FontID font_id, Grapheme g) const noexcept
+[[nodiscard]] font_glyph_ids font_book::find_glyph(font_id font_id, grapheme g) const noexcept
 {
     auto i = glyph_cache.find({font_id, g});
     if (i != glyph_cache.end()) {
@@ -293,7 +293,7 @@ void font_book::post_process() noexcept
     }
 
     // Scan fonts which are fallback to this.
-    auto g_range = UnicodeRanges(g);
+    auto g_range = unicode_ranges(g);
     for (ttlet fallback_id: font_entries[font_id].fallbacks) {
         auto &fallback_description = font_entries[fallback_id].description;
         if (fallback_description.unicode_ranges >= g_range) {
@@ -305,7 +305,7 @@ void font_book::post_process() noexcept
     }
 
     // If all everything has failed, use the tofu block of the original font.
-    glyph_ids += GlyphID{0};
+    glyph_ids += glyph_id{0};
     glyph_ids.set_font_id(font_id);
     glyph_cache[{font_id, g}] = glyph_ids;
     return glyph_ids;

@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include "UnicodeRanges.hpp"
-#include "GlyphID.hpp"
-#include "FontWeight.hpp"
-#include "FontVariant.hpp"
+#include "unicode_ranges.hpp"
+#include "glyph_id.hpp"
+#include "font_weight.hpp"
+#include "font_variant.hpp"
 #include "../exception.hpp"
 #include "../required.hpp"
 
 namespace tt {
 
-struct FontDescription {
+struct font_description {
     std::string family_name;
     std::string sub_family_name;
 
@@ -20,20 +20,20 @@ struct FontDescription {
     bool serif = false;
     bool italic = false;
     bool condensed = false;
-    FontWeight weight = FontWeight::Regular;
+    font_weight weight = font_weight::Regular;
     float optical_size = 12.0;
 
-    UnicodeRanges unicode_ranges;
+    unicode_ranges unicode_ranges;
 
     float xHeight = 0.0;
     float HHeight = 0.0;
     float DigitWidth = 0.0;
 
-    [[nodiscard]] FontVariant font_variant() const noexcept {
+    [[nodiscard]] font_variant font_variant() const noexcept {
         return {weight, italic};
     }
 
-    [[nodiscard]] friend std::string to_string(FontDescription const &rhs) noexcept {
+    [[nodiscard]] friend std::string to_string(font_description const &rhs) noexcept {
         return fmt::format("{} - {}: {}{}{}{}{} {} {}",
             rhs.family_name,
             rhs.sub_family_name,
@@ -47,7 +47,7 @@ struct FontDescription {
         );
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, FontDescription const &rhs) {
+    friend std::ostream &operator<<(std::ostream &lhs, font_description const &rhs) {
         return lhs << to_string(rhs);
     }
 };

@@ -12,16 +12,16 @@
 using namespace std;
 using namespace tt;
 
-struct GraphemeBreakTest {
+struct graphemeBreakTest {
     std::u32string codePoints;
     std::vector<bool> breakOpertunities;
     std::string comment;
     int lineNr;
 };
 
-std::optional<GraphemeBreakTest> parseGraphemeBreakTests_line(std::string_view line, int lineNr)
+std::optional<graphemeBreakTest> parsegraphemeBreakTests_line(std::string_view line, int lineNr)
 {
-    GraphemeBreakTest r;
+    graphemeBreakTest r;
 
     ttlet split_line = split(line, "\t#");
     if (split_line.size() < 2) {
@@ -51,15 +51,15 @@ std::optional<GraphemeBreakTest> parseGraphemeBreakTests_line(std::string_view l
     return r;
 }
 
-std::vector<GraphemeBreakTest> parseGraphemeBreakTests()
+std::vector<graphemeBreakTest> parsegraphemeBreakTests()
 {
-    ttlet view = file_view(URL("file:GraphemeBreakTest.txt"));
+    ttlet view = file_view(URL("file:graphemeBreakTest.txt"));
     ttlet test_data = view.string_view();
 
-    std::vector<GraphemeBreakTest> r;
+    std::vector<graphemeBreakTest> r;
     int lineNr = 1;
     for (ttlet line : split(test_data, '\n')) {
-        if (ttlet optionalTest = parseGraphemeBreakTests_line(line, lineNr)) {
+        if (ttlet optionalTest = parsegraphemeBreakTests_line(line, lineNr)) {
             r.push_back(*optionalTest);
         }
         lineNr++;
@@ -69,7 +69,7 @@ std::vector<GraphemeBreakTest> parseGraphemeBreakTests()
 
 TEST(unicode_text_segmentation, breaks_grapheme)
 {
-    auto tests = parseGraphemeBreakTests();
+    auto tests = parsegraphemeBreakTests();
 
     for (ttlet &test : tests) {
         ASSERT_EQ(test.codePoints.size() + 1, test.breakOpertunities.size());

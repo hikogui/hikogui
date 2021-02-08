@@ -1,7 +1,7 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "TrueTypeFont.hpp"
+#include "true_type_font.hpp"
 #include "../placement.hpp"
 #include "../strings.hpp"
 #include "../endian.hpp"
@@ -50,7 +50,7 @@ struct CMAPFormat4 {
 };
 
 
-static GlyphID searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c) noexcept
+static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c) noexcept
 {
     if (c > 0xffff) {
         // character value too high.
@@ -94,7 +94,7 @@ static GlyphID searchCharacterMapFormat4(std::span<std::byte const> bytes, char3
                     // Use modulo 65536 arithmetic.
                     uint16_t glyphIndex = idDelta[i].value();
                     glyphIndex += static_cast<uint16_t>(c);
-                    return GlyphID{ glyphIndex };
+                    return glyph_id{ glyphIndex };
 
                 } else {
                     ttlet charOffset = c - startCode_;
@@ -107,7 +107,7 @@ static GlyphID searchCharacterMapFormat4(std::span<std::byte const> bytes, char3
                     } else {
                         // Use modulo 65536 arithmetic.
                         glyphIndex += idDelta[i].value();
-                        return GlyphID{ glyphIndex};
+                        return glyph_id{ glyphIndex};
                     }
                 }
 
@@ -122,9 +122,9 @@ static GlyphID searchCharacterMapFormat4(std::span<std::byte const> bytes, char3
     return {};
 }
 
-[[nodiscard]] static UnicodeRanges parseCharacterMapFormat4(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_ranges parseCharacterMapFormat4(std::span<std::byte const> bytes)
 {
-    UnicodeRanges r;
+    unicode_ranges r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
@@ -151,7 +151,7 @@ struct CMAPFormat6 {
     big_uint16_buf_t entryCount;
 };
 
-static GlyphID searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c) noexcept
+static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c) noexcept
 {
     ssize_t offset = 0;
 
@@ -170,12 +170,12 @@ static GlyphID searchCharacterMapFormat6(std::span<std::byte const> bytes, char3
 
     ttlet charOffset = c - firstCode;
     assert_or_return(charOffset < glyphIndexArray.size(), {});
-    return GlyphID{glyphIndexArray[charOffset].value()};
+    return glyph_id{glyphIndexArray[charOffset].value()};
 }
 
-[[nodiscard]] static UnicodeRanges parseCharacterMapFormat6(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_ranges parseCharacterMapFormat6(std::span<std::byte const> bytes)
 {
-    UnicodeRanges r;
+    unicode_ranges r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
@@ -197,10 +197,10 @@ struct CMAPFormat12 {
 struct CMAPFormat12Group {
     big_uint32_buf_t startCharCode;
     big_uint32_buf_t endCharCode;
-    big_uint32_buf_t startGlyphID;
+    big_uint32_buf_t startglyph_id;
 };
 
-static GlyphID searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c) noexcept
+static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c) noexcept
 {
     ssize_t offset = 0;
 
@@ -221,7 +221,7 @@ static GlyphID searchCharacterMapFormat12(std::span<std::byte const> bytes, char
         ttlet startCharCode = entry.startCharCode.value();
         if (c >= startCharCode) {
             c -= startCharCode;
-            return GlyphID{entry.startGlyphID.value() + c};
+            return glyph_id{entry.startglyph_id.value() + c};
         } else {
             // Character was not in this group.
             return {};
@@ -233,9 +233,9 @@ static GlyphID searchCharacterMapFormat12(std::span<std::byte const> bytes, char
     }
 }
 
-[[nodiscard]] static UnicodeRanges parseCharacterMapFormat12(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_ranges parseCharacterMapFormat12(std::span<std::byte const> bytes)
 {
-    UnicodeRanges r;
+    unicode_ranges r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
@@ -248,7 +248,7 @@ static GlyphID searchCharacterMapFormat12(std::span<std::byte const> bytes, char
     return r;
 }
 
-[[nodiscard]] UnicodeRanges TrueTypeFont::parseCharacterMap()
+[[nodiscard]] unicode_ranges true_type_font::parseCharacterMap()
 {
     ttlet format = make_placement_ptr<big_uint16_buf_t>(cmapBytes);
 
@@ -261,7 +261,7 @@ static GlyphID searchCharacterMapFormat12(std::span<std::byte const> bytes, char
     }
 }
 
-[[nodiscard]] GlyphID TrueTypeFont::find_glyph(char32_t c) const noexcept
+[[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const noexcept
 {
     assert_or_return(check_placement_ptr<big_uint16_buf_t>(cmapBytes), {});
     ttlet format = unsafe_make_placement_ptr<big_uint16_buf_t>(cmapBytes);
@@ -367,7 +367,7 @@ struct HHEATable {
     big_uint16_buf_t numberOfHMetrics;
 };
 
-void TrueTypeFont::parseHheaTable(std::span<std::byte const> table_bytes)
+void true_type_font::parseHheaTable(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HHEATable>(table_bytes);
 
@@ -399,7 +399,7 @@ struct HEADTable {
     big_int16_buf_t glyphDataFormat;
 };
 
-void TrueTypeFont::parseHeadTable(std::span<std::byte const> table_bytes)
+void true_type_font::parseHeadTable(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HEADTable>(table_bytes);
 
@@ -498,7 +498,7 @@ static std::optional<std::string> getStringFromNameTable(std::span<std::byte con
     return {};
 }
 
-void TrueTypeFont::parseNameTable(std::span<std::byte const> table_bytes)
+void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
 {
     ssize_t offset = 0;
 
@@ -520,7 +520,7 @@ void TrueTypeFont::parseNameTable(std::span<std::byte const> table_bytes)
         ttlet nameLengthInBytes = record.length.value();
 
         switch (record.nameID.value()) {
-        case 1: { // Font family.(Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
+        case 1: { // font family.(Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
             if (!familyIsTypographic) {
                 auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
@@ -529,7 +529,7 @@ void TrueTypeFont::parseNameTable(std::span<std::byte const> table_bytes)
             }
             } break;
 
-        case 2: { // Font sub-family. (Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
+        case 2: { // font sub-family. (Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
             if (!subFamilyIsTypographic) {
                 auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
@@ -647,7 +647,7 @@ struct OS2Table0 {
     //big_uint16_buf_t usWinDescent;
 };
 
-void TrueTypeFont::parseOS2Table(std::span<std::byte const> table_bytes)
+void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<OS2Table0>(table_bytes);
     ttlet version = table->version.value();
@@ -655,7 +655,7 @@ void TrueTypeFont::parseOS2Table(std::span<std::byte const> table_bytes)
 
     ttlet weight_value = table->usWeightClass.value();
     if (weight_value >= 1 && weight_value <= 1000) {
-        description.weight = FontWeight_from_int(weight_value);
+        description.weight = font_weight_from_int(weight_value);
     }
 
     ttlet width_value = table->usWidthClass.value();
@@ -676,16 +676,16 @@ void TrueTypeFont::parseOS2Table(std::span<std::byte const> table_bytes)
     // increasing with boldness, Thin is bolder then Light.
     // The table below uses the integer value as an indication of boldness.
     switch (table->panose.bWeight) {
-    case 2: description.weight = FontWeight::Thin; break;
-    case 3: description.weight = FontWeight::ExtraLight; break;
-    case 4: description.weight = FontWeight::Light; break;
-    case 5: description.weight = FontWeight::Regular; break;
-    case 6: description.weight = FontWeight::Medium; break;
-    case 7: description.weight = FontWeight::SemiBold; break;
-    case 8: description.weight = FontWeight::Bold; break;
-    case 9: description.weight = FontWeight::ExtraBold; break;
-    case 10: description.weight = FontWeight::Black; break;
-    case 11: description.weight = FontWeight::ExtraBlack; break;
+    case 2: description.weight = font_weight::Thin; break;
+    case 3: description.weight = font_weight::ExtraLight; break;
+    case 4: description.weight = font_weight::Light; break;
+    case 5: description.weight = font_weight::Regular; break;
+    case 6: description.weight = font_weight::Medium; break;
+    case 7: description.weight = font_weight::SemiBold; break;
+    case 8: description.weight = font_weight::Bold; break;
+    case 9: description.weight = font_weight::ExtraBold; break;
+    case 10: description.weight = font_weight::Black; break;
+    case 11: description.weight = font_weight::ExtraBlack; break;
     default: break;
     }
 
@@ -743,7 +743,7 @@ struct MAXPTable10 {
     big_uint16_buf_t maxComponentDepth;
 };
 
-void TrueTypeFont::parseMaxpTable(std::span<std::byte const> table_bytes)
+void true_type_font::parseMaxpTable(std::span<std::byte const> table_bytes)
 {
     tt_parse_check(ssizeof(MAXPTable05) <= std::ssize(table_bytes), "MAXP table is larger than buffer");
     ttlet table = make_placement_ptr<MAXPTable05>(table_bytes);
@@ -754,7 +754,7 @@ void TrueTypeFont::parseMaxpTable(std::span<std::byte const> table_bytes)
     numGlyphs = table->numGlyphs.value();
 }
 
-bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, std::span<std::byte const> &glyph_bytes) const noexcept
+bool true_type_font::getGlyphBytes(glyph_id glyph_id, std::span<std::byte const> &glyph_bytes) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
@@ -818,7 +818,7 @@ struct KERNFormat0_entry {
     FWord_buf_t value;
 };
 
-static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, f32x4 &r) noexcept
+static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id, f32x4 &r) noexcept
 {
     ssize_t offset = 0;
 
@@ -855,12 +855,12 @@ static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t 
     }
 }
 
-static void getKerningFormat3(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, f32x4 &r) noexcept
+static void getKerningFormat3(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id, f32x4 &r) noexcept
 {
     tt_not_implemented();
 }
 
-[[nodiscard]] static f32x4 getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
+[[nodiscard]] static f32x4 getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
 {
     auto r = f32x4(0.0f, 0.0f);
     ssize_t offset = 0;
@@ -920,7 +920,11 @@ struct HMTXEntry {
     FWord_buf_t leftSideBearing;
 };
 
-bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID kern_glyph1_id, GlyphID kern_glyph2_id) const noexcept
+bool true_type_font::updateglyph_metrics(
+    tt::glyph_id glyph_id,
+    glyph_metrics &metrics,
+    tt::glyph_id kern_glyph1_id,
+    tt::glyph_id kern_glyph2_id) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
@@ -973,7 +977,7 @@ constexpr uint8_t FLAG_Y_SHORT = 0x04;
 constexpr uint8_t FLAG_REPEAT = 0x08;
 constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
-bool TrueTypeFont::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, Path &glyph) const noexcept
+bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, Path &glyph) const noexcept
 {
     ssize_t offset = 0;
 
@@ -1102,7 +1106,7 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]]constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool TrueTypeFont::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept
+bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, Path &glyph, glyph_id &metrics_glyph_id) const noexcept
 {
     ssize_t offset = ssizeof(GLYFEntry);
 
@@ -1115,7 +1119,7 @@ bool TrueTypeFont::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, Pat
         ttlet subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
 
         Path subGlyph;
-        assert_or_return(loadGlyph(GlyphID{subGlyphIndex}, subGlyph), false);
+        assert_or_return(loadGlyph(glyph_id{subGlyphIndex}, subGlyph), false);
 
         auto subGlyphOffset = f32x4{0.0, 0.0};
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
@@ -1193,7 +1197,7 @@ bool TrueTypeFont::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, Pat
     return true;
 }
 
-std::optional<GlyphID> TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
+std::optional<glyph_id> true_type_font::loadGlyph(glyph_id glyph_id, Path &glyph) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, {});
 
@@ -1222,7 +1226,7 @@ std::optional<GlyphID> TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) co
     return metrics_glyph_id;
 }
 
-bool TrueTypeFont::loadCompoundGlyphMetrics(std::span<std::byte const> bytes, GlyphID &metrics_glyph_id) const noexcept
+bool true_type_font::loadCompoundglyph_metrics(std::span<std::byte const> bytes, glyph_id &metrics_glyph_id) const noexcept
 {
     ssize_t offset = ssizeof(GLYFEntry);
 
@@ -1266,7 +1270,8 @@ bool TrueTypeFont::loadCompoundGlyphMetrics(std::span<std::byte const> bytes, Gl
     return true;
 }
 
-bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID lookahead_glyph_id) const noexcept
+bool true_type_font::loadglyph_metrics(tt::glyph_id glyph_id, glyph_metrics &metrics, tt::glyph_id lookahead_glyph_id)
+    const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
@@ -1287,7 +1292,7 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.
         } else if (numberOfContours < 0) {
-            assert_or_return(loadCompoundGlyphMetrics(glyph_bytes, metricsGlyphIndex), false);
+            assert_or_return(loadCompoundglyph_metrics(glyph_bytes, metricsGlyphIndex), false);
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1296,7 +1301,7 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
         // Empty glyph, such as white-space ' '.
     }
 
-    return updateGlyphMetrics(metricsGlyphIndex, metrics, glyph_id, lookahead_glyph_id);
+    return updateglyph_metrics(metricsGlyphIndex, metrics, glyph_id, lookahead_glyph_id);
 }
 
 struct SFNTHeader {
@@ -1314,7 +1319,7 @@ struct SFNTEntry {
     big_uint32_buf_t length;
 };
 
-void TrueTypeFont::parseFontDirectory()
+void true_type_font::parsefontDirectory()
 {
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<SFNTHeader>(file_bytes, offset);
@@ -1399,8 +1404,8 @@ void TrueTypeFont::parseFontDirectory()
     } else {
         ttlet glyph_id = find_glyph('x');
         if (glyph_id) {
-            GlyphMetrics metrics;
-            loadGlyphMetrics(glyph_id, metrics);
+            glyph_metrics metrics;
+            loadglyph_metrics(glyph_id, metrics);
             description.xHeight = metrics.boundingBox.height();
         }
     }
@@ -1410,16 +1415,16 @@ void TrueTypeFont::parseFontDirectory()
     } else {
         ttlet glyph_id = find_glyph('H');
         if (glyph_id) {
-            GlyphMetrics metrics;
-            loadGlyphMetrics(glyph_id, metrics);
+            glyph_metrics metrics;
+            loadglyph_metrics(glyph_id, metrics);
             description.HHeight = metrics.boundingBox.height();
         }
     }
 
     ttlet glyph_id = find_glyph('8');
     if (glyph_id) {
-        GlyphMetrics metrics;
-        loadGlyphMetrics(glyph_id, metrics);
+        glyph_metrics metrics;
+        loadglyph_metrics(glyph_id, metrics);
         description.DigitWidth = metrics.advance.x();
     }
 }

@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "FontID.hpp"
-#include "FontGlyphIDs.hpp"
+#include "font_id.hpp"
+#include "font_glyph_ids.hpp"
 #include "font_book.hpp"
 #include "../application.hpp"
 
 namespace tt {
 
-inline FontID elusive_icons_font_id = FontID{};
+inline font_id elusive_icons_font_id = font_id{};
 
 enum class elusive_icon : char32_t {
     AddressBook = 0xf102,
@@ -115,8 +115,8 @@ enum class elusive_icon : char32_t {
     FolderClose = 0xf163,
     FolderOpen = 0xf164,
     FolderSign = 0xf165,
-    Font = 0xf167,
-    Fontsize = 0xf168,
+    font = 0xf167,
+    fontsize = 0xf168,
     Fork = 0xf169,
     Forward = 0xf16b,
     ForwardAlt = 0xf16a,
@@ -319,11 +319,11 @@ enum class elusive_icon : char32_t {
     ZoomOut = 0xf230,
 };
 
-inline FontGlyphIDs to_FontGlyphIDs(elusive_icon rhs) noexcept {
+inline font_glyph_ids to_font_glyph_ids(elusive_icon rhs) noexcept {
     tt_axiom(elusive_icons_font_id);
     tt_axiom(font_book::global);
 
-    return font_book::global->find_glyph(elusive_icons_font_id, Grapheme{static_cast<char32_t>(rhs)});
+    return font_book::global->find_glyph(elusive_icons_font_id, grapheme{static_cast<char32_t>(rhs)});
 }
 
 

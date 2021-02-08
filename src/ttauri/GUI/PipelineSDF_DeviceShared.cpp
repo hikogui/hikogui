@@ -4,7 +4,7 @@
 #include "PipelineSDF.hpp"
 #include "PipelineSDF_DeviceShared.hpp"
 #include "gui_device_vulkan.hpp"
-#include "../text/ShapedText.hpp"
+#include "../text/shaped_text.hpp"
 #include "../pixel_map.hpp"
 #include "../URL.hpp"
 #include "../memory.hpp"
@@ -122,11 +122,11 @@ void DeviceShared::prepareAtlasForRendering()
  *  |                     |
  *  O---------------------+
  */
-AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
+AtlasRect DeviceShared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
 {
     ttlet[glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
 
-    ttlet drawScale = mat::S(drawFontSize, drawFontSize);
+    ttlet drawScale = mat::S(drawfontSize, drawfontSize);
     ttlet scaledBoundingBox = drawScale * glyphBoundingBox;
 
     // We will draw the font at a fixed size into the texture. And we need a border for the texture to
@@ -151,7 +151,7 @@ AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
     return atlas_rect;
 }
 
-std::pair<AtlasRect, bool> DeviceShared::getGlyphFromAtlas(FontGlyphIDs glyph) noexcept
+std::pair<AtlasRect, bool> DeviceShared::getGlyphFromAtlas(font_glyph_ids glyph) noexcept
 {
     ttlet i = glyphs_in_atlas.find(glyph);
     if (i != glyphs_in_atlas.cend()) {
@@ -164,7 +164,7 @@ std::pair<AtlasRect, bool> DeviceShared::getGlyphFromAtlas(FontGlyphIDs glyph) n
     }
 }
 
-aarect DeviceShared::getBoundingBox(FontGlyphIDs const &glyphs) noexcept
+aarect DeviceShared::getBoundingBox(font_glyph_ids const &glyphs) noexcept
 {
     // Adjust bounding box by adding a border based on 1EM.
     return expand(glyphs.getBoundingBox(), scaledDrawBorder);
@@ -172,7 +172,7 @@ aarect DeviceShared::getBoundingBox(FontGlyphIDs const &glyphs) noexcept
 
 bool DeviceShared::_placeVertices(
     vspan<Vertex> &vertices,
-    FontGlyphIDs const &glyphs,
+    font_glyph_ids const &glyphs,
     rect box,
     f32x4 color,
     aarect clippingRectangle) noexcept
@@ -199,7 +199,7 @@ bool DeviceShared::_placeVertices(
 
 bool DeviceShared::_placeVertices(
     vspan<Vertex> &vertices,
-    AttributedGlyph const &attr_glyph,
+    attributed_glyph const &attr_glyph,
     mat transform,
     aarect clippingRectangle,
     f32x4 color) noexcept
@@ -216,7 +216,7 @@ bool DeviceShared::_placeVertices(
 
 bool DeviceShared::_placeVertices(
     vspan<Vertex> &vertices,
-    AttributedGlyph const &attr_glyph,
+    attributed_glyph const &attr_glyph,
     mat transform,
     aarect clippingRectangle) noexcept
 {
@@ -225,7 +225,7 @@ bool DeviceShared::_placeVertices(
 
 void DeviceShared::placeVertices(
     vspan<Vertex> &vertices,
-    FontGlyphIDs const &glyphs,
+    font_glyph_ids const &glyphs,
     rect box,
     f32x4 color,
     aarect clippingRectangle) noexcept
@@ -237,7 +237,7 @@ void DeviceShared::placeVertices(
 
 void DeviceShared::placeVertices(
     vspan<Vertex> &vertices,
-    ShapedText const &text,
+    shaped_text const &text,
     mat transform,
     aarect clippingRectangle) noexcept
 {
@@ -255,7 +255,7 @@ void DeviceShared::placeVertices(
 
 void DeviceShared::placeVertices(
     vspan<Vertex> &vertices,
-    ShapedText const &text,
+    shaped_text const &text,
     mat transform,
     aarect clippingRectangle,
     f32x4 color) noexcept

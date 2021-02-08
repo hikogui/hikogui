@@ -14,7 +14,7 @@ namespace tt {
  * This information is used to position glyphs next to each other
  * and determinate the size of a shaped text.
  */
-struct GlyphMetrics {
+struct glyph_metrics {
     /*! Bounding box of the path.
     */
     aarect boundingBox = {};
@@ -60,24 +60,24 @@ struct GlyphMetrics {
     /*! The number of graphemes this glyph represents.
     * This may be larger than one when the glyph is a ligature.
     */
-    int numberOfGraphemes = 1;
+    int numberOfgraphemes = 1;
 
-    GlyphMetrics() noexcept = default;
-    GlyphMetrics(GlyphMetrics const &) noexcept = default;
-    GlyphMetrics(GlyphMetrics &&) noexcept = default;
-    GlyphMetrics &operator=(GlyphMetrics const &) noexcept = default;
-    GlyphMetrics &operator=(GlyphMetrics &&) noexcept = default;
+    glyph_metrics() noexcept = default;
+    glyph_metrics(glyph_metrics const &) noexcept = default;
+    glyph_metrics(glyph_metrics &&) noexcept = default;
+    glyph_metrics &operator=(glyph_metrics const &) noexcept = default;
+    glyph_metrics &operator=(glyph_metrics &&) noexcept = default;
 
     /*! Get the advanceWidth for the specific grapheme of
     * a potential ligature.
     */
-    f32x4 advanceForGrapheme(int index) const noexcept {
-        ttlet ligatureRatio = 1.0f / numberOfGraphemes;
+    f32x4 advanceForgrapheme(int index) const noexcept {
+        ttlet ligatureRatio = 1.0f / numberOfgraphemes;
 
         return advance * ligatureRatio * narrow_cast<float>(index);
     }
 
-    GlyphMetrics &scale(float rhs) noexcept
+    glyph_metrics &scale(float rhs) noexcept
     {
         auto S = mat::S(rhs, rhs);
 

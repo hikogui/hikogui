@@ -9,6 +9,6 @@
 #include "PipelineImage_ImageLocation.hpp"
 #include "draw_context.hpp"
 #include "theme.hpp"
-#include "../text/ShapedText.hpp"
+#include "../text/shaped_text.hpp"
 #include "../pixel_map.inl"
 #include "../alignment.hpp"

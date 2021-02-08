@@ -310,14 +310,14 @@ bool gui_window::send_event(KeyboardState _state, KeyboardModifiers modifiers, K
     return send_event(KeyboardEvent(_state, modifiers, key));
 }
 
-bool gui_window::send_event(Grapheme grapheme, bool full) noexcept
+bool gui_window::send_event(grapheme grapheme, bool full) noexcept
 {
     return send_event(KeyboardEvent(grapheme, full));
 }
 
 bool gui_window::send_event(char32_t c, bool full) noexcept
 {
-    return send_event(Grapheme(c), full);
+    return send_event(grapheme(c), full);
 }
 
 } // namespace tt

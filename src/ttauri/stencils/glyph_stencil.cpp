@@ -7,7 +7,7 @@
 
 namespace tt {
 
-glyph_stencil::glyph_stencil(alignment alignment, FontGlyphIDs glyph) noexcept : super(alignment), _glyph(std::move(glyph)) {}
+glyph_stencil::glyph_stencil(alignment alignment, font_glyph_ids glyph) noexcept : super(alignment), _glyph(std::move(glyph)) {}
 
 void glyph_stencil::draw(draw_context context, bool use_context_color) noexcept
 {

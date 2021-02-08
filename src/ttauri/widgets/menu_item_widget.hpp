@@ -226,7 +226,7 @@ public:
             _label_stencil = stencil::make_unique(alignment::middle_left, *label, theme::global->labelStyle);
             _label_stencil->set_show_icon(_show_icon);
 
-            _check_mark_stencil = stencil::make_unique(alignment::middle_center, ElusiveIcon::Ok);
+            _check_mark_stencil = stencil::make_unique(alignment::middle_center, elusive_icon::Ok);
 
             auto width = _label_stencil->preferred_extent().width() + theme::global->margin * 2.0f;
             if (_show_check_mark) {

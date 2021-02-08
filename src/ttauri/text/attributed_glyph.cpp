@@ -9,7 +9,7 @@
 
 namespace tt {
 
-attributed_glyph::attributed_glyph(AttributedGrapheme const &attr_grapheme, attributed_glyph const *next_attr_glyph) noexcept :
+attributed_glyph::attributed_glyph(attributed_grapheme const &attr_grapheme, attributed_glyph const *next_attr_glyph) noexcept :
     logicalIndex(attr_grapheme.logicalIndex),
     graphemeCount(1),
     general_category(attr_grapheme.general_category),
@@ -20,7 +20,7 @@ attributed_glyph::attributed_glyph(AttributedGrapheme const &attr_grapheme, attr
 
     // The end-of-paragraph is represented by a space glyph, which is usefull for
     // producing a correct cursor at an empty line at the end of a paragraph.
-    ttlet g = (attr_grapheme.grapheme == '\n') ? Grapheme{0} : attr_grapheme.grapheme;
+    ttlet g = (attr_grapheme.grapheme == '\n') ? grapheme{0} : attr_grapheme.grapheme;
 
     glyphs = font_book::global->find_glyph(style_font_id, g);
 
@@ -39,15 +39,15 @@ attributed_glyph::attributed_glyph(AttributedGrapheme const &attr_grapheme, attr
     // If the next glyph is of the same font, then use it for kerning reasons.
     ttlet next_glyph = (next_attr_glyph && next_attr_glyph->glyphs.font_id() == actual_font_id) ?
         next_attr_glyph->glyphs.front() :
-        GlyphID{};
+        glyph_id{};
 
-    if (!font->loadGlyphMetrics(this_glyph, metrics, next_glyph)) {
+    if (!font->loadglyph_metrics(this_glyph, metrics, next_glyph)) {
         tt_log_error("Could not load metrics for glyph {} in font {} - {}", static_cast<int>(this_glyph), font->description.family_name, font->description.sub_family_name);
         // failed to load metrics. Switch to glyph zero and load again.
         glyphs.clear();
         glyphs.set_font_id(style_font_id);
-        glyphs += GlyphID{0};
-        if (!font->loadGlyphMetrics(glyphs.front(), metrics)) {
+        glyphs += glyph_id{0};
+        if (!font->loadglyph_metrics(glyphs.front(), metrics)) {
             // Using null-metrics when even the null-glyph can not be found.
             tt_log_error("Could not load metrics for null-glyph in font {} - {}", font->description.family_name, font->description.sub_family_name);
         }

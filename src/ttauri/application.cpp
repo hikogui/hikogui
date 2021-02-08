@@ -10,8 +10,8 @@
 #include "version.hpp"
 #include "trace.hpp"
 #include "thread.hpp"
-#include "text/ElusiveIcons.hpp"
-#include "text/TTauriIcons.hpp"
+#include "text/elusive_icon.hpp"
+#include "text/ttauri_icon.hpp"
 #include "text/language.hpp"
 #include "text/font_book.hpp"
 #include "GUI/RenderDoc.hpp"
@@ -23,7 +23,7 @@
 #include <memory>
 
 #include "data/elusiveicons-webfont.ttf.inl"
-#include "data/TTauriIcons.ttf.inl"
+#include "data/ttauri_icons.ttf.inl"
 #include "ttauri/GUI/PipelineImage.vert.spv.inl"
 #include "ttauri/GUI/PipelineImage.frag.spv.inl"
 #include "ttauri/GUI/PipelineFlat.vert.spv.inl"
@@ -134,11 +134,11 @@ void application::init_foundation()
 void application::init_text()
 {
     static_resource_view::add_static_resource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
-    static_resource_view::add_static_resource(TTauriIcons_ttf_filename, TTauriIcons_ttf_bytes);
+    static_resource_view::add_static_resource(ttauri_icons_ttf_filename, ttauri_icons_ttf_bytes);
 
-    font_book::global = std::make_unique<font_book>(std::vector<URL>{URL::urlFromSystemFontDirectory()});
-    ElusiveIcons_font_id = font_book::global->register_font(URL("resource:elusiveicons-webfont.ttf"));
-    TTauriIcons_font_id = font_book::global->register_font(URL("resource:TTauriIcons.ttf"));
+    font_book::global = std::make_unique<font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
+    elusive_icons_font_id = font_book::global->register_font(URL("resource:elusiveicons-webfont.ttf"));
+    ttauri_icons_font_id = font_book::global->register_font(URL("resource:ttauri_icons.ttf"));
 
     language::set_preferred_languages(language::read_os_preferred_languages());
 }
@@ -218,7 +218,8 @@ void application::deinit_foundation()
 
 void application::deinit_text()
 {
-    ElusiveIcons_font_id = FontID{};
+    elusive_icons_font_id = font_id{};
+    ttauri_icons_font_id = font_id{};
     font_book::global = {};
 }
 

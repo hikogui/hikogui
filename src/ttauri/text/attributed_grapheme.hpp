@@ -3,19 +3,19 @@
 
 #pragma once
 
-#include "Grapheme.hpp"
-#include "TextStyle.hpp"
+#include "grapheme.hpp"
+#include "text_style.hpp"
 #include "unicode_bidi_class.hpp"
 #include "unicode_general_category.hpp"
 
 namespace tt {
 
 struct attributed_grapheme {
-    Grapheme grapheme;
+    tt::grapheme grapheme;
 
     /** All information about the shape and color needed to render this grapheme.
      */
-    TextStyle style;
+    text_style style;
 
     /** Index of the grapheme before bidi-algorithm.
      */
@@ -31,7 +31,7 @@ struct attributed_grapheme {
 
     unicode_general_category general_category;
 
-    attributed_grapheme(Grapheme grapheme, TextStyle style, ssize_t logicalIndex=0) :
+    attributed_grapheme(tt::grapheme grapheme, text_style style, ssize_t logicalIndex=0) :
         grapheme(std::move(grapheme)), style(std::move(style)), logicalIndex(logicalIndex),
         bidi_class(unicode_bidi_class::unknown),
         general_category(unicode_general_category::unknown)

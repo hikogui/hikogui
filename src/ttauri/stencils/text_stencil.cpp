@@ -7,12 +7,12 @@
 
 namespace tt {
 
-text_stencil::text_stencil(alignment alignment, std::u8string_view text, TextStyle style) noexcept :
+text_stencil::text_stencil(alignment alignment, std::u8string_view text, text_style style) noexcept :
     super(alignment), _text(text), _style(style), _shaped_text(text, style, 0.0f, alignment::top_left)
 {
 }
 
-text_stencil::text_stencil(alignment alignment, std::u8string text, TextStyle style) noexcept :
+text_stencil::text_stencil(alignment alignment, std::u8string text, text_style style) noexcept :
     super(alignment), _text(std::move(text)), _style(style), _shaped_text(_text, style, 0.0f, alignment)
 {
 }
@@ -27,7 +27,7 @@ void text_stencil::draw(draw_context context, bool use_context_color) noexcept
     auto data_is_modified = std::exchange(_data_is_modified, false);
 
     if (std::exchange(_size_is_modified, false) || data_is_modified) {
-        _shaped_text = ShapedText(_text, _style, _rectangle.width(), _alignment);
+        _shaped_text = shaped_text(_text, _style, _rectangle.width(), _alignment);
         _position_is_modified = true;
     }
 

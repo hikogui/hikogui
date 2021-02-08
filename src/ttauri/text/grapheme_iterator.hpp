@@ -5,7 +5,7 @@
 
 #include "code_point_iterator.hpp"
 #include "unicode_text_segmentation.hpp"
-#include "Grapheme.hpp"
+#include "grapheme.hpp"
 #include "../required.hpp"
 #include <type_traits>
 #include <iterator_traits>
@@ -29,9 +29,9 @@ public:
 
     [[nodiscard]] constexpr grapheme_iterator(iterator const &it) noexcept : it(itr), forward_break_state() {}
 
-    [[nodiscard]] Grapheme operator*() noexcept {
+    [[nodiscard]] grapheme operator*() noexcept {
         ttlet last_it = std::next(*this).it;
-        auto r = Grapheme(it, last_it);
+        auto r = grapheme(it, last_it);
     }
 
     grapheme_iterator &operator++() noexcept

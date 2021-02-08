@@ -57,7 +57,7 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     return base_localAppData / application_version.name;
 }
 
-URL URL::urlFromSystemFontDirectory() noexcept
+URL URL::urlFromSystemfontDirectory() noexcept
 {
     PWSTR wchar_fonts;
 

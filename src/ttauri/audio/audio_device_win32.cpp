@@ -67,7 +67,7 @@ std::string audio_device_win32::name() const noexcept
 
 tt::label audio_device_win32::label() const noexcept
 {
-    return {ElusiveIcon::Speaker, l10n("{}"), name()};
+    return {elusive_icon::Speaker, l10n("{}"), name()};
 }
 
 

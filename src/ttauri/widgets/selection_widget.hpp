@@ -11,7 +11,7 @@
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../text/font_book.hpp"
-#include "../text/ElusiveIcons.hpp"
+#include "../text/elusive_icon.hpp"
 #include "../observable.hpp"
 #include <memory>
 #include <string>
@@ -132,7 +132,7 @@ public:
 
         if (need_layout) {
             _left_box_rectangle = aarect{0.0f, 0.0f, theme::global->smallSize, rectangle().height()};
-            _chevrons_glyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
+            _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
             ttlet chevrons_glyph_bbox = PipelineSDF::DeviceShared::getBoundingBox(_chevrons_glyph);
             _chevrons_rectangle =
                 align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global->small_icon_size), alignment::middle_center);
@@ -273,7 +273,7 @@ private:
     aarect _option_rectangle;
     aarect _left_box_rectangle;
 
-    FontGlyphIDs _chevrons_glyph;
+    font_glyph_ids _chevrons_glyph;
     aarect _chevrons_rectangle;
 
     bool _selecting = false;

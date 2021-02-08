@@ -323,7 +323,7 @@ protected:
 
     bool send_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
 
-    bool send_event(Grapheme grapheme, bool full = true) noexcept;
+    bool send_event(grapheme grapheme, bool full = true) noexcept;
 
     bool send_event(char32_t c, bool full = true) noexcept;
 

@@ -20,7 +20,7 @@
 #include "../mat.hpp"
 #include "../aarect.hpp"
 #include "../vspan.hpp"
-#include "../text/ShapedText.hpp"
+#include "../text/shaped_text.hpp"
 #include <type_traits>
 
 namespace tt {
@@ -245,7 +245,7 @@ public:
      * @param text The shaped text to draw.
      * @param useContextColor When true display the text in the context's color, if false use text style color
      */
-    void draw_text(ShapedText const &text, bool useContextColor = false) const noexcept
+    void draw_text(shaped_text const &text, bool useContextColor = false) const noexcept
     {
         tt_axiom(_sdf_vertices != nullptr);
 
@@ -258,7 +258,7 @@ public:
         }
     }
 
-    void draw_glyph(FontGlyphIDs const &glyph, aarect box) const noexcept
+    void draw_glyph(font_glyph_ids const &glyph, aarect box) const noexcept
     {
         tt_axiom(_sdf_vertices != nullptr);
 

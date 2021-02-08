@@ -12,7 +12,7 @@
 #include "../GUI/draw_context.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
-#include "../text/ShapedText.hpp"
+#include "../text/shaped_text.hpp"
 #include "../alignment.hpp"
 #include "../Path.hpp"
 #include "../R16G16B16A16SFloat.hpp"

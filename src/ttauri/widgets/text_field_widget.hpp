@@ -5,7 +5,7 @@
 
 #include "text_field_delegate.hpp"
 #include "widget.hpp"
-#include "../text/EditableText.hpp"
+#include "../text/editable_text.hpp"
 #include "../format.hpp"
 #include "../label.hpp"
 #include <memory>
@@ -341,15 +341,15 @@ public:
             switch (event.type) {
                 using enum KeyboardEvent::Type;
 
-            case Grapheme:
+            case grapheme:
                 handled = true;
-                _field.insertGrapheme(event.grapheme);
+                _field.insertgrapheme(event.grapheme);
                 commit(false);
                 break;
 
-            case PartialGrapheme:
+            case Partialgrapheme:
                 handled = true;
-                _field.insertPartialGrapheme(event.grapheme);
+                _field.insertPartialgrapheme(event.grapheme);
                 commit(false);
                 break;
 
@@ -395,8 +395,8 @@ private:
     aarect _text_field_rectangle;
     aarect _text_field_clipping_rectangle;
 
-    EditableText _field;
-    ShapedText _shaped_text;
+    editable_text _field;
+    shaped_text _shaped_text;
     aarect _left_to_right_caret = {};
 
     /** Scroll speed in points per second.
@@ -521,7 +521,7 @@ private:
 
     void draw_partial_grapheme_caret(draw_context context) const noexcept
     {
-        ttlet partial_grapheme_caret = _field.partialGraphemeCaret();
+        ttlet partial_grapheme_caret = _field.partialgraphemeCaret();
         if (partial_grapheme_caret) {
             context.fill_color = theme::global->incompleteGlyphColor;
             context.draw_filled_quad(partial_grapheme_caret);

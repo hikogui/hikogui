@@ -159,7 +159,7 @@ theme::theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] FontWeight theme::parseFontWeight(datum const &data, char const *object_name)
+[[nodiscard]] font_weight theme::parsefont_weight(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error("Missing '{}'", object_name);
@@ -167,29 +167,29 @@ theme::theme(URL const &url)
 
     ttlet object = data[object_name];
     if (object.is_numeric()) {
-        return FontWeight_from_int(static_cast<int>(object));
+        return font_weight_from_int(static_cast<int>(object));
     } else if (object.is_string()) {
-        return FontWeight_from_string(static_cast<std::string>(object));
+        return font_weight_from_string(static_cast<std::string>(object));
     } else {
         throw parse_error("Unable to parse font weight, got {}.", object.type_name());
     }
 }
 
-[[nodiscard]] TextStyle theme::parseTextStyleValue(datum const &data)
+[[nodiscard]] text_style theme::parsetext_styleValue(datum const &data)
 {
     if (!data.is_map()) {
         throw parse_error("Expect a text-style to be an object, got '{}'", data);
     }
 
-    TextStyle r;
+    text_style r;
 
     r.family_id = font_book::global->find_family(parseString(data, "family"));
     r.size = parseFloat(data, "size");
 
     if (data.contains("weight")) {
-        r.variant.set_weight(parseFontWeight(data, "weight"));
+        r.variant.set_weight(parsefont_weight(data, "weight"));
     } else {
-        r.variant.set_weight(FontWeight::Regular);
+        r.variant.set_weight(font_weight::Regular);
     }
 
     if (data.contains("italic")) {
@@ -202,7 +202,7 @@ theme::theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] TextStyle theme::parseTextStyle(datum const &data, char const *object_name)
+[[nodiscard]] text_style theme::parsetext_style(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -211,7 +211,7 @@ theme::theme(URL const &url)
 
     ttlet textStyleObject = data[object_name];
     try {
-        return parseTextStyleValue(textStyleObject);
+        return parsetext_styleValue(textStyleObject);
     } catch (parse_error const &e) {
         throw parse_error("Could not parse text-style '{}'\n{}", object_name, tt::to_string(e, false));
     }
@@ -252,13 +252,13 @@ void theme::parse(datum const &data)
     this->cursorColor = parseColor(data, "cursor-color");
     this->incompleteGlyphColor = parseColor(data, "incomplete-glyph-color");
 
-    this->labelStyle = parseTextStyle(data, "label-style");
-    this->smallLabelStyle = parseTextStyle(data, "small-label-style");
-    this->warningLabelStyle = parseTextStyle(data, "warning-label-style");
-    this->errorLabelStyle = parseTextStyle(data, "error-label-style");
-    this->helpLabelStyle = parseTextStyle(data, "help-label-style");
-    this->placeholderLabelStyle = parseTextStyle(data, "placeholder-label-style");
-    this->linkLabelStyle = parseTextStyle(data, "link-label-style");
+    this->labelStyle = parsetext_style(data, "label-style");
+    this->smallLabelStyle = parsetext_style(data, "small-label-style");
+    this->warningLabelStyle = parsetext_style(data, "warning-label-style");
+    this->errorLabelStyle = parsetext_style(data, "error-label-style");
+    this->helpLabelStyle = parsetext_style(data, "help-label-style");
+    this->placeholderLabelStyle = parsetext_style(data, "placeholder-label-style");
+    this->linkLabelStyle = parsetext_style(data, "link-label-style");
 }
 
 }

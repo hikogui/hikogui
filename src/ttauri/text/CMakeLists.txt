@@ -1,29 +1,29 @@
 
 
 target_sources(ttauri PRIVATE
-    AttributedGlyph.cpp
-    AttributedGlyph.hpp
-    AttributedGlyphLine.hpp
-    AttributedGrapheme.hpp
+    attributed_glyph.cpp
+    attributed_glyph.hpp
+    attributed_glyph_line.hpp
+    attributed_grapheme.hpp
     code_point_iterator.hpp
-    EditableText.hpp
-    ElusiveIcons.hpp
-    Font.cpp
-    Font.hpp
+    editable_text.hpp
+    elusive_icon.hpp
+    font.cpp
+    font.hpp
     font_book.cpp
     font_book.hpp
-    FontDescription.hpp
-    FontFamilyID.hpp
-    FontGlyphIDs.cpp
-    FontGlyphIDs.hpp
-    FontGraphemeID.hpp
-    FontID.hpp
-    FontVariant.hpp
-    FontWeight.hpp
-    GlyphID.hpp
-    GlyphMetrics.hpp
-    Grapheme.cpp
-    Grapheme.hpp
+    font_description.hpp
+    font_family_id.hpp
+    font_glyph_ids.cpp
+    font_glyph_ids.hpp
+    font_grapheme_id.hpp
+    font_id.hpp
+    font_variant.hpp
+    font_weight.hpp
+    glyph_id.hpp
+    glyph_metrics.hpp
+    grapheme.cpp
+    grapheme.hpp
     grapheme_iterator.hpp
     gstring.cpp
     gstring.hpp
@@ -33,16 +33,16 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/language_win32.cpp>
     po_parser.cpp
     po_parser.hpp
-    ShapedText.cpp
-    ShapedText.hpp
-    TextDecoration.hpp
-    TextStyle.cpp
-    TextStyle.hpp
+    shaped_text.cpp
+    shaped_text.hpp
+    text_decoration.hpp
+    text_style.cpp
+    text_style.hpp
     translation.cpp
     translation.hpp
-    TrueTypeFont.cpp
-    TrueTypeFont.hpp
-    TTauriIcons.hpp
+    true_type_font.cpp
+    true_type_font.hpp
+    ttauri_icon.hpp
     unicode_bidi.cpp
     unicode_bidi.hpp
     unicode_bidi_bracket_type.hpp
@@ -57,8 +57,8 @@ target_sources(ttauri PRIVATE
     unicode_normalization.hpp
     unicode_text_segmentation.cpp
     unicode_text_segmentation.hpp
-    UnicodeRanges.cpp
-    UnicodeRanges.hpp
+    unicode_ranges.cpp
+    unicode_ranges.hpp
 )
 
 

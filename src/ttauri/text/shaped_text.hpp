@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "AttributedGlyphLine.hpp"
+#include "attributed_glyph_line.hpp"
 #include "gstring.hpp"
 #include "../required.hpp"
 #include "../alignment.hpp"
@@ -16,13 +16,13 @@
 namespace tt {
 
 
-/** ShapedText represent a piece of text shaped to be displayed.
+/** shaped_text represent a piece of text shaped to be displayed.
  */
-class ShapedText {
+class shaped_text {
 public:
-    using iterator = recursive_iterator<std::vector<AttributedGlyphLine>::iterator>;
+    using iterator = recursive_iterator<std::vector<attributed_glyph_line>::iterator>;
 
-    using const_iterator = recursive_iterator<std::vector<AttributedGlyphLine>::const_iterator>;
+    using const_iterator = recursive_iterator<std::vector<attributed_glyph_line>::const_iterator>;
 
     alignment alignment;
     aarect boundingBox;
@@ -30,16 +30,16 @@ public:
     f32x4 preferred_extent;
 
 private:
-    std::vector<AttributedGlyphLine> lines;
+    std::vector<attributed_glyph_line> lines;
 
 public:
-    ShapedText() noexcept :
+    shaped_text() noexcept :
         alignment(alignment::middle_center), boundingBox(), width(0.0f), preferred_extent(), lines() {}
-    ShapedText(ShapedText const &other) = default;
-    ShapedText(ShapedText &&other) noexcept = default;
-    ShapedText &operator=(ShapedText const &other) = default;
-    ShapedText &operator=(ShapedText &&other) noexcept = default;
-    ~ShapedText() = default;
+    shaped_text(shaped_text const &other) = default;
+    shaped_text(shaped_text &&other) noexcept = default;
+    shaped_text &operator=(shaped_text const &other) = default;
+    shaped_text &operator=(shaped_text &&other) noexcept = default;
+    ~shaped_text() = default;
 
     /** Create shaped text from attributed text.
      * This function is used to draw rich-text.
@@ -62,8 +62,8 @@ public:
      * @param alignment The alignment of the text within the extent.
      * @param wrap True when text should be wrapped to fit inside the given width.
      */
-    ShapedText(
-        std::vector<AttributedGrapheme> const &text,
+    shaped_text(
+        std::vector<attributed_grapheme> const &text,
         float width,
         tt::alignment const alignment=alignment::middle_center,
         bool wrap=true
@@ -78,9 +78,9 @@ public:
      * @param alignment The alignment of the text within the extent.
      * @param wrap When fitting the text in the extent wrap lines when needed.
      */
-    ShapedText(
+    shaped_text(
         gstring const &text,
-        TextStyle const &style,
+        text_style const &style,
         float width,
         tt::alignment const alignment=alignment::middle_center,
         bool wrap=true
@@ -95,9 +95,9 @@ public:
      * @param alignment The alignment of the text within the extent.
      * @param wrap When fitting the text in the extent wrap lines when needed.
      */
-    ShapedText(
+    shaped_text(
         std::u8string_view text,
-        TextStyle const &style,
+        text_style const &style,
         float width,
         tt::alignment const alignment=alignment::middle_center,
         bool wrap=true
@@ -215,7 +215,7 @@ public:
      * @param index 
      * @return A rectangle describing the position of the grapheme.
      */
-    [[nodiscard]] aarect rectangleOfGrapheme(ssize_t index) const noexcept;
+    [[nodiscard]] aarect rectangleOfgrapheme(ssize_t index) const noexcept;
 
     /** Return the cursor-carets.
      * The caret will be to the left of the character at position.
@@ -289,7 +289,7 @@ public:
 
 
     /** Get the index into the text from a coordinate.
-     * The index returned is from the text that was used to construct the ShapedText.
+     * The index returned is from the text that was used to construct the shaped_text.
      *
      * @param coordinate A coordinate within the box.
      * @return index of the selected grapheme, or -1 if no grapheme was found near the coordinate.
@@ -297,7 +297,7 @@ public:
     [[nodiscard]] int indexFromCoordinate(f32x4 coordinate) const noexcept;
 
     /** Get the index into the text from a coordinate.
-     * The index returned is from the text that was used to construct the ShapedText.
+     * The index returned is from the text that was used to construct the shaped_text.
      *
      * @param start The coordinate at the start of a mouse drag.
      * @param current The current coordinate of the mouse pointer, during the drag.
