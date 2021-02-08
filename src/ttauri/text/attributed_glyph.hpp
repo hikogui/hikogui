@@ -12,7 +12,7 @@ namespace tt {
 
 /**
 */
-struct AttributedGlyph {
+struct attributed_glyph {
     FontGlyphIDs glyphs;
 
     /** The logical index of the grapheme before bidi-algorithm.
@@ -44,13 +44,13 @@ struct AttributedGlyph {
      * @param attr_grapheme The grapheme to turn into a glyph.
      * @param next_attr_glyph The next glyph in display-ordering, used for kerning.
      */
-    AttributedGlyph(AttributedGrapheme const &attr_grapheme, AttributedGlyph const *next_attr_glyph=nullptr) noexcept;
+    attributed_glyph(AttributedGrapheme const &attr_grapheme, attributed_glyph const *next_attr_glyph=nullptr) noexcept;
 
-    AttributedGlyph(AttributedGlyph const &other) = default;
-    AttributedGlyph(AttributedGlyph &&other) noexcept = default;
-    AttributedGlyph &operator=(AttributedGlyph const &other) = default;
-    AttributedGlyph &operator=(AttributedGlyph &&other) noexcept = default;
-    ~AttributedGlyph() = default;
+    attributed_glyph(attributed_glyph const &other) = default;
+    attributed_glyph(attributed_glyph &&other) noexcept = default;
+    attributed_glyph &operator=(attributed_glyph const &other) = default;
+    attributed_glyph &operator=(attributed_glyph &&other) noexcept = default;
+    ~attributed_glyph() = default;
 
     /** Check if this glyph contains the grapheme at index.
      */

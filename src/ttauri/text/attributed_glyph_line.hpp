@@ -9,7 +9,7 @@
 
 namespace tt {
 
-struct AttributedGlyphLine {
+struct attributed_glyph_line {
     using vector_type = std::vector<AttributedGlyph>;
     using iterator = vector_type::iterator;
     using const_iterator = vector_type::const_iterator;
@@ -26,7 +26,7 @@ struct AttributedGlyphLine {
 
     /** This constructor will move the data from first to last.
     */
-    AttributedGlyphLine(iterator first, iterator last) noexcept :
+    attributed_glyph_line(iterator first, iterator last) noexcept :
         line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f), capHeight(0.0f), xHeight(0.0f)
     {
         tt_axiom(std::distance(first, last) > 0);
@@ -43,7 +43,7 @@ struct AttributedGlyphLine {
             std::ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
     }
 
-    [[nodiscard]] AttributedGlyphLine wrap(float maximum_width) noexcept {
+    [[nodiscard]] attributed_glyph_line wrap(float maximum_width) noexcept {
         tt_axiom(shouldWrap(maximum_width));
 
         auto word_end = line.begin();
@@ -72,7 +72,7 @@ struct AttributedGlyphLine {
             (i != line.begin()) ? i : // Wrap at character boundary
             i + 1; // Include at least one character.
 
-        auto reset_of_line = AttributedGlyphLine(split_position, line.end());
+        auto reset_of_line = attributed_glyph_line(split_position, line.end());
         line.erase(split_position, line.cend());
         calculateLineMetrics();
         return reset_of_line;

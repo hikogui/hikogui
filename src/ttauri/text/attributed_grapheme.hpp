@@ -10,7 +10,7 @@
 
 namespace tt {
 
-struct AttributedGrapheme {
+struct attributed_grapheme {
     Grapheme grapheme;
 
     /** All information about the shape and color needed to render this grapheme.
@@ -31,7 +31,7 @@ struct AttributedGrapheme {
 
     unicode_general_category general_category;
 
-    AttributedGrapheme(Grapheme grapheme, TextStyle style, ssize_t logicalIndex=0) :
+    attributed_grapheme(Grapheme grapheme, TextStyle style, ssize_t logicalIndex=0) :
         grapheme(std::move(grapheme)), style(std::move(style)), logicalIndex(logicalIndex),
         bidi_class(unicode_bidi_class::unknown),
         general_category(unicode_general_category::unknown)

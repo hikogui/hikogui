@@ -4,9 +4,9 @@
 #pragma once
 
 #include "GlyphMetrics.hpp"
-#include "FontGlyphIDs.hpp"
+#include "font_glyph_ids.hpp"
 #include "gstring.hpp"
-#include "FontDescription.hpp"
+#include "fontDescription.hpp"
 #include "../Path.hpp"
 #include "../resource_view.hpp"
 #include "../exception.hpp"
@@ -22,28 +22,28 @@ namespace tt {
  * This class has information on how to shape text and
  * get glyphs consisting of bezier contours.
  */
-class Font {
+class font {
 public:
-    Font() = default;
-    virtual ~Font() = default;
-    Font(Font const &) = delete;
-    Font &operator=(Font const &) = delete;
-    Font(Font &&) = delete;
-    Font &operator=(Font &&) = delete;
+    font() = default;
+    virtual ~font() = default;
+    font(font const &) = delete;
+    font &operator=(font const &) = delete;
+    font(font &&) = delete;
+    font &operator=(font &&) = delete;
 
     /** The description is filled with information parsed from the font.
      */
-    FontDescription description;
+    fontDescription description;
 
     /** Get the glyph for a code-point.
      * @return glyph-id, or invalid when not found or error.
      */
-    [[nodiscard]] virtual GlyphID find_glyph(char32_t c) const noexcept = 0;
+    [[nodiscard]] virtual glyph_id find_glyph(char32_t c) const noexcept = 0;
 
     /** Get the glyphs for a grapheme.
     * @return a set of glyph-ids, or invalid when not found or error.
     */
-    [[nodiscard]] FontGlyphIDs find_glyph(Grapheme g) const noexcept;
+    [[nodiscard]] font_glyph_ids find_glyph(Grapheme g) const noexcept;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
@@ -52,7 +52,7 @@ public:
     * \param path The path constructed by the loader.
     * \return empty on failure, or the glyphID of the metrics to use.
     */
-    virtual std::optional<GlyphID> loadGlyph(GlyphID glyph_id, Path &path) const noexcept = 0;
+    virtual std::optional<glyph_id> loadGlyph(glyph_id glyph_id, Path &path) const noexcept = 0;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
@@ -62,7 +62,7 @@ public:
     * \param lookahead_glyph_id The id of a glyph to the right, needed for kerning.
     * \return true on success, false on error.
     */
-    virtual bool loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID lookahead_glyph_id=GlyphID{}) const noexcept = 0;
+    virtual bool loadGlyphMetrics(glyph_id glyph_id, GlyphMetrics &metrics, glyph_id lookahead_glyph_id=glyph_id{}) const noexcept = 0;
 };
 
 }

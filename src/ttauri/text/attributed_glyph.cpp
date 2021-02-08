@@ -1,7 +1,7 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "AttributedGlyph.hpp"
+#include "attributed_glyph.hpp"
 #include "font_book.hpp"
 #include "../logger.hpp"
 #include "../application.hpp"
@@ -9,7 +9,7 @@
 
 namespace tt {
 
-AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, AttributedGlyph const *next_attr_glyph) noexcept :
+attributed_glyph::attributed_glyph(AttributedGrapheme const &attr_grapheme, attributed_glyph const *next_attr_glyph) noexcept :
     logicalIndex(attr_grapheme.logicalIndex),
     graphemeCount(1),
     general_category(attr_grapheme.general_category),
@@ -57,7 +57,7 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
     metrics.scale(style.scaled_size());
 }
 
-[[nodiscard]] Path AttributedGlyph::get_path() const noexcept
+[[nodiscard]] Path attributed_glyph::get_path() const noexcept
 {
     ttlet M = mat::T(position) * mat::S(style.scaled_size(), style.scaled_size());
 

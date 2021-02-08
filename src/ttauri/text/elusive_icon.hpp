@@ -10,9 +10,9 @@
 
 namespace tt {
 
-inline FontID ElusiveIcons_font_id = FontID{};
+inline FontID elusive_icons_font_id = FontID{};
 
-enum class ElusiveIcon : char32_t {
+enum class elusive_icon : char32_t {
     AddressBook = 0xf102,
     AddressBookAlt = 0xf101,
     Adjust = 0xf104,
@@ -319,11 +319,11 @@ enum class ElusiveIcon : char32_t {
     ZoomOut = 0xf230,
 };
 
-inline FontGlyphIDs to_FontGlyphIDs(ElusiveIcon rhs) noexcept {
-    tt_axiom(ElusiveIcons_font_id);
+inline FontGlyphIDs to_FontGlyphIDs(elusive_icon rhs) noexcept {
+    tt_axiom(elusive_icons_font_id);
     tt_axiom(font_book::global);
 
-    return font_book::global->find_glyph(ElusiveIcons_font_id, Grapheme{static_cast<char32_t>(rhs)});
+    return font_book::global->find_glyph(elusive_icons_font_id, Grapheme{static_cast<char32_t>(rhs)});
 }
 
 

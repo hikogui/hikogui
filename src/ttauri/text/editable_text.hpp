@@ -11,7 +11,7 @@
 
 namespace tt {
 
-class EditableText {
+class editable_text {
     std::vector<AttributedGrapheme> text;
     ShapedText _shapedText;
 
@@ -40,7 +40,7 @@ class EditableText {
     bool hasPartialGrapheme = false;
 
 public:
-    EditableText(TextStyle style) :
+    editable_text(TextStyle style) :
         text(), _shapedText(), currentStyle(style)
     {
     }
@@ -56,7 +56,7 @@ public:
         return r;
     }
 
-    EditableText &operator=(std::string_view str) noexcept
+    editable_text &operator=(std::string_view str) noexcept
     {
         cancelPartialGrapheme();
 

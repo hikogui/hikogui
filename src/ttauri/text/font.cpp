@@ -1,15 +1,15 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "Font.hpp"
-#include "TrueTypeFont.hpp"
+#include "font.hpp"
+#include "TrueTypefont.hpp"
 #include "../resource_view.hpp"
 
 namespace tt {
 
-[[nodiscard]] FontGlyphIDs Font::find_glyph(Grapheme g) const noexcept
+[[nodiscard]] font_glyph_ids font::find_glyph(Grapheme g) const noexcept
 {
-    FontGlyphIDs r;
+    font_glyph_ids r;
 
     // First try composed normalization
     for (ssize_t i = 0; i != std::ssize(g); ++i) {
