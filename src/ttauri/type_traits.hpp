@@ -184,7 +184,7 @@ template<typename DerivedType, typename BaseType>
 constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,BaseType>::value;
 
 template<typename T1, typename T2>
-constexpr bool is_different_v = !is_same_v<T1,T2>;
+constexpr bool is_different_v = !std::is_same_v<T1,T2>;
 
 
 template<typename First, typename Second>

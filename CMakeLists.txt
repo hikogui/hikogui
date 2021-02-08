@@ -123,16 +123,24 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
+    # Turn on a lot of warnings by default.
+    target_compile_options(ttauri PUBLIC -W4)
+
+    # Set the compiler to C++20 standard conforming as much as possible.
+    target_compile_options(ttauri PUBLIC -permissive-)
+
     # By default MSVC reports a incorrect version in __cplusplus
     # This option will make it work correctly.
     target_compile_options(ttauri PUBLIC -Zc:__cplusplus)
 
+    # Use the C++20 compliant preprocessor, which include __VA_OPT__()
+    # This causes warning "C5105: macro expansion producing 'defined' has undefined behavior" in winbase.h
+    # which is supposed to be fixed in a newer version of the SDK.
+    target_compile_options(ttauri PUBLIC -Zc:preprocessor)
+    target_compile_options(ttauri PUBLIC -wd5105)
+
     # Allow system headers to be imported.
     target_compile_options(ttauri PUBLIC -experimental:module)
-
-    # language_win32 requires RT and RT needs specifically the non-c++20
-    # experimental-and-incompatible coroutine support.
-    #target_compile_options(ttauri PUBLIC -await)
 
     # Support Intel's IvyBridge and AMD's Steamroller
     target_compile_options(ttauri PUBLIC -arch:AVX)
@@ -140,39 +148,38 @@ elseif (MSVC)
     # The TTauri generic tokenizer uses large constexpr tables.
     target_compile_options(ttauri PUBLIC -constexpr:steps 100000000)
 
-    target_compile_options(ttauri PUBLIC -W4)
-    #target_compile_options(ttauri PUBLIC -permissive-)
-
-    # Ignore unknown pragmas.
+    # C4068: unknown pragma.
+    # Ignore unknown pragmas, needed for other compilers.
     target_compile_options(ttauri PUBLIC -wd4068)
 
-    # C4324 structure was padded due to alignment specifier.
+    # C4324: structure was padded due to alignment specifier.
     # Of course it is, that is what the alignment specifier is used for??????
     target_compile_options(ttauri PUBLIC -wd4324)
 
-    # C4100 unreferenced formal parameter.
+    # C4100: unreferenced formal parameter.
     # This warning is in the way when you want to document a parameter of a virtual function
     # with an implementation that does not use the parameter.
     target_compile_options(ttauri PUBLIC -wd4100)
 
-    # C4127 conditional expression is constant.
-    # This warning will also trigger with expressions that include template parameters
-    # that sometimes causes the expression to be constant, but at other times not.
-    # Therefor this warning is useless.
+    # C4127: conditional expression is constant.
+    # False positive with expressions that include template parameters.
     target_compile_options(ttauri PUBLIC -wd4127)
 
-    # "C6326: Potential comparison of a constant with another constant."
-    # Should never have been a warning. This is caused by normal constexpr use since c++11.
+    # C6326: Potential comparison of a constant with another constant.
+    # False positive in constexpr context.
     target_compile_options(ttauri PUBLIC -wd6326)
 
-    # "C6239: (<non-zero constant> && <expression>) always evaluates to the result of <expression>.
-    # Did you intend to use the bitwise-and operator?"
-    # Should never have been a warning. This is caused by normal constexpr use since c++11.
+    # C6239: (<non-zero constant> && <expression>) always evaluates to the result of <expression>. Did you intend to use the bitwise-and operator?"
+    # False positive when using logical operators in constexpr context.
     target_compile_options(ttauri PUBLIC -wd6239)
 
-    # "C6262: Function uses 'x' bytes of stack: exceeds /analyze:stacksize 'x'. Consider moving some data to heap.
-    # False positives when returning data from a function in constexpr context since c++11.
+    # C6262: Function uses 'x' bytes of stack: exceeds /analyze:stacksize 'x'. Consider moving some data to heap.
+    # False positives when returning data from a function in constexpr context.
     target_compile_options(ttauri PUBLIC -wd6262)
+
+    # C4505: unreferenced local function has been removed.
+    # False positive when calling a local function from within a "if constexpr" block.
+    target_compile_options(ttauri PUBLIC -wd4505)
 
     if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
         # Enable Security Development Lifecycle checks.
@@ -205,11 +212,15 @@ if (WIN32)
     # std::result_of used by fmt.
     target_compile_options(ttauri PUBLIC -D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
 
+    # date library uses std::uncaught_exception
+    target_compile_options(ttauri PUBLIC -D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+
     # winrt will include experimental headers that can not be turned off.
     target_compile_options(ttauri PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
 
     # Make sure that Windows.h doesn't include all kind of weird things.
     target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
+
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_METAL_EXT)

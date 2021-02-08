@@ -110,6 +110,6 @@ template<typename... Args>
     debugger_abort(source_file, source_line, "<unknown>");
 }
 
-#define tt_debugger_abort(...) ::tt::debugger_abort(__FILE__, __LINE__, __VA_ARGS__)
+#define tt_debugger_abort(...) ::tt::debugger_abort(__FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
 
 }

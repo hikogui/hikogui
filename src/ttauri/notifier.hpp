@@ -26,6 +26,8 @@ class notifier {
 template<typename Result, typename... Args>
 class notifier<Result(Args...)> {
 public:
+    static_assert(std::is_same_v<Result,void>, "Result of a notifier must be void.");
+
     using callback_type = std::function<Result(Args const &...)>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
@@ -53,7 +55,7 @@ public:
      * Ownership of the callback belongs with the caller of `subscribe()`. The
      * `notifier` will hold a weak_ptr to the callback so that when the callback is destroyed
      * it will no longer be called.
-     * 
+     *
      * @param callback The callback-function to register.
      * @return A shared_ptr to a function object holding the callback.
      */
@@ -81,41 +83,9 @@ public:
     }
 
     /** Call the subscribed callbacks with the given arguments.
-     *
-     * @param args The arguments to pass with the invocation of the callback.
-     * @param init The start value of the accumulator.
-     * @param op The binary operation to accumulate the results of the callbacks.
-     * @return The result of the callback, reduced by the given operator.
-     */
-    template<typename BinaryOp, typename Result_ = Result>
-    requires(!std::is_same_v<Result_, void>) Result_
-    operator()(Args const &... args, Result_ init = {}, BinaryOp op = std::plus) const noexcept
-    {
-        auto lock = std::scoped_lock(_mutex);
-        tt_assert(!_executing_callbacks);
-        _executing_callbacks = true;
-
-        auto result = init;
-        auto i = _callbacks.begin();
-        while (i != _callbacks.end()) {
-            if (auto callback = i->lock()) {
-                result = op(result, (*callback)(args...));
-                ++i;
-
-            } else {
-                i = _callbacks.erase(i);
-            }
-        };
-        _executing_callbacks = false;
-
-        return result;
-    }
-
-    /** Call the subscribed callbacks with the given arguments.
      * @param args The arguments to pass with the invocation of the callback
      */
-    template<typename Result_ = Result>
-    requires(std::is_same_v<Result_, void>) void operator()(Args const &... args) const noexcept
+    void operator()(Args const &...args) const noexcept
     {
         auto lock = std::scoped_lock(_mutex);
         tt_assert(!_executing_callbacks);

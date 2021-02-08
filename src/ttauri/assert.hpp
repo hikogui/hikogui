@@ -33,7 +33,7 @@ namespace tt {
  * An axiom is checked in debug mode, and is used as an optimization
  * in release mode.
  */
-#define tt_axiom(expression, ...) tt_assert(expression, __VA_ARGS__)
+#define tt_axiom(expression, ...) tt_assert(expression __VA_OPT__(,) __VA_ARGS__)
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,

@@ -233,17 +233,17 @@ inline logger_type logger = {};
 #define tt_log(level, fmt, ...) \
     do { \
         ttlet _tt_log_timestamp = ::tt::cpu_counter_clock::now(); \
-        ::tt::logger.log<level, __FILE__, __LINE__, fmt>(_tt_log_timestamp, __VA_ARGS__); \
+        ::tt::logger.log<level, __FILE__, __LINE__, fmt>(_tt_log_timestamp __VA_OPT__(,) __VA_ARGS__); \
     } while (false)
 
-#define tt_log_debug(fmt, ...) tt_log(::tt::log_level::Debug, fmt, __VA_ARGS__)
-#define tt_log_trace(fmt, ...) tt_log(::tt::log_level::Trace, fmt, __VA_ARGS__)
-#define tt_log_counter(fmt, ...) tt_log(::tt::log_level::Counter, fmt, __VA_ARGS__)
-#define tt_log_info(fmt, ...) tt_log(::tt::log_level::Info, fmt, __VA_ARGS__)
-#define tt_log_audit(fmt, ...) tt_log(::tt::log_level::Audit, fmt, __VA_ARGS__)
-#define tt_log_warning(fmt, ...) tt_log(::tt::log_level::Warning, fmt, __VA_ARGS__)
-#define tt_log_error(fmt, ...) tt_log(::tt::log_level::Error, fmt, __VA_ARGS__)
-#define tt_log_critical(fmt, ...) tt_log(::tt::log_level::Critical, fmt, __VA_ARGS__)
+#define tt_log_debug(fmt, ...) tt_log(::tt::log_level::Debug, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tt_log_trace(fmt, ...) tt_log(::tt::log_level::Trace, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tt_log_counter(fmt, ...) tt_log(::tt::log_level::Counter, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tt_log_info(fmt, ...) tt_log(::tt::log_level::Info, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tt_log_audit(fmt, ...) tt_log(::tt::log_level::Audit, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tt_log_warning(fmt, ...) tt_log(::tt::log_level::Warning, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tt_log_error(fmt, ...) tt_log(::tt::log_level::Error, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tt_log_critical(fmt, ...) tt_log(::tt::log_level::Critical, fmt __VA_OPT__(,) __VA_ARGS__)
 #define tt_log_fatal(fmt, ...) \
-    tt_log(::tt::log_level::Fatal, fmt, __VA_ARGS__); \
+    tt_log(::tt::log_level::Fatal, fmt __VA_OPT__(,) __VA_ARGS__); \
     tt_unreachable()

@@ -110,7 +110,7 @@ public:
     [[nodiscard]] constexpr reference at(size_t pos)
     {
         if (pos < size()) {
-            throw std::out_of_range();
+            throw std::out_of_range("index out of range");
         }
         return v[pos];
     }
@@ -118,7 +118,7 @@ public:
     [[nodiscard]] constexpr const_reference at(size_t pos) const
     {
         if (pos < size()) {
-            throw std::out_of_range();
+            throw std::out_of_range("index out of range");
         }
         return v[pos];
     }
