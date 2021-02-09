@@ -32,7 +32,10 @@ public:
 
     /*! Return the possible command line argument options.
      */
-    virtual datum configuration(application &self, std::vector<std::string> arguments) const noexcept = 0;
+    virtual datum configuration(application &self, std::vector<std::string> arguments) const noexcept
+    {
+        return {};
+    }
 
     /** The delegate to be used for the audio system.
      * @return The delegate to be used for the audio system, or nullptr if the audio system should not be initialized.

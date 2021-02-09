@@ -1,7 +1,5 @@
 
-cmake_minimum_required(VERSION 3.17)
-cmake_policy(SET CMP0074 NEW)
-cmake_policy(SET CMP0054 NEW)
+cmake_minimum_required(VERSION 3.19)
 enable_testing()
 
 set(TT_WIN32 0)
@@ -66,7 +64,7 @@ else(APPLE)
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)

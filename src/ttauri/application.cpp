@@ -94,7 +94,11 @@ void application::init_foundation()
 
     main_thread_id = current_thread_id();
 
-    logger.minimum_log_level = static_cast<log_level>(static_cast<int>(configuration["log-level"]));
+    if (configuration.contains("log-level")) {
+        logger.minimum_log_level = static_cast<log_level>(static_cast<int>(configuration["log-level"]));
+    } else {
+        logger.minimum_log_level = log_level::Info;
+    }
 
     // The logger is the first object that will use the timezone database.
     // So we will initialize it here.

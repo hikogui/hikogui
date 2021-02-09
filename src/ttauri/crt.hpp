@@ -72,7 +72,7 @@ int WINAPI WinMain(
     arguments.reserve(argc + 1);
 
     for (auto i = 0; i != argc; ++i) {
-        arguments.push_back(std::move(to_string(std::wstring(argv[i]))));
+        arguments.push_back(std::move(tt::to_string(std::wstring(argv[i]))));
     }
     LocalFree(argv);
 
