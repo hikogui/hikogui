@@ -152,9 +152,12 @@ def replace_copyright(filename, contributors):
 
 def main(args):
     for filename in args:
-        commits = git_blame(filename)
-        contributors = extract_contributors(commits)
-        replace_copyright(filename, contributors)
+        try:
+            commits = git_blame(filename)
+            contributors = extract_contributors(commits)
+            replace_copyright(filename, contributors)
+        except Exception as e:
+            print("Error '{}' for file '{}'".format(e, filename))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
