@@ -46,24 +46,41 @@ class Commit (object):
     def __init__(self):
         self.nr_lines = 0
         self.author = None
-        self.years = set()
+        self.year = None
 
-    def add_year(self, new_year):
-        self.years.add(new_year)
+    def set_author(self, author):
+        self.author = author
+
+    def set_year(self, new_year):
+        self.year = new_year
+
+    def add_lines(self, nr_lines):
+        self.nr_lines += nr_lines
+
 
 class Contributor (object):
     def __init__(self, author):
         self.author = author
-        self.years = set()
+        self.years_and_lines = {}
 
     def __cmp__(self, other):
         return cmp(self.author, other.author)
 
-    def __str__(self):
-        return "Copyright {} {}.".format(self.author, format_years(self.years))
+    def __lt__(self, other):
+        return self.author < other.author
 
-    def add_years(self, new_years):
-        self.years = self.years.union(new_years)
+    def __str__(self):
+        years = self.get_years(10)
+        return "Copyright {} {}.".format(self.author, format_years(years))
+
+    def get_years(self, minimum_nr_lines):
+        return set(year for year, nr_lines in self.years_and_lines.items() if nr_lines >= minimum_nr_lines)
+
+    def enough(self):
+        return not not self.get_years(10)
+
+    def add_year_and_lines(self, new_year, nr_lines):
+        self.years_and_lines[new_year] = self.years_and_lines.get(new_year, 0) + nr_lines
 
 
 def git_blame_run(filename):
@@ -92,18 +109,18 @@ def git_blame(filename):
                 raise RuntimeError("Unexpected line where sha is expected: {}".format(line))
 
         elif line[0] == "\t":
-            commit.nr_lines += 1
+            commit.add_lines(1)
             commit = None
 
         elif line.startswith("author "):
             global name_aliases
             author = line[7:]
-            commit.author = name_aliases.get(author, author)
+            commit.set_author(name_aliases.get(author, author))
 
         elif line.startswith("author-time "):
             posix_timestamp = int(line[12:])
             date = datetime.date.fromtimestamp(posix_timestamp)
-            commit.add_year(date.year)
+            commit.set_year(date.year)
 
     return commits.values()
 
@@ -112,10 +129,9 @@ def extract_contributors(commits):
     contributors = {}
 
     for commit in commits:
-        if commit.nr_lines >= 10:
-            author = commit.author
-            contributor = contributors.setdefault(author, Contributor(author))
-            contributor.add_years(commit.years)
+        author = commit.author
+        contributor = contributors.setdefault(author, Contributor(author))
+        contributor.add_year_and_lines(commit.year, commit.nr_lines)
 
     return sorted(contributors.values())
 
@@ -135,7 +151,8 @@ def replace_copyright_detail(filename, contributors, prefix):
     suffix = "\r" if lines[0].endswith("\r") else ""
     new_lines = []
     for contributor in contributors:
-        new_lines.append("{}{}{}".format(prefix, contributor, suffix))
+        if contributor.enough():
+            new_lines.append("{}{}{}".format(prefix, contributor, suffix))
     for line in copyright_reference:
         new_lines.append("{}{}{}".format(prefix, line, suffix))
 
@@ -156,7 +173,7 @@ def main(args):
             commits = git_blame(filename)
             contributors = extract_contributors(commits)
             replace_copyright(filename, contributors)
-        except Exception as e:
+        except RuntimeError as e:
             print("Error '{}' for file '{}'".format(e, filename))
 
 if __name__ == "__main__":
