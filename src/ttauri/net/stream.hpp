@@ -7,18 +7,18 @@
 
 namespace tt {
 
-class SocketStream {
+class Socketstream {
 
 protected:
     bool connecting = false;
 
     /** Buffer with data read from the socket.
      */
-    PacketBuffer readBuffer;
+    packet_buffer readBuffer;
 
     /** Buffer with data to write.
      */
-    PacketBuffer writeBuffer;
+    packet_buffer writeBuffer;
 
 public:
 

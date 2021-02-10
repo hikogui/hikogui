@@ -28,19 +28,19 @@ std::string gui_device::string() const noexcept
     return fmt::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.UUIDString());
 }
 
-void gui_device::initializeDevice(gui_window const &window)
+void gui_device::initialize_device(gui_window const &window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    state = State::READY_TO_DRAW;
+    state = state_type::ready_to_draw;
 }
 
 void gui_device::add(std::shared_ptr<gui_window> window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    if (state == State::NO_DEVICE) {
-        initializeDevice(*window);
+    if (state == state_type::no_device) {
+        initialize_device(*window);
     }
 
     window->set_device(this);

@@ -56,7 +56,7 @@ public:
     virtual void init() = 0;
 
     template<typename... Args>
-    gui_window *makeWindow(Args &&... args)
+    gui_window *make_window(Args &&... args)
     {
         // This function should be called from the main thread from the main loop,
         // and therefor should not have a lock on the window.
@@ -79,7 +79,7 @@ public:
 
     /*! Count the number of windows managed by the GUI.
      */
-    ssize_t getNumberOfWindows();
+    ssize_t num_windows();
 
     void render(hires_utc_clock::time_point displayTimePoint) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -87,7 +87,7 @@ public:
         for (auto &device: devices) {
             device->render(displayTimePoint);
         }
-        ttlet currentNumberOfWindows = getNumberOfWindows();
+        ttlet currentNumberOfWindows = num_windows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
             application::global->run_from_main_loop([this]{
                 if (auto delegate_ = this->delegate.lock()) {

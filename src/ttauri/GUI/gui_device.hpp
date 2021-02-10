@@ -21,20 +21,19 @@ class gui_system;
  */
 class gui_device {
 public:
-    gui_system &system;
-
-    enum class State {
-        NO_DEVICE,
-        READY_TO_DRAW,
+    enum class state_type {
+        no_device,
+        ready_to_draw,
     };
 
-    State state = State::NO_DEVICE;
+    gui_system &system;
+
+    state_type state = state_type::no_device;
 
     std::string deviceName = "<no device>";
     uint32_t vendorID = 0;
     uint32_t deviceID = 0;
     uuid deviceUUID = {};
-
 
     std::string string() const noexcept;
 
@@ -55,13 +54,13 @@ public:
      */
     virtual int score(gui_window const &window) const = 0;
 
-    /*! Initialise the logical device.
+    /*! Initialize the logical device.
      *
      * \param window is used as prototype for queue allocation.
      */
-    virtual void initializeDevice(gui_window const &window);
+    virtual void initialize_device(gui_window const &window);
 
-    ssize_t getNumberOfWindows() const noexcept {
+    ssize_t num_windows() const noexcept {
         return std::ssize(windows);
     }
 

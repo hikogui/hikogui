@@ -86,7 +86,7 @@ public:
     /** Check if a audio configuration is supported by this device.
      * @param config Configuration such as sample rate, sample format and bit-depth.
      */
-    //virtual bool isConfigSupported(AudioStreamConfig config) const noexcept = 0;
+    //virtual bool isConfigSupported(AudiostreamConfig config) const noexcept = 0;
 
     /** Start a session.
      * Start a session, which will cause data to be stream to and
@@ -104,7 +104,7 @@ public:
      * @param config Configuration such as sample rate, sample format and bit-depth.
      * XXX Windows allows for an icon to be passed to a session.
      */
-    //virtual void startSession(uuid sessionId, std::string name, AudioStreamConfig config) = 0;
+    //virtual void startSession(uuid sessionId, std::string name, AudiostreamConfig config) = 0;
 
     /** Stop a session.
      * Stop a session, which will also stop the streams of audio.

@@ -10,7 +10,7 @@ namespace tt {
 
 /** A network message or stream buffer.
  */
-class Packet {
+class packet {
     std::byte *data;
     std::byte *data_end;
     std::byte *first;
@@ -20,21 +20,21 @@ class Packet {
 public:
     /** Allocate an empty packet of a certain size.
      */
-    Packet(ssize_t nrBytes) noexcept {
+    packet(ssize_t nrBytes) noexcept {
         data = new std::byte [nrBytes];
         data_end = data + nrBytes;
         first = data;
         last = data;
     }
 
-    ~Packet() noexcept {
+    ~packet() noexcept {
         delete [] data;
     }
 
-    Packet(Packet const &rhs) noexcept = delete;
-    Packet operator=(Packet const &rhs) noexcept = delete;
+    packet(packet const &rhs) noexcept = delete;
+    packet operator=(packet const &rhs) noexcept = delete;
 
-    Packet(Packet &&rhs) noexcept :
+    packet(packet &&rhs) noexcept :
         data(rhs.data), data_end(rhs.data_end), first(rhs.first), last(rhs.last) {
         rhs.data = nullptr;
     }

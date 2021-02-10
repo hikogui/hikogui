@@ -21,6 +21,23 @@
 namespace tt {
 
 class png {
+public:
+    png(std::span<std::byte const> bytes);
+
+    png(std::unique_ptr<resource_view> view);
+
+    png(URL const &url) :
+        png(url.loadView()) {}
+
+    i32x4 extent() const noexcept {
+        return i32x4{width, height};
+    }
+
+    void decode_image(pixel_map<R16G16B16A16SFloat> &image) const;
+
+    static pixel_map<R16G16B16A16SFloat> load(URL const &url);
+
+private:
     /** Matrix to convert png color values to sRGB.
      * The default are sRGB color primaries and white-point.
      */
@@ -54,24 +71,7 @@ class png {
     /** Take ownership of the view.
      */
     std::unique_ptr<resource_view> view;
-public:
 
-    png(std::span<std::byte const> bytes);
-
-    png(std::unique_ptr<resource_view> view);
-
-    png(URL const &url) :
-        png(url.loadView()) {}
-
-    i32x4 extent() const noexcept {
-        return i32x4{width, height};
-    }
-
-    void decode_image(pixel_map<R16G16B16A16SFloat> &image) const;
-
-    static pixel_map<R16G16B16A16SFloat> load(URL const &url);
-
-private:
     void read_header(std::span<std::byte const> bytes, ssize_t &offset);
     void read_chunks(std::span<std::byte const> bytes, ssize_t &offset);
     void read_IHDR(std::span<std::byte const> bytes);

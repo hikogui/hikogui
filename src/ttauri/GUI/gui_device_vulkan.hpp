@@ -21,15 +21,6 @@ class URL;
 namespace tt {
 
 class gui_device_vulkan final : public gui_device {
-protected:
-    vk::PhysicalDevice physicalIntrinsic;
-    vk::Device intrinsic;
-    VmaAllocator allocator;
-
-private:
-    void initializeQuadIndexBuffer();
-    void destroyQuadIndexBuffer();
-
 public:
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceProperties physicalProperties;
@@ -75,17 +66,17 @@ public:
     VmaMemoryUsage lazyMemoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     /*! Sorted list of queueFamilies and their capabilities.
-     * score(window) must be called before initializeDevice(window);
+     * score(window) must be called before initialize_device(window);
      */
     mutable std::vector<std::pair<uint32_t, uint8_t>> queueFamilyIndicesAndCapabilities;
 
     /*! Best surfae format.
-     * score(window) must be called before initializeDevice(window);
+     * score(window) must be called before initialize_device(window);
      */
     mutable vk::SurfaceFormatKHR bestSurfaceFormat = {};
 
     /*! Best surfae format.
-     * score(window) must be called before initializeDevice(window);
+     * score(window) must be called before initialize_device(window);
      */
     mutable vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
@@ -97,7 +88,7 @@ public:
     gui_device_vulkan(gui_device_vulkan &&) = delete;
     gui_device_vulkan &operator=(gui_device_vulkan &&) = delete;
 
-    void initializeDevice(gui_window const &window) override;
+    void initialize_device(gui_window const &window) override;
 
     int score(vk::SurfaceKHR surface) const;
 
@@ -110,7 +101,7 @@ public:
      * It is possible this method returns an incomplete queue family set. For
      * example without Present.
      */
-    std::vector<std::pair<uint32_t, uint8_t>> findBestQueueFamilyIndices(vk::SurfaceKHR surface) const;
+    std::vector<std::pair<uint32_t, uint8_t>> find_best_queue_family_indices(vk::SurfaceKHR surface) const;
 
     std::pair<vk::Buffer, VmaAllocation> createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const;
 
@@ -275,7 +266,14 @@ public:
         return physicalIntrinsic.getSurfaceCapabilitiesKHR(surface);
     }
 
+protected:
+    vk::PhysicalDevice physicalIntrinsic;
+    vk::Device intrinsic;
+    VmaAllocator allocator;
 
+private:
+    void initialize_quad_index_buffer();
+    void destroy_quad_index_buffer();
 };
 
 }

@@ -140,7 +140,7 @@ gui_device_vulkan::~gui_device_vulkan()
         flatPipeline->destroy(this);
         flatPipeline = nullptr;
 
-        destroyQuadIndexBuffer();
+        destroy_quad_index_buffer();
 
         vmaDestroyAllocator(allocator);
 
@@ -167,7 +167,7 @@ gui_device_vulkan::~gui_device_vulkan()
     }
 }
 
-void gui_device_vulkan::initializeDevice(gui_window const &window)
+void gui_device_vulkan::initialize_device(gui_window const &window)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -232,7 +232,7 @@ void gui_device_vulkan::initializeDevice(gui_window const &window)
         index++;
     }
 
-    initializeQuadIndexBuffer();
+    initialize_quad_index_buffer();
 
     flatPipeline = std::make_unique<pipeline_flat::device_shared>(*this);
     boxPipeline = std::make_unique<pipeline_box::device_shared>(*this);
@@ -240,10 +240,10 @@ void gui_device_vulkan::initializeDevice(gui_window const &window)
     SDFPipeline = std::make_unique<pipeline_SDF::device_shared>(*this);
     toneMapperPipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
 
-    gui_device::initializeDevice(window);
+    gui_device::initialize_device(window);
 }
 
-void gui_device_vulkan::initializeQuadIndexBuffer()
+void gui_device_vulkan::initialize_quad_index_buffer()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -319,13 +319,13 @@ void gui_device_vulkan::initializeQuadIndexBuffer()
     }
 }
 
-void gui_device_vulkan::destroyQuadIndexBuffer()
+void gui_device_vulkan::destroy_quad_index_buffer()
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     destroyBuffer(quadIndexBuffer, quadIndexBufferAllocation);
 }
 
-std::vector<std::pair<uint32_t, uint8_t>> gui_device_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface) const
+std::vector<std::pair<uint32_t, uint8_t>> gui_device_vulkan::find_best_queue_family_indices(vk::SurfaceKHR surface) const
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -386,7 +386,7 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
 
     auto formats = physicalIntrinsic.getSurfaceFormatsKHR(surface);
     auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
-    queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
+    queueFamilyIndicesAndCapabilities = find_best_queue_family_indices(surface);
 
     tt_log_info("Scoring device: {}", string());
     if (!hasRequiredFeatures(physicalIntrinsic, narrow_cast<gui_system_vulkan &>(system).requiredFeatures)) {

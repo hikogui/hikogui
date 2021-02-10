@@ -10,7 +10,7 @@ namespace tt {
 
 void keyboard_bindings::loadBindings(URL url, bool system_binding)
 {
-    ttlet data = parseJSON(url);
+    ttlet data = parse_JSON(url);
 
     try {
         tt_parse_check(data.contains("bindings"), "Missing key 'bindings' at top level.");

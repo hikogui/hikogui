@@ -38,13 +38,13 @@ gui_device *gui_system::findBestDeviceForWindow(gui_window const &window)
     }
 }
 
-ssize_t gui_system::getNumberOfWindows()
+ssize_t gui_system::num_windows()
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     ssize_t numberOfWindows = 0;
     for (const auto &device: devices) {
-        numberOfWindows+= device->getNumberOfWindows();
+        numberOfWindows+= device->num_windows();
     }
 
     return numberOfWindows;

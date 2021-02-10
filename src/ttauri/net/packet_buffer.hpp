@@ -7,8 +7,8 @@
 
 namespace tt {
 
-class PacketBuffer {
-    std::list<Packet> packets;
+class packet_buffer {
+    std::list<packet> packets;
     ssize_t _totalNrBytes;
     bool _closed;
 
@@ -31,7 +31,7 @@ public:
      * On a stream based socket this number is not useful, but larger
      * than zero when data is available.
      */
-    ssize_t nrPackets() const noexcept {
+    ssize_t nrpackets() const noexcept {
         return packets.size();
     }
 
@@ -44,7 +44,7 @@ public:
     /** Get a new packet to write a message into.
      * @return a pointer to an byte array with at least nrBytes of data available.
      */
-    std::span<std::byte> getNewPacket(ssize_t nrBytes) noexcept {
+    std::span<std::byte> getNewpacket(ssize_t nrBytes) noexcept {
         tt_assert(!closed());
         packets.emplace_back(nrBytes);
         return {packets.back().end(), nrBytes};
@@ -53,7 +53,7 @@ public:
     /** Get a packet to write a stream of bytes into.
      * @return a pointer to an byte array with at least nrBytes of data available.
      */
-    std::span<std::byte> getPacket(ssize_t nrBytes) noexcept {
+    std::span<std::byte> getpacket(ssize_t nrBytes) noexcept {
         tt_assert(!closed());
         if (packets.empty() || (packets.back().writeSize() < nrBytes)) {
             packets.emplace_back(nrBytes);
@@ -63,7 +63,7 @@ public:
    
     /** Write the data added to the packet.
      * This function will write the data added into the buffers returned
-     * by `getNewPacket()` and `getPacket()`.
+     * by `getNewpacket()` and `getpacket()`.
      *
      * @param nrBytes The number of bytes written into the packet.
      * @param push Push the data through the socket, bypass Nagel algorithm.
@@ -111,7 +111,7 @@ public:
         ssize_t packetNr = 0;
         ssize_t byteNr = 0;
         ssize_t i = 0;
-        while (packetNr < nrPackets()) {
+        while (packetNr < nrpackets()) {
             tt_parse_check(byteNr < nrBytes, "New-line not found within {} bytes", nrBytes);
 
             if (i == std::ssize(packets[packetNr])) {

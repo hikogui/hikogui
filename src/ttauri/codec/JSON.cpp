@@ -164,7 +164,7 @@ struct parse_context_t {
     }
 }
 
-[[nodiscard]] datum parseJSON(std::string_view text)
+[[nodiscard]] datum parse_JSON(std::string_view text)
 {
     token_vector tokens = parseTokens(text);
 
@@ -193,12 +193,12 @@ struct parse_context_t {
     return root;
 }
 
-[[nodiscard]] datum parseJSON(URL const &url)
+[[nodiscard]] datum parse_JSON(URL const &url)
 {
-    return parseJSON(url.loadView()->string_view());
+    return parse_JSON(url.loadView()->string_view());
 }
 
-static void dumpJSON_impl(datum const &value, std::string &result, tt::indent indent={})
+static void format_JSON_impl(datum const &value, std::string &result, tt::indent indent={})
 {
     bool first_item = true;
 
@@ -247,7 +247,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, tt::indent in
             }
             result += indent + 1;
 
-            dumpJSON_impl(*i, result, indent + 1);
+            format_JSON_impl(*i, result, indent + 1);
         }
 
         result += '\n';
@@ -267,10 +267,10 @@ static void dumpJSON_impl(datum const &value, std::string &result, tt::indent in
             }
             result += indent + 1;
 
-            dumpJSON_impl(i->first, result, indent + 1);
+            format_JSON_impl(i->first, result, indent + 1);
             result += ':';
             result += ' ';
-            dumpJSON_impl(i->second, result, indent + 1);
+            format_JSON_impl(i->second, result, indent + 1);
         }
 
         result += '\n';
@@ -283,10 +283,10 @@ static void dumpJSON_impl(datum const &value, std::string &result, tt::indent in
     }
 }
 
-[[nodiscard]] std::string dumpJSON(datum const &root)
+[[nodiscard]] std::string format_JSON(datum const &root)
 {
     auto r = std::string{};
-    dumpJSON_impl(root, r);
+    format_JSON_impl(root, r);
     r += '\n';
     return r;
 }

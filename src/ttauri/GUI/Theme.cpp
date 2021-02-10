@@ -16,7 +16,7 @@ theme::theme(URL const &url)
 {
     try {
         tt_log_info("Parsing theme at {}", url);
-        ttlet data = parseJSON(url);
+        ttlet data = parse_JSON(url);
         parse(data);
     } catch (...) {
         error_info(true).set<url_tag>(url);

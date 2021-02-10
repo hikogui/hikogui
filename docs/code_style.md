@@ -3,6 +3,8 @@ Code Style rules
 
 Identifiers
 -----------
+
+### Casing
 The following identifiers are in snake\_case:
  - functions,
  - member functions,
@@ -19,7 +21,19 @@ The following identifiers are in CamelCase:
  - template arguments.
 
 Capital letters within a snake\_case identifier are allowed for proper nouns and
-abrivations.
+abbreviations.
+
+### Prefixes and Suffixes
+Common prefixes and suffixes:
+
+ - prefix `num_`: Size of a list of items. The prefixed name should be plural
+ - suffix `_nr`: Ordinal of an item.
+ - suffix `_i` `_j` `_k`: Index inside a loop associated with an specific list.
+ - suffix `_it` `_jt` `_kt1`: Iterator inside a loop associated with an specific list.
+ - prefix `_`: Private or protected member variables and functions.
+ - suffix `_`: A variable after conversion to a different type.
+ - prefix `tt_`: A macro
+ - suffix `_type`: A type created inside a class.
 
 Private or protected member variables are prefixed with "\_", so that
 getter/setter member functions names will not alias with the variables.
@@ -27,7 +41,7 @@ getter/setter member functions names will not alias with the variables.
 Private or protected member functions may have the "\_" prefix when they
 implement the functionality of a public function of the same name.
 
-Macros, because they do not belong to a namespace, are prefixed with "tt\_".
+Macros, because they do not belong to a namespace, are prefixed with the prefix "tt\_".
 
 The suffix "\_" may be used when a new variable needs to be introduced
 when only its type has changed using casting or conversion.

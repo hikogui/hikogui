@@ -32,7 +32,7 @@ void preferences::save() const noexcept
 
     ttlet tmp_location = _location.urlByAppendingExtension(".tmp");
 
-    auto text = dumpJSON(serialize());
+    auto text = format_JSON(serialize());
 
     try {
         auto file = tt::file(tmp_location, access_mode::truncate_or_create_for_write | access_mode::rename);
@@ -57,7 +57,7 @@ void preferences::load() noexcept
     try {
         auto file = tt::file(_location, access_mode::open_for_read);
         auto text = file.read_string();
-        auto data = parseJSON(text);
+        auto data = parse_JSON(text);
         deserialize(data);
         --_deserializing;
 
