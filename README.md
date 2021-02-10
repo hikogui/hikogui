@@ -1,6 +1,5 @@
 TTauri GUI library
 ==================
-test
 
 A modern looking, portable, high performance, retained-mode GUI library
 written in C++.
