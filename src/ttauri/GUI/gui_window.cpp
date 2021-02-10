@@ -4,7 +4,7 @@
 
 #include "gui_window.hpp"
 #include "gui_device.hpp"
-#include "KeyboardBindings.hpp"
+#include "keyboard_bindings.hpp"
 #include "../widgets/window_widget.hpp"
 
 namespace tt {
@@ -146,13 +146,13 @@ void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widg
     auto current_target_widget = _mouse_target_widget.lock();
     if (new_target_widget != current_target_widget) {
         if (current_target_widget) {
-            if (!send_event_to_widget(current_target_widget, MouseEvent::exited())) {
+            if (!send_event_to_widget(current_target_widget, mouse_event::exited())) {
                 send_event_to_widget(current_target_widget, std::vector{command::gui_mouse_exit});
             }
         }
         _mouse_target_widget = new_target_widget;
         if (new_target_widget) {
-            if (!send_event_to_widget(new_target_widget, MouseEvent::entered(position))) {
+            if (!send_event_to_widget(new_target_widget, mouse_event::entered(position))) {
                 send_event_to_widget(new_target_widget, std::vector{command::gui_mouse_enter});
             }
         }
@@ -228,12 +228,12 @@ bool gui_window::handle_event(tt::command command) noexcept
 
 
 
-/*[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, MouseEvent const &event) noexcept
+/*[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, mouse_event const &event) noexcept
 {
     tt::send_event(target_widget, event);
 }
 
-[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, KeyboardEvent const &event) noexcept
+[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, keyboard_event const &event) noexcept
 {
     tt::send_event(target_widget, event);
 }
@@ -244,21 +244,21 @@ gui_window::send_event(std::shared_ptr<tt::widget> target_widget, std::vector<tt
     tt::send_event(target_widget, event);
 }*/
 
-bool gui_window::send_event(MouseEvent const &event) noexcept
+bool gui_window::send_event(mouse_event const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     switch (event.type) {
-    case MouseEvent::Type::Exited: // Mouse left window.
+    case mouse_event::Type::Exited: // Mouse left window.
         update_mouse_target({});
         break;
 
-    case MouseEvent::Type::ButtonDown:
-    case MouseEvent::Type::Move: {
+    case mouse_event::Type::ButtonDown:
+    case mouse_event::Type::Move: {
         ttlet hitbox = widget->hitbox_test(event.position);
         update_mouse_target(std::const_pointer_cast<tt::widget>(hitbox.widget.lock()), event.position);
 
-        if (event.type == MouseEvent::Type::ButtonDown) {
+        if (event.type == mouse_event::Type::ButtonDown) {
             update_keyboard_target(std::const_pointer_cast<tt::widget>(hitbox.widget.lock()), keyboard_focus_group::any);
         }
     } break;
@@ -274,7 +274,7 @@ bool gui_window::send_event(MouseEvent const &event) noexcept
     return false;
 }
 
-bool gui_window::send_event(KeyboardEvent const &event) noexcept
+bool gui_window::send_event(keyboard_event const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -285,7 +285,7 @@ bool gui_window::send_event(KeyboardEvent const &event) noexcept
     }
 
     // If the keyboard event is not handled directly, convert the key event to a command.
-    if (event.type == KeyboardEvent::Type::Key) {
+    if (event.type == keyboard_event::Type::Key) {
         ttlet commands = keyboardBindings.translate(event.key);
 
         ttlet handled = send_event_to_widget(target, commands);
@@ -306,14 +306,14 @@ bool gui_window::send_event(KeyboardEvent const &event) noexcept
     return false;
 }
 
-bool gui_window::send_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept
+bool gui_window::send_event(KeyboardState _state, keyboard_modifiers modifiers, keyboard_virtual_key key) noexcept
 {
-    return send_event(KeyboardEvent(_state, modifiers, key));
+    return send_event(keyboard_event(_state, modifiers, key));
 }
 
 bool gui_window::send_event(grapheme grapheme, bool full) noexcept
 {
-    return send_event(KeyboardEvent(grapheme, full));
+    return send_event(keyboard_event(grapheme, full));
 }
 
 bool gui_window::send_event(char32_t c, bool full) noexcept

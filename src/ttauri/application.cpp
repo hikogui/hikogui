@@ -17,7 +17,7 @@
 #include "text/font_book.hpp"
 #include "GUI/RenderDoc.hpp"
 #include "GUI/theme_book.hpp"
-#include "GUI/KeyboardBindings.hpp"
+#include "GUI/keyboard_bindings.hpp"
 #include "GUI/gui_system_vulkan_win32.hpp"
 #include "audio/audio_system.hpp"
 #include "audio/audio_system_aggregate.hpp"
@@ -25,16 +25,16 @@
 
 #include "data/elusiveicons-webfont.ttf.inl"
 #include "data/ttauri_icons.ttf.inl"
-#include "ttauri/GUI/PipelineImage.vert.spv.inl"
-#include "ttauri/GUI/PipelineImage.frag.spv.inl"
-#include "ttauri/GUI/PipelineFlat.vert.spv.inl"
-#include "ttauri/GUI/PipelineFlat.frag.spv.inl"
-#include "ttauri/GUI/PipelineBox.vert.spv.inl"
-#include "ttauri/GUI/PipelineBox.frag.spv.inl"
-#include "ttauri/GUI/PipelineSDF.vert.spv.inl"
-#include "ttauri/GUI/PipelineSDF.frag.spv.inl"
-#include "ttauri/GUI/PipelineToneMapper.vert.spv.inl"
-#include "ttauri/GUI/PipelineToneMapper.frag.spv.inl"
+#include "ttauri/GUI/pipeline_image.vert.spv.inl"
+#include "ttauri/GUI/pipeline_image.frag.spv.inl"
+#include "ttauri/GUI/pipeline_flat.vert.spv.inl"
+#include "ttauri/GUI/pipeline_flat.frag.spv.inl"
+#include "ttauri/GUI/pipeline_box.vert.spv.inl"
+#include "ttauri/GUI/pipeline_box.frag.spv.inl"
+#include "ttauri/GUI/pipeline_SDF.vert.spv.inl"
+#include "ttauri/GUI/pipeline_SDF.frag.spv.inl"
+#include "ttauri/GUI/pipeline_tone_mapper.vert.spv.inl"
+#include "ttauri/GUI/pipeline_tone_mapper.frag.spv.inl"
 
 namespace tt {
 
@@ -169,16 +169,16 @@ void application::init_gui()
             theme_book::global = std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
             theme_book::global->set_current_theme_mode(read_os_theme_mode());
 
-            static_resource_view::add_static_resource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
-            static_resource_view::add_static_resource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
-            static_resource_view::add_static_resource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
-            static_resource_view::add_static_resource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
-            static_resource_view::add_static_resource(PipelineBox_vert_spv_filename, PipelineBox_vert_spv_bytes);
-            static_resource_view::add_static_resource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
-            static_resource_view::add_static_resource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
-            static_resource_view::add_static_resource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
-            static_resource_view::add_static_resource(PipelineToneMapper_vert_spv_filename, PipelineToneMapper_vert_spv_bytes);
-            static_resource_view::add_static_resource(PipelineToneMapper_frag_spv_filename, PipelineToneMapper_frag_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_image_vert_spv_filename, pipeline_image_vert_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_image_frag_spv_filename, pipeline_image_frag_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_flat_vert_spv_filename, pipeline_flat_vert_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_flat_frag_spv_filename, pipeline_flat_frag_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_box_vert_spv_filename, pipeline_box_vert_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_box_frag_spv_filename, pipeline_box_frag_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_SDF_vert_spv_filename, pipeline_SDF_vert_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_SDF_frag_spv_filename, pipeline_SDF_frag_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_tone_mapper_vert_spv_filename, pipeline_tone_mapper_vert_spv_bytes);
+            static_resource_view::add_static_resource(pipeline_tone_mapper_frag_spv_filename, pipeline_tone_mapper_frag_spv_bytes);
 
             try {
                 keyboardBindings.loadSystemBindings();

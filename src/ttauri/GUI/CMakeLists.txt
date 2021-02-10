@@ -3,7 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(ttauri PRIVATE
-    Cursor.hpp
+    mouse_cursor.hpp
     draw_context.hpp
     gui_device.cpp
     gui_device.hpp
@@ -29,74 +29,74 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_win32.hpp>
-    HitBox.hpp
-    KeyboardBindings.cpp
-    KeyboardBindings.hpp
-    KeyboardEvent.hpp
-    KeyboardKey.hpp
-    KeyboardModifiers.hpp
-    KeyboardVirtualKey.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/KeyboardVirtualKey_win32.cpp>
+    hit_box.hpp
+    keyboard_bindings.cpp
+    keyboard_bindings.hpp
+    keyboard_event.hpp
+    keyboard_key.hpp
+    keyboard_modifiers.hpp
+    keyboard_virtual_key.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/keyboard_virtual_key_win32.cpp>
     keyboard_focus_direction.hpp
     keyboard_focus_group.hpp
-    MouseButtons.hpp
-    MouseEvent.hpp
+    mouse_buttons.hpp
+    mouse_event.hpp
     pipeline.cpp
     pipeline.hpp
     pipeline_vulkan.cpp
     pipeline_vulkan.hpp
-    PipelineBox.cpp
-    PipelineBox.frag
-    PipelineBox.hpp
-    PipelineBox.vert
-    PipelineBox_DeviceShared.cpp
-    PipelineBox_DeviceShared.hpp
-    PipelineBox_PushConstants.hpp
-    PipelineBox_Vertex.hpp
-    PipelineFlat.cpp
-    PipelineFlat.frag
-    PipelineFlat.hpp
-    PipelineFlat.vert
-    PipelineFlat_DeviceShared.cpp
-    PipelineFlat_DeviceShared.hpp
-    PipelineFlat_PushConstants.hpp
-    PipelineFlat_Vertex.hpp
-    PipelineImage.cpp
-    PipelineImage.frag
-    PipelineImage.hpp
-    PipelineImage.vert
-    PipelineImage_DeviceShared.cpp
-    PipelineImage_DeviceShared.hpp
-    PipelineImage_Image.cpp
-    PipelineImage_Image.hpp
-    PipelineImage_ImageLocation.hpp
-    PipelineImage_Page.hpp
-    PipelineImage_PushConstants.hpp
-    PipelineImage_TextureMap.cpp
-    PipelineImage_TextureMap.hpp
-    PipelineImage_Vertex.hpp
-    PipelineSDF.cpp
-    PipelineSDF.frag
-    PipelineSDF.hpp
-    PipelineSDF.vert
-    PipelineSDF_AtlasRect.cpp
-    PipelineSDF_AtlasRect.hpp
-    PipelineSDF_DeviceShared.cpp
-    PipelineSDF_DeviceShared.hpp
-    PipelineSDF_PushConstants.hpp
-    PipelineSDF_SpecializationConstants.hpp
-    PipelineSDF_TextureMap.cpp
-    PipelineSDF_TextureMap.hpp
-    PipelineSDF_Vertex.hpp
-    PipelineToneMapper.cpp
-    PipelineToneMapper.frag
-    PipelineToneMapper.hpp
-    PipelineToneMapper.vert
-    PipelineToneMapper_DeviceShared.cpp
-    PipelineToneMapper_DeviceShared.hpp
+    pipeline_box.cpp
+    pipeline_box.frag
+    pipeline_box.hpp
+    pipeline_box.vert
+    pipeline_box_device_shared.cpp
+    pipeline_box_device_shared.hpp
+    pipeline_box_push_constants.hpp
+    pipeline_box_vertex.hpp
+    pipeline_flat.cpp
+    pipeline_flat.frag
+    pipeline_flat.hpp
+    pipeline_flat.vert
+    pipeline_flat_device_shared.cpp
+    pipeline_flat_device_shared.hpp
+    pipeline_flat_push_constants.hpp
+    pipeline_flat_vertex.hpp
+    pipeline_image.cpp
+    pipeline_image.frag
+    pipeline_image.hpp
+    pipeline_image.vert
+    pipeline_image_device_shared.cpp
+    pipeline_image_device_shared.hpp
+    pipeline_image_image.cpp
+    pipeline_image_image.hpp
+    pipeline_image_image_location.hpp
+    pipeline_image_page.hpp
+    pipeline_image_push_constants.hpp
+    pipeline_image_texture_map.cpp
+    pipeline_image_texture_map.hpp
+    pipeline_image_vertex.hpp
+    pipeline_SDF.cpp
+    pipeline_SDF.frag
+    pipeline_SDF.hpp
+    pipeline_SDF.vert
+    pipeline_SDF_atlas_rect.cpp
+    pipeline_SDF_atlas_rect.hpp
+    pipeline_SDF_device_shared.cpp
+    pipeline_SDF_device_shared.hpp
+    pipeline_SDF_push_constants.hpp
+    pipeline_SDF_specialization_constants.hpp
+    pipeline_SDF_texture_map.cpp
+    pipeline_SDF_texture_map.hpp
+    pipeline_SDF_vertex.hpp
+    pipeline_tone_mapper.cpp
+    pipeline_tone_mapper.frag
+    pipeline_tone_mapper.hpp
+    pipeline_tone_mapper.vert
+    pipeline_tone_mapper_device_shared.cpp
+    pipeline_tone_mapper_device_shared.hpp
     RenderDoc.cpp
     RenderDoc.hpp
-    SubpixelOrientation.hpp
+    subpixel_orientation.hpp
     theme.cpp
     theme.hpp
     theme_book.cpp
@@ -105,12 +105,12 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_win32.cpp>
     utils.hpp
-    VerticalSync.hpp
-    VerticalSync_base.hpp
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_macos.hpp>
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_win32.hpp>
+    vertical_sync.hpp
+    vertical_sync_base.hpp
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.hpp>
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.mm>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_win32.hpp>
     VulkanMemoryAllocator.cpp
 )
 

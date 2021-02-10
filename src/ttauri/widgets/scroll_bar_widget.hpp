@@ -104,19 +104,19 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
-    HitBox hitbox_test(f32x4 window_position) const noexcept override
+    hit_box hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         ttlet position = _from_window_transform * window_position;
 
         if (window_clipping_rectangle().contains(window_position) && slider_rectangle.contains(position) && visible()) {
-            return HitBox{weak_from_this(), _draw_layer};
+            return hit_box{weak_from_this(), _draw_layer};
         } else {
-            return HitBox{};
+            return hit_box{};
         }
     }
 
-    [[nodiscard]] bool handle_event(MouseEvent const &event) noexcept
+    [[nodiscard]] bool handle_event(mouse_event const &event) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = super::handle_event(event);
@@ -125,7 +125,7 @@ public:
             handled = true;
             
             switch (event.type) {
-            using enum MouseEvent::Type;
+            using enum mouse_event::Type;
             case ButtonDown:
                 // Record the original scroll-position before the drag starts.
                 offset_before_drag = *offset;

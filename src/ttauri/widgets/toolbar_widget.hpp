@@ -117,14 +117,14 @@ public:
         abstract_container_widget::draw(std::move(context), display_time_point);
     }
 
-    HitBox hitbox_test(f32x4 window_position) const noexcept
+    hit_box hitbox_test(f32x4 window_position) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        auto r = HitBox{};
+        auto r = hit_box{};
 
         if (_window_clipping_rectangle.contains(window_position)) {
-            r = HitBox{weak_from_this(), _draw_layer, HitBox::Type::MoveArea};
+            r = hit_box{weak_from_this(), _draw_layer, hit_box::Type::MoveArea};
         }
 
         for (ttlet &child : _children) {

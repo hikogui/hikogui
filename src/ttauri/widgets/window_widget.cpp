@@ -76,7 +76,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
     abstract_container_widget::update_layout(display_time_point, need_layout);
 }
 
-HitBox window_widget::hitbox_test(f32x4 window_position) const noexcept
+hit_box window_widget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     ttlet position = _from_window_transform * window_position;
@@ -93,23 +93,23 @@ HitBox window_widget::hitbox_test(f32x4 window_position) const noexcept
     ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
     ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
 
-    auto r = HitBox{weak_from_this(), _draw_layer};
+    auto r = hit_box{weak_from_this(), _draw_layer};
     if (is_on_bottom_left_corner) {
-        return {weak_from_this(), _draw_layer, HitBox::Type::BottomLeftResizeCorner};
+        return {weak_from_this(), _draw_layer, hit_box::Type::BottomLeftResizeCorner};
     } else if (is_on_bottom_right_corner) {
-        return {weak_from_this(), _draw_layer, HitBox::Type::BottomRightResizeCorner};
+        return {weak_from_this(), _draw_layer, hit_box::Type::BottomRightResizeCorner};
     } else if (is_on_top_left_corner) {
-        return {weak_from_this(), _draw_layer, HitBox::Type::TopLeftResizeCorner};
+        return {weak_from_this(), _draw_layer, hit_box::Type::TopLeftResizeCorner};
     } else if (is_on_top_right_corner) {
-        return {weak_from_this(), _draw_layer, HitBox::Type::TopRightResizeCorner};
+        return {weak_from_this(), _draw_layer, hit_box::Type::TopRightResizeCorner};
     } else if (is_on_left_edge) {
-        r.type = HitBox::Type::LeftResizeBorder;
+        r.type = hit_box::Type::LeftResizeBorder;
     } else if (is_on_right_edge) {
-        r.type = HitBox::Type::RightResizeBorder;
+        r.type = hit_box::Type::RightResizeBorder;
     } else if (is_on_bottom_edge) {
-        r.type = HitBox::Type::BottomResizeBorder;
+        r.type = hit_box::Type::BottomResizeBorder;
     } else if (is_on_top_edge) {
-        r.type = HitBox::Type::TopResizeBorder;
+        r.type = hit_box::Type::TopResizeBorder;
     }
 
     if (

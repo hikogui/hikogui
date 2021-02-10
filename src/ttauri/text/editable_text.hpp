@@ -195,17 +195,17 @@ public:
      */
     ssize_t characterIndexAtPosition(f32x4 position) const noexcept;
 
-    void setCursorAtCoordinate(f32x4 coordinate) noexcept {
-        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            selectionIndex = cursorIndex = *newCursorPosition;
+    void setmouse_cursorAtCoordinate(f32x4 coordinate) noexcept {
+        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            selectionIndex = cursorIndex = *newmouse_cursorPosition;
             tt_axiom(selectionIndex >= 0);
             tt_axiom(selectionIndex <= std::ssize(text));
         }
     }
 
     void selectWordAtCoordinate(f32x4 coordinate) noexcept {
-        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newCursorPosition);
+        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newmouse_cursorPosition);
             tt_axiom(selectionIndex >= 0);
             tt_axiom(selectionIndex <= std::ssize(text));
             tt_axiom(cursorIndex >= 0);
@@ -214,8 +214,8 @@ public:
     }
 
     void selectParagraphAtCoordinate(f32x4 coordinate) noexcept {
-        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfParagraph(*newCursorPosition);
+        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfParagraph(*newmouse_cursorPosition);
             tt_axiom(selectionIndex >= 0);
             tt_axiom(selectionIndex <= std::ssize(text));
             tt_axiom(cursorIndex >= 0);
@@ -223,17 +223,17 @@ public:
         }
     }
 
-    void dragCursorAtCoordinate(f32x4 coordinate) noexcept {
-        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            cursorIndex = *newCursorPosition;
+    void dragmouse_cursorAtCoordinate(f32x4 coordinate) noexcept {
+        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            cursorIndex = *newmouse_cursorPosition;
             tt_axiom(cursorIndex >= 0);
             tt_axiom(cursorIndex <= std::ssize(text));
         }
     }
 
     void dragWordAtCoordinate(f32x4 coordinate) noexcept {
-        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            ttlet [a, b] = _shapedText.indicesOfWord(*newCursorPosition);
+        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            ttlet [a, b] = _shapedText.indicesOfWord(*newmouse_cursorPosition);
 
             if (selectionIndex <= cursorIndex) {
                 if (a < selectionIndex) {
@@ -261,8 +261,8 @@ public:
     }
 
     void dragParagraphAtCoordinate(f32x4 coordinate) noexcept {
-        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            ttlet [a, b] = _shapedText.indicesOfParagraph(*newCursorPosition);
+        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            ttlet [a, b] = _shapedText.indicesOfParagraph(*newmouse_cursorPosition);
 
             if (selectionIndex <= cursorIndex) {
                 if (a < selectionIndex) {
@@ -401,30 +401,30 @@ public:
         switch (command) {
         case command::text_cursor_char_left:
             handled = true;
-            if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
+            if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
                 // XXX Change currentStyle based on the grapheme at the new cursor position.
-                selectionIndex = cursorIndex = *newCursorPosition;
+                selectionIndex = cursorIndex = *newmouse_cursorPosition;
             }
             break;
 
         case command::text_cursor_char_right:
             handled = true;
-            if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
-                selectionIndex = cursorIndex = *newCursorPosition;
+            if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
+                selectionIndex = cursorIndex = *newmouse_cursorPosition;
             }
             break;
 
         case command::text_cursor_word_left:
             handled = true;
-            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
-                selectionIndex = cursorIndex = *newCursorPosition;
+            if (ttlet newmouse_cursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
+                selectionIndex = cursorIndex = *newmouse_cursorPosition;
             }
             break;
 
         case command::text_cursor_word_right:
             handled = true;
-            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
-                selectionIndex = cursorIndex = *newCursorPosition;
+            if (ttlet newmouse_cursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
+                selectionIndex = cursorIndex = *newmouse_cursorPosition;
             }
             break;
 
@@ -440,29 +440,29 @@ public:
 
         case command::text_select_char_left:
             handled = true;
-            if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
-                cursorIndex = *newCursorPosition;
+            if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
+                cursorIndex = *newmouse_cursorPosition;
             }
             break;
 
         case command::text_select_char_right:
             handled = true;
-            if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
-                cursorIndex = *newCursorPosition;
+            if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
+                cursorIndex = *newmouse_cursorPosition;
             }
             break;
 
         case command::text_select_word_left:
             handled = true;
-            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
-                cursorIndex = *newCursorPosition;
+            if (ttlet newmouse_cursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
+                cursorIndex = *newmouse_cursorPosition;
             }
             break;
 
         case command::text_select_word_right:
             handled = true;
-            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
-                cursorIndex = *newCursorPosition;
+            if (ttlet newmouse_cursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
+                cursorIndex = *newmouse_cursorPosition;
             }
             break;
 

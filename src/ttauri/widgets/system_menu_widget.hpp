@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/PipelineImage_Image.hpp"
+#include "../GUI/pipeline_image_image.hpp"
 #include "../Path.hpp"
 #include "../icon.hpp"
 #include "../stencils/image_stencil.hpp"
@@ -29,7 +29,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
 
-    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override;
+    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override;
 
 private:
     std::unique_ptr<image_stencil> _icon_stencil;

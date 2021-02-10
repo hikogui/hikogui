@@ -1,0 +1,24 @@
+// Copyright Take Vos 2019-2020.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#pragma once
+
+#include "vertical_sync_base.hpp"
+#include <span>
+#include <thread>
+
+typedef struct __CVDisplayLink CVDisplayLinkRef;
+
+namespace tt {
+
+class vertical_sync_macos final : public vertical_sync_base {
+private:
+    CVDisplayLinkRef *displayLink;
+
+public:
+    vertical_sync_macos(std::function<void(void *,hires_utc_clock::time_point)> callback, void *callbackData) noexcept;
+    ~vertical_sync_macos();
+};
+
+}

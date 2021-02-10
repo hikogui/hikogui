@@ -7,7 +7,7 @@
 #include "gui_device.hpp"
 #include "gui_window.hpp"
 #include "gui_window_vulkan_win32.hpp"
-#include "VerticalSync.hpp"
+#include "vertical_sync.hpp"
 #include "gui_system_delegate.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include <span>
@@ -27,7 +27,7 @@ public:
 
     std::weak_ptr<gui_system_delegate> delegate;
 
-    std::unique_ptr<VerticalSync> verticalSync;
+    std::unique_ptr<vertical_sync> verticalSync;
 
     //! List of all devices.
     std::vector<std::shared_ptr<gui_device>> devices;
@@ -40,7 +40,7 @@ public:
     gui_system(std::weak_ptr<gui_system_delegate> const &delegate) noexcept :
         delegate(delegate)
     {
-        verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync, this);
+        verticalSync = std::make_unique<vertical_sync>(_handlevertical_sync, this);
     }
 
     virtual ~gui_system() {}
@@ -98,13 +98,13 @@ public:
         previousNumberOfWindows = currentNumberOfWindows;
     }
 
-    void handleVerticalSync(hires_utc_clock::time_point displayTimePoint)
+    void handlevertical_sync(hires_utc_clock::time_point displayTimePoint)
     {
         render(displayTimePoint);
     }
 
 
-    static void _handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint);
+    static void _handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 protected:
     gui_device *findBestDeviceForWindow(gui_window const &window);

@@ -5,8 +5,8 @@
 
 #include "gui_window.hpp"
 #include "gui_device.hpp"
-#include "PipelineImage_Image.hpp"
-#include "PipelineImage_ImageLocation.hpp"
+#include "pipeline_image_image.hpp"
+#include "pipeline_image_image_location.hpp"
 #include "draw_context.hpp"
 #include "theme.hpp"
 #include "../text/shaped_text.hpp"

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "image_stencil.hpp"
-#include "../GUI/PipelineImage_Image.hpp"
+#include "../GUI/pipeline_image_image.hpp"
 #include "../pixel_map.hpp"
 #include "../R16G16B16A16SFloat.hpp"
 #include "../URL.hpp"
@@ -22,7 +22,7 @@ public:
 
 private:
     pixel_map<R16G16B16A16SFloat> _pixel_map;
-    PipelineImage::Image _backing;
+    pipeline_image::Image _backing;
     aarect _pixel_map_bounding_box;
     mat _pixel_map_transform;
 };

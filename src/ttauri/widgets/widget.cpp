@@ -137,13 +137,13 @@ bool widget::handle_command_recursive(command command, std::vector<std::shared_p
     }
 }
 
-bool widget::handle_event(MouseEvent const &event) noexcept
+bool widget::handle_event(mouse_event const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     return false;
 }
 
-bool widget::handle_event(KeyboardEvent const &event) noexcept
+bool widget::handle_event(keyboard_event const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     return false;

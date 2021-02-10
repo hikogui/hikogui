@@ -106,12 +106,12 @@ public:
             _other_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
-            ttlet check_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_check_glyph);
+            ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
             _check_glyph_rectangle =
                 align(_checkbox_rectangle, scale(check_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
 
             _minus_glyph = to_font_glyph_ids(elusive_icon::Minus);
-            ttlet minus_glyph_bb = PipelineSDF::DeviceShared::getBoundingBox(_minus_glyph);
+            ttlet minus_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_minus_glyph);
             _minus_glyph_rectangle =
                 align(_checkbox_rectangle, scale(minus_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
         }

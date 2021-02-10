@@ -33,7 +33,7 @@ public:
 
     vk::SurfaceKHR getSurface() const override;
 
-    void set_cursor(Cursor cursor) noexcept override;
+    void set_cursor(mouse_cursor cursor) noexcept override;
 
     void close_window() override;
 
@@ -57,15 +57,15 @@ private:
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
     char32_t highSurrogate = 0;
-    MouseEvent mouseButtonEvent;
+    mouse_event mouseButtonEvent;
     hires_utc_clock::time_point doubleClickTimePoint;
     hires_utc_clock::duration doubleClickMaximumDuration;
 
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;
-    [[nodiscard]] KeyboardModifiers getKeyboardModifiers() noexcept;
+    [[nodiscard]] keyboard_modifiers getkeyboard_modifiers() noexcept;
 
     [[nodiscard]] char32_t handleSuragates(char32_t c) noexcept;
-    [[nodiscard]] MouseEvent createMouseEvent(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
+    [[nodiscard]] mouse_event createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
 
 };

@@ -4,8 +4,8 @@
 
 #include "gui_device_vulkan.hpp"
 #include "gui_system_vulkan.hpp"
-#include "PipelineImage.hpp"
-#include "PipelineImage_DeviceShared.hpp"
+#include "pipeline_image.hpp"
+#include "pipeline_image_device_shared.hpp"
 #include "gui_window.hpp"
 #include "../application.hpp"
 #include <span>
@@ -234,11 +234,11 @@ void gui_device_vulkan::initializeDevice(gui_window const &window)
 
     initializeQuadIndexBuffer();
 
-    flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(*this);
-    boxPipeline = std::make_unique<PipelineBox::DeviceShared>(*this);
-    imagePipeline = std::make_unique<PipelineImage::DeviceShared>(*this);
-    SDFPipeline = std::make_unique<PipelineSDF::DeviceShared>(*this);
-    toneMapperPipeline = std::make_unique<PipelineToneMapper::DeviceShared>(*this);
+    flatPipeline = std::make_unique<pipeline_flat::device_shared>(*this);
+    boxPipeline = std::make_unique<pipeline_box::device_shared>(*this);
+    imagePipeline = std::make_unique<pipeline_image::device_shared>(*this);
+    SDFPipeline = std::make_unique<pipeline_SDF::device_shared>(*this);
+    toneMapperPipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
 
     gui_device::initializeDevice(window);
 }
@@ -277,27 +277,27 @@ void gui_device_vulkan::initializeQuadIndexBuffer()
         };
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-        ttlet [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = createBuffer(bufferCreateInfo, allocationCreateInfo);
+        ttlet [stagingvertexIndexBuffer, stagingvertexIndexBufferAllocation] = createBuffer(bufferCreateInfo, allocationCreateInfo);
 
         // Initialize indices.
-        ttlet stagingVertexIndexBufferData = mapMemory<vertex_index_type>(stagingVertexIndexBufferAllocation);
+        ttlet stagingvertexIndexBufferData = mapMemory<vertex_index_type>(stagingvertexIndexBufferAllocation);
         for (size_t i = 0; i < maximum_number_of_indices; i++) {
             ttlet vertexInRectangle = i % 6;
             ttlet rectangleNr = i / 6;
             ttlet rectangleBase = rectangleNr * 4;
 
             switch (vertexInRectangle) {
-            case 0: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 0); break;
-            case 1: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1); break;
-            case 2: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2); break;
-            case 3: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2); break;
-            case 4: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1); break;
-            case 5: stagingVertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 3); break;
+            case 0: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 0); break;
+            case 1: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1); break;
+            case 2: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2); break;
+            case 3: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2); break;
+            case 4: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1); break;
+            case 5: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 3); break;
             default: tt_no_default();
             }
         }
-        flushAllocation(stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
-        unmapMemory(stagingVertexIndexBufferAllocation);
+        flushAllocation(stagingvertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
+        unmapMemory(stagingvertexIndexBufferAllocation);
 
         // Copy indices to vertex index buffer.
         auto commands = allocateCommandBuffers({
@@ -306,7 +306,7 @@ void gui_device_vulkan::initializeQuadIndexBuffer()
             1
             }).at(0);
         commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-        commands.copyBuffer(stagingVertexIndexBuffer, quadIndexBuffer, {{0, 0, sizeof (vertex_index_type) * maximum_number_of_indices}});
+        commands.copyBuffer(stagingvertexIndexBuffer, quadIndexBuffer, {{0, 0, sizeof (vertex_index_type) * maximum_number_of_indices}});
         commands.end();
 
         std::vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
@@ -315,7 +315,7 @@ void gui_device_vulkan::initializeQuadIndexBuffer()
         graphicsQueue.waitIdle();
 
         freeCommandBuffers(graphicsCommandPool, {commands});
-        destroyBuffer(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation);
+        destroyBuffer(stagingvertexIndexBuffer, stagingvertexIndexBufferAllocation);
     }
 }
 

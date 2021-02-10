@@ -10,15 +10,15 @@
 #include "gui_device_vulkan.hpp"
 #include "gui_window.hpp"
 #include "theme.hpp"
-#include "PipelineImage_Image.hpp"
-#include "PipelineFlat_DeviceShared.hpp"
-#include "PipelineBox_DeviceShared.hpp"
-#include "PipelineImage_DeviceShared.hpp"
-#include "PipelineSDF_DeviceShared.hpp"
-#include "PipelineFlat_Vertex.hpp"
-#include "PipelineBox_Vertex.hpp"
-#include "PipelineImage_Vertex.hpp"
-#include "PipelineSDF_Vertex.hpp"
+#include "pipeline_image_image.hpp"
+#include "pipeline_flat_device_shared.hpp"
+#include "pipeline_box_device_shared.hpp"
+#include "pipeline_image_device_shared.hpp"
+#include "pipeline_SDF_device_shared.hpp"
+#include "pipeline_flat_vertex.hpp"
+#include "pipeline_box_vertex.hpp"
+#include "pipeline_image_vertex.hpp"
+#include "pipeline_SDF_vertex.hpp"
 #include "../numeric_array.hpp"
 #include "../mat.hpp"
 #include "../aarect.hpp"
@@ -70,10 +70,10 @@ public:
     draw_context(
         gui_window &window,
         aarect scissor_rectangle,
-        vspan<PipelineFlat::Vertex> &flatVertices,
-        vspan<PipelineBox::Vertex> &boxVertices,
-        vspan<PipelineImage::Vertex> &imageVertices,
-        vspan<PipelineSDF::Vertex> &sdfVertices) noexcept :
+        vspan<pipeline_flat::vertex> &flatVertices,
+        vspan<pipeline_box::vertex> &boxVertices,
+        vspan<pipeline_image::vertex> &imageVertices,
+        vspan<pipeline_SDF::vertex> &sdfVertices) noexcept :
         _window(&window),
         _scissor_rectangle(scissor_rectangle),
         _flat_vertices(&flatVertices),
@@ -154,7 +154,7 @@ public:
     {
         tt_axiom(_box_vertices != nullptr);
 
-        PipelineBox::DeviceShared::placeVertices(
+        pipeline_box::device_shared::placeVertices(
             *_box_vertices, transform * box, fill_color, line_width, color, corner_shapes, clipping_rectangle);
     }
 
@@ -187,7 +187,7 @@ public:
                 std::max(0.0f, corner_shapes.z() - shrink_value),
                 std::max(0.0f, corner_shapes.w() - shrink_value)};
 
-        PipelineBox::DeviceShared::placeVertices(
+        pipeline_box::device_shared::placeVertices(
             *_box_vertices, transform * new_rectangle, fill_color, line_width, color, new_corner_shapes, clipping_rectangle);
     }
 
@@ -221,7 +221,7 @@ public:
                 std::max(0.0f, corner_shapes.z() - shrink_value),
                 std::max(0.0f, corner_shapes.w() - shrink_value)};
 
-        PipelineBox::DeviceShared::placeVertices(
+        pipeline_box::device_shared::placeVertices(
             *_box_vertices, transform * new_rectangle, fill_color, line_width, color, new_corner_shapes, clipping_rectangle);
     }
 
@@ -231,7 +231,7 @@ public:
      *  - transform, to transform the image.
      *  - clippingRectangle
      */
-    void draw_image(PipelineImage::Image &image) const noexcept
+    void draw_image(pipeline_image::Image &image) const noexcept
     {
         tt_axiom(_image_vertices != nullptr);
 
@@ -279,10 +279,10 @@ private:
 public:
     aarect _scissor_rectangle;
 private:
-    vspan<PipelineFlat::Vertex> *_flat_vertices;
-    vspan<PipelineBox::Vertex> *_box_vertices;
-    vspan<PipelineImage::Vertex> *_image_vertices;
-    vspan<PipelineSDF::Vertex> *_sdf_vertices;
+    vspan<pipeline_flat::vertex> *_flat_vertices;
+    vspan<pipeline_box::vertex> *_box_vertices;
+    vspan<pipeline_image::vertex> *_image_vertices;
+    vspan<pipeline_SDF::vertex> *_sdf_vertices;
 };
 
 } // namespace tt

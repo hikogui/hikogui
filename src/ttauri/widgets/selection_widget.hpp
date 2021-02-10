@@ -134,7 +134,7 @@ public:
         if (need_layout) {
             _left_box_rectangle = aarect{0.0f, 0.0f, theme::global->smallSize, rectangle().height()};
             _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
-            ttlet chevrons_glyph_bbox = PipelineSDF::DeviceShared::getBoundingBox(_chevrons_glyph);
+            ttlet chevrons_glyph_bbox = pipeline_SDF::device_shared::getBoundingBox(_chevrons_glyph);
             _chevrons_rectangle =
                 align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global->small_icon_size), alignment::middle_center);
             _chevrons_rectangle =
@@ -168,7 +168,7 @@ public:
         }
     }
 
-    bool handle_event(MouseEvent const &event) noexcept override
+    bool handle_event(mouse_event const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = super::handle_event(event);
@@ -176,7 +176,7 @@ public:
         if (event.cause.leftButton) {
             handled = true;
             if (*enabled) {
-                if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
+                if (event.type == mouse_event::Type::ButtonUp && _window_rectangle.contains(event.position)) {
                     handle_event(command::gui_activate);
                 }
             }
@@ -214,19 +214,19 @@ public:
         return super::handle_event(command);
     }
 
-    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override
+    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         ttlet position = _from_window_transform * window_position;
 
-        auto r = HitBox{};
+        auto r = hit_box{};
 
         if (_selecting) {
             r = super::hitbox_test(window_position);
         }
 
         if (window_clipping_rectangle().contains(window_position)) {
-            r = std::max(r, HitBox{weak_from_this(), _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default});
+            r = std::max(r, hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default});
         }
 
         return r;

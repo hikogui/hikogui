@@ -6,9 +6,9 @@
 
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_device.hpp"
-#include "../GUI/MouseEvent.hpp"
-#include "../GUI/HitBox.hpp"
-#include "../GUI/KeyboardEvent.hpp"
+#include "../GUI/mouse_event.hpp"
+#include "../GUI/hit_box.hpp"
+#include "../GUI/keyboard_event.hpp"
 #include "../GUI/theme.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
@@ -34,18 +34,18 @@
 #include <mutex>
 #include <typeinfo>
 
-namespace tt::PipelineImage {
+namespace tt::pipeline_image {
 struct Image;
-struct Vertex;
-} // namespace tt::PipelineImage
-namespace tt::PipelineSDF {
-struct Vertex;
+struct vertex;
+} // namespace tt::pipeline_image
+namespace tt::pipeline_SDF {
+struct vertex;
 }
-namespace tt::PipelineFlat {
-struct Vertex;
+namespace tt::pipeline_flat {
+struct vertex;
 }
-namespace tt::PipelineBox {
-struct Vertex;
+namespace tt::pipeline_box {
+struct vertex;
 }
 
 namespace tt {
@@ -361,14 +361,14 @@ public:
      *
      * @param window_position The coordinate of the mouse on the window.
      *                        Use `fromWindowTransform` to convert to widget-local coordinates.
-     * @return A HitBox object with the cursor-type and a reference to the widget.
+     * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual HitBox hitbox_test(f32x4 window_position) const noexcept
+    [[nodiscard]] virtual hit_box hitbox_test(f32x4 window_position) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
-            return HitBox{weak_from_this(), _draw_layer};
+            return hit_box{weak_from_this(), _draw_layer};
         } else {
             return {};
         }
@@ -502,7 +502,7 @@ public:
      * @param event The mouse event, positions are in window coordinates.
      * @return If this widget has handled the mouse event.
      */
-    [[nodiscard]] virtual bool handle_event(MouseEvent const &event) noexcept;
+    [[nodiscard]] virtual bool handle_event(mouse_event const &event) noexcept;
 
     /** Handle keyboard event.
      * Called by the operating system when editing text, or entering special keys
@@ -510,7 +510,7 @@ public:
      * @param event The keyboard event.
      * @return If this widget has handled the keyboard event.
      */
-    [[nodiscard]] virtual bool handle_event(KeyboardEvent const &event) noexcept;
+    [[nodiscard]] virtual bool handle_event(keyboard_event const &event) noexcept;
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget

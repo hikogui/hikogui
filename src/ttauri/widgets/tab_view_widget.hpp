@@ -77,7 +77,7 @@ public:
         // Do not call super::draw, only the selected child should be drawn.
     }
 
-    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override
+    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         return selected_child().hitbox_test(window_position);

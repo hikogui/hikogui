@@ -12,20 +12,20 @@
 namespace tt {
 class gui_device_vulkan;
 
-namespace PipelineImage {
-class PipelineImage;
+namespace pipeline_image {
+class pipeline_image;
 }
-namespace PipelineFlat {
-class PipelineFlat;
+namespace pipeline_flat {
+class pipeline_flat;
 }
-namespace PipelineBox {
-class PipelineBox;
+namespace pipeline_box {
+class pipeline_box;
 }
-namespace PipelineSDF {
-class PipelineSDF;
+namespace pipeline_SDF {
+class pipeline_SDF;
 }
-namespace PipelineToneMapper {
-class PipelineToneMapper;
+namespace pipeline_tone_mapper {
+class pipeline_tone_mapper;
 }
 
 class gui_window_vulkan : public gui_window {
@@ -63,11 +63,11 @@ public:
     vk::Semaphore renderFinishedSemaphore;
     vk::Fence renderFinishedFence;
 
-    std::unique_ptr<PipelineImage::PipelineImage> imagePipeline;
-    std::unique_ptr<PipelineFlat::PipelineFlat> flatPipeline;
-    std::unique_ptr<PipelineBox::PipelineBox> boxPipeline;
-    std::unique_ptr<PipelineSDF::PipelineSDF> SDFPipeline;
-    std::unique_ptr<PipelineToneMapper::PipelineToneMapper> toneMapperPipeline;
+    std::unique_ptr<pipeline_image::pipeline_image> imagePipeline;
+    std::unique_ptr<pipeline_flat::pipeline_flat> flatPipeline;
+    std::unique_ptr<pipeline_box::pipeline_box> boxPipeline;
+    std::unique_ptr<pipeline_SDF::pipeline_SDF> SDFPipeline;
+    std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> toneMapperPipeline;
 
     gui_window_vulkan(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
     ~gui_window_vulkan();

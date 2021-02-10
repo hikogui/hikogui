@@ -50,11 +50,11 @@ ssize_t gui_system::getNumberOfWindows()
     return numberOfWindows;
 }
 
-void gui_system::_handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint)
+void gui_system::_handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint)
 {
     auto self = static_cast<gui_system *>(data);
 
-    self->handleVerticalSync(displayTimePoint);
+    self->handlevertical_sync(displayTimePoint);
 }
 
 

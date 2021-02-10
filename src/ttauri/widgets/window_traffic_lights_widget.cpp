@@ -94,10 +94,10 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
             tt_no_default();
         }
 
-        ttlet closeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(closeWindowGlyph);
-        ttlet minimizeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minimizeWindowGlyph);
-        ttlet maximizeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(maximizeWindowGlyph);
-        ttlet restoreWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(restoreWindowGlyph);
+        ttlet closeWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(closeWindowGlyph);
+        ttlet minimizeWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(minimizeWindowGlyph);
+        ttlet maximizeWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(maximizeWindowGlyph);
+        ttlet restoreWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(restoreWindowGlyph);
 
         ttlet glyph_size = theme::global->operatingSystem == OperatingSystem::MacOS ? 5.0f : theme::global->small_icon_size;
 
@@ -234,7 +234,7 @@ void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::t
     super::draw(std::move(context), display_time_point);
 }
 
-bool window_traffic_lights_widget::handle_event(MouseEvent const &event) noexcept
+bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     auto handled = super::handle_event(event);
@@ -253,7 +253,7 @@ bool window_traffic_lights_widget::handle_event(MouseEvent const &event) noexcep
         handled = true;
 
         switch (event.type) {
-            using enum MouseEvent::Type;
+            using enum mouse_event::Type;
         case ButtonUp:
             if (pressedClose && hoverClose) {
                 window.close_window();
@@ -289,16 +289,16 @@ bool window_traffic_lights_widget::handle_event(MouseEvent const &event) noexcep
     return handled;
 }
 
-HitBox window_traffic_lights_widget::hitbox_test(f32x4 window_position) const noexcept
+hit_box window_traffic_lights_widget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     ttlet position = _from_window_transform * window_position;
 
     if (_window_clipping_rectangle.contains(window_position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-            return HitBox{weak_from_this(), _draw_layer, HitBox::Type::Button};
+            return hit_box{weak_from_this(), _draw_layer, hit_box::Type::Button};
         } else {
-            return HitBox{};
+            return hit_box{};
         }
     } else {
         return {};

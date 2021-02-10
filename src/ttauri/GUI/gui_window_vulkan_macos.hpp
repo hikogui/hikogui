@@ -38,7 +38,7 @@ public:
 
     vk::SurfaceKHR getSurface() const override;
 
-    void set_cursor(Cursor cursor) noexcept override;
+    void set_cursor(mouse_cursor cursor) noexcept override;
 
     void close_window() override;
 

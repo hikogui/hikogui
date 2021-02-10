@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_window_vulkan_win32.hpp"
-#include "KeyboardVirtualKey.hpp"
+#include "keyboard_virtual_key.hpp"
 #include "gui_system_vulkan_win32.hpp"
 #include "theme_book.hpp"
 #include "../widgets/window_widget.hpp"
@@ -388,19 +388,19 @@ void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
     request_redraw();
 }
 
-void gui_window_vulkan_win32::set_cursor(Cursor cursor) noexcept
+void gui_window_vulkan_win32::set_cursor(mouse_cursor cursor) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (currentCursor == cursor) {
+        if (currentmouse_cursor == cursor) {
             return;
         }
-        currentCursor = cursor;
+        currentmouse_cursor = cursor;
 
-        if (cursor == Cursor::None) {
+        if (cursor == mouse_cursor::None) {
             return;
         }
     }
@@ -413,32 +413,32 @@ void gui_window_vulkan_win32::set_cursor(Cursor cursor) noexcept
 
     auto idc = idcNo;
     switch (cursor) {
-    case Cursor::None: idc = idcAppStarting; break;
-    case Cursor::Default: idc = idcArrow; break;
-    case Cursor::Button: idc = idcHand; break;
-    case Cursor::TextEdit: idc = idcIBeam; break;
+    case mouse_cursor::None: idc = idcAppStarting; break;
+    case mouse_cursor::Default: idc = idcArrow; break;
+    case mouse_cursor::Button: idc = idcHand; break;
+    case mouse_cursor::TextEdit: idc = idcIBeam; break;
     default: tt_no_default();
     }
 
     SetCursor(idc);
 }
 
-[[nodiscard]] KeyboardModifiers gui_window_vulkan_win32::getKeyboardModifiers() noexcept
+[[nodiscard]] keyboard_modifiers gui_window_vulkan_win32::getkeyboard_modifiers() noexcept
 {
-    auto r = KeyboardModifiers::None;
+    auto r = keyboard_modifiers::None;
 
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_SHIFT)) & 0x8000) != 0) {
-        r |= KeyboardModifiers::Shift;
+        r |= keyboard_modifiers::Shift;
     }
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_CONTROL)) & 0x8000) != 0) {
-        r |= KeyboardModifiers::Control;
+        r |= keyboard_modifiers::Control;
     }
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_MENU)) & 0x8000) != 0) {
-        r |= KeyboardModifiers::Alt;
+        r |= keyboard_modifiers::Alt;
     }
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
         (static_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0) {
-        r |= KeyboardModifiers::Super;
+        r |= keyboard_modifiers::Super;
     }
 
     return r;
@@ -465,7 +465,7 @@ void gui_window_vulkan_win32::set_cursor(Cursor cursor) noexcept
  */
 int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
-    MouseEvent mouseEvent;
+    mouse_event mouseEvent;
 
     switch (uMsg) {
     case WM_DESTROY: {
@@ -583,8 +583,8 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
         } else if (c >= 0x20) {
-            auto keyboardEvent = KeyboardEvent();
-            keyboardEvent.type = KeyboardEvent::Type::grapheme;
+            auto keyboardEvent = keyboard_event();
+            keyboardEvent.type = keyboard_event::Type::grapheme;
             keyboardEvent.grapheme = c;
             send_event(keyboardEvent);
         }
@@ -618,9 +618,9 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         tt_log_error("Key 0x{:x} extended={}", key_code, extended);
 
         ttlet key_state = getKeyboardState();
-        ttlet key_modifiers = getKeyboardModifiers();
-        ttlet virtual_key = to_KeyboardVirtualKey(key_code, extended, key_modifiers);
-        if (virtual_key != KeyboardVirtualKey::Nul) {
+        ttlet key_modifiers = getkeyboard_modifiers();
+        ttlet virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
+        if (virtual_key != keyboard_virtual_key::Nul) {
             send_event(key_state, key_modifiers, virtual_key);
         }
     } break;
@@ -640,7 +640,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     case WM_MOUSEMOVE:
-    case WM_MOUSELEAVE: send_event(createMouseEvent(uMsg, wParam, lParam)); break;
+    case WM_MOUSELEAVE: send_event(createmouse_event(uMsg, wParam, lParam)); break;
 
     case WM_NCCALCSIZE:
         if (wParam == TRUE) {
@@ -668,20 +668,20 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         gui_system_mutex.unlock();
 
         switch (hitbox_type) {
-        case HitBox::Type::BottomResizeBorder: set_cursor(Cursor::None); return HTBOTTOM;
-        case HitBox::Type::TopResizeBorder: set_cursor(Cursor::None); return HTTOP;
-        case HitBox::Type::LeftResizeBorder: set_cursor(Cursor::None); return HTLEFT;
-        case HitBox::Type::RightResizeBorder: set_cursor(Cursor::None); return HTRIGHT;
-        case HitBox::Type::BottomLeftResizeCorner: set_cursor(Cursor::None); return HTBOTTOMLEFT;
-        case HitBox::Type::BottomRightResizeCorner: set_cursor(Cursor::None); return HTBOTTOMRIGHT;
-        case HitBox::Type::TopLeftResizeCorner: set_cursor(Cursor::None); return HTTOPLEFT;
-        case HitBox::Type::TopRightResizeCorner: set_cursor(Cursor::None); return HTTOPRIGHT;
-        case HitBox::Type::ApplicationIcon: set_cursor(Cursor::None); return HTSYSMENU;
-        case HitBox::Type::MoveArea: set_cursor(Cursor::None); return HTCAPTION;
-        case HitBox::Type::TextEdit: set_cursor(Cursor::TextEdit); return HTCLIENT;
-        case HitBox::Type::Button: set_cursor(Cursor::Button); return HTCLIENT;
-        case HitBox::Type::Default: set_cursor(Cursor::Default); return HTCLIENT;
-        case HitBox::Type::Outside: set_cursor(Cursor::None); return HTCLIENT;
+        case hit_box::Type::BottomResizeBorder: set_cursor(mouse_cursor::None); return HTBOTTOM;
+        case hit_box::Type::TopResizeBorder: set_cursor(mouse_cursor::None); return HTTOP;
+        case hit_box::Type::LeftResizeBorder: set_cursor(mouse_cursor::None); return HTLEFT;
+        case hit_box::Type::RightResizeBorder: set_cursor(mouse_cursor::None); return HTRIGHT;
+        case hit_box::Type::BottomLeftResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMLEFT;
+        case hit_box::Type::BottomRightResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMRIGHT;
+        case hit_box::Type::TopLeftResizeCorner: set_cursor(mouse_cursor::None); return HTTOPLEFT;
+        case hit_box::Type::TopRightResizeCorner: set_cursor(mouse_cursor::None); return HTTOPRIGHT;
+        case hit_box::Type::ApplicationIcon: set_cursor(mouse_cursor::None); return HTSYSMENU;
+        case hit_box::Type::MoveArea: set_cursor(mouse_cursor::None); return HTCAPTION;
+        case hit_box::Type::TextEdit: set_cursor(mouse_cursor::TextEdit); return HTCLIENT;
+        case hit_box::Type::Button: set_cursor(mouse_cursor::Button); return HTCLIENT;
+        case hit_box::Type::Default: set_cursor(mouse_cursor::Default); return HTCLIENT;
+        case hit_box::Type::Outside: set_cursor(mouse_cursor::None); return HTCLIENT;
         default: tt_no_default();
         }
     } break;
@@ -730,7 +730,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     return c;
 }
 
-[[nodiscard]] MouseEvent gui_window_vulkan_win32::createMouseEvent(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
+[[nodiscard]] mouse_event gui_window_vulkan_win32::createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     // We have to do manual locking, since we don't want this
     // function or its caller to hold a lock while calling the windows API.
@@ -738,7 +738,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
     gui_system_mutex.lock();
 
-    auto mouseEvent = MouseEvent{};
+    auto mouseEvent = mouse_event{};
     mouseEvent.timePoint = cpu_utc_clock::now();
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
@@ -780,7 +780,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
         break;
     case WM_MOUSEMOVE:
-        if (mouseButtonEvent.type == MouseEvent::Type::ButtonDown) {
+        if (mouseButtonEvent.type == mouse_event::Type::ButtonDown) {
             mouseEvent.cause = mouseButtonEvent.cause;
         }
         break;
@@ -798,7 +798,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
     case WM_XBUTTONUP:
-        mouseEvent.type = MouseEvent::Type::ButtonUp;
+        mouseEvent.type = mouse_event::Type::ButtonUp;
         mouseEvent.downPosition = mouseButtonEvent.downPosition;
         mouseEvent.clickCount = 0;
 
@@ -814,7 +814,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
+        mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = (mouseEvent.timePoint < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
 
@@ -832,33 +832,33 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_MBUTTONDBLCLK:
     case WM_RBUTTONDBLCLK:
     case WM_XBUTTONDBLCLK:
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
+        mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = 2;
         doubleClickTimePoint = cpu_utc_clock::now();
         break;
 
     case WM_MOUSEWHEEL:
-    case WM_MOUSEHWHEEL: mouseEvent.type = MouseEvent::Type::Wheel; break;
+    case WM_MOUSEHWHEEL: mouseEvent.type = mouse_event::Type::Wheel; break;
 
     case WM_MOUSEMOVE: {
         // XXX Make sure the mouse is moved enough for this to cause a drag event.
-        mouseEvent.type = a_button_is_pressed ? MouseEvent::Type::Drag : MouseEvent::Type::Move;
+        mouseEvent.type = a_button_is_pressed ? mouse_event::Type::Drag : mouse_event::Type::Move;
         mouseEvent.downPosition = mouseButtonEvent.downPosition;
         mouseEvent.clickCount = mouseButtonEvent.clickCount;
     } break;
 
     case WM_MOUSELEAVE:
-        mouseEvent.type = MouseEvent::Type::Exited;
+        mouseEvent.type = mouse_event::Type::Exited;
         mouseEvent.downPosition = mouseButtonEvent.downPosition;
         mouseEvent.clickCount = 0;
 
         // After this event we need to ask win32 to track the mouse again.
         trackingMouseLeaveEvent = false;
 
-        // Force currentCursor to None so that the Window is in a fresh
+        // Force currentmouse_cursor to None so that the Window is in a fresh
         // state when the mouse reenters it.
-        currentCursor = Cursor::None;
+        currentmouse_cursor = mouse_cursor::None;
         break;
 
     default: tt_no_default();
@@ -879,8 +879,8 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     // Remember the last time a button was pressed or released, so that we can convert
     // a move into a drag event.
-    if (mouseEvent.type == MouseEvent::Type::ButtonDown || mouseEvent.type == MouseEvent::Type::ButtonUp ||
-        mouseEvent.type == MouseEvent::Type::Exited) {
+    if (mouseEvent.type == mouse_event::Type::ButtonDown || mouseEvent.type == mouse_event::Type::ButtonUp ||
+        mouseEvent.type == mouse_event::Type::Exited) {
         mouseButtonEvent = mouseEvent;
     }
 

@@ -149,11 +149,11 @@ public:
         return handled;
     }
 
-    HitBox hitbox_test(f32x4 window_position) const noexcept
+    hit_box hitbox_test(f32x4 window_position) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        auto r = HitBox{};
+        auto r = hit_box{};
         for (ttlet &child : _children) {
             tt_axiom(child);
             tt_axiom(&child->parent() == this);

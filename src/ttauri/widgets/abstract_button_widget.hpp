@@ -71,7 +71,7 @@ public:
         return super::handle_event(command);
     }
 
-    [[nodiscard]] bool handle_event(MouseEvent const &event) noexcept final
+    [[nodiscard]] bool handle_event(mouse_event const &event) noexcept final
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = super::handle_event(event);
@@ -83,7 +83,7 @@ public:
                     window.request_redraw(window_clipping_rectangle());
                 }
 
-                if (event.type == MouseEvent::Type::ButtonUp && _window_rectangle.contains(event.position)) {
+                if (event.type == mouse_event::Type::ButtonUp && _window_rectangle.contains(event.position)) {
                     handled |= handle_event(command::gui_activate);
                 }
             }
@@ -91,14 +91,14 @@ public:
         return handled;
     }
 
-    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept final
+    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept final
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (_window_clipping_rectangle.contains(window_position)) {
-            return HitBox{weak_from_this(), _draw_layer, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default};
         } else {
-            return HitBox{};
+            return hit_box{};
         }
     }
 

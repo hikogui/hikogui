@@ -71,14 +71,14 @@ void system_menu_widget::draw(draw_context context, hires_utc_clock::time_point 
     super::draw(std::move(context), display_time_point);
 }
 
-HitBox system_menu_widget::hitbox_test(f32x4 window_position) const noexcept
+hit_box system_menu_widget::hitbox_test(f32x4 window_position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     if (window_clipping_rectangle().contains(window_position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return HitBox{weak_from_this(), _draw_layer, HitBox::Type::ApplicationIcon};
+        return hit_box{weak_from_this(), _draw_layer, hit_box::Type::ApplicationIcon};
     } else {
         return {};
     }

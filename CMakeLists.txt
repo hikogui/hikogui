@@ -249,16 +249,16 @@ add_custom_command(
 target_sources(ttauri PRIVATE ${UNICODE_DATA_INL})
 
 add_shader(ttauri_binary_resources
-    src/TTauri/GUI/PipelineImage.vert
-    src/TTauri/GUI/PipelineImage.frag
-    src/TTauri/GUI/PipelineFlat.vert
-    src/TTauri/GUI/PipelineFlat.frag
-    src/TTauri/GUI/PipelineBox.vert
-    src/TTauri/GUI/PipelineBox.frag
-    src/TTauri/GUI/PipelineSDF.vert
-    src/TTauri/GUI/PipelineSDF.frag
-    src/TTauri/GUI/PipelineToneMapper.vert
-    src/TTauri/GUI/PipelineToneMapper.frag
+    src/TTauri/GUI/pipeline_image.vert
+    src/TTauri/GUI/pipeline_image.frag
+    src/TTauri/GUI/pipeline_flat.vert
+    src/TTauri/GUI/pipeline_flat.frag
+    src/TTauri/GUI/pipeline_box.vert
+    src/TTauri/GUI/pipeline_box.frag
+    src/TTauri/GUI/pipeline_SDF.vert
+    src/TTauri/GUI/pipeline_SDF.frag
+    src/TTauri/GUI/pipeline_tone_mapper.vert
+    src/TTauri/GUI/pipeline_tone_mapper.frag
 )
 set(ttauri_binary_resources ${ttauri_binary_resources}
     data/elusiveicons-webfont.ttf
@@ -289,7 +289,7 @@ add_custom_command(
 )
 
 set(TTauri_do_not_analyze
-    src/ttauri/GUI/PipelineFlat.cpp
+    src/ttauri/GUI/pipeline_flat.cpp
     src/ttauri/GUI/gui_window_vulkan.cpp
     src/ttauri/GUI/gui_device_vulkan.cpp
     src/ttauri/GUI/gui_system_vulkan.cpp
@@ -297,20 +297,20 @@ set(TTauri_do_not_analyze
     src/ttauri/GUI/gui_system_vulkan_win32.cpp
     src/ttauri/GUI/gui_window.cpp
     src/ttauri/GUI/gui_window_vulkan_win32.cpp
-    src/ttauri/GUI/PipelineFlat_DeviceShared.cpp
-    src/ttauri/GUI/PipelineImage.cpp
-    src/ttauri/GUI/PipelineToneMapper.cpp
-    src/ttauri/GUI/PipelineImage_TextureMap.cpp
-    src/ttauri/GUI/PipelineSDF_TextureMap.cpp
-    src/ttauri/GUI/PipelineBox_DeviceShared.cpp
-    src/ttauri/GUI/PipelineImage_DeviceShared.cpp
-    src/ttauri/GUI/PipelineToneMapper_DeviceShared.cpp
-    src/ttauri/GUI/PipelineImage_Image.cpp
-    src/ttauri/GUI/PipelineSDF_DeviceShared.cpp
-    src/ttauri/GUI/PipelineSDF_AtlasRect.cpp
-    src/ttauri/GUI/PipelineSDF.cpp
+    src/ttauri/GUI/pipeline_flat_device_shared.cpp
+    src/ttauri/GUI/pipeline_image.cpp
+    src/ttauri/GUI/pipeline_tone_mapper.cpp
+    src/ttauri/GUI/pipeline_image_texture_map.cpp
+    src/ttauri/GUI/pipeline_box_device_shared.cpp
+    src/ttauri/GUI/pipeline_image_device_shared.cpp
+    src/ttauri/GUI/pipeline_tone_mapper_device_shared.cpp
+    src/ttauri/GUI/pipeline_image_image.cpp
+    src/ttauri/GUI/pipeline_SDF_texture_map.cpp
+    src/ttauri/GUI/pipeline_SDF_device_shared.cpp
+    src/ttauri/GUI/pipeline_SDF_atlas_rect.cpp
+    src/ttauri/GUI/pipeline_SDF.cpp
     src/ttauri/GUI/pipeline_vulkan.cpp
-    src/ttauri/GUI/PipelineBox.cpp
+    src/ttauri/GUI/pipeline_box.cpp
     src/ttauri/widgets/WindowWidget.cpp
     src/ttauri/widgets/SystemMenuWidget.cpp
     src/ttauri/widgets/grid_layout_widget.cpp

@@ -28,8 +28,8 @@ public:
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
 
-    bool handle_event(MouseEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override;
+    bool handle_event(mouse_event const &event) noexcept override;
+    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override;
 
 private:
     static constexpr float GLYPH_SIZE = 5.0f;

@@ -5,11 +5,11 @@
 #include "gui_window_vulkan.hpp"
 #include "gui_system_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
-#include "PipelineFlat.hpp"
-#include "PipelineBox.hpp"
-#include "PipelineImage.hpp"
-#include "PipelineSDF.hpp"
-#include "PipelineToneMapper.hpp"
+#include "pipeline_flat.hpp"
+#include "pipeline_box.hpp"
+#include "pipeline_image.hpp"
+#include "pipeline_SDF.hpp"
+#include "pipeline_tone_mapper.hpp"
 #include "draw_context.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../trace.hpp"
@@ -43,11 +43,11 @@ void gui_window_vulkan::init()
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
     gui_window::init();
-    flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(*this);
-    boxPipeline = std::make_unique<PipelineBox::PipelineBox>(*this);
-    imagePipeline = std::make_unique<PipelineImage::PipelineImage>(*this);
-    SDFPipeline = std::make_unique<PipelineSDF::PipelineSDF>(*this);
-    toneMapperPipeline = std::make_unique<PipelineToneMapper::PipelineToneMapper>(*this);
+    flatPipeline = std::make_unique<pipeline_flat::pipeline_flat>(*this);
+    boxPipeline = std::make_unique<pipeline_box::pipeline_box>(*this);
+    imagePipeline = std::make_unique<pipeline_image::pipeline_image>(*this);
+    SDFPipeline = std::make_unique<pipeline_SDF::pipeline_SDF>(*this);
+    toneMapperPipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(*this);
 }
 
 void gui_window_vulkan::waitIdle()

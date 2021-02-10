@@ -176,7 +176,7 @@ public:
         super::update_layout(display_time_point, need_layout);
     }
 
-    [[nodiscard]] HitBox hitbox_test(f32x4 window_position) const noexcept override
+    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         tt_axiom(_content);
@@ -185,7 +185,7 @@ public:
 
         if (window_clipping_rectangle().contains(window_position)) {
             // Claim mouse events for scrolling.
-            r = std::max(r, HitBox{weak_from_this(), _draw_layer});
+            r = std::max(r, hit_box{weak_from_this(), _draw_layer});
         }
 
         return r;
@@ -202,12 +202,12 @@ public:
         return widget;
     }
 
-    bool handle_event(MouseEvent const &event) noexcept override
+    bool handle_event(mouse_event const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = super::handle_event(event);
 
-        if (event.type == MouseEvent::Type::Wheel) {
+        if (event.type == mouse_event::Type::Wheel) {
             handled = true;
             _scroll_offset_x += event.wheelDelta.x();
             _scroll_offset_y += event.wheelDelta.y();

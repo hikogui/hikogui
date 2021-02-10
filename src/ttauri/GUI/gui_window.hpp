@@ -8,11 +8,11 @@
 #include "gui_window_size.hpp"
 #include "gui_window_delegate.hpp"
 #include "gui_system_globals.hpp"
-#include "Cursor.hpp"
-#include "HitBox.hpp"
-#include "MouseEvent.hpp"
-#include "KeyboardEvent.hpp"
-#include "SubpixelOrientation.hpp"
+#include "mouse_cursor.hpp"
+#include "hit_box.hpp"
+#include "mouse_event.hpp"
+#include "keyboard_event.hpp"
+#include "subpixel_orientation.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "../text/gstring.hpp"
@@ -44,12 +44,12 @@ public:
 
     /** The current cursor.
      * Used for optimizing when the operating system cursor is updated.
-     * Set to Cursor::None at the start (for the wait icon) and when the
+     * Set to mouse_cursor::None at the start (for the wait icon) and when the
      * operating system is going to display another icon to make sure
      * when it comes back in the application the cursor will be updated
      * correctly.
      */
-    Cursor currentCursor = Cursor::None;
+    mouse_cursor currentmouse_cursor = mouse_cursor::None;
 
     /** When set to true the widgets will be layed out.
      */
@@ -83,7 +83,7 @@ public:
 
     /*! Orientation of the RGB subpixels.
      */
-    SubpixelOrientation subpixel_orientation = SubpixelOrientation::BlueRight;
+    subpixel_orientation subpixel_orientation = subpixel_orientation::BlueRight;
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
@@ -167,7 +167,7 @@ public:
 
     /** Set the mouse cursor icon.
      */
-    virtual void set_cursor(Cursor cursor) = 0;
+    virtual void set_cursor(mouse_cursor cursor) = 0;
 
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
 
@@ -296,7 +296,7 @@ protected:
     /** Handle mouse event.
      * This function is called when no widget has handled the mouse event.
      */
-    [[nodiscard]] virtual bool handle_event(MouseEvent const &event) noexcept
+    [[nodiscard]] virtual bool handle_event(mouse_event const &event) noexcept
     {
         return false;
     }
@@ -304,7 +304,7 @@ protected:
     /** Handle keyboard event.
      * This function is called when no widget has handled the keyboard event.
      */
-    [[nodiscard]] virtual bool handle_event(KeyboardEvent const &event) noexcept
+    [[nodiscard]] virtual bool handle_event(keyboard_event const &event) noexcept
     {
         return false;
     }
@@ -314,15 +314,15 @@ protected:
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    bool send_event(MouseEvent const &event) noexcept;
+    bool send_event(mouse_event const &event) noexcept;
 
     /*! Handle keyboard event.
      * Called by the operating system to show the character that was entered
      * or special key that was used.
      */
-    bool send_event(KeyboardEvent const &event) noexcept;
+    bool send_event(keyboard_event const &event) noexcept;
 
-    bool send_event(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
+    bool send_event(KeyboardState _state, keyboard_modifiers modifiers, keyboard_virtual_key key) noexcept;
 
     bool send_event(grapheme grapheme, bool full = true) noexcept;
 

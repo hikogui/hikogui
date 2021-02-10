@@ -259,7 +259,7 @@ public:
         return super::handle_event(command);
     }
 
-    bool handle_event(MouseEvent const &event) noexcept override
+    bool handle_event(mouse_event const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         auto handled = super::handle_event(event);
@@ -278,7 +278,7 @@ public:
             }
 
             switch (event.type) {
-                using enum MouseEvent::Type;
+                using enum mouse_event::Type;
             case ButtonDown:
                 if (_text_rectangle.contains(position)) {
                     ttlet mouseInTextPosition = _text_inv_translate * position;
@@ -286,9 +286,9 @@ public:
                     switch (event.clickCount) {
                     case 1:
                         if (event.down.shiftKey) {
-                            _field.dragCursorAtCoordinate(mouseInTextPosition);
+                            _field.dragmouse_cursorAtCoordinate(mouseInTextPosition);
                         } else {
-                            _field.setCursorAtCoordinate(mouseInTextPosition);
+                            _field.setmouse_cursorAtCoordinate(mouseInTextPosition);
                         }
                         break;
                     case 2: _field.selectWordAtCoordinate(mouseInTextPosition); break;
@@ -332,7 +332,7 @@ public:
         return handled;
     }
 
-    bool handle_event(KeyboardEvent const &event) noexcept override
+    bool handle_event(keyboard_event const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -340,7 +340,7 @@ public:
 
         if (*enabled) {
             switch (event.type) {
-                using enum KeyboardEvent::Type;
+                using enum keyboard_event::Type;
 
             case grapheme:
                 handled = true;
@@ -362,14 +362,14 @@ public:
         return handled;
     }
 
-    HitBox hitbox_test(f32x4 window_position) const noexcept override
+    hit_box hitbox_test(f32x4 window_position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (window_clipping_rectangle().contains(window_position)) {
-            return HitBox{weak_from_this(), _draw_layer, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
+            return hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::TextEdit : hit_box::Type::Default};
         } else {
-            return HitBox{};
+            return hit_box{};
         }
     }
 
@@ -452,7 +452,7 @@ private:
 
         ttlet mouseInTextPosition = _text_inv_translate * _drag_select_position;
         switch (_drag_click_count) {
-        case 1: _field.dragCursorAtCoordinate(mouseInTextPosition); break;
+        case 1: _field.dragmouse_cursorAtCoordinate(mouseInTextPosition); break;
         case 2: _field.dragWordAtCoordinate(mouseInTextPosition); break;
         case 3: _field.dragParagraphAtCoordinate(mouseInTextPosition); break;
         default:;

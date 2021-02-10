@@ -4,7 +4,7 @@
 
 #include "glyph_stencil.hpp"
 #include "../GUI/draw_context.hpp"
-#include "../GUI/PipelineSDF_DeviceShared.hpp"
+#include "../GUI/pipeline_SDF_device_shared.hpp"
 
 namespace tt {
 
@@ -13,7 +13,7 @@ glyph_stencil::glyph_stencil(alignment alignment, font_glyph_ids glyph) noexcept
 void glyph_stencil::draw(draw_context context, bool use_context_color) noexcept
 {
     if (std::exchange(_data_is_modified, false)) {
-        _glyph_bounding_box = PipelineSDF::DeviceShared::getBoundingBox(_glyph);
+        _glyph_bounding_box = pipeline_SDF::device_shared::getBoundingBox(_glyph);
         _size_is_modified = true;
         _position_is_modified = true;
     }
