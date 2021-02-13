@@ -7,95 +7,94 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
-using namespace tt;
+using namespace tt::geo;
 
 TEST(point, compare)
 {
-    ASSERT_FALSE(point2(1.0, 2.0) == point2(3.0, 4.0));
-    ASSERT_FALSE(point2(1.0, 2.0) == point2(1.0, 4.0));
-    ASSERT_FALSE(point2(1.0, 2.0) == point2(3.0, 2.0));
-    ASSERT_TRUE(point2(1.0, 2.0) == point2(1.0, 2.0));
+    ASSERT_FALSE(point<2>(1.0, 2.0) == point<2>(3.0, 4.0));
+    ASSERT_FALSE(point<2>(1.0, 2.0) == point<2>(1.0, 4.0));
+    ASSERT_FALSE(point<2>(1.0, 2.0) == point<2>(3.0, 2.0));
+    ASSERT_TRUE(point<2>(1.0, 2.0) == point<2>(1.0, 2.0));
 
-    ASSERT_TRUE(point2(1.0, 2.0) != point2(3.0, 4.0));
-    ASSERT_TRUE(point2(1.0, 2.0) != point2(1.0, 4.0));
-    ASSERT_TRUE(point2(1.0, 2.0) != point2(3.0, 2.0));
-    ASSERT_FALSE(point2(1.0, 2.0) != point2(1.0, 2.0));
+    ASSERT_TRUE(point<2>(1.0, 2.0) != point<2>(3.0, 4.0));
+    ASSERT_TRUE(point<2>(1.0, 2.0) != point<2>(1.0, 4.0));
+    ASSERT_TRUE(point<2>(1.0, 2.0) != point<2>(3.0, 2.0));
+    ASSERT_FALSE(point<2>(1.0, 2.0) != point<2>(1.0, 2.0));
 
-    ASSERT_FALSE(point3(1.0, 2.0, 3.0) == point3(3.0, 4.0, 5.0));
-    ASSERT_FALSE(point3(1.0, 2.0, 3.0) == point3(1.0, 4.0, 5.0));
-    ASSERT_FALSE(point3(1.0, 2.0, 3.0) == point3(3.0, 2.0, 5.0));
-    ASSERT_TRUE(point3(1.0, 2.0, 3.0) == point3(1.0, 2.0, 3.0));
+    ASSERT_FALSE(point<3>(1.0, 2.0, 3.0) == point<3>(3.0, 4.0, 5.0));
+    ASSERT_FALSE(point<3>(1.0, 2.0, 3.0) == point<3>(1.0, 4.0, 5.0));
+    ASSERT_FALSE(point<3>(1.0, 2.0, 3.0) == point<3>(3.0, 2.0, 5.0));
+    ASSERT_TRUE(point<3>(1.0, 2.0, 3.0) == point<3>(1.0, 2.0, 3.0));
 
-    ASSERT_FALSE(point2(1.0, 2.0) == point3(3.0, 4.0, 5.0));
-    ASSERT_FALSE(point2(1.0, 2.0) == point3(1.0, 4.0, 5.0));
-    ASSERT_FALSE(point2(1.0, 2.0) == point3(3.0, 2.0, 5.0));
-    ASSERT_FALSE(point2(1.0, 2.0) == point3(1.0, 2.0, 3.0));
-    ASSERT_TRUE(point2(1.0, 2.0) == point3(1.0, 2.0, 0.0));
+    ASSERT_FALSE(point<2>(1.0, 2.0) == point<3>(3.0, 4.0, 5.0));
+    ASSERT_FALSE(point<2>(1.0, 2.0) == point<3>(1.0, 4.0, 5.0));
+    ASSERT_FALSE(point<2>(1.0, 2.0) == point<3>(3.0, 2.0, 5.0));
+    ASSERT_FALSE(point<2>(1.0, 2.0) == point<3>(1.0, 2.0, 3.0));
+    ASSERT_TRUE(point<2>(1.0, 2.0) == point<3>(1.0, 2.0, 0.0));
 }
 
 TEST(point, adding)
 {
-    ASSERT_EQ(point2(1.0, 2.0) + vec2(3.0, 4.0), point2(4.0, 6.0));
-    ASSERT_EQ(point3(1.0, 2.0, 3.0) + vec3(3.0, 4.0, 5.0), point3(4.0, 6.0, 8.0));
-    ASSERT_EQ(point2(1.0, 2.0) + vec3(3.0, 4.0, 5.0), point3(4.0, 6.0, 5.0));
-    ASSERT_EQ(point3(1.0, 2.0, 3.0) + vec2(3.0, 4.0), point3(4.0, 6.0, 3.0));
+    ASSERT_EQ(point<2>(1.0, 2.0) + vector<2>(3.0, 4.0), point<2>(4.0, 6.0));
+    ASSERT_EQ(point<3>(1.0, 2.0, 3.0) + vector<3>(3.0, 4.0, 5.0), point<3>(4.0, 6.0, 8.0));
+    ASSERT_EQ(point<2>(1.0, 2.0) + vector<3>(3.0, 4.0, 5.0), point<3>(4.0, 6.0, 5.0));
+    ASSERT_EQ(point<3>(1.0, 2.0, 3.0) + vector<2>(3.0, 4.0), point<3>(4.0, 6.0, 3.0));
 
-    static_assert(point2(1.0, 2.0) + vec2(3.0, 4.0) == point2(4.0, 6.0));
-    static_assert(point3(1.0, 2.0, 3.0) + vec3(3.0, 4.0, 5.0) == point3(4.0, 6.0, 8.0));
-    static_assert(point2(1.0, 2.0) + vec3(3.0, 4.0, 5.0) == point3(4.0, 6.0, 5.0));
-    static_assert(point3(1.0, 2.0, 3.0) + vec2(3.0, 4.0) == point3(4.0, 6.0, 3.0));
+    static_assert(point<2>(1.0, 2.0) + vector<2>(3.0, 4.0) == point<2>(4.0, 6.0));
+    static_assert(point<3>(1.0, 2.0, 3.0) + vector<3>(3.0, 4.0, 5.0) == point<3>(4.0, 6.0, 8.0));
+    static_assert(point<2>(1.0, 2.0) + vector<3>(3.0, 4.0, 5.0) == point<3>(4.0, 6.0, 5.0));
+    static_assert(point<3>(1.0, 2.0, 3.0) + vector<2>(3.0, 4.0) == point<3>(4.0, 6.0, 3.0));
 
-    static_assert(std::is_same_v<decltype(point2(1.0, 2.0) + vec2(3.0, 4.0)), point2>);
-    static_assert(std::is_same_v<decltype(point3(1.0, 2.0, 3.0) + vec2(3.0, 4.0)), point3>);
-    static_assert(std::is_same_v<decltype(point2(1.0, 2.0) + vec3(3.0, 4.0, 5.0)), point3>);
-    static_assert(std::is_same_v<decltype(point3(1.0, 2.0, 3.0) + vec3(3.0, 4.0, 5.0)), point3>);
+    static_assert(std::is_same_v<decltype(point<2>(1.0, 2.0) + vector<2>(3.0, 4.0)), point<2>>);
+    static_assert(std::is_same_v<decltype(point<3>(1.0, 2.0, 3.0) + vector<2>(3.0, 4.0)), point<3>>);
+    static_assert(std::is_same_v<decltype(point<2>(1.0, 2.0) + vector<3>(3.0, 4.0, 5.0)), point<3>>);
+    static_assert(std::is_same_v<decltype(point<3>(1.0, 2.0, 3.0) + vector<3>(3.0, 4.0, 5.0)), point<3>>);
 
-    ASSERT_EQ(vec2(1.0, 2.0) + point2(3.0, 4.0), point2(4.0, 6.0));
-    ASSERT_EQ(vec3(1.0, 2.0, 3.0) + point3(3.0, 4.0, 5.0), point3(4.0, 6.0, 8.0));
-    ASSERT_EQ(vec2(1.0, 2.0) + point3(3.0, 4.0, 5.0), point3(4.0, 6.0, 5.0));
-    ASSERT_EQ(vec3(1.0, 2.0, 3.0) + point2(3.0, 4.0), point3(4.0, 6.0, 3.0));
+    ASSERT_EQ(vector<2>(1.0, 2.0) + point<2>(3.0, 4.0), point<2>(4.0, 6.0));
+    ASSERT_EQ(vector<3>(1.0, 2.0, 3.0) + point<3>(3.0, 4.0, 5.0), point<3>(4.0, 6.0, 8.0));
+    ASSERT_EQ(vector<2>(1.0, 2.0) + point<3>(3.0, 4.0, 5.0), point<3>(4.0, 6.0, 5.0));
+    ASSERT_EQ(vector<3>(1.0, 2.0, 3.0) + point<2>(3.0, 4.0), point<3>(4.0, 6.0, 3.0));
 
-    static_assert(vec2(1.0, 2.0) + point2(3.0, 4.0) == point2(4.0, 6.0));
-    static_assert(vec3(1.0, 2.0, 3.0) + point3(3.0, 4.0, 5.0) == point3(4.0, 6.0, 8.0));
-    static_assert(vec2(1.0, 2.0) + point3(3.0, 4.0, 5.0) == point3(4.0, 6.0, 5.0));
-    static_assert(vec3(1.0, 2.0, 3.0) + point2(3.0, 4.0) == point3(4.0, 6.0, 3.0));
+    static_assert(vector<2>(1.0, 2.0) + point<2>(3.0, 4.0) == point<2>(4.0, 6.0));
+    static_assert(vector<3>(1.0, 2.0, 3.0) + point<3>(3.0, 4.0, 5.0) == point<3>(4.0, 6.0, 8.0));
+    static_assert(vector<2>(1.0, 2.0) + point<3>(3.0, 4.0, 5.0) == point<3>(4.0, 6.0, 5.0));
+    static_assert(vector<3>(1.0, 2.0, 3.0) + point<2>(3.0, 4.0) == point<3>(4.0, 6.0, 3.0));
 
-    static_assert(std::is_same_v<decltype(vec2(1.0, 2.0) + point2(3.0, 4.0)), point2>);
-    static_assert(std::is_same_v<decltype(vec3(1.0, 2.0, 3.0) + point2(3.0, 4.0)), point3>);
-    static_assert(std::is_same_v<decltype(vec2(1.0, 2.0) + point3(3.0, 4.0, 5.0)), point3>);
-    static_assert(std::is_same_v<decltype(vec3(1.0, 2.0, 3.0) + point3(3.0, 4.0, 5.0)), point3>);
+    static_assert(std::is_same_v<decltype(vector<2>(1.0, 2.0) + point<2>(3.0, 4.0)), point<2>>);
+    static_assert(std::is_same_v<decltype(vector<3>(1.0, 2.0, 3.0) + point<2>(3.0, 4.0)), point<3>>);
+    static_assert(std::is_same_v<decltype(vector<2>(1.0, 2.0) + point<3>(3.0, 4.0, 5.0)), point<3>>);
+    static_assert(std::is_same_v<decltype(vector<3>(1.0, 2.0, 3.0) + point<3>(3.0, 4.0, 5.0)), point<3>>);
 }
 
 TEST(point, subtracting)
 {
-    ASSERT_EQ(point2(1.0, 2.0) - point2(3.0, 4.0), vec2(-2.0, -2.0));
-    ASSERT_EQ(point3(1.0, 2.0, 3.0) - point3(3.0, 4.0, 5.0), vec3(-2.0, -2.0, -2.0));
-    ASSERT_EQ(point2(1.0, 2.0) - point3(3.0, 4.0, 5.0), vec3(-2.0, -2.0, -5.0));
-    ASSERT_EQ(point3(1.0, 2.0, 3.0) - point2(3.0, 4.0), vec3(-2.0, -2.0, 3.0));
+    ASSERT_EQ(point<2>(1.0, 2.0) - point<2>(3.0, 4.0), vector<2>(-2.0, -2.0));
+    ASSERT_EQ(point<3>(1.0, 2.0, 3.0) - point<3>(3.0, 4.0, 5.0), vector<3>(-2.0, -2.0, -2.0));
+    ASSERT_EQ(point<2>(1.0, 2.0) - point<3>(3.0, 4.0, 5.0), vector<3>(-2.0, -2.0, -5.0));
+    ASSERT_EQ(point<3>(1.0, 2.0, 3.0) - point<2>(3.0, 4.0), vector<3>(-2.0, -2.0, 3.0));
 
-    static_assert(point2(1.0, 2.0) - point2(3.0, 4.0) == vec2(-2.0, -2.0));
-    static_assert(point3(1.0, 2.0, 3.0) - point3(3.0, 4.0, 5.0) == vec3(-2.0, -2.0, -2.0));
-    static_assert(point2(1.0, 2.0) - point3(3.0, 4.0, 5.0) == vec3(-2.0, -2.0, -5.0));
-    static_assert(point3(1.0, 2.0, 3.0) - point2(3.0, 4.0) == vec3(-2.0, -2.0, 3.0));
+    static_assert(point<2>(1.0, 2.0) - point<2>(3.0, 4.0) == vector<2>(-2.0, -2.0));
+    static_assert(point<3>(1.0, 2.0, 3.0) - point<3>(3.0, 4.0, 5.0) == vector<3>(-2.0, -2.0, -2.0));
+    static_assert(point<2>(1.0, 2.0) - point<3>(3.0, 4.0, 5.0) == vector<3>(-2.0, -2.0, -5.0));
+    static_assert(point<3>(1.0, 2.0, 3.0) - point<2>(3.0, 4.0) == vector<3>(-2.0, -2.0, 3.0));
 
-    static_assert(std::is_same_v<decltype(point2(1.0, 2.0) - point2(3.0, 4.0)), vec2>);
-    static_assert(std::is_same_v<decltype(point3(1.0, 2.0, 3.0) - point2(3.0, 4.0)), vec3>);
-    static_assert(std::is_same_v<decltype(point2(1.0, 2.0) - point3(3.0, 4.0, 5.0)), vec3>);
-    static_assert(std::is_same_v<decltype(point3(1.0, 2.0, 3.0) - point3(3.0, 4.0, 5.0)), vec3>);
+    static_assert(std::is_same_v<decltype(point<2>(1.0, 2.0) - point<2>(3.0, 4.0)), vector<2>>);
+    static_assert(std::is_same_v<decltype(point<3>(1.0, 2.0, 3.0) - point<2>(3.0, 4.0)), vector<3>>);
+    static_assert(std::is_same_v<decltype(point<2>(1.0, 2.0) - point<3>(3.0, 4.0, 5.0)), vector<3>>);
+    static_assert(std::is_same_v<decltype(point<3>(1.0, 2.0, 3.0) - point<3>(3.0, 4.0, 5.0)), vector<3>>);
 
-    ASSERT_EQ(point2(1.0, 2.0) - vec2(3.0, 4.0), point2(-2.0, -2.0));
-    ASSERT_EQ(point3(1.0, 2.0, 3.0) - vec3(3.0, 4.0, 5.0), point3(-2.0, -2.0, -2.0));
-    ASSERT_EQ(point2(1.0, 2.0) - vec3(3.0, 4.0, 5.0), point3(-2.0, -2.0, -5.0));
-    ASSERT_EQ(point3(1.0, 2.0, 3.0) - vec2(3.0, 4.0), point3(-2.0, -2.0, 3.0));
+    ASSERT_EQ(point<2>(1.0, 2.0) - vector<2>(3.0, 4.0), point<2>(-2.0, -2.0));
+    ASSERT_EQ(point<3>(1.0, 2.0, 3.0) - vector<3>(3.0, 4.0, 5.0), point<3>(-2.0, -2.0, -2.0));
+    ASSERT_EQ(point<2>(1.0, 2.0) - vector<3>(3.0, 4.0, 5.0), point<3>(-2.0, -2.0, -5.0));
+    ASSERT_EQ(point<3>(1.0, 2.0, 3.0) - vector<2>(3.0, 4.0), point<3>(-2.0, -2.0, 3.0));
 
-    static_assert(point2(1.0, 2.0) - vec2(3.0, 4.0) == point2(-2.0, -2.0));
-    static_assert(point3(1.0, 2.0, 3.0) - vec3(3.0, 4.0, 5.0) == point3(-2.0, -2.0, -2.0));
-    static_assert(point2(1.0, 2.0) - vec3(3.0, 4.0, 5.0) == point3(-2.0, -2.0, -5.0));
-    static_assert(point3(1.0, 2.0, 3.0) - vec2(3.0, 4.0) == point3(-2.0, -2.0, 3.0));
+    static_assert(point<2>(1.0, 2.0) - vector<2>(3.0, 4.0) == point<2>(-2.0, -2.0));
+    static_assert(point<3>(1.0, 2.0, 3.0) - vector<3>(3.0, 4.0, 5.0) == point<3>(-2.0, -2.0, -2.0));
+    static_assert(point<2>(1.0, 2.0) - vector<3>(3.0, 4.0, 5.0) == point<3>(-2.0, -2.0, -5.0));
+    static_assert(point<3>(1.0, 2.0, 3.0) - vector<2>(3.0, 4.0) == point<3>(-2.0, -2.0, 3.0));
 
-    static_assert(std::is_same_v<decltype(point2(1.0, 2.0) - vec2(3.0, 4.0)), point2>);
-    static_assert(std::is_same_v<decltype(point3(1.0, 2.0, 3.0) - vec2(3.0, 4.0)), point3>);
-    static_assert(std::is_same_v<decltype(point2(1.0, 2.0) - vec3(3.0, 4.0, 5.0)), point3>);
-    static_assert(std::is_same_v<decltype(point3(1.0, 2.0, 3.0) - vec3(3.0, 4.0, 5.0)), point3>);
+    static_assert(std::is_same_v<decltype(point<2>(1.0, 2.0) - vector<2>(3.0, 4.0)), point<2>>);
+    static_assert(std::is_same_v<decltype(point<3>(1.0, 2.0, 3.0) - vector<2>(3.0, 4.0)), point<3>>);
+    static_assert(std::is_same_v<decltype(point<2>(1.0, 2.0) - vector<3>(3.0, 4.0, 5.0)), point<3>>);
+    static_assert(std::is_same_v<decltype(point<3>(1.0, 2.0, 3.0) - vector<3>(3.0, 4.0, 5.0)), point<3>>);
 }

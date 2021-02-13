@@ -6,7 +6,7 @@
 
 #include "../numeric_array.hpp"
 
-namespace tt {
+namespace tt::geo {
 
 /** A esRGBA (extended-sRGB with alpha) color.
  * This color compatible with the sRGB standard IEC 61966-2-1:1999

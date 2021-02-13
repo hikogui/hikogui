@@ -1,13 +1,22 @@
 
 target_sources(ttauri PRIVATE
     color.hpp
-    mat.hpp
+    matrix.hpp
+    identity.hpp
+    translate.hpp
+    rotate.hpp
+    scale.hpp
+    transform.hpp
     point.hpp
-    vec.hpp
+    vector.hpp
 )
 
 target_sources(ttauri_tests PRIVATE
-    mat_tests.cpp
+    matrix_tests.cpp
+    identity_tests.cpp
+    translate_tests.cpp
+    scale_tests.cpp
+    transform_tests.cpp
     point_tests.cpp
-    vec_tests.cpp
+    vector_tests.cpp
 )

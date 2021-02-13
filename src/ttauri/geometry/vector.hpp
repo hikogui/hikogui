@@ -6,29 +6,29 @@
 
 #include "../numeric_array.hpp"
 
-namespace tt {
+namespace tt::geo {
 
 /** A high-level geometric vector
- * Part of the high-level vec, point, mat and color types.
+ * Part of the high-level vector, point, mat and color types.
  *
  * A vector, for both 2D or 3D is internally represented
  * as a 4D homogeneous vector. Which can be efficiently implemented
  * as a __m128 SSE register.
  */
 template<int D>
-class vec {
+class vector {
 public:
     static_assert(D == 2 || D == 3, "Only 2D or 3D vectors are supported");
 
-    constexpr vec(vec const &) noexcept = default;
-    constexpr vec(vec &&) noexcept = default;
-    constexpr vec &operator=(vec const &) noexcept = default;
-    constexpr vec &operator=(vec &&) noexcept = default;
+    constexpr vector(vector const &) noexcept = default;
+    constexpr vector(vector &&) noexcept = default;
+    constexpr vector &operator=(vector const &) noexcept = default;
+    constexpr vector &operator=(vector &&) noexcept = default;
 
     /** Construct a vector from a lower dimension vector.
      */
     template<int E>
-    requires(E < D) [[nodiscard]] constexpr vec(vec<E> const &other) noexcept : _v(static_cast<f32x4>(other))
+    requires(E < D) [[nodiscard]] constexpr vector(vector<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
         tt_axiom(is_valid());
     }
@@ -42,27 +42,27 @@ public:
 
     /** Construct a vector from a f32x4-numeric_array.
      */
-    [[nodiscard]] constexpr explicit vec(f32x4 const &other) noexcept : _v(other)
+    [[nodiscard]] constexpr explicit vector(f32x4 const &other) noexcept : _v(other)
     {
         tt_axiom(is_valid());
     }
 
     /** Construct a empty vector / zero length.
      */
-    [[nodiscard]] constexpr vec() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f) {}
+    [[nodiscard]] constexpr vector() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f) {}
 
     /** Construct a 2D vector from x and y elements.
      * @param x The x element.
      * @param y The y element.
      */
-    [[nodiscard]] constexpr vec(float x, float y) noexcept requires(D == 2) : _v(x, y, 0.0f, 0.0f) {}
+    [[nodiscard]] constexpr vector(float x, float y) noexcept requires(D == 2) : _v(x, y, 0.0f, 0.0f) {}
 
     /** Construct a 3D vector from x, y and z elements.
      * @param x The x element.
      * @param y The y element.
      * @param z The z element.
      */
-    [[nodiscard]] constexpr vec(float x, float y, float z = 0.0f) noexcept requires(D == 3) : _v(x, y, z, 0.0f) {}
+    [[nodiscard]] constexpr vector(float x, float y, float z = 0.0f) noexcept requires(D == 3) : _v(x, y, z, 0.0f) {}
 
     /** Access the x element from the vector.
      * @return a reference to the x element.
@@ -181,10 +181,10 @@ public:
     /** Mirror this vector.
      * @return The mirrored vector.
      */
-    [[nodiscard]] constexpr vec operator-() const noexcept
+    [[nodiscard]] constexpr vector operator-() const noexcept
     {
         tt_axiom(is_valid());
-        return vec{-_v};
+        return vector{-_v};
     }
 
     /** Add two vectors from each other.
@@ -192,10 +192,10 @@ public:
      * @param rhs The second vector.
      * @return A new vector.
      */
-    [[nodiscard]] constexpr friend vec operator+(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] constexpr friend vector operator+(vector const &lhs, vector const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
-        return vec{lhs._v + rhs._v};
+        return vector{lhs._v + rhs._v};
     }
 
     /** Subtract two vectors from each other.
@@ -203,10 +203,10 @@ public:
      * @param rhs The second vector.
      * @return A new vector.
      */
-    [[nodiscard]] constexpr friend vec operator-(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] constexpr friend vector operator-(vector const &lhs, vector const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
-        return vec{lhs._v - rhs._v};
+        return vector{lhs._v - rhs._v};
     }
 
     /** Scale the vector by a scaler.
@@ -214,10 +214,10 @@ public:
      * @param rhs The scaling factor.
      * @return The scaled vector.
      */
-    [[nodiscard]] constexpr friend vec operator*(vec const &lhs, float const &rhs) noexcept
+    [[nodiscard]] constexpr friend vector operator*(vector const &lhs, float const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid());
-        return vec{lhs._v * rhs};
+        return vector{lhs._v * rhs};
     }
 
     /** Compare if two vectors are equal.
@@ -225,7 +225,7 @@ public:
      * @param rhs The second vector.
      * @return True if both vectors are completely equal to each other.
      */
-    [[nodiscard]] constexpr friend bool operator==(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(vector const &lhs, vector const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
         return lhs._v == rhs._v;
@@ -235,7 +235,7 @@ public:
      * @param rhs The vector.
      * @return The length of the vector.
      */
-    [[nodiscard]] constexpr friend float hypot(vec const &rhs) noexcept
+    [[nodiscard]] constexpr friend float hypot(vector const &rhs) noexcept
     {
         tt_axiom(rhs.is_valid());
         return hypot<element_mask>(rhs._v);
@@ -245,7 +245,7 @@ public:
      * @param rhs The vector.
      * @return One over the length of the vector.
      */
-    [[nodiscard]] constexpr friend float rcp_hypot(vec const &rhs) noexcept
+    [[nodiscard]] constexpr friend float rcp_hypot(vector const &rhs) noexcept
     {
         tt_axiom(rhs.is_valid());
         return rcp_hypot<element_mask>(rhs._v);
@@ -255,10 +255,10 @@ public:
      * @param rhs The vector.
      * @return A vector with the same direction as the given vector, but its length is 1.0.
      */
-    [[nodiscard]] constexpr friend vec normalize(vec const &rhs) noexcept
+    [[nodiscard]] constexpr friend vector normalize(vector const &rhs) noexcept
     {
         tt_axiom(rhs.is_valid());
-        return vec{normalize<element_mask>(rhs._v)};
+        return vector{normalize<element_mask>(rhs._v)};
     }
 
     /** Get the dot product between two vectors.
@@ -266,7 +266,7 @@ public:
      * @param rhs The second vector.
      * @return The dot product from the two given vectors.
      */
-    [[nodiscard]] constexpr friend float dot(vec const &lhs, vec const &rhs) noexcept
+    [[nodiscard]] constexpr friend float dot(vector const &lhs, vector const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
         return dot<element_mask>(lhs._v, rhs._v);
@@ -290,10 +290,10 @@ private:
  * @param rhs The vector.
  * @return A vector perpendicular to the given vector.
  */
-[[nodiscard]] constexpr vec<2> cross(vec<2> const &rhs) noexcept
+[[nodiscard]] constexpr vector<2> cross(vector<2> const &rhs) noexcept
 {
     tt_axiom(rhs.is_valid());
-    return vec<2>{cross_2D(static_cast<f32x4>(rhs))};
+    return vector<2>{cross_2D(static_cast<f32x4>(rhs))};
 }
 
 /** Get the cross product between two 2D vectors.
@@ -304,7 +304,7 @@ private:
  * @param rhs The second vector.
  * @return A scaler representing the sharpness of the corner between the two vectors.
  */
-[[nodiscard]] constexpr float cross(vec<2> const &lhs, vec<2> const &rhs) noexcept
+[[nodiscard]] constexpr float cross(vector<2> const &lhs, vector<2> const &rhs) noexcept
 {
     tt_axiom(lhs.is_valid() && rhs.is_valid());
     return cross_2D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs));
@@ -315,13 +315,13 @@ private:
  * @param rhs The second vector.
  * @return A vector that is perpendicular to the given vectors.
  */
-[[nodiscard]] constexpr vec<3> cross(vec<3> const &lhs, vec<3> const &rhs) noexcept
+[[nodiscard]] constexpr vector<3> cross(vector<3> const &lhs, vector<3> const &rhs) noexcept
 {
     tt_axiom(lhs.is_valid() && rhs.is_valid());
-    return vec<3>{cross_3D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    return vector<3>{cross_3D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
 }
 
-using vec2 = vec<2>;
-using vec3 = vec<3>;
+using vector2 = vector<2>;
+using vector3 = vector<3>;
 
 } // namespace tt
