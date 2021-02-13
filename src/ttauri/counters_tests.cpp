@@ -30,17 +30,3 @@ TEST(Counters, RunTimeRead) {
     ASSERT_EQ(read_counter("foo_b").first, 1);
     ASSERT_EQ(read_counter("bar_b").first, 2);
 }
-
-//TEST(Counters, RunTimeReadWithStrings) {
-//    struct foo_c_tag {};
-//    struct bar_c_tag {};
-//    struct baz_c_tag {};
-//
-//    increment_counter<foo_c_tag>();
-//    increment_counter<bar_c_tag>();
-//    increment_counter<bar_c_tag>();
-//
-//    ASSERT_EQ(read_counter(std::type_index(typeid(baz_c_tag)).first, 0);
-//    ASSERT_EQ(read_counter(std::type_index(typeid(foo_c_tag)).first, 1);
-//    ASSERT_EQ(read_counter(std::type_index(typeid(bar_c_tag)).first, 2);
-//}
