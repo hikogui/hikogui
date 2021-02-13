@@ -28,10 +28,10 @@ struct skeleton_placeholder_node final : skeleton_node {
 
         } catch (...) {
             auto error_location = location;
-            if (ttlet expression_location = error_info::peek<parse_location_tag>()) {
+            if (ttlet expression_location = error_info::peek<parse_location, "parse_location">()) {
                 error_location += *expression_location;
             }
-            error_info(true).set<parse_location_tag>(error_location);
+            error_info(true).set<"parse_location">(error_location);
             throw;
         }
     }
@@ -47,11 +47,11 @@ struct skeleton_placeholder_node final : skeleton_node {
 
         ttlet tmp = evaluate_expression(context, *expression, location);
         if (tmp.is_break()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #break not inside a loop statement.");
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #continue not inside a loop statement.");
 
         } else if (tmp.is_undefined()) {

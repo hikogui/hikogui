@@ -14,7 +14,7 @@ namespace tt {
  * This exception is often thrown due to an error in the syntax
  * in both text and binary files.
  *
- * The `error_info`-`parse_location_tag` is often filled in for the
+ * The `error_info`-`"parse_location"` is often filled in for the
  * specific file name and location inside the file where the error
  * was.
  */

@@ -19,7 +19,7 @@ theme::theme(URL const &url)
         ttlet data = parse_JSON(url);
         parse(data);
     } catch (...) {
-        error_info(true).set<url_tag>(url);
+        error_info(true).set<"url">(url);
         throw;
     }
 }

@@ -42,7 +42,7 @@ struct parse_context_t {
         // Required a value.
         } else if (auto result = parseValue(context, token)) {
             if (!commaAfterValue) {
-                tt_error_info().set<parse_location_tag>(token->location);
+                tt_error_info().set<"parse_location">(token->location);
                 throw parse_error("Missing expected ','");
             }
 
@@ -57,7 +57,7 @@ struct parse_context_t {
             }
 
         } else {
-            tt_error_info().set<parse_location_tag>(token->location);
+            tt_error_info().set<"parse_location">(token->location);
             throw parse_error("Expecting a value as the next item in an array.");
         }
     }
@@ -86,7 +86,7 @@ struct parse_context_t {
         // Required a string name.
         } else if (*token == tokenizer_name_t::StringLiteral) {
             if (!commaAfterValue) {
-                tt_error_info().set<parse_location_tag>(token->location);
+                tt_error_info().set<"parse_location">(token->location);
                 throw parse_error("Missing expected ','");
             }
 
@@ -95,7 +95,7 @@ struct parse_context_t {
             if ((*token == tokenizer_name_t::Operator) && (*token == ":")) {
                 token++;
             } else {
-                tt_error_info().set<parse_location_tag>(token->location);
+                tt_error_info().set<"parse_location">(token->location);
                 throw parse_error("Missing expected ':'");
             }
 
@@ -104,7 +104,7 @@ struct parse_context_t {
                 token = result.next_token;
 
             } else {
-                tt_error_info().set<parse_location_tag>(token->location);
+                tt_error_info().set<"parse_location">(token->location);
                 throw parse_error("Missing JSON value");
             }
 
@@ -116,7 +116,7 @@ struct parse_context_t {
             }
 
         } else {
-            tt_error_info().set<parse_location_tag>(token->location);
+            tt_error_info().set<"parse_location">(token->location);
             throw parse_error(fmt::format("Unexpected token {}, expected a key or close-brace.", *token));
         }
     }
@@ -148,7 +148,7 @@ struct parse_context_t {
         } else if (name == "null") {
             return {datum{datum::null{}}, token};
         } else {
-            tt_error_info().set<parse_location_tag>(token->location);
+            tt_error_info().set<"parse_location">(token->location);
             throw parse_error(fmt::format("Unexpected name '{}'", name));
         }
         } break;
@@ -158,7 +158,7 @@ struct parse_context_t {
         } else if (auto result2 = parseArray(context, token)) {
             return result2;
         } else {
-            tt_error_info().set<parse_location_tag>(token->location);
+            tt_error_info().set<"parse_location">(token->location);
             throw parse_error(fmt::format("Unexpected token '{}'", token->name));
         }
     }
@@ -181,12 +181,12 @@ struct parse_context_t {
         token = result.next_token;
 
     } else {
-        tt_error_info().set<parse_location_tag>(token->location);
+        tt_error_info().set<"parse_location">(token->location);
         throw parse_error("Missing JSON object");
     }
 
     if (*token != tokenizer_name_t::End) {
-        tt_error_info().set<parse_location_tag>(token->location);
+        tt_error_info().set<"parse_location">(token->location);
         throw parse_error("Unexpected text after JSON root object");
     }
 

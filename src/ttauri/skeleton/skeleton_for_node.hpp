@@ -61,7 +61,7 @@ struct skeleton_for_node final: skeleton_node {
         auto list_data = evaluate_formula_without_output(context, *list_expression, location);
 
         if (!list_data.is_vector()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Expecting expression returns a vector, got {}", list_data);
         }
 
@@ -76,10 +76,10 @@ struct skeleton_for_node final: skeleton_node {
 
                 } catch (...) {
                     auto error_location = location;
-                    if (ttlet expression_location = error_info::peek<parse_location_tag>()) {
+                    if (ttlet expression_location = error_info::peek<parse_location, "parse_location">()) {
                         error_location += *expression_location;
                     }
-                    error_info(true).set<parse_location_tag>(error_location);
+                    error_info(true).set<"parse_location">(error_location);
                     throw;
                 }
 

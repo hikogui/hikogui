@@ -93,7 +93,7 @@ public:
             parsefontDirectory();
 
         } catch (...) {
-            error_info(true).set<url_tag>(url);
+            error_info(true).set<"url">(url);
             throw;
         }
     }

@@ -164,9 +164,6 @@ template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_f
 log_message(cpu_counter_clock::time_point, Args &&...)
     -> log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>;
 
-struct logger_blocked_tag {
-};
-
 /*! A class with which to log messages to a file or console.
  */
 class logger_type {
@@ -198,7 +195,7 @@ public:
             // * Simplifies logged_fatal_message logic.
             // * Will make sure everything gets logged.
             // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
-            auto message = message_queue.write<logger_blocked_tag>();
+            auto message = message_queue.write<"logger_blocked">();
 
             // dereference the message so that we get the polymorphic_optional, so this assignment will work correctly.
             message->emplace<log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(

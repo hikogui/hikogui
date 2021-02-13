@@ -119,18 +119,14 @@ void application::init_foundation()
         new sync_clock_calibration_type<hires_utc_clock, cpu_counter_clock>("cpu_utc");
 
     logger_maintenance_callback = timer::global->add_callback(100ms, [](auto current_time, auto last) {
-        struct logger_maintenance_tag {
-        };
-        ttlet t2 = trace<logger_maintenance_tag>{};
+        ttlet t2 = trace<"logger_maintenance">{};
 
         logger.gather_tick(last);
         logger.logger_tick();
     });
 
     clock_maintenance_callback = timer::global->add_callback(100ms, [](auto...) {
-        struct clock_maintenance_tag {
-        };
-        ttlet t2 = trace<clock_maintenance_tag>{};
+        ttlet t2 = trace<"clock_maintenance">{};
 
         sync_clock_calibration<hires_utc_clock, cpu_counter_clock>->calibrate_tick();
     });

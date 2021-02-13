@@ -17,7 +17,7 @@ struct formula_member_node final : formula_binary_operator_node {
     {
         rhs_name = dynamic_cast<formula_name_node*>(this->rhs.get());
         if (rhs_name == nullptr) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Expecting a name token on the right hand side of a member accessor. got {}.", rhs);
         }
     }
@@ -25,7 +25,7 @@ struct formula_member_node final : formula_binary_operator_node {
     void resolve_function_pointer(formula_post_process_context& context) override {
         method = context.get_method(rhs_name->name);
         if (!method) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Could not find method .{}().", rhs_name->name);
         }
     }
@@ -35,13 +35,13 @@ struct formula_member_node final : formula_binary_operator_node {
             ttlet &lhs_ = lhs->evaluate_xvalue(context);
 
             if (!lhs_.contains(rhs_name->name)) {
-                tt_error_info().set<parse_location_tag>(location);
+                tt_error_info().set<"parse_location">(location);
                 throw operation_error("Unknown attribute .{}", rhs_name->name);
             }
             try {
                 return lhs_[rhs_name->name];
             } catch (...) {
-                error_info(true).set<parse_location_tag>(location);
+                error_info(true).set<"parse_location">(location);
                 throw;
             }
 
@@ -49,13 +49,13 @@ struct formula_member_node final : formula_binary_operator_node {
             ttlet lhs_ = lhs->evaluate(context);
 
             if (!lhs_.contains(rhs_name->name)) {
-                tt_error_info().set<parse_location_tag>(location);
+                tt_error_info().set<"parse_location">(location);
                 throw operation_error("Unknown attribute .{}", rhs_name->name);
             }
             try {
                 return lhs_[rhs_name->name];
             } catch (...) {
-                error_info(true).set<parse_location_tag>(location);
+                error_info(true).set<"parse_location">(location);
                 throw;
             }
         }
@@ -66,7 +66,7 @@ struct formula_member_node final : formula_binary_operator_node {
         try {
             return lhs_[rhs_name->name];
         } catch (...) {
-            error_info(true).set<parse_location_tag>(location);
+            error_info(true).set<"parse_location">(location);
             throw;
         }
     }
@@ -76,7 +76,7 @@ struct formula_member_node final : formula_binary_operator_node {
         try {
             return method(context, lhs_, arguments);
         } catch (...) {
-            error_info(true).set<parse_location_tag>(location);
+            error_info(true).set<"parse_location">(location);
             throw;
         }
     }

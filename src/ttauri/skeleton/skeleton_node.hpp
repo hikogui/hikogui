@@ -56,18 +56,18 @@ struct skeleton_node {
     [[nodiscard]] std::string evaluate_output(formula_evaluation_context &context) {
         auto tmp = evaluate(context);
         if (tmp.is_break()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #break not inside a loop statement.");
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #continue not inside a loop statement.");
 
         } else if (tmp.is_undefined()) {
             return std::move(context.output);
 
         } else {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #return not inside a function.");
         }
     }
@@ -102,10 +102,10 @@ struct skeleton_node {
 
         } catch (...) {
             auto error_location = location;
-            if (ttlet evaluation_location = error_info::peek<parse_location_tag>()) {
+            if (ttlet evaluation_location = error_info::peek<parse_location, "parse_location">()) {
                 error_location += *evaluation_location;
             }
-            error_info(true).set<parse_location_tag>(error_location);
+            error_info(true).set<"parse_location">(error_location);
             throw;
         }
     }
@@ -116,10 +116,10 @@ struct skeleton_node {
 
         } catch (...) {
             auto error_location = location;
-            if (ttlet evaluation_location = error_info::peek<parse_location_tag>()) {
+            if (ttlet evaluation_location = error_info::peek<parse_location, "parse_location">()) {
                 error_location += *evaluation_location;
             }
-            error_info(true).set<parse_location_tag>(error_location);
+            error_info(true).set<"parse_location">(error_location);
             throw;
         }
     }
@@ -130,10 +130,10 @@ struct skeleton_node {
 
         } catch (...) {
             auto error_location = location;
-            if (ttlet evaluation_location = error_info::peek<parse_location_tag>()) {
+            if (ttlet evaluation_location = error_info::peek<parse_location, "parse_location">()) {
                 error_location += *evaluation_location;
             }
-            error_info(true).set<parse_location_tag>(error_location);
+            error_info(true).set<"parse_location">(error_location);
             throw;
         }
     }

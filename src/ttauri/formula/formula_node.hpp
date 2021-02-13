@@ -50,7 +50,7 @@ struct formula_node {
     /** Evaluate an existing lvalue.
     */
     virtual datum &evaluate_lvalue(formula_evaluation_context& context) const {
-        tt_error_info().set<parse_location_tag>(location);
+        tt_error_info().set<"parse_location">(location);
         throw operation_error("Expression is not a modifiable value.");
     }
 
@@ -61,7 +61,7 @@ struct formula_node {
     /** Evaluate an existing xvalue.
     */
     virtual datum const &evaluate_xvalue(formula_evaluation_context const& context) const {
-        tt_error_info().set<parse_location_tag>(location);
+        tt_error_info().set<"parse_location">(location);
         throw operation_error("Expression is not a xvalue.");
     }
 
@@ -81,14 +81,14 @@ struct formula_node {
     /** Call a function with a datum::vector as arguments.
     */
     virtual datum call(formula_evaluation_context& context, datum::vector const &arguments) const {
-        tt_error_info().set<parse_location_tag>(location);
+        tt_error_info().set<"parse_location">(location);
         throw operation_error("Expression is not callable.");
     }
 
     /** Get the name of a formula_name_node.
     */
     virtual std::string get_name() const {
-        tt_error_info().set<parse_location_tag>(location);
+        tt_error_info().set<"parse_location">(location);
         throw parse_error("Expect a name got {})", *this);
     }
 
@@ -96,7 +96,7 @@ struct formula_node {
     * This is only implemented on the formula_call_node.
     */
     virtual std::vector<std::string> get_name_and_argument_names() const {
-        tt_error_info().set<parse_location_tag>(location);
+        tt_error_info().set<"parse_location">(location);
         throw parse_error("Expect a function definition got {})", *this);
     }
 

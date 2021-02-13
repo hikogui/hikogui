@@ -96,7 +96,7 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
         tt_log_info("acquireNextImageKHR() eTimeout");
         return {};
 
-    default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from acquireNextImageKHR()");
+    default: tt_error_info().set<"vk_result">(result); throw gui_error("Unknown result from acquireNextImageKHR()");
     }
 }
 
@@ -128,7 +128,7 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
             state = gui_window_state::swapchain_lost;
             return;
 
-        default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from presentKHR()");
+        default: tt_error_info().set<"vk_result">(result); throw gui_error("Unknown result from presentKHR()");
         }
 
     } catch (vk::OutOfDateKHRError const &) {
@@ -314,11 +314,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         return;
     }
 
-    struct window_render_tag {
-    };
-    struct frame_buffer_index_tag {
-    };
-    auto tr = trace<window_render_tag, frame_buffer_index_tag>();
+    auto tr = trace<"window_render", "frame_buffer_index">();
 
     ttlet optionalFrameBufferIndex = acquireNextImageFromSwapchain();
     if (!optionalFrameBufferIndex) {
@@ -329,7 +325,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     ttlet frameBufferIndex = *optionalFrameBufferIndex;
     ttlet frameBuffer = swapchainFramebuffers.at(frameBufferIndex);
 
-    tr.set<frame_buffer_index_tag>(frameBufferIndex);
+    tr.set<"frame_buffer_index">(frameBufferIndex);
 
     // Wait until previous rendering has finished, before the next rendering.
     vulkan_device().waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
@@ -380,7 +376,7 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
 
     struct fill_command_buffer_tag {
     };
-    auto t = trace<fill_command_buffer_tag>{};
+    auto t = trace<"fill_command_buffer">{};
 
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
@@ -599,7 +595,7 @@ gui_window_state gui_window_vulkan::buildSwapchain()
 
     case vk::Result::eErrorSurfaceLostKHR: return gui_window_state::surface_lost;
 
-    default: tt_error_info().set<vk_result_tag>(result); throw gui_error("Unknown result from createSwapchainKHR()");
+    default: tt_error_info().set<"vk_result">(result); throw gui_error("Unknown result from createSwapchainKHR()");
     }
 
     tt_log_info("Finished building swap chain");

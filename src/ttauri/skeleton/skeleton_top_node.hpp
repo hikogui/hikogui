@@ -37,10 +37,10 @@ struct skeleton_top_node final: skeleton_node {
 
         } catch (...) {
             auto error_location = location;
-            if (auto formula_location = error_info::peek<parse_location_tag>()) {
+            if (auto formula_location = error_info::peek<parse_location, "parse_location">()) {
                 error_location += *formula_location;
             }
-            error_info(true).set<parse_location_tag>(error_location);
+            error_info(true).set<"parse_location">(error_location);
             throw;
         }
     }

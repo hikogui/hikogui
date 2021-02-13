@@ -21,7 +21,7 @@ namespace tt {
  * @param to The value the state needs to be before this function returns.
  * @param order The memory order to use during atomic loads.
  */
-template<typename CounterTag, typename T>
+template<basic_fixed_string CounterTag, typename T>
 tt_no_inline void
 contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order_seq_cst)
 {
@@ -53,7 +53,7 @@ contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_ord
  * @param to The value the state needs to be before this function returns.
  * @param order The memory order to use for the load atomic.
  */
-template<typename CounterTag, typename T>
+template<basic_fixed_string CounterTag, typename T>
 void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order_seq_cst)
 {
     if (state.load(order) != to) {
@@ -69,12 +69,12 @@ void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order or
  * @param to The value to set once state has the value `from` .
  * @param order Memory order to use for this state variable.
  */
-template<typename BlockCounterTag = void, typename T>
+template<basic_fixed_string BlockCounterTag = "", typename T>
 tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order = std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
-    if constexpr (!std::is_same_v<BlockCounterTag, void>) {
+    if constexpr (BlockCounterTag != "") {
         increment_counter<BlockCounterTag>();
     }
 
@@ -101,7 +101,7 @@ tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std:
  * @param to The value to set once state has the value `from` .
  * @param order Memory order to use for this state variable.
  */
-template<typename BlockCounterTag = void, typename T>
+template<basic_fixed_string BlockCounterTag = "", typename T>
 void transition(std::atomic<T> &state, T from, T to, std::memory_order order = std::memory_order_seq_cst)
 {
     auto expect = from;

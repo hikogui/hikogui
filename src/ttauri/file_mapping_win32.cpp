@@ -24,7 +24,7 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, size_t size) :
         protect = PAGE_READONLY;
     }
     else {
-        tt_error_info().set<url_tag>(location());
+        tt_error_info().set<"url">(location());
         throw io_error("Illegal access mode WRONLY/0 when mapping file.");
     }
 
@@ -35,7 +35,7 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, size_t size) :
         mapHandle = nullptr;
     } else {
         if ((mapHandle = CreateFileMappingW(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
-            tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+            tt_error_info().set<"error_message">(getLastErrorMessage()).set<"url">(location());
             throw io_error("Could not create file mapping");
         }
     }

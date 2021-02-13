@@ -56,26 +56,26 @@ struct skeleton_block_node final: skeleton_node {
 
         } catch (...) {
             auto error_location = location;
-            if (ttlet location_in_function = error_info::peek<parse_location_tag>()) {
+            if (ttlet location_in_function = error_info::peek<parse_location, "parse_location">()) {
                 error_location += *location_in_function;
             }
-            error_info(true).set<parse_location_tag>(error_location);
+            error_info(true).set<"parse_location">(error_location);
             throw;
         }
 
         if (tmp.is_break()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #break not inside a loop statement.");
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #continue not inside a loop statement.");
 
         } else if (tmp.is_undefined()) {
             return {};
 
         } else {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Can not use a #return statement inside a #block.");
         }
     }
@@ -86,18 +86,18 @@ struct skeleton_block_node final: skeleton_node {
         context.pop();
 
         if (tmp.is_break()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #break not inside a loop statement.");
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Found #continue not inside a loop statement.");
 
         } else if (tmp.is_undefined()) {
             return {};
 
         } else {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Can not use a #return statement inside a #block.");
         }
     }

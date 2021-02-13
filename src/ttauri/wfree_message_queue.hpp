@@ -6,6 +6,7 @@
 
 #include "required.hpp"
 #include "atomic.hpp"
+#include "fixed_string.hpp"
 #include <array>
 #include <atomic>
 #include <memory>
@@ -125,7 +126,7 @@ public:
     *
     * \return A scoped write operation which can be derefenced to access the message value.
     */
-    template<typename BlockCounterTag=void>
+    template<basic_fixed_string BlockCounterTag = "">
     scoped_write_operation write() noexcept {
         return {this, write_start<BlockCounterTag>()};
     }
@@ -154,7 +155,7 @@ public:
      * @param CounterTag counter to increment when write is contended
      * @return The index of the message.
      */
-    template<typename CounterTag=void>
+    template<basic_fixed_string CounterTag = "">
     index_type write_start() noexcept {
         ttlet index = head.fetch_add(1, std::memory_order_acquire);
         auto &message = messages[index % capacity];
@@ -185,7 +186,7 @@ public:
      *
      * \return The index of the message.
      */
-    template<typename CounterTag=void>
+    template<basic_fixed_string CounterTag = "">
     index_type read_start() noexcept {
         ttlet index = tail.fetch_add(1, std::memory_order_acquire);
         auto &message = messages[index % capacity];

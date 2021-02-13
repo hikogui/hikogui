@@ -25,7 +25,7 @@ File::File(URL const &location, AccessMode accessMode) :
     } else if (accessMode >= AccessMode::Write) {
         openFlags = O_WRONLY;;
     } else {
-        tt_error_info().set<url_tag>(location());
+        tt_error_info().set<"url">(location());
         throw io_error("Invalid AccessMode; expecting Readable and/or Writeable.");
     }
 
@@ -50,7 +50,7 @@ File::File(URL const &location, AccessMode accessMode) :
         }
 
     } else {
-        tt_error_info().set<url_tag>(location());
+        tt_error_info().set<"url">(location());
         throw io_error("Invalid AccessMode; expecting CreateFile and/or OpenFile.");
     }
 
@@ -71,7 +71,7 @@ File::File(URL const &location, AccessMode accessMode) :
 
     ttlet fileName = location.nativePath();
     if ((fileHandle = ::open(fileName.data(), openFlags, permissions)) == -1) {
-        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+        tt_error_info().set<"error_message">(getLastErrorMessage()).set<"url">(location());
         throw io_error("Could not open file");
     }
 }
@@ -85,7 +85,7 @@ void File::close()
 {
     if (fileHandle != -1) {
         if (::close(fileHandle) != 0) {
-            tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+            tt_error_info().set<"error_message">(getLastErrorMessage()).set<"url">(location());
             throw io_error("Could not close file");
         }
         fileHandle = -1;
@@ -99,7 +99,7 @@ size_t File::fileSize(URL const &url)
     struct ::stat statbuf;
 
     if (::stat(name.data(), &statbuf) == -1) {
-        tt_error_info().set<error_message_tag>(getLastErrorMessage()).set<url_tag>(location());
+        tt_error_info().set<"error_message">(getLastErrorMessage()).set<"url">(location());
         throw io_error("Could not retrieve file attributes");
     }
 

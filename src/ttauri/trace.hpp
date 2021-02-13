@@ -9,6 +9,7 @@
 #include "required.hpp"
 #include "tagged_map.hpp"
 #include "wfree_message_queue.hpp"
+#include "fixed_string.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <atomic>
@@ -76,7 +77,7 @@ inline thread_local trace_stack_type trace_stack;
 */
 void trace_record() noexcept;
 
-template<typename Tag, typename... InfoTags>
+template<basic_fixed_string Tag, basic_fixed_string... InfoTags>
 struct trace_data {
     /*! id of the parent trace.
     * zero means inactive trace
@@ -99,18 +100,18 @@ struct trace_data {
     trace_data(trace_data &&other) = default;
     trace_data &operator=(trace_data &&other) = default;
 
-    template<typename InfoTag>
+    template<basic_fixed_string InfoTag>
     sdatum &get() noexcept {
         return info.template get<InfoTag>();
     }
 
-    template<typename InfoTag>
+    template<basic_fixed_string InfoTag>
     sdatum const &get() const noexcept {
         return info.template get<InfoTag>();
     }
 };
 
-template<typename Tag, typename... InfoTags>
+template<basic_fixed_string Tag, basic_fixed_string... InfoTags>
 std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &rhs) {
     auto info_string = std::string{};
 
@@ -119,7 +120,7 @@ std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &
         if (counter++ > 0) {
             info_string += ", ";
         }
-        info_string += rhs.info.get_tag(i).name();
+        info_string += rhs.info.get_tag(i);
         info_string += "=";
         info_string += static_cast<std::string>(rhs.info[i]);
     }
@@ -210,13 +211,13 @@ public:
     }
 };
 
-template<typename Tag>
+template<basic_fixed_string Tag>
 inline trace_statistics_type trace_statistics;
 
-inline wfree_unordered_map<std::type_index,trace_statistics_type *,MAX_NR_TRACES> trace_statistics_map;
+inline wfree_unordered_map<std::string,trace_statistics_type *,MAX_NR_TRACES> trace_statistics_map;
 
 
-template<typename Tag, typename... InfoTags>
+template<basic_fixed_string Tag, basic_fixed_string... InfoTags>
 class trace final {
     // If this pointer is not an volatile, clang will optimize it away and replacing it
     // with direct access to the trace_stack variable. This trace_stack variable is in local storage,
@@ -226,7 +227,7 @@ class trace final {
     trace_data<Tag, InfoTags...> data;
 
     tt_no_inline static void add_to_map() {
-        trace_statistics_map.insert(std::type_index(typeid(Tag)), &trace_statistics<Tag>);
+        trace_statistics_map.insert(Tag, &trace_statistics<Tag>);
     }
 
 public:
@@ -263,7 +264,7 @@ public:
     trace &operator=(trace const &) = delete;
     trace &operator=(trace &&) = delete;
 
-    template<typename InfoTag, typename T>
+    template<basic_fixed_string InfoTag, typename T>
     trace &set(T &&value) {
         data.template get<InfoTag>() = std::forward<T>(value);
         return *this;

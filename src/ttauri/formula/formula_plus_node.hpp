@@ -17,7 +17,7 @@ struct formula_plus_node final : formula_unary_operator_node {
         try {
             return +rhs_;
         } catch (...) {
-            error_info(true).set<parse_location_tag>(location);
+            error_info(true).set<"parse_location">(location);
             throw;
         }
     }

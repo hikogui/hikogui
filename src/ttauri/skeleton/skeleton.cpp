@@ -31,7 +31,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.advance_over("\n");
 
         if (!context.pop()) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Unexpected #end statement.");
         }
 
@@ -44,7 +44,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
     } else if (context.starts_with_and_advance_over("elif ")) {
         if (!context.found_elif(location, context.parse_expression_and_advance_over("\n"))) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Unexpected #elif statement.");
         }
 
@@ -54,7 +54,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.advance_over("\n");
 
         if (!context.found_else(location)) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Unexpected #else statement.");
         }
 
@@ -73,7 +73,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
         if (context.top_statement_is_do()) {
             if (!context.found_while(location, std::move(expression))) {
-                tt_error_info().set<parse_location_tag>(location);
+                tt_error_info().set<"parse_location">(location);
                 throw parse_error("Unexpected #while statement; missing #do.");
             }
 
@@ -105,7 +105,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.advance_over("\n");
 
         if (!context.append<skeleton_break_node>(location)) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Unexpected #break statement");
         }
 
@@ -115,7 +115,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.advance_over("\n");
 
         if (!context.append<skeleton_continue_node>(location)) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Unexpected #continue statement");
         }
 
@@ -123,7 +123,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
     } else if (context.starts_with_and_advance_over("return ")) {
         if (!context.append<skeleton_return_node>(location, context.parse_expression_and_advance_over("\n"))) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Unexpected #return statement");
         }
 
@@ -135,7 +135,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
     } else { // Add '#' and the current character to text.
         if (!context.append<skeleton_expression_node>(location, context.parse_expression_and_advance_over("\n"))) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw parse_error("Unexpected # (expression) statement.");
         }
 
@@ -182,7 +182,7 @@ static void parse_skeleton_escape(skeleton_parse_context &context)
             return;
         }
     }
-    tt_error_info().set<parse_location_tag>(context.location);
+    tt_error_info().set<"parse_location">(context.location);
     throw parse_error("Unexpected end-of-file after escape '\' character.");
 }
 
@@ -217,10 +217,10 @@ static void parse_skeleton_escape(skeleton_parse_context &context)
     context.end_of_text_segment();
 
     if (context.statement_stack.size() < 1) {
-        tt_error_info().set<parse_location_tag>(context.location);
+        tt_error_info().set<"parse_location">(context.location);
         throw parse_error("Found to many #end statements.");
     } else if (context.statement_stack.size() > 1) {
-        tt_error_info().set<parse_location_tag>(context.location);
+        tt_error_info().set<"parse_location">(context.location);
         throw parse_error("Missing #end statement.");
     }
 

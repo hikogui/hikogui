@@ -288,7 +288,7 @@ std::unique_ptr<resource_view> URL::loadView() const
         return view;
 
     } else {
-        tt_error_info().set<url_tag>(*this);
+        tt_error_info().set<"url">(*this);
         throw url_error("Unknown scheme for loading a resource");
     }
 }

@@ -54,7 +54,7 @@ void keyboard_bindings::loadBindings(URL url, bool system_binding)
         }
 
     } catch (...) {
-        error_info(true).set<url_tag>(url);
+        error_info(true).set<"url">(url);
         throw;
     }
 

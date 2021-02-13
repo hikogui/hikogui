@@ -18,33 +18,13 @@
 
 namespace tt {
 
-/** Location in the source file where an error was thrown.
- */
-struct source_location_tag {
-    using value_type = source_location;
-};
-
 /** Used to define for which URL a io_error was thrown.
  */
 class URL;
-struct url_tag {
-    using value_type = URL;
-};
-
-struct key_tag {
-    using value_type = std::string;
-};
-
-struct error_message_tag {
-    using value_type = std::string;
-};
 
 /** Used to define the location in a text file where there was an error during parsing.
  */
 class parse_location;
-struct parse_location_tag {
-    using value_type = parse_location;
-};
 
 namespace detail {
 
@@ -56,9 +36,9 @@ struct error_info_entry_base {
     [[nodiscard]] virtual std::string string() noexcept = 0;
 };
 
-template<typename Tag>
+template<basic_fixed_string Tag, typename ValueType>
 struct error_info_entry : public error_info_entry_base {
-    using value_type = typename Tag::value_type;
+    using value_type = ValueType;
 
     std::optional<value_type> value;
 
@@ -68,9 +48,9 @@ struct error_info_entry : public error_info_entry_base {
         using tt::to_string;
 
         if constexpr (to_stringable<value_type>) {
-            return fmt::format("{}={}", tag_name<Tag>(), to_string(*value));
+            return fmt::format("{}={}", Tag, to_string(*value));
         } else {
-            return fmt::format("{}={}", tag_name<Tag>(), *value);
+            return fmt::format("{}={}", Tag, *value);
         }
     }
 };
@@ -88,11 +68,11 @@ struct error_info_entry : public error_info_entry_base {
  *
  *     } catch (runtime_error const &e) {
  *         // Add more information during the catch.
- *         tt::error_info(true).set<url_tag>(file_url);
+ *         tt::error_info(true).set<"url">(file_url);
  *         throw
  *     }
  * } catch (runtime_error const &e) {
- *     auto error_url = *tt::error_info::pop<url_tag>();
+ *     auto error_url = *tt::error_info::pop<"url">();
  *     auto error_errno = *tt::error_info::pop<errno_tag>();
  *     tt_log_error("Config file error in file {}, errno={}", error_url, error_errno);
  * }
@@ -111,7 +91,7 @@ public:
         tt_axiom(version != 0);
 
         state = state::writing;
-        set<source_location_tag>(location);
+        set<"source_location">(location);
     }
 
     /** Reopen a error info transaction.
@@ -160,13 +140,13 @@ public:
      * @param value The value to set.
      * @return A reference to the error_info, for chaining of .set() calls.
      */
-    template<typename Tag, typename Arg>
+    template<basic_fixed_string Tag, typename Arg>
     error_info &set(Arg &&value) noexcept
     {
         tt_axiom(state == state::writing);
         tt_axiom(version != 0);
 
-        auto &e = entry<Tag>;
+        auto &e = entry<Tag, std::remove_cvref_t<Arg>>;
         if (e.version == 0) {
             // Track this entry from now on, so that information on all error_info
             // can be listed dynamically.
@@ -201,13 +181,13 @@ public:
      *             for the value returned by this function.
      * @return The value to if it was set, or empty.
      */
-    template<typename Tag>
-    static std::optional<typename Tag::value_type> pop() noexcept
+    template<typename ValueType, basic_fixed_string Tag>
+    static std::optional<ValueType> pop() noexcept
     {
         close();
         tt_axiom(state == state::closed);
 
-        auto &e = entry<Tag>;
+        auto &e = entry<Tag,ValueType>;
         if (version != 0 && e.version == version) {
             return std::exchange(e.value, {});
         } else {
@@ -223,10 +203,10 @@ public:
      *             for the value returned by this function.
      * @return The value to if it was set, or empty.
      */
-    template<typename Tag>
-    static std::optional<typename Tag::value_type> peek() noexcept
+    template<typename ValueType, basic_fixed_string Tag>
+    static std::optional<ValueType> peek() noexcept
     {
-        auto &e = entry<Tag>;
+        auto &e = entry<Tag,ValueType>;
         if (version != 0 && e.version == version) {
             return e.value;
         } else {
@@ -269,8 +249,8 @@ private:
 
     /** The last value that was committed.
      */
-    template<typename Tag>
-    inline static thread_local detail::error_info_entry<Tag> entry;
+    template<basic_fixed_string Tag, typename ValueType>
+    inline static thread_local detail::error_info_entry<Tag, ValueType> entry;
 
     /** A list of entries to check when listing all error_info of an exception.
      * When an entry is set for the first time, it will be added to this list.

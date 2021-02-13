@@ -14,11 +14,11 @@ using namespace tt;
 
 TEST(error_info, default) {
     try {
-        tt_error_info().set<key_tag>("foo"s);
+        tt_error_info().set<"key">("foo"s);
         throw key_error("This is a key error");
 
     } catch (...) {
-        ttlet key = error_info::pop<key_tag>();
+        ttlet key = error_info::pop<std::string, "key">();
         ASSERT_TRUE(key);
         ASSERT_EQ(*key, "foo"s);
     }

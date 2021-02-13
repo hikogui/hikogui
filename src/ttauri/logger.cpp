@@ -73,7 +73,7 @@ void logger_type::display_counters() noexcept
     tt_log_counter("{:>18} {:>9} {:>10} {:>10}", "total", "delta", "mean", "peak");
     for (ttlet &tag : keys) {
         ttlet[count, count_since_last_read] = read_counter(tag);
-        tt_log_counter("{:>18} {:>+9} {:10} {:10} {}", count, count_since_last_read, "", "", tag_name(tag));
+        tt_log_counter("{:>18} {:>+9} {:10} {:10} {}", count, count_since_last_read, "", "", tag);
     }
 }
 
@@ -86,7 +86,7 @@ void logger_type::display_trace_statistics() noexcept
         ttlet stat_result = stat->read();
 
         if (stat_result.last_count <= 0) {
-            tt_log_counter("{:18n} {:+9n} {:10} {:10} {}", stat_result.count, stat_result.last_count, "", "", tag_name(tag));
+            tt_log_counter("{:18n} {:+9n} {:10} {:10} {}", stat_result.count, stat_result.last_count, "", "", tag);
 
         } else {
             // XXX not perfect at all.
@@ -98,16 +98,14 @@ void logger_type::display_trace_statistics() noexcept
                 stat_result.last_count,
                 duration_per_iter,
                 duration_peak,
-                tag_name(tag));
+                tag);
         }
     }
 }
 
 void logger_type::gather_tick(bool last) noexcept
 {
-    struct gather_tick_tag {
-    };
-    ttlet t = trace<gather_tick_tag>{};
+    ttlet t = trace<"gather_tick">{};
 
     constexpr auto gather_interval = 30s;
 
@@ -128,9 +126,7 @@ void logger_type::gather_tick(bool last) noexcept
 
 void logger_type::logger_tick() noexcept
 {
-    struct logger_tick_tag {
-    };
-    ttlet t = trace<logger_tick_tag>{};
+    ttlet t = trace<"logger_tick">{};
 
     while (!message_queue.empty()) {
         auto message = message_queue.read();

@@ -120,7 +120,7 @@ static std::unique_ptr<formula_node> parse_operation_formula(
         case operator_to_int("^="): return std::make_unique<formula_inplace_xor_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("!"): return std::make_unique<formula_filter_node>(op.location, std::move(lhs), std::move(rhs));
         default:
-            tt_error_info().set<parse_location_tag>(op.location);
+            tt_error_info().set<"parse_location">(op.location);
             throw parse_error(fmt::format("Unexpected binary operator {}", op));
         }
     } else {
@@ -133,7 +133,7 @@ static std::unique_ptr<formula_node> parse_operation_formula(
         case operator_to_int("++"): return std::make_unique<formula_increment_node>(op.location, std::move(rhs));
         case operator_to_int("--"): return std::make_unique<formula_decrement_node>(op.location, std::move(rhs));
         default: 
-            tt_error_info().set<parse_location_tag>(op.location);
+            tt_error_info().set<"parse_location">(op.location);
             throw parse_error(fmt::format("Unexpected unary operator {}", op));
         }
     }
@@ -191,7 +191,7 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
             if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
                 ++context;
             } else {
-                tt_error_info().set<parse_location_tag>(location);
+                tt_error_info().set<"parse_location">(location);
                 throw parse_error(fmt::format("Expected ')' token for function call got {}", *context));
             }
 
@@ -212,7 +212,7 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
                     ++context;
                     break;
                 } else {
-                    tt_error_info().set<parse_location_tag>(location);
+                    tt_error_info().set<"parse_location">(location);
                     throw parse_error(fmt::format("Expected ']' or ',' after a vector sub-formula. got {}", *context));
                 }
             }
@@ -232,7 +232,7 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
                 if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
                     ++context;
                 } else {
-                    tt_error_info().set<parse_location_tag>(location);
+                    tt_error_info().set<"parse_location">(location);
                     throw parse_error(fmt::format("Expected ':' after a map key. got {}", *context));
                 }
 
@@ -244,7 +244,7 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
                     ++context;
                     break;
                 } else {
-                    tt_error_info().set<parse_location_tag>(location);
+                    tt_error_info().set<"parse_location">(location);
                     throw parse_error(fmt::format("Expected ']' or ',' after a vector sub-formula. got {}", *context));
                 }
             }
@@ -260,7 +260,7 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
         }
 
     default:
-        tt_error_info().set<parse_location_tag>(location);
+        tt_error_info().set<"parse_location">(location);
         throw parse_error(fmt::format("Unexpected token in primary formula {}", *context));
     }
 }
@@ -274,7 +274,7 @@ static std::unique_ptr<formula_node> parse_index_formula(formula_parse_context& 
     if ((*context == tokenizer_name_t::Operator) && (*context == "]")) {
         ++context;
     } else {
-        tt_error_info().set<parse_location_tag>(context->location);
+        tt_error_info().set<"parse_location">(context->location);
         throw parse_error(fmt::format("Expected ']' token at end of indexing operator got {}", *context));
     }
     return rhs;
@@ -289,7 +289,7 @@ static std::unique_ptr<formula_node> parse_ternary_argument_formula(formula_pars
     if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
         ++context;
     } else {
-        tt_error_info().set<parse_location_tag>(context->location);
+        tt_error_info().set<"parse_location">(context->location);
         throw parse_error(fmt::format("Expected ':' token in ternary formula {}", *context));
     }
 
@@ -319,7 +319,7 @@ static std::unique_ptr<formula_node> parse_call_argument_formula(formula_parse_c
             break;
 
         } else {
-            tt_error_info().set<parse_location_tag>(context->location);
+            tt_error_info().set<"parse_location">(context->location);
             throw parse_error(fmt::format("Expected ',' or ')' After a function argument {}", *context));
         }
     }
@@ -334,7 +334,7 @@ static bool parse_formula_is_at_end(formula_parse_context& context)
     }
 
     if (*context != tokenizer_name_t::Operator) {
-        tt_error_info().set<parse_location_tag>(context->location);
+        tt_error_info().set<"parse_location">(context->location);
         throw parse_error(fmt::format("Expecting an operator token got {}", *context));
     }
 

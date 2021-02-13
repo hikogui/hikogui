@@ -17,14 +17,14 @@ struct formula_index_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
 
         if (!lhs_.contains(rhs_)) {
-            tt_error_info().set<parse_location_tag>(location);
+            tt_error_info().set<"parse_location">(location);
             throw operation_error("Unknown key '{}'", rhs_);
         }
 
         try {
             return lhs_[rhs_];
         } catch (...) {
-            error_info(true).set<parse_location_tag>(location);
+            error_info(true).set<"parse_location">(location);
             throw;
         }
     }
@@ -35,7 +35,7 @@ struct formula_index_node final : formula_binary_operator_node {
         try {
             return lhs_[rhs_];
         } catch (...) {
-            error_info(true).set<parse_location_tag>(location);
+            error_info(true).set<"parse_location">(location);
             throw;
         }
     }
