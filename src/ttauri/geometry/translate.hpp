@@ -42,6 +42,11 @@ public:
         tt_axiom(is_valid());
     }
 
+    [[nodiscard]] constexpr explicit translate(aarect const &other) noexcept : _v(other.p0().xy00())
+    {
+        tt_axiom(is_valid());
+    }
+
     template<int E>
     requires(E < D) [[nodiscard]] constexpr translate(translate<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
@@ -71,6 +76,16 @@ public:
     {
         tt_axiom(is_valid() && rhs.is_valid());
         return point<std::max(D, E)>{_v + static_cast<f32x4>(rhs)};
+    }
+
+    [[nodiscard]] constexpr aarect operator*(aarect const &rhs) const noexcept requires(D == 2)
+    {
+        return aarect::p0p3(_v + rhs.p0(), _v + rhs.p3());
+    }
+
+    [[nodiscard]] constexpr rect operator*(rect const &rhs) const noexcept
+    {
+        return rect{_v + rhs.corner<0>(), _v + rhs.corner<1>(), _v + rhs.corner<2>(), _v + rhs.corner<3>()};
     }
 
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept

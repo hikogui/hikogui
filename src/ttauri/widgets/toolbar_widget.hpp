@@ -179,7 +179,7 @@ private:
             child_width,
             rectangle().height() - child.margin() * 2.0f};
 
-        ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
+        ttlet child_window_rectangle = translate2{_window_rectangle} * child_rectangle;
 
         child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
     }

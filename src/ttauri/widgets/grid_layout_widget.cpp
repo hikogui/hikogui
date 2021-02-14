@@ -116,7 +116,7 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
             ttlet child_rectangle = cell.rectangle(_columns, _rows);
             ttlet child_base_line = cell.base_line(_rows);
 
-            ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
+            ttlet child_window_rectangle = translate2{_window_rectangle} * child_rectangle;
             ttlet child_base_line_position =
                 child_base_line.position(child_window_rectangle.bottom(), child_window_rectangle.top());
 

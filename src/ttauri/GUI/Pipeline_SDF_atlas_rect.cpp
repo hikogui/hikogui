@@ -5,6 +5,7 @@
 #include "pipeline_SDF_atlas_rect.hpp"
 #include "pipeline_SDF_device_shared.hpp"
 #include "../mat.hpp"
+#include "../geometry/scale.hpp"
 
 namespace tt::pipeline_SDF {
 
@@ -17,7 +18,7 @@ atlas_rect::atlas_rect(i32x4 atlasPosition, f32x4 drawExtent) noexcept :
         drawExtent
     };
 
-    ttlet textureCoordinateScale = mat::S{
+    ttlet textureCoordinateScale = scale2{
         device_shared::atlasTextureCoordinateMultiplier,
         device_shared::atlasTextureCoordinateMultiplier
     };

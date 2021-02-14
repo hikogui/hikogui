@@ -115,7 +115,7 @@ private:
                 child_length
             };
 
-        ttlet child_window_rectangle = mat::T2{_window_rectangle} * child_rectangle;
+        ttlet child_window_rectangle = translate2{_window_rectangle} * child_rectangle;
 
         if constexpr (arrangement == arrangement::row) {
             child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);

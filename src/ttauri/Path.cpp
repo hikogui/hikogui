@@ -514,10 +514,8 @@ Path Path::centerScale(f32x4 extent, float padding) const noexcept
     
     ttlet offset = -bbox.offset() + (extent - bbox.extent()) * 0.5;
 
-    return (mat::T(offset) * mat::S(scale, scale, 1.0)) * *this;
+    return (translate2(offset) * scale2(scale, scale)) * *this;
 }
-
-
 
 void composit(pixel_map<sfloat_rgba16>& dst, color color, Path const &path) noexcept
 {

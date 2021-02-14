@@ -1153,18 +1153,17 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, P
         }
 
         // Start with an identity matrix.
-        auto subGlyphScale = mat::I();
+        auto subGlyphScale = scale2{};
         if (flags & FLAG_WE_HAVE_A_SCALE) {
             assert_or_return(check_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset), false);
-            subGlyphScale = mat::S(
-                unsafe_make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value(),
+            subGlyphScale = scale2(
                 unsafe_make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value()
             );
 
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
             assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2), false);
             ttlet tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2);
-            subGlyphScale = mat::S(
+            subGlyphScale = scale2(
                 tmp[0].value(),
                 tmp[1].value()
             );
@@ -1189,8 +1188,7 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, P
             metrics_glyph_id = subGlyphIndex;
         }
 
-        ttlet transform = mat::T(subGlyphOffset) * subGlyphScale;
-        glyph += transform * subGlyph;
+        glyph += translate2(subGlyphOffset) * subGlyphScale * subGlyph;
 
     } while (flags & FLAG_MORE_COMPONENTS);
     // Ignore trailing instructions.

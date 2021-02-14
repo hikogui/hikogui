@@ -144,7 +144,7 @@ private:
 
         ttlet animatedValue = to_float(value, _animation_duration);
 
-        ttlet positionedSliderRectangle = mat::T2(_slider_move_range * animatedValue, 0.0f) * _slider_rectangle;
+        ttlet positionedSliderRectangle = translate2(_slider_move_range * animatedValue, 0.0f) * _slider_rectangle;
 
         if (*value) {
             if (*enabled && window.active) {

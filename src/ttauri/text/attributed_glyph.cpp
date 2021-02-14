@@ -60,7 +60,7 @@ attributed_glyph::attributed_glyph(attributed_grapheme const &attr_grapheme, att
 
 [[nodiscard]] Path attributed_glyph::get_path() const noexcept
 {
-    ttlet M = mat::T(position) * mat::S(style.scaled_size(), style.scaled_size());
+    ttlet M = translate2(position) * scale2(style.scaled_size(), style.scaled_size());
 
     auto [glyph_path, glyph_bounding_box] = glyphs.getPathAndBoundingBox();
     auto transformed_glyph_path = M * glyph_path;

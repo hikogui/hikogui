@@ -13,6 +13,8 @@
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
 #include "../mat.hpp"
+#include "../geometry/scale.hpp"
+#include "../geometry/translate.hpp"
 #include <array>
 
 namespace tt::pipeline_SDF {
@@ -127,7 +129,7 @@ atlas_rect device_shared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
 {
     ttlet[glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
 
-    ttlet drawScale = mat::S(drawfontSize, drawfontSize);
+    ttlet drawScale = scale2{drawfontSize, drawfontSize};
     ttlet scaledBoundingBox = drawScale * glyphBoundingBox;
 
     // We will draw the font at a fixed size into the texture. And we need a border for the texture to
@@ -137,7 +139,7 @@ atlas_rect device_shared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
     // This is the bounding box sized to the fixed font size and a border
     ttlet drawOffset = f32x4{drawBorder, drawBorder} - scaledBoundingBox.offset();
     ttlet drawExtent = scaledBoundingBox.extent() + 2.0f * f32x4{drawBorder, drawBorder};
-    ttlet drawTranslate = mat::T(drawOffset);
+    ttlet drawTranslate = translate2{drawOffset};
 
     // Transform the path to the scale of the fixed font size and drawing the bounding box inside the image.
     ttlet drawPath = (drawTranslate * drawScale) * glyphPath;

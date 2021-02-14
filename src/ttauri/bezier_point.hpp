@@ -8,6 +8,7 @@
 #include "cast.hpp"
 #include "numeric_array.hpp"
 #include "mat.hpp"
+#include "geometry/transform.hpp"
 #include <vector>
 
 namespace tt {
@@ -21,7 +22,8 @@ struct bezier_point {
     Type type;
     f32x4 p;
 
-    bezier_point(f32x4 const p, Type const type) noexcept : type(type), p(p) {
+    bezier_point(f32x4 const p, Type const type) noexcept : type(type), p(p)
+    {
         tt_axiom(p.is_point());
     }
 
@@ -41,8 +43,8 @@ struct bezier_point {
      */
     [[nodiscard]] static std::vector<bezier_point> normalizePoints(
         std::vector<bezier_point>::const_iterator const begin,
-        std::vector<bezier_point>::const_iterator const end
-    ) noexcept {
+        std::vector<bezier_point>::const_iterator const end) noexcept
+    {
         std::vector<bezier_point> r;
 
         tt_assert((end - begin) >= 2);
@@ -68,9 +70,7 @@ struct bezier_point {
                 r.push_back(point);
                 break;
 
-            case bezier_point::Type::CubicControl1:
-                r.push_back(point);
-                break;
+            case bezier_point::Type::CubicControl1: r.push_back(point); break;
 
             case bezier_point::Type::CubicControl2:
                 if (previousPoint.type == bezier_point::Type::Anchor) {
@@ -83,8 +83,7 @@ struct bezier_point {
                 r.push_back(point);
                 break;
 
-            default:
-                tt_no_default();
+            default: tt_no_default();
             }
 
             previousPreviousPoint = previousPoint;
@@ -106,21 +105,28 @@ struct bezier_point {
     /** Transform the point.
      */
     template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    inline bezier_point &operator*=(M const &rhs) noexcept {
+    inline bezier_point &operator*=(M const &rhs) noexcept
+    {
         p = rhs * p;
         return *this;
     }
 
-    [[nodiscard]] friend bool operator==(bezier_point const &lhs, bezier_point const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(bezier_point const &lhs, bezier_point const &rhs) noexcept
+    {
         return (lhs.p == rhs.p) && (lhs.type == rhs.type);
     }
 
     /** Transform the point.
-    */
+     */
     template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    [[nodiscard]] friend bezier_point operator*(M const &lhs, bezier_point const &rhs) noexcept {
-        return { lhs * rhs.p, rhs.type };
+    [[nodiscard]] friend bezier_point operator*(M const &lhs, bezier_point const &rhs) noexcept
+    {
+        return {lhs * rhs.p, rhs.type};
+    }
+
+    [[nodiscard]] friend bezier_point operator*(geo::transformer<2> auto const &lhs, bezier_point const &rhs) noexcept {
+        return {lhs * rhs.p, rhs.type};
     }
 };
 
-}
+} // namespace tt

@@ -10,6 +10,7 @@
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../mat.hpp"
+#include "../geometry/translate.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
 
@@ -134,7 +135,7 @@ void Image::placePageVertices(vspan<vertex> &vertices, int const index, aarect c
     }
 
     ttlet atlasPosition = device_shared::getAtlasPositionFromPage(page);
-    ttlet atlasRect = mat::T(f32x4{atlasPosition.xyz0()}) * aarect{e4};
+    ttlet atlasRect = translate3{f32x4{atlasPosition.xyz0()}} * aarect{e4};
 
     vertices.emplace_back(p1, atlasRect.corner<0>(), clippingRectangle);
     vertices.emplace_back(p2, atlasRect.corner<1>(), clippingRectangle);

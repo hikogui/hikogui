@@ -10,6 +10,7 @@
 #include "numeric_array.hpp"
 #include "aarect.hpp"
 #include "mat.hpp"
+#include "geometry/transform.hpp"
 #include "color/sfloat_rgba16.hpp"
 #include "color/sdf_r8.hpp"
 #include <vector>
@@ -242,6 +243,15 @@ struct Path {
     template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
     friend Path operator*(M const &lhs, Path rhs) noexcept {
         return rhs *= lhs;
+    }
+
+    friend Path operator*(geo::transformer<2> auto const &lhs, Path const &rhs) noexcept
+    {
+        auto rhs_ = rhs;
+        for (auto &&point : rhs_.points) {
+            point = lhs * point;
+        }
+        return rhs_;
     }
 };
 

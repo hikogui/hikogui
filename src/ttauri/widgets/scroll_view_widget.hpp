@@ -112,11 +112,11 @@ public:
             // Update layout parameters for both scrollbars.
             if constexpr (can_scroll_horizontally) {
                 _horizontal_scroll_bar->set_layout_parameters(
-                    mat::T2{_window_rectangle} * horizontal_scroll_bar_rectangle, _window_clipping_rectangle);
+                    translate2{_window_rectangle} * horizontal_scroll_bar_rectangle, _window_clipping_rectangle);
             }
             if constexpr (can_scroll_vertically) {
                 _vertical_scroll_bar->set_layout_parameters(
-                    mat::T2{_window_rectangle} * vertical_scroll_bar_rectangle, _window_clipping_rectangle);
+                    translate2{_window_rectangle} * vertical_scroll_bar_rectangle, _window_clipping_rectangle);
             }
 
             auto aperture_x = rectangle().x();
@@ -166,11 +166,12 @@ public:
             // Make a clipping rectangle that fits the content_rectangle exactly.
             ttlet aperture_rectangle = aarect{aperture_x, aperture_y, aperture_width, aperture_height};
             ttlet window_aperture_clipping_rectangle =
-                intersect(_window_clipping_rectangle, mat::T2{_window_rectangle} * aperture_rectangle);
+                intersect(_window_clipping_rectangle, translate2{_window_rectangle} * aperture_rectangle);
 
             ttlet content_rectangle = aarect{content_x, content_y, content_width, content_height};
 
-            _content->set_layout_parameters(mat::T2{_window_rectangle} * content_rectangle, window_aperture_clipping_rectangle);
+            _content->set_layout_parameters(
+                translate2{_window_rectangle} * content_rectangle, window_aperture_clipping_rectangle);
         }
 
         super::update_layout(display_time_point, need_layout);

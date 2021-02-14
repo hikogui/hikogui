@@ -49,6 +49,12 @@ public:
 
     [[nodiscard]] constexpr scale(float x, float y, float z = 1.0) noexcept requires(D == 3) : _v(x, y, z, 1.0) {}
 
+    [[nodiscard]] constexpr f32x4 operator*(f32x4 const &rhs) const noexcept
+    {
+        tt_axiom(is_valid());
+        return _v * rhs;
+    }
+
     template<int E>
     [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
     {
@@ -61,6 +67,16 @@ public:
     {
         tt_axiom(is_valid() && rhs.is_valid());
         return point<E>{_v * static_cast<f32x4>(rhs)};
+    }
+
+    [[nodiscard]] constexpr aarect operator*(aarect const &rhs) const noexcept requires(D == 2)
+    {
+        return aarect::p0p3(_v * rhs.p0(), _v * rhs.p3());
+    }
+
+    [[nodiscard]] constexpr rect operator*(rect const &rhs) const noexcept
+    {
+        return rect{_v * rhs.corner<0>(), _v * rhs.corner<1>(), _v * rhs.corner<2>(), _v * rhs.corner<3>()};
     }
 
     [[nodiscard]] constexpr scale operator*(identity const &) const noexcept

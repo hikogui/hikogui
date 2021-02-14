@@ -8,6 +8,7 @@
 #include "../numeric_array.hpp"
 #include "../mat.hpp"
 #include "../aarect.hpp"
+#include "../geometry/scale.hpp"
 
 namespace tt {
 
@@ -80,10 +81,10 @@ struct glyph_metrics {
 
     glyph_metrics &scale(float rhs) noexcept
     {
-        auto S = mat::S(rhs, rhs);
+        auto S = scale2(rhs);
 
         boundingBox = S * boundingBox;
-        leftSideBearing *= rhs; 
+        leftSideBearing *= rhs;
         rightSideBearing *= rhs;
         advance = S * advance;
         ascender *= rhs;

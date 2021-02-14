@@ -8,6 +8,7 @@
 #include "attributed_grapheme.hpp"
 #include "glyph_metrics.hpp"
 #include "../mat.hpp"
+#include "../geometry/translate.hpp"
 
 namespace tt {
 
@@ -111,7 +112,7 @@ struct attributed_glyph {
      * @param border The 1EM scaled border around the glyph bounding box.
      */
     [[nodiscard]] aarect boundingBox(float border) const noexcept {
-        return mat::T2(position.xyz0()) * expand(metrics.boundingBox, border * style.scaled_size());
+        return translate2{position.xy00()} * expand(metrics.boundingBox, border * style.scaled_size());
     }
 
     /** Find the logical index closest to the coordinate.

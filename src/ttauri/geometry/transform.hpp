@@ -11,7 +11,7 @@
 #include "scale.hpp"
 #include <type_traits>
 
-namespace tt { namespace geo {
+namespace tt::geo {
 
 template<int D>
 [[nodiscard]] constexpr matrix<D> operator*(identity const &lhs, matrix<D> const &rhs) noexcept
@@ -83,6 +83,6 @@ template<typename T, int D>
 constexpr bool transform_v = transform<T, D>::value;
 
 template<typename T, int D>
-concept transforming = transform_v<T, D>;
+concept transformer = transform_v<T, D>;
 
-}} // namespace tt::geo
+} // namespace tt

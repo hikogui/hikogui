@@ -6,6 +6,8 @@
 
 #include "vector.hpp"
 #include "point.hpp"
+#include "../rect.hpp"
+#include "../aarect.hpp"
 #include "../color/color.hpp"
 
 namespace tt {
@@ -43,6 +45,28 @@ public:
         float c1r2,
         float c2r2) noexcept requires(D == 3) :
         _col0(c0r0, c0r1, c0r2, 0.0f), _col1(c1r0, c1r1, c1r2, 0.0f), _col2(c2r0, c2r1, c2r2, 0.0f), _col3(0.0f, 0.0f, 0.0f, 1.0f)
+    {
+    }
+
+    constexpr matrix(
+        float c0r0,
+        float c1r0,
+        float c2r0,
+        float c3r0,
+        float c0r1,
+        float c1r1,
+        float c2r1,
+        float c3r1,
+        float c0r2,
+        float c1r2,
+        float c2r2,
+        float c3r2,
+        float c0r3,
+        float c1r3,
+        float c2r3,
+        float c3r3
+        ) noexcept requires(D == 3) :
+        _col0(c0r0, c0r1, c0r2, c0r3), _col1(c1r0, c1r1, c1r2, c1r3), _col2(c2r0, c2r1, c2r2, c2r3), _col3(c3r0, c3r1, c3r2, c3r3)
     {
     }
 
