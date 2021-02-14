@@ -7,7 +7,8 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 
-namespace tt::geo {
+namespace tt {
+namespace geo {
 
 template<int D>
 class scale {
@@ -33,7 +34,7 @@ public:
     [[nodiscard]] constexpr operator matrix<D>() const noexcept
     {
         tt_axiom(is_valid());
-        return matrix{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
+        return matrix<D>{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
     }
 
     [[nodiscard]] constexpr scale() noexcept : _v(1.0, 1.0, 1.0, 1.0) {}
@@ -91,4 +92,9 @@ private:
     f32x4 _v;
 };
 
-}
+} // namespace geo
+
+using scale2 = geo::scale<2>;
+using scale3 = geo::scale<3>;
+
+} // namespace tt

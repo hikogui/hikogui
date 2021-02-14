@@ -7,7 +7,8 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 
-namespace tt::geo {
+namespace tt {
+namespace geo {
 
 template<int D>
 class translate {
@@ -101,4 +102,9 @@ private:
     f32x4 _v;
 };
 
-}
+} // namespace geo
+
+using translate2 = geo::translate<2>;
+using translate3 = geo::translate<3>;
+
+} // namespace tt

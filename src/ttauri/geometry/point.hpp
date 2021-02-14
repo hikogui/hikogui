@@ -7,7 +7,8 @@
 #include "../numeric_array.hpp"
 #include "vector.hpp"
 
-namespace tt::geo {
+namespace tt {
+namespace geo {
 
 /** A high-level geometric point
  * Part of the high-level vec, point, mat and color types.
@@ -120,10 +121,10 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend point<std::max(D,E)> operator+(point const &lhs, vector<E> const &rhs) noexcept
+    [[nodiscard]] constexpr friend point<std::max(D, E)> operator+(point const &lhs, vector<E> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
-        return point<std::max(D,E)>{lhs._v + static_cast<f32x4>(rhs)};
+        return point<std::max(D, E)>{lhs._v + static_cast<f32x4>(rhs)};
     }
 
     /** Move a point along a vector.
@@ -132,7 +133,7 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend point<std::max(D,E)> operator+(vector<E> const &rhs, point const &lhs) noexcept
+    [[nodiscard]] constexpr friend point<std::max(D, E)> operator+(vector<E> const &rhs, point const &lhs) noexcept
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
         return point<std::max(D, E)>{lhs._v + static_cast<f32x4>(rhs)};
@@ -144,7 +145,7 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend point<std::max(D,E)> operator-(point const &lhs, vector<E> const &rhs) noexcept
+    [[nodiscard]] constexpr friend point<std::max(D, E)> operator-(point const &lhs, vector<E> const &rhs) noexcept
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
         return point<std::max(D, E)>{lhs._v - static_cast<f32x4>(rhs)};
@@ -184,7 +185,9 @@ private:
     f32x4 _v;
 };
 
-using point2 = point<2>;
-using point3 = point<3>;
+} // namespace geo
+
+using point2 = geo::point<2>;
+using point3 = geo::point<3>;
 
 } // namespace tt

@@ -165,7 +165,7 @@ private:
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
 
         if (*this->enabled && this->window.active) {
-            context.color = theme::global->accentColor;
+            context.line_color = theme::global->accentColor;
         }
 
         // Checkmark or tristate.
@@ -183,7 +183,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (*this->enabled) {
-            context.color = theme::global->labelStyle.color;
+            context.line_color = theme::global->labelStyle.color;
         }
 
         ttlet &labelCell = this->value == this->true_value ?

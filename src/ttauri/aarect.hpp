@@ -16,7 +16,7 @@ namespace tt {
 template<typename T>
 class axis_aligned_rectangle {
 private:
-    friend class R32G32B32A32SFloat;
+    friend class sfloat_rgba32;
 
     /** Intrinsic of the rectangle.
      * Elements are assigned as follows:

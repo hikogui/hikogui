@@ -9,7 +9,7 @@
 
 namespace tt {
 
-[[nodiscard]] constexpr uint32_t make_A2B10G10R10UNormPack32_value(f32x4 const &rhs) noexcept
+[[nodiscard]] constexpr uint32_t make_unorm_a2bgr10_pack_value(f32x4 const &rhs) noexcept
 {
     ttlet r = static_cast<uint32_t>(std::clamp(rhs.r, 0.0f, 1.0f) * 1023.0f);
     ttlet g = static_cast<uint32_t>(std::clamp(rhs.g, 0.0f, 1.0f) * 1023.0f);
@@ -18,21 +18,21 @@ namespace tt {
     return (a << 30) | (b << 20) | (g << 10) | r;
 }
 
-struct A2B10G10R10UNormPack32 {
+struct unorm_a2bgr10_pack {
     uint32_t value;
 
-    A2B10G10R10UNormPack32() = default;
-    A2B10G10R10UNormPack32(A2B10G10R10UNormPack32 const &rhs) noexcept = default;
-    A2B10G10R10UNormPack32(A2B10G10R10UNormPack32 &&rhs) noexcept = default;
-    A2B10G10R10UNormPack32 &operator=(A2B10G10R10UNormPack32 const &rhs) noexcept = default;
-    A2B10G10R10UNormPack32 &operator=(A2B10G10R10UNormPack32 &&rhs) noexcept = default;
-    ~A2B10G10R10UNormPack32() = default;
+    unorm_a2bgr10_pack() = default;
+    unorm_a2bgr10_pack(unorm_a2bgr10_pack const &rhs) noexcept = default;
+    unorm_a2bgr10_pack(unorm_a2bgr10_pack &&rhs) noexcept = default;
+    unorm_a2bgr10_pack &operator=(unorm_a2bgr10_pack const &rhs) noexcept = default;
+    unorm_a2bgr10_pack &operator=(unorm_a2bgr10_pack &&rhs) noexcept = default;
+    ~unorm_a2bgr10_pack() = default;
 
-    explicit A2B10G10R10UNormPack32(f32x4 const &rhs) noexcept :
-        value(make_A2B10G10R10UNormPack32_value(rhs)) {}
+    explicit unorm_a2bgr10_pack(f32x4 const &rhs) noexcept :
+        value(make_unorm_a2bgr10_pack_value(rhs)) {}
 
-    A2B10G10R10UNormPack32 &operator=(f32x4 const &rhs) noexcept {
-        value = make_A2B10G10R10UNormPack32_value(rhs);
+    unorm_a2bgr10_pack &operator=(f32x4 const &rhs) noexcept {
+        value = make_unorm_a2bgr10_pack_value(rhs);
         return *this;
     }
 

@@ -7,7 +7,7 @@
 #include "pipeline_image_texture_map.hpp"
 #include "pipeline_image_page.hpp"
 #include "../required.hpp"
-#include "../R16G16B16A16SFloat.hpp"
+#include "../color/sfloat_rgba16.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -91,12 +91,12 @@ struct device_shared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    tt::pixel_map<R16G16B16A16SFloat> getStagingPixelMap();
+    tt::pixel_map<sfloat_rgba16> getStagingPixelMap();
 
     void prepareAtlasForRendering();
 
 private:
-    tt::pixel_map<R16G16B16A16SFloat> getStagingPixelMap(i32x4 extent) {
+    tt::pixel_map<sfloat_rgba16> getStagingPixelMap(i32x4 extent) {
         return getStagingPixelMap().submap({i32x4::point(0,0), extent});
     }
 

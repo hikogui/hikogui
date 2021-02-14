@@ -7,7 +7,7 @@
 #include "font_description.hpp"
 #include "text_decoration.hpp"
 #include "font_family_id.hpp"
-#include "../numeric_array.hpp"
+#include "../color/color.hpp"
 #include <fmt/format.h>
 #include <ostream>
 
@@ -20,16 +20,21 @@ struct text_style {
     font_family_id family_id;
     font_variant variant;
     float size;
-    f32x4 color;
+    color color;
     text_decoration decoration;
 
     text_style() noexcept :
         family_id(), variant(), size(0.0), color(), decoration(text_decoration::None) {}
 
-    text_style(tt::font_family_id family_id, tt::font_variant variant, float size, f32x4 color, text_decoration decoration) noexcept :
+    text_style(tt::font_family_id family_id, tt::font_variant variant, float size, tt::color color, text_decoration decoration) noexcept :
         family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
 
-    text_style(std::string_view family_name, tt::font_variant variant, float size, f32x4 color, text_decoration decoration) noexcept;
+    text_style(
+        std::string_view family_name,
+        tt::font_variant variant,
+        float size,
+        tt::color color,
+        text_decoration decoration) noexcept;
 
     text_style(text_style const &) noexcept = default;
     text_style(text_style &&) noexcept = default;

@@ -267,7 +267,7 @@ private:
     typename decltype(option_list)::callback_ptr_type _option_list_callback;
 
     std::unique_ptr<label_stencil> _text_stencil;
-    f32x4 _text_stencil_color;
+    color _text_stencil_color;
 
     float _max_option_label_height;
 
@@ -375,9 +375,9 @@ private:
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
         if (_selecting) {
-            context.color = theme::global->accentColor;
+            context.line_color = theme::global->accentColor;
         }
-        context.fill_color = context.color;
+        context.fill_color = context.line_color;
         context.corner_shapes = f32x4{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
         context.draw_box_with_border_inside(_left_box_rectangle);
     }
@@ -387,7 +387,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.2f} * context.transform;
-        context.color = *enabled ? theme::global->foregroundColor : context.fill_color;
+        context.line_color = *enabled ? theme::global->foregroundColor : context.fill_color;
         context.draw_glyph(_chevrons_glyph, _chevrons_rectangle);
     }
 
@@ -396,7 +396,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
-        context.color = *enabled ? _text_stencil_color : context.color;
+        context.line_color = *enabled ? _text_stencil_color : context.line_color;
         _text_stencil->draw(context, true);
     }
 };

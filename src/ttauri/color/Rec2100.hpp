@@ -5,15 +5,15 @@
 #pragma once
 
 #include "Rec2020.hpp"
-#include "mat.hpp"
+#include "../mat.hpp"
 #include <cmath>
 #include <array>
 
 namespace tt {
 
-inline mat Rec2100_to_XYZ = Rec2020_to_XYZ;
+constexpr matrix3 Rec2100_to_XYZ = Rec2020_to_XYZ;
 
-inline mat XYZ_to_Rec2100 = XYZ_to_Rec2020;
+constexpr matrix3 XYZ_to_Rec2100 = XYZ_to_Rec2020;
 
 [[nodiscard]] inline float Rec2100_linear_to_gamma(float L) noexcept
 {

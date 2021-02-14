@@ -82,7 +82,7 @@ public:
             context.draw_box_with_border_inside(this->rectangle());
 
             if (*this->enabled) {
-                context.color = theme::global->foregroundColor;
+                context.line_color = theme::global->foregroundColor;
             }
             context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
             _label_stencil->draw(context, true);

@@ -48,7 +48,7 @@ struct counter_functor {
         return value + 1;
     }
 
-    int64_t read() const noexcept
+    [[nodiscard]] int64_t read() const noexcept
     {
         return counter.load(std::memory_order_relaxed);
     }
@@ -63,7 +63,7 @@ inline int64_t increment_counter() noexcept
 }
 
 template<basic_fixed_string Tag>
-inline int64_t read_counter() noexcept
+[[nodiscard]] inline int64_t read_counter() noexcept
 {
     return counter_functor<Tag>{}.read();
 }
@@ -71,7 +71,7 @@ inline int64_t read_counter() noexcept
 /*!
  * \return The current count, count since last read.
  */
-inline std::pair<int64_t, int64_t> read_counter(std::string tag) noexcept
+[[nodiscard]] inline std::pair<int64_t, int64_t> read_counter(std::string tag) noexcept
 {
     auto &item = counter_map[tag];
 

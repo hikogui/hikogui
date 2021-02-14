@@ -495,9 +495,9 @@ private:
 
     void draw_background_box(draw_context context) const noexcept
     {
-        ttlet line_color = context.color;
+        ttlet line_color = context.line_color;
 
-        context.color = context.fill_color;
+        context.line_color = context.fill_color;
         context.corner_shapes = {0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
         context.draw_box_with_border_inside(_text_field_rectangle);
 

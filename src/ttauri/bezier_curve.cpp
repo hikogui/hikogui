@@ -281,7 +281,7 @@ void fill(pixel_map<uint8_t> &image, std::vector<bezier_curve> const &curves) no
 }
 
 
- [[nodiscard]] static float generate_SDF8_pixel(f32x4 point, std::vector<bezier_curve> const &curves) noexcept
+ [[nodiscard]] static float generate_sdf_r8_pixel(f32x4 point, std::vector<bezier_curve> const &curves) noexcept
 {
     if (std::ssize(curves) == 0) {
         return -std::numeric_limits<float>::max();
@@ -299,7 +299,7 @@ void fill(pixel_map<uint8_t> &image, std::vector<bezier_curve> const &curves) no
     return min_distance;
 }
 
-static void bad_pixels_edges(pixel_map<SDF8> &image) noexcept
+static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
 {
     // Bottom edge.
     auto row = image[0];
@@ -335,12 +335,12 @@ static void bad_pixels_edges(pixel_map<SDF8> &image) noexcept
     }
 }
 
-static void bad_pixels_horizontally(pixel_map<SDF8> &image) noexcept
+static void bad_pixels_horizontally(pixel_map<sdf_r8> &image) noexcept
 {
     for (ssize_t row_nr = 0; row_nr != image.height(); ++row_nr) {
         auto row = image[row_nr];
         // The left edge of the signed distance field should be outside of the glyph -float_max
-        auto prev_pixel_value = SDF8(-std::numeric_limits<float>::max());
+        auto prev_pixel_value = sdf_r8(-std::numeric_limits<float>::max());
         for (ssize_t column_nr = 0; column_nr != image.width(); ++column_nr) {
             auto &pixel = row[column_nr];
             ttlet pixel_value = static_cast<float>(pixel);
@@ -358,7 +358,7 @@ static void bad_pixels_horizontally(pixel_map<SDF8> &image) noexcept
     }
 }
 
-[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels_homogenious(pixel_map<SDF8> const &image) noexcept
+[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels_homogenious(pixel_map<sdf_r8> const &image) noexcept
 {
     constexpr float threshold = 0.075f;
 
@@ -405,14 +405,14 @@ static void bad_pixels_horizontally(pixel_map<SDF8> &image) noexcept
 }
 
 
-void fill(pixel_map<SDF8> &image, std::vector<bezier_curve> const &curves) noexcept
+void fill(pixel_map<sdf_r8> &image, std::vector<bezier_curve> const &curves) noexcept
 {
     for (int row_nr = 0; row_nr != image.height(); ++row_nr) {
         auto row = image.at(row_nr);
         auto y = static_cast<float>(row_nr);
         for (int column_nr = 0; column_nr != image.width(); ++column_nr) {
             auto x = static_cast<float>(column_nr);
-            row[column_nr] = generate_SDF8_pixel(f32x4::point(x, y), curves);
+            row[column_nr] = generate_sdf_r8_pixel(f32x4::point(x, y), curves);
         }
     }
 

@@ -6,7 +6,8 @@
 
 #include "../numeric_array.hpp"
 
-namespace tt::geo {
+namespace tt {
+namespace geo {
 
 /** A high-level geometric vector
  * Part of the high-level vector, point, mat and color types.
@@ -321,7 +322,9 @@ private:
     return vector<3>{cross_3D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
 }
 
-using vector2 = vector<2>;
-using vector3 = vector<3>;
+}
+
+using vector2 = geo::vector<2>;
+using vector3 = geo::vector<3>;
 
 } // namespace tt

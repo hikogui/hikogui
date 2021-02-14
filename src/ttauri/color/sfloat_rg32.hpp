@@ -4,29 +4,29 @@
 
 #pragma once
 
-#include "numeric_array.hpp"
+#include "../numeric_array.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
 
 namespace tt {
 
-class R32G32SFloat {
+class sfloat_rg32 {
     alignas(sizeof(float) * 2)
     // Red, Green in binary32 (native endian).
     std::array<float,2> v;
 
 public:
-    R32G32SFloat() = default;
-    R32G32SFloat(R32G32SFloat const &rhs) noexcept = default;
-    R32G32SFloat(R32G32SFloat &&rhs) noexcept = default;
-    R32G32SFloat &operator=(R32G32SFloat const &rhs) noexcept = default;
-    R32G32SFloat &operator=(R32G32SFloat &&rhs) noexcept = default;
+    sfloat_rg32() = default;
+    sfloat_rg32(sfloat_rg32 const &rhs) noexcept = default;
+    sfloat_rg32(sfloat_rg32 &&rhs) noexcept = default;
+    sfloat_rg32 &operator=(sfloat_rg32 const &rhs) noexcept = default;
+    sfloat_rg32 &operator=(sfloat_rg32 &&rhs) noexcept = default;
 
-    R32G32SFloat(f32x4 const &rhs) noexcept :
+    sfloat_rg32(f32x4 const &rhs) noexcept :
         v(static_cast<decltype(v)>(rhs)) {}
 
-    R32G32SFloat &operator=(f32x4 const &rhs) noexcept {
+    sfloat_rg32 &operator=(f32x4 const &rhs) noexcept {
         v = static_cast<decltype(v)>(rhs);
         return *this;
     }
@@ -35,10 +35,10 @@ public:
         return f32x4{v};
     }
 
-    [[nodiscard]] friend bool operator==(R32G32SFloat const &lhs, R32G32SFloat const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] friend bool operator!=(R32G32SFloat const &lhs, R32G32SFloat const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept {
         return !(lhs == rhs);
     }
 };

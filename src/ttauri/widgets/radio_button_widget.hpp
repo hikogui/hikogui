@@ -131,9 +131,9 @@ private:
         // draw pip
         if (this->value == this->true_value) {
             if (*this->enabled && this->window.active) {
-                context.color = theme::global->accentColor;
+                context.line_color = theme::global->accentColor;
             }
-            std::swap(context.color, context.fill_color);
+            std::swap(context.line_color, context.fill_color);
             context.corner_shapes = f32x4::broadcast(_pip_rectangle.height() * 0.5f);
             context.draw_box_with_border_inside(_pip_rectangle);
         }
@@ -144,7 +144,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (*this->enabled) {
-            context.color = theme::global->labelStyle.color;
+            context.line_color = theme::global->labelStyle.color;
         }
 
         _label_stencil->draw(context, true);

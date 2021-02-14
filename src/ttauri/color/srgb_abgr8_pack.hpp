@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "R16G16B16A16SFloat.hpp"
+#include "sfloat_rgba16.hpp"
 #include "sRGB.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
@@ -12,31 +12,31 @@
 
 namespace tt {
 
-class A8B8G8R8SrgbPack32 {
+class srgb_abgr8_pack {
     uint32_t v;
 
 public:
-    A8B8G8R8SrgbPack32() = default;
-    A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
-    A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
-    A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
-    A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
+    srgb_abgr8_pack() = default;
+    srgb_abgr8_pack(srgb_abgr8_pack const &rhs) noexcept = default;
+    srgb_abgr8_pack(srgb_abgr8_pack &&rhs) noexcept = default;
+    srgb_abgr8_pack &operator=(srgb_abgr8_pack const &rhs) noexcept = default;
+    srgb_abgr8_pack &operator=(srgb_abgr8_pack &&rhs) noexcept = default;
 
-    //A8B8G8R8SrgbPack32(f32x4 const &rhs) noexcept {
+    //srgb_abgr8_pack(f32x4 const &rhs) noexcept {
     //}
 
-    //A8B8G8R8SrgbPack32 &operator=(f32x4 const &rhs) noexcept {
+    //srgb_abgr8_pack &operator=(f32x4 const &rhs) noexcept {
     //    return *this;
     //}
 
     //operator f32x4 () const noexcept {
     //}
 
-    A8B8G8R8SrgbPack32(uint32_t const &rhs) noexcept : v(rhs) {}
-    A8B8G8R8SrgbPack32 &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
+    srgb_abgr8_pack(uint32_t const &rhs) noexcept : v(rhs) {}
+    srgb_abgr8_pack &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
     operator uint32_t () noexcept { return v; }
 
-    A8B8G8R8SrgbPack32(R16G16B16A16SFloat const &rhs) noexcept {
+    srgb_abgr8_pack(sfloat_rgba16 const &rhs) noexcept {
         ttlet &rhs_v = rhs.get();
 
         ttlet r = sRGB_linear16_to_gamma8(rhs_v[0].get());
@@ -49,7 +49,7 @@ public:
             static_cast<uint32_t>(r);
     }
 
-    A8B8G8R8SrgbPack32 &operator=(R16G16B16A16SFloat const &rhs) noexcept {
+    srgb_abgr8_pack &operator=(sfloat_rgba16 const &rhs) noexcept {
         ttlet &rhs_v = rhs.get();
 
         ttlet r = sRGB_linear16_to_gamma8(rhs_v[0]);
@@ -63,21 +63,21 @@ public:
         return *this;
     }
 
-    [[nodiscard]] friend bool operator==(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] friend bool operator!=(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] friend A8B8G8R8SrgbPack32 makeTransparent(A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] friend srgb_abgr8_pack makeTransparent(srgb_abgr8_pack const &rhs) noexcept {
         return {rhs.v & 0x00ffffff};
     }
 };
 
 
 
-inline void fill(pixel_map<A8B8G8R8SrgbPack32>& dst, pixel_map<R16G16B16A16SFloat> const& src) noexcept
+inline void fill(pixel_map<srgb_abgr8_pack>& dst, pixel_map<sfloat_rgba16> const& src) noexcept
 {
     tt_assert(dst.width >= src.width);
     tt_assert(dst.height >= src.height);

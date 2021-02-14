@@ -69,14 +69,14 @@ draw_context widget::make_draw_context(draw_context context) const noexcept
     context.transform = _to_window_transform;
 
     // The default fill and border colors.
-    context.color = theme::global->borderColor(_semantic_layer);
+    context.line_color = theme::global->borderColor(_semantic_layer);
     context.fill_color = theme::global->fillColor(_semantic_layer);
 
     if (*enabled) {
         if (_focus && window.active) {
-            context.color = theme::global->accentColor;
+            context.line_color = theme::global->accentColor;
         } else if (_hover) {
-            context.color = theme::global->borderColor(_semantic_layer + 1);
+            context.line_color = theme::global->borderColor(_semantic_layer + 1);
         }
 
         if (_hover) {
@@ -85,7 +85,7 @@ draw_context widget::make_draw_context(draw_context context) const noexcept
 
     } else {
         // Disabled, only the outline is shown.
-        context.color = theme::global->borderColor(_semantic_layer - 1);
+        context.line_color = theme::global->borderColor(_semantic_layer - 1);
         context.fill_color = theme::global->fillColor(_semantic_layer - 1);
     }
 

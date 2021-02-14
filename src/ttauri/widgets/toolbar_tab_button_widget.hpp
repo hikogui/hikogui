@@ -183,14 +183,14 @@ private:
 
         if (this->_hover || *this->value == this->true_value) {
             context.fill_color = theme::global->fillColor(this->_semantic_layer - 1);
-            context.color = context.fill_color;
+            context.line_color = context.fill_color;
         } else {
             context.fill_color = theme::global->fillColor(this->_semantic_layer);
-            context.color = context.fill_color;
+            context.line_color = context.fill_color;
         }
 
         if (this->_focus && this->window.active) {
-            context.color = theme::global->accentColor;
+            context.line_color = theme::global->accentColor;
         }
 
         context.corner_shapes = f32x4{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
@@ -204,7 +204,7 @@ private:
         context.transform = mat::T(0.0f, 0.0f, 0.9f) * context.transform;
 
         if (*this->enabled) {
-            context.color = theme::global->labelStyle.color;
+            context.line_color = theme::global->labelStyle.color;
         }
 
         _label_stencil->draw(context, true);

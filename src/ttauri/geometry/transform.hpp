@@ -11,7 +11,7 @@
 #include "scale.hpp"
 #include <type_traits>
 
-namespace tt::geo {
+namespace tt { namespace geo {
 
 template<int D>
 [[nodiscard]] constexpr matrix<D> operator*(identity const &lhs, matrix<D> const &rhs) noexcept
@@ -37,12 +37,11 @@ template<int D>
     return rhs;
 }
 
-
 template<int D, int E>
 [[nodiscard]] constexpr auto operator*(translate<D> const &lhs, scale<E> const &rhs) noexcept
 {
     tt_axiom(lhs.is_valid() && rhs.is_valid());
-    return matrix<std::max(D,E)>{
+    return matrix<std::max(D, E)>{
         static_cast<f32x4>(rhs).x000(),
         static_cast<f32x4>(rhs)._0y00(),
         static_cast<f32x4>(rhs)._00z0(),
@@ -65,7 +64,7 @@ struct transform : public std::false_type {
 };
 
 template<int D>
-struct transform<matrix<D>,D> : public std::true_type {
+struct transform<matrix<D>, D> : public std::true_type {
 };
 
 template<int D>
@@ -86,4 +85,4 @@ constexpr bool transform_v = transform<T, D>::value;
 template<typename T, int D>
 concept transforming = transform_v<T, D>;
 
-} // namespace tt
+}} // namespace tt::geo

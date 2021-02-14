@@ -6,9 +6,9 @@
 
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
-#include "../R16G16B16A16SFloat.hpp"
-#include "../R32G32B32A32SFloat.hpp"
-#include "../R32G32B32SFloat.hpp"
+#include "../color/sfloat_rgba16.hpp"
+#include "../color/sfloat_rgba32.hpp"
+#include "../color/sfloat_rgb32.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt::pipeline_SDF {
@@ -18,18 +18,18 @@ namespace tt::pipeline_SDF {
 */
 struct vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
-    R32G32B32SFloat position;
+    sfloat_rgb32 position;
 
     //! Clipping rectangle. (x,y)=bottom-left, (z,w)=top-right
-    R32G32B32A32SFloat clippingRectangle;
+    sfloat_rgba32 clippingRectangle;
 
     //! The x, y (relative to bottom-left) coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
-    R32G32B32SFloat textureCoord;
+    sfloat_rgb32 textureCoord;
 
     //! The color of the glyph.
-    R16G16B16A16SFloat color;
+    sfloat_rgba16 color;
 
-    vertex(f32x4 position, aarect clippingRectangle, f32x4 textureCoord, f32x4 color) noexcept :
+    vertex(f32x4 position, aarect clippingRectangle, f32x4 textureCoord, tt::color color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),

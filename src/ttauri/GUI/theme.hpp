@@ -11,6 +11,7 @@
 #include "../URL.hpp"
 #include "../numeric_array.hpp"
 #include "../datum.hpp"
+#include "../color/color.hpp"
 #include <array>
 
 namespace tt {
@@ -79,22 +80,22 @@ public:
     theme_mode mode;
 
     // Themed bright colors.
-    f32x4 blue;
-    f32x4 green;
-    f32x4 indigo;
-    f32x4 orange;
-    f32x4 pink;
-    f32x4 purple;
-    f32x4 red;
-    f32x4 teal;
-    f32x4 yellow;
+    color blue;
+    color green;
+    color indigo;
+    color orange;
+    color pink;
+    color purple;
+    color red;
+    color teal;
+    color yellow;
 
     // Semantic colors
-    f32x4 foregroundColor;
-    f32x4 accentColor;
-    f32x4 textSelectColor;
-    f32x4 cursorColor;
-    f32x4 incompleteGlyphColor;
+    color foregroundColor;
+    color accentColor;
+    color textSelectColor;
+    color cursorColor;
+    color incompleteGlyphColor;
 
     text_style labelStyle;
     text_style smallLabelStyle;
@@ -117,7 +118,7 @@ public:
     /** Get fill color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
     */
-    [[nodiscard]] f32x4 fillColor(ssize_t nesting_level) const noexcept
+    [[nodiscard]] color fillColor(ssize_t nesting_level) const noexcept
     {
         nesting_level = std::max(ssize_t{0}, nesting_level);
         tt_axiom(std::ssize(fillShades) > 0);
@@ -127,7 +128,7 @@ public:
     /** Get border color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
     */
-    [[nodiscard]] f32x4 borderColor(ssize_t nesting_level) const noexcept
+    [[nodiscard]] color borderColor(ssize_t nesting_level) const noexcept
     {
         nesting_level = std::max(ssize_t{0}, nesting_level);
         tt_axiom(std::ssize(borderShades) > 0);
@@ -140,7 +141,8 @@ public:
     * @param level Gray level: 0 is background, positive values increase in foregroundness.
     *              -1 is foreground, more negative values go toward background.
     */
-    [[nodiscard]] f32x4 gray(ssize_t level) const noexcept {
+    [[nodiscard]] color gray(ssize_t level) const noexcept
+    {
         if (level < 0) {
             level = std::ssize(grayShades) + level;
         }
@@ -150,16 +152,16 @@ public:
     }
 
 private:
-    std::vector<f32x4> fillShades;
-    std::vector<f32x4> borderShades;
-    std::vector<f32x4> grayShades;
+    std::vector<color> fillShades;
+    std::vector<color> borderShades;
+    std::vector<color> grayShades;
 
     [[nodiscard]] float parseFloat(datum const &data, char const *name);
     [[nodiscard]] bool parseBool(datum const &data, char const *name);
     [[nodiscard]] std::string parseString(datum const &data, char const *name);
-    [[nodiscard]] f32x4 parseColorValue(datum const &data);
-    [[nodiscard]] std::vector<f32x4> parseColorList(datum const &data, char const *name);
-    [[nodiscard]] f32x4 parseColor(datum const &data, char const *name);
+    [[nodiscard]] color parseColorValue(datum const &data);
+    [[nodiscard]] std::vector<color> parseColorList(datum const &data, char const *name);
+    [[nodiscard]] color parseColor(datum const &data, char const *name);
     [[nodiscard]] text_style parsetext_styleValue(datum const &data);
     [[nodiscard]] font_weight parsefont_weight(datum const &data, char const *name);
     [[nodiscard]] text_style parsetext_style(datum const &data, char const *name);

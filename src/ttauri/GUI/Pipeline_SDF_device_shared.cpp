@@ -71,7 +71,7 @@ void device_shared::uploadStagingPixmapToAtlas(atlas_rect location)
 {
     // Flush the given image, included the border.
     device.flushAllocation(
-        stagingTexture.allocation, 0, (stagingTexture.pixel_map.height() * stagingTexture.pixel_map.stride()) * sizeof(SDF8));
+        stagingTexture.allocation, 0, (stagingTexture.pixel_map.height() * stagingTexture.pixel_map.stride()) * sizeof(sdf_r8));
 
     stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferSrcOptimal);
 
@@ -175,7 +175,7 @@ bool device_shared::_placeVertices(
     vspan<vertex> &vertices,
     font_glyph_ids const &glyphs,
     rect box,
-    f32x4 color,
+    color color,
     aarect clippingRectangle) noexcept
 {
     ttlet[atlas_rect, glyph_was_added] = getGlyphFromAtlas(glyphs);
@@ -203,7 +203,7 @@ bool device_shared::_placeVertices(
     attributed_glyph const &attr_glyph,
     mat transform,
     aarect clippingRectangle,
-    f32x4 color) noexcept
+    color color) noexcept
 {
     if (!is_visible(attr_glyph.general_category)) {
         return false;
@@ -228,7 +228,7 @@ void device_shared::placeVertices(
     vspan<vertex> &vertices,
     font_glyph_ids const &glyphs,
     rect box,
-    f32x4 color,
+    color color,
     aarect clippingRectangle) noexcept
 {
     if (_placeVertices(vertices, glyphs, box, color, clippingRectangle)) {
@@ -259,7 +259,7 @@ void device_shared::placeVertices(
     shaped_text const &text,
     mat transform,
     aarect clippingRectangle,
-    f32x4 color) noexcept
+    color color) noexcept
 {
     auto atlas_was_updated = false;
 
@@ -280,7 +280,7 @@ void device_shared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 
 void device_shared::buildShaders()
 {
-    specializationConstants.SDF8maxDistance = SDF8::max_distance;
+    specializationConstants.sdf_r8maxDistance = sdf_r8::max_distance;
     specializationConstants.atlasImageWidth = atlasImageWidth;
 
     fragmentShaderSpecializationMapEntries = specialization_constants::specializationConstantMapEntries();
@@ -384,13 +384,13 @@ void device_shared::buildAtlas()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     ttlet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    ttlet data = device.mapMemory<SDF8>(allocation);
+    ttlet data = device.mapMemory<sdf_r8>(allocation);
 
     stagingTexture = {
         image,
         allocation,
         vk::ImageView(),
-        tt::pixel_map<SDF8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}};
+        tt::pixel_map<sdf_r8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),

@@ -310,9 +310,9 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.color = context.fill_color;
+        context.line_color = context.fill_color;
         if (this->_focus && this->window.active) {
-            context.color = theme::global->accentColor;
+            context.line_color = theme::global->accentColor;
         }
 
         context.draw_box_with_border_inside(this->rectangle());
@@ -322,7 +322,7 @@ private:
     {
         context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
         if (*this->enabled) {
-            context.color = theme::global->foregroundColor;
+            context.line_color = theme::global->foregroundColor;
         }
         _label_stencil->draw(context);
     }
@@ -332,7 +332,7 @@ private:
         if (this->value == this->true_value) {
             context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
             if (*this->enabled) {
-                context.color = theme::global->foregroundColor;
+                context.line_color = theme::global->foregroundColor;
             }
             _check_mark_stencil->draw(context);
         }

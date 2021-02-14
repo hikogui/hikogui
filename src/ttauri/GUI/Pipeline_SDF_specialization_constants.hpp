@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "../R32G32SFloat.hpp"
+#include "../color/sfloat_rg32.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt::pipeline_SDF {
 
 struct specialization_constants {
-    float SDF8maxDistance;
+    float sdf_r8maxDistance;
     float atlasImageWidth;
 
     [[nodiscard]] vk::SpecializationInfo specializationInfo(std::vector<vk::SpecializationMapEntry> &entries) const noexcept {
@@ -23,7 +23,7 @@ struct specialization_constants {
 
     [[nodiscard]] static std::vector<vk::SpecializationMapEntry> specializationConstantMapEntries() noexcept {
         return {
-            {0, offsetof(specialization_constants, SDF8maxDistance), sizeof(SDF8maxDistance)},
+            {0, offsetof(specialization_constants, sdf_r8maxDistance), sizeof(sdf_r8maxDistance)},
             {1, offsetof(specialization_constants, atlasImageWidth), sizeof(atlasImageWidth)},
         };
     }

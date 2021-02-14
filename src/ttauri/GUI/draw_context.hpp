@@ -24,6 +24,7 @@
 #include "../aarect.hpp"
 #include "../vspan.hpp"
 #include "../text/shaped_text.hpp"
+#include "../color/color.hpp"
 #include <type_traits>
 
 namespace tt {
@@ -33,10 +34,10 @@ namespace tt {
 class draw_context {
 public:
     /// Foreground color.
-    f32x4 color = f32x4::color(1.0, 1.0, 1.0, 1.0);
+    color line_color = color(1.0, 1.0, 1.0, 1.0);
 
     /// Fill color.
-    f32x4 fill_color = f32x4::color(0.0, 0.0, 0.0, 0.0);
+    color fill_color = color(0.0, 0.0, 0.0, 0.0);
 
     /// Size of lines.
     float line_width = 1.0;
@@ -80,7 +81,7 @@ public:
         _box_vertices(&boxVertices),
         _image_vertices(&imageVertices),
         _sdf_vertices(&sdfVertices),
-        color(0.0, 1.0, 0.0, 1.0),
+        line_color(0.0, 1.0, 0.0, 1.0),
         fill_color(1.0, 1.0, 0.0, 1.0),
         line_width(theme::global->borderWidth),
         corner_shapes(),
@@ -155,7 +156,7 @@ public:
         tt_axiom(_box_vertices != nullptr);
 
         pipeline_box::device_shared::placeVertices(
-            *_box_vertices, transform * box, fill_color, line_width, color, corner_shapes, clipping_rectangle);
+            *_box_vertices, transform * box, fill_color, line_width, line_color, corner_shapes, clipping_rectangle);
     }
 
     /** Draw an axis aligned box
@@ -188,7 +189,7 @@ public:
                 std::max(0.0f, corner_shapes.w() - shrink_value)};
 
         pipeline_box::device_shared::placeVertices(
-            *_box_vertices, transform * new_rectangle, fill_color, line_width, color, new_corner_shapes, clipping_rectangle);
+            *_box_vertices, transform * new_rectangle, fill_color, line_width, line_color, new_corner_shapes, clipping_rectangle);
     }
 
     /** Draw an axis aligned box
@@ -222,7 +223,7 @@ public:
                 std::max(0.0f, corner_shapes.w() - shrink_value)};
 
         pipeline_box::device_shared::placeVertices(
-            *_box_vertices, transform * new_rectangle, fill_color, line_width, color, new_corner_shapes, clipping_rectangle);
+            *_box_vertices, transform * new_rectangle, fill_color, line_width, line_color, new_corner_shapes, clipping_rectangle);
     }
 
     /** Draw an image
@@ -254,7 +255,7 @@ public:
 
         if (useContextColor) {
             narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-                *_sdf_vertices, text, transform, clipping_rectangle, color);
+                *_sdf_vertices, text, transform, clipping_rectangle, line_color);
         } else {
             narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
                 *_sdf_vertices, text, transform, clipping_rectangle);
@@ -266,7 +267,7 @@ public:
         tt_axiom(_sdf_vertices != nullptr);
 
         narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-            *_sdf_vertices, glyph, transform * box, color, clipping_rectangle);
+            *_sdf_vertices, glyph, transform * box, line_color, clipping_rectangle);
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, aarect const &rectangle) noexcept

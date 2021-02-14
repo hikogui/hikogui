@@ -89,17 +89,17 @@ ssize_t Path::endLayer(ssize_t layerNr) const noexcept
     return layerEndContours.at(layerNr).first + 1;
 }
 
-f32x4 Path::getColorOfLayer(ssize_t layerNr) const noexcept
+color Path::getColorOfLayer(ssize_t layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).second;
 }
 
-void Path::setColorOfLayer(ssize_t layerNr, f32x4 fillColor) noexcept
+void Path::setColorOfLayer(ssize_t layerNr, color fillColor) noexcept
 {
     layerEndContours.at(layerNr).second = fillColor;
 }
 
-std::pair<Path,f32x4> Path::getLayer(ssize_t layerNr) const noexcept
+std::pair<Path,color> Path::getLayer(ssize_t layerNr) const noexcept
 {
     tt_assert(hasLayers());
 
@@ -194,7 +194,7 @@ bool Path::isLayerOpen() const noexcept
     }
 }
 
-void Path::closeLayer(f32x4 fillColor) noexcept
+void Path::closeLayer(color fillColor) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
@@ -432,13 +432,13 @@ void Path::addContour(std::vector<bezier_curve> const &contour) noexcept
     closeContour();
 }
 
-void Path::addPath(Path const &path, f32x4 fillColor) noexcept
+void Path::addPath(Path const &path, color fillColor) noexcept
 {
     *this += path;
     closeLayer(fillColor);
 }
 
-void Path::addStroke(Path const &path, f32x4 strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
+void Path::addStroke(Path const &path, color strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
 {
     *this += path.toStroke(strokeWidth, lineJoinStyle, tolerance);
     closeLayer(strokeColor);
@@ -519,7 +519,7 @@ Path Path::centerScale(f32x4 extent, float padding) const noexcept
 
 
 
-void composit(pixel_map<R16G16B16A16SFloat>& dst, f32x4 color, Path const &path) noexcept
+void composit(pixel_map<sfloat_rgba16>& dst, color color, Path const &path) noexcept
 {
     tt_assert(!path.hasLayers());
     tt_assert(!path.isContourOpen());
@@ -533,7 +533,7 @@ void composit(pixel_map<R16G16B16A16SFloat>& dst, f32x4 color, Path const &path)
     composit(dst, color, mask);
 }
 
-void composit(pixel_map<R16G16B16A16SFloat>& dst, Path const &src) noexcept
+void composit(pixel_map<sfloat_rgba16>& dst, Path const &src) noexcept
 {
     tt_assert(src.hasLayers() && !src.isLayerOpen());
 
@@ -544,7 +544,7 @@ void composit(pixel_map<R16G16B16A16SFloat>& dst, Path const &src) noexcept
     }
 }
 
-void fill(pixel_map<SDF8> &dst, Path const &path) noexcept
+void fill(pixel_map<sdf_r8> &dst, Path const &path) noexcept
 {
     fill(dst, path.getBeziers());
 }

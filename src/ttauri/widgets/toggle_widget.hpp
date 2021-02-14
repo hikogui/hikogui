@@ -148,15 +148,15 @@ private:
 
         if (*value) {
             if (*enabled && window.active) {
-                drawContext.color = theme::global->accentColor;
+                drawContext.line_color = theme::global->accentColor;
             }
         } else {
             if (*enabled && window.active) {
-                drawContext.color =
+                drawContext.line_color =
                     _hover ? theme::global->borderColor(_semantic_layer + 1) : theme::global->borderColor(_semantic_layer);
             }
         }
-        std::swap(drawContext.color, drawContext.fill_color);
+        std::swap(drawContext.line_color, drawContext.fill_color);
         drawContext.transform = mat::T{0.0f, 0.0f, 0.1f} * drawContext.transform;
         drawContext.corner_shapes = f32x4::broadcast(positionedSliderRectangle.height() * 0.5f);
         drawContext.draw_box_with_border_inside(positionedSliderRectangle);
@@ -167,7 +167,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (*enabled) {
-            drawContext.color = theme::global->labelStyle.color;
+            drawContext.line_color = theme::global->labelStyle.color;
         }
 
         ttlet &label_stencil = *value ? _on_label_stencil : _off_label_stencil;

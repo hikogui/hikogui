@@ -17,7 +17,7 @@
 namespace tt {
 
 template<typename T> class pixel_map;
-class R16G16B16A16SFloat;
+class sfloat_rgba16;
 };
 
 namespace tt::pipeline_image {
@@ -77,7 +77,7 @@ struct Image {
 
     /** Upload image to atlas.
      */
-    void upload(pixel_map<R16G16B16A16SFloat> const &image) noexcept;
+    void upload(pixel_map<sfloat_rgba16> const &image) noexcept;
 
 private:
     //! Temporary memory used for pre calculating vertices.

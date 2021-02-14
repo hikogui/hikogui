@@ -6,7 +6,7 @@
 #include "../text/font_book.hpp"
 #include "../application.hpp"
 #include "../codec/JSON.hpp"
-#include "../sRGB.hpp"
+#include "../color/sRGB.hpp"
 #include "../logger.hpp"
 #include "../URL.hpp"
 
@@ -65,7 +65,7 @@ theme::theme(URL const &url)
     return static_cast<bool>(object);
 }
 
-[[nodiscard]] f32x4 theme::parseColorValue(datum const &data)
+[[nodiscard]] color theme::parseColorValue(datum const &data)
 {
     if (data.is_vector()) {
         if (std::ssize(data) != 3 && std::ssize(data) != 4) {
@@ -84,7 +84,7 @@ theme::theme(URL const &url)
                 static_cast<uint8_t>(a)
             );
         } else if (r.is_float() && g.is_float() && b.is_float() && a.is_float()) {
-            return f32x4::color(
+            return color(
                 static_cast<float>(r),
                 static_cast<float>(g),
                 static_cast<float>(b),
@@ -121,7 +121,7 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] f32x4 theme::parseColor(datum const &data, char const *object_name)
+[[nodiscard]] color theme::parseColor(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -136,7 +136,7 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] std::vector<f32x4> theme::parseColorList(datum const &data, char const *object_name)
+[[nodiscard]] std::vector<color> theme::parseColorList(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -148,7 +148,7 @@ theme::theme(URL const &url)
         throw parse_error("Expecting color list '{}' to be a list of colors, got {}", object_name, colorListObject.type_name());
     }
 
-    auto r = std::vector<f32x4>{};
+    auto r = std::vector<color>{};
     ssize_t i = 0;
     for (auto it = colorListObject.vector_begin(); it != colorListObject.vector_end(); ++it, ++i) {
         try {

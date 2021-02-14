@@ -65,7 +65,7 @@ Image device_shared::makeImage(const i32x4 extent) noexcept
     return Image{this, extent, pageExtent, allocatePages(pageExtent.x() * pageExtent.y())};
 }
 
-tt::pixel_map<R16G16B16A16SFloat> device_shared::getStagingPixelMap()
+tt::pixel_map<sfloat_rgba16> device_shared::getStagingPixelMap()
 {
     stagingTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
@@ -253,13 +253,13 @@ void device_shared::buildAtlas()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     ttlet [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    ttlet data = device.mapMemory<R16G16B16A16SFloat>(allocation);
+    ttlet data = device.mapMemory<sfloat_rgba16>(allocation);
 
     stagingTexture = {
         image,
         allocation,
         vk::ImageView(),
-        tt::pixel_map<R16G16B16A16SFloat>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
+        tt::pixel_map<sfloat_rgba16>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

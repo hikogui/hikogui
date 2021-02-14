@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include "../R32G32SFloat.hpp"
+#include "../color/sfloat_rg32.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt::pipeline_image {
 
 struct push_constants {
-    R32G32SFloat windowExtent = f32x4{ 0.0, 0.0 };
-    R32G32SFloat viewportScale = f32x4{ 0.0, 0.0 };
-    R32G32SFloat atlasExtent = f32x4{ 0.0, 0.0 };
-    R32G32SFloat atlasScale = f32x4{ 0.0, 0.0 };
+    sfloat_rg32 windowExtent = f32x4{ 0.0, 0.0 };
+    sfloat_rg32 viewportScale = f32x4{ 0.0, 0.0 };
+    sfloat_rg32 atlasExtent = f32x4{ 0.0, 0.0 };
+    sfloat_rg32 atlasScale = f32x4{ 0.0, 0.0 };
 
     static std::vector<vk::PushConstantRange> pushConstantRanges()
     {

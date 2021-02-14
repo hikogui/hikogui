@@ -381,7 +381,11 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    ttlet colorClearValue = vk::ClearColorValue{static_cast<std::array<float, 4>>(widget->backgroundColor())};
+    ttlet background_color = widget->backgroundColor();
+    ttlet background_color_f32x4 = static_cast<f32x4>(background_color);
+    ttlet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
+
+    ttlet colorClearValue = vk::ClearColorValue{background_color_array};
     ttlet sdfClearValue = vk::ClearColorValue{std::array{0.0f, 0.0f, 0.0f, 0.0f}};
     ttlet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
     ttlet clearValues = std::array{

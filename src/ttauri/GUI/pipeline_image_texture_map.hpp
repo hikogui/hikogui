@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../pixel_map.hpp"
-#include "../R16G16B16A16SFloat.hpp"
+#include "../color/sfloat_rgba16.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
@@ -19,7 +19,7 @@ struct texture_map {
     vk::Image image;
     VmaAllocation allocation = {};
     vk::ImageView view;
-    tt::pixel_map<R16G16B16A16SFloat> pixel_map;
+    tt::pixel_map<sfloat_rgba16> pixel_map;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
     void transitionLayout(const gui_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);

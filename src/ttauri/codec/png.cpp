@@ -6,8 +6,9 @@
 #include "zlib.hpp"
 #include "../endian.hpp"
 #include "../placement.hpp"
-#include "../sRGB.hpp"
-#include "../Rec2100.hpp"
+#include "../color/sRGB.hpp"
+#include "../color/Rec2100.hpp"
+#include "../color/color_space.hpp"
 
 namespace tt {
 
@@ -146,7 +147,7 @@ void png::read_cHRM(std::span<std::byte const> bytes)
 {
     ttlet chrm = make_placement_ptr<cHRM>(bytes);
 
-    ttlet color_to_XYZ = mat::RGBtoXYZ(
+    ttlet color_to_XYZ = color_primaries_to_RGBtoXYZ(
         narrow_cast<float>(chrm->white_point_x.value()) / 100'000.0f,
         narrow_cast<float>(chrm->white_point_y.value()) / 100'000.0f,
         narrow_cast<float>(chrm->red_x.value()) / 100'000.0f,
@@ -175,7 +176,7 @@ void png::read_sRGB(std::span<std::byte const> bytes)
     ttlet rendering_intent = srgb->rendering_intent;
     tt_parse_check(rendering_intent <= 3, "Invalid rendering intent");
 
-    color_to_sRGB = mat::I();
+    color_to_sRGB = geo::identity();
     generate_sRGB_transfer_function();
 }
 
@@ -442,13 +443,13 @@ i32x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) cons
     return {r, g, b, a};
 }
 
-void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<R16G16B16A16SFloat> &line) const noexcept
+void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &line) const noexcept
 {
     ttlet alpha_mul = bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
     for (int x = 0; x != width; ++x) {
         ttlet value = extract_pixel_from_line(bytes, x);
 
-        ttlet linear_color = f32x4::color(
+        ttlet linear_color = color(
             transfer_function[value.x()],
             transfer_function[value.y()],
             transfer_function[value.z()]
@@ -461,7 +462,7 @@ void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<R16G16B
     }
 }
 
-void png::data_to_image(bstring bytes, pixel_map<R16G16B16A16SFloat> &image) const noexcept
+void png::data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const noexcept
 {
     auto bytes_span = std::span(bytes);
 
@@ -474,7 +475,7 @@ void png::data_to_image(bstring bytes, pixel_map<R16G16B16A16SFloat> &image) con
     }
 }
 
-void png::decode_image(pixel_map<R16G16B16A16SFloat> &image) const
+void png::decode_image(pixel_map<sfloat_rgba16> &image) const
 {
     // There is a filter selection byte in front of every line.
     ttlet image_data_size = stride * height;
@@ -488,10 +489,10 @@ void png::decode_image(pixel_map<R16G16B16A16SFloat> &image) const
 
 }
 
-pixel_map<R16G16B16A16SFloat> png::load(URL const &url)
+pixel_map<sfloat_rgba16> png::load(URL const &url)
 {
     ttlet png_data = png(url);
-    auto image = pixel_map<R16G16B16A16SFloat>{png_data.extent()};
+    auto image = pixel_map<sfloat_rgba16>{png_data.extent()};
     png_data.decode_image(image);
     return image;
 }

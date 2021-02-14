@@ -10,8 +10,8 @@
 #include "numeric_array.hpp"
 #include "aarect.hpp"
 #include "mat.hpp"
-#include "R16G16B16A16SFloat.hpp"
-#include "SDF8.hpp"
+#include "color/sfloat_rgba16.hpp"
+#include "color/sdf_r8.hpp"
 #include <vector>
 
 namespace tt {
@@ -36,7 +36,7 @@ struct Path {
 
     /** An color and index into \see contourEndPoints where each layer ends.
      */
-    std::vector<std::pair<ssize_t,f32x4>> layerEndContours;
+    std::vector<std::pair<ssize_t,color>> layerEndContours;
 
     /** Clear the path.
      */
@@ -90,11 +90,11 @@ struct Path {
 
     [[nodiscard]] std::vector<bezier_curve> getBeziers() const noexcept;
 
-    [[nodiscard]] std::pair<Path,f32x4> getLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] std::pair<Path,color> getLayer(ssize_t layerNr) const noexcept;
 
-    [[nodiscard]] f32x4 getColorOfLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] color getColorOfLayer(ssize_t layerNr) const noexcept;
 
-    void setColorOfLayer(ssize_t layerNr, f32x4 fillColor) noexcept;
+    void setColorOfLayer(ssize_t layerNr, color fillColor) noexcept;
 
     /** Return true if there is an open contour.
      */
@@ -116,7 +116,7 @@ struct Path {
     /** Close current contour.
     * No operation if there is no open layer.
     */
-    void closeLayer(f32x4 fillColor) noexcept;
+    void closeLayer(color fillColor) noexcept;
 
     /** Optimize layers.
      * Merge contiguous layers with the same color.
@@ -202,11 +202,11 @@ struct Path {
 
     /** Add path and close layer.
      */
-    void addPath(Path const &path, f32x4 fillColor) noexcept;
+    void addPath(Path const &path, color fillColor) noexcept;
 
     /** Stroke a path and close layer.
      */
-    void addStroke(Path const &path, f32x4 strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
+    void addStroke(Path const &path, color strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
 
     /** Convert path to stroke-path.
      *
@@ -255,19 +255,19 @@ struct Path {
 * \param color color to composit.
 * \param mask mask where the color will be composited on the destination.
 */
-void composit(pixel_map<R16G16B16A16SFloat>& dst, f32x4 color, Path const &mask) noexcept;
+void composit(pixel_map<sfloat_rgba16>& dst, f32x4 color, Path const &mask) noexcept;
 
 /** Composit color onto the destination image where the mask is solid.
 *
 * \param dst destination image.
 * \param mask mask where the color will be composited on the destination.
 */
-void composit(pixel_map<R16G16B16A16SFloat>& dst, Path const &mask) noexcept;
+void composit(pixel_map<sfloat_rgba16>& dst, Path const &mask) noexcept;
 
 /** Fill a signed distance field image from the given path.
 * @param dst An signed-distance-field which show distance toward the closest curve
 * @param path A path.
 */
-void fill(pixel_map<SDF8> &dst, Path const &path) noexcept;
+void fill(pixel_map<sdf_r8> &dst, Path const &path) noexcept;
 
 }

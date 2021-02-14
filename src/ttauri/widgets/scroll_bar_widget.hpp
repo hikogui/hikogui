@@ -230,7 +230,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.color = theme::global->fillColor(_semantic_layer);
+        context.line_color = theme::global->fillColor(_semantic_layer);
         context.fill_color = theme::global->fillColor(_semantic_layer);
         if constexpr (is_vertical) {
             context.corner_shapes = f32x4::broadcast(rectangle().width() * 0.5f);
@@ -244,7 +244,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.color = theme::global->fillColor(_semantic_layer + 1);
+        context.line_color = theme::global->fillColor(_semantic_layer + 1);
         context.fill_color = theme::global->fillColor(_semantic_layer + 1);
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
         if constexpr (is_vertical) {

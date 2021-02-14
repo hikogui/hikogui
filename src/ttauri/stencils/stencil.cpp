@@ -14,7 +14,7 @@ namespace tt {
 
 [[nodiscard]] std::unique_ptr<image_stencil> stencil::make_unique(alignment alignment, tt::icon const &icon)
 {
-    if (ttlet pixel_map = std::get_if<tt::pixel_map<R16G16B16A16SFloat>>(&icon.image)) {
+    if (ttlet pixel_map = std::get_if<tt::pixel_map<sfloat_rgba16>>(&icon.image)) {
         return std::make_unique<pixel_map_stencil>(alignment, *pixel_map);
     } else if (ttlet glyph = std::get_if<font_glyph_ids>(&icon.image)) {
         return std::make_unique<glyph_stencil>(alignment, *glyph);

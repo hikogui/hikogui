@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "SDF8.hpp"
+#include "color/sdf_r8.hpp"
 #include "pixel_map.hpp"
 #include "alignment.hpp"
 #include "math.hpp"
@@ -368,6 +368,6 @@ void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) no
 * @param image An signed-distance-field which show distance toward the closest curve
 * @param curves All curves of path, in no particular order.
 */
-void fill(pixel_map<SDF8> &image, std::vector<bezier_curve> const &curves) noexcept;
+void fill(pixel_map<sdf_r8> &image, std::vector<bezier_curve> const &curves) noexcept;
 
 }

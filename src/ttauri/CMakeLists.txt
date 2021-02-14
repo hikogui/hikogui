@@ -4,6 +4,7 @@
 
 add_subdirectory(text)
 add_subdirectory(geometry)
+add_subdirectory(color)
 add_subdirectory(GUI)
 add_subdirectory(widgets)
 add_subdirectory(stencils)
@@ -12,14 +13,13 @@ add_subdirectory(codec)
 add_subdirectory(formula)
 add_subdirectory(skeleton)
 
+
 target_sources(ttauri PRIVATE
     detail/f32x4_sse.hpp
     detail/observable_base.hpp
     detail/observable_not.hpp
     detail/observable_unary.hpp
     detail/observable_value.hpp
-    A2B10G10R10UNormPack32.hpp
-    A8B8G8R8SrgbPack32.hpp
     aarect.hpp
     algorithm.hpp
     application.cpp
@@ -122,17 +122,10 @@ target_sources(ttauri PRIVATE
     placement.hpp
     polymorphic_optional.hpp
     polynomial.hpp
-    R16G16B16A16SFloat.hpp
-    R32G32B32A32SFloat.hpp
-    R32G32B32SFloat.hpp
-    R32G32SFloat.hpp
-    R8SNorm.hpp
     random_pcg.hpp
     range_map.hpp
     ranged_numeric.hpp
     ranges.hpp
-    Rec2020.hpp
-    Rec2100.hpp
     recursive_iterator.hpp
     rect.hpp
     required.hpp
@@ -140,11 +133,9 @@ target_sources(ttauri PRIVATE
     ranged_numeric.hpp
     resource_view.hpp
     safe_int.hpp
-    SDF8.hpp
     source_location.hpp
     small_map.hpp
     small_vector.hpp
-    sRGB.hpp
     stack.hpp
     static_resource_view.cpp
     static_resource_view.hpp

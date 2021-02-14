@@ -8,6 +8,7 @@
 #include "../numeric_array.hpp"
 #include "../rect.hpp"
 #include "../vspan.hpp"
+#include "../color/color.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -45,9 +46,9 @@ struct device_shared final {
     static void placeVertices(
         vspan<vertex> &vertices,
         rect box,
-        f32x4 backgroundColor,
+        color backgroundColor,
         float borderSize,
-        f32x4 borderColor,
+        color borderColor,
         f32x4 cornerShapes,
         aarect clippingRectangle
     );

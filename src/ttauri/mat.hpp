@@ -494,24 +494,7 @@ public:
         return {tmp._1000(), tmp._0100(), tmp._0010(), tmp._0001()};
     }
 
-    [[nodiscard]] static mat RGBtoXYZ(float wx, float wy, float rx, float ry, float gx, float gy, float bx, float by) noexcept
-    {
-        ttlet w = f32x4{wx, wy, 1.0f - wx - wy};
-        ttlet r = f32x4{rx, ry, 1.0f - rx - ry};
-        ttlet g = f32x4{gx, gy, 1.0f - gx - gy};
-        ttlet b = f32x4{bx, by, 1.0f - bx - by};
-
-        // Calculate whitepoint's tristimulus values from coordinates
-        ttlet W = f32x4{1.0f * (w.x() / w.y()), 1.0f, 1.0f * (w.z() / w.y())};
-
-        // C is the chromaticity matrix.
-        ttlet C = mat{r, g, b};
-
-        // solve tristimulus sums.
-        ttlet S = mat::S{f32x4::point(~C * W)};
-
-        return C * S;
-    }
+    
 
     /** Create a 2D shearing matrix.
      *

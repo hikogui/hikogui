@@ -20,14 +20,15 @@
 
 namespace tt {
 class gui_device_vulkan;
-template<typename T> class pixel_map;
+template<typename T>
+class pixel_map;
 class mat;
-}
+} // namespace tt
 
 namespace tt {
 class shaped_text;
 struct attributed_glyph;
-}
+} // namespace tt
 
 namespace tt::pipeline_SDF {
 
@@ -47,7 +48,7 @@ struct device_shared final {
 
     static constexpr float atlasTextureCoordinateMultiplier = 1.0f / atlasImageWidth;
     static constexpr float drawfontSize = 28.0f;
-    static constexpr float drawBorder = SDF8::max_distance;
+    static constexpr float drawBorder = sdf_r8::max_distance;
     static constexpr float scaledDrawBorder = drawBorder / drawfontSize;
 
     gui_device_vulkan const &device;
@@ -60,7 +61,7 @@ struct device_shared final {
     vk::SpecializationInfo fragmentShaderSpecializationInfo;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-    std::unordered_map<font_glyph_ids,atlas_rect> glyphs_in_atlas;
+    std::unordered_map<font_glyph_ids, atlas_rect> glyphs_in_atlas;
     texture_map stagingTexture;
     std::vector<texture_map> atlasTextures;
 
@@ -72,7 +73,6 @@ struct device_shared final {
     /// During allocation on a row, we keep track of the tallest glyph.
     int atlasAllocationMaxHeight = 0;
 
-
     device_shared(gui_device_vulkan const &device);
     ~device_shared();
 
@@ -82,8 +82,9 @@ struct device_shared final {
     device_shared &operator=(device_shared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of gui_device_vulkan, therefor we can not use our `std::weak_ptr<gui_device_vulkan> device`.
-    */
+     * This is called in the destructor of gui_device_vulkan, therefor we can not use our `std::weak_ptr<gui_device_vulkan>
+     * device`.
+     */
     void destroy(gui_device_vulkan *vulkanDevice);
 
     /** Allocate an glyph in the atlas.
@@ -99,7 +100,7 @@ struct device_shared final {
     void uploadStagingPixmapToAtlas(atlas_rect location);
 
     /** This will transition the staging texture to 'general' for writing by the CPU.
-    */
+     */
     void prepareStagingPixmapForDrawing();
 
     /** This will transition the atlas to 'shader-read'.
@@ -113,15 +114,20 @@ struct device_shared final {
     /** Get the bounding box, including draw border of a glyph.
      */
     static aarect getBoundingBox(font_glyph_ids const &glyphs) noexcept;
-    
+
     /** Place vertices for a single glyph.
-    * @param vertices The list of vertices to add to.
-    * @param glyphs The font-id, composed-glyphs to render
-    * @param box The rectangle of the glyph in window coordinates; including the draw border.
-    * @param color The color of the glyph.
-    * @param clippingRectangle The rectangle to clip the glyph.
-    */
-    void placeVertices(vspan<vertex> &vertices, font_glyph_ids const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept;
+     * @param vertices The list of vertices to add to.
+     * @param glyphs The font-id, composed-glyphs to render
+     * @param box The rectangle of the glyph in window coordinates; including the draw border.
+     * @param color The color of the glyph.
+     * @param clippingRectangle The rectangle to clip the glyph.
+     */
+    void placeVertices(
+        vspan<vertex> &vertices,
+        font_glyph_ids const &glyphs,
+        rect box,
+        color color,
+        aarect clippingRectangle) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -132,13 +138,18 @@ struct device_shared final {
     void placeVertices(vspan<vertex> &vertices, shaped_text const &text, mat transform, aarect clippingRectangle) noexcept;
 
     /** Draw the text on the screen.
-    * @param text The box of text to draw
-    * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
-    * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
-    * @param vertices The vertices to draw the glyphs to.
-    * @param color Override the color of the text to draw.
-    */
-    void placeVertices(vspan<vertex> &vertices, shaped_text const &text, mat transform, aarect clippingRectangle, f32x4 color) noexcept;
+     * @param text The box of text to draw
+     * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
+     * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
+     * @param vertices The vertices to draw the glyphs to.
+     * @param color Override the color of the text to draw.
+     */
+    void placeVertices(
+        vspan<vertex> &vertices,
+        shaped_text const &text,
+        mat transform,
+        aarect clippingRectangle,
+        color color) noexcept;
 
 private:
     void buildShaders();
@@ -157,38 +168,48 @@ private:
      * @param clippingRectangle The rectangle to clip the glyph.
      * @return True if the glyph was added to the atlas.
      */
-    [[nodiscard]] bool _placeVertices(vspan<vertex> &vertices, font_glyph_ids const &glyphs, rect box, f32x4 color, aarect clippingRectangle) noexcept;
+    [[nodiscard]] bool _placeVertices(
+        vspan<vertex> &vertices,
+        font_glyph_ids const &glyphs,
+        rect box,
+        color color,
+        aarect clippingRectangle) noexcept;
 
     /** Place an single attributed glyph.
-    * This function will not execute prepareAtlasForRendering().
-    *
-    * @param vertices The list of vertices to add to.
-    * @param attr_glyph The attributed glyph; scaled and positioned.
-    * @param transform Extra transformation on the glyph.
-    * @param clippingRectangle The rectangle to clip the glyph.
-    * @return True if the glyph was added to the atlas.
-    */
-    [[nodiscard]] bool _placeVertices(vspan<vertex> &vertices, attributed_glyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
+     * This function will not execute prepareAtlasForRendering().
+     *
+     * @param vertices The list of vertices to add to.
+     * @param attr_glyph The attributed glyph; scaled and positioned.
+     * @param transform Extra transformation on the glyph.
+     * @param clippingRectangle The rectangle to clip the glyph.
+     * @return True if the glyph was added to the atlas.
+     */
+    [[nodiscard]] bool
+    _placeVertices(vspan<vertex> &vertices, attributed_glyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
 
     /** Place an single attributed glyph.
-    * This function will not execute prepareAtlasForRendering().
-    *
-    * @param vertices The list of vertices to add to.
-    * @param attr_glyph The attributed glyph; scaled and positioned.
-    * @param transform Extra transformation on the glyph.
-    * @param clippingRectangle The rectangle to clip the glyph.
-    * @param color Override the color from the glyph style.
-    * @return True if the glyph was added to the atlas.
-    */
-    [[nodiscard]] bool _placeVertices(vspan<vertex> &vertices, attributed_glyph const &attr_glyph, mat transform, aarect clippingRectangle, f32x4 color) noexcept;
+     * This function will not execute prepareAtlasForRendering().
+     *
+     * @param vertices The list of vertices to add to.
+     * @param attr_glyph The attributed glyph; scaled and positioned.
+     * @param transform Extra transformation on the glyph.
+     * @param clippingRectangle The rectangle to clip the glyph.
+     * @param color Override the color from the glyph style.
+     * @return True if the glyph was added to the atlas.
+     */
+    [[nodiscard]] bool _placeVertices(
+        vspan<vertex> &vertices,
+        attributed_glyph const &attr_glyph,
+        mat transform,
+        aarect clippingRectangle,
+        color color) noexcept;
 
     atlas_rect addGlyphToAtlas(font_glyph_ids glyph) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    std::pair<atlas_rect,bool> getGlyphFromAtlas(font_glyph_ids glyph) noexcept;
-
+    std::pair<atlas_rect, bool> getGlyphFromAtlas(font_glyph_ids glyph) noexcept;
 };
 
-}
+} // namespace tt::pipeline_SDF

@@ -7,7 +7,7 @@
 #include "../required.hpp"
 #include "../aarect.hpp"
 #include "../numeric_array.hpp"
-#include "../R16G16B16A16SFloat.hpp"
+#include "../color/sfloat_rgba16.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

@@ -119,44 +119,44 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext, hi
     context.corner_shapes = f32x4{RADIUS, RADIUS, RADIUS, RADIUS};
 
     if (!window.active && !_hover) {
-        context.fill_color = f32x4::color(0.246f, 0.246f, 0.246f);
+        context.fill_color = color(0.246f, 0.246f, 0.246f);
     } else if (pressedClose) {
-        context.fill_color = f32x4::color(1.0f, 0.242f, 0.212f);
+        context.fill_color = color(1.0f, 0.242f, 0.212f);
     } else {
-        context.fill_color = f32x4::color(1.0f, 0.1f, 0.082f);
+        context.fill_color = color(1.0f, 0.1f, 0.082f);
     }
-    context.color = context.fill_color;
+    context.line_color = context.fill_color;
     context.draw_box_with_border_inside(closeRectangle);
 
     if (!window.active && !_hover) {
-        context.fill_color = f32x4::color(0.246f, 0.246f, 0.246f);
+        context.fill_color = color(0.246f, 0.246f, 0.246f);
     } else if (pressedMinimize) {
-        context.fill_color = f32x4::color(1.0f, 0.847f, 0.093f);
+        context.fill_color = color(1.0f, 0.847f, 0.093f);
     } else {
-        context.fill_color = f32x4::color(0.784f, 0.521f, 0.021f);
+        context.fill_color = color(0.784f, 0.521f, 0.021f);
     }
-    context.color = context.fill_color;
+    context.line_color = context.fill_color;
     context.draw_box_with_border_inside(minimizeRectangle);
 
     if (!window.active && !_hover) {
-        context.fill_color = f32x4::color(0.246f, 0.246f, 0.246f);
+        context.fill_color = color(0.246f, 0.246f, 0.246f);
     } else if (pressedMaximize) {
-        context.fill_color = f32x4::color(0.223f, 0.863f, 0.1f);
+        context.fill_color = color(0.223f, 0.863f, 0.1f);
     } else {
-        context.fill_color = f32x4::color(0.082f, 0.533f, 0.024f);
+        context.fill_color = color(0.082f, 0.533f, 0.024f);
     }
-    context.color = context.fill_color;
+    context.line_color = context.fill_color;
     context.draw_box_with_border_inside(maximizeRectangle);
 
     if (_hover) {
         context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
-        context.color = f32x4::color(0.319f, 0.0f, 0.0f);
+        context.line_color = color(0.319f, 0.0f, 0.0f);
         context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle);
 
-        context.color = f32x4::color(0.212f, 0.1f, 0.0f);
+        context.line_color = color(0.212f, 0.1f, 0.0f);
         context.draw_glyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
 
-        context.color = f32x4::color(0.0f, 0.133f, 0.0f);
+        context.line_color = color(0.0f, 0.133f, 0.0f);
         if (window.size_state == gui_window_size::maximized) {
             context.draw_glyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
         } else {
@@ -174,9 +174,9 @@ void window_traffic_lights_widget::drawWindows(
     auto context = drawContext;
 
     if (pressedClose) {
-        context.fill_color = f32x4::color(1.0f, 0.0f, 0.0f);
+        context.fill_color = color(1.0f, 0.0f, 0.0f);
     } else if (hoverClose) {
-        context.fill_color = f32x4::color(0.5f, 0.0f, 0.0f);
+        context.fill_color = color(0.5f, 0.0f, 0.0f);
     } else {
         context.fill_color = theme::global->fillColor(_semantic_layer);
     }
@@ -201,9 +201,9 @@ void window_traffic_lights_widget::drawWindows(
     context.draw_filled_quad(maximizeRectangle);
 
     if (window.active) {
-        context.color = theme::global->foregroundColor;
+        context.line_color = theme::global->foregroundColor;
     } else {
-        context.color = theme::global->borderColor(_semantic_layer);
+        context.line_color = theme::global->borderColor(_semantic_layer);
     }
     context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
     context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle);

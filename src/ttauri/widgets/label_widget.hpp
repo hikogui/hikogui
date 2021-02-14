@@ -80,7 +80,7 @@ public:
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             if (*enabled) {
-                context.color = theme::global->labelStyle.color;
+                context.line_color = theme::global->labelStyle.color;
             }
 
             _label_cell->draw(context, true);

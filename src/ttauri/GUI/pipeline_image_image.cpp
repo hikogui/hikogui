@@ -42,7 +42,7 @@ Image::~Image()
     }
 }
 
-void Image::upload(pixel_map<R16G16B16A16SFloat> const &image) noexcept
+void Image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 {
     tt_axiom(parent);
 

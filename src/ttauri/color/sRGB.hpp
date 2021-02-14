@@ -4,26 +4,27 @@
 
 #pragma once
 
-#include "float16.hpp"
-#include "mat.hpp"
-#include "codec/base_n.hpp"
+#include "../float16.hpp"
+#include "../geometry/matrix.hpp"
+#include "../codec/base_n.hpp"
+#include "color.hpp"
 #include <cmath>
 #include <array>
 
 namespace tt {
 
-inline mat sRGB_to_XYZ = mat{
-    0.41239080f, 0.35758434f, 0.18048079f, 0.0f,
-    0.21263901f, 0.71516868f, 0.07219232f, 0.0f,
-    0.01933082f, 0.11919478f, 0.95053215f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
+constexpr matrix3 sRGB_to_XYZ =
+    matrix3{
+    0.41239080f, 0.35758434f, 0.18048079f,
+    0.21263901f, 0.71516868f, 0.07219232f,
+    0.01933082f, 0.11919478f, 0.95053215f
 };
 
-inline mat XYZ_to_sRGB = mat{
-     3.24096994f, -1.53738318f, -0.49861076f, 0.0f,
-    -0.96924364f,  1.87596750f,  0.04155506f, 0.0f,
-     0.05563008f, -0.20397696f,  1.05697151f, 0.0f,
-     0.0f, 0.0f, 0.0f, 1.0f
+constexpr matrix3 XYZ_to_sRGB =
+    matrix3{
+     3.24096994f, -1.53738318f, -0.49861076f,
+    -0.96924364f,  1.87596750f,  0.04155506f,
+     0.05563008f, -0.20397696f,  1.05697151f
 };
 
 [[nodiscard]] inline float sRGB_linear_to_gamma(float u) noexcept
@@ -84,21 +85,21 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
     return sRGB_gamma8_to_linear16_table[u];
 }
 
-[[nodiscard]] inline f32x4 color_from_sRGB(float r, float g, float b, float a) noexcept
+[[nodiscard]] inline color color_from_sRGB(float r, float g, float b, float a) noexcept
 {
-    return f32x4{
+    return color{
         sRGB_gamma_to_linear(narrow_cast<float>(r)),
         sRGB_gamma_to_linear(narrow_cast<float>(g)),
         sRGB_gamma_to_linear(narrow_cast<float>(b)),
         a};
 }
 
-[[nodiscard]] inline f32x4 color_from_sRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
+[[nodiscard]] inline color color_from_sRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) noexcept
 {
     return color_from_sRGB(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }
 
-[[nodiscard]] inline f32x4 color_from_sRGB(std::string_view str)
+[[nodiscard]] inline color color_from_sRGB(std::string_view str)
 {
     auto tmp = std::string{str};
 

@@ -6,7 +6,7 @@
 
 #include "URL.hpp"
 #include "pixel_map.hpp"
-#include "R16G16B16A16SFloat.hpp"
+#include "color/sfloat_rgba16.hpp"
 #include "text/font_glyph_ids.hpp"
 #include "text/elusive_icon.hpp"
 #include "text/ttauri_icon.hpp"
@@ -19,7 +19,7 @@ namespace tt {
 class icon {
 public:
     icon(URL const &url);
-    icon(pixel_map<R16G16B16A16SFloat> &&image) noexcept;
+    icon(pixel_map<sfloat_rgba16> &&image) noexcept;
     icon(font_glyph_ids const &glyph) noexcept;
     icon(elusive_icon const &icon) noexcept;
     icon(ttauri_icon const &icon) noexcept;
@@ -41,7 +41,7 @@ public:
     }
 
 private:
-    using image_type = std::variant<std::monostate, font_glyph_ids, pixel_map<R16G16B16A16SFloat>>;
+    using image_type = std::variant<std::monostate, font_glyph_ids, pixel_map<sfloat_rgba16>>;
 
     image_type image;
 

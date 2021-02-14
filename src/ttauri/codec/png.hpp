@@ -7,8 +7,8 @@
 
 #include "../required.hpp"
 #include "../pixel_map.hpp"
-#include "../R16G16B16A16SFloat.hpp"
-#include "../mat.hpp"
+#include "../color/sfloat_rgba16.hpp"
+#include "../geometry/identity.hpp"
 #include "../numeric_array.hpp"
 #include "../URL.hpp"
 #include "../resource_view.hpp"
@@ -33,15 +33,15 @@ public:
         return i32x4{width, height};
     }
 
-    void decode_image(pixel_map<R16G16B16A16SFloat> &image) const;
+    void decode_image(pixel_map<sfloat_rgba16> &image) const;
 
-    static pixel_map<R16G16B16A16SFloat> load(URL const &url);
+    static pixel_map<sfloat_rgba16> load(URL const &url);
 
 private:
     /** Matrix to convert png color values to sRGB.
      * The default are sRGB color primaries and white-point.
      */
-    mat color_to_sRGB = mat::I();
+    matrix3 color_to_sRGB = geo::identity();
 
     /** The gamma curve to convert a sample directly to linear float.
      */
@@ -90,8 +90,8 @@ private:
     void unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
-    void data_to_image(bstring bytes, pixel_map<R16G16B16A16SFloat> &image) const noexcept;
-    void data_to_image_line(std::span<std::byte const> bytes, pixel_row<R16G16B16A16SFloat> &row) const noexcept;
+    void data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const noexcept;
+    void data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &row) const noexcept;
     i32x4 extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
 
 };

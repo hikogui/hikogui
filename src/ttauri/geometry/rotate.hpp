@@ -7,7 +7,8 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 
-namespace tt::geo {
+namespace tt {
+namespace geo {
 
 template<int D>
 class rotate {
@@ -79,5 +80,10 @@ private:
      */
     f32x4 _v;
 };
+
+}
+
+using rotate2 = geo::rotate<2>;
+using rotate3 = geo::rotate<3>;
 
 }

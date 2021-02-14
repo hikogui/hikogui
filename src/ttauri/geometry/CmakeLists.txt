@@ -1,6 +1,5 @@
 
 target_sources(ttauri PRIVATE
-    color.hpp
     matrix.hpp
     identity.hpp
     translate.hpp

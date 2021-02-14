@@ -26,7 +26,7 @@ public:
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
     [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override;
 
-    [[nodiscard]] f32x4 backgroundColor() noexcept {
+    [[nodiscard]] color backgroundColor() noexcept {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return theme::global->fillColor(_semantic_layer);
     }

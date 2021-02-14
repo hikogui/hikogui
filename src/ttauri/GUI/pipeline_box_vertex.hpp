@@ -7,9 +7,9 @@
 #include "../vspan.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
-#include "../R16G16B16A16SFloat.hpp"
-#include "../R32G32B32A32SFloat.hpp"
-#include "../R32G32B32SFloat.hpp"
+#include "../color/sfloat_rgba16.hpp"
+#include "../color/sfloat_rgba32.hpp"
+#include "../color/sfloat_rgb32.hpp"
 #include <vulkan/vulkan.hpp>
 #include <span>
 
@@ -20,31 +20,31 @@ namespace tt::pipeline_box {
 */
 struct vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
-    R32G32B32SFloat position;
+    sfloat_rgb32 position;
 
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    R32G32B32A32SFloat clippingRectangle;
+    sfloat_rgba32 clippingRectangle;
 
     //! Double 2D coordinates inside the quad, used to determine the distance from the sides and corner inside the fragment shader.
-    R32G32B32A32SFloat cornerCoordinate;
+    sfloat_rgba32 cornerCoordinate;
 
     //! background color of the box.
-    R16G16B16A16SFloat backgroundColor;
+    sfloat_rgba16 backgroundColor;
 
     //! border color of the box.
-    R16G16B16A16SFloat borderColor;
+    sfloat_rgba16 borderColor;
 
     //! Shape of each corner, negative values are cut corners, positive values are rounded corners.
-    R16G16B16A16SFloat cornerShapes;
+    sfloat_rgba16 cornerShapes;
 
     float borderSize;
 
     vertex(
         f32x4 position,
         f32x4 cornerCoordinate,
-        f32x4 backgroundColor,
+        color backgroundColor,
         float borderSize,
-        f32x4 borderColor,
+        color borderColor,
         f32x4 cornerShapes,
         aarect clippingRectangle
     ) noexcept :

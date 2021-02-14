@@ -104,13 +104,3 @@ TEST(Mat, Invert) {
 
 }
 
-TEST(Mat, Color) {
-    auto BT709_to_XYZ = mat::RGBtoXYZ(0.3127f, 0.3290f, 0.64f, 0.33f, 0.30f, 0.60f, 0.15f, 0.06f);
-
-    ASSERT_NEAR_VEC(BT709_to_XYZ.get<0>(), f32x4(0.4124f, 0.2126f, 0.0193f), 0.001);
-    ASSERT_NEAR_VEC(BT709_to_XYZ.get<1>(), f32x4(0.3576f, 0.7152f, 0.1192f), 0.001);
-    ASSERT_NEAR_VEC(BT709_to_XYZ.get<2>(), f32x4(0.1805f, 0.0722f, 0.9505f), 0.001);
-    ASSERT_NEAR_VEC(BT709_to_XYZ.get<3>(), f32x4(0.0, 0.0, 0.0, 1.0), 0.001);
-
-
-}

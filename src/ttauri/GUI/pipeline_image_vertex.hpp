@@ -7,8 +7,8 @@
 #include "pipeline_image_image_location.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
-#include "../R32G32B32SFloat.hpp"
-#include "../R32G32B32A32SFloat.hpp"
+#include "../color/sfloat_rgb32.hpp"
+#include "../color/sfloat_rgba32.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt::pipeline_image {
@@ -18,13 +18,13 @@ namespace tt::pipeline_image {
 */
 struct vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
-    R32G32B32SFloat position;
+    sfloat_rgb32 position;
 
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    R32G32B32A32SFloat clippingRectangle;
+    sfloat_rgba32 clippingRectangle;
 
     //! The x, y coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
-    R32G32B32SFloat atlasPosition;
+    sfloat_rgb32 atlasPosition;
 
     vertex(f32x4 position, f32x4 atlasPosition, aarect clippingRectangle) noexcept :
         position(position),
