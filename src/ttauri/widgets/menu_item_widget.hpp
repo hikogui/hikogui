@@ -320,7 +320,7 @@ private:
 
     void draw_label(draw_context context) noexcept
     {
-        context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
+        context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
         if (*this->enabled) {
             context.line_color = theme::global->foregroundColor;
         }
@@ -330,7 +330,7 @@ private:
     void draw_check_mark(draw_context context) noexcept
     {
         if (this->value == this->true_value) {
-            context.transform = mat::T(0.0f, 0.0f, 0.1f) * context.transform;
+            context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
             if (*this->enabled) {
                 context.line_color = theme::global->foregroundColor;
             }

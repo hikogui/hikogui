@@ -661,7 +661,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         gui_system_mutex.lock();
         ttlet screen_extent = virtual_screen_size();
         ttlet screen_position =
-            f32x4{narrow_cast<float>(GET_X_LPARAM(lParam)), screen_extent.height() - narrow_cast<float>(GET_Y_LPARAM(lParam))};
+            f32x4::point(narrow_cast<float>(GET_X_LPARAM(lParam)), screen_extent.height() - narrow_cast<float>(GET_Y_LPARAM(lParam)));
 
         ttlet window_position = screen_position - f32x4{_screen_rectangle.offset()};
         ttlet hitbox_type = widget->hitbox_test(window_position).type;

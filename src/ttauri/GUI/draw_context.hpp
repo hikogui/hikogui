@@ -66,7 +66,7 @@ public:
      * The z-axis translate is used for specifying the elevation
      * (inverse depth buffer) of the shape.
      */
-    mat transform = mat::I();
+    matrix3 transform = geo::identity{};
 
     draw_context(
         gui_window &window,

@@ -24,7 +24,7 @@ private:
     pixel_map<sfloat_rgba16> _pixel_map;
     pipeline_image::Image _backing;
     aarect _pixel_map_bounding_box;
-    mat _pixel_map_transform;
+    matrix2 _pixel_map_transform;
 };
 
 }

@@ -149,7 +149,7 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext, hi
     context.draw_box_with_border_inside(maximizeRectangle);
 
     if (_hover) {
-        context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
+        context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
         context.line_color = color(0.319f, 0.0f, 0.0f);
         context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle);
 
@@ -205,7 +205,7 @@ void window_traffic_lights_widget::drawWindows(
     } else {
         context.line_color = theme::global->borderColor(_semantic_layer);
     }
-    context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
+    context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
     context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle);
     context.draw_glyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
     if (window.size_state == gui_window_size::maximized) {

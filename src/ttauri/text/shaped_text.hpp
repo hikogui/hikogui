@@ -203,6 +203,14 @@ public:
         };
     }
 
+        /** Get the translation for where to place the text.
+     * @param position x is the left position,
+     *                 y is where the middle of the line should be.
+     */
+    translate2 translate_base_line(f32x4 position) noexcept
+    {
+        return translate2{position.x(), middleOffset(position.y())};
+    }
 
     /** Find a glyph that corresponds to position.
      */

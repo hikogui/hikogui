@@ -26,7 +26,7 @@ private:
     std::u8string _text;
     text_style _style;
     shaped_text _shaped_text;
-    mat _shaped_text_transform;
+    matrix2 _shaped_text_transform;
 };
 
 } // namespace tt

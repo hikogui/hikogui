@@ -21,7 +21,7 @@ void glyph_stencil::draw(draw_context context, bool use_context_color) noexcept
     auto layout_is_modified = std::exchange(_size_is_modified, false);
     layout_is_modified |= std::exchange(_position_is_modified, false);
     if (layout_is_modified) {
-        _glyph_transform = mat::uniform2D_scale_and_translate(_rectangle, _glyph_bounding_box, _alignment);
+        _glyph_transform = matrix2::uniform(_glyph_bounding_box, _rectangle, _alignment);
     }
 
     context.transform = context.transform * _glyph_transform;

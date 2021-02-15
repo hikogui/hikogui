@@ -22,7 +22,7 @@ public:
 private:
     font_glyph_ids _glyph;
     aarect _glyph_bounding_box;
-    mat _glyph_transform;
+    matrix2 _glyph_transform;
 };
 
 }

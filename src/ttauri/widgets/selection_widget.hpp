@@ -373,7 +373,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
+        context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
         if (_selecting) {
             context.line_color = theme::global->accentColor;
         }
@@ -386,7 +386,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = mat::T{0.0, 0.0, 0.2f} * context.transform;
+        context.transform = translate3{0.0, 0.0, 0.2f} * context.transform;
         context.line_color = *enabled ? theme::global->foregroundColor : context.fill_color;
         context.draw_glyph(_chevrons_glyph, _chevrons_rectangle);
     }
@@ -395,7 +395,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
+        context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
         context.line_color = *enabled ? _text_stencil_color : context.line_color;
         _text_stencil->draw(context, true);
     }

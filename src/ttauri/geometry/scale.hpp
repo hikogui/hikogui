@@ -6,6 +6,7 @@
 
 #include "matrix.hpp"
 #include "identity.hpp"
+#include "translate.hpp"
 
 namespace tt {
 namespace geo {
@@ -48,6 +49,33 @@ public:
     [[nodiscard]] constexpr scale(float x, float y) noexcept requires(D == 2) : _v(x, y, 1.0, 1.0) {}
 
     [[nodiscard]] constexpr scale(float x, float y, float z = 1.0) noexcept requires(D == 3) : _v(x, y, z, 1.0) {}
+
+    /** Get a uniform-scale-transform to scale an extent to another extent.
+     * @param src_extent The extent to transform
+     * @param dst_extent The extent to scale to.
+     * @return a scale to transform the src_extent to the dst_extent.
+     */
+    template<int E, int F>
+    requires(E <= D && F <= D) [[nodiscard]] static constexpr scale uniform(vector<E> src_extent, vector<F> dst_extent) noexcept
+    {
+        tt_axiom(dst_extent.x() != 0.0f && src_extent.x() != 0.0f);
+        tt_axiom(dst_extent.y() != 0.0f && src_extent.y() != 0.0f);
+
+        if constexpr (D == 2) {
+            ttlet non_uniform_scale = static_cast<f32x4>(dst_extent).xyxy() / static_cast<f32x4>(src_extent).xyxy();
+            ttlet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
+            return scale{uniform_scale};
+
+        } else if constexpr (D == 3) {
+            tt_axiom(dst_extent.z() != 0.0f && src_extent.z() != 0.0f);
+            ttlet non_uniform_scale = static_cast<f32x4>(dst_extent).xyzx() / static_cast<f32x4>(src_extent).xyzx();
+            ttlet uniform_scale = std::min({non_uniform_scale.x(), non_uniform_scale.y(), non_uniform_scale.z()});
+            return scale{uniform_scale};
+
+        } else {
+            tt_static_no_default();
+        }
+    }
 
     [[nodiscard]] constexpr f32x4 operator*(f32x4 const &rhs) const noexcept
     {
@@ -107,6 +135,16 @@ public:
 private:
     f32x4 _v;
 };
+
+template<int D>
+[[nodiscard]] constexpr matrix<D> matrix<D>::uniform(aarect src_rectangle, aarect dst_rectangle, alignment alignment) noexcept
+{
+    ttlet scale = tt::geo::scale<D>::uniform(vector2{src_rectangle.extent()}, vector2{dst_rectangle.extent()});
+    ttlet scaled_rectangle = scale * src_rectangle;
+    ttlet translation = translate<D>::align(scaled_rectangle, dst_rectangle, alignment);
+    return translation * scale;
+}
+
 
 } // namespace geo
 

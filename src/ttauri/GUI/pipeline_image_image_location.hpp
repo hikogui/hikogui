@@ -15,7 +15,7 @@ namespace tt::pipeline_image {
 struct ImageLocation {
     /** Transformation matrix.
      */
-    mat transform;
+    matrix3 transform;
 
     //! The position in pixels of the clipping rectangle relative to the top-left corner of the window, and extent in pixels.
     aarect clippingRectangle;

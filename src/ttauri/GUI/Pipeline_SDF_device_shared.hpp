@@ -135,7 +135,7 @@ struct device_shared final {
      * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
      * @param vertices The vertices to draw the glyphs to.
      */
-    void placeVertices(vspan<vertex> &vertices, shaped_text const &text, mat transform, aarect clippingRectangle) noexcept;
+    void placeVertices(vspan<vertex> &vertices, shaped_text const &text, matrix3 transform, aarect clippingRectangle) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -147,7 +147,7 @@ struct device_shared final {
     void placeVertices(
         vspan<vertex> &vertices,
         shaped_text const &text,
-        mat transform,
+        matrix3 transform,
         aarect clippingRectangle,
         color color) noexcept;
 
@@ -185,7 +185,7 @@ private:
      * @return True if the glyph was added to the atlas.
      */
     [[nodiscard]] bool
-    _placeVertices(vspan<vertex> &vertices, attributed_glyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
+    _placeVertices(vspan<vertex> &vertices, attributed_glyph const &attr_glyph, matrix3 transform, aarect clippingRectangle) noexcept;
 
     /** Place an single attributed glyph.
      * This function will not execute prepareAtlasForRendering().
@@ -200,7 +200,7 @@ private:
     [[nodiscard]] bool _placeVertices(
         vspan<vertex> &vertices,
         attributed_glyph const &attr_glyph,
-        mat transform,
+        matrix3 transform,
         aarect clippingRectangle,
         color color) noexcept;
 

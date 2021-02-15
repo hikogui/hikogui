@@ -64,26 +64,57 @@ public:
         float c0r3,
         float c1r3,
         float c2r3,
-        float c3r3
-        ) noexcept requires(D == 3) :
+        float c3r3) noexcept requires(D == 3) :
         _col0(c0r0, c0r1, c0r2, c0r3), _col1(c1r0, c1r1, c1r2, c1r3), _col2(c2r0, c2r1, c2r2, c2r3), _col3(c3r0, c3r1, c3r2, c3r3)
     {
     }
 
+    template<int E>
+    requires(E < D) [[nodiscard]] constexpr matrix(matrix<E> const &other) noexcept :
+        _col0(get<0>(other)), _col1(get<1>(other)), _col2(get<2>(other)), _col3(get<3>(other))
+    {
+    }
+
+    template<int E>
+    requires(E < D) constexpr matrix &operator=(matrix<E> const &rhs) noexcept
+    {
+        _col0 = get<0>(rhs);
+        _col1 = get<1>(rhs);
+        _col2 = get<2>(rhs);
+        _col3 = get<3>(rhs);
+        return *this;
+    }
+
+    /** Create a transformation matrix to translate and uniformly-scale a src_rectangle to a dst_rectangle.
+     *
+     * The implementation is located in scale.hpp since the definition requires both scale and translate.
+     *
+     * @param src_rectangle The rectangle to be transformed.
+     * @param dst_rectangle The rectangle after transformation.
+     * @param alignment How the src_rectangle should be aligned inside the dst_rectangle after scaling and moving.
+     * @return A transformation matrix to move and scale the src_rectangle to the dst_rectangle.
+     */
+    [[nodiscard]] constexpr static matrix uniform(aarect src_rectangle, aarect dst_rectangle, alignment alignment) noexcept;
+
     template<int I>
-    [[nodiscard]] f32x4 get() const noexcept
+    [[nodiscard]] friend constexpr f32x4 get(matrix const &rhs) noexcept
     {
         if constexpr (I == 0) {
-            return _col0;
+            return rhs._col0;
         } else if constexpr (I == 1) {
-            return _col1;
+            return rhs._col1;
         } else if constexpr (I == 2) {
-            return _col2;
+            return rhs._col2;
         } else if constexpr (I == 3) {
-            return _col3;
+            return rhs._col3;
         } else {
             tt_static_no_default();
         }
+    }
+
+    [[nodiscard]] constexpr bool is_valid() const noexcept
+    {
+        return true;
     }
 
     [[nodiscard]] constexpr auto operator*(f32x4 const &rhs) const noexcept
@@ -109,6 +140,11 @@ public:
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
     }
 
+    [[nodiscard]] constexpr auto operator*(rect const &rhs) const noexcept
+    {
+        return rect{*this * rhs.corner<0>(), *this * rhs.corner<1>(), *this * rhs.corner<2>(), *this * rhs.corner<3>()};
+    }
+
     /** Transform a color by a color matrix.
      * The alpha value is not included in the transformation and copied from the input.
      * The color will be correctly transformed if the color matrix includes translation.
@@ -128,14 +164,14 @@ public:
      */
     [[nodiscard]] constexpr auto operator*(matrix<2> const &rhs) const noexcept
     {
-        return matrix<D>{*this * rhs._col0, *this * rhs._col1, *this * rhs._col2, *this * rhs._col3};
+        return matrix<D>{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     /** Matrix/Matrix multiplication.
      */
     [[nodiscard]] constexpr auto operator*(matrix<3> const &rhs) const noexcept
     {
-        return matrix<3>{*this * rhs._col0, *this * rhs._col1, *this * rhs._col2, *this * rhs._col3};
+        return matrix<3>{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     /** Matrix transpose.
@@ -144,6 +180,12 @@ public:
     {
         auto tmp = transpose(rhs._col0, rhs._col1, rhs._col2, rhs._col3);
         return {std::get<0>(tmp), std::get<1>(tmp), std::get<2>(tmp), std::get<3>(tmp)};
+    }
+
+    template<int E>
+    [[nodiscard]] constexpr bool operator==(matrix<E> const &rhs) const noexcept
+    {
+        return _col0 == rhs._col0 && _col1 == rhs._col1 && _col2 == rhs._col2 && _col3 == rhs._col3;
     }
 
     /** Invert matrix.

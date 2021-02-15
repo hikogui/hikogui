@@ -203,7 +203,7 @@ public:
             // drawing remains inside this border. And change the transform to account
             // for how much the text has scrolled.
             context.clipping_rectangle = _text_field_clipping_rectangle;
-            context.transform = (mat::T(0.0, 0.0, 0.1f) * _text_translate) * context.transform;
+            context.transform = (translate3{0.0, 0.0, 0.1f} * _text_translate) * context.transform;
 
             draw_selection_rectangles(context);
             draw_partial_grapheme_caret(context);
@@ -415,8 +415,8 @@ private:
      */
     float _text_scroll_x = 0.0f;
 
-    mat::T2 _text_translate;
-    mat::T2 _text_inv_translate;
+    translate2 _text_translate;
+    translate2 _text_inv_translate;
 
     static constexpr hires_utc_clock::duration _blink_interval = 500ms;
     hires_utc_clock::time_point _next_redraw_time_point;
@@ -489,7 +489,7 @@ private:
         _text_scroll_x = std::clamp(_text_scroll_x, 0.0f, max_scroll_width);
 
         // Calculate how much we need to translate the text.
-        _text_translate = mat::T2(-_text_scroll_x, 0.0f) * _shaped_text.TMiddle(f32x4{_text_rectangle.x(), base_line()});
+        _text_translate = translate2{-_text_scroll_x, 0.0f} * _shaped_text.translate_base_line(f32x4{_text_rectangle.x(), base_line()});
         _text_inv_translate = ~_text_translate;
     }
 
@@ -502,7 +502,7 @@ private:
         context.draw_box_with_border_inside(_text_field_rectangle);
 
         ttlet line_rectangle = aarect{_text_field_rectangle.p0(), f32x4{_text_field_rectangle.width(), context.line_width}};
-        context.transform = context.transform * mat::T(0.0f, 0.0f, 0.1f);
+        context.transform = context.transform * translate3{0.0f, 0.0f, 0.1f};
         if (_error && window.active) {
             context.fill_color = theme::global->errorLabelStyle.color;
         } else {
@@ -545,7 +545,7 @@ private:
 
     void draw_text(draw_context context) const noexcept
     {
-        context.transform = mat::T(0.0f, 0.0f, 0.2f) * context.transform;
+        context.transform = translate3{0.0f, 0.0f, 0.2f} * context.transform;
         context.draw_text(_shaped_text);
     }
 };

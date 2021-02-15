@@ -162,7 +162,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = mat::T{0.0, 0.0, 0.1f} * context.transform;
+        context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
 
         if (*this->enabled && this->window.active) {
             context.line_color = theme::global->accentColor;

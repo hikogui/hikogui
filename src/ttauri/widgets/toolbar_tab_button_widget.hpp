@@ -159,7 +159,7 @@ private:
 
             // Draw the line above every other direct child of the toolbar, and between
             // the selected-tab (0.6) and unselected-tabs (0.8).
-            parent_context.transform = mat::T(0.0f, 0.0f, 1.7f) * parent_context.transform;
+            parent_context.transform = translate3{0.0f, 0.0f, 1.7f} * parent_context.transform;
 
             parent_context.fill_color = theme::global->accentColor;
             parent_context.draw_filled_quad(
@@ -172,9 +172,9 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
         if (this->_focus && this->window.active) {
             // The focus line will be placed at 0.7.
-            context.transform = mat::T(0.0f, 0.0f, 0.8f) * context.transform;
+            context.transform = translate3{0.0f, 0.0f, 0.8f} * context.transform;
         } else {
-            context.transform = mat::T(0.0f, 0.0f, 0.6f) * context.transform;
+            context.transform = translate3{0.0f, 0.0f, 0.6f} * context.transform;
         }
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
@@ -201,7 +201,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = mat::T(0.0f, 0.0f, 0.9f) * context.transform;
+        context.transform = translate3{0.0f, 0.0f, 0.9f} * context.transform;
 
         if (*this->enabled) {
             context.line_color = theme::global->labelStyle.color;

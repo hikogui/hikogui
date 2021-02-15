@@ -33,7 +33,7 @@ void text_stencil::draw(draw_context context, bool use_context_color) noexcept
     }
 
     if (std::exchange(_position_is_modified, false)) {
-        _shaped_text_transform = _shaped_text.TMiddle(f32x4{_rectangle.x(), _base_line_position});
+        _shaped_text_transform = _shaped_text.translate_base_line(f32x4{_rectangle.x(), _base_line_position});
     }
 
     context.transform = context.transform * _shaped_text_transform;

@@ -54,7 +54,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
         window.request_redraw(window_clipping_rectangle());
 
         // Used by draw().
-        _to_window_transform = mat::T(_window_rectangle.x(), _window_rectangle.y(), _draw_layer);
+        _to_window_transform = translate3(_window_rectangle.x(), _window_rectangle.y(), _draw_layer);
 
         // Used by handle_event()
         _from_window_transform = ~_to_window_transform;

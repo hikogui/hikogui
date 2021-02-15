@@ -352,7 +352,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
         SDFPipeline->vertexBufferData);
-    drawContext.transform = drawContext.transform * mat::T{0.5, 0.5};
+    drawContext.transform = drawContext.transform * translate2{0.5, 0.5};
 
     _request_redraw_rectangle = aarect{};
     widget->draw(drawContext, displayTimePoint);

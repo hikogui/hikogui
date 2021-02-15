@@ -73,7 +73,7 @@ struct Image {
      * An image is build out of atlas pages, that need to be individual rendered.
      * A page with the value std::numeric_limits<uint16_t>::max() is not rendered.
      *     */
-    void placeVertices(vspan<vertex> &vertices, mat transform, aarect clippingRectangle);
+    void placeVertices(vspan<vertex> &vertices, matrix3 transform, aarect clippingRectangle);
 
     /** Upload image to atlas.
      */
@@ -83,7 +83,7 @@ private:
     //! Temporary memory used for pre calculating vertices.
     std::vector<std::tuple<f32x4, f32x4, bool>> tmpvertexPositions;
 
-    void calculateVertexPositions(mat transform, aarect clippingRectangle);
+    void calculateVertexPositions(matrix3 transform, aarect clippingRectangle);
 
     void placePageVertices(vspan<vertex> &vertices, int const index, aarect clippingRectangle) const;
 

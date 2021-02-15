@@ -1,4 +1,4 @@
-// Copyright translateake Vos 2021.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -63,12 +63,56 @@ public:
 
     [[nodiscard]] constexpr translate(float x, float y, float z = 0.0) noexcept requires(D == 3) : _v(x, y, z, 0.0) {}
 
+    /** Align a rectangle within another rectangle.
+     * @param src_rectangle The rectangle to translate into the dst_rectangle
+     * @param dst_rectangle The destination rectangle.
+     * @param alignment How the source rectangle should be aligned inside the destination rectangle.
+     * @return Translation to move the src_rectangle into the dst_rectangle.
+     */
+    [[nodiscard]] constexpr static translate align(aarect src_rectangle, aarect dst_rectangle, alignment alignment) noexcept
+    {
+        auto x = 0.0f;
+        if (alignment == horizontal_alignment::left) {
+            x = dst_rectangle.p0().x();
+
+        } else if (alignment == horizontal_alignment::right) {
+            x = dst_rectangle.p3().x() - src_rectangle.width();
+
+        } else if (alignment == horizontal_alignment::center) {
+            x = (dst_rectangle.p0().x() + (dst_rectangle.width() * 0.5f)) - (src_rectangle.width() * 0.5f);
+
+        } else {
+            tt_no_default();
+        }
+
+        auto y = 0.0f;
+        if (alignment == vertical_alignment::bottom) {
+            y = dst_rectangle.p0().y();
+
+        } else if (alignment == vertical_alignment::top) {
+            y = dst_rectangle.p3().y() - src_rectangle.height();
+
+        } else if (alignment == vertical_alignment::middle) {
+            y = (dst_rectangle.p0().y() + (dst_rectangle.height() * 0.5f)) - (src_rectangle.height() * 0.5f);
+
+        } else {
+            tt_no_default();
+        }
+
+        return translate{x - src_rectangle.x(), y - src_rectangle.y()};
+    }
+
     template<int E>
     [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
     {
         // Vectors are not translated.
         tt_axiom(is_valid() && rhs.is_valid());
         return rhs;
+    }
+
+    [[nodiscard]] constexpr f32x4 operator*(f32x4 const &rhs) const noexcept
+    {
+        return rhs + _v * f32x4::broadcast(rhs.w());
     }
 
     template<int E>
@@ -95,6 +139,13 @@ public:
     }
 
     template<int E>
+    [[nodiscard]] constexpr auto operator*(matrix<E> const &rhs) const noexcept
+    {
+        tt_axiom(is_valid() && rhs.is_valid());
+        return matrix<std::max(D, E)>{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs) + _v};
+    }
+
+    template<int E>
     [[nodiscard]] constexpr auto operator*(translate<E> const &rhs) const noexcept
     {
         tt_axiom(is_valid() && rhs.is_valid());
@@ -106,6 +157,11 @@ public:
     {
         tt_axiom(is_valid() && rhs.is_valid());
         return {_v == static_cast<f32x4>(rhs)};
+    }
+
+    [[nodiscard]] constexpr translate operator~() const noexcept
+    {
+        return translate{-_v};
     }
 
     [[nodiscard]] constexpr bool is_valid() const noexcept

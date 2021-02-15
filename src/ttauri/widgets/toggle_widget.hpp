@@ -157,7 +157,7 @@ private:
             }
         }
         std::swap(drawContext.line_color, drawContext.fill_color);
-        drawContext.transform = mat::T{0.0f, 0.0f, 0.1f} * drawContext.transform;
+        drawContext.transform = translate3{0.0f, 0.0f, 0.1f} * drawContext.transform;
         drawContext.corner_shapes = f32x4::broadcast(positionedSliderRectangle.height() * 0.5f);
         drawContext.draw_box_with_border_inside(positionedSliderRectangle);
     }

@@ -246,7 +246,7 @@ private:
 
         context.line_color = theme::global->fillColor(_semantic_layer + 1);
         context.fill_color = theme::global->fillColor(_semantic_layer + 1);
-        context.transform = mat::T{0.0f, 0.0f, 0.1f} * context.transform;
+        context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
         if constexpr (is_vertical) {
             context.corner_shapes = f32x4::broadcast(slider_rectangle.width() * 0.5f);
         } else {

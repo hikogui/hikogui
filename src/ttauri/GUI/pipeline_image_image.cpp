@@ -69,13 +69,13 @@ iaarect Image::indexToRect(int const pageIndex) const noexcept
 }
 
 static std::tuple<f32x4, f32x4, bool>
-calculatePosition(int x, int y, int width, int height, mat transform, aarect clippingRectangle)
+calculatePosition(int x, int y, int width, int height, matrix3 transform, aarect clippingRectangle)
 {
     auto p = transform * f32x4::point(narrow_cast<float>(x), narrow_cast<float>(y));
     return {p, f32x4{narrow_cast<float>(width), narrow_cast<float>(height)}, clippingRectangle.contains(p)};
 }
 
-void Image::calculateVertexPositions(mat transform, aarect clippingRectangle)
+void Image::calculateVertexPositions(matrix3 transform, aarect clippingRectangle)
 {
     tmpvertexPositions.clear();
 
@@ -150,7 +150,7 @@ void Image::placePageVertices(vspan<vertex> &vertices, int const index, aarect c
  * \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in
  * radials.
  */
-void Image::placeVertices(vspan<vertex> &vertices, mat transform, aarect clippingRectangle)
+void Image::placeVertices(vspan<vertex> &vertices, matrix3 transform, aarect clippingRectangle)
 {
     calculateVertexPositions(transform, clippingRectangle);
 

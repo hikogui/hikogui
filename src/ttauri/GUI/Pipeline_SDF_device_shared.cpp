@@ -203,7 +203,7 @@ bool device_shared::_placeVertices(
 bool device_shared::_placeVertices(
     vspan<vertex> &vertices,
     attributed_glyph const &attr_glyph,
-    mat transform,
+    matrix3 transform,
     aarect clippingRectangle,
     color color) noexcept
 {
@@ -220,7 +220,7 @@ bool device_shared::_placeVertices(
 bool device_shared::_placeVertices(
     vspan<vertex> &vertices,
     attributed_glyph const &attr_glyph,
-    mat transform,
+    matrix3 transform,
     aarect clippingRectangle) noexcept
 {
     return _placeVertices(vertices, attr_glyph, transform, clippingRectangle, attr_glyph.style.color);
@@ -241,7 +241,7 @@ void device_shared::placeVertices(
 void device_shared::placeVertices(
     vspan<vertex> &vertices,
     shaped_text const &text,
-    mat transform,
+    matrix3 transform,
     aarect clippingRectangle) noexcept
 {
     auto atlas_was_updated = false;
@@ -259,7 +259,7 @@ void device_shared::placeVertices(
 void device_shared::placeVertices(
     vspan<vertex> &vertices,
     shaped_text const &text,
-    mat transform,
+    matrix3 transform,
     aarect clippingRectangle,
     color color) noexcept
 {

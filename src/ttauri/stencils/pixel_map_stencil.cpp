@@ -33,7 +33,7 @@ void pixel_map_stencil::draw(draw_context context, bool use_context_color) noexc
     layout_is_modified |= std::exchange(_position_is_modified, false);
     if (layout_is_modified) {
         _pixel_map_bounding_box = aarect{f32x4{_backing.extent}};
-        _pixel_map_transform = mat::uniform2D_scale_and_translate(_rectangle, _pixel_map_bounding_box, _alignment);
+        _pixel_map_transform = matrix2::uniform(_pixel_map_bounding_box, _rectangle, _alignment);
     }
 
     context.transform = context.transform * _pixel_map_transform;

@@ -576,11 +576,11 @@ protected:
 
     /** Transformation matrix from window coords to local coords.
      */
-    mat::T _from_window_transform;
+    matrix3 _from_window_transform;
 
     /** Transformation matrix from local coords to window coords.
      */
-    mat::T _to_window_transform;
+    matrix3 _to_window_transform;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
