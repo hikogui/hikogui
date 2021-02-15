@@ -14,8 +14,7 @@ a linear transfer function, where the value (0.0, 0.0, 0.0) is 0 nits black and
 Values above 1.0 for high dynamic range, and values below 0.0 for high gamut are
 allowed.
 
-Alpha
------
+### Alpha
 Alpha is encoded as a linear floating point number between 0.0 (transparent) and 1.0 (opaque).
 
 Inside the application and ttauri-library the color values are NOT pre-multiplied with the alpha value.
@@ -46,52 +45,51 @@ vec3 mix_perceptual(vec3 x, vec3 y, vec3 a)
 }
 ```
 
+Color format type
+-----------------
+Color format types are used in vertex arrays when communicating with the GPU.
 
-Semantic colors
----------------
-TTauri uses themes for defining color values for a design, which are used a preferences for the
-user but also for different theme modes like dark and light and accessibility modes.
+The types have the following syntax: `numeric-type` \_ `color-components` [ \_pack ]
 
-When an application needs a color it would select this color from the theme, below the complete
-list of colors.
+### Numeric type
 
-  id     | Name        | Description
-  ------:|:----------- |:-----------
-         | Gray 1 (BG) |
-         | Gray 2      |
-         | Gray 3      |
-         | Gray 4      |
-         | Gray 5 (M)  |
-         | Gray 6      |
-         | Gray 7      |
-         | Gray 8      |
-         | Gray 9 (FG) |
+   Type   | Description
+  :------ |:-------------------------------------------------------------------------
+   norm   | Signed integer mapped to the floating point range between -1.0 and 1.0.
+   unorm  | Unsigned integer mapped to the floating point range between 0.0 and 1.0.
+   int    | Signed integer
+   uint   | Unsigned integer
+   float  | Floating point number.
+   srgb   | Non-linear sRGB format for the RGB component, the alpha remains linear. Values are mapped to a floating point range between 0.0 and 1.0.
 
-         | Blue        |
-         | Green       |
-         | Indigo      |
-         | Orange      |
-         | Pink        |
-         | Purple      |
-         | Red         |
-         | Teal        |
-         | Yellow      |
+### Color components
 
-         | label 1     | The color used for foreground text.
-         | label 2     | The color used for foreground text.
-         | label 3     | The color used for foreground text.
-         | label 4     | The color used for foreground text.
+The color components are the lower case letters: r, g, b & a. The ordering of the letters describe
+the order of the color components in memory. A number describes the number of bits of each component
+before it.
 
-         | fill 1      |
-         | fill 2      |
-         | fill 3      |
-         | fill 4      |
+Here are a few examples of components:
 
-         | border 1      |
-         | border 2      |
-         | border 3      |
-         | border 4      |
+   Combination | Description
+  :----------- |:---------------------
+   rgba32      | 32 bits per component red, green, blue & alpha
+   rgba16      | 16 bits per component red, green, blue & alpha
+   rgba8       | 8 bits per component red, green, blue & alpha
+   rgb8        | 8 bits per component red, green, blue
+   rg8         | 8 bits per component red, green
+   r8          | 8 bits per component red
+   abgr8       | 8 bits per component alpha, blue, green & red
+   a2bgr10     | 2 bit alpha, 10 bits per component blue, green & red
 
+### Packing
+
+If the format is non-packed, then each each color component must be 8, 16, 32 or 64 bits in size.
+Each color component is stored in memory in native-byte-order, and the components are ordered
+with in increasing memory addresses.
+
+If the format is packed, then the color components are packed together in a single integer.
+The color components are packed inside the integer from msb to lsb.
+he integer is 8, 16, 32, 64 or 128 bits in size. The integer is stored in memory in native-byte-order.
 
 
 
