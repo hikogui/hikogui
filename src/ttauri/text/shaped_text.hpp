@@ -181,29 +181,6 @@ public:
     }
 
     /** Get the translation for where to place the text.
-    * @param rectangle The rectangle where the text should be aligned into.
-    *                  The width is ignored and assumed to be the same as the width
-    *                  passed during text shaping.
-    */
-    mat::T2 T(aarect rectangle) noexcept {
-        return {
-            rectangle.x(),
-            rectangle.y() + baselineOffset(rectangle.height())
-        };
-    }
-
-    /** Get the translation for where to place the text.
-    * @param position x is the left position,
-    *                 y is where the middle of the line should be.
-    */
-    mat::T2 TMiddle(f32x4 position) noexcept {
-        return {
-            position.x(),
-            middleOffset(position.y())
-        };
-    }
-
-        /** Get the translation for where to place the text.
      * @param position x is the left position,
      *                 y is where the middle of the line should be.
      */

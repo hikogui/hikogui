@@ -20,7 +20,6 @@
 #include "pipeline_image_vertex.hpp"
 #include "pipeline_SDF_vertex.hpp"
 #include "../numeric_array.hpp"
-#include "../mat.hpp"
 #include "../aarect.hpp"
 #include "../vspan.hpp"
 #include "../text/shaped_text.hpp"

@@ -11,7 +11,6 @@
 #include "bezier.hpp"
 #include "required.hpp"
 #include "numeric_array.hpp"
-#include "mat.hpp"
 #include "geometry/transform.hpp"
 #include <tuple>
 #include <limits>
@@ -289,16 +288,6 @@ struct bezier_curve {
         }
     }
 
-    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    bezier_curve &operator*=(M const rhs) noexcept
-    {
-        P1 = rhs * P1;
-        C1 = rhs * C1;
-        C2 = rhs * C2;
-        P2 = rhs * P2;
-        return *this;
-    }
-
     /*! Return a line-segment from a curve at a certain distance.
      * \param offset positive means the parallel line will be on the starboard of the curve.
      * \return line segment offset from the curve.
@@ -321,12 +310,6 @@ struct bezier_curve {
             return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.C2 == rhs.C2) && (lhs.P2 == rhs.P2);
         default: tt_no_default();
         }
-    }
-
-    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    [[nodiscard]] friend bezier_curve operator*(M const &lhs, bezier_curve const &rhs) noexcept
-    {
-        return {rhs.type, lhs * rhs.P1, lhs * rhs.C1, lhs * rhs.C2, lhs * rhs.P2};
     }
 
     [[nodiscard]] friend bezier_curve operator*(geo::transformer<2> auto const &lhs, bezier_curve const &rhs) noexcept

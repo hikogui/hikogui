@@ -7,7 +7,6 @@
 #include "required.hpp"
 #include "cast.hpp"
 #include "numeric_array.hpp"
-#include "mat.hpp"
 #include "geometry/transform.hpp"
 #include <vector>
 
@@ -102,15 +101,6 @@ struct bezier_point {
         tt_assert(false);
     }
 
-    /** Transform the point.
-     */
-    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    inline bezier_point &operator*=(M const &rhs) noexcept
-    {
-        p = rhs * p;
-        return *this;
-    }
-
     [[nodiscard]] friend bool operator==(bezier_point const &lhs, bezier_point const &rhs) noexcept
     {
         return (lhs.p == rhs.p) && (lhs.type == rhs.type);
@@ -118,12 +108,6 @@ struct bezier_point {
 
     /** Transform the point.
      */
-    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    [[nodiscard]] friend bezier_point operator*(M const &lhs, bezier_point const &rhs) noexcept
-    {
-        return {lhs * rhs.p, rhs.type};
-    }
-
     [[nodiscard]] friend bezier_point operator*(geo::transformer<2> auto const &lhs, bezier_point const &rhs) noexcept {
         return {lhs * rhs.p, rhs.type};
     }

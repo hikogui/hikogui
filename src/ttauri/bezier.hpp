@@ -6,7 +6,6 @@
 
 #include "polynomial.hpp"
 #include "numeric_array.hpp"
-#include "mat.hpp"
 #include <array>
 #include <optional>
 

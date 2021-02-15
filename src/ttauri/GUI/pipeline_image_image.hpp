@@ -9,7 +9,6 @@
 #include "../aarect.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
-#include "../mat.hpp"
 #include <span>
 #include <atomic>
 #include <string>

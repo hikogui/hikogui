@@ -9,7 +9,6 @@
 #include "../logger.hpp"
 #include "../required.hpp"
 #include "../cast.hpp"
-#include "../mat.hpp"
 #include "../geometry/translate.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"

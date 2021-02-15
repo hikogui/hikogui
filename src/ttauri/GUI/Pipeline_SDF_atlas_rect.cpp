@@ -4,7 +4,6 @@
 
 #include "pipeline_SDF_atlas_rect.hpp"
 #include "pipeline_SDF_device_shared.hpp"
-#include "../mat.hpp"
 #include "../geometry/scale.hpp"
 
 namespace tt::pipeline_SDF {

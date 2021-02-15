@@ -9,7 +9,6 @@
 #include "exception.hpp"
 #include "numeric_array.hpp"
 #include "aarect.hpp"
-#include "mat.hpp"
 #include "geometry/transform.hpp"
 #include "color/sfloat_rgba16.hpp"
 #include "color/sdf_r8.hpp"
@@ -230,19 +229,6 @@ struct Path {
 
     [[nodiscard]] friend Path operator+(Path lhs, Path const &rhs) noexcept {
         return lhs += rhs;
-    }
-
-    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    Path &operator*=(M const &rhs) noexcept {
-        for (auto &&point: points) {
-            point *= rhs;
-        }
-        return *this;
-    }
-
-    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    friend Path operator*(M const &lhs, Path rhs) noexcept {
-        return rhs *= lhs;
     }
 
     friend Path operator*(geo::transformer<2> auto const &lhs, Path const &rhs) noexcept

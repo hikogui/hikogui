@@ -12,7 +12,6 @@
 #include "../cast.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
-#include "../mat.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/translate.hpp"
 #include <array>

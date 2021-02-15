@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../numeric_array.hpp"
-#include "../mat.hpp"
 #include "../aarect.hpp"
 
 namespace tt::pipeline_image {

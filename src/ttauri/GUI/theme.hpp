@@ -6,7 +6,6 @@
 
 #include "theme_mode.hpp"
 #include "../required.hpp"
-#include "../mat.hpp"
 #include "../text/text_style.hpp"
 #include "../URL.hpp"
 #include "../numeric_array.hpp"

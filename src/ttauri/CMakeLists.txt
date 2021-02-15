@@ -101,7 +101,6 @@ target_sources(ttauri PRIVATE
     logger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/logger_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/logger_win32.cpp>
-    mat.hpp
     math.hpp
     memory.hpp
     meta.hpp
@@ -179,7 +178,6 @@ target_precompile_headers(ttauri PRIVATE
     debugger.hpp
     exception.hpp
     logger.hpp
-    mat.hpp
     numeric_array.hpp
     os_detect.hpp
     rect.hpp
@@ -206,7 +204,6 @@ target_sources(ttauri_tests PRIVATE
     glob_tests.cpp
     int_overflow_tests.cpp
     interval_vec2_tests.cpp
-    mat_tests.cpp
     math_tests.cpp
     numeric_array_tests.cpp
     Path_tests.cpp
@@ -232,7 +229,6 @@ target_precompile_headers(ttauri_tests PRIVATE
     debugger.hpp
     exception.hpp
     logger.hpp
-    mat.hpp
     numeric_array.hpp
     os_detect.hpp
     rect.hpp

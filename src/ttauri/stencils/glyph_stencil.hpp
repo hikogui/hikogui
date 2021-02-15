@@ -7,7 +7,6 @@
 #include "image_stencil.hpp"
 #include "../text/font_glyph_ids.hpp"
 #include "../aarect.hpp"
-#include "../mat.hpp"
 
 namespace tt {
 
