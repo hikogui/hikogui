@@ -31,10 +31,10 @@ struct bezier_curve {
 
     Type type;
     Color color;
-    f32x4 P1; //!< First point
-    f32x4 C1; //!< Control point
-    f32x4 C2; //!< Control point
-    f32x4 P2; //!< Last point
+    point2 P1; //!< First point
+    point2 C1; //!< Control point
+    point2 C2; //!< Control point
+    point2 P2; //!< Last point
 
     bezier_curve() noexcept = delete;
     bezier_curve(bezier_curve const &other) noexcept = default;
@@ -44,48 +44,36 @@ struct bezier_curve {
 
     /*! Construct a linear bezier-curve.
      */
-    bezier_curve(f32x4 const P1, f32x4 const P2, Color color = Color::White) noexcept :
+    bezier_curve(point2 const P1, point2 const P2, Color color = Color::White) noexcept :
         type(Type::Linear), color(color), P1(P1), C1(), C2(), P2(P2)
     {
-        tt_axiom(P1.is_point() && P2.is_point());
     }
 
     /*! Construct a quadratic bezier-curve.
      */
-    bezier_curve(f32x4 const P1, f32x4 const C1, f32x4 const P2, Color color = Color::White) noexcept :
+    bezier_curve(point2 const P1, point2 const C1, point2 const P2, Color color = Color::White) noexcept :
         type(Type::Quadratic), color(color), P1(P1), C1(C1), C2(), P2(P2)
     {
-        tt_axiom(P1.is_point() && C1.is_point() && P2.is_point());
     }
 
     /*! Construct a cubic bezier-curve.
      */
-    bezier_curve(f32x4 const P1, f32x4 const C1, f32x4 const C2, f32x4 const P2, Color color = Color::White) noexcept :
+    bezier_curve(point2 const P1, point2 const C1, point2 const C2, point2 const P2, Color color = Color::White) noexcept :
         type(Type::Cubic), color(color), P1(P1), C1(C1), C2(C2), P2(P2)
     {
-        tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
     }
 
     /*! Construct a bezier-curve of any type.
      */
     bezier_curve(
         Type const type,
-        f32x4 const P1,
-        f32x4 const C1,
-        f32x4 const C2,
-        f32x4 const P2,
+        point2 const P1,
+        point2 const C1,
+        point2 const C2,
+        point2 const P2,
         Color color = Color::White) noexcept :
         type(type), color(color), P1(P1), C1(C1), C2(C2), P2(P2)
     {
-        switch (type) {
-        case Type::Linear: tt_axiom(P1.is_point() && P2.is_point()); break;
-
-        case Type::Quadratic: tt_axiom(P1.is_point() && C1.is_point() && P2.is_point()); break;
-
-        case Type::Cubic: tt_axiom(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point()); break;
-
-        default: tt_no_default();
-        }
     }
 
     [[nodiscard]] bool has_red() const noexcept
@@ -110,7 +98,7 @@ struct bezier_curve {
      * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
      * \return the coordinates of the point on the curve.
      */
-    [[nodiscard]] f32x4 pointAt(float const t) const noexcept
+    [[nodiscard]] point2 pointAt(float const t) const noexcept
     {
         switch (type) {
         case Type::Linear: return bezierPointAt(P1, P2, t);
@@ -127,7 +115,7 @@ struct bezier_curve {
      * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
      * \return the tangent-vector at point t on the curve
      */
-    [[nodiscard]] f32x4 tangentAt(float const t) const noexcept
+    [[nodiscard]] vector2 tangentAt(float const t) const noexcept
     {
         switch (type) {
         case Type::Linear: return bezierTangentAt(P1, P2, t);
@@ -151,7 +139,7 @@ struct bezier_curve {
         }
     }
 
-    [[nodiscard]] results<float, 3> solveTForNormalsIntersectingPoint(f32x4 P) const noexcept
+    [[nodiscard]] results<float, 3> solveTForNormalsIntersectingPoint(point2 P) const noexcept
     {
         switch (type) {
         case Type::Linear: return bezierFindTForNormalsIntersectingPoint(P1, P2, P);
@@ -163,18 +151,18 @@ struct bezier_curve {
 
     /** Find the distance from the point to the curve.
      */
-    [[nodiscard]] float sdf_distance(f32x4 P) const noexcept
+    [[nodiscard]] float sdf_distance(point2 P) const noexcept
     {
         auto min_square_distance = std::numeric_limits<float>::max();
         auto min_t = 0.0f;
-        auto min_normal = f32x4{0.0f, 1.0f};
+        auto min_normal = vector2{0.0f, 1.0f};
 
         ttlet ts = solveTForNormalsIntersectingPoint(P);
         for (auto t : ts) {
             t = std::clamp(t, 0.0f, 1.0f);
 
             ttlet normal = P - pointAt(t);
-            ttlet square_distance = hypot_squared<0b0011>(normal);
+            ttlet square_distance = squared_hypot(normal);
             if (square_distance < min_square_distance) {
                 min_square_distance = square_distance;
                 min_t = t;
@@ -184,7 +172,7 @@ struct bezier_curve {
 
         ttlet tangent = tangentAt(min_t);
         ttlet distance = std::sqrt(min_square_distance);
-        ttlet sdistance = cross_2D(tangent, min_normal) < 0.0 ? distance : -distance;
+        ttlet sdistance = cross(tangent, min_normal) < 0.0 ? distance : -distance;
         return sdistance;
     }
 

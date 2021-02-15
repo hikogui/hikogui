@@ -823,7 +823,7 @@ public:
      * @return Result of the hypot-squared calculation.
      */
     template<ssize_t Mask>
-    [[nodiscard]] friend constexpr T hypot_squared(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr T squared_hypot(numeric_array const &rhs) noexcept
     {
         return dot<Mask>(rhs, rhs);
     }

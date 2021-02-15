@@ -58,7 +58,7 @@ TEST(numeric_array, Length)
 {
     ttlet tmp = f32x4(2.0f, 3.0f, 4.0f, 0.0f);
 
-    ASSERT_EQ(hypot_squared<0b0111>(tmp), 29.0f);
+    ASSERT_EQ(squared_hypot<0b0111>(tmp), 29.0f);
     ASSERT_NEAR(hypot<0b0111>(tmp), 5.3851f, 0.001f);
 }
 

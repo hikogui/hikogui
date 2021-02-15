@@ -47,10 +47,10 @@ bool graphic_path::allLayersHaveSameColor() const noexcept
         return aarect{0.0, 0.0, 0.0, 0.0};
     }
 
-    auto r = aarect::p0p3(points.front().p, points.front().p);
+    auto r = aarect::p0p3(static_cast<f32x4>(points.front().p), static_cast<f32x4>(points.front().p));
 
     for (ttlet &point: points) {
-        r |= point.p;
+        r |= static_cast<f32x4>(point.p);
     }
 
     return r;
@@ -202,87 +202,73 @@ void graphic_path::closeLayer(color fillColor) noexcept
     }
 }
 
-f32x4 graphic_path::currentPosition() const noexcept
+point2 graphic_path::currentPosition() const noexcept
 {
     if (isContourOpen()) {
         return points.back().p;
     } else {
-        return f32x4::point(0.0f, 0.0f);
+        return point2{};
     }
 }
 
-void graphic_path::moveTo(f32x4 position) noexcept
+void graphic_path::moveTo(point2 position) noexcept
 {
-    tt_axiom(position.is_point());
     closeContour();
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
-void graphic_path::moveRelativeTo(f32x4 direction) noexcept
+void graphic_path::moveRelativeTo(vector2 direction) noexcept
 {
     tt_assert(isContourOpen());
-    tt_axiom(direction.is_vector());
 
     ttlet lastPosition = currentPosition();
     closeContour();
     points.emplace_back(lastPosition + direction, bezier_point::Type::Anchor);
 }
 
-void graphic_path::lineTo(f32x4 position) noexcept
+void graphic_path::lineTo(point2 position) noexcept
 {
     tt_assert(isContourOpen());
-    tt_axiom(position.is_point());
 
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
-void graphic_path::lineRelativeTo(f32x4 direction) noexcept
+void graphic_path::lineRelativeTo(vector2 direction) noexcept
 {
     tt_assert(isContourOpen());
-    tt_axiom(direction.is_vector());
 
     points.emplace_back(currentPosition() + direction, bezier_point::Type::Anchor);
 }
 
-void graphic_path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
+void graphic_path::quadraticCurveTo(point2 controlPosition, point2 position) noexcept
 {
     tt_assert(isContourOpen());
-    tt_axiom(controlPosition.is_point());
-    tt_axiom(position.is_point());
 
     points.emplace_back(controlPosition, bezier_point::Type::QuadraticControl);
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
-void graphic_path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noexcept
+void graphic_path::quadraticCurveRelativeTo(vector2 controlDirection, vector2 direction) noexcept
 {
     tt_assert(isContourOpen());
-    tt_axiom(controlDirection.is_vector());
-    tt_axiom(direction.is_vector());
 
     ttlet p = currentPosition();
     points.emplace_back(p + controlDirection, bezier_point::Type::QuadraticControl);
     points.emplace_back(p + direction, bezier_point::Type::Anchor);
 }
 
-void graphic_path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept
+void graphic_path::cubicCurveTo(point2 controlPosition1, point2 controlPosition2, point2 position) noexcept
 {
     tt_assert(isContourOpen());
-    tt_axiom(controlPosition1.is_point());
-    tt_axiom(controlPosition2.is_point());
-    tt_axiom(position.is_point());
 
     points.emplace_back(controlPosition1, bezier_point::Type::CubicControl1);
     points.emplace_back(controlPosition2, bezier_point::Type::CubicControl2);
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
-void graphic_path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept
+void graphic_path::cubicCurveRelativeTo(vector2 controlDirection1, vector2 controlDirection2, vector2 direction) noexcept
 {
     tt_assert(isContourOpen());
-    tt_axiom(controlDirection1.is_vector());
-    tt_axiom(controlDirection2.is_vector());
-    tt_axiom(direction.is_vector());
 
     ttlet p = currentPosition();
     points.emplace_back(p + controlDirection1, bezier_point::Type::CubicControl1);
@@ -290,10 +276,9 @@ void graphic_path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDi
     points.emplace_back(p + direction, bezier_point::Type::Anchor);
 }
 
-void graphic_path::arcTo(float radius, f32x4 position) noexcept
+void graphic_path::arcTo(float radius, point2 position) noexcept
 {
     tt_assert(isContourOpen());
-    tt_axiom(position.is_point());
 
     ttlet r = std::abs(radius);
     ttlet P1 = currentPosition();
@@ -303,28 +288,28 @@ void graphic_path::arcTo(float radius, f32x4 position) noexcept
     ttlet Vm2 = P2 - Pm;
 
     // Calculate the half angle between vectors P0 - C and P2 - C.
-    ttlet alpha = std::asin(hypot<0b0011>(Vm2) / r);
+    ttlet alpha = std::asin(hypot(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
-    ttlet C = Pm + normal_2D(Vm2) * std::cos(alpha) * radius;
+    ttlet C = Pm + normal(Vm2) * std::cos(alpha) * radius;
 
     // Calculate vectors from center to end points.
     ttlet VC1 = P1 - C;
     ttlet VC2 = P2 - C;
 
-    ttlet q1 = hypot_squared<0b0011>(VC1);
-    ttlet q2 = q1 + dot<0b0011>(VC1, VC2);
-    ttlet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / cross_2D(VC1, VC2);
+    ttlet q1 = squared_hypot(VC1);
+    ttlet q2 = q1 + dot(VC1, VC2);
+    ttlet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / cross(VC1, VC2);
 
     // Calculate the control points.
-    ttlet C1 = f32x4::point({
+    ttlet C1 = point2{
         (C.x() + VC1.x()) - k2 * VC1.y(),
         (C.y() + VC1.y()) + k2 * VC1.x()
-    });
-    ttlet C2 = f32x4::point({
+    };
+    ttlet C2 = point2{
         (C.x() + VC2.x()) + k2 * VC2.y(),
         (C.y() + VC2.y()) - k2 * VC2.x()
-    });
+    };
 
     cubicCurveTo(C1, C2, P2);
 }
@@ -335,19 +320,19 @@ void graphic_path::addRectangle(aarect r, f32x4 corners) noexcept
 
     ttlet radii = abs(corners);
 
-    ttlet blc = r.corner<0>();
-    ttlet brc = r.corner<1>();
-    ttlet tlc = r.corner<2>();
-    ttlet trc = r.corner<3>();
+    ttlet blc = point2{r.corner<0>()};
+    ttlet brc = point2{r.corner<1>()};
+    ttlet tlc = point2{r.corner<2>()};
+    ttlet trc = point2{r.corner<3>()};
 
-    ttlet blc1 = blc + f32x4{0.0f, radii.x()};
-    ttlet blc2 = blc + f32x4{radii.x(), 0.0f};
-    ttlet brc1 = brc + f32x4{-radii.y(), 0.0f};
-    ttlet brc2 = brc + f32x4{0.0f, radii.y()};
-    ttlet tlc1 = tlc + f32x4{radii.z(), 0.0f};
-    ttlet tlc2 = tlc + f32x4{0.0f, -radii.z()};
-    ttlet trc1 = trc + f32x4{0.0f, -radii.w()};
-    ttlet trc2 = trc + f32x4{-radii.w(), 0.0f};
+    ttlet blc1 = blc + vector2{0.0f, radii.x()};
+    ttlet blc2 = blc + vector2{radii.x(), 0.0f};
+    ttlet brc1 = brc + vector2{-radii.y(), 0.0f};
+    ttlet brc2 = brc + vector2{0.0f, radii.y()};
+    ttlet tlc1 = tlc + vector2{radii.z(), 0.0f};
+    ttlet tlc2 = tlc + vector2{0.0f, -radii.z()};
+    ttlet trc1 = trc + vector2{0.0f, -radii.w()};
+    ttlet trc2 = trc + vector2{-radii.w(), 0.0f};
 
     moveTo(blc1);
     if (corners.x() > 0.0) {
@@ -380,16 +365,15 @@ void graphic_path::addRectangle(aarect r, f32x4 corners) noexcept
     closeContour();
 }
 
-void graphic_path::addCircle(f32x4 position, float radius) noexcept
+void graphic_path::addCircle(point2 position, float radius) noexcept
 {
     tt_assert(!isContourOpen());
-    tt_axiom(position.is_point());
 
-    moveTo(f32x4::point(position.x(), position.y() - radius));
-    arcTo(radius, f32x4::point(position.x() + radius, position.y()));
-    arcTo(radius, f32x4::point(position.x(), position.y() + radius));
-    arcTo(radius, f32x4::point(position.x() - radius, position.y()));
-    arcTo(radius, f32x4::point(position.x(), position.y() - radius));
+    moveTo(point2{position.x(), position.y() - radius});
+    arcTo(radius, point2{position.x() + radius, position.y()});
+    arcTo(radius, point2{position.x(), position.y() + radius});
+    arcTo(radius, point2{position.x() - radius, position.y()});
+    arcTo(radius, point2{position.x(), position.y() - radius});
     closeContour();
 }
 

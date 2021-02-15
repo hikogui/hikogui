@@ -221,6 +221,17 @@ public:
         return vector{lhs._v * rhs};
     }
 
+    /** Scale the vector by a scaler.
+     * @param lhs The vector to scale.
+     * @param rhs The scaling factor.
+     * @return The scaled vector.
+     */
+    [[nodiscard]] constexpr friend vector operator*(float const &lhs, vector const &rhs) noexcept
+    {
+        tt_axiom(rhs.is_valid());
+        return vector{lhs * rhs._v};
+    }
+
     /** Compare if two vectors are equal.
      * @param lhs The first vector.
      * @param rhs The second vector.
@@ -230,6 +241,16 @@ public:
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
         return lhs._v == rhs._v;
+    }
+
+    /** Get the squared length of the vector.
+     * @param rhs The vector.
+     * @return The length of the vector.
+     */
+    [[nodiscard]] constexpr friend float squared_hypot(vector const &rhs) noexcept
+    {
+        tt_axiom(rhs.is_valid());
+        return squared_hypot<element_mask>(rhs._v);
     }
 
     /** Get the length of the vector.
@@ -295,6 +316,16 @@ private:
 {
     tt_axiom(rhs.is_valid());
     return vector<2>{cross_2D(static_cast<f32x4>(rhs))};
+}
+
+/** Get the normal on a 2D vector.
+ * @param rhs The vector.
+ * @return A normal on the vector.
+ */
+[[nodiscard]] constexpr vector<2> normal(vector<2> const &rhs) noexcept
+{
+    tt_axiom(rhs.is_valid());
+    return normalize(cross(rhs));
 }
 
 /** Get the cross product between two 2D vectors.

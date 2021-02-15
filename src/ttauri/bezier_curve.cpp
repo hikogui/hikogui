@@ -24,9 +24,9 @@ std::vector<bezier_curve> makeContourFromPoints(std::vector<bezier_point>::const
     std::vector<bezier_curve> r;
 
     auto type = bezier_curve::Type::None;
-    auto P1 = f32x4{};
-    auto C1 = f32x4{};
-    auto C2 = f32x4{};
+    auto P1 = point2{};
+    auto C1 = point2{};
+    auto C2 = point2{};
 
     auto color = bezier_curve::Color::Yellow;
     for (ttlet &point: points) {
@@ -106,7 +106,7 @@ std::vector<bezier_curve> makeParrallelContour(std::vector<bezier_curve> const &
 
     // The resulting path now consists purely of line-segments that may have gaps and overlaps.
     // This needs to be repaired.
-    std::optional<f32x4> intersectPoint;
+    std::optional<point2> intersectPoint;
     auto r = std::vector<bezier_curve>{};
     for (ttlet &curve: contourAtOffset) {
         if (r.size() == 0) {
@@ -281,7 +281,7 @@ void fill(pixel_map<uint8_t> &image, std::vector<bezier_curve> const &curves) no
 }
 
 
- [[nodiscard]] static float generate_sdf_r8_pixel(f32x4 point, std::vector<bezier_curve> const &curves) noexcept
+ [[nodiscard]] static float generate_sdf_r8_pixel(point2 point, std::vector<bezier_curve> const &curves) noexcept
 {
     if (std::ssize(curves) == 0) {
         return -std::numeric_limits<float>::max();
@@ -412,7 +412,7 @@ void fill(pixel_map<sdf_r8> &image, std::vector<bezier_curve> const &curves) noe
         auto y = static_cast<float>(row_nr);
         for (int column_nr = 0; column_nr != image.width(); ++column_nr) {
             auto x = static_cast<float>(column_nr);
-            row[column_nr] = generate_sdf_r8_pixel(f32x4::point(x, y), curves);
+            row[column_nr] = generate_sdf_r8_pixel(point2(x, y), curves);
         }
     }
 

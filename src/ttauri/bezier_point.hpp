@@ -19,14 +19,13 @@ struct bezier_point {
     enum class Type { Anchor, QuadraticControl, CubicControl1, CubicControl2 };
 
     Type type;
-    f32x4 p;
+    point2 p;
 
-    bezier_point(f32x4 const p, Type const type) noexcept : type(type), p(p)
+    bezier_point(point2 const p, Type const type) noexcept : type(type), p(p)
     {
-        tt_axiom(p.is_point());
     }
 
-    bezier_point(float const x, float const y, Type const type) noexcept : bezier_point(f32x4::point({x, y}), type) {}
+    bezier_point(float const x, float const y, Type const type) noexcept : bezier_point(point2{x, y}, type) {}
 
     /*! Normalize points in a list.
      * The following normalizations are executed:
@@ -75,7 +74,7 @@ struct bezier_point {
                 if (previousPoint.type == bezier_point::Type::Anchor) {
                     tt_assert(previousPreviousPoint.type == bezier_point::Type::CubicControl2);
 
-                    r.emplace_back(reflect_point(previousPreviousPoint.p, previousPoint.p), bezier_point::Type::CubicControl1);
+                    r.emplace_back(reflect(previousPreviousPoint.p, previousPoint.p), bezier_point::Type::CubicControl1);
                 } else {
                     tt_assert(previousPoint.type == bezier_point::Type::CubicControl1);
                 }

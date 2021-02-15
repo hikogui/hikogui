@@ -17,7 +17,8 @@
 namespace tt {
 
 struct bezier_curve;
-template<typename T> class pixel_map;
+template<typename T>
+class pixel_map;
 
 /** A path is a vector graphics object.
  * It represents:
@@ -36,22 +37,23 @@ struct graphic_path {
 
     /** An color and index into \see contourEndPoints where each layer ends.
      */
-    std::vector<std::pair<ssize_t,color>> layerEndContours;
+    std::vector<std::pair<ssize_t, color>> layerEndContours;
 
     /** Clear the path.
      */
-    void clear() noexcept {
+    void clear() noexcept
+    {
         points.clear();
         contourEndPoints.clear();
         layerEndContours.clear();
     }
 
     /** Return the number of closed contours.
-    */
+     */
     [[nodiscard]] ssize_t numberOfContours() const noexcept;
 
     /** Return the number of closed layers.
-    */
+     */
     [[nodiscard]] ssize_t numberOfLayers() const noexcept;
 
     /** Check if all layers have the same color.
@@ -90,7 +92,7 @@ struct graphic_path {
 
     [[nodiscard]] std::vector<bezier_curve> getBeziers() const noexcept;
 
-    [[nodiscard]] std::pair<graphic_path,color> getLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] std::pair<graphic_path, color> getLayer(ssize_t layerNr) const noexcept;
 
     [[nodiscard]] color getColorOfLayer(ssize_t layerNr) const noexcept;
 
@@ -101,8 +103,8 @@ struct graphic_path {
     [[nodiscard]] bool isContourOpen() const noexcept;
 
     /** Close current contour.
-    * No operation if there is no open contour.
-    */
+     * No operation if there is no open contour.
+     */
     void closeContour() noexcept;
 
     /** This path has layers.
@@ -110,12 +112,12 @@ struct graphic_path {
     [[nodiscard]] bool hasLayers() const noexcept;
 
     /** Return true if there is an open layer.
-    */
+     */
     [[nodiscard]] bool isLayerOpen() const noexcept;
 
     /** Close current contour.
-    * No operation if there is no open layer.
-    */
+     * No operation if there is no open layer.
+     */
     void closeLayer(color fillColor) noexcept;
 
     /** Optimize layers.
@@ -126,38 +128,38 @@ struct graphic_path {
     /** Get the currentPosition of the open contour.
      * Returns {0, 0} when there is no contour open.
      */
-    [[nodiscard]] f32x4 currentPosition() const noexcept;
+    [[nodiscard]] point2 currentPosition() const noexcept;
 
     /** Start a new contour at position.
      * closes current subpath.
      */
-    void moveTo(f32x4 position) noexcept;
+    void moveTo(point2 position) noexcept;
 
     /** Start a new contour relative to current position.
      * closes current subpath.
      */
-    void moveRelativeTo(f32x4 direction) noexcept;
+    void moveRelativeTo(vector2 direction) noexcept;
 
-    void lineTo(f32x4 position) noexcept;
+    void lineTo(point2 position) noexcept;
 
-    void lineRelativeTo(f32x4 direction) noexcept;
+    void lineRelativeTo(vector2 direction) noexcept;
 
-    void quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept;
+    void quadraticCurveTo(point2 controlPosition, point2 position) noexcept;
 
     /** Draw curve from the current position to the new direction.
      * \param controlDirection control point of the curve relative from the start of the curve.
      * \param direction end point of the curve relative from the start of the curve.
      */
-    void quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noexcept;
+    void quadraticCurveRelativeTo(vector2 controlDirection, vector2 direction) noexcept;
 
-    void cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept;
+    void cubicCurveTo(point2 controlPosition1, point2 controlPosition2, point2 position) noexcept;
 
     /** Draw curve from the current position to the new direction.
      * @param controlDirection1 The first control point of the curve relative from the start of the curve.
      * @param controlDirection2 The second control point of the curve relative from the start of the curve.
      * @param direction end point of the curve relative from the start of the curve.
      */
-    void cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept;
+    void cubicCurveRelativeTo(vector2 controlDirection1, vector2 controlDirection2, vector2 direction) noexcept;
 
     /** Draw an circular arc.
      * The arc is drawn from the current position to the position given
@@ -170,34 +172,36 @@ struct graphic_path {
      * \param radius positive radius means positive arc, negative radius is a negative arc.
      * \param position end position of the arc.
      */
-    void arcTo(float radius, f32x4 position) noexcept;
+    void arcTo(float radius, point2 position) noexcept;
 
     /** Draw a rectangle.
      * \param rectangle the offset and size of the rectangle.
      * \param corners The radius of the (bottom-left, bottom-right, top-left, top-right)
      *        positive corner are rounded, negative curves are cut.
      */
-    void addRectangle(aarect rectangle, f32x4 corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
+    void addRectangle(aarect rectangle, f32x4 corners = {0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
     /** Draw a circle.
-    * \param position position of the center of the circle.
-    * \param radius radius of the circle
-    */
-    void addCircle(f32x4 position, float radius) noexcept;
+     * \param position position of the center of the circle.
+     * \param radius radius of the circle
+     */
+    void addCircle(point2 position, float radius) noexcept;
 
     /** Contour with the given bezier curves.
-    * The first anchor will be ignored.
-    */
+     * The first anchor will be ignored.
+     */
     void addContour(std::vector<bezier_curve> const &contour) noexcept;
 
     /** Curve with the given bezier curve.
-    * The first anchor will be ignored.
-    */
-    void addContour(std::vector<bezier_point>::const_iterator const &begin, std::vector<bezier_point>::const_iterator const &end) noexcept;
+     * The first anchor will be ignored.
+     */
+    void addContour(
+        std::vector<bezier_point>::const_iterator const &begin,
+        std::vector<bezier_point>::const_iterator const &end) noexcept;
 
     /** Curve with the given bezier curve.
-    * The first anchor will be ignored.
-    */
+     * The first anchor will be ignored.
+     */
     void addContour(std::vector<bezier_point> const &contour) noexcept;
 
     /** Add path and close layer.
@@ -206,7 +210,12 @@ struct graphic_path {
 
     /** Stroke a path and close layer.
      */
-    void addStroke(graphic_path const &path, color strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
+    void addStroke(
+        graphic_path const &path,
+        color strokeColor,
+        float strokeWidth,
+        LineJoinStyle lineJoinStyle = LineJoinStyle::Miter,
+        float tolerance = 0.05f) noexcept;
 
     /** Convert path to stroke-path.
      *
@@ -219,15 +228,19 @@ struct graphic_path {
      * \param lineJoinStyle the style of how outside corners of a stroke are drawn.
      * \param tolerance Tolerance of how flat the curves in the path need to be.
      */
-    [[nodiscard]] graphic_path toStroke(float strokeWidth=1.0f, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) const noexcept;
+    [[nodiscard]] graphic_path toStroke(
+        float strokeWidth = 1.0f,
+        LineJoinStyle lineJoinStyle = LineJoinStyle::Miter,
+        float tolerance = 0.05f) const noexcept;
 
     /** Center and scale a path inside the extent with padding.
      */
-    [[nodiscard]] graphic_path centerScale(f32x4 extent, float padding=0.0) const noexcept;
+    [[nodiscard]] graphic_path centerScale(f32x4 extent, float padding = 0.0) const noexcept;
 
     graphic_path &operator+=(graphic_path const &rhs) noexcept;
 
-    [[nodiscard]] friend graphic_path operator+(graphic_path lhs, graphic_path const &rhs) noexcept {
+    [[nodiscard]] friend graphic_path operator+(graphic_path lhs, graphic_path const &rhs) noexcept
+    {
         return lhs += rhs;
     }
 
@@ -241,29 +254,25 @@ struct graphic_path {
     }
 };
 
-
-
-
+/** Composit color onto the destination image where the mask is solid.
+ *
+ * \param dst destination image.
+ * \param color color to composit.
+ * \param mask mask where the color will be composited on the destination.
+ */
+void composit(pixel_map<sfloat_rgba16> &dst, f32x4 color, graphic_path const &mask) noexcept;
 
 /** Composit color onto the destination image where the mask is solid.
-*
-* \param dst destination image.
-* \param color color to composit.
-* \param mask mask where the color will be composited on the destination.
-*/
-void composit(pixel_map<sfloat_rgba16>& dst, f32x4 color, graphic_path const &mask) noexcept;
-
-/** Composit color onto the destination image where the mask is solid.
-*
-* \param dst destination image.
-* \param mask mask where the color will be composited on the destination.
-*/
-void composit(pixel_map<sfloat_rgba16>& dst, graphic_path const &mask) noexcept;
+ *
+ * \param dst destination image.
+ * \param mask mask where the color will be composited on the destination.
+ */
+void composit(pixel_map<sfloat_rgba16> &dst, graphic_path const &mask) noexcept;
 
 /** Fill a signed distance field image from the given path.
-* @param dst An signed-distance-field which show distance toward the closest curve
-* @param path A path.
-*/
+ * @param dst An signed-distance-field which show distance toward the closest curve
+ * @param path A path.
+ */
 void fill(pixel_map<sdf_r8> &dst, graphic_path const &path) noexcept;
 
-}
+} // namespace tt

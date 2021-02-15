@@ -173,6 +173,18 @@ public:
         return lhs._v == rhs._v;
     }
 
+    template<int E>
+    [[nodiscard]] friend constexpr auto midpoint(point const &lhs, point<E> const &rhs) noexcept
+    {
+        return point<std::max(D,E)>{midpoint(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
+    template<int E>
+    [[nodiscard]] friend constexpr auto reflect(point const &lhs, point<E> const &rhs) noexcept
+    {
+        return point<std::max(D, E)>{reflect_point(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
     /** Check if the point is valid.
      * This function will check if w is not zero, and with a 2D point is z is zero.
      */
