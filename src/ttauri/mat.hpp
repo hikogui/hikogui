@@ -16,7 +16,7 @@ namespace tt {
 /** A 4x4 matrix.
  * You can use this to transform f32x4 (which has 4 elements)
  */
-class mat {
+class mat [[deprecated]] {
     f32x4 col0;
     f32x4 col1;
     f32x4 col2;

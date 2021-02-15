@@ -63,7 +63,7 @@ struct error_info_entry : public error_info_entry_base {
  * ```
  * try {
  *     try {
- *         tt_error_info().set<errno_tag>(errno);
+ *         tt_error_info().set<"errno">(errno);
  *         throw std::runtime_error("foo");
  *
  *     } catch (runtime_error const &e) {
@@ -72,8 +72,8 @@ struct error_info_entry : public error_info_entry_base {
  *         throw
  *     }
  * } catch (runtime_error const &e) {
- *     auto error_url = *tt::error_info::pop<"url">();
- *     auto error_errno = *tt::error_info::pop<errno_tag>();
+ *     auto error_url = *tt::error_info::pop<URL, "url">();
+ *     auto error_errno = *tt::error_info::pop<int, "errno">();
  *     tt_log_error("Config file error in file {}, errno={}", error_url, error_errno);
  * }
  * ```

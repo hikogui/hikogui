@@ -9,10 +9,6 @@
 
 namespace tt {
 
-struct vk_result_tag {
-    using value_type = vk::Result;
-};
-
 /** Vulkan gui_device controller.
  * Manages Vulkan device and a set of Windows.
  */

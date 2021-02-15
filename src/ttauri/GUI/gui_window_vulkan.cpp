@@ -374,8 +374,6 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    struct fill_command_buffer_tag {
-    };
     auto t = trace<"fill_command_buffer">{};
 
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
