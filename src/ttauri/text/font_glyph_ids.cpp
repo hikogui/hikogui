@@ -5,20 +5,20 @@
 #include "attributed_glyph.hpp"
 #include "font_book.hpp"
 #include "../application.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 #include "../logger.hpp"
 
 namespace tt {
 
-[[nodiscard]] std::pair<Path,aarect> font_glyph_ids::getPathAndBoundingBox() const noexcept {
-    Path path;
+[[nodiscard]] std::pair<graphic_path,aarect> font_glyph_ids::getPathAndBoundingBox() const noexcept {
+    graphic_path path;
     auto boundingBox = aarect{};
 
     ttlet &font = font_book::global->get_font(font_id());
     for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 
-        Path glyph_path;
+        graphic_path glyph_path;
         if (!font.loadGlyph(glyph_id, glyph_path)) {
             tt_log_error("Could not load glyph {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
         }
@@ -40,7 +40,7 @@ namespace tt {
 }
 
 [[nodiscard]] aarect font_glyph_ids::getBoundingBox() const noexcept {
-    Path path;
+    graphic_path path;
     auto boundingBox = aarect{};
 
     ttlet &font = font_book::global->get_font(font_id());

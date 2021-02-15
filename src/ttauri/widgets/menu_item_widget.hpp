@@ -7,7 +7,7 @@
 #include "abstract_button_widget.hpp"
 #include "toolbar_widget.hpp"
 #include "../stencils/label_stencil.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 #include "../GUI/draw_context.hpp"
 #include <memory>
 #include <string>

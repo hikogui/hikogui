@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "ttauri/pixel_map.inl"
-#include "ttauri/Path.hpp"
+#include "ttauri/graphic_path.hpp"
 #include "ttauri/bezier_curve.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -38,7 +38,7 @@ TEST(pixel_map_tests, renderMaskFromPath) {
     auto mask = pixel_map<uint8_t>(9, 3);
     fill(mask);
 
-    auto path = Path();
+    auto path = graphic_path();
     path.moveTo(f32x4::point({1, 1}));
     path.lineTo(f32x4::point({2, 1}));
     path.lineTo(f32x4::point({2, 2}));

@@ -6,7 +6,7 @@
 
 #include "widget.hpp"
 #include "../GUI/pipeline_image_image.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 #include "../icon.hpp"
 #include "../stencils/image_stencil.hpp"
 #include <memory>

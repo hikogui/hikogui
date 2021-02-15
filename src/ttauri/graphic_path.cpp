@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "Path.hpp"
+#include "graphic_path.hpp"
 #include "pixel_map.inl"
 #include "bezier_curve.hpp"
 #include "pixel_map.hpp"
@@ -10,22 +10,22 @@
 
 namespace tt {
 
-ssize_t Path::numberOfContours() const noexcept
+ssize_t graphic_path::numberOfContours() const noexcept
 {
     return std::ssize(contourEndPoints);
 }
 
-ssize_t Path::numberOfLayers() const noexcept
+ssize_t graphic_path::numberOfLayers() const noexcept
 {
     return std::ssize(layerEndContours);
 }
 
-bool Path::hasLayers() const noexcept
+bool graphic_path::hasLayers() const noexcept
 {
     return numberOfLayers() > 0;
 }
 
-bool Path::allLayersHaveSameColor() const noexcept
+bool graphic_path::allLayersHaveSameColor() const noexcept
 {
     if (!hasLayers()) {
         return true;
@@ -41,7 +41,7 @@ bool Path::allLayersHaveSameColor() const noexcept
     return true;
 }
 
-[[nodiscard]] aarect Path::boundingBox() const noexcept
+[[nodiscard]] aarect graphic_path::boundingBox() const noexcept
 {
     if (std::ssize(points) == 0) {
         return aarect{0.0, 0.0, 0.0, 0.0};
@@ -56,7 +56,7 @@ bool Path::allLayersHaveSameColor() const noexcept
     return r;
 }
 
-void Path::tryRemoveLayers() noexcept
+void graphic_path::tryRemoveLayers() noexcept
 {
     if (!hasLayers()) {
         return;
@@ -69,41 +69,41 @@ void Path::tryRemoveLayers() noexcept
     layerEndContours.clear();
 }
 
-std::vector<bezier_point>::const_iterator Path::beginContour(ssize_t contourNr) const noexcept
+std::vector<bezier_point>::const_iterator graphic_path::beginContour(ssize_t contourNr) const noexcept
 {
     return points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
 }
 
-std::vector<bezier_point>::const_iterator Path::endContour(ssize_t contourNr) const noexcept
+std::vector<bezier_point>::const_iterator graphic_path::endContour(ssize_t contourNr) const noexcept
 {
     return points.begin() + contourEndPoints.at(contourNr) + 1;
 }
 
-ssize_t Path::beginLayer(ssize_t layerNr) const noexcept
+ssize_t graphic_path::beginLayer(ssize_t layerNr) const noexcept
 {
     return layerNr == 0 ? 0 : layerEndContours.at(layerNr - 1).first + 1;
 }
 
-ssize_t Path::endLayer(ssize_t layerNr) const noexcept
+ssize_t graphic_path::endLayer(ssize_t layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).first + 1;
 }
 
-color Path::getColorOfLayer(ssize_t layerNr) const noexcept
+color graphic_path::getColorOfLayer(ssize_t layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).second;
 }
 
-void Path::setColorOfLayer(ssize_t layerNr, color fillColor) noexcept
+void graphic_path::setColorOfLayer(ssize_t layerNr, color fillColor) noexcept
 {
     layerEndContours.at(layerNr).second = fillColor;
 }
 
-std::pair<Path,color> Path::getLayer(ssize_t layerNr) const noexcept
+std::pair<graphic_path,color> graphic_path::getLayer(ssize_t layerNr) const noexcept
 {
     tt_assert(hasLayers());
 
-    auto path = Path{};
+    auto path = graphic_path{};
 
     ttlet begin = beginLayer(layerNr);
     ttlet end = endLayer(layerNr);
@@ -114,7 +114,7 @@ std::pair<Path,color> Path::getLayer(ssize_t layerNr) const noexcept
     return {path, getColorOfLayer(layerNr)};
 }
 
-void Path::optimizeLayers() noexcept
+void graphic_path::optimizeLayers() noexcept
 {
     if (std::ssize(layerEndContours) == 0) {
         return;
@@ -138,19 +138,19 @@ void Path::optimizeLayers() noexcept
 }
 
 
-std::vector<bezier_point> Path::getbezier_pointsOfContour(ssize_t subpathNr) const noexcept
+std::vector<bezier_point> graphic_path::getbezier_pointsOfContour(ssize_t subpathNr) const noexcept
 {
     ttlet begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
     ttlet end = points.begin() + contourEndPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
-std::vector<bezier_curve> Path::getBeziersOfContour(ssize_t contourNr) const noexcept
+std::vector<bezier_curve> graphic_path::getBeziersOfContour(ssize_t contourNr) const noexcept
 {
     return makeContourFromPoints(beginContour(contourNr), endContour(contourNr));
 }
 
-std::vector<bezier_curve> Path::getBeziers() const noexcept
+std::vector<bezier_curve> graphic_path::getBeziers() const noexcept
 {
     tt_assert(!hasLayers());
 
@@ -163,7 +163,7 @@ std::vector<bezier_curve> Path::getBeziers() const noexcept
     return r;
 }
 
-bool Path::isContourOpen() const noexcept
+bool graphic_path::isContourOpen() const noexcept
 {
     if (points.size() == 0) {
         return false;
@@ -174,14 +174,14 @@ bool Path::isContourOpen() const noexcept
     }
 }
 
-void Path::closeContour() noexcept
+void graphic_path::closeContour() noexcept
 {
     if (isContourOpen()) {
         contourEndPoints.push_back(std::ssize(points) - 1);
     }
 }
 
-bool Path::isLayerOpen() const noexcept
+bool graphic_path::isLayerOpen() const noexcept
 {
     if (points.size() == 0) {
         return false;
@@ -194,7 +194,7 @@ bool Path::isLayerOpen() const noexcept
     }
 }
 
-void Path::closeLayer(color fillColor) noexcept
+void graphic_path::closeLayer(color fillColor) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
@@ -202,7 +202,7 @@ void Path::closeLayer(color fillColor) noexcept
     }
 }
 
-f32x4 Path::currentPosition() const noexcept
+f32x4 graphic_path::currentPosition() const noexcept
 {
     if (isContourOpen()) {
         return points.back().p;
@@ -211,14 +211,14 @@ f32x4 Path::currentPosition() const noexcept
     }
 }
 
-void Path::moveTo(f32x4 position) noexcept
+void graphic_path::moveTo(f32x4 position) noexcept
 {
     tt_axiom(position.is_point());
     closeContour();
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
-void Path::moveRelativeTo(f32x4 direction) noexcept
+void graphic_path::moveRelativeTo(f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
     tt_axiom(direction.is_vector());
@@ -228,7 +228,7 @@ void Path::moveRelativeTo(f32x4 direction) noexcept
     points.emplace_back(lastPosition + direction, bezier_point::Type::Anchor);
 }
 
-void Path::lineTo(f32x4 position) noexcept
+void graphic_path::lineTo(f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
     tt_axiom(position.is_point());
@@ -236,7 +236,7 @@ void Path::lineTo(f32x4 position) noexcept
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
-void Path::lineRelativeTo(f32x4 direction) noexcept
+void graphic_path::lineRelativeTo(f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
     tt_axiom(direction.is_vector());
@@ -244,7 +244,7 @@ void Path::lineRelativeTo(f32x4 direction) noexcept
     points.emplace_back(currentPosition() + direction, bezier_point::Type::Anchor);
 }
 
-void Path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
+void graphic_path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
     tt_axiom(controlPosition.is_point());
@@ -254,7 +254,7 @@ void Path::quadraticCurveTo(f32x4 controlPosition, f32x4 position) noexcept
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
-void Path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noexcept
+void graphic_path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
     tt_axiom(controlDirection.is_vector());
@@ -265,7 +265,7 @@ void Path::quadraticCurveRelativeTo(f32x4 controlDirection, f32x4 direction) noe
     points.emplace_back(p + direction, bezier_point::Type::Anchor);
 }
 
-void Path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept
+void graphic_path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
     tt_axiom(controlPosition1.is_point());
@@ -277,7 +277,7 @@ void Path::cubicCurveTo(f32x4 controlPosition1, f32x4 controlPosition2, f32x4 po
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
-void Path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept
+void graphic_path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2, f32x4 direction) noexcept
 {
     tt_assert(isContourOpen());
     tt_axiom(controlDirection1.is_vector());
@@ -290,7 +290,7 @@ void Path::cubicCurveRelativeTo(f32x4 controlDirection1, f32x4 controlDirection2
     points.emplace_back(p + direction, bezier_point::Type::Anchor);
 }
 
-void Path::arcTo(float radius, f32x4 position) noexcept
+void graphic_path::arcTo(float radius, f32x4 position) noexcept
 {
     tt_assert(isContourOpen());
     tt_axiom(position.is_point());
@@ -329,7 +329,7 @@ void Path::arcTo(float radius, f32x4 position) noexcept
     cubicCurveTo(C1, C2, P2);
 }
 
-void Path::addRectangle(aarect r, f32x4 corners) noexcept
+void graphic_path::addRectangle(aarect r, f32x4 corners) noexcept
 {
     tt_assert(!isContourOpen());
 
@@ -380,7 +380,7 @@ void Path::addRectangle(aarect r, f32x4 corners) noexcept
     closeContour();
 }
 
-void Path::addCircle(f32x4 position, float radius) noexcept
+void graphic_path::addCircle(f32x4 position, float radius) noexcept
 {
     tt_assert(!isContourOpen());
     tt_axiom(position.is_point());
@@ -393,19 +393,19 @@ void Path::addCircle(f32x4 position, float radius) noexcept
     closeContour();
 }
 
-void Path::addContour(std::vector<bezier_point>::const_iterator const &begin, std::vector<bezier_point>::const_iterator const &end) noexcept
+void graphic_path::addContour(std::vector<bezier_point>::const_iterator const &begin, std::vector<bezier_point>::const_iterator const &end) noexcept
 {
     tt_assert(!isContourOpen());
     points.insert(points.end(), begin, end);
     closeContour();
 }
 
-void Path::addContour(std::vector<bezier_point> const &contour) noexcept
+void graphic_path::addContour(std::vector<bezier_point> const &contour) noexcept
 {
     addContour(contour.begin(), contour.end());
 }
 
-void Path::addContour(std::vector<bezier_curve> const &contour) noexcept
+void graphic_path::addContour(std::vector<bezier_curve> const &contour) noexcept
 {
     tt_assert(!isContourOpen());
 
@@ -432,24 +432,24 @@ void Path::addContour(std::vector<bezier_curve> const &contour) noexcept
     closeContour();
 }
 
-void Path::addPath(Path const &path, color fillColor) noexcept
+void graphic_path::addPath(graphic_path const &path, color fillColor) noexcept
 {
     *this += path;
     closeLayer(fillColor);
 }
 
-void Path::addStroke(Path const &path, color strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
+void graphic_path::addStroke(graphic_path const &path, color strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
 {
     *this += path.toStroke(strokeWidth, lineJoinStyle, tolerance);
     closeLayer(strokeColor);
 }
 
-Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) const noexcept
+graphic_path graphic_path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) const noexcept
 {
     tt_assert(!hasLayers());
     tt_assert(!isContourOpen());
 
-    auto r = Path{};
+    auto r = graphic_path{};
 
     float starboardOffset = strokeWidth / 2;
     float portOffset = -starboardOffset;
@@ -467,7 +467,7 @@ Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolera
     return r;
 }
 
-Path &Path::operator+=(Path const &rhs) noexcept
+graphic_path &graphic_path::operator+=(graphic_path const &rhs) noexcept
 {
     tt_assert(!isContourOpen());
     tt_assert(!rhs.isContourOpen());
@@ -492,7 +492,7 @@ Path &Path::operator+=(Path const &rhs) noexcept
     return *this;
 }
 
-Path Path::centerScale(f32x4 extent, float padding) const noexcept
+graphic_path graphic_path::centerScale(f32x4 extent, float padding) const noexcept
 {
     tt_axiom(extent.is_vector());
 
@@ -517,7 +517,7 @@ Path Path::centerScale(f32x4 extent, float padding) const noexcept
     return (translate2(offset) * scale2(scale, scale)) * *this;
 }
 
-void composit(pixel_map<sfloat_rgba16>& dst, color color, Path const &path) noexcept
+void composit(pixel_map<sfloat_rgba16>& dst, color color, graphic_path const &path) noexcept
 {
     tt_assert(!path.hasLayers());
     tt_assert(!path.isContourOpen());
@@ -531,7 +531,7 @@ void composit(pixel_map<sfloat_rgba16>& dst, color color, Path const &path) noex
     composit(dst, color, mask);
 }
 
-void composit(pixel_map<sfloat_rgba16>& dst, Path const &src) noexcept
+void composit(pixel_map<sfloat_rgba16>& dst, graphic_path const &src) noexcept
 {
     tt_assert(src.hasLayers() && !src.isLayerOpen());
 
@@ -542,7 +542,7 @@ void composit(pixel_map<sfloat_rgba16>& dst, Path const &src) noexcept
     }
 }
 
-void fill(pixel_map<sdf_r8> &dst, Path const &path) noexcept
+void fill(pixel_map<sdf_r8> &dst, graphic_path const &path) noexcept
 {
     fill(dst, path.getBeziers());
 }

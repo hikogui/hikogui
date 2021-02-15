@@ -106,7 +106,7 @@ url_parts parse_url(std::string_view url) noexcept;
  *
  * \param path A UTF-8 string representing a file.
  * \param encodedPath A string that was created in the scope where url_parts is used.
- * \return The Path parsed into its parts.
+ * \return The path parsed into its parts.
  */
 url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept;
 

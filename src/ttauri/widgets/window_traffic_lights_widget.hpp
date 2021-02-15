@@ -5,13 +5,13 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 #include <memory>
 #include <string>
 #include <array>
 
 namespace tt {
-struct Path;
+struct graphic_path;
 }
 
 namespace tt {

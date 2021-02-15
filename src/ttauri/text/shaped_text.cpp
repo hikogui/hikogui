@@ -553,9 +553,9 @@ shaped_text::shaped_text(
     return e;
 }
 
-[[nodiscard]] Path shaped_text::get_path() const noexcept
+[[nodiscard]] graphic_path shaped_text::get_path() const noexcept
 {
-    Path r;
+    graphic_path r;
 
     if (std::ssize(*this) == 0) {
         return r;

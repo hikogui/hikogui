@@ -978,7 +978,7 @@ constexpr uint8_t FLAG_Y_SHORT = 0x04;
 constexpr uint8_t FLAG_REPEAT = 0x08;
 constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
-bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, Path &glyph) const noexcept
+bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph) const noexcept
 {
     ssize_t offset = 0;
 
@@ -1107,7 +1107,7 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]]constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, Path &glyph, glyph_id &metrics_glyph_id) const noexcept
+bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph, glyph_id &metrics_glyph_id) const noexcept
 {
     ssize_t offset = ssizeof(GLYFEntry);
 
@@ -1119,7 +1119,7 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, P
         assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
         ttlet subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
 
-        Path subGlyph;
+        graphic_path subGlyph;
         assert_or_return(loadGlyph(glyph_id{subGlyphIndex}, subGlyph), false);
 
         auto subGlyphOffset = f32x4{0.0, 0.0};
@@ -1196,7 +1196,7 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, P
     return true;
 }
 
-std::optional<glyph_id> true_type_font::loadGlyph(glyph_id glyph_id, Path &glyph) const noexcept
+std::optional<glyph_id> true_type_font::loadGlyph(glyph_id glyph_id, graphic_path &glyph) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, {});
 

@@ -6,7 +6,7 @@
 #include "font_book.hpp"
 #include "../logger.hpp"
 #include "../application.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 
 namespace tt {
 
@@ -58,7 +58,7 @@ attributed_glyph::attributed_glyph(attributed_grapheme const &attr_grapheme, att
     metrics.scale(style.scaled_size());
 }
 
-[[nodiscard]] Path attributed_glyph::get_path() const noexcept
+[[nodiscard]] graphic_path attributed_glyph::get_path() const noexcept
 {
     ttlet M = translate2(position) * scale2(style.scaled_size(), style.scaled_size());
 

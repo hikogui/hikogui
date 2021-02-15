@@ -8,7 +8,7 @@
 #include "font_glyph_ids.hpp"
 #include "gstring.hpp"
 #include "font_description.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 #include "../resource_view.hpp"
 #include "../exception.hpp"
 #include "../required.hpp"
@@ -53,7 +53,7 @@ public:
     * \param path The path constructed by the loader.
     * \return empty on failure, or the glyphID of the metrics to use.
     */
-    virtual std::optional<tt::glyph_id> loadGlyph(tt::glyph_id glyph_id, Path &path) const noexcept = 0;
+    virtual std::optional<tt::glyph_id> loadGlyph(tt::glyph_id glyph_id, graphic_path &path) const noexcept = 0;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.

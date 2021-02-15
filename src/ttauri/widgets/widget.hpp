@@ -15,7 +15,7 @@
 #include "../GUI/keyboard_focus_group.hpp"
 #include "../text/shaped_text.hpp"
 #include "../alignment.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 #include "../color/sfloat_rgba16.hpp"
 #include "../color/sfloat_rg32.hpp"
 #include "../URL.hpp"

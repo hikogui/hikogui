@@ -7,6 +7,7 @@
 #include "font_glyph_ids.hpp"
 #include "attributed_grapheme.hpp"
 #include "glyph_metrics.hpp"
+#include "../graphic_path.hpp"
 #include "../geometry/translate.hpp"
 
 namespace tt {
@@ -124,7 +125,7 @@ struct attributed_glyph {
         return narrow_cast<ssize_t>(std::round(relativePositionPergrapheme));
     }
 
-    [[nodiscard]] Path get_path() const noexcept;
+    [[nodiscard]] graphic_path get_path() const noexcept;
 };
 
 }

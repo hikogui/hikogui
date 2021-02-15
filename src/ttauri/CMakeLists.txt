@@ -113,8 +113,8 @@ target_sources(ttauri PRIVATE
     parse_location.hpp
     preferences.cpp
     preferences.hpp
-    Path.cpp
-    Path.hpp
+    graphic_path.cpp
+    graphic_path.hpp
     pixel_map.cpp
     pixel_map.hpp
     pixel_map.inl
@@ -206,7 +206,7 @@ target_sources(ttauri_tests PRIVATE
     interval_vec2_tests.cpp
     math_tests.cpp
     numeric_array_tests.cpp
-    Path_tests.cpp
+    graphic_path_tests.cpp
     pixel_map_tests.cpp
     polymorphic_optional_tests.cpp
     polynomial_tests.cpp

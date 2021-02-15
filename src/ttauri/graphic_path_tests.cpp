@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/Path.hpp"
+#include "ttauri/graphic_path.hpp"
 #include "ttauri/bezier_curve.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -11,8 +11,8 @@
 using namespace std;
 using namespace tt;
 
-TEST(PathTests, getBeziersOfLayer) {
-    auto path = Path();
+TEST(grahpic_path, getBeziersOfLayer) {
+    auto path = graphic_path();
     path.moveTo(f32x4::point( 1, 1 ));
     path.lineTo(f32x4::point( 2, 1 ));
     path.lineTo(f32x4::point( 2, 2 ));
@@ -27,8 +27,9 @@ TEST(PathTests, getBeziersOfLayer) {
     ASSERT_EQ(beziers[3], bezier_curve(f32x4::point( 1,2 ), f32x4::point( 1,1 )));
 }
 
-TEST(PathTests, getbezier_pointsOfContour) {
-    auto path = Path();
+TEST(grahpic_path, getbezier_pointsOfContour)
+{
+    auto path = graphic_path();
     path.moveTo(f32x4::point( 1, 1 ));
     path.lineTo(f32x4::point( 2, 1 ));
     path.lineTo(f32x4::point( 2, 2 ));

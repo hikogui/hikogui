@@ -25,7 +25,7 @@ template<typename T> class pixel_map;
  *  - a layer is a set of contours
  *  - a contour is a set of bezier point describing a closed set of bezier curves.
  */
-struct Path {
+struct graphic_path {
     /** A set of all bezier points describing all bezier curves, contours and layers.
      */
     std::vector<bezier_point> points;
@@ -90,7 +90,7 @@ struct Path {
 
     [[nodiscard]] std::vector<bezier_curve> getBeziers() const noexcept;
 
-    [[nodiscard]] std::pair<Path,color> getLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] std::pair<graphic_path,color> getLayer(ssize_t layerNr) const noexcept;
 
     [[nodiscard]] color getColorOfLayer(ssize_t layerNr) const noexcept;
 
@@ -202,11 +202,11 @@ struct Path {
 
     /** Add path and close layer.
      */
-    void addPath(Path const &path, color fillColor) noexcept;
+    void addPath(graphic_path const &path, color fillColor) noexcept;
 
     /** Stroke a path and close layer.
      */
-    void addStroke(Path const &path, color strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
+    void addStroke(graphic_path const &path, color strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
 
     /** Convert path to stroke-path.
      *
@@ -219,19 +219,19 @@ struct Path {
      * \param lineJoinStyle the style of how outside corners of a stroke are drawn.
      * \param tolerance Tolerance of how flat the curves in the path need to be.
      */
-    [[nodiscard]] Path toStroke(float strokeWidth=1.0f, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) const noexcept;
+    [[nodiscard]] graphic_path toStroke(float strokeWidth=1.0f, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) const noexcept;
 
     /** Center and scale a path inside the extent with padding.
      */
-    [[nodiscard]] Path centerScale(f32x4 extent, float padding=0.0) const noexcept;
+    [[nodiscard]] graphic_path centerScale(f32x4 extent, float padding=0.0) const noexcept;
 
-    Path &operator+=(Path const &rhs) noexcept;
+    graphic_path &operator+=(graphic_path const &rhs) noexcept;
 
-    [[nodiscard]] friend Path operator+(Path lhs, Path const &rhs) noexcept {
+    [[nodiscard]] friend graphic_path operator+(graphic_path lhs, graphic_path const &rhs) noexcept {
         return lhs += rhs;
     }
 
-    friend Path operator*(geo::transformer<2> auto const &lhs, Path const &rhs) noexcept
+    friend graphic_path operator*(geo::transformer<2> auto const &lhs, graphic_path const &rhs) noexcept
     {
         auto rhs_ = rhs;
         for (auto &&point : rhs_.points) {
@@ -251,19 +251,19 @@ struct Path {
 * \param color color to composit.
 * \param mask mask where the color will be composited on the destination.
 */
-void composit(pixel_map<sfloat_rgba16>& dst, f32x4 color, Path const &mask) noexcept;
+void composit(pixel_map<sfloat_rgba16>& dst, f32x4 color, graphic_path const &mask) noexcept;
 
 /** Composit color onto the destination image where the mask is solid.
 *
 * \param dst destination image.
 * \param mask mask where the color will be composited on the destination.
 */
-void composit(pixel_map<sfloat_rgba16>& dst, Path const &mask) noexcept;
+void composit(pixel_map<sfloat_rgba16>& dst, graphic_path const &mask) noexcept;
 
 /** Fill a signed distance field image from the given path.
 * @param dst An signed-distance-field which show distance toward the closest curve
 * @param path A path.
 */
-void fill(pixel_map<sdf_r8> &dst, Path const &path) noexcept;
+void fill(pixel_map<sdf_r8> &dst, graphic_path const &path) noexcept;
 
 }

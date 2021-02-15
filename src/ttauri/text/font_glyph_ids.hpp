@@ -12,7 +12,7 @@
 #include <tuple>
 
 namespace tt {
-struct Path;
+struct graphic_path;
 }
 
 namespace tt {
@@ -206,7 +206,7 @@ public:
         }
     }
 
-    [[nodiscard]] std::pair<Path,aarect> getPathAndBoundingBox() const noexcept;
+    [[nodiscard]] std::pair<graphic_path,aarect> getPathAndBoundingBox() const noexcept;
     [[nodiscard]] aarect getBoundingBox() const noexcept;
 
 private:

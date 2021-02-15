@@ -8,7 +8,7 @@
 #include "gstring.hpp"
 #include "../required.hpp"
 #include "../alignment.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 #include "../numeric_array.hpp"
 #include "../recursive_iterator.hpp"
 #include <string_view>
@@ -271,7 +271,7 @@ public:
 
     /** Convert the whole shaped text into a layered path.
      */
-    [[nodiscard]] Path get_path() const noexcept;
+    [[nodiscard]] graphic_path get_path() const noexcept;
 
 
     /** Get the index into the text from a coordinate.

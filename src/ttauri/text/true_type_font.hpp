@@ -5,7 +5,7 @@
 #pragma once
 
 #include "font.hpp"
-#include "../Path.hpp"
+#include "../graphic_path.hpp"
 #include "../resource_view.hpp"
 #include "../URL.hpp"
 #include "../error_info.hpp"
@@ -117,7 +117,7 @@ public:
      * @param path The path constructed by the loader.
      * @return empty on failure, or the glyphID of the metrics to use.
      */
-    std::optional<tt::glyph_id> loadGlyph(tt::glyph_id glyph_id, Path &path) const noexcept override;
+    std::optional<tt::glyph_id> loadGlyph(tt::glyph_id glyph_id, graphic_path &path) const noexcept override;
 
     /** Load a glyphMetrics into a path.
     * The glyph is directly loaded from the font file.
@@ -172,7 +172,7 @@ private:
         tt::glyph_id kern_glyph1_id = tt::glyph_id{},
         tt::glyph_id kern_glyph2_id = tt::glyph_id{}) const noexcept;
 
-    bool loadSimpleGlyph(std::span<std::byte const> bytes, Path &glyph) const noexcept;
+    bool loadSimpleGlyph(std::span<std::byte const> bytes, graphic_path &glyph) const noexcept;
 
     /** Load a compound glyph.
      * This will call loadGlyph() recursively.
@@ -182,7 +182,7 @@ private:
      * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
-    bool loadCompoundGlyph(std::span<std::byte const> bytes, Path &glyph, tt::glyph_id &metrics_glyph_id) const noexcept;
+    bool loadCompoundGlyph(std::span<std::byte const> bytes, graphic_path &glyph, tt::glyph_id &metrics_glyph_id) const noexcept;
 
     /** Load a compound glyph.
     * This will call loadGlyph() recursively.
