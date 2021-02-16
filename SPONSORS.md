@@ -3,7 +3,7 @@ SPONSORS
 Thank you very much to the sponsors of the ttauri-project.
 
 If you like to become a sponsor, please contribute to
-(Take Vos)[https://github.com/takev/] the main developer of the ttauri-project.
+[Take Vos](https://github.com/takev/) the main developer of the ttauri-project.
 
 Platinum sponsors
 -----------------

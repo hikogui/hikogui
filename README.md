@@ -46,5 +46,5 @@ The following people and companies are platinum sponsors:
 
 _There are currently no platinum sponsors._
 
-for more sponsers please see (SPONSORS)[SPONSORS.md].
+for more sponsers please see [SPONSORS](SPONSORS.md).
 
