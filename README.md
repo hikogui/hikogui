@@ -3,7 +3,6 @@ TTauri GUI library
 
 A portable, low latency, retained-mode GUI library written in C++.
 
-
 Motivation
 ----------
 I started this library to make a portable, low latency and modern looking
@@ -41,4 +40,11 @@ For installation instructions see the minimum example of a project that
 includes ttauri as a submodule at:
 <https://github.com/ttauri-project/ttauri_hello_world>
 
+Sponsors
+--------
+The following people and companies are platinum sponsors:
+
+_There are currently no platinum sponsors._
+
+for more sponsers please see (SPONSORS)[SPONSORS.md].
 
