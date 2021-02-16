@@ -8,6 +8,7 @@ target_sources(ttauri PRIVATE
     transform.hpp
     point.hpp
     vector.hpp
+    extent.hpp
 )
 
 target_sources(ttauri_tests PRIVATE

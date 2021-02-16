@@ -5,6 +5,7 @@
 #pragma once
 
 #include "vector.hpp"
+#include "extent.hpp"
 #include "point.hpp"
 #include "../rect.hpp"
 #include "../aarect.hpp"
@@ -127,6 +128,15 @@ public:
     {
         tt_axiom(rhs.is_valid());
         return vector<std::max(D, E)>{
+            _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
+            _col2 * static_cast<f32x4>(rhs).zzzz()};
+    }
+
+    template<int E>
+    [[nodiscard]] constexpr auto operator*(extent<E> const &rhs) const noexcept
+    {
+        tt_axiom(rhs.is_valid());
+        return extent<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
     }
