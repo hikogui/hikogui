@@ -180,6 +180,8 @@ class logger_type {
     hires_utc_clock::time_point next_gather_time = {};
 
 public:
+    logger_type() noexcept;
+
     log_level minimum_log_level = log_level::Debug;
 
     void logger_tick() noexcept;

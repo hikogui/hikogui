@@ -27,7 +27,7 @@ std::string getLastErrorMessage()
 {
     DWORD const errorCode = GetLastError();
     size_t const messageSize = 32768;
-    wchar_t* const c16_message = new wchar_t[messageSize];
+    wchar_t *const c16_message = new wchar_t[messageSize];
 
     FormatMessageW(
         FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -36,14 +36,23 @@ std::string getLastErrorMessage()
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         c16_message,
         messageSize,
-        NULL
-    );
+        NULL);
 
     auto message = to_string(std::wstring(c16_message));
-    delete [] c16_message;
+    delete[] c16_message;
 
     return message;
 }
 
-
+logger_type::logger_type() noexcept
+{
+    //if (!debugger_is_present() && AttachConsole(ATTACH_PARENT_PROCESS)) {
+    //    FILE *fpstdin = stdin, *fpstdout = stdout, *fpstderr = stderr;
+    //
+    //    freopen_s(&fpstdin, "CONIN$", "r", stdin);
+    //    freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+    //    freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+    //}
 }
+
+} // namespace tt
