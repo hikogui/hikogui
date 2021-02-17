@@ -3,7 +3,7 @@ TTauri GUI library
 
 A portable, low latency, retained-mode GUI library written in C++.
 
-![Screenshot](docs/media/screenshot/demo_v0.2.0.gif)
+![Screenshot](docs/media/screenshots/demo_v0.2.0.gif)
 
 Motivation
 ----------
