@@ -29,8 +29,7 @@ static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
     return textString;
 }
 
-audio_device_win32::audio_device_win32(IMMDevice *device) :
-    audio_device(), _device(device)
+audio_device_win32::audio_device_win32(IMMDevice *device) : audio_device(), _device(device)
 {
     tt_assert(_device != nullptr);
     tt_hresult_check(_device->QueryInterface(&_endpoint));
@@ -63,7 +62,11 @@ std::string audio_device_win32::id() const noexcept
 
 std::string audio_device_win32::name() const noexcept
 {
-    return getStringProperty(_property_store, PKEY_Device_FriendlyName);
+    try {
+        return getStringProperty(_property_store, PKEY_Device_FriendlyName);
+    } catch (io_error const &) {
+        return "<unknown name>"s;
+    }
 }
 
 tt::label audio_device_win32::label() const noexcept
@@ -71,23 +74,17 @@ tt::label audio_device_win32::label() const noexcept
     return {elusive_icon::Speaker, l10n("{}"), name()};
 }
 
-
 audio_device_state audio_device_win32::state() const noexcept
 {
     DWORD state;
     tt_hresult_check(_device->GetState(&state));
 
     switch (state) {
-    case DEVICE_STATE_ACTIVE:
-        return audio_device_state::active;
-    case DEVICE_STATE_DISABLED:
-        return audio_device_state::disabled;
-    case DEVICE_STATE_NOTPRESENT:
-        return audio_device_state::not_present;
-    case DEVICE_STATE_UNPLUGGED:
-        return audio_device_state::unplugged;
-    default:
-        tt_no_default();
+    case DEVICE_STATE_ACTIVE: return audio_device_state::active;
+    case DEVICE_STATE_DISABLED: return audio_device_state::disabled;
+    case DEVICE_STATE_NOTPRESENT: return audio_device_state::not_present;
+    case DEVICE_STATE_UNPLUGGED: return audio_device_state::unplugged;
+    default: tt_no_default();
     }
 }
 
@@ -100,19 +97,26 @@ audio_device_flow_direction audio_device_win32::direction() const noexcept
     case eRender: return audio_device_flow_direction::output;
     case eCapture: return audio_device_flow_direction::input;
     case eAll: return audio_device_flow_direction::bidirectional;
-    default:
-        tt_no_default();
+    default: tt_no_default();
     }
 }
 
 std::string audio_device_win32::device_name() const noexcept
 {
-    return getStringProperty(_property_store, PKEY_DeviceInterface_FriendlyName);
+    try {
+        return getStringProperty(_property_store, PKEY_DeviceInterface_FriendlyName);
+    } catch (io_error const &) {
+        return "<unknown device name>"s;
+    }
 }
 
 std::string audio_device_win32::end_point_name() const noexcept
 {
-    return getStringProperty(_property_store, PKEY_Device_DeviceDesc);
+    try {
+        return getStringProperty(_property_store, PKEY_Device_DeviceDesc);
+    } catch (io_error const &) {
+        return "<unknown end point name>"s;
+    }
 }
 
-}
+} // namespace tt
