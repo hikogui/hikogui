@@ -4,7 +4,7 @@ name: build
 on:
   # Triggers for push and pull_requests to the main branch
   push:
-    branches: [ main ]
+    branches: [ main, pull_externals_with_vcpkg ]
   pull_request:
     branches: [ main ]
 
