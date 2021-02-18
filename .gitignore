@@ -370,3 +370,32 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+# Auto-generated at build
+Doxyfile.doc
+ttauri_tests\[1\]_include.cmake
+
+Makefile
+link.txt
+build.make
+progress.make
+depend.make
+flags.make
+progress.marks
+cmake_install.cmake
+cmake_clean.cmake
+cmake_directory_clean.cmake
+cmake_clean_target.cmake
+DependInfo.cmake
+CTestTestfile.cmake
+dateTargets.cmake
+CMakeDirectoryInformation.cmake
+
+# External and google test auto generated files
+external/date/dateConfigVersion.cmake
+external/googletest/googletest/generated/gmock_main.pc
+external/googletest/googletest/generated/gmock.pc
+external/googletest/googletest/generated/gtest_main.pc
+external/googletest/googletest/generated/gtest.pc
+external/googletest/googletest/generated/GTestConfig.cmake
+external/googletest/googletest/generated/GTestConfigVersion.cmake
