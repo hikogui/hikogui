@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-18 17:03+0100\n"
-"PO-Revision-Date: 2021-02-18 17:03+0100\n"
+"POT-Creation-Date: 2021-02-18 18:01+0100\n"
+"PO-Revision-Date: 2021-02-18 18:01+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -33,7 +33,8 @@ msgstr "Word clock sample rate:"
 msgid "This is a toggle:"
 msgstr "This is a toggle:"
 
-#: src/audio_preferences_controller.cpp:25 src/audio_preferences_controller.cpp:30
+#: src/audio_preferences_controller.cpp:25
+#: src/audio_preferences_controller.cpp:30
 msgid "on"
 msgstr "on"
 
@@ -129,8 +130,8 @@ msgid "Preferences"
 msgstr "Preferences"
 
 #: src/main_window_controller.cpp:26
-msgid "ttauri_demo Preferences"
-msgstr "ttauri_demo Preferences"
+msgid "TTauri Demo - Preferences"
+msgstr "TTauri Demo - Preferences"
 
 #: src/main_window_controller.cpp:34
 msgid "Hello 世界"

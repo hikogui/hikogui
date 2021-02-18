@@ -1,39 +1,40 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# English translations for PACKAGE package.
+# Copyright (C) 2021 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Automatically generated, 2021.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-18 17:03+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: nl-NL\n"
+"POT-Creation-Date: 2021-02-18 18:01+0100\n"
+"PO-Revision-Date: 2021-02-18 18:01+0100\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/application_controller.cpp:57
 msgid "ttauri_demo"
-msgstr ""
+msgstr "ttauri_demo"
 
 #: src/audio_preferences_controller.cpp:17
 msgid "Audio device sample rate:"
-msgstr ""
+msgstr "Geluids apperaat sample snelheid:"
 
 #: src/audio_preferences_controller.cpp:20
 msgid "Word clock sample rate:"
-msgstr ""
+msgstr "Word clock sample snelheid:"
 
 #: src/audio_preferences_controller.cpp:23
 msgid "This is a toggle:"
-msgstr ""
+msgstr "Dit is een tokkel:"
 
-#: src/audio_preferences_controller.cpp:25 src/audio_preferences_controller.cpp:30
+#: src/audio_preferences_controller.cpp:25
+#: src/audio_preferences_controller.cpp:30
 msgid "on"
 msgstr "aan"
 
@@ -43,51 +44,50 @@ msgstr "uit"
 
 #: src/audio_preferences_controller.cpp:28
 msgid "This is disabled toggle:"
-msgstr ""
+msgstr "Dit is een uitgeschakelde tokkel:"
 
 #: src/audio_preferences_controller.cpp:33
 msgid "Audio device:"
-msgstr ""
+msgstr "Geluids apperaat:"
 
 #: src/audio_preferences_controller.cpp:37
 msgid "No device selected."
-msgstr ""
+msgstr "Geen apperaat geselecteerd."
 
 #: src/audio_preferences_controller.cpp:39
 msgid "This is disabled selection widget:"
-msgstr ""
+msgstr "Dit is een uitgeschakelde selectie widget:"
 
 #: src/audio_preferences_controller.cpp:43
 #: src/license_preferences_controller.cpp:35
 msgid "first"
-msgstr ""
+msgstr "eerste"
 
 #: src/audio_preferences_controller.cpp:44
 msgid "The second value has a really long label"
-msgstr ""
+msgstr "De tweede waarde heeft een hele lange label"
 
 #: src/audio_preferences_controller.cpp:45
 #: src/license_preferences_controller.cpp:37
 msgid "third"
-msgstr ""
+msgstr "derde"
 
 #: src/audio_preferences_controller.cpp:47
 #: src/license_preferences_controller.cpp:39
 msgid "Default"
-msgstr ""
+msgstr "Standard"
 
 #: src/audio_preferences_controller.cpp:50
 msgid "These are radio buttons:"
-msgstr ""
+msgstr "Dit zijn radio knoppen:"
 
 #: src/audio_preferences_controller.cpp:51
-#, fuzzy
 msgid "Radio 1."
-msgstr "Radio één"
+msgstr "Radio 1."
 
 #: src/audio_preferences_controller.cpp:54
 msgid "Radio 2, with another large label."
-msgstr "Radio 2, met een andere lange label"
+msgstr "Radio 2, met een andere lange label."
 
 #: src/audio_preferences_controller.cpp:57
 msgid "Radio 3"
@@ -95,75 +95,61 @@ msgstr "Radio 3"
 
 #: src/license_preferences_controller.cpp:19
 msgid "These is a checkbox:"
-msgstr ""
+msgstr "Dit is a selectievakje:"
 
 #: src/license_preferences_controller.cpp:21
 msgid "true"
-msgstr ""
+msgstr "waar"
 
 #: src/license_preferences_controller.cpp:22
 msgid "false"
-msgstr ""
+msgstr "onwaar"
 
 #: src/license_preferences_controller.cpp:23
 msgid "other"
-msgstr ""
+msgstr "anders"
 
 #: src/license_preferences_controller.cpp:26
 msgid "These is a disabled checkbox:"
-msgstr ""
+msgstr "Dit is een uitgeschakelde selectievakje:"
 
 #: src/license_preferences_controller.cpp:28
 msgid "Checkbox, with a pretty large label."
-msgstr "Selectievakje, met een best wel lange label"
+msgstr "Selectievakje, met een behoorlijk lange label."
 
 #: src/license_preferences_controller.cpp:32
 msgid "This is a selection box at the bottom:"
-msgstr ""
+msgstr "Dit is een selectie box aan de onderkand:"
 
 #: src/license_preferences_controller.cpp:36
 msgid "second"
-msgstr ""
+msgstr "tweede"
 
 #: src/main_window_controller.cpp:20
 msgid "Preferences"
-msgstr ""
+msgstr "Voorkeuren"
 
 #: src/main_window_controller.cpp:26
-msgid "ttauri_demo Preferences"
-msgstr ""
+msgid "TTauri Demo - Preferences"
+msgstr "TTauri Demo - Voorkeuren"
 
 #: src/main_window_controller.cpp:34
 msgid "Hello 世界"
-msgstr ""
+msgstr "Hallo 世界"
 
 #: src/main_window_controller.cpp:36
 msgid "Hello world"
-msgstr ""
+msgstr "Hallo weereld"
 
 #: src/main_window_controller.cpp:38
 msgid "Hello earthlings"
-msgstr ""
+msgstr "Hallo aardlingen"
 
 #: src/preferences_controller.cpp:19
 msgid "Audio"
-msgstr ""
+msgstr "Geluid"
 
 #: src/preferences_controller.cpp:22
 msgid "License"
-msgstr ""
+msgstr "Licentie"
 
-#~ msgid "This is a input widget:"
-#~ msgstr "Dit is een input widget:"
-
-#~ msgid "Toggle 1, this is a really long label, don't you think?"
-#~ msgstr "Knop 1, dit is een hele lange label, vind je niet?"
-
-#~ msgid "Toggle 2"
-#~ msgstr "Knop 2"
-
-#~ msgctxt "foo"
-#~ msgid "This has {0} values."
-#~ msgid_plural "This has {0} values."
-#~ msgstr[0] "Dit heefd {0} waarden."
-#~ msgstr[1] "Dit heefd {0} waarde."
