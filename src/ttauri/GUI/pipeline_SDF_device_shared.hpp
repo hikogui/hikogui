@@ -13,7 +13,7 @@
 #include "../vspan.hpp"
 #include "../numeric_array.hpp"
 #include "../rect.hpp"
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 #include <unordered_map>

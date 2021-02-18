@@ -6,7 +6,7 @@
 
 #include "pipeline_vulkan.hpp"
 #include "../vspan.hpp"
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 #include <span>
 
 namespace tt::pipeline_tone_mapper {

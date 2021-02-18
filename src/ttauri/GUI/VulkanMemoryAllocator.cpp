@@ -17,4 +17,4 @@ msvc_suppress(4703)
 msvc_suppress(4189)
 
 #define VMA_IMPLEMENTATION
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>

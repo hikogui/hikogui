@@ -24,36 +24,6 @@ set(x64_list x86 X86 amd64 AMD64)
 if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
     set(TT_X64 1)
 endif()
-
-find_package(GTest)
-find_package(Vulkan REQUIRED)
-find_package(Doxygen)
-
-if (DOXYGEN_EXECUTABLE)
-set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
-set(DOXYGEN_GENERATE_HTML YES)
-set(DOXYGEN_GENERATE_XML NO)
-set(DOXYGEN_GENERATE_LATEX NO)
-set(DOXYGEN_GENERATE_PDF NO)
-set(DOXYGEN_QUIET YES)
-set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-set(DOXYGEN_WARN_NO_PARAMDOC NO)
-
-set(DOXYGEN_STRIP_FROM_PATH src)
-set(DOXYGEN_STRIP_FROM_INC_PATH src)
-
-set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
-set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
-set(DOXYGEN_INLINE_INHERITED_MEMB YES)
-set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
-set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
-
-set(DOXYGEN_EXTRACT_ALL YES)
-
-doxygen_add_docs(doc src/ttauri docs)
-endif()
-
 if(WIN32)
     if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
         set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
@@ -63,19 +33,97 @@ else(APPLE)
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
 endif()
 
+# Define C++ Standard to use
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
+#-------------------------------------------------------------------
+# Setup CMake Includes
+#-------------------------------------------------------------------
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
 
+#-------------------------------------------------------------------
+# Setup Dependency Manager: VCPKG
+#-------------------------------------------------------------------
+
+include(SetupVcpkg)
+
+#-------------------------------------------------------------------
+# Find Dependencies
+#-------------------------------------------------------------------
+
+#
+# date
+#
+set(date_DIR "${VCPKG_DIR}/share/date")
+find_package(date CONFIG REQUIRED)
+
+#
+# fmt
+#
+set(fmt_DIR "${VCPKG_DIR}/share/fmt")
+find_package(fmt CONFIG REQUIRED)
+
+#
+# googletest
+#
+#set(gtest_force_shared_crt ON)
+set(GTest_DIR "${VCPKG_DIR}/share/gtest")
+find_package(GTest CONFIG REQUIRED)
+
+#
+# vulkan memory allocator
+#
+set(unofficial-vulkan-memory-allocator_DIR "${VCPKG_DIR}/share/unofficial-vulkan-memory-allocator")
+find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+
+#
+# vulkan SDK headers
+#
+# set VULKAN_SDK as env var
+set(Vulkan_DIR $ENV{VULKAN_SDK})
+message(STATUS "VULKAN_SDK -> $ENV{VULKAN_SDK}")
+find_package(Vulkan REQUIRED)
+
+#
+# doxygen
+#
+find_package(Doxygen)
+
+#-------------------------------------------------------------------
+# Setup Build Targets
+#-------------------------------------------------------------------
+
+add_library(ttauri STATIC)
+
+add_executable(ttauri_tests)
+
+#-------------------------------------------------------------------
+# Setup Sources
+#-------------------------------------------------------------------
+
+add_subdirectory(src)
 add_subdirectory(external)
 add_subdirectory(tools)
 
-add_library(ttauri STATIC)
-add_executable(ttauri_tests)
-add_subdirectory(src)
+#-------------------------------------------------------------------
+# Build Target: ttauri
+#-------------------------------------------------------------------
 
-target_link_libraries(ttauri PUBLIC fmt date date-tz ${Vulkan_LIBRARIES} VMA RenderDoc)
+target_link_libraries(ttauri PUBLIC
+    fmt::fmt
+    date::date
+    date::date-tz
+    ${Vulkan_LIBRARIES}
+    unofficial::vulkan-memory-allocator::vulkan-memory-allocator
+    RenderDoc
+)
+
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
@@ -84,11 +132,11 @@ target_compile_features(ttauri PUBLIC cxx_std_20)
 
 add_custom_command(
   TARGET ttauri POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory 
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata 
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata
     ${CMAKE_BINARY_DIR}/data/tzdata)
 
-# 
+#
 # We will support the following CPUs:
 #   * Intel Ivy Bridge from 2012, still used by Mac Pro sold in 2019.
 #   * AMD Steamroller from 2014
@@ -106,7 +154,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     target_compile_options(ttauri PUBLIC -Wno-nullability-completeness)
 
     # IvyBridge:                     F16C             FSGSBASE, AVX,           AES, PCLMUL        MMX, SSE, SSE2, SSE3,        SSSE3, SSE4.1, SSE4.2,     POPCNT, RDRND
-    # Steamroller 0x15-v3: BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM 
+    # Steamroller 0x15-v3: BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM
     # POPCNT is supported by Steamroller through he SSE4A instruction set.
     target_compile_options(ttauri PUBLIC -mf16c -mfsgsbase -mavx -maes -mpclmul -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mpopcnt)
 
@@ -246,7 +294,7 @@ target_static_resource(ttauri ${ttauri_binary_resources})
 
 add_custom_command(
     TARGET ttauri POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory 
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/data
         ${CMAKE_BINARY_DIR}/data
 )
@@ -255,9 +303,17 @@ if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
 target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
 endif()
 
+#-------------------------------------------------------------------
+# Build Target: ttauri_tests
+#-------------------------------------------------------------------
+
+target_link_libraries(ttauri_tests PRIVATE GTest::gtest_main ttauri)
+
 target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(ttauri_tests PRIVATE gtest_main ttauri)
+
+include(GoogleTest)
 gtest_discover_tests(ttauri_tests)
+
 add_custom_command(
     TARGET ttauri_tests PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -309,5 +365,31 @@ if(MSVC)
    endif()
 endif()
 
+#-------------------------------------------------------------------
+# Doxygen
+#-------------------------------------------------------------------
 
+if(DOXYGEN_EXECUTABLE)
+    set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
+    set(DOXYGEN_GENERATE_HTML YES)
+    set(DOXYGEN_GENERATE_XML NO)
+    set(DOXYGEN_GENERATE_LATEX NO)
+    set(DOXYGEN_GENERATE_PDF NO)
+    set(DOXYGEN_QUIET YES)
+    set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
+    set(DOXYGEN_WARN_NO_PARAMDOC NO)
 
+    set(DOXYGEN_STRIP_FROM_PATH src)
+    set(DOXYGEN_STRIP_FROM_INC_PATH src)
+
+    set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
+    set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
+    set(DOXYGEN_INLINE_INHERITED_MEMB YES)
+    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
+    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+    set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
+
+    set(DOXYGEN_EXTRACT_ALL YES)
+
+    doxygen_add_docs(doc src/ttauri docs)
+endif()
