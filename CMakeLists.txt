@@ -226,28 +226,6 @@ elseif (APPLE)
     target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
-set(UNICODE_DATA_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/UnicodeData.txt")
-set(EMOJI_DATA_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/emoji-data.txt")
-set(COMPOSITION_EXCLUSIONS_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/CompositionExclusions.txt")
-set(GRAPHEME_BREAK_PROPERTY_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/GraphemeBreakProperty.txt")
-set(BIDI_BRACKETS_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/BidiBrackets.txt")
-set(BIDI_MIRRORING_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/BidiMirroring.txt")
-set(UNICODE_DATA_GENERATOR_PY "${CMAKE_CURRENT_SOURCE_DIR}/tools/unicode_data_generator.py")
-set(UNICODE_DATA_INL "${CMAKE_CURRENT_BINARY_DIR}/src/ttauri/text/unicode_db.inl")
-add_custom_command(
-	OUTPUT ${UNICODE_DATA_INL}
-	COMMAND ${Python_EXECUTABLE} ${UNICODE_DATA_GENERATOR_PY}
-        --output=${UNICODE_DATA_INL}
-        --unicode-data=${UNICODE_DATA_TXT}
-        --emoji-data=${EMOJI_DATA_TXT}
-        --composition-exclusions=${COMPOSITION_EXCLUSIONS_TXT}
-        --grapheme-break-property=${GRAPHEME_BREAK_PROPERTY_TXT}
-        --bidi-brackets=${BIDI_BRACKETS_TXT}
-        --bidi-mirroring=${BIDI_MIRRORING_TXT}
-    DEPENDS ${UNICODE_DATA_GENERATOR_PY} ${UNICODE_DATA_TXT} ${GRAPHEME_BREAK_PROPERTY_TXT} ${EMOJI_DATA_TXT} ${COMPOSITION_EXCLUSIONS_TXT} ${BIDI_BRACKETS_TXT} ${BIDI_MIRRORING_TXT}
-	VERBATIM)
-target_sources(ttauri PRIVATE ${UNICODE_DATA_INL})
-
 add_shader(ttauri_binary_resources
     src/TTauri/GUI/pipeline_image.vert
     src/TTauri/GUI/pipeline_image.frag
