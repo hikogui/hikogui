@@ -1,8 +1,10 @@
 
 cmake_minimum_required(VERSION 3.19)
 enable_testing()
-set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
-set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
+endif()
 
 set(TT_WIN32 0)
 set(TT_MACOS 0)
