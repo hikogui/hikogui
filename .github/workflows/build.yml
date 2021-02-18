@@ -15,7 +15,7 @@ on:
 jobs:
 
   # This workflow contains a job called "Windows"
-  cd-:
+  build-on-windows:
     # The type of runner that the job will run is a windows server 2019 box
     runs-on: windows-2019
     env:
@@ -30,7 +30,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Lets get started...
-        run: echo Hello, world!
+        run: curl -V
 
 
 
