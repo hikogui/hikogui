@@ -5,7 +5,7 @@
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
 #include "unicode_composition.hpp"
-#include "ttauri/text/unicode_db.inl"
+#include "ttauri/text/unicode_db.hpp"
 #include "../assert.hpp"
 #include "../required.hpp"
 
