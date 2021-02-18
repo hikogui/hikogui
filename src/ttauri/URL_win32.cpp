@@ -40,7 +40,7 @@ URL URL::urlFromExecutableFile() noexcept
 URL URL::urlFromResourceDirectory() noexcept
 {
     // Resource path, is the same directory as where the executable lives.
-    static auto r = urlFromExecutableDirectory() / "data";
+    static auto r = urlFromExecutableDirectory() / "resources";
     return r;
 }
 

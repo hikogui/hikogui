@@ -1,0 +1,153 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-02-18 17:03+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/ApplicationController.cpp:57
+msgid "ttauri_demo"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:17
+msgid "Audio device sample rate:"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:20
+msgid "Word clock sample rate:"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:23
+msgid "This is a toggle:"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:25 src/AudioPreferencesController.cpp:30
+msgid "on"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:26
+msgid "off"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:28
+msgid "This is disabled toggle:"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:33
+msgid "Audio device:"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:37
+msgid "No device selected."
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:39
+msgid "This is disabled selection widget:"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:43
+#: src/LicensePreferencesController.cpp:35
+msgid "first"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:44
+msgid "The second value has a really long label"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:45
+#: src/LicensePreferencesController.cpp:37
+msgid "third"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:47
+#: src/LicensePreferencesController.cpp:39
+msgid "Default"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:50
+msgid "These are radio buttons:"
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:51
+msgid "Radio 1."
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:54
+msgid "Radio 2, with another large label."
+msgstr ""
+
+#: src/AudioPreferencesController.cpp:57
+msgid "Radio 3"
+msgstr ""
+
+#: src/LicensePreferencesController.cpp:19
+msgid "These is a checkbox:"
+msgstr ""
+
+#: src/LicensePreferencesController.cpp:21
+msgid "true"
+msgstr ""
+
+#: src/LicensePreferencesController.cpp:22
+msgid "false"
+msgstr ""
+
+#: src/LicensePreferencesController.cpp:23
+msgid "other"
+msgstr ""
+
+#: src/LicensePreferencesController.cpp:26
+msgid "These is a disabled checkbox:"
+msgstr ""
+
+#: src/LicensePreferencesController.cpp:28
+msgid "Checkbox, with a pretty large label."
+msgstr ""
+
+#: src/LicensePreferencesController.cpp:32
+msgid "This is a selection box at the bottom:"
+msgstr ""
+
+#: src/LicensePreferencesController.cpp:36
+msgid "second"
+msgstr ""
+
+#: src/MainWindowController.cpp:20
+msgid "Preferences"
+msgstr ""
+
+#: src/MainWindowController.cpp:26
+msgid "ttauri_demo Preferences"
+msgstr ""
+
+#: src/MainWindowController.cpp:34
+msgid "Hello 世界"
+msgstr ""
+
+#: src/MainWindowController.cpp:36
+msgid "Hello world"
+msgstr ""
+
+#: src/MainWindowController.cpp:38
+msgid "Hello earthlings"
+msgstr ""
+
+#: src/PreferencesController.cpp:19
+msgid "Audio"
+msgstr ""
+
+#: src/PreferencesController.cpp:22
+msgid "License"
+msgstr ""
