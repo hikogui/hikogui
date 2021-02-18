@@ -19,7 +19,7 @@ jobs:
     # The type of runner that the job will run is a windows server 2019 box
     runs-on: windows-2019
     env:
-      VULKAN_SDK: C:/VulkanSDK/1.2.162.1
+      VULKAN_SDK: C:\VulkanSDK\1.2.162.1
       VS_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\
       MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\
 
@@ -29,8 +29,16 @@ jobs:
       - uses: actions/checkout@v2
 
       # Runs a single command using the runners shell
-      - name: Lets get started...
+      - name: Show cURL version
         run: curl -V
+
+      - name: Install Vulkan_SDK
+        run: |
+          curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/1.2.162.1/windows/VulkanSDK-1.2.162.1-Installer.exe?Human=true
+          Vulkan_SDK_Installer.exe /S
+          dir %VULKAN_SDK%
+        shell: cmd
+
 
 
 
