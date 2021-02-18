@@ -1,0 +1,36 @@
+name: build
+
+# Controls when the action will run.
+on:
+  # Triggers for push and pull_requests to the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allow running the workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # This workflow contains a job called "Windows"
+  cd-:
+    # The type of runner that the job will run is a windows server 2019 box
+    runs-on: windows-2019
+    env:
+      VULKAN_SDK: C:/VulkanSDK/1.2.162.1
+      VS_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\
+      MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Lets get started...
+        run: echo Hello, world!
+
+
+
