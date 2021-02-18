@@ -116,14 +116,15 @@ generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 
     int line_nr = 1;
     for (ttlet line : tt::views::split(test_data, "\n")) {
-        if (line.empty() || line.starts_with("#")) {
+        ttlet line_ = strip(line);
+        if (line_.empty() || line_.starts_with("#")) {
             // Comment and empty lines.
-        } else if (line.starts_with("@Levels:")) {
-            levels = parse_bidi_test_levels(line.substr(8));
-        } else if (line.starts_with("@Reorder:")) {
-            reorder = parse_bidi_test_reorder(line.substr(9));
+        } else if (line_.starts_with("@Levels:")) {
+            levels = parse_bidi_test_levels(line_.substr(8));
+        } else if (line_.starts_with("@Reorder:")) {
+            reorder = parse_bidi_test_reorder(line_.substr(9));
         } else {
-            auto data = parse_bidi_test_data_line(line, levels, reorder, line_nr);
+            auto data = parse_bidi_test_data_line(line_, levels, reorder, line_nr);
             if (test_line_nr == -1 || line_nr == test_line_nr) {
                 co_yield data;
             }
@@ -251,10 +252,11 @@ generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_n
 
     int line_nr = 1;
     for (ttlet line : tt::views::split(test_data, "\n")) {
-        if (line.empty() || line.starts_with("#")) {
+        ttlet line_ = strip(line);
+        if (line_.empty() || line_.starts_with("#")) {
             // Comment and empty lines.
         } else {
-            auto data = parse_bidi_character_test_line(line, line_nr);
+            auto data = parse_bidi_character_test_line(line_, line_nr);
             if (test_line_nr == -1 || line_nr == test_line_nr) {
                 co_yield data;
             }

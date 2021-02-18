@@ -334,10 +334,8 @@ template<typename DataIt, typename ValueIt>
 DataIt front_strip(DataIt data_first, DataIt data_last, ValueIt value_first, ValueIt value_last) noexcept
 {
     for (auto it = data_first; it != data_last; ++it) {
-        ttlet &data = *it;
-        if (!std::any_of(value_first, value_last, [&data](ttlet &value) {
-                return data == value;
-            })) {
+        if (std::find(value_first, value_last, *it) == value_last) {
+            // Return the iterator pointing to the data that is not part of the value set.
             return it;
         }
     }
@@ -356,11 +354,10 @@ DataIt front_strip(DataIt data_first, DataIt data_last, ValueIt value_first, Val
 template<typename DataIt, typename ValueIt>
 DataIt back_strip(DataIt data_first, DataIt data_last, ValueIt value_first, ValueIt value_last) noexcept
 {
-    for (auto it = data_last - 1; it >= data_first; ++it) {
-        ttlet &data = *it;
-        if (!std::any_of(value_first, value_last, [&data](ttlet &value) {
-                return data == value;
-            })) {
+    auto it = data_last;
+    while (it != data_first) {
+        if (std::find(value_first, value_last, *(--it)) == value_last) {
+            // Return an iterator one beyond the data that is not part of the value set.
             return it + 1;
         }
     }
