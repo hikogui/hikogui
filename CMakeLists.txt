@@ -14,15 +14,15 @@ elseif (WIN32)
     set(TT_WIN32 1)
 endif()
 
-set(x64_list x86 X86 amd64 AMD64)
-if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
-    set(TT_X64 1)
-endif()
-
 if(APPLE)
 project(TTauri LANGUAGES CXX OBJC)
 else()
 project(TTauri LANGUAGES CXX)
+endif()
+
+set(x64_list x86 X86 amd64 AMD64)
+if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
+    set(TT_X64 1)
 endif()
 
 find_package(GTest)
