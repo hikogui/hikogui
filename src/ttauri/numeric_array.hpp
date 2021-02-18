@@ -644,7 +644,7 @@ public:
 
         auto r = numeric_array{};
         for (ssize_t i = 0; i != N; ++i) {
-            if ((Mask >> i) & 1 == 1) {
+            if (static_cast<bool>((Mask >> i) & 1)) {
                 r.v[i] = T{0};
             } else {
                 r.v[i] = rhs.v[i];
@@ -668,7 +668,7 @@ public:
 
         auto r = numeric_array{};
         for (ssize_t i = 0; i != N; ++i) {
-            if (((Mask >> i) & 1) == 1) {
+            if (static_cast<bool>((Mask >> i) & 1)) {
                 r.v[i] = -rhs.v[i];
             } else {
                 r.v[i] = rhs.v[i];
@@ -1093,7 +1093,7 @@ public:
 
         auto r = numeric_array{};
         for (ssize_t i = 0; i != N; ++i) {
-            if ((Mask >> i) & 1 == 1) {
+            if (static_cast<bool>((Mask >> i) & 1)) {
                 r.v[i] = lhs.v[i] + rhs.v[i];
             } else {
                 r.v[i] = lhs.v[i] - rhs.v[i];

@@ -1,6 +1,8 @@
 
 cmake_minimum_required(VERSION 3.19)
 enable_testing()
+set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
+set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
 
 set(TT_WIN32 0)
 set(TT_MACOS 0)
@@ -15,9 +17,9 @@ elseif (WIN32)
 endif()
 
 if(APPLE)
-project(TTauri LANGUAGES CXX OBJC)
+project(ttauri LANGUAGES CXX OBJC)
 else()
-project(TTauri LANGUAGES CXX)
+project(ttauri LANGUAGES CXX)
 endif()
 
 set(x64_list x86 X86 amd64 AMD64)
@@ -72,7 +74,9 @@ add_subdirectory(external)
 add_subdirectory(tools)
 
 add_library(ttauri STATIC)
+install(TARGETS ttauri RESOURCE)
 add_executable(ttauri_tests)
+
 add_subdirectory(src)
 
 target_link_libraries(ttauri PUBLIC fmt date date-tz ${Vulkan_LIBRARIES} VMA RenderDoc)
@@ -112,7 +116,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
 
     # The Microsoft version of clang does not implement all clang command line arguments.
     if (NOT MSVC)
-        # The TTauri generic tokenizer uses large constexpr tables.
+        # The ttauri generic tokenizer uses large constexpr tables.
         target_compile_options(ttauri PUBLIC -fconstexpr-steps=100000000)
 
         # Tune according to a more modern CPU.
@@ -142,7 +146,7 @@ elseif (MSVC)
     # Support Intel's IvyBridge and AMD's Steamroller
     target_compile_options(ttauri PUBLIC -arch:AVX)
 
-    # The TTauri generic tokenizer uses large constexpr tables.
+    # The ttauri generic tokenizer uses large constexpr tables.
     target_compile_options(ttauri PUBLIC -constexpr:steps 100000000)
 
     # C4068: unknown pragma.
@@ -225,39 +229,48 @@ elseif (APPLE)
     target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
-add_shader(ttauri_binary_resources
-    src/TTauri/GUI/pipeline_image.vert
-    src/TTauri/GUI/pipeline_image.frag
-    src/TTauri/GUI/pipeline_flat.vert
-    src/TTauri/GUI/pipeline_flat.frag
-    src/TTauri/GUI/pipeline_box.vert
-    src/TTauri/GUI/pipeline_box.frag
-    src/TTauri/GUI/pipeline_SDF.vert
-    src/TTauri/GUI/pipeline_SDF.frag
-    src/TTauri/GUI/pipeline_tone_mapper.vert
-    src/TTauri/GUI/pipeline_tone_mapper.frag
+########################################
+# Copy resources needed by executables #
+########################################
+add_shader(ttauri_static_resources
+    src/ttauri/GUI/pipeline_image.vert
+    src/ttauri/GUI/pipeline_image.frag
+    src/ttauri/GUI/pipeline_flat.vert
+    src/ttauri/GUI/pipeline_flat.frag
+    src/ttauri/GUI/pipeline_box.vert
+    src/ttauri/GUI/pipeline_box.frag
+    src/ttauri/GUI/pipeline_SDF.vert
+    src/ttauri/GUI/pipeline_SDF.frag
+    src/ttauri/GUI/pipeline_tone_mapper.vert
+    src/ttauri/GUI/pipeline_tone_mapper.frag
 )
-set(ttauri_binary_resources ${ttauri_binary_resources}
+set(ttauri_static_resources ${ttauri_static_resources}
     data/elusiveicons-webfont.ttf
     data/ttauri_icons.ttf
 )
 
-target_static_resource(ttauri ${ttauri_binary_resources})
+target_static_resource(ttauri ${ttauri_static_resources})
 
-add_custom_command(
-    TARGET ttauri POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory 
-        ${CMAKE_CURRENT_SOURCE_DIR}/data
-        ${CMAKE_BINARY_DIR}/data
+add_custom_target(ttauri_resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
+    DEPENDS
+    resources/themes/ttauri_dark.theme.json
+    resources/themes/ttauri_light.theme.json
+    resources/win32.keybinds.json
 )
+add_dependencies(ttauri ttauri_resources)
 
+#########################
+# Build test executable #
+#########################
+target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(ttauri_tests PRIVATE gtest_main ttauri)
 if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
 target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
 endif()
 
-target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(ttauri_tests PRIVATE gtest_main ttauri)
 gtest_discover_tests(ttauri_tests)
+
 add_custom_command(
     TARGET ttauri_tests PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -265,7 +278,15 @@ add_custom_command(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set(TTauri_do_not_analyze
+###############################
+# Build non-test applications #
+###############################
+add_subdirectory(examples)
+
+#############################################
+# Remove certain files from static analysis #
+#############################################
+set(ttauri_do_not_analyze
     src/ttauri/GUI/pipeline_flat.cpp
     src/ttauri/GUI/gui_window_vulkan.cpp
     src/ttauri/GUI/gui_device_vulkan.cpp
@@ -303,7 +324,7 @@ set(TTauri_do_not_analyze
 
 if(MSVC)
     if(TTAURI_ENABLE_CODE_ANALYSIS)
-        set_source_files_properties(${TTauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
+        set_source_files_properties(${ttauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
         target_compile_options(ttauri PUBLIC -analyze)
         #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
    endif()

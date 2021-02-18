@@ -1,0 +1,61 @@
+
+# By default cmake does not make optimized binaries when building "RelWithDebInfo" using the MSVC compiler.
+# It will only make optimized binaries when making a "Release" build, however those don't have debugging symbols.
+#
+# This CMakeOverride.txt will change the default compiler options for the "RelWithDebInfo" to make a fully
+# optimized executable like when building with "Release" but with included debugging symbols.
+
+cmake_policy(SET CMP0011 NEW)
+cmake_policy(SET CMP0054 NEW)
+
+# log all *_INIT variables
+#message("Start *_INIT variables:")
+#get_cmake_property(_varNames VARIABLES)
+#list (REMOVE_DUPLICATES _varNames)
+#list (SORT _varNames)
+#foreach (_varName ${_varNames})
+#    if (_varName MATCHES "_INIT$")
+#        message(STATUS "${_varName}=${${_varName}}")
+#    endif()
+#endforeach()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-MD -Zi -O2 -Ob2 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT "-MD -Zi -O2 -Ob2 -DNDEBUG")
+  #set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -debug")
+  #set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -debug")
+  #set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -debug")
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # using GCC
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+  # using Intel C++
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # using Visual Studio C++
+  set(CMAKE_C_FLAGS_INIT "-DWIN32 -D_WINDOWS -nologo")
+  set(CMAKE_CXX_FLAGS_INIT "-DWIN32 -D_WINDOWS -GR -EHsc -nologo")
+  set(CMAKE_EXE_LINKER_FLAGS_INIT "-machine:x64 -nologo")
+  set(CMAKE_MODULE_LINKER_FLAGS_INIT "-machine:x64 -nologo")
+  set(CMAKE_SHARED_LINKER_FLAGS_INIT "-machine:x64 -nologo")
+  set(CMAKE_STATIC_LINKER_FLAGS_INIT "-machine:x64 -nologo")
+
+  set(CMAKE_CXX_FLAGS_DEBUG_INIT "-MDd -Zi -Ob0 -Od")
+  set(CMAKE_C_FLAGS_DEBUG_INIT "-MDd -Zi -Ob0 -Od")
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT "-INCREMENTAL:NO -debug")
+  set(CMAKE_MODULE_LINKER_FLAGS_DEBUG_INIT "-INCREMENTAL:NO -debug")
+  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT "-INCREMENTAL:NO -debug")
+
+  set(CMAKE_CXX_FLAGS_RELEASE_INIT "-MD -O2 -Ob3 -GL -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELEASE_INIT "-MD -O2 -Ob3 -GL -DNDEBUG")
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO -LTCG")
+  set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO -LTCG")
+  set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO -LTCG")
+
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-MD -Zi -O2 -Ob3 -GL -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT "-MD -Zi -O2 -Ob3 -GL -DNDEBUG")
+  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
+  set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
+  set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
+endif()
