@@ -7,12 +7,12 @@
 #include "ttauri/observable.hpp"
 #include "ttauri/widgets/grid_layout_delegate.hpp"
 
-namespace ttauri_demo {
-class PreferencesController;
+namespace demo {
+class preferences_controller;
 
-class AudioPreferencesController : public tt::grid_layout_delegate {
+class audio_preferences_controller : public tt::grid_layout_delegate {
 public:
-    AudioPreferencesController(std::weak_ptr<PreferencesController> const &preferences_controller) noexcept :
+    audio_preferences_controller(std::weak_ptr<preferences_controller> const &preferences_controller) noexcept :
         preferences_controller(preferences_controller)
     {
         tt_assert(!preferences_controller.expired());
@@ -21,7 +21,7 @@ public:
     void init(tt::grid_layout_widget &self) noexcept override;
 
 protected:
-    std::weak_ptr<PreferencesController> preferences_controller;
+    std::weak_ptr<preferences_controller> preferences_controller;
 };
 
 }

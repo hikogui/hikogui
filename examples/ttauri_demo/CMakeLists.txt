@@ -21,12 +21,12 @@ add_custom_target(ttauri_demo_resources
 add_dependencies(ttauri_demo ttauri_demo_resources)
 
 set(ttauri_demo_do_no_analyze
-    src/PreferencesController.cpp
-    src/MainWindowController.cpp
-    src/AudioPreferencesController.cpp
+    src/preferences_controller.cpp
+    src/main_window_controller.cpp
+    src/audio_preferences_controller.cpp
     src/main.cpp
-    src/ApplicationController.cpp
-    src/LicensePreferencesController.cpp
+    src/application_controller.cpp
+    src/license_preferences_controller.cpp
 )
 
 if(MSVC)

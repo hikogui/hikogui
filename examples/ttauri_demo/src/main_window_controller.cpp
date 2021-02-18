@@ -1,18 +1,18 @@
 
-#include "MainWindowController.hpp"
-#include "PreferencesController.hpp"
-#include "ApplicationController.hpp"
+#include "main_window_controller.hpp"
+#include "preferences_controller.hpp"
+#include "application_controller.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/widgets/widgets.hpp"
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/GUI/gui_window.hpp"
 
-namespace ttauri_demo {
+namespace demo {
 
-using namespace tt;
-
-void MainWindowController::init(gui_window& self) noexcept
+void main_window_controller::init(tt::gui_window& self) noexcept
 {
+    using namespace tt;
+
     gui_window_delegate::init(self);
 
     // Add buttons to toolbar.
@@ -20,7 +20,7 @@ void MainWindowController::init(gui_window& self) noexcept
     preferences_button->label = label{ elusive_icon::Wrench, l10n("Preferences") };
     preferences_button_callback = preferences_button->subscribe([&self]() {
         run_from_main_loop([&self]() {
-            if (auto application_controller = ApplicationController::global.lock()) {
+            if (auto application_controller = application_controller::global.lock()) {
                 self.system.make_window(
                     application_controller->preferences_controller,
                     label{ icon{URL{"resource:ttauri_demo.png"}}, l10n("TTauri Demo - Preferences") }

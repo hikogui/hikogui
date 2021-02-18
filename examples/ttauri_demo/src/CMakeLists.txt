@@ -1,15 +1,15 @@
 
 target_sources(ttauri_demo PRIVATE
-    AudioPreferencesController.cpp
-    AudioPreferencesController.hpp
-    ApplicationPreferences.hpp
-    LicensePreferencesController.cpp
-    LicensePreferencesController.hpp
+    audio_preferences_controller.cpp
+    audio_preferences_controller.hpp
+    application_preferences.hpp
+    license_preferences_controller.cpp
+    license_preferences_controller.hpp
     main.cpp
-    MainWindowController.cpp
-    MainWindowController.hpp
-    PreferencesController.cpp
-    PreferencesController.hpp
-    ApplicationController.cpp
-    ApplicationController.hpp
+    main_window_controller.cpp
+    main_window_controller.hpp
+    preferences_controller.cpp
+    preferences_controller.hpp
+    application_controller.cpp
+    application_controller.hpp
 )

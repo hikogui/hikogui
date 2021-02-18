@@ -6,16 +6,16 @@
 #include "ttauri/preferences.hpp"
 #include "ttauri/observable.hpp"
 
-namespace ttauri_demo {
+namespace demo {
 
-class ApplicationPreferences : public tt::preferences {
+class application_preferences : public tt::preferences {
 public:
     using super = tt::preferences;
-    inline static std::unique_ptr<ApplicationPreferences> global;
+    inline static std::unique_ptr<application_preferences> global;
 
     tt::observable<std::string> audio_output_device_id;
 
-    ApplicationPreferences(tt::URL location) noexcept : super(location)
+    application_preferences(tt::URL location) noexcept : super(location)
     {
         audio_output_device_id.subscribe_ptr(_set_modified_ptr);
     }

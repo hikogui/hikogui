@@ -1,5 +1,5 @@
 
-#include "ApplicationController.hpp"
+#include "application_controller.hpp"
 #include "ttauri/application.hpp"
 #include "ttauri/crt.hpp"
 #include <Windows.h>
@@ -7,8 +7,8 @@
 
 int tt_main(std::vector<std::string> arguments, tt::os_handle instance)
 {
-    auto application_controller = std::make_shared<ttauri_demo::ApplicationController>();
-    ttauri_demo::ApplicationController::global = application_controller;
+    auto application_controller = std::make_shared<demo::application_controller>();
+    demo::application_controller::global = application_controller;
 
     auto app = tt_application(application_controller, std::move(arguments), instance);
     return app.main();

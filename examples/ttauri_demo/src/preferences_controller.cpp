@@ -1,19 +1,19 @@
 
-#include "PreferencesController.hpp"
+#include "preferences_controller.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/widgets/widgets.hpp"
 #include "ttauri/audio/audio_system.hpp"
 
-namespace ttauri_demo {
+namespace demo {
 
-using namespace tt;
-
-void PreferencesController::init(gui_window &self) noexcept
+void preferences_controller::init(tt::gui_window &self) noexcept
 {
+    using namespace tt;
+
     gui_window_delegate::init(self);
 
-    audio_preferences_controller = std::make_shared<AudioPreferencesController>(weak_from_this());
-    license_preferences_controller = std::make_shared<LicensePreferencesController>(weak_from_this());
+    audio_preferences_controller = std::make_shared<demo::audio_preferences_controller>(weak_from_this());
+    license_preferences_controller = std::make_shared<demo::license_preferences_controller>(weak_from_this());
 
     auto tab0 = self.make_toolbar_widget<toolbar_tab_button_widget<int>>(0, tab_index);
     tab0->label = {elusive_icon::Speaker , l10n("Audio")};
@@ -26,8 +26,10 @@ void PreferencesController::init(gui_window &self) noexcept
     tabs->make_widget(1, license_preferences_controller);
 }
 
-void PreferencesController::audio_device_list_changed(tt::audio_system &system) noexcept
+void preferences_controller::audio_device_list_changed(tt::audio_system &system) noexcept
 {
+    using namespace tt;
+
     auto devices = system.devices();
     auto device_list = std::vector<std::pair<std::string,tt::label>>{};
     for (auto const &device_ptr : devices) {

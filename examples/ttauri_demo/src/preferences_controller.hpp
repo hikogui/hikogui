@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "AudioPreferencesController.hpp"
-#include "LicensePreferencesController.hpp"
+#include "audio_preferences_controller.hpp"
+#include "license_preferences_controller.hpp"
 #include "ttauri/GUI/gui_window_delegate.hpp"
 #include "ttauri/observable.hpp"
 
-namespace ttauri_demo {
+namespace demo {
 
-class PreferencesController : public std::enable_shared_from_this<PreferencesController>, public tt::gui_window_delegate {
+class preferences_controller : public std::enable_shared_from_this<preferences_controller>, public tt::gui_window_delegate {
 public:
     void init(tt::gui_window &window) noexcept override;
 
@@ -24,11 +24,11 @@ private:
 
     tt::observable<std::vector<std::pair<std::string,tt::label>>> _audio_device_list;
 
-    std::shared_ptr<AudioPreferencesController> audio_preferences_controller;
-    std::shared_ptr<LicensePreferencesController> license_preferences_controller;
+    std::shared_ptr<audio_preferences_controller> audio_preferences_controller;
+    std::shared_ptr<license_preferences_controller> license_preferences_controller;
 
-    friend AudioPreferencesController;
-    friend LicensePreferencesController;
+    friend class audio_preferences_controller;
+    friend class license_preferences_controller;
 };
 
 }

@@ -1,15 +1,15 @@
 
-#include "LicensePreferencesController.hpp"
-#include "PreferencesController.hpp"
+#include "license_preferences_controller.hpp"
+#include "preferences_controller.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/widgets/widgets.hpp"
 
-namespace ttauri_demo {
+namespace demo {
 
-using namespace tt;
-
-void LicensePreferencesController::init(grid_layout_widget &self) noexcept
+void license_preferences_controller::init(tt::grid_layout_widget &self) noexcept
 {
+    using namespace tt;
+
     auto preferences_controller_ = preferences_controller.lock();
     tt_assert(preferences_controller_);
 
