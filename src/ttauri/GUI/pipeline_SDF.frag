@@ -16,7 +16,9 @@ layout(set = 0, binding = 2) uniform texture2D in_textures[16];
 
 layout(location = 0) in flat vec4 in_clipping_rectangle;
 layout(location = 1) in vec3 in_texture_coord;
-layout(location = 2) in flat vec4 in_color;
+layout(location = 2) in vec4 in_color;
+layout(location = 3) in float in_luminance;
+layout(location = 4) in float in_lightness;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 out_color;
@@ -26,16 +28,31 @@ bool is_clipped()
     return greaterThanEqual(gl_FragCoord.xyxy, in_clipping_rectangle) != bvec4(true, true, false, false);
 }
 
-vec3 mix_perceptual(vec3 x, vec3 y, vec3 a)
+float coverage_to_alpha(float coverage, float Y_back, float L_back, float Y_front, float L_front)
 {
-    vec3 r = mix(sqrt(x), sqrt(y), a);
-    return r * r;
+    if (Y_back == Y_front) {
+        return coverage;
+
+    } else {
+        float L_target = mix(L_back, L_front, coverage);
+        float Y_target = L_target * L_target;
+        return (Y_target - Y_back) / (Y_front - Y_back);
+    }
 }
 
-vec3 mix_perceptual(vec3 x, vec3 y, float a)
+vec3 coverage_to_alpha(vec3 coverage, float Y_back, float L_back, float Y_front, float L_front)
 {
-    vec3 r = mix(sqrt(x), sqrt(y), a);
-    return r * r;
+    if (Y_back == Y_front) {
+        return coverage;
+
+    } else {
+        vec3 L_back3 = vec3(L_back, L_back, L_back);
+        vec3 L_front3 = vec3(L_front, L_front, L_front);
+
+        vec3 L_target = mix(L_back3, L_front3, coverage);
+        vec3 Y_target = L_target * L_target;
+        return (Y_target - Y_back) / (Y_front - Y_back);
+    }
 }
 
 void main()
@@ -64,15 +81,19 @@ void main()
 
     } else {
         // Normal anti-aliasing.
-        vec4 background_color = clamp(subpassLoad(in_background_color), vec4(0.0, 0.0, 0.0, 0.0), vec4(1.0, 1.0, 1.0, 1.0));
-        vec4 foreground_color = clamp(in_color, vec4(0.0, 0.0, 0.0, 0.0), vec4(1.0, 1.0, 1.0, 1.0));
+        vec4 background_color = subpassLoad(in_background_color);
+        float background_luminance =
+            0.2126 * background_color.r + 0.7152 * background_color.g + 0.0722 * background_color.b;
+        float background_lightness = sqrt(background_luminance);
 
         if (pushConstants.subpixel_orientation == 0) {
             // Normal anti-aliasing.
             float coverage = clamp(green_radius + 0.5, 0.0, 1.0);
+            float alpha = coverage_to_alpha(
+                coverage, background_luminance, background_lightness, in_luminance, in_lightness);
 
             // Output alpha is always 1.0
-            out_color = vec4(mix_perceptual(background_color.rgb, foreground_color.rgb, coverage), 1.0);
+            out_color = vec4(mix(background_color.rgb, in_color.rgb, alpha), 1.0);
         
         } else {
             // Subpixel anti-aliasing
@@ -105,9 +126,11 @@ void main()
             float blue_radius = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), blue_coord).r * distance_multiplier;
 
             vec3 coverage = clamp(vec3(red_radius, green_radius, blue_radius) + 0.5, 0.0, 1.0);
+            vec3 alpha = coverage_to_alpha(
+                coverage, background_luminance, background_lightness, in_luminance, in_lightness);
 
             // Output alpha is always 1.0
-            out_color = vec4(mix_perceptual(background_color.rgb, foreground_color.rgb, coverage), 1.0);
+            out_color = vec4(mix(background_color.rgb, in_color.rgb, alpha), 1.0);
         }
     }
 }
