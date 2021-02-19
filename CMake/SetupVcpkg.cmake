@@ -5,10 +5,13 @@
 #
 # https://github.com/microsoft/vcpkg/blob/master/docs/users/integration.md#using-an-environment-variable-instead-of-a-command-line-option
 #
+# Environment Variables: https://vcpkg.readthedocs.io/en/latest/users/config-environment/
+#
 
 # == VCPKG_ROOT
 #
 # Please set VCPKG_ROOT on your env: export VCPKG_ROOT=/opt/vcpkg/bin
+# This avoids passing it on the configure line: -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
 #
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
@@ -16,7 +19,15 @@ endif()
 
 # == VCPKG_FEATURE_FLAGS
 #
-# Options include: manifests, binarycaching
+# This env var can be set to a comma-separated list of off-by-default features in vcpkg.
+#
+# Available features are: manifests, binarycaching.
+#
+# manifests     -> use the project-local manifest file "vcpkg.json" to build dependencies
+# binarycaching -> use prebuild packages from cache to avoid rebuilds
+#
+# https://vcpkg.readthedocs.io/en/latest/specifications/manifests/
+# https://vcpkg.readthedocs.io/en/latest/specifications/binarycaching/
 #
 if(NOT DEFINED ENV{VCPKG_FEATURE_FLAGS})
     set(ENV{VCPKG_FEATURE_FLAGS} "manifests")
@@ -24,8 +35,16 @@ endif()
 
 # == VCPKG_TARGET_TRIPLET
 #
-# The VCPKG_DEFAULT_TRIPLET is automatically set by vcpkg.cmake. TODO: Really?
-# If you want to build for other platforms, e.g. build for Android on Windows-x64 (canadian-cross builds),
+# A triplet defines the build target environment in a compact string.
+# [target-architecture]-[platform]-[linkage type]
+# Examples: x86-windows, x64-windows-static, x64-linux.
+#
+# https://vcpkg.readthedocs.io/en/latest/users/triplets/
+#
+# The VCPKG_DEFAULT_TRIPLET is automatically set by vcpkg.cmake.
+# The default triplets are: Windows: x86-windows, Linux: x64-linux, OSX: x64-osx.
+#
+# If you want to build for other platforms, e.g. build for Linux on Windows-x64 (canadian-cross builds)
 # please set VCPKG_TARGET_TRIPLET as env var: export VCPKG_TARGET_TRIPLET=x64-linux
 #
 if(DEFINED ENV{VCPKG_TARGET_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
@@ -49,6 +68,8 @@ endif()
 # Please use this variable to point to the locations of your packages share folder like below:
 # set(spdlog_DIR "${VCPKG_DIR}/share/spdlog")
 # find_package(spdlog CONFIG REQUIRED)
+#
+# TODO: define VCPKG_DIR for globally installed packages (in the vcpkg root)
 #
 if(NOT DEFINED VCPKG_DIR)
     if(WIN32)
