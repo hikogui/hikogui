@@ -22,15 +22,19 @@ jobs:
       VULKAN_SDK: C:\VulkanSDK\1.2.162.1
       VS_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\
       MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\
+      VCPKG_DEFAULT_TRIPLET: x64-windows
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Show cURL version
-        run: curl -V
+      - name: Show tool versions
+        run: |
+          curl -V
+          cmake --version
+          vcpkg version
+        shell: cmd
 
       - name: Install Vulkan_SDK
         run: |
@@ -39,6 +43,11 @@ jobs:
           dir %VULKAN_SDK%
         shell: cmd
 
+      - name: Install dependencies using VCPKG
+        run: c:\vcpkg\vcpkg install --feature-flags=manifests
 
-
-
+      - name: Configure and Build
+        run: |
+          cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build -S .
+          cmake --build ..\ttauri-build --config Release
+        shell: cmd
