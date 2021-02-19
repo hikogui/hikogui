@@ -15,7 +15,7 @@ static bool hasFoundationExtensions(const std::vector<const char *> &requiredExt
 {
     auto availableExtensions = std::unordered_set<std::string>();
     for (auto availableExtensionProperties : vk::enumerateInstanceExtensionProperties()) {
-        availableExtensions.insert(std::string(availableExtensionProperties.extensionName));
+        availableExtensions.insert(std::string(availableExtensionProperties.extensionName.data()));
     }
 
     for (auto requiredExtension : requiredExtensions) {
@@ -33,7 +33,7 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
     tt_log_info("Available vulkan layers:");
     auto r = std::vector<const char *>{};
     for (ttlet &available_layer : available_layers) {
-        ttlet layer_name = std::string{available_layer.layerName};
+        ttlet layer_name = std::string{available_layer.layerName.data()};
 
         ttlet it = std::find(std::begin(requested_layers), std::end(requested_layers), layer_name);
 
