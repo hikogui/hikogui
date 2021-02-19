@@ -1,10 +1,31 @@
 
 cmake_minimum_required(VERSION 3.19)
-enable_testing()
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
 endif()
+
+#-------------------------------------------------------------------
+# Build Options
+#-------------------------------------------------------------------
+
+option(TT_BUILD_DOCS      "Build documentation"                  OFF)
+option(TT_BUILD_EXAMPLES  "Build example applications"            ON)
+option(TT_BUILD_TESTS     "Build tests"                           ON)
+
+#-------------------------------------------------------------------
+# Project
+#-------------------------------------------------------------------
+
+if(APPLE)
+    project(ttauri LANGUAGES CXX OBJC)
+else()
+    project(ttauri LANGUAGES CXX)
+endif()
+
+#-------------------------------------------------------------------
+# Define Constants
+#-------------------------------------------------------------------
 
 set(TT_WIN32 0)
 set(TT_MACOS 0)
@@ -18,17 +39,14 @@ elseif (WIN32)
     set(TT_WIN32 1)
 endif()
 
-if(APPLE)
-project(ttauri LANGUAGES CXX OBJC)
-else()
-project(ttauri LANGUAGES CXX)
-endif()
-
 set(x64_list x86 X86 amd64 AMD64)
 if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
     set(TT_X64 1)
 endif()
 
+#-------------------------------------------------------------------
+# Precompiled Headers (PCH) Configuration
+#-------------------------------------------------------------------
 
 if(WIN32)
     if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
@@ -38,6 +56,10 @@ else(APPLE)
     # Unable to use precompiled headers with objc right now
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
 endif()
+
+#-------------------------------------------------------------------
+# Compiler Setup
+#-------------------------------------------------------------------
 
 # Define C++ Standard to use
 set(CMAKE_CXX_STANDARD 20)
@@ -76,50 +98,49 @@ set(fmt_DIR "${VCPKG_DIR}/share/fmt")
 find_package(fmt CONFIG REQUIRED)
 
 #
-# googletest
+# GoogleTest
 #
-#set(gtest_force_shared_crt ON)
 set(GTest_DIR "${VCPKG_DIR}/share/gtest")
 find_package(GTest CONFIG REQUIRED)
 
 #
-# vulkan memory allocator
+# Vulkan Memory Allocator
 #
 set(unofficial-vulkan-memory-allocator_DIR "${VCPKG_DIR}/share/unofficial-vulkan-memory-allocator")
 find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 
 #
-# vulkan SDK headers
+# Vulkan SDK Headers
 #
 # set VULKAN_SDK as env var
 set(Vulkan_DIR $ENV{VULKAN_SDK})
 message(STATUS "VULKAN_SDK -> $ENV{VULKAN_SDK}")
 find_package(Vulkan REQUIRED)
 
-#
-# doxygen
-#
-find_package(Doxygen)
-
 #-------------------------------------------------------------------
 # Setup Build Targets
 #-------------------------------------------------------------------
 
 add_library(ttauri STATIC)
- 
+
 install(TARGETS ttauri RESOURCE)
+
 add_executable(ttauri_tests)
 
 #-------------------------------------------------------------------
 # Setup Sources
 #-------------------------------------------------------------------
 
+# This needs to be below the build target commands (add_*).
+# We omit adding source files to these commands, but add them
+# later using target_sources() in CMakeLists of subdirectories.
+
 add_subdirectory(src)
 add_subdirectory(external)
 add_subdirectory(tools)
 
 #-------------------------------------------------------------------
-# Build Target: ttauri
+# Build Target: ttauri                                     (library)
 #-------------------------------------------------------------------
 
 target_link_libraries(ttauri PUBLIC
@@ -137,11 +158,13 @@ target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_features(ttauri PUBLIC cxx_std_20)
 
-add_custom_command(
-  TARGET ttauri POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata
-    ${CMAKE_BINARY_DIR}/data/tzdata)
+if(MSVC)
+    if(TTAURI_ENABLE_CODE_ANALYSIS)
+        set_source_files_properties(${TTauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
+        target_compile_options(ttauri PUBLIC -analyze)
+        #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
+   endif()
+endif()
 
 #
 # We will support the following CPUs:
@@ -280,9 +303,16 @@ elseif (APPLE)
     target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
-########################################
-# Copy resources needed by executables #
-########################################
+add_custom_command(
+  TARGET ttauri POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata
+    ${CMAKE_BINARY_DIR}/data/tzdata)
+
+#-------------------------------------------------------------------
+# Copy resources needed by executables
+#-------------------------------------------------------------------
+
 add_shader(ttauri_static_resources
     src/ttauri/GUI/pipeline_image.vert
     src/ttauri/GUI/pipeline_image.frag
@@ -295,6 +325,7 @@ add_shader(ttauri_static_resources
     src/ttauri/GUI/pipeline_tone_mapper.vert
     src/ttauri/GUI/pipeline_tone_mapper.frag
 )
+
 set(ttauri_static_resources ${ttauri_static_resources}
     data/elusiveicons-webfont.ttf
     data/ttauri_icons.ttf
@@ -309,33 +340,46 @@ add_custom_target(ttauri_resources
     resources/themes/ttauri_light.theme.json
     resources/win32.keybinds.json
 )
+
 add_dependencies(ttauri ttauri_resources)
 
-#########################
-# Build test executable #
-#########################
-target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(ttauri_tests PRIVATE gtest_main ttauri)
-if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
-target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
+#-------------------------------------------------------------------
+# Build Target: ttauri_tests                            (executable)
+#-------------------------------------------------------------------
+
+if(TT_BUILD_TESTS)
+
+    enable_testing()
+
+    if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
+        target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
+    endif()
+
+    target_link_libraries(ttauri_tests PRIVATE GTest::gtest_main ttauri)
+
+    add_custom_command(
+        TARGET ttauri_tests PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
+            ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
 endif()
 
+#-------------------------------------------------------------------
+# Build examples
+#-------------------------------------------------------------------
 
-add_custom_command(
-    TARGET ttauri_tests PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
+if(TT_BUILD_EXAMPLES)
 
-###############################
-# Build examples #
-###############################
-add_subdirectory(examples)
+    add_subdirectory(examples)
 
-#############################################
-# Remove certain files from static analysis #
-#############################################
+endif()
+
+#-------------------------------------------------------------------
+# Remove certain files from static analysis
+#-------------------------------------------------------------------
+
 set(ttauri_do_not_analyze
     src/ttauri/GUI/pipeline_flat.cpp
     src/ttauri/GUI/gui_window_vulkan.cpp
@@ -381,30 +425,40 @@ if(MSVC)
 endif()
 
 #-------------------------------------------------------------------
-# Doxygen
+# Build Documentation
 #-------------------------------------------------------------------
 
-if(DOXYGEN_EXECUTABLE)
-    set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
-    set(DOXYGEN_GENERATE_HTML YES)
-    set(DOXYGEN_GENERATE_XML NO)
-    set(DOXYGEN_GENERATE_LATEX NO)
-    set(DOXYGEN_GENERATE_PDF NO)
-    set(DOXYGEN_QUIET YES)
-    set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-    set(DOXYGEN_WARN_NO_PARAMDOC NO)
+if(TT_BUILD_DOCS)
 
-    set(DOXYGEN_STRIP_FROM_PATH src)
-    set(DOXYGEN_STRIP_FROM_INC_PATH src)
+    #
+    # Doxygen
+    #
+    find_package(Doxygen)
 
-    set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
-    set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
-    set(DOXYGEN_INLINE_INHERITED_MEMB YES)
-    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
-    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-    set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
+    if(DOXYGEN_FOUND)
+        set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
+        set(DOXYGEN_GENERATE_HTML YES)
+        set(DOXYGEN_GENERATE_XML NO)
+        set(DOXYGEN_GENERATE_LATEX NO)
+        set(DOXYGEN_GENERATE_PDF NO)
+        set(DOXYGEN_QUIET YES)
+        set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
+        set(DOXYGEN_WARN_NO_PARAMDOC NO)
 
-    set(DOXYGEN_EXTRACT_ALL YES)
+        set(DOXYGEN_STRIP_FROM_PATH src)
+        set(DOXYGEN_STRIP_FROM_INC_PATH src)
 
-    doxygen_add_docs(doc src/ttauri docs)
+        set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
+        set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
+        set(DOXYGEN_INLINE_INHERITED_MEMB YES)
+        set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
+        set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+        set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
+
+        set(DOXYGEN_EXTRACT_ALL YES)
+
+        doxygen_add_docs(doc src/ttauri docs)
+    else()
+        message("Please install Doxygen to generate the documentation.")
+    endif()
 endif()

@@ -14,8 +14,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # This workflow contains a job called "Windows"
-  build-on-windows:
+  # This workflow contains a job called "Windows-x64"
+  Windows-x64:
     # The type of runner that the job will run is a windows server 2019 box
     runs-on: windows-2019
     env:
