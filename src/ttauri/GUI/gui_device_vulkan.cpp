@@ -22,7 +22,7 @@ static bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, cons
 {
     auto availableExtensions = std::unordered_set<std::string>();
     for (auto availableExtensionProperties : physicalDevice.enumerateDeviceExtensionProperties()) {
-        availableExtensions.insert(std::string(availableExtensionProperties.extensionName));
+        availableExtensions.insert(std::string(availableExtensionProperties.extensionName.data()));
     }
 
     for (auto requiredExtension : requiredExtensions) {
@@ -120,7 +120,7 @@ gui_device_vulkan::gui_device_vulkan(gui_system &system, vk::PhysicalDevice phys
 
     deviceID = resultDeviceProperties2.properties.deviceID;
     vendorID = resultDeviceProperties2.properties.vendorID;
-    deviceName = std::string(resultDeviceProperties2.properties.deviceName);
+    deviceName = std::string(resultDeviceProperties2.properties.deviceName.data());
     deviceUUID = uuid::fromBigEndian(resultDeviceIDProperties.deviceUUID);
 
     physicalProperties = physicalIntrinsic.getProperties();

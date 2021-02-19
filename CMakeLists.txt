@@ -29,7 +29,6 @@ if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
     set(TT_X64 1)
 endif()
 
-find_package(GTest)
 find_package(Vulkan REQUIRED)
 find_package(Doxygen)
 
@@ -271,7 +270,7 @@ if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
 target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
 endif()
 
-gtest_discover_tests(ttauri_tests)
+#gtest_discover_tests(ttauri_tests)
 
 add_custom_command(
     TARGET ttauri_tests PRE_BUILD
