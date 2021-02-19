@@ -1,5 +1,5 @@
 
-XXX Depth buffer can be used as per-primative clipping/stencil buffer.
+XXX Depth buffer can be used as per-primitive clipping/stencil buffer.
 
 # Render architecture
 Vulkan is used as the backend for rendering windows.
@@ -44,14 +44,14 @@ Vulkan is used as the backend for rendering windows.
 ## Window
 The swap-chain of the window will consist of RGBA images with alpha set to 1.
 
-The window may either have the sRGB colour space, or the extended-float16-sRGB
+The window may either have the sRGB color space, or the extended-float16-sRGB
 color space.
 
 ## Single pass, five sub-passes.
 The whole render architecture is using a single pass with five sub-passes.
 
 By using a single pass the shader of the sub-passes are able to efficiently
-read from the frame-buffer. This frame buffer can be emphemeral and be located
+read from the frame-buffer. This frame buffer can be ephemeral and be located
 completely in fast on-GPU-chip memory. This will make rendering on mobile
 GPUs a lot more efficient compared to multi-pass architectures.
 
@@ -63,14 +63,14 @@ The five sub-passes are:
  - Flat Shader  - Render simple non-anti-aliased quads.
  - Box Shader   - Render anti-aliased rectangles with rounded corners.
  - Image Shader - Render anti-aliased texture mapped quads.
- - SDF Shader   - Render text-glyphs with subpixel-anti-aliasing.
+ - SDF Shader   - Render text-glyphs with sub-pixel-anti-aliasing.
  - Tone Mapper  - Convert HDR/WCG image to the reduced range of the display.
 
 ## Text Shaping
 
 Steps of text-shaping:
  - Start: with a list of style-graphemes in logical ordering. The style-grapheme contains the
-   Unicode-NFC and each grapheme as a style. Latin automatic ligatures such as 'ffi' are illigal
+   Unicode-NFC and each grapheme as a style. Latin automatic ligatures such as 'ffi' are illegal
    and should never be composed into a single grapheme.
  - Unicode-bidirectional-algorithm: This will put the list of graphemes in
    left-to-right render order. The new graphemes are in the form style-index-grapheme, here
@@ -85,17 +85,17 @@ Steps of text-shaping:
    the font.
  - Output 1: A list of vertex-points with screen-, texture- and color coordinates. And a index back to the original
    graphemes in logical ordering.
- - Output 2: A list of carret locations, by index.
+ - Output 2: A list of caret locations, by index.
     - It is possible for a single index to have up to two locations, due to left-to-right and right-to-left switching.
-    - It is possible to use this list to find the nearest carret location to the mouse cursor.
-    - The carret location list also contains the carret height and slant. 
+    - It is possible to use this list to find the nearest caret location to the mouse cursor.
+    - The caret location list also contains the caret height and slant. 
 
 
 ### Glyph Lookup algorithm
 
  1. Lookup grapheme's NFC code points in the code-point-to-font table and take the intersection of fonts.
  2. Lookup grapheme's NFD code points in the code-point-to-font table and take the intersection of fonts.
- 3. Find the closest matching font compared to the font-style and fall-back to the Noto font.
+ 3. Find the closest matching font compared to the font-style.
  4. Open the matching font.
  5. Lookup glyphs matching the code points from the grapheme's (NFC primary, NFD secondary).
  6. If next grapheme's style is the same, then try looking up the code-points in the current font, otherwise start at 1.
@@ -118,7 +118,7 @@ A font-style has the following characteristics:
  
   Bits | Name            | Description
  -----:|:--------------- |:-------------------------------------
- 24:31 | Super-Family ID | Super font family id 0-255. 0 = Noto
+ 24:31 | Super-Family ID | Super font family id 0-255.
     23 | Serif           |
     22 | Monospaced      | Serif + Monospace = Slab
     21 | Italic          | Italic / Oblique
@@ -128,7 +128,7 @@ A font-style has the following characteristics:
   0: 7 | Color index     |
 
 The characteristics are read from the 'feat' table or parsed from the
-ilename.
+filename.
 
 The font characteristic struct is ordered so that the nearest match
 can be found using nearest unsigned integer comparison. The color index
@@ -160,7 +160,7 @@ and from the preferences the user can select the current theme at runtime.
 #### Semantic Color
 #### Custom Color
 Custom colors are for application specific widgets. These colors may also be modified
-by the application at runtime. For example an audio application may use custom colours
+by the application at runtime. For example an audio application may use custom colors
 for drawing the audio level meters.
 
 ### Font Styles

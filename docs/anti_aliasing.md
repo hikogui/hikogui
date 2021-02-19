@@ -1,151 +1,190 @@
+Perceptive correct anti-aliasing
+================================
 
-The color space of a fragment shader
-------------------------------------
-The fragment shader does color calculations in floating point, the input and output are
-both in the sRGB color space with a linear transfer function.
-Where the values 0.0 to 1.0 are mapped-linearly to 0 cd/m2 to 80 cd/m2.
+Terms
+-----
 
-The range of black to 80 cd/m2 is the range of a correctly calibrated HDR monitor displaying
-the normal range of the sRGB color space. 
+### Linear-sRGB color space
+Linear-sRGB is an inaccurate term describing a color space based on
+the sRGB color primaries and white point, but with a linear transfer function.
 
-Preceived brightness by the human eye 
--------------------------------------
-But although the linear colors values in the fragment shader will be represented
-linearly by the amount of light coming from the monitor, the human eye preceived
-this amount of light logarithmically.
+The color component values have a range between 0.0 and 1.0 and are represented
+as floating point values. In certain cases values outside the 0.0 to 1.0 range
+are allowed to handle luminance values beyond 80 cm/m2 for HDR, or negative values
+which represent colors outside of the triangle of the sRGB color primaries.
 
-Reference: <https://en.wikipedia.org/wiki/Lightness>
+This is the color space that is used inside fragment shaders on a GPU.
 
-CIELAB is a color space and transfer function for preceived uniform color and brightness
-by the human eye.
+### Luminance
+The luminance is a physical linear indication of brightness.
 
-CIELAB specifies uniform lightness as:
-```
-L = L\* / 100.0
+In this paper we use the range of luminance values between 0.0 and 1.0 to
+be mapped linear to 0 cd/m2 to 80 cd/m2; which is the standard range of
+sRGB screen-luminance-level.
 
-L\* = 116 * f(Y / Yn) - 16
-
-f(t) = cbrt(t)                          if t > (6/29)^3
-       1/3 * (29/6)^2 * t + (4 / 29)    otherwise
-
-Yn = 80 cd/m2, Y = light from monitor
-
-or from the point of view of the fragment shader:
-
-Yn = 1.0, Y = color value from the shader
-```
-
-This is a pretty complicated to calculate inside the fragment shader
-so as a shortcut the estimate from 1920 is a simple:
+The luminance value is calculated from the linear-sRGB values as follows:
 
 ```
-L = sqrt(Y)
-
-Y = color value from the shader
-```
-
-Linear coverage to alpha compositing
-------------------------------------
-As everyone knows alpha compositing of two images must be done with
-linear colour values or there will be color and brightness changes
-where the alpha value is not either 0.0 or 1.0.
-
-If however we linearly convert the pixel coverage of an antialiased line
-to an alpha value between 0.0 and 1.0 we get the issue that the preceived
-width of the line is different between light-on-dark or dark-on-light.
-
-Below we calculate what we will perceptionally see when anti-aliasing a vertical
-line of two pixels wide, offset by 1/3 of a pixel. On the left side a white line
-on black background and on the right side the white line on a black background.
-
-```
-coverage:
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
- |  0% | 33% |100% | 66% |  0% |         |  0% | 33% |100% | 66% |  0% |
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
-
-alpha:
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
- | 0.0 |0.333| 1.0 |0.666| 0.0 |         | 1.0 |0.666| 0.0 |0.333| 1.0 |
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
-
-linear pixel value after compositing:
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
- | 0.0 |0.333| 1.0 |0.666| 0.0 |         | 1.0 |0.666| 0.0 |0.333| 1.0 |
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
-
-preceived lightness:
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
- | 0.0 |0.574| 1.0 |0.812| 0.0 |         | 1.0 |0.812| 0.0 |0.574| 1.0 |
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
-```
-
-Now we can calculate the line width based on the pixel values, simply
-sum the values of the pixels.
-We need to invert (1.0 - x) the values for black-on-white line for this calculation.
-
-```
-invert black on white line lightness, for calculating linear line width:
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
- | 0.0 |0.333| 1.0 |0.666| 0.0 |         | 0.0 |0.333| 1.0 |0.666| 0.0 |
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
-  width = 2.0                             width = 2.0
-
-invert black on white line lightness, for calculating preceived line width:
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
- | 0.0 |0.574| 1.0 |0.812| 0.0 |         | 0.0 |0.188| 1.0 |0.426| 0.0 |
- +-----+-----+-----+-----+-----+         +-----+-----+-----+-----+-----+
-  width = 2.386                           width = 1.614
-```
-
-As you see when you do linear compositing the perceived line width of a black line
-on white background is wider than a white line on black background.
-
-Perceived coverage to alpha compositing
----------------------------------------
-Since we are correctly using linear compositing colors with the alpha
-value. There can be only one conclusion: it is not correct to convert
-a coverage linearly to an alpha value.
-
-Since with coverage value we want to determine the lightness (perceptional)
-of a pixel based on a mix of the background and foreground color. We
-first need to get the lightness of a color.
-
-The following is the formula to covert sRGB color space to CIE luminance (Y),
-onverted to 1920 lightness:
-
-```
-L = sqrt(Y)
 Y = 0.2126 * R + 0.7152 * G + 0.0722 * B
 ```
 
-The wanted lightness and luminance based on coverage is:
+My intuition of luminance calculations on high-gamut colors is that
+the luminance is always positive. Since if a color outside of the standard sRGB
+triangle is selected at least one of the components must be a positive enough
+value to force the luminance to be above zero.
+
+<https://en.wikipedia.org/wiki/Relative_luminance>
+
+### Lightness
+Lightness is the perceptual uniform indication of brightness.
+
+In this paper we use the range of lightness values between 0.0 and 1.0 to
+be mapped non-linear to 0 cd/m2 to 80 cd/m2.  which is the standard range of
+[sRGB](https://en.wikipedia.org/wiki/SRGB) screen-luminance-level.
+
+The lightness and luminance value can be translated as follows:
 
 ```
-Lwanted = mix(Lback, Lfront, coverage), 
-Ywanted = Lwanted * Lwanted
+L = sqrt(Y)
+Y = L * L
 ```
 
-To get the alpha value we need to find the relative distance between the luminances
-of Ywanted between Yback and Yfront.
+The formula above is an approximation made in 1920, the current well accepted
+approximation is closer to cube-root curve with a linear section for dark values used
+in the 1976's CIELAB color space. However the square-root curve is accurate enough
+for the use-case of anti-aliasing fonts and is much faster in hardware and easier to
+use when doing the calculations for this paper.
+
+<https://en.wikipedia.org/wiki/Lightness>
+
+
+The problem
+-----------
+As everyone knows alpha compositing of two images must be done in the linear color
+space or there will be color and brightness changes over the range of alpha values.
+
+If however we linearly convert the pixel coverage of an anti-aliased line
+to an alpha value between 0.0 and 1.0 we get the issue that the perceived
+width of the line is different between light-on-dark or dark-on-light.
+
+Below we calculate what we will perceptional see when anti-aliasing a vertical
+line of two pixels wide centered at x=2.25. On the left side a white line
+on black background and on the right side the black line on a white background.
 
 ```
-alpha = (Ywanted - Yback) / (Yfront - Yback)       if Yfront != Yback
+           white on black-background    black on white-background
+          +----+----+----+----+----+   +----+----+----+----+----+
+coverage  | 0% |25% |100%|75% | 0% |   | 0% |25% |100%|75% | 0% |
+          +----+----+----+----+----+   +----+----+----+----+----+
+          
+          +----+----+----+----+----+   +----+----+----+----+----+
+alpha     |0.0 |0.25|1.0 |0.75|0.0 |   |0.0 |0.25|1.0 |0.75|0.0 |
+          +----+----+----+----+----+   +----+----+----+----+----+
+
+          +----+----+----+----+----+   +----+----+----+----+----+
+luminance |0.0 |0.25|1.0 |0.75|0.0 |   |1.0 |0.75|0.0 |0.25|1.0 |
+          +----+----+----+----+----+   +----+----+----+----+----+
+
+          +----+----+----+----+----+   +----+----+----+----+----+
+lightness |0.0 |0.5 |1.0 |0.87|0.0 |   |1.0 |0.87|0.0 |0.5 |1.0 |
+          +----+----+----+----+----+   +----+----+----+----+----+
+```
+
+The perceived line width of "white on black-background" is:
+`width = 0.0 + 0.5 + 1.0 + 0.87 + 0.0 = 2.37`
+
+The perceived line width of "black on white-background" is:
+`width = 5 - (1.0 + 0.87 + 0.0 + 0.5 + 1.0) = 1.63`
+
+As you can see the perceived width of the line is significant different
+especially when anti-aliasing objects which are thin, such as the lines
+on a glyph.
+
+There are some papers about the problems the change of thickness when
+rendering black text or white text. Most of those papers say these problems
+stem from not using linear compositing, or even hand-waving that the font
+was designed for black on white.
+
+However as you see from the calculations above this has nothing to do with
+the design of a font, because it shows up even when rendering a single line.
+Also if you would render the font without anti-aliasing these problems no longer
+exist, such as when rendering with a high resolution printer.
+
+The solution
+------------
+We want to anti-alias perceptional uniform between the foreground and background
+color, while at the same time linearly mix the foreground and background using
+alpha compositing. This means that the coverage-value is in perceptional uniform
+space.
+
+First we need to calculate the foreground and background lightness, based on the
+final composite of the foreground and background color using the two alpha values
+0.0 and 1.0. This definition will allow for semi-transparent foreground colors.
+
+```
+Yfront = 0.2126 * Rfront + 0.7152 * Gfront + 0.0722 * Bfront
+Yback = 0.2126 * Rback + 0.7152 * Gback + 0.0722 * Bback
+Lfront = sqrt(Yfront)
+Lback = sqrt(Yback)
+```
+
+By mixing the foreground and background lightness using the coverage value, we
+now have the target lightness for that coverage value.
+
+```
+Ltarget = mix(Lback, Lfront, coverage)
+```
+
+We can convert this target lightness to a target luminance, which can then be used to find
+the alpha value needed to reach that target from the foreground and background luminance.
+If the luminance of the background and foreground are the same, then that means only
+the color is different, in that case linearly map the coverage to alpha.
+
+```
+Ytarget = Ltarget * Ltarget
+alpha = (Ytarget - Yback) / (Yfront - Yback)       if Yfront != Yback
 alpha = coverage                                   otherwise
 ```
 
-Perceived coverage to alpha compositing with subpixel anti-aliasing
--------------------------------------------------------------------
-During subpixel anti-aliasing we get a coverage value at each
-sub-pixel location. Since from the previous chapter we determined
-that we are interested in the lightness of a color.
+### Example
+Below we calculate what we will perceptional see when anti-aliasing a vertical
+line of two pixels wide centered at x=2.25. On the left side a white line
+on black background and on the right side the black line on a white background.
 
-So we convert the sub-pixel coverage to sub-pixel alpha based
-on the overal lightness of the full pixel, not just on a component.
+```
+           white on black-background    black on white-background
+          +----+----+----+----+----+   +----+----+----+----+----+
+coverage  | 0% |25% |100%|75% | 0% |   | 0% |25% |100%|75% | 0% |
+          +----+----+----+----+----+   +----+----+----+----+----+
+                                        ((1 - coverage)^2 - 1) / -1
+          +----+----+----+----+----+   +----+----+----+----+----+
+alpha     |0.0 |.062|1.0 |.562|0.0 |   |0.0 |.438|1.0 |.938|0.0 |
+          +----+----+----+----+----+   +----+----+----+----+----+
+                                        1 - alpha
+          +----+----+----+----+----+   +----+----+----+----+----+
+luminance |0.0 |.062|1.0 |.562|0.0 |   |1.0 |.562|0.0 |.062|1.0 |
+          +----+----+----+----+----+   +----+----+----+----+----+
+                                        sqrt(luminance)
+          +----+----+----+----+----+   +----+----+----+----+----+
+lightness |0.0 |0.25|1.0 |0.75|0.0 |   |1.0 |0.75|0.0 |0.25|1.0 |
+          +----+----+----+----+----+   +----+----+----+----+----+
+```
 
-After that we have a sub-pixel alpha, then we do linear compositing
-on each sub-pixel separate.
+The perceived line width of "white on black-background" is:
+`width = 0.0 + 0.25 + 1.0 + 0.75 + 0.0 = 2`
 
-Alpha included in the foregound color or background color
----------------------------------------------------------
+The perceived line width of "black on white-background" is:
+`width = 5 - (1.0 + 0.75 + 0.0 + 0.25 + 1.0) = 2`
+
+sub-pixel anti-aliasing
+-----------------------
+During sub-pixel anti-aliasing we get a coverage value at each
+sub-pixel location.
+
+For a perceptional conversion of those coverage value to an alpha
+value we are interested in the lightness of the full pixel after
+compositing with the two alpha values of 0.0 and 1.0.
+
+After that we have an alpha value for each sub-pixel, then we do
+linear compositing on each sub-pixel separate.
 
