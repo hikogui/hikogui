@@ -362,7 +362,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
-    vulkan_device().graphicsQueue.submit(0, nullptr, renderFinishedFence);
+    [[maybe_unused]] ttlet submit_result = vulkan_device().graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
     presentImageToQueue(frameBufferIndex, renderFinishedSemaphore);
 

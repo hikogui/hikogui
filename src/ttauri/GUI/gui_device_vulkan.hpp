@@ -227,7 +227,7 @@ public:
 
     vk::Pipeline createGraphicsPipeline(vk::PipelineCache pipelineCache, const vk::GraphicsPipelineCreateInfo& createInfo) const {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        return intrinsic.createGraphicsPipeline(pipelineCache, createInfo);
+        return intrinsic.createGraphicsPipeline(pipelineCache, createInfo).value;
     }
 
     vk::Sampler createSampler(const vk::SamplerCreateInfo& createInfo) const {
