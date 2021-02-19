@@ -187,4 +187,3 @@ compositing with the two alpha values of 0.0 and 1.0.
 
 After that we have an alpha value for each sub-pixel, then we do
 linear compositing on each sub-pixel separate.
-
