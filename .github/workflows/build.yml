@@ -24,6 +24,7 @@ jobs:
       MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\
       VCPKG_ROOT: C:\vcpkg
       VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKG_DIR: C:\vcpkg\installed\x64-windows
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -44,11 +45,11 @@ jobs:
           dir %VULKAN_SDK%
         shell: cmd
 
-      - name: Install dependencies using VCPKG
-        run: c:\vcpkg\vcpkg install --feature-flags=manifests
+      #- name: Install dependencies using VCPKG
+      #  run: c:\vcpkg\vcpkg install --feature-flags=manifests
 
       - name: Configure and Build
         run: |
-          cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build -S . -DCMAKE_TOOLCHAIN_FILE=c:\vcpkg\scripts\buildsystems\vcpkg.cmake
+          cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build -S .
           cmake --build ..\ttauri-build --config Release
         shell: cmd
