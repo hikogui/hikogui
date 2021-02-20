@@ -76,7 +76,7 @@ before_build:
 
 build_script:
   # generate build files
-  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DBUILD_SHARED_LIBS:BOOL=OFF
+  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=OFF
   # build
   - cmake --build ..\ttauri-build --config %configuration%
 
@@ -88,6 +88,8 @@ after_build:
 #  - path: ttauri.zip
 #    name: ttauri
 
-# enable RDP session to Appveyor server
+# Enable RDP session to Appveyor server. You connect using a remote desktop connection (e.g. using mstsc.exe).
+# Use PW from APPVEYOR_RDP_PASSWORD above. A session lasts 60min max.
+# Do not forget to disable the following lines, when you solved the problem.
 on_finish:
   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
