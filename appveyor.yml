@@ -13,7 +13,7 @@ environment:
   VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
   VCPKG_ROOT: "C:\\Tools\\vcpkg"
   VULKAN_SDK: "C:\\VulkanSDK\\1.2.162.1"
-  #APPVEYOR_RDP_PASSWORD: somePassword#123
+  APPVEYOR_RDP_PASSWORD: somePassword#123
 
 #cache:
 #  - C:\Tools\vcpkg\installed\ -> appveyor.yml # preserve any vcpkg installed stuff
@@ -83,5 +83,5 @@ after_build:
 #    name: ttauri
 
 # enable RDP session to Appveyor server
-#on_finish:
-#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
