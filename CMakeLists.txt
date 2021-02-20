@@ -140,8 +140,6 @@ find_package(Vulkan REQUIRED)
 
 add_library(ttauri STATIC)
 
-show_build_target_properties(ttauri)
-
 install(TARGETS ttauri RESOURCE)
 
 add_executable(ttauri_tests)
@@ -382,6 +380,7 @@ if(TT_BUILD_TESTS)
         target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
     endif()
 
+    include(GoogleTest)
     gtest_discover_tests(ttauri_tests)
 
     add_custom_command(
@@ -450,6 +449,14 @@ if(MSVC)
         #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
    endif()
 endif()
+
+#-------------------------------------------------------------------
+# Display Compiler and Linker properties of Build Targets
+#-------------------------------------------------------------------
+
+show_build_target_properties(ttauri)
+show_build_target_properties(ttauri_demo)
+show_build_target_properties(ttauri_tests)
 
 #-------------------------------------------------------------------
 # Build Documentation
