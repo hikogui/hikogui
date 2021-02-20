@@ -6,7 +6,7 @@ function(add_shader RET)
     # add_shader depends on Vulkan::glslc. if not found, guide the user to find vulkan and the executable.
     if(NOT Vulkan_FOUND)
         message(FATAL_ERROR
-            "The addShader() function depends on the "glslc" shader compiler executable.\n"
+            "The addShader() function depends on the \"glslc\" shader compiler executable.\n"
             "It is detected during find_package(Vulkan REQUIRED) and defined as imported target executable Vulkan::glslc.\n"
             "Please use find_package(Vulkan REQUIRED) and make sure it succeeds!\n"
         )
