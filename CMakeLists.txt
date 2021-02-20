@@ -89,6 +89,9 @@ include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
 include(ShowBuildTargetProperties)
+if(WIN32)
+    include(GetWindowsNtVersion)
+endif()
 
 #-------------------------------------------------------------------
 # Setup Dependency Manager: VCPKG
@@ -314,6 +317,10 @@ if (WIN32)
     # Make sure that Windows.h doesn't include all kind of weird things.
     target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
 
+    # define the version of the windows header files to use
+    get_windows_ntversion(winnt_version)
+    target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${winnt_version})
+
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_METAL_EXT)
@@ -452,8 +459,14 @@ endif()
 #-------------------------------------------------------------------
 
 show_build_target_properties(ttauri)
-show_build_target_properties(ttauri_demo)
-show_build_target_properties(ttauri_tests)
+
+if(TT_BUILD_EXAMPLES)
+    show_build_target_properties(ttauri_demo)
+endif()
+
+if(TT_BUILD_TESTS)
+    show_build_target_properties(ttauri_tests)
+endif()
 
 #-------------------------------------------------------------------
 # Build Documentation
