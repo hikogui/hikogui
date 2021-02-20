@@ -16,7 +16,8 @@ endif()
 option(TT_BUILD_DOCS        "Build documentation"               OFF)
 option(TT_BUILD_EXAMPLES    "Build example applications"         ON)
 option(TT_BUILD_TESTS       "Build tests"                        ON)
-option(TT_BUILD_OPTIMIZED   "Build optimized Releases"          OFF)
+option(TT_BUILD_OPTIMIZED   "Build optimized Releases"           ON)
+option(TT_BUILD_PCH         "Build precompiled headers"          ON)
 
 #-------------------------------------------------------------------
 # Compiler Setup
@@ -294,8 +295,10 @@ elseif (MSVC)
 endif()
 
 if (WIN32)
-    if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
-    target_precompile_headers(ttauri PRIVATE <Windows.h>)
+    if(TT_BUILD_PCH)
+        if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
+            target_precompile_headers(ttauri PRIVATE <Windows.h>)
+        endif()
     endif()
 
     # Add vulkan win32 surface support.
@@ -384,8 +387,10 @@ if(TT_BUILD_TESTS)
 
     target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-    if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
-        target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
+    if(TT_BUILD_PCH)
+        if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
+            target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
+        endif()
     endif()
 
     include(GoogleTest)
