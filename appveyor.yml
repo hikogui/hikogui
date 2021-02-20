@@ -43,9 +43,9 @@ init:
 install:
   # 1) Get Git Submodules
   #- git submodule update --init --recursive
-  # 2) Update VCPKG
+  # 2) Update of VCPKG
   - cd C:\Tools\vcpkg
-  - git pull
+  - git pull &> /dev/null
   - .\bootstrap-vcpkg.bat -disableMetrics
   # 3) Install VULKAN_SDK
   - curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/1.2.162.1/windows/VulkanSDK-1.2.162.1-Installer.exe?Human=true
