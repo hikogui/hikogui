@@ -3,17 +3,8 @@ include(GetRelativePath)
 
 function(add_shader RET)
 
-    # The glslc shader compiler executable is detected during find_package(VULKAN).
-    # It's defined as Vulkan_GLSLC_EXECUTABLE.
-
-	# Find glslc shader compiler.
-	# On Android, the NDK includes the binary, so no external dependency.
-	#if(ANDROID)
-	#	file(GLOB glslc-folders ${ANDROID_NDK}/shader-tools/*)
-	#	find_program(GLSLC glslc HINTS ${glslc-folders})
-	#else()
-    #		find_program(GLSLC glslc)
-	#endif()
+    # The "glslc" shader compiler executable is detected during find_package(VULKAN).
+    # And defined as "Vulkan_GLSLC_EXECUTABLE" and also as target executable "Vulkan::glslc".
 
     foreach(SOURCE_FILE IN LISTS ARGN)
         message("add_shader: ${SOURCE_FILE}")
@@ -33,7 +24,7 @@ function(add_shader RET)
 	    # Add a custom command to compile GLSL to SPIR-V.
 	    add_custom_command(
 		    OUTPUT ${OUTPUT_PATH}
-		    COMMAND ${GLSLC} -o ${OUTPUT_PATH} ${INPUT_PATH}
+		    COMMAND Vulkan::glslc -o ${OUTPUT_PATH} ${INPUT_PATH}
 		    DEPENDS ${INPUT_PATH}
 		    VERBATIM)
 
