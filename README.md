@@ -1,5 +1,5 @@
 
-![example workflow](https://github.com/ttauri-project/ttauri/.github/workflows/codeql-analysis.yml/badge.svg)
+![codeql workflow](https://github.com/ttauri-project/ttauri/actions/workflows/codeql-analysis.yml/badge.svg)
 
 TTauri GUI library
 ==================
