@@ -59,7 +59,7 @@ before_build:
   # CHECK important folders to see if everything is present
   - dir C:\projects\ttauri
   - dir C:\projects\ttauri\vcpkg_installed
-  - dir C:\Tools\vcpkg\installed
+  #- dir C:\Tools\vcpkg\installed
   # return
   - cd C:\projects\ttauri
 
