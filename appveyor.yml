@@ -60,7 +60,7 @@ before_build:
   # CHECK important folders to see if everything is present
   - dir C:\projects\ttauri
   - dir C:\projects\ttauri\vcpkg_installed
-  - dir %VULKAN_SDK%/Bin
+  - dir %VULKAN_SDK%\Bin
   #- dir C:\Tools\vcpkg\installed
   # return
   - cd C:\projects\ttauri
