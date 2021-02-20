@@ -114,8 +114,13 @@ find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 #
 # set VULKAN_SDK as env var
 set(Vulkan_DIR $ENV{VULKAN_SDK})
-message(STATUS "VULKAN_SDK -> $ENV{VULKAN_SDK}")
+message(STATUS "ENV_VAR:VULKAN_SDK -> $ENV{VULKAN_SDK}")
 find_package(Vulkan REQUIRED)
+
+message(STATUS "Vulkan FOUND   -> ${Vulkan_FOUND}")
+message(STATUS "Vulkan Include -> ${Vulkan_INCLUDE_DIR}")
+message(STATUS "Vulkan Lib     -> ${Vulkan_LIBRARY}")
+message(STATUS "Vulkan GLSLC   -> ${Vulkan_GLSLC_EXECUTABLE}")
 
 #-------------------------------------------------------------------
 # Setup Build Targets

@@ -47,6 +47,7 @@ install:
   - cd C:\Tools\vcpkg
   - git pull --quiet
   - .\bootstrap-vcpkg.bat -disableMetrics
+  - vcpkg version
   # 3) Install VULKAN_SDK
   - curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/1.2.162.1/windows/VulkanSDK-1.2.162.1-Installer.exe?Human=true
   - Vulkan_SDK_Installer.exe /S
@@ -59,6 +60,7 @@ before_build:
   # CHECK important folders to see if everything is present
   - dir C:\projects\ttauri
   - dir C:\projects\ttauri\vcpkg_installed
+  - dir %VULKAN_SDK%/Bin
   #- dir C:\Tools\vcpkg\installed
   # return
   - cd C:\projects\ttauri
