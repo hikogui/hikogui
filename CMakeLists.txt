@@ -1,10 +1,6 @@
 
 cmake_minimum_required(VERSION 3.19)
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
-endif()
-
 if(WIN32)
     set(CMAKE_SYSTEM_VERSION 10.0)
 endif()
@@ -13,9 +9,28 @@ endif()
 # Build Options
 #-------------------------------------------------------------------
 
-option(TT_BUILD_DOCS      "Build documentation"                  OFF)
-option(TT_BUILD_EXAMPLES  "Build example applications"            ON)
-option(TT_BUILD_TESTS     "Build tests"                           ON)
+option(TT_BUILD_DOCS        "Build documentation"               OFF)
+option(TT_BUILD_EXAMPLES    "Build example applications"         ON)
+option(TT_BUILD_TESTS       "Build tests"                        ON)
+option(TT_BUILD_OPTIMIZED   "Build optimized Releases"          OFF)
+
+#-------------------------------------------------------------------
+# Compiler Setup
+#-------------------------------------------------------------------
+
+# Define C++ Standard to use
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
+if(TT_BUILD_OPTIMIZED)
+
+    # Compiler flags for optimized Release and RelWithDebugInfo builds
+    if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+        set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
+    endif()
+
+endif()
 
 #-------------------------------------------------------------------
 # Project
@@ -62,15 +77,6 @@ else(APPLE)
 endif()
 
 #-------------------------------------------------------------------
-# Compiler Setup
-#-------------------------------------------------------------------
-
-# Define C++ Standard to use
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON)
-
-#-------------------------------------------------------------------
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
@@ -78,6 +84,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
+include(ShowBuildTargetProperties)
+if(WIN32)
+    include(GetWindowsVersion)
+endif()
 
 #-------------------------------------------------------------------
 # Setup Dependency Manager: VCPKG
@@ -116,21 +126,21 @@ find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 #
 # Vulkan SDK Headers
 #
-# set VULKAN_SDK as env var
-set(Vulkan_DIR $ENV{VULKAN_SDK})
-message(STATUS "ENV_VAR:VULKAN_SDK -> $ENV{VULKAN_SDK}")
+if(NOT DEFINED ENV{VULKAN_SDK})
+    message(FATAL_ERROR
+        "Please set the VULKAN_SDK environment variable to the directory in which the SDK is installed.\n"
+        "It looks like C:\VulkanSDK\1.0.0.0, but with the version number being the version that was installed.\n"
+        "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
+endif()
 find_package(Vulkan REQUIRED)
-
-message(STATUS "Vulkan FOUND   -> ${Vulkan_FOUND}")
-message(STATUS "Vulkan Include -> ${Vulkan_INCLUDE_DIR}")
-message(STATUS "Vulkan Lib     -> ${Vulkan_LIBRARY}")
-message(STATUS "Vulkan GLSLC   -> ${Vulkan_GLSLC_EXECUTABLE}")
 
 #-------------------------------------------------------------------
 # Setup Build Targets
 #-------------------------------------------------------------------
 
 add_library(ttauri STATIC)
+
+show_build_target_properties(ttauri)
 
 install(TARGETS ttauri RESOURCE)
 
@@ -305,28 +315,9 @@ if (WIN32)
     # Make sure that Windows.h doesn't include all kind of weird things.
     target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
 
-    # taken from https://stackoverflow.com/a/40217291
-    macro(get_WIN32_WINNT version)
-        if (CMAKE_SYSTEM_VERSION)
-            set(ver ${CMAKE_SYSTEM_VERSION})
-            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
-            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
-            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
-            if ("${verMajor}" MATCHES "10")
-                set(verMajor "A")
-                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
-            endif ("${verMajor}" MATCHES "10")
-            # Remove all remaining '.' characters.
-            string(REPLACE "." "" ver ${ver})
-            # Prepend each digit with a zero.
-            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
-            set(${version} "0x${ver}")
-        endif(CMAKE_SYSTEM_VERSION)
-    endmacro(get_WIN32_WINNT)
-
-    get_WIN32_WINNT(ver)
-    add_definitions(-D_WIN32_WINNT=${ver})
-    target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${ver})
+    # define the version of the windows header files to use
+    get_windows_version(winnt_version)
+    target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${winnt_version})
 
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
@@ -383,11 +374,15 @@ if(TT_BUILD_TESTS)
 
     enable_testing()
 
+    target_link_libraries(ttauri_tests PRIVATE GTest::gtest_main ttauri)
+
+    target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
     if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
         target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
     endif()
 
-    target_link_libraries(ttauri_tests PRIVATE GTest::gtest_main ttauri)
+    gtest_discover_tests(ttauri_tests)
 
     add_custom_command(
         TARGET ttauri_tests PRE_BUILD

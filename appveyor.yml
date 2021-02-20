@@ -7,13 +7,19 @@ version: '{build}'
 
 platform: x64
 
-configuration: Release
+configuration:
+  - Debug
+  - Release
 
 environment:
   VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
   VCPKG_ROOT: "C:\\Tools\\vcpkg"
   VULKAN_SDK: "C:\\VulkanSDK\\1.2.162.1"
   APPVEYOR_RDP_PASSWORD: somePassword#123
+
+# lets the whole build fail immediately, if one of the job fails
+#matrix:
+#  fast_finish: true
 
 #cache:
 #  - C:\Tools\vcpkg\installed\ -> appveyor.yml # preserve any vcpkg installed stuff
@@ -41,21 +47,21 @@ init:
       }
 
 install:
-  # 1) Get Git Submodules
+  # Get Git Submodules
   #- git submodule update --init --recursive
   # Update CMake
-  - choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-  - refreshenv
-  # 2) Update of VCPKG
+  #- choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+  #- refreshenv
+  # Update of VCPKG
   - cd C:\Tools\vcpkg
   - git pull --quiet
   - .\bootstrap-vcpkg.bat -disableMetrics
   - vcpkg version
-  # 3) Install VULKAN_SDK
+  # Install VULKAN_SDK
   - curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/1.2.162.1/windows/VulkanSDK-1.2.162.1-Installer.exe?Human=true
   - Vulkan_SDK_Installer.exe /S
   - dir %VULKAN_SDK%
-  # 4) Install and build dependencies using VCPKG
+  # Install and build dependencies using VCPKG
   - cd C:\projects\ttauri
   - vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests
 
@@ -70,7 +76,7 @@ before_build:
 
 build_script:
   # generate build files
-  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build .
+  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DBUILD_WITH_STATIC_CRT:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -Dgtest_force_shared_crt:BOOL=ON -DBUILD_TZ_LIB:BOOL=ON -DUSE_SYSTEM_TZ_DB:BOOL=ON -DENABLE_DATE_TESTING:BOOL=OFF
   # build
   - cmake --build ..\ttauri-build --config %configuration%
 
