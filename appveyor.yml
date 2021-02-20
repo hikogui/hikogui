@@ -76,7 +76,7 @@ before_build:
 
 build_script:
   # generate build files
-  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=OFF
+  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
   # build
   - cmake --build ..\ttauri-build --config %configuration%
 

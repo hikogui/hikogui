@@ -225,6 +225,9 @@ elseif (MSVC)
     # Set the compiler to C++20 standard conforming as much as possible.
     target_compile_options(ttauri PUBLIC -permissive-)
 
+    # suppress msbuild startup banner
+    target_compile_options(ttauri PUBLIC /nologo)
+
     # By default MSVC reports a incorrect version in __cplusplus
     # This option will make it work correctly.
     target_compile_options(ttauri PUBLIC -Zc:__cplusplus)
@@ -285,7 +288,7 @@ elseif (MSVC)
         # -sdl forces deprecated warnings as errors so also not useful during development.
         #target_compile_options(ttauri PUBLIC -sdl)
 
-        # Just my code
+        # Just my code enables the VS debugger to steps over system, framework, library, and other non-user calls
         target_compile_options(ttauri PUBLIC -JMC)
     endif()
 endif()
@@ -320,7 +323,7 @@ if (WIN32)
     # define the version of the windows header files to use
     get_windows_ntversion(winnt_version)
     add_definitions(-D_WIN32_WINNT=${winnt_version})
-    #target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${winnt_version})
+    target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${winnt_version})
 
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
