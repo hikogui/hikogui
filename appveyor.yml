@@ -9,7 +9,7 @@ platform: x64
 
 configuration:
   - Debug
-  - Release
+  #- Release
 
 environment:
   VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
@@ -76,7 +76,7 @@ before_build:
 
 build_script:
   # generate build files
-  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DBUILD_WITH_STATIC_CRT:BOOL=OFF -DBUILD_SHARED_LIBS:BOOL=OFF -Dgtest_force_shared_crt:BOOL=ON -DBUILD_TZ_LIB:BOOL=ON -DUSE_SYSTEM_TZ_DB:BOOL=ON -DENABLE_DATE_TESTING:BOOL=OFF
+  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DBUILD_SHARED_LIBS:BOOL=OFF
   # build
   - cmake --build ..\ttauri-build --config %configuration%
 

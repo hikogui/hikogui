@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.19)
 
 if(WIN32)
     set(CMAKE_SYSTEM_VERSION 10.0)
+
+    # select MSVC runtime based on CMAKE_MSVC_RUNTIME_LIBRARY
+    cmake_policy(SET CMP0091 NEW)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 #-------------------------------------------------------------------
@@ -85,9 +89,6 @@ include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
 include(ShowBuildTargetProperties)
-if(WIN32)
-    include(GetWindowsVersion)
-endif()
 
 #-------------------------------------------------------------------
 # Setup Dependency Manager: VCPKG
@@ -312,10 +313,6 @@ if (WIN32)
 
     # Make sure that Windows.h doesn't include all kind of weird things.
     target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
-
-    # define the version of the windows header files to use
-    get_windows_version(winnt_version)
-    target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${winnt_version})
 
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
