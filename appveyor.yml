@@ -43,6 +43,8 @@ init:
 install:
   # 1) Get Git Submodules
   #- git submodule update --init --recursive
+  # Update CMake
+  - choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
   # 2) Update of VCPKG
   - cd C:\Tools\vcpkg
   - git pull --quiet
