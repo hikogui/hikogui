@@ -5,6 +5,10 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
 endif()
 
+if(WIN32)
+    set(CMAKE_SYSTEM_VERSION 10.0)
+endif()
+
 #-------------------------------------------------------------------
 # Build Options
 #-------------------------------------------------------------------
@@ -321,7 +325,7 @@ if (WIN32)
     endmacro(get_WIN32_WINNT)
 
     get_WIN32_WINNT(ver)
-    #add_definitions(-D_WIN32_WINNT=${ver})
+    add_definitions(-D_WIN32_WINNT=${ver})
     target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${ver})
 
 elseif (APPLE)
