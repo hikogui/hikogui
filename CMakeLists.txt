@@ -319,7 +319,8 @@ if (WIN32)
 
     # define the version of the windows header files to use
     get_windows_ntversion(winnt_version)
-    target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${winnt_version})
+    add_definitions(-D_WIN32_WINNT=${winnt_version})
+    #target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${winnt_version})
 
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
