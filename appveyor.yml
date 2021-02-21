@@ -63,7 +63,7 @@ install:
   - dir %VULKAN_SDK%
   # Install and build dependencies using VCPKG
   - cd C:\projects\ttauri
-  - vcpkg integrate install
+  - vcpkg integrate install --feature-flags=manifests
   - vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests
 
 before_build:
