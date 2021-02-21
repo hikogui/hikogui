@@ -7,6 +7,7 @@
 #include "wfree_unordered_map.hpp"
 #include "os_detect.hpp"
 #include "fixed_string.hpp"
+#include "statistics.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>
@@ -35,6 +36,7 @@ struct counter_functor {
     tt_no_inline void add_to_map() const noexcept
     {
         counter_map.insert(Tag, counter_map_value_type{&counter, 0});
+        statistics_start();
     }
 
     int64_t increment() const noexcept

@@ -16,6 +16,7 @@
 #include "os_detect.hpp"
 #include "delayed_format.hpp"
 #include "fixed_string.hpp"
+#include "system_status.hpp"
 #include <date/tz.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -26,94 +27,104 @@
 
 namespace tt {
 
-std::string getLastErrorMessage();
-
-[[noreturn]] void terminateOnFatalError(std::string &&message) noexcept;
-
-// Forward without including trace.hpp
-void trace_record() noexcept;
-
 enum class log_level : uint8_t {
-    //! Messages that are used for debugging during developmet.
-    Debug,
-    //! Informational messages used debugging problems in production by users of the application.
-    Info,
-    //! Trace message.
-    Trace,
-    //! A counter.
-    Counter,
-    //! Messages for auditing purposes.
-    Audit,
-    //! An error was detected which is recoverable by the application.
-    Warning,
-    //! An error was detected and is recoverable by the user.
-    Error,
-    //! An error has caused data to be corrupted.
-    Critical,
-    //! Unrecoverable error, need to terminate the application to reduce impact.
-    Fatal,
+    debug = to_log_level(system_status_type::log_level_debug),
+    info = to_log_level(system_status_type::log_level_info),
+    statistics = to_log_level(system_status_type::log_level_statistics),
+    trace = to_log_level(system_status_type::log_level_trace),
+    audit = to_log_level(system_status_type::log_level_audit),
+    warning = to_log_level(system_status_type::log_level_warning),
+    error = to_log_level(system_status_type::log_level_error),
+    fatal = to_log_level(system_status_type::log_level_fatal)
 };
+
+[[nodiscard]] constexpr log_level operator&(log_level const &lhs, log_level const &rhs) noexcept
+{
+    return static_cast<log_level>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
+}
+
+[[nodiscard]] constexpr log_level operator|(log_level const &lhs, log_level const &rhs) noexcept
+{
+    return static_cast<log_level>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+}
+
+constexpr log_level &operator|=(log_level &lhs, log_level const &rhs) noexcept
+{
+    lhs = lhs | rhs;
+    return lhs;
+}
+
+/** Make a log level mask based on a user given log level.
+ */
+[[nodiscard]] constexpr log_level make_log_level(log_level user_level) noexcept
+{
+    auto r = log_level{};
+
+    switch (user_level) {
+        using enum log_level;
+    case debug: r |= log_level::debug; [[fallthrough]];
+    case info: r |= info; [[fallthrough]];
+    case warning:
+        r |= statistics;
+        r |= warning;
+        [[fallthrough]];
+    case error:
+        r |= trace;
+        r |= error;
+        r |= fatal;
+        r |= audit;
+        break;
+    default: tt_no_default();
+    }
+
+    return r;
+}
 
 constexpr char const *to_const_string(log_level level) noexcept
 {
-    switch (level) {
-    case log_level::Debug: return "DEBUG";
-    case log_level::Info: return "INFO";
-    case log_level::Trace: return "TRACE";
-    case log_level::Counter: return "COUNT";
-    case log_level::Audit: return "AUDIT";
-    case log_level::Warning: return "WARN";
-    case log_level::Error: return "ERROR";
-    case log_level::Critical: return "CRIT";
-    case log_level::Fatal: return "FATAL";
-    default: return "<unknown>";
+    if (level >= log_level::fatal) {
+        return "fatal";
+    } else if (level >= log_level::error) {
+        return "error";
+    } else if (level >= log_level::warning) {
+        return "warning";
+    } else if (level >= log_level::audit) {
+        return "audit";
+    } else if (level >= log_level::trace) {
+        return "trace";
+    } else if (level >= log_level::statistics) {
+        return "statistics";
+    } else if (level >= log_level::info) {
+        return "info";
+    } else if (level >= log_level::debug) {
+        return "debug";
+    } else {
+        return "none";
     }
 }
 
-inline int command_line_argument_to_log_level(std::string_view str) noexcept
+inline void system_status_set_log_level(log_level level) noexcept
+{
+    return system_status_set_log_level(static_cast<uint8_t>(level));
+}
+
+inline int command_line_argument_to_log_level(std::string_view str)
 {
     if (str == "debug") {
-        return static_cast<int>(log_level::Debug);
-    } else if (str == "info") {
-        return static_cast<int>(log_level::Info);
-    } else if (str == "audit") {
-        return static_cast<int>(log_level::Audit);
-    } else if (str == "warning") {
-        return static_cast<int>(log_level::Warning);
-    } else if (str == "error") {
-        return static_cast<int>(log_level::Error);
-    } else if (str == "critical") {
-        return static_cast<int>(log_level::Critical);
-    } else if (str == "fatal") {
-        return static_cast<int>(log_level::Fatal);
-    } else {
-        return -1;
-    }
-}
+        return static_cast<int>(make_log_level(log_level::debug));
 
-constexpr bool operator<(log_level lhs, log_level rhs) noexcept
-{
-    return static_cast<int>(lhs) < static_cast<int>(rhs);
-}
-constexpr bool operator>(log_level lhs, log_level rhs) noexcept
-{
-    return rhs < lhs;
-}
-constexpr bool operator==(log_level lhs, log_level rhs) noexcept
-{
-    return static_cast<int>(lhs) == static_cast<int>(rhs);
-}
-constexpr bool operator!=(log_level lhs, log_level rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-constexpr bool operator<=(log_level lhs, log_level rhs) noexcept
-{
-    return !(lhs > rhs);
-}
-constexpr bool operator>=(log_level lhs, log_level rhs) noexcept
-{
-    return !(lhs < rhs);
+    } else if (str == "info") {
+        return static_cast<int>(make_log_level(log_level::info));
+
+    } else if (str == "warning") {
+        return static_cast<int>(make_log_level(log_level::warning));
+
+    } else if (str == "error") {
+        return static_cast<int>(make_log_level(log_level::error));
+
+    } else {
+        throw parse_error("Unknown log level '{}'", str);
+    }
 }
 
 class log_message_base {
@@ -138,8 +149,8 @@ public:
     static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
 
     template<typename... Args>
-    log_message(cpu_counter_clock::time_point timestamp, Args &&...args) noexcept :
-        _timestamp(timestamp), _what(std::forward<Args>(args)...)
+    log_message(Args &&...args) noexcept :
+        _timestamp(::tt::cpu_counter_clock::now()), _what(std::forward<Args>(args)...)
     {
     }
 
@@ -147,11 +158,10 @@ public:
     {
         ttlet local_timestring = log_message_base::cpu_utc_clock_as_iso8601(_timestamp);
 
-        if constexpr (Level == log_level::Trace || Level == log_level::Counter) {
+        if constexpr (static_cast<bool>(Level & log_level::statistics)) {
             return fmt::format("{} {:5} {}", local_timestring, to_const_string(Level), _what());
         } else {
-            return fmt::format(
-                "{} {:5} {} ({}:{})", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine);
+            return fmt::format("{} {:5} {} ({}:{})", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine);
         }
     }
 
@@ -164,86 +174,100 @@ template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_f
 log_message(cpu_counter_clock::time_point, Args &&...)
     -> log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>;
 
-/*! A class with which to log messages to a file or console.
+static constexpr size_t MAX_MESSAGE_SIZE = 224;
+static constexpr size_t MAX_NR_MESSAGES = 4096;
+
+using log_queue_item_type = polymorphic_optional<log_message_base, MAX_MESSAGE_SIZE>;
+using log_queue_type = wfree_message_queue<log_queue_item_type, MAX_NR_MESSAGES>;
+
+/** The global log queue contains messages to be displayed by the logger thread.
  */
-class logger_type {
-    static constexpr size_t MAX_MESSAGE_SIZE = 224;
-    static constexpr size_t MESSAGE_ALIGNMENT = 256;
-    static constexpr size_t MAX_NR_MESSAGES = 4096;
+inline log_queue_type log_queue;
 
-    using message_type = polymorphic_optional<log_message_base, MAX_MESSAGE_SIZE>;
-    using message_queue_type = wfree_message_queue<message_type, MAX_NR_MESSAGES>;
+std::string getLastErrorMessage();
 
-    //! the message queue must work correctly before main() is executed.
-    message_queue_type message_queue;
+// Forward without including trace.hpp
+void trace_record() noexcept;
 
-    hires_utc_clock::time_point next_gather_time = {};
+/** Flush all messages from the log_queue directly from this thread.
+ */
+tt_no_inline void logger_flush() noexcept;
 
-public:
-    logger_type() noexcept;
+/** Deinitalize the logger system.
+ */
+tt_no_inline void logger_deinit() noexcept;
 
-    log_level minimum_log_level = log_level::Debug;
+/** Initialize the log system.
+ * This will start the logging threads which periodically
+ * checks the log_queue for new messages and then
+ * call log_flush_messages().
+ */
+tt_no_inline void logger_init() noexcept;
 
-    void logger_tick() noexcept;
-    void gather_tick(bool last) noexcept;
+/** Start the logger system.
+ * Initialize the logger system if it is not already initialized and while the system is not in shutdown-mode.
+ * @return true if the logger system is initialized, false when the system is being shutdown.
+ */
+inline bool logger_start()
+{
+    return system_status_start_subsystem(system_status_type::logger, logger_init, logger_deinit);
+}
 
-    template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
-    void
-    log(typename cpu_counter_clock::time_point timestamp, Args &&...args) noexcept
-    {
-        if (Level >= minimum_log_level) {
-            // Add messages in the queue, block when full.
-            // * This reduces amount of instructions needed to be executed during logging.
-            // * Simplifies logged_fatal_message logic.
-            // * Will make sure everything gets logged.
-            // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
-            auto message = message_queue.write<"logger_blocked">();
+/** Log a message.
+ * @tparam Level log level of message, must be greater or equal to the log level of the `system_status`.
+ * @tparam SourceFile The source file where this function was called.
+ * @tparam SourceLine The source line where this function was called.
+ * @tparam Fmt The format string.
+ * @param timestamp The timestamp when the message is logged.
+ * @param args Arguments to fmt::format.
+ */
+template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+void log(Args &&...args) noexcept
+{
+    ttlet status = system_status.load(std::memory_order::memory_order_relaxed);
 
-            // dereference the message so that we get the polymorphic_optional, so this assignment will work correctly.
-            message->emplace<log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
-                timestamp, std::forward<Args>(args)...);
-
-            if constexpr (Level >= log_level::Fatal) {
-                // Make sure everything including this message and counters are logged.
-                terminateOnFatalError((*message)->format());
-
-            } else if constexpr (Level >= log_level::Error) {
-                // Actually logging of tracing will only work when we cleanly unwind the stack and destruct all trace objects
-                // this will not work on fatal messages.
-                trace_record();
-            }
-        }
+    if (!static_cast<bool>(to_log_level(status) & static_cast<uint8_t>(Level))) [[likely]] {
+        return;
     }
 
-private:
-    void write(std::string const &str) noexcept;
-    void writeToFile(std::string str) noexcept;
-    void writeToConsole(std::string str) noexcept;
-    void display_time_calibration() noexcept;
-    void display_counters() noexcept;
-    void display_trace_statistics() noexcept;
-};
+    // Add messages in the queue, block when full.
+    // * This reduces amount of instructions needed to be executed during logging.
+    // * Simplifies logged_fatal_message logic.
+    // * Will make sure everything gets logged.
+    // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
+    //auto message = ;
 
-// The constructor of logger only starts the logging thread.
-// The ring buffer of the logger is triviality constructed and can be used before the logger's constructor is stared.
-inline logger_type logger = {};
+    // Emplace a message directly on the queue.
+    log_queue.write<"logger_blocked">()->emplace<log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
+        std::forward<Args>(args)...);
+
+    if (static_cast<bool>(Level & log_level::fatal) || !logger_start()) {
+        [[unlikely]] logger_flush();
+    }
+
+    if constexpr (static_cast<bool>(Level & log_level::fatal)) {
+        std::terminate();
+
+    } else if constexpr (static_cast<bool>(Level & log_level::error)) {
+        // Actually logging of tracing will only work when we cleanly unwind the stack and destruct all trace objects.
+        trace_record();
+    }
+}
 
 } // namespace tt
 
 #define tt_log(level, fmt, ...) \
     do { \
-        ttlet _tt_log_timestamp = ::tt::cpu_counter_clock::now(); \
-        ::tt::logger.log<level, __FILE__, __LINE__, fmt>(_tt_log_timestamp __VA_OPT__(,) __VA_ARGS__); \
+        ::tt::log<level, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
     } while (false)
 
-#define tt_log_debug(fmt, ...) tt_log(::tt::log_level::Debug, fmt __VA_OPT__(,) __VA_ARGS__)
-#define tt_log_trace(fmt, ...) tt_log(::tt::log_level::Trace, fmt __VA_OPT__(,) __VA_ARGS__)
-#define tt_log_counter(fmt, ...) tt_log(::tt::log_level::Counter, fmt __VA_OPT__(,) __VA_ARGS__)
-#define tt_log_info(fmt, ...) tt_log(::tt::log_level::Info, fmt __VA_OPT__(,) __VA_ARGS__)
-#define tt_log_audit(fmt, ...) tt_log(::tt::log_level::Audit, fmt __VA_OPT__(,) __VA_ARGS__)
-#define tt_log_warning(fmt, ...) tt_log(::tt::log_level::Warning, fmt __VA_OPT__(,) __VA_ARGS__)
-#define tt_log_error(fmt, ...) tt_log(::tt::log_level::Error, fmt __VA_OPT__(,) __VA_ARGS__)
-#define tt_log_critical(fmt, ...) tt_log(::tt::log_level::Critical, fmt __VA_OPT__(,) __VA_ARGS__)
+#define tt_log_debug(fmt, ...) tt_log(::tt::log_level::debug, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define tt_log_info(fmt, ...) tt_log(::tt::log_level::info, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define tt_log_statistics(fmt, ...) tt_log(::tt::log_level::statistics, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define tt_log_trace(fmt, ...) tt_log(::tt::log_level::trace, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define tt_log_audit(fmt, ...) tt_log(::tt::log_level::audit, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define tt_log_warning(fmt, ...) tt_log(::tt::log_level::warning, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define tt_log_error(fmt, ...) tt_log(::tt::log_level::error, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define tt_log_fatal(fmt, ...) \
-    tt_log(::tt::log_level::Fatal, fmt __VA_OPT__(,) __VA_ARGS__); \
+    tt_log(::tt::log_level::fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
     tt_unreachable()
