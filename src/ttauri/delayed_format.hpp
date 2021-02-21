@@ -39,7 +39,7 @@ public:
      *             but excluding the locale.
      */
     template<typename... Args>
-    delayed_format(Args &&...args) noexcept : _values(forward_value<Args>{}(args)...)
+    delayed_format(Args const &...args) noexcept : _values(args...)
     {
     }
 
