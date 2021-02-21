@@ -1,12 +1,12 @@
 
-if(WIN32)
-  set(GUI_TYPE WIN32)
-elseif(APPLE)
-  set(GUI_TYPE MACOSX_BUNDLE)
-endif()
+#-------------------------------------------------------------------
+# Build Target: ttauri_demo                             (executable)
+#-------------------------------------------------------------------
 
-add_executable(ttauri_demo ${GUI_TYPE})
+add_executable(ttauri_demo WIN32 MACOSX_BUNDLE)
+
 target_link_libraries(ttauri_demo PRIVATE ttauri)
+
 add_subdirectory(src)
 
 add_custom_target(ttauri_demo_resources
@@ -18,6 +18,7 @@ add_custom_target(ttauri_demo_resources
     resources/locale/en.po
     resources/locale/nl.po
 )
+
 add_dependencies(ttauri_demo ttauri_demo_resources)
 
 set(ttauri_demo_do_no_analyze
@@ -34,4 +35,3 @@ if(MSVC)
         set_source_files_properties(${ttauri_demo_do_no_analyze} PROPERTIES COMPILE_FLAGS -analyze-)
     endif()
 endif()
-
