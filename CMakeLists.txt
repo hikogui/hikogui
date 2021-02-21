@@ -174,7 +174,7 @@ target_link_libraries(ttauri PUBLIC
     RenderDoc
 )
 
-if (WIN32)
+if(WIN32)
     target_link_libraries(ttauri PUBLIC UxTheme.lib)
     target_link_libraries(ttauri PUBLIC synchronization windowsapp.lib)
 endif()
