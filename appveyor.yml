@@ -114,15 +114,15 @@ build_script:
         -DTT_BUILD_OPTIMIZED:BOOL=ON
         -DTT_BUILD_PCH:BOOL=ON
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-  - if [%COMPILER%]==[CLANG] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T LLVM -S . -B ..\ttauri-build
+  - if [%COMPILER%]==[CLANG] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T ClangCL -S . -B ..\ttauri-build
         -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DTT_BUILD_TESTS:BOOL=ON
         -DTT_BUILD_OPTIMIZED:BOOL=ON
         -DTT_BUILD_PCH:BOOL=ON
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-        -DCMAKE_C_COMPILER=clang
-        -DCMAKE_CXX_COMPILER=clang++
+        -DCMAKE_C_COMPILER=C:/PROGRA~1/LLVM/bin/clang.exe
+        -DCMAKE_CXX_COMPILER=C:/PROGRA~1/LLVM/bin/clang-cl.exe
   # build
   - cmake --build ..\ttauri-build --config %BUILD_TYPE% --target install -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
