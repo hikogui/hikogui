@@ -15,7 +15,7 @@ version: '{build}'
 platform: x64
 configuration: Release
 environment:
-    # appveyor
+  # appveyor
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
   APPVEYOR_RDP_PASSWORD: somePassword#123
   # vcpkg
@@ -80,18 +80,18 @@ install:
   - vcpkg version
   # Install VULKAN_SDK
   - if not exist %VULKAN_SDK% (
-      curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/VulkanSDK-%VULKAN_VERSION%-Installer.exe?Human=true
+      curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/VulkanSDK-%VULKAN_VERSION%-Installer.exe?Human=true &
       Vulkan_SDK_Installer.exe /S
     )
   - dir %VULKAN_SDK%
   # Install and build dependencies using VCPKG
   - set VCPKG_INSTALLED=C:\Tools\vcpkg\installed\%VCPKG_TARGET_TRIPLET%
   - if not exist %VCPKG_INSTALLED% (
-      cd C:\projects\ttauri
-      vcpkg integrate install --feature-flags=manifests
-      vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests
+      cd C:\projects\ttauri &
+      vcpkg integrate install --feature-flags=manifests &
+      vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests &
     )
-  # Init MSVC environment
+  # Init MSVC environment, see https://www.appveyor.com/docs/lang/cpp/
   - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019 Preview"
       (call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM% )
 
