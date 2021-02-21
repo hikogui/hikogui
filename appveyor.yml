@@ -195,5 +195,5 @@ cache:
 # Use PW from APPVEYOR_RDP_PASSWORD above. A session lasts 60min max.
 # Do not forget to disable the following lines, when you solved the problem.
 
-#on_finish:
-#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
