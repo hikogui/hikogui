@@ -57,10 +57,6 @@ public:
     */
     datum configuration;
 
-    /** The system timezone.
-    */
-    date::time_zone const *timeZone = nullptr;
-
     /** Thread id of the main thread.
     */
     thread_id main_thread_id;

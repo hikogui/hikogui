@@ -193,13 +193,14 @@ public:
     }
 
 private:
-    enum state { empty, internal, external };
+    enum class state : uint8_t { empty, internal, external };
+
+    state _state;
 
     union {
         std::array<std::byte, capacity> buffer;
         pointer pointer;
     } _value;
-    state _state;
 
     tt_no_inline void reset_deep() noexcept
     {

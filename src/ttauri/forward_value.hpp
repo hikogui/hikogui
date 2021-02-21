@@ -61,6 +61,19 @@ struct forward_value<std::string_view> {
     }
 };
 
+// Override for char const *, otherwise forward_value will match
+// char const (&)[].
+template<>
+struct forward_value<char const *> {
+    using type = std::string;
+
+    [[nodiscard]] std::string operator()(char const *t) const noexcept
+    {
+        return std::string{t};
+    }
+};
+
+
 /** Get the storage type of the `forward_value` functor.
  * Use this type for the variables that are assigned with the return
  * value of the `forward_value` functor.

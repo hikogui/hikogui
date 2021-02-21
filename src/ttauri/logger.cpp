@@ -12,6 +12,7 @@
 #include "url_parser.hpp"
 #include "debugger.hpp"
 #include "timer.hpp"
+#include "unfair_recursive_mutex.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <exception>
@@ -19,6 +20,7 @@
 #include <iostream>
 #include <ostream>
 #include <chrono>
+#include <thread>
 
 namespace tt {
 
@@ -29,24 +31,7 @@ using namespace std::literals::chrono_literals;
     return format_iso8601(cpu_utc_clock::convert(timestamp));
 }
 
-[[noreturn]] void terminateOnFatalError(std::string &&message) noexcept
-{
-    if (debugger_is_present()) {
-        debugger_log(message);
-        tt_debugger_break();
-
-    } else {
-        debugger_dialogue(
-            "Fatal error",
-            "Fatal error: {}.\n\n"
-            "This is a serious bug in this application, please email support@pokitec.com with the error message above. "
-            "Press OK to quit the application.",
-            message);
-    }
-    std::terminate();
-}
-
-void logger_type::writeToConsole(std::string str) noexcept
+static void logger_write_to_console(std::string str) noexcept
 {
     if (debugger_is_present()) {
         debugger_log(str);
@@ -55,90 +40,73 @@ void logger_type::writeToConsole(std::string str) noexcept
     }
 }
 
-void logger_type::writeToFile(std::string str) noexcept {}
+static void logger_write_to_file(std::string str) noexcept {}
 
 /*! Write to a log file and console.
  * This will write to the console if one is open.
  * It will also create a log file in the application-data directory.
  */
-void logger_type::write(std::string const &str) noexcept
+static void logger_write(std::string const &str) noexcept
 {
-    writeToFile(str);
-    writeToConsole(str);
+    logger_write_to_file(str);
+    logger_write_to_console(str);
 }
 
-void logger_type::display_counters() noexcept
+unfair_recursive_mutex logger_mutex;
+std::jthread logger_thread;
+
+/** Flush all messages from the log_queue directly from this thread.
+ */
+void logger_flush() noexcept
 {
-    ttlet keys = counter_map.keys();
-    tt_log_counter("{:>18} {:>9} {:>10} {:>10}", "total", "delta", "mean", "peak");
-    for (ttlet &tag : keys) {
-        ttlet[count, count_since_last_read] = read_counter(tag);
-        tt_log_counter("{:>18} {:>+9} {:10} {:10} {}", count, count_since_last_read, "", "", tag);
-    }
-}
+    ttlet t = trace<"log_flush">{};
+    ttlet lock = std::scoped_lock(logger_mutex);
 
-void logger_type::display_trace_statistics() noexcept
-{
-    ttlet keys = trace_statistics_map.keys();
-    for (ttlet &tag : keys) {
-        auto *stat = trace_statistics_map.get(tag, nullptr);
-        tt_assert(stat != nullptr);
-        ttlet stat_result = stat->read();
+    while (!log_queue.empty()) {
+        auto message = log_queue.read();
 
-        if (stat_result.last_count <= 0) {
-            tt_log_counter("{:18n} {:+9n} {:10} {:10} {}", stat_result.count, stat_result.last_count, "", "", tag);
-
-        } else {
-            // XXX not perfect at all.
-            ttlet duration_per_iter = format_engineering(stat_result.last_duration / stat_result.last_count);
-            ttlet duration_peak = format_engineering(stat_result.peak_duration);
-            tt_log_counter(
-                "{:18n} {:+9n} {:>10} {:>10} {}",
-                stat_result.count,
-                stat_result.last_count,
-                duration_per_iter,
-                duration_peak,
-                tag);
-        }
-    }
-}
-
-void logger_type::gather_tick(bool last) noexcept
-{
-    ttlet t = trace<"gather_tick">{};
-
-    constexpr auto gather_interval = 30s;
-
-    if (last) {
-        tt_log_info("Counter: displaying counters and statistics at end of program");
-        display_counters();
-        display_trace_statistics();
-
-    } else if (next_gather_time < hires_utc_clock::now()) {
-        tt_log_info("Counter: displaying counters and statistics over the last {} seconds", gather_interval / 1s);
-        display_counters();
-        display_trace_statistics();
-
-        ttlet now_rounded_to_interval = hires_utc_clock::now().time_since_epoch() / gather_interval;
-        next_gather_time = typename hires_utc_clock::time_point(gather_interval * (now_rounded_to_interval + 1));
-    }
-}
-
-void logger_type::logger_tick() noexcept
-{
-    ttlet t = trace<"logger_tick">{};
-
-    while (!message_queue.empty()) {
-        auto message = message_queue.read();
-
-        ttlet str = (*message)->format();
-
-        write(str);
+        logger_write((*message)->format());
 
         // Call the virtual-destructor of the `log_message_base`, so that it can skip this when
         // adding messages to the queue.
         message->reset();
     }
+}
+
+static void logger_thread_loop(std::stop_token stop_token) noexcept
+{
+    set_thread_name("logger");
+    tt_log_info("logger thread started");
+
+    while (!stop_token.stop_requested()) {
+        logger_flush();
+        std::this_thread::sleep_for(100ms);
+    }
+
+    tt_log_info("logger thread finished");
+}
+
+void logger_deinit() noexcept
+{
+    ttlet lock = std::scoped_lock(logger_mutex);
+
+    if (logger_thread.joinable()) {
+        logger_thread.request_stop();
+        logger_thread.join();
+    }
+
+    logger_flush();
+}
+
+/** Initialize the log system.
+ * This will start the logging threads which periodically
+ * checks the log_queue for new messages and then
+ * call log_flush_messages().
+ */
+void logger_init() noexcept
+{
+    ttlet lock = std::scoped_lock(logger_mutex);
+    logger_thread = std::jthread(logger_thread_loop);
 }
 
 } // namespace tt

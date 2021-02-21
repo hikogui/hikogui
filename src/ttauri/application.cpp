@@ -95,21 +95,9 @@ void application::init_foundation()
     main_thread_id = current_thread_id();
 
     if (configuration.contains("log-level")) {
-        logger.minimum_log_level = static_cast<log_level>(static_cast<int>(configuration["log-level"]));
+        system_status_set_log_level(static_cast<uint8_t>(configuration["log-level"]));
     } else {
-        logger.minimum_log_level = log_level::Info;
-    }
-
-    // The logger is the first object that will use the timezone database.
-    // So we will initialize it here.
-#if USE_OS_TZDB == 0
-    ttlet tzdata_location = URL::urlFromResourceDirectory() / "tzdata";
-    date::set_install(tzdata_location.nativePath());
-#endif
-    try {
-        timeZone = date::current_zone();
-    } catch (std::runtime_error const &e) {
-        tt_log_error("Could not get the current time zone, all times shown as UTC: '{}'", tt::to_string(e));
+        system_status_set_log_level(make_log_level(log_level::info));
     }
 
     // First we need a clock, it is used by almost any other service.
@@ -117,13 +105,6 @@ void application::init_foundation()
     // more accurate, but we don't want to block here.
     sync_clock_calibration<hires_utc_clock, cpu_counter_clock> =
         new sync_clock_calibration_type<hires_utc_clock, cpu_counter_clock>("cpu_utc");
-
-    logger_maintenance_callback = timer::global->add_callback(100ms, [](auto current_time, auto last) {
-        ttlet t2 = trace<"logger_maintenance">{};
-
-        logger.gather_tick(last);
-        logger.logger_tick();
-    });
 
     clock_maintenance_callback = timer::global->add_callback(100ms, [](auto...) {
         ttlet t2 = trace<"clock_maintenance">{};
