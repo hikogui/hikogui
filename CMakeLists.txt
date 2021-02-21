@@ -98,34 +98,37 @@ endif()
 # Setup Dependency Manager: VCPKG
 #-------------------------------------------------------------------
 
-include(SetupVcpkg)
+#include(SetupVcpkg)
 
 #-------------------------------------------------------------------
 # Find Dependencies
 #-------------------------------------------------------------------
 
+# this can be moved into "Setup Sources" when GTest is removed from externals
+add_subdirectory(external)
+
 #
 # date
 #
-set(date_DIR "${VCPKG_DIR}/share/date")
+#set(date_DIR "${VCPKG_DIR}/share/date")
 find_package(date CONFIG REQUIRED)
 
 #
 # fmt
 #
-set(fmt_DIR "${VCPKG_DIR}/share/fmt")
+#set(fmt_DIR "${VCPKG_DIR}/share/fmt")
 find_package(fmt CONFIG REQUIRED)
 
 #
 # GoogleTest
 #
-set(GTest_DIR "${VCPKG_DIR}/share/gtest")
-find_package(GTest CONFIG REQUIRED)
+#set(GTest_DIR "${VCPKG_DIR}/share/gtest")
+find_package(GTest)
 
 #
 # Vulkan Memory Allocator
 #
-set(unofficial-vulkan-memory-allocator_DIR "${VCPKG_DIR}/share/unofficial-vulkan-memory-allocator")
+#set(unofficial-vulkan-memory-allocator_DIR "${VCPKG_DIR}/share/unofficial-vulkan-memory-allocator")
 find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 
 #
@@ -158,7 +161,6 @@ add_executable(ttauri_tests)
 # later using target_sources() in CMakeLists of subdirectories.
 
 add_subdirectory(src)
-add_subdirectory(external)
 add_subdirectory(tools)
 
 #-------------------------------------------------------------------
@@ -386,7 +388,7 @@ if(TT_BUILD_TESTS)
 
     enable_testing()
 
-    target_link_libraries(ttauri_tests PRIVATE GTest::gtest_main ttauri)
+    target_link_libraries(ttauri_tests PRIVATE gtest_main ttauri)
 
     target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

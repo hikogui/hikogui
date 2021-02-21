@@ -7,7 +7,6 @@
     "dependencies": [
       "fmt",
       "date",
-      "gtest",
       "vulkan",
       "vulkan-memory-allocator"
     ]
