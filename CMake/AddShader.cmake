@@ -3,8 +3,14 @@ include(GetRelativePath)
 
 function(add_shader RET)
 
-    # The "glslc" shader compiler executable is detected during find_package(VULKAN)
-    # and defined as "Vulkan_GLSLC_EXECUTABLE" and also as target executable "Vulkan::glslc".
+    # add_shader depends on Vulkan::glslc. if not found, guide the user to find vulkan and the executable.
+    if(NOT Vulkan_FOUND)
+        message(FATAL_ERROR
+            "The addShader() function depends on the \"glslc\" shader compiler executable.\n"
+            "It is detected during find_package(Vulkan REQUIRED) and defined as imported target executable Vulkan::glslc.\n"
+            "Please use find_package(Vulkan REQUIRED) and make sure it succeeds!\n"
+        )
+    endif()
 
     foreach(SOURCE_FILE IN LISTS ARGN)
         message("add_shader: ${SOURCE_FILE}")

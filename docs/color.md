@@ -8,42 +8,21 @@ the application, the ttauri library and its shaders. This allows for HDR (high d
 and high gamut colors while remaining backward compatible with normal sRGB and rec709 colors.
 
 The extended linear sRGB uses the ITU-R BT.709 color primaries and white-point, but uses
-a linear transfer function, where the value (0.0, 0.0, 0.0) is 0 nits black and
-(1.0, 1.0, 1.0) is 80 nits white.
+a linear transfer function, where the value (0.0, 0.0, 0.0) is 0 cd/m2 black and
+(1.0, 1.0, 1.0) is 80 cd/m2 white.
 
 Values above 1.0 for high dynamic range, and values below 0.0 for high gamut are
 allowed.
 
-### Alpha
+Alpha
+-----
 Alpha is encoded as a linear floating point number between 0.0 (transparent) and 1.0 (opaque).
 
 Inside the application and ttauri-library the color values are NOT pre-multiplied with the alpha value.
 However the shaders may pre-multiply alpha internally for optimization or color accuracy reasons.
 
-Coverage blending
------------------
-When compositing glyphs onto background we use a mask with coverage value, of how much the glyph has
-covered that specific pixel.
-
-If you convert this coverage value 0% - 100% directly into an alpha value of 0.0 and 1.0 you will
-find that linear compositing of the text color on the background will use different result when
-compositing dark on light vs light on dark. Where the weight of the glyph seems to change.
-
-In fact linear compositing is actually incorrect and compositing should be done by keeping in mind
-the perceptional non-linear lightness curve and the actual color values of the foreground and background.
-
-The perceptional curve is cubic, as an optimization a square perceptional curve seem to be visually good
-enough to handle fonts.
-
-The following function is used for subpixel-compositing, with a coverage value `a` for each subpixel.
-
-```
-vec3 mix_perceptual(vec3 x, vec3 y, vec3 a)
-{
-    vec3 r = mix(sqrt(x), sqrt(y), a);
-    return r * r;
-}
-```
+When anti-aliasing the coverage value is directly used as the alpha value during compositing.
+For text we use a more accurate anti-aliasing algorithm, for details see: [Anti Aliasing](anti_aliasing.md)
 
 Color format type
 -----------------

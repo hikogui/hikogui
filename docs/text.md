@@ -14,7 +14,7 @@ startup time.
 
 The following information gleamed during the fast-parse:
  * 'name' Prefered Font family name; code-16 if available, otherwise code-1
- * 'name' Prefered Font subfamily name: code-17 if available, otherwide code-2
+ * 'name' Prefered Font subfamily name: code-17 if available, otherwise code-2
  * 'OS/2' Font weight
  * 'OS/2' Regular/Italic
  * 'OS/2' Serif/Sans-serif
@@ -36,7 +36,7 @@ example "Arial Arabic" will be prioritized when the current font is "Arial"
 Font selection
 --------------
 A FontVariant consists of a FontWeight+serif-flag. This allows a user to select a font
-family to draw a text with and emphesize fragments of the text using italic and bold.
+family to draw a text with and emphasize fragments of the text using italic and bold.
 
 There are a total of maximum 20 FontVariants for each FontFamilyID.
 
@@ -57,31 +57,31 @@ Text shaping
 
 ### Phases
 
- 1. Given a text and a text-style; calculate the natual size of the text
+ 1. Given a text and a text-style; calculate the natural size of the text
     - Lookup the glyphs and their width.
  2. Given a maximum width fold the text; shape the text.
     - Line wrap the text to fit the maximum width.
-    - Execute the Unicode bidrectional algorithm.
+    - Execute the Unicode bidirectional algorithm.
     - Lookup glyphs that have been replaced.
     - Morph glyphs such as font ligatures
     - Calculate position of each glyph
  3. Draw the text, possibly replacing the color
  4. Given draw coordinates find character in the original text.
- 5. Given a character in the original text find a neighbouring character on the screen.
+ 5. Given a character in the original text find a neighboring character on the screen.
 
 ### Sub-styles
-Sub-styles can be selected inline in the text using the following Unicode code-points:
+Sub-styles can be selected in-line in the text using the following Unicode code-points:
 
   Code   | Name      | Common Style        | Description
  :-------|:--------- |:------------------- |:--------------------------
   U+FDD0 | Regular   | Regular             | This is the default regular text
-  U+FDD1 | Emphasis  | Italic              | For different but not more or less imporant than regular text.
+  U+FDD1 | Emphasis  | Italic              | For different but not more or less important than regular text.
   U+FDD2 | Strong    | Bold or red         | For important text like warnings.
   U+FDD3 | Light     | Light or gray       | For less important text, like long explanations.
   U+FDD4 | Code      | Monospaced          | For data, or examples of data.
   U+FDD5 | Link      | Underlined and blue | For clickable links.
 
-These code-points are noncharacter code-point and are used internally of the TTauri library.
+These code-points are non-character code-point and are used internally of the TTauri library.
 
 
 

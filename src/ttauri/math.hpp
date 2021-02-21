@@ -77,21 +77,26 @@ constexpr T median(T a, T b, T c) noexcept {
     return std::clamp(c, std::min(a, b), std::max(a, b));
 }
 
-inline bool almost_equal(float a, float b) noexcept {
-    uint32_t a_;
-    uint32_t b_;
+/** Compare two floating point values to be almost equal.
+ * The two floating point values are almost equal if they are
+ * at most 10 smallest float steps away from each other.
+ */
+constexpr bool almost_equal(float a, float b) noexcept {
+    constexpr int32_t epsilon = 5;
 
-    std::memcpy(&a_, &a, sizeof(a_));
-    std::memcpy(&b_, &b, sizeof(b_));
+    ttlet a_ = std::bit_cast<int32_t>(a);
+    ttlet b_ = std::bit_cast<int32_t>(b);
 
-    auto a__ = static_cast<int>(a_ & 0x7ffffff);
-    auto b__ = static_cast<int>(b_ & 0x7ffffff);
+    // Strip the sign bit, and extend to not overflow when calculating the delta.
+    ttlet a_abs = static_cast<int64_t>(a_ & 0x7ffffff);
+    ttlet b_abs = static_cast<int64_t>(b_ & 0x7ffffff);
 
-    if ((a_ < 0) == (b_ < 0)) {
-        return std::abs(a__ - b__) < 10;
-    } else {
-        return std::abs(a__ + b__) < 10;
-    }
+    // If both floats have the same size, we can subtract to get the delta.
+    // If they have a different sign then we need to add.
+    ttlet delta = (a_ < 0) == (b_ < 0) ? a_abs - b_abs : a_abs + b_abs;
+
+    // Check if the delta is with epsilon.
+    return delta < epsilon && delta > -epsilon;
 }
 
 template<typename Iterator>

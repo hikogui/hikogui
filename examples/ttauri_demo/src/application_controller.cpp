@@ -1,8 +1,10 @@
-// Copyright 2020 Pokitec
-// All rights reserved.
+// Copyright Take Vos 2020-2021.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "application_controller.hpp"
 #include "application_preferences.hpp"
+#include "ttauri/system_status.hpp"
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include "ttauri/application.hpp"
@@ -34,7 +36,7 @@ tt::datum application_controller::configuration(tt::application &self, std::vect
 
     auto default_configuration = tt::datum{ tt::datum::map{} };
     default_configuration["help"] = false;
-    default_configuration["log-level"] = static_cast<uint8_t>(tt::log_level::Debug);
+    default_configuration["log-level"] = static_cast<int>(make_log_level(tt::log_level::debug));
 
     ttlet command_line_configuration = parser.parse(arguments);
     auto configuration = deep_merge(default_configuration, command_line_configuration);

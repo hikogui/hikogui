@@ -44,15 +44,14 @@ std::string getLastErrorMessage()
     return message;
 }
 
-logger_type::logger_type() noexcept
-{
-    //if (!debugger_is_present() && AttachConsole(ATTACH_PARENT_PROCESS)) {
-    //    FILE *fpstdin = stdin, *fpstdout = stdout, *fpstderr = stderr;
-    //
-    //    freopen_s(&fpstdin, "CONIN$", "r", stdin);
-    //    freopen_s(&fpstdout, "CONOUT$", "w", stdout);
-    //    freopen_s(&fpstderr, "CONOUT$", "w", stderr);
-    //}
+void logger_init_system() {
+    // if (!debugger_is_present() && AttachConsole(ATTACH_PARENT_PROCESS)) {
+//    FILE *fpstdin = stdin, *fpstdout = stdout, *fpstderr = stderr;
+//
+//    freopen_s(&fpstdin, "CONIN$", "r", stdin);
+//    freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+//    freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+//}
 }
 
 } // namespace tt

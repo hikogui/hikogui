@@ -15,7 +15,9 @@ layout(location = 3) in vec4 inColor;
 
 layout(location = 0) out flat vec4 outClippingRectangle;
 layout(location = 1) out vec3 outTextureCoord;
-layout(location = 2) out flat vec4 outColor;
+layout(location = 2) out vec4 outColor;
+layout(location = 3) out float outLuminance;
+layout(location = 4) out float outLightness;
 
 vec4 convertPositionToViewport(vec3 windowPosition)
 {
@@ -39,6 +41,9 @@ void main() {
     gl_Position = convertPositionToViewport(inPosition);
     outClippingRectangle = convertClippingRectangleToScreen(inClippingRectangle);
     outTextureCoord = inTextureCoord;
+
     // Do not pre-multiply the alpha due to subpixel compositing. 
     outColor = inColor;
+    outLuminance = 0.2126 * inColor.r + 0.7152 * inColor.g + 0.0722 * inColor.b;
+    outLightness = sqrt(outLuminance);
 }

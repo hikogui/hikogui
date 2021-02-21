@@ -4,6 +4,7 @@
 
 #include "hires_utc_clock.hpp"
 #include "application.hpp"
+#include "logger.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 
@@ -24,7 +25,7 @@ std::string format_engineering(hires_utc_clock::duration duration)
     }
 }
 
-std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp)
+std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp) noexcept
 {
     ttlet nanoseconds = utc_timestamp.time_since_epoch().count() % 1000000000;
 
@@ -35,24 +36,27 @@ std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp)
 
     ttlet tod = date::make_time(sys_timestamp - daypoint);
 
-    return fmt::format("{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:09}Z",
+    return fmt::format(
+        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:09}Z",
         static_cast<int>(ymd.year()),
         static_cast<unsigned>(ymd.month()),
         static_cast<unsigned>(ymd.day()),
-        tod.hours().count(), tod.minutes().count(), tod.seconds().count(),
-        nanoseconds
-    );
+        tod.hours().count(),
+        tod.minutes().count(),
+        tod.seconds().count(),
+        nanoseconds);
 }
 
-std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone)
+std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone) noexcept
 {
     if (time_zone == nullptr) {
-        tt_axiom(application::global);
-        time_zone = application::global->timeZone;
-    }
+        try {
+            time_zone = date::current_zone();
+            tt_axiom(time_zone != nullptr);
 
-    if (time_zone == nullptr) {
-        return format_iso8601_utc(utc_timestamp);
+        } catch (std::runtime_error const &) {
+            return format_iso8601_utc(utc_timestamp);
+        }
     }
 
     ttlet nanoseconds = utc_timestamp.time_since_epoch().count() % 1000000000;
@@ -97,9 +101,8 @@ std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time
         return fmt::format("{}:{:02}.{:09}{}", local_timestring, seconds, nanoseconds, tz_offset_string);
 
     } catch (...) {
-        error_info::close();
         return format_iso8601_utc(utc_timestamp);
     }
 }
 
-}
+} // namespace tt

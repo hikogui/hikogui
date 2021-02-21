@@ -18,7 +18,11 @@
  * that the command line arguments are encoded as UTF-8.
  */
 
+#pragma once
+
 #include "os_detect.hpp"
+#include "system_status.hpp"
+#include "URL.hpp"
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "application_win32.hpp"
@@ -31,7 +35,7 @@
 
 #endif
 
-#pragma once
+#include <date/tz.h>
 
 /** Main entry-point.
  *
@@ -90,7 +94,19 @@ int WINAPI WinMain(
     default:;
     }
 
-    return tt_main(std::move(arguments), hInstance);
+#if USE_OS_TZDB == 0
+    ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
+    date::set_install(tzdata_location.nativePath());
+    try {
+        [[maybe_unused]] ttlet time_zone = date::current_zone();
+    } catch (std::runtime_error const &e) {
+        tt_log_error("Could not get current time zone: {}", e.what());
+    }
+#endif
+
+    ttlet r = tt_main(std::move(arguments), hInstance);
+    tt::system_status_shutdown();
+    return r;
 }
 
 #else
@@ -109,7 +125,21 @@ int main(int argc, char **argv)
         arguments.emplace_back(argv[i]);
     }
 
-    return tt_main(arguments, {});
+
+    // XXX - The URL system needs to know about the location of the executable.
+#if USE_OS_TZDB == 0
+    ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
+    date::set_install(tzdata_location.nativePath());
+    try {
+        [[maybe_unused]] ttlet time_zone = date::current_zone();
+    } catch (std::runtime_error const &e) {
+        tt_log_error("Could not get current time zone: {}", e.what());
+    }
+#endif
+
+    ttlet r = tt_main(arguments, {});
+    tt::system_status_shutdown();
+    return r;
 }
 
 #endif

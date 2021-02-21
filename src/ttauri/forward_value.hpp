@@ -29,35 +29,50 @@ template<typename T>
 struct forward_value {
     using type = std::remove_cvref_t<T>;
 
-    [[nodiscard]] constexpr T &&operator()(std::remove_reference_t<T> &t) const noexcept
+    [[nodiscard]] type operator()(T const &t) const noexcept
     {
-        return static_cast<T &&>(t);
-    }
-
-    [[nodiscard]] constexpr T &&operator()(std::remove_reference_t<T> &&t) const noexcept
-    {
-        static_assert(!std::is_lvalue_reference_v<T>, "Can not forward an rvalue as an lvalue.");
-        return static_cast<T &&>(t);
+        return t;
     }
 };
 
+
+#define MAKE_FORWARD_VALUE(TEMPLATE_TYPE, RETURN_TYPE, ARGUMENT_TYPE) \
+    template<> \
+    struct forward_value<TEMPLATE_TYPE> { \
+        using type = RETURN_TYPE; \
+\
+        [[nodiscard]] type operator()(ARGUMENT_TYPE t) const noexcept \
+        { \
+            return type{t}; \
+        } \
+    };
+
+// Copy string_view by string value.
+MAKE_FORWARD_VALUE(std::string_view, std::string, std::string_view const &)
+MAKE_FORWARD_VALUE(std::string_view const, std::string, std::string_view const &)
+MAKE_FORWARD_VALUE(std::string_view &, std::string, std::string_view const &)
+MAKE_FORWARD_VALUE(std::string_view const &, std::string, std::string_view const &)
+
+// Copy char pointers by string value.
+MAKE_FORWARD_VALUE(char *, std::string, char const *)
+MAKE_FORWARD_VALUE(char const *, std::string, char const *)
+MAKE_FORWARD_VALUE(char * const, std::string, char const *)
+MAKE_FORWARD_VALUE(char const * const, std::string, char const *)
+MAKE_FORWARD_VALUE(char *&, std::string, char const *)
+MAKE_FORWARD_VALUE(char const *&, std::string, char const *)
+MAKE_FORWARD_VALUE(char *const&, std::string, char const *)
+MAKE_FORWARD_VALUE(char const *const&, std::string, char const *)
+
+#undef MAKE_FORWARD_VALUE
+
+// Copy string literal by pointer.
 template<size_t N>
 struct forward_value<char const (&)[N]> {
     using type = char const *;
 
-    [[nodiscard]] constexpr char const *operator()(char const (&t)[N]) const noexcept
+    [[nodiscard]] constexpr type operator()(char const (&t)[N]) const noexcept
     {
         return static_cast<char const *>(t);
-    }
-};
-
-template<>
-struct forward_value<std::string_view> {
-    using type = std::string;
-
-    [[nodiscard]] std::string operator()(std::string_view t) const noexcept
-    {
-        return std::string{t};
     }
 };
 

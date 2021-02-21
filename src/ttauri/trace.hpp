@@ -10,6 +10,7 @@
 #include "tagged_map.hpp"
 #include "wfree_message_queue.hpp"
 #include "fixed_string.hpp"
+#include "statistics.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <atomic>
@@ -228,6 +229,7 @@ class trace final {
 
     tt_no_inline static void add_to_map() {
         trace_statistics_map.insert(Tag, &trace_statistics<Tag>);
+        statistics_start();
     }
 
 public:

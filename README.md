@@ -1,3 +1,6 @@
+
+![codeql workflow](https://github.com/ttauri-project/ttauri/actions/workflows/codeql-analysis.yml/badge.svg)
+
 TTauri GUI library
 ==================
 

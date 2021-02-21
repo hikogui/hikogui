@@ -138,8 +138,11 @@ target_sources(ttauri PRIVATE
     stack.hpp
     static_resource_view.cpp
     static_resource_view.hpp
+    statistics.cpp
+    statistics.hpp
     strings.hpp
     sync_clock.hpp
+    system_status.hpp
     tag.hpp
     tagged_id.hpp
     tagged_map.hpp

@@ -14,9 +14,22 @@ TEST(forward_value, string_literal)
     static_assert(std::is_same_v<tt::forward_value_t<decltype("hello world")>, char const *>);
 }
 
+TEST(forward_value, char_ptr_literal)
+{
+    char const *hello_world = "hello world";
+    char const *const const_hello_world = "hello world";
+
+    static_assert(std::is_same_v<tt::forward_value_t<decltype(hello_world)>, std::string>);
+    static_assert(std::is_same_v<tt::forward_value_t<decltype(const_hello_world)>, std::string>);
+    static_assert(std::is_same_v<tt::forward_value_t<decltype(hello_world)&>, std::string>);
+    static_assert(std::is_same_v<tt::forward_value_t<decltype(const_hello_world)&>, std::string>);
+}
 TEST(forward_value, string_view)
 {
     static_assert(std::is_same_v<tt::forward_value_t<std::string_view>, std::string>);
+    static_assert(std::is_same_v<tt::forward_value_t<std::string_view const>, std::string>);
+    static_assert(std::is_same_v<tt::forward_value_t<std::string_view const &>, std::string>);
+    static_assert(std::is_same_v<tt::forward_value_t<std::string_view &>, std::string>);
 }
 
 TEST(forward_value, integer)
@@ -25,7 +38,13 @@ TEST(forward_value, integer)
     static_assert(std::is_same_v<tt::forward_value_t<int &>, int>);
     static_assert(std::is_same_v<tt::forward_value_t<int const &>, int>);
     static_assert(std::is_same_v<tt::forward_value_t<int *>, int *>);
+    static_assert(std::is_same_v<tt::forward_value_t<int * const>, int *>);
     static_assert(std::is_same_v<tt::forward_value_t<int const *>, int const *>);
+    static_assert(std::is_same_v<tt::forward_value_t<int const * const>, int const *>);
+    static_assert(std::is_same_v<tt::forward_value_t<int *&>, int *>);
+    static_assert(std::is_same_v<tt::forward_value_t<int *const&>, int *>);
+    static_assert(std::is_same_v<tt::forward_value_t<int const *&>, int const *>);
+    static_assert(std::is_same_v<tt::forward_value_t<int const *const&>, int const *>);
 }
 
 class A{};
@@ -36,5 +55,11 @@ TEST(forward_value, class_object)
     static_assert(std::is_same_v<tt::forward_value_t<A &>, A>);
     static_assert(std::is_same_v<tt::forward_value_t<A const &>, A>);
     static_assert(std::is_same_v<tt::forward_value_t<A *>, A *>);
+    static_assert(std::is_same_v<tt::forward_value_t<A * const>, A *>);
     static_assert(std::is_same_v<tt::forward_value_t<A const *>, A const *>);
+    static_assert(std::is_same_v<tt::forward_value_t<A const * const>, A const *>);
+    static_assert(std::is_same_v<tt::forward_value_t<A *&>, A *>);
+    static_assert(std::is_same_v<tt::forward_value_t<A *const&>, A *>);
+    static_assert(std::is_same_v<tt::forward_value_t<A const *&>, A const *>);
+    static_assert(std::is_same_v<tt::forward_value_t<A const *const&>, A const *>);
 }

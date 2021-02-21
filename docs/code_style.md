@@ -52,18 +52,15 @@ Global variables
 ----------------
 Singletons (classes that can only be instantiated once) are discouraged.
 
-Instead add a static-member-variable to the class, which is a raw-pointer to an instance
-of that class. When there is only one such member, call it "global".
+Instead add a static-member-function to the class, which returns a reference to an instance
+of that class. When there is only one such member, call it `global()`.
 
-These "global" static-member-variables should be allocated and initiaized in the constructor
-of the `tt::application` class. Using `tt::application` as the owner of the global instance of
-these classes will make sure that these instances are cleaned up before `main()` has finished.
+In certain cases these `global()` member functions have to initialize a subsystem and/or make
+sure that it is not being allocated during system shutdown. The `system_status` will
+help with correctly instantiating and closing down of subsystems,
 
-It is recommended that the `global` static-member-variables are `std::unique\_ptr` and
-`std::shared\_ptr`.
-
-If it is not possible to add a static-member-variable due to circular dependencies than
-nameing a global variable as the name of the followed by the name of the global variable with
+If it is not possible to add a static-member-function due to circular dependencies than
+naming a global variable as the name of the class followed by the name of the global variable with
 and underscore "\_" as separator.
 
 Another interesting global variable, either as a static-member-variable or as a global
@@ -107,3 +104,9 @@ Delegates should at least have the following two function to handle the lifetime
 The two functions mirror the two phase construction and are often called from `init()` and `deinit()` of the managed
 object. However they may be called from the constructor and destructor of the object as well.
 
+Subsystems
+----------
+A subsystem will have a name in the `system_status_type` enum, and will have a global function under the same name
+suffixed with \_start. This subsystem_start function is used to initialize and register the deinitalize function
+with the system_status. The subsystem_start function must be low latency so that it can be called very often to make
+sure the subsystem is started when functionality of the subsystem is used for the first time.
