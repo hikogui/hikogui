@@ -174,6 +174,11 @@ target_link_libraries(ttauri PUBLIC
     RenderDoc
 )
 
+if (WIN32)
+    target_link_libraries(ttauri PUBLIC UxTheme.lib)
+    target_link_libraries(ttauri PUBLIC synchronization windowsapp.lib)
+endif()
+
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
@@ -303,10 +308,6 @@ if (WIN32)
 
     # Add vulkan win32 surface support.
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
-
-    target_link_libraries(ttauri PUBLIC UxTheme.lib)
-
-    target_link_libraries(ttauri PUBLIC synchronization windowsapp.lib)
 
     # Set defines to compile a win32 application.
 	target_compile_options(ttauri PUBLIC -D_WIN64 -DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
