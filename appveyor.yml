@@ -77,7 +77,7 @@ before_build:
 
 build_script:
   # generate build files
-  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=OFF -DTT_BUILD_OPTIMIZED:BOOL=OFF -DTT_BUILD_PCH:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=ON -DTT_BUILD_OPTIMIZED:BOOL=ON -DTT_BUILD_PCH:BOOL=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
   # build
   - cmake --build ..\ttauri-build --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
