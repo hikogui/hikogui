@@ -1,12 +1,8 @@
 #-------------------------------------------------------------------
-# AppVeyor CI
-#
-# appveyor.yml reference:
+# AppVeyor build configuration
+# https://www.appveyor.com/docs/
 # https://www.appveyor.com/docs/appveyor-yml/
 #-------------------------------------------------------------------
-
-# Build worker image (VM template)
-image: Visual Studio 2019 Preview
 
 clone_depth: 5
 
@@ -17,13 +13,9 @@ version: '{build}'
 #-------------------------------------------------------------------
 
 platform: x64
-
-configuration:
-  - Debug
-  #- Release
-
+configuration: Release
 environment:
-  # appveyor
+    # appveyor
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
   APPVEYOR_RDP_PASSWORD: somePassword#123
   # vcpkg
@@ -32,20 +24,26 @@ environment:
   # vulkan
   VULKAN_VERSION: "1.2.162.1"
   VULKAN_SDK: "C:\\VulkanSDK\\%VULKAN_VERSION%"
+  # the build matrix
+  matrix:
+    # MSVC
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+      APPVEYOR_JOB_NAME: windows-msvc2019
+      BUILD_TYPE: Release
+      COMPILER: MSVC19
+      PLATFORM: x64
+    # Clang
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      APPVEYOR_JOB_NAME: windows-clangcl
+      BUILD_TYPE: Debug
+      COMPILER: clang-cl
+      CC: clang-cl
+      CXX: clang-cl
+      PLATFORM: x64
 
 #matrix:
   # let the whole build fail immediately, if one of the job fails
   # fast_finish: true
-
-# preserve some things until an appveyor.yml file change
-cache:
-  - C:\Tools\vcpkg\installed\ -> appveyor.yml
-  - '%VULKAN_SDK%\Bin -> appveyor.yml'
-  - '%VULKAN_SDK%\Bin32 -> appveyor.yml'
-  - '%VULKAN_SDK%\Include -> appveyor.yml'
-  - '%VULKAN_SDK%\Source\lib -> appveyor.yml'
-  - '%VULKAN_SDK%\Source\lib32 -> appveyor.yml'
-  - '%VULKAN_SDK%\spirv-tools -> appveyor.yml'
 
 build:
   # MSBuild verbosity level
@@ -75,24 +73,32 @@ install:
   # Update CMake
   #- choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
   #- refreshenv
-  # Update of VCPKG
+  # Update VCPKG
   - cd C:\Tools\vcpkg
   - git pull --quiet
   - .\bootstrap-vcpkg.bat -disableMetrics
   - vcpkg version
   # Install VULKAN_SDK
-  - curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/VulkanSDK-%VULKAN_VERSION%-Installer.exe?Human=true
-  - Vulkan_SDK_Installer.exe /S
+  - if not exist %VULKAN_SDK% (
+      curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/VulkanSDK-%VULKAN_VERSION%-Installer.exe?Human=true
+      Vulkan_SDK_Installer.exe /S
+    )
   - dir %VULKAN_SDK%
   # Install and build dependencies using VCPKG
-  - cd C:\projects\ttauri
-  - vcpkg integrate install --feature-flags=manifests
-  - vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests
+  - set VCPKG_INSTALLED=C:\Tools\vcpkg\installed\%VCPKG_TARGET_TRIPLET%
+  - if not exist %VCPKG_INSTALLED% (
+      cd C:\projects\ttauri
+      vcpkg integrate install --feature-flags=manifests
+      vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests
+    )
+  # Init MSVC environment
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019 Preview"
+      (call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM% )
 
 before_build:
   # CHECK important folders to see if everything is present
   - dir C:\projects\ttauri
-  - dir C:\projects\ttauri\vcpkg_installed
+  #- dir C:\projects\ttauri\vcpkg_installed
   - dir %VULKAN_SDK%\Bin
   #- dir C:\Tools\vcpkg\installed
   # return
@@ -100,9 +106,10 @@ before_build:
 
 build_script:
   # generate build files
-  - cmake -G "Visual Studio 16 2019" -A %PLATFORM% -B ..\ttauri-build . -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=ON -DTT_BUILD_OPTIMIZED:BOOL=ON -DTT_BUILD_PCH:BOOL=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+  - if [%COMPILER%]==[MSVC19] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -S . -B ..\ttauri-build -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=ON -DTT_BUILD_OPTIMIZED:BOOL=ON -DTT_BUILD_PCH:BOOL=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+  - if [%COMPILER%]==[clang-cl] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T ClangCL -S . -B ..\ttauri-build -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_FLAGS="-m64" -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=ON -DTT_BUILD_OPTIMIZED:BOOL=ON -DTT_BUILD_PCH:BOOL=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
   # build
-  - cmake --build ..\ttauri-build --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmake --build ..\ttauri-build --config %BUILD_TYPE% --target install -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
    # CHECK important folders to see if all build artifacts are present
@@ -113,10 +120,10 @@ after_build:
 #-------------------------------------------------------------------
 
 #before_test:
-#  - set PATH=%PATH%;C:\projects\ttauri-build\%configuration%
+#  - set PATH=%PATH%;C:\projects\ttauri-build\%BUILD_TYPE%
 
 #test_script:
-#  - C:\projects\ttauri-build\tests\%configuration%\ttauri-tests.exe
+#  - C:\projects\ttauri-build\tests\%BUILD_TYPE%\ttauri-tests.exe
 
 #-------------------------------------------------------------------
 #     Build Artifacts
@@ -147,6 +154,18 @@ after_build:
 #    appveyor_repo_tag: true        # deploy on tag push only
 #  auth_token:                      # encrypted token from GitHub
 #    secure: *hash*
+
+#-------------------------------------------------------------------
+#     Cache things until an appveyor.yml file change
+#-------------------------------------------------------------------
+
+cache:
+  - C:\Tools\vcpkg\installed -> appveyor.yml
+  - '%VULKAN_SDK%\Bin -> appveyor.yml'
+  - '%VULKAN_SDK%\Bin32 -> appveyor.yml'
+  - '%VULKAN_SDK%\Include -> appveyor.yml'
+  - '%VULKAN_SDK%\Lib -> appveyor.yml'
+  - '%VULKAN_SDK%\Lib32 -> appveyor.yml'
 
 #-------------------------------------------------------------------
 #     Accessing Windows build worker via Remote Desktop (RDP)
