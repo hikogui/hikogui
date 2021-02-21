@@ -36,9 +36,9 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       APPVEYOR_JOB_NAME: windows-clangcl
       BUILD_TYPE: Debug
-      COMPILER: clang-cl
-      CC: clang-cl
-      CXX: clang-cl
+      COMPILER: CLANG
+      CC: clang
+      CXX: clang++
       PLATFORM: x64
 
 #matrix:
@@ -56,6 +56,7 @@ init:
   - cmake --version
   - msbuild /version
   - vcpkg version
+  - if [%COMPILER%]==[CLANG] clang++ -v
   # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
   - ps: >-
       if ($env:APPVEYOR_REPO_TAG -eq "true")
@@ -106,14 +107,32 @@ before_build:
 
 build_script:
   # generate build files
-  - if [%COMPILER%]==[MSVC19] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -S . -B ..\ttauri-build -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=ON -DTT_BUILD_OPTIMIZED:BOOL=ON -DTT_BUILD_PCH:BOOL=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-  - if [%COMPILER%]==[clang-cl] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T ClangCL -S . -B ..\ttauri-build -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_FLAGS="-m64" -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=ON -DTT_BUILD_OPTIMIZED:BOOL=ON -DTT_BUILD_PCH:BOOL=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+  - if [%COMPILER%]==[MSVC19] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -S . -B ..\ttauri-build
+        -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DTT_BUILD_TESTS:BOOL=ON
+        -DTT_BUILD_OPTIMIZED:BOOL=ON
+        -DTT_BUILD_PCH:BOOL=ON
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+  - if [%COMPILER%]==[CLANG] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T LLVM -S . -B ..\ttauri-build
+        -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DTT_BUILD_TESTS:BOOL=ON
+        -DTT_BUILD_OPTIMIZED:BOOL=ON
+        -DTT_BUILD_PCH:BOOL=ON
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DCMAKE_C_COMPILER=clang
+        -DCMAKE_CXX_COMPILER=clang++
   # build
   - cmake --build ..\ttauri-build --config %BUILD_TYPE% --target install -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 after_build:
    # CHECK important folders to see if all build artifacts are present
    - dir C:\projects\ttauri-build
+
+#on_failure:
+#  - appveyor PushArtifact CMakeFiles\CMakeOutput.log
+#  - appveyor PushArtifact CMakeFiles\CMakeError.log
 
 #-------------------------------------------------------------------
 #     Tests
