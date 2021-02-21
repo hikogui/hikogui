@@ -1,9 +1,20 @@
+#-------------------------------------------------------------------
+# AppVeyor CI
+#
+# appveyor.yml reference:
+# https://www.appveyor.com/docs/appveyor-yml/
+#-------------------------------------------------------------------
+
 # Build worker image (VM template)
 image: Visual Studio 2019 Preview
 
 clone_depth: 5
 
 version: '{build}'
+
+#-------------------------------------------------------------------
+#     Build configuration
+#-------------------------------------------------------------------
 
 platform: x64
 
@@ -12,20 +23,32 @@ configuration:
   #- Release
 
 environment:
+  # appveyor
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  APPVEYOR_RDP_PASSWORD: somePassword#123
+  # vcpkg
   VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
   VCPKG_ROOT: "C:\\Tools\\vcpkg"
-  VULKAN_SDK: "C:\\VulkanSDK\\1.2.162.1"
-  APPVEYOR_RDP_PASSWORD: somePassword#123
+  # vulkan
+  VULKAN_VERSION: "1.2.162.1"
+  VULKAN_SDK: "C:\\VulkanSDK\\%VULKAN_VERSION%"
 
-# lets the whole build fail immediately, if one of the job fails
 #matrix:
-#  fast_finish: true
+  # let the whole build fail immediately, if one of the job fails
+  # fast_finish: true
 
-#cache:
-#  - C:\Tools\vcpkg\installed\ -> appveyor.yml # preserve any vcpkg installed stuff
-#  - C:\Tools\vcpkg\downloads\ -> appveyor.yml # preserve any vcpkg installed stuff
+# preserve some things until an appveyor.yml file change
+cache:
+  - C:\Tools\vcpkg\installed\ -> appveyor.yml
+  - '%VULKAN_SDK%\Bin -> appveyor.yml'
+  - '%VULKAN_SDK%\Bin32 -> appveyor.yml'
+  - '%VULKAN_SDK%\Include -> appveyor.yml'
+  - '%VULKAN_SDK%\Source\lib -> appveyor.yml'
+  - '%VULKAN_SDK%\Source\lib32 -> appveyor.yml'
+  - '%VULKAN_SDK%\spirv-tools -> appveyor.yml'
 
 build:
+  # MSBuild verbosity level
   verbosity: minimal
 
 # scripts that are called at very beginning, before repo cloning
@@ -58,7 +81,7 @@ install:
   - .\bootstrap-vcpkg.bat -disableMetrics
   - vcpkg version
   # Install VULKAN_SDK
-  - curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/1.2.162.1/windows/VulkanSDK-1.2.162.1-Installer.exe?Human=true
+  - curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/VulkanSDK-%VULKAN_VERSION%-Installer.exe?Human=true
   - Vulkan_SDK_Installer.exe /S
   - dir %VULKAN_SDK%
   # Install and build dependencies using VCPKG
@@ -77,7 +100,7 @@ before_build:
 
 build_script:
   # generate build files
-  - cmake -G "Visual Studio 16 2019" -A x64 -B ..\ttauri-build . -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=ON -DTT_BUILD_OPTIMIZED:BOOL=ON -DTT_BUILD_PCH:BOOL=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+  - cmake -G "Visual Studio 16 2019" -A %PLATFORM% -B ..\ttauri-build . -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_SHARED_LIBS:BOOL=OFF -DTT_BUILD_TESTS:BOOL=ON -DTT_BUILD_OPTIMIZED:BOOL=ON -DTT_BUILD_PCH:BOOL=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
   # build
   - cmake --build ..\ttauri-build --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
@@ -85,12 +108,54 @@ after_build:
    # CHECK important folders to see if all build artifacts are present
    - dir C:\projects\ttauri-build
 
+#-------------------------------------------------------------------
+#     Tests
+#-------------------------------------------------------------------
+
+#before_test:
+#  - set PATH=%PATH%;C:\projects\ttauri-build\%configuration%
+
+#test_script:
+#  - C:\projects\ttauri-build\tests\%configuration%\ttauri-tests.exe
+
+#-------------------------------------------------------------------
+#     Build Artifacts
+#-------------------------------------------------------------------
+
 #artifacts:
 #  - path: ttauri.zip
-#    name: ttauri
+#    name: ttauri_lib_zip
+#  - path: ttauri_examples.zip
+#    name: ttauri_examples_zip
 
-# Enable RDP session to Appveyor server. You connect using a remote desktop connection (e.g. using mstsc.exe).
+#-------------------------------------------------------------------
+#     Deployment configuration
+#-------------------------------------------------------------------
+
+# deploy to Github Releases on tag push
+#deploy:
+#  provider: GitHub
+#  release: 'ttauri $(APPVEYOR_REPO_TAG_NAME)'
+#  tag: $(APPVEYOR_REPO_TAG_NAME)
+#  #description: '[**Changelog**](https://github.com/ttauri-project/ttauri/blob/master/CHANGELOG.md)'
+#  artifact: ttauri_lib_zip, ttauri_examples_zip
+#  draft: false
+#  prerelease: false
+#  force_update: true               # overwrite files of existing release on GitHub (for re-releasing)
+#  on:
+#    branch: master                 # release from master branch only
+#    appveyor_repo_tag: true        # deploy on tag push only
+#  auth_token:                      # encrypted token from GitHub
+#    secure: *hash*
+
+#-------------------------------------------------------------------
+#     Accessing Windows build worker via Remote Desktop (RDP)
+#-------------------------------------------------------------------
+
+# Enable RDP session to Appveyor server by enabling the two on_finish lines.
+# You connect using a remote desktop connection (e.g. using mstsc.exe).
 # Use PW from APPVEYOR_RDP_PASSWORD above. A session lasts 60min max.
 # Do not forget to disable the following lines, when you solved the problem.
+
 #on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
