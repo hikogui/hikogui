@@ -35,3 +35,27 @@ if(MSVC)
         set_source_files_properties(${ttauri_demo_do_no_analyze} PROPERTIES COMPILE_FLAGS -analyze-)
     endif()
 endif()
+
+#-------------------------------------------------------------------
+# Installation Rules: ttauri_demo
+#-------------------------------------------------------------------
+
+install(TARGETS ttauri_demo DESTINATION examples/ttauri_demo)
+
+install(FILES resources/ttauri_demo.png DESTINATION examples/ttauri_demo/data)
+
+install(FILES data/ttauri_demo.pot  DESTINATION examples/ttauri_demo/data/locale)
+install(DIRECTORY resources/locale/ DESTINATION examples/ttauri_demo/data/locale)
+
+# copy additional "ttauri library" resources from top-level
+
+install(FILES ../../data/elusiveicons-OFL1_1.license DESTINATION examples/ttauri_demo/doc)
+
+install(FILES ../../data/elusiveicons-webfont.ttf
+              ../../data/ttauri_icons.ttf
+    DESTINATION examples/ttauri_demo/data)
+
+install(DIRECTORY ../../resources/  DESTINATION examples/ttauri_demo/data)
+
+install(DIRECTORY ../../external/tzdata/ DESTINATION examples/ttauri_demo/data/tzdata)
+
