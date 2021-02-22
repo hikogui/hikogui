@@ -43,7 +43,7 @@ public:
 
         // Switch to 1 means there are no waiters.
         uint32_t expected = 0;
-        if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::memory_order_acquire)) {
+        if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
             [[unlikely]] lock_contented(expected);
         }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
@@ -64,7 +64,7 @@ public:
 
         // Switch to 1 means there are no waiters.
         uint32_t expected = 0;
-        if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::memory_order_acquire)) {
+        if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
             tt_axiom(semaphore.load() <= 2);
             [[unlikely]] return false;
         }
@@ -78,12 +78,12 @@ public:
     void unlock() noexcept {
         tt_axiom(semaphore.load() <= 2);
 
-        if (semaphore.fetch_sub(1, std::memory_order::memory_order_relaxed) != 1) {
-            [[unlikely]] semaphore.store(0, std::memory_order::memory_order_release);
+        if (semaphore.fetch_sub(1, std::memory_order::relaxed) != 1) {
+            [[unlikely]] semaphore.store(0, std::memory_order::release);
 
             semaphore.notify_one();
         } else {
-            atomic_thread_fence(std::memory_order::memory_order_release);
+            atomic_thread_fence(std::memory_order::release);
         }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
         locking_thread = 0;

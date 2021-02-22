@@ -16,9 +16,8 @@ struct formula_logical_not_node final : formula_unary_operator_node {
         auto rhs_ = rhs->evaluate(context);
         try {
             return !rhs_;
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate logical not.\n{}", location, e.what());
         }
     }
 

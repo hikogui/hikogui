@@ -21,7 +21,7 @@ font_book::font_book(std::vector<URL> const &font_directories)
                 register_font(font_url, false);
 
             } catch (std::exception const &e) {
-                tt_log_error("Failed parsing font at {}", font_url, tt::to_string(e));
+                tt_log_error("Failed parsing font at {}: \"{}\"", font_url, e.what());
             }
         }
     }

@@ -27,16 +27,14 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
     } else if (accessMode() >= AccessMode::Read) {
         prot = PROT_READ;
     } else {
-        tt_error_info().set<"url">(location());
-        throw io_error("Illegal access mode write-only when viewing file.");
+        throw io_error("{}: Illegal access mode write-only when viewing file.", location());
     }
 
     int flags = MAP_SHARED;
 
     void *data;
     if ((data = ::mmap(0, size, prot, flags, _file_mapping_object->file->fileHandle, _offset)) == MAP_FAILED) {
-        tt_error_info().set<"error_message">(getLastErrorMessage()).set<"url">(location());
-        throw io_error("Could not map view of file.");
+        throw io_error("{}: Could not map view of file. '{}'", location(), get_last_error_message());
     }
 
     auto *bytes_ptr = new std::span<std::byte>(static_cast<std::byte *>(data), size);
@@ -83,7 +81,7 @@ void file_view::unmap(std::span<std::byte> *bytes) noexcept
     if (bytes != nullptr) {
         if (!bytes->empty()) {
             if (!munmap(bytes->data(), bytes->size())) {
-                tt_log_error("Could not munmap view on file '{}'", getLastErrorMessage());
+                tt_log_error("Could not munmap view on file '{}'", get_last_error_message());
             }
         }
         delete bytes;
@@ -94,8 +92,7 @@ void file_view::flush(void *base, size_t size)
 {
     int flags = MS_SYNC;
     if (!msync(base, size, flags)) {
-        tt_error_info().set<"error_message">(getLastErrorMessage()).set<"url">(location());
-        throw io_error("Could not flush file");
+        throw io_error("{}: Could not flush file '{}'", location(), get_last_error_message());
     }
 }
 

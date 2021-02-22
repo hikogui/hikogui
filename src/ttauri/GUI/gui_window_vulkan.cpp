@@ -96,7 +96,7 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
         tt_log_info("acquireNextImageKHR() eTimeout");
         return {};
 
-    default: tt_error_info().set<"vk_result">(result); throw gui_error("Unknown result from acquireNextImageKHR()");
+    default: throw gui_error("Unknown result from acquireNextImageKHR(). '{}'", to_string(result));
     }
 }
 
@@ -128,7 +128,7 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
             state = gui_window_state::swapchain_lost;
             return;
 
-        default: tt_error_info().set<"vk_result">(result); throw gui_error("Unknown result from presentKHR()");
+        default: throw gui_error("Unknown result from presentKHR(). '{}'", to_string(result));
         }
 
     } catch (vk::OutOfDateKHRError const &) {
@@ -305,7 +305,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     widget->set_layout_parameters(aarect{extent}, aarect{extent});
 
     // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
-    ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;
+    ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
 
     // Make sure the widget's layout is updated before draw, but after window resize.
     widget->update_layout(displayTimePoint, need_layout);
@@ -597,7 +597,7 @@ gui_window_state gui_window_vulkan::buildSwapchain()
 
     case vk::Result::eErrorSurfaceLostKHR: return gui_window_state::surface_lost;
 
-    default: tt_error_info().set<"vk_result">(result); throw gui_error("Unknown result from createSwapchainKHR()");
+    default: throw gui_error("Unknown result from createSwapchainKHR(). '{}'", to_string(result));
     }
 
     tt_log_info("Finished building swap chain");

@@ -23,7 +23,7 @@ namespace tt {
 
 using namespace std::literals::chrono_literals;
 
-std::string getLastErrorMessage()
+std::string get_last_error_message()
 {
     DWORD const errorCode = GetLastError();
     size_t const messageSize = 32768;
@@ -41,7 +41,7 @@ std::string getLastErrorMessage()
     auto message = to_string(std::wstring(c16_message));
     delete[] c16_message;
 
-    return message;
+    return strip(message);
 }
 
 void logger_init_system() {

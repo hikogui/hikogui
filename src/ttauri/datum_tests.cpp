@@ -47,6 +47,21 @@ TEST(Datum, IntOperations) {
     ASSERT_EQ(b.is_float(), true);
     ASSERT_EQ(b == 45.0, true);
 
+    ASSERT_THROW(datum(-42) << 1, operation_error);
+    ASSERT_THROW(datum(-42) >> -1, operation_error);
+
+    ASSERT_EQ(datum(42) << 0, 42);
+    ASSERT_EQ(datum(42) >> 0, 42);
+    ASSERT_EQ(datum(42) << 1, 84);
+    ASSERT_EQ(datum(42) >> -1, 84);
+    ASSERT_EQ(datum(-42) >> 1, -21);
+
+    ASSERT_EQ(datum(42) << 63, 0);
+    ASSERT_EQ(datum(42) >> 63, 0);
+    ASSERT_EQ(datum(-42) >> 63, -1);
+    ASSERT_EQ(datum(42) << 64, 0);
+    ASSERT_EQ(datum(42) >> 64, 0);
+    ASSERT_EQ(datum(-42) >> 64, -1);
 }
 
 TEST(Datum, DecimalOperations) {

@@ -17,9 +17,8 @@ struct formula_bit_and_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
         try {
             return lhs_ & rhs_;
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate binary-and.\n{}", location, e.what());
         }
     }
 

@@ -52,7 +52,7 @@ void application_win32::post_message(void *window, unsigned int Msg, ptrdiff_t w
         reinterpret_cast<HWND>(window), static_cast<UINT>(Msg), static_cast<WPARAM>(wParam), static_cast<LPARAM>(lParam));
 
     if (!ret) {
-        tt_log_fatal("Could not post message {} to window {}: {}", Msg, reinterpret_cast<ptrdiff_t>(window), getLastErrorMessage());
+        tt_log_fatal("Could not post message {} to window {}: {}", Msg, reinterpret_cast<ptrdiff_t>(window), get_last_error_message());
     }
 }
 

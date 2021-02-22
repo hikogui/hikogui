@@ -61,8 +61,7 @@ struct skeleton_for_node final: skeleton_node {
         auto list_data = evaluate_formula_without_output(context, *list_expression, location);
 
         if (!list_data.is_vector()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Expecting expression returns a vector, got {}", list_data);
+            throw operation_error("{}: Expecting expression returns a vector, got {}", location, list_data);
         }
 
         ttlet output_size = context.output_size();
@@ -74,13 +73,8 @@ struct skeleton_for_node final: skeleton_node {
                 try {
                     name_expression->assign_without_output(context, item);
 
-                } catch (...) {
-                    auto error_location = location;
-                    if (ttlet expression_location = error_info::peek<parse_location, "parse_location">()) {
-                        error_location += *expression_location;
-                    }
-                    error_info(true).set<"parse_location">(error_location);
-                    throw;
+                } catch (std::exception const &e) {
+                    throw operation_error("{}: Could not evaluate for-loop expression.\n{}", location, e.what());
                 }
 
                 context.loop_push(loop_count++, loop_size);

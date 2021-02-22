@@ -58,7 +58,7 @@ public:
         ttlet count = static_cast<unsigned int>(x >> 59);
 
         x ^= x >> 18;
-        return rotr(static_cast<uint32_t>(x >> 27), count);
+        return std::rotr(static_cast<uint32_t>(x >> 27), count);
     }
 
     bstring get_bytes(ssize_t count) {
@@ -80,16 +80,16 @@ public:
     }
 
     uint32_t operator()() {
-        auto x = state.load(std::memory_order_relaxed);
+        auto x = state.load(std::memory_order::relaxed);
         uint64_t new_state;
         do {
             [[unlikely]] new_state = x * multiplier + increment;
-        } while (!state.compare_exchange_weak(x, new_state, std::memory_order_relaxed));
+        } while (!state.compare_exchange_weak(x, new_state, std::memory_order::relaxed));
 
         ttlet count = static_cast<unsigned int>(x >> 59);
 
         x ^= x >> 18;
-        return rotr(static_cast<uint32_t>(x >> 27), count);
+        return std::rotr(static_cast<uint32_t>(x >> 27), count);
     }
 
     bstring get_bytes(ssize_t count) {

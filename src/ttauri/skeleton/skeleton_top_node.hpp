@@ -35,13 +35,8 @@ struct skeleton_top_node final: skeleton_node {
         try {
             return evaluate_children(context, children);
 
-        } catch (...) {
-            auto error_location = location;
-            if (auto formula_location = error_info::peek<parse_location, "parse_location">()) {
-                error_location += *formula_location;
-            }
-            error_info(true).set<"parse_location">(error_location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Could not evaluate.\n{}", location, e.what());
         }
     }
 

@@ -19,7 +19,7 @@
 
 namespace tt {
 
-std::string getLastErrorMessage()
+std::string get_last_error_message()
 {
     return strerror(errno);
 }

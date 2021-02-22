@@ -23,7 +23,7 @@ namespace tt {
  */
 template<basic_fixed_string CounterTag, typename T>
 tt_no_inline void
-contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order_seq_cst)
+contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order::seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
@@ -54,7 +54,7 @@ contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_ord
  * @param order The memory order to use for the load atomic.
  */
 template<basic_fixed_string CounterTag, typename T>
-void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order_seq_cst)
+void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order = std::memory_order::seq_cst)
 {
     if (state.load(order) != to) {
         [[unlikely]] contended_wait_for_transition<CounterTag>(state, to, order);
@@ -70,7 +70,7 @@ void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order or
  * @param order Memory order to use for this state variable.
  */
 template<basic_fixed_string BlockCounterTag = "", typename T>
-tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order = std::memory_order_seq_cst)
+tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order = std::memory_order::seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
@@ -102,7 +102,7 @@ tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std:
  * @param order Memory order to use for this state variable.
  */
 template<basic_fixed_string BlockCounterTag = "", typename T>
-void transition(std::atomic<T> &state, T from, T to, std::memory_order order = std::memory_order_seq_cst)
+void transition(std::atomic<T> &state, T from, T to, std::memory_order order = std::memory_order::seq_cst)
 {
     auto expect = from;
     if (state.compare_exchange_strong(expect, to, order)) {

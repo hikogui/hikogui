@@ -18,9 +18,8 @@ theme::theme(URL const &url)
         tt_log_info("Parsing theme at {}", url);
         ttlet data = parse_JSON(url);
         parse(data);
-    } catch (...) {
-        error_info(true).set<"url">(url);
-        throw;
+    } catch (std::exception const &e) {
+        throw io_error("{}: Could not load theme.\n{}", url, e.what());
     }
 }
 
@@ -132,7 +131,7 @@ theme::theme(URL const &url)
     try {
         return parseColorValue(colorObject);
     } catch (parse_error const &e) {
-        throw parse_error("Could not parse color '{}'\n{}", object_name, tt::to_string(e, false));
+        throw parse_error("Could not parse color '{}'\n{}", object_name, e.what());
     }
 }
 
@@ -154,7 +153,7 @@ theme::theme(URL const &url)
         try {
             r.push_back(parseColorValue(*it));
         } catch (parse_error const &e) {
-            throw parse_error("Could not parse {}nd entry of color list '{}'\n{}", i + 1, name, tt::to_string(e, false));
+            throw parse_error("Could not parse {}nd entry of color list '{}'\n{}", i + 1, name, e.what());
         }
     }
     return r;
@@ -214,7 +213,7 @@ theme::theme(URL const &url)
     try {
         return parsetext_styleValue(textStyleObject);
     } catch (parse_error const &e) {
-        throw parse_error("Could not parse text-style '{}'\n{}", object_name, tt::to_string(e, false));
+        throw parse_error("Could not parse text-style '{}'\n{}", object_name, e.what());
     }
 }
 

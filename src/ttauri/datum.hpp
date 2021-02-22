@@ -2277,16 +2277,18 @@ public:
     friend datum_impl operator<<(datum_impl const &lhs, datum_impl const &rhs)
     {
         if (lhs.is_integer() && rhs.is_integer()) {
-            ttlet lhs_ = static_cast<uint64_t>(lhs);
-            ttlet rhs_ = static_cast<int64_t>(rhs);
-            if (rhs_ < -63) {
-                return datum_impl{0};
-            } else if (rhs_ < 0) {
-                // Pretend this is a unsigned shift right.
-                return datum_impl{lhs_ >> -rhs_};
-            } else if (rhs_ == 0) {
-                return lhs;
-            } else if (rhs_ > 63) {
+            ttlet lhs_ = static_cast<long long>(lhs);
+            ttlet rhs_ = static_cast<long long>(rhs);
+
+            if (rhs_ < 0) {
+                return lhs >> -rhs;
+            }
+
+            if (lhs_ < 0) {
+                throw operation_error("lhs value {} of left shift must not be negative", lhs);
+            }
+
+            if (rhs_ > 63) {
                 return datum_impl{0};
             } else {
                 return datum_impl{lhs_ << rhs_};
@@ -2294,7 +2296,7 @@ public:
 
         } else {
             throw operation_error(
-                "Can't logical shift-left '<<' value {} of type {} with value {} of type {}",
+                "Can't arithmetic shift-left '<<' value {} of type {} with value {} of type {}",
                 lhs.repr(),
                 lhs.type_name(),
                 rhs.repr(),
@@ -2305,18 +2307,17 @@ public:
     friend datum_impl operator>>(datum_impl const &lhs, datum_impl const &rhs)
     {
         if (lhs.is_integer() && rhs.is_integer()) {
-            ttlet lhs_ = static_cast<uint64_t>(lhs);
-            ttlet rhs_ = static_cast<int64_t>(rhs);
-            if (rhs_ < -63) {
-                return datum_impl{0};
-            } else if (rhs_ < 0) {
-                return datum_impl{lhs_ << -rhs_};
-            } else if (rhs_ == 0) {
-                return lhs;
-            } else if (rhs_ > 63) {
-                return (lhs_ >= 0) ? datum_impl{0} : datum_impl{-1};
+            ttlet lhs_ = static_cast<long long>(lhs);
+            ttlet rhs_ = static_cast<long long>(rhs);
+
+            if (rhs < 0) {
+                return lhs << -rhs;
+            }
+
+            if (rhs_ > 63) {
+                return lhs_ < 0 ? datum_impl{-1} : datum_impl{0};
             } else {
-                return datum_impl{static_cast<int64_t>(lhs_) >> rhs_};
+                return datum_impl{lhs_ >> rhs_};
             }
 
         } else {

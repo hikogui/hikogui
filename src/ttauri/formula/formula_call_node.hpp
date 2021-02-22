@@ -45,14 +45,14 @@ struct formula_call_node final : formula_node {
         try {
             r.push_back(lhs->get_name());
         } catch (parse_error const &e) {
-            throw parse_error(fmt::format("Function definition does not have a name, got {}\n{}", lhs, to_string(e, false)));
+            throw parse_error("Function definition does not have a name, got {}\n{}", lhs, e.what());
         }
 
         for (ttlet &arg: args) {
             try {
                 r.push_back(arg->get_name());
             } catch (parse_error const &e) {
-                throw parse_error(fmt::format("Definition of function {}() has a non-name argument {}\n{}", lhs, arg, to_string(e, false)));
+                throw parse_error("Definition of function {}() has a non-name argument {}\n{}", lhs, arg, e.what());
             }
         }
 

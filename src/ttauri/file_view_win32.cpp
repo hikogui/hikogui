@@ -4,7 +4,6 @@
 
 #include "file_view.hpp"
 #include "exception.hpp"
-#include "error_info.hpp"
 #include "logger.hpp"
 #include "memory.hpp"
 #include "URL.hpp"
@@ -31,8 +30,7 @@ file_view::file_view(std::shared_ptr<file_mapping> const& _file_mapping_object, 
         desiredAccess = FILE_MAP_READ;
     }
     else {
-        tt_error_info().set<"url">(location());
-        throw io_error("Illegal access mode WRONLY/0 when viewing file.");
+        throw io_error("{}: Illegal access mode WRONLY/0 when viewing file.", location());
     }
 
     DWORD fileOffsetHigh = _offset >> 32;
@@ -43,8 +41,7 @@ file_view::file_view(std::shared_ptr<file_mapping> const& _file_mapping_object, 
         data = nullptr;
     } else {
         if ((data = MapViewOfFile(_file_mapping_object->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
-            tt_error_info().set<"error_message">(getLastErrorMessage()).set<"url">(location());
-            throw io_error("Could not map view of file.");
+            throw io_error("{}: Could not map view of file. '{}'", location(), get_last_error_message());
         }
     }
 
@@ -91,7 +88,7 @@ void file_view::unmap(std::span<std::byte> *bytes) noexcept
         if (bytes->size() > 0) {
             void *data = bytes->data();
             if (!UnmapViewOfFile(data)) {
-                tt_log_error("Could not unmap view on file '{}'", getLastErrorMessage());
+                tt_log_error("Could not unmap view on file '{}'", get_last_error_message());
             }
         }
         delete bytes;
@@ -101,8 +98,7 @@ void file_view::unmap(std::span<std::byte> *bytes) noexcept
 void file_view::flush(void* base, size_t size)
 {
     if (!FlushViewOfFile(base, size)) {
-        tt_error_info().set<"error_message">(getLastErrorMessage()).set<"url">(location());
-        throw io_error("Could not flush file");
+        throw io_error("{}: Could not flush file. '{}'", location(), get_last_error_message());
     }
 }
 

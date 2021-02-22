@@ -16,13 +16,13 @@ language::language(language_tag tag) noexcept :
     // XXX fmt::format is unable to find language_tag::operator<<
     auto po_url = URL(fmt::format("resource:locale/{}.po", to_string(this->tag)));
 
-    tt_log_info("Loading language {} catalogue {}", to_string(this->tag), po_url);
+    tt_log_info("Loading language {} catalog {}", to_string(this->tag), po_url);
 
     try {
         add_translation(parse_po(po_url), *this);
 
     } catch (std::exception const &e) {
-        tt_log_warning("Could not load language catalogue: {}", tt::to_string(e));
+        tt_log_warning("Could not load language catalog {}: \"{}\"", this->tag, e.what());
     }
 }
 
