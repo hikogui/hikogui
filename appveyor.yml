@@ -131,7 +131,7 @@ build_script:
 after_build:
    # CHECK important folders to see if all build artifacts are present
    - dir C:\projects\ttauri-build
-   - dir C:\projects\ttauri-install
+   - dir /S /B C:\projects\ttauri-install
 
 on_failure:
   - appveyor PushArtifact CMakeFiles\CMakeOutput.log

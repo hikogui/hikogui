@@ -19,7 +19,7 @@ option(TT_BUILD_TESTS       "Build tests"                        ON)
 option(TT_BUILD_OPTIMIZED   "Build optimized Releases"           ON)
 option(TT_BUILD_PCH         "Build precompiled headers"          ON)
 
-option(TT_ENABLE_ANALYSIS    "Compile using -analyze"           OFF)
+option(TT_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
 
 #-------------------------------------------------------------------
 # Compiler Setup
@@ -106,9 +106,9 @@ endif()
 # Find Dependencies
 #-------------------------------------------------------------------
 
-# non-vcpkg dependencies
-set(gtest_force_shared_crt ON)
-add_subdirectory(external/googletest)
+#
+# RenderDoc - non-vcpkg, directly build from externals
+#
 add_subdirectory(external/RenderDoc)
 
 #
@@ -128,6 +128,16 @@ find_package(fmt CONFIG REQUIRED)
 #
 #set(GTest_DIR "${VCPKG_DIR}/share/gtest")
 #find_package(GTest)
+
+#
+# GoogleTest - non-vcpkg, directly build from externals
+#
+set(gtest_force_shared_crt ON)
+
+# Don't install GTest libs when we run `install`.
+set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest." FORCE)
+
+add_subdirectory(external/googletest)
 
 #
 # Vulkan Memory Allocator
@@ -151,8 +161,6 @@ find_package(Vulkan REQUIRED)
 #-------------------------------------------------------------------
 
 add_library(ttauri STATIC)
-
-install(TARGETS ttauri RESOURCE)
 
 add_executable(ttauri_tests)
 
@@ -383,6 +391,22 @@ add_custom_target(ttauri_resources
 )
 
 add_dependencies(ttauri ttauri_resources)
+
+#-------------------------------------------------------------------
+# Installation Rules: ttauri                               (library)
+#-------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
+install(TARGETS ttauri RESOURCE)
+
+install(TARGETS ttauri
+    EXPORT ttauri
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 
 #-------------------------------------------------------------------
 # Build Target: ttauri_tests                            (executable)
