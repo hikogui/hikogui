@@ -8,6 +8,13 @@
 # Environment Variables: https://vcpkg.readthedocs.io/en/latest/users/config-environment/
 #
 
+# X_VCPKG_APPLOCAL_DEPS_INSTALL depends on CMake policy CMP0087
+if(POLICY CMP0087)
+    cmake_policy(SET CMP0087 NEW)
+endif()
+
+set(X_VCPKG_APPLOCAL_DEPS_INSTALL ON)
+
 # == VCPKG_ROOT
 #
 # Please set VCPKG_ROOT on your env: export VCPKG_ROOT=/opt/vcpkg/bin
