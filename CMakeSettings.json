@@ -12,7 +12,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "variables": [
         {
-          "name": "TTAURI_ENABLE_CODE_ANALYSIS",
+          "name": "TT_ENABLE_ANALYSIS",
           "value": "ON",
           "type": "STRING"
         },

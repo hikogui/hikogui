@@ -19,6 +19,8 @@ option(TT_BUILD_TESTS       "Build tests"                        ON)
 option(TT_BUILD_OPTIMIZED   "Build optimized Releases"           ON)
 option(TT_BUILD_PCH         "Build precompiled headers"          ON)
 
+option(TT_ENABLE_ANALYSIS    "Compile using -analyze"           OFF)
+
 #-------------------------------------------------------------------
 # Compiler Setup
 #-------------------------------------------------------------------
@@ -190,7 +192,7 @@ target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_features(ttauri PUBLIC cxx_std_20)
 
 if(MSVC)
-    if(TTAURI_ENABLE_CODE_ANALYSIS)
+    if(TT_ENABLE_ANALYSIS)
         set_source_files_properties(${TTauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
         target_compile_options(ttauri PUBLIC -analyze)
         #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
@@ -308,7 +310,7 @@ endif()
 
 if (WIN32)
     if(TT_BUILD_PCH)
-        if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
+        if(NOT TT_ENABLE_ANALYSIS)
             target_precompile_headers(ttauri PRIVATE <Windows.h>)
         endif()
     endif()
@@ -395,7 +397,7 @@ if(TT_BUILD_TESTS)
     target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
     if(TT_BUILD_PCH)
-        if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
+        if(NOT TT_ENABLE_ANALYSIS)
             target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
         endif()
     endif()
@@ -463,7 +465,7 @@ set(ttauri_do_not_analyze
 )
 
 if(MSVC)
-    if(TTAURI_ENABLE_CODE_ANALYSIS)
+    if(TT_ENABLE_ANALYSIS)
         set_source_files_properties(${ttauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
         target_compile_options(ttauri PUBLIC -analyze)
         #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)

@@ -31,7 +31,7 @@ set(ttauri_demo_do_no_analyze
 )
 
 if(MSVC)
-    if(TTAURI_ENABLE_CODE_ANALYSIS)
+    if(TT_ENABLE_ANALYSIS)
         set_source_files_properties(${ttauri_demo_do_no_analyze} PROPERTIES COMPILE_FLAGS -analyze-)
     endif()
 endif()

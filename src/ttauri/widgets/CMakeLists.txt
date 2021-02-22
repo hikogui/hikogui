@@ -39,7 +39,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_PCH)
-    if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
+    if(NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
         Widget.hpp
     )
