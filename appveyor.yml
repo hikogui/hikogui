@@ -145,11 +145,11 @@ on_failure:
 #     Tests
 #-------------------------------------------------------------------
 
-#before_test:
-#  - set PATH=%PATH%;C:\projects\ttauri-build\%BUILD_TYPE%
+before_test:
+  - set PATH=%PATH%;C:\projects\ttauri-%APPVEYOR_BUILD_VERSION%\tests\
 
-#test_script:
-#  - C:\projects\ttauri-build\tests\%BUILD_TYPE%\ttauri-tests.exe
+test_script:
+  - ttauri_tests.exe
 
 #-------------------------------------------------------------------
 #     Build Artifacts
