@@ -25,21 +25,6 @@
           "name": "gtest_force_shared_crt",
           "value": "ON",
           "type": "STRING"
-        },
-        {
-          "name": "BUILD_TZ_LIB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "USE_SYSTEM_TZ_DB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "ENABLE_DATE_TESTING",
-          "value": "OFF",
-          "type": "STRING"
         }
       ],
       "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
@@ -63,21 +48,6 @@
         {
           "name": "gtest_force_shared_crt",
           "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "BUILD_TZ_LIB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "USE_SYSTEM_TZ_DB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "ENABLE_DATE_TESTING",
-          "value": "OFF",
           "type": "STRING"
         }
       ],
@@ -104,21 +74,6 @@
           "name": "gtest_force_shared_crt",
           "value": "ON",
           "type": "STRING"
-        },
-        {
-          "name": "BUILD_TZ_LIB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "USE_SYSTEM_TZ_DB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "ENABLE_DATE_TESTING",
-          "value": "OFF",
-          "type": "STRING"
         }
       ],
       "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
@@ -143,21 +98,6 @@
           "name": "gtest_force_shared_crt",
           "value": "ON",
           "type": "STRING"
-        },
-        {
-          "name": "BUILD_TZ_LIB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "USE_SYSTEM_TZ_DB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "ENABLE_DATE_TESTING",
-          "value": "OFF",
-          "type": "STRING"
         }
       ],
       "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
@@ -181,21 +121,6 @@
         {
           "name": "gtest_force_shared_crt",
           "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "BUILD_TZ_LIB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "USE_SYSTEM_TZ_DB",
-          "value": "ON",
-          "type": "STRING"
-        },
-        {
-          "name": "ENABLE_DATE_TESTING",
-          "value": "OFF",
           "type": "STRING"
         }
       ],
