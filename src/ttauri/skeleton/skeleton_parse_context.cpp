@@ -32,13 +32,8 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression(std::stri
     try {
         expression = parse_formula(context);
 
-    } catch (...) {
-        auto error_location = location;
-        if (auto formula_location = error_info::peek<parse_location, "parse_location">()) {
-            error_location += *formula_location;
-        }
-        error_info(true).set<"parse_location">(error_location);
-        throw;
+    } catch (std::exception const &e) {
+        throw parse_error("{}: Could not parse expression.\n{}", location, e.what());
     }
 
     (*this) += std::distance(index, formula_last);
@@ -49,8 +44,7 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression_and_advan
     auto expression = parse_expression(end_text);
 
     if (!starts_with_and_advance_over(end_text)) {
-        tt_error_info().set<"parse_location">(location);
-        throw parse_error("Could not find '{}' after expression", end_text);
+        throw parse_error("{}: Could not find '{}' after expression", location, end_text);
     }
 
     return expression;
@@ -86,8 +80,7 @@ void skeleton_parse_context::end_of_text_segment()
     if (text_segment_start) {
         if (index > *text_segment_start) {
             if (!append<skeleton_string_node>(location, std::string(*text_segment_start, index))) {
-                tt_error_info().set<"parse_location">(location);
-                throw parse_error("Unexpected text segment.");
+                throw parse_error("{}: Unexpected text segment.", location);
             }
         }
 
@@ -135,12 +128,10 @@ void skeleton_parse_context::include(parse_location _location, std::unique_ptr<f
 
     if (std::ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_skeleton(new_skeleton_path))) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Unexpected #include statement");
+            throw parse_error("{}: Unexpected #include statement.", location);
         }
     } else {
-        tt_error_info().set<"parse_location">(location);
-        throw parse_error("Unexpected #include statement, missing top-level");
+        throw parse_error("{}: Unexpected #include statement, missing top-level", location);
     }
 }
 

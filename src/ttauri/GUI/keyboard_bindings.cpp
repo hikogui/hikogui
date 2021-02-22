@@ -53,9 +53,8 @@ void keyboard_bindings::loadBindings(URL url, bool system_binding)
             }
         }
 
-    } catch (...) {
-        error_info(true).set<"url">(url);
-        throw;
+    } catch (std::exception const &e) {
+        throw io_error("{}: Could not load keyboard bindings.\n{}", url, e.what());
     }
 
 }

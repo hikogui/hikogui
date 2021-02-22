@@ -163,7 +163,7 @@ gui_device_vulkan::~gui_device_vulkan()
         intrinsic.destroy();
 
     } catch (std::exception const &e) {
-        tt_log_fatal("Could not properly destruct gui_device_vulkan {}", to_string(e));
+        tt_log_fatal("Could not properly destruct gui_device_vulkan. '{}'", e.what());
     }
 }
 

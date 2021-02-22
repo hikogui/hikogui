@@ -58,7 +58,7 @@ vertical_sync_win32::vertical_sync_win32(std::function<void(void*,hires_utc_cloc
 
     gdi = LoadLibraryW(L"Gdi32.dll");
     if (!gdi) {
-        tt_log_fatal("Error opening Gdi32.dll {}", getLastErrorMessage());
+        tt_log_fatal("Error opening Gdi32.dll {}", get_last_error_message());
     }
 
     pfnD3DKMTWaitForVerticalBlankEvent = (PFND3DKMT_WAITFORVERTICALBLANKEVENT) GetProcAddress(reinterpret_cast<HMODULE>(gdi), "D3DKMTWaitForVerticalBlankEvent");
@@ -137,7 +137,7 @@ void vertical_sync_win32::closeAdapter() noexcept
 
     NTSTATUS status = pfnD3DKMTCloseAdapter(&ca);
     if (status != STATUS_SUCCESS) {
-        tt_log_error("Could not close adapter '{}'.", getLastErrorMessage());
+        tt_log_error("Could not close adapter '{}'.", get_last_error_message());
         state = State::FALLBACK;
     } else {
         state = State::ADAPTER_CLOSED;
@@ -179,7 +179,7 @@ hires_utc_clock::time_point vertical_sync_win32::wait() noexcept
             closeAdapter();
             break;
         default:
-            tt_log_error("Failed waiting for vertical sync. '{}'", getLastErrorMessage());
+            tt_log_error("Failed waiting for vertical sync. '{}'", get_last_error_message());
             closeAdapter();
             state = State::FALLBACK;
             break;

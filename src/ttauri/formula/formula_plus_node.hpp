@@ -16,9 +16,8 @@ struct formula_plus_node final : formula_unary_operator_node {
         auto rhs_ = rhs->evaluate(context);
         try {
             return +rhs_;
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate unary-plus.\n{}", location, e.what());
         }
     }
 

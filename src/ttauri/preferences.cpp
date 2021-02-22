@@ -41,7 +41,7 @@ void preferences::save() const noexcept
         file.rename(_location, true);
 
     } catch (io_error const &e) {
-        tt_log_error("Could not save preferences to file: {}", tt::to_string(e));
+        tt_log_error("Could not save preferences to file. \"{}\"", e.what());
     }
 
     _modified = false;
@@ -62,11 +62,11 @@ void preferences::load() noexcept
         --_deserializing;
 
     } catch (io_error const &e) {
-        tt_log_warning("Could not read preferences file: {}", to_string(e));
+        tt_log_warning("Could not read preferences file. \"{}\"", e.what());
         --_deserializing = false;
 
     } catch (parse_error const &e) {
-        tt_log_error("Could not parse preferences file: {}", to_string(e));
+        tt_log_error("Could not parse preferences file. \"{}\"", e.what());
         --_deserializing = false;
     }
 }

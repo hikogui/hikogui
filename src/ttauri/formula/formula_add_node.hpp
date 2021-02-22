@@ -17,13 +17,8 @@ struct formula_add_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
         try {
             return lhs_ + rhs_;
-        } catch (...) {
-            auto error_location = location;
-            if (auto formula_location = error_info::peek<parse_location, "parse_location">()) {
-                error_location += *formula_location;
-            }
-            error_info(true).set<"parse_location">(error_location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate add.\n{}", location, e.what());
         }
     }
 

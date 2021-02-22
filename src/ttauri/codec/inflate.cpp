@@ -60,7 +60,7 @@ static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_of
     case 284: return get_bits(bytes, bit_offset, 5) + 227;
     case 285: return 258;
     default:
-        throw parse_error(fmt::format("Literal/Length symbol out of range {}", symbol)); 
+        throw parse_error("Literal/Length symbol out of range {}", symbol); 
     }
 }
 
@@ -101,7 +101,7 @@ static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_of
     case 28: return get_bits(bytes, bit_offset, 13) + 16385;
     case 29: return get_bits(bytes, bit_offset, 13) + 24577;
     default:
-        throw parse_error(fmt::format("Distance symbol out of range {}", symbol)); 
+        throw parse_error("Distance symbol out of range {}", symbol); 
     }
 }
 

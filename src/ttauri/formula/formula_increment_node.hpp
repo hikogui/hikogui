@@ -16,9 +16,8 @@ struct formula_increment_node final : formula_unary_operator_node {
         auto &rhs_ = rhs->evaluate_lvalue(context);
         try {
             return ++rhs_;
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate increment.\n{}", location, e.what());
         }
     }
 

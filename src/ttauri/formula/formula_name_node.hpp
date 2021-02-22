@@ -18,8 +18,7 @@ struct formula_name_node final : formula_node {
     void resolve_function_pointer(formula_post_process_context& context) override {
         function = context.get_function(name);
         if (!function) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Could not find function {}()", name);
+            throw parse_error("{}: Could not find function {}().", location, name);
         }
     }
 
@@ -28,18 +27,16 @@ struct formula_name_node final : formula_node {
 
         try {
             return const_context.get(name);
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate function.\n{}", location, e.what());
         }
     }
 
     datum &evaluate_lvalue(formula_evaluation_context& context) const override {
         try {
             return context.get(name);
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate function.\n{}", location, e.what());
         }
     }
 
@@ -52,18 +49,16 @@ struct formula_name_node final : formula_node {
     datum const &evaluate_xvalue(formula_evaluation_context const& context) const override {
         try {
             return context.get(name);
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate function.\n{}", location, e.what());
         }
     }
 
     datum &assign(formula_evaluation_context& context, datum const &rhs) const override {
         try {
             return context.set(name, rhs);
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate function.\n{}", location, e.what());
         }
     }
 

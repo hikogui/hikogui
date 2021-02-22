@@ -160,7 +160,7 @@ void application::init_gui()
             try {
                 keyboardBindings.loadSystemBindings();
             } catch (std::exception const &e) {
-                tt_log_fatal("Could not load keyboard bindings {}", tt::to_string(e));
+                tt_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
             }
 
             gui_system::global = std::make_unique<gui_system_vulkan_win32>(gui_delegate);

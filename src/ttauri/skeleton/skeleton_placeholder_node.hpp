@@ -26,13 +26,8 @@ struct skeleton_placeholder_node final : skeleton_node {
         try {
             expression->post_process(context);
 
-        } catch (...) {
-            auto error_location = location;
-            if (ttlet expression_location = error_info::peek<parse_location, "parse_location">()) {
-                error_location += *expression_location;
-            }
-            error_info(true).set<"parse_location">(error_location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Could not post process placeholder.\n{}", location, e.what());
         }
     }
 
@@ -47,12 +42,10 @@ struct skeleton_placeholder_node final : skeleton_node {
 
         ttlet tmp = evaluate_expression(context, *expression, location);
         if (tmp.is_break()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #break not inside a loop statement.");
+            throw operation_error("{}: Found #break not inside a loop statement.", location);
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #continue not inside a loop statement.");
+            throw operation_error("{}: Found #continue not inside a loop statement.", location);
 
         } else if (tmp.is_undefined()) {
             return {};

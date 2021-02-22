@@ -58,7 +58,7 @@ public:
         ttlet count = static_cast<unsigned int>(x >> 59);
 
         x ^= x >> 18;
-        return rotr(static_cast<uint32_t>(x >> 27), count);
+        return std::rotr(static_cast<uint32_t>(x >> 27), count);
     }
 
     bstring get_bytes(ssize_t count) {
@@ -89,7 +89,7 @@ public:
         ttlet count = static_cast<unsigned int>(x >> 59);
 
         x ^= x >> 18;
-        return rotr(static_cast<uint32_t>(x >> 27), count);
+        return std::rotr(static_cast<uint32_t>(x >> 27), count);
     }
 
     bstring get_bytes(ssize_t count) {

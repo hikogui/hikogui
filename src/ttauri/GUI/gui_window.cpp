@@ -46,7 +46,7 @@ gui_window::~gui_window()
         tt_log_info("Window '{}' has been propertly destructed.", title);
 
     } catch (std::exception const &e) {
-        tt_log_fatal("Could not properly destruct gui_window {}", to_string(e));
+        tt_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
     }
 }
 

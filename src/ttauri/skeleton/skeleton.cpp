@@ -31,8 +31,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.advance_over("\n");
 
         if (!context.pop()) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Unexpected #end statement.");
+            throw parse_error("{}: Unexpected #end statement.", location);
         }
 
         context.start_of_text_segment();
@@ -44,8 +43,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
     } else if (context.starts_with_and_advance_over("elif ")) {
         if (!context.found_elif(location, context.parse_expression_and_advance_over("\n"))) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Unexpected #elif statement.");
+            throw parse_error("{}: Unexpected #elif statement.", location);
         }
 
         context.start_of_text_segment();
@@ -54,8 +52,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.advance_over("\n");
 
         if (!context.found_else(location)) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Unexpected #else statement.");
+            throw parse_error("{}: Unexpected #else statement.", location);
         }
 
         context.start_of_text_segment();
@@ -73,8 +70,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
         if (context.top_statement_is_do()) {
             if (!context.found_while(location, std::move(expression))) {
-                tt_error_info().set<"parse_location">(location);
-                throw parse_error("Unexpected #while statement; missing #do.");
+                throw parse_error("{}: Unexpected #while statement; missing #do.", location);
             }
 
             tt_assert(context.pop());
@@ -105,8 +101,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.advance_over("\n");
 
         if (!context.append<skeleton_break_node>(location)) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Unexpected #break statement");
+            throw parse_error("{}: Unexpected #break statement", location);
         }
 
         context.start_of_text_segment();
@@ -115,16 +110,14 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.advance_over("\n");
 
         if (!context.append<skeleton_continue_node>(location)) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Unexpected #continue statement");
+            throw parse_error("{}: Unexpected #continue statement", location);
         }
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("return ")) {
         if (!context.append<skeleton_return_node>(location, context.parse_expression_and_advance_over("\n"))) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Unexpected #return statement");
+            throw parse_error("{}: Unexpected #return statement", location);
         }
 
         context.start_of_text_segment();
@@ -135,8 +128,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
     } else { // Add '#' and the current character to text.
         if (!context.append<skeleton_expression_node>(location, context.parse_expression_and_advance_over("\n"))) {
-            tt_error_info().set<"parse_location">(location);
-            throw parse_error("Unexpected # (expression) statement.");
+            throw parse_error("{}: Unexpected # (expression) statement.", location);
         }
 
         context.start_of_text_segment();
@@ -182,8 +174,7 @@ static void parse_skeleton_escape(skeleton_parse_context &context)
             return;
         }
     }
-    tt_error_info().set<"parse_location">(context.location);
-    throw parse_error("Unexpected end-of-file after escape '\' character.");
+    throw parse_error("{}: Unexpected end-of-file after escape '\' character.", context.location);
 }
 
 [[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(skeleton_parse_context &context)
@@ -217,11 +208,9 @@ static void parse_skeleton_escape(skeleton_parse_context &context)
     context.end_of_text_segment();
 
     if (context.statement_stack.size() < 1) {
-        tt_error_info().set<"parse_location">(context.location);
-        throw parse_error("Found to many #end statements.");
+        throw parse_error("{}: Found to many #end statements.", context.location);
     } else if (context.statement_stack.size() > 1) {
-        tt_error_info().set<"parse_location">(context.location);
-        throw parse_error("Missing #end statement.");
+        throw parse_error("{}: Missing #end statement.", context.location);
     }
 
     auto top = std::move(context.statement_stack.back());

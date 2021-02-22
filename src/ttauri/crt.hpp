@@ -100,7 +100,7 @@ int WINAPI WinMain(
     try {
         [[maybe_unused]] ttlet time_zone = date::current_zone();
     } catch (std::runtime_error const &e) {
-        tt_log_error("Could not get current time zone: {}", e.what());
+        tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }
 #endif
 
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
     try {
         [[maybe_unused]] ttlet time_zone = date::current_zone();
     } catch (std::runtime_error const &e) {
-        tt_log_error("Could not get current time zone: {}", e.what());
+        tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }
 #endif
 
