@@ -104,8 +104,10 @@ endif()
 # Find Dependencies
 #-------------------------------------------------------------------
 
-# this can be moved into "Setup Sources" when GTest is removed from externals
-add_subdirectory(external)
+# non-vcpkg dependencies
+set(gtest_force_shared_crt ON)
+add_subdirectory(external/googletest)
+add_subdirectory(external/RenderDoc)
 
 #
 # date
@@ -123,7 +125,7 @@ find_package(fmt CONFIG REQUIRED)
 # GoogleTest
 #
 #set(GTest_DIR "${VCPKG_DIR}/share/gtest")
-find_package(GTest)
+#find_package(GTest)
 
 #
 # Vulkan Memory Allocator
@@ -160,7 +162,7 @@ add_executable(ttauri_tests)
 # We omit adding source files to these commands, but add them
 # later using target_sources() in CMakeLists of subdirectories.
 
-add_subdirectory(src)
+add_subdirectory(src/ttauri)
 add_subdirectory(tools)
 
 #-------------------------------------------------------------------
@@ -416,7 +418,7 @@ endif()
 
 if(TT_BUILD_EXAMPLES)
 
-    add_subdirectory(examples)
+    add_subdirectory(examples/ttauri_demo)
 
 endif()
 

@@ -1,6 +1,10 @@
 
 project(TTauri_Utilities C)
 
+#-------------------------------------------------------------------
+# Build Target: BinaryToCPP                             (executable)
+#-------------------------------------------------------------------
+
 add_executable(BinaryToCPP BinaryToCPP.c)
 
 if (MSVC)
