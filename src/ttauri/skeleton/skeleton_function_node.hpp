@@ -31,8 +31,7 @@ struct skeleton_function_node final: skeleton_node {
                 return this->evaluate_call(context, arguments);
 
             } catch (std::exception const &e) {
-                error_info(true).set<"parse_location">(location);
-                throw operation_error("Failed during handling of function call.\n{}", tt::to_string(e, false));
+                throw operation_error("{}: Failed during handling of function call.\n{}", location, e.what());
             }
         }
         );
@@ -64,8 +63,7 @@ struct skeleton_function_node final: skeleton_node {
     datum evaluate_call(formula_evaluation_context &context, datum::vector const &arguments) {
         context.push();
         if (std::ssize(argument_names) != std::ssize(arguments)) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Invalid number of arguments to function {}() expecting {} got {}.", name, argument_names.size(), arguments.size());
+            throw operation_error("{}: Invalid number of arguments to function {}() expecting {} got {}.", location, name, argument_names.size(), arguments.size());
         }
 
         for (ssize_t i = 0; i != std::ssize(argument_names); ++i) {
@@ -77,12 +75,10 @@ struct skeleton_function_node final: skeleton_node {
         context.pop();
 
         if (tmp.is_break()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #break not inside a loop statement.");
+            throw operation_error("{}: Found #break not inside a loop statement.", location);
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #continue not inside a loop statement.");
+            throw operation_error("{}: Found #continue not inside a loop statement.", location);
 
         } else if (tmp.is_undefined()) {
             return {};

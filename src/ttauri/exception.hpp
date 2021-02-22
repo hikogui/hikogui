@@ -13,10 +13,15 @@ namespace tt {
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax
  * in both text and binary files.
- *
- * The `error_info`-`"parse_location"` is often filled in for the
- * specific file name and location inside the file where the error
- * was.
+ * 
+ * The what-string should start with the location of the error in the file followed with ": " and the error message.
+ * The what-string may be shown to the user, when the parser was working on user supplied files.
+ * 
+ * The location for a text file will be: a path followed by line_nr (starting at line 1) and column_nr (starting at column 1).
+ * The location for a binary: a path followed by an optional chunk names, followed by a byte number within the chunk.
+ * 
+ * If there are nested errors, such as an error in an included file, then the what-string may be multiple-lines, where the
+ * nested error appears later in the what-string.
  */
 class parse_error : public std::runtime_error {
 public:
@@ -45,6 +50,13 @@ public:
     }
 };
 
+/** Exception thrown during I/O on an error.
+ * This exception is often thrown due to an error with permission or existence of files.
+ *
+ * The what-string should start with the path of the object where the error happened.
+ * Followed after ": " with a user-friendly error message. Optionally followed between single quotes
+ * the operating system error string.
+ */
 class io_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;

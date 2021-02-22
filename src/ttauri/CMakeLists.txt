@@ -63,7 +63,6 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
     endian.hpp
-    error_info.hpp
     exception.hpp
     file.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>

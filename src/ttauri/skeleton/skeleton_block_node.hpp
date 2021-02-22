@@ -54,29 +54,21 @@ struct skeleton_block_node final: skeleton_node {
         try {
             tmp = function(context, datum::vector{});
 
-        } catch (...) {
-            auto error_location = location;
-            if (ttlet location_in_function = error_info::peek<parse_location, "parse_location">()) {
-                error_location += *location_in_function;
-            }
-            error_info(true).set<"parse_location">(error_location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Could not evaluate block.\n{}", location, e.what());
         }
 
         if (tmp.is_break()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #break not inside a loop statement.");
+            throw operation_error("{}: Found #break not inside a loop statement.", location);
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #continue not inside a loop statement.");
+            throw operation_error("{}: Found #continue not inside a loop statement.", location);
 
         } else if (tmp.is_undefined()) {
             return {};
 
         } else {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Can not use a #return statement inside a #block.");
+            throw operation_error("{}: Can not use a #return statement inside a #block.", location);
         }
     }
 
@@ -86,19 +78,16 @@ struct skeleton_block_node final: skeleton_node {
         context.pop();
 
         if (tmp.is_break()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #break not inside a loop statement.");
+            throw operation_error("{}: Found #break not inside a loop statement.", location);
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #continue not inside a loop statement.");
+            throw operation_error("{}: Found #continue not inside a loop statement.", location);
 
         } else if (tmp.is_undefined()) {
             return {};
 
         } else {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Can not use a #return statement inside a #block.");
+            throw operation_error("{}: Can not use a #return statement inside a #block.", location);
         }
     }
 

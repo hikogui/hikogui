@@ -11,7 +11,6 @@
 #include "exception.hpp"
 #include "static_resource_view.hpp"
 #include "logger.hpp"
-#include "error_info.hpp"
 #include <regex>
 
 namespace tt {
@@ -274,8 +273,6 @@ std::unique_ptr<resource_view> URL::loadView() const
             return view;
 
         } catch (key_error const &) {
-            error_info::close();
-
             ttlet absoluteLocation = URL::urlFromResourceDirectory() / *this;
             auto view = file_view::loadView(absoluteLocation);
             tt_log_info("Loaded resource {} from filesystem at {}.", *this, absoluteLocation);
@@ -288,8 +285,7 @@ std::unique_ptr<resource_view> URL::loadView() const
         return view;
 
     } else {
-        tt_error_info().set<"url">(*this);
-        throw url_error("Unknown scheme for loading a resource");
+        throw url_error("{}: Unknown scheme for loading a resource", *this);
     }
 }
 

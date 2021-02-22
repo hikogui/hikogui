@@ -30,16 +30,13 @@ struct formula_vector_literal_node final : formula_node {
 
     datum &assign(formula_evaluation_context& context, datum const &rhs) const override {
         if (!rhs.is_vector()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Unpacking values can only be done on vectors, got {}.", rhs);
+            throw operation_error("{}: Unpacking values can only be done on vectors, got {}.", location, rhs);
         }
         if (values.size() < 1) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Unpacking can only be done on 1 or more return values.");
+            throw operation_error("{}: Unpacking can only be done on 1 or more return values.", location);
         }
         if (values.size() != rhs.size()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Unpacking values can only be done on with a vector of size {} got {}.", values.size(), rhs.size());
+            throw operation_error("{}: Unpacking values can only be done on with a vector of size {} got {}.", location, values.size(), rhs.size());
         }
 
         // Make a copy, in case of self assignment.

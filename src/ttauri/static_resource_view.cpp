@@ -21,8 +21,7 @@ std::span<std::byte const> static_resource_view::get_static_resource(std::string
 {
     ttlet i = _static_resources.find(key);
     if (i == _static_resources.end()) {
-        tt_error_info().set<"key">(key);
-        throw key_error("Could not find static resource");
+        throw key_error("Could not find static resource '{}'.", key);
     }
     return i->second;
 }

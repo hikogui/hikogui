@@ -8,7 +8,6 @@
 #include "../graphic_path.hpp"
 #include "../resource_view.hpp"
 #include "../URL.hpp"
-#include "../error_info.hpp"
 #include <memory>
 
 namespace tt {
@@ -92,9 +91,8 @@ public:
         try {
             parsefontDirectory();
 
-        } catch (...) {
-            error_info(true).set<"url">(url);
-            throw;
+        } catch (std::exception const &e) {
+            throw parse_error("{}: Could not parse font directory.\n{}", url, e.what());
         }
     }
 

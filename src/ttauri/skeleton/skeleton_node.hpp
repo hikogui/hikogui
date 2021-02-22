@@ -56,19 +56,16 @@ struct skeleton_node {
     [[nodiscard]] std::string evaluate_output(formula_evaluation_context &context) {
         auto tmp = evaluate(context);
         if (tmp.is_break()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #break not inside a loop statement.");
+            throw operation_error("{}: Found #break not inside a loop statement.", location);
 
         } else if (tmp.is_continue()) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #continue not inside a loop statement.");
+            throw operation_error("{}: Found #continue not inside a loop statement.", location);
 
         } else if (tmp.is_undefined()) {
             return std::move(context.output);
 
         } else {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Found #return not inside a function.");
+            throw operation_error("{}: Found #return not inside a function.", location);
         }
     }
 
@@ -100,13 +97,8 @@ struct skeleton_node {
         try {
             return expression.evaluate_without_output(context);
 
-        } catch (...) {
-            auto error_location = location;
-            if (ttlet evaluation_location = error_info::peek<parse_location, "parse_location">()) {
-                error_location += *evaluation_location;
-            }
-            error_info(true).set<"parse_location">(error_location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Could not evaluate.\n{}", location, e.what());
         }
     }
 
@@ -114,13 +106,8 @@ struct skeleton_node {
         try {
             return expression.evaluate(context);
 
-        } catch (...) {
-            auto error_location = location;
-            if (ttlet evaluation_location = error_info::peek<parse_location, "parse_location">()) {
-                error_location += *evaluation_location;
-            }
-            error_info(true).set<"parse_location">(error_location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Could not evaluate expression.\n{}", location, e.what());
         }
     }
 
@@ -128,16 +115,10 @@ struct skeleton_node {
         try {
             return expression.post_process(context);
 
-        } catch (...) {
-            auto error_location = location;
-            if (ttlet evaluation_location = error_info::peek<parse_location, "parse_location">()) {
-                error_location += *evaluation_location;
-            }
-            error_info(true).set<"parse_location">(error_location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Could not post-process expression.\n{}", location, e.what());
         }
     }
-
 
     [[nodiscard]] static datum evaluate_children(formula_evaluation_context &context, statement_vector const &children) {
         for (ttlet &child: children) {

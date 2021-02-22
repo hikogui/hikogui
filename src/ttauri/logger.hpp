@@ -185,7 +185,7 @@ using log_queue_type = wfree_message_queue<log_queue_item_type, MAX_NR_MESSAGES>
  */
 inline log_queue_type log_queue;
 
-std::string getLastErrorMessage();
+std::string get_last_error_message();
 
 // Forward without including trace.hpp
 void trace_record() noexcept;

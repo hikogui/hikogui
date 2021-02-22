@@ -70,4 +70,5 @@ target_sources(ttauri_tests PRIVATE
     unicode_bidi_tests.cpp
     unicode_text_segmentation_tests.cpp
     unicode_normalization_tests.cpp
+    language_tag_tests.cpp
 )

@@ -17,15 +17,13 @@ struct formula_index_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
 
         if (!lhs_.contains(rhs_)) {
-            tt_error_info().set<"parse_location">(location);
-            throw operation_error("Unknown key '{}'", rhs_);
+            throw operation_error("{}: Unknown key '{}'.", location, rhs_);
         }
 
         try {
             return lhs_[rhs_];
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate indexing operation.\n{}", location, e.what());
         }
     }
 
@@ -34,9 +32,8 @@ struct formula_index_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
         try {
             return lhs_[rhs_];
-        } catch (...) {
-            error_info(true).set<"parse_location">(location);
-            throw;
+        } catch (std::exception const &e) {
+            throw operation_error("{}: Can not evaluate indexing operation.\n{}", location, e.what());
         }
     }
 
