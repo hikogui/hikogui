@@ -439,6 +439,14 @@ if(TT_BUILD_TESTS)
 endif()
 
 #-------------------------------------------------------------------
+# Installation Rules: ttauri_tests
+#-------------------------------------------------------------------
+
+install(TARGETS ttauri_tests DESTINATION tests)
+
+install(DIRECTORY tests/data DESTINATION tests)
+
+#-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
 
