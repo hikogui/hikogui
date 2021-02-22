@@ -100,7 +100,7 @@ endif()
 # Setup Dependency Manager: VCPKG
 #-------------------------------------------------------------------
 
-#include(SetupVcpkg)
+include(SetupVcpkg)
 
 #-------------------------------------------------------------------
 # Find Dependencies
