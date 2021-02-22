@@ -85,11 +85,11 @@ public:
 
             // First look for an empty (0) item, highly likely when doing insert.
             size_t item_hash = 0;
-            if (item.hash.compare_exchange_strong(item_hash, 1, std::memory_order_acquire)) {
+            if (item.hash.compare_exchange_strong(item_hash, 1, std::memory_order::acquire)) {
                 // Success, we found an empty entry, we marked it as busy (1).
                 item.key = std::move(key);
                 item.value = value;
-                item.hash.store(hash, std::memory_order_release);
+                item.hash.store(hash, std::memory_order::release);
                 return;
 
             } else if (item_hash == hash && key == item.key) {
@@ -129,10 +129,10 @@ public:
 
             // First look for an empty (0) item, highly likely when doing insert.
             size_t item_hash = 0;
-            if (item.hash.compare_exchange_strong(item_hash, 1, std::memory_order_acquire)) {
+            if (item.hash.compare_exchange_strong(item_hash, 1, std::memory_order::acquire)) {
                 // Success, we found an empty entry, we marked it as busy (1).
                 item.key = std::move(key);
-                item.hash.store(hash, std::memory_order_release);
+                item.hash.store(hash, std::memory_order::release);
 
                 if constexpr (std::is_default_constructible_v<V>) {
                     item.value = {};
@@ -164,7 +164,7 @@ public:
         while (true) {
             auto &item = items[index];
 
-            auto item_hash = item.hash.load(std::memory_order_acquire);
+            auto item_hash = item.hash.load(std::memory_order::acquire);
 
             if (item_hash == hash && key == item.key) {
                 // Found key
@@ -194,11 +194,11 @@ public:
         auto index = hash % CAPACITY;
         while (true) {
             auto &item = items[index];
-            auto item_hash = item.hash.load(std::memory_order_acquire);
+            auto item_hash = item.hash.load(std::memory_order::acquire);
 
             if (item_hash == hash && key == item.key) {
                 // Set tombstone. Don't actually delete the key or value.
-                item.hash.store(1, std::memory_order_release);
+                item.hash.store(1, std::memory_order::release);
                 return { item.value };
 
             } else if (item_hash == 0) {

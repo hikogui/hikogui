@@ -64,7 +64,7 @@ public:
         //
         // This only works for comparing the owner with the current thread, it would
         // not work to check the owner with a thread_id of another thread.
-        if (owner.load(std::memory_order::memory_order_acquire) == current_thread_id()) {
+        if (owner.load(std::memory_order::acquire) == current_thread_id()) {
             return count;
         } else {
             return 0;
@@ -81,7 +81,7 @@ public:
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
-        if (owner.load(std::memory_order::memory_order_acquire) == thread_id) {
+        if (owner.load(std::memory_order::acquire) == thread_id) {
             // FIRST | OWNER
             tt_axiom(count != 0);
             ++count;
@@ -94,7 +94,7 @@ public:
             tt_axiom(count == 0);
             count = 1;
             tt_axiom(owner == 0);
-            owner.store(thread_id, std::memory_order::memory_order_release);
+            owner.store(thread_id, std::memory_order::release);
 
             return true;
 
@@ -127,7 +127,7 @@ public:
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
-        if (owner.load(std::memory_order::memory_order_acquire) == thread_id) {
+        if (owner.load(std::memory_order::acquire) == thread_id) {
             // FIRST | OWNER
             tt_axiom(count != 0);
             ++count;
@@ -142,7 +142,7 @@ public:
             tt_axiom(count == 0);
             count = 1;
             tt_axiom(owner == 0);
-            owner.store(thread_id, std::memory_order::memory_order_release);
+            owner.store(thread_id, std::memory_order::release);
         }
     }
 
@@ -156,7 +156,7 @@ public:
             // Only OTHER can execute in `lock()` or `try_lock()`,
             // where it will either see the thread_id of FIRST or zero.
             // In both cases the OTHER thread is detected correctly.
-            owner.store(0, std::memory_order::memory_order_release);
+            owner.store(0, std::memory_order::release);
 
             mutex.unlock();
             // OTHER

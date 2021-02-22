@@ -80,11 +80,11 @@ public:
     }
 
     uint32_t operator()() {
-        auto x = state.load(std::memory_order_relaxed);
+        auto x = state.load(std::memory_order::relaxed);
         uint64_t new_state;
         do {
             [[unlikely]] new_state = x * multiplier + increment;
-        } while (!state.compare_exchange_weak(x, new_state, std::memory_order_relaxed));
+        } while (!state.compare_exchange_weak(x, new_state, std::memory_order::relaxed));
 
         ttlet count = static_cast<unsigned int>(x >> 59);
 

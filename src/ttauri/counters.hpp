@@ -41,7 +41,7 @@ struct counter_functor {
 
     int64_t increment() const noexcept
     {
-        ttlet value = counter.fetch_add(1, std::memory_order_relaxed);
+        ttlet value = counter.fetch_add(1, std::memory_order::relaxed);
 
         if (value == 0) {
             [[unlikely]] add_to_map();
@@ -52,7 +52,7 @@ struct counter_functor {
 
     [[nodiscard]] int64_t read() const noexcept
     {
-        return counter.load(std::memory_order_relaxed);
+        return counter.load(std::memory_order::relaxed);
     }
 
     // Don't implement readAndSet, a set to zero would cause the counters to be reinserted.
@@ -78,7 +78,7 @@ template<basic_fixed_string Tag>
     auto &item = counter_map[tag];
 
     ttlet *const count_ptr = item.counter;
-    ttlet count = count_ptr != nullptr ? item.counter->load(std::memory_order_relaxed) : 0;
+    ttlet count = count_ptr != nullptr ? item.counter->load(std::memory_order::relaxed) : 0;
     ttlet count_since_last_read = count - item.previous_value;
     item.previous_value = count;
     return {count, count_since_last_read};

@@ -62,11 +62,11 @@ public:
     }
 
     typename slow_clock::time_point convert(typename fast_clock::time_point fast_time) const noexcept {
-        return convert(gain.load(std::memory_order_relaxed), bias.load(std::memory_order_relaxed), fast_time);
+        return convert(gain.load(std::memory_order_relaxed), bias.load(std::memory_order::relaxed), fast_time);
     }
 
     typename slow_clock::duration convert(typename fast_clock::duration fast_duration) const noexcept {
-        return convert(gain.load(std::memory_order_relaxed), fast_duration);
+        return convert(gain.load(std::memory_order::relaxed), fast_duration);
     }
 
     /* Calibrate the sync clock.
@@ -180,7 +180,7 @@ private:
 
         ttlet do_gain_calibration = calibration_nr <= 5;
 
-        ttlet new_gain = do_gain_calibration ? getGain() : gain.load(std::memory_order_relaxed);
+        ttlet new_gain = do_gain_calibration ? getGain() : gain.load(std::memory_order::relaxed);
         ttlet new_bias = getBias(new_gain);
         ttlet leap_adjustment = getLeapAdjustment(new_gain, new_bias);
 
@@ -200,9 +200,9 @@ private:
         }
         
         if (do_gain_calibration) {
-            gain.store(new_gain, std::memory_order_relaxed);
+            gain.store(new_gain, std::memory_order::relaxed);
         }
-        bias.store(new_bias + leap_adjustment, std::memory_order_relaxed);
+        bias.store(new_bias + leap_adjustment, std::memory_order::relaxed);
         leapsecond_offset += leap_adjustment;
     }
 

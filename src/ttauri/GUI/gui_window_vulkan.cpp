@@ -305,7 +305,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     widget->set_layout_parameters(aarect{extent}, aarect{extent});
 
     // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
-    ttlet need_layout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed) || constraints_have_changed;
+    ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
 
     // Make sure the widget's layout is updated before draw, but after window resize.
     widget->update_layout(displayTimePoint, need_layout);
