@@ -126,7 +126,7 @@ bool system_status_start_subsystem(system_status_type subsystem, InitFunc init_f
 {
     tt_axiom(std::popcount(static_cast<uint32_t>(subsystem)) == 1);
 
-    if (!static_cast<bool>(system_status.load(std::memory_order_relaxed) & subsystem)) {
+    if (!static_cast<bool>(system_status.load(std::memory_order::relaxed) & subsystem)) {
         [[unlikely]] return detail::system_status_start_subsystem(subsystem, init_function, deinit_function);
     } else {
         // Subsystem is already running.

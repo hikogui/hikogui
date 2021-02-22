@@ -24,6 +24,7 @@
 #include <string_view>
 #include <tuple>
 #include <mutex>
+#include <atomic>
 
 namespace tt {
 
@@ -224,7 +225,7 @@ inline bool logger_start()
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
 void log(Args &&...args) noexcept
 {
-    ttlet status = system_status.load(std::memory_order::memory_order_relaxed);
+    ttlet status = system_status.load(std::memory_order::relaxed);
 
     if (!static_cast<bool>(to_log_level(status) & static_cast<uint8_t>(Level))) [[likely]] {
         return;

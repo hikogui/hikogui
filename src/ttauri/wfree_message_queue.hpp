@@ -110,15 +110,15 @@ public:
     */
     index_type size() const noexcept {
         // head and tail are extremelly large integers, they will never wrap arround.
-        return head.load(std::memory_order_relaxed) - tail.load(std::memory_order_relaxed);
+        return head.load(std::memory_order::relaxed) - tail.load(std::memory_order::relaxed);
     }
 
     bool empty() const noexcept {
-        return head.load(std::memory_order_relaxed) <= tail.load(std::memory_order_relaxed);
+        return head.load(std::memory_order::relaxed) <= tail.load(std::memory_order::relaxed);
     }
 
     bool full() const noexcept {
-        return head.load(std::memory_order_relaxed) >= (tail.load(std::memory_order_relaxed) + (capacity - slack));
+        return head.load(std::memory_order::relaxed) >= (tail.load(std::memory_order::relaxed) + (capacity - slack));
     }
 
     /*! Write a message into the queue.
@@ -157,14 +157,14 @@ public:
      */
     template<basic_fixed_string CounterTag = "">
     index_type write_start() noexcept {
-        ttlet index = head.fetch_add(1, std::memory_order_acquire);
+        ttlet index = head.fetch_add(1, std::memory_order::acquire);
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the queue was full.
         // So we have to wait until the message is empty, however when it is empty we are
         // the only one that holds the message, so we only need to mark it that we are done with
         // writing the message.
-        wait_for_transition<CounterTag>(message.in_use, false, std::memory_order_acquire);
+        wait_for_transition<CounterTag>(message.in_use, false, std::memory_order::acquire);
         return index;
     }
 
@@ -177,7 +177,7 @@ public:
         auto &message = messages[index % capacity];
 
         // Mark that the message is finished with writing.
-        message.in_use.store(true, std::memory_order_release);
+        message.in_use.store(true, std::memory_order::release);
     }
 
     /*! Start a read from the message queue.
@@ -188,11 +188,11 @@ public:
      */
     template<basic_fixed_string CounterTag = "">
     index_type read_start() noexcept {
-        ttlet index = tail.fetch_add(1, std::memory_order_acquire);
+        ttlet index = tail.fetch_add(1, std::memory_order::acquire);
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the message was ready.
-        wait_for_transition<CounterTag>(message.in_use, true, std::memory_order_acquire);
+        wait_for_transition<CounterTag>(message.in_use, true, std::memory_order::acquire);
         return index;
     }
 
@@ -205,7 +205,7 @@ public:
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the message was ready.
-        message.in_use.store(false, std::memory_order_release);
+        message.in_use.store(false, std::memory_order::release);
 
         // The message itself does not need to be destructed.
         // This will happen automatically when wrapping around the ring buffer overwrites the message.

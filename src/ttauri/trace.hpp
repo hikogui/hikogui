@@ -49,7 +49,7 @@ struct trace_stack_type {
     */
     inline int64_t push() noexcept {
         ttlet parent_id = top_trace_id;
-        top_trace_id = trace_id.fetch_add(1, std::memory_order_relaxed) + 1;
+        top_trace_id = trace_id.fetch_add(1, std::memory_order::relaxed) + 1;
         depth++;
         return parent_id;
     }
@@ -162,17 +162,17 @@ public:
     bool write(cpu_counter_clock::duration const &d) {
         // In the logging thread we can check if count and version are equal
         // to read the statistics.
-        ttlet current_count = count.fetch_add(1, std::memory_order_acquire);
+        ttlet current_count = count.fetch_add(1, std::memory_order::acquire);
 
-        duration.fetch_add(d.count(), std::memory_order_relaxed);
+        duration.fetch_add(d.count(), std::memory_order::relaxed);
 
-        auto prev_peak = peak_duration.load(std::memory_order_relaxed);
+        auto prev_peak = peak_duration.load(std::memory_order::relaxed);
         decltype(prev_peak) new_peak;
         do {
             new_peak = d.count() > prev_peak ? d.count() : prev_peak;
-        } while (!peak_duration.compare_exchange_weak(prev_peak, new_peak, std::memory_order_relaxed));
+        } while (!peak_duration.compare_exchange_weak(prev_peak, new_peak, std::memory_order::relaxed));
 
-        version.store(current_count + 1, std::memory_order_release);
+        version.store(current_count + 1, std::memory_order::release);
         
         return current_count == 0;
     }
@@ -191,17 +191,17 @@ public:
 
         r.peak_duration = {};
         do {
-            r.count = count.load(std::memory_order_acquire);
+            r.count = count.load(std::memory_order::acquire);
 
-            r.duration = decltype(r.duration){duration.load(std::memory_order_relaxed)};
+            r.duration = decltype(r.duration){duration.load(std::memory_order::relaxed)};
 
-            auto tmp = peak_duration.exchange(0, std::memory_order_relaxed);
+            auto tmp = peak_duration.exchange(0, std::memory_order::relaxed);
             if (tmp > r.peak_duration.count()) {
                 r.peak_duration = decltype(r.duration){tmp};
             }
 
-            std::atomic_thread_fence(std::memory_order_release);
-        } while (r.count != version.load(std::memory_order_relaxed));
+            std::atomic_thread_fence(std::memory_order::release);
+        } while (r.count != version.load(std::memory_order::relaxed));
 
         r.last_count = r.count - prev_count;
         r.last_duration = r.duration - prev_duration;
