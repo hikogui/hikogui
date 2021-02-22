@@ -20,6 +20,7 @@ environment:
   APPVEYOR_RDP_PASSWORD: somePassword#123
   # vcpkg
   VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+  VCPKG_DEFAULT_TRIPLET: "%VCPKG_TARGET_TRIPLET%"
   VCPKG_ROOT: "C:\\Tools\\vcpkg"
   # vulkan
   VULKAN_VERSION: "1.2.162.1"
