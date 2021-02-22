@@ -95,6 +95,9 @@ install:
   # Init MSVC environment, see https://www.appveyor.com/docs/lang/cpp/
   - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019 Preview"
       (call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM% )
+  # are these env var still set?
+  - echo %VCPKG_TARGET_TRIPLET%
+  - echo %VCPKG_DEFAULT_TRIPLET%
 
 before_build:
   # CHECK important folders to see if everything is present
