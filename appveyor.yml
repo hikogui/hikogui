@@ -132,6 +132,10 @@ after_build:
    # CHECK important folders to see if all build artifacts are present
    - dir C:\projects\ttauri-build
    - dir /S /B C:\projects\ttauri-install
+   # package ttauri artifact
+   - cd C:\projects\
+   - rename ttauri-install ttauri-%APPVEYOR_BUILD_VERSION%
+   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%APPVEYOR_BUILD_VERSION%
 
 on_failure:
   - appveyor PushArtifact CMakeFiles\CMakeOutput.log
@@ -151,11 +155,9 @@ on_failure:
 #     Build Artifacts
 #-------------------------------------------------------------------
 
-#artifacts:
-#  - path: ttauri.zip
-#    name: ttauri_lib_zip
-#  - path: ttauri_examples.zip
-#    name: ttauri_examples_zip
+artifacts:
+  - path: ttauri-*.zip
+    name: ttauri_zip
 
 #-------------------------------------------------------------------
 #     Deployment configuration
@@ -167,7 +169,7 @@ on_failure:
 #  release: 'ttauri $(APPVEYOR_REPO_TAG_NAME)'
 #  tag: $(APPVEYOR_REPO_TAG_NAME)
 #  #description: '[**Changelog**](https://github.com/ttauri-project/ttauri/blob/master/CHANGELOG.md)'
-#  artifact: ttauri_lib_zip, ttauri_examples_zip
+#  artifact: ttauri_zip
 #  draft: false
 #  prerelease: false
 #  force_update: true               # overwrite files of existing release on GitHub (for re-releasing)
@@ -198,5 +200,5 @@ cache:
 # Use PW from APPVEYOR_RDP_PASSWORD above. A session lasts 60min max.
 # Do not forget to disable the following lines, when you solved the problem.
 
-on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
