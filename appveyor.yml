@@ -138,8 +138,8 @@ after_build:
    - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%APPVEYOR_BUILD_VERSION%
 
 on_failure:
-  - appveyor PushArtifact CMakeFiles\CMakeOutput.log
-  - appveyor PushArtifact CMakeFiles\CMakeError.log
+  - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeOutput.log
+  - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeError.log
 
 #-------------------------------------------------------------------
 #     Tests
