@@ -124,15 +124,18 @@ build_script:
         -DCMAKE_C_COMPILER=C:/PROGRA~1/LLVM/bin/clang.exe
         -DCMAKE_CXX_COMPILER=C:/PROGRA~1/LLVM/bin/clang-cl.exe
   # build
-  - cmake --build ..\ttauri-build --config %BUILD_TYPE% --target install -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmake --build ..\ttauri-build --config %BUILD_TYPE% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  # install
+  - cmake --install ..\ttauri-build --prefix ..\ttauri-install --strip --verbose
 
 after_build:
    # CHECK important folders to see if all build artifacts are present
    - dir C:\projects\ttauri-build
+   - dir C:\projects\ttauri-install
 
-#on_failure:
-#  - appveyor PushArtifact CMakeFiles\CMakeOutput.log
-#  - appveyor PushArtifact CMakeFiles\CMakeError.log
+on_failure:
+  - appveyor PushArtifact CMakeFiles\CMakeOutput.log
+  - appveyor PushArtifact CMakeFiles\CMakeError.log
 
 #-------------------------------------------------------------------
 #     Tests
