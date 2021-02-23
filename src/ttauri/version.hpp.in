@@ -1,0 +1,41 @@
+// Copyright Take Vos 2020.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#pragma once
+
+#include <string>
+
+namespace tt {
+
+struct version {
+    /** Incremented on backward incompatible change. */
+    int major = @TTAURI_MAJOR_VERSION@;
+    /** Incremented on additive change */
+    int minor = @TTAURI_MINOR_VERSION@;
+    /** Incremented on bug fixes */
+    int patch = @TTAURI_PATCH_VERSION@;
+
+    /** Name of the git branch. */
+    std::string git_branch = "@GIT_BRANCH@";
+
+    /** The git commit short hash. */
+    std::string git_commit = "@GIT_COMMIT_HASH@";
+
+    /** The version string. */
+    std::string version_long = "@TTAURI_PROJECT_VERSION@";
+
+    /** A version string containing only major.minor.patch version numbers. */
+    std::string version_short = "@TTAURI_PROJECT_VERSION_SHORT@";
+
+    /** Release date string. */
+    std::string release_date = "@RELEASE_DATE@";
+
+    /** Name of the application or library */
+    std::string name = "ttauri";
+};
+
+inline version ttauri_version;
+inline version application_version;
+
+}

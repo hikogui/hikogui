@@ -71,12 +71,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
+include(Versioning)
 
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # for gtest_force_shared_crt
 add_subdirectory(external)
 add_subdirectory(tools)
 
 add_library(ttauri STATIC)
+
 install(TARGETS ttauri RESOURCE)
+
 add_executable(ttauri_tests)
 
 add_subdirectory(src)
@@ -90,11 +94,11 @@ target_compile_features(ttauri PUBLIC cxx_std_20)
 
 add_custom_command(
   TARGET ttauri POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory 
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata 
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata
     ${CMAKE_BINARY_DIR}/data/tzdata)
 
-# 
+#
 # We will support the following CPUs:
 #   * Intel Ivy Bridge from 2012, still used by Mac Pro sold in 2019.
 #   * AMD Steamroller from 2014
@@ -112,7 +116,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     target_compile_options(ttauri PUBLIC -Wno-nullability-completeness)
 
     # IvyBridge:                     F16C             FSGSBASE, AVX,           AES, PCLMUL        MMX, SSE, SSE2, SSE3,        SSSE3, SSE4.1, SSE4.2,     POPCNT, RDRND
-    # Steamroller 0x15-v3: BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM 
+    # Steamroller 0x15-v3: BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM
     # POPCNT is supported by Steamroller through he SSE4A instruction set.
     target_compile_options(ttauri PUBLIC -mf16c -mfsgsbase -mavx -maes -mpclmul -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mpopcnt)
 
