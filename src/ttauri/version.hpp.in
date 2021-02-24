@@ -14,7 +14,7 @@ struct version {
     /** Incremented on additive change */
     int minor = @TTAURI_MINOR_VERSION@;
     /** Incremented on bug fixes */
-    int patch = @TTAURI_PATCH_VERSION @;
+    int patch = @TTAURI_PATCH_VERSION@;
 
     /** Name of the application or library. */
     std::string name = "ttauri";
@@ -35,7 +35,7 @@ struct version {
     std::string git_commit = "@GIT_COMMIT_HASH@";
 
     /** The number of commits since the version tag. */
-    int git_commits_since_version_tag = "@GIT_COMMITS_SINCE_TAG@";
+    int git_commits_since_version_tag = @GIT_COMMITS_SINCE_TAG@;
 
     /** There are local changes. */
     bool git_local_changes = "@GIT_LOCAL_CHANGES@";
