@@ -61,9 +61,29 @@ init:
   - if [%COMPILER%]==[CLANG] clang++ -v
 
 install:
-  # Set "build version number" to [tag version]-[commits_since_tag]-[tag_commit_hash],e.g. "v0.2.3-82-g3d248b9f"
-  - ps: $build_version = ("$(git describe --tags --always --long --match="v[0-9][0-9.]*")").trim()
-  - ps: Update-AppveyorBuild -Version "$build_version"
+  # set "build version number" to [tag version]-[commits_since_tag]-[tag_commit_hash],e.g. "v0.2.3-82-g3d248b9f"
+  - ps: |
+      function get_git_version() {
+          $env:git_commit_long_hash=git rev-parse HEAD
+          $env:git_commit_long_shorthash=git rev-parse --short HEAD
+          $env:git_tag_rcs=git describe --tags --always --long --match=v[0-9][0-9.]*
+          $env:git_commits_since_tag=$env:git_tag_rcs | %{$_.split('-')[1]}
+          $env:git_tag_name=git describe --tags --abbrev=0 $env:APPVEYOR_REPO_BRANCH
+          $env:version_and_commits_since="$env:git_tag_name-$env:git_commits_since_tag"
+          $env:build_version_branch="$env:version_and_commits_since-$env:APPVEYOR_REPO_BRANCH"
+          $env:build_version="$env:version_and_commits_since"
+          write-host "[ == Versioning Overview == ]"
+          write-host "git_commit_long_hash        -> $env:git_commit_long_hash"
+          write-host "git_commit_long_shorthash   -> $env:git_commit_long_shorthash"
+          write-host "git_tag_rcs                 -> $env:git_tag_rcs"
+          write-host "git_commits_since_tag       -> $env:git_commits_since_tag"
+          write-host "git_tag_name                -> $env:git_tag_name"
+          write-host "build_version_branch        -> $env:build_version_branch"
+          write-host "build_version               -> $env:build_version"
+      }
+      get_git_version
+
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
   # Get Git Submodules
   #- git submodule update --init --recursive
