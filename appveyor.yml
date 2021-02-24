@@ -77,11 +77,11 @@ install:
         }
         elseif ($env:APPVEYOR_PULL_REQUEST_NUMBER -ne $null)
         {
-          Update-AppveyorBuild -Version "PR-$env:APPVEYOR_PULL_REQUEST_NUMBER-$env:APPVEYOR_REPO_BRANCH-$env:build_version_number_with_current_commit"
+          Update-AppveyorBuild -Version "PR-$env:APPVEYOR_PULL_REQUEST_NUMBER-$env:build_version_number_with_current_commit"
         }
         else
         {
-          Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_BRANCH-$env:build_version_number_with_current_commit"
+          Update-AppveyorBuild -Version "$env:build_version_number_with_current_commit"
         }
 
   # Get Git Submodules
