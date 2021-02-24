@@ -68,24 +68,27 @@ public:
         super::update_layout(displayTimePoint, need_layout);
     }
 
+    [[nodiscard]] color background_color() const noexcept override
+    {
+        if (*this->value) {
+            return this->accent_color();
+        } else {
+            return super::background_color();
+        }
+    }
+
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
             context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
-            if (*this->value) {
-                context.fill_color = theme::global->accentColor;
-            }
 
             // Move the border of the button in the middle of a pixel.
-            context.draw_box_with_border_inside(this->rectangle());
+            context.draw_box_with_border_inside(this->rectangle(), this->focus_color(), this->background_color());
 
-            if (*this->enabled) {
-                context.line_color = theme::global->foregroundColor;
-            }
             context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-            _label_stencil->draw(context, true);
+            _label_stencil->draw(context, this->label_color());
         }
 
         super::draw(std::move(context), display_time_point);

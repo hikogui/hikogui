@@ -54,9 +54,9 @@ public:
     /** Draw the cell.
      *
      * @param context The current draw context.
-     * @param use_context_color True to use the colors in the context, False to use the colors in the cell itself.
+     * @param color The color to use for drawing.
      */
-    virtual void draw(draw_context context, bool use_context_color = false) noexcept = 0;
+    virtual void draw(draw_context context, tt::color color = tt::color{}) noexcept = 0;
 
     [[nodiscard]] static std::unique_ptr<class image_stencil> make_unique(alignment alignment, icon const &icon);
 

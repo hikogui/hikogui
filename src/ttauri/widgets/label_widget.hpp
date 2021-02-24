@@ -79,11 +79,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
-            if (*enabled) {
-                context.line_color = theme::global->labelStyle.color;
-            }
-
-            _label_cell->draw(context, true);
+            _label_cell->draw(context, this->label_color());
         }
 
         super::draw(std::move(context), display_time_point);

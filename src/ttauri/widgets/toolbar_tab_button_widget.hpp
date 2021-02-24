@@ -161,9 +161,8 @@ private:
             // the selected-tab (0.6) and unselected-tabs (0.8).
             parent_context.transform = translate3{0.0f, 0.0f, 1.7f} * parent_context.transform;
 
-            parent_context.fill_color = theme::global->accentColor;
             parent_context.draw_filled_quad(
-                aarect{parent_.rectangle().x(), parent_.rectangle().y(), parent_.rectangle().width(), 1.0f});
+                aarect{parent_.rectangle().x(), parent_.rectangle().y(), parent_.rectangle().width(), 1.0f}, this->focus_color());
         }
     }
 
@@ -181,20 +180,13 @@ private:
         // so that the bottom border of the tab button is not drawn.
         context.clipping_rectangle = this->parent().window_rectangle();
 
-        if (this->_hover || *this->value == this->true_value) {
-            context.fill_color = theme::global->fillColor(this->_semantic_layer - 1);
-            context.line_color = context.fill_color;
-        } else {
-            context.fill_color = theme::global->fillColor(this->_semantic_layer);
-            context.line_color = context.fill_color;
-        }
-
-        if (this->_focus && this->window.active) {
-            context.line_color = theme::global->accentColor;
-        }
+        auto button_color = (this->_hover || *this->value == this->true_value) ?
+            theme::global->fillColor(this->_semantic_layer - 1) :
+            theme::global->fillColor(this->_semantic_layer);
 
         context.corner_shapes = f32x4{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
-        context.draw_box_with_border_inside(_button_rectangle);
+        context.draw_box_with_border_inside(
+            _button_rectangle, (this->_focus && this->window.active) ? this->focus_color() : button_color, button_color);
     }
 
     void draw_label(draw_context context) noexcept
@@ -202,12 +194,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = translate3{0.0f, 0.0f, 0.9f} * context.transform;
-
-        if (*this->enabled) {
-            context.line_color = theme::global->labelStyle.color;
-        }
-
-        _label_stencil->draw(context, true);
+        _label_stencil->draw(context, this->label_color());
     }
 };
 

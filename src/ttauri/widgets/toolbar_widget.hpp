@@ -110,8 +110,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
-            context.fill_color = theme::global->fillColor(_semantic_layer + 1);
-            context.draw_filled_quad(rectangle());
+            context.draw_filled_quad(rectangle(), theme::global->fillColor(_semantic_layer + 1));
         }
 
         abstract_container_widget::draw(std::move(context), display_time_point);

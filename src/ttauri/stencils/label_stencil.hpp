@@ -140,13 +140,13 @@ public:
         }
     }
 
-    void draw(draw_context context, bool use_context_color = false) noexcept override
+    void draw(draw_context context, tt::color color) noexcept override
     {
         if (_text_stencil) {
-            _text_stencil->draw(context, use_context_color);
+            _text_stencil->draw(context, color);
         }
         if (_icon_stencil) {
-            _icon_stencil->draw(context, use_context_color);
+            _icon_stencil->draw(context, color);
         }
     }
 

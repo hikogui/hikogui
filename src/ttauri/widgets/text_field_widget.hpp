@@ -379,6 +379,15 @@ public:
         return is_normal(group) && *enabled;
     }
 
+    [[nodiscard]] color focus_color() const noexcept override
+    {
+        if (*enabled && window.active && _error) {
+            return theme::global->errorLabelStyle.color;
+        } else {
+            return super::focus_color();
+        }
+    }
+
 private:
     typename decltype(value)::callback_ptr_type _value_callback;
 
@@ -495,28 +504,19 @@ private:
 
     void draw_background_box(draw_context context) const noexcept
     {
-        ttlet line_color = context.line_color;
-
-        context.line_color = context.fill_color;
         context.corner_shapes = {0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
-        context.draw_box_with_border_inside(_text_field_rectangle);
+        context.draw_box_with_border_inside(_text_field_rectangle, background_color(), background_color());
 
         ttlet line_rectangle = aarect{_text_field_rectangle.p0(), f32x4{_text_field_rectangle.width(), context.line_width}};
         context.transform = context.transform * translate3{0.0f, 0.0f, 0.1f};
-        if (_error && window.active) {
-            context.fill_color = theme::global->errorLabelStyle.color;
-        } else {
-            context.fill_color = line_color;
-        }
-        context.draw_filled_quad(line_rectangle);
+        context.draw_filled_quad(line_rectangle, focus_color());
     }
 
     void draw_selection_rectangles(draw_context context) const noexcept
     {
         ttlet selection_rectangles = _field.selectionRectangles();
         for (ttlet selection_rectangle : selection_rectangles) {
-            context.fill_color = theme::global->textSelectColor;
-            context.draw_filled_quad(selection_rectangle);
+            context.draw_filled_quad(selection_rectangle, theme::global->textSelectColor);
         }
     }
 
@@ -524,8 +524,7 @@ private:
     {
         ttlet partial_grapheme_caret = _field.partialgraphemeCaret();
         if (partial_grapheme_caret) {
-            context.fill_color = theme::global->incompleteGlyphColor;
-            context.draw_filled_quad(partial_grapheme_caret);
+            context.draw_filled_quad(partial_grapheme_caret, theme::global->incompleteGlyphColor);
         }
     }
 
@@ -538,15 +537,14 @@ private:
         ttlet blink_is_on = nr_half_blinks % 2 == 0;
         _left_to_right_caret = _field.leftToRightCaret();
         if (_left_to_right_caret && blink_is_on && _focus && window.active) {
-            context.fill_color = theme::global->cursorColor;
-            context.draw_filled_quad(_left_to_right_caret);
+            context.draw_filled_quad(_left_to_right_caret, theme::global->cursorColor);
         }
     }
 
     void draw_text(draw_context context) const noexcept
     {
         context.transform = translate3{0.0f, 0.0f, 0.2f} * context.transform;
-        context.draw_text(_shaped_text);
+        context.draw_text(_shaped_text, label_color());
     }
 };
 
