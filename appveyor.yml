@@ -59,11 +59,12 @@ init:
   - msbuild /version
   - vcpkg version
   - if [%COMPILER%]==[CLANG] clang++ -v
+
+install:
   # Set "build version number" to [tag version]-[commits_since_tag]-[tag_commit_hash],e.g. "v0.2.3-82-g3d248b9f"
   - ps: $build_version = ("$(git describe --tags --always --long --match="v[0-9][0-9.]*")").trim()
   - ps: Update-AppveyorBuild -Version "$build_version"
 
-install:
   # Get Git Submodules
   #- git submodule update --init --recursive
 
