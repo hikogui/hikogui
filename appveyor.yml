@@ -61,12 +61,15 @@ init:
   - if [%COMPILER%]==[CLANG] clang++ -v
 
 install:
-  # set "build version number" to [tag version]-[commits_since_tag]-[tag_commit_hash],e.g. "v0.2.3-82-g3d248b9f"
+  # set "build version number" to [tag version]-[commits_since_tag]-[tag_commit_hash], e.g. "v0.2.3-82-g3d248b9f"
   - ps: |
       $env:build_version_number = Select-String -Path "src/ttauri/version.hpp" -Pattern 'version_long' | %{$_.Line.Split('"')[1]}
       $env:version_number_short = $env:build_version_number.Split("-")[0]
       $env:git_commits_since_tag = $env:build_version_number.Split("-")[1]
       $env:git_tag_commit_hash = $env:build_version_number.Split("-")[2]
+  # on tagging, e.g. "v0.2.4"                    ->                  0.2.4-00-a2b135c
+  # on commit, with added branch prefix          ->      branch_name-0.2.3-14-g39e0db
+  # on pull request, with added PR-number prefix -> PR-2-branch_name-0.2.3-14-g39e0db
   - ps: |
         if ($env:APPVEYOR_REPO_TAG -eq "true")
         {
@@ -80,7 +83,6 @@ install:
         {
           Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_BRANCH-$env:build_version_number"
         }
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
   # Get Git Submodules
   #- git submodule update --init --recursive
@@ -161,8 +163,8 @@ after_build:
 
    # package ttauri artifact
    - cd C:\projects\
-   - rename ttauri-install ttauri-%APPVEYOR_BUILD_VERSION%
-   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%APPVEYOR_BUILD_VERSION%
+   - rename ttauri-install ttauri-$env:version_number_short
+   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-$env:version_number_short
 
 on_failure:
   - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeOutput.log
