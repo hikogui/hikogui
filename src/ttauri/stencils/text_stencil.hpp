@@ -20,7 +20,7 @@ public:
 
     [[nodiscard]] f32x4 preferred_extent() noexcept override;
 
-    void draw(draw_context context, bool use_context_color = false) noexcept override;
+    void draw(draw_context context, tt::color color) noexcept override;
 
 private:
     std::u8string _text;

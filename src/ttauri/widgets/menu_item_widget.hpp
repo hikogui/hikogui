@@ -296,6 +296,15 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
+    [[nodiscard]] color focus_color() const noexcept override
+    {
+        if (this->_focus) {
+            return super::focus_color();
+        } else {
+            return this->background_color();
+        }
+    }
+
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
     std::unique_ptr<label_stencil> _label_stencil;
@@ -309,32 +318,20 @@ private:
     void draw_background(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        context.line_color = context.fill_color;
-        if (this->_focus && this->window.active) {
-            context.line_color = theme::global->accentColor;
-        }
-
-        context.draw_box_with_border_inside(this->rectangle());
+        context.draw_box_with_border_inside(this->rectangle(), this->focus_color(), this->background_color());
     }
 
     void draw_label(draw_context context) noexcept
     {
         context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-        if (*this->enabled) {
-            context.line_color = theme::global->foregroundColor;
-        }
-        _label_stencil->draw(context);
+        _label_stencil->draw(context, this->label_color());
     }
 
     void draw_check_mark(draw_context context) noexcept
     {
         if (this->value == this->true_value) {
             context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-            if (*this->enabled) {
-                context.line_color = theme::global->foregroundColor;
-            }
-            _check_mark_stencil->draw(context);
+            _check_mark_stencil->draw(context, this->accent_color());
         }
     }
 };

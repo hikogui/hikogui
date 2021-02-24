@@ -155,7 +155,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.draw_box_with_border_inside(_checkbox_rectangle);
+        context.draw_box_with_border_inside(_checkbox_rectangle, this->focus_color(), this->background_color());
     }
 
     void draw_check_mark(draw_context context) noexcept
@@ -164,17 +164,13 @@ private:
 
         context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
 
-        if (*this->enabled && this->window.active) {
-            context.line_color = theme::global->accentColor;
-        }
-
         // Checkmark or tristate.
         if (this->value == this->true_value) {
-            context.draw_glyph(_check_glyph, _check_glyph_rectangle);
+            context.draw_glyph(_check_glyph, _check_glyph_rectangle, this->accent_color());
         } else if (this->value == this->false_value) {
             ;
         } else {
-            context.draw_glyph(_minus_glyph, _minus_glyph_rectangle);
+            context.draw_glyph(_minus_glyph, _minus_glyph_rectangle, this->accent_color());
         }
     }
 
@@ -182,15 +178,11 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (*this->enabled) {
-            context.line_color = theme::global->labelStyle.color;
-        }
-
         ttlet &labelCell = this->value == this->true_value ?
             _true_label_stencil :
             this->value == this->false_value ? _false_label_stencil : _other_label_stencil;
 
-        labelCell->draw(context, true);
+        labelCell->draw(context, this->label_color());
     }
 };
 

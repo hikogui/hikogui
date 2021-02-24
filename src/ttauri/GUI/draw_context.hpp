@@ -32,12 +32,6 @@ namespace tt {
  */
 class draw_context {
 public:
-    /// Foreground color.
-    color line_color = color(1.0, 1.0, 1.0, 1.0);
-
-    /// Fill color.
-    color fill_color = color(0.0, 0.0, 0.0, 0.0);
-
     /// Size of lines.
     float line_width = 1.0;
 
@@ -80,8 +74,6 @@ public:
         _box_vertices(&boxVertices),
         _image_vertices(&imageVertices),
         _sdf_vertices(&sdfVertices),
-        line_color(0.0, 1.0, 0.0, 1.0),
-        fill_color(1.0, 1.0, 0.0, 1.0),
         line_width(theme::global->borderWidth),
         corner_shapes(),
         clipping_rectangle(static_cast<f32x4>(window.extent))
@@ -118,7 +110,7 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    void draw_filled_quad(f32x4 p1, f32x4 p2, f32x4 p3, f32x4 p4) const noexcept
+    void draw_filled_quad(f32x4 p1, f32x4 p2, f32x4 p3, f32x4 p4, color fill_color) const noexcept
     {
         tt_axiom(_flat_vertices != nullptr);
         _flat_vertices->emplace_back(transform * p1, clipping_rectangle, fill_color);
@@ -134,9 +126,9 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    void draw_filled_quad(aarect r) const noexcept
+    void draw_filled_quad(aarect r, color fill_color) const noexcept
     {
-        draw_filled_quad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>());
+        draw_filled_quad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>(), fill_color);
     }
 
     /** Draw an axis aligned box
@@ -150,7 +142,7 @@ public:
      *  - shadowSize
      *  - cornerShapes
      */
-    void draw_box(aarect box) const noexcept
+    void draw_box(aarect box, color line_color, color fill_color) const noexcept
     {
         tt_axiom(_box_vertices != nullptr);
 
@@ -173,7 +165,7 @@ public:
      *  - border_color
      *  - corner_shapes
      */
-    void draw_box_with_border_inside(aarect rectangle) const noexcept
+    void draw_box_with_border_inside(aarect rectangle, color line_color, color fill_color) const noexcept
     {
         tt_axiom(_box_vertices != nullptr);
 
@@ -207,7 +199,7 @@ public:
      *  - shadowSize
      *  - cornerShapes
      */
-    void draw_box_with_border_outside(aarect rectangle) const noexcept
+    void draw_box_with_border_outside(aarect rectangle, color line_color, color fill_color) const noexcept
     {
         tt_axiom(_box_vertices != nullptr);
 
@@ -248,25 +240,25 @@ public:
      * @param text The shaped text to draw.
      * @param useContextColor When true display the text in the context's color, if false use text style color
      */
-    void draw_text(shaped_text const &text, bool useContextColor = false) const noexcept
+    void draw_text(shaped_text const &text, std::optional<color> text_color = {}) const noexcept
     {
         tt_axiom(_sdf_vertices != nullptr);
 
-        if (useContextColor) {
+        if (text_color) {
             narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-                *_sdf_vertices, text, transform, clipping_rectangle, line_color);
+                *_sdf_vertices, text, transform, clipping_rectangle, *text_color);
         } else {
             narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
                 *_sdf_vertices, text, transform, clipping_rectangle);
         }
     }
 
-    void draw_glyph(font_glyph_ids const &glyph, aarect box) const noexcept
+    void draw_glyph(font_glyph_ids const &glyph, aarect box, color text_color) const noexcept
     {
         tt_axiom(_sdf_vertices != nullptr);
 
         narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-            *_sdf_vertices, glyph, transform * box, line_color, clipping_rectangle);
+            *_sdf_vertices, glyph, transform * box, text_color, clipping_rectangle);
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, aarect const &rectangle) noexcept

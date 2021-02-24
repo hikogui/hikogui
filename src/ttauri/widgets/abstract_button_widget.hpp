@@ -35,15 +35,13 @@ public:
     {
     }
 
-    draw_context make_draw_context(draw_context context) const noexcept override
+    color background_color() const noexcept override
     {
-        auto new_context = super::make_draw_context(context);
-
         if (_pressed) {
-            new_context.fill_color = theme::global->fillColor(this->_semantic_layer + 2);
+            return theme::global->fillColor(this->_semantic_layer + 2);
+        } else {
+            return super::background_color();
         }
-
-        return new_context;
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept

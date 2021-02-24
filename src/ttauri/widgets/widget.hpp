@@ -430,6 +430,16 @@ public:
      */
     [[nodiscard]] virtual void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
 
+    virtual [[nodiscard]] color background_color() const noexcept;
+
+    virtual [[nodiscard]] color foreground_color() const noexcept;
+
+    virtual [[nodiscard]] color focus_color() const noexcept;
+
+    virtual [[nodiscard]] color accent_color() const noexcept;
+
+    virtual [[nodiscard]] color label_color() const noexcept;
+
     /** Make a draw context for this widget.
      * This function will make a draw context with the correct transformation
      * and default color values.

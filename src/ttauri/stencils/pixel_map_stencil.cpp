@@ -20,7 +20,7 @@ pixel_map_stencil::pixel_map_stencil(tt::alignment alignment, pixel_map<sfloat_r
 
 pixel_map_stencil::pixel_map_stencil(tt::alignment alignment, URL const &url) : pixel_map_stencil(alignment, png::load(url)) {}
 
-void pixel_map_stencil::draw(draw_context context, bool use_context_color) noexcept
+void pixel_map_stencil::draw(draw_context context, tt::color color) noexcept
 {
     if (std::exchange(_data_is_modified, false)) {
         _backing = narrow_cast<gui_device_vulkan&>(context.device()).imagePipeline->makeImage(_pixel_map.extent());
