@@ -23,7 +23,7 @@ f32x4 text_stencil::preferred_extent() noexcept
     return _shaped_text.preferred_extent;
 }
 
-void text_stencil::draw(draw_context context, bool use_context_color) noexcept
+void text_stencil::draw(draw_context context, tt::color color) noexcept
 {
     auto data_is_modified = std::exchange(_data_is_modified, false);
 
@@ -37,7 +37,7 @@ void text_stencil::draw(draw_context context, bool use_context_color) noexcept
     }
 
     context.transform = context.transform * _shaped_text_transform;
-    context.draw_text(_shaped_text, use_context_color);
+    context.draw_text(_shaped_text, color);
 }
 
 } // namespace tt

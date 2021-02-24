@@ -85,7 +85,7 @@ public:
             _off_label_stencil->set_layout_parameters(_label_rectangle, base_line());
 
             _slider_rectangle =
-                shrink(aarect{0.0f, _rail_rectangle.y(), _rail_rectangle.height(), _rail_rectangle.height()}, 1.5f);
+                shrink(aarect{0.0f, _rail_rectangle.y(), _rail_rectangle.height(), _rail_rectangle.height()}, 2.5f);
 
             ttlet sliderMoveWidth = theme::global->smallSize * 2.0f - (_slider_rectangle.x() * 2.0f);
             _slider_move_range = sliderMoveWidth - _slider_rectangle.width();
@@ -129,7 +129,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         drawContext.corner_shapes = f32x4::broadcast(_rail_rectangle.height() * 0.5f);
-        drawContext.draw_box_with_border_inside(_rail_rectangle);
+        drawContext.draw_box_with_border_inside(_rail_rectangle, focus_color(), background_color());
     }
 
     void draw_slider(draw_context drawContext) noexcept
@@ -143,36 +143,19 @@ private:
         }
 
         ttlet animatedValue = to_float(value, _animation_duration);
-
         ttlet positionedSliderRectangle = translate2(_slider_move_range * animatedValue, 0.0f) * _slider_rectangle;
 
-        if (*value) {
-            if (*enabled && window.active) {
-                drawContext.line_color = theme::global->accentColor;
-            }
-        } else {
-            if (*enabled && window.active) {
-                drawContext.line_color =
-                    _hover ? theme::global->borderColor(_semantic_layer + 1) : theme::global->borderColor(_semantic_layer);
-            }
-        }
-        std::swap(drawContext.line_color, drawContext.fill_color);
         drawContext.transform = translate3{0.0f, 0.0f, 0.1f} * drawContext.transform;
         drawContext.corner_shapes = f32x4::broadcast(positionedSliderRectangle.height() * 0.5f);
-        drawContext.draw_box_with_border_inside(positionedSliderRectangle);
+        drawContext.draw_box_with_border_inside(positionedSliderRectangle, accent_color(), accent_color());
     }
 
     void draw_label(draw_context drawContext) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (*enabled) {
-            drawContext.line_color = theme::global->labelStyle.color;
-        }
-
         ttlet &label_stencil = *value ? _on_label_stencil : _off_label_stencil;
-
-        label_stencil->draw(drawContext, true);
+        label_stencil->draw(drawContext, label_color());
     }
 };
 

@@ -91,7 +91,7 @@ public:
             _label_rectangle = aarect{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
             _label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 
-            _pip_rectangle = shrink(_outline_rectangle, 1.5f);
+            _pip_rectangle = shrink(_outline_rectangle, 2.5f);
         }
         super::update_layout(display_time_point, need_layout);
     }
@@ -121,7 +121,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.corner_shapes = f32x4::broadcast(_outline_rectangle.height() * 0.5f);
-        context.draw_box_with_border_inside(_outline_rectangle);
+        context.draw_box_with_border_inside(_outline_rectangle, this->focus_color(), this->background_color());
     }
 
     void draw_pip(draw_context context) noexcept
@@ -130,24 +130,15 @@ private:
 
         // draw pip
         if (this->value == this->true_value) {
-            if (*this->enabled && this->window.active) {
-                context.line_color = theme::global->accentColor;
-            }
-            std::swap(context.line_color, context.fill_color);
             context.corner_shapes = f32x4::broadcast(_pip_rectangle.height() * 0.5f);
-            context.draw_box_with_border_inside(_pip_rectangle);
+            context.draw_box_with_border_inside(_pip_rectangle, this->accent_color(), this->accent_color());
         }
     }
 
     void draw_label(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        if (*this->enabled) {
-            context.line_color = theme::global->labelStyle.color;
-        }
-
-        _label_stencil->draw(context, true);
+        _label_stencil->draw(context, this->label_color());
     }
 };
 

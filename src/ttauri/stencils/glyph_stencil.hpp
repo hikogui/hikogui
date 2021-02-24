@@ -16,7 +16,7 @@ public:
 
     glyph_stencil(alignment alignment, font_glyph_ids glyph) noexcept;
 
-    void draw(draw_context context, bool use_context_color=false) noexcept override;
+    void draw(draw_context context, tt::color color) noexcept override;
 
 private:
     font_glyph_ids _glyph;

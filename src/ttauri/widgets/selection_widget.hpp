@@ -45,6 +45,9 @@ public:
         option_list(std::forward<OptionList>(option_list)),
         unknown_label(std::forward<UnknownLabel>(unknown_label))
     {
+        // Because the super class `abstract_container_widget` forces the same semantic layer
+        // as the a parent, we need to force it back as if this is a normal widget.
+        _semantic_layer = parent->semantic_layer() + 1;
     }
 
     ~selection_widget() {}
@@ -260,6 +263,14 @@ public:
         tt_no_default();
     }
 
+    [[nodiscard]] color focus_color() const noexcept override
+    {
+        if (*enabled && _selecting) {
+            return theme::global->accentColor;
+        } else {
+            return super::focus_color();
+        }
+    }
 
 private:
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
@@ -366,7 +377,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
-        context.draw_box_with_border_inside(rectangle());
+        context.draw_box_with_border_inside(rectangle(), focus_color(), background_color());
     }
 
     void draw_left_box(draw_context context) noexcept
@@ -374,12 +385,9 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
-        if (_selecting) {
-            context.line_color = theme::global->accentColor;
-        }
-        context.fill_color = context.line_color;
         context.corner_shapes = f32x4{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
-        context.draw_box_with_border_inside(_left_box_rectangle);
+        context.draw_box_with_border_inside(
+            _left_box_rectangle, focus_color(), focus_color());
     }
 
     void draw_chevrons(draw_context context) noexcept
@@ -387,8 +395,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = translate3{0.0, 0.0, 0.2f} * context.transform;
-        context.line_color = *enabled ? theme::global->foregroundColor : context.fill_color;
-        context.draw_glyph(_chevrons_glyph, _chevrons_rectangle);
+        context.draw_glyph(_chevrons_glyph, _chevrons_rectangle, label_color());
     }
 
     void draw_value(draw_context context) noexcept
@@ -396,8 +403,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
-        context.line_color = *enabled ? _text_stencil_color : context.line_color;
-        _text_stencil->draw(context, true);
+        _text_stencil->draw(context, label_color());
     }
 };
 
