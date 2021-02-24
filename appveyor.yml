@@ -35,13 +35,11 @@ environment:
       COMPILER: MSVC19
       PLATFORM: x64
     # Clang
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      APPVEYOR_JOB_NAME: windows-clangcl
-      BUILD_TYPE: Debug
-      COMPILER: CLANG
-      CC: clang
-      CXX: clang++
-      PLATFORM: x64
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #  APPVEYOR_JOB_NAME: windows-clangcl
+    #  BUILD_TYPE: Debug
+    #  COMPILER: CLANG
+    #  PLATFORM: x64
 
 #matrix:
   # let the whole build fail immediately, if one of the job fails
@@ -67,21 +65,23 @@ install:
       $env:version_number_short = $env:build_version_number.Split("-")[0]
       $env:git_commits_since_tag = $env:build_version_number.Split("-")[1]
       $env:git_tag_commit_hash = $env:build_version_number.Split("-")[2]
-  # on tagging, e.g. "v0.2.4"                    ->                  0.2.4-00-a2b135c
-  # on commit, with added branch prefix          ->      branch_name-0.2.3-14-g39e0db
-  # on pull request, with added PR-number prefix -> PR-2-branch_name-0.2.3-14-g39e0db
+      $env:git_commit_hash_short = $($env:APPVEYOR_REPO_COMMIT.substring(0,7))
+      $env:build_version_number_with_current_commit = "$env:build_version_number-$env:git_commit_hash_short"
+  # on tagging, e.g. "v0.2.4"                    ->                  0.2.4-00-a2b135c-a3ge1fe
+  # on commit, with added branch prefix          ->      branch_name-0.2.3-14-g39e0db-b3gf3ed
+  # on pull request, with added PR-number prefix -> PR-2-branch_name-0.2.3-14-g39e0db-e3df4fd
   - ps: |
         if ($env:APPVEYOR_REPO_TAG -eq "true")
         {
-          Update-AppveyorBuild -Version "$env:build_version_number"
+          Update-AppveyorBuild -Version "$env:build_version_number_with_current_commit"
         }
         elseif ($env:APPVEYOR_PULL_REQUEST_NUMBER -ne $null)
         {
-          Update-AppveyorBuild -Version "PR-$env:APPVEYOR_PULL_REQUEST_NUMBER-$env:APPVEYOR_REPO_BRANCH-$env:build_version_number"
+          Update-AppveyorBuild -Version "PR-$env:APPVEYOR_PULL_REQUEST_NUMBER-$env:APPVEYOR_REPO_BRANCH-$env:build_version_number_with_current_commit"
         }
         else
         {
-          Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_BRANCH-$env:build_version_number"
+          Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_BRANCH-$env:build_version_number_with_current_commit"
         }
 
   # Get Git Submodules
@@ -163,8 +163,8 @@ after_build:
 
    # package ttauri artifact
    - cd C:\projects\
-   - rename ttauri-install ttauri-$env:version_number_short
-   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-$env:version_number_short
+   - rename ttauri-install ttauri-%version_number_short%
+   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%build_version_number_with_current_commit%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%version_number_short%
 
 on_failure:
   - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeOutput.log
@@ -174,11 +174,11 @@ on_failure:
 #     Tests
 #-------------------------------------------------------------------
 
-before_test:
-  - set PATH=%PATH%;C:\projects\ttauri-%APPVEYOR_BUILD_VERSION%\tests\
+#before_test:
+#  - set PATH=%PATH%;C:\projects\ttauri-%version_number_short%\tests\
 
-test_script:
-  - ttauri_tests.exe
+#test_script:
+#  - ttauri_tests.exe
 
 #-------------------------------------------------------------------
 #     Build Artifacts
