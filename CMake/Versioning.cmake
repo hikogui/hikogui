@@ -1,3 +1,4 @@
+
 #
 # Versioning
 #
@@ -5,51 +6,6 @@
 #
 #   include(Versioning.cmake)
 #
-# Description:
-#
-# The root folder of the project contains a `VERSION` file.
-# This `VERSION` file contains a version string, e.g. `1.2.3`.
-# This version string is changed by the maintainer manually,
-# before building and tagging the next version for release.
-# By using a standalone versioning file you don't have to touch CMakeLists.txt.
-#
-# The version string is tokenized into [major].[minor].[patch] tokens.
-#
-# Then additional versioning information is collected and added.
-# This allows to add any static or dynamic strings to the version.
-# A dynamic version string might come from the source-control-system, e.g. git.
-# That enables you to add, e.g. the fetched short-hash of a git commit,
-# the git branch name or a current timestamp as release date.
-# You could add the static string, e.g. "dev-local", if is not a git repo.
-#
-# All the version strings are then inserted into the version template file,
-# which uses variable replacement tags (@VAR@).
-#
-# Finally, the new version header file is written.
-#
-
-#-------------------------------------------------------------------
-# Read Version from VERSION file
-#-------------------------------------------------------------------
-
-file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/../VERSION" version)
-
-if(${version} MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
-    set(TTAURI_PROJECT_VERSION ${version})
-    message(VERBOSE "Read version " ${TTAURI_PROJECT_VERSION} " from VERSION file.: ${PROJECT_VERSION}")
-else()
-    message(FATAL_ERROR
-        "No valid version string found.\nPlease ensure the VERSION file in "
-        "the root folder contains a version string in Major.Minor.Patch format.")
-endif()
-
-#-------------------------------------------------------------------
-# Tokenize version into major minor patch
-#-------------------------------------------------------------------
-
-string(REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+" "\\1" TTAURI_MAJOR_VERSION ${TTAURI_PROJECT_VERSION})
-string(REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" TTAURI_MINOR_VERSION ${TTAURI_PROJECT_VERSION})
-string(REGEX REPLACE "[0-9]+.[0-9]+.([0-9]+)" "\\1" TTAURI_PATCH_VERSION ${TTAURI_PROJECT_VERSION})
 
 #-------------------------------------------------------------------
 # Get dynamic versioning strings from git
@@ -63,6 +19,7 @@ mark_as_advanced(GIT_TOOL)
 find_file(GIT_DIR NAMES .git PATHS ${CMAKE_SOURCE_DIR} NO_DEFAULT_PATH)
 
 if(GIT_TOOL AND GIT_DIR)
+
   # get git commit hash
   execute_process(
     COMMAND git rev-parse --short=7 HEAD
@@ -81,21 +38,48 @@ if(GIT_TOOL AND GIT_DIR)
   )
   set(GIT_BRANCH ${GIT_BRANCH_RAW})
 
+  # get date of the git commit
+  execute_process(
+    COMMAND git log -1 --format=%cd --date=short
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_DATE_RAW
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  set(RELEASE_DATE ${GIT_COMMIT_DATE_RAW})
+
+  # get long description of a git tag
+  execute_process(
+    COMMAND git describe --tags --abbrev=40 --dirty --broken --match=v[0-9][0-9.]* --long
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_TAG_DESCRIPTION_RAW
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  set(GIT_TAG_RCS ${GIT_TAG_DESCRIPTION_RAW})
+
   unset(GIT_DIR)
 else()
   # not a git repo, possibly a source download
   set(GIT_COMMIT_HASH "")
 endif()
 
-if(GIT_COMMIT_HASH_RAW)
-  set(TTAURI_PROJECT_VERSION_SHORT ${TTAURI_PROJECT_VERSION})
-  set(TTAURI_PROJECT_VERSION ${TTAURI_PROJECT_VERSION}+build.${GIT_COMMIT_HASH})
-else()
-  # add static string to indicate a non-repo version build
-  set(TTAURI_PROJECT_VERSION ${TTAURI_PROJECT_VERSION}+build.local)
-endif()
+#-------------------------------------------------------------------
+# Tokenize version into major, minor, patch, commits since tag
+#-------------------------------------------------------------------
 
-string(TIMESTAMP RELEASE_DATE "%Y-%m-%d")
+string(REGEX MATCH "v([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.+)-(.+)" _ "${GIT_TAG_RCS}")
+set(TTAURI_MAJOR_VERSION     ${CMAKE_MATCH_1})
+set(TTAURI_MINOR_VERSION     ${CMAKE_MATCH_2})
+set(TTAURI_PATCH_VERSION     ${CMAKE_MATCH_3})
+set(GIT_COMMITS_SINCE_TAG    ${CMAKE_MATCH_4})
+set(GIT_TAG_COMMIT_HASH      ${CMAKE_MATCH_5})
+set(GIT_LOCAL_CHANGES        ${CMAKE_MATCH_6})
+
+string(SUBSTRING ${GIT_TAG_COMMIT_HASH} 0 7 GIT_TAG_COMMIT_HASH_SHORT)
+
+set(TTAURI_PROJECT_VERSION
+"${TTAURI_MAJOR_VERSION}.${TTAURI_MINOR_VERSION}.${TTAURI_PATCH_VERSION}-${GIT_COMMITS_SINCE_TAG}-${GIT_TAG_COMMIT_HASH_SHORT}")
+
+set(TTAURI_PROJECT_VERSION_SHORT "${TTAURI_MAJOR_VERSION}.${TTAURI_MINOR_VERSION}.${TTAURI_PATCH_VERSION}")
 
 #-------------------------------------------------------------------
 # Overview
@@ -108,9 +92,12 @@ message(STATUS "[Version] TTAURI_PROJECT_VERSION_SHORT -> " ${TTAURI_PROJECT_VER
 message(STATUS "[Version] TTAURI_PROJECT_MAJOR -> " ${TTAURI_MAJOR_VERSION})
 message(STATUS "[Version] TTAURI_PROJECT_MINOR -> " ${TTAURI_MINOR_VERSION})
 message(STATUS "[Version] TTAURI_PROJECT_PATCH -> " ${TTAURI_PATCH_VERSION})
+message(STATUS "[Version] GIT_TAG_RCS -> " ${GIT_TAG_RCS})
+message(STATUS "[Version] GIT_COMMITS_SINCE_TAG  -> " ${GIT_COMMITS_SINCE_TAG})
+message(STATUS "[Version] GIT_LOCAL_CHANGES -> " ${GIT_LOCAL_CHANGES})
 message(STATUS "[Version] GIT_COMMIT_HASH -> " ${GIT_COMMIT_HASH})
 message(STATUS "[Version] GIT_BRANCH -> " ${GIT_BRANCH})
-message(STATUS "[Version] RELEASE_DATE -> " ${RELEASE_DATE})
+message(STATUS "[Version] RELEASE_DATE (when committed) -> " ${RELEASE_DATE})
 message(STATUS "")
 
 #-------------------------------------------------------------------
