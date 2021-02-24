@@ -17,6 +17,7 @@ configuration: Release
 environment:
   # appveyor
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  APPVEYOR_CACHE_ENTRY_ZIP_ARGS: -t7z -m0=lzma -mx=5
   APPVEYOR_RDP_PASSWORD: somePassword#123
   # vcpkg
   VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
@@ -58,34 +59,31 @@ init:
   - msbuild /version
   - vcpkg version
   - if [%COMPILER%]==[CLANG] clang++ -v
-  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
-  - ps: >-
-      if ($env:APPVEYOR_REPO_TAG -eq "true")
-      {
-        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
-      }
-      else
-      {
-        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
-      }
+  # Set "build version number" to [tag version]-[commits_since_tag]-[tag_commit_hash],e.g. "v0.2.3-82-g3d248b9f"
+  - ps: $build_version = ("$(git describe --tags --always --long --match="v[0-9][0-9.]*")").trim()
+  - ps: Update-AppveyorBuild -Version "$build_version"
 
 install:
   # Get Git Submodules
   #- git submodule update --init --recursive
+
   # Update CMake
   #- choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
   #- refreshenv
+
   # Update VCPKG
   - cd C:\Tools\vcpkg
   - git pull --quiet
   - .\bootstrap-vcpkg.bat -disableMetrics
   - vcpkg version
+
   # Install VULKAN_SDK
   - if not exist %VULKAN_SDK% (
       curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/VulkanSDK-%VULKAN_VERSION%-Installer.exe?Human=true &
       Vulkan_SDK_Installer.exe /S
     )
   - dir %VULKAN_SDK%
+
   # Install and build dependencies using VCPKG
   - set VCPKG_INSTALLED=C:\Tools\vcpkg\installed\%VCPKG_TARGET_TRIPLET%
   - if not exist %VCPKG_INSTALLED% (
@@ -94,12 +92,10 @@ install:
       vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests
     )
   - vcpkg list
+
   # Init MSVC environment, see https://www.appveyor.com/docs/lang/cpp/
   - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019 Preview"
       (call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM% )
-  # are these env var still set?
-  - echo %VCPKG_TARGET_TRIPLET%
-  - echo %VCPKG_DEFAULT_TRIPLET%
 
 before_build:
   # CHECK important folders to see if everything is present
@@ -111,7 +107,9 @@ before_build:
   - cd C:\projects\ttauri
 
 build_script:
+  #
   # generate build files
+  #
   - if [%COMPILER%]==[MSVC19] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -S . -B ..\ttauri-build
         -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -119,6 +117,7 @@ build_script:
         -DTT_BUILD_OPTIMIZED:BOOL=ON
         -DTT_BUILD_PCH:BOOL=ON
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+
   - if [%COMPILER%]==[CLANG] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T ClangCL -S . -B ..\ttauri-build
         -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         -DBUILD_SHARED_LIBS:BOOL=OFF
@@ -128,15 +127,20 @@ build_script:
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
         -DCMAKE_C_COMPILER=C:/PROGRA~1/LLVM/bin/clang.exe
         -DCMAKE_CXX_COMPILER=C:/PROGRA~1/LLVM/bin/clang-cl.exe
+  #
   # build
+  #
   - cmake --build ..\ttauri-build --config %BUILD_TYPE% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  #
   # install
+  #
   - cmake --install ..\ttauri-build --prefix ..\ttauri-install --strip --verbose
 
 after_build:
    # CHECK important folders to see if all build artifacts are present
    - dir C:\projects\ttauri-build
    - dir /S /B C:\projects\ttauri-install
+
    # package ttauri artifact
    - cd C:\projects\
    - rename ttauri-install ttauri-%APPVEYOR_BUILD_VERSION%
