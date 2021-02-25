@@ -4,7 +4,7 @@
 # https://www.appveyor.com/docs/appveyor-yml/
 #-------------------------------------------------------------------
 
-clone_depth: 5
+#clone_depth: 5
 
 version: '{build}'
 
@@ -57,7 +57,6 @@ init:
   - msbuild /version
   - vcpkg version
   - if [%COMPILER%]==[CLANG] clang++ -v
-  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
   - ps: >-
       if ($env:APPVEYOR_REPO_TAG -eq "true")
       {
@@ -65,7 +64,7 @@ init:
       }
       else
       {
-        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+        Update-AppveyorBuild -Version "$(git describe --tags)-$env:APPVEYOR_REPO_BRANCH"
       }
 
 install:
