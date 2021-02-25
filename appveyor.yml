@@ -80,7 +80,6 @@ install:
       {
         Update-AppveyorBuild -Version "$env:build_version_number-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
       }
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
   # Update CMake
   #- choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
@@ -159,8 +158,10 @@ after_build:
 
    # package ttauri artifact
    - cd C:\projects\
-   - rename ttauri-install ttauri-%APPVEYOR_BUILD_VERSION%
-   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%APPVEYOR_BUILD_VERSION%
+   # name of the top level folder inside the zip
+   - echo ttauri-%build_version_number%
+   - rename ttauri-install ttauri-%build_version_number%
+   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%build_version_number%
 
 on_failure:
   - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeOutput.log
@@ -171,7 +172,7 @@ on_failure:
 #-------------------------------------------------------------------
 
 #before_test:
-#  - set PATH=%PATH%;C:\projects\ttauri-%APPVEYOR_BUILD_VERSION%\tests\
+#  - set PATH=%PATH%;C:\projects\ttauri-%build_version_number%\tests\
 
 #test_script:
 #  - ttauri_tests.exe
