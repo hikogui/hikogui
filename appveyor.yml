@@ -127,6 +127,7 @@ build_script:
   #
   - if [%COMPILER%]==[MSVC19] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -S . -B ..\ttauri-build
         -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_TARGET_TRIPLET=%VCPKG_TARGET_TRIPLET%
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DTT_BUILD_TESTS:BOOL=ON
         -DTT_BUILD_OPTIMIZED:BOOL=ON
