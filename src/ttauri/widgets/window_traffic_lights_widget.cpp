@@ -118,23 +118,22 @@ void window_traffic_lights_widget::drawMacOS(
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto context = drawContext;
-    context.corner_shapes = f32x4{RADIUS, RADIUS, RADIUS, RADIUS};
 
     ttlet close_circle_color = (!window.active && !_hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedClose                                       ? color(1.0f, 0.242f, 0.212f) :
                                                              color(1.0f, 0.1f, 0.082f);
-    context.draw_box_with_border_inside(closeRectangle, close_circle_color, close_circle_color);
+    context.draw_box(closeRectangle, close_circle_color, corner_shapes{RADIUS});
 
     ttlet minimize_circle_color = (!window.active && !_hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMinimize                                       ? color(1.0f, 0.847f, 0.093f) :
                                                                 color(0.784f, 0.521f, 0.021f);
-    context.draw_box_with_border_inside(minimizeRectangle, minimize_circle_color, minimize_circle_color);
+    context.draw_box(minimizeRectangle, minimize_circle_color, corner_shapes{RADIUS});
 
     ttlet maximize_circle_color = (!window.active && !_hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMaximize                                       ? color(0.223f, 0.863f, 0.1f) :
                                                                 color(0.082f, 0.533f, 0.024f);
 
-    context.draw_box_with_border_inside(maximizeRectangle, maximize_circle_color, maximize_circle_color);
+    context.draw_box(maximizeRectangle, maximize_circle_color, corner_shapes{RADIUS});
 
     if (_hover) {
         context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;

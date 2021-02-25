@@ -124,15 +124,15 @@ private:
     decltype(on_label)::callback_ptr_type _on_label_callback;
     decltype(off_label)::callback_ptr_type _off_label_callback;
 
-    void draw_rail(draw_context drawContext) noexcept
+    void draw_rail(draw_context draw_context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        drawContext.corner_shapes = f32x4::broadcast(_rail_rectangle.height() * 0.5f);
-        drawContext.draw_box_with_border_inside(_rail_rectangle, focus_color(), background_color());
+        draw_context.draw_box_with_border_inside(
+            _rail_rectangle, background_color(), focus_color(), corner_shapes{_rail_rectangle.height() * 0.5f});
     }
 
-    void draw_slider(draw_context drawContext) noexcept
+    void draw_slider(draw_context draw_context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -145,17 +145,17 @@ private:
         ttlet animatedValue = to_float(value, _animation_duration);
         ttlet positionedSliderRectangle = translate2(_slider_move_range * animatedValue, 0.0f) * _slider_rectangle;
 
-        drawContext.transform = translate3{0.0f, 0.0f, 0.1f} * drawContext.transform;
-        drawContext.corner_shapes = f32x4::broadcast(positionedSliderRectangle.height() * 0.5f);
-        drawContext.draw_box_with_border_inside(positionedSliderRectangle, accent_color(), accent_color());
+        draw_context.transform = translate3{0.0f, 0.0f, 0.1f} * draw_context.transform;
+        draw_context.draw_box(
+            positionedSliderRectangle, accent_color(), corner_shapes{positionedSliderRectangle.height() * 0.5f});
     }
 
-    void draw_label(draw_context drawContext) noexcept
+    void draw_label(draw_context draw_context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         ttlet &label_stencil = *value ? _on_label_stencil : _off_label_stencil;
-        label_stencil->draw(drawContext, label_color());
+        label_stencil->draw(draw_context, label_color());
     }
 };
 

@@ -504,10 +504,10 @@ private:
 
     void draw_background_box(draw_context context) const noexcept
     {
-        context.corner_shapes = {0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
-        context.draw_box_with_border_inside(_text_field_rectangle, background_color(), background_color());
+        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
+        context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
-        ttlet line_rectangle = aarect{_text_field_rectangle.p0(), f32x4{_text_field_rectangle.width(), context.line_width}};
+        ttlet line_rectangle = aarect{_text_field_rectangle.p0(), f32x4{_text_field_rectangle.width(), 1.0}};
         context.transform = context.transform * translate3{0.0f, 0.0f, 0.1f};
         context.draw_filled_quad(line_rectangle, focus_color());
     }

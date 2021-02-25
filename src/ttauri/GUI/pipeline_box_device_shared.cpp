@@ -7,6 +7,7 @@
 #include "gui_device_vulkan.hpp"
 #include "../pixel_map.hpp"
 #include "../URL.hpp"
+#include "../geometry/corner_shapes.hpp"
 #include <array>
 
 namespace tt::pipeline_box {
@@ -34,35 +35,39 @@ void device_shared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
 
-void device_shared::placeVertices(
+void device_shared::place_vertices(
     vspan<vertex> &vertices,
+    aarect clipping_rectangle,
     rect box,
-    color backgroundColor,
-    float borderSize,
-    color borderColor,
-    f32x4 cornerShapes,
-    aarect clippingRectangle
+    color fill_color,
+    color line_color,
+    float line_width,
+    tt::corner_shapes corner_shapes
 )
 {
-    ttlet extraSpace = (borderSize * 0.5f) + 1.0f;
-    ttlet outerBox = expand(box, extraSpace);
+    ttlet extra_space = (line_width * 0.5f) + 1.0f;
+    ttlet outer_box = expand(box, extra_space);
 
-    ttlet v0 = outerBox.corner<0>();
-    ttlet v1 = outerBox.corner<1>();
-    ttlet v2 = outerBox.corner<2>();
-    ttlet v3 = outerBox.corner<3>();
+    ttlet v0 = outer_box.corner<0>();
+    ttlet v1 = outer_box.corner<1>();
+    ttlet v2 = outer_box.corner<2>();
+    ttlet v3 = outer_box.corner<3>();
 
-    ttlet outerExtent = outerBox.extent();
+    ttlet outer_extent = outer_box.extent();
 
-    ttlet t0 = outerExtent._00xy();
-    ttlet t1 = outerExtent.x00y();
-    ttlet t2 = outerExtent._0yx0();
-    ttlet t3 = outerExtent.xy00();
+    // x = Number of pixels to the right from the left edge of the quad.
+    // y = Number of pixels above the bottom edge.
+    // z = Number of pixels to the left from the right edge of the quad.
+    // w = Number of pixels below the top edge.
+    ttlet t0 = outer_extent._00xy();
+    ttlet t1 = outer_extent.x00y();
+    ttlet t2 = outer_extent._0yx0();
+    ttlet t3 = outer_extent.xy00();
 
-    vertices.emplace_back(v0, t0, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
-    vertices.emplace_back(v1, t1, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
-    vertices.emplace_back(v2, t2, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
-    vertices.emplace_back(v3, t3, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
+    vertices.emplace_back(clipping_rectangle, v0, t0, fill_color, line_color, line_width, corner_shapes);
+    vertices.emplace_back(clipping_rectangle, v1, t1, fill_color, line_color, line_width, corner_shapes);
+    vertices.emplace_back(clipping_rectangle, v2, t2, fill_color, line_color, line_width, corner_shapes);
+    vertices.emplace_back(clipping_rectangle, v3, t3, fill_color, line_color, line_width, corner_shapes);
 }
 
 void device_shared::buildShaders()

@@ -245,12 +245,9 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if constexpr (is_vertical) {
-            context.corner_shapes = f32x4::broadcast(rectangle().width() * 0.5f);
-        } else {
-            context.corner_shapes = f32x4::broadcast(rectangle().height() * 0.5f);
-        }
-        context.draw_box_with_border_inside(rectangle(), background_color(), background_color());
+        ttlet corner_shapes =
+            is_vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
+        context.draw_box(rectangle(), background_color(), corner_shapes);
     }
 
     void draw_slider(draw_context context) noexcept
@@ -258,12 +255,10 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-        if constexpr (is_vertical) {
-            context.corner_shapes = f32x4::broadcast(slider_rectangle.width() * 0.5f);
-        } else {
-            context.corner_shapes = f32x4::broadcast(slider_rectangle.height() * 0.5f);
-        }
-        context.draw_box_with_border_inside(slider_rectangle, foreground_color(), foreground_color());
+        ttlet corner_shapes = is_vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
+                                            tt::corner_shapes{slider_rectangle.height() * 0.5f};
+
+        context.draw_box(slider_rectangle, foreground_color(), corner_shapes);
     }
 };
 
