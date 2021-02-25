@@ -318,7 +318,7 @@ private:
     void draw_background(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        context.draw_box_with_border_inside(this->rectangle(), this->focus_color(), this->background_color());
+        context.draw_box_with_border_inside(this->rectangle(), this->background_color(), this->focus_color());
     }
 
     void draw_label(draw_context context) noexcept

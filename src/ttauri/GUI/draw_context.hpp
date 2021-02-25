@@ -24,6 +24,7 @@
 #include "../vspan.hpp"
 #include "../text/shaped_text.hpp"
 #include "../color/color.hpp"
+#include "../geometry/corner_shapes.hpp"
 #include <type_traits>
 
 namespace tt {
@@ -32,23 +33,6 @@ namespace tt {
  */
 class draw_context {
 public:
-    /// Size of lines.
-    float line_width = 1.0;
-
-    /** Shape of the corners of a box.
-     * The vector holds information for each corner:
-     *  - x: left-bottom
-     *  - y: right-bottom
-     *  - z: left-top
-     *  - w: right-top
-     *
-     * The value means:
-     *  - zero: Sharp corner
-     *  - positive: Rounded corner of that radius
-     *  - negative: Cur corner of that radius
-     */
-    f32x4 corner_shapes = f32x4{0.0, 0.0, 0.0, 0.0};
-
     /** The clipping rectangle when drawing.
      * The clipping rectangle is passes as-is to the pipelines and
      * is not modified by the transform.
@@ -74,8 +58,6 @@ public:
         _box_vertices(&boxVertices),
         _image_vertices(&imageVertices),
         _sdf_vertices(&sdfVertices),
-        line_width(theme::global->borderWidth),
-        corner_shapes(),
         clipping_rectangle(static_cast<f32x4>(window.extent))
     {
         _flat_vertices->clear();
@@ -142,12 +124,31 @@ public:
      *  - shadowSize
      *  - cornerShapes
      */
-    void draw_box(aarect box, color line_color, color fill_color) const noexcept
+    void draw_box(
+        aarect box,
+        color fill_color,
+        color line_color,
+        float line_width = 1.0,
+        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept
     {
         tt_axiom(_box_vertices != nullptr);
 
-        pipeline_box::device_shared::placeVertices(
-            *_box_vertices, transform * box, fill_color, line_width, line_color, corner_shapes, clipping_rectangle);
+        pipeline_box::device_shared::place_vertices(
+            *_box_vertices, clipping_rectangle, transform * box, fill_color, line_color, line_width, corner_shapes);
+    }
+
+    void draw_box(
+        aarect box,
+        color fill_color,
+        color line_color,
+        tt::corner_shapes corner_shapes) const noexcept
+    {
+        draw_box(box, fill_color, line_color, 1.0, corner_shapes);
+    }
+
+    void draw_box(aarect box, color fill_color, tt::corner_shapes corner_shapes) const noexcept
+    {
+        draw_box(box, fill_color, fill_color, 0.0, corner_shapes);
     }
 
     /** Draw an axis aligned box
@@ -165,7 +166,12 @@ public:
      *  - border_color
      *  - corner_shapes
      */
-    void draw_box_with_border_inside(aarect rectangle, color line_color, color fill_color) const noexcept
+    void draw_box_with_border_inside(
+        aarect rectangle,
+        color fill_color,
+        color line_color,
+        float line_width = 1.0,
+        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept
     {
         tt_axiom(_box_vertices != nullptr);
 
@@ -173,14 +179,19 @@ public:
 
         ttlet new_rectangle = shrink(rectangle, shrink_value);
 
-        ttlet new_corner_shapes =
-            f32x4{std::max(0.0f, corner_shapes.x() - shrink_value),
-                std::max(0.0f, corner_shapes.y() - shrink_value),
-                std::max(0.0f, corner_shapes.z() - shrink_value),
-                std::max(0.0f, corner_shapes.w() - shrink_value)};
+        ttlet new_corner_shapes = corner_shapes - shrink_value;
 
-        pipeline_box::device_shared::placeVertices(
-            *_box_vertices, transform * new_rectangle, fill_color, line_width, line_color, new_corner_shapes, clipping_rectangle);
+        pipeline_box::device_shared::place_vertices(
+            *_box_vertices, clipping_rectangle, transform * new_rectangle, fill_color, line_color, line_width, new_corner_shapes);
+    }
+
+    void draw_box_with_border_inside(
+        aarect rectangle,
+        color fill_color,
+        color line_color,
+        tt::corner_shapes corner_shapes) const noexcept
+    {
+        draw_box_with_border_inside(rectangle, fill_color, line_color, 1.0, corner_shapes);
     }
 
     /** Draw an axis aligned box
@@ -199,22 +210,29 @@ public:
      *  - shadowSize
      *  - cornerShapes
      */
-    void draw_box_with_border_outside(aarect rectangle, color line_color, color fill_color) const noexcept
+    void draw_box_with_border_outside(
+        aarect rectangle,
+        color fill_color,
+        color line_color,
+        float line_width = 1.0,
+        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept
     {
         tt_axiom(_box_vertices != nullptr);
 
-        ttlet shrink_value = line_width * 0.5f;
+        ttlet expand_value = line_width * 0.5f;
 
-        ttlet new_rectangle = expand(rectangle, shrink_value);
+        ttlet new_rectangle = expand(rectangle, expand_value);
 
-        ttlet new_corner_shapes =
-            f32x4{std::max(0.0f, corner_shapes.x() - shrink_value),
-                std::max(0.0f, corner_shapes.y() - shrink_value),
-                std::max(0.0f, corner_shapes.z() - shrink_value),
-                std::max(0.0f, corner_shapes.w() - shrink_value)};
+        ttlet new_corner_shapes = corner_shapes + expand_value;
 
-        pipeline_box::device_shared::placeVertices(
-            *_box_vertices, transform * new_rectangle, fill_color, line_width, line_color, new_corner_shapes, clipping_rectangle);
+        pipeline_box::device_shared::place_vertices(
+            *_box_vertices, clipping_rectangle, transform * new_rectangle, fill_color, line_color, line_width, new_corner_shapes);
+    }
+
+    void draw_box_with_border_outside(aarect rectangle, color fill_color, color line_color, tt::corner_shapes corner_shapes)
+        const noexcept
+    {
+        draw_box_with_border_outside(rectangle, fill_color, line_color, 1.0, corner_shapes);
     }
 
     /** Draw an image
@@ -268,8 +286,10 @@ public:
 
 private:
     gui_window *_window;
+
 public:
     aarect _scissor_rectangle;
+
 private:
     vspan<pipeline_flat::vertex> *_flat_vertices;
     vspan<pipeline_box::vertex> *_box_vertices;

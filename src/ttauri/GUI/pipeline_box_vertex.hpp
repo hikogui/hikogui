@@ -23,38 +23,48 @@ struct vertex {
     sfloat_rgb32 position;
 
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    sfloat_rgba32 clippingRectangle;
+    sfloat_rgba32 clipping_rectangle;
 
-    //! Double 2D coordinates inside the quad, used to determine the distance from the sides and corner inside the fragment shader.
-    sfloat_rgba32 cornerCoordinate;
+    /** Double 2D coordinates inside the quad, used to determine the distance from the sides and corner inside the fragment shader.
+     * x = Number of pixels to the right from the left edge of the quad.
+     * y = Number of pixels above the bottom edge.
+     * z = Number of pixels to the left from the right edge of the quad.
+     * w = Number of pixels below the top edge.
+     * 
+     * The rasteriser will interpolate these numbers, so that inside the fragment shader
+     * the distance from a corner can be determined easily.
+     */
+    sfloat_rgba32 corner_coordinate;
 
     //! background color of the box.
-    sfloat_rgba16 backgroundColor;
+    sfloat_rgba16 fill_color;
 
     //! border color of the box.
-    sfloat_rgba16 borderColor;
+    sfloat_rgba16 line_color;
 
     //! Shape of each corner, negative values are cut corners, positive values are rounded corners.
-    sfloat_rgba16 cornerShapes;
+    sfloat_rgba16 corner_shapes;
 
-    float borderSize;
+    float line_width;
 
     vertex(
+        aarect clipping_rectangle,
         f32x4 position,
-        f32x4 cornerCoordinate,
-        color backgroundColor,
-        float borderSize,
-        color borderColor,
-        f32x4 cornerShapes,
-        aarect clippingRectangle
+        f32x4 corner_coordinate,
+        color fill_color,
+        color line_color,
+        float line_width,
+        tt::corner_shapes corner_shapes
     ) noexcept :
         position(position),
-        clippingRectangle(clippingRectangle),
-        cornerCoordinate(cornerCoordinate),
-        backgroundColor(backgroundColor),
-        borderColor(borderColor),
-        cornerShapes(cornerShapes),
-        borderSize(borderSize) {}
+        clipping_rectangle(clipping_rectangle),
+        corner_coordinate(corner_coordinate),
+        fill_color(fill_color),
+        line_color(line_color),
+        corner_shapes(corner_shapes),
+        line_width(line_width)
+    {
+    }
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
@@ -67,12 +77,12 @@ struct vertex {
     {
         return {
             { 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(vertex, position) },
-            { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clippingRectangle) },
-            { 2, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, cornerCoordinate) },
-            { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, backgroundColor) },
-            { 4, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, borderColor) },
-            { 5, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, cornerShapes) },
-            { 6, 0, vk::Format::eR32Sfloat, offsetof(vertex, borderSize) },
+            { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clipping_rectangle) },
+            { 2, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, corner_coordinate) },
+            { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, fill_color) },
+            { 4, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, line_color) },
+            { 5, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, corner_shapes) },
+            { 6, 0, vk::Format::eR32Sfloat, offsetof(vertex, line_width) },
         };
     }
 };

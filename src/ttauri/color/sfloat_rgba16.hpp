@@ -8,6 +8,7 @@
 #include "color.hpp"
 #include "../float16.hpp"
 #include "../pixel_map.hpp"
+#include "../geometry/corner_shapes.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -59,6 +60,8 @@ public:
     {
         return color{static_cast<f32x4>(*this)};
     }
+
+    [[nodiscard]] sfloat_rgba16(corner_shapes const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
 
     // std::array<float16,4> const &get() const noexcept {
     //    return v;

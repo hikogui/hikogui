@@ -90,7 +90,7 @@ private:
     void draw_background(draw_context context) noexcept
     {
         context.clipping_rectangle = expand(context.clipping_rectangle, theme::global->borderWidth);
-        context.draw_box_with_border_outside(rectangle(), foreground_color(), background_color());
+        context.draw_box_with_border_outside(rectangle(), background_color(), foreground_color());
     }
 };
 
