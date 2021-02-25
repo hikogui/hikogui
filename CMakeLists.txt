@@ -444,7 +444,7 @@ endif()
 
 install(TARGETS ttauri_tests DESTINATION tests)
 
-install(DIRECTORY tests/data DESTINATION tests)
+install(DIRECTORY tests/data/ DESTINATION tests)
 
 #-------------------------------------------------------------------
 # Build examples
