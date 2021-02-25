@@ -376,8 +376,8 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
-        context.draw_box_with_border_inside(rectangle(), focus_color(), background_color());
+        context.draw_box_with_border_inside(
+            rectangle(), background_color(), focus_color(), corner_shapes{theme::global->roundingRadius});
     }
 
     void draw_left_box(draw_context context) noexcept
@@ -385,9 +385,8 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
-        context.corner_shapes = f32x4{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
-        context.draw_box_with_border_inside(
-            _left_box_rectangle, focus_color(), focus_color());
+        ttlet corner_shapes = tt::corner_shapes{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
+        context.draw_box(_left_box_rectangle, focus_color(), corner_shapes);
     }
 
     void draw_chevrons(draw_context context) noexcept

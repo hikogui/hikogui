@@ -5,6 +5,9 @@
 #pragma once
 
 #include "../numeric_array.hpp"
+#include "../geometry/corner_shapes.hpp"
+#include "../aarect.hpp"
+#include "color.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -13,7 +16,7 @@ namespace tt {
 
 class sfloat_rgba32 {
     // Red, Green, Blue, Alpha in binary32 (native endian).
-    std::array<float,4> v;
+    std::array<float, 4> v;
 
 public:
     sfloat_rgba32() = default;
@@ -22,35 +25,42 @@ public:
     sfloat_rgba32 &operator=(sfloat_rgba32 const &rhs) noexcept = default;
     sfloat_rgba32 &operator=(sfloat_rgba32 &&rhs) noexcept = default;
 
-    sfloat_rgba32(f32x4 const &rhs) noexcept : v(static_cast<std::array<float,4>>(rhs)) {
-    }
+    sfloat_rgba32(f32x4 const &rhs) noexcept : v(static_cast<std::array<float, 4>>(rhs)) {}
 
-    sfloat_rgba32 &operator=(f32x4 const &rhs) noexcept {
-        v = static_cast<std::array<float,4>>(rhs);
+    sfloat_rgba32 &operator=(f32x4 const &rhs) noexcept
+    {
+        v = static_cast<std::array<float, 4>>(rhs);
         return *this;
     }
 
-    operator f32x4 () const noexcept {
+    operator f32x4() const noexcept
+    {
         return f32x4{v};
     }
 
     sfloat_rgba32(aarect const &rhs) noexcept : sfloat_rgba32(rhs.v) {}
 
-    sfloat_rgba32 &operator=(aarect const &rhs) noexcept {
+    sfloat_rgba32(corner_shapes const &rhs) noexcept : sfloat_rgba32(static_cast<f32x4>(rhs)) {}
+
+    sfloat_rgba32 &operator=(aarect const &rhs) noexcept
+    {
         *this = rhs.v;
         return *this;
     }
 
-    operator aarect () const noexcept {
+    operator aarect() const noexcept
+    {
         return aarect::p0p3(f32x4(v));
     }
 
-    [[nodiscard]] friend bool operator==(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept
+    {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] friend bool operator!=(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept
+    {
         return !(lhs == rhs);
     }
 };
 
-}
+} // namespace tt

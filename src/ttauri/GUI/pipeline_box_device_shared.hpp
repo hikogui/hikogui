@@ -9,6 +9,7 @@
 #include "../rect.hpp"
 #include "../vspan.hpp"
 #include "../color/color.hpp"
+#include "../geometry/corner_shapes.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -43,14 +44,14 @@ struct device_shared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    static void placeVertices(
+    static void place_vertices(
         vspan<vertex> &vertices,
+        aarect clipping_rectangle,
         rect box,
-        color backgroundColor,
-        float borderSize,
-        color borderColor,
-        f32x4 cornerShapes,
-        aarect clippingRectangle
+        color fill_color,
+        color line_color,
+        float line_width,
+        corner_shapes corner_shapes
     );
 
 private:

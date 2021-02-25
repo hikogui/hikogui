@@ -184,9 +184,11 @@ private:
             theme::global->fillColor(this->_semantic_layer - 1) :
             theme::global->fillColor(this->_semantic_layer);
 
-        context.corner_shapes = f32x4{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
+        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
         context.draw_box_with_border_inside(
-            _button_rectangle, (this->_focus && this->window.active) ? this->focus_color() : button_color, button_color);
+            _button_rectangle, button_color,
+            (this->_focus && this->window.active) ? this->focus_color() : button_color,
+            corner_shapes);
     }
 
     void draw_label(draw_context context) noexcept

@@ -82,10 +82,9 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->window_clipping_rectangle())) {
-            context.corner_shapes = f32x4::broadcast(theme::global->roundingRadius);
-
             // Move the border of the button in the middle of a pixel.
-            context.draw_box_with_border_inside(this->rectangle(), this->focus_color(), this->background_color());
+            context.draw_box_with_border_inside(
+                this->rectangle(), this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
 
             context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
             _label_stencil->draw(context, this->label_color());

@@ -120,8 +120,8 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.corner_shapes = f32x4::broadcast(_outline_rectangle.height() * 0.5f);
-        context.draw_box_with_border_inside(_outline_rectangle, this->focus_color(), this->background_color());
+        context.draw_box_with_border_inside(
+            _outline_rectangle, this->background_color(), this->focus_color(), corner_shapes{_outline_rectangle.height() * 0.5f});
     }
 
     void draw_pip(draw_context context) noexcept
@@ -130,8 +130,8 @@ private:
 
         // draw pip
         if (this->value == this->true_value) {
-            context.corner_shapes = f32x4::broadcast(_pip_rectangle.height() * 0.5f);
-            context.draw_box_with_border_inside(_pip_rectangle, this->accent_color(), this->accent_color());
+            context.draw_box(
+                _pip_rectangle, this->accent_color(), corner_shapes{_pip_rectangle.height() * 0.5f});
         }
     }
 

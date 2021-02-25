@@ -155,7 +155,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.draw_box_with_border_inside(_checkbox_rectangle, this->focus_color(), this->background_color());
+        context.draw_box_with_border_inside(_checkbox_rectangle, this->background_color(), this->focus_color());
     }
 
     void draw_check_mark(draw_context context) noexcept
