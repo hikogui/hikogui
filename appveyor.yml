@@ -57,15 +57,26 @@ init:
   - msbuild /version
   - vcpkg version
   - if [%COMPILER%]==[CLANG] clang++ -v
-  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
+  #
+  # This power shell block sets the [build version number] and updates the [AppveyorBuildVersion number].
+  #
+  #  1. We fetch the version number (1.2.3) from the `version.hpp` file.
+  #  2. When the commit is a tag push, we set the [AppveyorBuildVersion number] to the [tag_name], e.g. "v1.2.3".
+  #  3. On normal commits, we set the [AppveyorBuildVersion number] to "[build_version_number]-[current_commit_short_hash]"".
+  #
+  #  The build version number is later also used for naming the release folder, e.g. "ttauri-[build_version_number]" = "ttauri-1.2.3".
+  #
+  # In short: set "build version number" to "version_num-current_commit_short_hash" or when tagged to "tag name" (Travis style).
   - ps: >-
+      $env:build_version_number = Select-String -Path "src/ttauri/version.hpp" -Pattern 'version_short' | %{$_.Line.Split('"')[1]}
+      write-host "build_version_number -> $env:build_version_number"
       if ($env:APPVEYOR_REPO_TAG -eq "true")
       {
         Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
       }
       else
       {
-        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+        Update-AppveyorBuild -Version "$env:build_version_number-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
       }
 
 install:
