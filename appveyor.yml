@@ -57,33 +57,18 @@ init:
   - msbuild /version
   - vcpkg version
   - if [%COMPILER%]==[CLANG] clang++ -v
+  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
+  - ps: >-
+      if ($env:APPVEYOR_REPO_TAG -eq "true")
+      {
+        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
+      }
+      else
+      {
+        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+      }
 
 install:
-  # set "build version number" to [tag version]-[commits_since_tag]-[tag_commit_hash], e.g. "v0.2.3-82-g3d248b9f"
-  - ps: |
-      $env:build_version_number = Select-String -Path "src/ttauri/version.hpp" -Pattern 'version_long' | %{$_.Line.Split('"')[1]}
-      $env:version_number_short = $env:build_version_number.Split("-")[0]
-      $env:git_commits_since_tag = $env:build_version_number.Split("-")[1]
-      $env:git_tag_commit_hash = $env:build_version_number.Split("-")[2]
-      $env:git_commit_hash_short = $($env:APPVEYOR_REPO_COMMIT.substring(0,7))
-      $env:build_version_number_with_current_commit = "$env:build_version_number-$env:git_commit_hash_short"
-  # on tagging, e.g. "v0.2.4"                    ->                  0.2.4-00-a2b135c-a3ge1fe
-  # on commit, with added branch prefix          ->      branch_name-0.2.3-14-g39e0db-b3gf3ed
-  # on pull request, with added PR-number prefix -> PR-2-branch_name-0.2.3-14-g39e0db-e3df4fd
-  - ps: |
-        if ($env:APPVEYOR_REPO_TAG -eq "true")
-        {
-          Update-AppveyorBuild -Version "$env:build_version_number_with_current_commit"
-        }
-        elseif ($env:APPVEYOR_PULL_REQUEST_NUMBER -ne $null)
-        {
-          Update-AppveyorBuild -Version "PR-$env:APPVEYOR_PULL_REQUEST_NUMBER-$env:build_version_number_with_current_commit"
-        }
-        else
-        {
-          Update-AppveyorBuild -Version "$env:build_version_number_with_current_commit"
-        }
-
   # Get Git Submodules
   #- git submodule update --init --recursive
 
@@ -163,7 +148,7 @@ after_build:
 
    # package ttauri artifact
    - cd C:\projects\
-   - rename ttauri-install ttauri-%version_number_short%
+   - rename ttauri-install ttauri-%APPVEYOR_BUILD_VERSION%
    - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%build_version_number_with_current_commit%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%version_number_short%
 
 on_failure:
@@ -192,7 +177,7 @@ artifacts:
 #     Deployment configuration
 #-------------------------------------------------------------------
 
-# deploy to Github Releases on tag push
+# deploy to Github Releases on tag push (conditional deploy)
 #deploy:
 #  provider: GitHub
 #  release: 'ttauri $(APPVEYOR_REPO_TAG_NAME)'
