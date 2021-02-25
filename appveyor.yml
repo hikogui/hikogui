@@ -4,7 +4,7 @@
 # https://www.appveyor.com/docs/appveyor-yml/
 #-------------------------------------------------------------------
 
-#clone_depth: 5
+clone_depth: 5
 
 version: '{build}'
 
@@ -57,6 +57,7 @@ init:
   - msbuild /version
   - vcpkg version
   - if [%COMPILER%]==[CLANG] clang++ -v
+  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
   - ps: >-
       if ($env:APPVEYOR_REPO_TAG -eq "true")
       {
@@ -64,7 +65,7 @@ init:
       }
       else
       {
-        Update-AppveyorBuild -Version "$(git describe --tags)-$env:APPVEYOR_REPO_BRANCH"
+        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
       }
 
 install:
@@ -142,7 +143,7 @@ build_script:
   - cmake --install ..\ttauri-build --prefix ..\ttauri-install --strip --verbose
 
 after_build:
-   # CHECK important folders to see if all build artifacts are present
+   # Check if all build artifacts are present, before packaging
    - dir C:\projects\ttauri-build
    - dir /S /B C:\projects\ttauri-install
 
@@ -160,7 +161,7 @@ on_failure:
 #-------------------------------------------------------------------
 
 #before_test:
-#  - set PATH=%PATH%;C:\projects\ttauri-%version_number_short%\tests\
+#  - set PATH=%PATH%;C:\projects\ttauri-%APPVEYOR_BUILD_VERSION%\tests\
 
 #test_script:
 #  - ttauri_tests.exe
@@ -182,13 +183,13 @@ artifacts:
 #  provider: GitHub
 #  release: 'ttauri $(APPVEYOR_REPO_TAG_NAME)'
 #  tag: $(APPVEYOR_REPO_TAG_NAME)
-#  #description: '[**Changelog**](https://github.com/ttauri-project/ttauri/blob/master/CHANGELOG.md)'
+#  #description: '[**Changelog**](https://github.com/ttauri-project/ttauri/blob/main/CHANGELOG.md)'
 #  artifact: ttauri_zip
 #  draft: false
 #  prerelease: false
 #  force_update: true               # overwrite files of existing release on GitHub (for re-releasing)
 #  on:
-#    branch: master                 # release from master branch only
+#    branch: main                   # release from main branch only
 #    appveyor_repo_tag: true        # deploy on tag push only
 #  auth_token:                      # encrypted token from GitHub
 #    secure: *hash*
