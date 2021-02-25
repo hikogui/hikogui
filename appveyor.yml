@@ -80,6 +80,7 @@ install:
   - cd C:\Tools\vcpkg
   - git pull --quiet
   - .\bootstrap-vcpkg.bat -disableMetrics
+  - ps: Add-Content "C:\tools\vcpkg\triplets\x64-windows-static.cmake" "set(VCPKG_BUILD_TYPE release)"
   - vcpkg version
 
   # Install VULKAN_SDK
@@ -149,7 +150,7 @@ after_build:
    # package ttauri artifact
    - cd C:\projects\
    - rename ttauri-install ttauri-%APPVEYOR_BUILD_VERSION%
-   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%build_version_number_with_current_commit%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%version_number_short%
+   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%APPVEYOR_BUILD_VERSION%
 
 on_failure:
   - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeOutput.log
