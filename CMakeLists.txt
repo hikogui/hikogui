@@ -1,24 +1,19 @@
 
 cmake_minimum_required(VERSION 3.19)
 
-if(WIN32)
-    set(CMAKE_SYSTEM_VERSION 10.0)
-
-    # select MSVC runtime based on CMAKE_MSVC_RUNTIME_LIBRARY
-    cmake_policy(SET CMP0091 NEW)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
 #-------------------------------------------------------------------
 # Build Options
+#
+# These variables are project-wide and can be used with CMake-GUI.
 #-------------------------------------------------------------------
 
+option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
 option(TT_BUILD_DOCS        "Build documentation"               OFF)
 option(TT_BUILD_EXAMPLES    "Build example applications"         ON)
 option(TT_BUILD_TESTS       "Build tests"                        ON)
 option(TT_BUILD_OPTIMIZED   "Build optimized Releases"           ON)
 option(TT_BUILD_PCH         "Build precompiled headers"          ON)
-
+option(TT_INSTALL           "Generate installation target"       ON)
 option(TT_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
 
 #-------------------------------------------------------------------
@@ -32,11 +27,25 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 if(TT_BUILD_OPTIMIZED)
 
-    # Compiler flags for optimized Release and RelWithDebugInfo builds
+    # Global Compiler flags for optimized Release and RelWithDebugInfo builds
     if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
         set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
     endif()
 
+endif()
+
+if(WIN32)
+    # Build for a Windows 10 host system.
+    set(CMAKE_SYSTEM_VERSION 10.0)
+
+    # When we build statically:
+    if(NOT BUILD_SHARED_LIBS)
+        # Select MSVC runtime based on CMAKE_MSVC_RUNTIME_LIBRARY.
+        # We switch from the multi-threaded dynamically-linked library (default)
+        # to the multi-threaded statically-linked runtime library.
+        cmake_policy(SET CMP0091 NEW)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
 endif()
 
 #-------------------------------------------------------------------
@@ -160,16 +169,19 @@ find_package(Vulkan REQUIRED)
 # Setup Build Targets
 #-------------------------------------------------------------------
 
-add_library(ttauri STATIC)
+add_library(ttauri)
+add_library(ttauri::tauri ALIAS ttauri)
 
-add_executable(ttauri_tests)
+if(TT_BUILD_TESTS)
+    add_executable(ttauri_tests)
+endif()
 
 #-------------------------------------------------------------------
 # Setup Sources
 #-------------------------------------------------------------------
 
 # This needs to be below the build target commands (add_*).
-# We omit adding source files to these commands, but add them
+# We omit adding source files to the `add_*` commands, but add them
 # later using target_sources() in CMakeLists of subdirectories.
 
 add_subdirectory(src/ttauri)
@@ -197,7 +209,6 @@ target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_compile_features(ttauri PUBLIC cxx_std_20)
 
 if(MSVC)
     if(TT_ENABLE_ANALYSIS)
@@ -396,17 +407,39 @@ add_dependencies(ttauri ttauri_resources)
 # Installation Rules: ttauri                               (library)
 #-------------------------------------------------------------------
 
-include(GNUInstallDirs)
+if(WIN32)
 
-install(TARGETS ttauri RESOURCE)
+    install(TARGETS ttauri RESOURCE)
 
-install(TARGETS ttauri
-    EXPORT ttauri
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+    # Copy all header files for the library.
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            FILES_MATCHING PATTERN "*.hpp")
+
+    # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
+    get_target_property(target_type ttauri TYPE)
+
+    if(target_type STREQUAL STATIC_LIBRARY)
+
+        # Install the library and headers.
+        install(TARGETS ttauri EXPORT ttauri
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
+        )
+    endif()
+
+    if(target_type STREQUAL DYNAMIC_LIBRARY)
+
+        # Install the library and headers.
+        install(TARGETS ttauri EXPORT ttauri
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
+        )
+    endif()
+
+endif()
 
 #-------------------------------------------------------------------
 # Build Target: ttauri_tests                            (executable)

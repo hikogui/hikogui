@@ -106,7 +106,6 @@ install:
       vcpkg integrate install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests
     )
   #vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests &
-  - vcpkg list
 
   # Init MSVC environment, see https://www.appveyor.com/docs/lang/cpp/
   - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019 Preview"
