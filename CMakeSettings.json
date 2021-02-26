@@ -20,11 +20,6 @@
           "name": "BUILD_SHARED_LIBS",
           "value": "OFF",
           "type": "STRING"
-        },
-        {
-          "name": "gtest_force_shared_crt",
-          "value": "ON",
-          "type": "STRING"
         }
       ],
       "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
@@ -46,8 +41,8 @@
           "type": "STRING"
         },
         {
-          "name": "gtest_force_shared_crt",
-          "value": "ON",
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows-static",
           "type": "STRING"
         }
       ],
@@ -69,11 +64,6 @@
           "name": "BUILD_SHARED_LIBS",
           "value": "OFF",
           "type": "STRING"
-        },
-        {
-          "name": "gtest_force_shared_crt",
-          "value": "ON",
-          "type": "STRING"
         }
       ],
       "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
@@ -93,11 +83,6 @@
           "name": "BUILD_SHARED_LIBS",
           "value": "OFF",
           "type": "STRING"
-        },
-        {
-          "name": "gtest_force_shared_crt",
-          "value": "ON",
-          "type": "STRING"
         }
       ],
       "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
@@ -116,11 +101,6 @@
         {
           "name": "BUILD_SHARED_LIBS",
           "value": "OFF",
-          "type": "STRING"
-        },
-        {
-          "name": "gtest_force_shared_crt",
-          "value": "ON",
           "type": "STRING"
         }
       ],

@@ -141,6 +141,7 @@ find_package(fmt CONFIG REQUIRED)
 #
 # GoogleTest - non-vcpkg, directly build from externals
 #
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 set(gtest_force_shared_crt ON)
 
 # Don't install GTest libs when we run `install`.
@@ -191,6 +192,8 @@ add_subdirectory(tools)
 # Build Target: ttauri                                     (library)
 #-------------------------------------------------------------------
 
+set_target_properties(ttauri PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} SOVERSION ${TTAURI_MAJOR_VERSION})
+
 target_link_libraries(ttauri PUBLIC
     fmt::fmt
     date::date
@@ -203,20 +206,14 @@ target_link_libraries(ttauri PUBLIC
 if(WIN32)
     target_link_libraries(ttauri PUBLIC UxTheme.lib)
     target_link_libraries(ttauri PUBLIC synchronization windowsapp.lib)
+elseif(APPLE)
+    target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-
-if(MSVC)
-    if(TT_ENABLE_ANALYSIS)
-        set_source_files_properties(${TTauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
-        target_compile_options(ttauri PUBLIC -analyze)
-        #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
-   endif()
-endif()
 
 #
 # We will support the following CPUs:
@@ -257,7 +254,7 @@ elseif (MSVC)
     target_compile_options(ttauri PUBLIC -permissive-)
 
     # suppress msbuild startup banner
-    target_compile_options(ttauri PUBLIC /nologo)
+    target_compile_options(ttauri PUBLIC -nologo)
 
     # By default MSVC reports a incorrect version in __cplusplus
     # This option will make it work correctly.
@@ -359,8 +356,6 @@ if (WIN32)
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_METAL_EXT)
-
-    target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
 add_custom_command(
@@ -412,7 +407,7 @@ if(WIN32)
     install(TARGETS ttauri RESOURCE)
 
     # Copy all header files for the library.
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/ttauri/
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             FILES_MATCHING PATTERN "*.hpp")
 
@@ -493,44 +488,43 @@ endif()
 # Remove certain files from static analysis
 #-------------------------------------------------------------------
 
-set(ttauri_do_not_analyze
-    src/ttauri/GUI/pipeline_flat.cpp
-    src/ttauri/GUI/gui_window_vulkan.cpp
-    src/ttauri/GUI/gui_device_vulkan.cpp
-    src/ttauri/GUI/gui_system_vulkan.cpp
-    src/ttauri/GUI/gui_system.cpp
-    src/ttauri/GUI/gui_system_vulkan_win32.cpp
-    src/ttauri/GUI/gui_window.cpp
-    src/ttauri/GUI/gui_window_vulkan_win32.cpp
-    src/ttauri/GUI/pipeline_flat_device_shared.cpp
-    src/ttauri/GUI/pipeline_image.cpp
-    src/ttauri/GUI/pipeline_tone_mapper.cpp
-    src/ttauri/GUI/pipeline_image_texture_map.cpp
-    src/ttauri/GUI/pipeline_box_device_shared.cpp
-    src/ttauri/GUI/pipeline_image_device_shared.cpp
-    src/ttauri/GUI/pipeline_tone_mapper_device_shared.cpp
-    src/ttauri/GUI/pipeline_image_image.cpp
-    src/ttauri/GUI/pipeline_SDF_texture_map.cpp
-    src/ttauri/GUI/pipeline_SDF_device_shared.cpp
-    src/ttauri/GUI/pipeline_SDF_atlas_rect.cpp
-    src/ttauri/GUI/pipeline_SDF.cpp
-    src/ttauri/GUI/pipeline_vulkan.cpp
-    src/ttauri/GUI/pipeline_box.cpp
-    src/ttauri/widgets/WindowWidget.cpp
-    src/ttauri/widgets/SystemMenuWidget.cpp
-    src/ttauri/widgets/grid_layout_widget.cpp
-    src/ttauri/widgets/WindowTrafficLightsWidget.cpp
-    src/ttauri/widgets/LineInputWidget.cpp
-    src/ttauri/widgets/widget.cpp
-    src/ttauri/stencils/glyph_stencil.cpp
-    src/ttauri/stencils/pixel_map_stencil.cpp
-    src/ttauri/stencils/text_stencil.cpp
-    src/ttauri/stencils/stencil.cpp
-    src/ttauri/application.cpp
-)
-
-if(MSVC)
-    if(TT_ENABLE_ANALYSIS)
+if(TT_ENABLE_ANALYSIS)
+    if(MSVC)
+        set(ttauri_do_not_analyze
+            src/ttauri/GUI/pipeline_flat.cpp
+            src/ttauri/GUI/gui_window_vulkan.cpp
+            src/ttauri/GUI/gui_device_vulkan.cpp
+            src/ttauri/GUI/gui_system_vulkan.cpp
+            src/ttauri/GUI/gui_system.cpp
+            src/ttauri/GUI/gui_system_vulkan_win32.cpp
+            src/ttauri/GUI/gui_window.cpp
+            src/ttauri/GUI/gui_window_vulkan_win32.cpp
+            src/ttauri/GUI/pipeline_flat_device_shared.cpp
+            src/ttauri/GUI/pipeline_image.cpp
+            src/ttauri/GUI/pipeline_tone_mapper.cpp
+            src/ttauri/GUI/pipeline_image_texture_map.cpp
+            src/ttauri/GUI/pipeline_box_device_shared.cpp
+            src/ttauri/GUI/pipeline_image_device_shared.cpp
+            src/ttauri/GUI/pipeline_tone_mapper_device_shared.cpp
+            src/ttauri/GUI/pipeline_image_image.cpp
+            src/ttauri/GUI/pipeline_SDF_texture_map.cpp
+            src/ttauri/GUI/pipeline_SDF_device_shared.cpp
+            src/ttauri/GUI/pipeline_SDF_atlas_rect.cpp
+            src/ttauri/GUI/pipeline_SDF.cpp
+            src/ttauri/GUI/pipeline_vulkan.cpp
+            src/ttauri/GUI/pipeline_box.cpp
+            src/ttauri/widgets/WindowWidget.cpp
+            src/ttauri/widgets/SystemMenuWidget.cpp
+            src/ttauri/widgets/grid_layout_widget.cpp
+            src/ttauri/widgets/WindowTrafficLightsWidget.cpp
+            src/ttauri/widgets/LineInputWidget.cpp
+            src/ttauri/widgets/widget.cpp
+            src/ttauri/stencils/glyph_stencil.cpp
+            src/ttauri/stencils/pixel_map_stencil.cpp
+            src/ttauri/stencils/text_stencil.cpp
+            src/ttauri/stencils/stencil.cpp
+            src/ttauri/application.cpp
+        )
         set_source_files_properties(${ttauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
         target_compile_options(ttauri PUBLIC -analyze)
         #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)

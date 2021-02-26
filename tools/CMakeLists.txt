@@ -1,5 +1,5 @@
 
-project(TTauri_Utilities C)
+project(ttauri_utilities C)
 
 #-------------------------------------------------------------------
 # Build Target: BinaryToCPP                             (executable)
