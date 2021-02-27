@@ -29,6 +29,15 @@ endif()
 if(WIN32)
     # Build for a Windows 10 host system.
     set(CMAKE_SYSTEM_VERSION 10.0)
+
+    # When we build statically:
+    if(NOT BUILD_SHARED_LIBS)
+        # Select MSVC runtime based on CMAKE_MSVC_RUNTIME_LIBRARY.
+        # We switch from the multi-threaded dynamically-linked library (default)
+        # to the multi-threaded statically-linked runtime library.
+        cmake_policy(SET CMP0091 NEW)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
 endif()
 #-------------------------------------------------------------------
 # Project

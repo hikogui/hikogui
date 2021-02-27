@@ -8,11 +8,21 @@
 # Environment Variables: https://vcpkg.readthedocs.io/en/latest/users/config-environment/
 #
 
+set(VCPKG_VERBOSE ON)
+
 # X_VCPKG_APPLOCAL_DEPS_INSTALL depends on CMake policy CMP0087
 if(POLICY CMP0087)
     cmake_policy(SET CMP0087 NEW)
 endif()
 
+#
+# Install vcpkg dependencies automatically.
+#
+
+# Copy dependencies into the output directory for executables.
+set(VCPKG_APPLOCAL_DEPS ON)
+
+# Copy dependencies into the install target directory for executables.
 set(X_VCPKG_APPLOCAL_DEPS_INSTALL ON)
 
 # == VCPKG_ROOT
