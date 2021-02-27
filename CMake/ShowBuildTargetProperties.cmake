@@ -7,20 +7,32 @@
 #
 
 function(show_build_target_property target property)
+  if(NOT TARGET ${target})
+    message("There is no target named '${target}'.")
+    return()
+  endif()
+
   get_target_property(values ${target} ${property})
   if(values)
     if(NOT "${values}" STREQUAL "${property}-NOTFOUND")
-      message(STATUS "[${target}] ${property}:\n'${values}'\n")
+      message(STATUS "[${target}] ${property} -> '${values}'")
     endif()
   endif()
 endfunction()
 
 function(show_build_target_properties target)
-  message(STATUS "[INFO] Properties of Build Target '${target}':\n")
-  show_build_target_property(${target} INCLUDE_DIRECTORIES)
-  show_build_target_property(${target} LINK_LIBRARIES)
-  show_build_target_property(${target} LINK_FLAGS)
-  show_build_target_property(${target} COMPILE_OPTIONS)
-  show_build_target_property(${target} COMPILE_DEFINITIONS)
-  show_build_target_property(${target} CMAKE_EXE_LINKER_FLAGS)
+  message(STATUS "[INFO] Properties of Build Target '${target}':")
+  set(properties
+    SOURCE_DIR
+    BINARY_DIR
+    INCLUDE_DIRECTORIES
+    LINK_LIBRARIES
+    LINK_FLAGS
+    COMPILE_OPTIONS
+    COMPILE_DEFINITIONS
+    CMAKE_EXE_LINKER_FLAGS
+  )
+  foreach (prop ${properties})
+    show_build_target_property(${target} ${prop})
+  endforeach()
 endfunction()
