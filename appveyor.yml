@@ -28,18 +28,34 @@ environment:
   VULKAN_SDK: "C:\\VulkanSDK\\%VULKAN_VERSION%"
   # the build matrix
   matrix:
-    # MSVC
+    #
+    # MSVC 2019 - Release
+    #
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
       APPVEYOR_JOB_NAME: windows-msvc2019
       BUILD_TYPE: Release
       COMPILER: MSVC19
-      PLATFORM: x64
-    # Clang
+    #
+    # MSVC - Debug
+    #
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+      APPVEYOR_JOB_NAME: windows-msvc2019
+      BUILD_TYPE: Debug
+      COMPILER: MSVC19
+    #
+    # Clang - Release
+    #
+    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #  APPVEYOR_JOB_NAME: windows-clangcl
+    #  BUILD_TYPE: Release
+    #  COMPILER: CLANG
+    #
+    # Clang - Debug
+    #
     #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     #  APPVEYOR_JOB_NAME: windows-clangcl
     #  BUILD_TYPE: Debug
     #  COMPILER: CLANG
-    #  PLATFORM: x64
 
 #matrix:
   # let the whole build fail immediately, if one of the job fails

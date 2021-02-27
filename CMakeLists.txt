@@ -3,15 +3,11 @@ cmake_minimum_required(VERSION 3.19)
 
 #-------------------------------------------------------------------
 # Build Options
-#
-# These variables are project-wide and can be used with CMake-GUI.
 #-------------------------------------------------------------------
 
 option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
-option(TT_BUILD_DOCS        "Build documentation"               OFF)
 option(TT_BUILD_EXAMPLES    "Build example applications"         ON)
 option(TT_BUILD_TESTS       "Build tests"                        ON)
-option(TT_BUILD_OPTIMIZED   "Build optimized Releases"           ON)
 option(TT_BUILD_PCH         "Build precompiled headers"          ON)
 option(TT_INSTALL           "Generate installation target"       ON)
 option(TT_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
@@ -25,29 +21,15 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-if(TT_BUILD_OPTIMIZED)
-
-    # Global Compiler flags for optimized Release and RelWithDebugInfo builds
-    if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-        set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
-    endif()
-
+# Global Compiler flags for optimized Release and RelWithDebugInfo builds
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
 endif()
 
 if(WIN32)
     # Build for a Windows 10 host system.
     set(CMAKE_SYSTEM_VERSION 10.0)
-
-    # When we build statically:
-    if(NOT BUILD_SHARED_LIBS)
-        # Select MSVC runtime based on CMAKE_MSVC_RUNTIME_LIBRARY.
-        # We switch from the multi-threaded dynamically-linked library (default)
-        # to the multi-threaded statically-linked runtime library.
-        cmake_policy(SET CMP0091 NEW)
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    endif()
 endif()
-
 #-------------------------------------------------------------------
 # Project
 #-------------------------------------------------------------------
@@ -123,19 +105,16 @@ add_subdirectory(external/RenderDoc)
 #
 # date
 #
-#set(date_DIR "${VCPKG_DIR}/share/date")
 find_package(date CONFIG REQUIRED)
 
 #
 # fmt
 #
-#set(fmt_DIR "${VCPKG_DIR}/share/fmt")
 find_package(fmt CONFIG REQUIRED)
 
 #
 # GoogleTest
 #
-#set(GTest_DIR "${VCPKG_DIR}/share/gtest")
 #find_package(GTest)
 
 #
@@ -152,7 +131,6 @@ add_subdirectory(external/googletest)
 #
 # Vulkan Memory Allocator
 #
-#set(unofficial-vulkan-memory-allocator_DIR "${VCPKG_DIR}/share/unofficial-vulkan-memory-allocator")
 find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 
 #
@@ -319,7 +297,7 @@ elseif (MSVC)
         # -sdl forces deprecated warnings as errors so also not useful during development.
         #target_compile_options(ttauri PUBLIC -sdl)
 
-        # Just my code enables the VS debugger to steps over system, framework, library, and other non-user calls
+        # Just my code enables the VS debugger to step over system, framework, library, and other non-user calls.
         target_compile_options(ttauri PUBLIC -JMC)
     endif()
 endif()
@@ -402,6 +380,8 @@ add_dependencies(ttauri ttauri_resources)
 # Installation Rules: ttauri                               (library)
 #-------------------------------------------------------------------
 
+include(GNUInstallDirs)
+
 if(WIN32)
 
     install(TARGETS ttauri RESOURCE)
@@ -467,7 +447,7 @@ if(TT_BUILD_TESTS)
 endif()
 
 #-------------------------------------------------------------------
-# Installation Rules: ttauri_tests
+# Installation Rules: ttauri_tests                      (executable)
 #-------------------------------------------------------------------
 
 install(TARGETS ttauri_tests DESTINATION tests)
@@ -549,37 +529,34 @@ endif()
 # Build Documentation
 #-------------------------------------------------------------------
 
-if(TT_BUILD_DOCS)
+#
+# Doxygen
+#
+find_package(Doxygen)
 
-    #
-    # Doxygen
-    #
-    find_package(Doxygen)
+if(DOXYGEN_FOUND)
+    set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
+    set(DOXYGEN_GENERATE_HTML YES)
+    set(DOXYGEN_GENERATE_XML NO)
+    set(DOXYGEN_GENERATE_LATEX NO)
+    set(DOXYGEN_GENERATE_PDF NO)
+    set(DOXYGEN_QUIET YES)
+    set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
+    set(DOXYGEN_WARN_NO_PARAMDOC NO)
 
-    if(DOXYGEN_FOUND)
-        set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
-        set(DOXYGEN_GENERATE_HTML YES)
-        set(DOXYGEN_GENERATE_XML NO)
-        set(DOXYGEN_GENERATE_LATEX NO)
-        set(DOXYGEN_GENERATE_PDF NO)
-        set(DOXYGEN_QUIET YES)
-        set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-        set(DOXYGEN_WARN_NO_PARAMDOC NO)
+    set(DOXYGEN_STRIP_FROM_PATH src)
+    set(DOXYGEN_STRIP_FROM_INC_PATH src)
 
-        set(DOXYGEN_STRIP_FROM_PATH src)
-        set(DOXYGEN_STRIP_FROM_INC_PATH src)
+    set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
+    set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
+    set(DOXYGEN_INLINE_INHERITED_MEMB YES)
+    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
+    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+    set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
 
-        set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
-        set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
-        set(DOXYGEN_INLINE_INHERITED_MEMB YES)
-        set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
-        set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-        set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
+    set(DOXYGEN_EXTRACT_ALL YES)
 
-        set(DOXYGEN_EXTRACT_ALL YES)
-
-        doxygen_add_docs(doc src/ttauri docs)
-    else()
-        message("Please install Doxygen to generate the documentation.")
-    endif()
+    doxygen_add_docs(doc src/ttauri docs)
+else()
+    message("Please install Doxygen to generate the documentation.")
 endif()
