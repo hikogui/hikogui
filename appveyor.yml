@@ -165,7 +165,7 @@ build_script:
   #
   # install
   #
-  - cmake --install ..\ttauri-build --prefix ..\ttauri-install --strip --verbose
+  - cmake --install ..\ttauri-build --config %BUILD_TYPE% --prefix ..\ttauri-install --strip --verbose
 
 after_build:
    # Check if all build artifacts are present, before packaging
