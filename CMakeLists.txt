@@ -21,16 +21,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-# Global Compiler flags for optimized Release and RelWithDebugInfo builds
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
-endif()
-
 if(WIN32)
     # Build for a Windows 10 host system.
     set(CMAKE_SYSTEM_VERSION 10.0)
 
-    # When we build statically:
+    message(STATUS "[INFO] BUILD_SHARED_LIBS -> '${BUILD_SHARED_LIBS}'.")
+
+    # When we build statically (MT):
     if(NOT BUILD_SHARED_LIBS)
         # Select MSVC runtime based on CMAKE_MSVC_RUNTIME_LIBRARY.
         # We switch from the multi-threaded dynamically-linked library (default)
@@ -38,7 +35,16 @@ if(WIN32)
         cmake_policy(SET CMP0091 NEW)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif()
+
+
+    # Global Compiler flags for optimized Release and RelWithDebugInfo builds
+    # All overrides are for multi-threaded dynamically-linked libs: MD + MDd.
+    if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+        set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
+    endif()
+
 endif()
+
 #-------------------------------------------------------------------
 # Project
 #-------------------------------------------------------------------
@@ -201,6 +207,8 @@ target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+target_compile_features(ttauri INTERFACE cxx_std_20)
 
 #
 # We will support the following CPUs:
@@ -462,6 +470,9 @@ endif()
 install(TARGETS ttauri_tests DESTINATION tests)
 
 install(DIRECTORY tests/data/ DESTINATION tests)
+
+# experimental
+x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
 
 #-------------------------------------------------------------------
 # Build examples

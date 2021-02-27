@@ -1,7 +1,7 @@
 ﻿{
   "configurations": [
     {
-      "name": "x64-Analysis",
+      "name": "x64-MSVC-Analysis",
       "generator": "Ninja",
       "configurationType": "Debug",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
@@ -17,15 +17,15 @@
           "type": "STRING"
         },
         {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "OFF",
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows",
           "type": "STRING"
         }
       ],
       "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
     },
     {
-      "name": "x64-Debug",
+      "name": "x64-MSVC-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
@@ -36,13 +36,47 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "variables": [
         {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "OFF",
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows",
           "type": "STRING"
-        },
+        }
+      ],
+      "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
+    },
+    {
+      "name": "x64-MSVC-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
         {
           "name": "VCPKG_TARGET_TRIPLET",
-          "value": "x64-windows-static",
+          "value": "x64-windows",
+          "type": "STRING"
+        }
+      ],
+      "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
+    },
+
+    {
+      "name": "x64-MSVC-ReleaseWithDebugInfo",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows",
           "type": "STRING"
         }
       ],
@@ -61,27 +95,8 @@
       "inheritEnvironments": [ "clang_cl_x64" ],
       "variables": [
         {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "OFF",
-          "type": "STRING"
-        }
-      ],
-      "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
-    },
-    {
-      "name": "x64-Release",
-      "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": [
-        {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "OFF",
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows",
           "type": "STRING"
         }
       ],
@@ -89,6 +104,25 @@
     },
     {
       "name": "x64-Clang-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "clang_cl_x64" ],
+      "variables": [
+        {
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows",
+          "type": "STRING"
+        }
+      ],
+      "cmakeExecutable": "E:/tools/vcpkg/downloads/tools/cmake-3.19.2-windows/cmake-3.19.2-win32-x86/bin/cmake.exe"
+    },
+    {
+      "name": "x64-Clang-ReleaseWithDebugInfo",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
@@ -99,8 +133,8 @@
       "inheritEnvironments": [ "clang_cl_x64" ],
       "variables": [
         {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "OFF",
+          "name": "VCPKG_TARGET_TRIPLET",
+          "value": "x64-windows",
           "type": "STRING"
         }
       ],

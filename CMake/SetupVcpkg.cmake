@@ -8,24 +8,39 @@
 # Environment Variables: https://vcpkg.readthedocs.io/en/latest/users/config-environment/
 #
 
-set(VCPKG_VERBOSE ON)
+set(VCPKG_ENABLED on)
 
-# X_VCPKG_APPLOCAL_DEPS_INSTALL depends on CMake policy CMP0087
-if(POLICY CMP0087)
-    cmake_policy(SET CMP0087 NEW)
+if(DEFINED ENV{VCPKG_VERBOSE} AND NOT DEFINED VCPKG_VERBOSE)
+    set(VCPKG_VERBOSE "$ENV{VCPKG_VERBOSE}" CACHE BOOL "")
 endif()
 
 #
-# Install vcpkg dependencies automatically.
+# -- Automatic install of vcpkg dependencies.
+#
+# This is experimental.
+# See https://github.com/Microsoft/vcpkg/issues/1653
 #
 
+set(VCPKG_APPLOCAL_DEPS_INSTALL ON)
+
 # Copy dependencies into the output directory for executables.
-set(VCPKG_APPLOCAL_DEPS ON)
+if(DEFINED ENV{VCPKG_APPLOCAL_DEPS} AND NOT DEFINED VCPKG_APPLOCAL_DEPS)
+    set(VCPKG_APPLOCAL_DEPS "$ENV{VCPKG_APPLOCAL_DEPS}" CACHE BOOL "")
+endif()
 
 # Copy dependencies into the install target directory for executables.
-set(X_VCPKG_APPLOCAL_DEPS_INSTALL ON)
+if(DEFINED ENV{X_VCPKG_APPLOCAL_DEPS_INSTALL} AND NOT DEFINED VCPKG_APPLOCAL_DEPS)
 
-# == VCPKG_ROOT
+    # X_VCPKG_APPLOCAL_DEPS_INSTALL depends on CMake policy CMP0087
+    if(POLICY CMP0087)
+        cmake_policy(SET CMP0087 NEW)
+    endif()
+    
+    set(X_VCPKG_APPLOCAL_DEPS_INSTALL "$ENV{X_VCPKG_APPLOCAL_DEPS_INSTALL}" CACHE BOOL "")
+endif()
+
+#
+# --  VCPKG_ROOT
 #
 # Please set VCPKG_ROOT on your env: export VCPKG_ROOT=/opt/vcpkg/bin
 # This avoids passing it on the configure line: -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
@@ -34,7 +49,8 @@ if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 endif()
 
-# == VCPKG_FEATURE_FLAGS
+#
+# -- VCPKG_FEATURE_FLAGS
 #
 # This env var can be set to a comma-separated list of off-by-default features in vcpkg.
 #
@@ -50,7 +66,8 @@ if(NOT DEFINED ENV{VCPKG_FEATURE_FLAGS})
     set(ENV{VCPKG_FEATURE_FLAGS} "manifests")
 endif()
 
-# == VCPKG_TARGET_TRIPLET
+#
+# -- VCPKG_TARGET_TRIPLET
 #
 # A triplet defines the build target environment in a compact string.
 # [target-architecture]-[platform]-[linkage type]
@@ -68,13 +85,15 @@ if(DEFINED ENV{VCPKG_TARGET_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
     set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_TARGET_TRIPLET}" CACHE STRING "")
 endif()
 
-# == VCPKG_DEFAULT_TRIPLET
+#
+# -- VCPKG_DEFAULT_TRIPLET
 #
 if(DEFINED ENV{VCPKG_DEFAULT_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
   set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}" CACHE STRING "")
 endif()
 
-# == VCPKG_DIR
+#
+# -- VCPKG_DIR
 #
 # VCPKG_DIR is the root folder for all compiled packages, e.g.
 # the local /project/vcpkg_installed/x64-windows
@@ -113,6 +132,8 @@ source_group("vcpkg" FILES
 message(STATUS "")
 message(STATUS "[VCPKG]  Configuration Overview:")
 message(STATUS "")
+message(STATUS "[VCPKG]  VCPKG_VERBOSE           -> '${VCPKG_VERBOSE}'")
+message(STATUS "[VCPKG]  VCPKG_APPLOCAL_DEPS     -> '${VCPKG_APPLOCAL_DEPS}'")
 message(STATUS "[VCPKG]  VCPKG_FEATURE_FLAGS     -> '$ENV{VCPKG_FEATURE_FLAGS}'")
 message(STATUS "[VCPKG]  VCPKG_ROOT              -> '$ENV{VCPKG_ROOT}'")
 message(STATUS "[VCPKG]  CMAKE_TOOLCHAIN_FILE    -> '${CMAKE_TOOLCHAIN_FILE}'")

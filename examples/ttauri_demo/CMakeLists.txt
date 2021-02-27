@@ -58,3 +58,7 @@ install(DIRECTORY ../../resources/  DESTINATION examples/ttauri_demo/data)
 
 install(DIRECTORY ../../external/tzdata/ DESTINATION examples/ttauri_demo/data/tzdata)
 
+# copy vcpkg dependencies (experimental)
+
+x_vcpkg_install_local_dependencies(TARGETS ttauri_demo DESTINATION examples/ttauri_demo)
+

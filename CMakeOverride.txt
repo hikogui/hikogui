@@ -21,9 +21,9 @@ cmake_policy(SET CMP0054 NEW)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # RelWithDebugInfo - MultiThreadedDLL
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-MD -Zi -O2 -Ob2 -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT "-MD -Zi -O2 -Ob2 -DNDEBUG")
-  #set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -debug")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT            "-MD -Zi -O2 -Ob2 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT              "-MD -Zi -O2 -Ob2 -DNDEBUG")
+  #set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-INCREMENTAL:NO -debug")
   #set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -debug")
   #set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -debug")
 
@@ -35,31 +35,42 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
 
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # using Visual Studio C++
-  set(CMAKE_C_FLAGS_INIT "-DWIN32 -D_WINDOWS -nologo")
-  set(CMAKE_CXX_FLAGS_INIT "-DWIN32 -D_WINDOWS -GR -EHsc -nologo")
-  set(CMAKE_EXE_LINKER_FLAGS_INIT "-machine:x64 -nologo")
+  set(CMAKE_C_FLAGS_INIT             "-DWIN32 -D_WINDOWS -nologo")
+  set(CMAKE_CXX_FLAGS_INIT           "-DWIN32 -D_WINDOWS -GR -EHsc -nologo")
+  set(CMAKE_EXE_LINKER_FLAGS_INIT    "-machine:x64 -nologo")
   set(CMAKE_MODULE_LINKER_FLAGS_INIT "-machine:x64 -nologo")
   set(CMAKE_SHARED_LINKER_FLAGS_INIT "-machine:x64 -nologo")
   set(CMAKE_STATIC_LINKER_FLAGS_INIT "-machine:x64 -nologo")
 
   # Debug - MultiThreadedDebugDLL
-  set(CMAKE_CXX_FLAGS_DEBUG_INIT "-MDd -Zi -Ob0 -Od")
-  set(CMAKE_C_FLAGS_DEBUG_INIT "-MDd -Zi -Ob0 -Od")
-  set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT "-INCREMENTAL:NO -debug")
+  set(CMAKE_CXX_FLAGS_DEBUG_INIT           "-Zi -Ob0 -Od") # -MDd 
+  set(CMAKE_C_FLAGS_DEBUG_INIT             "-Zi -Ob0 -Od") # -MDd 
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT    "-INCREMENTAL:NO -debug")
   set(CMAKE_MODULE_LINKER_FLAGS_DEBUG_INIT "-INCREMENTAL:NO -debug")
   set(CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT "-INCREMENTAL:NO -debug")
 
   # Release - MultiThreadedDLL
-  set(CMAKE_CXX_FLAGS_RELEASE_INIT "-MD -O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELEASE_INIT "-MD -O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO -LTCG")
+  set(CMAKE_CXX_FLAGS_RELEASE_INIT           "-O2 -Ob3 -GL -DNDEBUG") # -MD
+  set(CMAKE_C_FLAGS_RELEASE_INIT             "-O2 -Ob3 -GL -DNDEBUG") # -MD
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT    "-INCREMENTAL:NO -LTCG")
   set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO -LTCG")
   set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO -LTCG")
 
   # RelWithDebugInfo - MultiThreadedDLL
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "-MD -Zi -O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT "-MD -Zi -O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
+  #
+  # This build_type is important, because we need to step through the
+  # assembly of the optimized release build, while having debug information.
+  # 
+  # MD:     MultiThreadedDLL
+  # Zi:     Produce a separate PDB file (debug symbols)
+  # O2:     Maximize Speed
+  # Ob3:    Aggressive Inline Function Expansion
+  # GL:     Whole Program Optimization
+  # NDEBUG: Assertion checks turned off at compile time 
+  #
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT           "-Zi -O2 -Ob3 -GL -DNDEBUG") # -MD
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT             "-Zi -O2 -Ob3 -GL -DNDEBUG") # -MD
+  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-INCREMENTAL:NO -LTCG -debug")
   set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
   set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
 endif()
