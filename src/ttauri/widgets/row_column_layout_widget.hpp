@@ -115,13 +115,8 @@ private:
                 child_length
             };
 
-        ttlet child_window_rectangle = translate2{_window_rectangle} * child_rectangle;
 
-        if constexpr (arrangement == arrangement::row) {
-            child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
-        } else {
-            child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle);
-        }
+        child.set_layout_parameters_from_parent(child_rectangle, _clipping_rectangle);
     }
 };
 

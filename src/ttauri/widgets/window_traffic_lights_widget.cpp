@@ -54,7 +54,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
     if (need_layout) {
         auto extent = rectangle().extent();
         if (extent.height() > theme::global->toolbarHeight * 1.2f) {
-            extent = f32x4{extent.width(), theme::global->toolbarHeight};
+            extent = extent2{extent.width(), theme::global->toolbarHeight};
         }
         auto y = rectangle().height() - extent.height();
 
@@ -196,7 +196,7 @@ void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::t
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (overlaps(context, this->window_clipping_rectangle())) {
+    if (overlaps(context, _clipping_rectangle)) {
         if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
             drawMacOS(context, display_time_point);
 
@@ -218,12 +218,11 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
 
     // Check the hover states of each button.
     auto stateHasChanged = false;
-    ttlet position = _from_window_transform * event.position;
-    stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(position));
-    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(position));
-    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(position));
+    stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(event.position));
+    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(event.position));
+    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(event.position));
     if (stateHasChanged) {
-        window.request_redraw(window_clipping_rectangle());
+        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
     }
 
     if (event.cause.leftButton) {
@@ -248,14 +247,14 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
                 }
             }
 
-            window.request_redraw(window_clipping_rectangle());
+            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
             pressedClose = false;
             pressedMinimize = false;
             pressedMaximize = false;
             break;
 
         case ButtonDown:
-            window.request_redraw(window_clipping_rectangle());
+            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
             pressedClose = hoverClose;
             pressedMinimize = hoverMinimize;
             pressedMaximize = hoverMaximize;
@@ -266,12 +265,11 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
     return handled;
 }
 
-hit_box window_traffic_lights_widget::hitbox_test(f32x4 window_position) const noexcept
+hit_box window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    ttlet position = _from_window_transform * window_position;
 
-    if (_window_clipping_rectangle.contains(window_position)) {
+    if (rectangle().contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, hit_box::Type::Button};
         } else {

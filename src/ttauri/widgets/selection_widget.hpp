@@ -130,7 +130,7 @@ public:
                 ttlet overlay_y = std::round(_window_rectangle.middle() - overlay_height * 0.5f);
                 ttlet overlay_rectangle = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
 
-                _overlay_widget->set_layout_parameters(overlay_rectangle, overlay_rectangle);
+                _overlay_widget->set_layout_parameters_from_parent(overlay_rectangle, overlay_rectangle);
             }
         }
 
@@ -179,7 +179,7 @@ public:
         if (event.cause.leftButton) {
             handled = true;
             if (*enabled) {
-                if (event.type == mouse_event::Type::ButtonUp && _window_rectangle.contains(event.position)) {
+                if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
                     handle_event(command::gui_activate);
                 }
             }
@@ -330,8 +330,8 @@ private:
     void stop_selecting() noexcept
     {
         _selecting = false;
-        window.request_redraw(_overlay_widget->window_rectangle());
-        window.request_redraw(window_rectangle());
+        window.request_redraw(aarect{_overlay_widget->local_to_window() * _overlay_widget->clipping_rectangle()});
+        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
     }
 
     /** Populate the scroll view with menu items corresponding to the options.

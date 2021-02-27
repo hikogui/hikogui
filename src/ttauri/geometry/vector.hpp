@@ -34,6 +34,18 @@ public:
         tt_axiom(is_valid());
     }
 
+    /** Construct a vector from a higher dimension vector.
+     * This will clear the values in the higher dimensions.
+     */
+    template<int E>
+    requires(E > D) [[nodiscard]] constexpr explicit vector(vector<E> const &other) noexcept : _v(static_cast<f32x4>(other))
+    {
+        for (size_t i = D; i != E; ++i) {
+            _v[i] = 0.0f;
+        }
+        tt_axiom(is_valid());
+    }
+
     /** Convert a vector to its f32x4-nummeric_array.
      */
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
@@ -234,6 +246,22 @@ public:
     [[nodiscard]] constexpr bool is_valid() const noexcept
     {
         return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
+    }
+
+    [[nodiscard]] friend std::string to_string(vector const &rhs) noexcept
+    {
+        if constexpr (D == 2) {
+            return fmt::format("({}, {})", rhs._v.x(), rhs._v.y());
+        } else if constexpr (D == 3) {
+            return fmt::format("({}, {}, {})", rhs._v.x(), rhs._v.y(), rhs._v.z());
+        } else {
+            tt_static_no_default();
+        }
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, vector const &rhs) noexcept
+    {
+        return lhs << to_string(rhs);
     }
 
 private:

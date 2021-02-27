@@ -33,9 +33,13 @@ namespace tt {
  */
 class draw_context {
 public:
+    /** This is the rectangle of the window that is being redrawn.
+     * The scissor rectangle, like drawing coordinates are relative to the widget.
+     */
+    aarect scissor_rectangle;
+
     /** The clipping rectangle when drawing.
-     * The clipping rectangle is passes as-is to the pipelines and
-     * is not modified by the transform.
+     * The clipping rectangle, like drawing coordinates are relative to the widget.
      */
     aarect clipping_rectangle;
 
@@ -53,7 +57,7 @@ public:
         vspan<pipeline_image::vertex> &imageVertices,
         vspan<pipeline_SDF::vertex> &sdfVertices) noexcept :
         _window(&window),
-        _scissor_rectangle(scissor_rectangle),
+        scissor_rectangle(scissor_rectangle),
         _flat_vertices(&flatVertices),
         _box_vertices(&boxVertices),
         _image_vertices(&imageVertices),
@@ -95,10 +99,10 @@ public:
     void draw_filled_quad(f32x4 p1, f32x4 p2, f32x4 p3, f32x4 p4, color fill_color) const noexcept
     {
         tt_axiom(_flat_vertices != nullptr);
-        _flat_vertices->emplace_back(transform * p1, clipping_rectangle, fill_color);
-        _flat_vertices->emplace_back(transform * p2, clipping_rectangle, fill_color);
-        _flat_vertices->emplace_back(transform * p3, clipping_rectangle, fill_color);
-        _flat_vertices->emplace_back(transform * p4, clipping_rectangle, fill_color);
+        _flat_vertices->emplace_back(aarect{transform * clipping_rectangle}, transform * p1, fill_color);
+        _flat_vertices->emplace_back(aarect{transform * clipping_rectangle}, transform * p2, fill_color);
+        _flat_vertices->emplace_back(aarect{transform * clipping_rectangle}, transform * p3, fill_color);
+        _flat_vertices->emplace_back(aarect{transform * clipping_rectangle}, transform * p4, fill_color);
     }
 
     /** Draw a rectangle of one color.
@@ -245,7 +249,7 @@ public:
     {
         tt_axiom(_image_vertices != nullptr);
 
-        image.placeVertices(*_image_vertices, transform, clipping_rectangle);
+        image.place_vertices(*_image_vertices, aarect{transform * clipping_rectangle}, transform);
     }
 
     /** Draw shaped text.
@@ -263,11 +267,11 @@ public:
         tt_axiom(_sdf_vertices != nullptr);
 
         if (text_color) {
-            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-                *_sdf_vertices, text, transform, clipping_rectangle, *text_color);
+            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+                *_sdf_vertices, aarect{transform * clipping_rectangle}, transform, text, *text_color);
         } else {
-            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-                *_sdf_vertices, text, transform, clipping_rectangle);
+            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+                *_sdf_vertices, aarect{transform * clipping_rectangle}, transform, text);
         }
     }
 
@@ -275,22 +279,18 @@ public:
     {
         tt_axiom(_sdf_vertices != nullptr);
 
-        narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-            *_sdf_vertices, glyph, transform * box, text_color, clipping_rectangle);
+        narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+            *_sdf_vertices, aarect{transform * clipping_rectangle}, transform * box, glyph, text_color);
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, aarect const &rectangle) noexcept
     {
-        return overlaps(context._scissor_rectangle, rectangle);
+        return overlaps(context.scissor_rectangle, rectangle);
     }
 
 private:
     gui_window *_window;
 
-public:
-    aarect _scissor_rectangle;
-
-private:
     vspan<pipeline_flat::vertex> *_flat_vertices;
     vspan<pipeline_box::vertex> *_box_vertices;
     vspan<pipeline_image::vertex> *_image_vertices;

@@ -199,7 +199,7 @@ public:
      */
     virtual void set_text_on_clipboard(std::string str) noexcept = 0;
 
-    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, f32x4 position = f32x4{0.0f, 0.0f}) noexcept;
+    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, point2 position = {}) noexcept;
 
     /** Change the keyboard focus to the given widget.
      * If the group of the widget is incorrect then no widget will be in focus.
@@ -248,7 +248,7 @@ protected:
      * It may also be used for the extent of the window when the GPU
      * library is unable to determine the extent of the surface.
      */
-    iaarect _screen_rectangle;
+    aarect _screen_rectangle;
 
     bool _request_setting_change = true;
 

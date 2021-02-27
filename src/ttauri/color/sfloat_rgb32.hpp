@@ -33,6 +33,19 @@ public:
         return f32x4{v};
     }
 
+    sfloat_rgb32(point3 const &rhs) noexcept : v(static_cast<std::array<float, 3>>(static_cast<f32x4>(rhs))) {}
+
+    sfloat_rgb32 &operator=(point3 const &rhs) noexcept
+    {
+        v = static_cast<std::array<float, 3>>(static_cast<f32x4>(rhs));
+        return *this;
+    }
+
+    operator point3() const noexcept
+    {
+        return point3{f32x4{v}};
+    }
+
     [[nodiscard]] friend bool operator==(sfloat_rgb32 const &lhs, sfloat_rgb32 const &rhs) noexcept {
         return lhs.v == rhs.v;
     }

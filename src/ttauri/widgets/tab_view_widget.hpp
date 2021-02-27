@@ -62,7 +62,7 @@ public:
         if (need_layout) {
             for (auto &child : _children) {
                 tt_axiom(child);
-                child->set_layout_parameters(_window_rectangle, _window_clipping_rectangle, _window_base_line);
+                child->set_layout_parameters_from_parent(rectangle(), _clipping_rectangle);
             }
         }
 

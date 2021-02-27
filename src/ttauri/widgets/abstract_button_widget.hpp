@@ -78,10 +78,10 @@ public:
             handled = true;
             if (*enabled) {
                 if (compare_then_assign(_pressed, static_cast<bool>(event.down.leftButton))) {
-                    window.request_redraw(window_clipping_rectangle());
+                    window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
                 }
 
-                if (event.type == mouse_event::Type::ButtonUp && _window_rectangle.contains(event.position)) {
+                if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
                     handled |= handle_event(command::gui_activate);
                 }
             }

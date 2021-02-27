@@ -92,7 +92,7 @@ public:
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             // A tab button widget draws beyond its clipping rectangle.
-            this->window.request_redraw(this->window_clipping_rectangle());
+            this->window.request_redraw(aarect{this->_local_to_window * this->_clipping_rectangle});
 
             ttlet offset = theme::global->margin + theme::global->borderWidth;
             _button_rectangle = aarect{
@@ -178,7 +178,7 @@ private:
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
         // so that the bottom border of the tab button is not drawn.
-        context.clipping_rectangle = this->parent().window_rectangle();
+        context.clipping_rectangle = this->_parent_to_local * this->parent().clipping_rectangle();
 
         auto button_color = (this->_hover || *this->value == this->true_value) ?
             theme::global->fillColor(this->_semantic_layer - 1) :

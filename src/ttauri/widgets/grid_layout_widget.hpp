@@ -88,12 +88,6 @@ private:
 
             return {x, y, width, height};
         };
-
-        [[nodiscard]] relative_base_line base_line(flow_layout const &rows) const noexcept
-        {
-            ttlet aligned_row_nr = address.row.aligned_to(rows.nr_items());
-            return rows.get_base_line(aligned_row_nr);
-        }
     };
 
     std::vector<cell> _cells;

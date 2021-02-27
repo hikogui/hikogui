@@ -34,12 +34,12 @@ public:
     }
 
     void
-    update(ssize_t index, float extent, ranged_int<3> resistance, float margin, relative_base_line base_line) noexcept
+    update(ssize_t index, float extent, ranged_int<3> resistance, float margin) noexcept
     {
         tt_axiom(index >= 0);
         tt_axiom(index < std::ssize(items));
         tt_axiom(index + 1 < std::ssize(margins));
-        items[index].update(extent, resistance, base_line);
+        items[index].update(extent, resistance);
         margins[index] = std::max(margins[index], margin);
         margins[index+1] = std::max(margins[index+1], margin);
     }
@@ -101,12 +101,6 @@ public:
         
     }
 
-    [[nodiscard]] relative_base_line get_base_line(ssize_t index) const noexcept
-    {
-        tt_axiom(index >= 0 && index < ssize(items));
-        return items[index].base_line();
-    }
-
     /** Grow layout to include upto new_size of items.
      */
     void reserve(ssize_t new_size) noexcept
@@ -124,14 +118,14 @@ public:
 
 private:
     struct flow_layout_item {
-        constexpr flow_layout_item() noexcept : _minimum_size(0.0f), _resistance(1), _base_line(), offset(-1.0f), size(-1.0f) {}
+        constexpr flow_layout_item() noexcept : _minimum_size(0.0f), _resistance(1), offset(-1.0f), size(-1.0f) {}
 
         constexpr flow_layout_item(flow_layout_item const &rhs) noexcept = default;
         constexpr flow_layout_item(flow_layout_item &&rhs) noexcept = default;
         constexpr flow_layout_item &operator=(flow_layout_item const &rhs) noexcept = default;
         constexpr flow_layout_item &operator=(flow_layout_item &&rhs) noexcept = default;
 
-        constexpr void update(float minimum_size, ranged_int<3> resistance, relative_base_line base_line) noexcept
+        constexpr void update(float minimum_size, ranged_int<3> resistance) noexcept
         {
             _minimum_size = std::max(_minimum_size, minimum_size);
             switch (static_cast<int>(resistance)) {
@@ -146,7 +140,6 @@ private:
             default:
                 tt_no_default();
             }
-            _base_line = std::max(_base_line, base_line);
         }
 
         [[nodiscard]] float minimum_size() const noexcept {
@@ -162,18 +155,12 @@ private:
             return _resistance;
         }
 
-        [[nodiscard]] relative_base_line base_line() const noexcept
-        {
-            return _base_line;
-        }
-
         float offset;
         float size;
 
     private:
         float _minimum_size;
         ranged_int<3> _resistance;
-        relative_base_line _base_line;
     };
 
     /* The margin between the items, margin[0] is the margin

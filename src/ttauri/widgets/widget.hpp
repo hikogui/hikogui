@@ -18,6 +18,7 @@
 #include "../graphic_path.hpp"
 #include "../color/sfloat_rgba16.hpp"
 #include "../color/sfloat_rg32.hpp"
+#include "../geometry/transform.hpp"
 #include "../URL.hpp"
 #include "../vspan.hpp"
 #include "../utils.hpp"
@@ -98,7 +99,6 @@ public:
     /** Convenient reference to the Window.
      */
     gui_window &window;
-
 
     /** The widget is enabled.
      */
@@ -236,25 +236,6 @@ public:
         return _preferred_size;
     }
 
-    /** Get the relative_base_line of the widget.
-     * This value is used by a container widget to align the text
-     * of its children on the same base-line.
-     *
-     * By taking `std::max()`  of the `preferred_base_line()` of all children,
-     * you will get the highest priority relative-base-line. The container
-     * can then use the `relative_base_line::position()` method to get the
-     * base-line position that should be used for all widgets in a row.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @pre `updateConstraint()` must be called first.
-     * @return A relative base-line position preferred by this widget.
-     */
-    [[nodiscard]] relative_base_line preferred_base_line() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _preferred_base_line;
-    }
-
     /** Set the location and size of the widget inside the window.
      *
      * The parent should call this `set_layout_paramters()` before this `updateLayout()`.
@@ -264,73 +245,71 @@ public:
      * layout parameters for each frame.
      *
      * @pre `mutex` must be locked by current thread.
-     * @param window_rectangle The location and size of the widget inside the window.
-     * @param window_clipping_rectangle The location and size of the clipping rectangle,
-     *                                  beyond which not to draw or accept mouse events.
-     * @param window_base_line The position of the text base-line from the bottom of the window. When not given
-     *                         the middle of the _window_rectangle is used together with the preferred
-     *                         relative base-line.
      */
-    void set_layout_parameters(
-        aarect const &window_rectangle,
-        aarect const &window_clipping_rectangle,
-        float window_base_line = std::numeric_limits<float>::infinity()) noexcept
+    void set_layout_parameters(geo::transformer auto const &parent_to_local, extent2 size, aarect const &clipping_rectangle) noexcept
     {
-        if (std::isinf(window_base_line)) {
-            window_base_line = _preferred_base_line.position(window_rectangle.bottom(), window_rectangle.top());
-        }
-
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (_window_rectangle != window_rectangle) {
-            // The previous position needs to be redrawn.
-            window.request_redraw(_window_clipping_rectangle);
-
-            _window_rectangle = window_rectangle;
-            _request_relayout = true;
+        _parent_to_local = parent_to_local;
+        _local_to_parent = ~parent_to_local;
+        if (auto parent = _parent.lock()) {
+            auto parent_ = reinterpret_cast<widget *>(parent.get());
+            _window_to_local = parent_to_local * parent_->window_to_local();
+            _local_to_window = ~parent_to_local * parent_->local_to_window();
+        } else {
+            _window_to_local = parent_to_local;
+            _local_to_window = ~parent_to_local;
         }
-
-        ttlet window_clipping_rectangle_clean =
-            intersect(window_clipping_rectangle, expand(_window_rectangle, theme::global->borderWidth));
-        if (_window_clipping_rectangle != window_clipping_rectangle_clean) {
-            _window_clipping_rectangle = window_clipping_rectangle_clean;
-            _request_relayout = true;
-        }
-
-        if (_window_base_line != window_base_line) {
-            _window_base_line = window_base_line;
-            _request_relayout = true;
-        }
+        _size = size;
+        _clipping_rectangle = clipping_rectangle;
     }
 
-    /** Get the rectangle in window coordinates.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] aarect window_rectangle() const noexcept
+    void set_layout_parameters_from_parent(aarect child_rectangle, aarect parent_clipping_rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _window_rectangle;
+
+        ttlet child_translate = translate2{child_rectangle};
+        ttlet child_size = child_rectangle.extent();
+        ttlet child_clipping_rectangle =
+            intersect(child_translate * parent_clipping_rectangle, expand(child_rectangle, margin()));
+
+        set_layout_parameters(child_translate, child_size, child_clipping_rectangle);
     }
 
-    /** Get the clipping-rectangle in window coordinates.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] virtual aarect window_clipping_rectangle() const noexcept
+    [[nodiscard]] matrix3 parent_to_local() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _window_clipping_rectangle;
+        return _parent_to_local;
     }
 
-    /** Get the base-line distance from the bottom of the window.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] float window_base_line() const noexcept
+    [[nodiscard]] matrix3 local_to_parent() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _window_base_line;
+        return _local_to_parent;
+    }
+
+    [[nodiscard]] matrix3 window_to_local() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return _window_to_local;
+    }
+
+    [[nodiscard]] matrix3 local_to_window() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return _local_to_window;
+    }
+
+    [[nodiscard]] extent2 size() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return _size;
+    }
+
+    [[nodiscard]] aarect clipping_rectangle() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return _clipping_rectangle;
     }
 
     /** Get the rectangle in local coordinates.
@@ -340,17 +319,7 @@ public:
     [[nodiscard]] aarect rectangle() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return aarect{_window_rectangle.extent()};
-    }
-
-    /** Get the base-line in local coordinates.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] float base_line() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _window_base_line - _window_rectangle.y();
+        return aarect{_size};
     }
 
     [[nodiscard]] gui_device *device() const noexcept;
@@ -359,15 +328,14 @@ public:
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
      *
-     * @param window_position The coordinate of the mouse on the window.
-     *                        Use `fromWindowTransform` to convert to widget-local coordinates.
+     * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hit_box hitbox_test(f32x4 window_position) const noexcept
+    [[nodiscard]] virtual hit_box hitbox_test(point2 position) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (_window_clipping_rectangle.contains(window_position) && _window_rectangle.contains(window_position)) {
+        if (_clipping_rectangle.contains(position) && rectangle().contains(position)) {
             return hit_box{weak_from_this(), _draw_layer};
         } else {
             return {};
@@ -418,9 +386,8 @@ public:
      * which should only be done when the data or sizes change. Because this function is called
      * on every vertical sync it should cache these calculations.
      *
-     * This function will likely call `set_window_rectangle()` and `set_window_base_line()` on
-     * its children, before calling `updateLayout()` on that child.
-     *
+     * This function will likely call `set_layout_parameters()` on its children.
+     * 
      * Subclasses should call `updateLayout()` on its children, call `updateLayout()` on its
      * base class with `forceLayout` argument to the result of `layoutRequest.exchange(false)`.
      *
@@ -568,7 +535,8 @@ public:
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
-    [[nodiscard]] static std::vector<std::shared_ptr<widget>> parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
+    [[nodiscard]] static std::vector<std::shared_ptr<widget>>
+    parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
 
 protected:
     /** Pointer to the parent widget.
@@ -584,13 +552,29 @@ protected:
      */
     bool _focus = false;
 
-    /** Transformation matrix from window coords to local coords.
+    /** Conversion of coordinates relative to the window to relative to this widget.
      */
-    matrix3 _from_window_transform;
+    matrix3 _window_to_local;
 
-    /** Transformation matrix from local coords to window coords.
+    /** Conversion of coordinates relative to this widget to relative to the window.
      */
-    matrix3 _to_window_transform;
+    matrix3 _local_to_window;
+
+    /** Conversion of coordinates relative to the parent widget to relative to this widget.
+     */
+    matrix3 _parent_to_local;
+
+    /** Conversion of coordinates relative to this widget to relative to the parent widget.
+     */
+    matrix3 _local_to_parent;
+
+    /** Size of the widget.
+     */
+    extent2 _size;
+
+    /** Clipping rectangle of the widget in local coordinates.
+     */
+    aarect _clipping_rectangle;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
@@ -600,21 +584,7 @@ protected:
      */
     bool _request_relayout = true;
 
-    /** The position of the widget on the window.
-     */
-    aarect _window_rectangle;
-
-    /** The height of the base line from the bottom of the window.
-     */
-    float _window_base_line;
-
-    /** The clipping rectangle beyond which not to draw or receive mouse events.
-     */
-    aarect _window_clipping_rectangle;
-
     interval_vec2 _preferred_size;
-
-    relative_base_line _preferred_base_line = relative_base_line{};
 
     ranged_int<3> _width_resistance = 1;
     ranged_int<3> _height_resistance = 1;

@@ -56,10 +56,11 @@ public:
      * @return a scale to transform the src_extent to the dst_extent.
      */
     template<int E, int F>
-    requires(E <= D && F <= D) [[nodiscard]] static constexpr scale uniform(vector<E> src_extent, vector<F> dst_extent) noexcept
+    requires(E <= D && F <= D) [[nodiscard]] static constexpr scale uniform(extent<E> src_extent, extent<F> dst_extent) noexcept
     {
-        tt_axiom(dst_extent.x() != 0.0f && src_extent.x() != 0.0f);
-        tt_axiom(dst_extent.y() != 0.0f && src_extent.y() != 0.0f);
+        tt_axiom(
+            dst_extent.width() != 0.0f && src_extent.width() != 0.0f && dst_extent.height() != 0.0f &&
+            src_extent.height() != 0.0f);
 
         if constexpr (D == 2) {
             ttlet non_uniform_scale = static_cast<f32x4>(dst_extent).xyxy() / static_cast<f32x4>(src_extent).xyxy();
@@ -139,12 +140,11 @@ private:
 template<int D>
 [[nodiscard]] constexpr matrix<D> matrix<D>::uniform(aarect src_rectangle, aarect dst_rectangle, alignment alignment) noexcept
 {
-    ttlet scale = tt::geo::scale<D>::uniform(vector2{src_rectangle.extent()}, vector2{dst_rectangle.extent()});
+    ttlet scale = tt::geo::scale<D>::uniform(src_rectangle.extent(), dst_rectangle.extent());
     ttlet scaled_rectangle = scale * src_rectangle;
     ttlet translation = translate<D>::align(scaled_rectangle, dst_rectangle, alignment);
     return translation * scale;
 }
-
 
 } // namespace geo
 

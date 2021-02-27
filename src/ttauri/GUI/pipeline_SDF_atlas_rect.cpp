@@ -8,26 +8,18 @@
 
 namespace tt::pipeline_SDF {
 
-atlas_rect::atlas_rect(i32x4 atlasPosition, f32x4 drawExtent) noexcept :
-    atlasPosition(atlasPosition),
-    atlasExtent(ceil(drawExtent))
+atlas_rect::atlas_rect(point3 atlas_position, extent2 size) noexcept : atlas_position(atlas_position), size(ceil(size))
 {
-    ttlet atlas_px_rect = rect{
-        f32x4{atlasPosition.xyz1()},
-        drawExtent
-    };
+    ttlet atlas_px_rect = rect{atlas_position, size};
 
-    ttlet textureCoordinateScale = scale2{
-        device_shared::atlasTextureCoordinateMultiplier,
-        device_shared::atlasTextureCoordinateMultiplier
-    };
+    ttlet texture_coordinate_scale = scale2{device_shared::atlasTextureCoordinateMultiplier};
 
-    ttlet atlas_tx_rect = textureCoordinateScale * atlas_px_rect;
+    ttlet atlas_tx_rect = texture_coordinate_scale * atlas_px_rect;
 
-    std::get<0>(textureCoords) = atlas_tx_rect.corner<0>();
-    std::get<1>(textureCoords) = atlas_tx_rect.corner<1>();
-    std::get<2>(textureCoords) = atlas_tx_rect.corner<2>();
-    std::get<3>(textureCoords) = atlas_tx_rect.corner<3>();
+    std::get<0>(texture_coordinates) = get<0>(atlas_tx_rect);
+    std::get<1>(texture_coordinates) = get<1>(atlas_tx_rect);
+    std::get<2>(texture_coordinates) = get<2>(atlas_tx_rect);
+    std::get<3>(texture_coordinates) = get<3>(atlas_tx_rect);
 }
 
-}
+} // namespace tt::pipeline_SDF

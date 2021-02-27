@@ -11,7 +11,8 @@
 #include "scale.hpp"
 #include <type_traits>
 
-namespace tt::geo {
+namespace tt {
+namespace geo {
 
 template<int D>
 [[nodiscard]] constexpr matrix<D> operator*(identity const &lhs, matrix<D> const &rhs) noexcept
@@ -59,30 +60,28 @@ template<int D, int E>
         static_cast<f32x4>(lhs) * static_cast<f32x4>(rhs).xyz1()};
 }
 
-template<typename T, int D>
+template<typename T>
 struct transform : public std::false_type {
 };
 
-template<int D>
-struct transform<matrix<D>, D> : public std::true_type {
-};
+// clang-format off
+template<> struct transform<matrix<2>> : public std::true_type {};
+template<> struct transform<matrix<3>> : public std::true_type {};
+template<> struct transform<identity> : public std::true_type {};
+template<> struct transform<translate<2>> : public std::true_type {};
+template<> struct transform<translate<3>> : public std::true_type {};
+template<> struct transform<rotate<2>> : public std::true_type {};
+template<> struct transform<rotate<3>> : public std::true_type {};
+template<> struct transform<scale<2>> : public std::true_type {};
+template<> struct transform<scale<3>> : public std::true_type {};
+// clang-format on
 
-template<int D>
-struct transform<translate<D>, D> : public std::true_type {
-};
+template<typename T>
+constexpr bool transform_v = transform<T>::value;
 
-template<int D>
-struct transform<rotate<D>, D> : public std::true_type {
-};
+template<typename T>
+concept transformer = transform_v<T>;
 
-template<int D>
-struct transform<scale<D>, D> : public std::true_type {
-};
-
-template<typename T, int D>
-constexpr bool transform_v = transform<T, D>::value;
-
-template<typename T, int D>
-concept transformer = transform_v<T, D>;
+} // namespace geo
 
 } // namespace tt

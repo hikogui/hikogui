@@ -29,7 +29,7 @@ struct vertex {
     //! The color of the glyph.
     sfloat_rgba16 color;
 
-    vertex(f32x4 position, aarect clippingRectangle, f32x4 textureCoord, tt::color color) noexcept :
+    vertex(point3 position, aarect clippingRectangle, point3 textureCoord, tt::color color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),

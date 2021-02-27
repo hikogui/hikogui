@@ -49,11 +49,7 @@ grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow
             auto index = cell.address.row.begin(nr_rows);
 
             rows.update(
-                index,
-                cell.widget->preferred_size().minimum().height(),
-                cell.widget->height_resistance(),
-                cell.widget->margin(),
-                cell.widget->preferred_base_line());
+                index, cell.widget->preferred_size().minimum().height(), cell.widget->height_resistance(), cell.widget->margin());
         }
 
         tt_axiom(cell.address.column.is_absolute);
@@ -64,8 +60,7 @@ grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow
                 index,
                 cell.widget->preferred_size().minimum().width(),
                 cell.widget->width_resistance(),
-                cell.widget->margin(),
-                relative_base_line{});
+                cell.widget->margin());
         }
     }
 
@@ -114,13 +109,11 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
         for (auto &&cell : _cells) {
             auto &&child = cell.widget;
             ttlet child_rectangle = cell.rectangle(_columns, _rows);
-            ttlet child_base_line = cell.base_line(_rows);
 
-            ttlet child_window_rectangle = translate2{_window_rectangle} * child_rectangle;
-            ttlet child_base_line_position =
-                child_base_line.position(child_window_rectangle.bottom(), child_window_rectangle.top());
-
-            child->set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, child_base_line_position);
+            ttlet child_translate = translate3{child_rectangle.p0().x(), child_rectangle.p0().y(), child->draw_layer()};
+            ttlet child_clipping_rectangle =
+                intersect(aarect{child_translate * _clipping_rectangle}, expand(child_rectangle, child->margin()));
+            child->set_layout_parameters(child_translate, child_rectangle.extent(), child_clipping_rectangle);
         }
     }
 

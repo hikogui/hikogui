@@ -20,7 +20,8 @@ widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> p
     }
 
     _enabled_callback = enabled.subscribe([this](auto...) {
-        window.request_redraw(window_clipping_rectangle());
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        window.request_redraw(aarect{this->local_to_window() * this->clipping_rectangle()});
     });
 
     _preferred_size = {f32x4{0.0f, 0.0f}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
@@ -51,16 +52,29 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        window.request_redraw(window_clipping_rectangle());
-
-        // Used by draw().
-        _to_window_transform = translate3(_window_rectangle.x(), _window_rectangle.y(), _draw_layer);
-
-        // Used by handle_event()
-        _from_window_transform = ~_to_window_transform;
+        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
     }
 }
 
+//void widget::set_layout_parameters(
+//    transformer3 auto const &parent_to_local,
+//    extent2 size,
+//    aarect const &clipping_rectangle) noexcept
+//{
+//    tt_axiom(gui_system_mutex.recurse_lock_count());
+//
+//    _parent_to_local = parent_to_local;
+//    _local_to_parent = ~parent_to_local;
+//    if (auto parent = _parent.lock()) {
+//        _window_to_local = parent_to_local * parent->window_to_local();
+//        _local_to_window = ~parent_to_local * parent->local_to_window();
+//    } else {
+//        _window_to_local = parent_to_local;
+//        _local_to_window = ~parent_to_local;
+//    }
+//    _size = size;
+//    _clipping_rectangle = clipping_rectangle;
+//}
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
@@ -129,8 +143,9 @@ draw_context widget::make_draw_context(draw_context context) const noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    context.clipping_rectangle = _window_clipping_rectangle;
-    context.transform = _to_window_transform;
+    context.scissor_rectangle = aarect{_parent_to_local * context.scissor_rectangle};
+    context.clipping_rectangle = _clipping_rectangle;
+    context.transform = _local_to_window;
     return context;
 }
 
@@ -142,22 +157,22 @@ bool widget::handle_event(command command) noexcept
         using enum tt::command;
     case gui_keyboard_enter:
         _focus = true;
-        window.request_redraw(window_clipping_rectangle());
+        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
         return true;
 
     case gui_keyboard_exit:
         _focus = false;
-        window.request_redraw(window_clipping_rectangle());
+        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
         return true;
 
     case gui_mouse_enter:
         _hover = true;
-        window.request_redraw(window_clipping_rectangle());
+        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
         return true;
 
     case gui_mouse_exit:
         _hover = false;
-        window.request_redraw(window_clipping_rectangle());
+        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
         return true;
 
     default:;

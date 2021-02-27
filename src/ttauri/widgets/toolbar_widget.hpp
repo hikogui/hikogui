@@ -64,8 +64,7 @@ public:
                 index++,
                 theme::global->width,
                 ranged_int<3>{0},
-                0.0f,
-                relative_base_line{});
+                0.0f);
 
             for (ttlet &child : std::views::reverse(_right_children)) {
                 update_constraints_for_child(*child, index++, shared_base_line, shared_height);
@@ -73,7 +72,6 @@ public:
 
             tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
             _preferred_size = {f32x4{_layout.minimum_size(), shared_height}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
-            _preferred_base_line = shared_base_line;
             return true;
         } else {
             return false;
@@ -109,25 +107,25 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, _clipping_rectangle)) {
             context.draw_filled_quad(rectangle(), theme::global->fillColor(_semantic_layer + 1));
         }
 
         abstract_container_widget::draw(std::move(context), display_time_point);
     }
 
-    hit_box hitbox_test(f32x4 window_position) const noexcept
+    hit_box hitbox_test(point2 position) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         auto r = hit_box{};
 
-        if (_window_clipping_rectangle.contains(window_position)) {
+        if (_clipping_rectangle.contains(position)) {
             r = hit_box{weak_from_this(), _draw_layer, hit_box::Type::MoveArea};
         }
 
         for (ttlet &child : _children) {
-            r = std::max(r, child->hitbox_test(window_position));
+            r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
         }
         return r;
     }
@@ -160,9 +158,8 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        _layout.update(index, child.preferred_size().minimum().width(), child.width_resistance(), child.margin(), relative_base_line{});
+        _layout.update(index, child.preferred_size().minimum().width(), child.width_resistance(), child.margin());
 
-        shared_base_line = std::max(shared_base_line, child.preferred_base_line());
         shared_height = std::max(shared_height, child.preferred_size().minimum().height() + child.margin() * 2.0f);
     }
 
@@ -178,9 +175,7 @@ private:
             child_width,
             rectangle().height() - child.margin() * 2.0f};
 
-        ttlet child_window_rectangle = translate2{_window_rectangle} * child_rectangle;
-
-        child.set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, _window_base_line);
+        child.set_layout_parameters_from_parent(child_rectangle, _clipping_rectangle);
     }
 };
 

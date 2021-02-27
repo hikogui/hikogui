@@ -20,11 +20,18 @@ public:
     constexpr translate &operator=(translate const &) noexcept = default;
     constexpr translate &operator=(translate &&) noexcept = default;
 
-    [[nodiscard]] constexpr operator matrix<D>() const noexcept
+    [[nodiscard]] constexpr operator matrix<2>() const noexcept requires(D == 2)
     {
         tt_axiom(is_valid());
         ttlet ones = f32x4::broadcast(1.0);
-        return matrix<D>{ones.x000(), ones._0y00(), ones._00z0(), ones._000w() + _v};
+        return matrix<2>{ones.x000(), ones._0y00(), ones._00z0(), ones._000w() + _v};
+    }
+
+    [[nodiscard]] constexpr operator matrix<3>() const noexcept
+    {
+        tt_axiom(is_valid());
+        ttlet ones = f32x4::broadcast(1.0);
+        return matrix<3>{ones.x000(), ones._0y00(), ones._00z0(), ones._000w() + _v};
     }
 
     [[nodiscard]] constexpr translate() noexcept : _v() {}

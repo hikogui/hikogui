@@ -302,7 +302,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     } else if (extent >> preferred_size) {
         set_window_size(extent = preferred_size.maximum());
     }
-    widget->set_layout_parameters(aarect{extent}, aarect{extent});
+    widget->set_layout_parameters(translate2{0.5, 0.5}, extent2{extent}, aarect{extent});
 
     // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
     ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
@@ -352,10 +352,9 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
         SDFPipeline->vertexBufferData);
-    drawContext.transform = drawContext.transform * translate2{0.5, 0.5};
 
     _request_redraw_rectangle = aarect{};
-    widget->draw(drawContext, displayTimePoint);
+    widget->draw(widget->make_draw_context(drawContext), displayTimePoint);
 
     fillCommandBuffer(frameBuffer, scissor_rectangle);
     submitCommandBuffer();

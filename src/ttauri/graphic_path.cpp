@@ -476,13 +476,11 @@ graphic_path &graphic_path::operator+=(graphic_path const &rhs) noexcept
     return *this;
 }
 
-graphic_path graphic_path::centerScale(f32x4 extent, float padding) const noexcept
+graphic_path graphic_path::centerScale(extent2 extent, float padding) const noexcept
 {
-    tt_axiom(extent.is_vector());
-
-    auto max_size = f32x4{
-        std::max(1.0f, extent.x() - (padding * 2.0f)),
-        std::max(1.0f, extent.y() - (padding * 2.0f))
+    auto max_size = extent2{
+        std::max(1.0f, extent.width() - (padding * 2.0f)),
+        std::max(1.0f, extent.height() - (padding * 2.0f))
     };
 
     auto bbox = boundingBox();
@@ -491,8 +489,8 @@ graphic_path graphic_path::centerScale(f32x4 extent, float padding) const noexce
     }
 
     ttlet scale = std::min(
-        max_size.x() / bbox.width(),
-        max_size.y() / bbox.height()
+        max_size.width() / bbox.width(),
+        max_size.height() / bbox.height()
     );
     bbox *= scale;
     

@@ -82,8 +82,7 @@ public:
     template<typename T, typename... Args>
     std::shared_ptr<T> make_widget(Args &&...args)
     {
-        auto tmp = std::make_shared<T>(
-            window, shared_from_this(), std::forward<Args>(args)...);
+        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
         tmp->init();
         return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
     }
@@ -149,7 +148,7 @@ public:
         return handled;
     }
 
-    hit_box hitbox_test(f32x4 window_position) const noexcept
+    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -157,7 +156,7 @@ public:
         for (ttlet &child : _children) {
             tt_axiom(child);
             tt_axiom(&child->parent() == this);
-            r = std::max(r, child->hitbox_test(window_position));
+            r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
         }
         return r;
     }

@@ -139,7 +139,7 @@ private:
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(_animation_duration);
         if (animationProgress < 1.0f) {
-            window.request_redraw(window_clipping_rectangle());
+            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
         }
 
         ttlet animatedValue = to_float(value, _animation_duration);
