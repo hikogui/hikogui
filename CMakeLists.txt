@@ -452,7 +452,9 @@ if(TT_BUILD_TESTS)
     endif()
 
     include(GoogleTest)
-    gtest_discover_tests(ttauri_tests)
+
+    # PRE_TEST delays test discovery until just prior to test execution
+    gtest_discover_tests(ttauri_tests DISCOVERY_MODE PRE_TEST)
 
     add_custom_command(
         TARGET ttauri_tests PRE_BUILD
