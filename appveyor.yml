@@ -22,8 +22,8 @@ environment:
   APPVEYOR_CACHE_ENTRY_ZIP_ARGS: -t7z -m0=lzma -mx=5
   APPVEYOR_RDP_PASSWORD: somePassword#123
   # vcpkg
-  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
-  VCPKG_DEFAULT_TRIPLET: "%VCPKG_TARGET_TRIPLET%"
+  #VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+  #VCPKG_DEFAULT_TRIPLET: "%VCPKG_TARGET_TRIPLET%"
   VCPKG_ROOT: "C:\\Tools\\vcpkg"
   # vulkan
   VULKAN_VERSION: "1.2.162.1"
@@ -153,6 +153,13 @@ install:
     )
   - dir %VULKAN_SDK%
 
+  # Install Vulkan Runtime (for vulkan-1.dll)
+  - if not exist %VULKAN_SDK%\runtime (
+      curl -L --silent --show-error --output vulkan-runtime.zip https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/vulkan-runtime-components.zip?Human=true &
+      7z e vulkan-runtime.zip -o%VULKAN_SDK%\runtime\%PLATFORM% */%PLATFORM%
+    )
+  - dir %VULKAN_SDK%\runtime\%PLATFORM%
+
   # Install and build dependencies using VCPKG
   - set VCPKG_INSTALLED=C:\Tools\vcpkg\installed\%VCPKG_TARGET_TRIPLET%
   - if not exist %VCPKG_INSTALLED% (
@@ -206,7 +213,14 @@ build_script:
   - cmake --install ..\ttauri-build --config %BUILD_TYPE% --prefix ..\ttauri-install --strip --verbose
 
 after_build:
-   # Check if all build artifacts are present, before packaging
+   # set STATIC_BUILD to true, if the triplet contains "static", false otherwise.
+   - echo.%VCPKG_TARGET_TRIPLET%|findstr /C:"static" >nul 2>&1 && (set STATIC_BUILD=TRUE) || (set STATIC_BUILD=FALSE)
+
+   # Copy Vulkan Runtime (vulkan-1.dll) for dynamic-linking builds into each folder with an executable.
+   - if [%STATIC_BUILD%]==[FALSE] copy %VULKAN_SDK%\runtime\%PLATFORM%\*.* C:\projects\ttauri-install\tests
+   - if [%STATIC_BUILD%]==[FALSE] copy %VULKAN_SDK%\runtime\%PLATFORM%\*.* C:\projects\ttauri-install\examples\ttauri_demo
+
+   # Check if all build artifacts are present, before packaging.
    - dir C:\projects\ttauri-build
    - dir /S /B C:\projects\ttauri-install
 
@@ -227,11 +241,9 @@ on_failure:
 #     Tests
 #-------------------------------------------------------------------
 
-#before_test:
-#  - set PATH=%PATH%;C:\projects\ttauri-%build_version_number%\tests\
-
-#test_script:
-#  - ttauri_tests.exe
+test_script:
+  - cd C:\projects\ttauri-%build_version_number%\tests
+  - ttauri_tests.exe
 
 #-------------------------------------------------------------------
 #     Build Artifacts
@@ -272,6 +284,7 @@ cache:
   - '%VULKAN_SDK%\Include -> appveyor.yml'
   - '%VULKAN_SDK%\Lib -> appveyor.yml'
   - '%VULKAN_SDK%\Lib32 -> appveyor.yml'
+  - '%VULKAN_SDK%\runtime -> appveyor.yml'
 
 #-------------------------------------------------------------------
 #     Accessing Windows build worker via Remote Desktop (RDP)

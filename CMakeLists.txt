@@ -473,6 +473,9 @@ install(TARGETS ttauri_tests DESTINATION tests)
 
 install(DIRECTORY tests/data/ DESTINATION tests)
 
+# copy one additional file from the "build" directory
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/data/ttauri_icons.ttf.inl DESTINATION tests)
+
 # experimental
 x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
 
