@@ -214,11 +214,12 @@ build_script:
 
 after_build:
    # set STATIC_BUILD to true, if the triplet contains "static", false otherwise.
-   - echo.%VCPKG_TARGET_TRIPLET%|findstr /C:"static" >nul 2>&1 && (set STATIC_BUILD=TRUE) || (set STATIC_BUILD=FALSE)
+   #- echo.%VCPKG_TARGET_TRIPLET%|findstr /C:"static" >nul 2>&1 && (set STATIC_BUILD=TRUE) || (set STATIC_BUILD=FALSE)
 
    # Copy Vulkan Runtime (vulkan-1.dll) for dynamic-linking builds into each folder with an executable.
-   - if [%STATIC_BUILD%]==[FALSE] copy %VULKAN_SDK%\runtime\%PLATFORM%\*.* C:\projects\ttauri-install\tests
-   - if [%STATIC_BUILD%]==[FALSE] copy %VULKAN_SDK%\runtime\%PLATFORM%\*.* C:\projects\ttauri-install\examples\ttauri_demo
+   #- if [%STATIC_BUILD%]==[FALSE]
+   - copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* C:\projects\ttauri-install\tests
+   - copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* C:\projects\ttauri-install\examples\ttauri_demo
 
    # Check if all build artifacts are present, before packaging.
    - dir C:\projects\ttauri-build
