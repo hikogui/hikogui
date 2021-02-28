@@ -24,8 +24,7 @@ void glyph_stencil::draw(draw_context context, tt::color color) noexcept
         _glyph_transform = matrix2::uniform(_glyph_bounding_box, _rectangle, _alignment);
     }
 
-    context.transform = context.transform * _glyph_transform;
-    context.draw_glyph(_glyph, _glyph_bounding_box, color);
+    context.draw_glyph(_glyph, _glyph_transform * _glyph_bounding_box, color);
 }
 
 } // namespace tt

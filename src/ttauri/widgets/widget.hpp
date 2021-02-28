@@ -246,19 +246,19 @@ public:
      *
      * @pre `mutex` must be locked by current thread.
      */
-    void set_layout_parameters(geo::transformer auto const &parent_to_local, extent2 size, aarect const &clipping_rectangle) noexcept
+    void set_layout_parameters(geo::transformer auto const &local_to_parent, extent2 size, aarect const &clipping_rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        _parent_to_local = parent_to_local;
-        _local_to_parent = ~parent_to_local;
+        _local_to_parent = local_to_parent;
+        _parent_to_local = ~local_to_parent;
         if (auto parent = _parent.lock()) {
             auto parent_ = reinterpret_cast<widget *>(parent.get());
-            _window_to_local = parent_to_local * parent_->window_to_local();
-            _local_to_window = ~parent_to_local * parent_->local_to_window();
+            _local_to_window = local_to_parent * parent_->local_to_window();
+            _window_to_local = ~local_to_parent * parent_->window_to_local();
         } else {
-            _window_to_local = parent_to_local;
-            _local_to_window = ~parent_to_local;
+            _local_to_window = local_to_parent;
+            _window_to_local = ~local_to_parent;
         }
         _size = size;
         _clipping_rectangle = clipping_rectangle;
@@ -270,8 +270,8 @@ public:
 
         ttlet child_translate = translate2{child_rectangle};
         ttlet child_size = child_rectangle.extent();
-        ttlet child_clipping_rectangle =
-            intersect(child_translate * parent_clipping_rectangle, expand(child_rectangle, margin()));
+        ttlet rectangle = aarect{child_size};
+        ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, expand(rectangle, margin()));
 
         set_layout_parameters(child_translate, child_size, child_clipping_rectangle);
     }
@@ -425,7 +425,7 @@ public:
      * @return A new draw context for drawing the current widget in the
      *         local coordinate system.
      */
-    virtual draw_context make_draw_context(draw_context context) const noexcept;
+    virtual draw_context make_draw_context(draw_context const &parent_context) const noexcept;
 
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.

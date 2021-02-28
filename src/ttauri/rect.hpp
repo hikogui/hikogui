@@ -126,6 +126,11 @@ public:
             lhs.corner<2>() + rhs * -rightDirection + rhs * upDirection,
             lhs.corner<3>() + rhs * rightDirection + rhs * upDirection};
     }
+
+    [[nodiscard]] friend rect shrink(rect const &lhs, float rhs) noexcept
+    {
+        return expand(lhs, -rhs);
+    }
 };
 
 } // namespace tt

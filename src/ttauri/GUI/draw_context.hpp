@@ -117,18 +117,6 @@ public:
         draw_filled_quad(get<0>(r), get<1>(r), get<2>(r), get<3>(r), fill_color);
     }
 
-    /** Draw a rectangle of one color.
-     * This function will draw the given rectangle.
-     * This will use the current:
-     *  - transform, to transform each corner of the rectangle.
-     *  - clippingRectangle
-     *  - fillColor
-     */
-    void draw_filled_quad(aarect r, color fill_color) const noexcept
-    {
-        draw_filled_quad(rect{r}, fill_color);
-    }
-
     /** Draw an axis aligned box
      * This function will draw the given box.
      * This will use the current:
@@ -141,7 +129,7 @@ public:
      *  - cornerShapes
      */
     void draw_box(
-        aarect box,
+        rect box,
         color fill_color,
         color line_color,
         float line_width = 1.0,
@@ -150,11 +138,11 @@ public:
         tt_axiom(_box_vertices != nullptr);
 
         pipeline_box::device_shared::place_vertices(
-            *_box_vertices, clipping_rectangle, transform * box, fill_color, line_color, line_width, corner_shapes);
+            *_box_vertices, aarect{transform * clipping_rectangle}, transform * box, fill_color, line_color, line_width, corner_shapes);
     }
 
     void draw_box(
-        aarect box,
+        rect box,
         color fill_color,
         color line_color,
         tt::corner_shapes corner_shapes) const noexcept
@@ -162,7 +150,7 @@ public:
         draw_box(box, fill_color, line_color, 1.0, corner_shapes);
     }
 
-    void draw_box(aarect box, color fill_color, tt::corner_shapes corner_shapes) const noexcept
+    void draw_box(rect box, color fill_color, tt::corner_shapes corner_shapes) const noexcept
     {
         draw_box(box, fill_color, fill_color, 0.0, corner_shapes);
     }
@@ -183,7 +171,7 @@ public:
      *  - corner_shapes
      */
     void draw_box_with_border_inside(
-        aarect rectangle,
+        rect rectangle,
         color fill_color,
         color line_color,
         float line_width = 1.0,
@@ -198,11 +186,17 @@ public:
         ttlet new_corner_shapes = corner_shapes - shrink_value;
 
         pipeline_box::device_shared::place_vertices(
-            *_box_vertices, clipping_rectangle, transform * new_rectangle, fill_color, line_color, line_width, new_corner_shapes);
+            *_box_vertices,
+            aarect{transform * clipping_rectangle},
+            transform * new_rectangle,
+            fill_color,
+            line_color,
+            line_width,
+            new_corner_shapes);
     }
 
     void draw_box_with_border_inside(
-        aarect rectangle,
+        rect rectangle,
         color fill_color,
         color line_color,
         tt::corner_shapes corner_shapes) const noexcept
@@ -227,7 +221,7 @@ public:
      *  - cornerShapes
      */
     void draw_box_with_border_outside(
-        aarect rectangle,
+        rect rectangle,
         color fill_color,
         color line_color,
         float line_width = 1.0,
@@ -242,10 +236,16 @@ public:
         ttlet new_corner_shapes = corner_shapes + expand_value;
 
         pipeline_box::device_shared::place_vertices(
-            *_box_vertices, clipping_rectangle, transform * new_rectangle, fill_color, line_color, line_width, new_corner_shapes);
+            *_box_vertices,
+            aarect{transform * clipping_rectangle},
+            transform * new_rectangle,
+            fill_color,
+            line_color,
+            line_width,
+            new_corner_shapes);
     }
 
-    void draw_box_with_border_outside(aarect rectangle, color fill_color, color line_color, tt::corner_shapes corner_shapes)
+    void draw_box_with_border_outside(rect rectangle, color fill_color, color line_color, tt::corner_shapes corner_shapes)
         const noexcept
     {
         draw_box_with_border_outside(rectangle, fill_color, line_color, 1.0, corner_shapes);
@@ -257,11 +257,11 @@ public:
      *  - transform, to transform the image.
      *  - clippingRectangle
      */
-    void draw_image(pipeline_image::Image &image) const noexcept
+    void draw_image(pipeline_image::Image &image, matrix3 image_transform) const noexcept
     {
         tt_axiom(_image_vertices != nullptr);
 
-        image.place_vertices(*_image_vertices, aarect{transform * clipping_rectangle}, transform);
+        image.place_vertices(*_image_vertices, aarect{transform * clipping_rectangle}, transform * image_transform);
     }
 
     /** Draw shaped text.
@@ -287,7 +287,7 @@ public:
         }
     }
 
-    void draw_glyph(font_glyph_ids const &glyph, aarect box, color text_color) const noexcept
+    void draw_glyph(font_glyph_ids const &glyph, rect box, color text_color) const noexcept
     {
         tt_axiom(_sdf_vertices != nullptr);
 

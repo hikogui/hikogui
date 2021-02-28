@@ -191,4 +191,9 @@ private:
 using translate2 = geo::translate<2>;
 using translate3 = geo::translate<3>;
 
+constexpr translate3 translate_z(float z) noexcept
+{
+    return translate3{0.0f, 0.0f, z};
+}
+
 } // namespace tt

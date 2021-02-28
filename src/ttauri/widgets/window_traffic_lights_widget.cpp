@@ -136,14 +136,13 @@ void window_traffic_lights_widget::drawMacOS(
     context.draw_box(maximizeRectangle, maximize_circle_color, corner_shapes{RADIUS});
 
     if (_hover) {
-        context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-        context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
-        context.draw_glyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle, color{0.212f, 0.1f, 0.0f});
+        context.draw_glyph(closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
+        context.draw_glyph(minimizeWindowGlyph, translate_z(0.1f) * minimizeWindowGlyphRectangle, color{0.212f, 0.1f, 0.0f});
 
         if (window.size_state == gui_window_size::maximized) {
-            context.draw_glyph(restoreWindowGlyph, restoreWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
+            context.draw_glyph(restoreWindowGlyph, translate_z(0.1f) * restoreWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
         } else {
-            context.draw_glyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
+            context.draw_glyph(maximizeWindowGlyph, translate_z(0.1f) * maximizeWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
         }
     }
 }
@@ -182,13 +181,12 @@ void window_traffic_lights_widget::drawWindows(
 
     ttlet glyph_color = window.active ? label_color() : foreground_color();
 
-    context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-    context.draw_glyph(closeWindowGlyph, closeWindowGlyphRectangle, glyph_color);
-    context.draw_glyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle, glyph_color);
+    context.draw_glyph(closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color);
+    context.draw_glyph(minimizeWindowGlyph, translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color);
     if (window.size_state == gui_window_size::maximized) {
-        context.draw_glyph(restoreWindowGlyph, restoreWindowGlyphRectangle, glyph_color);
+        context.draw_glyph(restoreWindowGlyph, translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color);
     } else {
-        context.draw_glyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle, glyph_color);
+        context.draw_glyph(maximizeWindowGlyph, translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color);
     }
 }
 

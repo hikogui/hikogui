@@ -57,26 +57,6 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
     }
 }
 
-//void widget::set_layout_parameters(
-//    transformer3 auto const &parent_to_local,
-//    extent2 size,
-//    aarect const &clipping_rectangle) noexcept
-//{
-//    tt_axiom(gui_system_mutex.recurse_lock_count());
-//
-//    _parent_to_local = parent_to_local;
-//    _local_to_parent = ~parent_to_local;
-//    if (auto parent = _parent.lock()) {
-//        _window_to_local = parent_to_local * parent->window_to_local();
-//        _local_to_window = ~parent_to_local * parent->local_to_window();
-//    } else {
-//        _window_to_local = parent_to_local;
-//        _local_to_window = ~parent_to_local;
-//    }
-//    _size = size;
-//    _clipping_rectangle = clipping_rectangle;
-//}
-
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (*enabled) {
@@ -140,11 +120,12 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
     }
 }
 
-draw_context widget::make_draw_context(draw_context context) const noexcept
+draw_context widget::make_draw_context(draw_context const &parent_context) const noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    context.scissor_rectangle = aarect{_parent_to_local * context.scissor_rectangle};
+    auto context = parent_context;
+    context.scissor_rectangle = aarect{_parent_to_local * parent_context.scissor_rectangle};
     context.clipping_rectangle = _clipping_rectangle;
     context.transform = _local_to_window;
     return context;
