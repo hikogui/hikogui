@@ -34,7 +34,7 @@ environment:
     #
     # "Windows | MSVC 2019 | x64-windows | Release
     #
-    #- APPVEYOR_JOB_NAME: win-msvc19-x64-release
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Release
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
     #  BUILD_TYPE: Release
@@ -42,7 +42,7 @@ environment:
     #
     # Windows | MSVC 2019 | x64-windows | ReleaseWithDebugInfo
     #
-    - APPVEYOR_JOB_NAME: win-msvc19-x64-relwithdebinfo
+    - APPVEYOR_JOB_NAME: Win-MSVC19-x64-RelWithDebInfo
       COMPILER: MSVC19
       VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
       BUILD_TYPE: RelWithDebInfo
@@ -50,7 +50,7 @@ environment:
     #
     # Windows | MSVC 2019 | x64-windows | Debug
     #
-    #- APPVEYOR_JOB_NAME: win-msvc19-x64-debug
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Debug
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
     #  BUILD_TYPE: Debug
@@ -58,7 +58,7 @@ environment:
     #
     # Windows | MSVC 2019 | x64-windows-static | Release
     #
-    #- APPVEYOR_JOB_NAME: win-msvc19-x64-static-release
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-Release
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
     #  BUILD_TYPE: Release
@@ -66,7 +66,7 @@ environment:
     #
     # Windows | MSVC 2019 | x64-windows-static | ReleaseWithDebugInfo
     #
-    - APPVEYOR_JOB_NAME: win-msvc19-x64-relwithdebinfo
+    - APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-RelWithDebInfo
       COMPILER: MSVC19
       VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
       BUILD_TYPE: RelWithDebInfo
@@ -74,22 +74,22 @@ environment:
     #
     # Windows | MSVC 2019 | x64-windows-static | Debug
     #
-    #- APPVEYOR_JOB_NAME: win-msvc19-x64-static-debug
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-Debug
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
     #  BUILD_TYPE: Debug
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
-    # Windows | ClangCL | x64-windows | Release |
+    # Windows | ClangCL | x64-windows | Release
     #
-    #- APPVEYOR_JOB_NAME: windows-clangcl
+    #- APPVEYOR_JOB_NAME: Win-ClangCL-x64-Release
     #  COMPILER: CLANG
     #  BUILD_TYPE: Release
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     #
-    # Windows | ClangCL | Debug | x64-windows
+    # Windows | ClangCL | x64-windows | Debug
     #
-    #- APPVEYOR_JOB_NAME: windows-clangcl
+    #- APPVEYOR_JOB_NAME: Win-ClangCL-x64-Debug
     #  COMPILER: CLANG
     #  BUILD_TYPE: Debug
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
@@ -212,10 +212,12 @@ after_build:
 
    # package ttauri artifact
    - cd C:\projects\
+   # remove "-windows" from VCPKG_TARGET_TRIPLET (x64-windows -> x64, x64-windows-static -> x64-static)
+   - set TRIPLET=%VCPKG_TARGET_TRIPLET:-windows=%
    # name of the top level folder inside the zip
    - echo ttauri-%build_version_number%
    - rename ttauri-install ttauri-%build_version_number%
-   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%PLATFORM%.zip" ./ttauri-%build_version_number%
+   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%TRIPLET%-%BUILD_TYPE%.zip" ./ttauri-%build_version_number%
 
 on_failure:
   - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeOutput.log
