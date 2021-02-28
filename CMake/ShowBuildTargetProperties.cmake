@@ -21,6 +21,7 @@ function(show_build_target_property target property)
 endfunction()
 
 function(show_build_target_properties target)
+  message(STATUS "|")
   message(STATUS "[INFO] Properties of Build Target '${target}':")
   set(properties
     SOURCE_DIR

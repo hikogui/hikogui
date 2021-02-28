@@ -12,50 +12,88 @@ version: '{build}'
 #     Build configuration
 #-------------------------------------------------------------------
 
+# defaults
 platform: x64
 configuration: Release
+
 environment:
   # appveyor
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
   APPVEYOR_CACHE_ENTRY_ZIP_ARGS: -t7z -m0=lzma -mx=5
   APPVEYOR_RDP_PASSWORD: somePassword#123
   # vcpkg
-  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
   VCPKG_DEFAULT_TRIPLET: "%VCPKG_TARGET_TRIPLET%"
   VCPKG_ROOT: "C:\\Tools\\vcpkg"
   # vulkan
   VULKAN_VERSION: "1.2.162.1"
   VULKAN_SDK: "C:\\VulkanSDK\\%VULKAN_VERSION%"
   # the build matrix
+  #   Platform | Compiler | Target Triplet | Build Type
   matrix:
     #
-    # MSVC 2019 - Release
+    # "Windows | MSVC 2019 | x64-windows | Release
     #
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
-      APPVEYOR_JOB_NAME: windows-msvc2019
-      BUILD_TYPE: Release
-      COMPILER: MSVC19
-    #
-    # MSVC - Debug
-    #
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
-      APPVEYOR_JOB_NAME: windows-msvc2019
-      BUILD_TYPE: Debug
-      COMPILER: MSVC19
-    #
-    # Clang - Release
-    #
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    #  APPVEYOR_JOB_NAME: windows-clangcl
+    #- APPVEYOR_JOB_NAME: win-msvc19-x64-release
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
     #  BUILD_TYPE: Release
-    #  COMPILER: CLANG
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
-    # Clang - Debug
+    # Windows | MSVC 2019 | x64-windows | ReleaseWithDebugInfo
     #
-    #- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    #  APPVEYOR_JOB_NAME: windows-clangcl
+    - APPVEYOR_JOB_NAME: win-msvc19-x64-relwithdebinfo
+      COMPILER: MSVC19
+      VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+      BUILD_TYPE: RelWithDebInfo
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows | Debug
+    #
+    #- APPVEYOR_JOB_NAME: win-msvc19-x64-debug
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
     #  BUILD_TYPE: Debug
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows-static | Release
+    #
+    #- APPVEYOR_JOB_NAME: win-msvc19-x64-static-release
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+    #  BUILD_TYPE: Release
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows-static | ReleaseWithDebugInfo
+    #
+    - APPVEYOR_JOB_NAME: win-msvc19-x64-relwithdebinfo
+      COMPILER: MSVC19
+      VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+      BUILD_TYPE: RelWithDebInfo
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows-static | Debug
+    #
+    #- APPVEYOR_JOB_NAME: win-msvc19-x64-static-debug
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+    #  BUILD_TYPE: Debug
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | ClangCL | x64-windows | Release |
+    #
+    #- APPVEYOR_JOB_NAME: windows-clangcl
     #  COMPILER: CLANG
+    #  BUILD_TYPE: Release
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #
+    # Windows | ClangCL | Debug | x64-windows
+    #
+    #- APPVEYOR_JOB_NAME: windows-clangcl
+    #  COMPILER: CLANG
+    #  BUILD_TYPE: Debug
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #
 
 #matrix:
   # let the whole build fail immediately, if one of the job fails
