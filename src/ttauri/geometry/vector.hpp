@@ -134,6 +134,14 @@ public:
         return vector{-_v};
     }
 
+    template<int E> requires (E <= D)
+    constexpr vector &operator+=(vector<E> const &rhs) noexcept
+    {
+        tt_axiom(is_valid() && rhs.is_valid());
+        _v = _v + static_cast<f32x4>(rhs);
+        return *this;
+    }
+
     /** Add two vectors from each other.
      * @param lhs The first vector.
      * @param rhs The second vector.

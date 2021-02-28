@@ -82,8 +82,7 @@ public:
                  _other_label_stencil->preferred_extent().width()});
             ttlet minimum_width = theme::global->smallSize + theme::global->margin + minimum_width_of_labels;
 
-            this->_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            this->_preferred_base_line = relative_base_line{vertical_alignment::top, -theme::global->smallSize * 0.5f};
+            this->_preferred_size = interval_extent2::make_minimum(minimum_width, minimum_height);
 
             return true;
         } else {
@@ -123,7 +122,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, this->_clipping_rectangle)) {
             draw_check_box(context);
             draw_check_mark(context);
             draw_label(context);

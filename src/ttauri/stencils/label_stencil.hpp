@@ -29,7 +29,7 @@ public:
         }
     }
 
-    [[nodiscard]] f32x4 preferred_extent() noexcept override
+    [[nodiscard]] extent2 preferred_extent() noexcept override
     {
         if (!_text_stencil) {
             // There is only an icon available.

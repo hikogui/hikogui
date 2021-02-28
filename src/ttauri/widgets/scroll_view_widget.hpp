@@ -77,8 +77,7 @@ public:
                 width += _vertical_scroll_bar->preferred_size().width();
             }
 
-            _preferred_size = interval_vec2{width, height};
-            _preferred_base_line = {};
+            _preferred_size = interval_extent2{width, height};
         }
 
         return has_updated_contraints;
@@ -173,14 +172,14 @@ public:
         super::update_layout(display_time_point, need_layout);
     }
 
-    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override
+    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         tt_axiom(_content);
 
-        auto r = super::hitbox_test(window_position);
+        auto r = super::hitbox_test(position);
 
-        if (window_clipping_rectangle().contains(window_position)) {
+        if (rectangle().contains(position)) {
             // Claim mouse events for scrolling.
             r = std::max(r, hit_box{weak_from_this(), _draw_layer});
         }

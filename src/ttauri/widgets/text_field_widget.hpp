@@ -123,9 +123,8 @@ public:
             }
 
             _preferred_size = {
-                f32x4{_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f},
-                f32x4{std::numeric_limits<float>::infinity(), theme::global->smallSize + theme::global->margin * 2.0f}};
-            _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
+                extent2{_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f},
+                extent2{std::numeric_limits<float>::infinity(), theme::global->smallSize + theme::global->margin * 2.0f}};
             _width_resistance = 2;
 
             return true;
@@ -144,17 +143,11 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _text_field_rectangle =
-                aarect{rectangle().x(), rectangle().y(), _text_width + theme::global->margin * 2.0f, rectangle().height()};
-            auto _text_field_window_rectangle = aarect{
-                _window_rectangle.x() + theme::global->borderWidth * 2.0f,
-                _window_rectangle.y(),
-                _text_width + theme::global->margin * 2.0f - theme::global->borderWidth * 4.0f,
-                _window_rectangle.height()};
+            _text_field_rectangle = aarect{extent2{_text_width + theme::global->margin * 2.0f, _size.height()}};
 
             // Set the clipping rectangle to within the border of the input field.
             // Add another border width, so glyphs do not touch the border.
-            _text_field_clipping_rectangle = intersect(window_clipping_rectangle(), _text_field_window_rectangle);
+            _text_field_clipping_rectangle = intersect(_clipping_rectangle, _text_field_rectangle);
 
             _text_rectangle = shrink(_text_field_rectangle, theme::global->margin);
 
@@ -194,7 +187,7 @@ public:
 
         _next_redraw_time_point = display_time_point + _blink_interval;
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, this->_clipping_rectangle)) {
             scroll_text();
 
             draw_background_box(context);
@@ -265,10 +258,9 @@ public:
         auto handled = super::handle_event(event);
 
         // Make sure we only scroll when dragging outside the widget.
-        ttlet position = _from_window_transform * event.position;
         _drag_scroll_speed_x = 0.0f;
         _drag_click_count = event.clickCount;
-        _drag_select_position = position;
+        _drag_select_position = event.position;
 
         if (event.cause.leftButton) {
             handled = true;
@@ -280,8 +272,8 @@ public:
             switch (event.type) {
                 using enum mouse_event::Type;
             case ButtonDown:
-                if (_text_rectangle.contains(position)) {
-                    ttlet mouseInTextPosition = _text_inv_translate * position;
+                if (_text_rectangle.contains(event.position)) {
+                    ttlet mouseInTextPosition = _text_inv_translate * event.position;
 
                     switch (event.clickCount) {
                     case 1:
@@ -306,14 +298,14 @@ public:
             case Drag:
                 // When the mouse is dragged beyond the line input,
                 // start scrolling the text and select on the edge of the textRectangle.
-                if (position.x() > _text_rectangle.p3().x()) {
+                if (event.position.x() > _text_rectangle.p3().x()) {
                     // The mouse is on the right of the text.
                     _drag_select_position.x() = _text_rectangle.p3().x();
 
                     // Scroll text to the left in points per second.
                     _drag_scroll_speed_x = 50.0f;
 
-                } else if (position.x() < _text_rectangle.x()) {
+                } else if (event.position.x() < _text_rectangle.x()) {
                     // The mouse is on the left of the text.
                     _drag_select_position.x() = _text_rectangle.x();
 
@@ -362,11 +354,11 @@ public:
         return handled;
     }
 
-    hit_box hitbox_test(f32x4 window_position) const noexcept override
+    hit_box hitbox_test(point2 position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (window_clipping_rectangle().contains(window_position)) {
+        if (rectangle().contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::TextEdit : hit_box::Type::Default};
         } else {
             return hit_box{};
@@ -418,7 +410,7 @@ private:
      */
     int _drag_click_count = 0;
 
-    f32x4 _drag_select_position = {};
+    point2 _drag_select_position = {};
 
     /** How much the text has scrolled in points.
      */
@@ -498,7 +490,8 @@ private:
         _text_scroll_x = std::clamp(_text_scroll_x, 0.0f, max_scroll_width);
 
         // Calculate how much we need to translate the text.
-        _text_translate = translate2{-_text_scroll_x, 0.0f} * _shaped_text.translate_base_line(f32x4{_text_rectangle.x(), base_line()});
+        _text_translate = translate2{-_text_scroll_x, 0.0f} *
+            _shaped_text.translate_base_line(point2{_text_rectangle.x(), rectangle().middle()});
         _text_inv_translate = ~_text_translate;
     }
 
@@ -508,8 +501,7 @@ private:
         context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
         ttlet line_rectangle = aarect{_text_field_rectangle.p0(), f32x4{_text_field_rectangle.width(), 1.0}};
-        context.transform = context.transform * translate3{0.0f, 0.0f, 0.1f};
-        context.draw_filled_quad(line_rectangle, focus_color());
+        context.draw_filled_quad(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
     }
 
     void draw_selection_rectangles(draw_context context) const noexcept

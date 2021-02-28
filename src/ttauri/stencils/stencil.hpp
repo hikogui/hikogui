@@ -27,7 +27,7 @@ public:
 
     /** Return the extent that this cell wants to be drawn as.
      */
-    [[nodiscard]] virtual f32x4 preferred_extent() noexcept
+    [[nodiscard]] virtual extent2 preferred_extent() noexcept
     {
         return {};
     }

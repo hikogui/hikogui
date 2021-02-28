@@ -31,7 +31,7 @@ namespace tt {
     return {nr_left + nr_right, nr_bottom + nr_top};
 }
 
-[[nodiscard]] f32x4
+[[nodiscard]] extent2
 grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -90,7 +90,7 @@ bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         _preferred_size = {
             calculate_cell_min_size(_cells, _rows, _columns),
-            f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
         return true;
     } else {
         return false;

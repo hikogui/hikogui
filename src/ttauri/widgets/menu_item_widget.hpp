@@ -239,7 +239,7 @@ public:
 
             ttlet height = _label_stencil->preferred_extent().height() + theme::global->margin * 2.0f;
             this->_preferred_size = {
-                f32x4{width, height}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+                extent2{width, height}, extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             return true;
         } else {
             return false;
@@ -287,7 +287,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, this->_clipping_rectangle)) {
             draw_background(context);
             draw_check_mark(context);
             draw_label(context);

@@ -128,7 +128,7 @@ bool gui_window::is_closed()
     return std::ceil(dpi / 100.0f);
 }
 
-void gui_window::window_changed_size(f32x4 new_extent)
+void gui_window::window_changed_size(extent2 new_extent)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 

@@ -24,7 +24,8 @@ widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> p
         window.request_redraw(aarect{this->local_to_window() * this->clipping_rectangle()});
     });
 
-    _preferred_size = {f32x4{0.0f, 0.0f}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+    _preferred_size = {
+        extent2{0.0f, 0.0f}, extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
 }
 
 widget::~widget() {}

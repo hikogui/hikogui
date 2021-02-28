@@ -66,6 +66,12 @@ public:
         tt_axiom(is_valid());
     }
 
+    template<int E>
+    requires(E <= D) [[nodiscard]] constexpr explicit translate(point<E> const &other) noexcept : _v(static_cast<f32x4>(other).xyz0())
+    {
+        tt_axiom(is_valid());
+    }
+
     [[nodiscard]] constexpr translate(float x, float y) noexcept requires(D == 2) : _v(x, y, 0.0, 0.0) {}
 
     [[nodiscard]] constexpr translate(float x, float y, float z = 0.0) noexcept requires(D == 3) : _v(x, y, z, 0.0) {}

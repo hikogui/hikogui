@@ -43,10 +43,8 @@ public:
 
             if constexpr (arrangement == arrangement::row) {
                 _preferred_size = {_layout.minimum_size(), shared_thickness};
-                _preferred_base_line = shared_base_line;
             } else {
                 _preferred_size = {shared_thickness, _layout.minimum_size()};
-                _preferred_base_line = relative_base_line{};
             }
             return true;
         } else {
@@ -90,9 +88,8 @@ private:
 
         ttlet length_resistance = arrangement == arrangement::row ? child.width_resistance() : child.height_resistance();
 
-        _layout.update(index, length, length_resistance, child.margin(), child.preferred_base_line());
+        _layout.update(index, length, length_resistance, child.margin());
 
-        shared_base_line = std::max(shared_base_line, child.preferred_base_line());
         shared_thickness = std::max(shared_thickness, thickness + child.margin() * 2.0f);
     }
 

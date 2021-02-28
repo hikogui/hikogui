@@ -50,7 +50,9 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
 
         ttlet content_size = _content->preferred_size();
         _preferred_size = intersect(
-            max(content_size + toolbar_size._0y(), toolbar_size.x0()), interval_vec2::make_maximum(window.virtual_screen_size()));
+            max(content_size + interval_extent2{finterval{}, toolbar_size.height()},
+                interval_extent2{toolbar_size.width(), finterval{}}),
+            interval_extent2::make_maximum(window.virtual_screen_size()));
         return true;
     } else {
         return false;

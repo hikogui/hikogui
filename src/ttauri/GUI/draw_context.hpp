@@ -96,7 +96,7 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    void draw_filled_quad(f32x4 p1, f32x4 p2, f32x4 p3, f32x4 p4, color fill_color) const noexcept
+    void draw_filled_quad(point3 p1, point3 p2, point3 p3, point3 p4, color fill_color) const noexcept
     {
         tt_axiom(_flat_vertices != nullptr);
         _flat_vertices->emplace_back(aarect{transform * clipping_rectangle}, transform * p1, fill_color);
@@ -112,9 +112,21 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
+    void draw_filled_quad(rect r, color fill_color) const noexcept
+    {
+        draw_filled_quad(get<0>(r), get<1>(r), get<2>(r), get<3>(r), fill_color);
+    }
+
+    /** Draw a rectangle of one color.
+     * This function will draw the given rectangle.
+     * This will use the current:
+     *  - transform, to transform each corner of the rectangle.
+     *  - clippingRectangle
+     *  - fillColor
+     */
     void draw_filled_quad(aarect r, color fill_color) const noexcept
     {
-        draw_filled_quad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>(), fill_color);
+        draw_filled_quad(rect{r}, fill_color);
     }
 
     /** Draw an axis aligned box

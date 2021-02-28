@@ -71,7 +71,9 @@ public:
             }
 
             tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-            _preferred_size = {f32x4{_layout.minimum_size(), shared_height}, f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            _preferred_size = {
+                extent2{_layout.minimum_size(), shared_height},
+                extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             return true;
         } else {
             return false;

@@ -29,7 +29,7 @@ struct vertex {
     sfloat_rgba16 color;
 
 
-    vertex(aarect clippingRectangle, f32x4 position, tt::color color) noexcept :
+    vertex(aarect clippingRectangle, point3 position, tt::color color) noexcept :
         position(position),
         clipping_rectangle(clippingRectangle),
         color(color) {}

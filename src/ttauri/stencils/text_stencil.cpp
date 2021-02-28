@@ -18,7 +18,7 @@ text_stencil::text_stencil(alignment alignment, std::u8string text, text_style s
 {
 }
 
-f32x4 text_stencil::preferred_extent() noexcept
+extent2 text_stencil::preferred_extent() noexcept
 {
     return _shaped_text.preferred_extent;
 }
@@ -33,7 +33,7 @@ void text_stencil::draw(draw_context context, tt::color color) noexcept
     }
 
     if (std::exchange(_position_is_modified, false)) {
-        _shaped_text_transform = _shaped_text.translate_base_line(f32x4{_rectangle.x(), _base_line_position});
+        _shaped_text_transform = _shaped_text.translate_base_line(point2{_rectangle.x(), _base_line_position});
     }
 
     context.transform = context.transform * _shaped_text_transform;

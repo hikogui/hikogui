@@ -44,7 +44,6 @@ public:
         if (has_updated_contraints) {
 
             ttlet &child = selected_child();
-            _preferred_base_line = child.preferred_base_line();
             if (compare_then_assign(_preferred_size, child.preferred_size())) {
                 // The size of the selected child has changed, resize the window.
                 window.requestResize = true;
@@ -77,10 +76,11 @@ public:
         // Do not call super::draw, only the selected child should be drawn.
     }
 
-    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override
+    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        return selected_child().hitbox_test(window_position);
+        ttlet &child = selected_child();
+        return child.hitbox_test(point2{child.parent_to_local() * position});
     }
 
     std::shared_ptr<widget> find_next_widget(

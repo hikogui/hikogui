@@ -89,11 +89,11 @@ public:
         return handled;
     }
 
-    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept final
+    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept final
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (_window_clipping_rectangle.contains(window_position)) {
+        if (rectangle().contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default};
         } else {
             return hit_box{};

@@ -26,7 +26,7 @@
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../unfair_recursive_mutex.hpp"
-#include "../interval_vec2.hpp"
+#include "../interval_extent2.hpp"
 #include "../flow_layout.hpp"
 #include "../ranged_numeric.hpp"
 #include <limits>
@@ -230,7 +230,7 @@ public:
      * @pre `updateConstraint()` must be called first.
      * @return The minimum and maximum size as an interval of a 2D vector.
      */
-    [[nodiscard]] interval_vec2 preferred_size() const noexcept
+    [[nodiscard]] interval_extent2 preferred_size() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return _preferred_size;
@@ -320,6 +320,14 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return aarect{_size};
+    }
+
+    /** Return the base-line where the text should be located.
+     * @return Number of pixels from the bottom of the widget where the base-line is located.
+     */
+    [[nodiscard]] virtual float base_line() const noexcept
+    {
+        return rectangle().middle();
     }
 
     [[nodiscard]] gui_device *device() const noexcept;
@@ -584,7 +592,7 @@ protected:
      */
     bool _request_relayout = true;
 
-    interval_vec2 _preferred_size;
+    interval_extent2 _preferred_size;
 
     ranged_int<3> _width_resistance = 1;
     ranged_int<3> _height_resistance = 1;

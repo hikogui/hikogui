@@ -296,6 +296,22 @@ public:
         return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
     }
 
+    [[nodiscard]] friend std::string to_string(extent const &rhs) noexcept
+    {
+        if constexpr (D == 2) {
+            return fmt::format("[{}, {}]", rhs._v.x(), rhs._v.y());
+        } else if constexpr (D == 3) {
+            return fmt::format("[{}, {}, {}]", rhs._v.x(), rhs._v.y(), rhs._v.z());
+        } else {
+            tt_static_no_default();
+        }
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, extent const &rhs) noexcept
+    {
+        return lhs << to_string(rhs);
+    }
+
 private:
     f32x4 _v;
 

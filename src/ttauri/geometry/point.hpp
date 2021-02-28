@@ -127,6 +127,14 @@ public:
         return _v.z();
     }
 
+    template<int E> requires (E <= D)
+    constexpr point &operator+=(vector<E> const &rhs) noexcept
+    {
+        tt_axiom(is_valid() && rhs.is_valid());
+        _v = _v + static_cast<f32x4>(rhs);
+        return *this;
+    }
+
     /** Move a point along a vector.
      * @param lhs The point to move.
      * @param rhs The vector to move along.

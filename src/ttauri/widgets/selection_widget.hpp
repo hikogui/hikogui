@@ -100,8 +100,7 @@ public:
             ttlet option_height = std::max(unknown_label_size.height(), _max_option_label_height) + theme::global->margin * 2.0f;
             ttlet chevron_width = theme::global->smallSize;
 
-            _preferred_size = interval_vec2::make_minimum(f32x4{chevron_width + option_width, option_height});
-            _preferred_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 200.0f};
+            _preferred_size = interval_extent2::make_minimum(extent2{chevron_width + option_width, option_height});
             return true;
 
         } else {
@@ -126,11 +125,14 @@ public:
                 ttlet overlay_width =
                     clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
                 ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
-                ttlet overlay_x = _window_rectangle.x() + theme::global->smallSize;
-                ttlet overlay_y = std::round(_window_rectangle.middle() - overlay_height * 0.5f);
-                ttlet overlay_rectangle = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
+                ttlet overlay_x = theme::global->smallSize;
+                ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
+                ttlet overlay_rectangle_request = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
 
-                _overlay_widget->set_layout_parameters_from_parent(overlay_rectangle, overlay_rectangle);
+                ttlet overlay_rectangle = _overlay_widget->make_overlay_rectangle_from_parent(overlay_rectangle_request);
+                ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
+
+                _overlay_widget->set_layout_parameters_from_parent(overlay_rectangle, overlay_clipping_rectangle);
             }
         }
 
@@ -159,7 +161,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, this->_clipping_rectangle)) {
             draw_outline(context);
             draw_left_box(context);
             draw_chevrons(context);
@@ -217,18 +219,17 @@ public:
         return super::handle_event(command);
     }
 
-    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override
+    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        ttlet position = _from_window_transform * window_position;
 
         auto r = hit_box{};
 
         if (_selecting) {
-            r = super::hitbox_test(window_position);
+            r = super::hitbox_test(position);
         }
 
-        if (window_clipping_rectangle().contains(window_position)) {
+        if (rectangle().contains(position)) {
             r = std::max(r, hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default});
         }
 

@@ -58,8 +58,7 @@ public:
                 std::max({_on_label_stencil->preferred_extent().width(), _off_label_stencil->preferred_extent().width()}) +
                 theme::global->smallSize * 2.0f + theme::global->margin;
 
-            _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-            _preferred_base_line = relative_base_line{vertical_alignment::top, -theme::global->smallSize * 0.5f};
+            _preferred_size = interval_extent2::make_minimum(minimumWidth, minimumHeight);
 
             return true;
         } else {
@@ -98,7 +97,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, _clipping_rectangle)) {
             draw_rail(context);
             draw_slider(context);
             draw_label(context);

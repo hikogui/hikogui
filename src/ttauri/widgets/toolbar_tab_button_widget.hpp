@@ -51,14 +51,6 @@ public:
         });
     }
 
-    /** The tab button widget will draw beyond the normal clipping rectangle.
-     */
-    [[nodiscard]] aarect window_clipping_rectangle() const noexcept override
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->parent().window_clipping_rectangle();
-    }
-
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -76,9 +68,8 @@ public:
             ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * theme::global->margin;
 
             this->_preferred_size = {
-                f32x4{minimum_width, minimum_height},
-                f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
-            this->_preferred_base_line = relative_base_line{vertical_alignment::middle, -theme::global->margin};
+                extent2{minimum_width, minimum_height},
+                extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
             return true;
         } else {
             return false;
@@ -111,7 +102,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, this->_clipping_rectangle)) {
             draw_button(context);
             draw_label(context);
             draw_focus_line(context);
@@ -178,7 +169,7 @@ private:
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
         // so that the bottom border of the tab button is not drawn.
-        context.clipping_rectangle = this->_parent_to_local * this->parent().clipping_rectangle();
+        context.clipping_rectangle = aarect{this->_parent_to_local * this->parent().clipping_rectangle()};
 
         auto button_color = (this->_hover || *this->value == this->true_value) ?
             theme::global->fillColor(this->_semantic_layer - 1) :
