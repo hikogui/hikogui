@@ -111,6 +111,7 @@ init:
   - msbuild /version
   - vcpkg version
   - if [%COMPILER%]==[CLANG] clang++ -v
+  - echo NUMBER_OF_PROCESSORS=%NUMBER_OF_PROCESSORS%
 
 install:
   #
@@ -206,7 +207,7 @@ build_script:
   #
   # build
   #
-  - cmake --build ..\ttauri-build --config %BUILD_TYPE% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmake --build ..\ttauri-build --config %BUILD_TYPE% -j %NUMBER_OF_PROCESSORS% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   #
   # install
   #
