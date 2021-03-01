@@ -112,7 +112,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 new_extent)
+void gui_window_vulkan_win32::create_window(const std::u8string &_title, extent2 new_extent)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
@@ -132,8 +132,8 @@ void gui_window_vulkan_win32::create_window(const std::u8string &_title, f32x4 n
         // Size and position
         500,
         500,
-        narrow_cast<int>(new_extent.x()),
-        narrow_cast<int>(new_extent.y()),
+        narrow_cast<int>(new_extent.width()),
+        narrow_cast<int>(new_extent.height()),
 
         NULL, // Parent window
         NULL, // Menu
@@ -233,7 +233,7 @@ void gui_window_vulkan_win32::normalize_window()
     });
 }
 
-void gui_window_vulkan_win32::set_window_size(f32x4 new_extent)
+void gui_window_vulkan_win32::set_window_size(extent2 new_extent)
 {
     gui_system_mutex.lock();
     ttlet handle = reinterpret_cast<HWND>(win32Window);
@@ -251,7 +251,7 @@ void gui_window_vulkan_win32::set_window_size(f32x4 new_extent)
     });
 }
 
-[[nodiscard]] f32x4 gui_window_vulkan_win32::virtual_screen_size() const noexcept
+[[nodiscard]] extent2 gui_window_vulkan_win32::virtual_screen_size() const noexcept
 {
     ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
     ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
@@ -381,7 +381,7 @@ void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 
     auto screen_extent = virtual_screen_size();
 
-    _screen_rectangle = iaarect{rect.left, screen_extent.height() - rect.bottom, rect.right - rect.left, rect.bottom - rect.top};
+    _screen_rectangle = aarect{rect.left, screen_extent.height() - rect.bottom, rect.right - rect.left, rect.bottom - rect.top};
 
     // Force a redraw, so that the swapchain is used and causes out-of-date results on window resize,
     // which in turn will cause a forceLayout.
@@ -661,9 +661,9 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         gui_system_mutex.lock();
         ttlet screen_extent = virtual_screen_size();
         ttlet screen_position =
-            f32x4::point(narrow_cast<float>(GET_X_LPARAM(lParam)), screen_extent.height() - narrow_cast<float>(GET_Y_LPARAM(lParam)));
+            point2(narrow_cast<float>(GET_X_LPARAM(lParam)), screen_extent.height() - narrow_cast<float>(GET_Y_LPARAM(lParam)));
 
-        ttlet window_position = screen_position - f32x4{_screen_rectangle.offset()};
+        ttlet window_position = screen_position - _screen_rectangle.offset();
         ttlet hitbox_type = widget->hitbox_test(window_position).type;
         gui_system_mutex.unlock();
 
@@ -744,9 +744,9 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
     mouseEvent.position =
-        f32x4::point(narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(extent.y() - GET_Y_LPARAM(lParam)));
+        point2(narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(extent.height() - GET_Y_LPARAM(lParam)));
 
-    mouseEvent.wheelDelta = f32x4{};
+    mouseEvent.wheelDelta = {};
     if (uMsg == WM_MOUSEWHEEL) {
         mouseEvent.wheelDelta.y() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
     } else if (uMsg == WM_MOUSEHWHEEL) {

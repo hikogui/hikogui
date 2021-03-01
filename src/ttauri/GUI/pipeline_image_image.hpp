@@ -71,8 +71,8 @@ struct Image {
     /*! Place vertices for this image.
      * An image is build out of atlas pages, that need to be individual rendered.
      * A page with the value std::numeric_limits<uint16_t>::max() is not rendered.
-     *     */
-    void placeVertices(vspan<vertex> &vertices, matrix3 transform, aarect clippingRectangle);
+     */
+    void place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, matrix3 transform);
 
     /** Upload image to atlas.
      */

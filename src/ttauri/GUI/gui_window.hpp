@@ -75,7 +75,7 @@ public:
     gui_window_size size_state = gui_window_size::normal;
 
     //! The current window extent as set by the GPU library.
-    f32x4 extent;
+    extent2 extent;
 
     std::weak_ptr<gui_window_delegate> delegate;
 
@@ -189,7 +189,7 @@ public:
 
     /** Ask the operating system to set the size of this window.
      */
-    virtual void set_window_size(f32x4 extent) = 0;
+    virtual void set_window_size(extent2 extent) = 0;
 
     /** Retrieve a text string from the operating system's clip-board.
      */
@@ -199,7 +199,7 @@ public:
      */
     virtual void set_text_on_clipboard(std::string str) noexcept = 0;
 
-    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, f32x4 position = f32x4{0.0f, 0.0f}) noexcept;
+    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, point2 position = {}) noexcept;
 
     /** Change the keyboard focus to the given widget.
      * If the group of the widget is incorrect then no widget will be in focus.
@@ -228,7 +228,7 @@ public:
      * Each window may be on a different virtual screen with different
      * sizes, so retrieve it on a per window basis.
      */
-    [[nodiscard]] virtual f32x4 virtual_screen_size() const noexcept = 0;
+    [[nodiscard]] virtual extent2 virtual_screen_size() const noexcept = 0;
 
 protected:
     /** The device the window is assigned to.
@@ -248,7 +248,7 @@ protected:
      * It may also be used for the extent of the window when the GPU
      * library is unable to determine the extent of the surface.
      */
-    iaarect _screen_rectangle;
+    aarect _screen_rectangle;
 
     bool _request_setting_change = true;
 
@@ -258,7 +258,7 @@ protected:
      * @param title The title of the window.
      * @param extent The size of the window.
      */
-    virtual void create_window(const std::u8string &title, f32x4 extent) = 0;
+    virtual void create_window(const std::u8string &title, extent2 extent) = 0;
 
     /** By how much graphic elements should be scaled to match a point.
      * The widget should not care much about this value, since the
@@ -268,7 +268,7 @@ protected:
 
     /*! Called when the GPU library has changed the window size.
      */
-    virtual void window_changed_size(f32x4 new_extent);
+    virtual void window_changed_size(extent2 new_extent);
 
     /*! Teardown Window based on State::*_LOST
      */

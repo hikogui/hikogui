@@ -47,10 +47,15 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet toolbar_size = _toolbar->preferred_size();
-
         ttlet content_size = _content->preferred_size();
-        _preferred_size = intersect(
-            max(content_size + toolbar_size._0y(), toolbar_size.x0()), interval_vec2::make_maximum(window.virtual_screen_size()));
+
+        float min_width = std::max(toolbar_size.width().minimum(), content_size.width().minimum());
+        float max_width = std::min({toolbar_size.width().maximum(), content_size.width().maximum(), window.virtual_screen_size().width()});
+
+        float min_height = toolbar_size.height().minimum() + content_size.height().minimum();
+        float max_height = std::min(toolbar_size.height().maximum() + content_size.height().maximum(), window.virtual_screen_size().height());
+
+        _preferred_size = interval_extent2{extent2{min_width, min_height}, extent2{max_width, max_height}};
         return true;
     } else {
         return false;
@@ -66,27 +71,26 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
         ttlet toolbar_size = _toolbar->preferred_size();
         ttlet toolbar_height = toolbar_size.minimum().height();
         ttlet toolbar_rectangle = aarect{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        _toolbar->set_layout_parameters(translate2{_window_rectangle} * toolbar_rectangle, _window_clipping_rectangle);
+        _toolbar->set_layout_parameters_from_parent(toolbar_rectangle);
 
         ttlet content_size = _content->preferred_size();
         ttlet content_rectangle = aarect{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        _content->set_layout_parameters(translate2{_window_rectangle} * content_rectangle, _window_clipping_rectangle);
+        _content->set_layout_parameters_from_parent(content_rectangle);
     }
 
     abstract_container_widget::update_layout(display_time_point, need_layout);
 }
 
-hit_box window_widget::hitbox_test(f32x4 window_position) const noexcept
+hit_box window_widget::hitbox_test(point2 position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    ttlet position = _from_window_transform * window_position;
 
     constexpr float BORDER_WIDTH = 10.0f;
 
     ttlet is_on_left_edge = position.x() <= BORDER_WIDTH;
-    ttlet is_on_right_edge = position.x() >= (rectangle().width() - BORDER_WIDTH);
+    ttlet is_on_right_edge = position.x() >= (_size.width() - BORDER_WIDTH);
     ttlet is_on_bottom_edge = position.y() <= BORDER_WIDTH;
-    ttlet is_on_top_edge = position.y() >= (rectangle().height() - BORDER_WIDTH);
+    ttlet is_on_top_edge = position.y() >= (_size.height() - BORDER_WIDTH);
 
     ttlet is_on_bottom_left_corner = is_on_bottom_edge && is_on_left_edge;
     ttlet is_on_bottom_right_corner = is_on_bottom_edge && is_on_right_edge;
@@ -112,17 +116,13 @@ hit_box window_widget::hitbox_test(f32x4 window_position) const noexcept
         r.type = hit_box::Type::TopResizeBorder;
     }
 
-    if (
-        (is_on_left_edge && left_resize_border_has_priority) ||
-        (is_on_right_edge && right_resize_border_has_priority) ||
-        (is_on_bottom_edge && bottom_resize_border_has_priority) ||
-        (is_on_top_edge && top_resize_border_has_priority)
-    ) {
+    if ((is_on_left_edge && left_resize_border_has_priority) || (is_on_right_edge && right_resize_border_has_priority) ||
+        (is_on_bottom_edge && bottom_resize_border_has_priority) || (is_on_top_edge && top_resize_border_has_priority)) {
         return r;
     }
 
     for (ttlet &child : _children) {
-        r = std::max(r, child->hitbox_test(window_position));
+        r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
     }
 
     return r;

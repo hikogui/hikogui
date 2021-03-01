@@ -8,6 +8,8 @@
 #include "../endian.hpp"
 #include "../codec/UTF.hpp"
 #include "../logger.hpp"
+#include "../geometry/vector.hpp"
+#include "../geometry/point.hpp"
 #include <cstddef>
 
 
@@ -819,7 +821,13 @@ struct KERNFormat0_entry {
     FWord_buf_t value;
 };
 
-static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id, f32x4 &r) noexcept
+static void getKerningFormat0(
+    std::span<std::byte const> const &bytes,
+    uint16_t coverage,
+    float unitsPerEm,
+    glyph_id glyph1_id,
+    glyph_id glyph2_id,
+    vector2 &r) noexcept
 {
     ssize_t offset = 0;
 
@@ -856,14 +864,20 @@ static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t 
     }
 }
 
-static void getKerningFormat3(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id, f32x4 &r) noexcept
+static void getKerningFormat3(
+    std::span<std::byte const> const &bytes,
+    uint16_t coverage,
+    float unitsPerEm,
+    glyph_id glyph1_id,
+    glyph_id glyph2_id,
+    vector2 &r) noexcept
 {
     tt_not_implemented();
 }
 
-[[nodiscard]] static f32x4 getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
+[[nodiscard]] static vector2 getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
 {
-    auto r = f32x4(0.0f, 0.0f);
+    auto r = vector2{0.0f, 0.0f};
     ssize_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNTable_ver0>(bytes, offset), r);
@@ -948,7 +962,7 @@ bool true_type_font::updateglyph_metrics(
         leftSideBearing = leftSideBearings[static_cast<uint16_t>(glyph_id) - numberOfHMetrics].value(unitsPerEm);
     }
 
-    metrics.advance = f32x4{advanceWidth, 0.0f};
+    metrics.advance = vector2{advanceWidth, 0.0f};
     metrics.leftSideBearing = leftSideBearing;
     metrics.rightSideBearing = advanceWidth - (leftSideBearing + metrics.boundingBox.width());
     metrics.ascender = ascender;

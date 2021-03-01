@@ -26,7 +26,7 @@ struct attributed_glyph {
 
     /** Position of the glyph.
     */
-    f32x4 position;
+    point2 position;
 
     /** Number of graphemes merged (ligature) into this attributed-glyph. */
     int8_t graphemeCount;
@@ -92,7 +92,7 @@ struct attributed_glyph {
      * This makes clusters of:
      *  - paragraph separator.
      *  - identifiers (letter and digits),
-     *  - visibiles (other marks and symbols)
+     *  - visibles (other marks and symbols)
      *  - whitespace
      */
     [[nodiscard]] int selectionWordClusterID() const noexcept {
@@ -112,14 +112,14 @@ struct attributed_glyph {
      * @param border The 1EM scaled border around the glyph bounding box.
      */
     [[nodiscard]] aarect boundingBox(float border) const noexcept {
-        return translate2{position.xy00()} * expand(metrics.boundingBox, border * style.scaled_size());
+        return translate2{position} * expand(metrics.boundingBox, border * style.scaled_size());
     }
 
     /** Find the logical index closest to the coordinate.
      * For a non-ligature, left of the halfway-point returnes the current logicalIndex,
      * right of the halfway-point return the next logicalIndex.
      */
-    [[nodiscard]] ssize_t relativeIndexAtCoordinate(f32x4 coordinate) const noexcept {
+    [[nodiscard]] ssize_t relativeIndexAtCoordinate(point2 coordinate) const noexcept {
         ttlet relativePositionInGlyph = (coordinate.x() - position.x()) / metrics.advance.x();
         ttlet relativePositionPergrapheme = relativePositionInGlyph * narrow_cast<float>(graphemeCount);
         return narrow_cast<ssize_t>(std::round(relativePositionPergrapheme));

@@ -5,7 +5,9 @@
 #pragma once
 
 #include "mouse_buttons.hpp"
-#include "../numeric_array.hpp"
+#include "../geometry/point.hpp"
+#include "../geometry/vector.hpp"
+#include "../geometry/transform.hpp"
 #include "../hires_utc_clock.hpp"
 
 namespace tt {
@@ -18,13 +20,13 @@ struct mouse_event {
     hires_utc_clock::time_point timePoint;
 
     //! The current position of the mouse pointer.
-    f32x4 position;
+    point2 position;
 
     //! The position the last time a button was pressed.
-    f32x4 downPosition;
+    point2 downPosition;
 
     //! Change in wheel rotation, in pixels.
-    f32x4 wheelDelta;
+    vector2 wheelDelta;
 
     //! Buttons which has caused this event.
     mouse_buttons cause;
@@ -44,13 +46,7 @@ struct mouse_event {
     {
     }
 
-    /** Get the location of the mouse relative to the start of a drag.
-     */
-    [[nodiscard]] f32x4 delta() const noexcept {
-        return type == Type::Drag ? position - downPosition : f32x4{};
-    }
-
-    static mouse_event entered(f32x4 position=f32x4::point({0.0f, 0.0f})) noexcept {
+    static mouse_event entered(point2 position={}) noexcept {
         mouse_event event;
         event.position = position;
         event.type = mouse_event::Type::Entered;
@@ -63,9 +59,25 @@ struct mouse_event {
         constexpr float far_ = std::numeric_limits<float>::max() * -0.5f;
 
         mouse_event event;
-        event.position = f32x4{far_, far_};
+        event.position = point2{far_, far_};
         event.type = mouse_event::Type::Exited;
         return event;
+    }
+
+    /** Get the location of the mouse relative to the start of a drag.
+     */
+    [[nodiscard]] vector2 delta() const noexcept
+    {
+        return type == Type::Drag ? position - downPosition : vector2{};
+    }
+
+    [[nodiscard]] friend mouse_event operator*(geo::transformer auto const &transform, mouse_event const &rhs) noexcept
+    {
+        auto r = rhs;
+        r.position = point2{transform * rhs.position};
+        r.downPosition = point2{transform * rhs.downPosition};
+        r.wheelDelta = vector2{transform * rhs.wheelDelta};
+        return r;
     }
 
     friend std::string to_string(mouse_event const &rhs) noexcept {

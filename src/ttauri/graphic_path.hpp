@@ -235,7 +235,7 @@ struct graphic_path {
 
     /** Center and scale a path inside the extent with padding.
      */
-    [[nodiscard]] graphic_path centerScale(f32x4 extent, float padding = 0.0) const noexcept;
+    [[nodiscard]] graphic_path centerScale(extent2 extent, float padding = 0.0) const noexcept;
 
     graphic_path &operator+=(graphic_path const &rhs) noexcept;
 
@@ -244,7 +244,7 @@ struct graphic_path {
         return lhs += rhs;
     }
 
-    friend graphic_path operator*(geo::transformer<2> auto const &lhs, graphic_path const &rhs) noexcept
+    friend graphic_path operator*(geo::transformer auto const &lhs, graphic_path const &rhs) noexcept
     {
         auto rhs_ = rhs;
         for (auto &&point : rhs_.points) {

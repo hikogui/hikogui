@@ -23,6 +23,11 @@ public:
         return matrix<E>();
     }
 
+    [[nodiscard]] identity operator~() const noexcept
+    {
+        return {};
+    }
+
     template<int E>
     [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
     {
@@ -36,12 +41,6 @@ public:
     }
 
     [[nodiscard]] constexpr color operator*(color const &rhs) const noexcept
-    {
-        return rhs;
-    }
-
-    template<int E>
-    [[nodiscard]] constexpr matrix<E> operator*(matrix<E> const &rhs) const noexcept
     {
         return rhs;
     }

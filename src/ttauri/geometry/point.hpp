@@ -35,6 +35,18 @@ public:
         tt_axiom(is_valid());
     }
 
+    /** Construct a point from a higher dimension point.
+     * This will clear the values in the higher dimensions.
+     */
+    template<int E>
+    requires(E > D) [[nodiscard]] constexpr explicit point(point<E> const &other) noexcept : _v(static_cast<f32x4>(other))
+    {
+        for (size_t i = D; i != E; ++i) {
+            _v[i] = 0.0f;
+        }
+        tt_axiom(is_valid());
+    }
+
     /** Convert a point to its f32x4-nummeric_array.
      */
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
@@ -115,6 +127,14 @@ public:
         return _v.z();
     }
 
+    template<int E> requires (E <= D)
+    constexpr point &operator+=(vector<E> const &rhs) noexcept
+    {
+        tt_axiom(is_valid() && rhs.is_valid());
+        _v = _v + static_cast<f32x4>(rhs);
+        return *this;
+    }
+
     /** Move a point along a vector.
      * @param lhs The point to move.
      * @param rhs The vector to move along.
@@ -191,6 +211,22 @@ public:
     [[nodiscard]] constexpr bool is_valid() const noexcept
     {
         return _v.w() != 0.0f && (D == 3 || _v.z() == 0.0f);
+    }
+
+    [[nodiscard]] friend std::string to_string(point const &rhs) noexcept
+    {
+        if constexpr (D == 2) {
+            return fmt::format("<{}, {}>", rhs._v.x(), rhs._v.y());
+        } else if constexpr (D == 3) {
+            return fmt::format("<{}, {}, {}>", rhs._v.x(), rhs._v.y(), rhs._v.z());
+        } else {
+            tt_static_no_default();
+        }
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, point const &rhs) noexcept
+    {
+        return lhs << to_string(rhs);
     }
 
 private:

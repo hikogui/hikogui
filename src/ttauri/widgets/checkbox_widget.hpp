@@ -82,8 +82,7 @@ public:
                  _other_label_stencil->preferred_extent().width()});
             ttlet minimum_width = theme::global->smallSize + theme::global->margin + minimum_width_of_labels;
 
-            this->_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            this->_preferred_base_line = relative_base_line{vertical_alignment::top, -theme::global->smallSize * 0.5f};
+            this->_preferred_size = interval_extent2::make_minimum(minimum_width, minimum_height);
 
             return true;
         } else {
@@ -97,7 +96,7 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _checkbox_rectangle = aarect{0.0f, this->base_line() - theme::global->smallSize * 0.5f, theme::global->smallSize, theme::global->smallSize};
+            _checkbox_rectangle = aarect{0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
 
             ttlet label_x = _checkbox_rectangle.p3().x() + theme::global->margin;
             _label_rectangle = aarect{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
@@ -123,7 +122,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, this->_clipping_rectangle)) {
             draw_check_box(context);
             draw_check_mark(context);
             draw_label(context);
@@ -162,15 +161,13 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
-
         // Checkmark or tristate.
         if (this->value == this->true_value) {
-            context.draw_glyph(_check_glyph, _check_glyph_rectangle, this->accent_color());
+            context.draw_glyph(_check_glyph, translate_z(0.1f) * _check_glyph_rectangle, this->accent_color());
         } else if (this->value == this->false_value) {
             ;
         } else {
-            context.draw_glyph(_minus_glyph, _minus_glyph_rectangle, this->accent_color());
+            context.draw_glyph(_minus_glyph, translate_z(0.1f) * _minus_glyph_rectangle, this->accent_color());
         }
     }
 

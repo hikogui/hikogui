@@ -18,7 +18,7 @@ public:
     pixel_map_stencil(tt::alignment alignment, pixel_map<sfloat_rgba16> const &pixel_map);
     pixel_map_stencil(tt::alignment alignment, URL const &url);
 
-    void draw(draw_context context, tt::color color) noexcept override;
+    void draw(draw_context context, tt::color color, matrix3 transform) noexcept override;
 
 private:
     pixel_map<sfloat_rgba16> _pixel_map;

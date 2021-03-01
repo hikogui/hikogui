@@ -33,17 +33,11 @@ namespace tt {
  */
 class draw_context {
 public:
-    /** The clipping rectangle when drawing.
-     * The clipping rectangle is passes as-is to the pipelines and
-     * is not modified by the transform.
-     */
-    aarect clipping_rectangle;
-
-    /** Transform used on the given coordinates.
-     * The z-axis translate is used for specifying the elevation
-     * (inverse depth buffer) of the shape.
-     */
-    matrix3 transform = geo::identity{};
+    draw_context(draw_context const &rhs) noexcept = default;
+    draw_context(draw_context &&rhs) noexcept = default;
+    draw_context &operator=(draw_context const &rhs) noexcept = default;
+    draw_context &operator=(draw_context &&rhs) noexcept = default;
+    ~draw_context() = default;
 
     draw_context(
         gui_window &window,
@@ -58,7 +52,7 @@ public:
         _box_vertices(&boxVertices),
         _image_vertices(&imageVertices),
         _sdf_vertices(&sdfVertices),
-        clipping_rectangle(static_cast<f32x4>(window.extent))
+        _clipping_rectangle(static_cast<f32x4>(window.extent))
     {
         _flat_vertices->clear();
         _box_vertices->clear();
@@ -66,11 +60,30 @@ public:
         _sdf_vertices->clear();
     }
 
-    draw_context(draw_context const &rhs) noexcept = default;
-    draw_context(draw_context &&rhs) noexcept = default;
-    draw_context &operator=(draw_context const &rhs) noexcept = default;
-    draw_context &operator=(draw_context &&rhs) noexcept = default;
-    ~draw_context() = default;
+    [[nodiscard]] draw_context
+    make_child_context(matrix3 parent_to_local, matrix3 local_to_window, aarect clipping_rectangle) const noexcept
+    {
+        auto new_context = *this;
+        new_context._scissor_rectangle = aarect{parent_to_local * this->_scissor_rectangle};
+        new_context._clipping_rectangle = clipping_rectangle;
+        new_context._transform = local_to_window;
+        return new_context;
+    }
+
+    [[nodiscard]] aarect clipping_rectangle() const noexcept
+    {
+        return _clipping_rectangle;
+    }
+
+    void set_clipping_rectangle(aarect clipping_rectangle) noexcept
+    {
+        _clipping_rectangle = clipping_rectangle;
+    }
+
+    [[nodiscard]] matrix3 transform() const noexcept
+    {
+        return _transform;
+    }
 
     gui_window &window() const noexcept
     {
@@ -92,13 +105,13 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    void draw_filled_quad(f32x4 p1, f32x4 p2, f32x4 p3, f32x4 p4, color fill_color) const noexcept
+    void draw_filled_quad(point3 p1, point3 p2, point3 p3, point3 p4, color fill_color) const noexcept
     {
         tt_axiom(_flat_vertices != nullptr);
-        _flat_vertices->emplace_back(transform * p1, clipping_rectangle, fill_color);
-        _flat_vertices->emplace_back(transform * p2, clipping_rectangle, fill_color);
-        _flat_vertices->emplace_back(transform * p3, clipping_rectangle, fill_color);
-        _flat_vertices->emplace_back(transform * p4, clipping_rectangle, fill_color);
+        _flat_vertices->emplace_back(aarect{_transform * _clipping_rectangle}, _transform * p1, fill_color);
+        _flat_vertices->emplace_back(aarect{_transform * _clipping_rectangle}, _transform * p2, fill_color);
+        _flat_vertices->emplace_back(aarect{_transform * _clipping_rectangle}, _transform * p3, fill_color);
+        _flat_vertices->emplace_back(aarect{_transform * _clipping_rectangle}, _transform * p4, fill_color);
     }
 
     /** Draw a rectangle of one color.
@@ -108,9 +121,9 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    void draw_filled_quad(aarect r, color fill_color) const noexcept
+    void draw_filled_quad(rect r, color fill_color) const noexcept
     {
-        draw_filled_quad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>(), fill_color);
+        draw_filled_quad(get<0>(r), get<1>(r), get<2>(r), get<3>(r), fill_color);
     }
 
     /** Draw an axis aligned box
@@ -125,7 +138,7 @@ public:
      *  - cornerShapes
      */
     void draw_box(
-        aarect box,
+        rect box,
         color fill_color,
         color line_color,
         float line_width = 1.0,
@@ -134,19 +147,21 @@ public:
         tt_axiom(_box_vertices != nullptr);
 
         pipeline_box::device_shared::place_vertices(
-            *_box_vertices, clipping_rectangle, transform * box, fill_color, line_color, line_width, corner_shapes);
+            *_box_vertices,
+            aarect{_transform * _clipping_rectangle},
+            _transform * box,
+            fill_color,
+            line_color,
+            line_width,
+            corner_shapes);
     }
 
-    void draw_box(
-        aarect box,
-        color fill_color,
-        color line_color,
-        tt::corner_shapes corner_shapes) const noexcept
+    void draw_box(rect box, color fill_color, color line_color, tt::corner_shapes corner_shapes) const noexcept
     {
         draw_box(box, fill_color, line_color, 1.0, corner_shapes);
     }
 
-    void draw_box(aarect box, color fill_color, tt::corner_shapes corner_shapes) const noexcept
+    void draw_box(rect box, color fill_color, tt::corner_shapes corner_shapes) const noexcept
     {
         draw_box(box, fill_color, fill_color, 0.0, corner_shapes);
     }
@@ -167,7 +182,7 @@ public:
      *  - corner_shapes
      */
     void draw_box_with_border_inside(
-        aarect rectangle,
+        rect rectangle,
         color fill_color,
         color line_color,
         float line_width = 1.0,
@@ -182,14 +197,19 @@ public:
         ttlet new_corner_shapes = corner_shapes - shrink_value;
 
         pipeline_box::device_shared::place_vertices(
-            *_box_vertices, clipping_rectangle, transform * new_rectangle, fill_color, line_color, line_width, new_corner_shapes);
+            *_box_vertices,
+            aarect{_transform * _clipping_rectangle},
+            _transform * new_rectangle,
+            fill_color,
+            line_color,
+            line_width,
+            new_corner_shapes);
     }
 
-    void draw_box_with_border_inside(
-        aarect rectangle,
-        color fill_color,
-        color line_color,
-        tt::corner_shapes corner_shapes) const noexcept
+    
+
+    void draw_box_with_border_inside(rect rectangle, color fill_color, color line_color, tt::corner_shapes corner_shapes)
+        const noexcept
     {
         draw_box_with_border_inside(rectangle, fill_color, line_color, 1.0, corner_shapes);
     }
@@ -211,7 +231,7 @@ public:
      *  - cornerShapes
      */
     void draw_box_with_border_outside(
-        aarect rectangle,
+        rect rectangle,
         color fill_color,
         color line_color,
         float line_width = 1.0,
@@ -226,10 +246,16 @@ public:
         ttlet new_corner_shapes = corner_shapes + expand_value;
 
         pipeline_box::device_shared::place_vertices(
-            *_box_vertices, clipping_rectangle, transform * new_rectangle, fill_color, line_color, line_width, new_corner_shapes);
+            *_box_vertices,
+            aarect{_transform * _clipping_rectangle},
+            _transform * new_rectangle,
+            fill_color,
+            line_color,
+            line_width,
+            new_corner_shapes);
     }
 
-    void draw_box_with_border_outside(aarect rectangle, color fill_color, color line_color, tt::corner_shapes corner_shapes)
+    void draw_box_with_border_outside(rect rectangle, color fill_color, color line_color, tt::corner_shapes corner_shapes)
         const noexcept
     {
         draw_box_with_border_outside(rectangle, fill_color, line_color, 1.0, corner_shapes);
@@ -241,11 +267,11 @@ public:
      *  - transform, to transform the image.
      *  - clippingRectangle
      */
-    void draw_image(pipeline_image::Image &image) const noexcept
+    void draw_image(pipeline_image::Image &image, matrix3 image_transform) const noexcept
     {
         tt_axiom(_image_vertices != nullptr);
 
-        image.placeVertices(*_image_vertices, transform, clipping_rectangle);
+        image.place_vertices(*_image_vertices, aarect{_transform * _clipping_rectangle}, _transform * image_transform);
     }
 
     /** Draw shaped text.
@@ -258,25 +284,25 @@ public:
      * @param text The shaped text to draw.
      * @param useContextColor When true display the text in the context's color, if false use text style color
      */
-    void draw_text(shaped_text const &text, std::optional<color> text_color = {}) const noexcept
+    void draw_text(shaped_text const &text, std::optional<color> text_color = {}, matrix3 transform = geo::identity{}) const noexcept
     {
         tt_axiom(_sdf_vertices != nullptr);
 
         if (text_color) {
-            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-                *_sdf_vertices, text, transform, clipping_rectangle, *text_color);
+            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+                *_sdf_vertices, aarect{_transform * _clipping_rectangle}, _transform * transform, text, *text_color);
         } else {
-            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-                *_sdf_vertices, text, transform, clipping_rectangle);
+            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+                *_sdf_vertices, aarect{_transform * _clipping_rectangle}, _transform * transform, text);
         }
     }
 
-    void draw_glyph(font_glyph_ids const &glyph, aarect box, color text_color) const noexcept
+    void draw_glyph(font_glyph_ids const &glyph, rect box, color text_color) const noexcept
     {
         tt_axiom(_sdf_vertices != nullptr);
 
-        narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->placeVertices(
-            *_sdf_vertices, glyph, transform * box, text_color, clipping_rectangle);
+        narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+            *_sdf_vertices, aarect{_transform * _clipping_rectangle}, _transform * box, glyph, text_color);
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, aarect const &rectangle) noexcept
@@ -287,14 +313,26 @@ public:
 private:
     gui_window *_window;
 
-public:
-    aarect _scissor_rectangle;
-
-private:
     vspan<pipeline_flat::vertex> *_flat_vertices;
     vspan<pipeline_box::vertex> *_box_vertices;
     vspan<pipeline_image::vertex> *_image_vertices;
     vspan<pipeline_SDF::vertex> *_sdf_vertices;
+
+    /** This is the rectangle of the window that is being redrawn.
+     * The scissor rectangle, like drawing coordinates are relative to the widget.
+     */
+    aarect _scissor_rectangle;
+
+    /** The clipping rectangle when drawing.
+     * The clipping rectangle, like drawing coordinates are relative to the widget.
+     */
+    aarect _clipping_rectangle;
+
+    /** Transform used on the given coordinates.
+     * The z-axis translate is used for specifying the elevation
+     * (inverse depth buffer) of the shape.
+     */
+    matrix3 _transform = geo::identity{};
 };
 
 } // namespace tt

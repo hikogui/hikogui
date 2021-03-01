@@ -50,7 +50,7 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::middle_center, *label, theme::global->labelStyle);
-            this->_preferred_size = interval_vec2::make_minimum(_label_stencil->preferred_extent() + theme::global->margin2Dx2);
+            this->_preferred_size = interval_extent2::make_minimum(_label_stencil->preferred_extent() + extent2{theme::global->margin2Dx2});
             return true;
         } else {
             return false;
@@ -81,13 +81,12 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, this->_clipping_rectangle)) {
             // Move the border of the button in the middle of a pixel.
             context.draw_box_with_border_inside(
                 this->rectangle(), this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
 
-            context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-            _label_stencil->draw(context, this->label_color());
+            _label_stencil->draw(context, this->label_color(), translate_z(0.1f));
         }
 
         super::draw(std::move(context), display_time_point);
@@ -97,7 +96,7 @@ public:
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         if (compare_then_assign(this->value, !this->value)) {
-            this->window.request_redraw(this->window_clipping_rectangle());
+            this->window.request_redraw(aarect{this->_local_to_window * this->_clipping_rectangle});
         }
     }
 

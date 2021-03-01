@@ -31,7 +31,7 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet width = theme::global->toolbarDecorationButtonWidth;
         ttlet height = theme::global->toolbarHeight;
-        _preferred_size = {f32x4{width, height}, f32x4{width, std::numeric_limits<float>::infinity()}};
+        _preferred_size = {extent2{width, height}, extent2{width, std::numeric_limits<float>::infinity()}};
         return true;
     } else {
         return false;
@@ -64,18 +64,18 @@ void system_menu_widget::draw(draw_context context, hires_utc_clock::time_point 
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (overlaps(context, this->window_clipping_rectangle())) {
+    if (overlaps(context, _clipping_rectangle)) {
         _icon_stencil->draw(context);
     }
 
     super::draw(std::move(context), display_time_point);
 }
 
-hit_box system_menu_widget::hitbox_test(f32x4 window_position) const noexcept
+hit_box system_menu_widget::hitbox_test(point2 position) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    if (window_clipping_rectangle().contains(window_position)) {
+    if (_clipping_rectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
         return hit_box{weak_from_this(), _draw_layer, hit_box::Type::ApplicationIcon};

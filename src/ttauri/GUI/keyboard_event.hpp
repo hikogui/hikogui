@@ -9,6 +9,7 @@
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../command.hpp"
+#include "../geometry/transform.hpp"
 #include <utility>
 
 namespace tt {

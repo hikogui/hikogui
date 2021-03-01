@@ -57,7 +57,7 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_cell = stencil::make_unique(_alignment, *label, theme::global->labelStyle);
-            _preferred_size = interval_vec2::make_minimum(_label_cell->preferred_extent());
+            _preferred_size = interval_extent2::make_minimum(_label_cell->preferred_extent());
             return true;
         } else {
             return false;
@@ -70,7 +70,7 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _label_cell->set_layout_parameters(rectangle(), base_line());
+            _label_cell->set_layout_parameters(rectangle(), this->base_line());
         }
         super::update_layout(displayTimePoint, need_layout);
     }
@@ -78,7 +78,7 @@ public:
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, _clipping_rectangle)) {
             _label_cell->draw(context, this->label_color());
         }
 

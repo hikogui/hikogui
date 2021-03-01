@@ -28,7 +28,7 @@ public:
     gui_window_vulkan_win32(gui_window_vulkan_win32 &&) = delete;
     gui_window_vulkan_win32 &operator=(gui_window_vulkan_win32 &&) = delete;
 
-    void create_window(const std::u8string &title, f32x4 extent) override;
+    void create_window(const std::u8string &title, extent2 extent) override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     vk::SurfaceKHR getSurface() const override;
@@ -43,9 +43,9 @@ public:
 
     void normalize_window() override;
 
-    void set_window_size(f32x4 extent) override;
+    void set_window_size(extent2 extent) override;
 
-    [[nodiscard]] f32x4 virtual_screen_size() const noexcept override;
+    [[nodiscard]] extent2 virtual_screen_size() const noexcept override;
 
     [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
 

@@ -193,9 +193,10 @@ public:
 
     /*! Find the nearest character at position and return it's index.
      */
-    ssize_t characterIndexAtPosition(f32x4 position) const noexcept;
+    ssize_t characterIndexAtPosition(point2 position) const noexcept;
 
-    void setmouse_cursorAtCoordinate(f32x4 coordinate) noexcept {
+    void setmouse_cursorAtCoordinate(point2 coordinate) noexcept
+    {
         if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             selectionIndex = cursorIndex = *newmouse_cursorPosition;
             tt_axiom(selectionIndex >= 0);
@@ -203,7 +204,8 @@ public:
         }
     }
 
-    void selectWordAtCoordinate(f32x4 coordinate) noexcept {
+    void selectWordAtCoordinate(point2 coordinate) noexcept
+    {
         if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newmouse_cursorPosition);
             tt_axiom(selectionIndex >= 0);
@@ -213,7 +215,8 @@ public:
         }
     }
 
-    void selectParagraphAtCoordinate(f32x4 coordinate) noexcept {
+    void selectParagraphAtCoordinate(point2 coordinate) noexcept
+    {
         if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfParagraph(*newmouse_cursorPosition);
             tt_axiom(selectionIndex >= 0);
@@ -223,7 +226,8 @@ public:
         }
     }
 
-    void dragmouse_cursorAtCoordinate(f32x4 coordinate) noexcept {
+    void dragmouse_cursorAtCoordinate(point2 coordinate) noexcept
+    {
         if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             cursorIndex = *newmouse_cursorPosition;
             tt_axiom(cursorIndex >= 0);
@@ -231,7 +235,8 @@ public:
         }
     }
 
-    void dragWordAtCoordinate(f32x4 coordinate) noexcept {
+    void dragWordAtCoordinate(point2 coordinate) noexcept
+    {
         if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             ttlet [a, b] = _shapedText.indicesOfWord(*newmouse_cursorPosition);
 
@@ -260,7 +265,8 @@ public:
         }
     }
 
-    void dragParagraphAtCoordinate(f32x4 coordinate) noexcept {
+    void dragParagraphAtCoordinate(point2 coordinate) noexcept
+    {
         if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             ttlet [a, b] = _shapedText.indicesOfParagraph(*newmouse_cursorPosition);
 

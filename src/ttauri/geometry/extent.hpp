@@ -48,6 +48,13 @@ public:
         tt_axiom(is_valid());
     }
 
+    template<int E>
+    [[nodiscard]] constexpr explicit operator vector<E>() const noexcept requires(E >= D)
+    {
+        tt_axiom(is_valid());
+        return vector<E>{static_cast<f32x4>(*this)};
+    }
+
     /** Construct a empty extent / zero length.
      */
     [[nodiscard]] constexpr extent() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f) {}
@@ -131,6 +138,16 @@ public:
         return _v.z();
     }
 
+    [[nodiscard]] constexpr vector<D> right() const noexcept
+    {
+        return vector<D>{_v.x000()};
+    }
+
+    [[nodiscard]] constexpr vector<D> up() const noexcept
+    {
+        return vector<D>{_v._0y00()};
+    }
+
     /** Add two extents from each other.
      * @param lhs The first extent.
      * @param rhs The second extent.
@@ -162,6 +179,41 @@ public:
     {
         tt_axiom(lhs.is_valid());
         return extent{lhs._v * rhs};
+    }
+
+    template<int E>
+    [[nodiscard]] constexpr friend auto operator+(extent const &lhs, vector<E> const &rhs) noexcept
+    {
+        tt_axiom(lhs.is_valid());
+        tt_axiom(rhs.is_valid());
+
+        return extent<std::max(D, E)>{static_cast<f32x4>(lhs) + static_cast<f32x4>(rhs)};
+    }
+
+    template<int E>
+    [[nodiscard]] constexpr friend auto operator+(vector<E> const &lhs, extent const &rhs) noexcept
+    {
+        tt_axiom(lhs.is_valid());
+        tt_axiom(rhs.is_valid());
+
+        return vector<std::max(D, E)>{static_cast<f32x4>(lhs) + static_cast<f32x4>(rhs)};
+    }
+
+    /** Add a scaler to the extent.
+     * @param lhs The extent to scale.
+     * @param rhs The scaling factor.
+     * @return The scaled extent.
+     */
+    [[nodiscard]] constexpr friend extent operator+(extent const &lhs, float const &rhs) noexcept
+    {
+        tt_axiom(lhs.is_valid());
+
+        auto r = extent{};
+        for (size_t i = 0; i != D; ++i) {
+            r._v[i] = lhs._v[i] + rhs;
+        }
+
+        return r;
     }
 
     /** Scale the extent by a scaler.
@@ -226,12 +278,38 @@ public:
         return extent{normalize<element_mask>(rhs._v)};
     }
 
+    [[nodiscard]] constexpr friend extent ceil(extent const &rhs) noexcept
+    {
+        return extent{ceil(static_cast<f32x4>(rhs))};
+    }
+
+    [[nodiscard]] constexpr friend extent floor(extent const &rhs) noexcept
+    {
+        return extent{floor(static_cast<f32x4>(rhs))};
+    }
+
     /** Check if the extent is valid.
      * This function will check if w is zero, and with 2D extent is z is zero.
      */
     [[nodiscard]] constexpr bool is_valid() const noexcept
     {
         return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
+    }
+
+    [[nodiscard]] friend std::string to_string(extent const &rhs) noexcept
+    {
+        if constexpr (D == 2) {
+            return fmt::format("[{}, {}]", rhs._v.x(), rhs._v.y());
+        } else if constexpr (D == 3) {
+            return fmt::format("[{}, {}, {}]", rhs._v.x(), rhs._v.y(), rhs._v.z());
+        } else {
+            tt_static_no_default();
+        }
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, extent const &rhs) noexcept
+    {
+        return lhs << to_string(rhs);
     }
 
 private:

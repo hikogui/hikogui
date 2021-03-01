@@ -29,7 +29,7 @@ public:
         }
     }
 
-    [[nodiscard]] f32x4 preferred_extent() noexcept override
+    [[nodiscard]] extent2 preferred_extent() noexcept override
     {
         if (!_text_stencil) {
             // There is only an icon available.
@@ -140,13 +140,13 @@ public:
         }
     }
 
-    void draw(draw_context context, tt::color color) noexcept override
+    void draw(draw_context context, tt::color color, matrix3 transform = geo::identity{}) noexcept override
     {
         if (_text_stencil) {
-            _text_stencil->draw(context, color);
+            _text_stencil->draw(context, color, transform);
         }
         if (_icon_stencil) {
-            _icon_stencil->draw(context, color);
+            _icon_stencil->draw(context, color, transform);
         }
     }
 
