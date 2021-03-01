@@ -30,14 +30,14 @@ static void statistics_flush_traces() noexcept
         ttlet stat_result = stat->read();
 
         if (stat_result.last_count <= 0) {
-            tt_log_statistics("{:18n} {:+9n} {:10} {:10} {}", stat_result.count, stat_result.last_count, "", "", tag);
+            tt_log_statistics("{:18d} {:+9d} {:10} {:10} {}", stat_result.count, stat_result.last_count, "", "", tag);
 
         } else {
             // XXX not perfect at all.
             ttlet duration_per_iter = format_engineering(stat_result.last_duration / stat_result.last_count);
             ttlet duration_peak = format_engineering(stat_result.peak_duration);
             tt_log_statistics(
-                "{:18n} {:+9n} {:>10} {:>10} {}",
+                "{:18d} {:+9d} {:>10} {:>10} {}",
                 stat_result.count,
                 stat_result.last_count,
                 duration_per_iter,
