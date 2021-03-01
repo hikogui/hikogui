@@ -133,9 +133,9 @@ void gui_window::window_changed_size(extent2 new_extent)
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     extent = new_extent;
-    tt_axiom(widget);
 
-    widget->set_layout_parameters(translate2{0.5, 0.5}, extent2{extent}, aarect{extent});
+    tt_axiom(widget);
+    widget->set_layout_parameters_from_parent(aarect{extent});
     requestLayout = true;
 }
 

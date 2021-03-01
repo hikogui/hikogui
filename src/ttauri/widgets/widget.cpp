@@ -123,12 +123,8 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 draw_context widget::make_draw_context(draw_context const &parent_context) const noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
+    return parent_context.make_child_context(_parent_to_local, _local_to_window, _clipping_rectangle);
 
-    auto context = parent_context;
-    context.scissor_rectangle = aarect{_parent_to_local * parent_context.scissor_rectangle};
-    context.clipping_rectangle = _clipping_rectangle;
-    context.transform = _local_to_window;
-    return context;
 }
 
 bool widget::handle_event(command command) noexcept

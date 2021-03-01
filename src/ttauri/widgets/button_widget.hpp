@@ -86,8 +86,7 @@ public:
             context.draw_box_with_border_inside(
                 this->rectangle(), this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
 
-            context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-            _label_stencil->draw(context, this->label_color());
+            _label_stencil->draw(context, this->label_color(), translate_z(0.1f));
         }
 
         super::draw(std::move(context), display_time_point);

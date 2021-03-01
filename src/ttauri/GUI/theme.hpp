@@ -47,8 +47,10 @@ public:
     float roundingRadius = 5.0f;
 
     /** The size of small square widgets.
+     * Should be even, so that it can be drawn in the middle of a rectangle, on a odd
+     * coordinate.
      */
-    float smallSize = 15.0f;
+    float smallSize = 16.0f;
 
     /** The height of the larger widgets like buttons, text-input and drop-down-lists.
      */

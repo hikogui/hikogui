@@ -177,7 +177,7 @@ private:
             child_width,
             rectangle().height() - child.margin() * 2.0f};
 
-        child.set_layout_parameters_from_parent(child_rectangle, _clipping_rectangle);
+        child.set_layout_parameters_from_parent(child_rectangle);
     }
 };
 

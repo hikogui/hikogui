@@ -252,11 +252,10 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
         ttlet corner_shapes = is_vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
                                             tt::corner_shapes{slider_rectangle.height() * 0.5f};
 
-        context.draw_box(slider_rectangle, foreground_color(), corner_shapes);
+        context.draw_box(translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
     }
 };
 

@@ -148,7 +148,7 @@ private:
             // of the toolbar.
             auto parent_context = parent_.make_draw_context(context);
 
-            ttlet line_rectangle = aarect{parent_.rectangle().x(), parent_.rectangle().y(), parent_.rectangle().width(), 1.0f};
+            ttlet line_rectangle = aarect{extent2{parent_.rectangle().width(), 1.0f}};
             
             // Draw the line above every other direct child of the toolbar, and between
             // the selected-tab (0.6) and unselected-tabs (0.8).
@@ -162,7 +162,7 @@ private:
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
         // so that the bottom border of the tab button is not drawn.
-        context.clipping_rectangle = aarect{this->_parent_to_local * this->parent().clipping_rectangle()};
+        context.set_clipping_rectangle(aarect{this->_parent_to_local * this->parent().clipping_rectangle()});
 
         // The focus line will be placed at 0.7.
         ttlet button_z = (this->_focus && this->window.active) ? translate_z(0.8f) : translate_z(0.6f);
@@ -182,9 +182,7 @@ private:
     void draw_label(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        context.transform = translate_z(0.9f) * context.transform;
-        _label_stencil->draw(context, this->label_color());
+        _label_stencil->draw(context, this->label_color(), translate_z(0.9f));
     }
 };
 

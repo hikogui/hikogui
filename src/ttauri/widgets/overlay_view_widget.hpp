@@ -48,7 +48,7 @@ public:
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             tt_axiom(_content);
-            _content->set_layout_parameters_from_parent(rectangle(), rectangle());
+            _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
         }
 
         super::update_layout(display_time_point, need_layout);

@@ -23,7 +23,7 @@ extent2 text_stencil::preferred_extent() noexcept
     return _shaped_text.preferred_extent;
 }
 
-void text_stencil::draw(draw_context context, tt::color color) noexcept
+void text_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept
 {
     auto data_is_modified = std::exchange(_data_is_modified, false);
 
@@ -36,8 +36,7 @@ void text_stencil::draw(draw_context context, tt::color color) noexcept
         _shaped_text_transform = _shaped_text.translate_base_line(point2{_rectangle.x(), _base_line_position});
     }
 
-    context.transform = context.transform * _shaped_text_transform;
-    context.draw_text(_shaped_text, color);
+    context.draw_text(_shaped_text, color, transform * _shaped_text_transform);
 }
 
 } // namespace tt

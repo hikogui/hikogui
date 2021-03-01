@@ -323,15 +323,13 @@ private:
 
     void draw_label(draw_context context) noexcept
     {
-        context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-        _label_stencil->draw(context, this->label_color());
+        _label_stencil->draw(context, this->label_color(), translate_z(0.1f));
     }
 
     void draw_check_mark(draw_context context) noexcept
     {
         if (this->value == this->true_value) {
-            context.transform = translate3{0.0f, 0.0f, 0.1f} * context.transform;
-            _check_mark_stencil->draw(context, this->accent_color());
+            _check_mark_stencil->draw(context, this->accent_color(), translate_z(0.1f));
         }
     }
 };

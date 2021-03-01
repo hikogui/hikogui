@@ -68,11 +68,11 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
         ttlet toolbar_size = _toolbar->preferred_size();
         ttlet toolbar_height = toolbar_size.minimum().height();
         ttlet toolbar_rectangle = aarect{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        _toolbar->set_layout_parameters_from_parent(toolbar_rectangle, _clipping_rectangle);
+        _toolbar->set_layout_parameters_from_parent(toolbar_rectangle);
 
         ttlet content_size = _content->preferred_size();
         ttlet content_rectangle = aarect{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        _content->set_layout_parameters_from_parent(content_rectangle, _clipping_rectangle);
+        _content->set_layout_parameters_from_parent(content_rectangle);
     }
 
     abstract_container_widget::update_layout(display_time_point, need_layout);

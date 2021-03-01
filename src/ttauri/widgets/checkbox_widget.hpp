@@ -161,15 +161,13 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
-
         // Checkmark or tristate.
         if (this->value == this->true_value) {
-            context.draw_glyph(_check_glyph, _check_glyph_rectangle, this->accent_color());
+            context.draw_glyph(_check_glyph, translate_z(0.1f) * _check_glyph_rectangle, this->accent_color());
         } else if (this->value == this->false_value) {
             ;
         } else {
-            context.draw_glyph(_minus_glyph, _minus_glyph_rectangle, this->accent_color());
+            context.draw_glyph(_minus_glyph, translate_z(0.1f) * _minus_glyph_rectangle, this->accent_color());
         }
     }
 

@@ -246,7 +246,8 @@ public:
      *
      * @pre `mutex` must be locked by current thread.
      */
-    void set_layout_parameters(geo::transformer auto const &local_to_parent, extent2 size, aarect const &clipping_rectangle) noexcept
+    void
+    set_layout_parameters(geo::transformer auto const &local_to_parent, extent2 size, aarect const &clipping_rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -264,7 +265,8 @@ public:
         _clipping_rectangle = clipping_rectangle;
     }
 
-    void set_layout_parameters_from_parent(aarect child_rectangle, aarect parent_clipping_rectangle) noexcept
+    void
+    set_layout_parameters_from_parent(aarect child_rectangle, aarect parent_clipping_rectangle, float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -273,7 +275,20 @@ public:
         ttlet rectangle = aarect{child_size};
         ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, expand(rectangle, margin()));
 
-        set_layout_parameters(child_translate, child_size, child_clipping_rectangle);
+        set_layout_parameters(translate_z(draw_layer_delta) * child_translate, child_size, child_clipping_rectangle);
+    }
+
+    void set_layout_parameters_from_parent(aarect child_rectangle) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        if (auto parent = _parent.lock()) {
+            auto parent_ = reinterpret_cast<widget *>(parent.get());
+            ttlet draw_layer_delta = _draw_layer - parent_->draw_layer();
+            return set_layout_parameters_from_parent(child_rectangle, parent_->clipping_rectangle(), draw_layer_delta);
+        } else {
+            return set_layout_parameters_from_parent(child_rectangle, child_rectangle, 0.0f);
+        }
     }
 
     [[nodiscard]] matrix3 parent_to_local() const noexcept
@@ -395,7 +410,7 @@ public:
      * on every vertical sync it should cache these calculations.
      *
      * This function will likely call `set_layout_parameters()` on its children.
-     * 
+     *
      * Subclasses should call `updateLayout()` on its children, call `updateLayout()` on its
      * base class with `forceLayout` argument to the result of `layoutRequest.exchange(false)`.
      *

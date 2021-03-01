@@ -110,12 +110,10 @@ public:
 
             // Update layout parameters for both scrollbars.
             if constexpr (can_scroll_horizontally) {
-                _horizontal_scroll_bar->set_layout_parameters_from_parent(
-                    horizontal_scroll_bar_rectangle, _clipping_rectangle);
+                _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
             }
             if constexpr (can_scroll_vertically) {
-                _vertical_scroll_bar->set_layout_parameters_from_parent(
-                    vertical_scroll_bar_rectangle, _clipping_rectangle);
+                _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
             }
 
             auto aperture_x = rectangle().x();
@@ -166,7 +164,8 @@ public:
             ttlet aperture_rectangle = aarect{aperture_x, aperture_y, aperture_width, aperture_height};
             ttlet content_rectangle = aarect{content_x, content_y, content_width, content_height};
 
-            _content->set_layout_parameters_from_parent(content_rectangle, aperture_rectangle);
+            _content->set_layout_parameters_from_parent(
+                content_rectangle, aperture_rectangle, _content->draw_layer() - _draw_layer);
         }
 
         super::update_layout(display_time_point, need_layout);
@@ -188,7 +187,7 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args &&... args) noexcept
+    std::shared_ptr<WidgetType> make_widget(Args &&...args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 

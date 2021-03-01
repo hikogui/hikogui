@@ -113,7 +113,7 @@ private:
             };
 
 
-        child.set_layout_parameters_from_parent(child_rectangle, _clipping_rectangle);
+        child.set_layout_parameters_from_parent(child_rectangle);
     }
 };
 

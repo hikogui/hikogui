@@ -56,7 +56,7 @@ public:
      * @param context The current draw context.
      * @param color The color to use for drawing.
      */
-    virtual void draw(draw_context context, tt::color color = tt::color{}) noexcept = 0;
+    virtual void draw(draw_context context, tt::color color = tt::color{}, matrix3 transform = geo::identity()) noexcept = 0;
 
     [[nodiscard]] static std::unique_ptr<class image_stencil> make_unique(alignment alignment, icon const &icon);
 

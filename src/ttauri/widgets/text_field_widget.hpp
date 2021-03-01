@@ -195,9 +195,7 @@ public:
             // After drawing the border around the input field make sure any other
             // drawing remains inside this border. And change the transform to account
             // for how much the text has scrolled.
-            context.clipping_rectangle = _text_field_clipping_rectangle;
-            context.transform = (translate3{0.0, 0.0, 0.1f} * _text_translate) * context.transform;
-
+            context.set_clipping_rectangle(_text_field_clipping_rectangle);
             draw_selection_rectangles(context);
             draw_partial_grapheme_caret(context);
             draw_caret(context, display_time_point);
@@ -508,7 +506,7 @@ private:
     {
         ttlet selection_rectangles = _field.selectionRectangles();
         for (ttlet selection_rectangle : selection_rectangles) {
-            context.draw_filled_quad(selection_rectangle, theme::global->textSelectColor);
+            context.draw_filled_quad(_text_translate * translate_z(0.1f) * selection_rectangle, theme::global->textSelectColor);
         }
     }
 
@@ -516,7 +514,8 @@ private:
     {
         ttlet partial_grapheme_caret = _field.partialgraphemeCaret();
         if (partial_grapheme_caret) {
-            context.draw_filled_quad(partial_grapheme_caret, theme::global->incompleteGlyphColor);
+            context.draw_filled_quad(
+                _text_translate * translate_z(0.1f) * partial_grapheme_caret, theme::global->incompleteGlyphColor);
         }
     }
 
@@ -529,14 +528,13 @@ private:
         ttlet blink_is_on = nr_half_blinks % 2 == 0;
         _left_to_right_caret = _field.leftToRightCaret();
         if (_left_to_right_caret && blink_is_on && _focus && window.active) {
-            context.draw_filled_quad(_left_to_right_caret, theme::global->cursorColor);
+            context.draw_filled_quad(_text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global->cursorColor);
         }
     }
 
     void draw_text(draw_context context) const noexcept
     {
-        context.transform = translate3{0.0f, 0.0f, 0.2f} * context.transform;
-        context.draw_text(_shaped_text, label_color());
+        context.draw_text(_shaped_text, label_color(), _text_translate * translate_z(0.2f));
     }
 };
 

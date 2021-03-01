@@ -70,6 +70,7 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
+            _label_cell->set_layout_parameters(rectangle(), this->base_line());
         }
         super::update_layout(displayTimePoint, need_layout);
     }

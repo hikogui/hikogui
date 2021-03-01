@@ -109,11 +109,7 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
         for (auto &&cell : _cells) {
             auto &&child = cell.widget;
             ttlet child_rectangle = cell.rectangle(_columns, _rows);
-
-            ttlet child_translate = translate3{child_rectangle.p0().x(), child_rectangle.p0().y(), child->draw_layer()};
-            ttlet child_clipping_rectangle =
-                intersect(aarect{child_translate * _clipping_rectangle}, expand(child_rectangle, child->margin()));
-            child->set_layout_parameters(child_translate, child_rectangle.extent(), child_clipping_rectangle);
+            child->set_layout_parameters_from_parent(child_rectangle);
         }
     }
 

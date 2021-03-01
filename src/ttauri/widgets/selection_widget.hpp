@@ -132,7 +132,8 @@ public:
                 ttlet overlay_rectangle = _overlay_widget->make_overlay_rectangle_from_parent(overlay_rectangle_request);
                 ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
 
-                _overlay_widget->set_layout_parameters_from_parent(overlay_rectangle, overlay_clipping_rectangle);
+                _overlay_widget->set_layout_parameters_from_parent(
+                    overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer() - _draw_layer);
             }
         }
 
@@ -385,25 +386,21 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
         ttlet corner_shapes = tt::corner_shapes{theme::global->roundingRadius, 0.0f, theme::global->roundingRadius, 0.0f};
-        context.draw_box(_left_box_rectangle, focus_color(), corner_shapes);
+        context.draw_box(translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
     }
 
     void draw_chevrons(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.transform = translate3{0.0, 0.0, 0.2f} * context.transform;
-        context.draw_glyph(_chevrons_glyph, _chevrons_rectangle, label_color());
+        context.draw_glyph(_chevrons_glyph, translate_z(0.2f) * _chevrons_rectangle, label_color());
     }
 
     void draw_value(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        context.transform = translate3{0.0, 0.0, 0.1f} * context.transform;
-        _text_stencil->draw(context, label_color());
+        _text_stencil->draw(context, label_color(), translate_z(0.1f));
     }
 };
 
