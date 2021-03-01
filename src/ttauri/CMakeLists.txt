@@ -25,7 +25,7 @@ execute_process(
     OUTPUT_VARIABLE TT_GIT_REMOTE_URL
 )
 
-configure_file(git_version.hpp.in git_version.hpp @ONLY)
+#configure_file(git_version.hpp.in git_version.hpp @ONLY)
 
 
 target_sources(ttauri PRIVATE
@@ -95,7 +95,7 @@ target_sources(ttauri PRIVATE
     format.hpp
     forward_value.hpp
     gap_buffer.hpp
-    git_version.hpp
+    #git_version.hpp
     glob.hpp
     hash.hpp
     hires_utc_clock.cpp
