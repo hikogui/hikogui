@@ -1,3 +1,6 @@
+Code of Conduct
+===============
+
 This document provides community guidelines for a safe, respectful,
 productive, and collaborative place for any person who is willing to
 contribute to the ttauri-project community. It applies to all
