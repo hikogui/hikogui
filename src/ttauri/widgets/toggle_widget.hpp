@@ -74,7 +74,7 @@ public:
         if (need_layout) {
             _rail_rectangle = aarect{
                 -0.5f, // Expand horizontally due to rounded shape
-                base_line() - theme::global->smallSize * 0.5f,
+                std::round(base_line() - theme::global->smallSize * 0.5f),
                 theme::global->smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
                 theme::global->smallSize};
 

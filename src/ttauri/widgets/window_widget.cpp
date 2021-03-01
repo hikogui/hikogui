@@ -47,12 +47,15 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet toolbar_size = _toolbar->preferred_size();
-
         ttlet content_size = _content->preferred_size();
-        _preferred_size = intersect(
-            max(content_size + interval_extent2{finterval{}, toolbar_size.height()},
-                interval_extent2{toolbar_size.width(), finterval{}}),
-            interval_extent2::make_maximum(window.virtual_screen_size()));
+
+        float min_width = std::max(toolbar_size.width().minimum(), content_size.width().minimum());
+        float max_width = std::min({toolbar_size.width().maximum(), content_size.width().maximum(), window.virtual_screen_size().width()});
+
+        float min_height = toolbar_size.height().minimum() + content_size.height().minimum();
+        float max_height = std::min(toolbar_size.height().maximum() + content_size.height().maximum(), window.virtual_screen_size().height());
+
+        _preferred_size = interval_extent2{extent2{min_width, min_height}, extent2{max_width, max_height}};
         return true;
     } else {
         return false;
