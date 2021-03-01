@@ -107,7 +107,7 @@ struct bezier_point {
 
     /** Transform the point.
      */
-    [[nodiscard]] friend bezier_point operator*(geo::transformer<2> auto const &lhs, bezier_point const &rhs) noexcept {
+    [[nodiscard]] friend bezier_point operator*(geo::transformer auto const &lhs, bezier_point const &rhs) noexcept {
         return {lhs * rhs.p, rhs.type};
     }
 };

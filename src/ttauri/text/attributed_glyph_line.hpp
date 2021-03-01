@@ -82,24 +82,25 @@ struct attributed_glyph_line {
     [[nodiscard]] aarect boundingBox() const noexcept {
         tt_axiom(std::ssize(line) >= 1);
 
-        ttlet p0 = f32x4::point(
+        ttlet p0 = point2{
             line.front().position.x(),
             line.front().position.y() - descender
-        );
+        };
 
-        ttlet p3 = f32x4::point(
+        ttlet p3 = point2{
             line.back().position.x() + line.back().metrics.advance.x(),
             line.back().position.y() + ascender
-        );
+        };
 
-        return aarect::p0p3(p0, p3);
+        return aarect{p0, p3};
     }
 
-    [[nodiscard]] bool contains(f32x4 coordinate) const noexcept {
+    [[nodiscard]] bool contains(point2 coordinate) const noexcept {
         return boundingBox().contains(coordinate);            
     }
 
-    [[nodiscard]] const_iterator find(f32x4 coordinate) const noexcept {
+    [[nodiscard]] const_iterator find(point2 coordinate) const noexcept
+    {
         auto bbox = boundingBox();
 
         if (coordinate.y() < bbox.y() || coordinate.y() > bbox.p3().y()) {
@@ -129,8 +130,7 @@ struct attributed_glyph_line {
     [[nodiscard]] const_iterator end() const noexcept { return line.cend(); }
     [[nodiscard]] const_iterator cend() const noexcept { return line.cend(); }
 
-    void positionGlyphs(f32x4 position) noexcept {
-        tt_axiom(position.is_point());
+    void positionGlyphs(point2 position) noexcept {
         y = position.y();
         for (auto &&g: line) {
             g.position = position;

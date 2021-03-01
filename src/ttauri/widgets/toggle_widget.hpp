@@ -58,8 +58,7 @@ public:
                 std::max({_on_label_stencil->preferred_extent().width(), _off_label_stencil->preferred_extent().width()}) +
                 theme::global->smallSize * 2.0f + theme::global->margin;
 
-            _preferred_size = interval_vec2::make_minimum(minimumWidth, minimumHeight);
-            _preferred_base_line = relative_base_line{vertical_alignment::top, -theme::global->smallSize * 0.5f};
+            _preferred_size = interval_extent2::make_minimum(minimumWidth, minimumHeight);
 
             return true;
         } else {
@@ -75,7 +74,7 @@ public:
         if (need_layout) {
             _rail_rectangle = aarect{
                 -0.5f, // Expand horizontally due to rounded shape
-                base_line() - theme::global->smallSize * 0.5f,
+                std::round(base_line() - theme::global->smallSize * 0.5f),
                 theme::global->smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
                 theme::global->smallSize};
 
@@ -98,7 +97,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, _clipping_rectangle)) {
             draw_rail(context);
             draw_slider(context);
             draw_label(context);
@@ -139,13 +138,12 @@ private:
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(_animation_duration);
         if (animationProgress < 1.0f) {
-            window.request_redraw(window_clipping_rectangle());
+            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
         }
 
         ttlet animatedValue = to_float(value, _animation_duration);
-        ttlet positionedSliderRectangle = translate2(_slider_move_range * animatedValue, 0.0f) * _slider_rectangle;
+        ttlet positionedSliderRectangle = translate3{_slider_move_range * animatedValue, 0.0f, 0.1f} * _slider_rectangle;
 
-        draw_context.transform = translate3{0.0f, 0.0f, 0.1f} * draw_context.transform;
         draw_context.draw_box(
             positionedSliderRectangle, accent_color(), corner_shapes{positionedSliderRectangle.height() * 0.5f});
     }

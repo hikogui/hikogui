@@ -300,7 +300,7 @@ struct bezier_curve {
         }
     }
 
-    [[nodiscard]] friend bezier_curve operator*(geo::transformer<2> auto const &lhs, bezier_curve const &rhs) noexcept
+    [[nodiscard]] friend bezier_curve operator*(geo::transformer auto const &lhs, bezier_curve const &rhs) noexcept
     {
         return {rhs.type, lhs * rhs.P1, lhs * rhs.C1, lhs * rhs.C2, lhs * rhs.P2};
     }

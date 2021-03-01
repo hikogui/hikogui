@@ -88,12 +88,6 @@ private:
 
             return {x, y, width, height};
         };
-
-        [[nodiscard]] relative_base_line base_line(flow_layout const &rows) const noexcept
-        {
-            ttlet aligned_row_nr = address.row.aligned_to(rows.nr_items());
-            return rows.get_base_line(aligned_row_nr);
-        }
     };
 
     std::vector<cell> _cells;
@@ -105,7 +99,7 @@ private:
     flow_layout _columns;
 
     [[nodiscard]] static std::pair<int, int> calculate_grid_size(std::vector<cell> const &cells) noexcept;
-    [[nodiscard]] static f32x4
+    [[nodiscard]] static extent2
     calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
 };
 

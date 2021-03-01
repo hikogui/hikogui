@@ -149,12 +149,12 @@ void Image::placePageVertices(vspan<vertex> &vertices, int const index, aarect c
  * \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in
  * radials.
  */
-void Image::placeVertices(vspan<vertex> &vertices, matrix3 transform, aarect clippingRectangle)
+void Image::place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, matrix3 transform)
 {
-    calculateVertexPositions(transform, clippingRectangle);
+    calculateVertexPositions(transform, clipping_rectangle);
 
     for (int index = 0; index < std::ssize(pages); index++) {
-        placePageVertices(vertices, index, clippingRectangle);
+        placePageVertices(vertices, index, clipping_rectangle);
     }
 }
 

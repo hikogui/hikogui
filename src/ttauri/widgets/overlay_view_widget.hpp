@@ -36,7 +36,6 @@ public:
         if (has_updated_contraints) {
             tt_axiom(_content);
             _preferred_size = _content->preferred_size();
-            _preferred_base_line = _content->preferred_base_line();
         }
 
         return has_updated_contraints;
@@ -48,15 +47,8 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            // The _window_rectangle, is not allowed to be beyond the edges of the actual window.
-            // Change _window_rectangle to fit the window.
-            ttlet window_rectangle_and_margin = expand(_window_rectangle, _margin);
-            ttlet new_window_rectangle_and_margin = fit(aarect{f32x4{window.extent}}, window_rectangle_and_margin);
-            _window_rectangle = shrink(new_window_rectangle_and_margin, _margin);
-            _window_clipping_rectangle = _window_rectangle;
-
             tt_axiom(_content);
-            _content->set_layout_parameters(_window_rectangle, _window_clipping_rectangle);
+            _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
         }
 
         super::update_layout(display_time_point, need_layout);
@@ -66,11 +58,29 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, _clipping_rectangle)) {
             draw_background(context);
         }
 
         super::draw(std::move(context), display_time_point);
+    }
+
+    /** Make an overlay rectangle.
+     * @param requested_rectangle A rectangle in the parent's local coordinate system.
+     * @return A rectangle that fits the window's constraints in the parent's local coordinate system.
+     */
+    [[nodiscard]] aarect make_overlay_rectangle_from_parent(aarect requested_rectangle) const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        if (auto parent = _parent.lock()) {
+            ttlet requested_window_rectangle = aarect{parent->local_to_window() * requested_rectangle};
+            ttlet window_bounds = aarect{10.0, 10.0, window.extent.width() - 20.0, window.extent.height() - 50.0};
+            ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
+            return aarect{parent->window_to_local() * response_window_rectangle};
+        } else {
+            tt_no_default();
+        }
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
@@ -89,7 +99,6 @@ private:
 
     void draw_background(draw_context context) noexcept
     {
-        context.clipping_rectangle = expand(context.clipping_rectangle, theme::global->borderWidth);
         context.draw_box_with_border_outside(rectangle(), background_color(), foreground_color());
     }
 };

@@ -262,6 +262,11 @@ public:
         return {_pixels + offset, rect.width(), rect.height(), _stride};
     }
 
+    pixel_map<T> submap(aarect rect) const noexcept
+    {
+        return submap(iaarect{rect});
+    }
+
     /** Get a (smaller) view of the map.
      * @param x x-offset in the current pixel-map
      * @param y y-offset in the current pixel-map

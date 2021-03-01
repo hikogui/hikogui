@@ -7,6 +7,8 @@
 #include "../required.hpp"
 #include "../numeric_array.hpp"
 #include "../aarect.hpp"
+#include "../geometry/extent.hpp"
+#include "../geometry/point.hpp"
 #include <array>
 
 namespace tt::pipeline_SDF {
@@ -14,12 +16,12 @@ namespace tt::pipeline_SDF {
 /* A location inside the atlas where the character is located.
  */
 struct atlas_rect {
-    i32x4 atlasPosition;
-    i32x4 atlasExtent;
+    point3 atlas_position;
+    extent2 size;
 
-    std::array<f32x4,4> textureCoords;
+    std::array<point3, 4> texture_coordinates;
 
-    atlas_rect(i32x4 atlasPosition, f32x4 drawExtent) noexcept;
+    atlas_rect(point3 atlas_position, extent2 size) noexcept;
 };
 
 }

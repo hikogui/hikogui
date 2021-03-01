@@ -11,6 +11,8 @@
 #include "../graphic_path.hpp"
 #include "../numeric_array.hpp"
 #include "../recursive_iterator.hpp"
+#include "../geometry/extent.hpp"
+#include "../geometry/point.hpp"
 #include <string_view>
 #include <optional>
 
@@ -28,7 +30,7 @@ public:
     alignment alignment;
     aarect boundingBox;
     float width;
-    f32x4 preferred_extent;
+    extent2 preferred_extent;
 
 private:
     std::vector<attributed_glyph_line> lines;
@@ -184,7 +186,7 @@ public:
      * @param position x is the left position,
      *                 y is where the middle of the line should be.
      */
-    translate2 translate_base_line(f32x4 position) noexcept
+    translate2 translate_base_line(point2 position) noexcept
     {
         return translate2{position.x(), middleOffset(position.y())};
     }
@@ -225,7 +227,7 @@ public:
     * @param coordinate The coordinate of the mouse pointer.
     * @return The logical index of the character closest to the coordinate
     */
-    [[nodiscard]] std::optional<ssize_t> indexOfCharAtCoordinate(f32x4 coordinate) const noexcept;
+    [[nodiscard]] std::optional<ssize_t> indexOfCharAtCoordinate(point2 coordinate) const noexcept;
 
     /** Get the character left of the given character
     * @param logical_index The index of the logical character pointed to.
@@ -280,7 +282,7 @@ public:
      * @param coordinate A coordinate within the box.
      * @return index of the selected grapheme, or -1 if no grapheme was found near the coordinate.
      */
-    [[nodiscard]] int indexFromCoordinate(f32x4 coordinate) const noexcept;
+    [[nodiscard]] int indexFromCoordinate(point2 coordinate) const noexcept;
 
     /** Get the index into the text from a coordinate.
      * The index returned is from the text that was used to construct the shaped_text.
@@ -289,7 +291,7 @@ public:
      * @param current The current coordinate of the mouse pointer, during the drag.
      * @return indices of all the graphemes selected during a drag.
      */
-    [[nodiscard]] std::vector<int> indicesFromCoordinates(f32x4 start, f32x4 current) const noexcept;
+    [[nodiscard]] std::vector<int> indicesFromCoordinates(point2 start, point2 current) const noexcept;
 };
 
 

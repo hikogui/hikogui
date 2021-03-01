@@ -27,7 +27,7 @@ public:
     {
         _value_callback = this->value.subscribe([this](auto...) {
             ttlet lock = std::scoped_lock(gui_system_mutex);
-            this->window.request_redraw(this->window_clipping_rectangle());
+            this->window.request_redraw(aarect{this->local_to_window() * this->clipping_rectangle()});
         });
         _callback = this->subscribe([this]() {
             this->select();
@@ -41,7 +41,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
         if (compare_then_assign(this->value, this->true_value)) {
-            this->window.request_redraw(this->window_clipping_rectangle());
+            this->window.request_redraw(aarect{this->_local_to_window * this->_clipping_rectangle});
         }
     }
 

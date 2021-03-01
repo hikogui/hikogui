@@ -14,8 +14,15 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
 {
     while (target_widget) {
         // Send a command in priority order to the widget.
-        if (target_widget->handle_event(event)) {
-            return true;
+        if constexpr (std::is_same_v<Event,mouse_event>) {
+            if (target_widget->handle_event(target_widget->window_to_local() * event)) {
+                return true;
+            }
+
+        } else {
+            if (target_widget->handle_event(event)) {
+                return true;
+            }
         }
 
         // Forward the keyboard event to the parent of the target.
@@ -121,14 +128,14 @@ bool gui_window::is_closed()
     return std::ceil(dpi / 100.0f);
 }
 
-void gui_window::window_changed_size(f32x4 new_extent)
+void gui_window::window_changed_size(extent2 new_extent)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
     extent = new_extent;
-    tt_axiom(widget);
 
-    widget->set_layout_parameters(aarect{extent}, aarect{extent});
+    tt_axiom(widget);
+    widget->set_layout_parameters_from_parent(aarect{extent});
     requestLayout = true;
 }
 
@@ -139,7 +146,7 @@ void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, 
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
-void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, f32x4 position) noexcept
+void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, point2 position) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 

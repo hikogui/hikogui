@@ -31,7 +31,7 @@ namespace tt {
     return {nr_left + nr_right, nr_bottom + nr_top};
 }
 
-[[nodiscard]] f32x4
+[[nodiscard]] extent2
 grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -49,11 +49,7 @@ grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow
             auto index = cell.address.row.begin(nr_rows);
 
             rows.update(
-                index,
-                cell.widget->preferred_size().minimum().height(),
-                cell.widget->height_resistance(),
-                cell.widget->margin(),
-                cell.widget->preferred_base_line());
+                index, cell.widget->preferred_size().minimum().height(), cell.widget->height_resistance(), cell.widget->margin());
         }
 
         tt_axiom(cell.address.column.is_absolute);
@@ -64,8 +60,7 @@ grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow
                 index,
                 cell.widget->preferred_size().minimum().width(),
                 cell.widget->width_resistance(),
-                cell.widget->margin(),
-                relative_base_line{});
+                cell.widget->margin());
         }
     }
 
@@ -95,7 +90,7 @@ bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         _preferred_size = {
             calculate_cell_min_size(_cells, _rows, _columns),
-            f32x4{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
         return true;
     } else {
         return false;
@@ -114,13 +109,7 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
         for (auto &&cell : _cells) {
             auto &&child = cell.widget;
             ttlet child_rectangle = cell.rectangle(_columns, _rows);
-            ttlet child_base_line = cell.base_line(_rows);
-
-            ttlet child_window_rectangle = translate2{_window_rectangle} * child_rectangle;
-            ttlet child_base_line_position =
-                child_base_line.position(child_window_rectangle.bottom(), child_window_rectangle.top());
-
-            child->set_layout_parameters(child_window_rectangle, _window_clipping_rectangle, child_base_line_position);
+            child->set_layout_parameters_from_parent(child_rectangle);
         }
     }
 

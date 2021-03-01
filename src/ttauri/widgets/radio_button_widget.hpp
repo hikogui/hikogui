@@ -70,8 +70,7 @@ public:
             ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), theme::global->smallSize);
             ttlet minimum_width = theme::global->smallSize + theme::global->margin + _label_stencil->preferred_extent().width();
 
-            super::_preferred_size = interval_vec2::make_minimum(minimum_width, minimum_height);
-            super::_preferred_base_line = relative_base_line{vertical_alignment::top, -theme::global->smallSize * 0.5f};
+            super::_preferred_size = interval_extent2::make_minimum(minimum_width, minimum_height);
             return true;
         } else {
             return false;
@@ -85,7 +84,7 @@ public:
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             _outline_rectangle = aarect{
-                0.0f, this->base_line() - theme::global->smallSize * 0.5f, theme::global->smallSize, theme::global->smallSize};
+                0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
 
             ttlet labelX = _outline_rectangle.p3().x() + theme::global->margin;
             _label_rectangle = aarect{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
@@ -100,7 +99,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->window_clipping_rectangle())) {
+        if (overlaps(context, this->_clipping_rectangle)) {
             draw_outline(context);
             draw_pip(context);
             draw_label(context);

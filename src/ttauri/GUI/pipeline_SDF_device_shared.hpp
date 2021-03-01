@@ -69,7 +69,7 @@ struct device_shared final {
     vk::Sampler atlasSampler;
     vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
 
-    i32x4 atlasAllocationPosition = {};
+    point3 atlas_allocation_position = {};
     /// During allocation on a row, we keep track of the tallest glyph.
     int atlasAllocationMaxHeight = 0;
 
@@ -90,7 +90,7 @@ struct device_shared final {
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
      */
-    [[nodiscard]] atlas_rect allocateRect(f32x4 drawExtent) noexcept;
+    [[nodiscard]] atlas_rect allocateRect(extent2 drawExtent) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -122,12 +122,8 @@ struct device_shared final {
      * @param color The color of the glyph.
      * @param clippingRectangle The rectangle to clip the glyph.
      */
-    void placeVertices(
-        vspan<vertex> &vertices,
-        font_glyph_ids const &glyphs,
-        rect box,
-        color color,
-        aarect clippingRectangle) noexcept;
+    void
+    place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, rect box, font_glyph_ids const &glyphs, color color) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -135,7 +131,7 @@ struct device_shared final {
      * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
      * @param vertices The vertices to draw the glyphs to.
      */
-    void placeVertices(vspan<vertex> &vertices, shaped_text const &text, matrix3 transform, aarect clippingRectangle) noexcept;
+    void place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, matrix3 transform, shaped_text const &text) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -144,11 +140,11 @@ struct device_shared final {
      * @param vertices The vertices to draw the glyphs to.
      * @param color Override the color of the text to draw.
      */
-    void placeVertices(
+    void place_vertices(
         vspan<vertex> &vertices,
-        shaped_text const &text,
+        aarect clipping_rectangle,
         matrix3 transform,
-        aarect clippingRectangle,
+        shaped_text const &text,
         color color) noexcept;
 
 private:
@@ -168,12 +164,13 @@ private:
      * @param clippingRectangle The rectangle to clip the glyph.
      * @return True if the glyph was added to the atlas.
      */
-    [[nodiscard]] bool _placeVertices(
+    [[nodiscard]] bool _place_vertices(
         vspan<vertex> &vertices,
-        font_glyph_ids const &glyphs,
+        aarect clipping_rectangle,
         rect box,
-        color color,
-        aarect clippingRectangle) noexcept;
+        font_glyph_ids const &glyphs,
+        color color
+        ) noexcept;
 
     /** Place an single attributed glyph.
      * This function will not execute prepareAtlasForRendering().
@@ -184,8 +181,12 @@ private:
      * @param clippingRectangle The rectangle to clip the glyph.
      * @return True if the glyph was added to the atlas.
      */
-    [[nodiscard]] bool
-    _placeVertices(vspan<vertex> &vertices, attributed_glyph const &attr_glyph, matrix3 transform, aarect clippingRectangle) noexcept;
+    [[nodiscard]] bool _place_vertices(
+        vspan<vertex> &vertices,
+        aarect clippingRectangle,
+        matrix3 transform,
+        attributed_glyph const &attr_glyph
+        ) noexcept;
 
     /** Place an single attributed glyph.
      * This function will not execute prepareAtlasForRendering().
@@ -197,11 +198,11 @@ private:
      * @param color Override the color from the glyph style.
      * @return True if the glyph was added to the atlas.
      */
-    [[nodiscard]] bool _placeVertices(
+    [[nodiscard]] bool _place_vertices(
         vspan<vertex> &vertices,
-        attributed_glyph const &attr_glyph,
-        matrix3 transform,
         aarect clippingRectangle,
+        matrix3 transform,
+        attributed_glyph const &attr_glyph,
         color color) noexcept;
 
     atlas_rect addGlyphToAtlas(font_glyph_ids glyph) noexcept;

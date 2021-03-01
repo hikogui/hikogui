@@ -7,6 +7,8 @@
 #include "numeric_array.hpp"
 #include "alignment.hpp"
 #include "concepts.hpp"
+#include "geometry/extent.hpp"
+#include "geometry/point.hpp"
 #include <concepts>
 
 namespace tt {
@@ -23,7 +25,7 @@ private:
      *  - (x, y) 2D-coordinate of left-bottom corner of the rectangle
      *  - (z, w) 2D-coordinate of right-top corner of the rectangle
      */
-    numeric_array<T,4> v;
+    numeric_array<T, 4> v;
 
 public:
     axis_aligned_rectangle() noexcept : v() {}
@@ -32,6 +34,12 @@ public:
     axis_aligned_rectangle(axis_aligned_rectangle &&rhs) noexcept = default;
     axis_aligned_rectangle &operator=(axis_aligned_rectangle &&rhs) noexcept = default;
 
+    template<typename O>
+    axis_aligned_rectangle(axis_aligned_rectangle<O> const &rhs) noexcept requires(is_different_v<O, T>) :
+        axis_aligned_rectangle(rhs.x(), rhs.y(), rhs.width(), rhs.height())
+    {
+    }
+
     /** Create a box from the position and size.
      *
      * @param x The x location of the left-bottom corner of the box
@@ -39,7 +47,11 @@ public:
      * @param width The width of the box.
      * @param height The height of the box.
      */
-    axis_aligned_rectangle(tt::arithmetic auto x, tt::arithmetic auto y, tt::arithmetic auto width, tt::arithmetic auto height) noexcept :
+    axis_aligned_rectangle(
+        tt::arithmetic auto x,
+        tt::arithmetic auto y,
+        tt::arithmetic auto width,
+        tt::arithmetic auto height) noexcept :
         v({narrow_cast<T>(x),
            narrow_cast<T>(y),
            narrow_cast<T>(x) + narrow_cast<T>(width),
@@ -62,7 +74,8 @@ public:
      * @param position The position of the left-bottom corner of the box
      * @param extent The size of the box.
      */
-    axis_aligned_rectangle(numeric_array<T,4> const &position, numeric_array<T,4> const &extent) noexcept : v(position.xyxy() + extent._00xy())
+    axis_aligned_rectangle(numeric_array<T, 4> const &position, numeric_array<T, 4> const &extent) noexcept :
+        v(position.xyxy() + extent._00xy())
     {
         tt_axiom(position.is_point());
         tt_axiom(position.z() == 0.0);
@@ -74,7 +87,26 @@ public:
      * The rectangle's left bottom corner is at the origin.
      * @param extent The size of the box.
      */
-    explicit axis_aligned_rectangle(numeric_array<T,4> const &extent) noexcept : v(extent._00xy())
+    explicit axis_aligned_rectangle(extent2 const &extent) noexcept : v(static_cast<f32x4>(extent)._00xy()) {}
+
+    /** Create a rectangle from the left-bottom and right-top points.
+     * @param p0 The left bottom point.
+     * @param p3 The right opt point.
+     */
+    explicit axis_aligned_rectangle(point2 const &p0, point2 const &p3) noexcept :
+        v(static_cast<f32x4>(p0).xy00() + static_cast<f32x4>(p3)._00xy())
+    {
+        tt_axiom(p0.is_valid());
+        tt_axiom(p3.is_valid());
+        tt_axiom(p0.x() <= p3.x());
+        tt_axiom(p0.y() <= p3.y());
+    }
+
+    /** Create a rectangle from the size.
+     * The rectangle's left bottom corner is at the origin.
+     * @param extent The size of the box.
+     */
+    explicit axis_aligned_rectangle(numeric_array<T, 4> const &extent) noexcept : v(extent._00xy())
     {
         tt_axiom(extent.is_vector());
         tt_axiom(extent.z() == 0.0);
@@ -83,7 +115,7 @@ public:
     /** Create axis_aligned_rectangle from packed p0p3 coordinates.
      * @param v p0 = (x, y), p3 = (z, w)
      */
-    [[nodiscard]] static axis_aligned_rectangle p0p3(numeric_array<T,4> const &v) noexcept
+    [[nodiscard]] static axis_aligned_rectangle p0p3(numeric_array<T, 4> const &v) noexcept
     {
         axis_aligned_rectangle r;
         r.v = v;
@@ -94,16 +126,16 @@ public:
      * @param p0 The left bottom corner.
      * @param p3 The right top corner.
      */
-    [[nodiscard]] static axis_aligned_rectangle p0p3(numeric_array<T,4> const &p0, numeric_array<T,4> const &p3) noexcept
+    [[nodiscard]] static axis_aligned_rectangle p0p3(numeric_array<T, 4> const &p0, numeric_array<T, 4> const &p3) noexcept
     {
         tt_axiom(p0.is_point());
         tt_axiom(p3.is_point());
         return axis_aligned_rectangle::p0p3(p0.xy00() + p3._00xy());
     }
 
-    [[nodiscard]] static axis_aligned_rectangle infinity() noexcept requires (std::floating_point<T>)
+    [[nodiscard]] static axis_aligned_rectangle infinity() noexcept requires(std::floating_point<T>)
     {
-        return axis_aligned_rectangle::p0p3(numeric_array<T,4>{
+        return axis_aligned_rectangle::p0p3(numeric_array<T, 4>{
             -std::numeric_limits<T>::infinity(),
             -std::numeric_limits<T>::infinity(),
             std::numeric_limits<T>::infinity(),
@@ -147,7 +179,7 @@ public:
      *
      * @param rhs The new rectangle to include in the current rectangle.
      */
-    axis_aligned_rectangle &operator|=(numeric_array<T,4> const &rhs) noexcept
+    axis_aligned_rectangle &operator|=(numeric_array<T, 4> const &rhs) noexcept
     {
         return *this = *this | rhs;
     }
@@ -156,7 +188,7 @@ public:
      *
      * @param rhs The vector to add to the coordinates of the rectangle.
      */
-    axis_aligned_rectangle &operator+=(numeric_array<T,4> const &rhs) noexcept
+    axis_aligned_rectangle &operator+=(numeric_array<T, 4> const &rhs) noexcept
     {
         return *this = *this + rhs;
     }
@@ -165,7 +197,7 @@ public:
      *
      * @param rhs The vector to subtract from the coordinates of the rectangle.
      */
-    axis_aligned_rectangle &operator-=(numeric_array<T,4> const &rhs) noexcept
+    axis_aligned_rectangle &operator-=(numeric_array<T, 4> const &rhs) noexcept
     {
         return *this = *this - rhs;
     }
@@ -185,7 +217,7 @@ public:
      * @return The homogeneous coordinate of the corner.
      */
     template<size_t I>
-    [[nodiscard]] numeric_array<T,4> corner() const noexcept
+    [[nodiscard]] numeric_array<T, 4> corner() const noexcept
     {
         static_assert(I <= 3);
         if constexpr (I == 0) {
@@ -199,12 +231,39 @@ public:
         }
     }
 
-    [[nodiscard]] numeric_array<T,4> p0() const noexcept
+    [[nodiscard]] constexpr point2 operator[](size_t i) const noexcept
+    {
+        switch (i) {
+        case 0: return point2{v.xy01()};
+        case 1: return point2{v.zy01()};
+        case 2: return point2{v.xw01()};
+        case 3: return point2{v.zw01()};
+        default: tt_no_default();
+        }
+    }
+
+    template<int I>
+    [[nodiscard]] constexpr friend point2 get(axis_aligned_rectangle const &rhs) noexcept
+    {
+        if constexpr (I == 0) {
+            return point2{rhs.v.xy01()};
+        } else if constexpr (I == 1) {
+            return point2{rhs.v.zy01()};
+        } else if constexpr (I == 2) {
+            return point2{rhs.v.xw01()};
+        } else if constexpr (I == 3) {
+            return point2{rhs.v.zw01()};
+        } else {
+            tt_static_no_default();
+        }
+    }
+
+    [[nodiscard]] numeric_array<T, 4> p0() const noexcept
     {
         return corner<0>();
     }
 
-    [[nodiscard]] numeric_array<T,4> p3() const noexcept
+    [[nodiscard]] numeric_array<T, 4> p3() const noexcept
     {
         return corner<3>();
     }
@@ -213,18 +272,18 @@ public:
      *
      * @return The homogeneous coordinate of the bottom-left corner.
      */
-    [[nodiscard]] numeric_array<T,4> offset() const noexcept
+    [[nodiscard]] vector2 offset() const noexcept
     {
-        return v.xy00();
+        return vector2{v.xy00()};
     }
 
     /** Get size of the rectangle
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
      */
-    [[nodiscard]] numeric_array<T,4> extent() const noexcept
+    [[nodiscard]] extent2 extent() const noexcept
     {
-        return (v.zwzw() - v).xy00();
+        return extent2{v.zwzw() - v};
     }
 
     [[nodiscard]] T x() const noexcept
@@ -283,13 +342,13 @@ public:
 
     axis_aligned_rectangle &set_width(T newWidth) noexcept
     {
-        v = v.xyxw() + numeric_array<T,4>{0.0f, 0.0f, newWidth, 0.0f};
+        v = v.xyxw() + numeric_array<T, 4>{0.0f, 0.0f, newWidth, 0.0f};
         return *this;
     }
 
     axis_aligned_rectangle &set_height(T newHeight) noexcept
     {
-        v = v.xyzy() + numeric_array<T,4>{0.0f, 0.0f, 0.0f, newHeight};
+        v = v.xyzy() + numeric_array<T, 4>{0.0f, 0.0f, 0.0f, newHeight};
         return *this;
     }
 
@@ -297,10 +356,20 @@ public:
      *
      * @param rhs The coordinate of the point to test.
      */
-    [[nodiscard]] bool contains(numeric_array<T,4> const &rhs) const noexcept
+    [[nodiscard]] bool contains(numeric_array<T, 4> const &rhs) const noexcept
     {
         // No need to check with empty due to half open range check.
         return ge(rhs.xyxy(), v) == 0b0011;
+    }
+
+    /** Check if a 2D coordinate is inside the rectangle.
+     *
+     * @param rhs The coordinate of the point to test.
+     */
+    [[nodiscard]] bool contains(point2 const &rhs) const noexcept
+    {
+        // No need to check with empty due to half open range check.
+        return ge(static_cast<f32x4>(rhs).xyxy(), v) == 0b0011;
     }
 
     /** Align a rectangle within another rectangle.
@@ -309,7 +378,8 @@ public:
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
-    [[nodiscard]] friend axis_aligned_rectangle align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle
+    align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
     {
         T x;
         if (alignment == horizontal_alignment::left) {
@@ -339,12 +409,13 @@ public:
             tt_no_default();
         }
 
-        return {numeric_array<T,4>::point({x, y}), needle.extent()};
+        return {numeric_array<T, 4>::point({x, y}), static_cast<f32x4>(needle.extent())};
     }
 
     /** Need to call the hiden friend function from within another class.
      */
-    [[nodiscard]] static axis_aligned_rectangle _align(axis_aligned_rectangle outside, axis_aligned_rectangle inside, alignment alignment) noexcept
+    [[nodiscard]] static axis_aligned_rectangle
+    _align(axis_aligned_rectangle outside, axis_aligned_rectangle inside, alignment alignment) noexcept
     {
         return align(outside, inside, alignment);
     }
@@ -380,7 +451,8 @@ public:
         return true;
     }
 
-    [[nodiscard]] friend axis_aligned_rectangle operator|(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle
+    operator|(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
     {
         if (!lhs) {
             return rhs;
@@ -391,7 +463,8 @@ public:
         }
     }
 
-    [[nodiscard]] friend axis_aligned_rectangle operator|(axis_aligned_rectangle const &lhs, numeric_array<T,4> const &rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle
+    operator|(axis_aligned_rectangle const &lhs, numeric_array<T, 4> const &rhs) noexcept
     {
         tt_axiom(rhs.is_point());
         if (!lhs) {
@@ -401,12 +474,14 @@ public:
         }
     }
 
-    [[nodiscard]] friend axis_aligned_rectangle operator+(axis_aligned_rectangle const &lhs, numeric_array<T,4> const &rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle
+    operator+(axis_aligned_rectangle const &lhs, numeric_array<T, 4> const &rhs) noexcept
     {
         return axis_aligned_rectangle::p0p3(lhs.v + rhs.xyxy());
     }
 
-    [[nodiscard]] friend axis_aligned_rectangle operator-(axis_aligned_rectangle const &lhs, numeric_array<T,4> const &rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle
+    operator-(axis_aligned_rectangle const &lhs, numeric_array<T, 4> const &rhs) noexcept
     {
         return axis_aligned_rectangle::p0p3(lhs.v - rhs.xyxy());
     }
@@ -418,7 +493,7 @@ public:
 
     /** Get the center of the rectangle.
      */
-    [[nodiscard]] friend numeric_array<T,4> center(axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend numeric_array<T, 4> center(axis_aligned_rectangle const &rhs) noexcept
     {
         return (rhs.p0() + rhs.p3()) * 0.5f;
     }
@@ -435,9 +510,9 @@ public:
         ttlet diff_extent = scaled_extent - extent;
         ttlet half_diff_extent = diff_extent * 0.5f;
 
-        ttlet p1 = lhs.p0() - half_diff_extent;
-        ttlet p2 = lhs.p3() + half_diff_extent;
-        return axis_aligned_rectangle::p0p3(p1, p2);
+        ttlet p1 = get<0>(lhs) - vector2{half_diff_extent};
+        ttlet p2 = get<3>(lhs) + vector2{half_diff_extent};
+        return axis_aligned_rectangle{p1, p2};
     }
 
     /** Expand the rectangle for the same amount in all directions.
@@ -448,7 +523,7 @@ public:
      */
     [[nodiscard]] friend axis_aligned_rectangle expand(axis_aligned_rectangle const &lhs, T rhs) noexcept
     {
-        return axis_aligned_rectangle::p0p3(lhs.v + neg<0b0011>(numeric_array<T,4>{rhs, rhs, rhs, rhs}));
+        return axis_aligned_rectangle::p0p3(lhs.v + neg<0b0011>(numeric_array<T, 4>{rhs, rhs, rhs, rhs}));
     }
 
     /** Expand the rectangle for the same amount in all directions.
@@ -457,7 +532,7 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle expand(axis_aligned_rectangle const &lhs, numeric_array<T,4> rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle expand(axis_aligned_rectangle const &lhs, numeric_array<T, 4> rhs) noexcept
     {
         return axis_aligned_rectangle::p0p3(lhs.v + neg<1, 1, 0, 0>(rhs.xyxy()));
     }
@@ -479,7 +554,7 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle shrank on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle shrink(axis_aligned_rectangle const &lhs, numeric_array<T,4> rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle shrink(axis_aligned_rectangle const &lhs, numeric_array<T, 4> rhs) noexcept
     {
         return expand(lhs, -rhs);
     }
@@ -510,7 +585,8 @@ public:
     /** Return the overlapping part of two rectangles.
      * When the rectangles are not overlapping, the width and height are zero.
      */
-    [[nodiscard]] friend axis_aligned_rectangle intersect(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle
+    intersect(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
     {
         ttlet p0 = max(lhs.p0(), rhs.p0());
         ttlet p3 = max(p0, min(lhs.p3(), rhs.p3()));
@@ -524,7 +600,8 @@ public:
      * @param rectangle The rectangle to fit inside the bounds.
      * @return A rectangle that fits inside the bounds
      */
-    [[nodiscard]] friend axis_aligned_rectangle fit(axis_aligned_rectangle const &bounds, axis_aligned_rectangle const &rectangle) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle
+    fit(axis_aligned_rectangle const &bounds, axis_aligned_rectangle const &rectangle) noexcept
     {
         ttlet resized_rectangle = axis_aligned_rectangle{
             rectangle.x(),
@@ -532,8 +609,8 @@ public:
             std::min(rectangle.width(), bounds.width()),
             std::min(rectangle.height(), bounds.height())};
 
-        ttlet translate_from_p0 = max(numeric_array<T,4>{}, bounds.p0() - resized_rectangle.p0());
-        ttlet translate_from_p3 = min(numeric_array<T,4>{}, bounds.p3() - resized_rectangle.p3());
+        ttlet translate_from_p0 = max(numeric_array<T, 4>{}, bounds.p0() - resized_rectangle.p0());
+        ttlet translate_from_p3 = min(numeric_array<T, 4>{}, bounds.p3() - resized_rectangle.p3());
         return resized_rectangle + (translate_from_p0 + translate_from_p3);
     }
 };

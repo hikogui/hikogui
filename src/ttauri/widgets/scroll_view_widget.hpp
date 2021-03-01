@@ -77,8 +77,7 @@ public:
                 width += _vertical_scroll_bar->preferred_size().width();
             }
 
-            _preferred_size = interval_vec2{width, height};
-            _preferred_base_line = {};
+            _preferred_size = interval_extent2{width, height};
         }
 
         return has_updated_contraints;
@@ -111,12 +110,10 @@ public:
 
             // Update layout parameters for both scrollbars.
             if constexpr (can_scroll_horizontally) {
-                _horizontal_scroll_bar->set_layout_parameters(
-                    translate2{_window_rectangle} * horizontal_scroll_bar_rectangle, _window_clipping_rectangle);
+                _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
             }
             if constexpr (can_scroll_vertically) {
-                _vertical_scroll_bar->set_layout_parameters(
-                    translate2{_window_rectangle} * vertical_scroll_bar_rectangle, _window_clipping_rectangle);
+                _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
             }
 
             auto aperture_x = rectangle().x();
@@ -165,26 +162,23 @@ public:
 
             // Make a clipping rectangle that fits the content_rectangle exactly.
             ttlet aperture_rectangle = aarect{aperture_x, aperture_y, aperture_width, aperture_height};
-            ttlet window_aperture_clipping_rectangle =
-                intersect(_window_clipping_rectangle, translate2{_window_rectangle} * aperture_rectangle);
-
             ttlet content_rectangle = aarect{content_x, content_y, content_width, content_height};
 
-            _content->set_layout_parameters(
-                translate2{_window_rectangle} * content_rectangle, window_aperture_clipping_rectangle);
+            _content->set_layout_parameters_from_parent(
+                content_rectangle, aperture_rectangle, _content->draw_layer() - _draw_layer);
         }
 
         super::update_layout(display_time_point, need_layout);
     }
 
-    [[nodiscard]] hit_box hitbox_test(f32x4 window_position) const noexcept override
+    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         tt_axiom(_content);
 
-        auto r = super::hitbox_test(window_position);
+        auto r = super::hitbox_test(position);
 
-        if (window_clipping_rectangle().contains(window_position)) {
+        if (rectangle().contains(position)) {
             // Claim mouse events for scrolling.
             r = std::max(r, hit_box{weak_from_this(), _draw_layer});
         }
@@ -193,7 +187,7 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args &&... args) noexcept
+    std::shared_ptr<WidgetType> make_widget(Args &&...args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 

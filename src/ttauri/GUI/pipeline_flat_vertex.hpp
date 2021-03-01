@@ -23,15 +23,15 @@ struct vertex {
     sfloat_rgb32 position;
 
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    sfloat_rgba32 clippingRectangle;
+    sfloat_rgba32 clipping_rectangle;
 
     //! transparency of the image.
     sfloat_rgba16 color;
 
 
-    vertex(f32x4 position, aarect clippingRectangle, tt::color color) noexcept :
+    vertex(aarect clippingRectangle, point3 position, tt::color color) noexcept :
         position(position),
-        clippingRectangle(clippingRectangle),
+        clipping_rectangle(clippingRectangle),
         color(color) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
@@ -45,7 +45,7 @@ struct vertex {
     {
         return {
             { 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(vertex, position) },
-            { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clippingRectangle) },
+            { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clipping_rectangle) },
             { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, color) }
         };
     }
