@@ -1,5 +1,333 @@
 News for the tz database
 
+Release 2021a - 2021-01-24 10:54:57 -0800
+
+  Changes to future timestamps
+
+    South Sudan changes from +03 to +02 on 2021-02-01 at 00:00.
+    (Thanks to Steffen Thorsen.)
+
+
+Release 2020f - 2020-12-29 00:17:46 -0800
+
+  Change to build procedure
+
+    'make rearguard_tarballs' no longer generates a bad rearguard.zi,
+    fixing a 2020e bug.  (Problem reported by Deborah Goldsmith.)
+
+
+Release 2020e - 2020-12-22 15:14:34 -0800
+
+  Briefly:
+    Volgograd switches to Moscow time on 2020-12-27 at 02:00.
+
+  Changes to future timestamps
+
+    Volgograd changes time zone from +04 to +03 on 2020-12-27 at 02:00.
+    (Thanks to Alexander Krivenyshev and Stepan Golosunov.)
+
+  Changes to past timestamps
+
+    Correct many pre-1986 transitions, fixing entries originally
+    derived from Shanks.  The fixes include:
+      - Australia: several 1917 through 1971 transitions
+      - Bahamas: several 1941 through 1945 transitions
+      - Bermuda: several 1917 through 1956 transitions
+      - Belize: several 1942 through 1968 transitions
+      - Ghana: several 1915 through 1956 transitions
+      - Israel and Palestine: several 1940 through 1985 transitions
+      - Kenya and adjacent: several 1908 through 1960 transitions
+      - Nigeria and adjacent: correcting LMT in Lagos, and several 1905
+        through 1919 transitions
+      - Seychelles: the introduction of standard time in 1907, not 1906
+      - Vanuatu: DST in 1973-1974, and a corrected 1984 transition
+    (Thanks to P Chan.)
+
+    Because of the Australia change, Australia/Currie (King Island) is
+    no longer needed, as it is identical to Australia/Hobart for all
+    timestamps since 1970 and was therefore created by mistake.
+    Australia/Currie has been moved to the 'backward' file and its
+    corrected data moved to the 'backzone' file.
+
+  Changes to past time zone abbreviations and DST flags
+
+    To better match legislation in Turks and Caicos, the 2015 shift to
+    year-round observance of -04 is now modeled as AST throughout before
+    returning to Eastern Time with US DST in 2018, rather than as
+    maintaining EDT until 2015-11-01.  (Thanks to P Chan.)
+
+  Changes to documentation
+
+    The zic man page now documents zic's coalescing of transitions
+    when a zone falls back just before DST springs forward.
+
+
+Release 2020d - 2020-10-21 11:24:13 -0700
+
+  Briefly:
+    Palestine ends DST earlier than predicted, on 2020-10-24.
+
+  Changes to past and future timestamps
+
+    Palestine ends DST on 2020-10-24 at 01:00, instead of 2020-10-31
+    as previously predicted (thanks to Sharef Mustafa.)  Its
+    2019-10-26 fall-back was at 00:00, not 01:00 (thanks to Steffen
+    Thorsen.)  Its 2015-10-23 transition was at 01:00 not 00:00, and
+    its spring 2020 transition was on March 28 at 00:00, not March 27
+    (thanks to Pierre Cashon.)  This affects Asia/Gaza and
+    Asia/Hebron.  Assume future spring and fall transitions will be on
+    the Saturday preceding the last Sunday of March and October,
+    respectively.
+
+
+Release 2020c - 2020-10-16 11:15:53 -0700
+
+  Briefly:
+    Fiji starts DST later than usual, on 2020-12-20.
+
+  Changes to future timestamps
+
+    Fiji will start DST on 2020-12-20, instead of 2020-11-08 as
+    previously predicted.  DST will still end on 2021-01-17.
+    (Thanks to Raymond Kumar and Alan Mintz.)  Assume for now that
+    the later-than-usual start date is a one-time departure from the
+    recent pattern.
+
+  Changes to build procedure
+
+    Rearguard tarballs now contain an empty file pacificnew.
+    Some older downstream software expects this file to exist.
+    (Problem reported by Mike Cullinan.)
+
+
+Release 2020b - 2020-10-06 18:35:04 -0700
+
+  Briefly:
+    Revised predictions for Morocco's changes starting in 2023.
+    Canada's Yukon changes to -07 on 2020-11-01, not 2020-03-08.
+    Macquarie Island has stayed in sync with Tasmania since 2011.
+    Casey, Antarctica is at +08 in winter and +11 in summer.
+    zic no longer supports -y, nor the TYPE field of Rules.
+
+  Changes to future timestamps
+
+    Morocco's spring-forward after Ramadan is now predicted to occur
+    no sooner than two days after Ramadan, instead of one day.
+    (Thanks to Milamber.)  The first altered prediction is for 2023,
+    now predicted to spring-forward on April 30 instead of April 23.
+
+  Changes to past and future timestamps
+
+   Casey Station, Antarctica has been using +08 in winter and +11 in
+   summer since 2018.  The most recent transition from +08 to +11 was
+   2020-10-04 00:01.  Also, Macquarie Island has been staying in
+   sync with Tasmania since 2011.  (Thanks to Steffen Thorsen.)
+
+  Changes to past and future time zone abbreviations and DST flags
+
+    Canada's Yukon, represented by America/Whitehorse and
+    America/Dawson, changes its time zone rules from -08/-07 to
+    permanent -07 on 2020-11-01, not on 2020-03-08 as 2020a had it.
+    This change affects only the time zone abbreviation (MST vs PDT)
+    and daylight saving flag for the period between the two dates.
+    (Thanks to Andrew G. Smith.)
+
+  Changes to past timestamps
+
+    Correct several transitions for Hungary for 1918/1983.
+    For example, the 1983-09-25 fall-back was at 01:00, not 03:00.
+    (Thanks to Géza Nyáry.)  Also, the 1890 transition to standard
+    time was on 11-01, not 10-01 (thanks to Michael Deckers).
+
+    The 1891 French transition was on March 16, not March 15.  The
+    1911-03-11 French transition was at midnight, not a minute later.
+    Monaco's transitions were on 1892-06-01 and 1911-03-29, not
+    1891-03-15 and 1911-03-11.  (Thanks to Michael Deckers.)
+
+  Changes to code
+
+    Support for zic's long-obsolete '-y YEARISTYPE' option has been
+    removed and, with it, so has support for the TYPE field in Rule
+    lines, which is now reserved for compatibility with earlier zic.
+    These features were previously deprecated in release 2015f.
+    (Thanks to Tim Parenti.)
+
+    zic now defaults to '-b slim' instead of to '-b fat'.
+
+    zic's new '-l -' and '-p -' options uninstall any existing
+    localtime and posixrules files, respectively.
+
+    The undocumented and ineffective tzsetwall function has been
+    removed.
+
+  Changes to build procedure
+
+    The Makefile now defaults POSIXRULES to '-', so the posixrules
+    feature (obsolete as of 2019b) is no longer installed by default.
+
+  Changes to documentation and commentary
+
+    The long-obsolete files pacificnew, systemv, and yearistype.sh have
+    been removed from the distribution.  (Thanks to Tim Parenti.)
+
+
+Release 2020a - 2020-04-23 16:03:47 -0700
+
+  Briefly:
+    Morocco springs forward on 2020-05-31, not 2020-05-24.
+    Canada's Yukon advanced to -07 year-round on 2020-03-08.
+    America/Nuuk renamed from America/Godthab.
+    zic now supports expiration dates for leap second lists.
+
+  Changes to future timestamps
+
+    Morocco's second spring-forward transition in 2020 will be May 31,
+    not May 24 as predicted earlier.  (Thanks to Semlali Naoufal.)
+    Adjust future-year predictions to use the first Sunday after the
+    day after Ramadan, not the first Sunday after Ramadan.
+
+    Canada's Yukon, represented by America/Whitehorse and
+    America/Dawson, advanced to -07 year-round, beginning with its
+    spring-forward transition on 2020-03-08, and will not fall back on
+    2020-11-01.  Although a government press release calls this
+    "permanent Pacific Daylight Saving Time", we prefer MST for
+    consistency with nearby Dawson Creek, Creston, and Fort Nelson.
+    (Thanks to Tim Parenti.)
+
+  Changes to past timestamps
+
+    Shanghai observed DST in 1919.  (Thanks to Phake Nick.)
+
+  Changes to timezone identifiers
+
+    To reflect current usage in English better, America/Godthab has
+    been renamed to America/Nuuk.  A backwards-compatibility link
+    remains for the old name.
+
+  Changes to code
+
+    localtime.c no longer mishandles timestamps after the last
+    transition in a TZif file with leap seconds and with daylight
+    saving time transitions projected into the indefinite future.
+    For example, with TZ='America/Los_Angeles' with leap seconds,
+    zdump formerly reported a DST transition on 2038-03-14
+    from 01:59:32.999... to 02:59:33 instead of the correct transition
+    from 01:59:59.999... to 03:00:00.
+
+    zic -L now supports an Expires line in the leapseconds file, and
+    truncates the TZif output accordingly.  This propagates leap
+    second expiration information into the TZif file, and avoids the
+    abovementioned localtime.c bug as well as similar bugs present in
+    many client implementations.  If no Expires line is present, zic
+    -L instead truncates the TZif output based on the #expires comment
+    present in leapseconds files distributed by tzdb 2018f and later;
+    however, this usage is obsolescent.  For now, the distributed
+    leapseconds file has an Expires line that is commented out, so
+    that the file can be fed to older versions of zic which ignore the
+    commented-out line.  Future tzdb distributions are planned to
+    contain a leapseconds file with an Expires line.
+
+    The configuration macros HAVE_TZNAME and USG_COMPAT should now be
+    set to 1 if the system library supports the feature, and 2 if not.
+    As before, these macros are nonzero if tzcode should support the
+    feature, zero otherwise.
+
+    The configuration macro ALTZONE now has the same values with the
+    same meaning as HAVE_TZNAME and USG_COMPAT.
+
+    The code's defense against CRLF in leap-seconds.list is now
+    portable to POSIX awk.  (Problem reported by Deborah Goldsmith.)
+
+    Although the undocumented tzsetwall function is not changed in
+    this release, it is now deprecated in preparation for removal in
+    future releases.  Due to POSIX requirements, tzsetwall has not
+    worked for some time.  Any code that uses it should instead use
+    tzalloc(NULL) or, if portability trumps thread-safety, should
+    unset the TZ environment variable.
+
+  Changes to commentary
+
+    The Îles-de-la-Madeleine and the Listuguj reserve are noted as
+    following America/Halifax, and comments about Yukon's "south" and
+    "north" have been corrected to say "east" and "west".  (Thanks to
+    Jeffery Nichols.)
+
+
+Release 2019c - 2019-09-11 08:59:48 -0700
+
+  Briefly:
+    Fiji observes DST from 2019-11-10 to 2020-01-12.
+    Norfolk Island starts observing Australian-style DST.
+
+  Changes to future timestamps
+
+    Fiji's next DST transitions will be 2019-11-10 and 2020-01-12
+    instead of 2019-11-03 and 2020-01-19.  (Thanks to Raymond Kumar.)
+    Adjust future guesses accordingly.
+
+    Norfolk Island will observe Australian-style DST starting in
+    spring 2019.  The first transition is on 2019-10-06.  (Thanks to
+    Kyle Czech and Michael Deckers.)
+
+  Changes to past timestamps
+
+    Many corrections to time in Turkey from 1940 through 1985.
+    (Thanks to Oya Vulaş via Alois Treindl, and to Kıvanç Yazan.)
+
+    The Norfolk Island 1975-03-02 transition was at 02:00 standard
+    time, not 02:00 DST.  (Thanks to Michael Deckers.)
+
+    South Korea observed DST from 1948 through 1951.  Although this
+    info was supposed to appear in release 2014j, a typo inadvertently
+    suppressed the change.  (Thanks to Alois Treindl.)
+
+    Detroit observed DST in 1967 and 1968 following the US DST rules,
+    except that its 1967 DST began on June 14 at 00:01.  (Thanks to
+    Alois Treindl for pointing out that the old data entries were
+    probably wrong.)
+
+    Fix several errors in pre-1970 transitions in Perry County, IN.
+    (Thanks to Alois Triendl for pointing out the 1967/9 errors.)
+
+    Edmonton did not observe DST in 1967 or 1969.  In 1946 Vancouver
+    ended DST on 09-29 not 10-13, and Vienna ended DST on 10-07 not
+    10-06.  In 1945 Königsberg (now Kaliningrad) switched from +01/+02
+    to +02/+03 on 04-10 not 01-01, and its +02/+03 is abbreviated
+    EET/EEST, not CET/CEST.  (Thanks to Alois Triendl.)  In 1946
+    Königsberg switched to +03 on 04-07 not 01-01.
+
+    In 1946 Louisville switched from CST to CDT on 04-28 at 00:01, not
+    01-01 at 00:00.  (Thanks to Alois Treindl and Michael Deckers.)
+    Also, it switched from CST to CDT on 1950-04-30, not 1947-04-27.
+
+    The 1892-05-01 transition in Brussels was at 00:17:30, not at noon.
+    (Thanks to Michael Deckers.)
+
+  Changes to past time zone abbreviations and DST flags
+
+    Hong Kong Winter Time, observed from 1941-10-01 to 1941-12-25,
+    is now flagged as DST and is abbreviated HKWT not HKT.
+
+  Changes to code
+
+    leapseconds.awk now relies only on its input data, rather than
+    also relying on its comments.  (Inspired by code from Dennis
+    Ferguson and Chris Woodbury.)
+
+    The code now defends against CRLFs in leap-seconds.list.
+    (Thanks to Brian Inglis and Chris Woodbury.)
+
+  Changes to documentation and commentary
+
+    theory.html discusses leap seconds.  (Thanks to Steve Summit.)
+
+    Nashville's newspapers dueled about the time of day in the 1950s.
+    (Thanks to John Seigenthaler.)
+
+    Liechtenstein observed Swiss DST in 1941/2.
+    (Thanks to Alois Treindl.)
+
+
 Release 2019b - 2019-07-01 00:09:53 -0700
 
   Briefly:
