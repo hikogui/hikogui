@@ -20,22 +20,22 @@ struct version {
     std::string name = "ttauri";
 
     /** The version string with major.minor.patch, commits since tag, short hash of tag. */
-    std::string version_long = "0.2.3-25-g7f6be3";
+    std::string version_long = "0.2.3-27-g1d5f13";
 
     /** A version string containing only major.minor.patch version numbers. */
     std::string version_short = "0.2.3";
 
     /* The git tag RCS. */
-    std::string git_tag_rcs = "v0.2.3-25-g7f6be3fa7a10d204bb09ffc20b7fd024e536eb59-dirty";
+    std::string git_tag_rcs = "v0.2.3-27-g1d5f13e206f23483fc9e2fa4f68055351d309705-dirty";
 
     /** Name of the git branch. */
     std::string git_branch = "main";
 
     /** The git commit short hash. */
-    std::string git_commit = "7f6be3f";
+    std::string git_commit = "1d5f13e";
 
     /** The number of commits since the version tag. */
-    int git_commits_since_version_tag = 25;
+    int git_commits_since_version_tag = 27;
 
     /** There are local changes. */
     bool git_local_changes = "dirty";

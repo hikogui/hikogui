@@ -353,12 +353,6 @@ elseif (APPLE)
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_METAL_EXT)
 endif()
 
-add_custom_command(
-  TARGET ttauri POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata
-    ${CMAKE_BINARY_DIR}/data/tzdata)
-
 #-------------------------------------------------------------------
 # Copy resources needed by executables
 #-------------------------------------------------------------------
@@ -386,6 +380,7 @@ target_static_resource(ttauri ${ttauri_static_resources})
 add_custom_target(ttauri_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     DEPENDS
+    resources/tzdata/version
     resources/themes/ttauri_dark.theme.json
     resources/themes/ttauri_light.theme.json
     resources/win32.keybinds.json
