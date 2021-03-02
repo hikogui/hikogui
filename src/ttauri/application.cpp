@@ -8,7 +8,6 @@
 #include "logger.hpp"
 #include "timer.hpp"
 #include "os_detect.hpp"
-#include "version.hpp"
 #include "trace.hpp"
 #include "thread.hpp"
 #include "text/elusive_icon.hpp"
@@ -23,6 +22,7 @@
 #include "audio/audio_system_aggregate.hpp"
 #include <memory>
 
+#include "ttauri/current_version.hpp"
 #include "data/elusiveicons-webfont.ttf.inl"
 #include "data/ttauri_icons.ttf.inl"
 #include "ttauri/GUI/pipeline_image.vert.spv.inl"
@@ -75,7 +75,7 @@ void application::init()
 
     if (auto delegate_ = delegate.lock()) {
         delegate_->init(*this);
-        application_version.name = delegate_->application_name(narrow_cast<application &>(*this));
+        application_version = delegate_->application_version(narrow_cast<application &>(*this));
         configuration = delegate_->configuration(narrow_cast<application &>(*this), arguments);
     }
 

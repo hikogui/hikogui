@@ -42,8 +42,8 @@ TEST(URLTests, glob1) {
 TEST(URLTests, glob2) {
     ttlet executableDirectory = URL::urlFromExecutableDirectory();
 
-    ttlet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.inl");
+    ttlet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.txt");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return x.path().ends_with("ttauri_icons.ttf.inl"s); }));
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return x.path().ends_with("glob2.txt"s); }));
 }

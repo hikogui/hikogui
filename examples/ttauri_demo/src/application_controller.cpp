@@ -10,10 +10,12 @@
 #include "ttauri/application.hpp"
 #include "ttauri/CommandLineParser.hpp"
 
+#include "demo_version.hpp"
+
 namespace demo {
 
-std::string application_controller::application_name(tt::application &self) const noexcept {
-    return "TTauri Demo";
+tt::version application_controller::application_version(tt::application &self) const noexcept {
+    return demo_version;
 }
 
 tt::datum application_controller::configuration(tt::application &self, std::vector<std::string> arguments) const noexcept {

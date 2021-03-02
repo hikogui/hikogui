@@ -1,4 +1,6 @@
 
+configure_file(demo_version.hpp.in demo_version.hpp @ONLY)
+
 target_sources(ttauri_demo PRIVATE
     audio_preferences_controller.cpp
     audio_preferences_controller.hpp

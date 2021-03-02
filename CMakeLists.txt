@@ -50,10 +50,11 @@ endif()
 #-------------------------------------------------------------------
 
 if(APPLE)
-    project(ttauri LANGUAGES CXX OBJC)
+    set(LANGUAGES CXX OBJCXX)
 else()
-    project(ttauri LANGUAGES CXX)
+    set(LANGUAGES CXX)
 endif()
+project(ttauri VERSION 0.3.0 LANGUAGES ${LANGUAGES})
 
 #-------------------------------------------------------------------
 # Define Constants
@@ -98,6 +99,7 @@ include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
 include(ShowBuildTargetProperties)
+include(FetchContent)
 if(WIN32)
     include(GetWindowsNtVersion)
 endif()
@@ -111,11 +113,6 @@ include(SetupVcpkg)
 #-------------------------------------------------------------------
 # Find Dependencies
 #-------------------------------------------------------------------
-
-#
-# RenderDoc - non-vcpkg, directly build from externals
-#
-add_subdirectory(external/RenderDoc)
 
 #
 # date
@@ -135,13 +132,11 @@ find_package(fmt CONFIG REQUIRED)
 #
 # GoogleTest - non-vcpkg, directly build from externals
 #
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-set(gtest_force_shared_crt ON)
+if(TT_BUILD_TESTS)
+    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.10.0)
+    FetchContent_MakeAvailable(googletest)
 
-# Don't install GTest libs when we run `install`.
-set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest." FORCE)
-
-add_subdirectory(external/googletest)
+endif()
 
 #
 # Vulkan Memory Allocator
@@ -186,6 +181,7 @@ add_subdirectory(tools)
 #-------------------------------------------------------------------
 
 set_target_properties(ttauri PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} SOVERSION ${TTAURI_MAJOR_VERSION})
+#set_target_properties(ttauri PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 target_link_libraries(ttauri PUBLIC
     fmt::fmt
@@ -193,13 +189,9 @@ target_link_libraries(ttauri PUBLIC
     date::date-tz
     ${Vulkan_LIBRARIES}
     unofficial::vulkan-memory-allocator::vulkan-memory-allocator
-    RenderDoc
 )
 
-if(WIN32)
-    target_link_libraries(ttauri PUBLIC UxTheme.lib)
-    target_link_libraries(ttauri PUBLIC synchronization windowsapp.lib)
-elseif(APPLE)
+if(APPLE)
     target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
@@ -353,12 +345,6 @@ elseif (APPLE)
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_METAL_EXT)
 endif()
 
-add_custom_command(
-  TARGET ttauri POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata
-    ${CMAKE_BINARY_DIR}/data/tzdata)
-
 #-------------------------------------------------------------------
 # Copy resources needed by executables
 #-------------------------------------------------------------------
@@ -386,6 +372,7 @@ target_static_resource(ttauri ${ttauri_static_resources})
 add_custom_target(ttauri_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     DEPENDS
+    resources/tzdata/version
     resources/themes/ttauri_dark.theme.json
     resources/themes/ttauri_light.theme.json
     resources/win32.keybinds.json
@@ -404,9 +391,13 @@ if(WIN32)
     install(TARGETS ttauri RESOURCE)
 
     # Copy all header files for the library.
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/ttauri/
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             FILES_MATCHING PATTERN "*.hpp")
+
+    # Copy all resource files needing to be added to the resource directory of an application
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/resources)
 
     # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
     get_target_property(target_type ttauri TYPE)
@@ -472,9 +463,6 @@ endif()
 install(TARGETS ttauri_tests DESTINATION tests)
 
 install(DIRECTORY tests/data/ DESTINATION tests)
-
-# copy one additional file from the "build" directory
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/data/ttauri_icons.ttf.inl DESTINATION tests)
 
 # experimental
 x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)

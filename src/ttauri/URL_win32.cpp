@@ -6,7 +6,7 @@
 #include "strings.hpp"
 #include "required.hpp"
 #include "url_parser.hpp"
-#include "version.hpp"
+#include "ttauri/current_version.hpp"
 #include <regex>
 
 #include <Windows.h>

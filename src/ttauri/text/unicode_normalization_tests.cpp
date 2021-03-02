@@ -131,14 +131,14 @@ protected:
 
 TEST_F(unicode_normalization, unicode_NFC_colon)
 {
-    ASSERT_EQ(unicode_NFC(tt::to_u32string("Audio device:")), tt::to_u32string("Audio device:"));
-    ASSERT_EQ(unicode_NFD(tt::to_u32string("Audio device:")), tt::to_u32string("Audio device:"));
+    ASSERT_TRUE(unicode_NFC(tt::to_u32string("Audio device:")) == tt::to_u32string("Audio device:"));
+    ASSERT_TRUE(unicode_NFD(tt::to_u32string("Audio device:")) == tt::to_u32string("Audio device:"));
 }
 
 TEST_F(unicode_normalization, toNFC_c1)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFC(test.c1), test.c2) << test.comment;
+        ASSERT_TRUE(unicode_NFC(test.c1) == test.c2) << test.comment;
     }
 }
 
@@ -146,28 +146,28 @@ TEST_F(unicode_normalization, toNFC_c1)
 TEST_F(unicode_normalization, toNFC_c2)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFC(test.c2), test.c2) << test.comment;
+        ASSERT_TRUE(unicode_NFC(test.c2) == test.c2) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFC_c3)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFC(test.c3), test.c2) << test.comment;
+        ASSERT_TRUE(unicode_NFC(test.c3) == test.c2) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFC_c4)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFC(test.c4), test.c4) << test.comment;
+        ASSERT_TRUE(unicode_NFC(test.c4) == test.c4) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFC_c5)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFC(test.c5), test.c4) << test.comment;
+        ASSERT_TRUE(unicode_NFC(test.c5) == test.c4) << test.comment;
     }
 }
 #endif
@@ -175,7 +175,7 @@ TEST_F(unicode_normalization, toNFC_c5)
 TEST_F(unicode_normalization, toNFKC_c1)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKC(test.c1), test.c4) << test.comment;
+        ASSERT_TRUE(unicode_NFKC(test.c1) == test.c4) << test.comment;
     }
 }
 
@@ -183,28 +183,28 @@ TEST_F(unicode_normalization, toNFKC_c1)
 TEST_F(unicode_normalization, toNFKC_c2)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKC(test.c2), test.c4) << test.comment;
+        ASSERT_TRUE(unicode_NFKC(test.c2) == test.c4) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKC_c3)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKC(test.c3), test.c4) << test.comment;
+        ASSERT_TRUE(unicode_NFKC(test.c3) == test.c4) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKC_c4)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKC(test.c4), test.c4) << test.comment;
+        ASSERT_TRUE(unicode_NFKC(test.c4) == test.c4) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKC_c5)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKC(test.c5), test.c4) << test.comment;
+        ASSERT_TRUE(unicode_NFKC(test.c5) == test.c4) << test.comment;
     }
 }
 #endif
@@ -212,7 +212,7 @@ TEST_F(unicode_normalization, toNFKC_c5)
 TEST_F(unicode_normalization, toNFD_c1)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFD(test.c1), test.c3) << test.comment;
+        ASSERT_TRUE(unicode_NFD(test.c1) == test.c3) << test.comment;
     }
 }
 
@@ -220,28 +220,28 @@ TEST_F(unicode_normalization, toNFD_c1)
 TEST_F(unicode_normalization, toNFD_c2)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFD(test.c2), test.c3) << test.comment;
+        ASSERT_TRUE(unicode_NFD(test.c2) == test.c3) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFD_c3)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFD(test.c3), test.c3) << test.comment;
+        ASSERT_TRUE(unicode_NFD(test.c3) == test.c3) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFD_c4)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFD(test.c4), test.c5) << test.comment;
+        ASSERT_TRUE(unicode_NFD(test.c4) == test.c5) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFD_c5)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFD(test.c5), test.c5) << test.comment;
+        ASSERT_TRUE(unicode_NFD(test.c5) == test.c5) << test.comment;
     }
 }
 #endif
@@ -249,7 +249,7 @@ TEST_F(unicode_normalization, toNFD_c5)
 TEST_F(unicode_normalization, toNFKD_c1)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKD(test.c1), test.c5) << test.comment;
+        ASSERT_TRUE(unicode_NFKD(test.c1) == test.c5) << test.comment;
     }
 }
 
@@ -257,28 +257,28 @@ TEST_F(unicode_normalization, toNFKD_c1)
 TEST_F(unicode_normalization, toNFKD_c2)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKD(test.c2), test.c5) << test.comment;
+        ASSERT_TRUE(unicode_NFKD(test.c2) == test.c5) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKD_c3)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKD(test.c3), test.c5) << test.comment;
+        ASSERT_TRUE(unicode_NFKD(test.c3) == test.c5) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKD_c4)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKD(test.c4), test.c5) << test.comment;
+        ASSERT_TRUE(unicode_NFKD(test.c4) == test.c5) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKD_c5)
 {
     for (ttlet &test : normalizationTests) {
-        ASSERT_EQ(unicode_NFKD(test.c5), test.c5) << test.comment;
+        ASSERT_TRUE(unicode_NFKD(test.c5) == test.c5) << test.comment;
     }
 }
 #endif
@@ -309,10 +309,10 @@ TEST_F(unicode_normalization, Invariant)
         if (!previouslyTestedCodePoints[i]) {
             ttlet str = std::u32string(1, i);
 
-            ASSERT_EQ(unicode_NFD(str), str);
-            ASSERT_EQ(unicode_NFC(str), str);
-            ASSERT_EQ(unicode_NFKD(str), str);
-            ASSERT_EQ(unicode_NFKC(str), str);
+            ASSERT_TRUE(unicode_NFD(str) == str);
+            ASSERT_TRUE(unicode_NFC(str) == str);
+            ASSERT_TRUE(unicode_NFKD(str) == str);
+            ASSERT_TRUE(unicode_NFKC(str) == str);
         }
     }
 }
