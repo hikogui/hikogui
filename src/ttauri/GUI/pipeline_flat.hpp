@@ -8,7 +8,7 @@
 #include "pipeline_flat_push_constants.hpp"
 #include "pipeline_flat_vertex.hpp"
 #include "../vspan.hpp"
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 #include <span>
 
 namespace tt::pipeline_flat {

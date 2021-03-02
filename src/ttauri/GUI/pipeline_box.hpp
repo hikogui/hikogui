@@ -8,7 +8,7 @@
 #include "pipeline_box_push_constants.hpp"
 #include "pipeline_box_vertex.hpp"
 #include "../vspan.hpp"
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 #include <span>
 
 namespace tt::pipeline_box {

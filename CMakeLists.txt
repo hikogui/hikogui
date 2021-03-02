@@ -1,10 +1,63 @@
 
 cmake_minimum_required(VERSION 3.19)
-enable_testing()
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
+#-------------------------------------------------------------------
+# Build Options
+#-------------------------------------------------------------------
+
+option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
+option(TT_BUILD_EXAMPLES    "Build example applications"         ON)
+option(TT_BUILD_TESTS       "Build tests"                        ON)
+option(TT_BUILD_PCH         "Build precompiled headers"          ON)
+option(TT_INSTALL           "Generate installation target"       ON)
+option(TT_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
+
+#-------------------------------------------------------------------
+# Compiler Setup
+#-------------------------------------------------------------------
+
+# Define C++ Standard to use
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
+if(WIN32)
+    # Build for a Windows 10 host system.
+    set(CMAKE_SYSTEM_VERSION 10.0)
+
+    message(STATUS "[INFO] BUILD_SHARED_LIBS -> '${BUILD_SHARED_LIBS}'.")
+
+    # When we build statically (MT):
+    if(NOT BUILD_SHARED_LIBS)
+        # Select MSVC runtime based on CMAKE_MSVC_RUNTIME_LIBRARY.
+        # We switch from the multi-threaded dynamically-linked library (default)
+        # to the multi-threaded statically-linked runtime library.
+        cmake_policy(SET CMP0091 NEW)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
+
+
+    # Global Compiler flags for optimized Release and RelWithDebugInfo builds
+    # All overrides are for multi-threaded dynamically-linked libs: MD + MDd.
+    if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+        set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
+    endif()
+
 endif()
+
+#-------------------------------------------------------------------
+# Project
+#-------------------------------------------------------------------
+
+if(APPLE)
+    project(ttauri LANGUAGES CXX OBJC)
+else()
+    project(ttauri LANGUAGES CXX)
+endif()
+
+#-------------------------------------------------------------------
+# Define Constants
+#-------------------------------------------------------------------
 
 set(TT_WIN32 0)
 set(TT_MACOS 0)
@@ -18,45 +71,14 @@ elseif (WIN32)
     set(TT_WIN32 1)
 endif()
 
-if(APPLE)
-project(ttauri LANGUAGES CXX OBJC)
-else()
-project(ttauri LANGUAGES CXX)
-endif()
-
 set(x64_list x86 X86 amd64 AMD64)
 if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
     set(TT_X64 1)
 endif()
 
-find_package(GTest)
-find_package(Vulkan REQUIRED)
-find_package(Doxygen)
-
-if (DOXYGEN_EXECUTABLE)
-set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
-set(DOXYGEN_GENERATE_HTML YES)
-set(DOXYGEN_GENERATE_XML NO)
-set(DOXYGEN_GENERATE_LATEX NO)
-set(DOXYGEN_GENERATE_PDF NO)
-set(DOXYGEN_QUIET YES)
-set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-set(DOXYGEN_WARN_NO_PARAMDOC NO)
-
-set(DOXYGEN_STRIP_FROM_PATH src)
-set(DOXYGEN_STRIP_FROM_INC_PATH src)
-
-set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
-set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
-set(DOXYGEN_INLINE_INHERITED_MEMB YES)
-set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
-set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
-
-set(DOXYGEN_EXTRACT_ALL YES)
-
-doxygen_add_docs(doc src/ttauri docs)
-endif()
+#-------------------------------------------------------------------
+# Precompiled Headers (PCH) Configuration
+#-------------------------------------------------------------------
 
 if(WIN32)
     if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
@@ -67,36 +89,126 @@ else(APPLE)
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
 endif()
 
+#-------------------------------------------------------------------
+# Setup CMake Includes
+#-------------------------------------------------------------------
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
-include(Versioning)
+include(ShowBuildTargetProperties)
+if(WIN32)
+    include(GetWindowsNtVersion)
+endif()
 
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # for gtest_force_shared_crt
-add_subdirectory(external)
+#-------------------------------------------------------------------
+# Setup Dependency Manager: VCPKG
+#-------------------------------------------------------------------
+
+include(SetupVcpkg)
+
+#-------------------------------------------------------------------
+# Find Dependencies
+#-------------------------------------------------------------------
+
+#
+# RenderDoc - non-vcpkg, directly build from externals
+#
+add_subdirectory(external/RenderDoc)
+
+#
+# date
+#
+find_package(date CONFIG REQUIRED)
+
+#
+# fmt
+#
+find_package(fmt CONFIG REQUIRED)
+
+#
+# GoogleTest
+#
+#find_package(GTest)
+
+#
+# GoogleTest - non-vcpkg, directly build from externals
+#
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+set(gtest_force_shared_crt ON)
+
+# Don't install GTest libs when we run `install`.
+set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest." FORCE)
+
+add_subdirectory(external/googletest)
+
+#
+# Vulkan Memory Allocator
+#
+find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+
+#
+# Vulkan SDK Headers
+#
+if(NOT DEFINED ENV{VULKAN_SDK})
+    message(FATAL_ERROR
+        "Please set the VULKAN_SDK environment variable to the directory in which the SDK is installed.\n"
+        "It looks like C:\VulkanSDK\1.0.0.0, but with the version number being the version that was installed.\n"
+        "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
+endif()
+find_package(Vulkan REQUIRED)
+
+#-------------------------------------------------------------------
+# Setup Build Targets
+#-------------------------------------------------------------------
+
+add_library(ttauri)
+add_library(ttauri::tauri ALIAS ttauri)
+
+if(TT_BUILD_TESTS)
+    add_executable(ttauri_tests)
+endif()
+
+#-------------------------------------------------------------------
+# Setup Sources
+#-------------------------------------------------------------------
+
+# This needs to be below the build target commands (add_*).
+# We omit adding source files to the `add_*` commands, but add them
+# later using target_sources() in CMakeLists of subdirectories.
+
+add_subdirectory(src/ttauri)
 add_subdirectory(tools)
 
-add_library(ttauri STATIC)
+#-------------------------------------------------------------------
+# Build Target: ttauri                                     (library)
+#-------------------------------------------------------------------
 
-install(TARGETS ttauri RESOURCE)
+set_target_properties(ttauri PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} SOVERSION ${TTAURI_MAJOR_VERSION})
 
-add_executable(ttauri_tests)
+target_link_libraries(ttauri PUBLIC
+    fmt::fmt
+    date::date
+    date::date-tz
+    ${Vulkan_LIBRARIES}
+    unofficial::vulkan-memory-allocator::vulkan-memory-allocator
+    RenderDoc
+)
 
-add_subdirectory(src)
+if(WIN32)
+    target_link_libraries(ttauri PUBLIC UxTheme.lib)
+    target_link_libraries(ttauri PUBLIC synchronization windowsapp.lib)
+elseif(APPLE)
+    target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
+endif()
 
-target_link_libraries(ttauri PUBLIC fmt date date-tz ${Vulkan_LIBRARIES} VMA RenderDoc)
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_compile_features(ttauri PUBLIC cxx_std_20)
 
-add_custom_command(
-  TARGET ttauri POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata
-    ${CMAKE_BINARY_DIR}/data/tzdata)
+target_compile_features(ttauri INTERFACE cxx_std_20)
 
 #
 # We will support the following CPUs:
@@ -135,6 +247,9 @@ elseif (MSVC)
 
     # Set the compiler to C++20 standard conforming as much as possible.
     target_compile_options(ttauri PUBLIC -permissive-)
+
+    # suppress msbuild startup banner
+    target_compile_options(ttauri PUBLIC -nologo)
 
     # By default MSVC reports a incorrect version in __cplusplus
     # This option will make it work correctly.
@@ -188,6 +303,9 @@ elseif (MSVC)
     # False positive when calling a local function from within a "if constexpr" block.
     target_compile_options(ttauri PUBLIC -wd4505)
 
+    # C4648: standard attribute 'no_unique_address' is ignored
+    target_compile_options(ttauri PUBLIC -wd4648)
+
     if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
         # Enable Security Development Lifecycle checks.
         # This includes run-time checks, don't include this in the Release type
@@ -196,22 +314,20 @@ elseif (MSVC)
         # -sdl forces deprecated warnings as errors so also not useful during development.
         #target_compile_options(ttauri PUBLIC -sdl)
 
-        # Just my code
+        # Just my code enables the VS debugger to step over system, framework, library, and other non-user calls.
         target_compile_options(ttauri PUBLIC -JMC)
     endif()
 endif()
 
 if (WIN32)
-    if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
-    target_precompile_headers(ttauri PRIVATE <Windows.h>)
+    if(TT_BUILD_PCH)
+        if(NOT TT_ENABLE_ANALYSIS)
+            target_precompile_headers(ttauri PRIVATE <Windows.h>)
+        endif()
     endif()
 
     # Add vulkan win32 surface support.
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
-
-    target_link_libraries(ttauri PUBLIC UxTheme.lib)
-
-    target_link_libraries(ttauri PUBLIC synchronization windowsapp.lib)
 
     # Set defines to compile a win32 application.
 	target_compile_options(ttauri PUBLIC -D_WIN64 -DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
@@ -228,16 +344,25 @@ if (WIN32)
     # Make sure that Windows.h doesn't include all kind of weird things.
     target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
 
+    # define the version of the windows header files to use
+    get_windows_ntversion(winnt_version)
+    target_compile_options(ttauri PUBLIC -D_WIN32_WINNT=${winnt_version})
+
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_METAL_EXT)
-
-    target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
-########################################
-# Copy resources needed by executables #
-########################################
+add_custom_command(
+  TARGET ttauri POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/tzdata
+    ${CMAKE_BINARY_DIR}/data/tzdata)
+
+#-------------------------------------------------------------------
+# Copy resources needed by executables
+#-------------------------------------------------------------------
+
 add_shader(ttauri_static_resources
     src/ttauri/GUI/pipeline_image.vert
     src/ttauri/GUI/pipeline_image.frag
@@ -250,6 +375,7 @@ add_shader(ttauri_static_resources
     src/ttauri/GUI/pipeline_tone_mapper.vert
     src/ttauri/GUI/pipeline_tone_mapper.frag
 )
+
 set(ttauri_static_resources ${ttauri_static_resources}
     data/elusiveicons-webfont.ttf
     data/ttauri_icons.ttf
@@ -264,77 +390,198 @@ add_custom_target(ttauri_resources
     resources/themes/ttauri_light.theme.json
     resources/win32.keybinds.json
 )
+
 add_dependencies(ttauri ttauri_resources)
 
-#########################
-# Build test executable #
-#########################
-target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(ttauri_tests PRIVATE gtest_main ttauri)
-if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
-target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
+#-------------------------------------------------------------------
+# Installation Rules: ttauri                               (library)
+#-------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
+if(WIN32)
+
+    install(TARGETS ttauri RESOURCE)
+
+    # Copy all header files for the library.
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/ttauri/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            FILES_MATCHING PATTERN "*.hpp")
+
+    # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
+    get_target_property(target_type ttauri TYPE)
+
+    if(target_type STREQUAL STATIC_LIBRARY)
+
+        # Install the library and headers.
+        install(TARGETS ttauri EXPORT ttauri
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
+        )
+    endif()
+
+    if(target_type STREQUAL DYNAMIC_LIBRARY)
+
+        # Install the library and headers.
+        install(TARGETS ttauri EXPORT ttauri
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
+        )
+    endif()
+
 endif()
 
-gtest_discover_tests(ttauri_tests)
+#-------------------------------------------------------------------
+# Build Target: ttauri_tests                            (executable)
+#-------------------------------------------------------------------
 
-add_custom_command(
-    TARGET ttauri_tests PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
+if(TT_BUILD_TESTS)
 
-###############################
-# Build non-test applications #
-###############################
-add_subdirectory(examples)
+    enable_testing()
 
-#############################################
-# Remove certain files from static analysis #
-#############################################
-set(ttauri_do_not_analyze
-    src/ttauri/GUI/pipeline_flat.cpp
-    src/ttauri/GUI/gui_window_vulkan.cpp
-    src/ttauri/GUI/gui_device_vulkan.cpp
-    src/ttauri/GUI/gui_system_vulkan.cpp
-    src/ttauri/GUI/gui_system.cpp
-    src/ttauri/GUI/gui_system_vulkan_win32.cpp
-    src/ttauri/GUI/gui_window.cpp
-    src/ttauri/GUI/gui_window_vulkan_win32.cpp
-    src/ttauri/GUI/pipeline_flat_device_shared.cpp
-    src/ttauri/GUI/pipeline_image.cpp
-    src/ttauri/GUI/pipeline_tone_mapper.cpp
-    src/ttauri/GUI/pipeline_image_texture_map.cpp
-    src/ttauri/GUI/pipeline_box_device_shared.cpp
-    src/ttauri/GUI/pipeline_image_device_shared.cpp
-    src/ttauri/GUI/pipeline_tone_mapper_device_shared.cpp
-    src/ttauri/GUI/pipeline_image_image.cpp
-    src/ttauri/GUI/pipeline_SDF_texture_map.cpp
-    src/ttauri/GUI/pipeline_SDF_device_shared.cpp
-    src/ttauri/GUI/pipeline_SDF_atlas_rect.cpp
-    src/ttauri/GUI/pipeline_SDF.cpp
-    src/ttauri/GUI/pipeline_vulkan.cpp
-    src/ttauri/GUI/pipeline_box.cpp
-    src/ttauri/widgets/WindowWidget.cpp
-    src/ttauri/widgets/SystemMenuWidget.cpp
-    src/ttauri/widgets/grid_layout_widget.cpp
-    src/ttauri/widgets/WindowTrafficLightsWidget.cpp
-    src/ttauri/widgets/LineInputWidget.cpp
-    src/ttauri/widgets/widget.cpp
-    src/ttauri/stencils/glyph_stencil.cpp
-    src/ttauri/stencils/pixel_map_stencil.cpp
-    src/ttauri/stencils/text_stencil.cpp
-    src/ttauri/stencils/stencil.cpp
-    src/ttauri/application.cpp
-)
+    target_link_libraries(ttauri_tests PRIVATE gtest_main ttauri)
 
-if(MSVC)
-    if(TTAURI_ENABLE_CODE_ANALYSIS)
+    target_include_directories(ttauri_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+    if(TT_BUILD_PCH)
+        if(NOT TT_ENABLE_ANALYSIS)
+            target_precompile_headers(ttauri_tests PRIVATE <gtest/gtest.h>)
+        endif()
+    endif()
+
+    include(GoogleTest)
+
+    # PRE_TEST delays test discovery until just prior to test execution
+    gtest_discover_tests(ttauri_tests DISCOVERY_MODE PRE_TEST)
+
+    add_custom_command(
+        TARGET ttauri_tests PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
+            ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
+endif()
+
+#-------------------------------------------------------------------
+# Installation Rules: ttauri_tests                      (executable)
+#-------------------------------------------------------------------
+
+install(TARGETS ttauri_tests DESTINATION tests)
+
+install(DIRECTORY tests/data/ DESTINATION tests)
+
+# copy one additional file from the "build" directory
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/data/ttauri_icons.ttf.inl DESTINATION tests)
+
+# experimental
+x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+
+#-------------------------------------------------------------------
+# Build examples
+#-------------------------------------------------------------------
+
+if(TT_BUILD_EXAMPLES)
+
+    add_subdirectory(examples/ttauri_demo)
+
+endif()
+
+#-------------------------------------------------------------------
+# Remove certain files from static analysis
+#-------------------------------------------------------------------
+
+if(TT_ENABLE_ANALYSIS)
+    if(MSVC)
+        set(ttauri_do_not_analyze
+            src/ttauri/GUI/pipeline_flat.cpp
+            src/ttauri/GUI/gui_window_vulkan.cpp
+            src/ttauri/GUI/gui_device_vulkan.cpp
+            src/ttauri/GUI/gui_system_vulkan.cpp
+            src/ttauri/GUI/gui_system.cpp
+            src/ttauri/GUI/gui_system_vulkan_win32.cpp
+            src/ttauri/GUI/gui_window.cpp
+            src/ttauri/GUI/gui_window_vulkan_win32.cpp
+            src/ttauri/GUI/pipeline_flat_device_shared.cpp
+            src/ttauri/GUI/pipeline_image.cpp
+            src/ttauri/GUI/pipeline_tone_mapper.cpp
+            src/ttauri/GUI/pipeline_image_texture_map.cpp
+            src/ttauri/GUI/pipeline_box_device_shared.cpp
+            src/ttauri/GUI/pipeline_image_device_shared.cpp
+            src/ttauri/GUI/pipeline_tone_mapper_device_shared.cpp
+            src/ttauri/GUI/pipeline_image_image.cpp
+            src/ttauri/GUI/pipeline_SDF_texture_map.cpp
+            src/ttauri/GUI/pipeline_SDF_device_shared.cpp
+            src/ttauri/GUI/pipeline_SDF_atlas_rect.cpp
+            src/ttauri/GUI/pipeline_SDF.cpp
+            src/ttauri/GUI/pipeline_vulkan.cpp
+            src/ttauri/GUI/pipeline_box.cpp
+            src/ttauri/widgets/WindowWidget.cpp
+            src/ttauri/widgets/SystemMenuWidget.cpp
+            src/ttauri/widgets/grid_layout_widget.cpp
+            src/ttauri/widgets/WindowTrafficLightsWidget.cpp
+            src/ttauri/widgets/LineInputWidget.cpp
+            src/ttauri/widgets/widget.cpp
+            src/ttauri/stencils/glyph_stencil.cpp
+            src/ttauri/stencils/pixel_map_stencil.cpp
+            src/ttauri/stencils/text_stencil.cpp
+            src/ttauri/stencils/stencil.cpp
+            src/ttauri/application.cpp
+        )
         set_source_files_properties(${ttauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
         target_compile_options(ttauri PUBLIC -analyze)
         #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
    endif()
 endif()
 
+#-------------------------------------------------------------------
+# Display Compiler and Linker properties of Build Targets
+#-------------------------------------------------------------------
 
+show_build_target_properties(ttauri)
 
+if(TT_BUILD_EXAMPLES)
+    show_build_target_properties(ttauri_demo)
+endif()
+
+if(TT_BUILD_TESTS)
+    show_build_target_properties(ttauri_tests)
+endif()
+
+#-------------------------------------------------------------------
+# Build Documentation
+#-------------------------------------------------------------------
+
+#
+# Doxygen
+#
+find_package(Doxygen)
+
+if(DOXYGEN_FOUND)
+    set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
+    set(DOXYGEN_GENERATE_HTML YES)
+    set(DOXYGEN_GENERATE_XML NO)
+    set(DOXYGEN_GENERATE_LATEX NO)
+    set(DOXYGEN_GENERATE_PDF NO)
+    set(DOXYGEN_QUIET YES)
+    set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
+    set(DOXYGEN_WARN_NO_PARAMDOC NO)
+
+    set(DOXYGEN_STRIP_FROM_PATH src)
+    set(DOXYGEN_STRIP_FROM_INC_PATH src)
+
+    set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
+    set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
+    set(DOXYGEN_INLINE_INHERITED_MEMB YES)
+    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
+    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+    set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
+
+    set(DOXYGEN_EXTRACT_ALL YES)
+
+    doxygen_add_docs(doc src/ttauri docs)
+else()
+    message("Please install Doxygen to generate the documentation.")
+endif()

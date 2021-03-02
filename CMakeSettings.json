@@ -1,210 +1,90 @@
 ﻿{
-    "configurations": [
+  "configurations": [
+    {
+      "name": "x64-MSVC-Analysis",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "-C Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
         {
-            "name": "x64-Analysis",
-            "generator": "Ninja",
-            "configurationType": "Debug",
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "",
-            "buildCommandArgs": "",
-            "ctestCommandArgs": "-C Debug",
-            "inheritEnvironments": [
-                "msvc_x64_x64"
-            ],
-            "variables": [
-                {
-                    "name": "TTAURI_ENABLE_CODE_ANALYSIS",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "BUILD_SHARED_LIBS",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "gtest_force_shared_crt",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "BUILD_TZ_LIB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "USE_SYSTEM_TZ_DB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "ENABLE_DATE_TESTING",
-                    "value": "OFF",
-                    "type": "STRING"
-                }
-            ]
-        },
-        {
-            "name": "x64-Debug",
-            "generator": "Ninja",
-            "configurationType": "Debug",
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "",
-            "buildCommandArgs": "",
-            "ctestCommandArgs": "-C Debug",
-            "inheritEnvironments": [
-                "msvc_x64_x64"
-            ],
-            "variables": [
-                {
-                    "name": "BUILD_SHARED_LIBS",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "gtest_force_shared_crt",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "BUILD_TZ_LIB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "USE_SYSTEM_TZ_DB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "ENABLE_DATE_TESTING",
-                    "value": "OFF",
-                    "type": "STRING"
-                }
-            ]
-        },
-        {
-            "name": "x64-Clang-Debug",
-            "generator": "Ninja",
-            "configurationType": "Debug",
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "",
-            "buildCommandArgs": "",
-            "ctestCommandArgs": "-C Debug",
-            "intelliSenseMode": "windows-clang-x64",
-            "inheritEnvironments": [
-                "clang_cl_x64"
-            ],
-            "variables": [
-                {
-                    "name": "BUILD_SHARED_LIBS",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "gtest_force_shared_crt",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "BUILD_TZ_LIB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "USE_SYSTEM_TZ_DB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "ENABLE_DATE_TESTING",
-                    "value": "OFF",
-                    "type": "STRING"
-                }
-            ]
-        },
-        {
-            "name": "x64-Release",
-            "generator": "Ninja",
-            "configurationType": "RelWithDebInfo",
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
-            "buildCommandArgs": "",
-            "ctestCommandArgs": "",
-            "inheritEnvironments": [
-                "msvc_x64_x64"
-            ],
-            "variables": [
-                {
-                    "name": "BUILD_SHARED_LIBS",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "gtest_force_shared_crt",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "BUILD_TZ_LIB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "USE_SYSTEM_TZ_DB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "ENABLE_DATE_TESTING",
-                    "value": "OFF",
-                    "type": "STRING"
-                }
-            ]
-        },
-        {
-            "name": "x64-Clang-Release",
-            "generator": "Ninja",
-            "configurationType": "RelWithDebInfo",
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
-            "buildCommandArgs": "",
-            "ctestCommandArgs": "",
-            "inheritEnvironments": [
-                "clang_cl_x64"
-            ],
-            "variables": [
-                {
-                    "name": "BUILD_SHARED_LIBS",
-                    "value": "OFF",
-                    "type": "STRING"
-                },
-                {
-                    "name": "gtest_force_shared_crt",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "BUILD_TZ_LIB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "USE_SYSTEM_TZ_DB",
-                    "value": "ON",
-                    "type": "STRING"
-                },
-                {
-                    "name": "ENABLE_DATE_TESTING",
-                    "value": "OFF",
-                    "type": "STRING"
-                }
-            ]
+          "name": "TT_ENABLE_ANALYSIS",
+          "value": "ON",
+          "type": "STRING"
         }
-    ]
+      ]
+    },
+    {
+      "name": "x64-MSVC-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "-C Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    },
+    {
+      "name": "x64-MSVC-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    },
+
+    {
+      "name": "x64-MSVC-ReleaseWithDebugInfo",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    },
+    {
+      "name": "x64-Clang-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "-C Debug",
+      "intelliSenseMode": "windows-clang-x64",
+      "inheritEnvironments": [ "clang_cl_x64" ]
+    },
+    {
+      "name": "x64-Clang-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "clang_cl_x64" ]
+    },
+    {
+      "name": "x64-Clang-ReleaseWithDebugInfo",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "clang_cl_x64" ]
+    }
+  ]
 }

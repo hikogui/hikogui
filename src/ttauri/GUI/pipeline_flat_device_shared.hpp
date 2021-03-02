@@ -8,7 +8,7 @@
 #include "../aarect.hpp"
 #include "../numeric_array.hpp"
 #include "../color/sfloat_rgba16.hpp"
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 

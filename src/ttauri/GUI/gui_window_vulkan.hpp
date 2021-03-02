@@ -6,7 +6,7 @@
 
 #include "gui_window.hpp"
 #include <vulkan/vulkan.hpp>
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 #include <optional>
 
 namespace tt {

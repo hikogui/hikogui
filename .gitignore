@@ -64,6 +64,9 @@ bld/
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
+# VCPKG installation folder for dependencies
+vcpkg_installed/
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

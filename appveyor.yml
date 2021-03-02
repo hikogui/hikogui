@@ -1,0 +1,301 @@
+#-------------------------------------------------------------------
+# AppVeyor build configuration
+# https://www.appveyor.com/docs/
+# https://www.appveyor.com/docs/appveyor-yml/
+#-------------------------------------------------------------------
+
+clone_depth: 5
+
+version: '{build}'
+
+#-------------------------------------------------------------------
+#     Build configuration
+#-------------------------------------------------------------------
+
+# defaults
+platform: x64
+configuration: Release
+
+environment:
+  # appveyor
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  APPVEYOR_CACHE_ENTRY_ZIP_ARGS: -t7z -m0=lzma -mx=5
+  APPVEYOR_RDP_PASSWORD: somePassword#123
+  # vcpkg
+  #VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+  #VCPKG_DEFAULT_TRIPLET: "%VCPKG_TARGET_TRIPLET%"
+  VCPKG_ROOT: "C:\\Tools\\vcpkg"
+  # vulkan
+  VULKAN_VERSION: "1.2.162.1"
+  VULKAN_SDK: "C:\\VulkanSDK\\%VULKAN_VERSION%"
+  # the build matrix
+  #   Platform | Compiler | Target Triplet | Build Type
+  matrix:
+    #
+    # "Windows | MSVC 2019 | x64-windows | Release
+    #
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Release
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_TYPE: Release
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows | ReleaseWithDebugInfo
+    #
+    - APPVEYOR_JOB_NAME: Win-MSVC19-x64-RelWithDebInfo
+      COMPILER: MSVC19
+      VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+      BUILD_TYPE: RelWithDebInfo
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows | Debug
+    #
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Debug
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_TYPE: Debug
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows-static | Release
+    #
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-Release
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+    #  BUILD_TYPE: Release
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows-static | ReleaseWithDebugInfo
+    #
+    - APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-RelWithDebInfo
+      COMPILER: MSVC19
+      VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+      BUILD_TYPE: RelWithDebInfo
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | MSVC 2019 | x64-windows-static | Debug
+    #
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-Debug
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+    #  BUILD_TYPE: Debug
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #
+    # Windows | ClangCL | x64-windows | Release
+    #
+    #- APPVEYOR_JOB_NAME: Win-ClangCL-x64-Release
+    #  COMPILER: CLANG
+    #  BUILD_TYPE: Release
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #
+    # Windows | ClangCL | x64-windows | Debug
+    #
+    #- APPVEYOR_JOB_NAME: Win-ClangCL-x64-Debug
+    #  COMPILER: CLANG
+    #  BUILD_TYPE: Debug
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    #
+
+#matrix:
+  # let the whole build fail immediately, if one of the job fails
+  # fast_finish: true
+
+build:
+  # MSBuild verbosity level
+  verbosity: minimal
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - date /T & time /T
+  - curl -V
+  - cmake --version
+  - msbuild /version
+  - vcpkg version
+  - if [%COMPILER%]==[CLANG] clang++ -v
+  - echo NUMBER_OF_PROCESSORS=%NUMBER_OF_PROCESSORS%
+
+install:
+  #
+  # This power shell block sets the [build version number] and updates the [AppveyorBuildVersion number].
+  #
+  #  1. We fetch the version number (1.2.3) from the `version.hpp` file.
+  #  2. When the commit is a tag push, we set the [AppveyorBuildVersion number] to the [tag_name], e.g. "v1.2.3".
+  #  3. On normal commits, we set the [AppveyorBuildVersion number] to "[build_version_number]-[current_commit_short_hash]"".
+  #
+  #  The build version number is later also used for naming the release folder, e.g. "ttauri-[build_version_number]" = "ttauri-1.2.3".
+  #
+  # In short: set "build version number" to "version_num-current_commit_short_hash" or when tagged to "tag name" (Travis style).
+  - ps: |
+      $env:build_version_number = Select-String -Path "src/ttauri/version.hpp" -Pattern 'version_short' | %{$_.Line.Split('"')[1]}
+      write-host "build_version_number -> $env:build_version_number"
+      if ($env:APPVEYOR_REPO_TAG -eq "true")
+      {
+        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
+      }
+      else
+      {
+        Update-AppveyorBuild -Version "$env:build_version_number-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+      }
+
+  # Update CMake
+  #- choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+  #- refreshenv
+
+  # Update VCPKG
+  - cd C:\Tools\vcpkg
+  - git pull --quiet
+  - .\bootstrap-vcpkg.bat -disableMetrics
+  #- ps: Add-Content "C:\tools\vcpkg\triplets\x64-windows-static.cmake" "set(VCPKG_BUILD_TYPE release)"
+  - vcpkg version
+
+  # Install VULKAN_SDK
+  - if not exist %VULKAN_SDK% (
+      curl -L --silent --show-error --output Vulkan_SDK_Installer.exe https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/VulkanSDK-%VULKAN_VERSION%-Installer.exe?Human=true &
+      Vulkan_SDK_Installer.exe /S
+    )
+  - dir %VULKAN_SDK%
+
+  # Install Vulkan Runtime (for vulkan-1.dll)
+  - if not exist %VULKAN_SDK%\runtime (
+      curl -L --silent --show-error --output vulkan-runtime.zip https://sdk.lunarg.com/sdk/download/%VULKAN_VERSION%/windows/vulkan-runtime-components.zip?Human=true &
+      7z e vulkan-runtime.zip -o%VULKAN_SDK%\runtime\%PLATFORM% */%PLATFORM%
+    )
+  - dir %VULKAN_SDK%\runtime\%PLATFORM%
+
+  # Install and build dependencies using VCPKG
+  - set VCPKG_INSTALLED=C:\Tools\vcpkg\installed\%VCPKG_TARGET_TRIPLET%
+  - if not exist %VCPKG_INSTALLED% (
+      cd C:\projects\ttauri &
+      vcpkg integrate install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests
+    )
+  #vcpkg install --triplet=%VCPKG_TARGET_TRIPLET% --feature-flags=manifests &
+
+  # Init MSVC environment, see https://www.appveyor.com/docs/lang/cpp/
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019 Preview"
+      (call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM% )
+
+before_build:
+  # CHECK important folders to see if everything is present
+  - dir C:\projects\ttauri
+  #- dir C:\projects\ttauri\vcpkg_installed
+  - dir %VULKAN_SDK%\Bin
+  #- dir C:\Tools\vcpkg\installed
+  # return
+  - cd C:\projects\ttauri
+
+build_script:
+  #
+  # generate build files
+  #
+  - if [%COMPILER%]==[MSVC19] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -S . -B ..\ttauri-build
+        -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_TARGET_TRIPLET=%VCPKG_TARGET_TRIPLET%
+        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DTT_BUILD_TESTS:BOOL=ON
+        -DTT_BUILD_OPTIMIZED:BOOL=ON
+        -DTT_BUILD_PCH:BOOL=ON
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+
+  - if [%COMPILER%]==[CLANG] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T ClangCL -S . -B ..\ttauri-build
+        -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DTT_BUILD_TESTS:BOOL=ON
+        -DTT_BUILD_OPTIMIZED:BOOL=ON
+        -DTT_BUILD_PCH:BOOL=ON
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DCMAKE_C_COMPILER=C:/PROGRA~1/LLVM/bin/clang.exe
+        -DCMAKE_CXX_COMPILER=C:/PROGRA~1/LLVM/bin/clang-cl.exe
+  #
+  # build
+  #
+  - cmake --build ..\ttauri-build --config %BUILD_TYPE% -j %NUMBER_OF_PROCESSORS% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  #
+  # install
+  #
+  - cmake --install ..\ttauri-build --config %BUILD_TYPE% --prefix ..\ttauri-install --strip --verbose
+
+after_build:
+   # set STATIC_BUILD to true, if the triplet contains "static", false otherwise.
+   #- echo.%VCPKG_TARGET_TRIPLET%|findstr /C:"static" >nul 2>&1 && (set STATIC_BUILD=TRUE) || (set STATIC_BUILD=FALSE)
+
+   # Copy Vulkan Runtime (vulkan-1.dll) for dynamic-linking builds into each folder with an executable.
+   #- if [%STATIC_BUILD%]==[FALSE]
+   - copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* C:\projects\ttauri-install\tests
+   - copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* C:\projects\ttauri-install\examples\ttauri_demo
+
+   # Check if all build artifacts are present, before packaging.
+   - dir C:\projects\ttauri-build
+   - dir /S /B C:\projects\ttauri-install
+
+   # package ttauri artifact
+   - cd C:\projects\
+   # remove "-windows" from VCPKG_TARGET_TRIPLET (x64-windows -> x64, x64-windows-static -> x64-static)
+   - set TRIPLET=%VCPKG_TARGET_TRIPLET:-windows=%
+   # name of the top level folder inside the zip
+   - echo ttauri-%build_version_number%
+   - rename ttauri-install ttauri-%build_version_number%
+   - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\ttauri-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%TRIPLET%-%BUILD_TYPE%.zip" ./ttauri-%build_version_number%
+
+on_failure:
+  - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeOutput.log
+  - appveyor PushArtifact C:\projects\ttauri-build\CMakeFiles\CMakeError.log
+
+#-------------------------------------------------------------------
+#     Tests
+#-------------------------------------------------------------------
+
+test_script:
+  - cd C:\projects\ttauri-%build_version_number%\tests
+  - ttauri_tests.exe
+
+#-------------------------------------------------------------------
+#     Build Artifacts
+#-------------------------------------------------------------------
+
+artifacts:
+  - path: ttauri-*.zip
+    name: ttauri_zip
+
+#-------------------------------------------------------------------
+#     Deployment configuration
+#-------------------------------------------------------------------
+
+# deploy to Github Releases on tag push (conditional deploy)
+#deploy:
+#  provider: GitHub
+#  release: 'ttauri $(APPVEYOR_REPO_TAG_NAME)'
+#  tag: $(APPVEYOR_REPO_TAG_NAME)
+#  #description: '[**Changelog**](https://github.com/ttauri-project/ttauri/blob/main/CHANGELOG.md)'
+#  artifact: ttauri_zip
+#  draft: false
+#  prerelease: false
+#  force_update: true               # overwrite files of existing release on GitHub (for re-releasing)
+#  on:
+#    branch: main                   # release from main branch only
+#    appveyor_repo_tag: true        # deploy on tag push only
+#  auth_token:                      # encrypted token from GitHub
+#    secure: *hash*
+
+#-------------------------------------------------------------------
+#     Cache things until an appveyor.yml file change
+#-------------------------------------------------------------------
+
+cache:
+  - C:\Tools\vcpkg\installed -> appveyor.yml
+  - '%VULKAN_SDK%\Bin -> appveyor.yml'
+  - '%VULKAN_SDK%\Bin32 -> appveyor.yml'
+  - '%VULKAN_SDK%\Include -> appveyor.yml'
+  - '%VULKAN_SDK%\Lib -> appveyor.yml'
+  - '%VULKAN_SDK%\Lib32 -> appveyor.yml'
+  - '%VULKAN_SDK%\runtime -> appveyor.yml'
+
+#-------------------------------------------------------------------
+#     Accessing Windows build worker via Remote Desktop (RDP)
+#-------------------------------------------------------------------
+
+# Enable RDP session to Appveyor server by enabling the two on_finish lines.
+# You connect using a remote desktop connection (e.g. using mstsc.exe).
+# Use PW from APPVEYOR_RDP_PASSWORD above. A session lasts 60min max.
+# Do not forget to disable the following lines, when you solved the problem.
+
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

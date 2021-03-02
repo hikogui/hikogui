@@ -8,7 +8,7 @@
 #include "pipeline_image_push_constants.hpp"
 #include "pipeline_image_vertex.hpp"
 #include "../vspan.hpp"
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 namespace tt::pipeline_image {
 

@@ -12,7 +12,7 @@
 #include "pipeline_SDF_device_shared.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include <vulkan/vulkan.hpp>
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 namespace tt {
 class URL;

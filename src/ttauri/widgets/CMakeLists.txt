@@ -38,8 +38,10 @@ target_sources(ttauri PRIVATE
     window_widget.hpp
 )
 
-if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
-target_precompile_headers(ttauri PRIVATE
-    Widget.hpp
-)
+if(TT_BUILD_PCH)
+    if(NOT TT_ENABLE_ANALYSIS)
+    target_precompile_headers(ttauri PRIVATE
+        Widget.hpp
+    )
+    endif()
 endif()

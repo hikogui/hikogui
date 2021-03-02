@@ -5,7 +5,7 @@
 #pragma once
 
 #include "snorm_r8.hpp"
-#include "math.hpp"
+#include "../math.hpp"
 
 namespace tt {
 

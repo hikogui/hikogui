@@ -186,23 +186,25 @@ target_sources(ttauri PRIVATE
     wfree_unordered_map.hpp
 )
 
-if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
-target_precompile_headers(ttauri PRIVATE
-    aarect.hpp
-    assert.hpp
-    counters.hpp
-    datum.hpp
-    debugger.hpp
-    exception.hpp
-    logger.hpp
-    numeric_array.hpp
-    os_detect.hpp
-    rect.hpp
-    required.hpp
-    strings.hpp
-    trace.hpp
-    URL.hpp
-)
+if(TT_BUILD_PCH)
+    if(NOT TT_ENABLE_ANALYSIS)
+    target_precompile_headers(ttauri PRIVATE
+        aarect.hpp
+        assert.hpp
+        counters.hpp
+        datum.hpp
+        debugger.hpp
+        exception.hpp
+        logger.hpp
+        numeric_array.hpp
+        os_detect.hpp
+        rect.hpp
+        required.hpp
+        strings.hpp
+        trace.hpp
+        URL.hpp
+    )
+    endif()
 endif()
 
 target_sources(ttauri_tests PRIVATE
@@ -237,21 +239,23 @@ target_sources(ttauri_tests PRIVATE
     URL_tests.cpp
 )
 
-if(NOT TTAURI_ENABLE_CODE_ANALYSIS)
-target_precompile_headers(ttauri_tests PRIVATE
-    aarect.hpp
-    assert.hpp
-    counters.hpp
-    datum.hpp
-    debugger.hpp
-    exception.hpp
-    logger.hpp
-    numeric_array.hpp
-    os_detect.hpp
-    rect.hpp
-    required.hpp
-    strings.hpp
-    trace.hpp
-    URL.hpp
-)
+if(TT_BUILD_PCH)
+    if(NOT TT_ENABLE_ANALYSIS)
+    target_precompile_headers(ttauri_tests PRIVATE
+        aarect.hpp
+        assert.hpp
+        counters.hpp
+        datum.hpp
+        debugger.hpp
+        exception.hpp
+        logger.hpp
+        numeric_array.hpp
+        os_detect.hpp
+        rect.hpp
+        required.hpp
+        strings.hpp
+        trace.hpp
+        URL.hpp
+    )
+    endif()
 endif()

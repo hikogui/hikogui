@@ -21,17 +21,38 @@ add_custom_target(ttauri_demo_resources
 
 add_dependencies(ttauri_demo ttauri_demo_resources)
 
-set(ttauri_demo_do_no_analyze
-    src/preferences_controller.cpp
-    src/main_window_controller.cpp
-    src/audio_preferences_controller.cpp
-    src/main.cpp
-    src/application_controller.cpp
-    src/license_preferences_controller.cpp
-)
-
 if(MSVC)
-    if(TTAURI_ENABLE_CODE_ANALYSIS)
-        set_source_files_properties(${ttauri_demo_do_no_analyze} PROPERTIES COMPILE_FLAGS -analyze-)
+    if(TT_ENABLE_ANALYSIS)
+        set(ttauri_demo_do_not_analyze
+            src/preferences_controller.cpp
+            src/main_window_controller.cpp
+            src/audio_preferences_controller.cpp
+            src/main.cpp
+            src/application_controller.cpp
+            src/license_preferences_controller.cpp
+        )
+        set_source_files_properties(${ttauri_demo_do_not_analyze} PROPERTIES COMPILE_FLAGS -analyze-)
     endif()
 endif()
+
+#-------------------------------------------------------------------
+# Installation Rules: ttauri_demo
+#-------------------------------------------------------------------
+
+install(TARGETS ttauri_demo DESTINATION examples/ttauri_demo)
+
+install(FILES resources/ttauri_demo.png DESTINATION examples/ttauri_demo/resources)
+
+install(FILES data/ttauri_demo.pot  DESTINATION examples/ttauri_demo/resources/locale)
+install(DIRECTORY resources/locale/ DESTINATION examples/ttauri_demo/resources/locale)
+
+# copy additional "ttauri library" resources from top-level
+
+install(DIRECTORY ../../resources/  DESTINATION examples/ttauri_demo/resources)
+
+install(DIRECTORY ../../external/tzdata/ DESTINATION examples/ttauri_demo/resources/tzdata)
+
+# copy vcpkg dependencies (experimental)
+
+x_vcpkg_install_local_dependencies(TARGETS ttauri_demo DESTINATION examples/ttauri_demo)
+

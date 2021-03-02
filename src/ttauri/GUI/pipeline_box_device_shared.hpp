@@ -9,8 +9,8 @@
 #include "../rect.hpp"
 #include "../vspan.hpp"
 #include "../color/color.hpp"
+#include <vk_mem_alloc.h>
 #include "../geometry/corner_shapes.hpp"
-#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
