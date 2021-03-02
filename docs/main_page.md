@@ -6,9 +6,10 @@ TTauri is a cross platform C++ GUI library.
 Subsystems
 ----------
 
- - [Information Reporting](information_reporting.md); exceptions, assertions,
+ - [Information Reporting](information_reporting.md): exceptions, assertions,
    logging, counting and tracing.
-
+ - [Geometry](geometry): `vector`, `geo::point`, `tt::geo::extent`, rectangle, axis-aligned rectangle,
+   translate, scale, rotate, matrix.
 
 Features
 --------
