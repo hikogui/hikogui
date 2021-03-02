@@ -98,6 +98,7 @@ include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
 include(ShowBuildTargetProperties)
+include(FetchContent)
 if(WIN32)
     include(GetWindowsNtVersion)
 endif()
@@ -135,13 +136,19 @@ find_package(fmt CONFIG REQUIRED)
 #
 # GoogleTest - non-vcpkg, directly build from externals
 #
-set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-set(gtest_force_shared_crt ON)
+if(TT_BUILD_TESTS)
+    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.10.0)
+    FetchContent_MakeAvailable(googletest)
+
+endif()
+
+#set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+#set(gtest_force_shared_crt ON)
 
 # Don't install GTest libs when we run `install`.
-set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest." FORCE)
+#set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest." FORCE)
 
-add_subdirectory(external/googletest)
+#add_subdirectory(external/googletest)
 
 #
 # Vulkan Memory Allocator
