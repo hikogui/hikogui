@@ -186,6 +186,7 @@ add_subdirectory(tools)
 #-------------------------------------------------------------------
 
 set_target_properties(ttauri PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} SOVERSION ${TTAURI_MAJOR_VERSION})
+#set_target_properties(ttauri PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 target_link_libraries(ttauri PUBLIC
     fmt::fmt
@@ -196,10 +197,7 @@ target_link_libraries(ttauri PUBLIC
     RenderDoc
 )
 
-if(WIN32)
-    target_link_libraries(ttauri PUBLIC UxTheme.lib)
-    target_link_libraries(ttauri PUBLIC synchronization windowsapp.lib)
-elseif(APPLE)
+if(APPLE)
     target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
@@ -399,9 +397,13 @@ if(WIN32)
     install(TARGETS ttauri RESOURCE)
 
     # Copy all header files for the library.
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/ttauri/
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             FILES_MATCHING PATTERN "*.hpp")
+
+    # Copy all resource files needing to be added to the resource directory of an application
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
+            DESTINATION ${CMAKE_INSTALL_PREFIX}/resources)
 
     # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
     get_target_property(target_type ttauri TYPE)
