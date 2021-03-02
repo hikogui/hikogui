@@ -25,7 +25,7 @@ public:
         preferences_controller = std::make_shared<demo::preferences_controller>();
     }
 
-    std::string application_name(tt::application &self) const noexcept override;
+    tt::version application_version(tt::application &self) const noexcept override;
 
     tt::datum configuration(tt::application &self, std::vector<std::string> arguments) const noexcept override;
 

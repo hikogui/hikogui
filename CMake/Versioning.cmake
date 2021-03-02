@@ -100,13 +100,3 @@ message(STATUS "[Version] GIT_BRANCH -> " ${GIT_BRANCH})
 message(STATUS "[Version] RELEASE_DATE (when committed) -> " ${RELEASE_DATE})
 message(STATUS "")
 
-#-------------------------------------------------------------------
-# Write version file
-#-------------------------------------------------------------------
-
-# Load the template file `version.hpp.in`.
-# Replace any @VAR@ tags and write `version.hpp`.
-configure_file(
-    ${CMAKE_CURRENT_LIST_DIR}/../src/ttauri/version.hpp.in
-    ${CMAKE_CURRENT_LIST_DIR}/../src/ttauri/version.hpp
-)

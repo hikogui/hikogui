@@ -4,6 +4,7 @@
 
 #include "gui_system_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
+#include "ttauri/current_version.hpp"
 #include <chrono>
 #include <cstring>
 
@@ -54,7 +55,11 @@ gui_system_vulkan::gui_system_vulkan(
     gui_system(delegate), requiredExtensions(std::move(extensionNames))
 {
     applicationInfo = vk::ApplicationInfo(
-        "TTauri App", VK_MAKE_VERSION(0, 1, 0), "TTauri Engine", VK_MAKE_VERSION(0, 1, 0), VK_API_VERSION_1_2);
+        application_version.name.c_str(),
+        VK_MAKE_VERSION(application_version.major, application_version.minor, application_version.patch),
+        ttauri_version.name.c_str(),
+        VK_MAKE_VERSION(ttauri_version.major, ttauri_version.minor, ttauri_version.patch),
+        VK_API_VERSION_1_2);
 
     // VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2 extension is needed to retrieve unique identifiers for
     // each GPU in the system, so that we can select the same one on each startup and so that the

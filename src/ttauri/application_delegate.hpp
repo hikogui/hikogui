@@ -5,6 +5,7 @@
 #pragma once
 
 #include "datum.hpp"
+#include "version.hpp"
 #include <string>
 #include <vector>
 #include <optional>
@@ -28,7 +29,7 @@ public:
 
     /*! Called when an application name is needed.
      */
-    virtual std::string application_name(application &self) const noexcept = 0;
+    virtual version application_version(application &self) const noexcept = 0;
 
     /*! Return the possible command line argument options.
      */

@@ -50,10 +50,11 @@ endif()
 #-------------------------------------------------------------------
 
 if(APPLE)
-    project(ttauri LANGUAGES CXX OBJC)
+    set(LANGUAGES CXX OBJCXX)
 else()
-    project(ttauri LANGUAGES CXX)
+    set(LANGUAGES CXX)
 endif()
+project(ttauri VERSION 0.3.0 LANGUAGES ${LANGUAGES})
 
 #-------------------------------------------------------------------
 # Define Constants
@@ -114,11 +115,6 @@ include(SetupVcpkg)
 #-------------------------------------------------------------------
 
 #
-# RenderDoc - non-vcpkg, directly build from externals
-#
-add_subdirectory(external/RenderDoc)
-
-#
 # date
 #
 find_package(date CONFIG REQUIRED)
@@ -141,14 +137,6 @@ if(TT_BUILD_TESTS)
     FetchContent_MakeAvailable(googletest)
 
 endif()
-
-#set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-#set(gtest_force_shared_crt ON)
-
-# Don't install GTest libs when we run `install`.
-#set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest." FORCE)
-
-#add_subdirectory(external/googletest)
 
 #
 # Vulkan Memory Allocator
@@ -201,7 +189,6 @@ target_link_libraries(ttauri PUBLIC
     date::date-tz
     ${Vulkan_LIBRARIES}
     unofficial::vulkan-memory-allocator::vulkan-memory-allocator
-    RenderDoc
 )
 
 if(APPLE)

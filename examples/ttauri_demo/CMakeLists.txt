@@ -6,6 +6,7 @@
 add_executable(ttauri_demo WIN32 MACOSX_BUNDLE)
 
 target_link_libraries(ttauri_demo PRIVATE ttauri)
+target_include_directories(ttauri_demo PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 add_subdirectory(src)
 
