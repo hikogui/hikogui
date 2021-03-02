@@ -41,16 +41,10 @@ endif()
 
 install(TARGETS ttauri_demo DESTINATION examples/ttauri_demo)
 
-install(FILES resources/ttauri_demo.png DESTINATION examples/ttauri_demo/resources)
-
-install(FILES data/ttauri_demo.pot  DESTINATION examples/ttauri_demo/resources/locale)
-install(DIRECTORY resources/locale/ DESTINATION examples/ttauri_demo/resources/locale)
+install(DIRECTORY resources/ DESTINATION examples/ttauri_demo/resources)
 
 # copy additional "ttauri library" resources from top-level
-
 install(DIRECTORY ../../resources/  DESTINATION examples/ttauri_demo/resources)
-
-install(DIRECTORY ../../external/tzdata/ DESTINATION examples/ttauri_demo/resources/tzdata)
 
 # copy vcpkg dependencies (experimental)
 
