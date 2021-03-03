@@ -110,7 +110,8 @@ The following packages need to be installed:
 
  - app-arch/zip (needed for vcpkg)
  - dev-util/vulkan-tools (the vulkan SDK)
- - dev-util/glslang (for building the shaders)
+ - dev-util/glslang
+ - media-libs/shaderc (for building the shaders)
 
 Since the vulkan sdk is part of gentoo it will be installed in `/usr`.
 
