@@ -103,6 +103,22 @@ c:\build>cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF
 c:\build>cmake --build .
 ```
 
+### Gentoo
+**Note: TTauri does not currently build fully on Linux.**
+
+The vulkan SDK can be installed by installing the `vulkan-tools` gentoo package. This
+means the SDK is installed in `/usr`. vcpkg will use the `zip` gentoo package as well.
+
+```
+ttauri> mkdir build
+ttauri> cd build
+build> export VCPKG_ROOT=~/src/vcpkg
+build> export VULKAN_SDK=/usr
+build> $VCPKG_ROOT/vcpkg integrate install --feature-flags=manifests
+build> cmake -DVCPKG_TARGET_TRIPLET=x64-linux -DBUILD_SHARED_LIBS=ON ..
+build> cmake --build .
+```
+
 Debugging with RenderDoc
 ------------------------
 Debug builds of ttauri are linked against the RenderDoc API. Which means
