@@ -21,10 +21,10 @@ In order to avoid wasting your time, we highly encourage opening an issue to dis
 whether the PR you're thinking about making will be acceptable.
 
 If you like to work on an already existing issue, you may want to assign
-youself to that issue before working on it, to reduce the chance of
+yourself to that issue before working on it, to reduce the chance of
 two people working on the same pull request.
 
-It could be helpfull having a more realtime discussion through discord at:
+It could be helpful having a more real time discussion through discord at:
 <https://discord.gg/7e8pFTsujw>
 
 We have written down a [code style](code_style.md) which may help you
@@ -34,7 +34,7 @@ to this, don't worry about this :smile:
 
 Install
 -------
-Here is a discription on how to install for the development of ttauri
+Here is a description on how to install for the development of ttauri
 
 ### Windows 10
 
@@ -47,6 +47,7 @@ Install requirements:
    + Windows 10 SDK
  - git from <https://git-scm.com>
  - vcpkg from <https://github.com/microsoft/vcpkg> (see below for instructions)
+ - Vulkan SDK from <https://www.lunarg.com/vulkan-sdk/>
  - optional: RenderDoc (for Vulkan debugging) from <https://renderdoc.org/>
  - optional: Doxygen (for documentation generation) from <https://www.doxygen.nl/>
 
@@ -54,9 +55,29 @@ The ttauri library builds the following of its dependencies using vcpkg:
 
  - date
  - fmt
- - Vulkan SDK
  - Vulkan Memory Allocator
 
+#### Developer Command Prompt for VS 2019
+
+To install vcpkg, we will need to do the following
+```
+
+```
+
+If you already have vcpkg installed you still will need to set VCPKG_ROOT and 'integrate'
+each time you start a new shell.
+```
+c:\build>set VCPKG_ROOT=c:\tools\vcpkg
+c:\build>call %VCPKG_ROOT%\vcpkg integrate install --feature-flags=manifests
+```
+
+```
+c:\build>cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF ..
+```
+
+```
+c:\build>cmake --build .
+```
 
 Testing the demo application
 ----------------------------
@@ -80,6 +101,6 @@ To make crash mini-dump when the ttauri demo application crashes create the foll
 
 Code of Conduct
 ---------------
-This project and everyone participating in it is coverned by the
+This project and everyone participating in it is governed by the
 (TTauri Code of Conduct)[https://github.com/ttauri-project/ttauri/blob/main/docs/CODE_OF_CONDUCT.md]
 

@@ -2,6 +2,12 @@
 cmake_minimum_required(VERSION 3.19)
 
 #-------------------------------------------------------------------
+# Configure early CMAKE paths
+#-------------------------------------------------------------------
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+include(SetupVcpkg)
+
+#-------------------------------------------------------------------
 # Build Options
 #-------------------------------------------------------------------
 
@@ -94,7 +100,6 @@ endif()
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
@@ -103,12 +108,6 @@ include(FetchContent)
 if(WIN32)
     include(GetWindowsNtVersion)
 endif()
-
-#-------------------------------------------------------------------
-# Setup Dependency Manager: VCPKG
-#-------------------------------------------------------------------
-
-include(SetupVcpkg)
 
 #-------------------------------------------------------------------
 # Find Dependencies
