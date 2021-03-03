@@ -51,19 +51,43 @@ Install requirements:
  - optional: RenderDoc (for Vulkan debugging) from <https://renderdoc.org/>
  - optional: Doxygen (for documentation generation) from <https://www.doxygen.nl/>
 
-The ttauri library builds the following of its dependencies using vcpkg:
+To install vcpkg, we will need to do the following:
+```
+c:\tools>git clone https://github.com/microsoft/vcpkg
+c:\tools>cd vcpkg
+c:\tools\vcpkg>bootstrap-vcpkg.bat
+c:\tools\vcpkg>vcpkg integrate install --feature-flags=manifests
+```
 
- - date
- - fmt
- - Vulkan Memory Allocator
+To clone ttauri:
+```
+c:\Users\Tjienta\Projects>git clone https://github.com/ttauri-project/ttauri
+```
+
+#### Visual Studio 2019
+You can open ttauri directly in Visual Studio using the
+"[open folder](https://docs.microsoft.com/en-us/cpp/build/open-folder-projects-cpp?view=msvc-160)" method.
+
+Since it is a large project you may have to wait a minute before Visual Studio is finished with fully loading
+the project. Once it is loaded you will see a selection box with a set of build configurations:
+ - x64-MSVC-Debug
+ - x64-MSVC-Release
+ - x64-MSVC-ReleaseWithDebugInfo
+ - x64-Clang-Debug (currently not supported)
+ - x64-Clang-Release (currently not supported)
+ - x64-Clang-ReleaseWithDebugInfo (currently not supported)
+
+Select the x64-MSVC-Debug and use the following menu items to build the project:
+ - Project / Generate Cache for ttauri
+ - Build / Build All
+
+After building you can select "ttauri_demo.exe" from "Select Startup Item..." next to the run-button. Then
+press that button to run the debug build (with the debugger attached).
+
+You may also want to read the following about how to use CMake projects with visual studio:
+<https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-160>
 
 #### Developer Command Prompt for VS 2019
-
-To install vcpkg, we will need to do the following
-```
-
-```
-
 If you already have vcpkg installed you still will need to set VCPKG_ROOT and 'integrate'
 each time you start a new shell.
 ```
@@ -78,6 +102,17 @@ c:\build>cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF
 ```
 c:\build>cmake --build .
 ```
+
+Debugging with RenderDoc
+------------------------
+Debug builds of ttauri are linked against the RenderDoc API. Which means
+that once an ttauri-application is started you can "Attach to running process"
+and select the application there.
+
+Since a ttauri-application tries to reduce the amount of window redraws; the
+application may not show on this list, or you are unable to capture a frame
+or the frame is not captured. You can force a redraw by selecting the
+application window, or mouse-over the window.
 
 Testing the demo application
 ----------------------------
