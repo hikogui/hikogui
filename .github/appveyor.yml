@@ -43,12 +43,12 @@ environment:
     #
     # Windows | MSVC 2019 | x64-windows | ReleaseWithDebugInfo
     #
-    - APPVEYOR_JOB_NAME: Win-MSVC19-x64-RelWithDebInfo
-      COMPILER: MSVC19
-      VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
-      BUILD_SHARED_LIBS: ON
-      BUILD_TYPE: RelWithDebInfo
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-RelWithDebInfo
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_SHARED_LIBS: ON
+    #  BUILD_TYPE: RelWithDebInfo
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
     # Windows | MSVC 2019 | x64-windows | Debug
     #

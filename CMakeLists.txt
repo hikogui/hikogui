@@ -158,7 +158,7 @@ find_package(Vulkan REQUIRED)
 #-------------------------------------------------------------------
 
 add_library(ttauri)
-add_library(ttauri::tauri ALIAS ttauri)
+add_library(ttauri::ttauri ALIAS ttauri)
 
 if(TT_BUILD_TESTS)
     add_executable(ttauri_tests)
