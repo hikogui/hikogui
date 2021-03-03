@@ -103,11 +103,16 @@ c:\build>cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF
 c:\build>cmake --build .
 ```
 
-### Gentoo
+### Gentoo Linux
 **Note: TTauri does not currently build fully on Linux.**
 
-The vulkan SDK can be installed by installing the `vulkan-tools` gentoo package. This
-means the SDK is installed in `/usr`. vcpkg will use the `zip` gentoo package as well.
+The following packages need to be installed:
+
+ - app-arch/zip (needed for vcpkg)
+ - dev-util/vulkan-tools (the vulkan SDK)
+ - dev-util/glslang (for building the shaders)
+
+Since the vulkan sdk is part of gentoo it will be installed in `/usr`.
 
 ```
 ttauri> mkdir build
