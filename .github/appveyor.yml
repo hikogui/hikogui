@@ -37,22 +37,25 @@ environment:
     #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Release
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_SHARED_LIBS: ON
     #  BUILD_TYPE: Release
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
     # Windows | MSVC 2019 | x64-windows | ReleaseWithDebugInfo
     #
-    - APPVEYOR_JOB_NAME: Win-MSVC19-x64-RelWithDebInfo
-      COMPILER: MSVC19
-      VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
-      BUILD_TYPE: RelWithDebInfo
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-RelWithDebInfo
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_SHARED_LIBS: ON
+    #  BUILD_TYPE: RelWithDebInfo
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
     # Windows | MSVC 2019 | x64-windows | Debug
     #
     #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Debug
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_SHARED_LIBS: ON
     #  BUILD_TYPE: Debug
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
@@ -61,6 +64,7 @@ environment:
     #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-Release
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+    #  BUILD_SHARED_LIBS: OFF
     #  BUILD_TYPE: Release
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
@@ -69,6 +73,7 @@ environment:
     - APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-RelWithDebInfo
       COMPILER: MSVC19
       VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+      BUILD_SHARED_LIBS: OFF
       BUILD_TYPE: RelWithDebInfo
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
@@ -77,6 +82,7 @@ environment:
     #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-Debug
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+    #  BUILD_SHARED_LIBS: OFF
     #  BUILD_TYPE: Debug
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
@@ -189,7 +195,7 @@ build_script:
   - if [%COMPILER%]==[MSVC19] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -S . -B ..\ttauri-build
         -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         -DVCPKG_TARGET_TRIPLET=%VCPKG_TARGET_TRIPLET%
-        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DBUILD_SHARED_LIBS:BOOL=%BUILD_SHARED_LIBS%
         -DTT_BUILD_TESTS:BOOL=ON
         -DTT_BUILD_OPTIMIZED:BOOL=ON
         -DTT_BUILD_PCH:BOOL=ON
@@ -197,7 +203,7 @@ build_script:
 
   - if [%COMPILER%]==[CLANG] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T ClangCL -S . -B ..\ttauri-build
         -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
-        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DBUILD_SHARED_LIBS:BOOL=%BUILD_SHARED_LIBS%
         -DTT_BUILD_TESTS:BOOL=ON
         -DTT_BUILD_OPTIMIZED:BOOL=ON
         -DTT_BUILD_PCH:BOOL=ON

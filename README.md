@@ -1,5 +1,5 @@
 
-![codeql workflow](https://github.com/ttauri-project/ttauri/actions/workflows/codeql-analysis.yml/badge.svg)
+[![Build status](https://ci.appveyor.com/api/projects/status/baqx98wu1ombp3d2/branch/main?svg=true)](https://ci.appveyor.com/project/takev/ttauri/branch/main)
 
 TTauri GUI library
 ==================
