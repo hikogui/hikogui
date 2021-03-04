@@ -82,10 +82,10 @@ public:
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
 
             if constexpr (is_vertical) {
-                slider_rectangle = aarect{rectangle().x(), rectangle().y() + slider_offset, rectangle().width(), slider_length()};
+                slider_rectangle = aarect{rectangle().left(), rectangle().bottom() + slider_offset, rectangle().width(), slider_length()};
             } else {
                 slider_rectangle =
-                    aarect{rectangle().x() + slider_offset, rectangle().y(), slider_length(), rectangle().height()};
+                    aarect{rectangle().left() + slider_offset, rectangle().bottom(), slider_length(), rectangle().height()};
             }
         }
 

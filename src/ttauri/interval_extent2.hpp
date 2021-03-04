@@ -37,7 +37,7 @@ public:
 
     [[nodiscard]] interval_extent2() noexcept :
         interval_extent2(
-            extent2{-std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity()},
+            extent2{0.0f, 0.0f},
             extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()})
     {
     }

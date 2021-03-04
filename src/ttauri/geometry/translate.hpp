@@ -49,7 +49,7 @@ public:
         tt_axiom(is_valid());
     }
 
-    [[nodiscard]] constexpr explicit translate(aarect const &other) noexcept : _v(other.p0().xy00())
+    [[nodiscard]] constexpr explicit translate(aarect const &other) noexcept : _v(static_cast<f32x4>(get<0>(other)).xy00())
     {
         tt_axiom(is_valid());
     }
@@ -86,13 +86,13 @@ public:
     {
         auto x = 0.0f;
         if (alignment == horizontal_alignment::left) {
-            x = dst_rectangle.p0().x();
+            x = dst_rectangle.left();
 
         } else if (alignment == horizontal_alignment::right) {
-            x = dst_rectangle.p3().x() - src_rectangle.width();
+            x = dst_rectangle.right() - src_rectangle.width();
 
         } else if (alignment == horizontal_alignment::center) {
-            x = (dst_rectangle.p0().x() + (dst_rectangle.width() * 0.5f)) - (src_rectangle.width() * 0.5f);
+            x = dst_rectangle.center() - src_rectangle.width() * 0.5f;
 
         } else {
             tt_no_default();
@@ -100,19 +100,19 @@ public:
 
         auto y = 0.0f;
         if (alignment == vertical_alignment::bottom) {
-            y = dst_rectangle.p0().y();
+            y = dst_rectangle.bottom();
 
         } else if (alignment == vertical_alignment::top) {
-            y = dst_rectangle.p3().y() - src_rectangle.height();
+            y = dst_rectangle.top() - src_rectangle.height();
 
         } else if (alignment == vertical_alignment::middle) {
-            y = (dst_rectangle.p0().y() + (dst_rectangle.height() * 0.5f)) - (src_rectangle.height() * 0.5f);
+            y = dst_rectangle.middle() - src_rectangle.height() * 0.5f;
 
         } else {
             tt_no_default();
         }
 
-        return translate{x - src_rectangle.x(), y - src_rectangle.y()};
+        return translate{x - src_rectangle.left(), y - src_rectangle.bottom()};
     }
 
     template<int E>
@@ -121,11 +121,6 @@ public:
         // Vectors are not translated.
         tt_axiom(is_valid() && rhs.is_valid());
         return rhs;
-    }
-
-    [[nodiscard]] constexpr f32x4 operator*(f32x4 const &rhs) const noexcept
-    {
-        return rhs + _v * f32x4::broadcast(rhs.w());
     }
 
     template<int E>
@@ -137,12 +132,12 @@ public:
 
     [[nodiscard]] constexpr aarect operator*(aarect const &rhs) const noexcept requires(D == 2)
     {
-        return aarect::p0p3(_v + rhs.p0(), _v + rhs.p3());
+        return aarect{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
     [[nodiscard]] constexpr rect operator*(rect const &rhs) const noexcept
     {
-        return rect{_v + rhs.corner<0>(), _v + rhs.corner<1>(), _v + rhs.corner<2>(), _v + rhs.corner<3>()};
+        return rect{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept

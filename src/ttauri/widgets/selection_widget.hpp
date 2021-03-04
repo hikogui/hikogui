@@ -114,30 +114,26 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
 
-        if (_selecting) {
-            if (need_layout) {
-                // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
-                // from the point of view of the selection widget.
-
-                // The overlay should start on the same left edge as the selection box and the same width.
-                // The height of the overlay should be the maximum height, which will show all the options.
-
-                ttlet overlay_width =
-                    clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
-                ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
-                ttlet overlay_x = theme::global->smallSize;
-                ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
-                ttlet overlay_rectangle_request = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
-
-                ttlet overlay_rectangle = _overlay_widget->make_overlay_rectangle_from_parent(overlay_rectangle_request);
-                ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
-
-                _overlay_widget->set_layout_parameters_from_parent(
-                    overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer() - _draw_layer);
-            }
-        }
-
         if (need_layout) {
+            // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
+            // from the point of view of the selection widget.
+
+            // The overlay should start on the same left edge as the selection box and the same width.
+            // The height of the overlay should be the maximum height, which will show all the options.
+
+            ttlet overlay_width =
+                clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
+            ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
+            ttlet overlay_x = theme::global->smallSize;
+            ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
+            ttlet overlay_rectangle_request = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
+
+            ttlet overlay_rectangle = _overlay_widget->make_overlay_rectangle_from_parent(overlay_rectangle_request);
+            ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
+
+            _overlay_widget->set_layout_parameters_from_parent(
+                overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer() - _draw_layer);
+
             _left_box_rectangle = aarect{0.0f, 0.0f, theme::global->smallSize, rectangle().height()};
             _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
             ttlet chevrons_glyph_bbox = pipeline_SDF::device_shared::getBoundingBox(_chevrons_glyph);

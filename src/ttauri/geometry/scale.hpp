@@ -32,6 +32,12 @@ public:
         tt_axiom(is_valid());
     }
 
+    template<int E> requires(E <= D)
+    [[nodiscard]] constexpr explicit scale(vector<E> const &v) noexcept : _v(static_cast<f32x4>(v).xyz1())
+    {
+        tt_axiom(is_valid());
+    }
+
     [[nodiscard]] constexpr operator matrix<D>() const noexcept
     {
         tt_axiom(is_valid());
@@ -78,12 +84,6 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr f32x4 operator*(f32x4 const &rhs) const noexcept
-    {
-        tt_axiom(is_valid());
-        return _v * rhs;
-    }
-
     template<int E>
     [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
     {
@@ -100,12 +100,12 @@ public:
 
     [[nodiscard]] constexpr aarect operator*(aarect const &rhs) const noexcept requires(D == 2)
     {
-        return aarect::p0p3(_v * rhs.p0(), _v * rhs.p3());
+        return aarect{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
     [[nodiscard]] constexpr rect operator*(rect const &rhs) const noexcept
     {
-        return rect{_v * rhs.corner<0>(), _v * rhs.corner<1>(), _v * rhs.corner<2>(), _v * rhs.corner<3>()};
+        return rect{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     [[nodiscard]] constexpr scale operator*(identity const &) const noexcept

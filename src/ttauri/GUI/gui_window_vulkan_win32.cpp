@@ -381,7 +381,11 @@ void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 
     auto screen_extent = virtual_screen_size();
 
-    _screen_rectangle = aarect{rect.left, screen_extent.height() - rect.bottom, rect.right - rect.left, rect.bottom - rect.top};
+    _screen_rectangle = aarect{
+        narrow_cast<float>(rect.left),
+        narrow_cast<float>(screen_extent.height() - rect.bottom),
+        narrow_cast<float>(rect.right - rect.left),
+        narrow_cast<float>(rect.bottom - rect.top)};
 
     // Force a redraw, so that the swapchain is used and causes out-of-date results on window resize,
     // which in turn will cause a forceLayout.
@@ -493,10 +497,10 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         BeginPaint(win32Window, &ps);
 
         ttlet update_rectangle = aarect{
-            ps.rcPaint.left,
-            extent.height() - ps.rcPaint.bottom,
-            ps.rcPaint.right - ps.rcPaint.left,
-            ps.rcPaint.bottom - ps.rcPaint.top};
+            narrow_cast<float>(ps.rcPaint.left),
+            narrow_cast<float>(extent.height() - ps.rcPaint.bottom),
+            narrow_cast<float>(ps.rcPaint.right - ps.rcPaint.left),
+            narrow_cast<float>(ps.rcPaint.bottom - ps.rcPaint.top)};
 
         request_redraw(update_rectangle);
         EndPaint(win32Window, &ps);
@@ -504,7 +508,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
 
     case WM_NCPAINT: {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        request_redraw(aarect::infinity());
+        request_redraw();
     } break;
 
     case WM_SIZE: {
@@ -663,8 +667,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         ttlet screen_position =
             point2(narrow_cast<float>(GET_X_LPARAM(lParam)), screen_extent.height() - narrow_cast<float>(GET_Y_LPARAM(lParam)));
 
-        ttlet window_position = screen_position - _screen_rectangle.offset();
-        ttlet hitbox_type = widget->hitbox_test(window_position).type;
+        ttlet hitbox_type = widget->hitbox_test(screen_to_window() * screen_position).type;
         gui_system_mutex.unlock();
 
         switch (hitbox_type) {

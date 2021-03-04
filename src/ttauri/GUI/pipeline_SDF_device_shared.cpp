@@ -136,7 +136,7 @@ atlas_rect device_shared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
 
     // Determine the size of the image in the atlas.
     // This is the bounding box sized to the fixed font size and a border
-    ttlet drawOffset = vector2{drawBorder, drawBorder} - scaledBoundingBox.offset();
+    ttlet drawOffset = point2{drawBorder, drawBorder} - get<0>(scaledBoundingBox);
     ttlet drawExtent = scaledBoundingBox.extent() + 2.0f * drawBorder;
     ttlet drawTranslate = translate2{drawOffset};
 
@@ -394,7 +394,7 @@ void device_shared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        tt::pixel_map<sdf_r8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}};
+        tt::pixel_map<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),

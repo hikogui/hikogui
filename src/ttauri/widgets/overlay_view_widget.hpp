@@ -75,7 +75,7 @@ public:
 
         if (auto parent = _parent.lock()) {
             ttlet requested_window_rectangle = aarect{parent->local_to_window() * requested_rectangle};
-            ttlet window_bounds = aarect{10.0, 10.0, window.extent.width() - 20.0, window.extent.height() - 50.0};
+            ttlet window_bounds = aarect{10.0f, 10.0f, window.extent.width() - 20.0f, window.extent.height() - 50.0f};
             ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
             return aarect{parent->window_to_local() * response_window_rectangle};
         } else {

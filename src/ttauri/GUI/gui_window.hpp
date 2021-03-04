@@ -112,10 +112,18 @@ public:
 
     /** Request a rectangle on the window to be redrawn
      */
-    void request_redraw(aarect rectangle = aarect::infinity()) noexcept
+    void request_redraw(aarect rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         _request_redraw_rectangle |= rectangle;
+    }
+
+    /** Request a rectangle on the window to be redrawn
+     */
+    void request_redraw() noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        request_redraw(aarect{extent});
     }
 
     /** By how much the font needs to be scaled compared to current windowScale.
@@ -229,6 +237,16 @@ public:
      * sizes, so retrieve it on a per window basis.
      */
     [[nodiscard]] virtual extent2 virtual_screen_size() const noexcept = 0;
+
+    [[nodiscard]] translate2 window_to_screen() const noexcept
+    {
+        return translate2{_screen_rectangle.left(), _screen_rectangle.bottom()};
+    }
+
+    [[nodiscard]] translate2 screen_to_window() const noexcept
+    {
+        return ~window_to_screen();
+    }
 
 protected:
     /** The device the window is assigned to.

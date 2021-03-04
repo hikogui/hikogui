@@ -296,16 +296,16 @@ public:
             case Drag:
                 // When the mouse is dragged beyond the line input,
                 // start scrolling the text and select on the edge of the textRectangle.
-                if (event.position.x() > _text_rectangle.p3().x()) {
+                if (event.position.x() > _text_rectangle.right()) {
                     // The mouse is on the right of the text.
-                    _drag_select_position.x() = _text_rectangle.p3().x();
+                    _drag_select_position.x() = _text_rectangle.right();
 
                     // Scroll text to the left in points per second.
                     _drag_scroll_speed_x = 50.0f;
 
-                } else if (event.position.x() < _text_rectangle.x()) {
+                } else if (event.position.x() < _text_rectangle.left()) {
                     // The mouse is on the left of the text.
-                    _drag_select_position.x() = _text_rectangle.x();
+                    _drag_select_position.x() = _text_rectangle.left();
 
                     // Scroll text to the right in points per second.
                     _drag_scroll_speed_x = -50.0f;
@@ -472,14 +472,14 @@ private:
 
             // Scroll the text a quarter width to the left until the cursor is within the width
             // of the text field
-            if (_left_to_right_caret.x() - _text_scroll_x > _text_rectangle.width()) {
-                _text_scroll_x = _left_to_right_caret.x() - _text_rectangle.width() * 0.75f;
+            if (_left_to_right_caret.left() - _text_scroll_x > _text_rectangle.width()) {
+                _text_scroll_x = _left_to_right_caret.left() - _text_rectangle.width() * 0.75f;
             }
 
             // Scroll the text a quarter width to the right until the cursor is within the width
             // of the text field
-            while (_left_to_right_caret.x() - _text_scroll_x < 0.0f) {
-                _text_scroll_x = _left_to_right_caret.x() - _text_rectangle.width() * 0.25f;
+            while (_left_to_right_caret.left() - _text_scroll_x < 0.0f) {
+                _text_scroll_x = _left_to_right_caret.left() - _text_rectangle.width() * 0.25f;
             }
         }
 
@@ -489,7 +489,7 @@ private:
 
         // Calculate how much we need to translate the text.
         _text_translate = translate2{-_text_scroll_x, 0.0f} *
-            _shaped_text.translate_base_line(point2{_text_rectangle.x(), rectangle().middle()});
+            _shaped_text.translate_base_line(point2{_text_rectangle.left(), rectangle().middle()});
         _text_inv_translate = ~_text_translate;
     }
 
@@ -498,7 +498,7 @@ private:
         ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
         context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
-        ttlet line_rectangle = aarect{_text_field_rectangle.p0(), f32x4{_text_field_rectangle.width(), 1.0}};
+        ttlet line_rectangle = aarect{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
         context.draw_filled_quad(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
     }
 

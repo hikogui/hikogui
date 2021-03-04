@@ -52,7 +52,7 @@ public:
         _box_vertices(&boxVertices),
         _image_vertices(&imageVertices),
         _sdf_vertices(&sdfVertices),
-        _clipping_rectangle(static_cast<f32x4>(window.extent))
+        _clipping_rectangle(window.extent)
     {
         _flat_vertices->clear();
         _box_vertices->clear();

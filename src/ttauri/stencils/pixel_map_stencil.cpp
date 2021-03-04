@@ -23,7 +23,8 @@ pixel_map_stencil::pixel_map_stencil(tt::alignment alignment, URL const &url) : 
 void pixel_map_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept
 {
     if (std::exchange(_data_is_modified, false)) {
-        _backing = narrow_cast<gui_device_vulkan &>(context.device()).imagePipeline->makeImage(_pixel_map.extent());
+        _backing =
+            narrow_cast<gui_device_vulkan &>(context.device()).imagePipeline->makeImage(_pixel_map.width(), _pixel_map.height());
         _backing.upload(_pixel_map);
         _size_is_modified = true;
         _position_is_modified = true;
@@ -32,7 +33,8 @@ void pixel_map_stencil::draw(draw_context context, tt::color color, matrix3 tran
     auto layout_is_modified = std::exchange(_size_is_modified, false);
     layout_is_modified |= std::exchange(_position_is_modified, false);
     if (layout_is_modified) {
-        _pixel_map_bounding_box = aarect{f32x4{_backing.extent}};
+        _pixel_map_bounding_box =
+            aarect{extent2{narrow_cast<float>(_backing.width_in_px), narrow_cast<float>(_backing.height_in_px)}};
         _pixel_map_transform = matrix2::uniform(_pixel_map_bounding_box, _rectangle, _alignment);
     }
 

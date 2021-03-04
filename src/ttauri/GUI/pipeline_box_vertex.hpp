@@ -49,7 +49,7 @@ struct vertex {
 
     vertex(
         aarect clipping_rectangle,
-        f32x4 position,
+        point3 position,
         f32x4 corner_coordinate,
         color fill_color,
         color line_color,

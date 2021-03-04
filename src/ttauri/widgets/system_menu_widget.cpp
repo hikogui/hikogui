@@ -45,14 +45,14 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         ttlet icon_height = rectangle().height() < theme::global->toolbarHeight * 1.2f ? rectangle().height() : theme::global->toolbarHeight;
-        ttlet icon_rectangle = aarect{rectangle().x(), rectangle().top() - icon_height, rectangle().width(), icon_height};
+        ttlet icon_rectangle = aarect{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
         _icon_stencil->set_layout_parameters(icon_rectangle);
 
         // Leave space for window resize handles on the left and top.
         system_menu_rectangle = aarect{
-            rectangle().x() + theme::global->margin,
-            rectangle().y(),
+            rectangle().left() + theme::global->margin,
+            rectangle().bottom(),
             rectangle().width() - theme::global->margin,
             rectangle().height() - theme::global->margin};
     }

@@ -10,8 +10,8 @@
 namespace tt::pipeline_SDF {
 
 struct push_constants {
-    sfloat_rg32 windowExtent = f32x4{ 0.0, 0.0 };
-    sfloat_rg32 viewportScale = f32x4{ 0.0, 0.0 };
+    sfloat_rg32 windowExtent = extent2{ 0.0, 0.0 };
+    sfloat_rg32 viewportScale = scale2{ 0.0, 0.0 };
     int32_t subpixel_orientation = 0;
 
     static std::vector<vk::PushConstantRange> pushConstantRanges()

@@ -34,24 +34,39 @@ struct Image {
 
     device_shared *parent;
 
-    /** The size of the image in pixels.
+    /** The width of the image in pixels.
      */
-    i32x4 extent;
+    size_t width_in_px;
 
-    /** This size of the image in pages.
-     * This value is used to calculate how many quads need to be drawn.
+    /** The height of the image in pixels.
      */
-    i32x4 pageExtent;
+    size_t height_in_px;
+
+    /** The width of the image in pages
+     */
+    size_t width_in_pages;
+
+    /** The height of the image in pages
+     */
+    size_t height_in_pages;
 
     std::vector<Page> pages;
 
     Image() noexcept :
-        parent(nullptr), extent(), pageExtent(), pages() {}
+        parent(nullptr), width_in_px(0), height_in_px(0), width_in_pages(0), height_in_pages(0), pages() {}
 
-    Image(device_shared *parent, i32x4 extent, i32x4 pageExtent, std::vector<Page> &&pages) noexcept :
+    Image(
+        device_shared *parent,
+        size_t width_in_px,
+        size_t height_in_px,
+        size_t width_in_pages,
+        size_t height_in_pages,
+        std::vector<Page> &&pages) noexcept :
         parent(parent),
-        extent(extent),
-        pageExtent(pageExtent),
+        width_in_px(width_in_px),
+        height_in_px(height_in_px),
+        width_in_pages(width_in_pages),
+        height_in_pages(height_in_pages),
         pages(std::move(pages)) {}
 
     Image(Image &&other) noexcept;
@@ -66,7 +81,7 @@ struct Image {
      * @return The rectangle within the image representing a quad to be drawn.
      *         This rectangle is already size-adjusted for the quads on the edge.
      */
-    iaarect indexToRect(int const pageIndex) const noexcept;
+    aarect index_to_rect(size_t page_index) const noexcept;
 
     /*! Place vertices for this image.
      * An image is build out of atlas pages, that need to be individual rendered.
@@ -80,11 +95,11 @@ struct Image {
 
 private:
     //! Temporary memory used for pre calculating vertices.
-    std::vector<std::tuple<f32x4, f32x4, bool>> tmpvertexPositions;
+    std::vector<std::tuple<point3, extent2, bool>> tmpvertexPositions;
 
     void calculateVertexPositions(matrix3 transform, aarect clippingRectangle);
 
-    void placePageVertices(vspan<vertex> &vertices, int const index, aarect clippingRectangle) const;
+    void placePageVertices(vspan<vertex> &vertices, size_t index, aarect clippingRectangle) const;
 
 };
 

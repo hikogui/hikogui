@@ -33,8 +33,8 @@ public:
      */
     float margin = 6.0f;
 
-    f32x4 margin2D = f32x4{margin, margin};
-    f32x4 margin2Dx2 = f32x4{margin * 2.0f, margin * 2.0f};
+    extent2 margin2D = extent2{margin, margin};
+    extent2 margin2Dx2 = extent2{margin * 2.0f, margin * 2.0f};
 
     float scroll_bar_thickness = margin * 2.0f;
 

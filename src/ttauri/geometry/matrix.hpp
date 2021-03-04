@@ -35,6 +35,14 @@ public:
     {
     }
 
+    constexpr matrix(vector3 col0, vector3 col1, vector3 col2) noexcept requires(D == 3) :
+        _col0(static_cast<f32x4>(col0)),
+        _col1(static_cast<f32x4>(col1)),
+        _col2(static_cast<f32x4>(col2)),
+        _col3{0.0f, 0.0f, 0.0f, 1.0f}
+    {
+    }
+
     constexpr matrix(
         float c0r0,
         float c1r0,
@@ -152,7 +160,7 @@ public:
 
     [[nodiscard]] constexpr auto operator*(rect const &rhs) const noexcept
     {
-        return rect{*this * rhs.corner<0>(), *this * rhs.corner<1>(), *this * rhs.corner<2>(), *this * rhs.corner<3>()};
+        return rect{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     /** Transform a color by a color matrix.

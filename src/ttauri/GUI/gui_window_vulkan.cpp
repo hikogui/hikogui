@@ -392,13 +392,15 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
         vk::ClearValue{colorClearValue}};
 
     // Clamp the scissor rectangle to the size of the window.
-    scissor_rectangle = intersect(scissor_rectangle, aarect{0.0f, 0.0f, swapchainImageExtent.width, swapchainImageExtent.height});
+    scissor_rectangle = intersect(
+        scissor_rectangle,
+        aarect{0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
     scissor_rectangle = ceil(scissor_rectangle);
 
     ttlet scissors = std::array{vk::Rect2D{
         vk::Offset2D(
-            narrow_cast<uint32_t>(scissor_rectangle.x()),
-            narrow_cast<uint32_t>(swapchainImageExtent.height - scissor_rectangle.y() - scissor_rectangle.height())),
+            narrow_cast<uint32_t>(scissor_rectangle.left()),
+            narrow_cast<uint32_t>(swapchainImageExtent.height - scissor_rectangle.bottom() - scissor_rectangle.height())),
         vk::Extent2D(narrow_cast<uint32_t>(scissor_rectangle.width()), narrow_cast<uint32_t>(scissor_rectangle.height()))}};
 
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.

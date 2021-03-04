@@ -84,9 +84,9 @@ public:
             _off_label_stencil->set_layout_parameters(_label_rectangle, base_line());
 
             _slider_rectangle =
-                shrink(aarect{0.0f, _rail_rectangle.y(), _rail_rectangle.height(), _rail_rectangle.height()}, 2.5f);
+                shrink(aarect{0.0f, _rail_rectangle.bottom(), _rail_rectangle.height(), _rail_rectangle.height()}, 2.5f);
 
-            ttlet sliderMoveWidth = theme::global->smallSize * 2.0f - (_slider_rectangle.x() * 2.0f);
+            ttlet sliderMoveWidth = theme::global->smallSize * 2.0f - (_slider_rectangle.left() * 2.0f);
             _slider_move_range = sliderMoveWidth - _slider_rectangle.width();
         }
 

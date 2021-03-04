@@ -10,8 +10,8 @@
 namespace tt::pipeline_flat {
 
 struct push_constants {
-    sfloat_rg32 windowExtent = f32x4{ 0.0, 0.0 };
-    sfloat_rg32 viewportScale = f32x4{ 0.0, 0.0 };
+    sfloat_rg32 windowExtent = extent2{ 0.0, 0.0 };
+    sfloat_rg32 viewportScale = scale2{ 0.0, 0.0 };
 
     static std::vector<vk::PushConstantRange> pushConstantRanges()
     {

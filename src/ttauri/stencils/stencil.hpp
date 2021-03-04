@@ -42,7 +42,7 @@ public:
         if (_rectangle.extent() != rectangle.extent()) {
             _size_is_modified = true;
         }
-        if (_rectangle.offset() != rectangle.offset() || _base_line_position != base_line_position) {
+        if (get<0>(_rectangle) != get<0>(rectangle) || _base_line_position != base_line_position) {
             _position_is_modified = true;
         }
 

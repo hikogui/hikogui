@@ -103,15 +103,15 @@ struct attributed_glyph_line {
     {
         auto bbox = boundingBox();
 
-        if (coordinate.y() < bbox.y() || coordinate.y() > bbox.p3().y()) {
+        if (coordinate.y() < bbox.bottom() || coordinate.y() > bbox.top()) {
             return cend();
         }
 
-        if (coordinate.x() < bbox.x()) {
+        if (coordinate.x() < bbox.left()) {
             return cbegin();
         }
 
-        if (coordinate.x() > bbox.p3().x()) {
+        if (coordinate.x() > bbox.right()) {
             return cend() - 1;
         }
 

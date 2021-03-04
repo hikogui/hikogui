@@ -269,6 +269,7 @@ public:
     set_layout_parameters_from_parent(aarect child_rectangle, aarect parent_clipping_rectangle, float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(child_rectangle.extent() >= _preferred_size.minimum());
 
         ttlet child_translate = translate2{child_rectangle};
         ttlet child_size = child_rectangle.extent();
@@ -321,10 +322,16 @@ public:
         return _size;
     }
 
-    [[nodiscard]] aarect clipping_rectangle() const noexcept
+    [[nodiscard]] float width() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _clipping_rectangle;
+        return _size.width();
+    }
+
+    [[nodiscard]] float height() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return _size.height();
     }
 
     /** Get the rectangle in local coordinates.
@@ -343,6 +350,12 @@ public:
     [[nodiscard]] virtual float base_line() const noexcept
     {
         return rectangle().middle();
+    }
+
+    [[nodiscard]] aarect clipping_rectangle() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return _clipping_rectangle;
     }
 
     [[nodiscard]] gui_device *device() const noexcept;

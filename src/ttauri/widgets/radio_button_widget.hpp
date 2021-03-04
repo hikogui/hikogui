@@ -86,7 +86,7 @@ public:
             _outline_rectangle = aarect{
                 0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
 
-            ttlet labelX = _outline_rectangle.p3().x() + theme::global->margin;
+            ttlet labelX = _outline_rectangle.right() + theme::global->margin;
             _label_rectangle = aarect{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
             _label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 

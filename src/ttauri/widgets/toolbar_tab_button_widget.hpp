@@ -87,8 +87,8 @@ public:
 
             ttlet offset = theme::global->margin + theme::global->borderWidth;
             _button_rectangle = aarect{
-                this->rectangle().x(),
-                this->rectangle().y() - offset,
+                this->rectangle().left(),
+                this->rectangle().bottom() - offset,
                 this->rectangle().width(),
                 this->rectangle().height() + offset};
 

@@ -22,6 +22,37 @@ public:
         return _v;
     }
 
+    [[nodiscard]] constexpr float left_bottom() const noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr float right_bottom() const noexcept
+    {
+        return _v.y();
+    }
+
+    [[nodiscard]] constexpr float left_top() const noexcept
+    {
+        return _v.z();
+    }
+
+    [[nodiscard]] constexpr float right_top() const noexcept
+    {
+        return _v.w();
+    }
+
+    template<int I>
+    [[nodiscard]] constexpr friend float get(corner_shapes const &rhs) noexcept
+    {
+        return get<I>(rhs._v);
+    }
+
+    [[nodiscard]] constexpr float operator[](size_t i) const noexcept
+    {
+        return _v[i];
+    }
+
     [[nodiscard]] constexpr friend corner_shapes operator+(corner_shapes const &lhs, float rhs) noexcept
     {
         auto r = corner_shapes{};

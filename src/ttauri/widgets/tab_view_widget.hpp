@@ -44,6 +44,7 @@ public:
         if (has_updated_contraints) {
 
             ttlet &child = selected_child();
+            tt_axiom(&child.parent() == this);
             if (compare_then_assign(_preferred_size, child.preferred_size())) {
                 // The size of the selected child has changed, resize the window.
                 window.requestResize = true;
@@ -59,13 +60,14 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            for (auto &child : _children) {
-                tt_axiom(child);
-                child->set_layout_parameters_from_parent(rectangle());
-            }
+            auto &child = selected_child();
+            tt_axiom(&child.parent() == this);
+            child.set_layout_parameters_from_parent(rectangle());
+            child.update_layout(display_time_point, need_layout);
         }
 
-        super::update_layout(display_time_point, need_layout);
+        // THIS DOES NOT CALL THROUGH THE ABSTRACT_CONTAINER_WIDGET AND SKIPS DIRECTLY TO WIDGET.
+        widget::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

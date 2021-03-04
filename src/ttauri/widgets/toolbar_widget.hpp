@@ -172,8 +172,8 @@ private:
         ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
 
         ttlet child_rectangle = aarect{
-            rectangle().x() + child_x,
-            rectangle().y() + child.margin(),
+            rectangle().left() + child_x,
+            rectangle().bottom() + child.margin(),
             child_width,
             rectangle().height() - child.margin() * 2.0f};
 

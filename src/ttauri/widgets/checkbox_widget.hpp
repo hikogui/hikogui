@@ -98,7 +98,7 @@ public:
         if (need_layout) {
             _checkbox_rectangle = aarect{0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
 
-            ttlet label_x = _checkbox_rectangle.p3().x() + theme::global->margin;
+            ttlet label_x = _checkbox_rectangle.right() + theme::global->margin;
             _label_rectangle = aarect{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
             _true_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
             _false_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());

@@ -60,22 +60,22 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
 
         if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
             closeRectangle =
-                aarect{f32x4::point(extent.width() * 2.0f / 3.0f, y), f32x4{extent.width() * 1.0f / 3.0f, extent.height()}};
+                aarect{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
             maximizeRectangle =
-                aarect{f32x4::point(extent.width() * 1.0f / 3.0f, y), f32x4{extent.width() * 1.0f / 3.0f, extent.height()}};
+                aarect{point2(extent.width() * 1.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-            minimizeRectangle = aarect{f32x4::point(0.0f, y), f32x4{extent.width() * 1.0f / 3.0f, extent.height()}};
+            minimizeRectangle = aarect{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
         } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
-            closeRectangle = aarect{f32x4::point(MARGIN, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
+            closeRectangle = aarect{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
             minimizeRectangle =
-                aarect{f32x4::point(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
+                aarect{point2(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
             maximizeRectangle = aarect{
-                f32x4::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
-                {DIAMETER, DIAMETER}};
+                point2(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
+                extent2{DIAMETER, DIAMETER}};
         } else {
             tt_no_default();
         }

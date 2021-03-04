@@ -21,6 +21,7 @@ target_sources(ttauri PRIVATE
     detail/observable_not.hpp
     detail/observable_unary.hpp
     detail/observable_value.hpp
+    aarect.cpp
     aarect.hpp
     algorithm.hpp
     application.cpp
@@ -205,7 +206,7 @@ target_sources(ttauri_tests PRIVATE
     exceptions_tests.cpp
     file_view_tests.cpp
     forward_value_tests.cpp
-    gap_buffer_tests.cpp
+    #gap_buffer_tests.cpp
     glob_tests.cpp
     int_overflow_tests.cpp
     interval_extent2_tests.cpp

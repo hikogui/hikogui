@@ -50,7 +50,7 @@ public:
 
     operator aarect() const noexcept
     {
-        return aarect::p0p3(f32x4(v));
+        return aarect{f32x4{v}};
     }
 
     [[nodiscard]] friend bool operator==(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept
