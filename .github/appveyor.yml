@@ -251,7 +251,13 @@ on_failure:
 
 test_script:
   - cd C:\projects\ttauri-%build_version_number%\tests
-  - ttauri_tests.exe
+  - ttauri_tests.exe --gtest_output=xml:test_results_gtest.xml
+  # Transform test results from gtest to junit format
+  - ps: $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
+  - ps: $xsl.Load("C:\projects\ttauri\.github\gtest_to_junit.xsl")
+  - ps: $xsl.Transform((Resolve-Path .\test_results_gtest.xml), (Join-Path (Resolve-Path .) "test_results_junit.xml"))
+  - ps: $web = New-Object 'System.Net.WebClient'
+  - ps: $web.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test_results_junit.xml))
 
 #-------------------------------------------------------------------
 #     Build Artifacts
