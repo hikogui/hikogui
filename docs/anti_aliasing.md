@@ -15,7 +15,7 @@ which represent colors outside of the triangle of the sRGB color primaries.
 
 This is the color space that is used inside fragment shaders on a GPU.
 
-### Luminance
+### Luminance (Y)
 The luminance is a physical linear indication of brightness.
 
 In this paper we use the range of luminance values between 0.0 and 1.0 to
@@ -28,14 +28,15 @@ The luminance value is calculated from the linear-sRGB values as follows:
 Y = 0.2126 * R + 0.7152 * G + 0.0722 * B
 ```
 
-My intuition of luminance calculations on high-gamut colors is that
-the luminance is always positive. Since if a color outside of the standard sRGB
+My intuition of luminance calculations in high-gamut extended-sRGB color space
+is that the luminance is always positive. Since if a color outside of the standard sRGB
 triangle is selected at least one of the components must be a positive enough
-value to force the luminance to be above zero.
+value to force the luminance to be above zero. Having only positive values is important
+for taking the square root, see the next section.
 
 <https://en.wikipedia.org/wiki/Relative_luminance>
 
-### Lightness
+### Lightness (L)
 Lightness is the perceptual uniform indication of brightness.
 
 In this paper we use the range of lightness values between 0.0 and 1.0 to
@@ -52,7 +53,7 @@ Y = L * L
 The formula above is an approximation made in 1920, the current well accepted
 approximation is closer to cube-root curve with a linear section for dark values used
 in the 1976's CIELAB color space. However the square-root curve is accurate enough
-for the use-case of anti-aliasing fonts and is much faster in hardware and easier to
+for the use-case of anti-aliasing glyphs and is much faster in hardware and easier to
 use when doing the calculations for this paper.
 
 <https://en.wikipedia.org/wiki/Lightness>
@@ -61,7 +62,7 @@ use when doing the calculations for this paper.
 The problem
 -----------
 As everyone knows alpha compositing of two images must be done in the linear color
-space or there will be color and brightness changes over the range of alpha values.
+space or there will be color and/or brightness shifts over the range of alpha values.
 
 If however we linearly convert the pixel coverage of an anti-aliased line
 to an alpha value between 0.0 and 1.0 we get the issue that the perceived
@@ -100,22 +101,31 @@ As you can see the perceived width of the line is significant different
 especially when anti-aliasing objects which are thin, such as the lines
 on a glyph.
 
-There are some papers about the problems the change of thickness when
-rendering black text or white text. Most of those papers say these problems
-stem from not using linear compositing, or even hand-waving that the font
+The solution
+------------
+There are some papers that mention the problem of the change of apparent thickness
+of glyphs when rendering black text or white text. Most of those papers go on
+to explain this stems from not doing linear compositing, or explaining that the font
 was designed for black on white.
 
-However as you see from the calculations above this has nothing to do with
-the design of a font, because it shows up even when rendering a single line.
+However as you see from the calculations in the previous section this has nothing to
+do with the design of a font, because it shows up even when rendering a single line.
 Also if you would render the font without anti-aliasing these problems no longer
 exist, such as when rendering with a high resolution printer.
 
-The solution
-------------
-We want to anti-alias perceptional uniform between the foreground and background
-color, while at the same time linearly mix the foreground and background using
-alpha compositing. This means that the coverage-value is in perceptional uniform
-space.
+Problems like this even happen with physical anti-alias filters, such as when using
+an anti-alias glass in front of a image sensor, which scatter the photons over range
+of pixels. It often shows as a reduction of contrast of textured images and on sharp edges,
+normally this is solved by increasing the contrast of high frequency content, such
+as using a sharpen-filter, or with professional cameras using a equalizer tuned on
+the whole optical system.
+
+Since with computer graphics we have control over anti-aliasing itself
+we can make the algorithm mix the foreground and background color on a
+perceptional uniform gradiant.
+
+The calculation below shows how to convert an anti-alias-pixel-coverage value
+to an alpha value, when this pixel coverage is in a perceptional uniform space.
 
 First we need to calculate the foreground and background lightness, based on the
 final composite of the foreground and background color using the two alpha values
