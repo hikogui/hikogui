@@ -102,7 +102,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Name()
         ttlet c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isNameNext(c) || c == '-') {
+        if (is_name_next(c) || c == '-') {
             transition.next = tokenizer_state_t::Name;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else {
@@ -127,7 +127,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_MinusO
         if (c == '0') {
             transition.next = tokenizer_state_t::Zero;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
-        } else if (isDigit(c) || c == '.') {
+        } else if (is_digit(c) || c == '.') {
             transition.next = tokenizer_state_t::Number;
         } else {
             transition.next = tokenizer_state_t::OperatorSecondChar;
@@ -146,7 +146,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Dot()
         ttlet c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isDigit(c)) {
+        if (is_digit(c)) {
             transition.next = tokenizer_state_t::Float;
         } else {
             transition.next = tokenizer_state_t::Initial;
@@ -187,7 +187,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Number
         ttlet c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isDigit(c)) {
+        if (is_digit(c)) {
             transition.next = tokenizer_state_t::Number;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else if (c == '_' || c == '\'') {
@@ -221,7 +221,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DashAf
         ttlet c = static_cast<char>(i);
         tokenizer_transition_t transition = {'-'};
 
-        if (isDigit(c)) {
+        if (is_digit(c)) {
             transition.next = tokenizer_state_t::Date;
             transition.action = tokenizer_action_t::Capture;
         } else {
@@ -243,7 +243,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_ColonA
         ttlet c = static_cast<char>(i);
         tokenizer_transition_t transition = {':'};
 
-        if (isDigit(c)) {
+        if (is_digit(c)) {
             transition.next = tokenizer_state_t::Time;
             transition.action = tokenizer_action_t::Capture;
         } else {
@@ -293,7 +293,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Date()
         ttlet c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isDigit(c) || c == '-') {
+        if (is_digit(c) || c == '-') {
             transition.next = tokenizer_state_t::Date;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else {
@@ -315,7 +315,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Time()
         ttlet c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isDigit(c) || c == ':' || c == '.') {
+        if (is_digit(c) || c == ':' || c == '.') {
             transition.next = tokenizer_state_t::Time;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else {
@@ -336,7 +336,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Float(
         ttlet c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isDigit(c) || c == 'e' || c == 'E' || c == '-') {
+        if (is_digit(c) || c == 'e' || c == 'E' || c == '-') {
             transition.next = tokenizer_state_t::Float;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else if (c == '_' || c == '\'') {
@@ -386,7 +386,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_LineCo
 
         if (c == '\0') {
             transition.next = tokenizer_state_t::Initial;
-        } else if (isLinefeed(c)) {
+        } else if (is_line_feed(c)) {
             transition.next = tokenizer_state_t::Initial;
             transition.action = tokenizer_action_t::Read | c;
         } else {
@@ -507,7 +507,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String
             transition.next = tokenizer_state_t::Initial;
             transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::ErrorEOTInString;
-        } else if (isLinefeed(c)) {
+        } else if (is_line_feed(c)) {
             transition.next = tokenizer_state_t::Initial;
             transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start | c;
             transition.name = tokenizer_name_t::ErrorLFInString;
@@ -575,7 +575,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockS
         } else if (c == '"') {
             transition.next = tokenizer_state_t::BlockStringDQuote;
             transition.action = tokenizer_action_t::Read;
-        } else if (isWhitespace(c)) {
+        } else if (is_white_space(c)) {
             transition.next = tokenizer_state_t::BlockString;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | c;
         } else if (c == '\\') {
@@ -823,7 +823,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initia
             transition.next = tokenizer_state_t::Initial;
             transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::End;
-        } else if (isNameFirst(c)) {
+        } else if (is_name_first(c)) {
             transition.next = tokenizer_state_t::Name;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (c == '-' || c == '+') {
@@ -832,7 +832,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initia
         } else if (c == '0') {
             transition.next = tokenizer_state_t::Zero;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
-        } else if (isDigit(c)) {
+        } else if (is_digit(c)) {
             transition.next = tokenizer_state_t::Number;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (c == '.') {
@@ -841,7 +841,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initia
         } else if (c == '"') {
             transition.next = tokenizer_state_t::DQuote;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Start;
-        } else if (isWhitespace(c)) {
+        } else if (is_white_space(c)) {
             transition.next = tokenizer_state_t::Initial;
             transition.action = tokenizer_action_t::Read | c;
         } else if (c == '#') {

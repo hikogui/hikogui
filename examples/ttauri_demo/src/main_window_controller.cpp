@@ -29,7 +29,7 @@ void main_window_controller::init(tt::gui_window& self) noexcept
         });
     });
 
-    auto column = self.make_widget<column_layout_widget, ""_ca>();
+    auto column = self.make_widget<column_layout_widget>("A1");
     auto button1 = column->make_widget<button_widget<bool>>(true);
     button1->label = l10n(u8"Hello \u4e16\u754c");
     auto button2 = column->make_widget<button_widget<bool>>(true);

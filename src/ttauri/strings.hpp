@@ -21,74 +21,74 @@
 
 namespace tt {
 
-[[nodiscard]] constexpr bool isUpper(char c) noexcept
+[[nodiscard]] constexpr bool is_upper(char c) noexcept
 {
     return c >= 'A' && c <= 'Z';
 }
 
-[[nodiscard]] constexpr bool isLower(char c) noexcept
+[[nodiscard]] constexpr bool is_lower(char c) noexcept
 {
     return c >= 'a' && c <= 'z';
 }
 
-[[nodiscard]] constexpr bool isAlpha(char c) noexcept
+[[nodiscard]] constexpr bool is_alpha(char c) noexcept
 {
-    return isUpper(c) || isLower(c);
+    return is_upper(c) || is_lower(c);
 }
 
-[[nodiscard]] constexpr bool isDigit(char c) noexcept
+[[nodiscard]] constexpr bool is_digit(char c) noexcept
 {
     return c >= '0' && c <= '9';
 }
 
-[[nodiscard]] constexpr bool isAlphaNum(char c) noexcept
+[[nodiscard]] constexpr bool is_alpha_num(char c) noexcept
 {
-    return isAlpha(c) || isDigit(c);
+    return is_alpha(c) || is_digit(c);
 }
 
-[[nodiscard]] constexpr bool isLinefeed(char c) noexcept
+[[nodiscard]] constexpr bool is_line_feed(char c) noexcept
 {
     return c == '\r' || c == '\n' || c == '\f' || c == '\v';
 }
 
-[[nodiscard]] constexpr bool isWhitespace(char c) noexcept
+[[nodiscard]] constexpr bool is_white_space(char c) noexcept
 {
-    return c == ' ' || c == '\t' || isLinefeed(c);
+    return c == ' ' || c == '\t' || is_line_feed(c);
 }
 
-[[nodiscard]] constexpr bool isNumberFirst(char c) noexcept
+[[nodiscard]] constexpr bool is_number_first(char c) noexcept
 {
-    return isDigit(c) || c == '+' || c == '-';
+    return is_digit(c) || c == '+' || c == '-';
 }
 
-[[nodiscard]] constexpr bool isNameFirst(char c) noexcept
+[[nodiscard]] constexpr bool is_name_first(char c) noexcept
 {
-    return isAlpha(c) || c == '_' || c == '$';
+    return is_alpha(c) || c == '_' || c == '$';
 }
 
-[[nodiscard]] constexpr bool isNameNext(char c) noexcept
+[[nodiscard]] constexpr bool is_name_next(char c) noexcept
 {
-    return isAlphaNum(c) || c == '_' || c == '$';
+    return is_alpha_num(c) || c == '_' || c == '$';
 }
 
-[[nodiscard]] constexpr bool isQuote(char c) noexcept
+[[nodiscard]] constexpr bool is_quote(char c) noexcept
 {
     return c == '"' || c == '\'' || c == '`';
 }
 
-[[nodiscard]] constexpr bool isOpenBracket(char c) noexcept
+[[nodiscard]] constexpr bool is_open_bracket(char c) noexcept
 {
     return c == '(' || c == '{' || c == '[';
 }
 
-[[nodiscard]] constexpr bool isCloseBracket(char c) noexcept
+[[nodiscard]] constexpr bool is_close_bracket(char c) noexcept
 {
     return c == ')' || c == '}' || c == ']';
 }
 
-[[nodiscard]] constexpr bool isOperator(char c) noexcept
+[[nodiscard]] constexpr bool is_operator(char c) noexcept
 {
-    return !isAlphaNum(c) && c != '_' && !isWhitespace(c) && !isQuote(c) && !isOpenBracket(c) && !isCloseBracket(c);
+    return !is_alpha_num(c) && c != '_' && !is_white_space(c) && !is_quote(c) && !is_open_bracket(c) && !is_close_bracket(c);
 }
 
 [[nodiscard]] inline std::string to_lower(std::string_view str) noexcept
@@ -154,9 +154,9 @@ namespace tt {
     std::string r;
     r.reserve(size(str));
 
-    r += isNameFirst(str.front()) ? str.front() : '_';
+    r += is_name_first(str.front()) ? str.front() : '_';
     for (ttlet c : str.substr(1)) {
-        r += isNameNext(c) ? c : '_';
+        r += is_name_next(c) ? c : '_';
     }
 
     return r;

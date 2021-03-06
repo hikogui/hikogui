@@ -8,27 +8,17 @@
 
 namespace tt {
 
-[[nodiscard]] std::pair<int, int> grid_layout_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept
+[[nodiscard]] std::pair<size_t, size_t> grid_layout_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept
 {
-    int nr_left = 0;
-    int nr_right = 0;
-    int nr_top = 0;
-    int nr_bottom = 0;
+    size_t nr_columns = 0;
+    size_t nr_rows = 0;
 
     for (auto &&cell : cells) {
-        if (cell.address.row.is_opposite) {
-            nr_top = std::max(nr_top, cell.address.row.index + cell.address.row.span);
-        } else {
-            nr_bottom = std::max(nr_bottom, cell.address.row.index + cell.address.row.span);
-        }
-        if (cell.address.column.is_opposite) {
-            nr_right = std::max(nr_right, cell.address.column.index + cell.address.column.span);
-        } else {
-            nr_left = std::max(nr_left, cell.address.column.index + cell.address.column.span);
-        }
+        nr_rows = std::max(nr_rows, cell.row_nr + 1);
+        nr_columns = std::max(nr_columns, cell.column_nr + 1);
     }
 
-    return {nr_left + nr_right, nr_bottom + nr_top};
+    return {nr_columns, nr_rows};
 }
 
 [[nodiscard]] extent2
@@ -43,43 +33,42 @@ grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow
     rows.reserve(nr_rows);
     columns.reserve(nr_columns);
 
+    ttlet max_row_nr = nr_rows - 1;
     for (auto &&cell : cells) {
-        tt_axiom(cell.address.row.is_absolute);
-        if (cell.address.row.span == 1) {
-            auto index = cell.address.row.begin(nr_rows);
+        rows.update(
+            cell.row_nr,
+            cell.widget->preferred_size().minimum().height(),
+            cell.widget->height_resistance(),
+            cell.widget->margin());
 
-            rows.update(
-                index, cell.widget->preferred_size().minimum().height(), cell.widget->height_resistance(), cell.widget->margin());
-        }
-
-        tt_axiom(cell.address.column.is_absolute);
-        if (cell.address.column.span == 1) {
-            auto index = cell.address.column.begin(nr_columns);
-
-            columns.update(
-                index,
-                cell.widget->preferred_size().minimum().width(),
-                cell.widget->width_resistance(),
-                cell.widget->margin());
-        }
+        columns.update(
+            cell.column_nr,
+            cell.widget->preferred_size().minimum().width(),
+            cell.widget->width_resistance(),
+            cell.widget->margin());
     }
 
     return {columns.minimum_size(), rows.minimum_size()};
 }
 
-std::shared_ptr<widget> grid_layout_widget::add_widget(cell_address address, std::shared_ptr<widget> widget) noexcept
+bool grid_layout_widget::address_in_use(size_t column_nr, size_t row_nr) const noexcept
+{
+    for (ttlet &cell: _cells) {
+        if (cell.column_nr == column_nr && cell.row_nr == row_nr) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::shared_ptr<widget> grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::shared_ptr<widget> widget) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     auto tmp = abstract_container_widget::add_widget(std::move(widget));
 
-    if (std::ssize(_children) == 0) {
-        // When there are no children, relative addresses need to start at the origin.
-        _current_address = "L0T0"_ca;
-    } else {
-        _current_address *= address;
-    }
+    tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
 
-    _cells.emplace_back(_current_address, tmp);
+    _cells.emplace_back(column_nr, row_nr, tmp);
     return tmp;
 }
 
@@ -103,13 +92,14 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        _columns.set_size(rectangle().width());
-        _rows.set_size(rectangle().height());
+        _columns.set_size(width());
+        _rows.set_size(height());
 
         for (auto &&cell : _cells) {
             auto &&child = cell.widget;
-            ttlet child_rectangle = cell.rectangle(_columns, _rows);
+            ttlet child_rectangle = cell.rectangle(_columns, _rows, height());
             child->set_layout_parameters_from_parent(child_rectangle);
+            tt_log_info("cell {}, {}", cell.column_nr, cell.row_nr);
         }
     }
 
