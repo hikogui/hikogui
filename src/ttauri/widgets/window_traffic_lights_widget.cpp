@@ -220,7 +220,7 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
     stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(event.position));
     stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(event.position));
     if (stateHasChanged) {
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        request_redraw();
     }
 
     if (event.cause.leftButton) {
@@ -245,14 +245,14 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
                 }
             }
 
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
             pressedClose = false;
             pressedMinimize = false;
             pressedMaximize = false;
             break;
 
         case ButtonDown:
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
             pressedClose = hoverClose;
             pressedMinimize = hoverMinimize;
             pressedMaximize = hoverMaximize;

@@ -170,6 +170,12 @@ public:
         }
     }
 
+    void request_redraw() const noexcept override
+    {
+        super::request_redraw();
+        _overlay_widget->request_redraw();
+    }
+
     bool handle_event(mouse_event const &event) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -319,17 +325,25 @@ private:
 
     void start_selecting() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         _selecting = true;
         if (auto selected_menu_item = get_selected_menu_item()) {
             this->window.update_keyboard_target(selected_menu_item, keyboard_focus_group::menu);
+
+        } else if (not _children.empty()) {
+            this->window.update_keyboard_target(_children.front());
         }
+
+        request_redraw();
     }
 
     void stop_selecting() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         _selecting = false;
-        window.request_redraw(aarect{_overlay_widget->local_to_window() * _overlay_widget->clipping_rectangle()});
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        request_redraw();
     }
 
     /** Populate the scroll view with menu items corresponding to the options.

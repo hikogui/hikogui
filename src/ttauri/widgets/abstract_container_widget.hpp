@@ -128,7 +128,10 @@ public:
         for (auto &child : _children) {
             tt_axiom(child);
             tt_axiom(&child->parent() == this);
-            child->draw(child->make_draw_context(context), display_time_point);
+
+            auto child_context =
+                context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
+            child->draw(child_context, display_time_point);
         }
 
         super::draw(std::move(context), display_time_point);

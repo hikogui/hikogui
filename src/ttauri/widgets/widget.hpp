@@ -444,18 +444,6 @@ public:
 
     virtual [[nodiscard]] color label_color() const noexcept;
 
-    /** Make a draw context for this widget.
-     * This function will make a draw context with the correct transformation
-     * and default color values.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @param context A template drawing context. This template may be taken
-     *                from the parent's draw call.
-     * @return A new draw context for drawing the current widget in the
-     *         local coordinate system.
-     */
-    virtual draw_context make_draw_context(draw_context const &parent_context) const noexcept;
-
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.
      * It should recursively call this function on every visible child.
@@ -474,6 +462,11 @@ public:
     virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
+    }
+
+    virtual void request_redraw() const noexcept
+    {
+        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
     }
 
     /** Handle command.

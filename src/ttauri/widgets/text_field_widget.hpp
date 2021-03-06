@@ -138,7 +138,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (_focus && display_time_point >= _next_redraw_time_point) {
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
         }
 
         need_layout |= std::exchange(_request_relayout, false);
@@ -289,7 +289,7 @@ public:
                     // Record the last time the cursor is moved, so that the caret remains lit.
                     _last_update_time_point = event.timePoint;
 
-                    window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+                    request_redraw();
                 }
                 break;
 
@@ -313,7 +313,7 @@ public:
 
                 drag_select();
 
-                window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+                request_redraw();
                 break;
 
             default:;
@@ -465,7 +465,7 @@ private:
             drag_select();
 
             // Once we are scrolling, don't stop.
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
 
         } else if (_drag_click_count == 0) {
             // The following is for scrolling based on keyboard input, ignore mouse drags.

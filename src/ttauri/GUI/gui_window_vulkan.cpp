@@ -354,7 +354,9 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         SDFPipeline->vertexBufferData);
 
     _request_redraw_rectangle = aarect{};
-    widget->draw(widget->make_draw_context(drawContext), displayTimePoint);
+    auto widget_context =
+        drawContext.make_child_context(widget->parent_to_local(), widget->local_to_window(), widget->clipping_rectangle());
+    widget->draw(widget_context, displayTimePoint);
 
     fillCommandBuffer(frameBuffer, scissor_rectangle);
     submitCommandBuffer();

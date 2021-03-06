@@ -42,7 +42,6 @@ public:
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
         if (has_updated_contraints) {
-
             ttlet &child = selected_child();
             tt_axiom(&child.parent() == this);
             if (compare_then_assign(_preferred_size, child.preferred_size())) {
@@ -58,13 +57,14 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
+        auto &child = selected_child();
+        tt_axiom(&child.parent() == this);
+
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            auto &child = selected_child();
-            tt_axiom(&child.parent() == this);
             child.set_layout_parameters_from_parent(rectangle());
-            child.update_layout(display_time_point, need_layout);
         }
+        child.update_layout(display_time_point, need_layout);
 
         // THIS DOES NOT CALL THROUGH THE ABSTRACT_CONTAINER_WIDGET AND SKIPS DIRECTLY TO WIDGET.
         widget::update_layout(display_time_point, need_layout);
@@ -95,7 +95,7 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(value_type value, Args &&... args) noexcept
+    std::shared_ptr<WidgetType> make_widget(value_type value, Args &&...args) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -112,7 +112,7 @@ private:
     [[nodiscard]] auto find_child(value_type index) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_axiom(std::size(_children_keys) == std::size(_children));        
+        tt_axiom(std::size(_children_keys) == std::size(_children));
 
         ttlet child_key_it = std::find(_children_keys.cbegin(), _children_keys.cend(), index);
         if (child_key_it != _children_keys.cend()) {
@@ -178,7 +178,9 @@ private:
     void draw_child(draw_context context, hires_utc_clock::time_point displayTimePoint, widget &child) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        child.draw(child.make_draw_context(context), displayTimePoint);
+        auto child_context =
+            context.make_child_context(child.parent_to_local(), child.local_to_window(), child.clipping_rectangle());
+        child.draw(child_context, displayTimePoint);
     }
 };
 

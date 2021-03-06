@@ -78,7 +78,7 @@ public:
             handled = true;
             if (*enabled) {
                 if (compare_then_assign(_pressed, static_cast<bool>(event.down.leftButton))) {
-                    window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+                    request_redraw();
                 }
 
                 if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
