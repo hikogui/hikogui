@@ -42,7 +42,6 @@ target_sources(ttauri PRIVATE
     bigint.hpp
     bits.hpp
     byte_string.hpp
-    cell_address.hpp
     check.hpp
     concepts.hpp
     coroutine.hpp
@@ -189,7 +188,6 @@ target_sources(ttauri_tests PRIVATE
     algorithm_tests.cpp
     bezier_curve_tests.cpp
     bigint_tests.cpp
-    cell_address_tests.cpp
     coroutine_tests.cpp
     counters_tests.cpp
     datum_tests.cpp
