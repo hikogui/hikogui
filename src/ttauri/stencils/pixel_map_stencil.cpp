@@ -34,13 +34,13 @@ void pixel_map_stencil::draw(draw_context context, tt::color color, matrix3 tran
     layout_is_modified |= std::exchange(_position_is_modified, false);
     if (layout_is_modified) {
         _pixel_map_bounding_box =
-            aarect{extent2{narrow_cast<float>(_backing.width_in_px), narrow_cast<float>(_backing.height_in_px)}};
+            aarectangle{extent2{narrow_cast<float>(_backing.width_in_px), narrow_cast<float>(_backing.height_in_px)}};
         _pixel_map_transform = matrix2::uniform(_pixel_map_bounding_box, _rectangle, _alignment);
     }
 
     switch (_backing.state) {
     case pipeline_image::Image::State::Drawing:
-        context.window().request_redraw(aarect{context.transform() * context.clipping_rectangle()});
+        context.window().request_redraw(aarectangle{context.transform() * context.clipping_rectangle()});
         break;
     case pipeline_image::Image::State::Uploaded: context.draw_image(_backing, transform * _pixel_map_transform); break;
     default:;

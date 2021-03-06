@@ -302,7 +302,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     } else if (extent >> preferred_size) {
         set_window_size(extent = preferred_size.maximum());
     }
-    widget->set_layout_parameters_from_parent(aarect{extent});
+    widget->set_layout_parameters_from_parent(aarectangle{extent});
 
     // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
     ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
@@ -339,7 +339,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
     ttlet scissor_rectangle = ceil(std::accumulate(
-        swapchainRedrawRectangle.cbegin(), swapchainRedrawRectangle.cend(), aarect{}, [](ttlet &sum, ttlet &item) {
+        swapchainRedrawRectangle.cbegin(), swapchainRedrawRectangle.cend(), aarectangle{}, [](ttlet &sum, ttlet &item) {
             return sum | item;
         }));
 
@@ -353,7 +353,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         imagePipeline->vertexBufferData,
         SDFPipeline->vertexBufferData);
 
-    _request_redraw_rectangle = aarect{};
+    _request_redraw_rectangle = aarectangle{};
     auto widget_context =
         drawContext.make_child_context(widget->parent_to_local(), widget->local_to_window(), widget->clipping_rectangle());
     widget->draw(widget_context, displayTimePoint);
@@ -371,7 +371,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     teardown();
 }
 
-void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect scissor_rectangle)
+void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarectangle scissor_rectangle)
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -396,7 +396,7 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
     // Clamp the scissor rectangle to the size of the window.
     scissor_rectangle = intersect(
         scissor_rectangle,
-        aarect{0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
+        aarectangle{0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
     scissor_rectangle = ceil(scissor_rectangle);
 
     ttlet scissors = std::array{vk::Rect2D{

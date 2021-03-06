@@ -126,7 +126,7 @@ public:
             ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
             ttlet overlay_x = theme::global->smallSize;
             ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
-            ttlet overlay_rectangle_request = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
+            ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
 
             ttlet overlay_rectangle = _overlay_widget->make_overlay_rectangle_from_parent(overlay_rectangle_request);
             ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
@@ -134,7 +134,7 @@ public:
             _overlay_widget->set_layout_parameters_from_parent(
                 overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer() - _draw_layer);
 
-            _left_box_rectangle = aarect{0.0f, 0.0f, theme::global->smallSize, rectangle().height()};
+            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme::global->smallSize, rectangle().height()};
             _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
             ttlet chevrons_glyph_bbox = pipeline_SDF::device_shared::getBoundingBox(_chevrons_glyph);
             _chevrons_rectangle =
@@ -143,7 +143,7 @@ public:
                 align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global->small_icon_size), alignment::middle_center);
 
             // The unknown_label is located to the right of the selection box icon.
-            _option_rectangle = aarect{
+            _option_rectangle = aarectangle{
                 _left_box_rectangle.right() + theme::global->margin,
                 0.0f,
                 rectangle().width() - _left_box_rectangle.width() - theme::global->margin * 2.0f,
@@ -286,11 +286,11 @@ private:
 
     float _max_option_label_height;
 
-    aarect _option_rectangle;
-    aarect _left_box_rectangle;
+    aarectangle _option_rectangle;
+    aarectangle _left_box_rectangle;
 
     font_glyph_ids _chevrons_glyph;
-    aarect _chevrons_rectangle;
+    aarectangle _chevrons_rectangle;
 
     bool _selecting = false;
     std::shared_ptr<overlay_view_widget> _overlay_widget;
@@ -313,6 +313,15 @@ private:
         return -1;
     }
 
+    [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_first_menu_item() const noexcept
+    {
+        if (std::ssize(_menu_item_widgets) != 0) {
+            return _menu_item_widgets.front();
+        } else {
+            return {};
+        }
+    }
+
     [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_selected_menu_item() const noexcept
     {
         ttlet i = get_value_as_index();
@@ -331,8 +340,9 @@ private:
         if (auto selected_menu_item = get_selected_menu_item()) {
             this->window.update_keyboard_target(selected_menu_item, keyboard_focus_group::menu);
 
-        } else if (not _children.empty()) {
-            this->window.update_keyboard_target(_children.front());
+        } else if (auto first_menu_item = get_first_menu_item()) {
+            this->window.update_keyboard_target(first_menu_item, keyboard_focus_group::menu);
+
         }
 
         request_redraw();

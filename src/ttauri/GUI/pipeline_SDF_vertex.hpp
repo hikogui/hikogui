@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../color/sfloat_rgba16.hpp"
 #include "../color/sfloat_rgba32.hpp"
 #include "../color/sfloat_rgb32.hpp"
@@ -29,7 +28,7 @@ struct vertex {
     //! The color of the glyph.
     sfloat_rgba16 color;
 
-    vertex(point3 position, aarect clippingRectangle, point3 textureCoord, tt::color color) noexcept :
+    vertex(point3 position, aarectangle clippingRectangle, point3 textureCoord, tt::color color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),

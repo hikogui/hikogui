@@ -49,7 +49,7 @@ public:
         tt_axiom(is_valid());
     }
 
-    [[nodiscard]] constexpr explicit translate(aarect const &other) noexcept : _v(static_cast<f32x4>(get<0>(other)).xy00())
+    [[nodiscard]] constexpr explicit translate(aarectangle const &other) noexcept : _v(static_cast<f32x4>(get<0>(other)).xy00())
     {
         tt_axiom(is_valid());
     }
@@ -82,7 +82,7 @@ public:
      * @param alignment How the source rectangle should be aligned inside the destination rectangle.
      * @return Translation to move the src_rectangle into the dst_rectangle.
      */
-    [[nodiscard]] constexpr static translate align(aarect src_rectangle, aarect dst_rectangle, alignment alignment) noexcept
+    [[nodiscard]] constexpr static translate align(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
     {
         auto x = 0.0f;
         if (alignment == horizontal_alignment::left) {
@@ -130,14 +130,14 @@ public:
         return point<std::max(D, E)>{_v + static_cast<f32x4>(rhs)};
     }
 
-    [[nodiscard]] constexpr aarect operator*(aarect const &rhs) const noexcept requires(D == 2)
+    [[nodiscard]] constexpr aarectangle operator*(aarectangle const &rhs) const noexcept requires(D == 2)
     {
-        return aarect{*this * get<0>(rhs), *this * get<3>(rhs)};
+        return aarectangle{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
-    [[nodiscard]] constexpr rect operator*(rect const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
     {
-        return rect{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
+        return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept

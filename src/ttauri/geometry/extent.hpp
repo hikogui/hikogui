@@ -5,7 +5,7 @@
 #pragma once
 
 #include "vector.hpp"
-#include "../numeric_array.hpp"
+#include "numeric_array.hpp"
 
 namespace tt {
 namespace geo {

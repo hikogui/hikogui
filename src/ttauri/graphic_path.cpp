@@ -41,13 +41,13 @@ bool graphic_path::allLayersHaveSameColor() const noexcept
     return true;
 }
 
-[[nodiscard]] aarect graphic_path::boundingBox() const noexcept
+[[nodiscard]] aarectangle graphic_path::boundingBox() const noexcept
 {
     if (std::ssize(points) == 0) {
-        return aarect{0.0, 0.0, 0.0, 0.0};
+        return aarectangle{0.0, 0.0, 0.0, 0.0};
     }
 
-    auto r = aarect{points.front().p, points.front().p};
+    auto r = aarectangle{points.front().p, points.front().p};
 
     for (ttlet &point: points) {
         r |= point.p;
@@ -314,7 +314,7 @@ void graphic_path::arcTo(float radius, point2 position) noexcept
     cubicCurveTo(C1, C2, P2);
 }
 
-void graphic_path::addRectangle(aarect r, corner_shapes corners) noexcept
+void graphic_path::addRectangle(aarectangle r, corner_shapes corners) noexcept
 {
     tt_assert(!isContourOpen());
 

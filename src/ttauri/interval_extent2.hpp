@@ -5,7 +5,6 @@
 #pragma once
 
 #include "interval.hpp"
-#include "numeric_array.hpp"
 #include "geometry/extent.hpp"
 
 namespace tt {

@@ -99,13 +99,13 @@ public:
             ttlet horizontal_scroll_bar_width = width() - vertical_scroll_bar_width;
 
             // Calculate the rectangles based on the sizes of the scrollbars.
-            ttlet vertical_scroll_bar_rectangle = aarect{
+            ttlet vertical_scroll_bar_rectangle = aarectangle{
                 rectangle().right() - vertical_scroll_bar_width,
                 rectangle().bottom() + horizontal_scroll_bar_height,
                 vertical_scroll_bar_width,
                 rectangle().height() - horizontal_scroll_bar_height};
 
-            ttlet horizontal_scroll_bar_rectangle = aarect{
+            ttlet horizontal_scroll_bar_rectangle = aarectangle{
                 rectangle().left(), rectangle().bottom(), rectangle().width() - vertical_scroll_bar_width, horizontal_scroll_bar_height};
 
             // Update layout parameters for both scrollbars.
@@ -161,8 +161,8 @@ public:
             }
 
             // Make a clipping rectangle that fits the content_rectangle exactly.
-            ttlet aperture_rectangle = aarect{aperture_x, aperture_y, aperture_width, aperture_height};
-            ttlet content_rectangle = aarect{content_x, content_y, content_width, content_height};
+            ttlet aperture_rectangle = aarectangle{aperture_x, aperture_y, aperture_width, aperture_height};
+            ttlet content_rectangle = aarectangle{content_x, content_y, content_width, content_height};
 
             _content->set_layout_parameters_from_parent(
                 content_rectangle, aperture_rectangle, _content->draw_layer() - _draw_layer);

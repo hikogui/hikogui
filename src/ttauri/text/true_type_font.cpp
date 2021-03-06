@@ -1300,7 +1300,7 @@ bool true_type_font::loadglyph_metrics(tt::glyph_id glyph_id, glyph_metrics &met
 
         ttlet xyMin = point2{entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm)};
         ttlet xyMax = point2{entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm)};
-        metrics.boundingBox = aarect{xyMin, xyMax};
+        metrics.boundingBox = aarectangle{xyMin, xyMax};
 
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.

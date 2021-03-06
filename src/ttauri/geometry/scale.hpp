@@ -98,14 +98,14 @@ public:
         return point<E>{_v * static_cast<f32x4>(rhs)};
     }
 
-    [[nodiscard]] constexpr aarect operator*(aarect const &rhs) const noexcept requires(D == 2)
+    [[nodiscard]] constexpr aarectangle operator*(aarectangle const &rhs) const noexcept requires(D == 2)
     {
-        return aarect{*this * get<0>(rhs), *this * get<3>(rhs)};
+        return aarectangle{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
-    [[nodiscard]] constexpr rect operator*(rect const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
     {
-        return rect{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
+        return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     [[nodiscard]] constexpr scale operator*(identity const &) const noexcept
@@ -138,7 +138,7 @@ private:
 };
 
 template<int D>
-[[nodiscard]] constexpr matrix<D> matrix<D>::uniform(aarect src_rectangle, aarect dst_rectangle, alignment alignment) noexcept
+[[nodiscard]] constexpr matrix<D> matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
 {
     ttlet scale = tt::geo::scale<D>::uniform(src_rectangle.extent(), dst_rectangle.extent());
     ttlet scaled_rectangle = scale * src_rectangle;

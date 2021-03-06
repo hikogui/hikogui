@@ -72,7 +72,7 @@ tt::pixel_map<sfloat_rgba16> device_shared::getStagingPixelMap()
 void device_shared::updateAtlasWithStagingPixelMap(const Image &image)
 {
     // Start with the actual image inside the stagingImage.
-    auto rectangle = aarect{
+    auto rectangle = aarectangle{
         point2{narrow_cast<float>(Page::border), narrow_cast<float>(Page::border)},
         extent2{narrow_cast<float>(image.width_in_px), narrow_cast<float>(image.height_in_px)}};
 

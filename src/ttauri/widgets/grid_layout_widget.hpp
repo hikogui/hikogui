@@ -76,7 +76,7 @@ private:
 
         cell(cell_address address, std::shared_ptr<tt::widget> widget) noexcept : address(address), widget(std::move(widget)) {}
 
-        [[nodiscard]] aarect rectangle(flow_layout const &columns, flow_layout const &rows) const noexcept
+        [[nodiscard]] aarectangle rectangle(flow_layout const &columns, flow_layout const &rows) const noexcept
         {
             ttlet first_column_nr = address.column.begin(columns.nr_items());
             ttlet last_column_nr = address.column.end(columns.nr_items());

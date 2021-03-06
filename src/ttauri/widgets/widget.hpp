@@ -247,7 +247,7 @@ public:
      * @pre `mutex` must be locked by current thread.
      */
     void
-    set_layout_parameters(geo::transformer auto const &local_to_parent, extent2 size, aarect const &clipping_rectangle) noexcept
+    set_layout_parameters(geo::transformer auto const &local_to_parent, extent2 size, aarectangle const &clipping_rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -263,24 +263,24 @@ public:
         }
         _size = size;
         _clipping_rectangle = clipping_rectangle;
-        _visible_rectangle = intersect(aarect{size}, clipping_rectangle);
+        _visible_rectangle = intersect(aarectangle{size}, clipping_rectangle);
     }
 
     void
-    set_layout_parameters_from_parent(aarect child_rectangle, aarect parent_clipping_rectangle, float draw_layer_delta) noexcept
+    set_layout_parameters_from_parent(aarectangle child_rectangle, aarectangle parent_clipping_rectangle, float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         tt_axiom(child_rectangle.extent() >= _preferred_size.minimum());
 
         ttlet child_translate = translate2{child_rectangle};
         ttlet child_size = child_rectangle.extent();
-        ttlet rectangle = aarect{child_size};
+        ttlet rectangle = aarectangle{child_size};
         ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, expand(rectangle, margin()));
 
         set_layout_parameters(translate_z(draw_layer_delta) * child_translate, child_size, child_clipping_rectangle);
     }
 
-    void set_layout_parameters_from_parent(aarect child_rectangle) noexcept
+    void set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -339,10 +339,10 @@ public:
      *
      * @pre `mutex` must be locked by current thread.
      */
-    [[nodiscard]] aarect rectangle() const noexcept
+    [[nodiscard]] aarectangle rectangle() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return aarect{_size};
+        return aarectangle{_size};
     }
 
     /** Return the base-line where the text should be located.
@@ -353,7 +353,7 @@ public:
         return rectangle().middle();
     }
 
-    [[nodiscard]] aarect clipping_rectangle() const noexcept
+    [[nodiscard]] aarectangle clipping_rectangle() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return _clipping_rectangle;
@@ -466,7 +466,7 @@ public:
 
     virtual void request_redraw() const noexcept
     {
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        window.request_redraw(aarectangle{_local_to_window * _clipping_rectangle});
     }
 
     /** Handle command.
@@ -604,14 +604,14 @@ protected:
 
     /** Clipping rectangle of the widget in local coordinates.
      */
-    aarect _clipping_rectangle;
+    aarectangle _clipping_rectangle;
 
     /** The rectangle of the widget intersecting with the clipping_rectangle.
      * This visible rectangle is used in the `hitbox_test()` so that mouse events
      * will only match when that part of the widget is actual visible and not hidden
      * behind the border of a for example a scroll view.
      */
-    aarect _visible_rectangle;
+    aarectangle _visible_rectangle;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */

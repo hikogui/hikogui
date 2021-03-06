@@ -171,7 +171,7 @@ private:
 
         ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
 
-        ttlet child_rectangle = aarect{
+        ttlet child_rectangle = aarectangle{
             rectangle().left() + child_x,
             rectangle().bottom() + child.margin(),
             child_width,

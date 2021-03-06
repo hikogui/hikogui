@@ -17,8 +17,7 @@
 #include "keyboard_focus_group.hpp"
 #include "../text/gstring.hpp"
 #include "../logger.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../cpu_utc_clock.hpp"
 #include "../cell_address.hpp"
 #include "../label.hpp"
@@ -112,7 +111,7 @@ public:
 
     /** Request a rectangle on the window to be redrawn
      */
-    void request_redraw(aarect rectangle) noexcept
+    void request_redraw(aarectangle rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         _request_redraw_rectangle |= rectangle;
@@ -123,7 +122,7 @@ public:
     void request_redraw() noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        request_redraw(aarect{extent});
+        request_redraw(aarectangle{extent});
     }
 
     /** By how much the font needs to be scaled compared to current windowScale.
@@ -266,11 +265,11 @@ protected:
      * It may also be used for the extent of the window when the GPU
      * library is unable to determine the extent of the surface.
      */
-    aarect _screen_rectangle;
+    aarectangle _screen_rectangle;
 
     bool _request_setting_change = true;
 
-    aarect _request_redraw_rectangle = aarect{};
+    aarectangle _request_redraw_rectangle = aarectangle{};
 
     /** Let the operating system create the actual window.
      * @param title The title of the window.

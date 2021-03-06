@@ -10,8 +10,7 @@
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../geometry/translate.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 
 namespace tt::pipeline_image {
 
@@ -62,10 +61,8 @@ void Image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
     state = State::Uploaded;
 }
 
-aarect Image::index_to_rect(size_t page_index) const noexcept
+aarectangle Image::index_to_rect(size_t page_index) const noexcept
 {
-    ttlet pageWH = i32x4{Page::width, Page::height};
-
     ttlet left = (page_index % width_in_pages) * Page::width;
     ttlet bottom = (page_index / width_in_pages) * Page::height;
     ttlet right = std::min(left + Page::width, width_in_px);
@@ -73,11 +70,11 @@ aarect Image::index_to_rect(size_t page_index) const noexcept
 
     ttlet p0 = point2{narrow_cast<float>(left), narrow_cast<float>(bottom)};
     ttlet p3 = point2{narrow_cast<float>(right), narrow_cast<float>(top)};
-    return aarect{p0, p3};
+    return aarectangle{p0, p3};
 }
 
 static std::tuple<point3, extent2, bool>
-calculatePosition(size_t x, size_t y, size_t width, size_t height, matrix3 transform, aarect clippingRectangle)
+calculatePosition(size_t x, size_t y, size_t width, size_t height, matrix3 transform, aarectangle clippingRectangle)
 {
     auto p = transform * point2(narrow_cast<float>(x), narrow_cast<float>(y));
     auto e = extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
@@ -85,7 +82,7 @@ calculatePosition(size_t x, size_t y, size_t width, size_t height, matrix3 trans
     return {p, e, i};
 }
 
-void Image::calculateVertexPositions(matrix3 transform, aarect clippingRectangle)
+void Image::calculateVertexPositions(matrix3 transform, aarectangle clippingRectangle)
 {
     tmpvertexPositions.clear();
 
@@ -118,7 +115,7 @@ void Image::calculateVertexPositions(matrix3 transform, aarect clippingRectangle
  *    v   \ |
  *    0 --> 1
  */
-void Image::placePageVertices(vspan<vertex> &vertices, size_t index, aarect clippingRectangle) const
+void Image::placePageVertices(vspan<vertex> &vertices, size_t index, aarectangle clippingRectangle) const
 {
     ttlet page = pages.at(index);
 
@@ -147,7 +144,7 @@ void Image::placePageVertices(vspan<vertex> &vertices, size_t index, aarect clip
     ttlet atlasPosition = device_shared::getAtlasPositionFromPage(page);
     ttlet atlasPosition_ = point3{
         narrow_cast<float>(atlasPosition.x()), narrow_cast<float>(atlasPosition.y()), narrow_cast<float>(atlasPosition.z())};
-    ttlet atlasRect = translate3{atlasPosition_} * aarect{e4};
+    ttlet atlasRect = translate3{atlasPosition_} * aarectangle{e4};
 
     vertices.emplace_back(p1, get<0>(atlasRect), clippingRectangle);
     vertices.emplace_back(p2, get<1>(atlasRect), clippingRectangle);
@@ -162,7 +159,7 @@ void Image::placePageVertices(vspan<vertex> &vertices, size_t index, aarect clip
  * \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in
  * radials.
  */
-void Image::place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, matrix3 transform)
+void Image::place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, matrix3 transform)
 {
     calculateVertexPositions(transform, clipping_rectangle);
 

@@ -7,8 +7,8 @@
 #include "vector.hpp"
 #include "extent.hpp"
 #include "point.hpp"
-#include "../rect.hpp"
-#include "../aarect.hpp"
+#include "rectangle.hpp"
+#include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 
 namespace tt {
@@ -103,7 +103,7 @@ public:
      * @param alignment How the src_rectangle should be aligned inside the dst_rectangle after scaling and moving.
      * @return A transformation matrix to move and scale the src_rectangle to the dst_rectangle.
      */
-    [[nodiscard]] constexpr static matrix uniform(aarect src_rectangle, aarect dst_rectangle, alignment alignment) noexcept;
+    [[nodiscard]] constexpr static matrix uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept;
 
     template<int I>
     [[nodiscard]] friend constexpr f32x4 get(matrix const &rhs) noexcept
@@ -158,9 +158,9 @@ public:
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
     }
 
-    [[nodiscard]] constexpr auto operator*(rect const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(rectangle const &rhs) const noexcept
     {
-        return rect{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
+        return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     /** Transform a color by a color matrix.

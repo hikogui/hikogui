@@ -5,7 +5,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "aarect.hpp"
+#include "geometry/axis_aligned_rectangle.hpp"
 #include "geometry/extent.hpp"
 #include <span>
 #include <string>
@@ -246,14 +246,14 @@ public:
         return {_pixels + offset, width, height, _stride};
     }
 
-    pixel_map<T> submap(aarect rect) const noexcept
+    pixel_map<T> submap(aarectangle rectangle) const noexcept
     {
-        tt_axiom(round(rect) == rect);
+        tt_axiom(round(rectangle) == rectangle);
         return submap(
-            narrow_cast<ssize_t>(rect.left()),
-            narrow_cast<ssize_t>(rect.bottom()),
-            narrow_cast<ssize_t>(rect.width()),
-            narrow_cast<ssize_t>(rect.height()));
+            narrow_cast<ssize_t>(rectangle.left()),
+            narrow_cast<ssize_t>(rectangle.bottom()),
+            narrow_cast<ssize_t>(rectangle.width()),
+            narrow_cast<ssize_t>(rectangle.height()));
     }
 
     pixel_row<T> const operator[](ssize_t rowNr) const noexcept

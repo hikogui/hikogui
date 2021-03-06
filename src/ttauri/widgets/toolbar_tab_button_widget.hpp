@@ -86,7 +86,7 @@ public:
             this->request_redraw();
 
             ttlet offset = theme::global->margin + theme::global->borderWidth;
-            _button_rectangle = aarect{
+            _button_rectangle = aarectangle{
                 this->rectangle().left(),
                 this->rectangle().bottom() - offset,
                 this->rectangle().width(),
@@ -137,17 +137,17 @@ public:
 
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
-    aarect _button_rectangle;
+    aarectangle _button_rectangle;
     std::unique_ptr<stencil> _label_stencil;
 
     void draw_focus_line(draw_context context) noexcept
     {
         if (this->_focus && this->window.active && *this->value == this->true_value) {
             ttlet &parent_ = this->parent();
-            ttlet parent_rectangle = aarect{this->_parent_to_local * parent_.rectangle()};
+            ttlet parent_rectangle = aarectangle{this->_parent_to_local * parent_.rectangle()};
 
             // Create a line, on the bottom of the toolbar over the full width.
-            ttlet line_rectangle = aarect{
+            ttlet line_rectangle = aarectangle{
                 parent_rectangle.left(),
                 parent_rectangle.bottom(),
                 parent_rectangle.width(),
@@ -170,7 +170,7 @@ private:
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
         // so that the bottom border of the tab button is not drawn.
-        context.set_clipping_rectangle(aarect{this->_parent_to_local * this->parent().clipping_rectangle()});
+        context.set_clipping_rectangle(aarectangle{this->_parent_to_local * this->parent().clipping_rectangle()});
 
         // The focus line will be placed at 0.7.
         ttlet button_z = (this->_focus && this->window.active) ? translate_z(0.8f) : translate_z(0.6f);

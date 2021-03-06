@@ -143,7 +143,7 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _text_field_rectangle = aarect{extent2{_text_width + theme::global->margin * 2.0f, _size.height()}};
+            _text_field_rectangle = aarectangle{extent2{_text_width + theme::global->margin * 2.0f, _size.height()}};
 
             // Set the clipping rectangle to within the border of the input field.
             // Add another border width, so glyphs do not touch the border.
@@ -390,14 +390,14 @@ private:
     l10n _error;
 
     float _text_width = 0.0f;
-    aarect _text_rectangle = {};
+    aarectangle _text_rectangle = {};
 
-    aarect _text_field_rectangle;
-    aarect _text_field_clipping_rectangle;
+    aarectangle _text_field_rectangle;
+    aarectangle _text_field_clipping_rectangle;
 
     editable_text _field;
     shaped_text _shaped_text;
-    aarect _left_to_right_caret = {};
+    aarectangle _left_to_right_caret = {};
 
     /** Scroll speed in points per second.
      * This is used when dragging outside of the widget.
@@ -498,7 +498,7 @@ private:
         ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
         context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
-        ttlet line_rectangle = aarect{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
+        ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
         context.draw_filled_quad(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
     }
 

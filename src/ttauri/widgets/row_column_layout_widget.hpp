@@ -100,12 +100,12 @@ private:
         ttlet[child_offset, child_length] = _layout.get_offset_and_size(index++);
 
         ttlet child_rectangle = arrangement == arrangement::row ?
-            aarect{
+            aarectangle{
                 rectangle().left() + child_offset,
                 rectangle().bottom() + child.margin(),
                 child_length,
                 rectangle().height() - child.margin() * 2.0f} :
-            aarect{
+            aarectangle{
                 rectangle().left() + child.margin(),
                 rectangle().top() - child_offset - child_length,
                 rectangle().width() - child.margin() * 2.0f,

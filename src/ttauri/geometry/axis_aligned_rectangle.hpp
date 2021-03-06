@@ -5,10 +5,10 @@
 #pragma once
 
 #include "numeric_array.hpp"
-#include "alignment.hpp"
-#include "concepts.hpp"
-#include "geometry/extent.hpp"
-#include "geometry/point.hpp"
+#include "../alignment.hpp"
+#include "../concepts.hpp"
+#include "extent.hpp"
+#include "point.hpp"
 #include <concepts>
 
 namespace tt {
@@ -422,6 +422,6 @@ public:
     fit(axis_aligned_rectangle const &bounds, axis_aligned_rectangle const &rectangle) noexcept;
 };
 
-using aarect = axis_aligned_rectangle;
+using aarectangle = axis_aligned_rectangle;
 
 } // namespace tt

@@ -4,13 +4,11 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
+#include "../geometry/numeric_array.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/vector.hpp"
 #include "../geometry/point.hpp"
-#include <immintrin.h>
-#include <emmintrin.h>
 #include <algorithm>
 
 namespace tt {
@@ -28,17 +26,17 @@ public:
     sfloat_rg32 &operator=(sfloat_rg32 &&rhs) noexcept = default;
 
     explicit sfloat_rg32(f32x4 const &rhs) noexcept :
-        v(static_cast<decltype(v)>(rhs)) {}
+        v{rhs.r(), rhs.g()} {}
 
     sfloat_rg32 &operator=(f32x4 const &rhs) noexcept
     {
-        v = static_cast<decltype(v)>(rhs);
+        v = {rhs.r(), rhs.g()};
         return *this;
     }
 
     explicit operator f32x4() const noexcept
     {
-        return f32x4{v};
+        return f32x4{std::get<0>(v), std::get<1>(v), 0.0f, 0.0f};
     }
 
     sfloat_rg32(extent2 const &rhs) noexcept : sfloat_rg32{static_cast<f32x4>(rhs)} {}

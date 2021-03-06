@@ -6,9 +6,7 @@
 
 #include "pipeline_image_page.hpp"
 #include "../vspan.hpp"
-#include "../aarect.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include <span>
 #include <atomic>
 #include <string>
@@ -81,13 +79,13 @@ struct Image {
      * @return The rectangle within the image representing a quad to be drawn.
      *         This rectangle is already size-adjusted for the quads on the edge.
      */
-    aarect index_to_rect(size_t page_index) const noexcept;
+    aarectangle index_to_rect(size_t page_index) const noexcept;
 
     /*! Place vertices for this image.
      * An image is build out of atlas pages, that need to be individual rendered.
      * A page with the value std::numeric_limits<uint16_t>::max() is not rendered.
      */
-    void place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, matrix3 transform);
+    void place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, matrix3 transform);
 
     /** Upload image to atlas.
      */
@@ -97,9 +95,9 @@ private:
     //! Temporary memory used for pre calculating vertices.
     std::vector<std::tuple<point3, extent2, bool>> tmpvertexPositions;
 
-    void calculateVertexPositions(matrix3 transform, aarect clippingRectangle);
+    void calculateVertexPositions(matrix3 transform, aarectangle clippingRectangle);
 
-    void placePageVertices(vspan<vertex> &vertices, size_t index, aarect clippingRectangle) const;
+    void placePageVertices(vspan<vertex> &vertices, size_t index, aarectangle clippingRectangle) const;
 
 };
 

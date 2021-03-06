@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 
 namespace tt {
 class draw_context;
@@ -37,7 +37,7 @@ public:
      * @param base_line_position The position of the base line within the rectangle.
      */
     virtual void
-    set_layout_parameters(aarect const &rectangle, float base_line_position = std::numeric_limits<float>::infinity()) noexcept
+    set_layout_parameters(aarectangle const &rectangle, float base_line_position = std::numeric_limits<float>::infinity()) noexcept
     {
         if (_rectangle.extent() != rectangle.extent()) {
             _size_is_modified = true;
@@ -68,7 +68,7 @@ public:
 
 protected:
     alignment _alignment;
-    aarect _rectangle;
+    aarectangle _rectangle;
     float _base_line_position;
 
     /** Set to true when the data of the cell has been modified.
