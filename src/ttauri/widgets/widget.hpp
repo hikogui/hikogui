@@ -263,6 +263,7 @@ public:
         }
         _size = size;
         _clipping_rectangle = clipping_rectangle;
+        _visible_rectangle = intersect(aarect{size}, clipping_rectangle);
     }
 
     void
@@ -369,9 +370,9 @@ public:
      */
     [[nodiscard]] virtual hit_box hitbox_test(point2 position) const noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (_clipping_rectangle.contains(position) && rectangle().contains(position)) {
+        if (_visible_rectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer};
         } else {
             return {};
@@ -611,6 +612,13 @@ protected:
     /** Clipping rectangle of the widget in local coordinates.
      */
     aarect _clipping_rectangle;
+
+    /** The rectangle of the widget intersecting with the clipping_rectangle.
+     * This visible rectangle is used in the `hitbox_test()` so that mouse events
+     * will only match when that part of the widget is actual visible and not hidden
+     * behind the border of a for example a scroll view.
+     */
+    aarect _visible_rectangle;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */

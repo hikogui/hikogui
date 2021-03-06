@@ -265,9 +265,9 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
 
 hit_box window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (rectangle().contains(position)) {
+    if (_visible_rectangle.contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, hit_box::Type::Button};
         } else {

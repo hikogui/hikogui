@@ -118,11 +118,11 @@ public:
 
     hit_box hitbox_test(point2 position) const noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto r = hit_box{};
 
-        if (_clipping_rectangle.contains(position)) {
+        if (_visible_rectangle.contains(position)) {
             r = hit_box{weak_from_this(), _draw_layer, hit_box::Type::MoveArea};
         }
 

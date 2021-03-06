@@ -173,12 +173,12 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         tt_axiom(_content);
 
         auto r = super::hitbox_test(position);
 
-        if (rectangle().contains(position)) {
+        if (_visible_rectangle.contains(position)) {
             // Claim mouse events for scrolling.
             r = std::max(r, hit_box{weak_from_this(), _draw_layer});
         }

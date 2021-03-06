@@ -80,7 +80,7 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         ttlet &child = selected_child();
         return child.hitbox_test(point2{child.parent_to_local() * position});
     }

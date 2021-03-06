@@ -105,9 +105,9 @@ public:
 
     hit_box hitbox_test(point2 position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (slider_rectangle.contains(position) && visible()) {
+        if (visible() && _visible_rectangle.contains(position) && slider_rectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer};
         } else {
             return hit_box{};

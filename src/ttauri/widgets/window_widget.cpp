@@ -83,7 +83,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
 
 hit_box window_widget::hitbox_test(point2 position) const noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     constexpr float BORDER_WIDTH = 10.0f;
 
