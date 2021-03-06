@@ -1,33 +1,74 @@
-# TTauri Geometry System
+TTauri Geometry System
+======================
 
-## Data Types
-### Vector: vec
-The `vec` class is a 4D homogeneous coordinate.  
-Internally this is a `__m128` on x64 CPUs, where the bits are:
- - x [31:0]
- - y [63:32]
- - z [95:64]
- - w [127:96]
+Low level geometry types
+------------------------
 
-The `vec()` constructor will default with w=0.0. There are also the
-`vec::point()` and `vec::color()` factories which default w=1.0.
+### numeric_array<T,N>
+The `numeric_array` is an array of numbers, with many mathematical operations
+on the array of numbers. The numeric_array is designed to be useable in
+constexpr and easilly to vectorize by the optimizer.
 
-### Matrix: mat
-The `mat` class is a 4x4 homogeneous transformation matrix in column-major
-order. Internally this a `vec` for each column.
+### f32x4
+The `f32x4` is an `numeric_array<float,4>` many of the operations on a `f32x4`
+are hand optimized using the intel intrinsics on SSE registers.
 
-Vector * matrix multiplications are performed as if the vector is a column.
+High level geometry type
+------------------------
 
-### Axis-aligned rectangle: aarectangle
-The `aarectangle` class is a 2D axis-aligned rectangle.
+### geo::vector<D>
+A vector is a direction and distance.
 
-Internally this is a `vec` where:
+Both `vector2` and `vector3` is implemented as a `f32x4` homogenious 4D coordinate.
+
+### geo::point<D>
+A point is a location in space
+
+Both `point2` and `point3` is implemented as a `f32x4` homogenious 4D coordinate.
+
+### geo::extent<D>
+An extend is a width, height and depth.
+
+### corner_shapes
+
+### color
+
+### rectangle
+
+### axis_aligned_rectangle
+The `axis_aligned_rectangle` class is a 2D axis-aligned rectangle.
+
+Internally this is a `f32x4` where:
  - x - left-bottom point x.
  - y - left-bottom point y.
  - z - right-top point x.
  - w - right-top point y.
 
-## Coordinates
+
+Transformation types
+---------------------
+
+### geo::identity
+
+### geo::translate<D>
+
+### geo::scale<D>
+
+### geo::rotate<D>
+ 
+### geo::matrix<D>
+The `mat` class is a 4x4 homogeneous transformation matrix in column-major
+order. Internally this a `vec` for each column.
+
+Vector * matrix multiplications are performed as if the vector is a column.
+
+### geo::transform
+
+
+
+
+Coordinates
+-----------
 All origins (0, 0, 0) are at the bottom-left-far corner. With the x-axis pointing
 right, y-axis pointing up, z-axis pointing near.
 
