@@ -18,27 +18,54 @@ High level geometry type
 
 ### geo::vector<D>
 A vector is a direction and distance.
+ 
+When transforming a vector, only scale, rotation and shear have effect.
 
-Both `vector2` and `vector3` is implemented as a `f32x4` homogenious 4D coordinate.
+Both `vector2` and `vector3` are implemented as a `f32x4` homogenious 4D coordinate with w = 0.0.
 
 ### geo::point<D>
-A point is a location in space
+A point is a location in space.
+ 
+A point can be transformed in the same way as a vector and also be translated.
 
-Both `point2` and `point3` is implemented as a `f32x4` homogenious 4D coordinate.
+Both `point2` and `point3` are implemented as a `f32x4` homogenious 4D coordinate with w = 1.0.
 
 ### geo::extent<D>
 An extend is a width, height and depth.
+ 
+A extent can be transformed like a vector.
+ 
+Both `extent2` and `extent3` are implemented as a `f32x4` homegeniuos 4D coordindate with w = 0.0.
 
 ### corner_shapes
+Corner shapes are 4 floating point numbers one for the corner in the left-bottom, right-bottom,
+left-top and right-top corner. Each number has the following meaning:
+
+ - 0.0 Sharp corner,
+ - >0.0 Radius of a rounded corner,
+ - <0.0 Radius of a cut corner.
 
 ### color
+A 4D red, green, blue and alpha values. A `color` can be transformed like a `vector3`, in this
+case the alpha value is ignored and copied into the result.
+
+For more information see: [color](color.md).
 
 ### rectangle
+A `rectangle` is a closed plane in three dimensions.
+
+A `rectangle` can be transformed like a `point3`.
+
+It should be implemented as a `point3` in the left-bottom corner and two `vector3`s to the upper and right corners.
+However it is currently implemented as 4 points one for each corner.
 
 ### axis_aligned_rectangle
 The `axis_aligned_rectangle` class is a 2D axis-aligned rectangle.
 
-Internally this is a `f32x4` where:
+When transforming an axis aligned rectangle in 3D or with rotation the result will be a normal `rectangle`.
+A rectangle can be converted back to an axis_aligned_rectangle, as a bounding rectangle around the transformed rectangle.
+
+a axis_aligned_rectangle is implemented as a `f32x4` where:
  - x - left-bottom point x.
  - y - left-bottom point y.
  - z - right-top point x.
@@ -49,6 +76,7 @@ Transformation types
 ---------------------
 
 ### geo::identity
+An identity transform does not
 
 ### geo::translate<D>
 
