@@ -96,10 +96,10 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _checkbox_rectangle = aarect{0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
+            _checkbox_rectangle = aarectangle{0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
 
-            ttlet label_x = _checkbox_rectangle.p3().x() + theme::global->margin;
-            _label_rectangle = aarect{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
+            ttlet label_x = _checkbox_rectangle.right() + theme::global->margin;
+            _label_rectangle = aarectangle{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
             _true_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
             _false_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
             _other_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
@@ -141,14 +141,14 @@ private:
     std::unique_ptr<label_stencil> _other_label_stencil;
 
     font_glyph_ids _check_glyph;
-    aarect _check_glyph_rectangle;
+    aarectangle _check_glyph_rectangle;
 
     font_glyph_ids _minus_glyph;
-    aarect _minus_glyph_rectangle;
+    aarectangle _minus_glyph_rectangle;
 
-    aarect _checkbox_rectangle;
+    aarectangle _checkbox_rectangle;
 
-    aarect _label_rectangle;
+    aarectangle _label_rectangle;
 
     void draw_check_box(draw_context const &context) noexcept
     {

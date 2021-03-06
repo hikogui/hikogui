@@ -79,7 +79,7 @@ struct attributed_glyph_line {
         return reset_of_line;
     }
 
-    [[nodiscard]] aarect boundingBox() const noexcept {
+    [[nodiscard]] aarectangle boundingBox() const noexcept {
         tt_axiom(std::ssize(line) >= 1);
 
         ttlet p0 = point2{
@@ -92,7 +92,7 @@ struct attributed_glyph_line {
             line.back().position.y() + ascender
         };
 
-        return aarect{p0, p3};
+        return aarectangle{p0, p3};
     }
 
     [[nodiscard]] bool contains(point2 coordinate) const noexcept {
@@ -103,15 +103,15 @@ struct attributed_glyph_line {
     {
         auto bbox = boundingBox();
 
-        if (coordinate.y() < bbox.y() || coordinate.y() > bbox.p3().y()) {
+        if (coordinate.y() < bbox.bottom() || coordinate.y() > bbox.top()) {
             return cend();
         }
 
-        if (coordinate.x() < bbox.x()) {
+        if (coordinate.x() < bbox.left()) {
             return cbegin();
         }
 
-        if (coordinate.x() > bbox.p3().x()) {
+        if (coordinate.x() > bbox.right()) {
             return cend() - 1;
         }
 

@@ -96,7 +96,7 @@ public:
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         if (compare_then_assign(this->value, !this->value)) {
-            this->window.request_redraw(aarect{this->_local_to_window * this->_clipping_rectangle});
+            this->request_redraw();
         }
     }
 

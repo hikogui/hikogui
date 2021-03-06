@@ -17,8 +17,7 @@
 #include "keyboard_focus_group.hpp"
 #include "../text/gstring.hpp"
 #include "../logger.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../cpu_utc_clock.hpp"
 #include "../cell_address.hpp"
 #include "../label.hpp"
@@ -112,10 +111,18 @@ public:
 
     /** Request a rectangle on the window to be redrawn
      */
-    void request_redraw(aarect rectangle = aarect::infinity()) noexcept
+    void request_redraw(aarectangle rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         _request_redraw_rectangle |= rectangle;
+    }
+
+    /** Request a rectangle on the window to be redrawn
+     */
+    void request_redraw() noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        request_redraw(aarectangle{extent});
     }
 
     /** By how much the font needs to be scaled compared to current windowScale.
@@ -230,6 +237,16 @@ public:
      */
     [[nodiscard]] virtual extent2 virtual_screen_size() const noexcept = 0;
 
+    [[nodiscard]] translate2 window_to_screen() const noexcept
+    {
+        return translate2{_screen_rectangle.left(), _screen_rectangle.bottom()};
+    }
+
+    [[nodiscard]] translate2 screen_to_window() const noexcept
+    {
+        return ~window_to_screen();
+    }
+
 protected:
     /** The device the window is assigned to.
      * The device may change during the lifetime of a window,
@@ -248,11 +265,11 @@ protected:
      * It may also be used for the extent of the window when the GPU
      * library is unable to determine the extent of the surface.
      */
-    aarect _screen_rectangle;
+    aarectangle _screen_rectangle;
 
     bool _request_setting_change = true;
 
-    aarect _request_redraw_rectangle = aarect{};
+    aarectangle _request_redraw_rectangle = aarectangle{};
 
     /** Let the operating system create the actual window.
      * @param title The title of the window.

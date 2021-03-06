@@ -23,7 +23,7 @@ public:
 private:
     pixel_map<sfloat_rgba16> _pixel_map;
     pipeline_image::Image _backing;
-    aarect _pixel_map_bounding_box;
+    aarectangle _pixel_map_bounding_box;
     matrix2 _pixel_map_transform;
 };
 

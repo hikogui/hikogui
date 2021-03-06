@@ -34,7 +34,7 @@ public:
 private:
     std::unique_ptr<image_stencil> _icon_stencil;
 
-    aarect system_menu_rectangle;
+    aarectangle system_menu_rectangle;
 };
 
 }

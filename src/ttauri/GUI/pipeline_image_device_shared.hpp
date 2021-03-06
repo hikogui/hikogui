@@ -63,7 +63,7 @@ struct device_shared final {
      * \param page number in the atlas
      * \return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex.
      */
-    static i32x4 getAtlasPositionFromPage(Page page) noexcept {
+    static point3 getAtlasPositionFromPage(Page page) noexcept {
         ttlet imageIndex = page.nr / atlasNrPagesPerImage;
         ttlet pageNrInsideImage = page.nr % atlasNrPagesPerImage;
 
@@ -73,21 +73,23 @@ struct device_shared final {
         ttlet x = pageX * Page::widthIncludingBorder + Page::border;
         ttlet y = pageY * Page::heightIncludingBorder + Page::border;
 
-        return i32x4{narrow_cast<int>(x), narrow_cast<int>(y), narrow_cast<int>(imageIndex), 1};
+        return point3{narrow_cast<float>(x), narrow_cast<float>(y), narrow_cast<float>(imageIndex)};
     }
 
     /** Allocate pages from the atlas.
      */
-    std::vector<Page> allocatePages(int const nrPages) noexcept;
+    std::vector<Page> allocatePages(size_t num_pages) noexcept;
 
     /** Deallocate pages back to the atlas.
      */
     void freePages(std::vector<Page> const &pages) noexcept;
 
     /** Allocate an image in the atlas.
-     * \param extent of the image.
+     * @param width of the image.
+     * @param height of the image.
+     * @return An image with allocated pages in the atlas.
      */
-    Image makeImage(i32x4 extent) noexcept;
+    Image makeImage(size_t width, size_t height) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -96,8 +98,8 @@ struct device_shared final {
     void prepareAtlasForRendering();
 
 private:
-    tt::pixel_map<sfloat_rgba16> getStagingPixelMap(i32x4 extent) {
-        return getStagingPixelMap().submap({i32x4::point(0,0), extent});
+    tt::pixel_map<sfloat_rgba16> getStagingPixelMap(size_t width, size_t height) {
+        return getStagingPixelMap().submap(0, 0, width, height);
     }
 
     void updateAtlasWithStagingPixelMap(Image const &image);

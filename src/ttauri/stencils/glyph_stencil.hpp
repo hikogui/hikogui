@@ -6,7 +6,7 @@
 
 #include "image_stencil.hpp"
 #include "../text/font_glyph_ids.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 
 namespace tt {
 
@@ -20,7 +20,7 @@ public:
 
 private:
     font_glyph_ids _glyph;
-    aarect _glyph_bounding_box;
+    aarectangle _glyph_bounding_box;
     matrix2 _glyph_transform;
 };
 

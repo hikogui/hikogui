@@ -78,7 +78,7 @@ public:
             handled = true;
             if (*enabled) {
                 if (compare_then_assign(_pressed, static_cast<bool>(event.down.leftButton))) {
-                    window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+                    request_redraw();
                 }
 
                 if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
@@ -91,9 +91,9 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept final
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (rectangle().contains(position)) {
+        if (_visible_rectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default};
         } else {
             return hit_box{};

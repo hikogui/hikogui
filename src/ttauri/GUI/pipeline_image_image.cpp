@@ -10,13 +10,17 @@
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../geometry/translate.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 
 namespace tt::pipeline_image {
 
 Image::Image(Image &&other) noexcept :
-    parent(other.parent), extent(other.extent), pageExtent(other.pageExtent), pages(std::move(other.pages))
+    parent(other.parent),
+    width_in_px(other.width_in_px),
+    height_in_px(other.height_in_px),
+    width_in_pages(other.width_in_pages),
+    height_in_pages(other.height_in_pages),
+    pages(std::move(other.pages))
 {
     other.parent = nullptr;
 }
@@ -28,8 +32,10 @@ Image &Image::operator=(Image &&other) noexcept
     }
 
     parent = other.parent;
-    extent = other.extent;
-    pageExtent = other.pageExtent;
+    width_in_px = other.width_in_px;
+    height_in_px = other.height_in_px;
+    width_in_pages = other.width_in_pages;
+    height_in_pages = other.height_in_pages;
     pages = std::move(other.pages);
     other.parent = nullptr;
     return *this;
@@ -48,53 +54,55 @@ void Image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 
     state = State::Drawing;
 
-    auto stagingImage = parent->getStagingPixelMap(extent);
+    auto stagingImage = parent->getStagingPixelMap(width_in_px, height_in_px);
     copy(image, stagingImage);
     parent->updateAtlasWithStagingPixelMap(*this);
 
     state = State::Uploaded;
 }
 
-iaarect Image::indexToRect(int const pageIndex) const noexcept
+aarectangle Image::index_to_rect(size_t page_index) const noexcept
 {
-    ttlet pageWH = i32x4{Page::width, Page::height};
+    ttlet left = (page_index % width_in_pages) * Page::width;
+    ttlet bottom = (page_index / width_in_pages) * Page::height;
+    ttlet right = std::min(left + Page::width, width_in_px);
+    ttlet top = std::min(bottom + Page::height, height_in_px);
 
-    ttlet p0 = i32x4::point(i32x4{pageIndex % pageExtent.x(), pageIndex / pageExtent.x()} * pageWH);
-
-    // Limit the rectangle to the size of the image.
-    ttlet p3 = min(p0 + pageWH, i32x4::point(extent));
-
-    return iaarect::p0p3(p0, p3);
+    ttlet p0 = point2{narrow_cast<float>(left), narrow_cast<float>(bottom)};
+    ttlet p3 = point2{narrow_cast<float>(right), narrow_cast<float>(top)};
+    return aarectangle{p0, p3};
 }
 
-static std::tuple<f32x4, f32x4, bool>
-calculatePosition(int x, int y, int width, int height, matrix3 transform, aarect clippingRectangle)
+static std::tuple<point3, extent2, bool>
+calculatePosition(size_t x, size_t y, size_t width, size_t height, matrix3 transform, aarectangle clippingRectangle)
 {
-    auto p = transform * f32x4::point(narrow_cast<float>(x), narrow_cast<float>(y));
-    return {p, f32x4{narrow_cast<float>(width), narrow_cast<float>(height)}, clippingRectangle.contains(p)};
+    auto p = transform * point2(narrow_cast<float>(x), narrow_cast<float>(y));
+    auto e = extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
+    auto i = clippingRectangle.contains(point2{p});
+    return {p, e, i};
 }
 
-void Image::calculateVertexPositions(matrix3 transform, aarect clippingRectangle)
+void Image::calculateVertexPositions(matrix3 transform, aarectangle clippingRectangle)
 {
     tmpvertexPositions.clear();
 
-    ttlet restWidth = extent.x() % Page::width;
-    ttlet restHeight = extent.y() % Page::height;
+    ttlet restWidth = width_in_px % Page::width;
+    ttlet restHeight = height_in_px % Page::height;
     ttlet lastWidth = restWidth ? restWidth : Page::width;
     ttlet lastHeight = restHeight ? restHeight : Page::height;
 
-    for (int y = 0; y < extent.y(); y += Page::height) {
-        for (int x = 0; x < extent.x(); x += Page::width) {
+    for (auto y = 0_uz; y < height_in_px; y += Page::height) {
+        for (auto x = 0_uz; x < width_in_px; x += Page::width) {
             tmpvertexPositions.push_back(calculatePosition(x, y, Page::width, Page::height, transform, clippingRectangle));
         }
-        tmpvertexPositions.push_back(calculatePosition(extent.x(), y, lastWidth, Page::height, transform, clippingRectangle));
+        tmpvertexPositions.push_back(calculatePosition(width_in_px, y, lastWidth, Page::height, transform, clippingRectangle));
     }
 
-    int const y = extent.y();
-    for (int x = 0; x < extent.x(); x += Page::width) {
+    auto y = height_in_px;
+    for (auto x = 0_uz; x < width_in_px; x += Page::width) {
         tmpvertexPositions.push_back(calculatePosition(x, y, Page::width, lastHeight, transform, clippingRectangle));
     }
-    tmpvertexPositions.push_back(calculatePosition(extent.x(), y, lastWidth, lastHeight, transform, clippingRectangle));
+    tmpvertexPositions.push_back(calculatePosition(width_in_px, y, lastWidth, lastHeight, transform, clippingRectangle));
 }
 
 /** Places vertices.
@@ -107,7 +115,7 @@ void Image::calculateVertexPositions(matrix3 transform, aarect clippingRectangle
  *    v   \ |
  *    0 --> 1
  */
-void Image::placePageVertices(vspan<vertex> &vertices, int const index, aarect clippingRectangle) const
+void Image::placePageVertices(vspan<vertex> &vertices, size_t index, aarectangle clippingRectangle) const
 {
     ttlet page = pages.at(index);
 
@@ -116,10 +124,10 @@ void Image::placePageVertices(vspan<vertex> &vertices, int const index, aarect c
         return;
     }
 
-    ttlet vertexY = index / pageExtent.x();
-    ttlet vertexX = index % pageExtent.x();
+    ttlet vertexY = index / width_in_pages;
+    ttlet vertexX = index % width_in_pages;
 
-    ttlet vertexStride = pageExtent.x() + 1;
+    ttlet vertexStride = width_in_pages + 1;
     ttlet vertexIndex = vertexY * vertexStride + vertexX;
 
     // Point, Extent, Inside
@@ -134,12 +142,14 @@ void Image::placePageVertices(vspan<vertex> &vertices, int const index, aarect c
     }
 
     ttlet atlasPosition = device_shared::getAtlasPositionFromPage(page);
-    ttlet atlasRect = translate3{f32x4{atlasPosition.xyz0()}} * aarect{e4};
+    ttlet atlasPosition_ = point3{
+        narrow_cast<float>(atlasPosition.x()), narrow_cast<float>(atlasPosition.y()), narrow_cast<float>(atlasPosition.z())};
+    ttlet atlasRect = translate3{atlasPosition_} * aarectangle{e4};
 
-    vertices.emplace_back(p1, atlasRect.corner<0>(), clippingRectangle);
-    vertices.emplace_back(p2, atlasRect.corner<1>(), clippingRectangle);
-    vertices.emplace_back(p3, atlasRect.corner<2>(), clippingRectangle);
-    vertices.emplace_back(p4, atlasRect.corner<3>(), clippingRectangle);
+    vertices.emplace_back(p1, get<0>(atlasRect), clippingRectangle);
+    vertices.emplace_back(p2, get<1>(atlasRect), clippingRectangle);
+    vertices.emplace_back(p3, get<2>(atlasRect), clippingRectangle);
+    vertices.emplace_back(p4, get<3>(atlasRect), clippingRectangle);
 }
 
 /*! Place vertices for this image.
@@ -149,7 +159,7 @@ void Image::placePageVertices(vspan<vertex> &vertices, int const index, aarect c
  * \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in
  * radials.
  */
-void Image::place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, matrix3 transform)
+void Image::place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, matrix3 transform)
 {
     calculateVertexPositions(transform, clipping_rectangle);
 

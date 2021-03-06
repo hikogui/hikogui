@@ -38,19 +38,19 @@ private:
     static constexpr float MARGIN = 10.0f;
     static constexpr float SPACING = 8.0f;
 
-    aarect closeRectangle;
-    aarect minimizeRectangle;
-    aarect maximizeRectangle;
+    aarectangle closeRectangle;
+    aarectangle minimizeRectangle;
+    aarectangle maximizeRectangle;
 
     font_glyph_ids closeWindowGlyph;
     font_glyph_ids minimizeWindowGlyph;
     font_glyph_ids maximizeWindowGlyph;
     font_glyph_ids restoreWindowGlyph;
 
-    aarect closeWindowGlyphRectangle;
-    aarect minimizeWindowGlyphRectangle;
-    aarect maximizeWindowGlyphRectangle;
-    aarect restoreWindowGlyphRectangle;
+    aarectangle closeWindowGlyphRectangle;
+    aarectangle minimizeWindowGlyphRectangle;
+    aarectangle maximizeWindowGlyphRectangle;
+    aarectangle restoreWindowGlyphRectangle;
 
     bool hoverClose = false;
     bool hoverMinimize = false;

@@ -108,7 +108,7 @@ static void wrap_lines(std::vector<attributed_glyph_line> &lines, float width) n
     return size;
 }
 
-[[nodiscard]] static aarect calculate_bounding_box(std::vector<attributed_glyph_line> const &lines, float width) noexcept
+[[nodiscard]] static aarectangle calculate_bounding_box(std::vector<attributed_glyph_line> const &lines, float width) noexcept
 {
     ttlet min_y = lines.back().y - lines.back().descender;
     ttlet max_y = lines.front().y + lines.front().ascender;
@@ -225,7 +225,7 @@ static void position_glyphs(std::vector<attributed_glyph_line> &lines, alignment
 
 struct shape_text_result {
     extent2 preferred_extent;
-    aarect boundingBox;
+    aarectangle boundingBox;
     std::vector<attributed_glyph_line> lines;
 };
 
@@ -336,7 +336,7 @@ shaped_text::shaped_text(
     });
 }
 
-[[nodiscard]] aarect shaped_text::rectangleOfgrapheme(ssize_t index) const noexcept
+[[nodiscard]] aarectangle shaped_text::rectangleOfgrapheme(ssize_t index) const noexcept
 {
     ttlet i = find(index);
 
@@ -361,10 +361,10 @@ shaped_text::shaped_text(
 
     ttlet p0 = ligature_position_left - vector2{0.0f, line_i->descender};
     ttlet p3 = ligature_position_right + vector2{0.0f, line_i->ascender};
-    return aarect{p0, p3};
+    return aarectangle{p0, p3};
 }
 
-[[nodiscard]] aarect shaped_text::leftToRightCaret(ssize_t index, bool insertMode) const noexcept
+[[nodiscard]] aarectangle shaped_text::leftToRightCaret(ssize_t index, bool insertMode) const noexcept
 {
     auto r = rectangleOfgrapheme(index);
 
@@ -376,9 +376,9 @@ shaped_text::shaped_text(
     return r;
 }
 
-[[nodiscard]] std::vector<aarect> shaped_text::selectionRectangles(ssize_t first, ssize_t last) const noexcept
+[[nodiscard]] std::vector<aarectangle> shaped_text::selectionRectangles(ssize_t first, ssize_t last) const noexcept
 {
-    auto r = std::vector<aarect>{};
+    auto r = std::vector<aarectangle>{};
 
     for (ssize_t i = first; i != last; ++i) {
         auto newRect = rectangleOfgrapheme(i);

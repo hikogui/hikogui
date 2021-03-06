@@ -135,7 +135,7 @@ void gui_window::window_changed_size(extent2 new_extent)
     extent = new_extent;
 
     tt_axiom(widget);
-    widget->set_layout_parameters_from_parent(aarect{extent});
+    widget->set_layout_parameters_from_parent(aarectangle{extent});
     requestLayout = true;
 }
 

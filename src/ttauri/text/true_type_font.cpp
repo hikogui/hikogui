@@ -1136,16 +1136,16 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, g
         graphic_path subGlyph;
         assert_or_return(loadGlyph(glyph_id{subGlyphIndex}, subGlyph), false);
 
-        auto subGlyphOffset = f32x4{0.0, 0.0};
+        auto subGlyphOffset = vector2{};
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
                 assert_or_return(check_placement_array<FWord_buf_t>(glyph_bytes, offset, 2), false);
                 ttlet tmp = unsafe_make_placement_array<FWord_buf_t>(glyph_bytes, offset, 2);
-                subGlyphOffset = f32x4{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
+                subGlyphOffset = vector2{tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             } else {
                 assert_or_return(check_placement_array<FByte_buf_t>(glyph_bytes, offset, 2), false);
                 ttlet tmp = unsafe_make_placement_array<FByte_buf_t>(glyph_bytes, offset, 2);
-                subGlyphOffset = f32x4{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
+                subGlyphOffset = vector2{tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             }
         } else {
             size_t pointNr1;
@@ -1298,9 +1298,9 @@ bool true_type_font::loadglyph_metrics(tt::glyph_id glyph_id, glyph_metrics &met
         ttlet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
         ttlet numberOfContours = entry->numberOfContours.value();
 
-        ttlet xyMin = f32x4::point( entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) );
-        ttlet xyMax = f32x4::point( entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm) );
-        metrics.boundingBox = aarect::p0p3(xyMin, xyMax);
+        ttlet xyMin = point2{entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm)};
+        ttlet xyMax = point2{entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm)};
+        metrics.boundingBox = aarectangle{xyMin, xyMax};
 
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.

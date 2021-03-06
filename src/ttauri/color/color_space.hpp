@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
+#include "../geometry/numeric_array.hpp"
 #include "../geometry/matrix.hpp"
 #include "../geometry/scale.hpp"
 
@@ -13,19 +13,19 @@ namespace tt {
 [[nodiscard]] constexpr matrix3
 color_primaries_to_RGBtoXYZ(float wx, float wy, float rx, float ry, float gx, float gy, float bx, float by) noexcept
 {
-    ttlet w = f32x4{wx, wy, 1.0f - wx - wy};
-    ttlet r = f32x4{rx, ry, 1.0f - rx - ry};
-    ttlet g = f32x4{gx, gy, 1.0f - gx - gy};
-    ttlet b = f32x4{bx, by, 1.0f - bx - by};
+    ttlet w = vector3{wx, wy, 1.0f - wx - wy};
+    ttlet r = vector3{rx, ry, 1.0f - rx - ry};
+    ttlet g = vector3{gx, gy, 1.0f - gx - gy};
+    ttlet b = vector3{bx, by, 1.0f - bx - by};
 
-    // Calculate whitepoint's tristimulus values from coordinates
-    ttlet W = f32x4{1.0f * (w.x() / w.y()), 1.0f, 1.0f * (w.z() / w.y())};
+    // Calculate white point's tristimulus values from coordinates
+    ttlet W = vector3{1.0f * (w.x() / w.y()), 1.0f, 1.0f * (w.z() / w.y())};
 
     // C is the chromaticity matrix.
     ttlet C = matrix3{r, g, b};
 
     // solve tristimulus sums.
-    ttlet S = scale3{(~C * W).xyz1()};
+    ttlet S = scale3{~C * W};
 
     return C * S;
 }

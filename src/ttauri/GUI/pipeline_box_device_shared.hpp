@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../numeric_array.hpp"
-#include "../rect.hpp"
+#include "../geometry/rectangle.hpp"
 #include "../vspan.hpp"
 #include "../color/color.hpp"
 #include <vk_mem_alloc.h>
@@ -46,8 +45,8 @@ struct device_shared final {
 
     static void place_vertices(
         vspan<vertex> &vertices,
-        aarect clipping_rectangle,
-        rect box,
+        aarectangle clipping_rectangle,
+        rectangle box,
         color fill_color,
         color line_color,
         float line_width,

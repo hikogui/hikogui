@@ -72,21 +72,21 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _rail_rectangle = aarect{
+            _rail_rectangle = aarectangle{
                 -0.5f, // Expand horizontally due to rounded shape
                 std::round(base_line() - theme::global->smallSize * 0.5f),
                 theme::global->smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
                 theme::global->smallSize};
 
             ttlet labelX = theme::global->smallSize * 2.0f + theme::global->margin;
-            _label_rectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
+            _label_rectangle = aarectangle{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
             _on_label_stencil->set_layout_parameters(_label_rectangle, base_line());
             _off_label_stencil->set_layout_parameters(_label_rectangle, base_line());
 
             _slider_rectangle =
-                shrink(aarect{0.0f, _rail_rectangle.y(), _rail_rectangle.height(), _rail_rectangle.height()}, 2.5f);
+                shrink(aarectangle{0.0f, _rail_rectangle.bottom(), _rail_rectangle.height(), _rail_rectangle.height()}, 2.5f);
 
-            ttlet sliderMoveWidth = theme::global->smallSize * 2.0f - (_slider_rectangle.x() * 2.0f);
+            ttlet sliderMoveWidth = theme::global->smallSize * 2.0f - (_slider_rectangle.left() * 2.0f);
             _slider_move_range = sliderMoveWidth - _slider_rectangle.width();
         }
 
@@ -109,12 +109,12 @@ public:
 private:
     static constexpr hires_utc_clock::duration _animation_duration = 150ms;
 
-    aarect _rail_rectangle;
+    aarectangle _rail_rectangle;
 
-    aarect _slider_rectangle;
+    aarectangle _slider_rectangle;
     float _slider_move_range;
 
-    aarect _label_rectangle;
+    aarectangle _label_rectangle;
 
     std::unique_ptr<label_stencil> _on_label_stencil;
     std::unique_ptr<label_stencil> _off_label_stencil;
@@ -138,7 +138,7 @@ private:
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(_animation_duration);
         if (animationProgress < 1.0f) {
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
         }
 
         ttlet animatedValue = to_float(value, _animation_duration);

@@ -10,7 +10,8 @@
 #include "math.hpp"
 #include "bezier.hpp"
 #include "required.hpp"
-#include "numeric_array.hpp"
+#include "geometry/vector.hpp"
+#include "geometry/point.hpp"
 #include "geometry/transform.hpp"
 #include <tuple>
 #include <limits>

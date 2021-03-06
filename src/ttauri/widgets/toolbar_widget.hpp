@@ -118,11 +118,11 @@ public:
 
     hit_box hitbox_test(point2 position) const noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto r = hit_box{};
 
-        if (_clipping_rectangle.contains(position)) {
+        if (_visible_rectangle.contains(position)) {
             r = hit_box{weak_from_this(), _draw_layer, hit_box::Type::MoveArea};
         }
 
@@ -171,9 +171,9 @@ private:
 
         ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
 
-        ttlet child_rectangle = aarect{
-            rectangle().x() + child_x,
-            rectangle().y() + child.margin(),
+        ttlet child_rectangle = aarectangle{
+            rectangle().left() + child_x,
+            rectangle().bottom() + child.margin(),
             child_width,
             rectangle().height() - child.margin() * 2.0f};
 

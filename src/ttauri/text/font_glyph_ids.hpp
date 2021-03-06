@@ -8,7 +8,7 @@
 #include "font_id.hpp"
 #include "../hash.hpp"
 #include "../tagged_id.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include <tuple>
 
 namespace tt {
@@ -206,8 +206,8 @@ public:
         }
     }
 
-    [[nodiscard]] std::pair<graphic_path,aarect> getPathAndBoundingBox() const noexcept;
-    [[nodiscard]] aarect getBoundingBox() const noexcept;
+    [[nodiscard]] std::pair<graphic_path,aarectangle> getPathAndBoundingBox() const noexcept;
+    [[nodiscard]] aarectangle getBoundingBox() const noexcept;
 
 private:
     [[nodiscard]] bool has_pointer() const noexcept {

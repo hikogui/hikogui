@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../aarect.hpp"
-#include "../numeric_array.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

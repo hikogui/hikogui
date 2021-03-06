@@ -4,12 +4,10 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
+#include "../geometry/numeric_array.hpp"
 #include "../geometry/corner_shapes.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "color.hpp"
-#include <immintrin.h>
-#include <emmintrin.h>
 #include <algorithm>
 
 namespace tt {
@@ -38,19 +36,19 @@ public:
         return f32x4{v};
     }
 
-    sfloat_rgba32(aarect const &rhs) noexcept : sfloat_rgba32(rhs.v) {}
+    sfloat_rgba32(aarectangle const &rhs) noexcept : sfloat_rgba32(rhs.v) {}
 
     sfloat_rgba32(corner_shapes const &rhs) noexcept : sfloat_rgba32(static_cast<f32x4>(rhs)) {}
 
-    sfloat_rgba32 &operator=(aarect const &rhs) noexcept
+    sfloat_rgba32 &operator=(aarectangle const &rhs) noexcept
     {
         *this = rhs.v;
         return *this;
     }
 
-    operator aarect() const noexcept
+    operator aarectangle() const noexcept
     {
-        return aarect::p0p3(f32x4(v));
+        return aarectangle{f32x4{v}};
     }
 
     [[nodiscard]] friend bool operator==(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept

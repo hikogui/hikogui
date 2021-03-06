@@ -41,16 +41,16 @@ bool graphic_path::allLayersHaveSameColor() const noexcept
     return true;
 }
 
-[[nodiscard]] aarect graphic_path::boundingBox() const noexcept
+[[nodiscard]] aarectangle graphic_path::boundingBox() const noexcept
 {
     if (std::ssize(points) == 0) {
-        return aarect{0.0, 0.0, 0.0, 0.0};
+        return aarectangle{0.0, 0.0, 0.0, 0.0};
     }
 
-    auto r = aarect::p0p3(static_cast<f32x4>(points.front().p), static_cast<f32x4>(points.front().p));
+    auto r = aarectangle{points.front().p, points.front().p};
 
     for (ttlet &point: points) {
-        r |= static_cast<f32x4>(point.p);
+        r |= point.p;
     }
 
     return r;
@@ -314,51 +314,54 @@ void graphic_path::arcTo(float radius, point2 position) noexcept
     cubicCurveTo(C1, C2, P2);
 }
 
-void graphic_path::addRectangle(aarect r, f32x4 corners) noexcept
+void graphic_path::addRectangle(aarectangle r, corner_shapes corners) noexcept
 {
     tt_assert(!isContourOpen());
 
-    ttlet radii = abs(corners);
+    ttlet bl_radius = std::abs(corners.left_bottom());
+    ttlet br_radius = std::abs(corners.right_bottom());
+    ttlet tl_radius = std::abs(corners.left_top());
+    ttlet tr_radius = std::abs(corners.right_top());
 
-    ttlet blc = point2{r.corner<0>()};
-    ttlet brc = point2{r.corner<1>()};
-    ttlet tlc = point2{r.corner<2>()};
-    ttlet trc = point2{r.corner<3>()};
+    ttlet blc = get<0>(r);
+    ttlet brc = get<1>(r);
+    ttlet tlc = get<2>(r);
+    ttlet trc = get<3>(r);
 
-    ttlet blc1 = blc + vector2{0.0f, radii.x()};
-    ttlet blc2 = blc + vector2{radii.x(), 0.0f};
-    ttlet brc1 = brc + vector2{-radii.y(), 0.0f};
-    ttlet brc2 = brc + vector2{0.0f, radii.y()};
-    ttlet tlc1 = tlc + vector2{radii.z(), 0.0f};
-    ttlet tlc2 = tlc + vector2{0.0f, -radii.z()};
-    ttlet trc1 = trc + vector2{0.0f, -radii.w()};
-    ttlet trc2 = trc + vector2{-radii.w(), 0.0f};
+    ttlet blc1 = blc + vector2{0.0f, bl_radius};
+    ttlet blc2 = blc + vector2{bl_radius, 0.0f};
+    ttlet brc1 = brc + vector2{-br_radius, 0.0f};
+    ttlet brc2 = brc + vector2{0.0f, br_radius};
+    ttlet tlc1 = tlc + vector2{tl_radius, 0.0f};
+    ttlet tlc2 = tlc + vector2{0.0f, -tl_radius};
+    ttlet trc1 = trc + vector2{0.0f, -tr_radius};
+    ttlet trc2 = trc + vector2{-tr_radius, 0.0f};
 
     moveTo(blc1);
-    if (corners.x() > 0.0) {
-        arcTo(radii.x(), blc2);
-    } else if (corners.x() < 0.0) {
+    if (corners.left_bottom() > 0.0) {
+        arcTo(bl_radius, blc2);
+    } else if (corners.left_bottom() < 0.0) {
         lineTo(blc2);
     }
 
     lineTo(brc1);
-    if (corners.y() > 0.0) {
-        arcTo(radii.y(), brc2);
-    } else if (corners.y() < 0.0) {
+    if (corners.right_bottom() > 0.0) {
+        arcTo(br_radius, brc2);
+    } else if (corners.right_bottom() < 0.0) {
         lineTo(blc2);
     }
 
     lineTo(tlc1);
-    if (corners.z() > 0.0) {
-        arcTo(radii.z(), tlc2);
-    } else if (corners.z() < 0.0) {
+    if (corners.left_top() > 0.0) {
+        arcTo(tl_radius, tlc2);
+    } else if (corners.left_top() < 0.0) {
         lineTo(tlc2);
     }
 
     lineTo(trc1);
-    if (corners.w() > 0.0) {
-        arcTo(radii.w(), trc2);
-    } else if (corners.w() < 0.0) {
+    if (corners.right_top() > 0.0) {
+        arcTo(tr_radius, trc2);
+    } else if (corners.right_top() < 0.0) {
         lineTo(trc2);
     }
 
@@ -492,9 +495,9 @@ graphic_path graphic_path::centerScale(extent2 extent, float padding) const noex
         max_size.width() / bbox.width(),
         max_size.height() / bbox.height()
     );
-    bbox *= scale;
+    bbox = scale2(scale) * bbox;
     
-    ttlet offset = -bbox.offset() + (extent - bbox.extent()) * 0.5;
+    ttlet offset = (point2{} - get<0>(bbox)) + (extent - bbox.extent()) * 0.5;
 
     return (translate2(offset) * scale2(scale, scale)) * *this;
 }

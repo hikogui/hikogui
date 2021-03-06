@@ -4,36 +4,54 @@
 
 #pragma once
 
-#include "../aligned_array.hpp"
+#include <array>
+#include <smmintrin.h>
+#include <xmmintrin.h>
+#include <pmmintrin.h>
+#include <immintrin.h>
 
 namespace tt {
+
+using f32x4_raw = std::array<float, 4>;
+
+[[nodiscard]] inline f32x4_raw to_f32x4_raw(__m128 const &rhs) noexcept
+{
+    std::array<float, 4> r;
+    _mm_storeu_ps(r.data(), rhs);
+    return r;
+}
+
+[[nodiscard]] inline __m128 to_m128(f32x4_raw const &rhs) noexcept
+{
+    return _mm_loadu_ps(rhs.data());
+}
 
 /** Take the ceil for each of the elements in the SSE register.
  */
 [[nodiscard]] inline f32x4_raw f32x4_sse_ceil(f32x4_raw const &rhs) noexcept
 {
-    return f32x4_raw{_mm_ceil_ps(static_cast<__m128>(rhs))};
+    return to_f32x4_raw(_mm_ceil_ps(to_m128(rhs)));
 }
 
 /** Take the floor for each of the elements in the SSE register.
  */
 [[nodiscard]] inline f32x4_raw f32x4_sse_floor(f32x4_raw const &rhs) noexcept
 {
-    return f32x4_raw{_mm_floor_ps(static_cast<__m128>(rhs))};
+    return to_f32x4_raw(_mm_floor_ps(to_m128(rhs)));
 }
 
 /** Round each of the elements in the current rounding direction in the SSE register.
  */
 [[nodiscard]] inline f32x4_raw f32x4_sse_round(f32x4_raw const &rhs) noexcept
 {
-    return f32x4_raw{_mm_round_ps(static_cast<__m128>(rhs), _MM_FROUND_CUR_DIRECTION)};
+    return to_f32x4_raw(_mm_round_ps(to_m128(rhs), _MM_FROUND_CUR_DIRECTION));
 }
 
 /** Take the reciprocal of each element in the SSE register.
  */
 [[nodiscard]] inline f32x4_raw f32x4_sse_rcp(f32x4_raw const &rhs) noexcept
 {
-    return f32x4_raw{_mm_rcp_ps(static_cast<__m128>(rhs))};
+    return to_f32x4_raw(_mm_rcp_ps(to_m128(rhs)));
 }
 
 /** Clear elements of an SSE register.
@@ -49,10 +67,10 @@ template<unsigned int Mask>
         return rhs;
     } else if constexpr (Mask == 0b1111) {
         // 1 cycle
-        return f32x4_raw{_mm_setzero_ps()};
+        return to_f32x4_raw(_mm_setzero_ps());
     } else {
         // 1 cycle
-        return f32x4_raw{_mm_insert_ps(static_cast<__m128>(rhs), static_cast<__m128>(rhs), Mask)};
+        return to_f32x4_raw(_mm_insert_ps(to_m128(rhs), to_m128(rhs), Mask));
     }
 }
 
@@ -68,20 +86,20 @@ template<unsigned int Mask>
     static_assert((Mask ^ (Mask & 0xf)) == 0);
 
     if constexpr (Mask == 0b0000) {
-        return f32x4_raw{_mm_setzero_ps()};
+        return to_f32x4_raw(_mm_setzero_ps());
 
     } else if constexpr (Mask == 0b0001) {
-        return f32x4_raw{_mm_set_ss(-0.0f)};
+        return to_f32x4_raw(_mm_set_ss(-0.0f));
 
     } else if constexpr (Mask == 0b1111) {
-        return f32x4_raw{_mm_set_ps1(-0.0f)};
+        return to_f32x4_raw(_mm_set_ps1(-0.0f));
 
     } else {
         constexpr float x = (Mask & 0b0001) == 0 ? 0.0f : -0.0f;
         constexpr float y = (Mask & 0b0010) == 0 ? 0.0f : -0.0f;
         constexpr float z = (Mask & 0b0100) == 0 ? 0.0f : -0.0f;
         constexpr float w = (Mask & 0b1000) == 0 ? 0.0f : -0.0f;
-        return f32x4_raw{_mm_set_ps(w, z, y, x)};
+        return to_f32x4_raw(_mm_set_ps(w, z, y, x));
     }
 }
 
@@ -98,8 +116,8 @@ template<unsigned int Mask>
         return rhs;
 
     } else {
-        ttlet sign = static_cast<__m128>(f32x4_sse_make_sign<Mask>());
-        return f32x4_raw{_mm_xor_ps(static_cast<__m128>(rhs), sign)};
+        ttlet sign = to_m128(f32x4_sse_make_sign<Mask>());
+        return to_f32x4_raw(_mm_xor_ps(to_m128(rhs), sign));
     }
 }
 
@@ -112,7 +130,7 @@ template<unsigned int Mask>
 [[nodiscard]] inline f32x4_raw
 f32x4_sse_hadd(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    return f32x4_raw{_mm_hadd_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs))};
+    return to_f32x4_raw(_mm_hadd_ps(to_m128(lhs), to_m128(rhs)));
 }
 
 /** Subtract elements horizontally together.
@@ -124,7 +142,7 @@ f32x4_sse_hadd(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 [[nodiscard]] inline f32x4_raw
 f32x4_sse_hsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    return f32x4_raw{_mm_hsub_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs))};
+    return to_f32x4_raw(_mm_hsub_ps(to_m128(lhs), to_m128(rhs)));
 }
 
 /** Add or subtract elements of two SSE registers.
@@ -153,25 +171,25 @@ template<unsigned int Mask>
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
 
-    ttlet lhs_ = static_cast<__m128>(lhs);
-    ttlet rhs_ = static_cast<__m128>(rhs);
+    ttlet lhs_ = to_m128(lhs);
+    ttlet rhs_ = to_m128(rhs);
 
     if constexpr (Mask == 0b0000) {
-        return f32x4_raw{_mm_sub_ps(lhs_, rhs_)};
+        return to_f32x4_raw(_mm_sub_ps(lhs_, rhs_));
 
     } else if constexpr (Mask == 0b0101) {
-        return f32x4_raw{_mm_addsub_ps(lhs_, rhs_)};
+        return to_f32x4_raw(_mm_addsub_ps(lhs_, rhs_));
 
     } else if constexpr (Mask == 0b1010) {
-        ttlet neg_rhs = static_cast<__m128>(f32x4_sse_neg<0b1111>(rhs));
-        return f32x4_raw{_mm_addsub_ps(lhs_, neg_rhs)};
+        ttlet neg_rhs = to_m128(f32x4_sse_neg<0b1111>(rhs));
+        return to_f32x4_raw(_mm_addsub_ps(lhs_, neg_rhs));
         
     } else if constexpr (Mask == 0b1111) {
-        return f32x4_raw{_mm_add_ps(lhs_, rhs_)};
+        return to_f32x4_raw(_mm_add_ps(lhs_, rhs_));
 
     } else {
-        ttlet neg_rhs = static_cast<__m128>(f32x4_sse_neg<~Mask & 0xf>(rhs));
-        return f32x4_raw{_mm_add_ps(lhs_, neg_rhs)};
+        ttlet neg_rhs = to_m128(f32x4_sse_neg<~Mask & 0xf>(rhs));
+        return to_f32x4_raw(_mm_add_ps(lhs_, neg_rhs));
     }
 }
 
@@ -188,7 +206,7 @@ template<unsigned int Mask>
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
-    auto tmp = f32x4_raw{_mm_dp_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs), imm8)};
+    auto tmp = to_f32x4_raw(_mm_dp_ps(to_m128(lhs), to_m128(rhs), imm8));
     return get<0>(tmp);
 }
 
@@ -206,8 +224,8 @@ template<unsigned int Mask>
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
-    auto _rhs = static_cast<__m128>(rhs);
-    auto tmp = f32x4_raw{_mm_sqrt_ps(_mm_dp_ps(_rhs, _rhs, imm8))};
+    auto _rhs = to_m128(rhs);
+    auto tmp = to_f32x4_raw(_mm_sqrt_ps(_mm_dp_ps(_rhs, _rhs, imm8)));
     return get<0>(tmp);
 }
 
@@ -225,8 +243,8 @@ template<unsigned int Mask>
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
-    auto _rhs = static_cast<__m128>(rhs);
-    auto tmp = f32x4_raw{_mm_rsqrt_ps(_mm_dp_ps(_rhs, _rhs, imm8))};
+    auto _rhs = to_m128(rhs);
+    auto tmp = to_f32x4_raw(_mm_rsqrt_ps(_mm_dp_ps(_rhs, _rhs, imm8)));
     return get<0>(tmp);
 }
 
@@ -246,10 +264,10 @@ template<unsigned int Mask>
     constexpr int dp_imm8 = (Mask << 4) | Mask;
     constexpr int zero_imm8 = ~Mask & 0xf;
 
-    ttlet rhs_ = static_cast<__m128>(rhs);
+    ttlet rhs_ = to_m128(rhs);
     ttlet rcp_length = _mm_rsqrt_ps(_mm_dp_ps(rhs_, rhs_, dp_imm8));
     ttlet rcp_length_ = _mm_insert_ps(rcp_length, rcp_length, zero_imm8);
-    return f32x4_raw{_mm_mul_ps(rhs_, rcp_length_)};
+    return to_f32x4_raw(_mm_mul_ps(rhs_, rcp_length_));
 }
 
 /** Compare if equal elements of two SSE registers and return a mask.
@@ -257,7 +275,7 @@ template<unsigned int Mask>
 [[nodiscard]] inline unsigned int
 f32x4_sse_eq_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    auto tmp = _mm_cmpeq_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs));
+    auto tmp = _mm_cmpeq_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
 }
 
@@ -266,7 +284,7 @@ f32x4_sse_eq_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 [[nodiscard]] inline unsigned int
 f32x4_sse_ne_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    auto tmp = _mm_cmpneq_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs));
+    auto tmp = _mm_cmpneq_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
 }
 
@@ -275,7 +293,7 @@ f32x4_sse_ne_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 [[nodiscard]] inline unsigned int
 f32x4_sse_lt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    auto tmp = _mm_cmplt_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs));
+    auto tmp = _mm_cmplt_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
 }
 
@@ -284,7 +302,7 @@ f32x4_sse_lt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 [[nodiscard]] inline unsigned int
 f32x4_sse_gt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    auto tmp = _mm_cmpgt_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs));
+    auto tmp = _mm_cmpgt_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
 }
 
@@ -293,7 +311,7 @@ f32x4_sse_gt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 [[nodiscard]] inline unsigned int
 f32x4_sse_le_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    auto tmp = _mm_cmple_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs));
+    auto tmp = _mm_cmple_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
 }
 
@@ -302,7 +320,7 @@ f32x4_sse_le_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 [[nodiscard]] inline unsigned int
 f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    auto tmp = _mm_cmpge_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs));
+    auto tmp = _mm_cmpge_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
 }
 
@@ -322,7 +340,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
     //    tmp -> (0.0, 0.0, 0.0, 0.0) != (1.0, 1.0, 1.0, 1.0) -> (1,1,1,1)
     //    return -> x == 0 && y == 0 && z == 0 && w == 0 -> false
 
-    auto tmp = _mm_cmpneq_ps(static_cast<__m128>(lhs), static_cast<__m128>(rhs));
+    auto tmp = _mm_cmpneq_ps(to_m128(lhs), to_m128(rhs));
     return _mm_testz_ps(tmp, tmp);
 }
 
@@ -333,8 +351,8 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 [[nodiscard]] inline float f32x4_sse_viktor_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     // a.x * b.y - a.y * b.x
-    ttlet tmp1 = _mm_permute_ps(static_cast<__m128>(rhs), _MM_SHUFFLE(2, 3, 0, 1));
-    ttlet tmp2 = _mm_mul_ps(static_cast<__m128>(lhs), tmp1);
+    ttlet tmp1 = _mm_permute_ps(to_m128(rhs), _MM_SHUFFLE(2, 3, 0, 1));
+    ttlet tmp2 = _mm_mul_ps(to_m128(lhs), tmp1);
     ttlet tmp3 = _mm_hsub_ps(tmp2, tmp2);
     return _mm_cvtss_f32(tmp3);
 }
@@ -349,8 +367,8 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  */
 [[nodiscard]] inline f32x4_raw f32x4_sse_hamilton_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    ttlet lhs_ = static_cast<__m128>(lhs);
-    ttlet rhs_ = static_cast<__m128>(rhs);
+    ttlet lhs_ = to_m128(lhs);
+    ttlet rhs_ = to_m128(rhs);
 
     ttlet lhs_x = _mm_permute_ps(lhs_, _MM_SHUFFLE(0, 0, 0, 0));
     ttlet lhs_y = _mm_permute_ps(lhs_, _MM_SHUFFLE(1, 1, 1, 1));
@@ -366,9 +384,9 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
     ttlet y = _mm_mul_ps(lhs_y, rhs_2);
     ttlet z = _mm_mul_ps(lhs_z, rhs_3);
 
-    ttlet s0 = f32x4_sse_addsub<0b0101>(f32x4_raw{w}, f32x4_raw{x});
-    ttlet s1 = f32x4_sse_addsub<0b0011>(s0, f32x4_raw{y});
-    return f32x4_sse_addsub<0b0110>(s1, f32x4_raw{z});
+    ttlet s0 = f32x4_sse_addsub<0b0101>(to_f32x4_raw(w), to_f32x4_raw(x));
+    ttlet s1 = f32x4_sse_addsub<0b0011>(s0, to_f32x4_raw(y));
+    return f32x4_sse_addsub<0b0110>(s1, to_f32x4_raw(z));
 }
 
 
@@ -381,14 +399,14 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  */
 [[nodiscard]] inline f32x4_raw f32x4_sse_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
-    ttlet a_left = _mm_permute_ps(static_cast<__m128>(lhs), _MM_SHUFFLE(3, 0, 2, 1));
-    ttlet b_left = _mm_permute_ps(static_cast<__m128>(rhs), _MM_SHUFFLE(3, 1, 0, 2));
+    ttlet a_left = _mm_permute_ps(to_m128(lhs), _MM_SHUFFLE(3, 0, 2, 1));
+    ttlet b_left = _mm_permute_ps(to_m128(rhs), _MM_SHUFFLE(3, 1, 0, 2));
     ttlet left = _mm_mul_ps(a_left, b_left);
 
-    ttlet a_right = _mm_permute_ps(static_cast<__m128>(lhs), _MM_SHUFFLE(3, 1, 0, 2));
-    ttlet b_right = _mm_permute_ps(static_cast<__m128>(rhs), _MM_SHUFFLE(3, 0, 2, 1));
+    ttlet a_right = _mm_permute_ps(to_m128(lhs), _MM_SHUFFLE(3, 1, 0, 2));
+    ttlet b_right = _mm_permute_ps(to_m128(rhs), _MM_SHUFFLE(3, 0, 2, 1));
     ttlet right = _mm_mul_ps(a_right, b_right);
-    return f32x4_raw{_mm_sub_ps(left, right)};
+    return to_f32x4_raw(_mm_sub_ps(left, right));
 }
 
 [[nodiscard]] inline std::array<f32x4_raw, 4> f32x4_sse_transpose(
@@ -397,18 +415,17 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
     f32x4_raw const &col2,
     f32x4_raw const &col3) noexcept
 {
-    auto col0_ = static_cast<__m128>(col0);
-    auto col1_ = static_cast<__m128>(col1);
-    auto col2_ = static_cast<__m128>(col2);
-    auto col3_ = static_cast<__m128>(col3);
+    auto col0_ = to_m128(col0);
+    auto col1_ = to_m128(col1);
+    auto col2_ = to_m128(col2);
+    auto col3_ = to_m128(col3);
 
     _MM_TRANSPOSE4_PS(col0_, col1_, col2_, col3_);
 
     return {
-        f32x4_raw{col0_},
-        f32x4_raw{col1_},
-        f32x4_raw{col2_},
-        f32x4_raw{col3_}};
+        to_f32x4_raw(col0_),
+        to_f32x4_raw(col1_),
+        to_f32x4_raw(col2_), to_f32x4_raw(col3_)};
 }
 
 template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
@@ -502,9 +519,9 @@ template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
     __m128 swizzled;
     // Clang is able to optimize these intrinsics, MSVC is not.
     if constexpr (permute_mask != 0b11'10'01'00) {
-        swizzled = _mm_permute_ps(static_cast<__m128>(value), permute_mask);
+        swizzled = _mm_permute_ps(to_m128(value), permute_mask);
     } else {
-        swizzled = static_cast<__m128>(value);
+        swizzled = to_m128(value);
     }
 
     __m128 numbers;
@@ -529,7 +546,7 @@ template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
     } else {
         result = _mm_blend_ps(swizzled, numbers, number_mask);
     }
-    return f32x4_raw{result};
+    return to_f32x4_raw(result);
 }
 
 }
