@@ -19,7 +19,6 @@
 #include "../logger.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../cpu_utc_clock.hpp"
-#include "../cell_address.hpp"
 #include "../label.hpp"
 #include <unordered_set>
 #include <memory>
@@ -163,8 +162,14 @@ public:
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
-    template<typename T, cell_address CellAddress, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&...args);
+    template<typename T, typename... Args>
+    std::shared_ptr<T> make_widget(size_t column_nr, size_t row_nr, Args &&...args);
+
+    /** Add a widget to main widget of the window.
+     * The implementation is in widgets.hpp
+     */
+    template<typename T, typename... Args>
+    std::shared_ptr<T> make_widget(std::string_view address, Args &&...args);
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
