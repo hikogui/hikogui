@@ -402,7 +402,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
 
 # Copy all resource files needing to be added to the resource directory of an application
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/resources)
+        DESTINATION share/ttauri/resources)
 
 # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
 get_target_property(target_type ttauri TYPE)
@@ -429,7 +429,7 @@ endif()
 #)
 install(
     EXPORT ttauri
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ttauri"
+    DESTINATION share/ttauri
     NAMESPACE ttauri::
     FILE "ttauriTargets.cmake"
 )
@@ -448,7 +448,7 @@ write_basic_package_version_file(
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfigVersion.cmake"
-    DESTINATION lib/cmake/ttauri
+    DESTINATION share/ttauri
 )
 #-------------------------------------------------------------------
 # Build Target: ttauri_tests                            (executable)
