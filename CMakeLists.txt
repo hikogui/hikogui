@@ -196,9 +196,13 @@ if(APPLE)
 endif()
 
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
+
+target_include_directories(ttauri PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    "$<INSTALL_INTERFACE:include>"
+)
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
-target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 target_compile_features(ttauri INTERFACE cxx_std_20)
 
@@ -386,47 +390,66 @@ add_dependencies(ttauri ttauri_resources)
 
 include(GNUInstallDirs)
 
-if(WIN32)
+install(TARGETS ttauri RESOURCE)
 
-    install(TARGETS ttauri RESOURCE)
+# Copy all header files for the library.
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h")
 
-    # Copy all header files for the library.
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            FILES_MATCHING PATTERN "*.hpp")
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            FILES_MATCHING PATTERN "*.h")
+# Copy all resource files needing to be added to the resource directory of an application
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/resources)
 
-    # Copy all resource files needing to be added to the resource directory of an application
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/resources)
-
-    # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
-    get_target_property(target_type ttauri TYPE)
-
-    if(target_type STREQUAL STATIC_LIBRARY)
-
-        # Install the library and headers.
-        install(TARGETS ttauri EXPORT ttauri
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
-        )
-    endif()
-
-    if(target_type STREQUAL DYNAMIC_LIBRARY)
-
-        # Install the library and headers.
-        install(TARGETS ttauri EXPORT ttauri
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
-        )
-    endif()
-
+# On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
+get_target_property(target_type ttauri TYPE)
+if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
+    # Install the library and headers.
+    install(TARGETS ttauri EXPORT ttauri
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
+    )
+else()
+    # Install the library and headers.
+    install(TARGETS ttauri EXPORT ttauri
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
+    )
 endif()
 
+#export(TARGETS
+#        ttauri
+#    NAMESPACE ttauri::
+#    FILE "${CMAKE_CURRENT_BINARY_DIR}/ttauri-config.cmake"
+#)
+install(
+    EXPORT ttauri
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/ttauri"
+    NAMESPACE ttauri::
+    FILE "ttauriTargets.cmake"
+)
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/ttauriConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/ttauri
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfigVersion.cmake"
+    COMPATIBILITY SameMajorVersion 
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfigVersion.cmake"
+    DESTINATION lib/cmake/ttauri
+)
 #-------------------------------------------------------------------
 # Build Target: ttauri_tests                            (executable)
 #-------------------------------------------------------------------
