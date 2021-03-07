@@ -132,9 +132,10 @@ find_package(fmt CONFIG REQUIRED)
 # GoogleTest - non-vcpkg, directly build from externals
 #
 if(TT_BUILD_TESTS)
+    set(INSTALL_GTEST OFF)
+    set(INSTALL_GMOCK OFF)
     FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.10.0)
     FetchContent_MakeAvailable(googletest)
-
 endif()
 
 #
@@ -393,6 +394,9 @@ if(WIN32)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             FILES_MATCHING PATTERN "*.hpp")
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            FILES_MATCHING PATTERN "*.h")
 
     # Copy all resource files needing to be added to the resource directory of an application
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
