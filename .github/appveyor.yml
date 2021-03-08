@@ -75,7 +75,7 @@ environment:
       VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
       BUILD_SHARED_LIBS: OFF
       BUILD_TYPE: RelWithDebInfo
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
     # Windows | MSVC 2019 | x64-windows-static | Debug
     #
