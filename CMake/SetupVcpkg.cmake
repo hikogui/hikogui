@@ -122,8 +122,8 @@ endif()
 # Add this file and the VCPKG_MANIFEST_FILE as a "vcpkg" source_group to the IDE.
 # They are not automatically picked up and listed as "important project" files by IDEs, yet.
 source_group("vcpkg" FILES
-    ${CMAKE_SOURCE_DIR}/cmake/SetupVcpkg.cmake
-    ${CMAKE_SOURCE_DIR}/vcpkg.json
+    "${CMAKE_SOURCE_DIR}/cmake/SetupVcpkg.cmake"
+    "${CMAKE_SOURCE_DIR}/vcpkg.json"
 )
 
 #
