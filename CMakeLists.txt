@@ -31,13 +31,14 @@ endif()
 
 # vcpkg.json is the primary source for version data
 file(READ ${CMAKE_SOURCE_DIR}/vcpkg.json VCPKG_JSON_STRING)
-string(JSON TT_NAME     GET ${VCPKG_JSON_STRING} "name")
-string(JSON TT_VERSION  GET ${VCPKG_JSON_STRING} "version-string")
-string(JSON TT_LICENSE  GET ${VCPKG_JSON_STRING} "license")
-string(JSON TT_DESC     GET ${VCPKG_JSON_STRING} "description")
-string(JSON TT_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
+string(JSON APP_NAME     GET ${VCPKG_JSON_STRING} "name")
+string(JSON APP_VERSION  GET ${VCPKG_JSON_STRING} "version-string")
+string(JSON APP_LICENSE  GET ${VCPKG_JSON_STRING} "license")
+string(JSON APP_DESC     GET ${VCPKG_JSON_STRING} "description")
+string(JSON APP_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
+set(APP_VENDOR "Yoyodyne Propulsion Systems")
 
-project(${TT_NAME} VERSION ${TT_VERSION} LANGUAGES ${LANGUAGES})
+project(${APP_NAME} VERSION ${APP_VERSION} LANGUAGES ${LANGUAGES})
 
 #-------------------------------------------------------------------
 # Define Constants
