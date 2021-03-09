@@ -10,8 +10,7 @@
 #include "../URL.hpp"
 #include "../memory.hpp"
 #include "../cast.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/translate.hpp"
 #include <array>
@@ -136,7 +135,7 @@ atlas_rect device_shared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
 
     // Determine the size of the image in the atlas.
     // This is the bounding box sized to the fixed font size and a border
-    ttlet drawOffset = vector2{drawBorder, drawBorder} - scaledBoundingBox.offset();
+    ttlet drawOffset = point2{drawBorder, drawBorder} - get<0>(scaledBoundingBox);
     ttlet drawExtent = scaledBoundingBox.extent() + 2.0f * drawBorder;
     ttlet drawTranslate = translate2{drawOffset};
 
@@ -146,7 +145,7 @@ atlas_rect device_shared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     prepareStagingPixmapForDrawing();
     auto atlas_rect = allocateRect(drawExtent);
-    auto pixmap = stagingTexture.pixel_map.submap(aarect{atlas_rect.size});
+    auto pixmap = stagingTexture.pixel_map.submap(aarectangle{atlas_rect.size});
     fill(pixmap, drawPath);
     uploadStagingPixmapToAtlas(atlas_rect);
 
@@ -160,13 +159,13 @@ std::pair<atlas_rect, bool> device_shared::getGlyphFromAtlas(font_glyph_ids glyp
         return {i->second, false};
 
     } else {
-        ttlet aarect = addGlyphToAtlas(glyph);
-        glyphs_in_atlas.emplace(glyph, aarect);
-        return {aarect, true};
+        ttlet aarectangle = addGlyphToAtlas(glyph);
+        glyphs_in_atlas.emplace(glyph, aarectangle);
+        return {aarectangle, true};
     }
 }
 
-aarect device_shared::getBoundingBox(font_glyph_ids const &glyphs) noexcept
+aarectangle device_shared::getBoundingBox(font_glyph_ids const &glyphs) noexcept
 {
     // Adjust bounding box by adding a border based on 1EM.
     return expand(glyphs.getBoundingBox(), scaledDrawBorder);
@@ -174,8 +173,8 @@ aarect device_shared::getBoundingBox(font_glyph_ids const &glyphs) noexcept
 
 bool device_shared::_place_vertices(
     vspan<vertex> &vertices,
-    aarect clipping_rectangle,
-    rect box,
+    aarectangle clipping_rectangle,
+    rectangle box,
     font_glyph_ids const &glyphs,
     color color) noexcept
 {
@@ -188,7 +187,7 @@ bool device_shared::_place_vertices(
 
     // If none of the vertices is inside the clipping rectangle then don't add the
     // quad to the vertex list.
-    if (!overlaps(clipping_rectangle, aarect{box})) {
+    if (!overlaps(clipping_rectangle, aarectangle{box})) {
         return glyph_was_added;
     }
 
@@ -201,7 +200,7 @@ bool device_shared::_place_vertices(
 
 bool device_shared::_place_vertices(
     vspan<vertex> &vertices,
-    aarect clipping_rectangle,
+    aarectangle clipping_rectangle,
     matrix3 transform,
     attributed_glyph const &attr_glyph,
     color color) noexcept
@@ -218,7 +217,7 @@ bool device_shared::_place_vertices(
 
 bool device_shared::_place_vertices(
     vspan<vertex> &vertices,
-    aarect clipping_rectangle,
+    aarectangle clipping_rectangle,
     matrix3 transform,
     attributed_glyph const &attr_glyph
     ) noexcept
@@ -228,8 +227,8 @@ bool device_shared::_place_vertices(
 
 void device_shared::place_vertices(
     vspan<vertex> &vertices,
-    aarect clippingRectangle,
-    rect box,
+    aarectangle clippingRectangle,
+    rectangle box,
     font_glyph_ids const &glyphs,
     color color
     ) noexcept
@@ -241,7 +240,7 @@ void device_shared::place_vertices(
 
 void device_shared::place_vertices(
     vspan<vertex> &vertices,
-    aarect clipping_rectangle,
+    aarectangle clipping_rectangle,
     matrix3 transform,
     shaped_text const &text
     ) noexcept
@@ -260,7 +259,7 @@ void device_shared::place_vertices(
 
 void device_shared::place_vertices(
     vspan<vertex> &vertices,
-    aarect clipping_rectangle,
+    aarectangle clipping_rectangle,
     matrix3 transform,
     shaped_text const &text,
     color color) noexcept
@@ -394,7 +393,7 @@ void device_shared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        tt::pixel_map<sdf_r8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}};
+        tt::pixel_map<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),

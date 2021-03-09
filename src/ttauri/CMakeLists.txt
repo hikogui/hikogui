@@ -16,12 +16,10 @@ add_subdirectory(skeleton)
 configure_file(current_version.hpp.in current_version.hpp @ONLY)
 
 target_sources(ttauri PRIVATE
-    detail/f32x4_sse.hpp
     detail/observable_base.hpp
     detail/observable_not.hpp
     detail/observable_unary.hpp
     detail/observable_value.hpp
-    aarect.hpp
     algorithm.hpp
     application.cpp
     application.hpp
@@ -32,7 +30,6 @@ target_sources(ttauri PRIVATE
     application_delegate.hpp
     assert.hpp
     atomic.hpp
-    aligned_array.hpp
     alignment.hpp
     audio_counter_clock.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_macos.cpp>
@@ -45,7 +42,6 @@ target_sources(ttauri PRIVATE
     bigint.hpp
     bits.hpp
     byte_string.hpp
-    cell_address.hpp
     check.hpp
     concepts.hpp
     coroutine.hpp
@@ -105,7 +101,6 @@ target_sources(ttauri PRIVATE
     memory.hpp
     meta.hpp
     notifier.hpp
-    numeric_array.hpp
     cast.hpp
     observable.hpp
     operator.hpp
@@ -126,7 +121,6 @@ target_sources(ttauri PRIVATE
     ranged_numeric.hpp
     ranges.hpp
     recursive_iterator.hpp
-    rect.hpp
     required.hpp
     range_map.hpp
     ranged_numeric.hpp
@@ -175,16 +169,13 @@ target_sources(ttauri PRIVATE
 if(TT_BUILD_PCH)
     if(NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
-        aarect.hpp
         assert.hpp
         counters.hpp
         datum.hpp
         debugger.hpp
         exception.hpp
         logger.hpp
-        numeric_array.hpp
         os_detect.hpp
-        rect.hpp
         required.hpp
         strings.hpp
         trace.hpp
@@ -197,7 +188,6 @@ target_sources(ttauri_tests PRIVATE
     algorithm_tests.cpp
     bezier_curve_tests.cpp
     bigint_tests.cpp
-    cell_address_tests.cpp
     coroutine_tests.cpp
     counters_tests.cpp
     datum_tests.cpp
@@ -205,12 +195,11 @@ target_sources(ttauri_tests PRIVATE
     exceptions_tests.cpp
     file_view_tests.cpp
     forward_value_tests.cpp
-    gap_buffer_tests.cpp
+    #gap_buffer_tests.cpp
     glob_tests.cpp
     int_overflow_tests.cpp
     interval_extent2_tests.cpp
     math_tests.cpp
-    numeric_array_tests.cpp
     graphic_path_tests.cpp
     pixel_map_tests.cpp
     polymorphic_optional_tests.cpp
@@ -228,16 +217,13 @@ target_sources(ttauri_tests PRIVATE
 if(TT_BUILD_PCH)
     if(NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri_tests PRIVATE
-        aarect.hpp
         assert.hpp
         counters.hpp
         datum.hpp
         debugger.hpp
         exception.hpp
         logger.hpp
-        numeric_array.hpp
         os_detect.hpp
-        rect.hpp
         required.hpp
         strings.hpp
         trace.hpp

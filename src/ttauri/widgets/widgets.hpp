@@ -25,19 +25,28 @@
 #include "row_column_layout_widget.hpp"
 #include "grid_layout_widget.hpp"
 #include "../GUI/gui_window.hpp"
-#include "../cell_address.hpp"
 
 namespace tt {
 
 /** Add a widget to the main widget of the window.
 * The implementation is located here so that widget is a concrete type.
 */
-template<typename T, cell_address CellAddress, typename... Args>
-std::shared_ptr<T> gui_window::make_widget(Args &&... args)
+template<typename T, typename... Args>
+std::shared_ptr<T> gui_window::make_widget(size_t column_nr, size_t row_nr, Args &&... args)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
     tt_axiom(widget);
-    return widget->content()->make_widget<T, CellAddress>(std::forward<Args>(args)...);
+    return widget->content()->make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
+}
+
+/** Add a widget to the main widget of the window.
+ * The implementation is located here so that widget is a concrete type.
+ */
+template<typename T, typename... Args>
+std::shared_ptr<T> gui_window::make_widget(std::string_view address, Args &&...args)
+{
+    ttlet [column_nr, row_nr] = parse_absolute_spread_sheet_address(address);
+    return make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
 }
 
 /** Add a widget to the toolbar of the window.

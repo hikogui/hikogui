@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/scale.hpp"
 
 namespace tt {
@@ -18,7 +17,7 @@ namespace tt {
 struct glyph_metrics {
     /*! Bounding box of the path.
     */
-    aarect boundingBox = {};
+    aarectangle boundingBox = {};
 
     /*! This is the position where the left side of the glyph
     * starts. This includes some leading white space so that the glyph

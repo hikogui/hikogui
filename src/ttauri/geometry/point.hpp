@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
+#include "numeric_array.hpp"
 #include "vector.hpp"
 
 namespace tt {
@@ -203,6 +203,49 @@ public:
     [[nodiscard]] friend constexpr auto reflect(point const &lhs, point<E> const &rhs) noexcept
     {
         return point<std::max(D, E)>{reflect_point(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
+    /** Mix the two points and get the lowest value of each element.
+     * @param lhs The first point.
+     * @param rhs The first point.
+     * @return A point that is the most left of both points, and most bottom of both points.
+     */
+    template<int E>
+    [[nodiscard]] friend constexpr auto min(point const &lhs, point<E> const &rhs) noexcept
+    {
+        return point<std::max(D,E)>{min(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
+    /** Mix the two points and get the heighest value of each element.
+     * @param lhs The first point.
+     * @param rhs The first point.
+     * @return A point that is the most right of both points, and most top of both points.
+     */
+    template<int E>
+    [[nodiscard]] friend constexpr auto max(point const &lhs, point<E> const &rhs) noexcept
+    {
+        return point<std::max(D, E)>{max(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
+    /** Round the coordinates of a point toward nearest integer.
+     */
+    [[nodiscard]] friend constexpr point round(point const &rhs) noexcept
+    {
+        return point{round(static_cast<f32x4>(rhs))};
+    }
+
+    /** Round the coordinates of a point toward the right-top.
+     */
+    [[nodiscard]] friend constexpr point ceil(point const &rhs) noexcept
+    {
+        return point{ceil(static_cast<f32x4>(rhs))};
+    }
+
+    /** Round the coordinates of a point toward the left-bottom.
+     */
+    [[nodiscard]] friend constexpr point floor(point const &rhs) noexcept
+    {
+        return point{floor(static_cast<f32x4>(rhs))};
     }
 
     /** Check if the point is valid.

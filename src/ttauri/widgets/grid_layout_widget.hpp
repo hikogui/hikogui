@@ -6,8 +6,8 @@
 
 #include "abstract_container_widget.hpp"
 #include "grid_layout_delegate.hpp"
+#include "../geometry/spread_sheet_address.hpp"
 #include "../GUI/theme.hpp"
-#include "../cell_address.hpp"
 #include "../flow_layout.hpp"
 #include <memory>
 
@@ -45,62 +45,62 @@ public:
 
     /* Add a widget to the grid.
      */
-    std::shared_ptr<widget> add_widget(cell_address address, std::shared_ptr<widget> childWidget) noexcept;
+    std::shared_ptr<widget> add_widget(size_t column_nr, size_t row_nr, std::shared_ptr<widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
      *
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget_at_address(cell_address address, Args &&...args)
+    std::shared_ptr<T> make_widget(size_t column_nr, size_t row_nr, Args &&...args)
     {
         auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
         tmp->init();
-        return std::static_pointer_cast<T>(add_widget(address, std::move(tmp)));
+        return std::static_pointer_cast<T>(add_widget(column_nr, row_nr, std::move(tmp)));
     }
 
     /** Add a widget directly to this widget.
      *
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
-    template<typename T, cell_address CellAddress, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&...args)
+    template<typename T, typename... Args>
+    std::shared_ptr<T> make_widget(std::string_view address, Args &&...args)
     {
-        return make_widget_at_address<T>(CellAddress, std::forward<Args>(args)...);
+        ttlet [column_nr, row_nr] = parse_absolute_spread_sheet_address(address);
+        return make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
     }
 
 private:
     struct cell {
-        cell_address address;
+        size_t column_nr;
+        size_t row_nr;
         std::shared_ptr<tt::widget> widget;
 
-        cell(cell_address address, std::shared_ptr<tt::widget> widget) noexcept : address(address), widget(std::move(widget)) {}
-
-        [[nodiscard]] aarect rectangle(flow_layout const &columns, flow_layout const &rows) const noexcept
+        cell(size_t column_nr, size_t row_nr, std::shared_ptr<tt::widget> widget) noexcept :
+            column_nr(column_nr), row_nr(row_nr), widget(std::move(widget))
         {
-            ttlet first_column_nr = address.column.begin(columns.nr_items());
-            ttlet last_column_nr = address.column.end(columns.nr_items());
-            ttlet first_row_nr = address.row.begin(rows.nr_items());
-            ttlet last_row_nr = address.row.end(rows.nr_items());
+        }
 
-            ttlet[x, width] = columns.get_offset_and_size(first_column_nr, last_column_nr);
-            ttlet[y, height] = rows.get_offset_and_size(first_row_nr, last_row_nr);
+        [[nodiscard]] aarectangle rectangle(flow_layout const &columns, flow_layout const &rows, float container_height) const noexcept
+        {
+            ttlet[x, width] = columns.get_offset_and_size(column_nr);
+            ttlet[y, height] = rows.get_offset_and_size(row_nr);
 
-            return {x, y, width, height};
+            return {x, container_height - y - height, width, height};
         };
     };
 
     std::vector<cell> _cells;
-    cell_address _current_address = "L0T0"_ca;
 
     std::weak_ptr<grid_layout_delegate> _delegate;
 
     flow_layout _rows;
     flow_layout _columns;
 
-    [[nodiscard]] static std::pair<int, int> calculate_grid_size(std::vector<cell> const &cells) noexcept;
+    [[nodiscard]] static std::pair<size_t, size_t> calculate_grid_size(std::vector<cell> const &cells) noexcept;
     [[nodiscard]] static extent2
     calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
+    [[nodiscard]] bool address_in_use(size_t column_nr, size_t row_nr) const noexcept;
 };
 
 } // namespace tt

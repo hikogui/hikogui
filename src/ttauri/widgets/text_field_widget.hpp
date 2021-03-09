@@ -138,12 +138,12 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (_focus && display_time_point >= _next_redraw_time_point) {
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
         }
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _text_field_rectangle = aarect{extent2{_text_width + theme::global->margin * 2.0f, _size.height()}};
+            _text_field_rectangle = aarectangle{extent2{_text_width + theme::global->margin * 2.0f, _size.height()}};
 
             // Set the clipping rectangle to within the border of the input field.
             // Add another border width, so glyphs do not touch the border.
@@ -289,23 +289,23 @@ public:
                     // Record the last time the cursor is moved, so that the caret remains lit.
                     _last_update_time_point = event.timePoint;
 
-                    window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+                    request_redraw();
                 }
                 break;
 
             case Drag:
                 // When the mouse is dragged beyond the line input,
                 // start scrolling the text and select on the edge of the textRectangle.
-                if (event.position.x() > _text_rectangle.p3().x()) {
+                if (event.position.x() > _text_rectangle.right()) {
                     // The mouse is on the right of the text.
-                    _drag_select_position.x() = _text_rectangle.p3().x();
+                    _drag_select_position.x() = _text_rectangle.right();
 
                     // Scroll text to the left in points per second.
                     _drag_scroll_speed_x = 50.0f;
 
-                } else if (event.position.x() < _text_rectangle.x()) {
+                } else if (event.position.x() < _text_rectangle.left()) {
                     // The mouse is on the left of the text.
-                    _drag_select_position.x() = _text_rectangle.x();
+                    _drag_select_position.x() = _text_rectangle.left();
 
                     // Scroll text to the right in points per second.
                     _drag_scroll_speed_x = -50.0f;
@@ -313,7 +313,7 @@ public:
 
                 drag_select();
 
-                window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+                request_redraw();
                 break;
 
             default:;
@@ -354,9 +354,9 @@ public:
 
     hit_box hitbox_test(point2 position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (rectangle().contains(position)) {
+        if (_visible_rectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::TextEdit : hit_box::Type::Default};
         } else {
             return hit_box{};
@@ -390,14 +390,14 @@ private:
     l10n _error;
 
     float _text_width = 0.0f;
-    aarect _text_rectangle = {};
+    aarectangle _text_rectangle = {};
 
-    aarect _text_field_rectangle;
-    aarect _text_field_clipping_rectangle;
+    aarectangle _text_field_rectangle;
+    aarectangle _text_field_clipping_rectangle;
 
     editable_text _field;
     shaped_text _shaped_text;
-    aarect _left_to_right_caret = {};
+    aarectangle _left_to_right_caret = {};
 
     /** Scroll speed in points per second.
      * This is used when dragging outside of the widget.
@@ -465,21 +465,21 @@ private:
             drag_select();
 
             // Once we are scrolling, don't stop.
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
 
         } else if (_drag_click_count == 0) {
             // The following is for scrolling based on keyboard input, ignore mouse drags.
 
             // Scroll the text a quarter width to the left until the cursor is within the width
             // of the text field
-            if (_left_to_right_caret.x() - _text_scroll_x > _text_rectangle.width()) {
-                _text_scroll_x = _left_to_right_caret.x() - _text_rectangle.width() * 0.75f;
+            if (_left_to_right_caret.left() - _text_scroll_x > _text_rectangle.width()) {
+                _text_scroll_x = _left_to_right_caret.left() - _text_rectangle.width() * 0.75f;
             }
 
             // Scroll the text a quarter width to the right until the cursor is within the width
             // of the text field
-            while (_left_to_right_caret.x() - _text_scroll_x < 0.0f) {
-                _text_scroll_x = _left_to_right_caret.x() - _text_rectangle.width() * 0.25f;
+            while (_left_to_right_caret.left() - _text_scroll_x < 0.0f) {
+                _text_scroll_x = _left_to_right_caret.left() - _text_rectangle.width() * 0.25f;
             }
         }
 
@@ -489,7 +489,7 @@ private:
 
         // Calculate how much we need to translate the text.
         _text_translate = translate2{-_text_scroll_x, 0.0f} *
-            _shaped_text.translate_base_line(point2{_text_rectangle.x(), rectangle().middle()});
+            _shaped_text.translate_base_line(point2{_text_rectangle.left(), rectangle().middle()});
         _text_inv_translate = ~_text_translate;
     }
 
@@ -498,7 +498,7 @@ private:
         ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
         context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
-        ttlet line_rectangle = aarect{_text_field_rectangle.p0(), f32x4{_text_field_rectangle.width(), 1.0}};
+        ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
         context.draw_filled_quad(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
     }
 

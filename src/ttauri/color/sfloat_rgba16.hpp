@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
 #include "color.hpp"
 #include "../float16.hpp"
 #include "../pixel_map.hpp"
 #include "../geometry/corner_shapes.hpp"
+#include "../geometry/numeric_array.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -32,13 +32,13 @@ public:
 
     sfloat_rgba16(f32x4 const &rhs) noexcept
     {
-        ttlet rhs_fp16 = _mm_cvtps_ph(static_cast<__m128>(rhs), _MM_FROUND_CUR_DIRECTION);
+        ttlet rhs_fp16 = _mm_cvtps_ph(to_m128(rhs), _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si64(v.data(), rhs_fp16);
     }
 
     sfloat_rgba16 &operator=(f32x4 const &rhs) noexcept
     {
-        ttlet rhs_fp16 = _mm_cvtps_ph(static_cast<__m128>(rhs), _MM_FROUND_CUR_DIRECTION);
+        ttlet rhs_fp16 = _mm_cvtps_ph(to_m128(rhs), _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si64(v.data(), rhs_fp16);
         return *this;
     }
@@ -46,7 +46,7 @@ public:
     explicit operator f32x4() const noexcept
     {
         ttlet rhs_fp16 = _mm_loadu_si64(v.data());
-        return f32x4{_mm_cvtph_ps(rhs_fp16)};
+        return f32x4{to_f32x4_raw(_mm_cvtph_ps(rhs_fp16))};
     }
 
     sfloat_rgba16(color const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
@@ -95,16 +95,6 @@ inline void fill(pixel_map<sfloat_rgba16> &image, f32x4 color) noexcept
         auto row = image[y];
         for (ssize_t x = 0; x != image.width(); ++x) {
             row[x] = color;
-        }
-    }
-}
-
-inline void desaturate(pixel_map<sfloat_rgba16> &image, float brightness) noexcept
-{
-    for (ssize_t y = 0; y != image.height(); ++y) {
-        auto row = image[y];
-        for (ssize_t x = 0; x != image.width(); ++x) {
-            row[x] = desaturate(static_cast<f32x4>(row[x]), brightness);
         }
     }
 }

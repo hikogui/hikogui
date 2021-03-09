@@ -83,11 +83,11 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _outline_rectangle = aarect{
+            _outline_rectangle = aarectangle{
                 0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
 
-            ttlet labelX = _outline_rectangle.p3().x() + theme::global->margin;
-            _label_rectangle = aarect{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
+            ttlet labelX = _outline_rectangle.right() + theme::global->margin;
+            _label_rectangle = aarectangle{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
             _label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 
             _pip_rectangle = shrink(_outline_rectangle, 2.5f);
@@ -108,9 +108,9 @@ public:
     }
 
 private:
-    aarect _outline_rectangle;
-    aarect _pip_rectangle;
-    aarect _label_rectangle;
+    aarectangle _outline_rectangle;
+    aarectangle _pip_rectangle;
+    aarectangle _label_rectangle;
     std::unique_ptr<stencil> _label_stencil;
 
     typename decltype(label)::callback_ptr_type label_callback;

@@ -11,8 +11,7 @@
 #include "../required.hpp"
 #include "../logger.hpp"
 #include "../vspan.hpp"
-#include "../numeric_array.hpp"
-#include "../rect.hpp"
+#include "../geometry/rectangle.hpp"
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -113,7 +112,7 @@ struct device_shared final {
 
     /** Get the bounding box, including draw border of a glyph.
      */
-    static aarect getBoundingBox(font_glyph_ids const &glyphs) noexcept;
+    static aarectangle getBoundingBox(font_glyph_ids const &glyphs) noexcept;
 
     /** Place vertices for a single glyph.
      * @param vertices The list of vertices to add to.
@@ -123,7 +122,7 @@ struct device_shared final {
      * @param clippingRectangle The rectangle to clip the glyph.
      */
     void
-    place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, rect box, font_glyph_ids const &glyphs, color color) noexcept;
+    place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, rectangle box, font_glyph_ids const &glyphs, color color) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -131,7 +130,7 @@ struct device_shared final {
      * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
      * @param vertices The vertices to draw the glyphs to.
      */
-    void place_vertices(vspan<vertex> &vertices, aarect clipping_rectangle, matrix3 transform, shaped_text const &text) noexcept;
+    void place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, matrix3 transform, shaped_text const &text) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -142,7 +141,7 @@ struct device_shared final {
      */
     void place_vertices(
         vspan<vertex> &vertices,
-        aarect clipping_rectangle,
+        aarectangle clipping_rectangle,
         matrix3 transform,
         shaped_text const &text,
         color color) noexcept;
@@ -166,8 +165,8 @@ private:
      */
     [[nodiscard]] bool _place_vertices(
         vspan<vertex> &vertices,
-        aarect clipping_rectangle,
-        rect box,
+        aarectangle clipping_rectangle,
+        rectangle box,
         font_glyph_ids const &glyphs,
         color color
         ) noexcept;
@@ -183,7 +182,7 @@ private:
      */
     [[nodiscard]] bool _place_vertices(
         vspan<vertex> &vertices,
-        aarect clippingRectangle,
+        aarectangle clippingRectangle,
         matrix3 transform,
         attributed_glyph const &attr_glyph
         ) noexcept;
@@ -200,7 +199,7 @@ private:
      */
     [[nodiscard]] bool _place_vertices(
         vspan<vertex> &vertices,
-        aarect clippingRectangle,
+        aarectangle clippingRectangle,
         matrix3 transform,
         attributed_glyph const &attr_glyph,
         color color) noexcept;

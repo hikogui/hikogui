@@ -25,15 +25,8 @@ public:
     gui_window_vulkan_macos(gui_window_vulkan_macos &&) = delete;
     gui_window_vulkan_macos &operator=(gui_window_vulkan_macos &&) = delete;
 
-    void createWindow(const std::string &title, i32x4 extent);
-    //LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
     static void createWindowClass();
 
-    //static const wchar_t *win32WindowClassName;
-    //static WNDCLASSW win32WindowClass;
-    //static bool win32WindowClassIsRegistered;
-    //static std::unordered_map<HWND, gui_window_vulkan_macos *> win32WindowMap;
     static bool firstWindowHasBeenOpened;
 
     vk::SurfaceKHR getSurface() const override;
@@ -48,7 +41,7 @@ public:
 
     void normalize_window() override;
 
-    void set_window_size(i32x4 extent) override {}
+    void set_window_size(size_t width, size_t height) override {}
 
     [[nodiscard]] std::string get_text_from_clipboard() const noexcept override {
         return "<clipboard>";
@@ -58,7 +51,7 @@ public:
 
 
 private:
-    //void setOSWindowRectangleFromRECT(RECT aarect) noexcept;
+    //void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
 
     //TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;

@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
-#include <immintrin.h>
-#include <emmintrin.h>
+#include "../geometry/numeric_array.hpp"
 #include <algorithm>
 
 namespace tt {
@@ -22,28 +20,27 @@ public:
     sfloat_rgb32 &operator=(sfloat_rgb32 const &rhs) noexcept = default;
     sfloat_rgb32 &operator=(sfloat_rgb32 &&rhs) noexcept = default;
 
-    sfloat_rgb32(f32x4 const &rhs) noexcept : v(static_cast<std::array<float,3>>(rhs)) {}
+    sfloat_rgb32(f32x4 const &rhs) noexcept : v{rhs.r(), rhs.g(), rhs.b()} {}
 
     sfloat_rgb32 &operator=(f32x4 const &rhs) noexcept {
-        v = static_cast<std::array<float, 3>>(rhs);
+        v = {rhs.r(), rhs.g(), rhs.b()};
         return *this;
     }
 
     operator f32x4 () const noexcept {
-        return f32x4{v};
+        return f32x4{std::get<0>(v), std::get<1>(v), std::get<2>(v), 0.0f};
     }
 
-    sfloat_rgb32(point3 const &rhs) noexcept : v(static_cast<std::array<float, 3>>(static_cast<f32x4>(rhs))) {}
+    sfloat_rgb32(point3 const &rhs) noexcept : sfloat_rgb32(static_cast<f32x4>(rhs)) {}
 
     sfloat_rgb32 &operator=(point3 const &rhs) noexcept
     {
-        v = static_cast<std::array<float, 3>>(static_cast<f32x4>(rhs));
-        return *this;
+        return *this = static_cast<f32x4>(rhs);
     }
 
     operator point3() const noexcept
     {
-        return point3{f32x4{v}};
+        return point3{f32x4{*this}};
     }
 
     [[nodiscard]] friend bool operator==(sfloat_rgb32 const &lhs, sfloat_rgb32 const &rhs) noexcept {

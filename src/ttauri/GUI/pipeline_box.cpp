@@ -30,8 +30,8 @@ void pipeline_box::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
-    pushConstants.windowExtent = f32x4{ narrow_cast<float>(extent.width) , narrow_cast<float>(extent.height) };
-    pushConstants.viewportScale = { 2.0f / extent.width, 2.0f / extent.height };
+    pushConstants.windowExtent = extent2{ narrow_cast<float>(extent.width) , narrow_cast<float>(extent.height) };
+    pushConstants.viewportScale = scale2{ 2.0f / extent.width, 2.0f / extent.height };
     commandBuffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,

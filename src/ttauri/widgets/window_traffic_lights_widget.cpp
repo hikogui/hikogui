@@ -60,22 +60,22 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
 
         if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
             closeRectangle =
-                aarect{f32x4::point(extent.width() * 2.0f / 3.0f, y), f32x4{extent.width() * 1.0f / 3.0f, extent.height()}};
+                aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
             maximizeRectangle =
-                aarect{f32x4::point(extent.width() * 1.0f / 3.0f, y), f32x4{extent.width() * 1.0f / 3.0f, extent.height()}};
+                aarectangle{point2(extent.width() * 1.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-            minimizeRectangle = aarect{f32x4::point(0.0f, y), f32x4{extent.width() * 1.0f / 3.0f, extent.height()}};
+            minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
         } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
-            closeRectangle = aarect{f32x4::point(MARGIN, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
+            closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
             minimizeRectangle =
-                aarect{f32x4::point(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), {DIAMETER, DIAMETER}};
+                aarectangle{point2(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
-            maximizeRectangle = aarect{
-                f32x4::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
-                {DIAMETER, DIAMETER}};
+            maximizeRectangle = aarectangle{
+                point2(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
+                extent2{DIAMETER, DIAMETER}};
         } else {
             tt_no_default();
         }
@@ -220,7 +220,7 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
     stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(event.position));
     stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(event.position));
     if (stateHasChanged) {
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        request_redraw();
     }
 
     if (event.cause.leftButton) {
@@ -245,14 +245,14 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
                 }
             }
 
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
             pressedClose = false;
             pressedMinimize = false;
             pressedMaximize = false;
             break;
 
         case ButtonDown:
-            window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+            request_redraw();
             pressedClose = hoverClose;
             pressedMinimize = hoverMinimize;
             pressedMaximize = hoverMaximize;
@@ -265,9 +265,9 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
 
 hit_box window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (rectangle().contains(position)) {
+    if (_visible_rectangle.contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, hit_box::Type::Button};
         } else {

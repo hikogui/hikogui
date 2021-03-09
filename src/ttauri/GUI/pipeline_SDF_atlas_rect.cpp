@@ -10,7 +10,7 @@ namespace tt::pipeline_SDF {
 
 atlas_rect::atlas_rect(point3 atlas_position, extent2 size) noexcept : atlas_position(atlas_position), size(ceil(size))
 {
-    ttlet atlas_px_rect = rect{atlas_position, size};
+    ttlet atlas_px_rect = rectangle{atlas_position, size};
 
     ttlet texture_coordinate_scale = scale2{device_shared::atlasTextureCoordinateMultiplier};
 

@@ -256,14 +256,14 @@ public:
             ttlet check_mark_width = theme::global->small_icon_size;
             ttlet check_mark_height = theme::global->small_icon_size;
             ttlet check_mark_y = this->rectangle().middle() - check_mark_height * 0.5f;
-            ttlet check_mark_rectangle = aarect{check_mark_x, check_mark_y, check_mark_width, check_mark_height};
+            ttlet check_mark_rectangle = aarectangle{check_mark_x, check_mark_y, check_mark_width, check_mark_height};
             _check_mark_stencil->set_layout_parameters(check_mark_rectangle);
 
             ttlet short_cut_width = theme::global->small_icon_size * 3.0f;
             ttlet short_cut_height = this->rectangle().height();
             ttlet short_cut_x = this->rectangle().right() - theme::global->margin - short_cut_width;
             ttlet short_cut_y = this->rectangle().bottom();
-            ttlet short_cut_rectangle = aarect{short_cut_x, short_cut_y, short_cut_width, short_cut_height};
+            ttlet short_cut_rectangle = aarectangle{short_cut_x, short_cut_y, short_cut_width, short_cut_height};
 
             ttlet label_height = this->rectangle().height();
             ttlet label_y = this->rectangle().bottom();
@@ -276,7 +276,7 @@ public:
             if (_show_short_cut) {
                 label_width -= (theme::global->margin + short_cut_width);
             }
-            ttlet label_rectangle = aarect{label_x, label_y, label_width, label_height};
+            ttlet label_rectangle = aarectangle{label_x, label_y, label_width, label_height};
 
             _label_stencil->set_layout_parameters(label_rectangle);
         }
