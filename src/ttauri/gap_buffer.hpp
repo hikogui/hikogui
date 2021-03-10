@@ -423,6 +423,9 @@ public:
         ++_it_end;
         ++_gap_begin;
         --_gap_size;
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        ++_version;
+#endif
     }
 
     void push_back(value_type const &value) noexcept
@@ -444,6 +447,9 @@ public:
         new (_gap_begin ) value_type(std::forward<Args>(args)...);
         ++_it_end;
         --_gap_size;
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        ++_version;
+#endif
     }
 
     void push_front(value_type const &value) noexcept
@@ -470,6 +476,9 @@ public:
         new (right_begin() - 1) value_type(std::forward<Args>(args)...);
         ++_it_end;
         --_gap_size;
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        ++_version;
+#endif
         return gap_buffer_iterator<T>(this, _gap_begin);
     }
 
@@ -525,6 +534,9 @@ public:
         ++_it_end;
         ++_gap_begin;
         --_gap_size;
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        ++_version;
+#endif
         return gap_buffer_iterator<T>(this, _gap_begin - 1);
     }
 
@@ -644,6 +656,10 @@ private:
     /** The size of the gap.
      */
     size_type _gap_size;
+
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+    size_t _version = 0;
+#endif
 
     [[no_unique_address]] allocator_type _allocator;
 
@@ -798,7 +814,20 @@ public:
     gap_buffer_iterator &operator=(gap_buffer_iterator const &) noexcept = default;
     gap_buffer_iterator &operator=(gap_buffer_iterator &&) noexcept = default;
 
-    gap_buffer_iterator(gap_buffer_type *buffer, difference_type index) noexcept : _buffer(buffer), _index(index) {}
+    gap_buffer_iterator(
+        gap_buffer_type *buffer,
+        pointer it_ptr
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        , size_t version
+#endif
+    ) noexcept :
+        _buffer(buffer),
+        _it_ptr(it_ptr)
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        , _version(version)
+#endif
+    {
+    }
 
     gap_buffer_type *buffer() const noexcept
     {
@@ -921,10 +950,20 @@ public:
 private:
     gap_buffer_type *_buffer;
     value_type *_it_ptr;
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+    size_t _version;
+#endif
 
     [[nodiscard]] bool is_valid() const noexcept
     {
-        return _buffer != nullptr && _it_ptr >= _buffer->_begin && _it_ptr <= _buffer->_end;
+        auto check = true;
+        check &= _buffer != nullptr;
+        check &= _it_ptr >= _buffer->_begin;
+        check &= _it_ptr <= _buffer->_end;
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        check &= _version == _buffer->_version;
+#endif
+        return check;
     }
 
     template<typename O>
