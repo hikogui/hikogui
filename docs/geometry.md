@@ -6,7 +6,7 @@
 
 The `numeric_array` is an array of numbers, with many mathematical operations
 on the array of numbers. The numeric_array is designed to be useable in
-constexpr and easilly to vectorize by the optimizer.
+constexpr and easily to vectorize by the optimizer.
 
 ### f32x4
 
@@ -21,7 +21,7 @@ A vector is a direction and distance.
 
 When transforming a vector, only scale, rotation and shear have effect.
 
-Both `vector2` and `vector3` are implemented as a `f32x4` homogenious 4D coordinate with w = 0.0.
+Both `vector2` and `vector3` are implemented as a `f32x4` homogeneous 4D coordinate with w = 0.0.
 
 ### geo::point<D>
 
@@ -29,7 +29,7 @@ A point is a location in space.
 
 A point can be transformed in the same way as a vector and also be translated.
 
-Both `point2` and `point3` are implemented as a `f32x4` homogenious 4D coordinate with w = 1.0.
+Both `point2` and `point3` are implemented as a `f32x4` homogeneous 4D coordinate with w = 1.0.
 
 ### geo::extent<D>
 
@@ -37,7 +37,7 @@ An extend is a width, height and depth.
 
 A extent can be transformed like a vector.
 
-Both `extent2` and `extent3` are implemented as a `f32x4` homegeniuos 4D coordindate with w = 0.0.
+Both `extent2` and `extent3` are implemented as a `f32x4` homogeneous 4D coordinate with w = 0.0.
 
 ### corner_shapes
 

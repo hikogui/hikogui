@@ -19,7 +19,7 @@ _key_=_value_   | Update the value
 _key_           | Show current value
 !_key_          | Set a value to its default
 
-The order of operations are:
+The order of operations is:
 
  1. Load application preferences
  2. Handle all arguments left-to-right

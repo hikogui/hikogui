@@ -87,6 +87,6 @@ The following log functions are available:
 - `tt_log_warning()`: Warnings are where something was wrong but the application
    was able to fully recover from it.
 - `tt_log_error()`: An error occurred which causes the application to not be
-   fully functional but still able to operate. This will also call `tt::trace_record()`
+   fully functional but still able to operate. This will also call `tt::trace_record()`.
 - `tt_log_fatal()`: An unrecoverable error has occurred and the application has
    to terminate. This will cause the application to abort.

@@ -62,7 +62,7 @@ The following
 
 - Use game-like redraw loop running at the current system's
    frame rate. Immediately reflecting updated data. And caching
-   size-constrainng, layout, text-shaping, and other expensive
+   size-constraining, layout, text-shaping, and other expensive
    pre-draw operations.
 - Partial drawing, widgets will only draw anything that falls
    within the current scissor rectangle. The scissor rectangle
