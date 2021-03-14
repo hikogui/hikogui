@@ -28,7 +28,17 @@ if(APPLE)
 else()
     set(LANGUAGES CXX)
 endif()
-project(ttauri VERSION 0.3.0 LANGUAGES ${LANGUAGES})
+
+# vcpkg.json is the primary source for version data
+file(READ ${CMAKE_SOURCE_DIR}/vcpkg.json VCPKG_JSON_STRING)
+string(JSON APP_NAME     GET ${VCPKG_JSON_STRING} "name")
+string(JSON APP_VERSION  GET ${VCPKG_JSON_STRING} "version-string")
+string(JSON APP_LICENSE  GET ${VCPKG_JSON_STRING} "license")
+string(JSON APP_DESC     GET ${VCPKG_JSON_STRING} "description")
+string(JSON APP_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
+set(APP_VENDOR "Yoyodyne Propulsion Systems")
+
+project(${APP_NAME} VERSION ${APP_VERSION} LANGUAGES ${LANGUAGES})
 
 #-------------------------------------------------------------------
 # Define Constants
@@ -411,7 +421,7 @@ configure_package_config_file(
 )
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfigVersion.cmake"
-    COMPATIBILITY SameMajorVersion 
+    COMPATIBILITY SameMajorVersion
 )
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfig.cmake"
