@@ -104,6 +104,14 @@ int WINAPI WinMain(
     }
 #endif
 
+    // Create a tt_main compatible argument table.
+    std::vector<char *> argument_pointers;
+    argument_pointers.reserve(argument.size() + 1);
+
+    for (auto &argument: arguments) {
+        argument_pointers(argument.c_str()
+    }
+
     ttlet r = tt_main(std::move(arguments), hInstance);
     tt::system_status_shutdown();
     return r;
@@ -111,20 +119,12 @@ int WINAPI WinMain(
 
 #else
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     if (argc < 1) {
         std::cerr << "Missing executable from argument list." << std::endl;
         return 2;
     }
-
-    auto arguments = std::vector<std::string>{};
-    arguments.reserve(argc);
-
-    for (int i = 0; i != argc; ++i) {
-        arguments.emplace_back(argv[i]);
-    }
-
 
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    ttlet r = tt_main(arguments, {});
+    ttlet r = tt_main(argc, argv, {});
     tt::system_status_shutdown();
     return r;
 }
