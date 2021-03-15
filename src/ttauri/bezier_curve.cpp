@@ -95,12 +95,12 @@ std::vector<bezier_curve> makeInverseContour(std::vector<bezier_curve> const &co
 }
 
 
-std::vector<bezier_curve> makeParrallelContour(std::vector<bezier_curve> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance) noexcept
+std::vector<bezier_curve> makeParallelContour(std::vector<bezier_curve> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance) noexcept
 {
     auto contourAtOffset = std::vector<bezier_curve>{};
     for (ttlet &curve: contour) {
         for (ttlet &flatCurve: curve.subdivideUntilFlat(tolerance)) {
-            contourAtOffset.push_back(flatCurve.toParrallelLine(offset));
+            contourAtOffset.push_back(flatCurve.toParallelLine(offset));
         }
     }
 
@@ -128,7 +128,7 @@ std::vector<bezier_curve> makeParrallelContour(std::vector<bezier_curve> const &
         } else {
             r.emplace_back(r.back().P2, curve.P1);
             r.push_back(curve);
-        } 
+        }
     }
 
     // Repair the endpoints of the contour as well.
@@ -425,7 +425,7 @@ void fill(pixel_map<sdf_r8> &image, std::vector<bezier_curve> const &curves) noe
         if (std::ssize(bad_pixel_list) == 0) {
             break;
         }
-    
+
         for (ttlet &[x, y]: bad_pixel_list) {
             image[y][x].repair();
         }

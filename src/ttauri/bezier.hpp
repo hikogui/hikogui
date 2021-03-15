@@ -248,7 +248,7 @@ inline float bezierFlatness(point2 P1, point2 C1, point2 C2, point2 P2) noexcept
     return P1P2 / (P1C1 + C1C2 + C2P2);
 }
 
-inline std::pair<point2, point2> parrallelLine(point2 P1, point2 P2, float distance) noexcept
+inline std::pair<point2, point2> parallelLine(point2 P1, point2 P2, float distance) noexcept
 {
     ttlet v = P2 - P1;
     ttlet n = normal(v);
