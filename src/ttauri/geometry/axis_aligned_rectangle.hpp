@@ -418,7 +418,7 @@ public:
      * @param rectangle The rectangle to fit inside the bounds.
      * @return A rectangle that fits inside the bounds
      */
-    friend axis_aligned_rectangle
+    [[nodiscard]] friend axis_aligned_rectangle
     fit(axis_aligned_rectangle const &bounds, axis_aligned_rectangle const &rectangle) noexcept;
 };
 

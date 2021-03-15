@@ -28,7 +28,7 @@
 #include <numeric>
 #include <string_view>
 #include <cmath>
-#include <stdexcept> // for std::overflow_error
+#include <stdexcept>
 
 namespace tt {
 template<bool HasLargeObjects>

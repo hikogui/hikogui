@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <concepts>
 #include <bit>
-#include <climits> // for identifier CHAR_BIT
+#include <climits>
 
 namespace tt {
 
