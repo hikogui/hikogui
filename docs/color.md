@@ -1,6 +1,8 @@
-# Color
+Color
+=====
 
-## Extended Linear sRGB
+Extended Linear sRGB
+--------------------
 
 Absolute color values uses the extended-linear-sRGB color space internally in
 the application, the ttauri library and its shaders. This allows for HDR (high dynamic range)
@@ -13,7 +15,8 @@ a linear transfer function, where the value (0.0, 0.0, 0.0) is 0 cd/m2 black and
 Values above 1.0 for high dynamic range, and values below 0.0 for high gamut are
 allowed.
 
-## Alpha
+Alpha
+-----
 
 Alpha is encoded as a linear floating point number between 0.0 (transparent) and 1.0 (opaque).
 
@@ -23,7 +26,8 @@ However the shaders may pre-multiply alpha internally for optimization or color 
 When anti-aliasing the coverage value is directly used as the alpha value during compositing.
 For text we use a more accurate anti-aliasing algorithm, for details see: [Anti Aliasing](anti_aliasing.md)
 
-## Color format type
+Color format type
+-----------------
 
 Color format types are used in vertex arrays when communicating with the GPU.
 

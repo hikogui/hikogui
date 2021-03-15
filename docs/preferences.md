@@ -1,9 +1,11 @@
-# Application Preferences
+Application Preferences
+=======================
 
 The preferences of an application are loaded and saved into a JSON file.
 Whenever a configuration values is modified the preferences are automatically saved.
 
-## Command Line
+Command Line
+------------
 
 The command line can be used to update the preferences.
 

@@ -1,17 +1,20 @@
-# TTauri time handling.
+TTauri time handling
+====================
 
-## High resolution UTC.
+High resolution UTC
+-------------------
 
 `hires_utc_clock` is a std::chrono clock. This is a clock with 1ns resolution, but its actual precision
 is based on the clock of the operating system:
 
-- POSIX `clock_gettime(CLOCK_REALTIME)`
-- Windows 10 `GetSystemTimeAsFileTime()`
-- macOS/iOS `gettimeofday()`
+ - POSIX `clock_gettime(CLOCK_REALTIME)`
+ - Windows 10 `GetSystemTimeAsFileTime()`
+ - macOS/iOS `gettimeofday()`
 
 During leap-seconds the UTC clock may slew or jump depending on how the operating system clock operates.
 
-## High performance Continues-UTC
+High performance Continues-UTC
+------------------------------
 
 `hiperf_cutc_clock` is a std::chrono clock. This is a clock with 1ns resolution, but its actual precision
 is based on a CPU counter and disciplined with `hires_utc_clock`.

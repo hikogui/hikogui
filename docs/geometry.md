@@ -1,6 +1,8 @@
-# TTauri Geometry System
+TTauri Geometry System
+======================
 
-## Low level geometry types
+Low level geometry types
+------------------------
 
 ### numeric_array<T,N>
 
@@ -13,7 +15,8 @@ constexpr and easily to vectorize by the optimizer.
 The `f32x4` is an `numeric_array<float,4>` many of the operations on a `f32x4`
 are hand optimized using the intel intrinsics on SSE registers.
 
-## High level geometry type
+High level geometry type
+------------------------
 
 ### geo::vector<D>
 
@@ -44,9 +47,9 @@ Both `extent2` and `extent3` are implemented as a `f32x4` homogeneous 4D coordin
 Corner shapes are 4 floating point numbers one for the corner in the left-bottom, right-bottom,
 left-top and right-top corner. Each number has the following meaning:
 
-- 0.0 Sharp corner,
-- >0.0 Radius of a rounded corner,
-- <0.0 Radius of a cut corner.
+ - 0.0 Sharp corner,
+ - >0.0 Radius of a rounded corner,
+ - <0.0 Radius of a cut corner.
 
 ### color
 
@@ -73,12 +76,13 @@ A rectangle can be converted back to an axis_aligned_rectangle, as a bounding re
 
 a axis_aligned_rectangle is implemented as a `f32x4` where:
 
-- x - left-bottom point x.
-- y - left-bottom point y.
-- z - right-top point x.
-- w - right-top point y.
+ - x - left-bottom point x.
+ - y - left-bottom point y.
+ - z - right-top point x.
+ - w - right-top point y.
 
-## Transformation types
+Transformation types
+--------------------
 
 ### geo::identity
 
@@ -99,17 +103,18 @@ Vector * matrix multiplications are performed as if the vector is a column.
 
 ### geo::transform
 
-## Coordinates
+Coordinates
+-----------
 
 All origins (0, 0, 0) are at the bottom-left-far corner. With the x-axis pointing
 right, y-axis pointing up, z-axis pointing near.
 
 This is true for:
 
-- Window
-- Images
-- Paths
-- Font-glyphs
+ - Window
+ - Images
+ - Paths
+ - Font-glyphs
 
 ### Window and Widget-surface coordinates
 
@@ -137,9 +142,9 @@ Z-coordinate for a window is between 0.0 (far) to 100.0 (near).
 For better precision we use a reverse-z method, to combine
 1/z together with float with linear precision.
 
-- The window-widget is set to depth 0.0.
-- Each nested widget, which needs to draw itself, is 1.0 nearer.
-- Widgets which extends across other widgets, such as a combo-box-widget
+ - The window-widget is set to depth 0.0.
+ - Each nested widget, which needs to draw itself, is 1.0 nearer.
+ - Widgets which extends across other widgets, such as a combo-box-widget
    will be 25.0 nearer.
 
 ### Image coordinates
@@ -159,31 +164,34 @@ X-axis pointing right, Y-axis pointing up.
 The origin (0,0) is on the crossing of the base line and left side bearing.
 Vertices of front faces are specified in counter clockwise order.
 
-## Corners
+Corners
+-------
 
 Corners are enumerated as follows:
 
-- 0: near bottom left
-- 1: near bottom right
-- 2: near top left
-- 3: near top right
-- 4: far bottom left
-- 5: far bottom right
-- 6: far top left
-- 7: far top right
+ - 0: near bottom left
+ - 1: near bottom right
+ - 2: near top left
+ - 3: near top right
+ - 4: far bottom left
+ - 5: far bottom right
+ - 6: far top left
+ - 7: far top right
 
 When corners are passing as 4D vectors:
 
-- x = bottom-left
-- y = bottom-right
-- z = top-left
-- w = top-right
+ - x = bottom-left
+ - y = bottom-right
+ - z = top-left
+ - w = top-right
 
-## Triangles
+Triangles
+---------
 
 A front facing triangle has the vertex ordered in counter-clockwise direction.
 
-## Quads
+Quads
+-----
 
 Quads are defined as two front facing triangles.
 The vertex index order is: 0, 1, 2, 2, 1, 3

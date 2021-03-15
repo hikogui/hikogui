@@ -1,7 +1,8 @@
 
 XXX Depth buffer can be used as per-primitive clipping/stencil buffer.
 
-# Render architecture
+Render architecture
+===================
 
 Vulkan is used as the backend for rendering windows.
 
@@ -39,14 +40,16 @@ Vulkan is used as the backend for rendering windows.
 
 ```
 
-## Window
+Window
+------
 
 The swap-chain of the window will consist of RGBA images with alpha set to 1.
 
 The window may either have the sRGB color space, or the extended-float16-sRGB
 color space.
 
-## Single pass, five sub-passes.
+Single pass, five sub-passes
+-----------------------------
 
 The whole render architecture is using a single pass with five sub-passes.
 
@@ -61,36 +64,37 @@ includes a depth image.
 
 The five sub-passes are:
 
-- Flat Shader  - Render simple non-anti-aliased quads.
-- Box Shader   - Render anti-aliased rectangles with rounded corners.
-- Image Shader - Render anti-aliased texture mapped quads.
-- SDF Shader   - Render text-glyphs with sub-pixel-anti-aliasing.
-- Tone Mapper  - Convert HDR/WCG image to the reduced range of the display.
+ - Flat Shader  - Render simple non-anti-aliased quads.
+ - Box Shader   - Render anti-aliased rectangles with rounded corners.
+ - Image Shader - Render anti-aliased texture mapped quads.
+ - SDF Shader   - Render text-glyphs with sub-pixel-anti-aliasing.
+ - Tone Mapper  - Convert HDR/WCG image to the reduced range of the display.
 
-## Text Shaping
+Text Shaping
+------------
 
 Steps of text-shaping:
 
-- Start: with a list of style-graphemes in logical ordering. The style-grapheme contains the
+ - Start: with a list of style-graphemes in logical ordering. The style-grapheme contains the
    Unicode-NFC and each grapheme as a style. Latin automatic ligatures such as 'ffi' are illegal
    and should never be composed into a single grapheme.
-- Unicode-bidirectional-algorithm: This will put the list of graphemes in
+ - Unicode-bidirectional-algorithm: This will put the list of graphemes in
    left-to-right render order. The new graphemes are in the form style-index-grapheme, here
    the index points back to the original order.
-- Glyph lookup: Each style-index-grapheme is looked up and converted into a set of font-glyph-size-color-index.
+ - Glyph lookup: Each style-index-grapheme is looked up and converted into a set of font-glyph-size-color-index.
    The search-priority algorithm will be described below.
-- Glyph morphing: Process a sequence of glyphs from the same font through the font's glyph morphing algorithms.
+ - Glyph morphing: Process a sequence of glyphs from the same font through the font's glyph morphing algorithms.
    The resulting font-glyph-size-color-index may contain fewer or more glyphs due to this morphing.
    This is also the place where ligatures like 'ffi' are constructed by the font itself.
-- Line breaking: based on a given width, extra line breaks are added to the text.
-- Advance and kerning: Each glyph is assigned a screen position based on the advance and kerning algorithms of
+ - Line breaking: based on a given width, extra line breaks are added to the text.
+ - Advance and kerning: Each glyph is assigned a screen position based on the advance and kerning algorithms of
    the font.
-- Output 1: A list of vertex-points with screen-, texture- and color coordinates. And a index back to the original
+ - Output 1: A list of vertex-points with screen-, texture- and color coordinates. And a index back to the original
    graphemes in logical ordering.
-- Output 2: A list of caret locations, by index.
-  - It is possible for a single index to have up to two locations, due to left-to-right and right-to-left switching.
-  - It is possible to use this list to find the nearest caret location to the mouse cursor.
-  - The caret location list also contains the caret height and slant.
+ - Output 2: A list of caret locations, by index.
+   - It is possible for a single index to have up to two locations, due to left-to-right and right-to-left switching.
+   - It is possible to use this list to find the nearest caret location to the mouse cursor.
+   - The caret location list also contains the caret height and slant.
 
 ### Glyph Lookup algorithm
 
@@ -149,7 +153,8 @@ Code | Value | Description
    8 |   900 | Heavy / Black
    9 |   950 | Extra-black / Ultra-black
 
-## Themes
+Themes
+------
 
 A theme consists of predefined colors, fonts and button shapes.
 A theme is loaded from a json file. The theme directory is scanned for all themes
@@ -171,15 +176,16 @@ for drawing the audio level meters.
 
 ### Button shapes
 
-## Box Pipeline
+Box Pipeline
+------------
 
 The box-pipeline is designed to draw axis-aligned quads with:
 
-- A fill color.
-- An anti-aliases border of a certain thickness and color.
-- An drop shadow around the border of a certain color.
-- An inlay shadow inside the border of a certain color.
-- Rounded and cut corners.
+ - A fill color.
+ - An anti-aliases border of a certain thickness and color.
+ - An drop shadow around the border of a certain color.
+ - An inlay shadow inside the border of a certain color.
+ - Rounded and cut corners.
 
 By using "texture" coordinates the fragment shader knows the distance towards an edge.
 Together with a factor to convert the texture coordinate to pixel distance from

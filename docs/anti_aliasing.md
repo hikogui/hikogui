@@ -1,6 +1,8 @@
-# Perceptive correct anti-aliasing
+Perceptive correct anti-aliasing
+================================
 
-## Terms
+Terms
+-----
 
 ### Linear-sRGB color space
 
@@ -60,7 +62,8 @@ use when doing the calculations for this paper.
 <https://en.wikipedia.org/wiki/Lightness>
 
 
-## The problem
+The problem
+-----------
 
 As everyone knows alpha compositing of two images must be done in the linear color
 space or there will be color and/or brightness shifts over the range of alpha values.
@@ -100,7 +103,8 @@ As you can see the perceived width of the line is significant different
 especially when anti-aliasing objects which are thin, such as the lines
 on a glyph.
 
-## The solution
+The solution
+------------
 
 There are some papers that mention the problem of the change of apparent thickness
 of glyphs when rendering black text or white text. Most of those papers go on
@@ -186,7 +190,8 @@ The perceived line width of "white on black-background" is:
 The perceived line width of "black on white-background" is:
 `width = 5 - (1.0 + 0.75 + 0.0 + 0.25 + 1.0) = 2`
 
-## Sub-pixel anti-aliasing
+Sub-pixel anti-aliasing
+-----------------------
 
 During sub-pixel anti-aliasing we get a coverage value at each
 sub-pixel location.

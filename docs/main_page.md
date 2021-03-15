@@ -1,14 +1,17 @@
-# TTauri {#mainpage}
+TTauri {#mainpage}
+==================
 
 TTauri is a cross platform C++ GUI library.
 
-## Subsystems
+Subsystems
+----------
 
 - [Information Reporting](information_reporting.md): exceptions, assertions,
    logging, counting and tracing.
 - [Geometry](geometry.md): `vector`, `geo::point`, `tt::geo::extent`, rectangle, axis-aligned rectangle, translate, scale, rotate, matrix.
 
-## Features
+Features
+--------
 
 ### Box drawing
 
@@ -44,30 +47,31 @@ it is not able to correctly draw overlapping glyphs. Since
 the shader will always revert to the background drawn by the
 previous sub-pass.
 
-## Performance
+Performance
+-----------
 
 TTauri is designed for low latency interactive applications.
 
 For this reason we have the following design considerations:
 
-- Widgets need to be able to animate at 60 fps.
-- CPU and GPU usage when drawing at 60 fps need to remain low.
-- Monitored data needs to be reflected in the user interface
+ - Widgets need to be able to animate at 60 fps.
+ - CPU and GPU usage when drawing at 60 fps need to remain low.
+ - Monitored data needs to be reflected in the user interface
    with at most one frame delay.
-- During drawing the widget can use predictive algorithms to
+ - During drawing the widget can use predictive algorithms to
    determine what should be shown to the user at the display time.
    When for example showing the current time on the display.
 
 The following
 
-- Use game-like redraw loop running at the current system's
+ - Use game-like redraw loop running at the current system's
    frame rate. Immediately reflecting updated data. And caching
    size-constraining, layout, text-shaping, and other expensive
    pre-draw operations.
-- Partial drawing, widgets will only draw anything that falls
+ - Partial drawing, widgets will only draw anything that falls
    within the current scissor rectangle. The scissor rectangle
    allows the GPU to discard drawing outside it to improve
    drawing speed.
-- All drawing is done by passing vertices to different
+ - All drawing is done by passing vertices to different
    shaders for GPU accelerated drawing of: flat-polygons,
    rounded-rectangles, pixmap-images and text-glyphs.

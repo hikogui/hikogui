@@ -1,22 +1,24 @@
-# Binary Object Notation (BON8)
+Binary Object Notation (BON8)
+=============================
 
 Here are the reasons for creating the BON8 data format:
 
-- Exact translation between JSON and BON8
-- A canonical representation to allow signing of messages.
-- No extensibility, allows every parser to handle every BON8.
-- Low amount of overhead
-- Quick encode / decode.
+ - Exact translation between JSON and BON8
+ - A canonical representation to allow signing of messages.
+ - No extensibility, allows every parser to handle every BON8.
+ - Low amount of overhead
+ - Quick encode / decode.
 
 Here are some other object-notation formats looked at:
 
-- Message Pack (complicated to parse, more data types than JSON)
-- BSON (data overhead, more data types than JSON)
-- CBOR (complicated concatenated data structure, more data types than JSON)
-- Smile (back references complicate encoding and decoding)
-- UBJSON (more data overhead)
+ - Message Pack (complicated to parse, more data types than JSON)
+ - BSON (data overhead, more data types than JSON)
+ - CBOR (complicated concatenated data structure, more data types than JSON)
+ - Smile (back references complicate encoding and decoding)
+ - UBJSON (more data overhead)
 
-## Encoding
+Encoding
+--------
 
 The idea of this encoding is that strings are encoded as UTF-8.
 
@@ -82,17 +84,18 @@ This table gives an overview on the encoding:
   fe                      | 1 | End Of Container (eoc)      |      |          |
   ff                      | 1 | End Of Text (eot)           |      |          |
 
-## Extra rules
+Extra rules
+-----------
 
 The rules below ensures minimum message size and allows for cryptographically
 signing of the message repeatably. All encoders MUST follow these rules.
 
-* String MUST ONLY end with 0xff if at least one of the following is true:
-  * The string is empty,
-  * When another string is directly following this string,
-  * If the full message is this string.
-* Integers MUST be encoded in the least amount of bytes.
-* Floating point numbers MUST be encoded in the least amount of bytes
+ - String MUST ONLY end with 0xff if at least one of the following is true:
+   - The string is empty,
+   - When another string is directly following this string,
+   - If the full message is this string.
+ - Integers MUST be encoded in the least amount of bytes.
+ - Floating point numbers MUST be encoded in the least amount of bytes
    while preserving precision. In other words: a binary64 number needs to be converted to
    binary32 and back to determine, if it can be encoded as binary32 while preserving precision.
-* Object keys MUST be lexically ordered based on UTF-8 code units.
+ - Object keys MUST be lexically ordered based on UTF-8 code units.
