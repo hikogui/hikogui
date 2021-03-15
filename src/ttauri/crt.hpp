@@ -119,11 +119,6 @@ int WINAPI WinMain(
 
 int main(int argc, char *argv[])
 {
-    if (argc < 1) {
-        std::cerr << "Missing executable from argument list." << std::endl;
-        return 2;
-    }
-
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
