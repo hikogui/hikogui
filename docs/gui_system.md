@@ -27,12 +27,16 @@ auto callback = button->subscribe([]{ foo(); });
 ```
 
 ### Checkbox
+
 The checkbox is configured with a true-value and a false-value, to match
-with the observed value; When the observed value is equal to:
- - **true-value**: A checkmark is shown inside the box and the
-   true\_label is shown to the right of the box.
- - **false-value**: The box is empty and the
-   false\_label is shown to the right of the box.
+with the observed value.
+
+When the observed value is equal to:
+
+ - **true-value**: a checkmark is shown inside the box and the
+   true\_label is shown to the right of the box,
+ - **false-value**: the box is empty and the
+   false\_label is shown to the right of the box,
  - neither: a dash is shown inside the box and the
    other\_label is shown to the right of the box.
 
@@ -55,6 +59,7 @@ button->other_label = l10n("other");
 ```
 
 ### Radio button
+
 In ttauri a set of radio buttons are a set of `tt::radio_button_widget`s.
 Each of the widgets in a set observe the same value and each widget is configured with
 a different true-value.

@@ -5,7 +5,9 @@ Identifiers
 -----------
 
 ### Casing
+
 The following identifiers are in snake\_case:
+
  - functions,
  - member functions,
  - variables,
@@ -18,12 +20,14 @@ The following identifiers are in snake\_case:
  - concepts.
 
 The following identifiers are in CamelCase:
+
  - template arguments.
 
 Capital letters within a snake\_case identifier are allowed for proper nouns and
 abbreviations.
 
 ### Prefixes and Suffixes
+
 Common prefixes and suffixes:
 
  - prefix `num_`: Size of a list of items. The prefixed name should be plural
@@ -47,9 +51,9 @@ The suffix "\_" may be used when a new variable needs to be introduced
 when only its type has changed using casting or conversion.
 If more than one such variable is needed the name of the type should be appended.
 
-
 Global variables
 ----------------
+
 Singletons (classes that can only be instantiated once) are discouraged.
 
 Instead add a static-member-function to the class, which returns a reference to an instance
@@ -68,6 +72,7 @@ variable would be a mutex named `mutex`.
 
 Two phase construction
 ----------------------
+
 When a polymorphic class needs to polymorphic initialization and destruction it should
 add the following two virtual functions:
 
@@ -87,6 +92,7 @@ for handling multithreading issues.
 
 Delegates
 ---------
+
 Delegates are polymorphic class instances that are passed to an object that is being managed.
 The managed object will call into the delegate to send messages and retrieve information.
 
@@ -106,7 +112,8 @@ object. However they may be called from the constructor and destructor of the ob
 
 Subsystems
 ----------
+
 A subsystem will have a name in the `system_status_type` enum, and will have a global function under the same name
-suffixed with \_start. This subsystem_start function is used to initialize and register the deinitalize function
+suffixed with \_start. This subsystem_start function is used to initialize and register the deinitialize function
 with the system_status. The subsystem_start function must be low latency so that it can be called very often to make
 sure the subsystem is started when functionality of the subsystem is used for the first time.
