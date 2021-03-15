@@ -134,7 +134,7 @@ install:
   #
   # This power shell block sets the [build version number] and updates the [AppveyorBuildVersion number].
   #
-  #  1. We fetch the version number (1.2.3) from the `version.hpp` file.
+  #  1. We fetch the version number (1.2.3) from the `vcpkg.json` file.
   #  2. When the commit is a tag push, we set the [AppveyorBuildVersion number] to the [tag_name], e.g. "v1.2.3".
   #  3. On normal commits, we set the [AppveyorBuildVersion number] to "[build_version_number]-[current_commit_short_hash]"".
   #
@@ -142,7 +142,8 @@ install:
   #
   # In short: set "build version number" to "version_num-current_commit_short_hash" or when tagged to "tag name" (Travis style).
   - ps: |
-      $env:build_version_number = Select-String -Path "CMakeLists.txt" -Pattern "project\(ttauri VERSION" | %{$_.Line.Split(' ')[2]}
+      $vcpkg_json = Get-Content "vcpkg.json" -Raw | ConvertFrom-Json
+      $env:PROJECT_VERSION = $vcpkg_json."version-string"
       write-host "build_version_number -> $env:build_version_number"
       if ($env:APPVEYOR_REPO_TAG -eq "true")
       {
@@ -150,7 +151,7 @@ install:
       }
       else
       {
-        Update-AppveyorBuild -Version "$env:build_version_number-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+        Update-AppveyorBuild -Version "$env:PROJECT_VERSION-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
       }
 
   # Update CMake
