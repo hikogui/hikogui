@@ -20,7 +20,7 @@ template<typename T>
 class toolbar_tab_button_widget final : public abstract_radio_button_widget<T> {
 public:
     using super = abstract_radio_button_widget<T>;
-    using value_type = super::value_type;
+    using value_type = typename super::value_type;
 
     observable<label> label;
 
@@ -155,7 +155,7 @@ private:
             };
 
             context.set_clipping_rectangle(line_rectangle);
-            
+
             if (overlaps(context, line_rectangle)) {
                 // Draw the line above every other direct child of the toolbar, and between
                 // the selected-tab (0.6) and unselected-tabs (0.8).

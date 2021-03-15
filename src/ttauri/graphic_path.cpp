@@ -123,7 +123,7 @@ void graphic_path::optimizeLayers() noexcept
     decltype(layerEndContours) tmp;
     tmp.reserve(std::ssize(layerEndContours));
 
-    auto prev_i = layerEndContours.begin(); 
+    auto prev_i = layerEndContours.begin();
     for (auto i = prev_i + 1; i != layerEndContours.end(); ++i) {
         // Add the last layer of a contiguous color.
         if (prev_i->second != i->second) {
@@ -444,10 +444,10 @@ graphic_path graphic_path::toStroke(float strokeWidth, LineJoinStyle lineJoinSty
     for (int i = 0; i < numberOfContours(); i++) {
         ttlet baseContour = getBeziersOfContour(i);
 
-        ttlet starboardContour = makeParrallelContour(baseContour, starboardOffset, lineJoinStyle, tolerance);
+        ttlet starboardContour = makeParallelContour(baseContour, starboardOffset, lineJoinStyle, tolerance);
         r.addContour(starboardContour);
 
-        ttlet portContour = makeInverseContour(makeParrallelContour(baseContour, portOffset, lineJoinStyle, tolerance));
+        ttlet portContour = makeInverseContour(makeParallelContour(baseContour, portOffset, lineJoinStyle, tolerance));
         r.addContour(portContour);
     }
 
@@ -496,7 +496,7 @@ graphic_path graphic_path::centerScale(extent2 extent, float padding) const noex
         max_size.height() / bbox.height()
     );
     bbox = scale2(scale) * bbox;
-    
+
     ttlet offset = (point2{} - get<0>(bbox)) + (extent - bbox.extent()) * 0.5;
 
     return (translate2(offset) * scale2(scale, scale)) * *this;

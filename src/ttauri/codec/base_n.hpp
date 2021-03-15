@@ -27,7 +27,7 @@ struct base_n_alphabet {
 
     /** Construct an alphabet.
      * @param str A null terminated string as a char array.
-     * @param case_insensitive The alphabet is case incensitive for decoding.
+     * @param case_insensitive The alphabet is case insensitive for decoding.
      * @param padding_char The character used to complete the last block during encoding.
      */
     template<size_t StringLength>
@@ -72,7 +72,7 @@ struct base_n_alphabet {
     }
 
     /** Get a character from an integer.
-     * The integer must be in range of 0 to modula (exlusive).
+     * The integer must be in range of 0 to modula (exclusive).
      */
     constexpr char char_from_int(int8_t x) const noexcept
     {
