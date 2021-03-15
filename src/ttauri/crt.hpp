@@ -106,6 +106,7 @@ int WINAPI WinMain(
 #endif
 
     ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
+
     tt::system_status_shutdown();
 
     for (auto argument: arguments) {
