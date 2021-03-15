@@ -61,7 +61,7 @@ using f32x4_raw = std::array<float, 4>;
 template<unsigned int Mask>
 [[nodiscard]] inline f32x4_raw f32x4_sse_clear(f32x4_raw const &rhs) noexcept
 {
-    static_assert(Mask ^ (Mask & 0xf) == 0);
+    static_assert((Mask ^ (Mask & 0xf)) == 0);
 
     if constexpr (Mask == 0b0000) {
         return rhs;
@@ -183,7 +183,7 @@ template<unsigned int Mask>
     } else if constexpr (Mask == 0b1010) {
         ttlet neg_rhs = to_m128(f32x4_sse_neg<0b1111>(rhs));
         return to_f32x4_raw(_mm_addsub_ps(lhs_, neg_rhs));
-        
+
     } else if constexpr (Mask == 0b1111) {
         return to_f32x4_raw(_mm_add_ps(lhs_, rhs_));
 
@@ -359,7 +359,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 
 /** 4D Quarternion cross product
  * x*i + y*j + z*k + w
- * 
+ *
  * x = w1*x2 + x1*w2 + y1*z2 - z1*y2
  * y = w1*y2 - x1*z2 + y1*w2 + z1*x2
  * z = w1*z2 + x1*y2 - y1*x2 + z1*w2

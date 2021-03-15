@@ -164,7 +164,7 @@ public:
     [[nodiscard]] constexpr bool operator==(translate<E> const &rhs) const noexcept
     {
         tt_axiom(is_valid() && rhs.is_valid());
-        return {_v == static_cast<f32x4>(rhs)};
+        return _v == static_cast<f32x4>(rhs);
     }
 
     [[nodiscard]] constexpr translate operator~() const noexcept

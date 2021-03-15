@@ -9,7 +9,7 @@
 #include "assert.hpp"
 #include <type_traits>
 #include <concepts>
-#include <limits>
+#include <climits> // for identifier CHAR_BIT
 
 namespace tt {
 

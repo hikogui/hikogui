@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <concepts>
 #include <bit>
+#include <climits> // for identifier CHAR_BIT
 
 namespace tt {
 
@@ -701,7 +702,7 @@ public:
 
     /** Normalize a vector.
      * All elements that do not participate in the normalization will be set to zero.
-     * 
+     *
      * @tparam Mask A mask for which elements participate in the normalization calculation.
      * @param lhs The left hand side.
      * @param rhs The right hand side.
@@ -1330,7 +1331,7 @@ private:
     container_type v;
 
     template<int I, typename First, typename... Rest>
-    [[nodiscard]] friend constexpr void
+    friend constexpr void
     transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
     {
         for (ssize_t j = 0; j != N; ++j) {
@@ -1343,7 +1344,7 @@ private:
     }
 
     template<ssize_t I, ssize_t FirstElement, ssize_t... RestElements>
-    [[nodiscard]] constexpr void swizzle_detail(numeric_array &r) const noexcept
+    constexpr void swizzle_detail(numeric_array &r) const noexcept
     {
         static_assert(I < N);
         static_assert(FirstElement >= -2 && FirstElement < N, "Index out of bounds");
