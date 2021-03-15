@@ -420,4 +420,26 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
     return r;
 }
 
+/** Copy a std::string to new memory.
+ * The caller will have to delete [] return value.
+ */
+[[nodiscard]] inline char *string_dup(char const *c_str, size_t size = -1) noexcept
+{
+    if (size == -1) {
+        size = std::strlen(c_str);
+    }
+
+    auto r = new char [size + 1];
+    std::memcpy(r, c_str, size + 1);
+    return r;
+}
+
+/** Copy a std::string to new memory.
+ * The caller will have to delete [] return value.
+ */
+[[nodiscard]] inline char *string_dup(std::string const &s) noexcept
+{
+    return string_dup(rhs.c_str(), rhs.size());
+}
+
 } // namespace tt

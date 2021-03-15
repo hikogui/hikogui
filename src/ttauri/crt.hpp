@@ -23,6 +23,7 @@
 #include "os_detect.hpp"
 #include "system_status.hpp"
 #include "URL.hpp"
+#include "strings.hpp"
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "application_win32.hpp"
@@ -64,36 +65,34 @@ int WINAPI WinMain(
     [[maybe_unused]] _In_ LPSTR lpCmdLine,
     _In_ int nShowCmd)
 {
+    // lpCmdLine does not handle UTF-8 command line properly.
+    // So use GetCommandLineW() to get wide string arguments.
+    // CommandLineToArgW properly unescapes the command line
+    // and splits in separate arguments.
     int argc;
     auto argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
-    if (argc < 1) {
-        std::cerr << "Missing executable from argument list." << std::endl;
-        return 2;
-    }
-
-    auto arguments = std::vector<std::string>{};
-    arguments.reserve(argc + 1);
-
+    // Convert the wchar arguments to UTF-8 and create nul terminated
+    // c-strings. main() compatibility requires writable strings, so
+    // we need to allocate old-style.
+    auto arguments = std::vector<char *>{};
+    arguments.reserve(argc + 2);
     for (auto i = 0; i != argc; ++i) {
-        arguments.push_back(std::move(tt::to_string(std::wstring(argv[i]))));
+        arguments.push_back(string_dup(tt::to_string(std::wstring(argv[i]))));
     }
     LocalFree(argv);
 
-    switch (nShowCmd) {
-    case 3:
-        arguments.insert(std::next(std::begin(arguments)), "--window-state=maximize");
-        break;
-    case 0:
-    case 2:
-    case 6:
-    case 7:
-    case 11:
-        arguments.insert(std::next(std::begin(arguments)), "--window-state=minimize");
-        break;
-    default:;
+    // Pass nShowCmd as a the second command line argument.
+    if (nShowCmd == 3) {
+        arguments.insert(std::next(std::begin(arguments)), string_dup("--window-state=maximize"));
+    } else if (nShowCmd == 0 || nShowCmd == 2 || nShowCmd == 6 || nShowCmd == 7 || nShowCmd == 11) {
+        arguments.insert(std::next(std::begin(arguments)), string_dup("--window-state=minimize"));
     }
 
+    // Add a nullptr to the end of the argument list.
+    arguments.push_back(nullptr);
+
+    // Initialize tzdata base.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
     date::set_install(tzdata_location.nativePath());
@@ -104,16 +103,12 @@ int WINAPI WinMain(
     }
 #endif
 
-    // Create a tt_main compatible argument table.
-    std::vector<char *> argument_pointers;
-    argument_pointers.reserve(argument.size() + 1);
-
-    for (auto &argument: arguments) {
-        argument_pointers(argument.c_str()
-    }
-
-    ttlet r = tt_main(std::move(arguments), hInstance);
+    ttlet r = tt_main(arguments.size() - 1, arguments.data(), hInstance);
     tt::system_status_shutdown();
+
+    for (auto argument: arguments) {
+        delete [] argument;
+    }
     return r;
 }
 
@@ -121,11 +116,6 @@ int WINAPI WinMain(
 
 int main(int argc, char *argv[])
 {
-    if (argc < 1) {
-        std::cerr << "Missing executable from argument list." << std::endl;
-        return 2;
-    }
-
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
