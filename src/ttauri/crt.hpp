@@ -39,12 +39,13 @@
 
 /** Main entry-point.
  *
- * @param arguments The command line arguments, split into tokens.
- *                  The first argument is the executable.
- * @param instance  An handle to the application instance.
- *                  On windows this is used open windows on this instance.
+ * @param argc Number of arguments
+ * @param argv A nullptr terminated list of pointers to null terminated strings.
+ * @param instance An handle to the application instance.
+ *                 On windows this is used to open windows on this instance.
+ * @return Exit code.
  */
-int tt_main(std::vector<std::string> arguments, tt::os_handle instance);
+int tt_main(int argc, char *argv[], tt::os_handle instance);
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 
@@ -111,20 +112,12 @@ int WINAPI WinMain(
 
 #else
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     if (argc < 1) {
         std::cerr << "Missing executable from argument list." << std::endl;
         return 2;
     }
-
-    auto arguments = std::vector<std::string>{};
-    arguments.reserve(argc);
-
-    for (int i = 0; i != argc; ++i) {
-        arguments.emplace_back(argv[i]);
-    }
-
 
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
@@ -137,7 +130,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    ttlet r = tt_main(arguments, {});
+    ttlet r = tt_main(argc, argv, {});
     tt::system_status_shutdown();
     return r;
 }

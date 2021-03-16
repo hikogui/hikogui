@@ -40,8 +40,12 @@ namespace tt {
 
 using namespace std;
 
-application::application(std::weak_ptr<application_delegate> const &delegate, std::vector<std::string> const &arguments, os_handle instance) :
-    delegate(delegate), arguments(arguments), instance(instance)
+application::application(
+    std::weak_ptr<application_delegate> const &delegate,
+    int argc,
+    char const * const argv[]
+    os_handle instance) :
+    delegate(delegate), argc(arc), argv(argv), instance(instance)
 {
 }
 
@@ -76,7 +80,7 @@ void application::init()
     if (auto delegate_ = delegate.lock()) {
         delegate_->init(*this);
         application_version = delegate_->application_version(narrow_cast<application &>(*this));
-        configuration = delegate_->configuration(narrow_cast<application &>(*this), arguments);
+        configuration = delegate_->configuration(narrow_cast<application &>(*this), argc, argv);
     }
 
     init_foundation();

@@ -5,12 +5,12 @@
 #include <Windows.h>
 #include <memory>
 
-int tt_main(std::vector<std::string> arguments, tt::os_handle instance)
+int tt_main(int argc, char *argv[], tt::os_handle instance)
 {
     auto application_controller = std::make_shared<demo::application_controller>();
     demo::application_controller::global = application_controller;
 
-    auto app = tt_application(application_controller, std::move(arguments), instance);
+    auto app = tt_application(application_controller, argc, argv, instance);
     return app.main();
 }
 

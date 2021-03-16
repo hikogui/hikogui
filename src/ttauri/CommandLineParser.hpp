@@ -101,13 +101,14 @@ public:
      * @param arguments a list of command line arguments, including the exectable name as the first argument.
      * @return The result as a map-datum, with option names as the keys.
      */
-    datum parse(std::vector<std::string> const &arguments) noexcept {
+    datum parse(int argc, char const *argv[]) noexcept {
         auto r = datum{datum::map{}};
 
-        int argumentCount = 0;
-        for (ttlet &argument: arguments) {
-            if (argumentCount++ == 0) {
-                r["executable-path"] = arguments[0];
+        for (int arg_index = 0; arg_index != argc; ++arg_index) {
+            auto argument = std::string(argv[arg_index]);
+
+            if (arg_index == 0) {
+                r["executable-path"] = argument;
 
             } else if (argument.starts_with("--"s)) {
                 ttlet i = argument.find('=');
