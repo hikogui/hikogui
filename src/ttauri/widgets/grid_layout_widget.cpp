@@ -99,7 +99,6 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
             auto &&child = cell.widget;
             ttlet child_rectangle = cell.rectangle(_columns, _rows, height());
             child->set_layout_parameters_from_parent(child_rectangle);
-            tt_log_info("cell {}, {}", cell.column_nr, cell.row_nr);
         }
     }
 
