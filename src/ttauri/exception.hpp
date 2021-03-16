@@ -101,5 +101,20 @@ public:
     }
 };
 
+/** Cancel error is caused by user pressing cancel.
+ * Cancels can be cause by a local user pressing cancel in a dialog box,
+ * or by a remote user through a network connection.
+ */
+class cancel_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+
+    template<typename FirstArg, typename... Args>
+    cancel_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
+        url_error(fmt::format(fmt, arg1, args...))
+    {
+    }
+};
+
 }
 

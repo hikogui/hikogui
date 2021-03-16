@@ -6,6 +6,8 @@
 #pragma once
 
 #include "os_detect.hpp"
+#include "console.hpp"
+#include "dialog.hpp"
 #include <fmt/format.h>
 
 namespace tt {
@@ -26,60 +28,6 @@ void _debugger_break();
  */
 bool debugger_is_present() noexcept;
 
-void _debugger_log(char const *text) noexcept;
-
-/*! Send a debug string to the debugger.
- */
-template<typename... Args>
-void debugger_log(char const *fmt, Args... args) noexcept
-{
-    if constexpr (sizeof...(Args) > 0) {
-        _debugger_log(fmt::format(fmt, std::forward<Args>(args)...).data());
-    } else {
-        _debugger_log(fmt);
-    }
-}
-
-/*! Send a debug string to the debugger.
- */
-template<typename... Args>
-void debugger_log(std::string fmt, Args... args) noexcept
-{
-    if constexpr (sizeof...(Args) > 0) {
-        _debugger_log(fmt::format(fmt, std::forward<Args>(args)...).data());
-    } else {
-        _debugger_log(fmt.data());
-    }
-}
-
-/*! Open a dialogue window.
- */
-void _debugger_dialogue(char const *caption, char const *message);
-
-/*! Send a debug string to the debugger.
- */
-template<typename... Args>
-void debugger_dialogue(char const *caption, char const *fmt, Args... args) noexcept
-{
-    if constexpr (sizeof...(Args) > 0) {
-        _debugger_dialogue(caption, fmt::format(fmt, std::forward<Args>(args)...).data());
-    } else {
-        _debugger_dialogue(caption, fmt);
-    }
-}
-
-/*! Send a debug string to the debugger.
- */
-template<typename... Args>
-void debugger_dialogue(std::string caption, std::string fmt, Args... args) noexcept
-{
-    if (sizeof...(Args) > 0) {
-        _debugger_dialogue(caption.data(), fmt::format(fmt, std::forward<Args>(args)...).data());
-    } else {
-        _debugger_dialogue(caption.data(), fmt.data());
-    }
-}
-
 
 /** Abort the application.
 * @param source_file __FILE__
@@ -99,10 +47,10 @@ template<typename... Args>
     }
 
     if (debugger_is_present()) {
-        debugger_log("{}:{} {}", source_file, source_line, message);
+        print("{}:{} {}\n", source_file, source_line, message);
         tt_debugger_break();
     } else {
-        debugger_dialogue("Aborting", "{}:{} {}", source_file, source_line, message);
+        dialog_ok("Aborting", "{}:{} {}", source_file, source_line, message);
     }
 
     std::abort();

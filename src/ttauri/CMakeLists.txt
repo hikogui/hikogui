@@ -44,6 +44,8 @@ target_sources(ttauri PRIVATE
     byte_string.hpp
     check.hpp
     concepts.hpp
+    console.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
     coroutine.hpp
     command.hpp
     CommandLineParser.hpp
@@ -59,6 +61,8 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
+    dialog.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
     exception.hpp
     file.hpp
