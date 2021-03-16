@@ -15,7 +15,11 @@ constexpr unsigned int WM_APP_CALL_FUNCTION = 0x8000 + 1;
 
 class application_win32 final : public application {
 public:
-    application_win32(std::weak_ptr<application_delegate> const &delegate, std::vector<std::string> const &arguments, os_handle instance);
+    application_win32(
+        std::weak_ptr<application_delegate> const &delegate,
+        int argc,
+        char *argv[],
+        os_handle instance);
     ~application_win32() = default;
 
     application_win32(const application_win32 &) = delete;

@@ -28,6 +28,7 @@
 #include <numeric>
 #include <string_view>
 #include <cmath>
+#include <stdexcept>
 
 namespace tt {
 template<bool HasLargeObjects>
@@ -537,7 +538,7 @@ public:
             }
             else
             {
-                throw overflow_error("Constructing datum from integer {}, larger than {}", value, maximum_int);
+                throw std::overflow_error(fmt::format("Constructing datum from integer {}, larger than {}", value, maximum_int));
             }
         }
     }
@@ -555,8 +556,8 @@ public:
                     auto *const p = new int64_t(value);
                     u64 = make_pointer(integer_ptr_mask, p);
                 } else {
-                    throw overflow_error(
-                        "Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int);
+                    throw std::overflow_error(fmt::format(
+                        "Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int));
                 }
             }
     }
@@ -770,7 +771,7 @@ public:
             }
             else
             {
-                throw overflow_error("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int);
+                throw std::overflow_error(fmt::format("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int));
             }
         }
 

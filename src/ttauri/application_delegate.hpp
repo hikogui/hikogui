@@ -33,7 +33,7 @@ public:
 
     /*! Return the possible command line argument options.
      */
-    virtual datum configuration(application &self, std::vector<std::string> arguments) const noexcept
+    virtual datum configuration(application &self, int argc, char *argv[]) const noexcept
     {
         return {};
     }
