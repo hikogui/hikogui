@@ -94,12 +94,22 @@ public:
         return widget;
     }
 
+    [[nodiscard]] color background_color() const noexcept override
+    {
+        return theme::global->fillColor(_semantic_layer + 1);
+    }
+
+    [[nodiscard]] color foreground_color() const noexcept override
+    {
+        return theme::global->borderColor(_semantic_layer + 1);
+    }
+
 private:
     std::shared_ptr<widget> _content;
 
     void draw_background(draw_context context) noexcept
     {
-        context.draw_box_with_border_outside(rectangle(), background_color(), foreground_color());
+        context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color());
     }
 };
 

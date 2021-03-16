@@ -619,8 +619,6 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
         auto key_code = narrow_cast<int>(wParam);
 
-        tt_log_error("Key 0x{:x} extended={}", key_code, extended);
-
         ttlet key_state = getKeyboardState();
         ttlet key_modifiers = getkeyboard_modifiers();
         ttlet virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
