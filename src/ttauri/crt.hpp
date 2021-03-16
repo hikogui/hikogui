@@ -25,6 +25,7 @@
 #include "URL.hpp"
 #include "strings.hpp"
 #include "cast.hpp"
+#include "console.hpp"
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "application_win32.hpp"
@@ -105,6 +106,9 @@ int WINAPI WinMain(
     }
 #endif
 
+    // Make sure the console is in a valid state to write text to it.
+    tt::console_init();
+
     ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
 
     tt::system_status_shutdown();
@@ -129,6 +133,9 @@ int main(int argc, char *argv[])
         tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }
 #endif
+
+    // Make sure the console is in a valid state to write text to it.
+    tt::console_init();
 
     ttlet r = tt_main(argc, argv, {});
     tt::system_status_shutdown();

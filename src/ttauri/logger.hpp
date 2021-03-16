@@ -160,9 +160,9 @@ public:
         ttlet local_timestring = log_message_base::cpu_utc_clock_as_iso8601(_timestamp);
 
         if constexpr (static_cast<bool>(Level & log_level::statistics)) {
-            return fmt::format("{} {:5} {}", local_timestring, to_const_string(Level), _what());
+            return fmt::format("{} {:5} {}\n", local_timestring, to_const_string(Level), _what());
         } else {
-            return fmt::format("{} {:5} {} ({}:{})", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine);
+            return fmt::format("{} {:5} {} ({}:{})\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine);
         }
     }
 
