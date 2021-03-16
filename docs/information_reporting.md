@@ -3,6 +3,7 @@ Information reporting
 
 Exceptions
 ----------
+
 TTauri will internally use many of the exceptions of the standard library.
 The library also includes its own exceptions. These exceptions work the same
 as standard library exceptions, except that the constructor works like
@@ -32,10 +33,10 @@ Assertions
    blocks.
  - `tt_static_no_default()`: Used in unreachable constexpr else blocks.
  - `tt_not_implemented()`: Added when functionality should exist, but
-   
 
 Counting
 --------
+
 The `tt::increment_counter()` is used to increment a global counter.
 The template parameter is a string literal.
 
@@ -45,22 +46,24 @@ system which logs the counter value each minute.
 
 Tracing
 -------
+
 Instantiating a `tt::trace` class starts a trace. A trace will track the amount
-if time is spend inside the trace. And extra information may be included with
+if time is spend inside the trace. Extra information may be included with
 the trace for debugging purpose.
 
 A lot of care is taken for this function to be efficient and may be used
 in a lot of places in the code. It uses thread\_local storage. And it
-will be slightly more expensiving than counting.
+will be slightly more expensive than counting.
 
 The average and accumulated time spend inside a trace is logged every minute.
 
 When `tt::trace_record()` is called within a trace all information about
-he current trace and any encapsulating traces are logged. `tt::trace_record()`
-is implicently called when using `tt_log_error()`.
+the current trace and any encapsulating traces are logged. `tt::trace_record()`
+is implicitly called when using `tt_log_error()`.
 
 Logging
 -------
+
 The logging system is for logs textual messages to a console or a file.
 It is the main system of high level debugging.
 
@@ -69,12 +72,14 @@ either counting or tracing. The logger functions work like std::format
 however the actual formatting is delayed and offloaded to the logger thread.
 
 Logging is wait-free, unless:
+
  - the ring buffer is full which causes the logging to block.
  - objects passed as argument allocate on copy.
  - All the objects together occupies more bytes than the message
    in the ring buffer 224 bytes, which causes an allocation.
 
 The following log functions are available:
+
  - `tt_log_debug()`: Logging debug information, which is used while developing
    the application.
  - `tt_log_info()`: Log information messages, which is used while debugging
@@ -88,7 +93,6 @@ The following log functions are available:
  - `tt_log_warning()`: Warnings are where something was wrong but the application
    was able to fully recover from it.
  - `tt_log_error()`: An error occurred which causes the application to not be
-   fully functional but still able to operate. This will also call `tt::trace_record()`
+   fully functional but still able to operate. This will also call `tt::trace_record()`.
  - `tt_log_fatal()`: An unrecoverable error has occurred and the application has
    to terminate. This will cause the application to abort.
-

@@ -1,15 +1,18 @@
 
 XXX Depth buffer can be used as per-primitive clipping/stencil buffer.
 
-# Render architecture
+Render architecture
+===================
+
 Vulkan is used as the backend for rendering windows.
+
 
 ```
 
      +---------+
      | Window  |
      +---------+
-          |      
+          |
       Tone Mapper
          | |
          | +---------------+
@@ -35,19 +38,19 @@ Vulkan is used as the backend for rendering windows.
                  |  Atlas  |
                  +---------+
 
-
-
-
-
 ```
 
-## Window
+Window
+------
+
 The swap-chain of the window will consist of RGBA images with alpha set to 1.
 
 The window may either have the sRGB color space, or the extended-float16-sRGB
 color space.
 
-## Single pass, five sub-passes.
+Single pass, five sub-passes
+-----------------------------
+
 The whole render architecture is using a single pass with five sub-passes.
 
 By using a single pass the shader of the sub-passes are able to efficiently
@@ -60,15 +63,18 @@ HDR/WCG (High Dynamic Range / Wide Color Gamut). The frame buffer also
 includes a depth image.
 
 The five sub-passes are:
+
  - Flat Shader  - Render simple non-anti-aliased quads.
  - Box Shader   - Render anti-aliased rectangles with rounded corners.
  - Image Shader - Render anti-aliased texture mapped quads.
  - SDF Shader   - Render text-glyphs with sub-pixel-anti-aliasing.
  - Tone Mapper  - Convert HDR/WCG image to the reduced range of the display.
 
-## Text Shaping
+Text Shaping
+------------
 
 Steps of text-shaping:
+
  - Start: with a list of style-graphemes in logical ordering. The style-grapheme contains the
    Unicode-NFC and each grapheme as a style. Latin automatic ligatures such as 'ffi' are illegal
    and should never be composed into a single grapheme.
@@ -86,10 +92,9 @@ Steps of text-shaping:
  - Output 1: A list of vertex-points with screen-, texture- and color coordinates. And a index back to the original
    graphemes in logical ordering.
  - Output 2: A list of caret locations, by index.
-    - It is possible for a single index to have up to two locations, due to left-to-right and right-to-left switching.
-    - It is possible to use this list to find the nearest caret location to the mouse cursor.
-    - The caret location list also contains the caret height and slant. 
-
+   - It is possible for a single index to have up to two locations, due to left-to-right and right-to-left switching.
+   - It is possible to use this list to find the nearest caret location to the mouse cursor.
+   - The caret location list also contains the caret height and slant.
 
 ### Glyph Lookup algorithm
 
@@ -107,25 +112,24 @@ he returned fonts are then matched with the font-style of the grapheme.
 This font is cached based on the style, and any code point is first checked with this
 cached font. If the code point is not found then the full lookup is done.
 
-
-
 ### Font styles
+
 A font style is a 32 bit description of how a grapheme should
 be displayed. It is only 32 bit so that it is accompanied with each
 attributed-grapheme.
 
 A font-style has the following characteristics:
- 
-  Bits | Name            | Description
- -----:|:--------------- |:-------------------------------------
- 24:31 | Super-Family ID | Super font family id 0-255.
-    23 | Serif           |
-    22 | Monospaced      | Serif + Monospace = Slab
-    21 | Italic          | Italic / Oblique
-    20 | Condensed       |
- 16:19 | Weight          | See weight table below.
-  8:15 | Optical size    | Design size in 0-255 pt
-  0: 7 | Color index     |
+
+ Bits | Name            | Description
+-----:|:----------------|:---------------------------
+24:31 | Super-Family ID | Super font family id 0-255.
+   23 | Serif           |
+   22 | Monospaced      | Serif + Monospace = Slab
+   21 | Italic          | Italic / Oblique
+   20 | Condensed       |
+16:19 | Weight          | See weight table below.
+ 8:15 | Optical size    | Design size in 0-255 pt
+ 0: 7 | Color index     |
 
 The characteristics are read from the 'feat' table or parsed from the
 filename.
@@ -136,38 +140,47 @@ should be ignored in such a case.
 
 Weight table:
 
-  Code | Value  | Description
- -----:| ------:|:------------
-     0 |    100 | Thin / Hairline
-     1 |    200 | Ultra-light / Extra-light
-     2 |    300 | Light
-     3 |    400 | Normal / Regular
-     4 |    500 | Medium
-     5 |    600 | Semi-bold / Demi-bold
-     6 |    700 | Bold
-     7 |    800 | Extra-bold / Ultra-bold
-     8 |    900 | Heavy / Black
-     9 |    950 | Extra-black / Ultra-black
+Code | Value | Description
+----:|------:|:-------------------------
+   0 |   100 | Thin / Hairline
+   1 |   200 | Ultra-light / Extra-light
+   2 |   300 | Light
+   3 |   400 | Normal / Regular
+   4 |   500 | Medium
+   5 |   600 | Semi-bold / Demi-bold
+   6 |   700 | Bold
+   7 |   800 | Extra-bold / Ultra-bold
+   8 |   900 | Heavy / Black
+   9 |   950 | Extra-black / Ultra-black
 
+Themes
+------
 
-## Themes
 A theme consists of predefined colors, fonts and button shapes.
 A theme is loaded from a json file. The theme directory is scanned for all themes
 and from the preferences the user can select the current theme at runtime.
 
 ### Colors
+
 #### Accent Color
+
 #### Semantic Color
+
 #### Custom Color
+
 Custom colors are for application specific widgets. These colors may also be modified
 by the application at runtime. For example an audio application may use custom colors
 for drawing the audio level meters.
 
 ### Font Styles
+
 ### Button shapes
 
-## Box Pipeline
+Box Pipeline
+------------
+
 The box-pipeline is designed to draw axis-aligned quads with:
+
  - A fill color.
  - An anti-aliases border of a certain thickness and color.
  - An drop shadow around the border of a certain color.

@@ -15,9 +15,10 @@ namespace tt {
 
 application_win32::application_win32(
     std::weak_ptr<application_delegate> const &delegate,
-    std::vector<std::string> const &arguments,
+    int argc,
+    char const * const argv[],
     os_handle instance) :
-    application(delegate, arguments, instance)
+    application(delegate, argc, argv, instance)
 {
 }
 

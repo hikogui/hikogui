@@ -16,6 +16,7 @@ Features
 --------
 
 ### Box drawing
+
 Most drawing is done through the box-drawing shader.
 The box-drawing shader can draw an anti-aliased box with:
 
@@ -33,22 +34,24 @@ This primitive can be used to draw different shapes, like:
  - circles.
 
 ### Text drawing
+
 Glyphs are drawn by the GPU using a signed-distance-field shader.
 This shader is able to render glyphs with subpixel-anti-aliasing
 without using a post processing filter.
 
-Glyphs are lazilly and asynchronous added to the texture-atlas
+Glyphs are lazily and asynchronous added to the texture-atlas
 when needed. By adding the glyphs as signed distance fields to
 the texture atlas a glyph needs to be added only once to be usable
 for displaying at any size.
 
 Due to the shader having to perform subpixel-compositing,
 it is not able to correctly draw overlapping glyphs. Since
-the shader will always rever to the background drawn by the
+the shader will always revert to the background drawn by the
 previous sub-pass.
 
 Performance
 -----------
+
 TTauri is designed for low latency interactive applications.
 
 For this reason we have the following design considerations:
@@ -61,19 +64,16 @@ For this reason we have the following design considerations:
    determine what should be shown to the user at the display time.
    When for example showing the current time on the display.
 
-The following 
+The following
 
  - Use game-like redraw loop running at the current system's
-   frame rate. Immediatly reflecting updated data. And caching
-   size-constrainng, layout, text-shaping, and other expensive
+   frame rate. Immediately reflecting updated data. And caching
+   size-constraining, layout, text-shaping, and other expensive
    pre-draw operations.
  - Partial drawing, widgets will only draw anything that falls
    within the current scissor rectangle. The scissor rectangle
    allows the GPU to discard drawing outside it to improve
    drawing speed.
  - All drawing is done by passing vertices to different
-   shaders for GPU accellerated drawing of: flat-polygons,
+   shaders for GPU accelerated drawing of: flat-polygons,
    rounded-rectangles, pixmap-images and text-glyphs.
-
-
-

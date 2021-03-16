@@ -1,5 +1,6 @@
 SPONSORS
 ========
+
 Thank you very much to the sponsors of the ttauri-project.
 
 If you like to become a sponsor, please contribute to
@@ -7,14 +8,16 @@ If you like to become a sponsor, please contribute to
 
 Platinum sponsors
 -----------------
+
 _There are currently no platinum sponsors._
 
 Gold sponsors
 -------------
+
 _There are currently no gold sponsors._
 
 Silver sponsors
-----------------
-_There are currently no silver sponsors._
+---------------
 
+_There are currently no silver sponsors._
 
