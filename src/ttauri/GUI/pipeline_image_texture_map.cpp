@@ -9,7 +9,7 @@ namespace tt::pipeline_image {
 
 void texture_map::transitionLayout(const gui_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout) {
     if (layout != nextLayout) {
-        device.transitionLayout(image, format, layout, nextLayout);
+        device.transition_layout(image, format, layout, nextLayout);
         layout = nextLayout;
     }
 }

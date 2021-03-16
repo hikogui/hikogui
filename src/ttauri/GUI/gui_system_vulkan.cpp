@@ -144,7 +144,9 @@ VkBool32 gui_system_vulkan::debugUtilsMessageCallback(
     void *pUserData)
 {
     switch (messageSeverity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: tt_log_debug("Vulkan: {}", pCallbackData->pMessage); break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        //tt_log_debug("Vulkan: {}", pCallbackData->pMessage);
+        break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: tt_log_info("Vulkan: {}", pCallbackData->pMessage); break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: tt_log_warning("Vulkan: {}", pCallbackData->pMessage); break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: tt_log_error("Vulkan: {}", pCallbackData->pMessage); break;
