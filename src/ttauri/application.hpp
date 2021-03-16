@@ -45,7 +45,7 @@ public:
      */
     int argc;
 
-    char const *argv[];
+    char **argv;
 
     /** Handle to the operating system's application-instance.
      */
@@ -78,7 +78,7 @@ public:
     application(
         std::weak_ptr<application_delegate> const &delegate,
         int argc,
-        char const * const argv[],
+        char *argv[],
         os_handle instance
     );
 

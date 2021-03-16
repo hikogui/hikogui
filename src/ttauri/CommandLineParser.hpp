@@ -101,7 +101,7 @@ public:
      * @param arguments a list of command line arguments, including the exectable name as the first argument.
      * @return The result as a map-datum, with option names as the keys.
      */
-    datum parse(int argc, char const *argv[]) noexcept {
+    datum parse(int argc, char const * const argv[]) noexcept {
         auto r = datum{datum::map{}};
 
         for (int arg_index = 0; arg_index != argc; ++arg_index) {
