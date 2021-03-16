@@ -423,7 +423,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-[[nodiscard]] inline char *string_dup(char const *c_str, size_t size = -1) noexcept
+[[nodiscard]] inline char *make_cstr(char const *c_str, size_t size = -1) noexcept
 {
     if (size == -1) {
         size = std::strlen(c_str);
@@ -437,9 +437,9 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-[[nodiscard]] inline char *string_dup(std::string const &s) noexcept
+[[nodiscard]] inline char *make_cstr(std::string const &s) noexcept
 {
-    return string_dup(s.c_str(), s.size());
+    return make_cstr(s.c_str(), s.size());
 }
 
 } // namespace tt

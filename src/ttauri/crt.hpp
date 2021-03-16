@@ -24,6 +24,7 @@
 #include "system_status.hpp"
 #include "URL.hpp"
 #include "strings.hpp"
+#include "cast.hpp"
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "application_win32.hpp"
@@ -79,15 +80,15 @@ int WINAPI WinMain(
     auto arguments = std::vector<char *>{};
     arguments.reserve(argc + 2);
     for (auto i = 0; i != argc; ++i) {
-        arguments.push_back(string_dup(tt::to_string(std::wstring(argv[i]))));
+        arguments.push_back(tt::make_cstr(tt::to_string(std::wstring(argv[i]))));
     }
     LocalFree(argv);
 
     // Pass nShowCmd as a the second command line argument.
     if (nShowCmd == 3) {
-        arguments.insert(std::next(std::begin(arguments)), string_dup("--window-state=maximize"));
+        arguments.insert(std::next(std::begin(arguments)), tt::make_cstr("--window-state=maximize"));
     } else if (nShowCmd == 0 || nShowCmd == 2 || nShowCmd == 6 || nShowCmd == 7 || nShowCmd == 11) {
-        arguments.insert(std::next(std::begin(arguments)), string_dup("--window-state=minimize"));
+        arguments.insert(std::next(std::begin(arguments)), tt::make_cstr("--window-state=minimize"));
     }
 
     // Add a nullptr to the end of the argument list.
@@ -104,7 +105,7 @@ int WINAPI WinMain(
     }
 #endif
 
-    ttlet r = tt_main(arguments.size() - 1, arguments.data(), hInstance);
+    ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
     tt::system_status_shutdown();
 
     for (auto argument: arguments) {
