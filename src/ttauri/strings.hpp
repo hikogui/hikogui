@@ -439,7 +439,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
  */
 [[nodiscard]] inline char *string_dup(std::string const &s) noexcept
 {
-    return string_dup(rhs.c_str(), rhs.size());
+    return string_dup(s.c_str(), s.size());
 }
 
 } // namespace tt

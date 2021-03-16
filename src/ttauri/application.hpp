@@ -45,7 +45,7 @@ public:
      */
     int argc;
 
-    char const *argv[];
+    char const **argv;
 
     /** Handle to the operating system's application-instance.
      */
