@@ -23,6 +23,8 @@ target_sources(ttauri PRIVATE
     skeleton_while_node.hpp
 )
 
-target_sources(ttauri_tests PRIVATE
-    skeleton_tests.cpp
-)
+if(TT_BUILD_TESTS)
+    target_sources(ttauri_tests PRIVATE
+        skeleton_tests.cpp
+    )
+endif()

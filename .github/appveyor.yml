@@ -306,7 +306,7 @@ artifacts:
 #-------------------------------------------------------------------
 
 cache:
-  - C:\Tools\vcpkg\installed -> appveyor.yml
+  - '%APPVEYOR_BUILD_FOLDER%\build\vcpkg_installed -> %APPVEYOR_BUILD_FOLDER%\build\vcpkg_installed\vcpkg\status'
   - '%VULKAN_SDK%\Bin -> appveyor.yml'
   - '%VULKAN_SDK%\Bin32 -> appveyor.yml'
   - '%VULKAN_SDK%\Include -> appveyor.yml'
