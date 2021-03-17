@@ -106,15 +106,11 @@ int WINAPI WinMain(
     }
 #endif
 
-<<<<<<< HEAD
-    ttlet r = tt_main(arguments.size() - 1, arguments.data(), hInstance);
-=======
     // Make sure the console is in a valid state to write text to it.
     tt::console_init();
 
     ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
 
->>>>>>> origin/main
     tt::system_status_shutdown();
 
     for (auto argument: arguments) {
