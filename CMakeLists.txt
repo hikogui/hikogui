@@ -463,22 +463,17 @@ endif()
 #-------------------------------------------------------------------
 # Installation Rules: ttauri_tests                      (executable)
 #-------------------------------------------------------------------
-
-install(TARGETS ttauri_tests DESTINATION tests)
-
-install(DIRECTORY tests/data/ DESTINATION tests)
-
-# experimental
-x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+if(TT_BUILD_TESTS)
+    install(TARGETS ttauri_tests DESTINATION tests)
+    install(DIRECTORY tests/data/ DESTINATION tests)
+    x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+endif()
 
 #-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
-
 if(TT_BUILD_EXAMPLES)
-
     add_subdirectory(examples/ttauri_demo)
-
 endif()
 
 #-------------------------------------------------------------------

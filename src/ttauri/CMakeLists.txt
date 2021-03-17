@@ -188,38 +188,40 @@ if(TT_BUILD_PCH)
     endif()
 endif()
 
-target_sources(ttauri_tests PRIVATE
-    algorithm_tests.cpp
-    bezier_curve_tests.cpp
-    bigint_tests.cpp
-    coroutine_tests.cpp
-    counters_tests.cpp
-    datum_tests.cpp
-    decimal_tests.cpp
-    exceptions_tests.cpp
-    file_view_tests.cpp
-    forward_value_tests.cpp
-    #gap_buffer_tests.cpp
-    glob_tests.cpp
-    int_overflow_tests.cpp
-    interval_extent2_tests.cpp
-    math_tests.cpp
-    graphic_path_tests.cpp
-    pixel_map_tests.cpp
-    polymorphic_optional_tests.cpp
-    polynomial_tests.cpp
-    ranges_tests.cpp
-    safe_int_tests.cpp
-    small_map_tests.cpp
-    strings_tests.cpp
-    tokenizer_tests.cpp
-    type_traits_tests.cpp
-    url_parser_tests.cpp
-    URL_tests.cpp
-)
+if(TT_BUILD_TESTS)
+    target_sources(ttauri_tests PRIVATE
+        algorithm_tests.cpp
+        bezier_curve_tests.cpp
+        bigint_tests.cpp
+        coroutine_tests.cpp
+        counters_tests.cpp
+        datum_tests.cpp
+        decimal_tests.cpp
+        exceptions_tests.cpp
+        file_view_tests.cpp
+        forward_value_tests.cpp
+        #gap_buffer_tests.cpp
+        glob_tests.cpp
+        int_overflow_tests.cpp
+        interval_extent2_tests.cpp
+        math_tests.cpp
+        graphic_path_tests.cpp
+        pixel_map_tests.cpp
+        polymorphic_optional_tests.cpp
+        polynomial_tests.cpp
+        ranges_tests.cpp
+        safe_int_tests.cpp
+        small_map_tests.cpp
+        strings_tests.cpp
+        tokenizer_tests.cpp
+        type_traits_tests.cpp
+        url_parser_tests.cpp
+        URL_tests.cpp
+    )
+endif()
 
-if(TT_BUILD_PCH)
-    if(NOT TT_ENABLE_ANALYSIS)
+
+if(TT_BUILD_TESTS AND TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri_tests PRIVATE
         assert.hpp
         counters.hpp
@@ -233,5 +235,4 @@ if(TT_BUILD_PCH)
         trace.hpp
         URL.hpp
     )
-    endif()
 endif()
