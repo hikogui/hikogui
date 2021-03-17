@@ -14,6 +14,8 @@ target_sources(ttauri PRIVATE
     sdf_r8.hpp
 )
 
-target_sources(ttauri_tests PRIVATE
-    color_space_tests.cpp
-)
+if(TT_BUILD_TESTS)
+    target_sources(ttauri_tests PRIVATE
+        color_space_tests.cpp
+    )
+endif()
