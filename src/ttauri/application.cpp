@@ -43,9 +43,9 @@ using namespace std;
 application::application(
     std::weak_ptr<application_delegate> const &delegate,
     int argc,
-    char const * const argv[]
+    char *argv[],
     os_handle instance) :
-    delegate(delegate), argc(arc), argv(argv), instance(instance)
+    delegate(delegate), argc(argc), argv(argv), instance(instance)
 {
 }
 

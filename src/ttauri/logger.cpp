@@ -10,9 +10,9 @@
 #include "strings.hpp"
 #include "thread.hpp"
 #include "url_parser.hpp"
-#include "debugger.hpp"
 #include "timer.hpp"
 #include "unfair_recursive_mutex.hpp"
+#include "console.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <exception>
@@ -31,16 +31,6 @@ using namespace std::literals::chrono_literals;
     return format_iso8601(cpu_utc_clock::convert(timestamp));
 }
 
-static void logger_write_to_console(std::string str) noexcept
-{
-    if (debugger_is_present()) {
-        debugger_log(str);
-    } else {
-        std::cerr << str << std::endl;
-    }
-}
-
-static void logger_write_to_file(std::string str) noexcept {}
 
 /*! Write to a log file and console.
  * This will write to the console if one is open.
@@ -48,8 +38,7 @@ static void logger_write_to_file(std::string str) noexcept {}
  */
 static void logger_write(std::string const &str) noexcept
 {
-    logger_write_to_file(str);
-    logger_write_to_console(str);
+    console_output(str);
 }
 
 unfair_recursive_mutex logger_mutex;

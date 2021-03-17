@@ -24,6 +24,8 @@
 #include "system_status.hpp"
 #include "URL.hpp"
 #include "strings.hpp"
+#include "cast.hpp"
+#include "console.hpp"
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "application_win32.hpp"
@@ -79,15 +81,15 @@ int WINAPI WinMain(
     auto arguments = std::vector<char *>{};
     arguments.reserve(argc + 2);
     for (auto i = 0; i != argc; ++i) {
-        arguments.push_back(string_dup(tt::to_string(std::wstring(argv[i]))));
+        arguments.push_back(tt::make_cstr(tt::to_string(std::wstring(argv[i]))));
     }
     LocalFree(argv);
 
     // Pass nShowCmd as a the second command line argument.
     if (nShowCmd == 3) {
-        arguments.insert(std::next(std::begin(arguments)), string_dup("--window-state=maximize"));
+        arguments.insert(std::next(std::begin(arguments)), tt::make_cstr("--window-state=maximize"));
     } else if (nShowCmd == 0 || nShowCmd == 2 || nShowCmd == 6 || nShowCmd == 7 || nShowCmd == 11) {
-        arguments.insert(std::next(std::begin(arguments)), string_dup("--window-state=minimize"));
+        arguments.insert(std::next(std::begin(arguments)), tt::make_cstr("--window-state=minimize"));
     }
 
     // Add a nullptr to the end of the argument list.
@@ -104,7 +106,15 @@ int WINAPI WinMain(
     }
 #endif
 
+<<<<<<< HEAD
     ttlet r = tt_main(arguments.size() - 1, arguments.data(), hInstance);
+=======
+    // Make sure the console is in a valid state to write text to it.
+    tt::console_init();
+
+    ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
+
+>>>>>>> origin/main
     tt::system_status_shutdown();
 
     for (auto argument: arguments) {
@@ -117,11 +127,6 @@ int WINAPI WinMain(
 
 int main(int argc, char *argv[])
 {
-    if (argc < 1) {
-        std::cerr << "Missing executable from argument list." << std::endl;
-        return 2;
-    }
-
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
@@ -132,6 +137,9 @@ int main(int argc, char *argv[])
         tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }
 #endif
+
+    // Make sure the console is in a valid state to write text to it.
+    tt::console_init();
 
     ttlet r = tt_main(argc, argv, {});
     tt::system_status_shutdown();

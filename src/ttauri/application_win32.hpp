@@ -18,7 +18,7 @@ public:
     application_win32(
         std::weak_ptr<application_delegate> const &delegate,
         int argc,
-        char const * const argv[],
+        char *argv[],
         os_handle instance);
     ~application_win32() = default;
 
