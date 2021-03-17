@@ -43,7 +43,7 @@ Here is a description on how to install for the development of ttauri.
 
 Installation requirements:
 
- - The latest Microsoft Visual Studio Preview from <https://visualstudio.microsoft.com/vs/preview/>
+ - The latest Microsoft Visual Studio from <https://visualstudio.microsoft.com/downloads/>
    - C++ core desktop features
    - C++ CMake tools for Windows
    - Test Adapter for Google Test
@@ -88,7 +88,7 @@ Select the x64-MSVC-Debug and use the following menu items to build the project:
  - Project / Generate Cache for ttauri
  - Build / Build All
 
-After building you can select "ttauri_demo.exe" from "Select Startup Item..." next to the run-button. Then
+After building you can select "ttauri\_demo.exe" from "Select Startup Item..." next to the run-button. Then
 press that button to run the debug build (with the debugger attached).
 
 You may also want to read the following about how to use CMake projects with visual studio:
@@ -96,7 +96,7 @@ You may also want to read the following about how to use CMake projects with vis
 
 #### Developer Command Prompt for VS 2019
 
-If you already have vcpkg installed you still will need to set VCPKG_ROOT and 'integrate'
+If you already have vcpkg installed you still will need to set `VCPKG_ROOT` and 'integrate'
 each time you start a new shell.
 
 ```
@@ -172,3 +172,4 @@ Code of Conduct
 
 This project and everyone participating in it is governed by the
 [TTauri Code of Conduct](https://github.com/ttauri-project/ttauri/blob/main/docs/CODE_OF_CONDUCT.md)
+

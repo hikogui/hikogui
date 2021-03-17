@@ -143,7 +143,7 @@ install:
   # In short: set "build version number" to "version_num-current_commit_short_hash" or when tagged to "tag name" (Travis style).
   - ps: |
       $vcpkg_json = Get-Content "vcpkg.json" -Raw | ConvertFrom-Json
-      $env:PROJECT_VERSION = $vcpkg_json."version-string"
+      $env:PROJECT_VERSION = $vcpkg_json."version"
       write-host "build_version_number -> $env:build_version_number"
       if ($env:APPVEYOR_REPO_TAG -eq "true")
       {
