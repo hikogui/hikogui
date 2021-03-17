@@ -32,7 +32,7 @@ endif()
 # vcpkg.json is the primary source for version data
 file(READ ${CMAKE_SOURCE_DIR}/vcpkg.json VCPKG_JSON_STRING)
 string(JSON APP_NAME     GET ${VCPKG_JSON_STRING} "name")
-string(JSON APP_VERSION  GET ${VCPKG_JSON_STRING} "version-string")
+string(JSON APP_VERSION  GET ${VCPKG_JSON_STRING} "version")
 string(JSON APP_LICENSE  GET ${VCPKG_JSON_STRING} "license")
 string(JSON APP_DESC     GET ${VCPKG_JSON_STRING} "description")
 string(JSON APP_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
