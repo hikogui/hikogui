@@ -60,6 +60,8 @@ target_sources(ttauri PRIVATE
     formula_vector_literal_node.hpp
 )
 
-target_sources(ttauri_tests PRIVATE
-    formula_tests.cpp
-)
+if(TT_BUILD_TESTS)
+    target_sources(ttauri_tests PRIVATE
+        formula_tests.cpp
+    )
+endif()

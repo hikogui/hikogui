@@ -17,15 +17,16 @@ target_sources(ttauri PRIVATE
     vector.hpp
 )
 
-target_sources(ttauri_tests PRIVATE
-    identity_tests.cpp
-    matrix_tests.cpp
-    numeric_array_tests.cpp
-    point_tests.cpp
-    scale_tests.cpp
-    spread_sheet_address_tests.cpp
-    transform_tests.cpp
-    translate_tests.cpp
-    vector_tests.cpp
-)
-
+if(TT_BUILD_TESTS)
+    target_sources(ttauri_tests PRIVATE
+        identity_tests.cpp
+        matrix_tests.cpp
+        numeric_array_tests.cpp
+        point_tests.cpp
+        scale_tests.cpp
+        spread_sheet_address_tests.cpp
+        transform_tests.cpp
+        translate_tests.cpp
+        vector_tests.cpp
+    )
+endif()

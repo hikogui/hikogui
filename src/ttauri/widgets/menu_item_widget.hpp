@@ -298,10 +298,10 @@ public:
 
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (this->_focus) {
+        if (this->_focus && this->window.active) {
             return super::focus_color();
         } else {
-            return this->background_color();
+            return color::transparent();
         }
     }
 

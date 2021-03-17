@@ -32,7 +32,7 @@ endif()
 # vcpkg.json is the primary source for version data
 file(READ ${CMAKE_SOURCE_DIR}/vcpkg.json VCPKG_JSON_STRING)
 string(JSON APP_NAME     GET ${VCPKG_JSON_STRING} "name")
-string(JSON APP_VERSION  GET ${VCPKG_JSON_STRING} "version-string")
+string(JSON APP_VERSION  GET ${VCPKG_JSON_STRING} "version")
 string(JSON APP_LICENSE  GET ${VCPKG_JSON_STRING} "license")
 string(JSON APP_DESC     GET ${VCPKG_JSON_STRING} "description")
 string(JSON APP_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
@@ -463,22 +463,17 @@ endif()
 #-------------------------------------------------------------------
 # Installation Rules: ttauri_tests                      (executable)
 #-------------------------------------------------------------------
-
-install(TARGETS ttauri_tests DESTINATION tests)
-
-install(DIRECTORY tests/data/ DESTINATION tests)
-
-# experimental
-x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+if(TT_BUILD_TESTS)
+    install(TARGETS ttauri_tests DESTINATION tests)
+    install(DIRECTORY tests/data/ DESTINATION tests)
+    x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+endif()
 
 #-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
-
 if(TT_BUILD_EXAMPLES)
-
     add_subdirectory(examples/ttauri_demo)
-
 endif()
 
 #-------------------------------------------------------------------
