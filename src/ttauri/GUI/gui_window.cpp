@@ -170,6 +170,10 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
+    // Before we are going to make new_target_widget empty, due to the rules below;
+    // capture which parents there are.
+    auto new_target_parent_chain = tt::widget::parent_chain(new_target_widget);
+
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
     // In that case no widget will get focus.
@@ -183,18 +187,18 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
         return;
     }
 
-    // Tell the current widget that the keyboard focus was exited.
-    if (current_target_widget) {
+    // When there is a new target, tell the current widget that the keyboard focus was exited.
+    if (new_target_widget && current_target_widget) {
         send_event_to_widget(current_target_widget, std::vector{command::gui_keyboard_exit});
+        _keyboard_target_widget = {};
     }
 
-    // Send a gui_cancel command to any widget that is not in the new_target_widget-parent-chain.
-    auto new_target_parent_chain = tt::widget::parent_chain(new_target_widget);
+    // Tell "escape" to all the widget that are not parents of the new widget 
     widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
-    _keyboard_target_widget = new_target_widget;
     if (new_target_widget) {
+        _keyboard_target_widget = new_target_widget;
         send_event_to_widget(new_target_widget, std::vector{command::gui_keyboard_enter});
     }
 }
