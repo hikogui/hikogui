@@ -4,7 +4,7 @@
 
 #include "application_controller.hpp"
 #include "application_preferences.hpp"
-#include "ttauri/system_status.hpp"
+#include "ttauri/log_level.hpp"
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include "ttauri/application.hpp"

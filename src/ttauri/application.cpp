@@ -99,9 +99,9 @@ void application::init_foundation()
     main_thread_id = current_thread_id();
 
     if (configuration.contains("log-level")) {
-        system_status_set_log_level(static_cast<uint8_t>(configuration["log-level"]));
+        log_level_global = static_cast<log_level>(static_cast<int>(configuration["log-level"]));
     } else {
-        system_status_set_log_level(make_log_level(log_level::info));
+        log_level_global = make_log_level(log_level::info);
     }
 
     // First we need a clock, it is used by almost any other service.
