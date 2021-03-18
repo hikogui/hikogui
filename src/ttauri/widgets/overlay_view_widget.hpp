@@ -22,6 +22,7 @@ public:
             ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer() + 20.0f;
             _semantic_layer = 0;
+            _margin = theme::global->margin;
         }
     }
 
@@ -75,7 +76,7 @@ public:
 
         if (auto parent = _parent.lock()) {
             ttlet requested_window_rectangle = aarectangle{parent->local_to_window() * requested_rectangle};
-            ttlet window_bounds = aarectangle{10.0f, 10.0f, window.extent.width() - 20.0f, window.extent.height() - 50.0f};
+            ttlet window_bounds = shrink(aarectangle{window.extent}, _margin);
             ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
             return aarectangle{parent->window_to_local() * response_window_rectangle};
         } else {
@@ -104,12 +105,18 @@ public:
         return theme::global->borderColor(_semantic_layer + 1);
     }
 
+    void scroll_to_show(tt::rectangle rectangle) noexcept override
+    {
+        // An overlay is in an absolute position on the window,
+        // so do not forward the scroll_to_show message to its parent.
+    }
+
 private:
     std::shared_ptr<widget> _content;
 
     void draw_background(draw_context context) noexcept
     {
-        context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color());
+        context.draw_box_with_border_outside(rectangle(), background_color(), foreground_color());
     }
 };
 

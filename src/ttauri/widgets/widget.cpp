@@ -128,6 +128,9 @@ bool widget::handle_event(command command) noexcept
         using enum tt::command;
     case gui_keyboard_enter:
         _focus = true;
+        // When scrolling, include the margin, so that the widget is clear from the edge of the
+        // scroll view's aperture.
+        scroll_to_show(expand(rectangle(), _margin));
         request_redraw();
         return true;
 
@@ -183,7 +186,6 @@ std::shared_ptr<widget> widget::find_next_widget(
     keyboard_focus_direction direction) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    tt_axiom(direction != keyboard_focus_direction::current);
 
     auto this_ = shared_from_this();
     if (current_keyboard_widget == this_) {
@@ -246,6 +248,15 @@ std::shared_ptr<widget> widget::find_next_widget(
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
     return parent().find_last_widget(group).get() == this;
+}
+
+void widget::scroll_to_show(tt::rectangle rectangle) noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+
+    if (auto parent = _parent.lock()) {
+        parent->scroll_to_show(_local_to_parent * rectangle);
+    }
 }
 
 /** Get a list of parents of a given widget.

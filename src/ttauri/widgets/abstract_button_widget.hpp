@@ -59,8 +59,7 @@ public:
             case command::gui_activate: this->_notifier(); return true;
             case command::gui_enter:
                 this->_notifier();
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
                 return true;
             default:;
             }

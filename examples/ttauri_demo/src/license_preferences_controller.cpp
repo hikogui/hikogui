@@ -34,7 +34,11 @@ void license_preferences_controller::init(tt::grid_layout_widget &self) noexcept
     selection3->option_list = std::vector{
         std::pair{0, label{l10n("first")}},
         std::pair{1, label{l10n("second")}},
-        std::pair{2, label{l10n("third")}}
+        std::pair{2, label{l10n("third")}},
+        std::pair{3, label{l10n("four")}},
+        std::pair{4, label{l10n("five")}},
+        std::pair{5, label{l10n("six")}},
+        std::pair{6, label{l10n("seven")}}
     };
     selection3->unknown_label = l10n("Default");
     selection3->enabled = true;
