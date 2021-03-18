@@ -14,7 +14,7 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
 {
     while (target_widget) {
         // Send a command in priority order to the widget.
-        if constexpr (std::is_same_v<Event,mouse_event>) {
+        if constexpr (std::is_same_v<Event, mouse_event>) {
             if (target_widget->handle_event(target_widget->window_to_local() * event)) {
                 return true;
             }
@@ -193,7 +193,7 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
         _keyboard_target_widget = {};
     }
 
-    // Tell "escape" to all the widget that are not parents of the new widget 
+    // Tell "escape" to all the widget that are not parents of the new widget
     widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
@@ -210,17 +210,20 @@ void gui_window::update_keyboard_target(
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    if (direction == keyboard_focus_direction::current) {
-        update_keyboard_target(std::move(start_widget), group);
-    } else {
-        auto tmp = widget->find_next_widget(start_widget, group, direction);
-        if (tmp == start_widget) {
-            // The currentTargetWidget was already the last (or only) widget;
-            // don't focus anything.
-            tmp = {};
-        }
-        update_keyboard_target(std::move(tmp), group);
+    auto tmp = widget->find_next_widget(start_widget, group, direction);
+    if (tmp == start_widget) {
+        // Could not a next widget, loop around.
+        tmp = widget->find_next_widget({}, group, direction);
     }
+    update_keyboard_target(std::move(tmp), group);
+}
+
+void gui_window::update_keyboard_target(
+    keyboard_focus_group group,
+    keyboard_focus_direction direction) noexcept
+{
+    auto current_keyboard_widget = _keyboard_target_widget.lock();
+    update_keyboard_target(current_keyboard_widget, group, direction);
 }
 
 bool gui_window::handle_event(tt::command command) noexcept
@@ -236,8 +239,6 @@ bool gui_window::handle_event(tt::command command) noexcept
     }
     return false;
 }
-
-
 
 /*[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, mouse_event const &event) noexcept
 {

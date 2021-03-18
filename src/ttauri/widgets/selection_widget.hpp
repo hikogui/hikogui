@@ -46,8 +46,9 @@ public:
         unknown_label(std::forward<UnknownLabel>(unknown_label))
     {
         // Because the super class `abstract_container_widget` forces the same semantic layer
-        // as the a parent, we need to force it back as if this is a normal widget.
+        // as the a parent and _margin to zero, we need to force them back as if this is a normal widget.
         _semantic_layer = parent->semantic_layer() + 1;
+        _margin = theme::global->margin;
     }
 
     ~selection_widget() {}
@@ -243,22 +244,6 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return is_normal(group) && *enabled;
-    }
-
-    std::shared_ptr<widget> find_next_widget(
-        std::shared_ptr<widget> const &current_widget,
-        keyboard_focus_group group,
-        keyboard_focus_direction direction) const noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-
-        if (_selecting) {
-            return super::find_next_widget(current_widget, group, direction);
-
-        } else {
-            // Bypass the abstract_container_widget and directly use the widget implementation.
-            return widget::find_next_widget(current_widget, group, direction);
-        }
     }
 
     template<typename T, typename... Args>

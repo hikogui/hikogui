@@ -225,8 +225,7 @@ public:
 
             case command::gui_enter:
                 commit(true);
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
                 return true;
 
             case command::gui_keyboard_enter:

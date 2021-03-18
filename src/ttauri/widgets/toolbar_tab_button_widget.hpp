@@ -117,22 +117,27 @@ public:
         switch (command) {
         case command::gui_toolbar_next:
             if (!this->is_last(keyboard_focus_group::toolbar)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+                this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
             }
             return true;
 
         case command::gui_toolbar_prev:
             if (!this->is_first(keyboard_focus_group::toolbar)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+                this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
             }
             return true;
 
         default:;
         }
 
-        return super::handle_event(command);
+        auto r = super::handle_event(command);
+        if (r) {
+            // Let the toolbar request a redraw, so that the extended focus line get redrawn when it changes.
+            auto parent = this->_parent.lock();
+            tt_axiom(parent);
+            parent->request_redraw();
+        }
+        return r;
     }
 
 private:
