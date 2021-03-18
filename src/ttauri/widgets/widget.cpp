@@ -128,6 +128,7 @@ bool widget::handle_event(command command) noexcept
         using enum tt::command;
     case gui_keyboard_enter:
         _focus = true;
+        scroll_to_show(rectangle());
         request_redraw();
         return true;
 
@@ -246,6 +247,15 @@ std::shared_ptr<widget> widget::find_next_widget(
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
     return parent().find_last_widget(group).get() == this;
+}
+
+void widget::scroll_to_show(tt::rectangle rectangle) noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+
+    if (auto parent = _parent.lock()) {
+        parent->scroll_to_show(_local_to_parent * rectangle);
+    }
 }
 
 /** Get a list of parents of a given widget.

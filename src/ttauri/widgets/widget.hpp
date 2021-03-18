@@ -562,6 +562,12 @@ public:
      */
     [[nodiscard]] bool is_last(keyboard_focus_group group) const noexcept;
 
+    /** Scroll to show the given rectangle on the window.
+     * This will call parents, until all parents have scrolled
+     * the rectangle to be shown on the window.
+     */
+    virtual void scroll_to_show(tt::rectangle rectangle) noexcept;
+
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */

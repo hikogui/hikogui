@@ -161,11 +161,11 @@ public:
             }
 
             // Make a clipping rectangle that fits the content_rectangle exactly.
-            ttlet aperture_rectangle = aarectangle{aperture_x, aperture_y, aperture_width, aperture_height};
+            _aperture_rectangle = aarectangle{aperture_x, aperture_y, aperture_width, aperture_height};
             ttlet content_rectangle = aarectangle{content_x, content_y, content_width, content_height};
 
             _content->set_layout_parameters_from_parent(
-                content_rectangle, aperture_rectangle, _content->draw_layer() - _draw_layer);
+                content_rectangle, _aperture_rectangle, _content->draw_layer() - _draw_layer);
         }
 
         super::update_layout(display_time_point, need_layout);
@@ -212,6 +212,33 @@ public:
         return handled;
     }
 
+    void scroll_to_show(tt::rectangle rectangle) noexcept override
+    {
+        auto rectangle_ = aarectangle{rectangle};
+
+        float delta_x = 0.0f;
+        if (rectangle_.right() > _aperture_rectangle.right()) {
+            delta_x = rectangle_.right() - _aperture_rectangle.right();
+        } else if (rectangle_.left() < _aperture_rectangle.left()) {
+            delta_x = rectangle_.left() - _aperture_rectangle.left();
+        }
+
+        float delta_y = 0.0f;
+        if (rectangle_.top() > _aperture_rectangle.top()) {
+            delta_y = rectangle_.top() - _aperture_rectangle.top();
+        } else if (rectangle_.bottom() < _aperture_rectangle.bottom()) {
+            delta_y = rectangle_.bottom() - _aperture_rectangle.bottom();
+        }
+
+        _scroll_offset_x += delta_x;
+        _scroll_offset_y += delta_y;
+
+        // There may be recursive scroll view, and they all need to move until the rectangle is visible.
+        if (auto parent = _parent.lock()) {
+            parent->scroll_to_show(_local_to_parent * translate2(delta_x, delta_y) * rectangle);
+        }
+    }
+
 private:
     std::shared_ptr<widget> _content;
     std::shared_ptr<scroll_bar_widget<false>> _horizontal_scroll_bar;
@@ -223,6 +250,8 @@ private:
     observable<float> _scroll_aperture_height;
     observable<float> _scroll_offset_x;
     observable<float> _scroll_offset_y;
+
+    aarectangle _aperture_rectangle;
 };
 
 template<bool ControlsWindow = false>

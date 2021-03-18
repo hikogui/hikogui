@@ -105,6 +105,12 @@ public:
         return theme::global->borderColor(_semantic_layer + 1);
     }
 
+    void scroll_to_show(tt::rectangle rectangle) noexcept override
+    {
+        // An overlay is in an absolute position on the window,
+        // so do not forward the scroll_to_show message to its parent.
+    }
+
 private:
     std::shared_ptr<widget> _content;
 
