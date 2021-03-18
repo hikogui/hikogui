@@ -139,8 +139,8 @@ target_sources(ttauri PRIVATE
     statistics.cpp
     statistics.hpp
     strings.hpp
+    subsystem.hpp
     sync_clock.hpp
-    system_status.hpp
     tag.hpp
     tagged_id.hpp
     tagged_map.hpp

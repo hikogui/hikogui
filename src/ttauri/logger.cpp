@@ -92,10 +92,11 @@ void logger_deinit() noexcept
  * checks the log_queue for new messages and then
  * call log_flush_messages().
  */
-void logger_init() noexcept
+bool logger_init() noexcept
 {
     ttlet lock = std::scoped_lock(logger_mutex);
     logger_thread = std::jthread(logger_thread_loop);
+    return true;
 }
 
 } // namespace tt

@@ -16,7 +16,8 @@
 #include "os_detect.hpp"
 #include "delayed_format.hpp"
 #include "fixed_string.hpp"
-#include "system_status.hpp"
+#include "subsystem.hpp"
+#include "log_level.hpp"
 #include <date/tz.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -27,106 +28,6 @@
 #include <atomic>
 
 namespace tt {
-
-enum class log_level : uint8_t {
-    debug = to_log_level(system_status_type::log_level_debug),
-    info = to_log_level(system_status_type::log_level_info),
-    statistics = to_log_level(system_status_type::log_level_statistics),
-    trace = to_log_level(system_status_type::log_level_trace),
-    audit = to_log_level(system_status_type::log_level_audit),
-    warning = to_log_level(system_status_type::log_level_warning),
-    error = to_log_level(system_status_type::log_level_error),
-    fatal = to_log_level(system_status_type::log_level_fatal)
-};
-
-[[nodiscard]] constexpr log_level operator&(log_level const &lhs, log_level const &rhs) noexcept
-{
-    return static_cast<log_level>(static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs));
-}
-
-[[nodiscard]] constexpr log_level operator|(log_level const &lhs, log_level const &rhs) noexcept
-{
-    return static_cast<log_level>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
-}
-
-constexpr log_level &operator|=(log_level &lhs, log_level const &rhs) noexcept
-{
-    lhs = lhs | rhs;
-    return lhs;
-}
-
-/** Make a log level mask based on a user given log level.
- */
-[[nodiscard]] constexpr log_level make_log_level(log_level user_level) noexcept
-{
-    auto r = log_level{};
-
-    switch (user_level) {
-        using enum log_level;
-    case debug: r |= log_level::debug; [[fallthrough]];
-    case info: r |= info; [[fallthrough]];
-    case warning:
-        r |= statistics;
-        r |= warning;
-        [[fallthrough]];
-    case error:
-        r |= trace;
-        r |= error;
-        r |= fatal;
-        r |= audit;
-        break;
-    default: tt_no_default();
-    }
-
-    return r;
-}
-
-constexpr char const *to_const_string(log_level level) noexcept
-{
-    if (level >= log_level::fatal) {
-        return "fatal";
-    } else if (level >= log_level::error) {
-        return "error";
-    } else if (level >= log_level::warning) {
-        return "warning";
-    } else if (level >= log_level::audit) {
-        return "audit";
-    } else if (level >= log_level::trace) {
-        return "trace";
-    } else if (level >= log_level::statistics) {
-        return "statistics";
-    } else if (level >= log_level::info) {
-        return "info";
-    } else if (level >= log_level::debug) {
-        return "debug";
-    } else {
-        return "none";
-    }
-}
-
-inline void system_status_set_log_level(log_level level) noexcept
-{
-    return system_status_set_log_level(static_cast<uint8_t>(level));
-}
-
-inline int command_line_argument_to_log_level(std::string_view str)
-{
-    if (str == "debug") {
-        return static_cast<int>(make_log_level(log_level::debug));
-
-    } else if (str == "info") {
-        return static_cast<int>(make_log_level(log_level::info));
-
-    } else if (str == "warning") {
-        return static_cast<int>(make_log_level(log_level::warning));
-
-    } else if (str == "error") {
-        return static_cast<int>(make_log_level(log_level::error));
-
-    } else {
-        throw parse_error("Unknown log level '{}'", str);
-    }
-}
 
 class log_message_base {
 public:
@@ -191,6 +92,8 @@ std::string get_last_error_message();
 void trace_record() noexcept;
 
 /** Flush all messages from the log_queue directly from this thread.
+ * Flushing includes writing the message to a log file or displaying
+ * them on the console.
  */
 tt_no_inline void logger_flush() noexcept;
 
@@ -203,7 +106,9 @@ tt_no_inline void logger_deinit() noexcept;
  * checks the log_queue for new messages and then
  * call log_flush_messages().
  */
-tt_no_inline void logger_init() noexcept;
+tt_no_inline bool logger_init() noexcept;
+
+inline std::atomic<bool> logger_running = false;
 
 /** Start the logger system.
  * Initialize the logger system if it is not already initialized and while the system is not in shutdown-mode.
@@ -211,7 +116,7 @@ tt_no_inline void logger_init() noexcept;
  */
 inline bool logger_start()
 {
-    return system_status_start_subsystem(system_status_type::logger, logger_init, logger_deinit);
+    return start_subsystem(logger_running, false, logger_init, logger_deinit);
 }
 
 /** Log a message.
@@ -225,9 +130,7 @@ inline bool logger_start()
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
 void log(Args &&...args) noexcept
 {
-    ttlet status = system_status.load(std::memory_order::relaxed);
-
-    if (!static_cast<bool>(to_log_level(status) & static_cast<uint8_t>(Level))) [[likely]] {
+    if (!static_cast<bool>(log_level_global.load(std::memory_order::relaxed) & Level)) {
         return;
     }
 
@@ -236,7 +139,6 @@ void log(Args &&...args) noexcept
     // * Simplifies logged_fatal_message logic.
     // * Will make sure everything gets logged.
     // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
-    //auto message = ;
 
     // Emplace a message directly on the queue.
     log_queue.write<"logger_blocked">()->emplace<log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
