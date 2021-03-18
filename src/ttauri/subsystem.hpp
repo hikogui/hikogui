@@ -77,11 +77,12 @@ template<typename T, typename InitFunc, typename DeinitFunc>
 T start_subsystem(std::atomic<T> &check_variable, T off_value, InitFunc init_function, DeinitFunc deinit_function)
 {
     auto old_value = check_variable.load(std::memory_order::acquire);
-    if (old_value != off_value) {
+    if (old_value == off_value) {
+        [[unlikely]] return detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
+    } else {
         [[likely]] return old_value;
     }
 
-    return detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
 }
 
 /** Shutdown the system.

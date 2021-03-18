@@ -130,7 +130,7 @@ inline bool logger_start()
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
 void log(Args &&...args) noexcept
 {
-    if (!static_cast<bool>(log_level_global.load(std::memory_order::relaxed) & Level)) [[likely]] {
+    if (!static_cast<bool>(log_level_global.load(std::memory_order::relaxed) & Level)) {
         return;
     }
 
