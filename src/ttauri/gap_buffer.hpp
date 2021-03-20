@@ -62,7 +62,7 @@ public:
     /** Construct an empty buffer.
      */
     gap_buffer(allocator_type const &allocator = allocator_type{}) noexcept :
-        _begin(nullptr), _end(nullptr), _gap_begin(nullptr), _gap_size(0), _allocator(allocator)
+        _begin(nullptr), _it_end(nullptr), _gap_begin(nullptr), _gap_size(0), _allocator(allocator)
     {
     }
 
@@ -70,7 +70,7 @@ public:
      */
     gap_buffer(std::initializer_list<T> init, allocator_type const &allocator = allocator_type{}) :
         _begin(_allocator.allocate(init.size() + _grow_size)),
-        _end(_begin + init.size() + _grow_size),
+        _it_end(_begin + init.size()),
         _gap_begin(_begin + init.size()),
         _gap_size(_grow_size),
         _allocator(allocator)
@@ -83,7 +83,7 @@ public:
      */
     gap_buffer(gap_buffer const &other) noexcept :
         _begin(nullptr),
-        _end(nullptr),
+        _it_end(nullptr),
         _gap_begin(nullptr),
         _gap_size(0),
         _allocator(other._allocator)
@@ -93,12 +93,12 @@ public:
 
         if (other._ptr != nullptr) {
             _begin = _allocator.allocate(other.capacity());
-            _end = _begin + other.capacity();
+            _it_end = _begin + other.size();
             _gap_begin = _begin + other.left_size();
             _gap_size = other._gap_size;
             
-            placement_copy(other.left_begin(), other.left_end(), left_begin());
-            placement_copy(other.right_begin(), other.right_end(), right_begin());
+            placement_copy(other.left_begin_ptr(), other.left_end_ptr(), left_begin_ptr());
+            placement_copy(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
         }
     }
 
@@ -120,15 +120,15 @@ public:
             _gap_begin = _begin + other.left_size();
             _gap_size = capacity() - other.size();
 
-            placement_copy(other.left_begin(), other.left_end(), left_begin());
-            placement_copy(other.right_begin(), other.right_end(), right_begin());
+            placement_copy(other.left_begin_ptr(), other.left_end_ptr(), left_begin_ptr());
+            placement_copy(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
 
         } else {
             // Deallocate previous memory.
             if (_begin != nullptr) {
                 _allocator.deallocate(_begin, capacity());
                 _begin = nullptr;
-                _end = nullptr;
+                _it_end = nullptr;
                 _gap_begin = nullptr;
                 _gap_size = 0;
             }
@@ -138,12 +138,12 @@ public:
                 ttlet new_capacity = other.size() + _grow_size;
 
                 _begin = _allocator.allocate(new_capacity);
-                _end = _begin + new_capacity;
-                _gap_begin = _begin + other.left_begin();
+                _it_end = _begin + other.size();
+                _gap_begin = _begin + other.left_begin_ptr();
                 _gap_size = new_capacity - other.size();
 
-                placement_copy(other.left_begin(), other.left_end(), left_begin());
-                placement_copy(other.right_begin(), other.right_end(), right_begin());
+                placement_copy(other.left_begin_ptr(), other.left_end_ptr(), left_begin_ptr());
+                placement_copy(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
             }
         }
     }
@@ -153,7 +153,7 @@ public:
      */
     gap_buffer(gap_buffer &&other) noexcept :
         _begin(other._begin),
-        _end(other._end),
+        _it_end(other._it_end),
         _gap_begin(other._gap_begin),
         _gap_size(other._gap_size),
         _allocator(other._allocator)
@@ -161,7 +161,7 @@ public:
         tt_axiom(&other != this);
 
         other._begin = nullptr;
-        other._end = nullptr;
+        other._it_end = nullptr;
         other._gap_begin = nullptr;
         other._gap_size = 0;
     }
@@ -181,26 +181,33 @@ public:
         if (_allocator == other._allocator) {
             // When allocators are the same we can simply swap.
             std::swap(_begin, other._begin);
-            std::swap(_end, other._end);
+            std::swap(_it_end, other._it_end);
             std::swap(_gap_begin, other._gap_begin);
             std::swap(_gap_size, other._size);
             return *this;
-        }
 
-        if (capacity() >= other.size()) {
-            // Reuse memory.
-            _gap_begin = _begin + other.left_size;
+        } else if (capacity() >= other.size()) {
+            // Reuse memory of this.
+            _it_end = _begin + other.size();
+            _gap_begin = _begin + other.left_size();
             _gap_size = capacity() - other.size();
 
-            placement_move(other.left_begin(), other.left_end(), left_begin());
-            placement_move(other.right_begin(), other.right_end(), right_begin());
+            placement_move(other.left_begin_ptr(), other.left_end_ptr(), left_begin_ptr());
+            placement_move(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
+
+            // Other can keep its own capacity.
+            ttlet other_capacity = other.capacity();
+            other._it_end = other._begin;
+            other._gap_begin = other._begin;
+            other._gap_size = other_capacity;
+            return *this;
 
         } else {
             // Deallocate previous memory.
-            if (_ptr != nullptr) {
+            if (_begin != nullptr) {
                 _allocator.deallocate(_begin, capacity());
                 _begin = nullptr;
-                _end = nullptr;
+                _it_end = nullptr;
                 _gap_begin = nullptr;
                 _gap_size = 0;
             }
@@ -210,18 +217,21 @@ public:
                 ttlet new_capacity = other.size() + _grow_size;
 
                 _begin = _allocator.allocate(new_capacity);
-                _end = _begin + new_capacity;
-                _gap_begin = _begin + other.left_size()
+                _it_end = _begin + other.size();
+                _gap_begin = _begin + other.left_size();
                 _gap_size = new_capacity - other.size();
 
-                placement_move(other.left_begin(), other.left_end(), left_begin());
-                placement_move(other.right_begin(), other.right_end(), right_begin());
+                placement_move(other.left_begin_ptr(), other.left_end_ptr(), left_begin_ptr());
+                placement_move(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
             }
-        }
 
-        // All items where moved, but keep the memory allocated in other, for potential reuse.
-        other._gap_begin = other._begin;
-        other._gap_size = other.capacity();
+            // Other can keep its own capacity.
+            ttlet other_capacity = other.capacity();
+            other._it_end = other._begin;
+            other._gap_begin = other._begin;
+            other._gap_size = other_capacity;
+            return *this;
+        }
     }
 
     /** Destructor.
@@ -293,7 +303,7 @@ public:
         return *get_pointer_from_it_ptr(_begin);
     }
 
-    [[nodiscard]] const_referencei front() const noexcept
+    [[nodiscard]] const_reference front() const noexcept
     {
         tt_axiom(size() != 0);
         return *get_pointer_from_it_ptr(_begin);
@@ -302,13 +312,13 @@ public:
     [[nodiscard]] reference back() noexcept
     {
         tt_axiom(size() != 0);
-        return *get_pointer_from_it_ptr(_end - 1);
+        return *get_pointer_from_it_ptr(_it_end - 1);
     }
 
     [[nodiscard]] const_reference back() const noexcept
     {
         tt_axiom(size() != 0);
-        return *get_pointer_from_it_ptr(_end - 1);
+        return *get_pointer_from_it_ptr(_it_end - 1);
     }
 
     void pop_back() noexcept
@@ -332,12 +342,13 @@ public:
      */
     void clear() noexcept
     {
-        if (_ptr) {
-            std::destroy(left_begin(), left_end());
-            std::destroy(right_begin(), right_end());
+        if (_begin) {
+            std::destroy(left_begin_ptr(), left_end_ptr());
+            std::destroy(right_begin_ptr(), right_end_ptr());
+            ttlet this_capacity = capacity();
+            _it_end = _begin;
             _gap_begin = _begin;
-            _gap_size = capacity();
-            _end = _begin + capacity();
+            _gap_size = this_capacity;
         }
     }
 
@@ -372,9 +383,9 @@ public:
         ttlet new_gap_size = new_capacity - size();
 
         if (_begin != nullptr) {
-            placement_move(left_begin(), left_end(), new_begin);
-            placement_move(right_begin(), right_end(), new_gap_begin + new_gap_size);
-            _allocator.deallocate(_ptr, _size);
+            placement_move(left_begin_ptr(), left_end_ptr(), new_begin);
+            placement_move(right_begin_ptr(), right_end_ptr(), new_gap_begin + new_gap_size);
+            _allocator.deallocate(_begin, capacity());
         }
 
         _begin = new_begin;
@@ -416,10 +427,10 @@ public:
     template<typename... Args>
     void emplace_back(Args &&...args) noexcept
     {
-        set_gap_offset(_begin + size());
+        set_gap_offset(_it_end);
         grow_to_insert(1);
 
-        new (_gap_begin) value_type(std::forward<Args>(args)...);
+        new (left_end_ptr()) value_type(std::forward<Args>(args)...);
         ++_it_end;
         ++_gap_begin;
         --_gap_size;
@@ -444,7 +455,7 @@ public:
         set_gap_offset(_begin);
         grow_to_insert(1);
 
-        new (_gap_begin ) value_type(std::forward<Args>(args)...);
+        new (right_begin_ptr() - 1) value_type(std::forward<Args>(args)...);
         ++_it_end;
         --_gap_size;
 #if TT_BUILT_TYPE == TT_BT_DEBUG
@@ -473,7 +484,7 @@ public:
         set_gap_offset(position.it_ptr());
         grow_to_insert(1);
 
-        new (right_begin() - 1) value_type(std::forward<Args>(args)...);
+        new (right_begin_ptr() - 1) value_type(std::forward<Args>(args)...);
         ++_it_end;
         --_gap_size;
 #if TT_BUILT_TYPE == TT_BT_DEBUG
@@ -530,7 +541,7 @@ public:
         set_gap_offset(position.it_ptr() + 1);
         grow_to_insert(1);
 
-        new (_gap_begin) value_type(std::forward<Args>(args)...);
+        new (left_end_ptr()) value_type(std::forward<Args>(args)...);
         ++_it_end;
         ++_gap_begin;
         --_gap_size;
@@ -667,7 +678,7 @@ private:
     {
         return
             (_begin == nullptr && _it_end == nullptr && _gap_begin == nullptr && _gap_size == 0) ||
-            (_begin <= _gap_begin && _gap_begin <= _end);
+            (_begin <= _gap_begin && _gap_begin <= _it_end);
     }
 
     /** Grow the gap_buffer based on the size to be inserted.
@@ -689,7 +700,7 @@ private:
     const_pointer get_const_pointer_from_it(const_pointer it_ptr) const noexcept
     {
         tt_axiom(is_valid());
-        tt_axion(it_ptr >= _begin && it_ptr <= _end);
+        tt_axiom(it_ptr >= _begin && it_ptr <= _it_end);
 
         if (it_ptr < _gap_begin) {
             return it_ptr;
@@ -698,30 +709,55 @@ private:
         }
     }
 
-    pointer get_pointer_from_it(pointer it_ptr) const noexcept
+    const_pointer get_pointer_from_it(pointer it_ptr) const noexcept
     {
-        return const_cast<pointer *>(get_const_pointer_from_it(it_ptr));
+        return get_const_pointer_from_it(it_ptr);
     }
 
-    [[nodiscard]] value_type const *left_begin() const noexcept
+    pointer get_pointer_from_it(pointer it_ptr) noexcept
+    {
+        return const_cast<pointer>(get_const_pointer_from_it(it_ptr));
+    }
+
+    /** Get a pointer to the item.
+     *
+     * @param it_ptr The pointer from a gab_buffer_iterator.
+     * @return Pointer to the item in memory.
+     */
+    const_pointer get_const_pointer_from_index(size_type index) const noexcept
+    {
+        return get_const_pointer_from_it(_begin + index);
+    }
+
+    const_pointer get_pointer_from_index(size_type index) const noexcept
+    {
+        return get_const_pointer_from_it(_begin + index);
+    }
+
+    pointer get_pointer_from_index(size_type index) noexcept
+    {
+        return get_pointer_from_it(_begin + index);
+    }
+
+    [[nodiscard]] value_type const *left_begin_ptr() const noexcept
     {
         tt_axiom(is_valid());
         return _begin;
     }
 
-    [[nodiscard]] value_type *left_begin() noexcept
+    [[nodiscard]] value_type *left_begin_ptr() noexcept
     {
         tt_axiom(is_valid());
         return _begin;
     }
 
-    [[nodiscard]] value_type const *left_end() const noexcept
+    [[nodiscard]] value_type const *left_end_ptr() const noexcept
     {
         tt_axiom(is_valid());
         return _gap_begin;
     }
 
-    [[nodiscard]] value_type *left_end() noexcept
+    [[nodiscard]] value_type *left_end_ptr() noexcept
     {
         tt_axiom(is_valid());
         return _gap_begin;
@@ -733,25 +769,25 @@ private:
         return static_cast<size_type>(_gap_begin - _begin);
     }
 
-    [[nodiscard]] value_type const *right_begin() const noexcept
+    [[nodiscard]] value_type const *right_begin_ptr() const noexcept
     {
         tt_axiom(is_valid());
         return _gap_begin + _gap_size;
     }
 
-    [[nodiscard]] value_type *right_begin() noexcept
+    [[nodiscard]] value_type *right_begin_ptr() noexcept
     {
         tt_axiom(is_valid());
         return _gap_begin + _gap_size;
     }
 
-    [[nodiscard]] value_type const *right_end() const noexcept
+    [[nodiscard]] value_type const *right_end_ptr() const noexcept
     {
         tt_axiom(is_valid());
         return _it_end + _gap_size;
     }
 
-    [[nodiscard]] value_type *right_end() noexcept
+    [[nodiscard]] value_type *right_end_ptr() noexcept
     {
         tt_axiom(is_valid());
         return _it_end + _gap_size;
@@ -785,7 +821,8 @@ private:
         _gap_begin = new_gap_begin;
     }
 
-    friend gap_buffer_iterator<T>;
+    template<typename IT>
+    friend class gap_buffer_iterator;
 };
 
 /** A continues iterator over a gap_buffer.
@@ -797,16 +834,18 @@ public:
         !std::is_volatile_v<T> && !std::is_reference_v<T>,
         "Type of a managing container iterator can not be volatile nor a reference");
 
+    static constexpr bool is_const = std::is_const_v<T>;
+
     using value_type = std::remove_cv_t<T>;
     using size_type = size_t;
     using difference_type = ptrdiff_t;
-    using pointer = T *;
-    using const_pointer = T const *;
-    using reference = T &;
-    using const_reference = T const &;
+    using pointer = value_type *;
+    using const_pointer = value_type const *;
+    using reference = value_type &;
+    using const_reference = value_type const &;
     using iterator_category = std::random_access_iterator_tag;
 
-    using gap_buffer_type = std::conditional_t<std::is_const_v<T>, gap_buffer<value_type> const, gap_buffer<value_type>>;
+    using gap_buffer_type = std::conditional_t<is_const, gap_buffer<value_type> const, gap_buffer<value_type>>;
 
     ~gap_buffer_iterator() noexcept = default;
     gap_buffer_iterator(gap_buffer_iterator const &) noexcept = default;
@@ -816,7 +855,7 @@ public:
 
     gap_buffer_iterator(
         gap_buffer_type *buffer,
-        pointer it_ptr
+        T *it_ptr
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         , size_t version
 #endif
@@ -834,33 +873,33 @@ public:
         return _buffer;
     }
 
-    pointer it_ptr() const noexcept
+    T *it_ptr() const noexcept
     {
         return _it_ptr;
     }
 
-    reference operator*() noexcept
+    reference operator*() noexcept requires(!is_const)
     {
         tt_axiom(is_valid());
-        return *(_buffer->get_pointer(_it_ptr));
+        return *(_buffer->get_pointer_from_it(_it_ptr));
     }
 
     const_reference operator*() const noexcept
     {
         tt_axiom(is_valid());
-        return *(_buffer->get_pointer(_it_ptr));
+        return *(_buffer->get_const_pointer_from_it(_it_ptr));
     }
 
-    reference operator[](std::integral auto index) noexcept
+    reference operator[](std::integral auto index) noexcept requires(!is_const)
     {
         tt_axiom(is_valid());
-        return *(_buffer->get_pointer(_it_ptr + index));
+        return *(_buffer->get_pointer_from_it(_it_ptr + index));
     }
 
     const_reference operator[](std::integral auto index) const noexcept
     {
         tt_axiom(is_valid());
-        return *(_buffer->get_pointer(_it_ptr + index));
+        return *(_buffer->get_const_pointer_from_it(_it_ptr + index));
     }
 
     gap_buffer_iterator &operator++() noexcept
@@ -949,7 +988,7 @@ public:
 
 private:
     gap_buffer_type *_buffer;
-    value_type *_it_ptr;
+    T *_it_ptr;
 #if TT_BUILT_TYPE == TT_BT_DEBUG
     size_t _version;
 #endif
@@ -959,7 +998,7 @@ private:
         auto check = true;
         check &= _buffer != nullptr;
         check &= _it_ptr >= _buffer->_begin;
-        check &= _it_ptr <= _buffer->_end;
+        check &= _it_ptr <= _buffer->_it_end;
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         check &= _version == _buffer->_version;
 #endif
