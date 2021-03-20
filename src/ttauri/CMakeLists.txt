@@ -84,6 +84,9 @@ target_sources(ttauri PRIVATE
     gap_buffer.hpp
     glob.hpp
     hash.hpp
+    hires_tai_clock.hpp
+    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_tai_clock_posix.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_tai_clock_win32.cpp>
     hires_utc_clock.cpp
     hires_utc_clock.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_posix.cpp>
