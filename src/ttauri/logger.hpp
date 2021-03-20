@@ -145,6 +145,8 @@ void log(Args &&...args) noexcept
         std::forward<Args>(args)...);
 
     if (static_cast<bool>(Level & log_level::fatal) || !logger_start()) {
+        // If the logger did not start we will log in degraded mode and log from the current thread.
+        // On fatal error we also want to log from the current thread.
         [[unlikely]] logger_flush();
     }
 

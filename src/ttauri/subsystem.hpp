@@ -20,7 +20,13 @@ namespace detail {
  *
  * The system status should only be written to when holding the system_status_mutex.
  */
-inline bool system_is_shutting_down = false;
+enum class system_status_type {
+    not_started,
+    running,
+    shutdown
+};
+
+inline system_status_type system_status = system_status_type::not_started;
 
 /** A list of deinit function to be called on shutdown.
  */
@@ -43,8 +49,9 @@ tt_no_inline T start_subsystem(std::atomic<T> &check_variable, T off_value, Init
         return old_value;
     }
 
-    if (system_is_shutting_down) {
-        // Once the system is being shutdown, no subsystems are allowed to start.
+    if (system_status != system_status_type::running) {
+        // Only when the system is running can subsystems be started.
+        // otherwise they have to run in degraded mode.
         return off_value;
     }
 
@@ -85,6 +92,15 @@ T start_subsystem(std::atomic<T> &check_variable, T off_value, InitFunc init_fun
 
 }
 
+/** Start the system.
+ * Subsystems will only initialize once the system is started.
+ */
+inline void start_system() noexcept
+{
+    ttlet lock = std::scoped_lock(detail::subsystem_mutex);
+    detail::system_status = detail::system_status_type::running;
+}
+
 /** Shutdown the system.
  * This will shutdown all the registered deinit functions.
  *
@@ -94,7 +110,7 @@ T start_subsystem(std::atomic<T> &check_variable, T off_value, InitFunc init_fun
 inline void shutdown_system() noexcept
 {
     detail::subsystem_mutex.lock();
-    detail::system_is_shutting_down = true;
+    detail::system_status = detail::system_status_type::shutdown;
 
     while (!detail::subsystem_deinit_list.empty()) {
         auto deinit = std::move(detail::subsystem_deinit_list.back());

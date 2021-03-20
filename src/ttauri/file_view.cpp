@@ -23,8 +23,8 @@ std::shared_ptr<file_mapping> file_view::findOrCreateFileMappingObject(URL const
 
     auto& mappings = mappedFileObjects[location];
 
-    for (auto weak__file_mapping_object : mappings) {
-        if (auto _file_mapping_object = weak__file_mapping_object.lock()) {
+    for (auto weak_file_mapping_object : mappings) {
+        if (auto _file_mapping_object = weak_file_mapping_object.lock()) {
             if (_file_mapping_object->size >= size && _file_mapping_object->accessMode() >= accessMode) {
                 return _file_mapping_object;
             }
