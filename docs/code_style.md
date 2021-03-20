@@ -1,11 +1,13 @@
-Code Style rules
-================
+Code Style
+==========
 
 Identifiers
 -----------
 
 ### Casing
+
 The following identifiers are in snake\_case:
+
  - functions,
  - member functions,
  - variables,
@@ -18,22 +20,33 @@ The following identifiers are in snake\_case:
  - concepts.
 
 The following identifiers are in CamelCase:
+
  - template arguments.
 
 Capital letters within a snake\_case identifier are allowed for proper nouns and
 abbreviations.
 
+### Common names
+
+Common identifiers:
+
+ - `i`, `j`, `k`: Index inside a loop.
+ - `it`, `jt`, `kt`: Iterator inside a loop.
+ - `r`: Return value being prepared.
+ - `first`, `last`: Iterator arguments to a function.
+
 ### Prefixes and Suffixes
+
 Common prefixes and suffixes:
 
  - prefix `num_`: Size of a list of items. The prefixed name should be plural
  - suffix `_nr`: Ordinal of an item.
  - suffix `_i` `_j` `_k`: Index inside a loop associated with an specific list.
- - suffix `_it` `_jt` `_kt1`: Iterator inside a loop associated with an specific list.
+ - suffix `_it` `_jt` `_kt`: Iterator inside a loop associated with an specific list.
  - prefix `_`: Private or protected member variables and functions.
  - suffix `_`: A variable after conversion to a different type.
- - prefix `tt_`: A macro
  - suffix `_type`: A type created inside a class.
+ - prefix `tt_`: A macro
 
 Private or protected member variables are prefixed with "\_", so that
 getter/setter member functions names will not alias with the variables.
@@ -47,9 +60,9 @@ The suffix "\_" may be used when a new variable needs to be introduced
 when only its type has changed using casting or conversion.
 If more than one such variable is needed the name of the type should be appended.
 
-
 Global variables
 ----------------
+
 Singletons (classes that can only be instantiated once) are discouraged.
 
 Instead add a static-member-function to the class, which returns a reference to an instance
@@ -68,7 +81,8 @@ variable would be a mutex named `mutex`.
 
 Two phase construction
 ----------------------
-When a polymorphic class needs to polymorphic initialization and destruction it should
+
+When a polymorphic class needs polymorphic initialization and destruction it should
 add the following two virtual functions:
 
  - virtual void `init()`
@@ -87,6 +101,7 @@ for handling multithreading issues.
 
 Delegates
 ---------
+
 Delegates are polymorphic class instances that are passed to an object that is being managed.
 The managed object will call into the delegate to send messages and retrieve information.
 
@@ -106,7 +121,8 @@ object. However they may be called from the constructor and destructor of the ob
 
 Subsystems
 ----------
+
 A subsystem will have a name in the `system_status_type` enum, and will have a global function under the same name
-suffixed with \_start. This subsystem_start function is used to initialize and register the deinitalize function
-with the system_status. The subsystem_start function must be low latency so that it can be called very often to make
+suffixed with \_start. This subsystem\_start function is used to initialize and register the deinitialize function
+with the system\_status. The subsystem\_start function must be low latency so that it can be called very often to make
 sure the subsystem is started when functionality of the subsystem is used for the first time.

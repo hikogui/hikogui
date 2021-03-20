@@ -8,7 +8,6 @@
 #include "../required.hpp"
 #include "../text/text_style.hpp"
 #include "../URL.hpp"
-#include "../numeric_array.hpp"
 #include "../datum.hpp"
 #include "../color/color.hpp"
 #include <array>
@@ -33,8 +32,8 @@ public:
      */
     float margin = 6.0f;
 
-    f32x4 margin2D = f32x4{margin, margin};
-    f32x4 margin2Dx2 = f32x4{margin * 2.0f, margin * 2.0f};
+    extent2 margin2D = extent2{margin, margin};
+    extent2 margin2Dx2 = extent2{margin * 2.0f, margin * 2.0f};
 
     float scroll_bar_thickness = margin * 2.0f;
 

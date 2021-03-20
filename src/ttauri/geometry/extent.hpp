@@ -5,7 +5,7 @@
 #pragma once
 
 #include "vector.hpp"
-#include "../numeric_array.hpp"
+#include "numeric_array.hpp"
 
 namespace tt {
 namespace geo {
@@ -57,20 +57,30 @@ public:
 
     /** Construct a empty extent / zero length.
      */
-    [[nodiscard]] constexpr extent() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f) {}
+    [[nodiscard]] constexpr extent() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f)
+    {
+        tt_axiom(is_valid());
+    }
 
     /** Construct a 2D extent from x and y elements.
      * @param x The x element.
      * @param y The y element.
      */
-    [[nodiscard]] constexpr extent(float width, float height) noexcept requires(D == 2) : _v(width, height, 0.0f, 0.0f) {}
+    [[nodiscard]] constexpr extent(float width, float height) noexcept requires(D == 2) : _v(width, height, 0.0f, 0.0f)
+    {
+        tt_axiom(is_valid());
+    }
 
     /** Construct a 3D extent from x, y and z elements.
      * @param x The x element.
      * @param y The y element.
      * @param z The z element.
      */
-    [[nodiscard]] constexpr extent(float width, float height, float depth = 0.0f) noexcept requires(D == 3) : _v(width, height, depth, 0.0f) {}
+    [[nodiscard]] constexpr extent(float width, float height, float depth = 0.0f) noexcept requires(D == 3) :
+        _v(width, height, depth, 0.0f)
+    {
+        tt_axiom(is_valid());
+    }
 
     /** Access the x-as-width element from the extent.
      * A extent can be seen as having a width, height and depth,
@@ -238,6 +248,62 @@ public:
         return lhs._v == rhs._v;
     }
 
+    /** Compare the size of the extents.
+     */
+    [[nodiscard]] constexpr friend bool operator<(extent const &lhs, extent const &rhs) noexcept requires (D == 2)
+    {
+        return lhs.width() < rhs.width() && lhs.height() < rhs.height();
+    }
+
+    /** Compare the size of the extents.
+     */
+    [[nodiscard]] constexpr friend bool operator<(extent const &lhs, extent const &rhs) noexcept requires(D == 3)
+    {
+        return lhs.width() < rhs.width() && lhs.height() < rhs.height() && lhs.depth() < rhs.depth();
+    }
+
+    /** Compare the size of the extents.
+     */
+    [[nodiscard]] constexpr friend bool operator<=(extent const &lhs, extent const &rhs) noexcept requires(D == 2)
+    {
+        return lhs.width() <= rhs.width() && lhs.height() <= rhs.height();
+    }
+
+    /** Compare the size of the extents.
+     */
+    [[nodiscard]] constexpr friend bool operator<=(extent const &lhs, extent const &rhs) noexcept requires(D == 3)
+    {
+        return lhs.width() <= rhs.width() && lhs.height() <= rhs.height() && lhs.depth() <= rhs.depth();
+    }
+
+    /** Compare the size of the extents.
+     */
+    [[nodiscard]] constexpr friend bool operator>(extent const &lhs, extent const &rhs) noexcept requires(D == 2)
+    {
+        return lhs.width() > rhs.width() && lhs.height() > rhs.height();
+    }
+
+    /** Compare the size of the extents.
+     */
+    [[nodiscard]] constexpr friend bool operator>(extent const &lhs, extent const &rhs) noexcept requires(D == 3)
+    {
+        return lhs.width() > rhs.width() && lhs.height() > rhs.height() && lhs.depth() > rhs.depth();
+    }
+
+    /** Compare the size of the extents.
+     */
+    [[nodiscard]] constexpr friend bool operator>=(extent const &lhs, extent const &rhs) noexcept requires(D == 2)
+    {
+        return lhs.width() >= rhs.width() && lhs.height() >= rhs.height();
+    }
+
+    /** Compare the size of the extents.
+     */
+    [[nodiscard]] constexpr friend bool operator>=(extent const &lhs, extent const &rhs) noexcept requires(D == 3)
+    {
+        return lhs.width() >= rhs.width() && lhs.height() >= rhs.height() && lhs.depth() >= rhs.depth();
+    }
+
     /** Get the squared length of the extent.
      * @param rhs The extent.
      * @return The length of the extent.
@@ -280,20 +346,23 @@ public:
 
     [[nodiscard]] constexpr friend extent ceil(extent const &rhs) noexcept
     {
+        tt_axiom(rhs.is_valid());
         return extent{ceil(static_cast<f32x4>(rhs))};
     }
 
     [[nodiscard]] constexpr friend extent floor(extent const &rhs) noexcept
     {
+        tt_axiom(rhs.is_valid());
         return extent{floor(static_cast<f32x4>(rhs))};
     }
 
     /** Check if the extent is valid.
+     * Extends must be positive.
      * This function will check if w is zero, and with 2D extent is z is zero.
      */
     [[nodiscard]] constexpr bool is_valid() const noexcept
     {
-        return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
+        return _v.x() >= 0.0f && _v.y() >= 0.0f && _v.z() >= 0.0f && _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
     }
 
     [[nodiscard]] friend std::string to_string(extent const &rhs) noexcept

@@ -10,7 +10,8 @@
 #include "math.hpp"
 #include "bezier.hpp"
 #include "required.hpp"
-#include "numeric_array.hpp"
+#include "geometry/vector.hpp"
+#include "geometry/point.hpp"
 #include "geometry/transform.hpp"
 #include <tuple>
 #include <limits>
@@ -280,9 +281,9 @@ struct bezier_curve {
      * \param offset positive means the parallel line will be on the starboard of the curve.
      * \return line segment offset from the curve.
      */
-    [[nodiscard]] bezier_curve toParrallelLine(float const offset) const noexcept
+    [[nodiscard]] bezier_curve toParallelLine(float const offset) const noexcept
     {
-        auto [newP1, newP2] = parrallelLine(P1, P2, offset);
+        auto [newP1, newP2] = parallelLine(P1, P2, offset);
         return {newP1, newP2};
     }
 
@@ -340,7 +341,7 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator first, std::vect
  * \param lineJoinStyle how the gaps between line segments are joined together.
  * \param tolerance to how curved the new contour should look.
  */
-[[nodiscard]] std::vector<bezier_curve> makeParrallelContour(
+[[nodiscard]] std::vector<bezier_curve> makeParallelContour(
     std::vector<bezier_curve> const &contour,
     float offset,
     LineJoinStyle lineJoinStyle,

@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../required.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/point.hpp"
 #include <array>

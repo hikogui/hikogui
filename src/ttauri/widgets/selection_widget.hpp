@@ -46,8 +46,9 @@ public:
         unknown_label(std::forward<UnknownLabel>(unknown_label))
     {
         // Because the super class `abstract_container_widget` forces the same semantic layer
-        // as the a parent, we need to force it back as if this is a normal widget.
+        // as the a parent and _margin to zero, we need to force them back as if this is a normal widget.
         _semantic_layer = parent->semantic_layer() + 1;
+        _margin = theme::global->margin;
     }
 
     ~selection_widget() {}
@@ -114,31 +115,27 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
 
-        if (_selecting) {
-            if (need_layout) {
-                // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
-                // from the point of view of the selection widget.
-
-                // The overlay should start on the same left edge as the selection box and the same width.
-                // The height of the overlay should be the maximum height, which will show all the options.
-
-                ttlet overlay_width =
-                    clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
-                ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
-                ttlet overlay_x = theme::global->smallSize;
-                ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
-                ttlet overlay_rectangle_request = aarect{overlay_x, overlay_y, overlay_width, overlay_height};
-
-                ttlet overlay_rectangle = _overlay_widget->make_overlay_rectangle_from_parent(overlay_rectangle_request);
-                ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
-
-                _overlay_widget->set_layout_parameters_from_parent(
-                    overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer() - _draw_layer);
-            }
-        }
-
         if (need_layout) {
-            _left_box_rectangle = aarect{0.0f, 0.0f, theme::global->smallSize, rectangle().height()};
+            // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
+            // from the point of view of the selection widget.
+
+            // The overlay should start on the same left edge as the selection box and the same width.
+            // The height of the overlay should be the maximum height, which will show all the options.
+
+            ttlet overlay_width =
+                clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
+            ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
+            ttlet overlay_x = theme::global->smallSize;
+            ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
+            ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
+
+            ttlet overlay_rectangle = _overlay_widget->make_overlay_rectangle_from_parent(overlay_rectangle_request);
+            ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
+
+            _overlay_widget->set_layout_parameters_from_parent(
+                overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer() - _draw_layer);
+
+            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme::global->smallSize, rectangle().height()};
             _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
             ttlet chevrons_glyph_bbox = pipeline_SDF::device_shared::getBoundingBox(_chevrons_glyph);
             _chevrons_rectangle =
@@ -147,7 +144,7 @@ public:
                 align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global->small_icon_size), alignment::middle_center);
 
             // The unknown_label is located to the right of the selection box icon.
-            _option_rectangle = aarect{
+            _option_rectangle = aarectangle{
                 _left_box_rectangle.right() + theme::global->margin,
                 0.0f,
                 rectangle().width() - _left_box_rectangle.width() - theme::global->margin * 2.0f,
@@ -172,6 +169,12 @@ public:
         if (_selecting) {
             super::draw(std::move(context), display_time_point);
         }
+    }
+
+    void request_redraw() const noexcept override
+    {
+        super::request_redraw();
+        _overlay_widget->request_redraw();
     }
 
     bool handle_event(mouse_event const &event) noexcept override
@@ -222,7 +225,7 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto r = hit_box{};
 
@@ -230,7 +233,7 @@ public:
             r = super::hitbox_test(position);
         }
 
-        if (rectangle().contains(position)) {
+        if (_visible_rectangle.contains(position)) {
             r = std::max(r, hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default});
         }
 
@@ -241,22 +244,6 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return is_normal(group) && *enabled;
-    }
-
-    std::shared_ptr<widget> find_next_widget(
-        std::shared_ptr<widget> const &current_widget,
-        keyboard_focus_group group,
-        keyboard_focus_direction direction) const noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-
-        if (_selecting) {
-            return super::find_next_widget(current_widget, group, direction);
-
-        } else {
-            // Bypass the abstract_container_widget and directly use the widget implementation.
-            return widget::find_next_widget(current_widget, group, direction);
-        }
     }
 
     template<typename T, typename... Args>
@@ -284,11 +271,11 @@ private:
 
     float _max_option_label_height;
 
-    aarect _option_rectangle;
-    aarect _left_box_rectangle;
+    aarectangle _option_rectangle;
+    aarectangle _left_box_rectangle;
 
     font_glyph_ids _chevrons_glyph;
-    aarect _chevrons_rectangle;
+    aarectangle _chevrons_rectangle;
 
     bool _selecting = false;
     std::shared_ptr<overlay_view_widget> _overlay_widget;
@@ -311,6 +298,15 @@ private:
         return -1;
     }
 
+    [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_first_menu_item() const noexcept
+    {
+        if (std::ssize(_menu_item_widgets) != 0) {
+            return _menu_item_widgets.front();
+        } else {
+            return {};
+        }
+    }
+
     [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_selected_menu_item() const noexcept
     {
         ttlet i = get_value_as_index();
@@ -323,17 +319,26 @@ private:
 
     void start_selecting() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         _selecting = true;
         if (auto selected_menu_item = get_selected_menu_item()) {
             this->window.update_keyboard_target(selected_menu_item, keyboard_focus_group::menu);
+
+        } else if (auto first_menu_item = get_first_menu_item()) {
+            this->window.update_keyboard_target(first_menu_item, keyboard_focus_group::menu);
+
         }
+
+        request_redraw();
     }
 
     void stop_selecting() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         _selecting = false;
-        window.request_redraw(aarect{_overlay_widget->local_to_window() * _overlay_widget->clipping_rectangle()});
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        request_redraw();
     }
 
     /** Populate the scroll view with menu items corresponding to the options.

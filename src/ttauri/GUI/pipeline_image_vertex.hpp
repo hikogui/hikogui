@@ -5,8 +5,7 @@
 #pragma once
 
 #include "pipeline_image_image_location.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../color/sfloat_rgb32.hpp"
 #include "../color/sfloat_rgba32.hpp"
 #include <vulkan/vulkan.hpp>
@@ -26,7 +25,7 @@ struct vertex {
     //! The x, y coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
     sfloat_rgb32 atlasPosition;
 
-    vertex(f32x4 position, f32x4 atlasPosition, aarect clippingRectangle) noexcept :
+    vertex(point3 position, point3 atlasPosition, aarectangle clippingRectangle) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         atlasPosition(atlasPosition) {}

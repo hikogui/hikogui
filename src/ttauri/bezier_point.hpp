@@ -6,7 +6,7 @@
 
 #include "required.hpp"
 #include "cast.hpp"
-#include "numeric_array.hpp"
+#include "geometry/point.hpp"
 #include "geometry/transform.hpp"
 #include <vector>
 

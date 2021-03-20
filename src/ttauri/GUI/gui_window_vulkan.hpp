@@ -28,6 +28,14 @@ namespace pipeline_tone_mapper {
 class pipeline_tone_mapper;
 }
 
+struct swapchain_image_info {
+    vk::Image image;
+    vk::ImageView image_view;
+    vk::Framebuffer frame_buffer;
+    aarectangle redraw_rectangle;
+    bool layout_is_present = false;
+};
+
 class gui_window_vulkan : public gui_window {
 public:
     vk::SurfaceKHR intrinsic;
@@ -39,10 +47,7 @@ public:
     int nrSwapchainImages;
     vk::Extent2D swapchainImageExtent;
     vk::SurfaceFormatKHR swapchainImageFormat;
-    std::vector<vk::Image> swapchainImages;
-    std::vector<vk::ImageView> swapchainImageViews;
-    std::vector<vk::Framebuffer> swapchainFramebuffers;
-    std::vector<aarect> swapchainRedrawRectangle;
+    std::vector<swapchain_image_info> swapchain_image_infos;
 
     static const vk::Format depthImageFormat = vk::Format::eD32Sfloat;
     VmaAllocation depthImageAllocation;
@@ -95,7 +100,7 @@ private:
     std::optional<uint32_t> acquireNextImageFromSwapchain();
     void presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
 
-    void fillCommandBuffer(vk::Framebuffer frameBuffer, aarect scissor_rectangle);
+    void fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle);
     void submitCommandBuffer();
 
     bool readSurfaceExtent();

@@ -16,10 +16,6 @@ enum class keyboard_focus_direction {
     /** Search forward in the keyboard focus chain.
      */
     forward,
-
-    /** The current widget.
-     */
-    current
 };
 
 } // namespace tt

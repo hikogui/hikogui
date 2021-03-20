@@ -14,7 +14,7 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
 {
     while (target_widget) {
         // Send a command in priority order to the widget.
-        if constexpr (std::is_same_v<Event,mouse_event>) {
+        if constexpr (std::is_same_v<Event, mouse_event>) {
             if (target_widget->handle_event(target_widget->window_to_local() * event)) {
                 return true;
             }
@@ -135,7 +135,7 @@ void gui_window::window_changed_size(extent2 new_extent)
     extent = new_extent;
 
     tt_axiom(widget);
-    widget->set_layout_parameters_from_parent(aarect{extent});
+    widget->set_layout_parameters_from_parent(aarectangle{extent});
     requestLayout = true;
 }
 
@@ -170,6 +170,10 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
+    // Before we are going to make new_target_widget empty, due to the rules below;
+    // capture which parents there are.
+    auto new_target_parent_chain = tt::widget::parent_chain(new_target_widget);
+
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
     // In that case no widget will get focus.
@@ -183,18 +187,18 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
         return;
     }
 
-    // Tell the current widget that the keyboard focus was exited.
-    if (current_target_widget) {
+    // When there is a new target, tell the current widget that the keyboard focus was exited.
+    if (new_target_widget && current_target_widget) {
         send_event_to_widget(current_target_widget, std::vector{command::gui_keyboard_exit});
+        _keyboard_target_widget = {};
     }
 
-    // Send a gui_cancel command to any widget that is not in the new_target_widget-parent-chain.
-    auto new_target_parent_chain = tt::widget::parent_chain(new_target_widget);
+    // Tell "escape" to all the widget that are not parents of the new widget
     widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
-    _keyboard_target_widget = new_target_widget;
     if (new_target_widget) {
+        _keyboard_target_widget = new_target_widget;
         send_event_to_widget(new_target_widget, std::vector{command::gui_keyboard_enter});
     }
 }
@@ -206,17 +210,20 @@ void gui_window::update_keyboard_target(
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    if (direction == keyboard_focus_direction::current) {
-        update_keyboard_target(std::move(start_widget), group);
-    } else {
-        auto tmp = widget->find_next_widget(start_widget, group, direction);
-        if (tmp == start_widget) {
-            // The currentTargetWidget was already the last (or only) widget;
-            // don't focus anything.
-            tmp = {};
-        }
-        update_keyboard_target(std::move(tmp), group);
+    auto tmp = widget->find_next_widget(start_widget, group, direction);
+    if (tmp == start_widget) {
+        // Could not a next widget, loop around.
+        tmp = widget->find_next_widget({}, group, direction);
     }
+    update_keyboard_target(std::move(tmp), group);
+}
+
+void gui_window::update_keyboard_target(
+    keyboard_focus_group group,
+    keyboard_focus_direction direction) noexcept
+{
+    auto current_keyboard_widget = _keyboard_target_widget.lock();
+    update_keyboard_target(current_keyboard_widget, group, direction);
 }
 
 bool gui_window::handle_event(tt::command command) noexcept
@@ -232,8 +239,6 @@ bool gui_window::handle_event(tt::command command) noexcept
     }
     return false;
 }
-
-
 
 /*[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, mouse_event const &event) noexcept
 {

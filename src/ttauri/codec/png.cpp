@@ -70,11 +70,11 @@ void png::read_header(std::span<std::byte const> bytes, ssize_t &offset)
 
 void png::generate_sRGB_transfer_function() noexcept
 {
-    ttlet value_range = bit_depth == 8 ? 256 : 65536;
+    ttlet value_range = _bit_depth == 8 ? 256 : 65536;
     ttlet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = narrow_cast<float>(i) / value_range_f;
-        transfer_function.push_back(sRGB_gamma_to_linear(u));
+        _transfer_function.push_back(sRGB_gamma_to_linear(u));
     }
 }
 
@@ -83,21 +83,21 @@ void png::generate_Rec2100_transfer_function() noexcept
     // SDR brightness is 80 cd/m2. Rec2100/PQ brightness is 10,000 cd/m2.
     constexpr float hdr_multiplier = 10'000.0f / 80.0f;
 
-    ttlet value_range = bit_depth == 8 ? 256 : 65536;
+    ttlet value_range = _bit_depth == 8 ? 256 : 65536;
     ttlet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = narrow_cast<float>(i) / value_range_f;
-        transfer_function.push_back(Rec2100_gamma_to_linear(u) * hdr_multiplier);
+        _transfer_function.push_back(Rec2100_gamma_to_linear(u) * hdr_multiplier);
     }
 }
 
 void png::generate_gamma_transfer_function(float gamma) noexcept
 {
-    ttlet value_range = bit_depth == 8 ? 256 : 65536;
+    ttlet value_range = _bit_depth == 8 ? 256 : 65536;
     ttlet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = narrow_cast<float>(i) / value_range_f;
-        transfer_function.push_back(powf(u, gamma));
+        _transfer_function.push_back(powf(u, gamma));
     }
 }
 
@@ -106,39 +106,38 @@ void png::read_IHDR(std::span<std::byte const> bytes)
 {
     ttlet ihdr = make_placement_ptr<IHDR>(bytes);
 
-    width = ihdr->width.value();
-    height = ihdr->height.value();
-    bit_depth = ihdr->bit_depth;
-    color_type = ihdr->color_type;
-    compression_method = ihdr->compression_method;
-    filter_method = ihdr->filter_method;
-    interlace_method = ihdr->interlace_method;
+    _width = ihdr->width.value();
+    _height = ihdr->height.value();
+    _bit_depth = ihdr->bit_depth;
+    _color_type = ihdr->color_type;
+    _compression_method = ihdr->compression_method;
+    _filter_method = ihdr->filter_method;
+    _interlace_method = ihdr->interlace_method;
 
-    tt_parse_check(width <= 16384, "PNG width too large.");
-    tt_parse_check(height <= 16384, "PNG height too large.");
-    tt_parse_check(bit_depth == 8 || bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
-    tt_parse_check(compression_method == 0, "Only deflate/inflate compression is allowed.");
-    tt_parse_check(filter_method == 0, "Only adaptive filtering is allowed.");
-    tt_parse_check(interlace_method == 0, "Only non interlaced PNG are implemented.");
+    tt_parse_check(_width <= 16384, "PNG width too large.");
+    tt_parse_check(_height <= 16384, "PNG height too large.");
+    tt_parse_check(_bit_depth == 8 || _bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
+    tt_parse_check(_compression_method == 0, "Only deflate/inflate compression is allowed.");
+    tt_parse_check(_filter_method == 0, "Only adaptive filtering is allowed.");
+    tt_parse_check(_interlace_method == 0, "Only non interlaced PNG are implemented.");
 
-    is_palletted = (color_type & 1) != 0;
-    is_color = (color_type & 2) != 0;
-    has_alpha = (color_type & 4) != 0;
-    tt_parse_check((color_type & 0xf8) == 0, "Invalid color type");
-    tt_parse_check(!is_palletted, "Paletted images are not supported");
+    _is_palletted = (_color_type & 1) != 0;
+    _is_color = (_color_type & 2) != 0;
+    _has_alpha = (_color_type & 4) != 0;
+    tt_parse_check((_color_type & 0xf8) == 0, "Invalid color type");
+    tt_parse_check(!_is_palletted, "Paletted images are not supported");
 
-    if (is_palletted) {
-        samples_per_pixel = 1;
+    if (_is_palletted) {
+        _samples_per_pixel = 1;
     } else {
-        samples_per_pixel = static_cast<int>(has_alpha);
-        samples_per_pixel += is_color ? 3 : 1;
+        _samples_per_pixel = static_cast<int>(_has_alpha);
+        _samples_per_pixel += _is_color ? 3 : 1;
     }
 
-
-    bits_per_pixel = samples_per_pixel * bit_depth;
-    bytes_per_line = (bits_per_pixel * width + 7) / 8;
-    stride = bytes_per_line + 1;
-    bytes_per_pixel = std::max(1, bits_per_pixel / 8);
+    _bits_per_pixel = _samples_per_pixel * _bit_depth;
+    _bytes_per_line = (_bits_per_pixel * _width + 7) / 8;
+    _stride = _bytes_per_line + 1;
+    _bytes_per_pixel = std::max(1, _bits_per_pixel / 8);
 
     generate_sRGB_transfer_function();
 }
@@ -158,7 +157,7 @@ void png::read_cHRM(std::span<std::byte const> bytes)
         narrow_cast<float>(chrm->blue_y.value()) / 100'000.0f
     );
 
-    color_to_sRGB = XYZ_to_sRGB * color_to_XYZ;
+    _color_to_sRGB = XYZ_to_sRGB * color_to_XYZ;
 }
 
 void png::read_gAMA(std::span<std::byte const> bytes)
@@ -176,7 +175,7 @@ void png::read_sRGB(std::span<std::byte const> bytes)
     ttlet rendering_intent = srgb->rendering_intent;
     tt_parse_check(rendering_intent <= 3, "Invalid rendering intent");
 
-    color_to_sRGB = geo::identity();
+    _color_to_sRGB = geo::identity();
     generate_sRGB_transfer_function();
 }
 
@@ -203,7 +202,7 @@ void png::read_iCCP(std::span<std::byte const> bytes)
         // The official rule here is to ignore everything in the ICC profile and
         // create the conversion matrix and transfer function from scratch.
 
-        color_to_sRGB = XYZ_to_sRGB * Rec2100_to_XYZ;
+        _color_to_sRGB = XYZ_to_sRGB * Rec2100_to_XYZ;
         generate_Rec2100_transfer_function();
         return;
     }
@@ -226,7 +225,7 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"):
-            idat_chunk_data.push_back(bytes.subspan(offset, length));
+            _idat_chunk_data.push_back(bytes.subspan(offset, length));
             break;
 
         case fourcc("IHDR"):
@@ -283,7 +282,7 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
 }
 
 png::png(std::span<std::byte const> bytes) :
-    view()
+    _view()
 {
     ssize_t offset = 0;
 
@@ -292,22 +291,22 @@ png::png(std::span<std::byte const> bytes) :
 }
 
 png::png(std::unique_ptr<resource_view> view) :
-    view(std::move(view))
+    _view(std::move(view))
 {
     ssize_t offset = 0;
 
-    ttlet bytes = this->view->bytes();
+    ttlet bytes = _view->bytes();
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
 
 bstring png::decompress_IDATs(ssize_t image_data_size) const {
-    if (std::ssize(idat_chunk_data) == 1) {
-        return zlib_decompress(idat_chunk_data[0], image_data_size);
+    if (std::ssize(_idat_chunk_data) == 1) {
+        return zlib_decompress(_idat_chunk_data[0], image_data_size);
     } else {
         // Merge all idat chunks together.
         ttlet compressed_data_size = std::accumulate(
-            idat_chunk_data.cbegin(), idat_chunk_data.cend(), ssize_t{0},
+            _idat_chunk_data.cbegin(), _idat_chunk_data.cend(), ssize_t{0},
             [](ttlet &a, ttlet &b) {
             return a + std::ssize(b);
         }
@@ -315,7 +314,7 @@ bstring png::decompress_IDATs(ssize_t image_data_size) const {
 
         bstring compressed_data;
         compressed_data.reserve(compressed_data_size);
-        for (ttlet &chunk_data : idat_chunk_data) {
+        for (ttlet &chunk_data : _idat_chunk_data) {
             std::copy(chunk_data.begin(), chunk_data.end(), std::back_inserter(compressed_data));
         }
 
@@ -325,8 +324,8 @@ bstring png::decompress_IDATs(ssize_t image_data_size) const {
 
 void png::unfilter_line_sub(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
-    for (int i = 0; i != bytes_per_line; ++i) {
-        int j = i - bytes_per_pixel;
+    for (int i = 0; i != _bytes_per_line; ++i) {
+        int j = i - _bytes_per_pixel;
 
         uint8_t prev_raw = j >= 0 ? line[j] : 0;
         line[i] += prev_raw;
@@ -335,15 +334,15 @@ void png::unfilter_line_sub(std::span<uint8_t> line, std::span<uint8_t const> pr
 
 void png::unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
-    for (int i = 0; i != bytes_per_line; ++i) {
+    for (int i = 0; i != _bytes_per_line; ++i) {
         line[i] += prev_line[i];
     }
 }
 
 void png::unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
-    for (int i = 0; i != bytes_per_line; ++i) {
-        int j = i - bytes_per_pixel;
+    for (int i = 0; i != _bytes_per_line; ++i) {
+        int j = i - _bytes_per_pixel;
 
         uint8_t prev_raw = j >= 0 ? line[j] : 0;
         line[i] += (prev_raw + prev_line[i]) / 2;
@@ -371,8 +370,8 @@ static uint8_t paeth_predictor(uint8_t _a, uint8_t _b, uint8_t _c) noexcept {
 
 void png::unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
-    for (int i = 0; i != bytes_per_line; ++i) {
-        int j = i - bytes_per_pixel;
+    for (int i = 0; i != _bytes_per_line; ++i) {
+        int j = i - _bytes_per_pixel;
 
         uint8_t up = prev_line[i];
         uint8_t left = j >= 0 ? line[j] : 0;
@@ -385,10 +384,10 @@ void png::unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_l
 {
     switch (line[0]) {
     case 0: return;
-    case 1: return unfilter_line_sub(line.subspan(1, bytes_per_line), prev_line);
-    case 2: return unfilter_line_up(line.subspan(1, bytes_per_line), prev_line);
-    case 3: return unfilter_line_average(line.subspan(1, bytes_per_line), prev_line);
-    case 4: return unfilter_line_paeth(line.subspan(1, bytes_per_line), prev_line);
+    case 1: return unfilter_line_sub(line.subspan(1, _bytes_per_line), prev_line);
+    case 2: return unfilter_line_up(line.subspan(1, _bytes_per_line), prev_line);
+    case 3: return unfilter_line_average(line.subspan(1, _bytes_per_line), prev_line);
+    case 4: return unfilter_line_paeth(line.subspan(1, _bytes_per_line), prev_line);
     default:
         throw parse_error("Unknown line-filter type");
     }
@@ -397,47 +396,48 @@ void png::unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_l
 void png::unfilter_lines(bstring &image_data) const
 {
     auto image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), std::ssize(image_data));
-    auto zero_line = bstring(bytes_per_line, std::byte{0});
+    auto zero_line = bstring(_bytes_per_line, std::byte{0});
 
     auto prev_line = std::span(reinterpret_cast<uint8_t *>(zero_line.data()), std::ssize(zero_line));
-    for (int y = 0; y != height; ++y) {
-        auto line = image_bytes.subspan(y * stride, stride);
+    for (int y = 0; y != _height; ++y) {
+        auto line = image_bytes.subspan(y * _stride, _stride);
         unfilter_line(line, prev_line);
-        prev_line = line.subspan(1, bytes_per_line);
+        prev_line = line.subspan(1, _bytes_per_line);
     }
 }
 
-static int get_sample(std::span<std::byte const> bytes, ssize_t &offset, bool two_bytes)
+static uint16_t get_sample(std::span<std::byte const> bytes, ssize_t &offset, bool two_bytes)
 {
-    int value = static_cast<uint8_t>(bytes[offset++]);
+    uint16_t value = static_cast<uint8_t>(bytes[offset++]);
     if (two_bytes) {
-        value = (value << 8) | static_cast<uint8_t>(bytes[offset++]);
+        value <<= 8;
+        value |= static_cast<uint8_t>(bytes[offset++]);
     }
     return value;
 }
 
-i32x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept
+u16x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept
 {
-    tt_axiom(bit_depth == 8 || bit_depth == 16);
-    tt_axiom(!is_palletted);
+    tt_axiom(_bit_depth == 8 || _bit_depth == 16);
+    tt_axiom(!_is_palletted);
 
-    int r = 0;
-    int g = 0;
-    int b = 0;
-    int a = 0;
+    uint16_t r = 0;
+    uint16_t g = 0;
+    uint16_t b = 0;
+    uint16_t a = 0;
 
-    ssize_t offset = x * bytes_per_pixel;
-    if (is_color) {
-        r = get_sample(bytes, offset, bit_depth == 16);
-        g = get_sample(bytes, offset, bit_depth == 16);
-        b = get_sample(bytes, offset, bit_depth == 16);
+    ssize_t offset = x * _bytes_per_pixel;
+    if (_is_color) {
+        r = get_sample(bytes, offset, _bit_depth == 16);
+        g = get_sample(bytes, offset, _bit_depth == 16);
+        b = get_sample(bytes, offset, _bit_depth == 16);
     } else {
-        r = g = b = get_sample(bytes, offset, bit_depth == 16);
+        r = g = b = get_sample(bytes, offset, _bit_depth == 16);
     }
-    if (has_alpha) {
-        a = get_sample(bytes, offset, bit_depth == 16);
+    if (_has_alpha) {
+        a = get_sample(bytes, offset, _bit_depth == 16);
     } else {
-        a = (bit_depth == 16) ? 65535 : 255;
+        a = (_bit_depth == 16) ? 65535 : 255;
     }
 
     return {r, g, b, a};
@@ -445,17 +445,17 @@ i32x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) cons
 
 void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &line) const noexcept
 {
-    ttlet alpha_mul = bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
-    for (int x = 0; x != width; ++x) {
+    ttlet alpha_mul = _bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
+    for (int x = 0; x != _width; ++x) {
         ttlet value = extract_pixel_from_line(bytes, x);
 
         ttlet linear_color = color(
-            transfer_function[value.x()],
-            transfer_function[value.y()],
-            transfer_function[value.z()]
+            _transfer_function[value.x()],
+            _transfer_function[value.y()],
+            _transfer_function[value.z()]
         );
 
-        auto lesRGB_color = color_to_sRGB * linear_color;
+        auto lesRGB_color = _color_to_sRGB * linear_color;
         lesRGB_color.a() = static_cast<float>(value.w()) * alpha_mul;
 
         line[x] = lesRGB_color;
@@ -466,10 +466,10 @@ void png::data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const no
 {
     auto bytes_span = std::span(bytes);
 
-    for (int y = 0; y != height; ++y) {
-        int inv_y = height - y - 1;
+    for (int y = 0; y != _height; ++y) {
+        int inv_y = _height - y - 1;
 
-        auto bytes_line = bytes_span.subspan(inv_y * stride + 1, bytes_per_line);
+        auto bytes_line = bytes_span.subspan(inv_y * _stride + 1, _bytes_per_line);
         auto pixel_line = image[y];
         data_to_image_line(bytes_line, pixel_line);
     }
@@ -478,7 +478,7 @@ void png::data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const no
 void png::decode_image(pixel_map<sfloat_rgba16> &image) const
 {
     // There is a filter selection byte in front of every line.
-    ttlet image_data_size = stride * height;
+    ttlet image_data_size = _stride * _height;
 
     auto image_data = decompress_IDATs(image_data_size);
     tt_parse_check(std::ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
@@ -492,7 +492,7 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
 pixel_map<sfloat_rgba16> png::load(URL const &url)
 {
     ttlet png_data = png(url);
-    auto image = pixel_map<sfloat_rgba16>{png_data.extent()};
+    auto image = pixel_map<sfloat_rgba16>{narrow_cast<ssize_t>(png_data.width()), narrow_cast<ssize_t>(png_data.height())};
     png_data.decode_image(image);
     return image;
 }

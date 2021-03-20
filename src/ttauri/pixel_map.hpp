@@ -5,7 +5,8 @@
 #pragma once
 
 #include "required.hpp"
-#include "aarect.hpp"
+#include "geometry/axis_aligned_rectangle.hpp"
+#include "geometry/extent.hpp"
 #include <span>
 #include <string>
 #include <algorithm>
@@ -19,7 +20,7 @@ template<typename T>
 class pixel_row {
 public:
     pixel_row(T *pixels, ssize_t width) noexcept : _pixels(pixels), _width(width) {}
-    
+
     [[nodiscard]] ssize_t width() const noexcept
     {
         return _width;
@@ -100,7 +101,7 @@ class pixel_map {
 public:
     /** Construct an empty pixel-map.
      */
-    pixel_map() noexcept : _pixels(nullptr), _width(0), _height(0), _stride(0) {}
+    pixel_map() noexcept : _pixels(nullptr), _width(0), _height(0), _stride(0), _self_allocated(true) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixels A pointer to pixels received from the API.
@@ -109,63 +110,39 @@ public:
      * @param stride Number of pixel elements until the next row.
      */
     pixel_map(T *pixels, ssize_t width, ssize_t height, ssize_t stride) noexcept :
-        _pixels(pixels), _width(width), _height(height), _stride(stride)
+        _pixels(pixels), _width(width), _height(height), _stride(stride), _self_allocated(false)
     {
-        if (pixels) {
-            tt_assert(_stride >= _width);
-            tt_assert(_width > 0);
-            tt_assert(_height > 0);
-        } else {
-            tt_assert(_width == 0);
-            tt_assert(_height == 0);
+        tt_assert(_stride >= _width);
+        tt_assert(_width >= 0);
+        tt_assert(_height >= 0);
+
+        if (pixels == nullptr) {
+            _self_allocated = true;
+            _pixels = new T[_height * _stride];
         }
     }
-
-    /** Construct an pixel-map.
-     * This constructor will allocate its own memory.
-     *
-     * @param width The width of the image.
-     * @param height The height of the image.
-     */
-    pixel_map(ssize_t width, ssize_t height) noexcept :
-        _pixels(new T[width * height]), _width(width), _height(height), _stride(width), _self_allocated(true)
-    {
-        if (_pixels) {
-            tt_assert(_stride >= _width);
-            tt_assert(_width > 0);
-            tt_assert(_height > 0);
-        } else {
-            tt_assert(_width == 0);
-            tt_assert(_height == 0);
-        }
-    }
-
-    /** Construct an pixel-map.
-     * This constructor will allocate its own memory.
-     *
-     * @param extent The width and height of the image.
-     */
-    pixel_map(i32x4 extent) noexcept : pixel_map(extent.x(), extent.y()) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixels A pointer to pixels received from the API.
      * @param width The width of the image.
      * @param height The height of the image.
+     * @param stride Number of pixel elements until the next row.
      */
     pixel_map(T *pixels, ssize_t width, ssize_t height) noexcept : pixel_map(pixels, width, height, width) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixels A pointer to pixels received from the API.
-     * @param extent The width and height of the image.
+     * @param width The width of the image.
+     * @param height The height of the image.
      */
-    pixel_map(T *pixels, i32x4 extent) noexcept : pixel_map(pixels, extent.x(), extent.y()) {}
+    pixel_map(ssize_t width, ssize_t height, ssize_t stride) noexcept : pixel_map(nullptr, width, height, stride) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixels A pointer to pixels received from the API.
-     * @param extent The width and height of the image.
-     * @param stride Number of pixel elements until the next row.
+     * @param width The width of the image.
+     * @param height The height of the image.
      */
-    pixel_map(T *pixels, i32x4 extent, ssize_t stride) noexcept : pixel_map(pixels, extent.x(), extent.y(), stride) {}
+    pixel_map(ssize_t width, ssize_t height) noexcept : pixel_map(nullptr, width, height, width) {}
 
     ~pixel_map()
     {
@@ -198,7 +175,11 @@ public:
     }
 
     pixel_map(pixel_map &&other) noexcept :
-        _pixels(other._pixels), _width(other._width), _height(other._height), _stride(other._stride), _self_allocated(other._self_allocated)
+        _pixels(other._pixels),
+        _width(other._width),
+        _height(other._height),
+        _stride(other._stride),
+        _self_allocated(other._self_allocated)
     {
         tt_axiom(this != &other);
         other._self_allocated = false;
@@ -243,28 +224,9 @@ public:
         return *this;
     }
 
-    i32x4 extent() const noexcept
+    extent2 extent() const noexcept
     {
-        return {narrow_cast<int>(_width), narrow_cast<int>(_height)};
-    }
-
-    /** Get a (smaller) view of the map.
-     * @param rect offset and extent of the rectangle to return.
-     * @return A new pixel-map that point to the same memory as the current pixel-map.
-     */
-    pixel_map<T> submap(iaarect rect) const noexcept
-    {
-        tt_axiom((rect.left() >= 0) && (rect.bottom() >= 0));
-        tt_assert((rect.right() <= _width) && (rect.top() <= _height));
-
-        ttlet offset = rect.bottom() * _stride + rect.left();
-
-        return {_pixels + offset, rect.width(), rect.height(), _stride};
-    }
-
-    pixel_map<T> submap(aarect rect) const noexcept
-    {
-        return submap(iaarect{rect});
+        return {narrow_cast<float>(_width), narrow_cast<float>(_height)};
     }
 
     /** Get a (smaller) view of the map.
@@ -276,7 +238,22 @@ public:
      */
     pixel_map<T> submap(ssize_t x, ssize_t y, ssize_t width, ssize_t height) const noexcept
     {
-        return submap(iaarect{x, y, width, height});
+        tt_axiom((x >= 0) && (y >= 0));
+        tt_assert((x + width <= _width) && (y + height <= _height));
+
+        ttlet offset = y * _stride + x;
+
+        return {_pixels + offset, width, height, _stride};
+    }
+
+    pixel_map<T> submap(aarectangle rectangle) const noexcept
+    {
+        tt_axiom(round(rectangle) == rectangle);
+        return submap(
+            narrow_cast<ssize_t>(rectangle.left()),
+            narrow_cast<ssize_t>(rectangle.bottom()),
+            narrow_cast<ssize_t>(rectangle.width()),
+            narrow_cast<ssize_t>(rectangle.height()));
     }
 
     pixel_row<T> const operator[](ssize_t rowNr) const noexcept
@@ -321,7 +298,7 @@ private:
 
     /** True if the memory was allocated by this class, false if the canvas was received from another API.
      */
-    bool _self_allocated = false;
+    bool _self_allocated;
 };
 
 template<typename T>

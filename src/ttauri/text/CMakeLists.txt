@@ -65,10 +65,11 @@ target_sources(ttauri PRIVATE
     unicode_ranges.hpp
 )
 
-
-target_sources(ttauri_tests PRIVATE
-    unicode_bidi_tests.cpp
-    unicode_text_segmentation_tests.cpp
-    unicode_normalization_tests.cpp
-    language_tag_tests.cpp
-)
+if(TT_BUILD_TESTS)
+    target_sources(ttauri_tests PRIVATE
+        unicode_bidi_tests.cpp
+        unicode_text_segmentation_tests.cpp
+        unicode_normalization_tests.cpp
+        language_tag_tests.cpp
+    )
+endif()

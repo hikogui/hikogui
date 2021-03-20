@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
+#include "../geometry/numeric_array.hpp"
 
 namespace tt {
 
@@ -54,6 +54,11 @@ public:
 
     [[nodiscard]] constexpr color() noexcept : _v(0.0, 0.0, 0.0, 1.0) {}
     [[nodiscard]] constexpr color(float r, float g, float b, float a = 1.0) noexcept : _v(r, g, b, a) {}
+
+    [[nodiscard]] static constexpr color transparent() noexcept
+    {
+        return {0.0f, 0.0f, 0.0f, 0.0f};
+    }
 
     [[nodiscard]] constexpr float &r() noexcept
     {

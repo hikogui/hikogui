@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
+#include "numeric_array.hpp"
 
 namespace tt {
 namespace geo {
@@ -246,6 +246,49 @@ public:
     {
         tt_axiom(lhs.is_valid() && rhs.is_valid());
         return dot<element_mask>(lhs._v, rhs._v);
+    }
+
+    /** Mix the two vectors and get the lowest value of each element.
+     * @param lhs The first vector.
+     * @param rhs The first vector.
+     * @return A vector that points the most left of both vectors, and most downward of both vectors.
+     */
+    template<int E>
+    [[nodiscard]] friend constexpr auto min(vector const &lhs, vector<E> const &rhs) noexcept
+    {
+        return vector<std::max(D, E)>{min(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
+    /** Mix the two vectors and get the highest value of each element.
+     * @param lhs The first vector.
+     * @param rhs The first vector.
+     * @return A vector that points the most right of both vectors, and most upward of both vectors.
+     */
+    template<int E>
+    [[nodiscard]] friend constexpr auto max(vector const &lhs, vector<E> const &rhs) noexcept
+    {
+        return vector<std::max(D, E)>{max(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
+    /** Round the elements of the vector toward nearest integer.
+     */
+    [[nodiscard]] friend constexpr vector round(vector const &rhs) noexcept
+    {
+        return vector{round(static_cast<f32x4>(rhs))};
+    }
+
+    /** Round the elements of the vector toward upward and to the right.
+     */
+    [[nodiscard]] friend constexpr vector ceil(vector const &rhs) noexcept
+    {
+        return vector{ceil(static_cast<f32x4>(rhs))};
+    }
+
+    /** Round the elements of the vector toward downward and to the left.
+     */
+    [[nodiscard]] friend constexpr vector floor(vector const &rhs) noexcept
+    {
+        return vector{floor(static_cast<f32x4>(rhs))};
     }
 
     /** Check if the vector is valid.

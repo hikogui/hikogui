@@ -4,7 +4,7 @@
 
 #include "application_controller.hpp"
 #include "application_preferences.hpp"
-#include "ttauri/system_status.hpp"
+#include "ttauri/log_level.hpp"
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include "ttauri/application.hpp"
@@ -18,7 +18,7 @@ tt::version application_controller::application_version(tt::application &self) c
     return demo_version;
 }
 
-tt::datum application_controller::configuration(tt::application &self, std::vector<std::string> arguments) const noexcept {
+tt::datum application_controller::configuration(tt::application &self, int argc, char *argv[]) const noexcept {
     using namespace std::literals;
 
     auto parser = tt::CommandLineParser(
@@ -40,7 +40,7 @@ tt::datum application_controller::configuration(tt::application &self, std::vect
     default_configuration["help"] = false;
     default_configuration["log-level"] = static_cast<int>(make_log_level(tt::log_level::debug));
 
-    ttlet command_line_configuration = parser.parse(arguments);
+    ttlet command_line_configuration = parser.parse(argc, argv);
     auto configuration = deep_merge(default_configuration, command_line_configuration);
 
     if (parser.has_error() || configuration["help"]) {

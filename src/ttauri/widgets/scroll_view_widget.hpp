@@ -90,23 +90,23 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            // Calculate the width and height of the scroll-bars, make the infinity thin when they don't exist.
+            // Calculate the width and height of the scroll-bars, make them infinitesimal thin when they don't exist.
             ttlet vertical_scroll_bar_width =
                 can_scroll_vertically ? _vertical_scroll_bar->preferred_size().minimum().width() : 0.0f;
             ttlet horizontal_scroll_bar_height =
                 can_scroll_horizontally ? _horizontal_scroll_bar->preferred_size().minimum().height() : 0.0f;
-            ttlet vertical_scroll_bar_height = rectangle().height() - horizontal_scroll_bar_height;
-            ttlet horizontal_scroll_bar_widht = rectangle().width() - vertical_scroll_bar_width;
+            ttlet vertical_scroll_bar_height = height() - horizontal_scroll_bar_height;
+            ttlet horizontal_scroll_bar_width = width() - vertical_scroll_bar_width;
 
             // Calculate the rectangles based on the sizes of the scrollbars.
-            ttlet vertical_scroll_bar_rectangle = aarect{
+            ttlet vertical_scroll_bar_rectangle = aarectangle{
                 rectangle().right() - vertical_scroll_bar_width,
-                rectangle().y() + horizontal_scroll_bar_height,
+                rectangle().bottom() + horizontal_scroll_bar_height,
                 vertical_scroll_bar_width,
                 rectangle().height() - horizontal_scroll_bar_height};
 
-            ttlet horizontal_scroll_bar_rectangle = aarect{
-                rectangle().x(), rectangle().y(), rectangle().width() - vertical_scroll_bar_width, horizontal_scroll_bar_height};
+            ttlet horizontal_scroll_bar_rectangle = aarectangle{
+                rectangle().left(), rectangle().bottom(), rectangle().width() - vertical_scroll_bar_width, horizontal_scroll_bar_height};
 
             // Update layout parameters for both scrollbars.
             if constexpr (can_scroll_horizontally) {
@@ -116,7 +116,7 @@ public:
                 _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
             }
 
-            auto aperture_x = rectangle().x();
+            auto aperture_x = rectangle().left();
             auto aperture_y = horizontal_scroll_bar_rectangle.top();
             auto aperture_width = horizontal_scroll_bar_rectangle.width();
             auto aperture_height = vertical_scroll_bar_rectangle.height();
@@ -161,11 +161,11 @@ public:
             }
 
             // Make a clipping rectangle that fits the content_rectangle exactly.
-            ttlet aperture_rectangle = aarect{aperture_x, aperture_y, aperture_width, aperture_height};
-            ttlet content_rectangle = aarect{content_x, content_y, content_width, content_height};
+            _aperture_rectangle = aarectangle{aperture_x, aperture_y, aperture_width, aperture_height};
+            ttlet content_rectangle = aarectangle{content_x, content_y, content_width, content_height};
 
             _content->set_layout_parameters_from_parent(
-                content_rectangle, aperture_rectangle, _content->draw_layer() - _draw_layer);
+                content_rectangle, _aperture_rectangle, _content->draw_layer() - _draw_layer);
         }
 
         super::update_layout(display_time_point, need_layout);
@@ -173,12 +173,12 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         tt_axiom(_content);
 
         auto r = super::hitbox_test(position);
 
-        if (rectangle().contains(position)) {
+        if (_visible_rectangle.contains(position)) {
             // Claim mouse events for scrolling.
             r = std::max(r, hit_box{weak_from_this(), _draw_layer});
         }
@@ -212,6 +212,33 @@ public:
         return handled;
     }
 
+    void scroll_to_show(tt::rectangle rectangle) noexcept override
+    {
+        auto rectangle_ = aarectangle{rectangle};
+
+        float delta_x = 0.0f;
+        if (rectangle_.right() > _aperture_rectangle.right()) {
+            delta_x = rectangle_.right() - _aperture_rectangle.right();
+        } else if (rectangle_.left() < _aperture_rectangle.left()) {
+            delta_x = rectangle_.left() - _aperture_rectangle.left();
+        }
+
+        float delta_y = 0.0f;
+        if (rectangle_.top() > _aperture_rectangle.top()) {
+            delta_y = rectangle_.top() - _aperture_rectangle.top();
+        } else if (rectangle_.bottom() < _aperture_rectangle.bottom()) {
+            delta_y = rectangle_.bottom() - _aperture_rectangle.bottom();
+        }
+
+        _scroll_offset_x += delta_x;
+        _scroll_offset_y += delta_y;
+
+        // There may be recursive scroll view, and they all need to move until the rectangle is visible.
+        if (auto parent = _parent.lock()) {
+            parent->scroll_to_show(_local_to_parent * translate2(delta_x, delta_y) * rectangle);
+        }
+    }
+
 private:
     std::shared_ptr<widget> _content;
     std::shared_ptr<scroll_bar_widget<false>> _horizontal_scroll_bar;
@@ -223,6 +250,8 @@ private:
     observable<float> _scroll_aperture_height;
     observable<float> _scroll_offset_x;
     observable<float> _scroll_offset_y;
+
+    aarectangle _aperture_rectangle;
 };
 
 template<bool ControlsWindow = false>

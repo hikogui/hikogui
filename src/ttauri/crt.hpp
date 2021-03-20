@@ -21,8 +21,11 @@
 #pragma once
 
 #include "os_detect.hpp"
-#include "system_status.hpp"
+#include "subsystem.hpp"
 #include "URL.hpp"
+#include "strings.hpp"
+#include "cast.hpp"
+#include "console.hpp"
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "application_win32.hpp"
@@ -39,12 +42,13 @@
 
 /** Main entry-point.
  *
- * @param arguments The command line arguments, split into tokens.
- *                  The first argument is the executable.
- * @param instance  An handle to the application instance.
- *                  On windows this is used open windows on this instance.
+ * @param argc Number of arguments
+ * @param argv A nullptr terminated list of pointers to null terminated strings.
+ * @param instance An handle to the application instance.
+ *                 On windows this is used to open windows on this instance.
+ * @return Exit code.
  */
-int tt_main(std::vector<std::string> arguments, tt::os_handle instance);
+int tt_main(int argc, char *argv[], tt::os_handle instance);
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 
@@ -64,36 +68,34 @@ int WINAPI WinMain(
     [[maybe_unused]] _In_ LPSTR lpCmdLine,
     _In_ int nShowCmd)
 {
+    // lpCmdLine does not handle UTF-8 command line properly.
+    // So use GetCommandLineW() to get wide string arguments.
+    // CommandLineToArgW properly unescapes the command line
+    // and splits in separate arguments.
     int argc;
     auto argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
-    if (argc < 1) {
-        std::cerr << "Missing executable from argument list." << std::endl;
-        return 2;
-    }
-
-    auto arguments = std::vector<std::string>{};
-    arguments.reserve(argc + 1);
-
+    // Convert the wchar arguments to UTF-8 and create nul terminated
+    // c-strings. main() compatibility requires writable strings, so
+    // we need to allocate old-style.
+    auto arguments = std::vector<char *>{};
+    arguments.reserve(argc + 2);
     for (auto i = 0; i != argc; ++i) {
-        arguments.push_back(std::move(tt::to_string(std::wstring(argv[i]))));
+        arguments.push_back(tt::make_cstr(tt::to_string(std::wstring(argv[i]))));
     }
     LocalFree(argv);
 
-    switch (nShowCmd) {
-    case 3:
-        arguments.insert(std::next(std::begin(arguments)), "--window-state=maximize");
-        break;
-    case 0:
-    case 2:
-    case 6:
-    case 7:
-    case 11:
-        arguments.insert(std::next(std::begin(arguments)), "--window-state=minimize");
-        break;
-    default:;
+    // Pass nShowCmd as a the second command line argument.
+    if (nShowCmd == 3) {
+        arguments.insert(std::next(std::begin(arguments)), tt::make_cstr("--window-state=maximize"));
+    } else if (nShowCmd == 0 || nShowCmd == 2 || nShowCmd == 6 || nShowCmd == 7 || nShowCmd == 11) {
+        arguments.insert(std::next(std::begin(arguments)), tt::make_cstr("--window-state=minimize"));
     }
 
+    // Add a nullptr to the end of the argument list.
+    arguments.push_back(nullptr);
+
+    // Initialize tzdata base.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
     date::set_install(tzdata_location.nativePath());
@@ -104,28 +106,23 @@ int WINAPI WinMain(
     }
 #endif
 
-    ttlet r = tt_main(std::move(arguments), hInstance);
-    tt::system_status_shutdown();
+    // Make sure the console is in a valid state to write text to it.
+    tt::console_init();
+
+    ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
+
+    tt::shutdown_system();
+
+    for (auto argument: arguments) {
+        delete [] argument;
+    }
     return r;
 }
 
 #else
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-    if (argc < 1) {
-        std::cerr << "Missing executable from argument list." << std::endl;
-        return 2;
-    }
-
-    auto arguments = std::vector<std::string>{};
-    arguments.reserve(argc);
-
-    for (int i = 0; i != argc; ++i) {
-        arguments.emplace_back(argv[i]);
-    }
-
-
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
@@ -137,8 +134,11 @@ int main(int argc, char **argv)
     }
 #endif
 
-    ttlet r = tt_main(arguments, {});
-    tt::system_status_shutdown();
+    // Make sure the console is in a valid state to write text to it.
+    tt::console_init();
+
+    ttlet r = tt_main(argc, argv, {});
+    tt::shutdown_system();
     return r;
 }
 

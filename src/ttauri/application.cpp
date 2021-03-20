@@ -40,8 +40,12 @@ namespace tt {
 
 using namespace std;
 
-application::application(std::weak_ptr<application_delegate> const &delegate, std::vector<std::string> const &arguments, os_handle instance) :
-    delegate(delegate), arguments(arguments), instance(instance)
+application::application(
+    std::weak_ptr<application_delegate> const &delegate,
+    int argc,
+    char *argv[],
+    os_handle instance) :
+    delegate(delegate), argc(argc), argv(argv), instance(instance)
 {
 }
 
@@ -76,7 +80,7 @@ void application::init()
     if (auto delegate_ = delegate.lock()) {
         delegate_->init(*this);
         application_version = delegate_->application_version(narrow_cast<application &>(*this));
-        configuration = delegate_->configuration(narrow_cast<application &>(*this), arguments);
+        configuration = delegate_->configuration(narrow_cast<application &>(*this), argc, argv);
     }
 
     init_foundation();
@@ -95,9 +99,9 @@ void application::init_foundation()
     main_thread_id = current_thread_id();
 
     if (configuration.contains("log-level")) {
-        system_status_set_log_level(static_cast<uint8_t>(configuration["log-level"]));
+        log_level_global = static_cast<log_level>(static_cast<int>(configuration["log-level"]));
     } else {
-        system_status_set_log_level(make_log_level(log_level::info));
+        log_level_global = make_log_level(log_level::info);
     }
 
     // First we need a clock, it is used by almost any other service.

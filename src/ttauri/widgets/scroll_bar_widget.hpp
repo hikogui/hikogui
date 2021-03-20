@@ -82,10 +82,10 @@ public:
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
 
             if constexpr (is_vertical) {
-                slider_rectangle = aarect{rectangle().x(), rectangle().y() + slider_offset, rectangle().width(), slider_length()};
+                slider_rectangle = aarectangle{rectangle().left(), rectangle().bottom() + slider_offset, rectangle().width(), slider_length()};
             } else {
                 slider_rectangle =
-                    aarect{rectangle().x() + slider_offset, rectangle().y(), slider_length(), rectangle().height()};
+                    aarectangle{rectangle().left() + slider_offset, rectangle().bottom(), slider_length(), rectangle().height()};
             }
         }
 
@@ -105,9 +105,9 @@ public:
 
     hit_box hitbox_test(point2 position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (slider_rectangle.contains(position) && visible()) {
+        if (visible() && _visible_rectangle.contains(position) && slider_rectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer};
         } else {
             return hit_box{};
@@ -181,7 +181,7 @@ private:
     typename decltype(aperture)::callback_ptr_type _aperture_callback;
     typename decltype(content)::callback_ptr_type _content_callback;
 
-    aarect slider_rectangle;
+    aarectangle slider_rectangle;
 
     float offset_before_drag;
 

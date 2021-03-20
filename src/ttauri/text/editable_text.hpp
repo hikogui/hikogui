@@ -148,7 +148,7 @@ public:
 
     /** Get carets at the cursor position.
     */
-    aarect partialgraphemeCaret() const noexcept {
+    aarectangle partialgraphemeCaret() const noexcept {
         if (hasPartialgrapheme) {
             tt_axiom(cursorIndex != 0);
             return _shapedText.leftToRightCaret(cursorIndex - 1, false);
@@ -159,14 +159,14 @@ public:
 
     /** Get carets at the cursor position.
      */
-    aarect leftToRightCaret() const noexcept {
+    aarectangle leftToRightCaret() const noexcept {
         return _shapedText.leftToRightCaret(cursorIndex, insertMode);
     }
 
     /** Get a set of rectangles for which text is selected.
      */
-    std::vector<aarect> selectionRectangles() const noexcept {
-        auto r = std::vector<aarect>{};
+    std::vector<aarectangle> selectionRectangles() const noexcept {
+        auto r = std::vector<aarectangle>{};
         if (selectionIndex < cursorIndex) {
             r = _shapedText.selectionRectangles(selectionIndex, cursorIndex);
         } else if (selectionIndex > cursorIndex) {

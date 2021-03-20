@@ -9,7 +9,6 @@
 #include "../required.hpp"
 #include "../alignment.hpp"
 #include "../graphic_path.hpp"
-#include "../numeric_array.hpp"
 #include "../recursive_iterator.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/point.hpp"
@@ -28,7 +27,7 @@ public:
     using const_iterator = recursive_iterator<std::vector<attributed_glyph_line>::const_iterator>;
 
     alignment alignment;
-    aarect boundingBox;
+    aarectangle boundingBox;
     float width;
     extent2 preferred_extent;
 
@@ -203,7 +202,7 @@ public:
      * @param index 
      * @return A rectangle describing the position of the grapheme.
      */
-    [[nodiscard]] aarect rectangleOfgrapheme(ssize_t index) const noexcept;
+    [[nodiscard]] aarectangle rectangleOfgrapheme(ssize_t index) const noexcept;
 
     /** Return the cursor-carets.
      * The caret will be to the left of the character at position.
@@ -212,7 +211,7 @@ public:
      * @param overwrite When true display a overwrite cursor.
      * @return left-to-right caret rectangle to display.
      */
-    [[nodiscard]] aarect leftToRightCaret(ssize_t index, bool overwrite) const noexcept;
+    [[nodiscard]] aarectangle leftToRightCaret(ssize_t index, bool overwrite) const noexcept;
 
     /** Return a list of merged rectangles to display for the selection.
      * The selection may be discontinues due to bidirectional text.
@@ -221,7 +220,7 @@ public:
      * @param last One beyond the last logical grapheme that is selected.
      * @return A list of rectangles to display.
      */
-    [[nodiscard]] std::vector<aarect> selectionRectangles(ssize_t first, ssize_t last) const noexcept;
+    [[nodiscard]] std::vector<aarectangle> selectionRectangles(ssize_t first, ssize_t last) const noexcept;
 
     /** Get the character close to a coordinate.
     * @param coordinate The coordinate of the mouse pointer.

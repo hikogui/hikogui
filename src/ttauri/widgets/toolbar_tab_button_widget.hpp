@@ -20,7 +20,7 @@ template<typename T>
 class toolbar_tab_button_widget final : public abstract_radio_button_widget<T> {
 public:
     using super = abstract_radio_button_widget<T>;
-    using value_type = super::value_type;
+    using value_type = typename super::value_type;
 
     observable<label> label;
 
@@ -83,12 +83,12 @@ public:
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             // A tab button widget draws beyond its clipping rectangle.
-            this->window.request_redraw(aarect{this->_local_to_window * this->_clipping_rectangle});
+            this->request_redraw();
 
             ttlet offset = theme::global->margin + theme::global->borderWidth;
-            _button_rectangle = aarect{
-                this->rectangle().x(),
-                this->rectangle().y() - offset,
+            _button_rectangle = aarectangle{
+                this->rectangle().left(),
+                this->rectangle().bottom() - offset,
                 this->rectangle().width(),
                 this->rectangle().height() + offset};
 
@@ -105,8 +105,9 @@ public:
         if (overlaps(context, this->_clipping_rectangle)) {
             draw_button(context);
             draw_label(context);
-            draw_focus_line(context);
         }
+
+        draw_focus_line(context);
 
         super::draw(std::move(context), display_time_point);
     }
@@ -116,43 +117,55 @@ public:
         switch (command) {
         case command::gui_toolbar_next:
             if (!this->is_last(keyboard_focus_group::toolbar)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+                this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
             }
             return true;
 
         case command::gui_toolbar_prev:
             if (!this->is_first(keyboard_focus_group::toolbar)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+                this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
             }
             return true;
 
         default:;
         }
 
-        return super::handle_event(command);
+        auto r = super::handle_event(command);
+        if (r) {
+            // Let the toolbar request a redraw, so that the extended focus line get redrawn when it changes.
+            auto parent = this->_parent.lock();
+            tt_axiom(parent);
+            parent->request_redraw();
+        }
+        return r;
     }
 
 private:
     typename decltype(label)::callback_ptr_type _label_callback;
-    aarect _button_rectangle;
+    aarectangle _button_rectangle;
     std::unique_ptr<stencil> _label_stencil;
 
-    void draw_focus_line(draw_context const &context) noexcept
+    void draw_focus_line(draw_context context) noexcept
     {
         if (this->_focus && this->window.active && *this->value == this->true_value) {
             ttlet &parent_ = this->parent();
+            ttlet parent_rectangle = aarectangle{this->_parent_to_local * parent_.rectangle()};
 
-            // Draw the focus line over the full width of the window at the bottom
-            // of the toolbar.
-            auto parent_context = parent_.make_draw_context(context);
+            // Create a line, on the bottom of the toolbar over the full width.
+            ttlet line_rectangle = aarectangle{
+                parent_rectangle.left(),
+                parent_rectangle.bottom(),
+                parent_rectangle.width(),
+                theme::global->borderWidth
+            };
 
-            ttlet line_rectangle = aarect{extent2{parent_.rectangle().width(), 1.0f}};
-            
-            // Draw the line above every other direct child of the toolbar, and between
-            // the selected-tab (0.6) and unselected-tabs (0.8).
-            parent_context.draw_filled_quad(translate_z(1.7f) * line_rectangle, this->focus_color());
+            context.set_clipping_rectangle(line_rectangle);
+
+            if (overlaps(context, line_rectangle)) {
+                // Draw the line above every other direct child of the toolbar, and between
+                // the selected-tab (0.6) and unselected-tabs (0.8).
+                context.draw_filled_quad(translate_z(0.7f) * line_rectangle, this->focus_color());
+            }
         }
     }
 
@@ -162,7 +175,7 @@ private:
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
         // so that the bottom border of the tab button is not drawn.
-        context.set_clipping_rectangle(aarect{this->_parent_to_local * this->parent().clipping_rectangle()});
+        context.set_clipping_rectangle(aarectangle{this->_parent_to_local * this->parent().clipping_rectangle()});
 
         // The focus line will be placed at 0.7.
         ttlet button_z = (this->_focus && this->window.active) ? translate_z(0.8f) : translate_z(0.6f);

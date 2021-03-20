@@ -27,7 +27,7 @@ public:
 
     tt::version application_version(tt::application &self) const noexcept override;
 
-    tt::datum configuration(tt::application &self, std::vector<std::string> arguments) const noexcept override;
+    tt::datum configuration(tt::application &self, int argc, char *argv[]) const noexcept override;
 
     /** The delegate to be used for the audio system.
     * @return The delegate to be used for the audio system, or nullptr if the audio system should not be initialized.

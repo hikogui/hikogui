@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
-
 namespace tt {
 
 enum class subpixel_orientation {

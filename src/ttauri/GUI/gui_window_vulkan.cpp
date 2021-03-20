@@ -302,7 +302,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     } else if (extent >> preferred_size) {
         set_window_size(extent = preferred_size.maximum());
     }
-    widget->set_layout_parameters_from_parent(aarect{extent});
+    widget->set_layout_parameters_from_parent(aarectangle{extent});
 
     // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
     ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
@@ -323,7 +323,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         return;
     }
     ttlet frameBufferIndex = *optionalFrameBufferIndex;
-    ttlet frameBuffer = swapchainFramebuffers.at(frameBufferIndex);
+    auto &current_image = swapchain_image_infos.at(frameBufferIndex);
 
     tr.set<"frame_buffer_index">(frameBufferIndex);
 
@@ -334,13 +334,13 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     vulkan_device().resetFences({renderFinishedFence});
 
     // Record which part of the image will be redrawn on the current swapchain image.
-    swapchainRedrawRectangle.at(frameBufferIndex) = _request_redraw_rectangle;
+    current_image.redraw_rectangle = _request_redraw_rectangle;
 
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
-    ttlet scissor_rectangle = ceil(std::accumulate(
-        swapchainRedrawRectangle.cbegin(), swapchainRedrawRectangle.cend(), aarect{}, [](ttlet &sum, ttlet &item) {
-            return sum | item;
+    ttlet scissor_rectangle = ceil(
+        std::accumulate(swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](ttlet &sum, ttlet &item) {
+            return sum | item.redraw_rectangle;
         }));
 
     // Update the widgets before the pipelines need their vertices.
@@ -353,10 +353,12 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         imagePipeline->vertexBufferData,
         SDFPipeline->vertexBufferData);
 
-    _request_redraw_rectangle = aarect{};
-    widget->draw(widget->make_draw_context(drawContext), displayTimePoint);
+    _request_redraw_rectangle = aarectangle{};
+    auto widget_context =
+        drawContext.make_child_context(widget->parent_to_local(), widget->local_to_window(), widget->clipping_rectangle());
+    widget->draw(widget_context, displayTimePoint);
 
-    fillCommandBuffer(frameBuffer, scissor_rectangle);
+    fill_command_buffer(current_image, scissor_rectangle);
     submitCommandBuffer();
 
     // Signal the fence when all rendering has finished on the graphics queue.
@@ -369,7 +371,7 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     teardown();
 }
 
-void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect scissor_rectangle)
+void gui_window_vulkan::fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle)
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -392,13 +394,15 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
         vk::ClearValue{colorClearValue}};
 
     // Clamp the scissor rectangle to the size of the window.
-    scissor_rectangle = intersect(scissor_rectangle, aarect{0.0f, 0.0f, swapchainImageExtent.width, swapchainImageExtent.height});
+    scissor_rectangle = intersect(
+        scissor_rectangle,
+        aarectangle{0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
     scissor_rectangle = ceil(scissor_rectangle);
 
     ttlet scissors = std::array{vk::Rect2D{
         vk::Offset2D(
-            narrow_cast<uint32_t>(scissor_rectangle.x()),
-            narrow_cast<uint32_t>(swapchainImageExtent.height - scissor_rectangle.y() - scissor_rectangle.height())),
+            narrow_cast<uint32_t>(scissor_rectangle.left()),
+            narrow_cast<uint32_t>(swapchainImageExtent.height - scissor_rectangle.bottom() - scissor_rectangle.height())),
         vk::Extent2D(narrow_cast<uint32_t>(scissor_rectangle.width()), narrow_cast<uint32_t>(scissor_rectangle.height()))}};
 
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.
@@ -406,11 +410,18 @@ void gui_window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer, aarect sc
 
     ttlet renderArea = scissors.at(0);
 
-    // ttlet renderArea = vk::Rect2D{
-    //    vk::Offset2D(0, 0), vk::Extent2D(swapchainImageExtent.width, swapchainImageExtent.height)};
+    // Because we use a scissor the image from the swapchain around the scissor-area is reused.
+    // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
+    // The swapchain creates images in undefined layout, so we need to change the layout once.
+    if (not current_image.layout_is_present) {
+        gui_device_vulkan::transition_layout(commandBuffer,
+            current_image.image, swapchainImageFormat.format, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR);
+
+        current_image.layout_is_present = true;
+    }
 
     commandBuffer.beginRenderPass(
-        {renderPass, frameBuffer, renderArea, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
+        {renderPass, current_image.frame_buffer, renderArea, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
         vk::SubpassContents::eInline);
 
     flatPipeline->drawInCommandBuffer(commandBuffer);
@@ -691,9 +702,9 @@ void gui_window_vulkan::buildFramebuffers()
         colorDescriptorImageInfos[i] = {vk::Sampler(), colorImageViews[i], vk::ImageLayout::eShaderReadOnlyOptimal};
     }
 
-    swapchainImages = vulkan_device().getSwapchainImagesKHR(swapchain);
-    for (auto image : swapchainImages) {
-        ttlet swapchainImageView = vulkan_device().createImageView(
+    auto swapchain_images = vulkan_device().getSwapchainImagesKHR(swapchain);
+    for (auto image : swapchain_images) {
+        auto image_view = vulkan_device().createImageView(
             {vk::ImageViewCreateFlags(),
              image,
              vk::ImageViewType::e2D,
@@ -701,11 +712,9 @@ void gui_window_vulkan::buildFramebuffers()
              vk::ComponentMapping(),
              {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
 
-        swapchainImageViews.push_back(swapchainImageView);
+        ttlet attachments = std::array{depthImageView, colorImageViews[0], colorImageViews[1], image_view};
 
-        ttlet attachments = std::array{depthImageView, colorImageViews[0], colorImageViews[1], swapchainImageView};
-
-        ttlet framebuffer = vulkan_device().createFramebuffer({
+        ttlet frame_buffer = vulkan_device().createFramebuffer({
             vk::FramebufferCreateFlags(),
             renderPass,
             narrow_cast<uint32_t>(attachments.size()),
@@ -714,31 +723,23 @@ void gui_window_vulkan::buildFramebuffers()
             swapchainImageExtent.height,
             1 // layers
         });
-        swapchainFramebuffers.push_back(framebuffer);
 
-        swapchainRedrawRectangle.emplace_back();
+        swapchain_image_infos.emplace_back(
+            std::move(image), std::move(image_view), std::move(frame_buffer), aarectangle{}, false);
     }
 
-    tt_axiom(swapchainImageViews.size() == swapchainImages.size());
-    tt_axiom(swapchainFramebuffers.size() == swapchainImages.size());
-    tt_axiom(swapchainRedrawRectangle.size() == swapchainImages.size());
+    tt_axiom(swapchain_image_infos.size() == swapchain_images.size());
 }
 
 void gui_window_vulkan::teardownFramebuffers()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    swapchainRedrawRectangle.clear();
-
-    for (auto frameBuffer : swapchainFramebuffers) {
-        vulkan_device().destroy(frameBuffer);
+    for (auto &info : swapchain_image_infos) {
+        vulkan_device().destroy(info.frame_buffer);
+        vulkan_device().destroy(info.image_view);
     }
-    swapchainFramebuffers.clear();
-
-    for (auto imageView : swapchainImageViews) {
-        vulkan_device().destroy(imageView);
-    }
-    swapchainImageViews.clear();
+    swapchain_image_infos.clear();
 
     vulkan_device().destroy(depthImageView);
     for (size_t i = 0; i != std::size(colorImageViews); ++i) {

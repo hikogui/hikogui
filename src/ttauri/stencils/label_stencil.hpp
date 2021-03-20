@@ -85,7 +85,7 @@ public:
     }
 
     void set_layout_parameters(
-        aarect const &rectangle,
+        aarectangle const &rectangle,
         float base_line_position = std::numeric_limits<float>::infinity()) noexcept override
     {
         stencil::set_layout_parameters(rectangle, base_line_position);
@@ -104,7 +104,7 @@ public:
 
 
         if (_icon_stencil) {
-            ttlet icon_rectangle = aarect{icon_x, icon_y, _icon_size, _icon_size};
+            ttlet icon_rectangle = aarectangle{icon_x, icon_y, _icon_size, _icon_size};
             _icon_stencil->set_layout_parameters(icon_rectangle);
         }
 
@@ -131,7 +131,7 @@ public:
                 _rectangle.bottom();
             // clang-format on
 
-            ttlet text_rectangle = aarect{text_x, text_y, text_width, text_height};
+            ttlet text_rectangle = aarectangle{text_x, text_y, text_width, text_height};
             if (_alignment == horizontal_alignment::center) {
                 _text_stencil->set_layout_parameters(text_rectangle);
             } else {

@@ -21,7 +21,7 @@ void preferences_controller::init(tt::gui_window &self) noexcept
     auto tab1 = self.make_toolbar_widget<toolbar_tab_button_widget<int>>(1, tab_index);
     tab1->label = {elusive_icon::Pencil, l10n("License")};
 
-    auto tabs = self.make_widget<tab_view_widget<int>,"L0T0"_ca>(tab_index);
+    auto tabs = self.make_widget<tab_view_widget<int>>("A1", tab_index);
     tabs->make_widget(0, audio_preferences_controller);
     tabs->make_widget(1, license_preferences_controller);
 }

@@ -128,7 +128,10 @@ public:
         for (auto &child : _children) {
             tt_axiom(child);
             tt_axiom(&child->parent() == this);
-            child->draw(child->make_draw_context(context), display_time_point);
+
+            auto child_context =
+                context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
+            child->draw(child_context, display_time_point);
         }
 
         super::draw(std::move(context), display_time_point);
@@ -150,7 +153,7 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto r = hit_box{};
         for (ttlet &child : _children) {
@@ -187,14 +190,16 @@ public:
         keyboard_focus_direction direction) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        tt_axiom(direction != keyboard_focus_direction::current);
 
-        // If current_keyboard_widget is empty, then we need to find the first widget that accepts focus.
-        auto found = !current_keyboard_widget;
+        auto found = false;
 
-        // The container widget itself accepts focus.
-        if (found && direction == keyboard_focus_direction::forward && accepts_keyboard_focus(group)) {
+        if (!current_keyboard_widget && accepts_keyboard_focus(group)) {
+            // If there was no current_keyboard_widget, then return this if it accepts focus.
             return std::const_pointer_cast<widget>(super::shared_from_this());
+
+        } else if (current_keyboard_widget == shared_from_this()) {
+            // If current_keyboard_widget is this, then we need to find the first child widget that accepts focus.
+            found = true;
         }
 
         ssize_t first = direction == keyboard_focus_direction::forward ? 0 : ssize(_children) - 1;
@@ -222,12 +227,15 @@ public:
             }
         }
 
-        // The container widget itself accepts focus.
-        if (found && direction == keyboard_focus_direction::backward && accepts_keyboard_focus(group)) {
-            return std::const_pointer_cast<widget>(super::shared_from_this());
+        if (found) {
+            // Either:
+            // 1. current_keyboard_widget was {} and this widget, nor its child widgets accept focus.
+            // 2. current_keyboard_wigget was this and non of the child widgets accept focus.
+            // 3. current_keyboard_widget is a child, and non of the following widgets accept focus.
+            return current_keyboard_widget;
         }
 
-        return found ? current_keyboard_widget : std::shared_ptr<widget>{};
+        return {};
     }
 
 protected:

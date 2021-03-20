@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../vspan.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../color/sfloat_rgba16.hpp"
 #include "../color/sfloat_rgba32.hpp"
 #include "../color/sfloat_rgb32.hpp"
@@ -29,7 +28,7 @@ struct vertex {
     sfloat_rgba16 color;
 
 
-    vertex(aarect clippingRectangle, point3 position, tt::color color) noexcept :
+    vertex(aarectangle clippingRectangle, point3 position, tt::color color) noexcept :
         position(position),
         clipping_rectangle(clippingRectangle),
         color(color) {}

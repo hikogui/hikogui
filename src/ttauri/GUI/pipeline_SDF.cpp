@@ -32,8 +32,8 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
-    pushConstants.windowExtent = f32x4{ narrow_cast<float>(extent.width) , narrow_cast<float>(extent.height) };
-    pushConstants.viewportScale = f32x4{ narrow_cast<float>(2.0f / extent.width), narrow_cast<float>(2.0f / extent.height)};
+    pushConstants.windowExtent = extent2{ narrow_cast<float>(extent.width) , narrow_cast<float>(extent.height) };
+    pushConstants.viewportScale = scale2{ narrow_cast<float>(2.0f / extent.width), narrow_cast<float>(2.0f / extent.height)};
     pushConstants.subpixel_orientation = static_cast<int>(window.subpixel_orientation);
 
     commandBuffer.pushConstants(

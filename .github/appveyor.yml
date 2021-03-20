@@ -37,22 +37,25 @@ environment:
     #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Release
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_SHARED_LIBS: ON
     #  BUILD_TYPE: Release
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
     # Windows | MSVC 2019 | x64-windows | ReleaseWithDebugInfo
     #
-    - APPVEYOR_JOB_NAME: Win-MSVC19-x64-RelWithDebInfo
-      COMPILER: MSVC19
-      VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
-      BUILD_TYPE: RelWithDebInfo
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+    #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-RelWithDebInfo
+    #  COMPILER: MSVC19
+    #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_SHARED_LIBS: ON
+    #  BUILD_TYPE: RelWithDebInfo
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
     # Windows | MSVC 2019 | x64-windows | Debug
     #
     #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Debug
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows"
+    #  BUILD_SHARED_LIBS: ON
     #  BUILD_TYPE: Debug
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
@@ -61,22 +64,36 @@ environment:
     #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-Release
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+    #  BUILD_SHARED_LIBS: OFF
     #  BUILD_TYPE: Release
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
+
     # Windows | MSVC 2019 | x64-windows-static | ReleaseWithDebugInfo
     #
     - APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-RelWithDebInfo
       COMPILER: MSVC19
       VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+      BUILD_SHARED_LIBS: OFF
+      BUILD_TYPE: RelWithDebInfo
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+
+    # Windows | MSVC 2019 Preview | x64-windows-static | ReleaseWithDebugInfo
+    #
+    - APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-RelWithDebInfo
+      COMPILER: MSVC19
+      VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+      BUILD_SHARED_LIBS: OFF
       BUILD_TYPE: RelWithDebInfo
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
+
     #
     # Windows | MSVC 2019 | x64-windows-static | Debug
     #
     #- APPVEYOR_JOB_NAME: Win-MSVC19-x64-Static-Debug
     #  COMPILER: MSVC19
     #  VCPKG_TARGET_TRIPLET: "%PLATFORM%-windows-static"
+    #  BUILD_SHARED_LIBS: OFF
     #  BUILD_TYPE: Debug
     #  APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019 Preview
     #
@@ -117,7 +134,7 @@ install:
   #
   # This power shell block sets the [build version number] and updates the [AppveyorBuildVersion number].
   #
-  #  1. We fetch the version number (1.2.3) from the `version.hpp` file.
+  #  1. We fetch the version number (1.2.3) from the `vcpkg.json` file.
   #  2. When the commit is a tag push, we set the [AppveyorBuildVersion number] to the [tag_name], e.g. "v1.2.3".
   #  3. On normal commits, we set the [AppveyorBuildVersion number] to "[build_version_number]-[current_commit_short_hash]"".
   #
@@ -125,7 +142,8 @@ install:
   #
   # In short: set "build version number" to "version_num-current_commit_short_hash" or when tagged to "tag name" (Travis style).
   - ps: |
-      $env:build_version_number = Select-String -Path "src/ttauri/version.hpp" -Pattern 'version_short' | %{$_.Line.Split('"')[1]}
+      $vcpkg_json = Get-Content "vcpkg.json" -Raw | ConvertFrom-Json
+      $env:PROJECT_VERSION = $vcpkg_json."version"
       write-host "build_version_number -> $env:build_version_number"
       if ($env:APPVEYOR_REPO_TAG -eq "true")
       {
@@ -133,7 +151,7 @@ install:
       }
       else
       {
-        Update-AppveyorBuild -Version "$env:build_version_number-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+        Update-AppveyorBuild -Version "$env:PROJECT_VERSION-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
       }
 
   # Update CMake
@@ -172,6 +190,8 @@ install:
   # Init MSVC environment, see https://www.appveyor.com/docs/lang/cpp/
   - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019 Preview"
       (call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM% )
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019"
+      (call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM% )
 
 before_build:
   # CHECK important folders to see if everything is present
@@ -189,7 +209,7 @@ build_script:
   - if [%COMPILER%]==[MSVC19] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -S . -B ..\ttauri-build
         -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
         -DVCPKG_TARGET_TRIPLET=%VCPKG_TARGET_TRIPLET%
-        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DBUILD_SHARED_LIBS:BOOL=%BUILD_SHARED_LIBS%
         -DTT_BUILD_TESTS:BOOL=ON
         -DTT_BUILD_OPTIMIZED:BOOL=ON
         -DTT_BUILD_PCH:BOOL=ON
@@ -197,7 +217,7 @@ build_script:
 
   - if [%COMPILER%]==[CLANG] cmake -G "Visual Studio 16 2019" -A %PLATFORM% -T ClangCL -S . -B ..\ttauri-build
         -DCMAKE_TOOLCHAIN_FILE=C:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake
-        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DBUILD_SHARED_LIBS:BOOL=%BUILD_SHARED_LIBS%
         -DTT_BUILD_TESTS:BOOL=ON
         -DTT_BUILD_OPTIMIZED:BOOL=ON
         -DTT_BUILD_PCH:BOOL=ON
@@ -245,7 +265,13 @@ on_failure:
 
 test_script:
   - cd C:\projects\ttauri-%build_version_number%\tests
-  - ttauri_tests.exe
+  - ttauri_tests.exe --gtest_output=xml:test_results_gtest.xml
+  # Transform test results from gtest to junit format
+  - ps: $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
+  - ps: $xsl.Load("C:\projects\ttauri\.github\gtest_to_junit.xsl")
+  - ps: $xsl.Transform((Resolve-Path .\test_results_gtest.xml), (Join-Path (Resolve-Path .) "test_results_junit.xml"))
+  - ps: $web = New-Object 'System.Net.WebClient'
+  - ps: $web.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test_results_junit.xml))
 
 #-------------------------------------------------------------------
 #     Build Artifacts
@@ -280,7 +306,7 @@ artifacts:
 #-------------------------------------------------------------------
 
 cache:
-  - C:\Tools\vcpkg\installed -> appveyor.yml
+  - '%APPVEYOR_BUILD_FOLDER%\build\vcpkg_installed -> %APPVEYOR_BUILD_FOLDER%\build\vcpkg_installed\vcpkg\status'
   - '%VULKAN_SDK%\Bin -> appveyor.yml'
   - '%VULKAN_SDK%\Bin32 -> appveyor.yml'
   - '%VULKAN_SDK%\Include -> appveyor.yml'

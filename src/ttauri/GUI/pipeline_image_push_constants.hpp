@@ -10,10 +10,10 @@
 namespace tt::pipeline_image {
 
 struct push_constants {
-    sfloat_rg32 windowExtent = f32x4{ 0.0, 0.0 };
-    sfloat_rg32 viewportScale = f32x4{ 0.0, 0.0 };
-    sfloat_rg32 atlasExtent = f32x4{ 0.0, 0.0 };
-    sfloat_rg32 atlasScale = f32x4{ 0.0, 0.0 };
+    sfloat_rg32 windowExtent = extent2{ 0.0, 0.0 };
+    sfloat_rg32 viewportScale = scale2{ 0.0, 0.0 };
+    sfloat_rg32 atlasExtent = extent2{ 0.0, 0.0 };
+    sfloat_rg32 atlasScale = scale2{ 0.0, 0.0 };
 
     static std::vector<vk::PushConstantRange> pushConstantRanges()
     {

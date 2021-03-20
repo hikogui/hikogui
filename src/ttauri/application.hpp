@@ -43,7 +43,9 @@ public:
 
     /*! Command line arguments.
      */
-    std::vector<std::string> arguments;
+    int argc;
+
+    char **argv;
 
     /** Handle to the operating system's application-instance.
      */
@@ -75,7 +77,8 @@ public:
      */
     application(
         std::weak_ptr<application_delegate> const &delegate,
-        std::vector<std::string> const &arguments,
+        int argc,
+        char *argv[],
         os_handle instance
     );
 

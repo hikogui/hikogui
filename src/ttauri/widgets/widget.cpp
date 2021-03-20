@@ -21,7 +21,7 @@ widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> p
 
     _enabled_callback = enabled.subscribe([this](auto...) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        window.request_redraw(aarect{this->local_to_window() * this->clipping_rectangle()});
+        this->request_redraw();
     });
 
     _preferred_size = {
@@ -53,7 +53,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        request_redraw();
     }
 }
 
@@ -120,13 +120,6 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
     }
 }
 
-draw_context widget::make_draw_context(draw_context const &parent_context) const noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return parent_context.make_child_context(_parent_to_local, _local_to_window, _clipping_rectangle);
-
-}
-
 bool widget::handle_event(command command) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -135,22 +128,25 @@ bool widget::handle_event(command command) noexcept
         using enum tt::command;
     case gui_keyboard_enter:
         _focus = true;
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        // When scrolling, include the margin, so that the widget is clear from the edge of the
+        // scroll view's aperture.
+        scroll_to_show(expand(rectangle(), _margin));
+        request_redraw();
         return true;
 
     case gui_keyboard_exit:
         _focus = false;
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        request_redraw();
         return true;
 
     case gui_mouse_enter:
         _hover = true;
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        request_redraw();
         return true;
 
     case gui_mouse_exit:
         _hover = false;
-        window.request_redraw(aarect{_local_to_window * _clipping_rectangle});
+        request_redraw();
         return true;
 
     default:;
@@ -190,7 +186,6 @@ std::shared_ptr<widget> widget::find_next_widget(
     keyboard_focus_direction direction) const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    tt_axiom(direction != keyboard_focus_direction::current);
 
     auto this_ = shared_from_this();
     if (current_keyboard_widget == this_) {
@@ -253,6 +248,15 @@ std::shared_ptr<widget> widget::find_next_widget(
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
     return parent().find_last_widget(group).get() == this;
+}
+
+void widget::scroll_to_show(tt::rectangle rectangle) noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+
+    if (auto parent = _parent.lock()) {
+        parent->scroll_to_show(_local_to_parent * rectangle);
+    }
 }
 
 /** Get a list of parents of a given widget.

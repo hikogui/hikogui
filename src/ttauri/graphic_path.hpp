@@ -7,8 +7,7 @@
 #include "bezier_point.hpp"
 #include "bezier_curve.hpp"
 #include "exception.hpp"
-#include "numeric_array.hpp"
-#include "aarect.hpp"
+#include "geometry/axis_aligned_rectangle.hpp"
 #include "geometry/transform.hpp"
 #include "color/sfloat_rgba16.hpp"
 #include "color/sdf_r8.hpp"
@@ -62,7 +61,7 @@ struct graphic_path {
 
     /** Calculate bounding box.
      */
-    [[nodiscard]] aarect boundingBox() const noexcept;
+    [[nodiscard]] aarectangle boundingBox() const noexcept;
 
     /** Try to move the layers in a path.
      * Layers are removed if there are layers, and all the layers have
@@ -179,7 +178,7 @@ struct graphic_path {
      * \param corners The radius of the (bottom-left, bottom-right, top-left, top-right)
      *        positive corner are rounded, negative curves are cut.
      */
-    void addRectangle(aarect rectangle, f32x4 corners = {0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
+    void addRectangle(aarectangle rectangle, corner_shapes corners = corner_shapes{0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
     /** Draw a circle.
      * \param position position of the center of the circle.
@@ -260,7 +259,7 @@ struct graphic_path {
  * \param color color to composit.
  * \param mask mask where the color will be composited on the destination.
  */
-void composit(pixel_map<sfloat_rgba16> &dst, f32x4 color, graphic_path const &mask) noexcept;
+void composit(pixel_map<sfloat_rgba16> &dst, tt::color color, graphic_path const &mask) noexcept;
 
 /** Composit color onto the destination image where the mask is solid.
  *

@@ -2,6 +2,13 @@
 cmake_minimum_required(VERSION 3.19)
 
 #-------------------------------------------------------------------
+# Configure early CMAKE paths
+#-------------------------------------------------------------------
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+include(SetupVcpkg)
+include(SetupCompiler)
+
+#-------------------------------------------------------------------
 # Build Options
 #-------------------------------------------------------------------
 
@@ -13,39 +20,6 @@ option(TT_INSTALL           "Generate installation target"       ON)
 option(TT_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
 
 #-------------------------------------------------------------------
-# Compiler Setup
-#-------------------------------------------------------------------
-
-# Define C++ Standard to use
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON)
-
-if(WIN32)
-    # Build for a Windows 10 host system.
-    set(CMAKE_SYSTEM_VERSION 10.0)
-
-    message(STATUS "[INFO] BUILD_SHARED_LIBS -> '${BUILD_SHARED_LIBS}'.")
-
-    # When we build statically (MT):
-    if(NOT BUILD_SHARED_LIBS)
-        # Select MSVC runtime based on CMAKE_MSVC_RUNTIME_LIBRARY.
-        # We switch from the multi-threaded dynamically-linked library (default)
-        # to the multi-threaded statically-linked runtime library.
-        cmake_policy(SET CMP0091 NEW)
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    endif()
-
-
-    # Global Compiler flags for optimized Release and RelWithDebugInfo builds
-    # All overrides are for multi-threaded dynamically-linked libs: MD + MDd.
-    if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-        set(CMAKE_USER_MAKE_RULES_OVERRIDE "CMakeOverride.txt")
-    endif()
-
-endif()
-
-#-------------------------------------------------------------------
 # Project
 #-------------------------------------------------------------------
 
@@ -54,7 +28,17 @@ if(APPLE)
 else()
     set(LANGUAGES CXX)
 endif()
-project(ttauri VERSION 0.3.0 LANGUAGES ${LANGUAGES})
+
+# vcpkg.json is the primary source for version data
+file(READ ${CMAKE_SOURCE_DIR}/vcpkg.json VCPKG_JSON_STRING)
+string(JSON APP_NAME     GET ${VCPKG_JSON_STRING} "name")
+string(JSON APP_VERSION  GET ${VCPKG_JSON_STRING} "version")
+string(JSON APP_LICENSE  GET ${VCPKG_JSON_STRING} "license")
+string(JSON APP_DESC     GET ${VCPKG_JSON_STRING} "description")
+string(JSON APP_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
+set(APP_VENDOR "Yoyodyne Propulsion Systems")
+
+project(${APP_NAME} VERSION ${APP_VERSION} LANGUAGES ${LANGUAGES})
 
 #-------------------------------------------------------------------
 # Define Constants
@@ -94,7 +78,6 @@ endif()
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
@@ -103,12 +86,6 @@ include(FetchContent)
 if(WIN32)
     include(GetWindowsNtVersion)
 endif()
-
-#-------------------------------------------------------------------
-# Setup Dependency Manager: VCPKG
-#-------------------------------------------------------------------
-
-include(SetupVcpkg)
 
 #-------------------------------------------------------------------
 # Find Dependencies
@@ -133,9 +110,10 @@ find_package(fmt CONFIG REQUIRED)
 # GoogleTest - non-vcpkg, directly build from externals
 #
 if(TT_BUILD_TESTS)
+    set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
+    set(INSTALL_GMOCK OFF CACHE INTERNAL "Don't install gmock")
     FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.10.0)
     FetchContent_MakeAvailable(googletest)
-
 endif()
 
 #
@@ -159,7 +137,7 @@ find_package(Vulkan REQUIRED)
 #-------------------------------------------------------------------
 
 add_library(ttauri)
-add_library(ttauri::tauri ALIAS ttauri)
+add_library(ttauri::ttauri ALIAS ttauri)
 
 if(TT_BUILD_TESTS)
     add_executable(ttauri_tests)
@@ -181,7 +159,7 @@ add_subdirectory(tools)
 #-------------------------------------------------------------------
 
 set_target_properties(ttauri PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} SOVERSION ${TTAURI_MAJOR_VERSION})
-#set_target_properties(ttauri PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set_target_properties(ttauri PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 target_link_libraries(ttauri PUBLIC
     fmt::fmt
@@ -196,9 +174,13 @@ if(APPLE)
 endif()
 
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
+
+target_include_directories(ttauri PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+    "$<INSTALL_INTERFACE:include>"
+)
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
-target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 target_compile_features(ttauri INTERFACE cxx_std_20)
 
@@ -386,44 +368,66 @@ add_dependencies(ttauri ttauri_resources)
 
 include(GNUInstallDirs)
 
-if(WIN32)
+install(TARGETS ttauri RESOURCE)
 
-    install(TARGETS ttauri RESOURCE)
+# Copy all header files for the library.
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h")
 
-    # Copy all header files for the library.
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            FILES_MATCHING PATTERN "*.hpp")
+# Copy all resource files needing to be added to the resource directory of an application
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
+        DESTINATION share/ttauri/resources)
 
-    # Copy all resource files needing to be added to the resource directory of an application
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/resources)
-
-    # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
-    get_target_property(target_type ttauri TYPE)
-
-    if(target_type STREQUAL STATIC_LIBRARY)
-
-        # Install the library and headers.
-        install(TARGETS ttauri EXPORT ttauri
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
-        )
-    endif()
-
-    if(target_type STREQUAL DYNAMIC_LIBRARY)
-
-        # Install the library and headers.
-        install(TARGETS ttauri EXPORT ttauri
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
-        )
-    endif()
-
+# On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
+get_target_property(target_type ttauri TYPE)
+if(WIN32 AND target_type STREQUAL DYNAMIC_LIBRARY)
+    # Install the library and headers.
+    install(TARGETS ttauri EXPORT ttauri
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR} # <- .dll next to exe
+    )
+else()
+    # Install the library and headers.
+    install(TARGETS ttauri EXPORT ttauri
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # <- .lib
+    )
 endif()
 
+#export(TARGETS
+#        ttauri
+#    NAMESPACE ttauri::
+#    FILE "${CMAKE_CURRENT_BINARY_DIR}/ttauri-config.cmake"
+#)
+install(
+    EXPORT ttauri
+    DESTINATION share/ttauri
+    NAMESPACE ttauri::
+    FILE "ttauriTargets.cmake"
+)
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/CMake/ttauriConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/ttauri
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfigVersion.cmake"
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/ttauriConfigVersion.cmake"
+    DESTINATION share/ttauri
+)
 #-------------------------------------------------------------------
 # Build Target: ttauri_tests                            (executable)
 #-------------------------------------------------------------------
@@ -459,22 +463,17 @@ endif()
 #-------------------------------------------------------------------
 # Installation Rules: ttauri_tests                      (executable)
 #-------------------------------------------------------------------
-
-install(TARGETS ttauri_tests DESTINATION tests)
-
-install(DIRECTORY tests/data/ DESTINATION tests)
-
-# experimental
-x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+if(TT_BUILD_TESTS)
+    install(TARGETS ttauri_tests DESTINATION tests)
+    install(DIRECTORY tests/data/ DESTINATION tests)
+    x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+endif()
 
 #-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
-
 if(TT_BUILD_EXAMPLES)
-
     add_subdirectory(examples/ttauri_demo)
-
 endif()
 
 #-------------------------------------------------------------------

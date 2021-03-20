@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 
 namespace tt::pipeline_image {
 
@@ -17,7 +16,7 @@ struct ImageLocation {
     matrix3 transform;
 
     //! The position in pixels of the clipping rectangle relative to the top-left corner of the window, and extent in pixels.
-    aarect clippingRectangle;
+    aarectangle clippingRectangle;
 
     bool operator==(const ImageLocation &other) noexcept {
         return (

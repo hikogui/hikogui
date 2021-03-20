@@ -5,8 +5,7 @@
 #pragma once
 
 #include "../vspan.hpp"
-#include "../numeric_array.hpp"
-#include "../aarect.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../color/sfloat_rgba16.hpp"
 #include "../color/sfloat_rgba32.hpp"
 #include "../color/sfloat_rgb32.hpp"
@@ -48,8 +47,8 @@ struct vertex {
     float line_width;
 
     vertex(
-        aarect clipping_rectangle,
-        f32x4 position,
+        aarectangle clipping_rectangle,
+        point3 position,
         f32x4 corner_coordinate,
         color fill_color,
         color line_color,

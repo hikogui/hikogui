@@ -22,6 +22,7 @@ public:
             ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer() + 20.0f;
             _semantic_layer = 0;
+            _margin = theme::global->margin;
         }
     }
 
@@ -69,15 +70,15 @@ public:
      * @param requested_rectangle A rectangle in the parent's local coordinate system.
      * @return A rectangle that fits the window's constraints in the parent's local coordinate system.
      */
-    [[nodiscard]] aarect make_overlay_rectangle_from_parent(aarect requested_rectangle) const noexcept
+    [[nodiscard]] aarectangle make_overlay_rectangle_from_parent(aarectangle requested_rectangle) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (auto parent = _parent.lock()) {
-            ttlet requested_window_rectangle = aarect{parent->local_to_window() * requested_rectangle};
-            ttlet window_bounds = aarect{10.0, 10.0, window.extent.width() - 20.0, window.extent.height() - 50.0};
+            ttlet requested_window_rectangle = aarectangle{parent->local_to_window() * requested_rectangle};
+            ttlet window_bounds = shrink(aarectangle{window.extent}, _margin);
             ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
-            return aarect{parent->window_to_local() * response_window_rectangle};
+            return aarectangle{parent->window_to_local() * response_window_rectangle};
         } else {
             tt_no_default();
         }
@@ -92,6 +93,22 @@ public:
         tt_axiom(!_content);
         _content = widget;
         return widget;
+    }
+
+    [[nodiscard]] color background_color() const noexcept override
+    {
+        return theme::global->fillColor(_semantic_layer + 1);
+    }
+
+    [[nodiscard]] color foreground_color() const noexcept override
+    {
+        return theme::global->borderColor(_semantic_layer + 1);
+    }
+
+    void scroll_to_show(tt::rectangle rectangle) noexcept override
+    {
+        // An overlay is in an absolute position on the window,
+        // so do not forward the scroll_to_show message to its parent.
     }
 
 private:

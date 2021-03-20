@@ -111,7 +111,7 @@ struct attributed_glyph {
      * Get the scaled and positioned bounding box.
      * @param border The 1EM scaled border around the glyph bounding box.
      */
-    [[nodiscard]] aarect boundingBox(float border) const noexcept {
+    [[nodiscard]] aarectangle boundingBox(float border) const noexcept {
         return translate2{position} * expand(metrics.boundingBox, border * style.scaled_size());
     }
 

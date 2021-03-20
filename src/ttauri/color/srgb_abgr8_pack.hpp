@@ -6,8 +6,6 @@
 
 #include "sfloat_rgba16.hpp"
 #include "sRGB.hpp"
-#include <immintrin.h>
-#include <emmintrin.h>
 #include <algorithm>
 
 namespace tt {
@@ -21,16 +19,6 @@ public:
     srgb_abgr8_pack(srgb_abgr8_pack &&rhs) noexcept = default;
     srgb_abgr8_pack &operator=(srgb_abgr8_pack const &rhs) noexcept = default;
     srgb_abgr8_pack &operator=(srgb_abgr8_pack &&rhs) noexcept = default;
-
-    //srgb_abgr8_pack(f32x4 const &rhs) noexcept {
-    //}
-
-    //srgb_abgr8_pack &operator=(f32x4 const &rhs) noexcept {
-    //    return *this;
-    //}
-
-    //operator f32x4 () const noexcept {
-    //}
 
     srgb_abgr8_pack(uint32_t const &rhs) noexcept : v(rhs) {}
     srgb_abgr8_pack &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
