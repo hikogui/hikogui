@@ -29,16 +29,17 @@ window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point dis
         if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
             ttlet width = theme::global->toolbarDecorationButtonWidth * 3.0f;
             ttlet height = theme::global->toolbarHeight;
-            _preferred_size = {extent2{width, height}, extent2{width, std::numeric_limits<float>::infinity()}};
+            _minimum_size = _preferred_size = _maximum_size = {width, height};
 
         } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
             ttlet width = DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING;
             ttlet height = DIAMETER + 2.0f * MARGIN;
-            _preferred_size = {extent2{width, height}, extent2{width, std::numeric_limits<float>::infinity()}};
+            _minimum_size = _preferred_size = _maximum_size = {width, height};
 
         } else {
             tt_no_default();
         }
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
     } else {
         return false;

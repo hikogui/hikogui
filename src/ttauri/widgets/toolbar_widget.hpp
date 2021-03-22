@@ -60,20 +60,17 @@ public:
             }
 
             // Add a space between the left and right widgets.
-            _layout.update(
-                index++,
-                theme::global->width,
-                ranged_int<3>{0},
-                0.0f);
+            _layout.update(index++, theme::global->width, theme::global->width, 32767.0f, 0.0f);
 
             for (ttlet &child : std::views::reverse(_right_children)) {
                 update_constraints_for_child(*child, index++, shared_base_line, shared_height);
             }
 
             tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-            _preferred_size = {
-                extent2{_layout.minimum_size(), shared_height},
-                extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            _minimum_size = {_layout.minimum_size(), shared_height};
+            _preferred_size = {_layout.preferred_size(), shared_height};
+            _maximum_size = {_layout.maximum_size(), shared_height};
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
             return false;
@@ -135,7 +132,7 @@ public:
     /** Add a widget directly to this widget.
      */
     template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&... args)
+    std::shared_ptr<T> make_widget(Args &&...args)
     {
         auto widget = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
         widget->init();
@@ -160,9 +157,10 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        _layout.update(index, child.preferred_size().minimum().width(), child.width_resistance(), child.margin());
+        _layout.update(
+            index, child.minimum_size().width(), child.preferred_size().width(), child.maximum_size().width(), child.margin());
 
-        shared_height = std::max(shared_height, child.preferred_size().minimum().height() + child.margin() * 2.0f);
+        shared_height = std::max(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
     }
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept

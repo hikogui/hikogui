@@ -92,16 +92,24 @@ public:
             }
 
             // Calculate the size of the widget based on the largest height of a label and the width of the overlay.
-            ttlet unknown_label_size =
-                stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle)
-                    ->preferred_extent();
+            ttlet unknown_label_stencil =
+                stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle);
 
-            ttlet overlay_width = _overlay_widget->preferred_size().minimum().width();
-            ttlet option_width = std::max(overlay_width, unknown_label_size.width() + theme::global->margin * 2.0f);
-            ttlet option_height = std::max(unknown_label_size.height(), _max_option_label_height) + theme::global->margin * 2.0f;
-            ttlet chevron_width = theme::global->smallSize;
+            ttlet extra_width = theme::global->smallSize + theme::global->margin * 2.0f;
+            ttlet extra_height = theme::global->margin * 2.0f;
 
-            _preferred_size = interval_extent2::make_minimum(extent2{chevron_width + option_width, option_height});
+            _minimum_size = {
+                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->minimum_size().width()) + extra_width,
+                std::max(_max_option_label_height, unknown_label_stencil->minimum_size().height()) + extra_height};
+            _preferred_size = {
+                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->preferred_size().width()) +
+                    extra_width,
+                std::max(_max_option_label_height, unknown_label_stencil->preferred_size().height()) + extra_height};
+            _maximum_size = {
+                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->maximum_size().width()) + extra_width,
+                std::max(_max_option_label_height, unknown_label_stencil->maximum_size().height()) + extra_height};
+
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
 
         } else {
@@ -122,9 +130,11 @@ public:
             // The overlay should start on the same left edge as the selection box and the same width.
             // The height of the overlay should be the maximum height, which will show all the options.
 
-            ttlet overlay_width =
-                clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
-            ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
+            ttlet overlay_width = std::clamp(
+                rectangle().width() - theme::global->smallSize,
+                _overlay_widget->minimum_size().width(),
+                _overlay_widget->maximum_size().width());
+            ttlet overlay_height = _overlay_widget->preferred_size().height();
             ttlet overlay_x = theme::global->smallSize;
             ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
             ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
@@ -327,7 +337,6 @@ private:
 
         } else if (auto first_menu_item = get_first_menu_item()) {
             this->window.update_keyboard_target(first_menu_item, keyboard_focus_group::menu);
-
         }
 
         request_redraw();
@@ -375,7 +384,7 @@ private:
         for (ttlet & [ tag, text ] : *option_list) {
             _max_option_label_height = std::max(
                 _max_option_label_height,
-                stencil::make_unique(alignment::middle_left, text, theme::global->labelStyle)->preferred_extent().height());
+                stencil::make_unique(alignment::middle_left, text, theme::global->labelStyle)->preferred_size().height());
         }
     }
 

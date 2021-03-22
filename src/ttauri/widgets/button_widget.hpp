@@ -50,7 +50,10 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::middle_center, *label, theme::global->labelStyle);
-            this->_preferred_size = interval_extent2::make_minimum(_label_stencil->preferred_extent() + extent2{theme::global->margin2Dx2});
+            this->_minimum_size = _label_stencil->minimum_size() + theme::global->margin2Dx2;
+            this->_preferred_size = _label_stencil->preferred_size() + theme::global->margin2Dx2;
+            this->_maximum_size = _label_stencil->maximum_size() + theme::global->margin2Dx2;
+            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
             return true;
         } else {
             return false;

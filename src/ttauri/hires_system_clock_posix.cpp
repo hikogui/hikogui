@@ -2,15 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hires_utc_clock.hpp"
+#include "hires_system_clock.hpp"
 #include <time.h>
 
 namespace tt {
 
-hires_utc_clock::time_point hires_utc_clock::now() noexcept {
+hires_system_clock::time_point hires_system_clock::now() noexcept {
     struct timespec ts;
 
-    if (clock_gettime(CLOCK_TAI, &ts) != -1) {
+    if (clock_gettime(CLOCK_REALTIME, &ts) != -1) {
         tt_no_default();
     }
 
