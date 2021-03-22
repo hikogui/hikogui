@@ -26,7 +26,6 @@
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../unfair_recursive_mutex.hpp"
-#include "../interval_extent2.hpp"
 #include "../flow_layout.hpp"
 #include "../ranged_numeric.hpp"
 #include <limits>
@@ -192,48 +191,41 @@ public:
         return _semantic_layer;
     }
 
-    /** Get the resistance in width.
-     * The amount of resistance the widget has for resizing to larger than the minimum size.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @return The amount of resistance to horizontal resize.
-     * @retval 0 Greedy: Widget will try to become the largest.
-     * @retval 1 Normal: Widget will share the space with others.
-     * @retval 2 Resist: Widget will try to maintain minimum size.
+    /** Minimum size.
+     * The absolute minimum size of the widget.
+     * A container will never reserve less space for the widget.
+     * For windows this size becomes a hard limit for the minimum window size.
      */
-    [[nodiscard]] ranged_int<3> width_resistance() const noexcept
+    [[nodiscard]] extent2 minimum_size() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _width_resistance;
+        return _minimum_size;
     }
 
-    /** Get the resistance in height.
-     * The amount of resistance the widget has for resizing to larger than the minimum size.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @return The amount of resistance to vertical resize.
-     * @retval 0 Greedy: Widget will try to become the largest.
-     * @retval 1 Normal: Widget will share the space with others.
-     * @retval 2 Resist: Widget will try to maintain minimum size.
+    /** Preferred size.
+     * The preferred size of a widget.
+     * Containers will initialize their layout algorithm at this size
+     * before growing or shrinking.
+     * For scroll-views this size will be used in the scroll-direction.
+     * For tab-views this is propagated.
+     * For windows this size is used to set the initial window size.
      */
-    [[nodiscard]] ranged_int<3> height_resistance() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _height_resistance;
-    }
-
-    /** Get the size-range of the widget.
-     * This size-range is used to determine the size of container widgets
-     * and eventually the size of the window.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @pre `updateConstraint()` must be called first.
-     * @return The minimum and maximum size as an interval of a 2D vector.
-     */
-    [[nodiscard]] interval_extent2 preferred_size() const noexcept
+    [[nodiscard]] extent2 preferred_size() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return _preferred_size;
+    }
+
+    /** Maximum size.
+     * The maximum size of a widget.
+     * Containers will try to not grow a widget beyond the maximum size,
+     * but it may do so to satisfy the minimum constraint on a neighboring widget.
+     * For windows the maximum size becomes a hard limit for the window size.
+     */
+    [[nodiscard]] extent2 maximum_size() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return _maximum_size;
     }
 
     /** Set the location and size of the widget inside the window.
@@ -270,7 +262,7 @@ public:
     set_layout_parameters_from_parent(aarectangle child_rectangle, aarectangle parent_clipping_rectangle, float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_axiom(child_rectangle.extent() >= _preferred_size.minimum());
+        tt_axiom(child_rectangle.extent() >= _minimum_size);
 
         ttlet child_translate = translate2{child_rectangle};
         ttlet child_size = child_rectangle.extent();
@@ -562,6 +554,12 @@ public:
      */
     [[nodiscard]] bool is_last(keyboard_focus_group group) const noexcept;
 
+    /** Scroll to show the given rectangle on the window.
+     * This will call parents, until all parents have scrolled
+     * the rectangle to be shown on the window.
+     */
+    virtual void scroll_to_show(tt::rectangle rectangle) noexcept;
+
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
@@ -621,10 +619,9 @@ protected:
      */
     bool _request_relayout = true;
 
-    interval_extent2 _preferred_size;
-
-    ranged_int<3> _width_resistance = 1;
-    ranged_int<3> _height_resistance = 1;
+    extent2 _minimum_size;
+    extent2 _preferred_size;
+    extent2 _maximum_size;
 
     float _margin = theme::global->margin;
 

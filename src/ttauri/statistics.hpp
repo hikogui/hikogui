@@ -4,19 +4,20 @@
 
 #pragma once
 
-#include "system_status.hpp"
-
-#include <thread>
+#include "subsystem.hpp"
+#include <atomic>
 
 namespace tt {
 
 void statistics_deinit() noexcept;
 
-void statistics_init() noexcept;
+bool statistics_init() noexcept;
+
+inline std::atomic<bool> statistics_running = false;
 
 inline bool statistics_start()
 {
-    return system_status_start_subsystem(system_status_type::statistics, statistics_init, statistics_deinit);
+    return start_subsystem(statistics_running, false, statistics_init, statistics_deinit);
 }
 
 } // namespace tt

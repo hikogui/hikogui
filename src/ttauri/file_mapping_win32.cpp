@@ -18,11 +18,9 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, size_t size) :
     DWORD protect;
     if (accessMode() >= (access_mode::read | access_mode::write)) {
         protect = PAGE_READWRITE;
-    }
-    else if (accessMode() >= access_mode::read) {
+    } else if (accessMode() >= access_mode::read) {
         protect = PAGE_READONLY;
-    }
-    else {
+    } else {
         throw io_error("{}: Illegal access mode WRONLY/0 when mapping file.", location());
     }
 
@@ -32,20 +30,25 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, size_t size) :
     if (this->size == 0) {
         mapHandle = nullptr;
     } else {
-        if ((mapHandle = CreateFileMappingW(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
+        if ((mapHandle = CreateFileMappingW(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) ==
+            nullptr) {
             throw io_error("{}: Could not create file mapping. '{}'", location(), get_last_error_message());
         }
     }
 }
 
 file_mapping::file_mapping(URL const &location, access_mode accessMode, size_t size) :
-    file_mapping(findOrOpenFile(location, accessMode), size) {}
+    file_mapping(findOrOpenFile(location, accessMode), size)
+{
+}
 
 file_mapping::~file_mapping()
 {
-    if (!CloseHandle(mapHandle)) {
-        tt_log_error("Could not close file mapping object on file '{}'", get_last_error_message());
+    if (mapHandle != nullptr) {
+        if (!CloseHandle(mapHandle)) {
+            tt_log_fatal("Could not close file mapping object on file '{}'", get_last_error_message());
+        }
     }
 }
 
-}
+} // namespace tt

@@ -34,7 +34,6 @@ public:
         abstract_radio_button_widget<T>(window, parent, std::move(true_value), std::forward<Value>(value)),
         label(std::forward<Label>(label))
     {
-        this->_width_resistance = 2;
     }
 
     toolbar_tab_button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
@@ -63,13 +62,12 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::top_center, *label, theme::global->labelStyle);
+            ttlet extra_size = extent2{theme::global->margin * 2.0f, 0.0f};
 
-            ttlet minimum_height = _label_stencil->preferred_extent().height();
-            ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * theme::global->margin;
-
-            this->_preferred_size = {
-                extent2{minimum_width, minimum_height},
-                extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            this->_minimum_size = _label_stencil->minimum_size() + extra_size;
+            this->_preferred_size = _label_stencil->preferred_size() + extra_size;
+            this->_maximum_size = _label_stencil->maximum_size() + extra_size;
+            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
             return true;
         } else {
             return false;
@@ -117,22 +115,27 @@ public:
         switch (command) {
         case command::gui_toolbar_next:
             if (!this->is_last(keyboard_focus_group::toolbar)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+                this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
             }
             return true;
 
         case command::gui_toolbar_prev:
             if (!this->is_first(keyboard_focus_group::toolbar)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+                this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
             }
             return true;
 
         default:;
         }
 
-        return super::handle_event(command);
+        auto r = super::handle_event(command);
+        if (r) {
+            // Let the toolbar request a redraw, so that the extended focus line get redrawn when it changes.
+            auto parent = this->_parent.lock();
+            tt_axiom(parent);
+            parent->request_redraw();
+        }
+        return r;
     }
 
 private:
@@ -148,11 +151,7 @@ private:
 
             // Create a line, on the bottom of the toolbar over the full width.
             ttlet line_rectangle = aarectangle{
-                parent_rectangle.left(),
-                parent_rectangle.bottom(),
-                parent_rectangle.width(),
-                theme::global->borderWidth
-            };
+                parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global->borderWidth};
 
             context.set_clipping_rectangle(line_rectangle);
 

@@ -180,16 +180,9 @@ public:
 
     /** Matrix/Matrix multiplication.
      */
-    [[nodiscard]] constexpr auto operator*(matrix<2> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(matrix const &rhs) const noexcept
     {
-        return matrix<D>{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
-    }
-
-    /** Matrix/Matrix multiplication.
-     */
-    [[nodiscard]] constexpr auto operator*(matrix<3> const &rhs) const noexcept
-    {
-        return matrix<3>{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
+        return matrix{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     /** Matrix transpose.

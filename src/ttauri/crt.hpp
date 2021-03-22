@@ -21,7 +21,7 @@
 #pragma once
 
 #include "os_detect.hpp"
-#include "system_status.hpp"
+#include "subsystem.hpp"
 #include "URL.hpp"
 #include "strings.hpp"
 #include "cast.hpp"
@@ -108,10 +108,11 @@ int WINAPI WinMain(
 
     // Make sure the console is in a valid state to write text to it.
     tt::console_init();
+    tt::start_system();
 
     ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
 
-    tt::system_status_shutdown();
+    tt::shutdown_system();
 
     for (auto argument: arguments) {
         delete [] argument;
@@ -136,9 +137,10 @@ int main(int argc, char *argv[])
 
     // Make sure the console is in a valid state to write text to it.
     tt::console_init();
+    tt::start_system();
 
     ttlet r = tt_main(argc, argv, {});
-    tt::system_status_shutdown();
+    tt::shutdown_system();
     return r;
 }
 

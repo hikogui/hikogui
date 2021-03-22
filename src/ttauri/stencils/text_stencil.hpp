@@ -18,7 +18,9 @@ public:
     text_stencil(alignment alignment, std::u8string_view text, text_style style) noexcept;
     text_stencil(alignment alignment, std::u8string text, text_style style) noexcept;
 
-    [[nodiscard]] extent2 preferred_extent() noexcept override;
+    [[nodiscard]] extent2 minimum_size() noexcept override;
+    [[nodiscard]] extent2 preferred_size() noexcept override;
+    [[nodiscard]] extent2 maximum_size() noexcept override;
 
     void draw(draw_context context, tt::color color, matrix3 transform) noexcept override;
 

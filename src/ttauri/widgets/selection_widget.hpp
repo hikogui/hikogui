@@ -46,8 +46,9 @@ public:
         unknown_label(std::forward<UnknownLabel>(unknown_label))
     {
         // Because the super class `abstract_container_widget` forces the same semantic layer
-        // as the a parent, we need to force it back as if this is a normal widget.
+        // as the a parent and _margin to zero, we need to force them back as if this is a normal widget.
         _semantic_layer = parent->semantic_layer() + 1;
+        _margin = theme::global->margin;
     }
 
     ~selection_widget() {}
@@ -91,16 +92,24 @@ public:
             }
 
             // Calculate the size of the widget based on the largest height of a label and the width of the overlay.
-            ttlet unknown_label_size =
-                stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle)
-                    ->preferred_extent();
+            ttlet unknown_label_stencil =
+                stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle);
 
-            ttlet overlay_width = _overlay_widget->preferred_size().minimum().width();
-            ttlet option_width = std::max(overlay_width, unknown_label_size.width() + theme::global->margin * 2.0f);
-            ttlet option_height = std::max(unknown_label_size.height(), _max_option_label_height) + theme::global->margin * 2.0f;
-            ttlet chevron_width = theme::global->smallSize;
+            ttlet extra_width = theme::global->smallSize + theme::global->margin * 2.0f;
+            ttlet extra_height = theme::global->margin * 2.0f;
 
-            _preferred_size = interval_extent2::make_minimum(extent2{chevron_width + option_width, option_height});
+            _minimum_size = {
+                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->minimum_size().width()) + extra_width,
+                std::max(_max_option_label_height, unknown_label_stencil->minimum_size().height()) + extra_height};
+            _preferred_size = {
+                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->preferred_size().width()) +
+                    extra_width,
+                std::max(_max_option_label_height, unknown_label_stencil->preferred_size().height()) + extra_height};
+            _maximum_size = {
+                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->maximum_size().width()) + extra_width,
+                std::max(_max_option_label_height, unknown_label_stencil->maximum_size().height()) + extra_height};
+
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
 
         } else {
@@ -121,9 +130,11 @@ public:
             // The overlay should start on the same left edge as the selection box and the same width.
             // The height of the overlay should be the maximum height, which will show all the options.
 
-            ttlet overlay_width =
-                clamp(rectangle().width() - theme::global->smallSize, _overlay_widget->preferred_size().width());
-            ttlet overlay_height = _overlay_widget->preferred_size().maximum().height();
+            ttlet overlay_width = std::clamp(
+                rectangle().width() - theme::global->smallSize,
+                _overlay_widget->minimum_size().width(),
+                _overlay_widget->maximum_size().width());
+            ttlet overlay_height = _overlay_widget->preferred_size().height();
             ttlet overlay_x = theme::global->smallSize;
             ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
             ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
@@ -245,22 +256,6 @@ public:
         return is_normal(group) && *enabled;
     }
 
-    std::shared_ptr<widget> find_next_widget(
-        std::shared_ptr<widget> const &current_widget,
-        keyboard_focus_group group,
-        keyboard_focus_direction direction) const noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-
-        if (_selecting) {
-            return super::find_next_widget(current_widget, group, direction);
-
-        } else {
-            // Bypass the abstract_container_widget and directly use the widget implementation.
-            return widget::find_next_widget(current_widget, group, direction);
-        }
-    }
-
     template<typename T, typename... Args>
     std::shared_ptr<T> make_widget(Args &&...args)
     {
@@ -342,7 +337,6 @@ private:
 
         } else if (auto first_menu_item = get_first_menu_item()) {
             this->window.update_keyboard_target(first_menu_item, keyboard_focus_group::menu);
-
         }
 
         request_redraw();
@@ -390,7 +384,7 @@ private:
         for (ttlet & [ tag, text ] : *option_list) {
             _max_option_label_height = std::max(
                 _max_option_label_height,
-                stencil::make_unique(alignment::middle_left, text, theme::global->labelStyle)->preferred_extent().height());
+                stencil::make_unique(alignment::middle_left, text, theme::global->labelStyle)->preferred_size().height());
         }
     }
 

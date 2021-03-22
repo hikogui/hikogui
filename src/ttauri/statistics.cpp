@@ -79,9 +79,10 @@ void statistics_deinit() noexcept
     statistics_flush();
 }
 
-void statistics_init() noexcept
+bool statistics_init() noexcept
 {
     statistics_thread = std::jthread(statistics_loop);
+    return true;
 }
 
 }

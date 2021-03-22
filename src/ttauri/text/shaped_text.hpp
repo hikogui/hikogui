@@ -29,14 +29,14 @@ public:
     alignment alignment;
     aarectangle boundingBox;
     float width;
-    extent2 preferred_extent;
 
 private:
     std::vector<attributed_glyph_line> lines;
+    extent2 _preferred_extent;
 
 public:
     shaped_text() noexcept :
-        alignment(alignment::middle_center), boundingBox(), width(0.0f), preferred_extent(), lines() {}
+        alignment(alignment::middle_center), boundingBox(), width(0.0f), _preferred_extent(), lines() {}
     shaped_text(shaped_text const &other) = default;
     shaped_text(shaped_text &&other) noexcept = default;
     shaped_text &operator=(shaped_text const &other) = default;
@@ -111,6 +111,21 @@ public:
             count += std::ssize(line);
         }
         return narrow_cast<size_t>(count);
+    }
+
+    [[nodiscard]] extent2 minimum_size() const noexcept
+    {
+        return _preferred_extent;
+    }
+
+    [[nodiscard]] extent2 preferred_size() const noexcept
+    {
+        return _preferred_extent;
+    }
+
+    [[nodiscard]] extent2 maximum_size() const noexcept
+    {
+        return _preferred_extent;
     }
 
     [[nodiscard]] iterator begin() noexcept { return recursive_iterator_begin(lines); }

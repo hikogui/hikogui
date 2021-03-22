@@ -16,7 +16,6 @@
 
 namespace tt {
 
-
 /** Menu item widget.
  *
  * Visual:
@@ -58,8 +57,7 @@ public:
         std::shared_ptr<abstract_container_widget> parent,
         value_type true_value,
         Value &&value = {}) noexcept :
-        super(window, parent, std::move(true_value), std::forward<Value>(value)),
-        _parent_is_toolbar(parent->is_toolbar())
+        super(window, parent, std::move(true_value), std::forward<Value>(value)), _parent_is_toolbar(parent->is_toolbar())
     {
         // menu item buttons hug the container-border and neighbor widgets.
         this->_margin = 0.0f;
@@ -165,32 +163,28 @@ public:
         switch (command) {
         case command::gui_menu_next:
             if (!_parent_is_toolbar && !this->is_last(keyboard_focus_group::menu)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::menu, keyboard_focus_direction::forward);
+                this->window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
                 return true;
             }
             break;
 
         case command::gui_menu_prev:
             if (!_parent_is_toolbar && !this->is_first(keyboard_focus_group::menu)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::menu, keyboard_focus_direction::backward);
+                this->window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
                 return true;
             }
             break;
 
         case command::gui_toolbar_next:
             if (_parent_is_toolbar && !this->is_last(keyboard_focus_group::toolbar)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+                this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
                 return true;
             }
             break;
 
         case command::gui_toolbar_prev:
             if (_parent_is_toolbar && !this->is_first(keyboard_focus_group::toolbar)) {
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+                this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
                 return true;
             }
             break;
@@ -198,17 +192,15 @@ public:
         case command::gui_activate:
         case command::gui_enter:
             if (!_parent_is_toolbar) {
-                ttlet direction =
-                    command == command::gui_enter ? keyboard_focus_direction::forward : keyboard_focus_direction::backward;
-
-                // We need to find the backward widget of the parent, before the menu is closed. 
-                ttlet focus_widget_after_commit = this->window.widget->find_next_widget(
-                    this->shared_from_this(), keyboard_focus_group::normal, direction);
-
                 ttlet handled = super::handle_event(command::gui_activate);
                 tt_axiom(handled);
 
-                this->window.update_keyboard_target(focus_widget_after_commit);
+                this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
+
+                if (command == command::gui_activate) {
+                    this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
+                }
+
                 return handled;
             }
             break;
@@ -229,7 +221,7 @@ public:
 
             _check_mark_stencil = stencil::make_unique(alignment::middle_center, elusive_icon::Ok);
 
-            auto width = _label_stencil->preferred_extent().width() + theme::global->margin * 2.0f;
+            auto width = theme::global->margin * 2.0f;
             if (_show_check_mark) {
                 width += theme::global->small_icon_size + theme::global->margin;
             }
@@ -237,9 +229,12 @@ public:
                 width += theme::global->margin + theme::global->small_icon_size * 3.0f;
             }
 
-            ttlet height = _label_stencil->preferred_extent().height() + theme::global->margin * 2.0f;
-            this->_preferred_size = {
-                extent2{width, height}, extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            ttlet extra_size = extent2{width, theme::global->margin * 2.0f};
+
+            this->_minimum_size = _label_stencil->minimum_size() + extra_size;
+            this->_preferred_size = _label_stencil->preferred_size() + extra_size;
+            this->_maximum_size = _label_stencil->maximum_size() + extra_size;
+            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
             return true;
         } else {
             return false;

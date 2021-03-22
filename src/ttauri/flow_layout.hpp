@@ -7,24 +7,58 @@
 #include "required.hpp"
 #include "interval.hpp"
 #include "alignment.hpp"
-#include "ranged_numeric.hpp"
 #include <vector>
 #include <optional>
 
 namespace tt {
 
+struct flow_layout_item {
+    constexpr flow_layout_item() noexcept :
+        minimum_size(0), preferred_size(0), maximum_size(0), offset(0), size(0)
+    {
+    }
+
+    constexpr flow_layout_item(flow_layout_item const &rhs) noexcept = default;
+    constexpr flow_layout_item(flow_layout_item &&rhs) noexcept = default;
+    constexpr flow_layout_item &operator=(flow_layout_item const &rhs) noexcept = default;
+    constexpr flow_layout_item &operator=(flow_layout_item &&rhs) noexcept = default;
+
+    constexpr void update(float min_size, float pref_size, float max_size) noexcept
+    {
+        minimum_size = std::max(minimum_size, narrow_cast<int>(std::ceil(min_size)));
+        preferred_size = std::max(preferred_size, narrow_cast<int>(std::round(pref_size)));
+        maximum_size = std::max(maximum_size, narrow_cast<int>(std::floor(max_size)));
+
+        // The maximum size must be larger than the minimum size.
+        maximum_size = std::max(maximum_size, minimum_size);
+
+        // Try to keep the preferred size below the maximum.
+        preferred_size = std::clamp(preferred_size, minimum_size, maximum_size);
+
+        tt_axiom(minimum_size <= preferred_size);
+        tt_axiom(preferred_size <= maximum_size);
+    }
+
+    int offset;
+    int size;
+    int minimum_size;
+    int preferred_size;
+    int maximum_size;
+};
+
 /** Layout algorithm.
  */
 class flow_layout {
 public:
-    flow_layout() noexcept : margins(), items() {
+    flow_layout() noexcept : margins(), items()
+    {
         clear();
     }
 
     void clear() noexcept
     {
         margins.clear();
-        margins.push_back(0.0f);
+        margins.push_back(0);
         items.clear();
     }
 
@@ -33,72 +67,82 @@ public:
         return items.size();
     }
 
-    void
-    update(ssize_t index, float extent, ranged_int<3> resistance, float margin) noexcept
+    void update(ssize_t index, float minimum_size, float preferred_size, float maximum_size, float margin) noexcept
     {
         tt_axiom(index >= 0);
         tt_axiom(index < std::ssize(items));
         tt_axiom(index + 1 < std::ssize(margins));
-        items[index].update(extent, resistance);
-        margins[index] = std::max(margins[index], margin);
-        margins[index+1] = std::max(margins[index+1], margin);
+
+        items[index].update(minimum_size, preferred_size, maximum_size);
+
+        ttlet margin_ = narrow_cast<int>(std::ceil(margin));
+        margins[index] = std::max(margins[index], margin_);
+        margins[index + 1] = std::max(margins[index + 1], margin_);
+    }
+
+    [[nodiscard]] int total_margin_size() const noexcept
+    {
+        return std::accumulate(margins.cbegin(), margins.cend(), 0);
     }
 
     [[nodiscard]] float minimum_size() const noexcept
     {
-        auto a = std::accumulate(margins.cbegin(), margins.cend(), 0.0f);
-        return std::accumulate(items.cbegin(), items.cend(), a, [](ttlet &acc, ttlet &item) {
-            return acc + item.minimum_size();
-        });
+        auto a = total_margin_size();
+        for (ttlet &item : items) {
+            a += item.minimum_size;
+        }
+        return narrow_cast<float>(a);
+    }
+
+    [[nodiscard]] float preferred_size() const noexcept
+    {
+        auto a = total_margin_size();
+        for (ttlet &item : items) {
+            a += item.preferred_size;
+        }
+        return narrow_cast<float>(a);
+    }
+
+    [[nodiscard]] float maximum_size() const noexcept
+    {
+        auto a = total_margin_size();
+        for (ttlet &item : items) {
+            a += item.maximum_size;
+        }
+        return narrow_cast<float>(a);
     }
 
     /** Update the layout of all items based on the total size.
      */
-    void set_size(float total_size) noexcept {
-        set_items_to_minimum_size();
-        auto extra_size = total_size - size();
+    void set_size(float total_size) noexcept
+    {
+        ttlet total_size_ = narrow_cast<int>(std::round(total_size));
+        // It is possible that total_size crosses the maximum_size.
+        tt_axiom(total_size_ >= minimum_size());
 
-        for (ttlet resistance : ranged_int<3>::range()) {
-            auto nr_can_grow = number_of_items_that_can_grow(resistance);
-            while (extra_size >= 1.0f && nr_can_grow != 0) {
-                nr_can_grow = grow_items(nr_can_grow, resistance, extra_size);
+        set_items_to_preferred_size();
+
+        auto grow_by = total_size_ - size();
+        while (grow_by != 0) { 
+            int num = num_items_can_resize(grow_by);
+
+            auto resize_beyond_maximum = num == 0;
+            if (resize_beyond_maximum) {
+                num = narrow_cast<int>(std::size(items));
             }
-        }
 
-        calculate_offset_and_size();
+            resize_items(num, grow_by, resize_beyond_maximum);
+
+            grow_by = total_size_ - size();
+        };
     }
 
-    /** Calculate the size of the combined items in the layout.
-     * @pre `set_size()` must be called.
-     */
-    [[nodiscard]] float size() const noexcept
+    [[nodiscard]] std::pair<float, float> get_offset_and_size(size_t index) const noexcept
     {
-        if (items.empty()) {
-            return margins.back();
-        } else {
-            tt_axiom(items.back().offset >= 0.0f);
-            return items.back().offset + items.back().size + margins.back();
-        }
-    }
-
-    /**
-     * @param first The first index
-     * @param last The index one beyond the last.
-     */
-    [[nodiscard]] std::pair<float, float> get_offset_and_size(ssize_t first, ssize_t last) const noexcept
-    {
-        tt_axiom(first >= 0 && first < std::ssize(items));
-        tt_axiom(last > 0 && last <= std::ssize(items));
-
-        auto offset = items[first].offset;
-        auto size = (items[last - 1].offset + items[last - 1].size) - offset;
+        tt_axiom(index < std::size(items));
+        auto offset = narrow_cast<float>(items[index].offset);
+        auto size = narrow_cast<float>(items[index].size);
         return {offset, size};
-    }
-
-    [[nodiscard]] std::pair<float, float> get_offset_and_size(ssize_t index) const noexcept
-    {
-        return get_offset_and_size(index, index + 1);
-        
     }
 
     /** Grow layout to include upto new_size of items.
@@ -110,117 +154,99 @@ public:
         }
 
         while (std::ssize(margins) < new_size + 1) {
-            margins.push_back(0.0f);
+            margins.push_back(0);
         }
 
         tt_axiom(margins.size() == items.size() + 1);
     }
 
 private:
-    struct flow_layout_item {
-        constexpr flow_layout_item() noexcept : _minimum_size(0.0f), _resistance(1), offset(-1.0f), size(-1.0f) {}
-
-        constexpr flow_layout_item(flow_layout_item const &rhs) noexcept = default;
-        constexpr flow_layout_item(flow_layout_item &&rhs) noexcept = default;
-        constexpr flow_layout_item &operator=(flow_layout_item const &rhs) noexcept = default;
-        constexpr flow_layout_item &operator=(flow_layout_item &&rhs) noexcept = default;
-
-        constexpr void update(float minimum_size, ranged_int<3> resistance) noexcept
-        {
-            _minimum_size = std::max(_minimum_size, minimum_size);
-            switch (static_cast<int>(resistance)) {
-            case 0: // No resistance has lower priority than strong resistance.
-                _resistance = _resistance == 2 ? 2 : 0;
-                break;
-            case 1: // Normal resistance will not change the value.
-                break;
-            case 2: // Strong resistance overrides all
-                _resistance = 2;
-                break;
-            default:
-                tt_no_default();
-            }
-        }
-
-        [[nodiscard]] float minimum_size() const noexcept {
-            return _minimum_size;
-        }
-
-        [[nodiscard]] float maximum_size() const noexcept {
-            return std::numeric_limits<float>::infinity();
-        }
-
-        [[nodiscard]] ranged_int<3> resistance() const noexcept
-        {
-            return _resistance;
-        }
-
-        float offset;
-        float size;
-
-    private:
-        float _minimum_size;
-        ranged_int<3> _resistance;
-    };
-
     /* The margin between the items, margin[0] is the margin
      * before the first item. margin[items.size()] is the margin
      * after the last item. margins.size() == items.size() + 1.
      */
-    std::vector<float> margins;
+    std::vector<int> margins;
     std::vector<flow_layout_item> items;
 
-    void set_items_to_minimum_size() noexcept
+    void set_items_to_preferred_size() noexcept
     {
         for (auto &&item : items) {
-            item.size = std::ceil(item.minimum_size());
+            item.size = item.preferred_size;
         }
         calculate_offset_and_size();
     }
 
-    [[nodiscard]] ssize_t number_of_items_that_can_grow(ranged_int<3> resistance) const noexcept
+    [[nodiscard]] int num_items_can_resize(int grow_by) noexcept
     {
-        auto nr_non_max = ssize_t{0};
+        if (grow_by > 0) {
+            return narrow_cast<int>(std::ranges::count_if(items, [](ttlet &item) {
+                return item.size < item.maximum_size;
+            }));
+        } else if (grow_by < 0) {
+            return narrow_cast<int>(std::ranges::count_if(items, [](ttlet &item) {
+                return item.size > item.minimum_size;
+            }));
 
-        for (auto &&item : items) {
-            if (item.resistance() == resistance && item.size < item.maximum_size()) {
-                ++nr_non_max;
-            }
+        } else {
+            return 0;
         }
-        return nr_non_max;
     }
 
-    [[nodiscard]] ssize_t grow_items(ssize_t nr_non_max, ranged_int<3> resistance, float &extra_size) noexcept
+    [[nodiscard]] void resize_items(int nr_items, int grow_by, bool resize_beyond_maximum) noexcept
     {
-        ttlet extra_size_per_item = std::ceil(extra_size / nr_non_max);
+        tt_axiom(grow_by != 0);
+        tt_axiom(nr_items > 0);
 
-        nr_non_max = 0;
+        auto per_item_grow_by = grow_by / nr_items;
+        if (per_item_grow_by == 0) {
+            per_item_grow_by = grow_by > 0 ? 1 : -1;
+        }
+
         for (auto &&item : items) {
-            if (item.resistance() == resistance) {
-                auto old_size = item.size;
+            auto new_item_size = item.size + per_item_grow_by;
+            if (!resize_beyond_maximum) {
+                new_item_size = std::clamp(new_item_size, item.minimum_size, item.maximum_size);
+            }
 
-                ttlet extra_size_this_item = std::min(extra_size, extra_size_per_item);
+            ttlet this_item_grown_by = new_item_size - item.size;
+            item.size = new_item_size;
 
-                item.size = std::ceil(item.size + extra_size_this_item);
-                extra_size -= item.size - old_size;
+            tt_axiom(item.size >= item.minimum_size);
+            if (!resize_beyond_maximum) {
+                tt_axiom(item.size <= item.maximum_size);
+            }
 
-                if (item.size < item.maximum_size()) {
-                    ++nr_non_max;
-                }
+            if ((grow_by -= this_item_grown_by) == 0) {
+                // All the growth has been spread to the widgets.
+                break;
             }
         }
-        return nr_non_max;
+
+        calculate_offset_and_size();
     }
 
     void calculate_offset_and_size() noexcept
     {
-        auto offset = 0.0f;
+        auto offset = 0;
         for (ssize_t i = 0; i != std::ssize(items); ++i) {
             offset += margins[i];
-            items[i].offset = std::floor(offset);
+            items[i].offset = offset;
             offset += items[i].size;
+        }
+    }
+
+    /** Calculate the size of the combined items in the layout.
+     * @pre `calculate_offset_and_size()` must be called.
+     */
+    [[nodiscard]] int size() const noexcept
+    {
+        if (items.empty()) {
+            return margins.back();
+        } else {
+            tt_axiom(items.back().offset >= 0);
+            return items.back().offset + items.back().size + margins.back();
         }
     }
 };
 
-}
+} // namespace tt

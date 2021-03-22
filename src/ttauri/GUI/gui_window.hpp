@@ -223,8 +223,8 @@ public:
         std::shared_ptr<tt::widget> widget,
         keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
 
-    /** Change the keyboard focus to the given, previous or next widget.
-     * This function will find the closest widget from the given widget wich belong to the given
+    /** Change the keyboard focus to the previous or next widget from the given widget.
+     * This function will find the closest widget from the given widget which belongs to the given
      * group; if none is found, or if the original selected widget is found, then no widget will be in focus.
      *
      * @param widget The widget to use as the start point for a new widget to select.
@@ -235,6 +235,15 @@ public:
         std::shared_ptr<tt::widget> const &widget,
         keyboard_focus_group group,
         keyboard_focus_direction direction) noexcept;
+
+    /** Change the keyboard focus to the given, previous or next widget.
+     * This function will find the closest widget from the current widget which belongs to the given
+     * group; if none is found, or if the original selected widget is found, then no widget will be in focus.
+     *
+     * @param group The group the widget must belong to.
+     * @param direction The direction to search in, or current to select the current widget.
+     */
+    void update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
 
     /** Get the size of the virtual-screen.
      * Each window may be on a different virtual screen with different

@@ -70,20 +70,37 @@ public:
             _false_label_stencil = stencil::make_unique(alignment::top_left, *false_label, theme::global->labelStyle);
             _other_label_stencil = stencil::make_unique(alignment::top_left, *other_label, theme::global->labelStyle);
 
-            ttlet minimum_height = std::max(
-                {_true_label_stencil->preferred_extent().height(),
-                 _false_label_stencil->preferred_extent().height(),
-                 _other_label_stencil->preferred_extent().height(),
-                 theme::global->smallSize});
+            ttlet minimum_label_size = std::max(
+                {_true_label_stencil->minimum_size(),
+                 _false_label_stencil->minimum_size(),
+                 _other_label_stencil->minimum_size()});
 
-            ttlet minimum_width_of_labels = std::max(
-                {_true_label_stencil->preferred_extent().width(),
-                 _false_label_stencil->preferred_extent().width(),
-                 _other_label_stencil->preferred_extent().width()});
-            ttlet minimum_width = theme::global->smallSize + theme::global->margin + minimum_width_of_labels;
+            auto preferred_label_size = std::max(
+                {_true_label_stencil->preferred_size(),
+                 _false_label_stencil->preferred_size(),
+                 _other_label_stencil->preferred_size()});
 
-            this->_preferred_size = interval_extent2::make_minimum(minimum_width, minimum_height);
+            auto maximum_label_size = std::min(
+                {_true_label_stencil->maximum_size(),
+                 _false_label_stencil->maximum_size(),
+                 _other_label_stencil->maximum_size()});
 
+            maximum_label_size = max(maximum_label_size, minimum_label_size);
+            preferred_label_size = clamp(preferred_label_size, minimum_label_size, maximum_label_size);
+
+            this->_minimum_size = {
+                minimum_label_size.width() + theme::global->smallSize + theme::global->margin,
+                std::max(minimum_label_size.height(), theme::global->smallSize)};
+
+            this->_preferred_size = {
+                preferred_label_size.width() + theme::global->smallSize + theme::global->margin,
+                std::max(preferred_label_size.height(), theme::global->smallSize)};
+
+            this->_maximum_size = {
+                maximum_label_size.width() + theme::global->smallSize + theme::global->margin,
+                std::max(maximum_label_size.height(), theme::global->smallSize)};
+
+            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
             return true;
         } else {
             return false;
@@ -96,7 +113,11 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            _checkbox_rectangle = aarectangle{0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
+            _checkbox_rectangle = aarectangle{
+                0.0f,
+                std::round(this->base_line() - theme::global->smallSize * 0.5f),
+                theme::global->smallSize,
+                theme::global->smallSize};
 
             ttlet label_x = _checkbox_rectangle.right() + theme::global->margin;
             _label_rectangle = aarectangle{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
@@ -175,9 +196,9 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        ttlet &labelCell = this->value == this->true_value ?
-            _true_label_stencil :
-            this->value == this->false_value ? _false_label_stencil : _other_label_stencil;
+        ttlet &labelCell = this->value == this->true_value ? _true_label_stencil :
+            this->value == this->false_value               ? _false_label_stencil :
+                                                             _other_label_stencil;
 
         labelCell->draw(context, this->label_color());
     }

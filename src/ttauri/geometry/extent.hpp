@@ -82,6 +82,46 @@ public:
         tt_axiom(is_valid());
     }
 
+    [[nodiscard]] static constexpr extent infinity() noexcept requires(D == 2)
+    {
+        return extent{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()};
+    }
+
+    [[nodiscard]] static constexpr extent infinity() noexcept requires(D == 3)
+    {
+        return extent{
+            std::numeric_limits<float>::infinity(),
+            std::numeric_limits<float>::infinity(),
+            std::numeric_limits<float>::infinity()};
+    }
+
+    [[nodiscard]] static constexpr extent large() noexcept requires(D == 2)
+    {
+        return extent{32767.0f, 32767.0f};
+    }
+
+    [[nodiscard]] static constexpr extent large() noexcept requires(D == 3)
+    {
+        return extent{32767.0f, 32767.0f, 32767.0f};
+    }
+
+    [[nodiscard]] static constexpr extent nan() noexcept requires(D == 2)
+    {
+        auto r = extent{};
+        r._v.x() = std::numeric_limits<float>::signaling_NaN();
+        r._v.y() = std::numeric_limits<float>::signaling_NaN();
+        return r;
+    }
+
+    [[nodiscard]] static constexpr extent nan() noexcept requires(D == 3)
+    {
+        auto r = extent{};
+        r._v.x() = std::numeric_limits<float>::signaling_NaN();
+        r._v.y() = std::numeric_limits<float>::signaling_NaN();
+        r._v.z() = std::numeric_limits<float>::signaling_NaN();
+        return r;
+    }
+
     /** Access the x-as-width element from the extent.
      * A extent can be seen as having a width, height and depth,
      * these accessors are aliases for x, y, and z.
@@ -250,7 +290,7 @@ public:
 
     /** Compare the size of the extents.
      */
-    [[nodiscard]] constexpr friend bool operator<(extent const &lhs, extent const &rhs) noexcept requires (D == 2)
+    [[nodiscard]] constexpr friend bool operator<(extent const &lhs, extent const &rhs) noexcept requires(D == 2)
     {
         return lhs.width() < rhs.width() && lhs.height() < rhs.height();
     }
@@ -356,6 +396,21 @@ public:
         return extent{floor(static_cast<f32x4>(rhs))};
     }
 
+    [[nodiscard]] constexpr friend extent min(extent const &lhs, extent const &rhs) noexcept
+    {
+        return extent{min(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
+    [[nodiscard]] constexpr friend extent max(extent const &lhs, extent const &rhs) noexcept
+    {
+        return extent{max(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+    }
+
+    [[nodiscard]] constexpr friend extent clamp(extent const &value, extent const &min, extent const &max) noexcept
+    {
+        return extent{clamp(static_cast<f32x4>(value), static_cast<f32x4>(min), static_cast<f32x4>(max))};
+    }
+
     /** Check if the extent is valid.
      * Extends must be positive.
      * This function will check if w is zero, and with 2D extent is z is zero.
@@ -387,7 +442,7 @@ private:
     static constexpr size_t element_mask = (1_uz << D) - 1;
 };
 
-}
+} // namespace geo
 
 using extent2 = geo::extent<2>;
 using extent3 = geo::extent<3>;

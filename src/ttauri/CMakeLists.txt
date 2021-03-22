@@ -94,7 +94,6 @@ target_sources(ttauri PRIVATE
     int_carry.hpp
     int_overflow.hpp
     interval.hpp
-    interval_extent2.hpp
     l10n.hpp
     label.hpp
     logger.cpp
@@ -139,8 +138,8 @@ target_sources(ttauri PRIVATE
     statistics.cpp
     statistics.hpp
     strings.hpp
+    subsystem.hpp
     sync_clock.hpp
-    system_status.hpp
     tag.hpp
     tagged_id.hpp
     tagged_map.hpp
@@ -200,10 +199,9 @@ if(TT_BUILD_TESTS)
         exceptions_tests.cpp
         file_view_tests.cpp
         forward_value_tests.cpp
-        #gap_buffer_tests.cpp
+        gap_buffer_tests.cpp
         glob_tests.cpp
         int_overflow_tests.cpp
-        interval_extent2_tests.cpp
         math_tests.cpp
         graphic_path_tests.cpp
         pixel_map_tests.cpp

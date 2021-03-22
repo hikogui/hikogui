@@ -122,11 +122,11 @@ public:
                 _text_width = 100.0;
             }
 
+            _minimum_size = {_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f};
             _preferred_size = {
-                extent2{_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f},
-                extent2{std::numeric_limits<float>::infinity(), theme::global->smallSize + theme::global->margin * 2.0f}};
-            _width_resistance = 2;
-
+                _text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f};
+            _maximum_size = {_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f};
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
             return false;
@@ -225,8 +225,7 @@ public:
 
             case command::gui_enter:
                 commit(true);
-                this->window.update_keyboard_target(
-                    this->shared_from_this(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
                 return true;
 
             case command::gui_keyboard_enter:
@@ -484,7 +483,7 @@ private:
         }
 
         // cap how far we scroll.
-        ttlet max_scroll_width = std::max(0.0f, _shaped_text.preferred_extent.width() - _text_rectangle.width());
+        ttlet max_scroll_width = std::max(0.0f, _shaped_text.preferred_size().width() - _text_rectangle.width());
         _text_scroll_x = std::clamp(_text_scroll_x, 0.0f, max_scroll_width);
 
         // Calculate how much we need to translate the text.
