@@ -55,6 +55,8 @@ target_sources(ttauri PRIVATE
     #cpu_id.hpp
     #$<${TT_X64}:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
     cpu_utc_clock.hpp
+    crt.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_win32.cpp>
     date.hpp
     datum.hpp
     debugger.hpp
@@ -84,9 +86,9 @@ target_sources(ttauri PRIVATE
     gap_buffer.hpp
     glob.hpp
     hash.hpp
-    hires_tai_clock.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_tai_clock_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_tai_clock_win32.cpp>
+    #hires_system_clock.hpp
+    #$<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_system_clock_posix.cpp>
+    #$<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_system_clock_win32.cpp>
     hires_utc_clock.cpp
     hires_utc_clock.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_posix.cpp>

@@ -10,7 +10,7 @@ namespace tt {
 hires_utc_clock::time_point hires_utc_clock::now() noexcept {
     struct timespec ts;
 
-    if (clock_gettime(CLOCK_REALTIME, &ts) != -1) {
+    if (clock_gettime(CLOCK_TAI, &ts) != -1) {
         tt_no_default();
     }
 
