@@ -77,7 +77,7 @@ void gui_window::init()
     extent = [this] {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         static_cast<void>(widget->update_constraints({}, true));
-        return widget->preferred_size().minimum();
+        return widget->preferred_size();
     }();
 
     // Once the window is open, we should be a full constraint, layout and draw of the window.

@@ -67,10 +67,20 @@ public:
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::top_left, *label, theme::global->labelStyle);
 
-            ttlet minimum_height = std::max(_label_stencil->preferred_extent().height(), theme::global->smallSize);
-            ttlet minimum_width = theme::global->smallSize + theme::global->margin + _label_stencil->preferred_extent().width();
+            ttlet minimum_height = std::max(_label_stencil->preferred_size().height(), theme::global->smallSize);
+            ttlet minimum_width = theme::global->smallSize + theme::global->margin + _label_stencil->preferred_size().width();
 
-            super::_preferred_size = interval_extent2::make_minimum(minimum_width, minimum_height);
+            this->_minimum_size = {
+                _label_stencil->minimum_size().width() + theme::global->smallSize + theme::global->margin,
+                std::max(_label_stencil->minimum_size().height(), theme::global->smallSize)};
+            this->_preferred_size = {
+                _label_stencil->preferred_size().width() + theme::global->smallSize + theme::global->margin,
+                std::max(_label_stencil->preferred_size().height(), theme::global->smallSize)};
+            this->_maximum_size = {
+                _label_stencil->maximum_size().width() + theme::global->smallSize + theme::global->margin,
+                std::max(_label_stencil->maximum_size().height(), theme::global->smallSize)};
+
+            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
             return true;
         } else {
             return false;
