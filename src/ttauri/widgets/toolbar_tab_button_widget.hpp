@@ -62,7 +62,7 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::top_center, *label, theme::global->labelStyle);
-            ttlet extra_size = extent2{0.0f, theme::global->margin * 2.0f};
+            ttlet extra_size = extent2{theme::global->margin * 2.0f, 0.0f};
 
             this->_minimum_size = _label_stencil->minimum_size() + extra_size;
             this->_preferred_size = _label_stencil->preferred_size() + extra_size;
@@ -151,11 +151,7 @@ private:
 
             // Create a line, on the bottom of the toolbar over the full width.
             ttlet line_rectangle = aarectangle{
-                parent_rectangle.left(),
-                parent_rectangle.bottom(),
-                parent_rectangle.width(),
-                theme::global->borderWidth
-            };
+                parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global->borderWidth};
 
             context.set_clipping_rectangle(line_rectangle);
 

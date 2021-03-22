@@ -75,15 +75,18 @@ public:
                  _false_label_stencil->minimum_size(),
                  _other_label_stencil->minimum_size()});
 
-            ttlet preferred_label_size = std::max(
+            auto preferred_label_size = std::max(
                 {_true_label_stencil->preferred_size(),
                  _false_label_stencil->preferred_size(),
                  _other_label_stencil->preferred_size()});
 
-            ttlet maximum_label_size = std::min(
+            auto maximum_label_size = std::min(
                 {_true_label_stencil->maximum_size(),
                  _false_label_stencil->maximum_size(),
                  _other_label_stencil->maximum_size()});
+
+            maximum_label_size = max(maximum_label_size, minimum_label_size);
+            preferred_label_size = clamp(preferred_label_size, minimum_label_size, maximum_label_size);
 
             this->_minimum_size = {
                 minimum_label_size.width() + theme::global->smallSize + theme::global->margin,

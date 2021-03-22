@@ -55,8 +55,12 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
             _toolbar->preferred_size().height() + _content->preferred_size().height()};
 
         _maximum_size = {
-            std::min(_toolbar->maximum_size().width(), _content->maximum_size().width()),
+            _content->maximum_size().width(),
             _toolbar->preferred_size().height() + _content->maximum_size().height()};
+
+        // Override maximum size and preferred size.
+        _maximum_size = max(_maximum_size, _minimum_size);
+        _preferred_size = clamp(_preferred_size, _minimum_size, _maximum_size);
 
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;

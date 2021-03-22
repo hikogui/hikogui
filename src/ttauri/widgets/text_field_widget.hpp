@@ -125,7 +125,7 @@ public:
             _minimum_size = {_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f};
             _preferred_size = {
                 _text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f};
-            _maximum_size = {32767.0f, theme::global->smallSize + theme::global->margin * 2.0f};
+            _maximum_size = {_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f};
             tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {

@@ -14,7 +14,7 @@ namespace tt {
 
 struct flow_layout_item {
     constexpr flow_layout_item() noexcept :
-        minimum_size(0), preferred_size(0), maximum_size(std::numeric_limits<int>::max()), offset(0), size(0)
+        minimum_size(0), preferred_size(0), maximum_size(0), offset(0), size(0)
     {
     }
 
@@ -27,7 +27,7 @@ struct flow_layout_item {
     {
         minimum_size = std::max(minimum_size, narrow_cast<int>(std::ceil(min_size)));
         preferred_size = std::max(preferred_size, narrow_cast<int>(std::round(pref_size)));
-        maximum_size = std::min(maximum_size, narrow_cast<int>(std::floor(max_size)));
+        maximum_size = std::max(maximum_size, narrow_cast<int>(std::floor(max_size)));
 
         // The maximum size must be larger than the minimum size.
         maximum_size = std::max(maximum_size, minimum_size);
@@ -117,16 +117,21 @@ public:
     void set_size(float total_size) noexcept
     {
         ttlet total_size_ = narrow_cast<int>(std::round(total_size));
-        tt_axiom(total_size_ >= minimum_size() && total_size_ <= maximum_size());
+        // It is possible that total_size crosses the maximum_size.
+        tt_axiom(total_size_ >= minimum_size());
 
         set_items_to_preferred_size();
 
         auto grow_by = total_size_ - size();
         while (grow_by != 0) { 
             int num = num_items_can_resize(grow_by);
-            tt_axiom(num > 0);
 
-            resize_items(num, grow_by);
+            auto resize_beyond_maximum = num == 0;
+            if (resize_beyond_maximum) {
+                num = narrow_cast<int>(std::size(items));
+            }
+
+            resize_items(num, grow_by, resize_beyond_maximum);
 
             grow_by = total_size_ - size();
         };
@@ -187,7 +192,7 @@ private:
         }
     }
 
-    [[nodiscard]] void resize_items(int nr_items, int grow_by) noexcept
+    [[nodiscard]] void resize_items(int nr_items, int grow_by, bool resize_beyond_maximum) noexcept
     {
         tt_axiom(grow_by != 0);
         tt_axiom(nr_items > 0);
@@ -198,11 +203,18 @@ private:
         }
 
         for (auto &&item : items) {
-            ttlet new_item_size = std::clamp(item.size + per_item_grow_by, item.minimum_size, item.maximum_size);
+            auto new_item_size = item.size + per_item_grow_by;
+            if (!resize_beyond_maximum) {
+                new_item_size = std::clamp(new_item_size, item.minimum_size, item.maximum_size);
+            }
+
             ttlet this_item_grown_by = new_item_size - item.size;
             item.size = new_item_size;
 
-            tt_axiom(item.size >= item.minimum_size && item.size <= item.maximum_size);
+            tt_axiom(item.size >= item.minimum_size);
+            if (!resize_beyond_maximum) {
+                tt_axiom(item.size <= item.maximum_size);
+            }
 
             if ((grow_by -= this_item_grown_by) == 0) {
                 // All the growth has been spread to the widgets.

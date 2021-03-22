@@ -62,14 +62,14 @@ public:
             // The maximum size is the minimum size of the content.
             if constexpr (can_scroll_horizontally) {
                 // The content could be smaller than the scrollbar.
-                _minimum_size.width() = std::min(_minimum_size.width(), _horizontal_scroll_bar->minimum_size().width());
-                _preferred_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->preferred_size().width());
-                _maximum_size.width() = std::min(_maximum_size.width(), _horizontal_scroll_bar->maximum_size().width());
+                _minimum_size.width() = _horizontal_scroll_bar->minimum_size().width();
+                _preferred_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->minimum_size().width());
+                _maximum_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->minimum_size().width());
             }
             if constexpr (can_scroll_vertically) {
-                _minimum_size.height() = std::min(_minimum_size.height(), _vertical_scroll_bar->minimum_size().height());
-                _preferred_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->preferred_size().height());
-                _maximum_size.height() = std::min(_maximum_size.height(), _vertical_scroll_bar->maximum_size().height());
+                _minimum_size.height() = _vertical_scroll_bar->minimum_size().height();
+                _preferred_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->minimum_size().height());
+                _maximum_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->minimum_size().height());
             }
 
             // Make room for the scroll bars.

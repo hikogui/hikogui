@@ -115,7 +115,7 @@ public:
 
     [[nodiscard]] extent2 minimum_size() const noexcept
     {
-        return {_preferred_extent.width() * .75f, _preferred_extent.height()};
+        return _preferred_extent;
     }
 
     [[nodiscard]] extent2 preferred_size() const noexcept
@@ -125,7 +125,7 @@ public:
 
     [[nodiscard]] extent2 maximum_size() const noexcept
     {
-        return {_preferred_extent.width() * 1.25f, _preferred_extent.height() * 5.0f};
+        return _preferred_extent;
     }
 
     [[nodiscard]] iterator begin() noexcept { return recursive_iterator_begin(lines); }

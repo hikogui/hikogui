@@ -35,7 +35,7 @@ public:
 
             auto minimum_thickness = 0.0f;
             auto preferred_thickness = 0.0f;
-            auto maximum_thickness = 32767.0f;
+            auto maximum_thickness = 0.0f;
             for (ttlet &child : _children) {
                 update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness);
             }
@@ -96,7 +96,7 @@ private:
 
             minimum_thickness = std::max(minimum_thickness, child.minimum_size().height() + child.margin() * 2.0f);
             preferred_thickness = std::max(preferred_thickness, child.preferred_size().height() + child.margin() * 2.0f);
-            maximum_thickness = std::min(maximum_thickness, child.maximum_size().height() + child.margin() * 2.0f);
+            maximum_thickness = std::max(maximum_thickness, child.maximum_size().height() + child.margin() * 2.0f);
 
         } else {
             ttlet minimum_length = child.minimum_size().height();
@@ -106,7 +106,7 @@ private:
 
             minimum_thickness = std::max(minimum_thickness, child.minimum_size().width() + child.margin() * 2.0f);
             preferred_thickness = std::max(preferred_thickness, child.preferred_size().width() + child.margin() * 2.0f);
-            maximum_thickness = std::min(maximum_thickness, child.maximum_size().width() + child.margin() * 2.0f);
+            maximum_thickness = std::max(maximum_thickness, child.maximum_size().width() + child.margin() * 2.0f);
         }
     }
 

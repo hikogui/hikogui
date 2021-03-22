@@ -83,6 +83,34 @@ public:
         return {width, height};
     }
 
+    [[nodiscard]] extent2 maximum_size() noexcept override
+    {
+        if (!_text_stencil) {
+            // There is only an icon available.
+            return {_icon_size, _icon_size};
+        }
+
+        if (!_icon_stencil && !_show_icon) {
+            // There is no image, just use the text label.
+            return _text_stencil->preferred_size();
+        }
+
+        // clang-format off
+        // When center aligned, do not include the icon width. So that the icon may go beyond the margins.
+        ttlet width =
+            _alignment == horizontal_alignment::center ? _text_stencil->maximum_size().width() :
+            _icon_size + theme::global->margin + _text_stencil->maximum_size().width();
+
+        // When middle aligned, do not include the icon height. So that the icon may go beyond the margins.
+        ttlet height =
+            _alignment == vertical_alignment::middle ? _text_stencil->maximum_size().height() :
+            _icon_size + _text_stencil->maximum_size().height();
+        // clang-format on
+
+        return {width, height};
+    }
+
+
     /** Whether the text in the label will align to an optional icon in the label.
      * Make space for, and optionally display, an icon in front
      * of the text. This option should be used when any of the labels in a menu
