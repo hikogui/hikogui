@@ -38,7 +38,7 @@ public:
 
     template<typename Label>
     label_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Label &&label) noexcept :
-        super(window, parent), _alignment(alignment::top_right), label(std::forward<Label>(label))
+        super(window, parent), _alignment(alignment::middle_right), label(std::forward<Label>(label))
     {
     }
 
@@ -57,7 +57,10 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_cell = stencil::make_unique(_alignment, *label, theme::global->labelStyle);
-            _preferred_size = interval_extent2::make_minimum(_label_cell->preferred_extent());
+            _minimum_size = _label_cell->minimum_size();
+            _preferred_size = _label_cell->preferred_size();
+            _maximum_size = _label_cell->maximum_size();
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
             return false;

@@ -98,8 +98,8 @@ private:
     flow_layout _columns;
 
     [[nodiscard]] static std::pair<size_t, size_t> calculate_grid_size(std::vector<cell> const &cells) noexcept;
-    [[nodiscard]] static extent2
-    calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
+    [[nodiscard]] static std::tuple<extent2, extent2, extent2>
+    calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
     [[nodiscard]] bool address_in_use(size_t column_nr, size_t row_nr) const noexcept;
 };
 

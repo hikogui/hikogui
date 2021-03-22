@@ -24,8 +24,9 @@ widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> p
         this->request_redraw();
     });
 
-    _preferred_size = {
-        extent2{0.0f, 0.0f}, extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+    _minimum_size = extent2::nan();
+    _preferred_size = extent2::nan();
+    _maximum_size = extent2::nan();
 }
 
 widget::~widget() {}

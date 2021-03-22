@@ -221,7 +221,7 @@ public:
 
             _check_mark_stencil = stencil::make_unique(alignment::middle_center, elusive_icon::Ok);
 
-            auto width = _label_stencil->preferred_extent().width() + theme::global->margin * 2.0f;
+            auto width = theme::global->margin * 2.0f;
             if (_show_check_mark) {
                 width += theme::global->small_icon_size + theme::global->margin;
             }
@@ -229,9 +229,12 @@ public:
                 width += theme::global->margin + theme::global->small_icon_size * 3.0f;
             }
 
-            ttlet height = _label_stencil->preferred_extent().height() + theme::global->margin * 2.0f;
-            this->_preferred_size = {
-                extent2{width, height}, extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            ttlet extra_size = extent2{width, theme::global->margin * 2.0f};
+
+            this->_minimum_size = _label_stencil->minimum_size() + extra_size;
+            this->_preferred_size = _label_stencil->preferred_size() + extra_size;
+            this->_maximum_size = _label_stencil->maximum_size() + extra_size;
+            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
             return true;
         } else {
             return false;

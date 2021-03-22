@@ -18,9 +18,19 @@ text_stencil::text_stencil(alignment alignment, std::u8string text, text_style s
 {
 }
 
-extent2 text_stencil::preferred_extent() noexcept
+extent2 text_stencil::minimum_size() noexcept
 {
-    return _shaped_text.preferred_extent;
+    return _shaped_text.minimum_size();
+}
+
+extent2 text_stencil::preferred_size() noexcept
+{
+    return _shaped_text.preferred_size();
+}
+
+extent2 text_stencil::maximum_size() noexcept
+{
+    return _shaped_text.maximum_size();
 }
 
 void text_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept

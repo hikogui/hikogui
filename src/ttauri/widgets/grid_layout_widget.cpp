@@ -21,8 +21,8 @@ namespace tt {
     return {nr_columns, nr_rows};
 }
 
-[[nodiscard]] extent2
-grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
+[[nodiscard]] std::tuple<extent2, extent2, extent2>
+grid_layout_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -37,23 +37,28 @@ grid_layout_widget::calculate_cell_min_size(std::vector<cell> const &cells, flow
     for (auto &&cell : cells) {
         rows.update(
             cell.row_nr,
-            cell.widget->preferred_size().minimum().height(),
-            cell.widget->height_resistance(),
+            cell.widget->minimum_size().height(),
+            cell.widget->preferred_size().height(),
+            cell.widget->maximum_size().height(),
             cell.widget->margin());
 
         columns.update(
             cell.column_nr,
-            cell.widget->preferred_size().minimum().width(),
-            cell.widget->width_resistance(),
+            cell.widget->minimum_size().width(),
+            cell.widget->preferred_size().width(),
+            cell.widget->maximum_size().width(),
             cell.widget->margin());
     }
 
-    return {columns.minimum_size(), rows.minimum_size()};
+    return {
+        extent2{columns.minimum_size(), rows.minimum_size()},
+        extent2{columns.preferred_size(), rows.preferred_size()},
+        extent2{columns.maximum_size(), rows.maximum_size()}};
 }
 
 bool grid_layout_widget::address_in_use(size_t column_nr, size_t row_nr) const noexcept
 {
-    for (ttlet &cell: _cells) {
+    for (ttlet &cell : _cells) {
         if (cell.column_nr == column_nr && cell.row_nr == row_nr) {
             return true;
         }
@@ -77,9 +82,8 @@ bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        _preferred_size = {
-            calculate_cell_min_size(_cells, _rows, _columns),
-            extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+        std::tie(_minimum_size, _preferred_size, _maximum_size) = calculate_size(_cells, _rows, _columns);
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
     } else {
         return false;
