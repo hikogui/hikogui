@@ -31,7 +31,8 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet width = theme::global->toolbarDecorationButtonWidth;
         ttlet height = theme::global->toolbarHeight;
-        _preferred_size = {extent2{width, height}, extent2{width, std::numeric_limits<float>::infinity()}};
+        _minimum_size = _preferred_size = _maximum_size = {width, height};
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
     } else {
         return false;

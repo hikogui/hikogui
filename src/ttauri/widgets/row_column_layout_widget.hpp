@@ -28,24 +28,30 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
-            auto shared_thickness = 0.0f;
-
             _layout.clear();
             _layout.reserve(std::ssize(_children));
 
             ssize_t index = 0;
+
+            auto minimum_thickness = 0.0f;
+            auto preferred_thickness = 0.0f;
+            auto maximum_thickness = 32767.0f;
             for (ttlet &child : _children) {
-                update_constraints_for_child(*child, index++, shared_base_line, shared_thickness);
+                update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness);
             }
 
             tt_axiom(index == std::ssize(_children));
 
             if constexpr (arrangement == arrangement::row) {
-                _preferred_size = {_layout.minimum_size(), shared_thickness};
+                _minimum_size = {_layout.minimum_size(), minimum_thickness};
+                _preferred_size = {_layout.preferred_size(), preferred_thickness};
+                _maximum_size = {_layout.maximum_size(), maximum_thickness};
             } else {
-                _preferred_size = {shared_thickness, _layout.minimum_size()};
+                _minimum_size = {minimum_thickness, _layout.minimum_size()};
+                _preferred_size = {preferred_thickness, _layout.preferred_size()};
+                _maximum_size = {maximum_thickness, _layout.maximum_size()};
             }
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
             return false;
@@ -76,21 +82,32 @@ private:
     void update_constraints_for_child(
         widget const &child,
         ssize_t index,
-        relative_base_line &shared_base_line,
-        float &shared_thickness) noexcept
+        float &minimum_thickness,
+        float &preferred_thickness,
+        float &maximum_thickness) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        ttlet length = arrangement == arrangement::row ? child.preferred_size().minimum().width() :
-                                                         child.preferred_size().minimum().height();
-        ttlet thickness = arrangement == arrangement::row ? child.preferred_size().minimum().height() :
-                                                            child.preferred_size().minimum().width();
+        if (arrangement == arrangement::row) {
+            ttlet minimum_length = child.minimum_size().width();
+            ttlet preferred_length = child.preferred_size().width();
+            ttlet maximum_length = child.maximum_size().width();
+            _layout.update(index, minimum_length, preferred_length, maximum_length, child.margin());
 
-        ttlet length_resistance = arrangement == arrangement::row ? child.width_resistance() : child.height_resistance();
+            minimum_thickness = std::max(minimum_thickness, child.minimum_size().height() + child.margin() * 2.0f);
+            preferred_thickness = std::max(preferred_thickness, child.preferred_size().height() + child.margin() * 2.0f);
+            maximum_thickness = std::min(maximum_thickness, child.maximum_size().height() + child.margin() * 2.0f);
 
-        _layout.update(index, length, length_resistance, child.margin());
+        } else {
+            ttlet minimum_length = child.minimum_size().height();
+            ttlet preferred_length = child.preferred_size().height();
+            ttlet maximum_length = child.maximum_size().height();
+            _layout.update(index, minimum_length, preferred_length, maximum_length, child.margin());
 
-        shared_thickness = std::max(shared_thickness, thickness + child.margin() * 2.0f);
+            minimum_thickness = std::max(minimum_thickness, child.minimum_size().width() + child.margin() * 2.0f);
+            preferred_thickness = std::max(preferred_thickness, child.preferred_size().width() + child.margin() * 2.0f);
+            maximum_thickness = std::min(maximum_thickness, child.maximum_size().width() + child.margin() * 2.0f);
+        }
     }
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept
@@ -109,9 +126,7 @@ private:
                 rectangle().left() + child.margin(),
                 rectangle().top() - child_offset - child_length,
                 rectangle().width() - child.margin() * 2.0f,
-                child_length
-            };
-
+                child_length};
 
         child.set_layout_parameters_from_parent(child_rectangle);
     }

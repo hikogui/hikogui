@@ -305,7 +305,7 @@ shaped_text::shaped_text(
     width(width)
 {
     auto result = shape_text(text, width, alignment, wrap);
-    preferred_extent = result.preferred_extent;
+    _preferred_extent = result.preferred_extent;
     boundingBox = result.boundingBox;
     lines = std::move(result.lines);
 }

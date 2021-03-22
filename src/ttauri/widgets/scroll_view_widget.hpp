@@ -54,32 +54,37 @@ public:
 
         // Recurse into the selected widget.
         if (has_updated_contraints) {
-            auto width = _content->preferred_size().width();
-            auto height = _content->preferred_size().height();
+            _minimum_size = _content->minimum_size();
+            _preferred_size = _content->preferred_size();
+            _maximum_size = _content->maximum_size();
 
             // When there are scrollbars the minimum size is the minimum length of the scrollbar.
             // The maximum size is the minimum size of the content.
             if constexpr (can_scroll_horizontally) {
                 // The content could be smaller than the scrollbar.
-                ttlet minimum_width = std::min(width.minimum(), _horizontal_scroll_bar->preferred_size().width().minimum());
-                width = {minimum_width, width.minimum()};
+                _minimum_size.width() = std::min(_minimum_size.width(), _horizontal_scroll_bar->minimum_size().width());
+                _preferred_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->preferred_size().width());
+                _maximum_size.width() = std::min(_maximum_size.width(), _horizontal_scroll_bar->maximum_size().width());
             }
             if constexpr (can_scroll_vertically) {
-                ttlet minimum_height = std::min(height.minimum(), _vertical_scroll_bar->preferred_size().height().minimum());
-                height = {minimum_height, height.minimum()};
+                _minimum_size.height() = std::min(_minimum_size.height(), _vertical_scroll_bar->minimum_size().height());
+                _preferred_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->preferred_size().height());
+                _maximum_size.height() = std::min(_maximum_size.height(), _vertical_scroll_bar->maximum_size().height());
             }
 
             // Make room for the scroll bars.
             if constexpr (can_scroll_horizontally) {
-                height += _horizontal_scroll_bar->preferred_size().height();
+                _minimum_size.height() += _horizontal_scroll_bar->preferred_size().height();
+                _preferred_size.height() += _horizontal_scroll_bar->preferred_size().height();
+                _maximum_size.height() += _horizontal_scroll_bar->preferred_size().height();
             }
             if constexpr (can_scroll_vertically) {
-                width += _vertical_scroll_bar->preferred_size().width();
+                _minimum_size.width() += _vertical_scroll_bar->preferred_size().width();
+                _preferred_size.width() += _vertical_scroll_bar->preferred_size().width();
+                _maximum_size.width() += _vertical_scroll_bar->preferred_size().width();
             }
-
-            _preferred_size = interval_extent2{width, height};
         }
-
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return has_updated_contraints;
     }
 
@@ -92,9 +97,9 @@ public:
         if (need_layout) {
             // Calculate the width and height of the scroll-bars, make them infinitesimal thin when they don't exist.
             ttlet vertical_scroll_bar_width =
-                can_scroll_vertically ? _vertical_scroll_bar->preferred_size().minimum().width() : 0.0f;
+                can_scroll_vertically ? _vertical_scroll_bar->preferred_size().width() : 0.0f;
             ttlet horizontal_scroll_bar_height =
-                can_scroll_horizontally ? _horizontal_scroll_bar->preferred_size().minimum().height() : 0.0f;
+                can_scroll_horizontally ? _horizontal_scroll_bar->preferred_size().height() : 0.0f;
             ttlet vertical_scroll_bar_height = height() - horizontal_scroll_bar_height;
             ttlet horizontal_scroll_bar_width = width() - vertical_scroll_bar_width;
 
@@ -123,8 +128,8 @@ public:
 
             // We can not use the content_rectangle is the window for the content.
             // We need to calculate the window_content_rectangle, to positions the content after scrolling.
-            _scroll_content_width = can_scroll_horizontally ? _content->preferred_size().minimum().width() : aperture_width;
-            _scroll_content_height = can_scroll_vertically ? _content->preferred_size().minimum().height() : aperture_height;
+            _scroll_content_width = can_scroll_horizontally ? _content->preferred_size().width() : aperture_width;
+            _scroll_content_height = can_scroll_vertically ? _content->preferred_size().height() : aperture_height;
 
             _scroll_aperture_width = aperture_width;
             _scroll_aperture_height = aperture_height;

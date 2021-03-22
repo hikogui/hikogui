@@ -52,18 +52,14 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            ttlet minimum_length = theme::global->width; // even for vertical bars.
-
             if constexpr (is_vertical) {
-                _preferred_size = interval_extent2{
-                    extent2{theme::global->scroll_bar_thickness, minimum_length},
-                    extent2{theme::global->scroll_bar_thickness, std::numeric_limits<float>::max()}};
+                _minimum_size = _preferred_size = {theme::global->scroll_bar_thickness, theme::global->width};
+                _maximum_size = {theme::global->scroll_bar_thickness, 32767.0f};
             } else {
-                _preferred_size = interval_extent2{
-                    extent2{minimum_length, theme::global->scroll_bar_thickness},
-                    extent2{std::numeric_limits<float>::max(), theme::global->scroll_bar_thickness}};
+                _minimum_size = _preferred_size = {theme::global->width, theme::global->scroll_bar_thickness};
+                _maximum_size = {32767.0f, theme::global->scroll_bar_thickness};
             }
-
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
             return false;
@@ -82,7 +78,8 @@ public:
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
 
             if constexpr (is_vertical) {
-                slider_rectangle = aarectangle{rectangle().left(), rectangle().bottom() + slider_offset, rectangle().width(), slider_length()};
+                slider_rectangle =
+                    aarectangle{rectangle().left(), rectangle().bottom() + slider_offset, rectangle().width(), slider_length()};
             } else {
                 slider_rectangle =
                     aarectangle{rectangle().left() + slider_offset, rectangle().bottom(), slider_length(), rectangle().height()};

@@ -36,7 +36,10 @@ public:
 
         if (has_updated_contraints) {
             tt_axiom(_content);
+            _minimum_size = _content->minimum_size();
             _preferred_size = _content->preferred_size();
+            _maximum_size = _content->maximum_size();
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         }
 
         return has_updated_contraints;

@@ -27,9 +27,23 @@ public:
 
     /** Return the extent that this cell wants to be drawn as.
      */
-    [[nodiscard]] virtual extent2 preferred_extent() noexcept
+    [[nodiscard]] virtual extent2 minimum_size() noexcept
     {
         return {};
+    }
+
+    /** Return the extent that this cell wants to be drawn as.
+     */
+    [[nodiscard]] virtual extent2 preferred_size() noexcept
+    {
+        return {};
+    }
+
+    /** Return the extent that this cell wants to be drawn as.
+     */
+    [[nodiscard]] virtual extent2 maximum_size() noexcept
+    {
+        return extent2::large();
     }
 
     /** Pass layout parameters in local coordinates.

@@ -49,17 +49,21 @@ public:
             _on_label_stencil = stencil::make_unique(alignment::top_left, *on_label, theme::global->labelStyle);
             _off_label_stencil = stencil::make_unique(alignment::top_left, *off_label, theme::global->labelStyle);
 
-            ttlet minimumHeight = std::max(
-                {_on_label_stencil->preferred_extent().height(),
-                 _off_label_stencil->preferred_extent().height(),
-                 theme::global->smallSize});
+            ttlet minimum_label_size = max(_on_label_stencil->minimum_size(), _off_label_stencil->minimum_size());
+            ttlet preferred_label_size = max(_on_label_stencil->preferred_size(), _off_label_stencil->preferred_size());
+            ttlet maximum_label_size = min(_on_label_stencil->maximum_size(), _off_label_stencil->maximum_size());
 
-            ttlet minimumWidth =
-                std::max({_on_label_stencil->preferred_extent().width(), _off_label_stencil->preferred_extent().width()}) +
-                theme::global->smallSize * 2.0f + theme::global->margin;
+            _minimum_size = {
+                minimum_label_size.width() + theme::global->smallSize * 2.0f + theme::global->margin,
+                std::max(minimum_label_size.height(), theme::global->smallSize)};
+            _preferred_size = {
+                preferred_label_size.width() + theme::global->smallSize * 2.0f + theme::global->margin,
+                std::max(preferred_label_size.height(), theme::global->smallSize)};
+            _maximum_size = {
+                maximum_label_size.width() + theme::global->smallSize * 2.0f + theme::global->margin,
+                std::max(maximum_label_size.height(), theme::global->smallSize)};
 
-            _preferred_size = interval_extent2::make_minimum(minimumWidth, minimumHeight);
-
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
             return false;

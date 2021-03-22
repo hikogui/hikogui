@@ -296,11 +296,13 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     //
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
-    ttlet preferred_size = widget->preferred_size();
-    if (requestResize.exchange(false) || extent << preferred_size) {
-        set_window_size(extent = preferred_size.minimum());
-    } else if (extent >> preferred_size) {
-        set_window_size(extent = preferred_size.maximum());
+    if (requestResize.exchange(false)) {
+        set_window_size(extent = widget->preferred_size());
+    } else {
+        ttlet new_extent = clamp(extent, widget->minimum_size(), widget->maximum_size());
+        if (new_extent != extent) {
+            set_window_size(extent = new_extent);
+        }
     }
     widget->set_layout_parameters_from_parent(aarectangle{extent});
 
@@ -512,9 +514,8 @@ bool gui_window_vulkan::readSurfaceExtent()
     }
 
     tt_axiom(widget);
-    ttlet widget_size = widget->preferred_size();
-    ttlet minimum_widget_size = widget_size.minimum();
-    ttlet maximum_widget_size = widget_size.maximum();
+    ttlet minimum_widget_size = widget->minimum_size();
+    ttlet maximum_widget_size = widget->maximum_size();
 
     if (narrow_cast<int>(swapchainImageExtent.width) < minimum_widget_size.width() ||
         narrow_cast<int>(swapchainImageExtent.height) < minimum_widget_size.height()) {

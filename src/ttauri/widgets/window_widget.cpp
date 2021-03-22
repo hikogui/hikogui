@@ -46,16 +46,19 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        ttlet toolbar_size = _toolbar->preferred_size();
-        ttlet content_size = _content->preferred_size();
+        _minimum_size = {
+            std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
+            _toolbar->preferred_size().height() + _content->minimum_size().height()};
 
-        float min_width = std::max(toolbar_size.width().minimum(), content_size.width().minimum());
-        float max_width = std::min({toolbar_size.width().maximum(), content_size.width().maximum(), window.virtual_screen_size().width()});
+        _preferred_size = {
+            std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
+            _toolbar->preferred_size().height() + _content->preferred_size().height()};
 
-        float min_height = toolbar_size.height().minimum() + content_size.height().minimum();
-        float max_height = std::min(toolbar_size.height().maximum() + content_size.height().maximum(), window.virtual_screen_size().height());
+        _maximum_size = {
+            std::min(_toolbar->maximum_size().width(), _content->maximum_size().width()),
+            _toolbar->preferred_size().height() + _content->maximum_size().height()};
 
-        _preferred_size = interval_extent2{extent2{min_width, min_height}, extent2{max_width, max_height}};
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
     } else {
         return false;
@@ -68,12 +71,10 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        ttlet toolbar_size = _toolbar->preferred_size();
-        ttlet toolbar_height = toolbar_size.minimum().height();
+        ttlet toolbar_height = _toolbar->preferred_size().height();
         ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
         _toolbar->set_layout_parameters_from_parent(toolbar_rectangle);
 
-        ttlet content_size = _content->preferred_size();
         ttlet content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
         _content->set_layout_parameters_from_parent(content_rectangle);
     }

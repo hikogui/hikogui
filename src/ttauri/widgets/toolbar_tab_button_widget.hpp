@@ -34,7 +34,6 @@ public:
         abstract_radio_button_widget<T>(window, parent, std::move(true_value), std::forward<Value>(value)),
         label(std::forward<Label>(label))
     {
-        this->_width_resistance = 2;
     }
 
     toolbar_tab_button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
@@ -63,13 +62,12 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _label_stencil = stencil::make_unique(alignment::top_center, *label, theme::global->labelStyle);
+            ttlet extra_size = extent2{0.0f, theme::global->margin * 2.0f};
 
-            ttlet minimum_height = _label_stencil->preferred_extent().height();
-            ttlet minimum_width = _label_stencil->preferred_extent().width() + 2.0f * theme::global->margin;
-
-            this->_preferred_size = {
-                extent2{minimum_width, minimum_height},
-                extent2{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
+            this->_minimum_size = _label_stencil->minimum_size() + extra_size;
+            this->_preferred_size = _label_stencil->preferred_size() + extra_size;
+            this->_maximum_size = _label_stencil->maximum_size() + extra_size;
+            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
             return true;
         } else {
             return false;

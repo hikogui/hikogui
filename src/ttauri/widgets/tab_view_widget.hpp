@@ -32,6 +32,12 @@ public:
         _value_callback = value.subscribe([this](auto...) {
             this->_request_reconstrain = true;
         });
+
+        // Compare and assign would trigger the signaling NaN that widget sets.
+        _minimum_size = {};
+        _preferred_size = {};
+        _maximum_size = {32767.0f, 32767.0f};
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
     ~tab_view_widget() {}
@@ -44,8 +50,13 @@ public:
         if (has_updated_contraints) {
             ttlet &child = selected_child();
             tt_axiom(&child.parent() == this);
-            if (compare_then_assign(_preferred_size, child.preferred_size())) {
-                // The size of the selected child has changed, resize the window.
+
+            auto size_changed = compare_then_assign(_minimum_size, child.minimum_size());
+            size_changed |= compare_then_assign(_preferred_size, child.preferred_size());
+            size_changed |= compare_then_assign(_maximum_size, child.maximum_size());
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+
+            if (size_changed) {
                 window.requestResize = true;
             }
         }
