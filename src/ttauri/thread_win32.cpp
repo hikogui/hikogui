@@ -32,4 +32,26 @@ void run_from_main_loop(std::function<void()> f)
     application::global->run_from_main_loop(f);
 }
 
+[[nodiscard]] uint64_t process_affinity_mask() noexcept
+{
+    DWORD_PTR process_mask;
+    DWORD_PTR system_mask;
+
+    auto process_handle = GetCurrentProcess();
+
+    auto r = GetProcessAffinityMask(process_handle, &process_mask, &system_mask);
+
+    return narrow_cast<uint64_t>(process_mask);
+}
+
+[[nodiscard]] uint64_t set_thread_affinity_mask(uint64_t mask) noexcept
+{
+    auto thread_handle = GetCurrentThread();
+
+    auto r = SetThreadAffinityMask(thread_handle, narrow_cast<DWORD_PTR>(mask));
+    return narrow_cast<uint64_t>(r);
+}
+
+
+
 }

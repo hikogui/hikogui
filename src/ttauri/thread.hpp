@@ -39,8 +39,6 @@ using thread_id = uint64_t;
 inline thread_local thread_id current_thread_id_dummy = 0;
 #endif
 
-
-
 [[nodiscard]] inline thread_id current_thread_id() noexcept
 {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
@@ -52,6 +50,29 @@ inline thread_local thread_id current_thread_id_dummy = 0;
     return reinterpret_cast<uint64_t>(&current_thread_id_dummy);
 #endif
 }
+
+/** Get the current process CPU affinity mask.
+ * On systems with more than 64 processors, this returns a mask
+ * of logical processors within the processor-group.
+ *
+ * @return A bit mask on which processors the process is allowed to run on.
+ *         Or zero on failure.
+ */
+[[nodiscard]] uint64_t process_affinity_mask() noexcept;
+
+/** Set the current thread CPU affinity mask.
+ * On systems with more than 64 processors, this sets a mask
+ * of logical processors within the processor-group.
+ *
+ * The given mask must be a strict subset of the mask returned from
+ * process_affinity_mask().
+ *
+ * @param mask A bit mask on which processors the thread should run on.
+ * @return The previous bit mask. Or zero on failure.
+ */
+[[nodiscard]] uint64_t set_thread_affinity_mask(uint64_t mask) noexcept;
+
+
 
 }
 

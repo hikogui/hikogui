@@ -598,6 +598,7 @@ struct bigint {
 };
 
 using ubig128 = bigint<uint64_t,2>;
+using ubig256 = bigint<uint64_t,4>;
 using uuid = bigint<uint64_t,2>;
 
 }
