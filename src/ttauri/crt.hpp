@@ -40,6 +40,19 @@
 
 #include <date/tz.h>
 
+namespace tt {
+
+/** Configure the process for use with ttauri library.
+ * This function is used to put the process in a state
+ * that is compatible with the ttauri library.
+ * 
+ * Examples of configurations:
+ *  - win32: GetSystemTimePreciseAsFileTime() should include leap-seconds.
+ */
+void crt_configure_process() noexcept;
+
+}
+
 /** Main entry-point.
  *
  * @param argc Number of arguments
@@ -50,6 +63,7 @@
  */
 int tt_main(int argc, char *argv[], tt::os_handle instance);
 
+#if not defined(TT_CRT_NO_MAIN)
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 
 /** Windows entry-point.
@@ -68,6 +82,8 @@ int WINAPI WinMain(
     [[maybe_unused]] _In_ LPSTR lpCmdLine,
     _In_ int nShowCmd)
 {
+    tt::crt_configure_process();
+    
     // lpCmdLine does not handle UTF-8 command line properly.
     // So use GetCommandLineW() to get wide string arguments.
     // CommandLineToArgW properly unescapes the command line
@@ -124,6 +140,8 @@ int WINAPI WinMain(
 
 int main(int argc, char *argv[])
 {
+    crt_configure_process();
+
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
@@ -145,4 +163,4 @@ int main(int argc, char *argv[])
 }
 
 #endif
-
+#endif
