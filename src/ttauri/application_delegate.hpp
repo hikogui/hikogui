@@ -5,7 +5,6 @@
 #pragma once
 
 #include "datum.hpp"
-#include "version.hpp"
 #include <string>
 #include <vector>
 #include <optional>
@@ -26,10 +25,6 @@ public:
 
     virtual void init(application &self) {}
     virtual void deinit(application &self) {}
-
-    /*! Called when an application name is needed.
-     */
-    virtual version application_version(application &self) const noexcept = 0;
 
     /*! Return the possible command line argument options.
      */

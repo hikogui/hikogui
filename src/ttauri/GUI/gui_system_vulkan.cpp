@@ -4,7 +4,7 @@
 
 #include "gui_system_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
-#include "ttauri/current_version.hpp"
+#include "ttauri/metadata.hpp"
 #include <chrono>
 #include <cstring>
 
@@ -55,10 +55,11 @@ gui_system_vulkan::gui_system_vulkan(
     gui_system(delegate), requiredExtensions(std::move(extensionNames))
 {
     applicationInfo = vk::ApplicationInfo(
-        application_version.name.c_str(),
-        VK_MAKE_VERSION(application_version.major, application_version.minor, application_version.patch),
-        ttauri_version.name.c_str(),
-        VK_MAKE_VERSION(ttauri_version.major, ttauri_version.minor, ttauri_version.patch),
+        application_metadata().name.c_str(),
+        VK_MAKE_VERSION(
+            application_metadata().version.major, application_metadata().version.minor, application_metadata().version.patch),
+        library_metadata().name.c_str(),
+        VK_MAKE_VERSION(library_metadata().version.major, library_metadata().version.minor, library_metadata().version.patch),
         VK_API_VERSION_1_2);
 
     // VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2 extension is needed to retrieve unique identifiers for
@@ -145,7 +146,7 @@ VkBool32 gui_system_vulkan::debugUtilsMessageCallback(
 {
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        //tt_log_debug("Vulkan: {}", pCallbackData->pMessage);
+        // tt_log_debug("Vulkan: {}", pCallbackData->pMessage);
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: tt_log_info("Vulkan: {}", pCallbackData->pMessage); break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: tt_log_warning("Vulkan: {}", pCallbackData->pMessage); break;

@@ -13,7 +13,7 @@ add_subdirectory(codec)
 add_subdirectory(formula)
 add_subdirectory(skeleton)
 
-configure_file(current_version.hpp.in current_version.hpp @ONLY)
+configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(ttauri PRIVATE
     detail/observable_base.hpp
@@ -55,6 +55,8 @@ target_sources(ttauri PRIVATE
     #cpu_id.hpp
     #$<${TT_X64}:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
     cpu_utc_clock.hpp
+    crt.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_win32.cpp>
     date.hpp
     datum.hpp
     debugger.hpp
@@ -84,6 +86,9 @@ target_sources(ttauri PRIVATE
     gap_buffer.hpp
     glob.hpp
     hash.hpp
+    #hires_system_clock.hpp
+    #$<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_system_clock_posix.cpp>
+    #$<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_system_clock_win32.cpp>
     hires_utc_clock.cpp
     hires_utc_clock.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_posix.cpp>
@@ -96,6 +101,8 @@ target_sources(ttauri PRIVATE
     interval.hpp
     l10n.hpp
     label.hpp
+    log_level.cpp
+    log_level.hpp
     logger.cpp
     logger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/logger_macos.mm>
@@ -103,6 +110,8 @@ target_sources(ttauri PRIVATE
     math.hpp
     memory.hpp
     meta.hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp
+    metadata.hpp
     notifier.hpp
     cast.hpp
     observable.hpp
@@ -129,6 +138,7 @@ target_sources(ttauri PRIVATE
     ranged_numeric.hpp
     resource_view.hpp
     safe_int.hpp
+    semantic_version.hpp
     source_location.hpp
     small_map.hpp
     small_vector.hpp
@@ -163,7 +173,6 @@ target_sources(ttauri PRIVATE
     url_parser.cpp
     url_parser.hpp
     utils.hpp
-    version.hpp
     vspan.hpp
     wfree_message_queue.hpp
     wfree_unordered_map.hpp
