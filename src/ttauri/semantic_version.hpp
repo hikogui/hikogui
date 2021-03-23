@@ -9,10 +9,8 @@
 
 namespace tt {
 
-struct version {
-    /** Name of the application or library. */
-    std::string name;
-
+class semantic_version {
+public:
     /** Incremented on backward incompatible change. */
     int major;
     /** Incremented on additive change */
@@ -20,8 +18,8 @@ struct version {
     /** Incremented on bug fixes */
     int patch;
 
-    version(std::string_view name, int major, int minor, int patch) noexcept :
-        name(name), major(major), minor(minor), patch(patch) {}
+    constexpr version(int major, int minor, int patch) noexcept :
+        major(major), minor(minor), patch(patch) {}
 };
 
 }
