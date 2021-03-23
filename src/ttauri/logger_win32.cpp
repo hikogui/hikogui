@@ -23,7 +23,7 @@ namespace tt {
 
 using namespace std::literals::chrono_literals;
 
-std::string get_last_error_message()
+[[nodiscard]] std::string get_last_error_message() noexcept
 {
     DWORD const errorCode = GetLastError();
     size_t const messageSize = 32768;

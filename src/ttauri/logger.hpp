@@ -26,8 +26,12 @@
 #include <tuple>
 #include <mutex>
 #include <atomic>
+namespace tt {
+void trace_record() noexcept;
+}
 
 namespace tt {
+namespace detail {
 
 class log_message_base {
 public:
@@ -51,8 +55,7 @@ public:
     static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
 
     template<typename... Args>
-    log_message(Args &&...args) noexcept :
-        _timestamp(::tt::cpu_counter_clock::now()), _what(std::forward<Args>(args)...)
+    log_message(Args &&...args) noexcept : _timestamp(::tt::cpu_counter_clock::now()), _what(std::forward<Args>(args)...)
     {
     }
 
@@ -86,16 +89,6 @@ using log_queue_type = wfree_message_queue<log_queue_item_type, MAX_NR_MESSAGES>
  */
 inline log_queue_type log_queue;
 
-std::string get_last_error_message();
-
-// Forward without including trace.hpp
-void trace_record() noexcept;
-
-/** Flush all messages from the log_queue directly from this thread.
- * Flushing includes writing the message to a log file or displaying
- * them on the console.
- */
-tt_no_inline void logger_flush() noexcept;
 
 /** Deinitalize the logger system.
  */
@@ -108,7 +101,19 @@ tt_no_inline void logger_deinit() noexcept;
  */
 tt_no_inline bool logger_init() noexcept;
 
-inline std::atomic<bool> logger_running = false;
+inline std::atomic<bool> logger_is_running = false;
+
+} // namespace detail
+
+/** Get the OS error message from the last error received on this thread.
+ */
+[[nodiscard]] std::string get_last_error_message() noexcept;
+
+/** Flush all messages from the log_queue directly from this thread.
+ * Flushing includes writing the message to a log file or displaying
+ * them on the console.
+ */
+tt_no_inline void logger_flush() noexcept;
 
 /** Start the logger system.
  * Initialize the logger system if it is not already initialized and while the system is not in shutdown-mode.
@@ -116,7 +121,15 @@ inline std::atomic<bool> logger_running = false;
  */
 inline bool logger_start()
 {
-    return start_subsystem(logger_running, false, logger_init, logger_deinit);
+    return start_subsystem(detail::logger_is_running, false, detail::logger_init, detail::logger_deinit);
+}
+
+/** Stop the logger system.
+ * De-initialize the logger system if it is initialized.
+ */
+inline void logger_stop()
+{
+    return stop_subsystem(detail::logger_is_running, false, detail::logger_deinit);
 }
 
 /** Log a message.
@@ -141,10 +154,10 @@ void log(Args &&...args) noexcept
     // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
 
     // Emplace a message directly on the queue.
-    log_queue.write<"logger_blocked">()->emplace<log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
-        std::forward<Args>(args)...);
+    detail::log_queue.write<"logger_blocked">()
+        ->emplace<detail::log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(std::forward<Args>(args)...);
 
-    if (static_cast<bool>(Level & log_level::fatal) || !logger_start()) {
+    if (static_cast<bool>(Level & log_level::fatal) || !detail::logger_is_running.load(std::memory_order::relaxed)) {
         // If the logger did not start we will log in degraded mode and log from the current thread.
         // On fatal error we also want to log from the current thread.
         [[unlikely]] logger_flush();

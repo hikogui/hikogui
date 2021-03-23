@@ -10,6 +10,7 @@
 #include <vector>
 #include <functional>
 #include <bit>
+#include <type_traits>
 
 namespace tt {
 namespace detail {
@@ -20,17 +21,13 @@ namespace detail {
  *
  * The system status should only be written to when holding the system_status_mutex.
  */
-enum class system_status_type {
-    not_started,
-    running,
-    shutdown
-};
+enum class system_status_type { not_started, running, shutdown };
 
 inline system_status_type system_status = system_status_type::not_started;
 
 /** A list of deinit function to be called on shutdown.
  */
-inline std::vector<std::function<void()>> subsystem_deinit_list;
+inline std::vector<void (*)()> subsystem_deinit_list;
 
 /** Mutex to be held when writing to system_status or accessing system_status_deinit_list.
  * The system status is also an atomic variable so that reads on system_status
@@ -38,8 +35,9 @@ inline std::vector<std::function<void()>> subsystem_deinit_list;
  */
 inline unfair_mutex subsystem_mutex;
 
-template<typename T, typename InitFunc, typename DeinitFunc>
-tt_no_inline T start_subsystem(std::atomic<T> &check_variable, T off_value, InitFunc init_function, DeinitFunc deinit_function)
+template<typename T, typename InitFunc>
+tt_no_inline T
+start_subsystem(std::atomic<T> &check_variable, T off_value, InitFunc const &init_function, void (*deinit_function)())
 {
     ttlet lock = std::scoped_lock(subsystem_mutex);
 
@@ -55,13 +53,13 @@ tt_no_inline T start_subsystem(std::atomic<T> &check_variable, T off_value, Init
         return off_value;
     }
 
-    auto new_value = std::forward<InitFunc>(init_function)();
+    auto new_value = init_function();
 
     if (new_value != off_value) {
-        subsystem_deinit_list.emplace_back(std::forward<DeinitFunc>(deinit_function));
+        subsystem_deinit_list.emplace_back(deinit_function);
+        check_variable.store(new_value, std::memory_order::release);
     }
 
-    check_variable.store(new_value, std::memory_order::release);
     return new_value;
 }
 
@@ -80,8 +78,8 @@ tt_no_inline T start_subsystem(std::atomic<T> &check_variable, T off_value, Init
  * @param deinit_function the deinit function to call when shutting down the system.
  * @return return value from the init_function; off_value if the system is shutting down.
  */
-template<typename T, typename InitFunc, typename DeinitFunc>
-T start_subsystem(std::atomic<T> &check_variable, T off_value, InitFunc init_function, DeinitFunc deinit_function)
+template<typename T, typename InitFunc>
+T start_subsystem(std::atomic<T> &check_variable, T off_value, InitFunc const &init_function, void (*deinit_function)())
 {
     auto old_value = check_variable.load(std::memory_order::acquire);
     if (old_value == off_value) {
@@ -89,7 +87,33 @@ T start_subsystem(std::atomic<T> &check_variable, T off_value, InitFunc init_fun
     } else {
         [[likely]] return old_value;
     }
+}
 
+/** Stop a sub-system.
+ * De-initialize a subsystem.
+ *
+ * This will also unregister the deinit function to be called on system shutdown.
+ *
+ * @param check_variable The variable to check before de-initializing.
+ * @param off_value The value of the check_variable when the subsystem is off.
+ * @param deinit_function the deinit function to call.
+ */
+template<typename T>
+void stop_subsystem(std::atomic<T> &check_variable, T off_value, void (*deinit_function)())
+{
+    ttlet lock = std::scoped_lock(detail::subsystem_mutex);
+
+    auto old_value = check_variable.exchange(off_value, std::memory_order::acquire);
+    if (old_value == off_value) {
+        return;
+    }
+
+    std::erase(detail::subsystem_deinit_list, deinit_function);
+
+    //auto it = std::ranges::remove(detail::subsystem_deinit_list, deinit_function);
+    //detail::subsystem_deinit_list.erase(it);
+
+    return deinit_function();
 }
 
 /** Start the system.
