@@ -10,6 +10,7 @@
 #include "os_detect.hpp"
 #include "trace.hpp"
 #include "thread.hpp"
+#include "metadata.hpp"
 #include "text/elusive_icon.hpp"
 #include "text/ttauri_icon.hpp"
 #include "text/language.hpp"
@@ -22,7 +23,7 @@
 #include "audio/audio_system_aggregate.hpp"
 #include <memory>
 
-#include "ttauri/current_version.hpp"
+#include "ttauri/metadata.hpp"
 #include "data/elusiveicons-webfont.ttf.inl"
 #include "data/ttauri_icons.ttf.inl"
 #include "ttauri/GUI/pipeline_image.vert.spv.inl"
@@ -79,7 +80,6 @@ void application::init()
 
     if (auto delegate_ = delegate.lock()) {
         delegate_->init(*this);
-        application_version = delegate_->application_version(narrow_cast<application &>(*this));
         configuration = delegate_->configuration(narrow_cast<application &>(*this), argc, argv);
     }
 
@@ -88,7 +88,7 @@ void application::init()
     init_audio();
     init_gui();
 
-    tt_log_info("Started application '{}'.", application_version.name);
+    tt_log_info("Started application '{}'.", application_metadata().display_name);
 }
 
 

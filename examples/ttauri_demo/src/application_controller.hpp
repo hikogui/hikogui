@@ -25,8 +25,6 @@ public:
         preferences_controller = std::make_shared<demo::preferences_controller>();
     }
 
-    tt::version application_version(tt::application &self) const noexcept override;
-
     tt::datum configuration(tt::application &self, int argc, char *argv[]) const noexcept override;
 
     /** The delegate to be used for the audio system.
