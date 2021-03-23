@@ -1,5 +1,6 @@
 
 #include "application_controller.hpp"
+#include "ttauri/logger.hpp"
 #include "ttauri/application.hpp"
 #include "ttauri/crt.hpp"
 #include "ttauri/hires_utc_clock.hpp"
@@ -8,6 +9,9 @@
 
 int tt_main(int argc, char *argv[], tt::os_handle instance)
 {
+    // Start the logger system, so logging is done asynchronously.
+    tt::logger_start();
+
     auto application_controller = std::make_shared<demo::application_controller>();
     demo::application_controller::global = application_controller;
 
