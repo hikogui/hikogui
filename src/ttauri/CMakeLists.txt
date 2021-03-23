@@ -101,6 +101,8 @@ target_sources(ttauri PRIVATE
     interval.hpp
     l10n.hpp
     label.hpp
+    log_level.cpp
+    log_level.hpp
     logger.cpp
     logger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/logger_macos.mm>
