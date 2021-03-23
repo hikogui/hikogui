@@ -23,6 +23,7 @@
 #include <thread>
 
 namespace tt {
+namespace detail {
 
 using namespace std::literals::chrono_literals;
 
@@ -44,23 +45,7 @@ static void logger_write(std::string const &str) noexcept
 unfair_recursive_mutex logger_mutex;
 std::jthread logger_thread;
 
-/** Flush all messages from the log_queue directly from this thread.
- */
-void logger_flush() noexcept
-{
-    ttlet t = trace<"log_flush">{};
-    ttlet lock = std::scoped_lock(logger_mutex);
 
-    while (!log_queue.empty()) {
-        auto message = log_queue.read();
-
-        logger_write((*message)->format());
-
-        // Call the virtual-destructor of the `log_message_base`, so that it can skip this when
-        // adding messages to the queue.
-        message->reset();
-    }
-}
 
 static void logger_thread_loop(std::stop_token stop_token) noexcept
 {
@@ -97,6 +82,26 @@ bool logger_init() noexcept
     ttlet lock = std::scoped_lock(logger_mutex);
     logger_thread = std::jthread(logger_thread_loop);
     return true;
+}
+
+}
+
+/** Flush all messages from the log_queue directly from this thread.
+ */
+void logger_flush() noexcept
+{
+    ttlet t = trace<"log_flush">{};
+    ttlet lock = std::scoped_lock(detail::logger_mutex);
+
+    while (!detail::log_queue.empty()) {
+        auto message = detail::log_queue.read();
+
+        detail::logger_write((*message)->format());
+
+        // Call the virtual-destructor of the `log_message_base`, so that it can skip this when
+        // adding messages to the queue.
+        message->reset();
+    }
 }
 
 } // namespace tt

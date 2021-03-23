@@ -12,7 +12,7 @@
  * This header should be included only once by a only a single
  * translation-unit, as it defines `main()` or `WinMain()`.
  *
- * The work done by this abstraction is purposfully very limitted,
+ * The work done by this abstraction is purposefully very limited,
  * its task it to make sure the command-line arguments are split into
  * tokens according to the rules of the operating system's shell. And
  * that the command line arguments are encoded as UTF-8.
