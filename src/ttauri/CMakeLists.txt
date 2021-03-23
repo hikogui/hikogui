@@ -13,7 +13,7 @@ add_subdirectory(codec)
 add_subdirectory(formula)
 add_subdirectory(skeleton)
 
-configure_file(metadata.hpp.in metadata.hpp @ONLY)
+configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(ttauri PRIVATE
     detail/observable_base.hpp
@@ -108,7 +108,8 @@ target_sources(ttauri PRIVATE
     math.hpp
     memory.hpp
     meta.hpp
-    ${CMAKE_CURRENT_BINARY_DIR}/metadata.hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp
+    metadata.hpp
     notifier.hpp
     cast.hpp
     observable.hpp

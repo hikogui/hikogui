@@ -18,7 +18,9 @@ public:
     /** Incremented on bug fixes */
     int patch;
 
-    constexpr version(int major, int minor, int patch) noexcept :
+    constexpr semantic_version() noexcept : major(0), minor(0), patch(0) {}
+
+    constexpr semantic_version(int major, int minor, int patch) noexcept :
         major(major), minor(minor), patch(patch) {}
 };
 

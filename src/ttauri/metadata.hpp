@@ -4,9 +4,11 @@
 
 #pragma once
 
-#include <ttauri/semantic_version.hpp>
-#include <ttauri/URL.hpp>
+#include "semantic_version.hpp"
+#include "URL.hpp"
+#include "logger.hpp"
 #include <string>
+#include <atomic>
 
 namespace tt {
 
@@ -55,31 +57,28 @@ public:
 };
 
 namespace detail {
+inline std::atomic<bool> application_metadata_is_set = false;
 inline metadata application_metadata;
-inline metadata library_metadata = metadata{
-    "@TT_LIB_NAME@",
-    "@TT_LIB_DISPLAY_NAME@",
-    "@TT_LIB_VENDOR@",
-    semantic_version{@PROJECT_VERSION_MAJOR@, @PROJECT_VERSION_MINOR@, @PROJECT_VERSION_PATCH@},
-    "@TT_LIB_LICENSE@",
-    URL{"@TT_LIB_HOMEPAGE"},
-    "@TT_LIB_DESCRIPTION@"
-};
+extern metadata library_metadata;
 } // namespace detail
 
 [[nodiscard]] inline metadata const &application_metadata() noexcept
 {
-    return detail::application_metadata();
+    if (!detail::application_metadata_is_set.load(std::memory_order::acquire)) {
+        tt_log_fatal("Application did not call tt::set_application_metadata()");
+    }
+    return detail::application_metadata;
 }
 
 inline void set_application_metadata(metadata const &rhs) noexcept
 {
     detail::application_metadata = rhs;
+    detail::application_metadata_is_set.store(true, std::memory_order::release);
 }
 
 [[nodiscard]] inline metadata const &library_metadata() noexcept
 {
-    return detail::library_metadata();
+    return detail::library_metadata;
 }
 
 } // namespace tt
