@@ -1,0 +1,33 @@
+#
+# .github/workflows/maintenance.yml
+#
+# Copyright 2021 Jens A. Koch.
+# SPDX-License-Identifier: BSL-1.0
+# This file is part of ttauri-project.
+#
+
+name: "Maintenance"
+
+on:
+  schedule:
+    - cron: '00 13 * * Sun' # At 13:00 on Sunday.
+
+jobs:
+
+# ---------------------------------------------------------------------------------------
+
+  remove_old_workflows:
+
+# ---------------------------------------------------------------------------------------
+
+    name: "Remove Old Workflows"
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: ✂️ Delete Workflow Runs
+        uses: GitRML/delete-workflow-runs@main # https://github.com/GitRML/delete-workflow-runs
+        if: always()
+        with:
+           retain_days: 7
+           keep_minimum_runs: 3

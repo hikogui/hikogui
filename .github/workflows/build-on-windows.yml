@@ -1,31 +1,24 @@
 #
-# .github/workflows/codeql-analysis.yml
+# .github/workflows/build-on-windows.yml
 #
 # Copyright 2021 Jens A. Koch.
 # SPDX-License-Identifier: BSL-1.0
 # This file is part of ttauri-project.
 #
 
-name: "CodeQL Analysis"
+name: "Build on Windows"
 
-# Trigger workflow on push or pull request, only for the main branch.
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  schedule:
-    - cron: '00 12 * * Sun' # At 12:00 on Sunday.
+on: [push, pull_request]
 
 jobs:
 
 # ---------------------------------------------------------------------------------------
 
-  codeql-analyze:
+  build-and-test:
 
 # ---------------------------------------------------------------------------------------
 
-    name: CodeQL Report ➞ ${{ matrix.config.VCPKG_TARGET_TRIPLET }}
+    name: ${{ matrix.config.VCPKG_TARGET_TRIPLET }} PCH:${{ matrix.config.TT_BUILD_PCH }}
     needs: install-vulkan-sdk-and-runtime
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md
     runs-on: windows-latest
@@ -34,10 +27,12 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { VCPKG_TARGET_TRIPLET: x64-windows-static, BUILD_SHARED_LIBS: OFF}
+          - { VCPKG_TARGET_TRIPLET: x64-windows-static, BUILD_SHARED_LIBS: OFF, TT_BUILD_PCH: ON}
+          - { VCPKG_TARGET_TRIPLET: x64-windows-static, BUILD_SHARED_LIBS: OFF, TT_BUILD_PCH: OFF}
+          #- { VCPKG_TARGET_TRIPLET: x64-windows,        BUILD_SHARED_LIBS: ON, TT_BUILD_PCH: ON}
 
     env:
-      BUILD_TYPE: RelWithDebInfo
+      BUILD_TYPE: Release # RelWithDebInfo
       PLATFORM: x64
       VCPKG_ROOT: C:\vcpkg
       VULKAN_SDK: ${{ needs.install-vulkan-sdk-and-runtime.outputs.VULKAN_SDK }}
@@ -49,6 +44,9 @@ jobs:
     steps:
       - name: 🤘 Checkout Code
         uses: actions/checkout@v2 # https://github.com/actions/checkout
+
+      #- name: 🔽 Get latest CMake and Ninja
+      #  uses: lukka/get-cmake@latest
 
       - name: ℹ Show Tool Versions
         run: |
@@ -78,7 +76,7 @@ jobs:
           $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
           $process.ExitCode
 
-      - name: 📥 Setup VC Environment (→ vcvarsall)
+      - name: 📥 Setup VC Environment (➞ vcvarsall)
         run: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%
 
       - name: 🔽 Update VCPKG
@@ -100,13 +98,13 @@ jobs:
             cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}-${{ github.ref }}
             cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}
 
-      - name: ❔ CHECK important folders, to see if everything is present (before building).
+      - name: ❔ CHECK important folders, to see if everything is present (before building)
         run: |
           dir %VULKAN_SDK%\Bin
           dir %VULKAN_SDK%\runtime\%PLATFORM%
           dir %LocalAppData%\vcpkg
 
-      - name: ✏ CMake ➞ Configure (including VCPKG → Install Dependencies)
+      - name: ✏️ CMake ➞ Configure (including VCPKG ➞ Install Dependencies)
         run: |
           cmake -G "Visual Studio 16 2019" -A ${{ env.PLATFORM }}                           ^
                 -S ${{ github.workspace }} -B ../build                                      ^
@@ -114,21 +112,81 @@ jobs:
                 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake            ^
                 -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }}            ^
                 -DBUILD_SHARED_LIBS=${{ matrix.config.BUILD_SHARED_LIBS }}                  ^
+                -DTT_BUILD_PCH=${{ matrix.config.TT_BUILD_PCH }}                            ^
                 -DCMAKE_VERBOSE_MAKEFILE=ON
 
-      - name: 📈 CodeQL ➞ Setup Scanner
-        uses: github/codeql-action/init@v1
-        with:
-          languages: 'cpp'
-          config-file: ./.github/codeql/codeql-config.yml
-
-      - name: 🙏 CMake → Build
+      - name: 🙏 CMake ➞ Build
         run: |
           cd ..\build
           cmake --build . --config %BUILD_TYPE% -j %NUMBER_OF_PROCESSORS%
 
-      - name: 📈 CodeQL → Perform Analysis
-        uses: github/codeql-action/analyze@v1
+      - name: 📦 CMake ➞ Install
+        run: cmake --install ..\build --config %BUILD_TYPE% --prefix ..\install --strip --verbose
+
+      - name: ❔ CHECK important folders, to see if everything is present (after building)
+        run: |
+          dir ..\build
+          dir /S /B ..\build\vcpkg_installed\${{ matrix.config.VCPKG_TARGET_TRIPLET }}
+          dir /S /B ..\install
+
+      - name: ✔️❌✔️ Test
+        run: |
+          cd ..\install\tests
+          ttauri_tests.exe --gtest_output=xml:test_results_gtest.xml
+
+      - name: ♻️ Transform Test Results (gtest ➞ junit)
+        shell: pwsh
+        run: |
+          cd ..\install\tests
+          $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
+          $xsl.Load("${{ github.workspace }}\.github\gtest_to_junit.xsl")
+          $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{ github.workspace }}\test_results.xml")
+          cd ${{ github.workspace }}
+          ren test_results.xml test_results_${{ matrix.config.VCPKG_TARGET_TRIPLET }}_PCH_${{ matrix.config.TT_BUILD_PCH }}.xml
+
+      # We upload multiple files into the same artifact file (zip).
+      # Each file is differently named by adding the job name of the matrix as a suffix.
+      # This enables the "Unit Test Result" display to show all individual test runs of the matrix.
+      # The tests are published after all matrix runs finished (from job: "publish-test-results").
+      - name: 🔼 Upload Test Results
+        uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
+        if: always()
+        with:
+          name: test-results
+          path: test_results_*.xml
+
+      # Build Artifact Name: ttauri-0.3.0-0cda6a2-MSVC19-x64-static-RelWithDebInfo
+      - name: ✏️ Fetch Versioning Data & Set Artifact Name
+        shell: pwsh
+        run: |
+          $NAME=$(jq -r .name vcpkg.json)
+          $VERSION=$(jq -r .version vcpkg.json)
+          $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
+          $COMPILER="MSVC19"
+          $TRIPLET=$("${{ matrix.config.VCPKG_TARGET_TRIPLET }}".Replace("-windows",""))
+          $BUILD_TYPE="$env:BUILD_TYPE"
+          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-$COMPILER-$TRIPLET-$BUILD_TYPE"
+          echo "Artifact Name:" $ARTIFACT_NAME
+          echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
+          echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
+
+      # Double ZIP issue: https://github.com/actions/upload-artifact#zipped-artifact-downloads
+      # You know the Microsoft road.. it's an Y. One way is zipping an already zipped file;
+      # the other way is sending all files to a zip service creating a 503. Choose your poison.
+      - name: 📦 Package
+        run: |
+           cd ..
+           rename install ttauri-%VERSION%
+           dir
+           7z a -tzip -mx9 "%ARTIFACT_NAME%.zip" ./ttauri-%VERSION%
+           move %ARTIFACT_NAME%.zip ttauri
+
+      # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
+      - name: 📦 🚀 Upload Artifact
+        uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
+        with:
+          name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.TT_BUILD_PCH }}
+          path: ${{ env.ARTIFACT_NAME }}.zip
 
 # ---------------------------------------------------------------------------------------
 
@@ -171,7 +229,7 @@ jobs:
           curl -L --silent --show-error --output VulkanSDK.exe %VULKAN_SDK_URL%
           VulkanSDK.exe /S
 
-      - name: 🔽 Install VULKAN Runtime (→ vulkan-1.dll)
+      - name: 🔽 Install VULKAN Runtime (➞ vulkan-1.dll)
         if: steps.cache-vulkan.outputs.cache-hit != 'true'
         run: |
           curl -L --silent --show-error --output vulkan-runtime.zip %VULKAN_RUN_URL%
@@ -201,3 +259,27 @@ jobs:
         id: vulkan-output
         run: |
          echo ::set-output name=VULKAN_SDK::${{ env.VULKAN_SDK }}
+
+# ---------------------------------------------------------------------------------------
+
+  publish-test-results:
+
+# ---------------------------------------------------------------------------------------
+
+    name: "Publish Tests Results"
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: success() || failure() # don't run job, if skipped
+
+    steps:
+
+      - name: 🔽 Download Artifacts
+        uses: actions/download-artifact@v2 # https://github.com/actions/download-artifact
+        with:
+          path: artifacts
+
+      - name: 👌 Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1 # https://github.com/EnricoMi/publish-unit-test-result-action
+        if: always()
+        with:
+          files: artifacts/**/test_results*.xml
