@@ -137,12 +137,13 @@ jobs:
           dir /S /B build\vcpkg_installed\${{ matrix.config.VCPKG_TARGET_TRIPLET }}
           dir /S /B build\ttauri-%VERSION%
 
-      - name: ✔️❌✔️ Test
+      - name: ✔ ❌✔️ Test
         run: |
           cd build\ttauri-%VERSION%\tests
+          cd
           ttauri_tests.exe --gtest_output=xml:test_results_gtest.xml
 
-      - name: ♻️ Transform Test Results (gtest ➔ junit)
+      - name: ♻ Transform Test Results (gtest ➔ junit)
         shell: pwsh
         run: |
           cd build\ttauri-${{ env.VERSION }}\tests
