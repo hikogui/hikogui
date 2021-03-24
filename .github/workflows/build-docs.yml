@@ -1,0 +1,39 @@
+#
+# .github/workflows/build-docs.yml
+#
+# Copyright 2021 Jens A. Koch.
+# SPDX-License-Identifier: BSL-1.0
+# This file is part of ttauri-project.
+#
+
+name: "Build Documentation"
+
+# rebuild docs only, when pushing to main or pushing a new tag
+on:
+  push:
+    branches: [ main ]
+    tags: [ "v*" ]
+
+jobs:
+
+# ---------------------------------------------------------------------------------------
+
+  trigger-docs-build:
+
+# ---------------------------------------------------------------------------------------
+
+    name: "Trigger Documentation Build"
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # https://docs.github.com/en/rest/reference/actions#create-a-workflow-dispatch-event
+      # https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token
+
+      - name: ⚙️ Trigger Documentation Build
+        run: |
+          curl -X POST \
+          -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          -H "Accept: application/vnd.github.v3+json" \
+          -d '{"ref":"${{ github.ref }}"}' \
+          https://api.github.com/repos/ttauri-project/ttauri-project.github.io/actions/workflows/build-docs.yml/dispatches
