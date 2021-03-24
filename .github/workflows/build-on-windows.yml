@@ -27,12 +27,12 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { VCPKG_TARGET_TRIPLET: x64-windows-static, BUILD_SHARED_LIBS: OFF, TT_BUILD_PCH: ON}
-          - { VCPKG_TARGET_TRIPLET: x64-windows-static, BUILD_SHARED_LIBS: OFF, TT_BUILD_PCH: OFF}
-          #- { VCPKG_TARGET_TRIPLET: x64-windows,        BUILD_SHARED_LIBS: ON, TT_BUILD_PCH: ON}
+          - { VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF}
+          - { VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON}
+          #- { VCPKG_TARGET_TRIPLET: x64-windows,       TT_BUILD_PCH: ON}
 
     env:
-      BUILD_TYPE: Release # RelWithDebInfo
+      BUILD_TYPE: RelWithDebInfo
       PLATFORM: x64
       VCPKG_ROOT: C:\vcpkg
       VULKAN_SDK: ${{ needs.install-vulkan-sdk-and-runtime.outputs.VULKAN_SDK }}
@@ -45,9 +45,6 @@ jobs:
       - name: 🤘 Checkout Code
         uses: actions/checkout@v2 # https://github.com/actions/checkout
 
-      #- name: 🔽 Get latest CMake and Ninja
-      #  uses: lukka/get-cmake@latest
-
       - name: ℹ Show Tool Versions
         run: |
           date /T
@@ -57,6 +54,21 @@ jobs:
           msbuild /version
           vcpkg version
           echo NUMBER_OF_PROCESSORS=%NUMBER_OF_PROCESSORS%
+
+      # Build Artifact Name: ttauri-0.3.0-0cda6a2-MSVC19-x64-static-RelWithDebInfo
+      - name: ✏ Fetch Versioning Data & Set Artifact Name
+        shell: pwsh
+        run: |
+          $NAME=$(jq -r .name vcpkg.json)
+          $VERSION=$(jq -r .version vcpkg.json)
+          $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
+          $COMPILER="MSVC19"
+          $TRIPLET="${{ matrix.config.VCPKG_TARGET_TRIPLET }}"
+          $BUILD_TYPE="$env:BUILD_TYPE"
+          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-$COMPILER-$TRIPLET-$BUILD_TYPE"
+          echo "Artifact Name:" $ARTIFACT_NAME
+          echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
+          echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
 
       - name: 🎯 Cache VULKAN SDK & Runtime
         id: cache-vulkan
@@ -91,7 +103,6 @@ jobs:
         id: cache-vcpkg
         uses: actions/cache@v1 # https://github.com/actions/cache
         with:
-          #path: ..\build\vcpkg_installed
           path: ~\AppData\Local\vcpkg
           key: cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}-${{ github.ref }}-${{ github.run_number }}
           restore-keys: |
@@ -104,40 +115,37 @@ jobs:
           dir %VULKAN_SDK%\runtime\%PLATFORM%
           dir %LocalAppData%\vcpkg
 
-      - name: ✏️ CMake ➔ Configure (including VCPKG ➔ Install Dependencies)
+      - name: ✏ CMake ➔ Configure (including VCPKG ➔ Install Dependencies)
         run: |
-          cmake -G "Visual Studio 16 2019" -A ${{ env.PLATFORM }}                           ^
-                -S ${{ github.workspace }} -B ../build                                      ^
+          mkdir build && cd build
+          cmake -G "Visual Studio 16 2019" -A ${{ env.PLATFORM }} ..                        ^
                 -DCMAKE_BUILD_TYPE=%BUILD_TYPE%                                             ^
                 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake            ^
                 -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }}            ^
-                -DBUILD_SHARED_LIBS=${{ matrix.config.BUILD_SHARED_LIBS }}                  ^
                 -DTT_BUILD_PCH=${{ matrix.config.TT_BUILD_PCH }}                            ^
                 -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: 🙏 CMake ➔ Build
-        run: |
-          cd ..\build
-          cmake --build . --config %BUILD_TYPE% -j %NUMBER_OF_PROCESSORS%
+        run: cmake --build build --config %BUILD_TYPE% -j %NUMBER_OF_PROCESSORS%
 
       - name: 📦 CMake ➔ Install
-        run: cmake --install ..\build --config %BUILD_TYPE% --prefix ..\install --strip --verbose
+        run: cmake --install build --config %BUILD_TYPE% --prefix build/ttauri-%VERSION% --verbose
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
-          dir ..\build
-          dir /S /B ..\build\vcpkg_installed\${{ matrix.config.VCPKG_TARGET_TRIPLET }}
-          dir /S /B ..\install
+          dir build
+          dir /S /B build\vcpkg_installed\${{ matrix.config.VCPKG_TARGET_TRIPLET }}
+          dir /S /B build\ttauri-%VERSION%
 
       - name: ✔️❌✔️ Test
         run: |
-          cd ..\install\tests
+          cd build\ttauri-%VERSION%\tests
           ttauri_tests.exe --gtest_output=xml:test_results_gtest.xml
 
       - name: ♻️ Transform Test Results (gtest ➔ junit)
         shell: pwsh
         run: |
-          cd ..\install\tests
+          cd build\ttauri-${{ env.VERSION }}\tests
           $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
           $xsl.Load("${{ github.workspace }}\.github\gtest_to_junit.xsl")
           $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{ github.workspace }}\test_results.xml")
@@ -155,31 +163,13 @@ jobs:
           name: test-results
           path: test_results_*.xml
 
-      # Build Artifact Name: ttauri-0.3.0-0cda6a2-MSVC19-x64-static-RelWithDebInfo
-      - name: ✏️ Fetch Versioning Data & Set Artifact Name
-        shell: pwsh
-        run: |
-          $NAME=$(jq -r .name vcpkg.json)
-          $VERSION=$(jq -r .version vcpkg.json)
-          $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
-          $COMPILER="MSVC19"
-          $TRIPLET=$("${{ matrix.config.VCPKG_TARGET_TRIPLET }}".Replace("-windows",""))
-          $BUILD_TYPE="$env:BUILD_TYPE"
-          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-$COMPILER-$TRIPLET-$BUILD_TYPE"
-          echo "Artifact Name:" $ARTIFACT_NAME
-          echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
-          echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
-
       # Double ZIP issue: https://github.com/actions/upload-artifact#zipped-artifact-downloads
       # You know the Microsoft road.. it's an Y. One way is zipping an already zipped file;
       # the other way is sending all files to a zip service creating a 503. Choose your poison.
       - name: 📦 Package
         run: |
-           cd ..
-           rename install ttauri-%VERSION%
-           dir
+           cd build
            7z a -tzip -mx9 "%ARTIFACT_NAME%.zip" ./ttauri-%VERSION%
-           move %ARTIFACT_NAME%.zip ttauri
 
       # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
       - name: 📦 🚀 Upload Artifact
