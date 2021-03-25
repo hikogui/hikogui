@@ -16,22 +16,15 @@ hires_utc_clock::time_point hires_utc_clock::now() noexcept
     FILETIME ts;
     GetSystemTimePreciseAsFileTime(&ts);
 
-    // Get the file_time, which since 2018 tracks leap-seconds.
-    FILETIME file_time;
-    GetSystemTimePreciseAsFileTime(&file_time);
+    auto utc_ts = static_cast<int64_t>(ts.dwHighDateTime) << 32;
+    utc_ts |= static_cast<int64_t>(ts.dwLowDateTime);
 
     // Convert to UNIX Epoch. Currently utc_ts is still in 100ns format.
     // Convert  1601-01-1 00:00:00 -> 1970-01-01 00:00:00
     utc_ts -= 11644473600'000'000'0;
 
-    // Get the number of days since 1970-01-01.
-    ttlet date = date::year_month_day{date::year{system_time.wYear}, date::month{system_time.wMonth}, date::day{system_time.wDay}};
-    int64_t ns1970 = static_cast<std::chrono::sys_days>(date).time_since_epoch() / 1h;
-    ns1970 += system_time.wHour;
-    ns1970 *= 60;
-    ns1970 += system_time.wMinute;
-    ns1970 *= 60;
-    ns1970 += std::min(system_time.wSecond, narrow_cast<WORD>(59)); // Drop leap-second for UTC.
+    // Convert to 1ns format.
+    utc_ts *= 100;
 
     // Windows time is 37 seconds behind TAI
     utc_ts += 37'000'000'000;
