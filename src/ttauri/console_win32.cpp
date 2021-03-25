@@ -49,7 +49,7 @@ void console_output(std::string_view text, std::ostream &output) noexcept
     tt_assert(std::addressof(output) == std::addressof(std::cout) || std::addressof(output) == std::addressof(std::cerr));
 
     if (IsDebuggerPresent()) {
-        std::wstring text_(text.begin(), text.end());
+        std::wstring text_ = {text.begin(), text.end()};
         OutputDebugStringW(text_.c_str());
 
     } else {

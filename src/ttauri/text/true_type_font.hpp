@@ -92,7 +92,7 @@ public:
             parsefontDirectory();
 
         } catch (std::exception const &e) {
-            throw parse_error("{}: Could not parse font directory.\n{}", url.directory(), e.what());
+            throw parse_error("{}: Could not parse font directory.\n{}", to_string(url), e.what());
         }
     }
 
