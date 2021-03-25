@@ -55,8 +55,28 @@ static time_stamp_counter get_sample(hires_utc_clock &tp) noexcept
 
 [[nodiscard]] int64_t time_stamp_counter::measure_frequency() noexcept
 {
+    constexpr int max_retries = 10;
+    auto cpu_switch = 0;
 
+    do {
+        hires_utc_clock::time_point tp1;
+        auto tsc1 = get_sample(&tp1);
 
+        hires_utc_clock::time_point tp2;
+        auto tsc2 = get_sample(&tp1);
+
+        if (tsc1.id != tsc2.id) {
+            ++cpu_switch;
+            goto retry;
+        }
+
+        auto tsc_diff = tsc2 - tsc1;
+        auto tp_diff = tp2 - tp1;
+        return 
+
+    retry:
+    } while (cpu_switch < max_retries);
+    tt_log_fatal("During TSC/UTC frequency measuring, cpu-switch={}", cpu_switch);
 }
 
 
