@@ -6,7 +6,6 @@
 
 #include "required.hpp"
 #include "os_detect.hpp"
-#include "hires_utc_clock.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <intrin.h>
 #endif
@@ -15,6 +14,7 @@
 #include <functional>
 #include <atomic>
 #include <chrono>
+#include <bit>
 
 namespace tt {
 
@@ -70,8 +70,27 @@ inline thread_local thread_id current_thread_id_dummy = 0;
  * @param mask A bit mask on which processors the thread should run on.
  * @return The previous bit mask. Or zero on failure.
  */
-[[nodiscard]] uint64_t set_thread_affinity_mask(uint64_t mask) noexcept;
+uint64_t set_thread_affinity_mask(uint64_t mask) noexcept;
 
+/** Set the current thread CPU affinity to a single processor.
+ * On systems with more than 64 processors, this sets the index
+ * of the logical processor within the processor-group.
+ *
+ * The given processor index must be a part of the mask returned from
+ * process_affinity_mask().
+ *
+ * @param processor_index The index of the processors the thread should run on.
+ * @return The previous bit mask. Or zero on failure.
+ */
+uint64_t set_thread_affinity(size_t processor_index) noexcept;
+
+/** Get the current processor index.
+ * On systems with more than 64 processors, this retrieves the logical
+ * processor index within the processor-group.
+ *
+ * @return an index between 0 and 63.
+ */
+[[nodiscard]] size_t current_processor() noexcept;
 
 
 }

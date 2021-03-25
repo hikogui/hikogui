@@ -44,12 +44,19 @@ void run_from_main_loop(std::function<void()> f)
     return narrow_cast<uint64_t>(process_mask);
 }
 
-[[nodiscard]] uint64_t set_thread_affinity_mask(uint64_t mask) noexcept
+uint64_t set_thread_affinity_mask(uint64_t mask) noexcept
 {
     auto thread_handle = GetCurrentThread();
 
     auto r = SetThreadAffinityMask(thread_handle, narrow_cast<DWORD_PTR>(mask));
     return narrow_cast<uint64_t>(r);
+}
+
+[[nodiscard]] size_t current_processor() noexcept
+{
+    ttlet index = GetCurrentProcessorNumber();
+    tt_axiom(index < 64);
+    return index;
 }
 
 

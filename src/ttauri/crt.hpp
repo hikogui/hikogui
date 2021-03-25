@@ -26,6 +26,7 @@
 #include "strings.hpp"
 #include "cast.hpp"
 #include "console.hpp"
+#include "time_stamp_count.hpp"
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "application_win32.hpp"
@@ -123,7 +124,8 @@ int WINAPI WinMain(
 #endif
 
     // Make sure the console is in a valid state to write text to it.
-    tt::console_init();
+    tt::console_start();
+    tt::time_stamp_count::start();
     tt::start_system();
 
     ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
@@ -154,7 +156,8 @@ int main(int argc, char *argv[])
 #endif
 
     // Make sure the console is in a valid state to write text to it.
-    tt::console_init();
+    tt::console_start();
+    tt::time_stamp_count::start();
     tt::start_system();
 
     ttlet r = tt_main(argc, argv, {});

@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "clock_counter.hpp"
 #include "os_detect.hpp"
 #include "cast.hpp"
 #include "hires_utc_clock.hpp"
+#include "bigint.hpp"
 #include <atomic>
 
 #if TT_PROCESSOR == TT_CPU_X64
@@ -21,17 +21,23 @@
 
 namespace tt {
 
-class time_stamp_counter {
+/** 
+ * Since Window's 10 QueryPerformanceCounter() counts at only 10MHz which
+ * is too low to measure performance in many cases.
+ * 
+ * Instead we will use the TSC.
+ */
+class time_stamp_count {
 public:
-    constexpr time_stamp_counter() noexcept :
-        _counter(0), _id(0) {}
+    constexpr time_stamp_count() noexcept :
+        _count(0), _id(0) {}
 
-    constexpr time_stamp_counter(int64_t counter, uint32_t id) noexcept :
-        _counter(counter), _id(id) {}
+    constexpr time_stamp_count(uint64_t count, uint32_t id) noexcept :
+        _count(count), _id(id) {}
 
-    [[nodiscard]] constexpr int64_t counter() const noexcept
+    [[nodiscard]] constexpr uint64_t count() const noexcept
     {
-        return _counter;
+        return _count;
     }
 
     [[nodiscard]] constexpr uint32_t id() const noexcept
@@ -39,18 +45,18 @@ public:
         return _id;
     }
 
-    /** Get the current count from the CPU's time stamp counter.
+    /** Get the current count from the CPU's time stamp count.
      * @param memory_order Memory order is one of seq_cst or relaxed.
      * @return The current clock count and cpu-id.
      */
-    [[nodiscard]] static time_stamp_counter now(std::memory_order memory_order = std::memory_order::seq_cst) noexcept
+    [[nodiscard]] static time_stamp_count now(std::memory_order memory_order = std::memory_order::seq_cst) noexcept
     {
         tt_axiom(memory_order != std::memory_order::consume);
         tt_axiom(memory_order != std::memory_order::acq_rel);
         tt_axiom(memory_order != std::memory_order::release);
         tt_axiom(memory_order != std::memory_order::acquire);
 
-        uint64_t counter;
+        uint64_t count;
         uint32_t id;
 
 #if TT_PROCESSOR == TT_CPU_X64
@@ -59,7 +65,7 @@ public:
         // before getting the timestamp. An explicit lfence after the rdtscp instruction
         // satisfies the seq_cst memory order.
         unsigned int aux;
-        counter = __rdtscp(&aux);
+        count = __rdtscp(&aux);
         if (memory_order == std::memory_order::seq_cst) {
             _mm_lfence();
         }
@@ -67,31 +73,29 @@ public:
         id = narrow_cast<uint32_t>(aux);
 #endif
 
-        return time_stamp_counter{counter, id};
+        return time_stamp_count{count, id};
     }
 
     /** Get a sample.
      * This gets a combination of a TSC and timepoint.
      * Care is taken that the sample was not interrupted by a timeslice.
      */
-    [[nodiscard]] static time_stamp_counter get_sample(hires_utc_clock::time_point &tp) noexcept;
+    [[nodiscard]] static time_stamp_count get_sample(hires_utc_clock::time_point &tp) noexcept;
 
-    /** Measure the frequence of the time_stamp_counter.
+    /** Measure the frequency of the time_stamp_count.
+     * Frequency drift from TSC is 1ppm
      */
-    [[nodiscard] static int64_t measure_frequency() noexcept;
+    [[nodiscard]] static uint64_t measure_frequency(hires_utc_clock::duration duration) noexcept;
 
-    /** Retrieve the frequency of the time_stamp_counter.
-     * This will try to retrieve the frequency of the time_stamp_counter
-     * using the cache, the operating system's TSC frequency,
-     * or by measuring.
+    /** Start the time_stamp_count subsystem.
      */
-    [[nodiscard]] static int64_t frequency() noexcept;
+    [[nodiscard]] static void start() noexcept;
 
 private:
-    int64_t _time_stamp;
+    uint64_t _count;
     uint32_t _id;
 
-    inline static std::atomic<uint64_t> _frequency;
+    inline static std::atomic<uint64_t> _period;
 };
 
 }

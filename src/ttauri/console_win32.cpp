@@ -12,7 +12,7 @@
 
 namespace tt {
 
-void console_init() noexcept
+void console_start() noexcept
 {
     auto out_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 

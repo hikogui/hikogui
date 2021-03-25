@@ -155,9 +155,13 @@ target_sources(ttauri PRIVATE
     tagged_map.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
+    thread.cpp
     thread.hpp
     timer.cpp
     timer.hpp
+    time_stamp_count.cpp
+    time_stamp_count.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>
     tokenizer.cpp
     tokenizer.hpp
     trace.cpp
