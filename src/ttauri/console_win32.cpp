@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "console.hpp"
+#include "strings.hpp"
 #include "assert.hpp"
 #include <Windows.h>
 #include <debugapi.h>
@@ -49,7 +50,7 @@ void console_output(std::string_view text, std::ostream &output) noexcept
     tt_assert(std::addressof(output) == std::addressof(std::cout) || std::addressof(output) == std::addressof(std::cerr));
 
     if (IsDebuggerPresent()) {
-        std::wstring text_ = {text.begin(), text.end()};
+        ttlet text_ = to_wstring(text);
         OutputDebugStringW(text_.c_str());
 
     } else {
