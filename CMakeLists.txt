@@ -194,6 +194,9 @@ target_compile_features(ttauri INTERFACE cxx_std_20)
 #   * AMD Steamroller from 2014
 #
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+    # Set the execution character encoding to UTF-8
+    target_compile_options(ttauri PUBLIC -fexec-charset=UTF-8)
+
     # Clang will complain about __builtin_assume even on constexpr functions and operators,
     # this warning is absolutely useless.
     target_compile_options(ttauri PUBLIC -Wno-assume)
@@ -238,6 +241,9 @@ elseif (MSVC)
     # which is supposed to be fixed in a newer version of the SDK.
     target_compile_options(ttauri PUBLIC -Zc:preprocessor)
     target_compile_options(ttauri PUBLIC -wd5105)
+
+    # Set the execution character encoding to UTF-8
+    target_compile_options(ttauri PUBLIC -execution-charset:utf-8)
 
     # Allow system headers to be imported.
     target_compile_options(ttauri PUBLIC -experimental:module)
