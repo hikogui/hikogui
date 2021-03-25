@@ -137,6 +137,12 @@ jobs:
           dir /S /B build\vcpkg_installed\${{ matrix.config.VCPKG_TARGET_TRIPLET }}
           dir /S /B build\ttauri-%VERSION%
 
+      # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
+      - name: Copy Vulkan Runtime (vulkan-1.dll)
+        run: |
+          copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* build\ttauri-%VERSION%\tests
+          copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* build\ttauri-%VERSION%\examples\ttauri_demo
+
       - name: ✔ ❌✔️ Test
         run: |
           cd build\ttauri-%VERSION%\tests
