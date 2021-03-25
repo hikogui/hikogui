@@ -10,6 +10,7 @@
 #include "../URL.hpp"
 #include "../datum.hpp"
 #include "../color/color.hpp"
+#include "../geometry/extent.hpp"
 #include <array>
 
 namespace tt {

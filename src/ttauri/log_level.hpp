@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "assert.hpp"
 #include <atomic>
 #include <cstdint>
 #include <string_view>

@@ -4,9 +4,13 @@
 
 #include "ttauri/text/unicode_text_segmentation.hpp"
 #include "ttauri/file_view.hpp"
+#include "ttauri/charconv.hpp"
+#include "ttauri/ranges.hpp"
+#include "ttauri/strings.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <span>
 #include <fmt/format.h>
 
@@ -14,8 +18,8 @@ using namespace std;
 using namespace tt;
 
 struct graphemeBreakTest {
-    std::u32string codePoints;
-    std::vector<bool> breakOpertunities;
+    std::u32string code_points;
+    std::vector<bool> break_opportunities;
     std::string comment;
     int lineNr;
 };
@@ -40,12 +44,12 @@ std::optional<graphemeBreakTest> parsegraphemeBreakTests_line(std::string_view l
         if (column == "") {
             // Empty.
         } else if (column == "\xc3\xb7") {
-            r.breakOpertunities.push_back(true);
+            r.break_opportunities.push_back(true);
         } else if (column == "\xc3\x97") {
-            r.breakOpertunities.push_back(false);
+            r.break_opportunities.push_back(false);
         } else {
-            auto codePoint = static_cast<char32_t>(std::stoi(std::string(column), nullptr, 16));
-            r.codePoints += codePoint;
+            auto code_point = static_cast<char32_t>(std::stoi(std::string(column), nullptr, 16));
+            r.code_points += code_point;
         }
     }
 
@@ -73,15 +77,15 @@ TEST(unicode_text_segmentation, breaks_grapheme)
     auto tests = parsegraphemeBreakTests();
 
     for (ttlet &test : tests) {
-        ASSERT_EQ(test.codePoints.size() + 1, test.breakOpertunities.size());
+        ASSERT_EQ(test.code_points.size() + 1, test.break_opportunities.size());
 
         auto state = grapheme_break_state{};
 
-        for (size_t i = 0; i < test.codePoints.size(); i++) {
-            ttlet codePoint = test.codePoints[i];
-            ttlet breakOpertunity = test.breakOpertunities[i];
+        for (size_t i = 0; i < test.code_points.size(); i++) {
+            ttlet code_point = test.code_points[i];
+            ttlet break_opportunities = test.break_opportunities[i];
 
-            ASSERT_EQ(breaks_grapheme(codePoint, state), breakOpertunity) << test.comment;
+            ASSERT_EQ(breaks_grapheme(code_point, state), break_opportunities) << test.comment;
         }
     }
 }

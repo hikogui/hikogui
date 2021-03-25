@@ -4,6 +4,7 @@
 
 #include "hires_utc_clock.hpp"
 #include "subsystem.hpp"
+#include "cast.hpp"
 #include "logger.hpp"
 #include <Windows.h>
 #include <timezoneapi.h>

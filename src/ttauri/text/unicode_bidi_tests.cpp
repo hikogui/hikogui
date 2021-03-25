@@ -6,9 +6,11 @@
 #include "ttauri/file_view.hpp"
 #include "ttauri/charconv.hpp"
 #include "ttauri/ranges.hpp"
+#include "ttauri/strings.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <span>
 #include <fmt/format.h>
 

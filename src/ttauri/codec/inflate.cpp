@@ -60,7 +60,7 @@ static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_of
     case 284: return get_bits(bytes, bit_offset, 5) + 227;
     case 285: return 258;
     default:
-        throw parse_error("Literal/Length symbol out of range {}", symbol); 
+        throw parse_error("Literal/Length symbol out of range {}", symbol);
     }
 }
 
@@ -101,7 +101,7 @@ static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_of
     case 28: return get_bits(bytes, bit_offset, 13) + 16385;
     case 29: return get_bits(bytes, bit_offset, 13) + 24577;
     default:
-        throw parse_error("Distance symbol out of range {}", symbol); 
+        throw parse_error("Distance symbol out of range {}", symbol);
     }
 }
 
@@ -131,7 +131,7 @@ static void inflate_block(
             return;
 
         } else {
-            auto length = inflate_decode_length(bytes, bit_offset, literal_symbol); 
+            auto length = inflate_decode_length(bytes, bit_offset, literal_symbol);
             tt_parse_check(std::ssize(r) + length <= max_size, "Output buffer overrun");
 
             // Test only every get_symbol, the trailer is at least 32 bits (Checksum)
