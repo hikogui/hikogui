@@ -60,6 +60,23 @@ The suffix "\_" may be used when a new variable needs to be introduced
 when only its type has changed using casting or conversion.
 If more than one such variable is needed the name of the type should be appended.
 
+Initializing variables
+----------------------
+I would like to see an assignment operator `=` with every variable initialization.
+Here are some examples that are acceptable:
+```
+auto foo = foo_type{init_value};
+auto foo = foo_type(init_value);
+foo_type foo = foo_type{init_value};
+foo_type foo = {init_value};
+foo_type foo = init_value;
+```
+
+Please do NOT use the following variable initialization as I find it difficult to read:
+```
+foo_type foo(init_value);
+```
+
 Global variables
 ----------------
 

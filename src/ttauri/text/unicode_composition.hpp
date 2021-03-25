@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../assert.hpp"
+
 namespace tt {
 
 class unicode_composition {

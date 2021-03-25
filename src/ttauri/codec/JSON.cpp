@@ -3,13 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "JSON.hpp"
-#include "../tokenizer.hpp"
-#include "../strings.hpp"
-#include "../datum.hpp"
-#include "../exception.hpp"
-#include "../indent.hpp"
-#include <vector>
-#include <optional>
 
 namespace tt {
 
@@ -26,7 +19,7 @@ struct parse_context_t {
 
     // Required '['
     if ((*token == tokenizer_name_t::Operator) && (*token == "[")) {
-        token++; 
+        token++;
     } else {
         return {};
     }
@@ -68,7 +61,7 @@ struct parse_context_t {
 
     // Required '{'
     if ((*token == tokenizer_name_t::Operator) && (*token == "{")) {
-        token++; 
+        token++;
     } else {
         return {};
     }

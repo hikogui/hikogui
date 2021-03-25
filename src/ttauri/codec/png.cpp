@@ -17,14 +17,14 @@ struct PNGHeader {
 };
 
 struct ChunkHeader {
-    big_uint32_buf_t length;    
-    uint8_t type[4];    
+    big_uint32_buf_t length;
+    uint8_t type[4];
 };
 
 
 struct IHDR {
-    big_uint32_buf_t width;    
-    big_uint32_buf_t height;    
+    big_uint32_buf_t width;
+    big_uint32_buf_t height;
     uint8_t bit_depth;
     uint8_t color_type;
     uint8_t compression_method;
@@ -33,18 +33,18 @@ struct IHDR {
 };
 
 struct gAMA {
-    big_uint32_buf_t gamma;    
+    big_uint32_buf_t gamma;
 };
 
 struct cHRM {
-    big_uint32_buf_t white_point_x;    
-    big_uint32_buf_t white_point_y;    
-    big_uint32_buf_t red_x;    
-    big_uint32_buf_t red_y;    
-    big_uint32_buf_t green_x;    
-    big_uint32_buf_t green_y;    
-    big_uint32_buf_t blue_x;    
-    big_uint32_buf_t blue_y;    
+    big_uint32_buf_t white_point_x;
+    big_uint32_buf_t white_point_y;
+    big_uint32_buf_t red_x;
+    big_uint32_buf_t red_y;
+    big_uint32_buf_t green_x;
+    big_uint32_buf_t green_y;
+    big_uint32_buf_t blue_x;
+    big_uint32_buf_t blue_y;
 };
 
 struct sRGB {
@@ -165,7 +165,7 @@ void png::read_gAMA(std::span<std::byte const> bytes)
     ttlet gama = make_placement_ptr<gAMA>(bytes);
     ttlet gamma = narrow_cast<float>(gama->gamma.value()) / 100'000.0f;
     tt_parse_check(gamma != 0.0f, "Gamma value can not be zero");
-     
+
     generate_gamma_transfer_function(1.0f / gamma);
 }
 

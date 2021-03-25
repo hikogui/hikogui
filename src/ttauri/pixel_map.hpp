@@ -3,13 +3,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
-
 #include "required.hpp"
 #include "geometry/axis_aligned_rectangle.hpp"
 #include "geometry/extent.hpp"
+#include <algorithm>
+#include <cassert>
 #include <span>
 #include <string>
-#include <algorithm>
 #include <vector>
 
 namespace tt {

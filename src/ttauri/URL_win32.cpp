@@ -6,7 +6,7 @@
 #include "strings.hpp"
 #include "required.hpp"
 #include "url_parser.hpp"
-#include "ttauri/current_version.hpp"
+#include "ttauri/metadata.hpp"
 #include <regex>
 
 #include <Windows.h>
@@ -55,7 +55,7 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     }
 
     ttlet base_localAppData = URL::urlFromWPath(wchar_localAppData);
-    return base_localAppData / application_version.name;
+    return base_localAppData / application_metadata().vendor / application_metadata().display_name;
 }
 
 URL URL::urlFromSystemfontDirectory() noexcept
