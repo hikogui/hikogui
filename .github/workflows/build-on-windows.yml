@@ -170,16 +170,21 @@ jobs:
           name: test-results
           path: test_results_*.xml
 
+      #
+      # We only upload artifacts for static builds with pre-compiled headers (TT_BUILD_PCH:ON).
+      #
+
       # Double ZIP issue: https://github.com/actions/upload-artifact#zipped-artifact-downloads
-      # You know the Microsoft road.. it's an Y. One way is zipping an already zipped file;
-      # the other way is sending all files to a zip service creating a 503. Choose your poison.
+      # We can either zip an already zipped file; or send all files to a zip service, possibly creating a 503.
       - name: 📦 Package
+        if: ${{ matrix.config.TT_BUILD_PCH == 'ON'}}
         run: |
            cd build
            7z a -tzip -mx9 "%ARTIFACT_NAME%.zip" ./ttauri-%VERSION%
 
       # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
       - name: 📦 🚀 Upload Artifact
+        if: ${{ matrix.config.TT_BUILD_PCH == 'ON'}}
         uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
         with:
           name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.TT_BUILD_PCH }}
