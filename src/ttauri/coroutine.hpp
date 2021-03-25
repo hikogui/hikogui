@@ -7,6 +7,7 @@
 #include <ranges>
 #include <concepts>
 #include <coroutine>
+#include <optional>
 
 namespace tt {
 
@@ -105,7 +106,7 @@ public:
     }
 
     /** A forward iterator which iterates through values co_yieled by the generator-function.
-     */ 
+     */
     class iterator {
     public:
         explicit iterator(handle_type coroutine) : _coroutine{coroutine} {}

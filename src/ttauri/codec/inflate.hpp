@@ -6,6 +6,7 @@
 
 #include "../required.hpp"
 #include "../byte_string.hpp"
+#include "../endian.hpp"
 #include <span>
 
 namespace tt {

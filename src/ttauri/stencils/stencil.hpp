@@ -4,7 +4,10 @@
 
 #pragma once
 
+#include "../color/color.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/matrix.hpp"
+#include "../geometry/identity.hpp"
 
 namespace tt {
 class draw_context;

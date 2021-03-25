@@ -8,9 +8,14 @@
 #include "../required.hpp"
 #include "../URL.hpp"
 #include "../datum.hpp"
+#include "../resource_view.hpp"
+#include "../strings.hpp"
+#include "../exception.hpp"
+#include "../indent.hpp"
 #include <string>
-#include <optional>
 #include <string_view>
+#include <vector>
+#include <optional>
 
 namespace tt {
 

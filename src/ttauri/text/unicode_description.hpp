@@ -9,6 +9,7 @@
 #include "unicode_bidi_bracket_type.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
 #include "../required.hpp"
+#include "../assert.hpp"
 
 namespace tt {
 namespace detail {
@@ -220,7 +221,7 @@ public:
     /** Get the canonical equivalent of this code-point.
      * The canonical equivalent is the code-point after NFC-normalization.
      * This is equal to canonical decomposition to a single code-point.
-     * 
+     *
      * @return The canonical equivalent code-point or U+ffff if there is not equivalent.
      */
     [[nodiscard]] constexpr char32_t canonical_equivalent() const noexcept
@@ -293,7 +294,7 @@ template<typename It>
  * the unicode_description. It may return a unicode_description to the
  * U+fffd 'REPLACEMENT CHARACTER' if the code-point could not be found in the
  * table. Or it may return unicode_description to a single element in a range
- * of code-points, such as for hangul-syllables, or private use areas.. 
+ * of code-points, such as for hangul-syllables, or private use areas..
  *
  * Passing an invalid unicode value causes undefined behaviour.
  *

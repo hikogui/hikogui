@@ -92,7 +92,7 @@ public:
             parsefontDirectory();
 
         } catch (std::exception const &e) {
-            throw parse_error("{}: Could not parse font directory.\n{}", url, e.what());
+            throw parse_error("{}: Could not parse font directory.\n{}", to_string(url), e.what());
         }
     }
 
@@ -107,10 +107,10 @@ public:
     * @return glyph-index, or invalid when not found or error.
     */
     [[nodiscard]] tt::glyph_id find_glyph(char32_t c) const noexcept override;
-    
+
     /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.
-     * 
+     *
      * @param glyph_id the index of a glyph inside the font.
      * @param path The path constructed by the loader.
      * @return empty on failure, or the glyphID of the metrics to use.
@@ -119,7 +119,7 @@ public:
 
     /** Load a glyphMetrics into a path.
     * The glyph is directly loaded from the font file.
-    * 
+    *
     * @param glyph_id the index of a glyph inside the font.
     * @param metrics The metrics constructed by the loader.
     * @param lookahead_glyph_id The next glyph, used for determining kerning.
