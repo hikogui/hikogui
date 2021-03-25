@@ -4,9 +4,13 @@
 
 #include "ttauri/text/unicode_text_segmentation.hpp"
 #include "ttauri/file_view.hpp"
+#include "ttauri/charconv.hpp"
+#include "ttauri/ranges.hpp"
+#include "ttauri/strings.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <span>
 #include <fmt/format.h>
 
@@ -15,7 +19,7 @@ using namespace tt;
 
 struct graphemeBreakTest {
     std::u32string codePoints;
-    std::vector<bool> breakOpertunities;
+    std::vector<bool> breakOpportunities;
     std::string comment;
     int lineNr;
 };
@@ -40,9 +44,9 @@ std::optional<graphemeBreakTest> parsegraphemeBreakTests_line(std::string_view l
         if (column == "") {
             // Empty.
         } else if (column == "\xc3\xb7") {
-            r.breakOpertunities.push_back(true);
+            r.breakOpportunities.push_back(true);
         } else if (column == "\xc3\x97") {
-            r.breakOpertunities.push_back(false);
+            r.breakOpportunities.push_back(false);
         } else {
             auto codePoint = static_cast<char32_t>(std::stoi(std::string(column), nullptr, 16));
             r.codePoints += codePoint;
@@ -73,13 +77,13 @@ TEST(unicode_text_segmentation, breaks_grapheme)
     auto tests = parsegraphemeBreakTests();
 
     for (ttlet &test : tests) {
-        ASSERT_EQ(test.codePoints.size() + 1, test.breakOpertunities.size());
+        ASSERT_EQ(test.codePoints.size() + 1, test.breakOpportunities.size());
 
         auto state = grapheme_break_state{};
 
         for (size_t i = 0; i < test.codePoints.size(); i++) {
             ttlet codePoint = test.codePoints[i];
-            ttlet breakOpertunity = test.breakOpertunities[i];
+            ttlet breakOpertunity = test.breakOpportunities[i];
 
             ASSERT_EQ(breaks_grapheme(codePoint, state), breakOpertunity) << test.comment;
         }

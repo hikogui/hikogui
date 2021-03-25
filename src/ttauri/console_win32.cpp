@@ -7,6 +7,7 @@
 #include <Windows.h>
 #include <debugapi.h>
 #include <memory>
+#include <string_view>
 
 namespace tt {
 
@@ -28,7 +29,7 @@ void console_init() noexcept
             FILE *fpstdin = stdin;
             FILE *fpstdout = stdout;
             FILE *fpstderr = stderr;
-            
+
             freopen_s(&fpstdin, "CONIN$", "r", stdin);
             freopen_s(&fpstdout, "CONOUT$", "w", stdout);
             freopen_s(&fpstderr, "CONOUT$", "w", stderr);
@@ -48,7 +49,7 @@ void console_output(std::string_view text, std::ostream &output) noexcept
     tt_assert(std::addressof(output) == std::addressof(std::cout) || std::addressof(output) == std::addressof(std::cerr));
 
     if (IsDebuggerPresent()) {
-        ttlet text_ = to_wstring(text);
+        std::wstring text_(text.begin(), text.end());
         OutputDebugStringW(text_.c_str());
 
     } else {

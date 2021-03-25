@@ -5,6 +5,8 @@
 #include "dialog.hpp"
 #include "exception.hpp"
 #include "codec/UTF.hpp"
+#include <Windows.h>
+#include <WinUser.h>
 
 namespace tt {
 

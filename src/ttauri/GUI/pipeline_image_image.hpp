@@ -7,6 +7,7 @@
 #include "pipeline_image_page.hpp"
 #include "../vspan.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/matrix.hpp"
 #include <span>
 #include <atomic>
 #include <string>

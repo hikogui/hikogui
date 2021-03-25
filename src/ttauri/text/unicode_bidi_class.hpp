@@ -6,6 +6,8 @@
 
 #include <cstdint>
 #include <string_view>
+#include "../exception.hpp"
+#include "../assert.hpp"
 
 namespace tt {
 
