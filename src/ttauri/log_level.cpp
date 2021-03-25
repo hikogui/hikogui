@@ -5,6 +5,7 @@
 #pragma once
 
 #include "log_level.hpp"
+#include "exception.hpp"
 
 namespace tt {
 
