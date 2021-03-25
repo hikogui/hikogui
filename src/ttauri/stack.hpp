@@ -8,6 +8,7 @@
 #include <memory>
 #include <initializer_list>
 #include "required.hpp"
+#include "cast.hpp"
 
 namespace tt {
 
@@ -42,7 +43,7 @@ public:
         _top(begin())
     {
         for (ttlet &init_item : init) {
-            push_back(init_item);            
+            push_back(init_item);
         }
     }
 

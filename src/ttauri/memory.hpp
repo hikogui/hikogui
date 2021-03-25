@@ -5,6 +5,7 @@
 #pragma once
 
 #include "required.hpp"
+#include "assert.hpp"
 #include "concepts"
 #include <memory>
 #include <vector>

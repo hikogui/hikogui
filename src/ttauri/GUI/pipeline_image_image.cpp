@@ -11,6 +11,7 @@
 #include "../cast.hpp"
 #include "../geometry/translate.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/extent.hpp"
 
 namespace tt::pipeline_image {
 

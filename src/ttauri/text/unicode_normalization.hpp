@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "../algorithm.hpp"
 #include <string>
 #include <string_view>
+
 
 namespace tt {
 

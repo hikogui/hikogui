@@ -8,6 +8,7 @@
 #include "concepts.hpp"
 #include <array>
 #include <memory>
+#include <optional>
 #include <type_traits>
 
 namespace tt {

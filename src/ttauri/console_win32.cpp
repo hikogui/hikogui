@@ -3,10 +3,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "console.hpp"
+#include "strings.hpp"
 #include "assert.hpp"
 #include <Windows.h>
 #include <debugapi.h>
 #include <memory>
+#include <string_view>
 
 namespace tt {
 
@@ -28,7 +30,7 @@ void console_init() noexcept
             FILE *fpstdin = stdin;
             FILE *fpstdout = stdout;
             FILE *fpstderr = stderr;
-            
+
             freopen_s(&fpstdin, "CONIN$", "r", stdin);
             freopen_s(&fpstdout, "CONOUT$", "w", stdout);
             freopen_s(&fpstderr, "CONOUT$", "w", stderr);
