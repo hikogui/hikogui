@@ -7,7 +7,7 @@
 #include "os_detect.hpp"
 #include "cast.hpp"
 #include "hires_utc_clock.hpp"
-#include "bigint.hpp"
+#include "intcarry.hpp"
 #include <atomic>
 
 #if TT_PROCESSOR == TT_CPU_X64
@@ -34,16 +34,6 @@ public:
 
     constexpr time_stamp_count(uint64_t count, uint32_t id) noexcept :
         _count(count), _id(id) {}
-
-    [[nodiscard]] constexpr uint64_t count() const noexcept
-    {
-        return _count;
-    }
-
-    [[nodiscard]] constexpr uint32_t id() const noexcept
-    {
-        return _id;
-    }
 
     /** Get the current count from the CPU's time stamp count.
      * @param memory_order Memory order is one of seq_cst or relaxed.
@@ -76,16 +66,37 @@ public:
         return time_stamp_count{count, id};
     }
 
-    /** Get a sample.
-     * This gets a combination of a TSC and timepoint.
-     * Care is taken that the sample was not interrupted by a timeslice.
+    /** Get a opaque CPU id.
+     * This number is unique per processor. However what the value means is unknown.
      */
-    [[nodiscard]] static time_stamp_count get_sample(hires_utc_clock::time_point &tp) noexcept;
+    [[nodiscard]] constexpr uint32_t id() const noexcept
+    {
+        return _id;
+    }
+
+    /** Get the count since epoch.
+     * The epoch is the same as the TSC count's epoch. In most cases the epoch
+     * is at system startup time.
+     */
+    [[nodiscard]] constexpr uint64_t count() const noexcept
+    {
+        return _count;
+    }
+
+    /** Convert to nanoseconds since epoch.
+     * The epoch is the same as the TSC count's epoch. In most cases the epoch
+     * is at system startup time.
+     */
+    [[nodiscard]] std::chrono::nanoseconds nanoseconds() const noexcept
+    {
+        auto [lo, hi] = wide_multiply(_count, _duration.load(std::memory_order::relaxed));
+        return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
+    }
 
     /** Measure the frequency of the time_stamp_count.
      * Frequency drift from TSC is 1ppm
      */
-    [[nodiscard]] static uint64_t measure_frequency(hires_utc_clock::duration duration) noexcept;
+    [[nodiscard]] static uint64_t measure_frequency(std::chrono::milliseconds duration) noexcept;
 
     /** Start the time_stamp_count subsystem.
      */

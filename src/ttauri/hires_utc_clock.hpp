@@ -10,6 +10,7 @@
 #include <type_traits>
 
 namespace tt {
+class time_stamp_count;
 
 /** Timestamp
  */
@@ -20,8 +21,49 @@ struct hires_utc_clock {
     using time_point = std::chrono::time_point<hires_utc_clock>;
     static const bool is_steady = false;
 
-	static time_point now() noexcept;
+    /** Get the current time.
+     */
+	[[nodiscard]] static time_point now() noexcept;
 
+    /** Get the current time and TSC value.
+     * @pre Use `set_thread_affinity()` to set the CPU affinity to a single CPU.
+     */
+    [[nodiscard]] static time_point now(time_stamp_count &tsc) noexcept
+
+    /** Make a time point from a time stamp count.
+     * This function will work in two modes:
+     *  - subsystem off: Uses now() and the time_stamp_count frequency to
+     *    estimate a timepoint from the given tsc.
+     *  - subsystem on: Uses the calibrated TSC offset and more accurate
+     *    frequency to estimate a timepoint from the given tsc.
+     *    this is much faster and a lot more accurate.
+     */
+    [[nodiscard]] static time_point make(time_stamp_count const &tsc) noexcept;
+
+    /** This will start the calibration subsystem.
+     */
+    static void subsystem_start() noexcept;
+
+    /** This will stop the calibration subsystem.
+     */
+    static void subsystem_stop() noexcept;
+
+    /** A calibration step which will drift the per-cpu tsc-offset.
+     * This is a fast lock-free function that may be called from any
+     * thread. It is useful to call this from the render thread
+     * which means small adjustments to the calibrations are made at
+     * 60 fps.
+     */
+    static void perform_drift() noexcept;
+
+private:
+    /** Subsystem initializer.
+     */
+    static bool subsystem_init() noexcept;
+
+    /** Subsystem de_initializer.
+     */
+    static void subsystem_deinit() noexcept;
 };
 
 std::string format_engineering(hires_utc_clock::duration duration);

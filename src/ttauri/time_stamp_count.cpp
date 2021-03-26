@@ -3,72 +3,27 @@
 
 namespace tt {
 
-[[nodiscard]] time_stamp_count time_stamp_count::get_sample(hires_utc_clock::time_point &tp) noexcept
-{
-    constexpr int max_retries = 10;
-    int cpu_switch = 0;
-    int tsc_stuck = 0;
-    int tsc_backward = 0;
-
-    do {
-        ttlet id = time_stamp_count::now().id();
-
-        auto shortest_diff = std::numeric_limits<uint64_t>::max();
-        time_stamp_count shortest_tsc;
-        hires_utc_clock::time_point shortest_tp;
-
-        // With three samples gathered on the same CPU we should
-        // have a TSC/UTC/TSC combination that was run inside a single time-slice.
-        for (auto i = 0; i != 3; ++i) {
-            ttlet tmp_tsc1 = time_stamp_count::now();
-            ttlet tmp_tp = hires_utc_clock::now();
-            ttlet tmp_tsc2 = time_stamp_count::now();
-
-            if (tmp_tsc1.id() != id || tmp_tsc2.id() != id) {
-                ++cpu_switch;
-                goto retry;
-            }
-
-            if (tmp_tsc1.count() == tmp_tsc2.count()) {
-                ++tsc_stuck;
-                goto retry;
-            } else if (tmp_tsc1.count() > tmp_tsc2.count()) {
-                ++tsc_backward;
-                goto retry;
-            }
-
-            ttlet diff = tmp_tsc2.count() - tmp_tsc1.count();
-
-            if (diff < shortest_diff) {
-                shortest_diff = diff;
-                shortest_tp = tmp_tp;
-                shortest_tsc = {tmp_tsc1.count() + (diff / 2), tmp_tsc1.id()};
-            }
-        }
-
-        tp = shortest_tp;
-        return shortest_tsc;
-retry:;
-    } while (cpu_switch + tsc_stuck + tsc_backward < max_retries);
-
-    tt_log_fatal("During TSC/UTC sampling, cpu-switch={}, tsc-stuck={}, tsc-backward={}", cpu_switch, tsc_stuck, tsc_backward);
-}
-
 [[nodiscard]] uint64_t time_stamp_count::measure_frequency(hires_utc_clock::duration duration) noexcept
 {
     auto prev_mask = set_thread_affinity(current_processor());
 
-    hires_utc_clock::time_point tp1;
-    auto tsc1 = get_sample(tp1);
+    time_stamp_count tsc1;
+    auto tp1 = hires_utc_clock::now(tsc1);
 
     std::this_thread::sleep_for(duration);
 
-    hires_utc_clock::time_point tp2;
-    auto tsc2 = get_sample(tp2);
+    time_stamp_count tsc2;
+    auto tp2 = hires_utc_clock::now(tsc2);
 
     set_thread_affinity_mask(prev_mask);
 
-    tt_axiom(tsc1.id() == tsc2.id());
+    if (tsc1.id() != tsc2.id()) {
+        tt_log_fatal("CPU Switch detected when measuring the TSC frequency.");
+    }
+
+    if (tmp_tsc1.count() >= tmp_tsc2.count()) {
+        tt_log_fatal("TSC Did not go forward during measuring its frequency.");
+    }
 
     auto tsc_diff = tsc2.count() - tsc1.count();
     auto tp_diff = tp2 - tp1;
