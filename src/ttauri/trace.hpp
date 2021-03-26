@@ -5,7 +5,8 @@
 #include "counters.hpp"
 #include "datum.hpp"
 #include "logger.hpp"
-#include "cpu_utc_clock.hpp"
+#include "time_stamp_count.hpp"
+#include "hires_utc_clock.hpp"
 #include "required.hpp"
 #include "tagged_map.hpp"
 #include "wfree_message_queue.hpp"
@@ -87,12 +88,12 @@ struct trace_data {
 
     /*! Start timestamp when the trace was started.
     */
-    typename cpu_counter_clock::time_point timestamp;
+    time_stamp_count time_stamp;
 
     tagged_map<sdatum, InfoTags...> info;
 
-    trace_data(typename cpu_counter_clock::time_point timestamp) :
-        timestamp(timestamp) {}
+    trace_data(time_stamp_count time_stamp) :
+        time_stamp(time_stamp) {}
 
     trace_data() = default;
     ~trace_data() = default;
@@ -129,7 +130,7 @@ std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &
     lhs << fmt::format("parent={} tag={} start={} {}",
         rhs.parent_id,
         std::type_index(typeid(Tag)).name(),
-        format_iso8601(cpu_utc_clock::convert(rhs.timestamp)),
+        format_iso8601(hires_utc_clock::make(rhs.time_stamp)),
         info_string
     );
     return lhs;
@@ -146,20 +147,21 @@ std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &
  */
 class trace_statistics_type {
 private:
-    std::atomic<int64_t> count = 0;
-    std::atomic<typename cpu_counter_clock::rep> duration = 0;
-    std::atomic<typename cpu_counter_clock::rep> peak_duration = 0;
-    std::atomic<int64_t> version = 0;
+    std::atomic<long long> count = 0;
+    std::atomic<long long> duration = {};
+    std::atomic<long long> peak_duration = {};
+    std::atomic<long long> version = 0;
 
     // Variables used by logger.
-    int64_t prev_count = 0;
-    typename cpu_counter_clock::duration prev_duration = {};
+    long long prev_count = 0;
+    std::chrono::nanoseconds prev_duration = {};
 
 public:
     /*!
      * \return true when this was the first write.
      */
-    bool write(cpu_counter_clock::duration const &d) {
+    bool write(std::chrono::nanoseconds const &d)
+    {
         // In the logging thread we can check if count and version are equal
         // to read the statistics.
         ttlet current_count = count.fetch_add(1, std::memory_order::acquire);
@@ -178,12 +180,12 @@ public:
     }
 
     struct read_result {
-        int64_t count;
-        int64_t last_count;
+        long long count;
+        long long last_count;
 
-        typename cpu_counter_clock::duration duration;
-        typename cpu_counter_clock::duration last_duration;
-        typename cpu_counter_clock::duration peak_duration;
+        std::chrono::nanoseconds duration;
+        std::chrono::nanoseconds last_duration;
+        std::chrono::nanoseconds peak_duration;
     };
 
     read_result read() {
@@ -193,11 +195,11 @@ public:
         do {
             r.count = count.load(std::memory_order::acquire);
 
-            r.duration = decltype(r.duration){duration.load(std::memory_order::relaxed)};
+            r.duration = std::chrono::nanoseconds{duration.load(std::memory_order::relaxed)};
 
             auto tmp = peak_duration.exchange(0, std::memory_order::relaxed);
             if (tmp > r.peak_duration.count()) {
-                r.peak_duration = decltype(r.duration){tmp};
+                r.peak_duration = std::chrono::nanoseconds{tmp};
             }
 
             std::atomic_thread_fence(std::memory_order::release);
@@ -239,7 +241,7 @@ public:
      * be executed. start_trace will place this onto current_trace and set this' parent.
      */
     trace() :
-        stack(&trace_stack), data(cpu_counter_clock::now())
+        stack(&trace_stack), data(time_stamp_count::now())
     {
         // We don't need to know our own id, until the destructor is called.
         // Our id will be at the top of the stack.
@@ -247,9 +249,9 @@ public:
     }
 
     ~trace() {
-        ttlet end_timestamp = cpu_counter_clock::now();
+        ttlet end_time_stamp = time_stamp_count::now();
 
-        if(trace_statistics<Tag>.write(end_timestamp - data.timestamp)) {
+        if(trace_statistics<Tag>.write(end_time_stamp.nanoseconds() - data.time_stamp.nanoseconds())) {
             [[unlikely]] add_to_map();
         }
 

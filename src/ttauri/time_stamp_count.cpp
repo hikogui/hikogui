@@ -3,7 +3,7 @@
 
 namespace tt {
 
-[[nodiscard]] uint64_t time_stamp_count::measure_frequency(hires_utc_clock::duration duration) noexcept
+[[nodiscard]] uint64_t time_stamp_count::measure_frequency(std::chrono::milliseconds duration) noexcept
 {
     auto prev_mask = set_thread_affinity(current_processor());
 
@@ -21,7 +21,7 @@ namespace tt {
         tt_log_fatal("CPU Switch detected when measuring the TSC frequency.");
     }
 
-    if (tmp_tsc1.count() >= tmp_tsc2.count()) {
+    if (tsc1.count() >= tsc2.count()) {
         tt_log_fatal("TSC Did not go forward during measuring its frequency.");
     }
 

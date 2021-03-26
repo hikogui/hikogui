@@ -6,8 +6,7 @@
 
 #include "os_detect.hpp"
 #include "cast.hpp"
-#include "hires_utc_clock.hpp"
-#include "intcarry.hpp"
+#include "int_carry.hpp"
 #include <atomic>
 
 #if TT_PROCESSOR == TT_CPU_X64
@@ -89,7 +88,7 @@ public:
      */
     [[nodiscard]] std::chrono::nanoseconds nanoseconds() const noexcept
     {
-        auto [lo, hi] = wide_multiply(_count, _duration.load(std::memory_order::relaxed));
+        auto [lo, hi] = wide_multiply(_count, _period.load(std::memory_order::relaxed));
         return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
     }
 

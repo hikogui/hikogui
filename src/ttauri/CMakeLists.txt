@@ -31,10 +31,6 @@ target_sources(ttauri PRIVATE
     assert.hpp
     atomic.hpp
     alignment.hpp
-    audio_counter_clock.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_macos.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_win32.cpp>
-    audio_utc_clock.hpp
     bezier.hpp
     bezier_curve.cpp
     bezier_curve.hpp
@@ -51,10 +47,8 @@ target_sources(ttauri PRIVATE
     CommandLineParser.hpp
     counters.hpp
     CP1252.hpp
-    cpu_counter_clock.hpp
     #cpu_id.hpp
     #$<${TT_X64}:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
-    cpu_utc_clock.hpp
     crt.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_win32.cpp>
     date.hpp
@@ -149,7 +143,6 @@ target_sources(ttauri PRIVATE
     statistics.hpp
     strings.hpp
     subsystem.hpp
-    sync_clock.hpp
     tag.hpp
     tagged_id.hpp
     tagged_map.hpp

@@ -22,7 +22,7 @@
 #include "../URL.hpp"
 #include "../vspan.hpp"
 #include "../utils.hpp"
-#include "../cpu_utc_clock.hpp"
+#include "../hires_utc_clock.hpp"
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../unfair_recursive_mutex.hpp"

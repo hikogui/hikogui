@@ -6,7 +6,7 @@
 #include "../logger.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
-#include "../cpu_utc_clock.hpp"
+#include "../hires_utc_clock.hpp"
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
@@ -190,7 +190,7 @@ hires_utc_clock::time_point vertical_sync_win32::wait() noexcept
         std::this_thread::sleep_for(16ms);
     }
 
-    ttlet now = cpu_utc_clock::now();
+    ttlet now = hires_utc_clock::now();
 
     return now + averageFrameDuration(now);
 }

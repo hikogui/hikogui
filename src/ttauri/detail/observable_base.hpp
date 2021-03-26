@@ -5,10 +5,10 @@
 #pragma once
 
 #include <functional>
-#include "../cpu_utc_clock.hpp"
 #include "../unfair_mutex.hpp"
 #include "../notifier.hpp"
 #include "../required.hpp"
+#include "../hires_utc_clock.hpp"
 
 namespace tt::detail {
 
@@ -66,7 +66,7 @@ public:
      */
     [[nodiscard]] duration duration_since_last_modified() const noexcept
     {
-        return cpu_utc_clock::now() - time_when_last_modified();
+        return hires_utc_clock::now() - time_when_last_modified();
     }
 
     /** The relative time since the start of the animation.
@@ -137,7 +137,7 @@ protected:
         {
             ttlet lock = std::scoped_lock(_mutex);
             _previous_value = old_value;
-            _last_modified = cpu_utc_clock::now();
+            _last_modified = hires_utc_clock::now();
         }
         _notifier();
     }

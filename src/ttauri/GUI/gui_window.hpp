@@ -18,7 +18,7 @@
 #include "../text/gstring.hpp"
 #include "../logger.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../cpu_utc_clock.hpp"
+#include "../hires_utc_clock.hpp"
 #include "../label.hpp"
 #include <unordered_set>
 #include <memory>

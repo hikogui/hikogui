@@ -65,5 +65,12 @@ std::string format_engineering(hires_utc_clock::duration duration)
     return shortest_tp;
 }
 
+[[nodiscard]] hires_utc_clock::time_point hires_utc_clock::make(time_stamp_count const &tsc) noexcept
+{
+    ttlet ref_tp = hires_utc_clock::now();
+    ttlet ref_tsc = time_stamp_count::now();
+    ttlet diff_ns = ref_tsc.nanoseconds() - tsc.nanoseconds();
+    return ref_tp - diff_ns;
+}
 
 } // namespace tt

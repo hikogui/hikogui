@@ -28,7 +28,7 @@ struct hires_utc_clock {
     /** Get the current time and TSC value.
      * @pre Use `set_thread_affinity()` to set the CPU affinity to a single CPU.
      */
-    [[nodiscard]] static time_point now(time_stamp_count &tsc) noexcept
+    [[nodiscard]] static time_point now(time_stamp_count &tsc) noexcept;
 
     /** Make a time point from a time stamp count.
      * This function will work in two modes:
