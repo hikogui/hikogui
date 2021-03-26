@@ -188,7 +188,7 @@ jobs:
         uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
         with:
           name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.TT_BUILD_PCH }}
-          path: ${{ env.ARTIFACT_NAME }}.zip
+          path: build/${{ env.ARTIFACT_NAME }}.zip
 
 # ---------------------------------------------------------------------------------------
 
