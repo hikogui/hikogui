@@ -5,9 +5,11 @@
 #pragma once
 
 #include "required.hpp"
+#include "unfair_mutex.hpp"
 #include <date/tz.h>
+#include <array>
+#include <atomic>
 #include <chrono>
-#include <type_traits>
 
 namespace tt {
 class time_stamp_count;
@@ -64,6 +66,20 @@ private:
     /** Subsystem de_initializer.
      */
     static void subsystem_deinit() noexcept;
+
+    [[nodiscard]] static size_t find_cpu_id(uint32_t cpu_id) noexcept;
+
+    struct calibration_type {
+        long long drift;
+
+        /** The offset in nanosecods to apply to time_stamp_count.
+         */
+        std::atomic<long long> offset;
+    };
+
+    static inline unfair_mutex mutex;
+    static inline std::array<uint32_t,64> cpu_ids;
+    static inline std::array<calibration_type,64> calibrations;
 };
 
 std::string format_engineering(hires_utc_clock::duration duration);

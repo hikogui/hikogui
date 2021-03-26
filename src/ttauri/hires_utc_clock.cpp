@@ -6,8 +6,10 @@
 #include "time_stamp_count.hpp"
 #include "application.hpp"
 #include "logger.hpp"
+#include <immintrin.h>
 #include <fmt/ostream.h>
 #include <fmt/format.h>
+#include <bit>
 
 namespace tt {
 
@@ -65,8 +67,36 @@ std::string format_engineering(hires_utc_clock::duration duration)
     return shortest_tp;
 }
 
+[[nodiscard]] size_t hires_utc_clock::find_cpu_id(uint32_t cpu_id) noexcept
+{
+    auto cpu_id_ = _mm256_set1_epi32(cpu_id);
+
+    std::atomic_thread_fence(std::memory_order_acquire);
+    // XXX We need to limit nr of CPUs that are calibrated.
+    for (size_t i = 0; i < cpu_ids.size(); i += 8) {
+        auto row = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(cpu_ids.data() + i));
+        auto row_result = _mm256_cmpeq_epi32(row, cpu_id_);
+        auto row_result_ = _mm256_castsi256_ps(row_result);
+        auto row_result_mask = _mm256_movemask_ps(row_result_);
+        if (static_cast<bool>(row_result_mask)) {
+            return i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
+        }
+    }
+    return cpu_ids.size();
+}
+
 [[nodiscard]] hires_utc_clock::time_point hires_utc_clock::make(time_stamp_count const &tsc) noexcept
 {
+    auto i = find_cpu_id(tsc.id());
+    if (i < calibrations.size()) {
+        [[likelly]] ttlet &calibration = calibrations[i];
+        ttlet offset = calibration.offset.load(std::memory_order::release);
+        if (offset != 0) {
+            [[likelly]] ttlet offset_ = hires_utc_clock::time_point{std::chrono::nanoseconds{offset}};
+            return offset_ + tsc.nanoseconds();
+        }
+    }
+    // Fallback.
     ttlet ref_tp = hires_utc_clock::now();
     ttlet ref_tsc = time_stamp_count::now();
     ttlet diff_ns = ref_tsc.nanoseconds() - tsc.nanoseconds();
