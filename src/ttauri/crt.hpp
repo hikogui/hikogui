@@ -125,7 +125,7 @@ int WINAPI WinMain(
 
     // Make sure the console is in a valid state to write text to it.
     tt::console_start();
-    tt::time_stamp_count::start();
+    tt::time_stamp_count::start_subsystem();
     tt::start_system();
 
     ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);

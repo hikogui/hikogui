@@ -19,6 +19,8 @@ int tt_main(int argc, char *argv[], tt::os_handle instance)
     // Start the logger system, so logging is done asynchronously.
     tt::logger_start();
 
+    // Start the hires_utc_clock subsystem for more accurate time stamps.
+    tt::hires_utc_clock::start_subsystem();
 
     auto application_controller = std::make_shared<demo::application_controller>();
     demo::application_controller::global = application_controller;

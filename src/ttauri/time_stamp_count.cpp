@@ -3,51 +3,72 @@
 
 namespace tt {
 
-[[nodiscard]] uint64_t time_stamp_count::measure_frequency(std::chrono::milliseconds duration) noexcept
+[[nodiscard]] uint64_t time_stamp_count::measure_frequency(std::chrono::milliseconds sample_duration) noexcept
 {
+    // Only sample the frequency of one of the TSC clocks.
     auto prev_mask = set_thread_affinity(current_processor());
 
     time_stamp_count tsc1;
     auto tp1 = hires_utc_clock::now(tsc1);
 
-    std::this_thread::sleep_for(duration);
+    std::this_thread::sleep_for(sample_duration);
 
     time_stamp_count tsc2;
     auto tp2 = hires_utc_clock::now(tsc2);
 
+    // Reset the mask back.
     set_thread_affinity_mask(prev_mask);
 
     if (tsc1.id() != tsc2.id()) {
+        // This must never happen, as we set the thread affinity to a single CPU
+        // if this happens something is seriously wrong.
         tt_log_fatal("CPU Switch detected when measuring the TSC frequency.");
     }
 
     if (tsc1.count() >= tsc2.count()) {
-        tt_log_fatal("TSC Did not go forward during measuring its frequency.");
+        // The TSC should only be reset during the very early boot sequence when
+        // the CPUs are started and synchronized. It may also happen to a CPU that
+        // was hot-swapped while the computer is running, in that case the CPU
+        // should not be running applications yet.
+        tt_log_fatal("TSC Did not advance during measuring its frequency.");
     }
 
-    auto tsc_diff = tsc2.count() - tsc1.count();
-    auto tp_diff = tp2 - tp1;
-    return (tsc_diff * 10'000'000) / (tp_diff / 100ns);
+    if (tp1 >= tp2) {
+        // The UTC clock did not advance, maybe a time server changed the clock.
+        return 0;
+    }
+
+    // Calculate the frequency by dividing the delta-tsc by the duration.
+    // We scale both the delta-tsc and duration by 1'000'000'000 before the
+    // division. The duration is scaled by 1'000'000'000 by dividing by 1ns.
+    ttlet[delta_tsc_lo, delta_tsc_hi] = wide_mul(tsc2.count() - tsc1.count(), uint64_t{1'000'000'000});
+    auto duration = narrow_cast<uint64_t>((tp2 - tp1) / 1ns);
+    return wide_div(delta_tsc_lo, delta_tsc_hi, duration);
 }
 
-[[nodiscard]] void time_stamp_count::start() noexcept
+[[nodiscard]] void time_stamp_count::start_subsystem() noexcept
 {
-    // Measuring for one second is enough to get a 4GHz TSC frequency accurate to within 10kHz.
-    // 
-    // This function is called from the crt, this should be very fast an accuracy should be within 1%.
-    // 
-    // A std::this_thread::sleep_for(1ms) seems to trigger a wait for a much longer time than
-    // just using std::this_thread::yield() presumably yield() continues directly when the CPU is free, while sleep_for()
-    // causes a wait for at least a full time-slice.
-    ttlet frequency = time_stamp_count::measure_frequency(1ms);
-    tt_log_info("The frequency according to the operating system is {} Hz.", frequency);
-    
-    // since the frequency is only accurate to 1 ppm, that means we only need 20 bits
-    // of accuracy in the (ns / cycle) period. Use a f32.32 format for the period.
+    // This function is called from the crt and must therefor be quick as we do not
+    // want to keep the user waiting. We are satisfied if the measured frequency is
+    // to within 1% accuracy.
 
-    auto period = (uint64_t{1'000'000'000} << 32) / frequency;
+    // We take an average over 4 times in case the hires_utc_clock gets reset by a time server.
+    uint64_t frequency = 0;
+    uint64_t num_samples = 0;
+    for (int i = 0; i != 4; ++i) {
+        ttlet f = time_stamp_count::measure_frequency(25ms);
+        if (f != 0) {
+            frequency += f;
+            ++num_samples;
+        }
+    }
+    if (num_samples == 0) {
+        tt_log_fatal("Unable the measure the frequency of the TSC. The UTC time did not advance.");
+    }
+    frequency /= num_samples;
 
-    _period.store(period, std::memory_order_release);
+    tt_log_info("The measured frequency of the TSC is {} Hz.", frequency);
+    time_stamp_count::set_frequency(frequency);
 }
 
 } // namespace tt

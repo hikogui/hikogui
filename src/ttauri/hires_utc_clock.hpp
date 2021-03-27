@@ -10,6 +10,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <thread>
 
 namespace tt {
 class time_stamp_count;
@@ -44,42 +45,48 @@ struct hires_utc_clock {
 
     /** This will start the calibration subsystem.
      */
-    static void subsystem_start() noexcept;
+    static bool start_subsystem() noexcept;
 
     /** This will stop the calibration subsystem.
      */
-    static void subsystem_stop() noexcept;
+    static void stop_subsystem() noexcept;
 
     /** A calibration step which will drift the per-cpu tsc-offset.
-     * This is a fast lock-free function that may be called from any
+     * This is a fast wait-free function that may be called from any
      * thread. It is useful to call this from the render thread
      * which means small adjustments to the calibrations are made at
      * 60 fps.
      */
-    static void perform_drift() noexcept;
+    static void adjust_for_drift() noexcept;
 
 private:
-    /** Subsystem initializer.
-     */
-    static bool subsystem_init() noexcept;
-
-    /** Subsystem de_initializer.
-     */
-    static void subsystem_deinit() noexcept;
-
-    [[nodiscard]] static size_t find_cpu_id(uint32_t cpu_id) noexcept;
-
     struct calibration_type {
         long long drift;
 
-        /** The offset in nanosecods to apply to time_stamp_count.
+        /** The epoch of when the tsc started counting.
+         * This is a hires_utc_clock::time_point representation.
          */
-        std::atomic<long long> offset;
+        std::atomic<long long> tsc_epoch;
     };
 
+    static inline std::atomic<bool> subsystem_is_running;
+    static inline std::jthread subsystem_thread;
     static inline unfair_mutex mutex;
-    static inline std::array<uint32_t,64> cpu_ids;
-    static inline std::array<calibration_type,64> calibrations;
+    static inline std::atomic<size_t> num_calibrations = 0;
+    static inline std::array<uint32_t, 64> cpu_ids;
+    static inline std::array<calibration_type, 64> calibrations;
+
+    static void subsystem_proc(std::stop_token stop_token) noexcept;
+
+    /** Subsystem initializer.
+     */
+    static bool init_subsystem() noexcept;
+
+    /** Subsystem de_initializer.
+     */
+    static void deinit_subsystem() noexcept;
+
+    [[nodiscard]] static size_t find_cpu_id(uint32_t cpu_id) noexcept;
 };
 
 std::string format_engineering(hires_utc_clock::duration duration);

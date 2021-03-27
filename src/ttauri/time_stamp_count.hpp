@@ -88,7 +88,7 @@ public:
      */
     [[nodiscard]] std::chrono::nanoseconds nanoseconds() const noexcept
     {
-        auto [lo, hi] = wide_multiply(_count, _period.load(std::memory_order::relaxed));
+        auto [lo, hi] = wide_mul(_count, _period.load(std::memory_order::relaxed));
         return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
     }
 
@@ -97,14 +97,22 @@ public:
      */
     [[nodiscard]] static uint64_t measure_frequency(std::chrono::milliseconds duration) noexcept;
 
+    static void set_frequency(uint64_t frequency) noexcept
+    {
+        auto period = (uint64_t{1'000'000'000} << 32) / frequency;
+        _period.store(period, std::memory_order_relaxed);
+    }
+
     /** Start the time_stamp_count subsystem.
      */
-    [[nodiscard]] static void start() noexcept;
+    [[nodiscard]] static void start_subsystem() noexcept;
 
 private:
     uint64_t _count;
     uint32_t _id;
 
+    /** The period in nanoseconds/cycle as Q32.32
+     */
     inline static std::atomic<uint64_t> _period;
 };
 
