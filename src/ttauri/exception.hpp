@@ -68,6 +68,22 @@ public:
     }
 };
 
+/** Exception thrown during an operating system call.
+ * This exception is often thrown due to an error with permission or incorrect given parameters
+ *
+ * The what-string should start with a user-friendly error message.
+ * Optionally followed between single quotes the operating system error string.
+ */
+class os_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+
+    template<typename FirstArg, typename... Args>
+    os_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept : os_error(fmt::format(fmt, arg1, args...))
+    {
+    }
+};
+
 class gui_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;

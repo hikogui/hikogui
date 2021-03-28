@@ -251,7 +251,7 @@ public:
     ~trace() {
         ttlet end_time_stamp = time_stamp_count::now();
 
-        if(trace_statistics<Tag>.write(end_time_stamp.nanoseconds() - data.time_stamp.nanoseconds())) {
+        if (trace_statistics<Tag>.write(end_time_stamp.time_since_epoch() - data.time_stamp.time_since_epoch())) {
             [[unlikely]] add_to_map();
         }
 

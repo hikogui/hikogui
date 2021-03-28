@@ -1,4 +1,5 @@
 // Copyright Take Vos 2019.
+// Copyright Take Vos 2019.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -61,21 +62,24 @@ struct hires_utc_clock {
 
 private:
     struct calibration_type {
-        long long drift;
+        int64_t slew;
+
+        /** Time when we wrote the tsc_epoch.
+         */
+        hires_utc_clock::time_point tp;
 
         /** The epoch of when the tsc started counting.
          * This is a hires_utc_clock::time_point representation.
          */
-        std::atomic<long long> tsc_epoch;
+        std::atomic<int64_t> tsc_epoch;
     };
 
     static inline std::atomic<bool> subsystem_is_running;
     static inline std::jthread subsystem_thread;
     static inline unfair_mutex mutex;
-    static inline std::atomic<size_t> num_calibrations = 0;
-    static inline std::array<uint32_t, 64> cpu_ids;
-    static inline std::array<calibration_type, 64> calibrations;
+    static inline std::array<calibration_type, maximum_num_processors> calibrations = {};
 
+    static void subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept;
     static void subsystem_proc(std::stop_token stop_token) noexcept;
 
     /** Subsystem initializer.

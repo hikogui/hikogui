@@ -43,7 +43,7 @@ std::string format_engineering(hires_utc_clock::duration duration)
         ttlet tmp_tp = hires_utc_clock::now();
         ttlet tmp_tsc2 = time_stamp_count::now();
 
-        if (tmp_tsc1.id() != tmp_tsc2.id()) {
+        if (tmp_tsc1.processor() != tmp_tsc2.processor()) {
             tt_log_fatal("CPU Switch detected during get_sample(), which should never happen");
         }
 
@@ -57,7 +57,7 @@ std::string format_engineering(hires_utc_clock::duration duration)
         if (diff < shortest_diff) {
             shortest_diff = diff;
             shortest_tp = tmp_tp;
-            shortest_tsc = {tmp_tsc1.count() + (diff / 2), tmp_tsc1.id()};
+            shortest_tsc = tmp_tsc1 + (diff / 2);
         }
     }
 
@@ -69,58 +69,41 @@ std::string format_engineering(hires_utc_clock::duration duration)
     return shortest_tp;
 }
 
-[[nodiscard]] size_t hires_utc_clock::find_cpu_id(uint32_t cpu_id) noexcept
-{
-    auto cpu_id_ = _mm256_set1_epi32(cpu_id);
-
-    ttlet num_calibrations_ = num_calibrations.load(std::memory_order_acquire);
-    tt_axiom(num_calibrations_ < cpu_ids.size());
-
-    // XXX We need to limit nr of CPUs that are calibrated.
-    for (size_t i = 0; i < num_calibrations_; i += 8) {
-        auto row = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(cpu_ids.data() + i));
-        auto row_result = _mm256_cmpeq_epi32(row, cpu_id_);
-        auto row_result_ = _mm256_castsi256_ps(row_result);
-        auto row_result_mask = _mm256_movemask_ps(row_result_);
-        if (static_cast<bool>(row_result_mask)) {
-            return i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
-        }
-    }
-    return cpu_ids.size();
-}
-
 [[nodiscard]] hires_utc_clock::time_point hires_utc_clock::make(time_stamp_count const &tsc) noexcept
 {
-    auto i = find_cpu_id(tsc.id());
-    if (i != calibrations.size()) [[likely]] {
-        ttlet &calibration = calibrations[i];
-        ttlet tsc_epoch = calibration.tsc_epoch.load(std::memory_order::release);
-        ttlet tsc_epoch_ = hires_utc_clock::time_point{std::chrono::nanoseconds{tsc_epoch}};
-        return tsc_epoch_ + tsc.nanoseconds();
+    auto i = tsc.processor();
+    if (i >= 0) {
+        ttlet tsc_epoch = calibrations[i].tsc_epoch.load(std::memory_order::relaxed);
+        if (tsc_epoch != 0) {
+            ttlet tsc_epoch_ = hires_utc_clock::time_point{std::chrono::nanoseconds{tsc_epoch}};
+            return tsc_epoch_ + tsc.time_since_epoch();
+        }
     }
 
     // Fallback.
     ttlet ref_tp = hires_utc_clock::now();
     ttlet ref_tsc = time_stamp_count::now();
-    ttlet diff_ns = ref_tsc.nanoseconds() - tsc.nanoseconds();
+    ttlet diff_ns = ref_tsc.time_since_epoch() - tsc.time_since_epoch();
     return ref_tp - diff_ns;
 }
 
-void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
+void hires_utc_clock::subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept
 {
-    set_thread_name("hires_utc_clock");
-
     // Calibrate the TSC frequency to within 1 ppm.
     // A 1s measurement already brings is to about 1ppm. We are
     // going to be taking average of the IQR of 11 samples, just
     // in case there are UTC clock adjustment made during the measurement.
 
-    std::array<uint64_t,16> frequencies;
+    std::array<uint64_t, 16> frequencies;
     for (auto i = 0; i != frequencies.size();) {
         ttlet f = time_stamp_count::measure_frequency(1s);
         if (f != 0) {
             frequencies[i] = f;
             ++i;
+        }
+
+        if (stop_token.stop_requested()) {
+            return;
         }
     }
     std::ranges::sort(frequencies);
@@ -133,13 +116,85 @@ void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
     time_stamp_count::set_frequency(frequency);
 }
 
+static void advance_cpu_thread_mask(uint64_t const &process_cpu_mask, uint64_t &thread_cpu_mask)
+{
+    tt_axiom(std::popcount(process_cpu_mask) > 0);
+    tt_axiom(std::popcount(thread_cpu_mask) == 1);
+
+    do {
+        if ((thread_cpu_mask <<= 1) == 0) {
+            thread_cpu_mask = 1;
+        }
+
+    } while ((process_cpu_mask & thread_cpu_mask) == 0);
+}
+
+void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
+{
+    set_thread_name("hires_utc_clock");
+    subsystem_proc_frequency_calibration(stop_token);
+
+    ttlet process_cpu_mask = process_affinity_mask();
+
+    size_t next_cpu = 0;
+    while (!stop_token.stop_requested()) {
+        ttlet current_cpu = advance_thread_affinity(next_cpu);
+        auto &calibration = calibrations[current_cpu];
+
+        std::this_thread::sleep_for(100ms);
+        ttlet lock = std::scoped_lock(hires_utc_clock::mutex);
+
+        time_stamp_count tsc;
+        ttlet tp = hires_utc_clock::now(tsc);
+        tt_axiom(tsc.processor() == current_cpu);
+
+        ttlet tsc_epoch = tp.time_since_epoch() - tsc.time_since_epoch();
+
+        ttlet cal_tsc_epoch = std::chrono::nanoseconds{calibration.tsc_epoch.load(std::memory_order::relaxed)};
+        ttlet drift = tsc_epoch - cal_tsc_epoch;
+
+        if (abs(drift) > 1ms) {
+            // Clock drifted to far away, reset.
+            tt_log_warning("TSC calibration for processor {} drifted by {} ns; resetting.", current_cpu, drift / 1ns);
+
+            calibration.tp = tp;
+            calibration.tsc_epoch.store(tsc_epoch.count(), std::memory_order::relaxed);
+
+        } else {
+            ttlet drift_duration = tp - calibration.tp;
+
+            // slew is Q32.32 ns/ms.
+            ttlet slew = (drift.count() << 32) / (drift_duration / 1ms);
+
+            // Adjust slew by 5% of the new slew.
+            calibration.slew += ((slew - calibration.slew) * 1) / 100;
+
+            // Calculate the adjustment to the epoch.
+            ttlet adjustment = (calibration.slew * (drift_duration / 1ms)) >> 32;
+            calibration.tsc_epoch.fetch_add(adjustment, std::memory_order::relaxed);
+            calibration.tp = tp;
+
+            if (current_cpu == 0) {
+                tt_log_info(
+                    "TSC cpu={}, drift={} ns, slew={} ns/minute, damped_slew={} ns/minute, adjustment={} ns",
+                    current_cpu,
+                    drift / 1ns,
+                    (slew * 60'000) >> 32,
+                    (calibration.slew * 60'000) >> 32,
+                    adjustment);
+            }
+        }
+    }
+}
+
 [[nodiscard]] bool hires_utc_clock::init_subsystem() noexcept
 {
     hires_utc_clock::subsystem_thread = std::jthread{subsystem_proc};
     return true;
 }
 
-void hires_utc_clock::deinit_subsystem() noexcept {
+void hires_utc_clock::deinit_subsystem() noexcept
+{
     if (hires_utc_clock::subsystem_thread.joinable()) {
         hires_utc_clock::subsystem_thread.request_stop();
         hires_utc_clock::subsystem_thread.join();

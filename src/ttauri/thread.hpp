@@ -31,6 +31,12 @@ bool is_main_thread();
 void run_from_main_loop(std::function<void()> f);
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+constexpr size_t maximum_num_processors = 64;
+#elif TT_OPERATING_SYSTEM == TT_OS_LINUX || TT_OPERATING_SYSTEM == TT_OS_MACOS
+constexpr size_t maximum_num_processors = CPU_SETSIZE;
+#endif
+
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 using thread_id = uint32_t;
 #else
 using thread_id = uint64_t;
@@ -39,6 +45,9 @@ using thread_id = uint64_t;
 inline thread_local thread_id current_thread_id_dummy = 0;
 #endif
 
+/** Get the current thread id.
+ * Get the current thread id quickly.
+ */
 [[nodiscard]] inline thread_id current_thread_id() noexcept
 {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
@@ -52,43 +61,48 @@ inline thread_local thread_id current_thread_id_dummy = 0;
 }
 
 /** Get the current process CPU affinity mask.
- * On systems with more than 64 processors, this returns a mask
- * of logical processors within the processor-group.
  *
  * @return A bit mask on which processors the process is allowed to run on.
  *         Or zero on failure.
  */
-[[nodiscard]] uint64_t process_affinity_mask() noexcept;
+[[nodiscard]] std::vector<bool> process_affinity_mask() noexcept;
 
 /** Set the current thread CPU affinity mask.
- * On systems with more than 64 processors, this sets a mask
- * of logical processors within the processor-group.
  *
  * The given mask must be a strict subset of the mask returned from
  * process_affinity_mask().
  *
  * @param mask A bit mask on which processors the thread should run on.
+ * @throw std::os_error When unable to set the thread affinity to the given index
  * @return The previous bit mask. Or zero on failure.
  */
-uint64_t set_thread_affinity_mask(uint64_t mask) noexcept;
+std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask);
 
 /** Set the current thread CPU affinity to a single processor.
- * On systems with more than 64 processors, this sets the index
- * of the logical processor within the processor-group.
  *
  * The given processor index must be a part of the mask returned from
  * process_affinity_mask().
  *
  * @param processor_index The index of the processors the thread should run on.
  * @return The previous bit mask. Or zero on failure.
+ * @throw std::os_error When unable to set the thread affinity to the given index
  */
-uint64_t set_thread_affinity(size_t processor_index) noexcept;
+std::vector<bool> set_thread_affinity(size_t processor_index);
+
+/** Advance thread affinity to the next processor.
+ * It is possible to detect when `advance_thread_affinity()` is at the last cpu;
+ * in that case the cpu parameter is less than or equal to the return value.
+ * 
+ * @param [inout] cpu On input The cpu to start a search in the available-cpu list.
+ *                    On output the cpu next on the available-cpu list.
+ *                                
+ * @return The cpu that was selected to run on.
+ */
+size_t advance_thread_affinity(size_t &cpu) noexcept;
 
 /** Get the current processor index.
- * On systems with more than 64 processors, this retrieves the logical
- * processor index within the processor-group.
  *
- * @return an index between 0 and 63.
+ * @return The current processor index.
  */
 [[nodiscard]] size_t current_processor() noexcept;
 

@@ -6,7 +6,7 @@
 #include "strings.hpp"
 #include "application.hpp"
 #include "logger.hpp"
-
+#include "exception.hpp"
 #include <Windows.h>
 #include <Synchapi.h>
 
@@ -32,24 +32,53 @@ void run_from_main_loop(std::function<void()> f)
     application::global->run_from_main_loop(f);
 }
 
-[[nodiscard]] uint64_t process_affinity_mask() noexcept
+static std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept
+{
+    auto r = std::vector<bool>{};
+
+    r.resize(64);
+    for (size_t i = 0; i != r.size(); ++i) {
+        r[i] = static_cast<bool>(rhs & (DWORD_PTR{1} << i));
+    }
+
+    return r;
+}
+
+static DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
+{
+    DWORD r = 0;
+    for (size_t i = 0; i != rhs.size(); ++i) {
+        r |= rhs[i] ? (DWORD{1} << i) : 0;
+    }
+    return r;
+}
+
+[[nodiscard]] std::vector<bool> process_affinity_mask() noexcept
 {
     DWORD_PTR process_mask;
     DWORD_PTR system_mask;
 
     auto process_handle = GetCurrentProcess();
 
-    auto r = GetProcessAffinityMask(process_handle, &process_mask, &system_mask);
+    if (!GetProcessAffinityMask(process_handle, &process_mask, &system_mask)) {
+        tt_log_fatal("Could not get process affinity mask: {}", get_last_error_message());
+    }
 
-    return narrow_cast<uint64_t>(process_mask);
+    return mask_int_to_vec(process_mask);
 }
 
-uint64_t set_thread_affinity_mask(uint64_t mask) noexcept
+std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
 {
-    auto thread_handle = GetCurrentThread();
+    ttlet mask_ = mask_vec_to_int(mask);
 
-    auto r = SetThreadAffinityMask(thread_handle, narrow_cast<DWORD_PTR>(mask));
-    return narrow_cast<uint64_t>(r);
+    ttlet thread_handle = GetCurrentThread();
+
+    ttlet old_mask = SetThreadAffinityMask(thread_handle, mask_);
+    if (old_mask == 0) {
+        throw os_error("Could not set the thread affinity. '{}'", get_last_error_message());
+    }
+
+    return mask_int_to_vec(old_mask);
 }
 
 [[nodiscard]] size_t current_processor() noexcept

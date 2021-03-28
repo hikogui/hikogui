@@ -7,6 +7,7 @@
 #include "os_detect.hpp"
 #include "cast.hpp"
 #include "int_carry.hpp"
+#include "thread.hpp"
 #include <atomic>
 
 #if TT_PROCESSOR == TT_CPU_X64
@@ -65,13 +66,12 @@ public:
         return time_stamp_count{count, id};
     }
 
-    /** Get a opaque CPU id.
-     * This number is unique per processor. However what the value means is unknown.
+    /** Get the processor index.
+     * This is logical processor number that the operating system uses.
+     * 
+     * @return the processor index, or -1 if the processor index is unknown.
      */
-    [[nodiscard]] constexpr uint32_t id() const noexcept
-    {
-        return _id;
-    }
+    [[nodiscard]] ssize_t processor() const noexcept;
 
     /** Get the count since epoch.
      * The epoch is the same as the TSC count's epoch. In most cases the epoch
@@ -86,10 +86,23 @@ public:
      * The epoch is the same as the TSC count's epoch. In most cases the epoch
      * is at system startup time.
      */
-    [[nodiscard]] std::chrono::nanoseconds nanoseconds() const noexcept
+    [[nodiscard]] std::chrono::nanoseconds time_since_epoch() const noexcept
     {
         auto [lo, hi] = wide_mul(_count, _period.load(std::memory_order::relaxed));
         return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
+    }
+
+    constexpr time_stamp_count &operator+=(uint64_t rhs) noexcept
+    {
+        _count += rhs;
+        return *this;
+    }
+
+    [[nodiscard]] constexpr time_stamp_count operator+(uint64_t rhs) const noexcept
+    {
+        auto tmp = *this;
+        tmp += rhs;
+        return tmp;
     }
 
     /** Measure the frequency of the time_stamp_count.
@@ -105,7 +118,7 @@ public:
 
     /** Start the time_stamp_count subsystem.
      */
-    [[nodiscard]] static void start_subsystem() noexcept;
+    static void start_subsystem() noexcept;
 
 private:
     uint64_t _count;
@@ -114,6 +127,21 @@ private:
     /** The period in nanoseconds/cycle as Q32.32
      */
     inline static std::atomic<uint64_t> _period;
+
+    /** The number of CPU ids we know of.
+     */
+    inline static std::atomic<size_t> _num_cpu_ids = 0;
+
+    /** A list of known CPU ids.
+     */
+    inline static std::array<uint32_t, maximum_num_processors> _cpu_ids;
+
+    /** A list of processor indices that match the _cpu_ids list.
+     */
+    inline static std::array<size_t, maximum_num_processors> _processor_indices;
+
+    static void populate_cpu_ids() noexcept;
+    static void configure_frequency() noexcept;
 };
 
 }

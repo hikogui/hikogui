@@ -8,15 +8,38 @@
 
 namespace tt {
 
-uint64_t set_thread_affinity(size_t processor_index) noexcept
+std::vector<bool> set_thread_affinity(size_t processor_index)
 {
-    auto available_mask = process_affinity_mask();
-    auto new_mask = uint64_t{1} << processor_index;
-    if ((available_mask & new_mask) == 0) {
-        tt_log_error("Current process {:x} does not match process_afinity_mask {:x}", new_mask, available_mask);
-        new_mask = std::bit_floor(available_mask);
-    }
+    auto new_mask = std::vector<bool>{};
+    new_mask.resize(processor_index + 1);
+    new_mask[processor_index] = true;
     return set_thread_affinity_mask(new_mask);
+}
+
+size_t advance_thread_affinity(size_t &cpu) noexcept
+{
+    auto available_cpus = process_affinity_mask();
+    tt_axiom(cpu < available_cpus.size());
+
+    ssize_t selected_cpu = -1;
+    do {
+        if (available_cpus[cpu]) {
+            try {
+                set_thread_affinity(cpu);
+                selected_cpu = narrow_cast<ssize_t>(cpu);
+            } catch (os_error const &) {}
+        }
+
+        // Advance to the next available cpu.
+        // We do this, so that the caller of this function can detect a wrap around.
+        do {
+            if (++cpu >= available_cpus.size()) {
+                cpu = 0;
+            }
+        } while (!available_cpus[cpu]);
+    } while (selected_cpu < 0);
+
+    return narrow_cast<size_t>(selected_cpu);
 }
 
 }
