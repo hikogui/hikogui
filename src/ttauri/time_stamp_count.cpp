@@ -2,7 +2,7 @@
 #include "time_stamp_count.hpp"
 #include "hires_utc_clock.hpp"
 #include "logger.hpp"
-#include <immintrin.h>
+#include <emmintrin.h>
 #include <array>
 #include <cstdint>
 
@@ -10,17 +10,17 @@ namespace tt {
 
 [[nodiscard]] ssize_t time_stamp_count::cpu_id_fallback() const noexcept
 {
-    auto aux_value_ = _mm256_set1_epi32(_aux);
+    auto aux_value_ = _mm_set1_epi32(_aux);
 
     ttlet num_aux_values = _num_aux_values.load(std::memory_order_acquire);
     tt_axiom(_aux_values.size() == _cpu_ids.size());
     tt_axiom(num_aux_values < _aux_values.size());
 
-    for (size_t i = 0; i < num_aux_values; i += 8) {
-        ttlet row = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(_aux_values.data() + i));
-        ttlet row_result = _mm256_cmpeq_epi32(row, aux_value_);
-        ttlet row_result_ = _mm256_castsi256_ps(row_result);
-        ttlet row_result_mask = _mm256_movemask_ps(row_result_);
+    for (size_t i = 0; i < num_aux_values; i += 4) {
+        ttlet row = _mm_loadu_si128(reinterpret_cast<__m256i const *>(_aux_values.data() + i));
+        ttlet row_result = _mm_cmpeq_epi32(row, aux_value_);
+        ttlet row_result_ = _mm_castsi128_ps(row_result);
+        ttlet row_result_mask = _mm_movemask_ps(row_result_);
         if (static_cast<bool>(row_result_mask)) {
             ttlet j = i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
             if (j < num_aux_values) {
