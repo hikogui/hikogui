@@ -292,7 +292,7 @@ struct bigint {
 
                 T result;
                 T accumulator = o.digits[rhs_index + lhs_index];
-                std::tie(result, carry) = multiply_carry(lhs_digit, rhs_digit, carry, accumulator);
+                std::tie(result, carry) = mul_carry(lhs_digit, rhs_digit, carry, accumulator);
                 o.digits[rhs_index + lhs_index] = result;
             }
         }

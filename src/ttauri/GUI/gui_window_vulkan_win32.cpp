@@ -492,18 +492,25 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_ERASEBKGND: return 1;
 
     case WM_PAINT: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet height = [this](){
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+            return extent.height();
+        }();
 
         PAINTSTRUCT ps;
         BeginPaint(win32Window, &ps);
 
         ttlet update_rectangle = aarectangle{
             narrow_cast<float>(ps.rcPaint.left),
-            narrow_cast<float>(extent.height() - ps.rcPaint.bottom),
+            narrow_cast<float>(height - ps.rcPaint.bottom),
             narrow_cast<float>(ps.rcPaint.right - ps.rcPaint.left),
             narrow_cast<float>(ps.rcPaint.bottom - ps.rcPaint.top)};
 
-        request_redraw(update_rectangle);
+        {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+            request_redraw(update_rectangle);
+        }
+
         EndPaint(win32Window, &ps);
     } break;
 
@@ -740,7 +747,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     gui_system_mutex.lock();
 
     auto mouseEvent = mouse_event{};
-    mouseEvent.timePoint = cpu_utc_clock::now();
+    mouseEvent.timePoint = hires_utc_clock::now();
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
@@ -836,7 +843,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = 2;
-        doubleClickTimePoint = cpu_utc_clock::now();
+        doubleClickTimePoint = hires_utc_clock::now();
         break;
 
     case WM_MOUSEWHEEL:

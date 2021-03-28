@@ -5,7 +5,7 @@
 #pragma once
 
 #include "counters.hpp"
-#include "cpu_counter_clock.hpp"
+#include "time_stamp_count.hpp"
 #include "hires_utc_clock.hpp"
 #include "polymorphic_optional.hpp"
 #include "wfree_message_queue.hpp"
@@ -44,8 +44,6 @@ public:
     log_message_base &operator=(log_message_base &&) = delete;
 
     virtual std::string format() const noexcept = 0;
-
-    static std::string cpu_utc_clock_as_iso8601(cpu_counter_clock::time_point const timestamp) noexcept;
 };
 
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Values>
@@ -55,13 +53,15 @@ public:
     static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
 
     template<typename... Args>
-    log_message(Args &&...args) noexcept : _timestamp(::tt::cpu_counter_clock::now()), _what(std::forward<Args>(args)...)
+    log_message(Args &&...args) noexcept :
+        _time_stamp(time_stamp_count::now(std::memory_order::relaxed)), _what(std::forward<Args>(args)...)
     {
     }
 
     std::string format() const noexcept override
     {
-        ttlet local_timestring = log_message_base::cpu_utc_clock_as_iso8601(_timestamp);
+        ttlet time_point = hires_utc_clock::make(_time_stamp);
+        ttlet local_timestring = format_iso8601(time_point);
 
         if constexpr (static_cast<bool>(Level & log_level::statistics)) {
             return fmt::format("{} {:5} {}\n", local_timestring, to_const_string(Level), _what());
@@ -71,13 +71,12 @@ public:
     }
 
 private:
-    cpu_counter_clock::time_point _timestamp;
+    time_stamp_count _time_stamp;
     delayed_format<Fmt, Values...> _what;
 };
 
-template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
-log_message(cpu_counter_clock::time_point, Args &&...)
-    -> log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>;
+//template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+//log_message(time_stamp_count, Args &&...) -> log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>;
 
 static constexpr size_t MAX_MESSAGE_SIZE = 224;
 static constexpr size_t MAX_NR_MESSAGES = 4096;
@@ -88,7 +87,6 @@ using log_queue_type = wfree_message_queue<log_queue_item_type, MAX_NR_MESSAGES>
 /** The global log queue contains messages to be displayed by the logger thread.
  */
 inline log_queue_type log_queue;
-
 
 /** Deinitalize the logger system.
  */

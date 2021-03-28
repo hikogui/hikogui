@@ -12,7 +12,7 @@ namespace tt {
 
 /** Initialize the console.
  */
-void console_init() noexcept;
+void console_start() noexcept;
 
 /** Output text to the console.
  * This will output the text to the console.

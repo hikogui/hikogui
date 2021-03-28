@@ -11,6 +11,7 @@
 #include <functional>
 #include <bit>
 #include <type_traits>
+#include <mutex>
 
 namespace tt {
 namespace detail {

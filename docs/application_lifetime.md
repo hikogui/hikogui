@@ -35,10 +35,29 @@ is called by the CRT.
 This is the part of the application where the developer can configure ttauri
 and initialize subsystems before the main loop is entered.
 
-Subsystems to initialize:
- - **logger**: The logger subsystem may be started by calling `tt::logger_start()`.
-   When the logger subsystem is running; a separate thread will log the messages
-   to the console or log file. Logging is still possible without the logger subsystem,
-   but this is much slower, as it is done from the current thread.
-   
+### time\_stamp\_count (required)
+The time\_stamp\_count subsystem calibrates the frequency of the TSC.
+This calibration is needed to convert a TSC timestamp into a `hires_utc_clock::time_point`,
+which in turn is used when logging messages to the console.
+
+The CRT will start this subsystem and will take about 100 ms.
+
+### hires\_utc\_clock (optional)
+The hires\_utc\_clock subsystem increases the accuracy and performance
+of converting a TSC to a `hires_utc_clock::time_point`.
+
+Within a minute after starting this subsystem TSC to UTC conversion becomes
+a much more accurate 1ppm, wait-free operation.
+
+### Logger (optional)
+The logger subsystem may be started by calling `tt::logger_start()`.
+
+When the logger subsystem is running; logging becomes a wait-free operation.
+On the current thread the data given with the log call is added to a queue,
+while on the separate "logger" thread the message is formatted and written
+to console and log file.
+
+Logging is still possible without the logger subsystem,
+but this is much slower; as formatting and writing to the console and log
+file are done from the current thread.
 

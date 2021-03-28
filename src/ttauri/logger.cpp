@@ -4,7 +4,6 @@
 
 #include "logger.hpp"
 #include "trace.hpp"
-#include "cpu_utc_clock.hpp"
 #include "required.hpp"
 #include "URL.hpp"
 #include "strings.hpp"
@@ -26,12 +25,6 @@ namespace tt {
 namespace detail {
 
 using namespace std::literals::chrono_literals;
-
-[[nodiscard]] std::string log_message_base::cpu_utc_clock_as_iso8601(cpu_counter_clock::time_point const timestamp) noexcept
-{
-    return format_iso8601(cpu_utc_clock::convert(timestamp));
-}
-
 
 /*! Write to a log file and console.
  * This will write to the console if one is open.
