@@ -25,8 +25,7 @@ static URL get_folder_by_id(const KNOWNFOLDERID &folder_id) noexcept
 {
     PWSTR path = nullptr;
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &path) != S_OK) {
-        // This should really never happen.
-        tt_no_default();
+        tt_log_fatal("Could not get known folder path.");
     }
     URL folder = URL::urlFromWPath(path);
     CoTaskMemFree(path);
@@ -36,31 +35,32 @@ static URL get_folder_by_id(const KNOWNFOLDERID &folder_id) noexcept
 URL URL::urlFromCurrentWorkingDirectory() noexcept
 {
     DWORD required_buffer_size = GetCurrentDirectoryW(0, nullptr);
-    if (!required_buffer_size){
-        tt_no_default();
+    if (!required_buffer_size) {
+        tt_log_fatal("Could not get required buffer size.");
     }
-    std::unique_ptr<wchar_t[]> currentDirectory(new wchar_t[required_buffer_size]);
-    GetCurrentDirectoryW(required_buffer_size, currentDirectory.get());
-    return URL::urlFromWPath(currentDirectory.get());
+    auto current_directory = std::make_unique<wchar_t[]>(required_buffer_size);
+    if (GetCurrentDirectoryW(required_buffer_size, current_directory.get()) == 0) {
+        tt_log_fatal("Could not get current directory: {}", get_last_error_message());
+    }
+    return URL::urlFromWPath(current_directory.get());
 }
 
 URL URL::urlFromExecutableFile() noexcept
 {
-    std::wstring modulePath;
-    auto bufferSize = MAX_PATH; // initial default value = 256
+    std::wstring module_path;
+    auto buffer_size = MAX_PATH; // initial default value = 256
     // iterative buffer resizing to max value of 32768 (256*2^7)
     for (size_t i = 0; i < 7; ++i) {
-        modulePath.resize(bufferSize);
-        auto chars = GetModuleFileNameW(nullptr, &modulePath[0], bufferSize);
-        if (chars < modulePath.length()) {
-            modulePath.resize(chars);
-            return URL::urlFromWPath(modulePath);
+        module_path.resize(buffer_size);
+        auto chars = GetModuleFileNameW(nullptr, &module_path[0], buffer_size);
+        if (chars < module_path.length()) {
+            module_path.resize(chars);
+            return URL::urlFromWPath(module_path);
         } else {
-            bufferSize *= 2;
+            buffer_size *= 2;
         }
     }
-    // throw io_error("The executable path exceeds 32768 chars length.");
-    return URL();
+    tt_log_fatal("Could not get executable path. It exceeds the buffer length of 32768 chars.");
 }
 
 URL URL::urlFromResourceDirectory() noexcept
