@@ -61,23 +61,10 @@ struct hires_utc_clock {
     static void adjust_for_drift() noexcept;
 
 private:
-    struct calibration_type {
-        int64_t slew;
-
-        /** Time when we wrote the tsc_epoch.
-         */
-        hires_utc_clock::time_point tp;
-
-        /** The epoch of when the tsc started counting.
-         * This is a hires_utc_clock::time_point representation.
-         */
-        std::atomic<int64_t> tsc_epoch;
-    };
-
-    static inline std::atomic<bool> subsystem_is_running;
+    static inline std::atomic<bool> subsystem_is_running = false;
     static inline std::jthread subsystem_thread;
     static inline unfair_mutex mutex;
-    static inline std::array<calibration_type, maximum_num_processors> calibrations = {};
+    static inline std::array<std::atomic<hires_utc_clock::time_point>, maximum_num_cpus> tsc_epochs = {};
 
     static void subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept;
     static void subsystem_proc(std::stop_token stop_token) noexcept;

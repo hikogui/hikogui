@@ -8,11 +8,11 @@
 
 namespace tt {
 
-std::vector<bool> set_thread_affinity(size_t processor_index)
+std::vector<bool> set_thread_affinity(size_t cpu_id)
 {
     auto new_mask = std::vector<bool>{};
-    new_mask.resize(processor_index + 1);
-    new_mask[processor_index] = true;
+    new_mask.resize(cpu_id + 1);
+    new_mask[cpu_id] = true;
     return set_thread_affinity_mask(new_mask);
 }
 

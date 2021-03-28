@@ -30,10 +30,9 @@ namespace tt {
 class time_stamp_count {
 public:
     constexpr time_stamp_count() noexcept :
-        _count(0), _id(0) {}
+        _count(0), _aux(0) {}
 
-    constexpr time_stamp_count(uint64_t count, uint32_t id) noexcept :
-        _count(count), _id(id) {}
+    constexpr time_stamp_count(uint64_t count, uint32_t aux) noexcept : _count(count), _aux(aux) {}
 
     /** Get the current count from the CPU's time stamp count.
      * @param memory_order Memory order is one of seq_cst or relaxed.
@@ -46,32 +45,37 @@ public:
         tt_axiom(memory_order != std::memory_order::release);
         tt_axiom(memory_order != std::memory_order::acquire);
 
-        uint64_t count;
-        uint32_t id;
-
 #if TT_PROCESSOR == TT_CPU_X64
         // rdtscp returns both a 64 bit timestamp and a 32 bit opaque cpu-id.
         // The rdtscp instruction includes an implied lfence and mfence instruction
         // before getting the timestamp. An explicit lfence after the rdtscp instruction
         // satisfies the seq_cst memory order.
         unsigned int aux;
-        count = __rdtscp(&aux);
+        auto count = __rdtscp(&aux);
         if (memory_order == std::memory_order::seq_cst) {
             _mm_lfence();
         }
 
-        id = narrow_cast<uint32_t>(aux);
+        return time_stamp_count{narrow_cast<uint64_t>(count), narrow_cast<uint32_t>(aux)};
 #endif
-
-        return time_stamp_count{count, id};
     }
 
-    /** Get the processor index.
-     * This is logical processor number that the operating system uses.
-     * 
+
+    /** Get the logical cpu index.
+     * This is logical CPU id that the operating system uses for things
+     * like thread affinity.
+     *
      * @return the processor index, or -1 if the processor index is unknown.
      */
-    [[nodiscard]] ssize_t processor() const noexcept;
+    [[nodiscard]] ssize_t cpu_id() const noexcept
+    {
+        if (_aux_is_cpu_id.load(std::memory_order::relaxed)) {
+            // On Linux the upper bits are used for a node-id.
+            return _aux & 0xfff;
+        } else {
+            return cpu_id_fallback();
+        }
+    }
 
     /** Get the count since epoch.
      * The epoch is the same as the TSC count's epoch. In most cases the epoch
@@ -122,25 +126,43 @@ public:
 
 private:
     uint64_t _count;
-    uint32_t _id;
+
+    // On intel x64 this is the TSC_AUX register value for this
+    // cpu. The operating system writes this value and is often not document.
+    // 
+    // We check if the lower 12 bits match the logical cpu id to use the fast
+    // pad for aux value to cpu id conversion. Otherwise we keep track in a table
+    // of each aux value and cpu id.
+    uint32_t _aux;
 
     /** The period in nanoseconds/cycle as Q32.32
      */
-    inline static std::atomic<uint64_t> _period;
+    inline static std::atomic<uint64_t> _period = 0;
+
+    inline static std::atomic<bool> _aux_is_cpu_id = false;
 
     /** The number of CPU ids we know of.
      */
-    inline static std::atomic<size_t> _num_cpu_ids = 0;
+    inline static std::atomic<size_t> _num_aux_values = 0;
 
     /** A list of known CPU ids.
      */
-    inline static std::array<uint32_t, maximum_num_processors> _cpu_ids;
+    inline static std::array<uint32_t, maximum_num_cpus> _aux_values;
 
-    /** A list of processor indices that match the _cpu_ids list.
+    /** A list of CPU ids that match the _aux_values list.
      */
-    inline static std::array<size_t, maximum_num_processors> _processor_indices;
+    inline static std::array<size_t, maximum_num_cpus> _cpu_ids;
 
-    static void populate_cpu_ids() noexcept;
+    /** Get the CPU id.
+     * This is logical CPU id that the operating system uses.
+     * This is the fallback function that will search through the
+     * table of _aux_values.
+     * 
+     * @return the CPU id, or -1 if the CPU id is unknown.
+     */
+    [[nodiscard]] ssize_t cpu_id_fallback() const noexcept;
+
+    static void populate_aux_values() noexcept;
     static void configure_frequency() noexcept;
 };
 

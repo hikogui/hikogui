@@ -43,7 +43,7 @@ std::string format_engineering(hires_utc_clock::duration duration)
         ttlet tmp_tp = hires_utc_clock::now();
         ttlet tmp_tsc2 = time_stamp_count::now();
 
-        if (tmp_tsc1.processor() != tmp_tsc2.processor()) {
+        if (tmp_tsc1.cpu_id() != tmp_tsc2.cpu_id()) {
             tt_log_fatal("CPU Switch detected during get_sample(), which should never happen");
         }
 
@@ -71,12 +71,11 @@ std::string format_engineering(hires_utc_clock::duration duration)
 
 [[nodiscard]] hires_utc_clock::time_point hires_utc_clock::make(time_stamp_count const &tsc) noexcept
 {
-    auto i = tsc.processor();
+    auto i = tsc.cpu_id();
     if (i >= 0) {
-        ttlet tsc_epoch = calibrations[i].tsc_epoch.load(std::memory_order::relaxed);
-        if (tsc_epoch != 0) {
-            ttlet tsc_epoch_ = hires_utc_clock::time_point{std::chrono::nanoseconds{tsc_epoch}};
-            return tsc_epoch_ + tsc.time_since_epoch();
+        ttlet tsc_epoch = tsc_epochs[i].load(std::memory_order::relaxed);
+        if (tsc_epoch != hires_utc_clock::time_point{}) {
+            return tsc_epoch + tsc.time_since_epoch();
         }
     }
 
@@ -139,51 +138,15 @@ void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
     size_t next_cpu = 0;
     while (!stop_token.stop_requested()) {
         ttlet current_cpu = advance_thread_affinity(next_cpu);
-        auto &calibration = calibrations[current_cpu];
 
         std::this_thread::sleep_for(100ms);
         ttlet lock = std::scoped_lock(hires_utc_clock::mutex);
 
         time_stamp_count tsc;
         ttlet tp = hires_utc_clock::now(tsc);
-        tt_axiom(tsc.processor() == current_cpu);
+        tt_axiom(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
 
-        ttlet tsc_epoch = tp.time_since_epoch() - tsc.time_since_epoch();
-
-        ttlet cal_tsc_epoch = std::chrono::nanoseconds{calibration.tsc_epoch.load(std::memory_order::relaxed)};
-        ttlet drift = tsc_epoch - cal_tsc_epoch;
-
-        if (abs(drift) > 1ms) {
-            // Clock drifted to far away, reset.
-            tt_log_warning("TSC calibration for processor {} drifted by {} ns; resetting.", current_cpu, drift / 1ns);
-
-            calibration.tp = tp;
-            calibration.tsc_epoch.store(tsc_epoch.count(), std::memory_order::relaxed);
-
-        } else {
-            ttlet drift_duration = tp - calibration.tp;
-
-            // slew is Q32.32 ns/ms.
-            ttlet slew = (drift.count() << 32) / (drift_duration / 1ms);
-
-            // Adjust slew by 5% of the new slew.
-            calibration.slew += ((slew - calibration.slew) * 1) / 100;
-
-            // Calculate the adjustment to the epoch.
-            ttlet adjustment = (calibration.slew * (drift_duration / 1ms)) >> 32;
-            calibration.tsc_epoch.fetch_add(adjustment, std::memory_order::relaxed);
-            calibration.tp = tp;
-
-            if (current_cpu == 0) {
-                tt_log_info(
-                    "TSC cpu={}, drift={} ns, slew={} ns/minute, damped_slew={} ns/minute, adjustment={} ns",
-                    current_cpu,
-                    drift / 1ns,
-                    (slew * 60'000) >> 32,
-                    (calibration.slew * 60'000) >> 32,
-                    adjustment);
-            }
-        }
+        tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);        
     }
 }
 

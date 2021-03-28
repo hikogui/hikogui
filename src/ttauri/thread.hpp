@@ -31,9 +31,9 @@ bool is_main_thread();
 void run_from_main_loop(std::function<void()> f);
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-constexpr size_t maximum_num_processors = 64;
+constexpr size_t maximum_num_cpus = 64;
 #elif TT_OPERATING_SYSTEM == TT_OS_LINUX || TT_OPERATING_SYSTEM == TT_OS_MACOS
-constexpr size_t maximum_num_processors = CPU_SETSIZE;
+constexpr size_t maximum_num_cpus = CPU_SETSIZE;
 #endif
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
@@ -62,7 +62,7 @@ inline thread_local thread_id current_thread_id_dummy = 0;
 
 /** Get the current process CPU affinity mask.
  *
- * @return A bit mask on which processors the process is allowed to run on.
+ * @return A bit mask on which CPUs the process is allowed to run on.
  *         Or zero on failure.
  */
 [[nodiscard]] std::vector<bool> process_affinity_mask() noexcept;
@@ -72,24 +72,24 @@ inline thread_local thread_id current_thread_id_dummy = 0;
  * The given mask must be a strict subset of the mask returned from
  * process_affinity_mask().
  *
- * @param mask A bit mask on which processors the thread should run on.
+ * @param mask A bit mask on which CPUs the thread should run on.
  * @throw std::os_error When unable to set the thread affinity to the given index
  * @return The previous bit mask. Or zero on failure.
  */
 std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask);
 
-/** Set the current thread CPU affinity to a single processor.
+/** Set the current thread CPU affinity to a single CPU.
  *
  * The given processor index must be a part of the mask returned from
  * process_affinity_mask().
  *
- * @param processor_index The index of the processors the thread should run on.
+ * @param processor_index The index of the CPU the thread should run on.
  * @return The previous bit mask. Or zero on failure.
  * @throw std::os_error When unable to set the thread affinity to the given index
  */
-std::vector<bool> set_thread_affinity(size_t processor_index);
+std::vector<bool> set_thread_affinity(size_t cpu_id);
 
-/** Advance thread affinity to the next processor.
+/** Advance thread affinity to the next CPU.
  * It is possible to detect when `advance_thread_affinity()` is at the last cpu;
  * in that case the cpu parameter is less than or equal to the return value.
  * 
@@ -100,11 +100,11 @@ std::vector<bool> set_thread_affinity(size_t processor_index);
  */
 size_t advance_thread_affinity(size_t &cpu) noexcept;
 
-/** Get the current processor index.
+/** Get the current CPU id.
  *
- * @return The current processor index.
+ * @return The current CPU id.
  */
-[[nodiscard]] size_t current_processor() noexcept;
+[[nodiscard]] size_t current_cpu_id() noexcept;
 
 
 }

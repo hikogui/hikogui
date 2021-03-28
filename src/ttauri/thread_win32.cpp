@@ -81,7 +81,7 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
     return mask_int_to_vec(old_mask);
 }
 
-[[nodiscard]] size_t current_processor() noexcept
+[[nodiscard]] size_t current_cpu_id() noexcept
 {
     ttlet index = GetCurrentProcessorNumber();
     tt_axiom(index < 64);

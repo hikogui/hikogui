@@ -3,23 +3,23 @@
 
 namespace tt {
 
-[[nodiscard]] ssize_t time_stamp_count::processor() const noexcept
+[[nodiscard]] ssize_t time_stamp_count::cpu_id_fallback() const noexcept
 {
-    auto cpu_id_ = _mm256_set1_epi32(_id);
+    auto aux_value_ = _mm256_set1_epi32(_aux);
 
-    ttlet num_cpu_ids = _num_cpu_ids.load(std::memory_order_acquire);
-    tt_axiom(_cpu_ids.size() == _processor_indices.size());
-    tt_axiom(num_cpu_ids < _cpu_ids.size());
+    ttlet num_aux_values = _num_aux_values.load(std::memory_order_acquire);
+    tt_axiom(_aux_values.size() == _cpu_ids.size());
+    tt_axiom(num_aux_values < _aux_values.size());
 
-    for (size_t i = 0; i < num_cpu_ids; i += 8) {
-        ttlet row = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(_cpu_ids.data() + i));
-        ttlet row_result = _mm256_cmpeq_epi32(row, cpu_id_);
+    for (size_t i = 0; i < num_aux_values; i += 8) {
+        ttlet row = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(_aux_values.data() + i));
+        ttlet row_result = _mm256_cmpeq_epi32(row, aux_value_);
         ttlet row_result_ = _mm256_castsi256_ps(row_result);
         ttlet row_result_mask = _mm256_movemask_ps(row_result_);
         if (static_cast<bool>(row_result_mask)) {
-            ttlet cpu_index = i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
-            if (cpu_index < num_cpu_ids) {
-                return _processor_indices[cpu_index];
+            ttlet j = i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
+            if (j < num_aux_values) {
+                return _cpu_ids[j];
             }
 
             return -1;
@@ -32,7 +32,7 @@ namespace tt {
 [[nodiscard]] uint64_t time_stamp_count::measure_frequency(std::chrono::milliseconds sample_duration) noexcept
 {
     // Only sample the frequency of one of the TSC clocks.
-    auto prev_mask = set_thread_affinity(current_processor());
+    auto prev_mask = set_thread_affinity(current_cpu_id());
 
     time_stamp_count tsc1;
     auto tp1 = hires_utc_clock::now(tsc1);
@@ -45,7 +45,7 @@ namespace tt {
     // Reset the mask back.
     set_thread_affinity_mask(prev_mask);
 
-    if (tsc1._id != tsc2._id) {
+    if (tsc1._aux != tsc2._aux) {
         // This must never happen, as we set the thread affinity to a single CPU
         // if this happens something is seriously wrong.
         tt_log_fatal("CPU Switch detected when measuring the TSC frequency.");
@@ -72,25 +72,35 @@ namespace tt {
     return wide_div(delta_tsc_lo, delta_tsc_hi, duration);
 }
 
-void time_stamp_count::populate_cpu_ids() noexcept
+void time_stamp_count::populate_aux_values() noexcept
 {
     // Keep track of the original thread affinity of the main thread.
-    auto prev_mask = set_thread_affinity(current_processor());
+    auto prev_mask = set_thread_affinity(current_cpu_id());
 
     // Create a table of cpu_ids.
     size_t next_cpu = 0;
     size_t current_cpu = 0;
+    bool aux_is_cpu_id = true;
     do {
         current_cpu = advance_thread_affinity(next_cpu);
 
-        auto i = _num_cpu_ids.load(std::memory_order::acquire);
+        auto i = _num_aux_values.load(std::memory_order::acquire);
         auto tsc = time_stamp_count::now();
-        _cpu_ids[i] = tsc._id;
-        _processor_indices[i] = current_cpu;
-        _num_cpu_ids.store(i + 1, std::memory_order::release);
-        tt_log_info("Found CPU {} with TSC:AUX {}.", current_cpu, tsc._id);
+        _aux_values[i] = tsc._aux;
+        _cpu_ids[i] = current_cpu;
+        _num_aux_values.store(i + 1, std::memory_order::release);
+        tt_log_info("Found CPU {} with TSC:AUX {}.", current_cpu, tsc._aux);
+
+        if ((tsc._aux & 0xfff) != current_cpu) {
+            aux_is_cpu_id = false;
+        }
 
     } while (next_cpu > current_cpu);
+
+    _aux_is_cpu_id.store(aux_is_cpu_id, std::memory_order_relaxed);
+    if (aux_is_cpu_id) {
+        tt_log_info("Use fast time_stamp_count.cpu_id() implementation.");
+    }
 
     // Set the thread affinity back to the original.
     set_thread_affinity_mask(prev_mask);
@@ -124,7 +134,7 @@ void time_stamp_count::configure_frequency() noexcept
 [[nodiscard]] void time_stamp_count::start_subsystem() noexcept
 {
     configure_frequency();
-    populate_cpu_ids();
+    populate_aux_values();
 }
 
 } // namespace tt
