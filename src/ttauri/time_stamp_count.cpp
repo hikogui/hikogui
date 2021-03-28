@@ -1,5 +1,10 @@
 
 #include "time_stamp_count.hpp"
+#include "hires_utc_clock.hpp"
+#include "logger.hpp"
+#include <immintrin.h>
+#include <array>
+#include <cstdint>
 
 namespace tt {
 

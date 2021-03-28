@@ -4,6 +4,7 @@
 
 #include "thread.hpp"
 #include "logger.hpp"
+#include "exception.hpp"
 #include <bit>
 
 namespace tt {

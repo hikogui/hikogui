@@ -10,7 +10,7 @@
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
-#include <algorithm>
+#include <numeric>
 
 typedef UINT D3DKMT_HANDLE;
 typedef UINT D3DDDI_VIDEO_PRESENT_SOURCE_ID;

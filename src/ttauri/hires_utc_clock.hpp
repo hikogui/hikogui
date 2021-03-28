@@ -1,5 +1,4 @@
-// Copyright Take Vos 2019.
-// Copyright Take Vos 2019.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -27,7 +26,7 @@ struct hires_utc_clock {
 
     /** Get the current time.
      */
-	[[nodiscard]] static time_point now() noexcept;
+    [[nodiscard]] static time_point now() noexcept;
 
     /** Get the current time and TSC value.
      * @pre Use `set_thread_affinity()` to set the CPU affinity to a single CPU.
@@ -93,4 +92,4 @@ std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp) noexce
  */
 std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone = nullptr) noexcept;
 
-}
+} // namespace tt

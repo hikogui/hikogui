@@ -7,7 +7,6 @@
 #include "application.hpp"
 #include "logger.hpp"
 #include "thread.hpp"
-#include <immintrin.h>
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <bit>

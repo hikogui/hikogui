@@ -9,14 +9,13 @@
 #include "int_carry.hpp"
 #include "thread.hpp"
 #include <atomic>
+#include <array>
+#include <cstdint>
 
-#if TT_PROCESSOR == TT_CPU_X64
-#include <emmintrin.h>
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <intrin.h>
 #elif TT_OPERATING_SYSTEM == TT_OS_LINUX
 #include <x86intrin.h>
-#endif
 #endif
 
 namespace tt {
