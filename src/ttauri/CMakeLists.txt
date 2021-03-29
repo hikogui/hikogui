@@ -207,6 +207,7 @@ if(TT_BUILD_TESTS)
         forward_value_tests.cpp
         gap_buffer_tests.cpp
         glob_tests.cpp
+        int_carry_tests.cpp
         int_overflow_tests.cpp
         math_tests.cpp
         graphic_path_tests.cpp

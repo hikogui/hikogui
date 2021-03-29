@@ -174,7 +174,7 @@ public:
      * @return The data encoded as a string.
      */
     template<typename ItIn>
-    static constexpr std::string encode(ItIn first, ItIn last) noexcept
+    static std::string encode(ItIn first, ItIn last) noexcept
     {
         std::string r;
         encode(first, last, std::back_inserter(r));
@@ -236,7 +236,7 @@ public:
         return ptr;
     }
 
-    static constexpr bstring decode(std::string_view str)
+    static bstring decode(std::string_view str)
     {
         auto r = bstring{};
         auto i = decode(begin(str), end(str), std::back_inserter(r));
@@ -246,7 +246,7 @@ public:
 
 private:
     template<typename ItOut>
-    static constexpr void encode_block(long long block, long long nr_bytes, ItOut output) noexcept
+    static void encode_block(long long block, long long nr_bytes, ItOut output) noexcept
     {
         ttlet padding = bytes_per_block - nr_bytes;
 
