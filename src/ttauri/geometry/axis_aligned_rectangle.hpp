@@ -27,13 +27,13 @@ private:
     f32x4 v;
 
 public:
-    axis_aligned_rectangle() noexcept : v() {}
-    axis_aligned_rectangle(axis_aligned_rectangle const &rhs) noexcept = default;
-    axis_aligned_rectangle &operator=(axis_aligned_rectangle const &rhs) noexcept = default;
-    axis_aligned_rectangle(axis_aligned_rectangle &&rhs) noexcept = default;
-    axis_aligned_rectangle &operator=(axis_aligned_rectangle &&rhs) noexcept = default;
+    constexpr axis_aligned_rectangle() noexcept : v() {}
+    constexpr axis_aligned_rectangle(axis_aligned_rectangle const &rhs) noexcept = default;
+    constexpr axis_aligned_rectangle &operator=(axis_aligned_rectangle const &rhs) noexcept = default;
+    constexpr axis_aligned_rectangle(axis_aligned_rectangle &&rhs) noexcept = default;
+    constexpr axis_aligned_rectangle &operator=(axis_aligned_rectangle &&rhs) noexcept = default;
 
-    explicit axis_aligned_rectangle(f32x4 const &other) noexcept : v(other)
+    constexpr explicit axis_aligned_rectangle(f32x4 const &other) noexcept : v(other)
     {
         tt_axiom(is_valid());
     }
@@ -45,7 +45,7 @@ public:
      * @param width The width of the box.
      * @param height The height of the box.
      */
-    axis_aligned_rectangle(float x, float y, float width, float height) noexcept : v{x, y, x + width, y + height}
+    constexpr axis_aligned_rectangle(float x, float y, float width, float height) noexcept : v{x, y, x + width, y + height}
     {
         tt_axiom(is_valid());
     }
@@ -54,7 +54,7 @@ public:
      * The rectangle's left bottom corner is at the origin.
      * @param extent The size of the box.
      */
-    explicit axis_aligned_rectangle(extent2 const &extent) noexcept : v(static_cast<f32x4>(extent)._00xy())
+    constexpr explicit axis_aligned_rectangle(extent2 const &extent) noexcept : v(static_cast<f32x4>(extent)._00xy())
     {
         tt_axiom(is_valid());
     }
@@ -63,7 +63,7 @@ public:
      * @param p0 The left bottom point.
      * @param p3 The right opt point.
      */
-    axis_aligned_rectangle(point2 const &p0, point2 const &p3) noexcept :
+    constexpr axis_aligned_rectangle(point2 const &p0, point2 const &p3) noexcept :
         v(static_cast<f32x4>(p0).xy00() + static_cast<f32x4>(p3)._00xy())
     {
         tt_axiom(p0.is_valid());
@@ -75,7 +75,7 @@ public:
      * The rectangle's left bottom corner is at the origin.
      * @param extent The size of the box.
      */
-    axis_aligned_rectangle(point2 const &p0, extent2 const &extent) noexcept :
+    constexpr axis_aligned_rectangle(point2 const &p0, extent2 const &extent) noexcept :
         v(static_cast<f32x4>(p0).xyxy() + static_cast<f32x4>(extent)._00xy())
     {
         tt_axiom(is_valid());
@@ -84,7 +84,7 @@ public:
     /** Make sure p0 is left/bottom from p3.
      * @return True is p0 is left and below p3.
      */
-    [[nodiscard]] bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool is_valid() const noexcept
     {
         return le(v, v.zwzw()) == 0b1111;
     }

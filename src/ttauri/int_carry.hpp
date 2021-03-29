@@ -26,7 +26,7 @@ namespace tt {
  * @param lhs The original value
  * @param rhs The count by how much to shift lhs left.
  * @param carry The carry data to or with the lower bits.
- * @return The result, followed by the carry which can be used to pass into the next iteration.
+ * @return (result, carry); the carry which can be used to pass into the next iteration.
  */
 template<std::unsigned_integral T>
 constexpr std::pair<T, T> shift_left_carry(T lhs, unsigned int rhs, T carry = 0) noexcept
@@ -41,7 +41,7 @@ constexpr std::pair<T, T> shift_left_carry(T lhs, unsigned int rhs, T carry = 0)
  * @param lhs The original value
  * @param rhs The count by how much to shift lhs right.
  * @param carry The carry data to or with the lower bits.
- * @return The result, followed by the carry which can be used to pass into the next iteration.
+ * @return (result, carry); the carry which can be used to pass into the next iteration.
  */
 template<std::unsigned_integral T>
 constexpr std::pair<T, T> shift_right_carry(T lhs, unsigned int rhs, T carry = 0) noexcept
@@ -52,32 +52,40 @@ constexpr std::pair<T, T> shift_right_carry(T lhs, unsigned int rhs, T carry = 0
     return {(lhs >> rhs) | carry, lhs << reverse_count};
 }
 
-/*! Add two numbers with carry chain.
- * \param carry either 0 or 1.
- * \return a + b + carry_in
+/** Add two numbers with carry chain.
+ * @param lhs The left hand side
+ * @param rhs The right hand side
+ * @param carry From the previous add in the chain
+ * @return (result, carry) pair
  */
 template<std::unsigned_integral T>
-constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
+constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = 0) noexcept
 {
+    tt_axiom(carry == 0 || carry == 1);
+
     if constexpr (sizeof(T) == 1) {
-        uint16_t r = static_cast<uint16_t>(a) + static_cast<uint16_t>(b) + carry;
+        uint16_t r = static_cast<uint16_t>(lhs) + static_cast<uint16_t>(rhs) + carry;
         return {static_cast<uint8_t>(r), static_cast<uint8_t>(r >> 8)};
 
     } else if constexpr (sizeof(T) == 2) {
-        uint32_t r = static_cast<uint32_t>(a) + static_cast<uint32_t>(b) + carry;
+        uint32_t r = static_cast<uint32_t>(lhs) + static_cast<uint32_t>(rhs) + carry;
         return {static_cast<uint16_t>(r), static_cast<uint16_t>(r >> 16)};
 
     } else if constexpr (sizeof(T) == 4) {
-        uint64_t r = static_cast<uint64_t>(a) + static_cast<uint64_t>(b) + carry;
+        uint64_t r = static_cast<uint64_t>(lhs) + static_cast<uint64_t>(rhs) + carry;
         return {static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32)};
 
     } else if constexpr (sizeof(T) == 8) {
-#if TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
-        auto r = static_cast<__uint128_t>(a) + static_cast<__uint128_t>(b) + carry;
+#if TT_COMPILER == TT_MSVC
+        uint64_t r;
+        auto carry_out = _addcarry_u64(static_cast<unsigned char>(carry), lhs, rhs, &r);
+        return {r, static_cast<uint64_t>(carry_out)};
+#elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
+        auto r = static_cast<__uint128_t>(lhs) + static_cast<__uint128_t>(rhs) + carry;
         return {static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64)};
 #else
-        uint64_t r1 = a + b;
-        uint64_t c = (r1 < a) ? 1 : 0;
+        uint64_t r1 = lhs + rhs;
+        uint64_t c = (r1 < lhs) ? 1 : 0;
         uint64_t r2 = r1 + carry;
         c += (r2 < r1) ? 1 : 0;
         return {r2, c};
@@ -85,55 +93,35 @@ constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
     }
 }
 
+/** Multiply with carry.
+ * The carry is a high-word of the multiplication result and has the same size
+ * as the inputs. The accumulator is used when doing long-multiplication from the
+ * previous row. This function does not overflow even if all the arguments are at max.
+ *
+ * @param lhs The left hand side.
+ * @param rhs The right hand side.
+ * @param carry The carry-input; carry-output from the previous `mul_carry()`.
+ * @param accumulator The column value during a long multiply.
+ */
 template<std::unsigned_integral T>
-constexpr std::pair<T, T> wide_mul(T a, T b) noexcept
+constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = 0, T accumulator = 0) noexcept
 {
     if constexpr (sizeof(T) == 1) {
-        uint16_t r = static_cast<uint16_t>(a) * static_cast<uint16_t>(b);
+        uint16_t r = static_cast<uint16_t>(lhs) * static_cast<uint16_t>(rhs) + carry + accumulator;
         return {static_cast<uint8_t>(r), static_cast<uint8_t>(r >> 8)};
 
     } else if constexpr (sizeof(T) == 2) {
-        uint32_t r = static_cast<uint32_t>(a) * static_cast<uint32_t>(b);
+        uint32_t r = static_cast<uint32_t>(lhs) * static_cast<uint32_t>(rhs) + carry + accumulator;
         return {static_cast<uint16_t>(r), static_cast<uint16_t>(r >> 16)};
 
     } else if constexpr (sizeof(T) == 4) {
-        uint64_t r = static_cast<uint64_t>(a) * static_cast<uint64_t>(b);
+        uint64_t r = static_cast<uint64_t>(lhs) * static_cast<uint64_t>(rhs) + carry + accumulator;
         return {static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32)};
 
     } else if constexpr (sizeof(T) == 8) {
 #if TT_COMPILER == TT_CC_MSVC
         uint64_t hi = 0;
-        uint64_t lo = _umul128(a, b, &hi);
-        return {lo, hi};
-
-#elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
-        auto r = static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b);
-        return {static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64)};
-#else
-#error "Not implemented"
-#endif
-    }
-}
-
-template<std::unsigned_integral T>
-constexpr std::pair<T, T> mul_carry(T a, T b, T carry = 0, T accumulator = 0) noexcept
-{
-    if constexpr (sizeof(T) == 1) {
-        uint16_t r = static_cast<uint16_t>(a) * static_cast<uint16_t>(b) + carry + accumulator;
-        return {static_cast<uint8_t>(r), static_cast<uint8_t>(r >> 8)};
-
-    } else if constexpr (sizeof(T) == 2) {
-        uint32_t r = static_cast<uint32_t>(a) * static_cast<uint32_t>(b) + carry + accumulator;
-        return {static_cast<uint16_t>(r), static_cast<uint16_t>(r >> 16)};
-
-    } else if constexpr (sizeof(T) == 4) {
-        uint64_t r = static_cast<uint64_t>(a) * static_cast<uint64_t>(b) + carry + accumulator;
-        return {static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32)};
-
-    } else if constexpr (sizeof(T) == 8) {
-#if TT_COMPILER == TT_CC_MSVC
-        uint64_t hi = 0;
-        uint64_t lo = _umul128(a, b, &hi);
+        uint64_t lo = _umul128(lhs, rhs, &hi);
         uint64_t c = 0;
         std::tie(lo, c) = add_carry(lo, carry, uint64_t{0});
         std::tie(hi, c) = add_carry(hi, uint64_t{0}, c);
@@ -142,7 +130,7 @@ constexpr std::pair<T, T> mul_carry(T a, T b, T carry = 0, T accumulator = 0) no
         return {lo, hi};
 
 #elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
-        auto r = static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b) + carry + accumulator;
+        auto r = static_cast<__uint128_t>(lhs) * static_cast<__uint128_t>(rhs) + carry + accumulator;
         return {static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64)};
 #else
 #error "Not implemented"
@@ -150,6 +138,52 @@ constexpr std::pair<T, T> mul_carry(T a, T b, T carry = 0, T accumulator = 0) no
     }
 }
 
+/** Wide multiply.
+ * multiplies two numbers and returns a low, high pair.
+ *
+ * @param lhs The left hand side.
+ * @param rhs The right hand side.
+ * @return (low, high) result.
+ */
+template<std::unsigned_integral T>
+constexpr std::pair<T, T> wide_mul(T lhs, T rhs) noexcept
+{
+    if constexpr (sizeof(T) == 1) {
+        uint16_t r = static_cast<uint16_t>(lhs) * static_cast<uint16_t>(rhs);
+        return {static_cast<uint8_t>(r), static_cast<uint8_t>(r >> 8)};
+
+    } else if constexpr (sizeof(T) == 2) {
+        uint32_t r = static_cast<uint32_t>(lhs) * static_cast<uint32_t>(rhs);
+        return {static_cast<uint16_t>(r), static_cast<uint16_t>(r >> 16)};
+
+    } else if constexpr (sizeof(T) == 4) {
+        uint64_t r = static_cast<uint64_t>(lhs) * static_cast<uint64_t>(rhs);
+        return {static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32)};
+
+    } else if constexpr (sizeof(T) == 8) {
+#if TT_COMPILER == TT_CC_MSVC
+        uint64_t hi = 0;
+        uint64_t lo = _umul128(lhs, rhs, &hi);
+        return {lo, hi};
+
+#elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
+        auto r = static_cast<__uint128_t>(lhs) * static_cast<__uint128_t>(rhs);
+        return {static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64)};
+#else
+#error "Not implemented"
+#endif
+    }
+}
+
+/** Wide divide.
+ * Can be used to divide a wide unsigned integer by a unsigned integer,
+ * as long as the result fits in an unsigned integer.
+ * 
+ * @param lhs_lo The low side of a wide left-hand-side
+ * @param lhs_hi The high side of a wide left-hand-side
+ * @param rhs The right hand side
+ * @retrun The result.
+ */
 template<std::unsigned_integral T>
 constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
 {

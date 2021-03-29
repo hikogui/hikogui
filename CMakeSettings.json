@@ -64,17 +64,6 @@
       "inheritEnvironments": [ "clang_cl_x64" ]
     },
     {
-      "name": "x64-Clang-Release",
-      "generator": "Ninja",
-      "configurationType": "Release",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "clang_cl_x64" ]
-    },
-    {
       "name": "x64-Clang-ReleaseWithDebugInfo",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
