@@ -17,7 +17,7 @@ namespace tt {
     tt_axiom(num_aux_values < _aux_values.size());
 
     for (size_t i = 0; i < num_aux_values; i += 4) {
-        ttlet row = _mm_loadu_si128(reinterpret_cast<__m256i const *>(_aux_values.data() + i));
+        ttlet row = _mm_loadu_si128(reinterpret_cast<__m128i const *>(_aux_values.data() + i));
         ttlet row_result = _mm_cmpeq_epi32(row, aux_value_);
         ttlet row_result_ = _mm_castsi128_ps(row_result);
         ttlet row_result_mask = _mm_movemask_ps(row_result_);
