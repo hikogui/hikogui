@@ -103,18 +103,6 @@ void application::init_foundation()
     } else {
         log_level_global = make_log_level(log_level::info);
     }
-
-    // First we need a clock, it is used by almost any other service.
-    // It will immediately be synchronized, but inaccurately, it will take a while to become
-    // more accurate, but we don't want to block here.
-    sync_clock_calibration<hires_utc_clock, cpu_counter_clock> =
-        new sync_clock_calibration_type<hires_utc_clock, cpu_counter_clock>("cpu_utc");
-
-    clock_maintenance_callback = timer::global->add_callback(100ms, [](auto...) {
-        ttlet t2 = trace<"clock_maintenance">{};
-
-        sync_clock_calibration<hires_utc_clock, cpu_counter_clock>->calibrate_tick();
-    });
 }
 
 void application::init_text()
@@ -198,8 +186,6 @@ void application::deinit_foundation()
     timer::global->remove_callback(clock_maintenance_callback);
     timer::global->remove_callback(logger_maintenance_callback);
     timer::global = {};
-
-    delete sync_clock_calibration<hires_utc_clock, cpu_counter_clock>;
 }
 
 void application::deinit_text()

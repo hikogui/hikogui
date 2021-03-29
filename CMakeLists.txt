@@ -248,7 +248,8 @@ elseif (MSVC)
     # Allow system headers to be imported.
     target_compile_options(ttauri PUBLIC -experimental:module)
 
-    # Support Intel's IvyBridge and AMD's Steamroller
+    # Support Intel's SkyLake and AMD's Excavator.
+    # see hardware_support.md
     target_compile_options(ttauri PUBLIC -arch:AVX)
 
     # The ttauri generic tokenizer uses large constexpr tables.

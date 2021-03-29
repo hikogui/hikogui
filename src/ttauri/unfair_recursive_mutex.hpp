@@ -116,7 +116,7 @@ public:
     *                jmp  locked
     * non_recursive: call unfair_mutex.lock()
     *                lea  r15,[r14+0A0h]  
-    *                mov  dword ptr [r15],r13d  
+    *                mov  dword ptr [r15],r13d
     *                mov  dword ptr [rbx+4],esi
     * locked:
     */
