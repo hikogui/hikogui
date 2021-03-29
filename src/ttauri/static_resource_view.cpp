@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "static_resource_view.hpp"
+#include "static_resource_list.hpp"
 #include "application.hpp"
 
 namespace tt {
@@ -12,18 +13,13 @@ static_resource_view::static_resource_view(std::string const &filename) :
 {
 }
 
-void static_resource_view::add_static_resource(std::string const &key, std::span<std::byte const> value) noexcept
+std::span<std::byte const> static_resource_view::get_static_resource(std::string const &filename)
 {
-    _static_resources.try_emplace(key, value);
-}
-
-std::span<std::byte const> static_resource_view::get_static_resource(std::string const &key)
-{
-    ttlet i = _static_resources.find(key);
-    if (i == _static_resources.end()) {
-        throw key_error("Could not find static resource '{}'.", key);
+    auto r = static_resource_item::find(filename);
+    if (r.empty()) {
+        throw key_error("Could not find static resource '{}'.", filename);
     }
-    return i->second;
+    return r;
 }
 
 }

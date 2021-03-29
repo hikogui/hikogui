@@ -40,26 +40,15 @@ public:
     }
 
     /** Get the data of a static resource.
-     * These are resources that where linked into the exectuable.
+     * These are resources that where linked into the executable.
      *
-     * @param key Name of the resource.
+     * @param filename Name of the resource.
      * @return A span to the constant byte array.
      * @exception key_error Thrown when static resource could not be found.
      */
-    static std::span<std::byte const> get_static_resource(std::string const &key);
-
-    /** Add static resource.
-     * This function should only be called on resources that are linked into the executable
-     * and therefor only be called by the application class.
-     *
-     * @param key Name of the resource.
-     * @param value A span to the constant byte array
-     */
-    static void add_static_resource(std::string const &key, std::span<std::byte const> value) noexcept;
+    static std::span<std::byte const> get_static_resource(std::string const &filename);
 
 private:
-    static inline std::unordered_map<std::string, std::span<std::byte const>> _static_resources;
-
     // Borrowed reference from a byte array inside StaticResources.
     std::span<std::byte const> _bytes;
 };

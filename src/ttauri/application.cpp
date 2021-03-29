@@ -24,18 +24,6 @@
 #include <memory>
 
 #include "ttauri/metadata.hpp"
-#include "data/elusiveicons-webfont.ttf.inl"
-#include "data/ttauri_icons.ttf.inl"
-#include "ttauri/GUI/pipeline_image.vert.spv.inl"
-#include "ttauri/GUI/pipeline_image.frag.spv.inl"
-#include "ttauri/GUI/pipeline_flat.vert.spv.inl"
-#include "ttauri/GUI/pipeline_flat.frag.spv.inl"
-#include "ttauri/GUI/pipeline_box.vert.spv.inl"
-#include "ttauri/GUI/pipeline_box.frag.spv.inl"
-#include "ttauri/GUI/pipeline_SDF.vert.spv.inl"
-#include "ttauri/GUI/pipeline_SDF.frag.spv.inl"
-#include "ttauri/GUI/pipeline_tone_mapper.vert.spv.inl"
-#include "ttauri/GUI/pipeline_tone_mapper.frag.spv.inl"
 
 namespace tt {
 
@@ -107,9 +95,6 @@ void application::init_foundation()
 
 void application::init_text()
 {
-    static_resource_view::add_static_resource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
-    static_resource_view::add_static_resource(ttauri_icons_ttf_filename, ttauri_icons_ttf_bytes);
-
     font_book::global = std::make_unique<font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
     elusive_icons_font_id = font_book::global->register_font(URL("resource:elusiveicons-webfont.ttf"));
     ttauri_icons_font_id = font_book::global->register_font(URL("resource:ttauri_icons.ttf"));
@@ -137,17 +122,6 @@ void application::init_gui()
 
             theme_book::global = std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
             theme_book::global->set_current_theme_mode(read_os_theme_mode());
-
-            static_resource_view::add_static_resource(pipeline_image_vert_spv_filename, pipeline_image_vert_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_image_frag_spv_filename, pipeline_image_frag_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_flat_vert_spv_filename, pipeline_flat_vert_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_flat_frag_spv_filename, pipeline_flat_frag_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_box_vert_spv_filename, pipeline_box_vert_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_box_frag_spv_filename, pipeline_box_frag_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_SDF_vert_spv_filename, pipeline_SDF_vert_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_SDF_frag_spv_filename, pipeline_SDF_frag_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_tone_mapper_vert_spv_filename, pipeline_tone_mapper_vert_spv_bytes);
-            static_resource_view::add_static_resource(pipeline_tone_mapper_frag_spv_filename, pipeline_tone_mapper_frag_spv_bytes);
 
             try {
                 keyboardBindings.loadSystemBindings();
