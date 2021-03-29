@@ -7,7 +7,7 @@ Each build of ttauri has different processor requirements.
 
 ### x86-64-v2.5
 The minimum CPU requirement:
- - **Intel**: Sandy Bridge
+ - **Intel**: Sandy Bridge (Gen2)
  - **AMD**: Jaguar / Bulldozer
 
 Here is a table of microarchitecture levels and the included instruction extensions.
@@ -48,6 +48,6 @@ TTauri uses vulkan-1.1 API as a minimum.
 The oldest graphics cards supporting vulkan-1.1:
  - **NVidia**: GeForce 600 (Kepler)
  - **AMD**: HD 7000 (TeraScale 2)
- - **Intel**: Skylake
+ - **Intel**: HD 500 (Gen9 SkyLake)
 
 

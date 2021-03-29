@@ -14,27 +14,53 @@
 
 namespace tt {
 
+/*! Convenience function for SHGetKnownFolderPath().
+ *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.
+ *  See https://docs.microsoft.com/en-us/windows/win32/shell/knownfolderid#constants
+ *
+ * \param KNOWNFOLDERID folder_id.
+ * \return The URL of the folder.
+ */
+static URL get_folder_by_id(const KNOWNFOLDERID &folder_id) noexcept
+{
+    PWSTR path = nullptr;
+    if (SHGetKnownFolderPath(folder_id, 0, nullptr, &path) != S_OK) {
+        tt_log_fatal("Could not get known folder path.");
+    }
+    URL folder = URL::urlFromWPath(path);
+    CoTaskMemFree(path);
+    return folder;
+}
+
 URL URL::urlFromCurrentWorkingDirectory() noexcept
 {
-    wchar_t currentDirectory[MAX_PATH];
-    if (GetCurrentDirectoryW(MAX_PATH, currentDirectory) == 0) {
-        // Can only cause error if there is not enough room in currentDirectory.
-        tt_no_default();
+    DWORD required_buffer_size = GetCurrentDirectoryW(0, nullptr);
+    if (!required_buffer_size) {
+        tt_log_fatal("Could not get required buffer size.");
     }
-    return URL::urlFromWPath(currentDirectory);
+    auto current_directory = std::make_unique<wchar_t[]>(required_buffer_size);
+    if (GetCurrentDirectoryW(required_buffer_size, current_directory.get()) == 0) {
+        tt_log_fatal("Could not get current directory: {}", get_last_error_message());
+    }
+    return URL::urlFromWPath(current_directory.get());
 }
 
 URL URL::urlFromExecutableFile() noexcept
 {
-    static auto r = []() {
-        wchar_t modulePathWChar[MAX_PATH];
-        if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
-            // Can only cause error if there is not enough room in modulePathWChar.
-            tt_no_default();
+    std::wstring module_path;
+    auto buffer_size = MAX_PATH; // initial default value = 256
+    // iterative buffer resizing to max value of 32768 (256*2^7)
+    for (size_t i = 0; i < 7; ++i) {
+        module_path.resize(buffer_size);
+        auto chars = GetModuleFileNameW(nullptr, &module_path[0], buffer_size);
+        if (chars < module_path.length()) {
+            module_path.resize(chars);
+            return URL::urlFromWPath(module_path);
+        } else {
+            buffer_size *= 2;
         }
-        return URL::urlFromWPath(modulePathWChar);
-    }();
-    return r;
+    }
+    tt_log_fatal("Could not get executable path. It exceeds the buffer length of 32768 chars.");
 }
 
 URL URL::urlFromResourceDirectory() noexcept
@@ -46,29 +72,14 @@ URL URL::urlFromResourceDirectory() noexcept
 
 URL URL::urlFromApplicationDataDirectory() noexcept
 {
-    PWSTR wchar_localAppData;
-
-    // Use application name for the directory inside the application-data directory.
-    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &wchar_localAppData) != S_OK) {
-        // This should really never happen.
-        tt_no_default();
-    }
-
-    ttlet base_localAppData = URL::urlFromWPath(wchar_localAppData);
-    return base_localAppData / application_metadata().vendor / application_metadata().display_name;
+    // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
+    return get_folder_by_id(FOLDERID_LocalAppData) / application_metadata().vendor / application_metadata().display_name;
 }
 
 URL URL::urlFromSystemfontDirectory() noexcept
 {
-    PWSTR wchar_fonts;
-
-    // Use application name for the directory inside the application-data directory.
-    if (SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &wchar_fonts) != S_OK) {
-        // This should really never happen.
-        tt_no_default();
-    }
-
-    return URL::urlFromWPath(wchar_fonts);
+    // FOLDERID_Fonts has the default path: %windir%\Fonts
+    return get_folder_by_id(FOLDERID_Fonts);
 }
 
 std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path) noexcept

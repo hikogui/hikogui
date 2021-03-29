@@ -188,7 +188,7 @@ jobs:
         uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
         with:
           name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.TT_BUILD_PCH }}
-          path: ${{ env.ARTIFACT_NAME }}.zip
+          path: build/${{ env.ARTIFACT_NAME }}.zip
 
 # ---------------------------------------------------------------------------------------
 
@@ -269,10 +269,14 @@ jobs:
 
 # ---------------------------------------------------------------------------------------
 
+    # Only publish test results, when the action runs in your repository's context.
+    # In other words: this disables publishing tests results from pull requests.
+    # PR test results are published from the standalone workflow "publish-PR-test-results.yml".
+
     name: "Publish Tests Results"
     needs: build-and-test
     runs-on: ubuntu-latest
-    if: success() || failure() # don't run job, if skipped
+    if: always() && ( github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository )
 
     steps:
 

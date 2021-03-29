@@ -39,11 +39,11 @@ struct flow_layout_item {
         tt_axiom(preferred_size <= maximum_size);
     }
 
-    int offset;
-    int size;
     int minimum_size;
     int preferred_size;
     int maximum_size;
+    int offset;
+    int size;
 };
 
 /** Layout algorithm.
@@ -123,7 +123,7 @@ public:
         set_items_to_preferred_size();
 
         auto grow_by = total_size_ - size();
-        while (grow_by != 0) { 
+        while (grow_by != 0) {
             int num = num_items_can_resize(grow_by);
 
             auto resize_beyond_maximum = num == 0;
