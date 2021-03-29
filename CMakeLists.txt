@@ -250,7 +250,7 @@ elseif (MSVC)
 
     # Support Intel's SkyLake and AMD's Excavator.
     # see hardware_support.md
-    target_compile_options(ttauri PUBLIC -arch:AVX2)
+    target_compile_options(ttauri PUBLIC -arch:AVX)
 
     # The ttauri generic tokenizer uses large constexpr tables.
     target_compile_options(ttauri PUBLIC -constexpr:steps 100000000)

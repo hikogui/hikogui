@@ -39,6 +39,8 @@ The following platforms are supported:
 
  - MSVC - Windows 10 - x64
 
+For hardware support see: [hardware\_support](docs/hardware_support.md)
+
 Installation
 ------------
 
