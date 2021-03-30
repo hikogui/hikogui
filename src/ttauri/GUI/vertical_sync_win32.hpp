@@ -24,8 +24,7 @@ class vertical_sync_win32 final : public vertical_sync_base {
     unsigned int adapter;
     unsigned int videoPresentSourceID;
 
-    std::thread verticalSyncThreadID;
-    bool stop = false;
+    std::jthread verticalSyncThreadID;
 
     hires_utc_clock::time_point previousFrameTimestamp;
     std::array<hires_utc_clock::duration,15> frameDurationData;
@@ -43,7 +42,7 @@ class vertical_sync_win32 final : public vertical_sync_base {
      */
     [[nodiscard]] hires_utc_clock::time_point wait() noexcept;
 
-    void verticalSyncThread() noexcept;
+    void verticalSyncThread(std::stop_token stop_token) noexcept;
 
 public:
     vertical_sync_win32(std::function<void(void *,hires_utc_clock::time_point)> callback, void *callbackData) noexcept;

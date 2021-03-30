@@ -58,12 +58,12 @@ public:
     void init() noexcept(false) override;
 
     vk::DispatchLoaderDynamic loader() const noexcept {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _loader;
     }
 
     void destroySurfaceKHR(vk::SurfaceKHR surface) {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         intrinsic.destroySurfaceKHR(surface);
     }
 

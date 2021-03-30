@@ -110,6 +110,7 @@ gui_system_vulkan::gui_system_vulkan(
 
 gui_system_vulkan::~gui_system_vulkan()
 {
+    ttlet lock = std::scoped_lock(gui_system_mutex);
     if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
         intrinsic.destroy(debugUtilsMessager, nullptr, loader());
     }

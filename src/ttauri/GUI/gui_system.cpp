@@ -12,7 +12,7 @@ using namespace std;
 
 gui_device *gui_system::findBestDeviceForWindow(gui_window const &window)
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     int bestScore = -1;
     gui_device *bestDevice = nullptr;

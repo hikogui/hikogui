@@ -31,10 +31,8 @@ using namespace std;
 
 application::application(
     std::weak_ptr<application_delegate> const &delegate,
-    int argc,
-    char *argv[],
     os_handle instance) :
-    delegate(delegate), argc(argc), argv(argv), instance(instance)
+    delegate(delegate), instance(instance)
 {
 }
 
@@ -68,7 +66,6 @@ void application::init()
 
     if (auto delegate_ = delegate.lock()) {
         delegate_->init(*this);
-        configuration = delegate_->configuration(narrow_cast<application &>(*this), argc, argv);
     }
 
     init_foundation();

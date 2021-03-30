@@ -52,7 +52,7 @@ void gui_window_vulkan::init()
 
 void gui_window_vulkan::waitIdle()
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     tt_assert(_device);
     if (renderFinishedFence) {
@@ -64,7 +64,7 @@ void gui_window_vulkan::waitIdle()
 
 std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
@@ -102,7 +102,7 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
 
 void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
-    auto lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     tt_axiom(_device);
 
@@ -145,7 +145,7 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
 
 void gui_window_vulkan::build()
 {
-    auto lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (state == gui_window_state::no_device) {
         if (_device) {
@@ -207,7 +207,7 @@ void gui_window_vulkan::build()
 
 void gui_window_vulkan::teardown()
 {
-    auto lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto nextState = state;
 
@@ -269,7 +269,7 @@ void gui_window_vulkan::teardown()
 
 void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();

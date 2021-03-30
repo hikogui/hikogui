@@ -41,12 +41,6 @@ public:
     */
     std::weak_ptr<application_delegate> delegate;
 
-    /*! Command line arguments.
-     */
-    int argc;
-
-    char **argv;
-
     /** Handle to the operating system's application-instance.
      */
     os_handle instance;
@@ -77,8 +71,6 @@ public:
      */
     application(
         std::weak_ptr<application_delegate> const &delegate,
-        int argc,
-        char *argv[],
         os_handle instance
     );
 
