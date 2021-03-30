@@ -43,7 +43,9 @@ public:
         verticalSync = std::make_unique<vertical_sync>(_handlevertical_sync, this);
     }
 
-    virtual ~gui_system() {}
+    virtual ~gui_system() {
+        verticalSync = {};
+    }
 
     gui_system(const gui_system &) = delete;
     gui_system &operator=(const gui_system &) = delete;

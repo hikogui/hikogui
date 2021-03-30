@@ -30,7 +30,7 @@ int tt_main(int argc, char *argv[], tt::os_handle instance)
 
     tt_log_info("leap second aware clock: {}", tt::format_iso8601(tt::hires_utc_clock::now()));
 
-    auto app = tt_application(application_controller, argc, argv, instance);
+    auto app = tt_application(application_controller, instance);
     return app.main();
 }
 

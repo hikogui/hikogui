@@ -9,10 +9,7 @@ namespace tt {
 
 class Application_macos final : public application {
 public:
-    int argc;
-    char const * const *argv;
-
-    Application_macos(const std::shared_ptr<application_delegate> delegate, int argc, char const * const *argv);
+    Application_macos(const std::shared_ptr<application_delegate> delegate);
     ~Application_macos();
 
     void runFromMainLoop(std::function<void()> function) override;

@@ -369,7 +369,7 @@ done:
 
 vk::SurfaceKHR gui_window_vulkan_win32::getSurface() const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     return narrow_cast<gui_system_vulkan_win32 &>(system).createWin32SurfaceKHR(
         {vk::Win32SurfaceCreateFlagsKHR(),
          reinterpret_cast<HINSTANCE>(application::global->instance),

@@ -69,7 +69,7 @@ public:
     void remove(gui_window &window) noexcept;
 
     void render(hires_utc_clock::time_point displayTimePoint) noexcept {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
 
         for (auto &window: windows) {
             window->render(displayTimePoint);

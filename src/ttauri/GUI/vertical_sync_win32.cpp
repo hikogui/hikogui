@@ -77,17 +77,19 @@ vertical_sync_win32::vertical_sync_win32(std::function<void(void*,hires_utc_cloc
         tt_log_fatal("Error locating function D3DKMTWaitForVerticalBlankEvent!");
     }
 
-    verticalSyncThreadID = std::thread([=]() {
+    verticalSyncThreadID = std::jthread([=](std::stop_token stop_token) {
         set_thread_name("vertical_sync");
         tt_log_info("Started: vertical-sync thread.");
-        this->verticalSyncThread();
+        this->verticalSyncThread(stop_token);
         tt_log_info("Finished: vertical-sync thread.");
     });
 }
 
 vertical_sync_win32::~vertical_sync_win32() {
-    stop = true;
-    verticalSyncThreadID.join();
+    if (verticalSyncThreadID.joinable()){
+        verticalSyncThreadID.request_stop();
+        verticalSyncThreadID.join();
+    }
 
     FreeLibrary(reinterpret_cast<HMODULE>(gdi));
 }
@@ -195,9 +197,9 @@ hires_utc_clock::time_point vertical_sync_win32::wait() noexcept
     return now + averageFrameDuration(now);
 }
 
-void vertical_sync_win32::verticalSyncThread() noexcept
+void vertical_sync_win32::verticalSyncThread(std::stop_token stop_token) noexcept
 {
-    while (!stop) {
+    while (!stop_token.stop_requested()) {
         ttlet displayTimePoint = wait();
         callback(callbackData, displayTimePoint);
     }

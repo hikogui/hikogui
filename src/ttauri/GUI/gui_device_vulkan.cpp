@@ -175,6 +175,8 @@ gui_device_vulkan::gui_device_vulkan(gui_system &system, vk::PhysicalDevice phys
 gui_device_vulkan::~gui_device_vulkan()
 {
     try {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+
         toneMapperPipeline->destroy(this);
         toneMapperPipeline = nullptr;
         SDFPipeline->destroy(this);
@@ -215,7 +217,7 @@ gui_device_vulkan::~gui_device_vulkan()
 
 void gui_device_vulkan::initialize_device(gui_window const &window)
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     const float defaultQueuePriority = 1.0;
 
@@ -373,7 +375,7 @@ void gui_device_vulkan::initialize_quad_index_buffer()
 
 void gui_device_vulkan::destroy_quad_index_buffer()
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     destroyBuffer(quadIndexBuffer, quadIndexBufferAllocation);
 }
 
@@ -564,7 +566,7 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
 
 int gui_device_vulkan::score(gui_window const &window) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto surface = narrow_cast<gui_window_vulkan const &>(window).getSurface();
     ttlet s = score(surface);
@@ -576,7 +578,7 @@ std::pair<vk::Buffer, VmaAllocation> gui_device_vulkan::createBuffer(
     const vk::BufferCreateInfo &bufferCreateInfo,
     const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     VkBuffer buffer;
     VmaAllocation allocation;
@@ -592,7 +594,7 @@ std::pair<vk::Buffer, VmaAllocation> gui_device_vulkan::createBuffer(
 
 void gui_device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     vmaDestroyBuffer(allocator, buffer, allocation);
 }
@@ -601,7 +603,7 @@ std::pair<vk::Image, VmaAllocation> gui_device_vulkan::createImage(
     const vk::ImageCreateInfo &imageCreateInfo,
     const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     VkImage image;
     VmaAllocation allocation;
@@ -617,21 +619,21 @@ std::pair<vk::Image, VmaAllocation> gui_device_vulkan::createImage(
 
 void gui_device_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     vmaDestroyImage(allocator, image, allocation);
 }
 
 void gui_device_vulkan::unmapMemory(const VmaAllocation &allocation) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     vmaUnmapMemory(allocator, allocation);
 }
 
 vk::CommandBuffer gui_device_vulkan::beginSingleTimeCommands() const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     ttlet commandBuffers = intrinsic.allocateCommandBuffers({graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1});
     ttlet commandBuffer = commandBuffers.at(0);
@@ -642,7 +644,7 @@ vk::CommandBuffer gui_device_vulkan::beginSingleTimeCommands() const
 
 void gui_device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     commandBuffer.end();
 
@@ -754,7 +756,7 @@ void gui_device_vulkan::copyImage(
     vk::ImageLayout dstLayout,
     vk::ArrayProxy<vk::ImageCopy const> regions) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     ttlet commandBuffer = beginSingleTimeCommands();
 
@@ -769,7 +771,7 @@ void gui_device_vulkan::clearColorImage(
     vk::ClearColorValue const &color,
     vk::ArrayProxy<const vk::ImageSubresourceRange> ranges) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     ttlet commandBuffer = beginSingleTimeCommands();
 
@@ -780,7 +782,7 @@ void gui_device_vulkan::clearColorImage(
 
 vk::ShaderModule gui_device_vulkan::loadShader(uint32_t const *data, size_t size) const
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
     tt_log_info("Loading shader");
 
