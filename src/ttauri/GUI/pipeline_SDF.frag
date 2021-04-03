@@ -28,31 +28,55 @@ bool is_clipped()
     return greaterThanEqual(gl_FragCoord.xyxy, in_clipping_rectangle) != bvec4(true, true, false, false);
 }
 
-float coverage_to_alpha(float coverage, float Y_back, float L_back, float Y_front, float L_front)
-{
-    if (Y_back == Y_front) {
-        return coverage;
+float Kr = 0.2126;
+float Kg = 0.7152;
+float Kb = 0.0722;
+float inv_Kr = Kr / Kg;
+float inv_Kb = Kb / Kg;
 
-    } else {
-        float L_target = mix(L_back, L_front, coverage);
-        float Y_target = L_target * L_target;
-        return (Y_target - Y_back) / (Y_front - Y_back);
-    }
+vec3 RGB_to_PrYPb(vec3 x)
+{
+    float Y = Kr * x.r + Kg * x.g + Kb * x.b;
+    float Pr = x.r - Y;
+    float Pb = x.b - Y;
+    return vec3(Pr, Y, Pb);
 }
 
-vec3 coverage_to_alpha(vec3 coverage, float Y_back, float L_back, float Y_front, float L_front)
+vec3 PrYPb_to_RGB(vec3 x)
 {
-    if (Y_back == Y_front) {
-        return coverage;
+    float R = x.r + x.g;
+    float G = x.g - x.r * inv_Kr - x.b * inv_Kb;
+    float B = x.b + x.g;
 
-    } else {
-        vec3 L_back3 = vec3(L_back, L_back, L_back);
-        vec3 L_front3 = vec3(L_front, L_front, L_front);
+    return vec3(R, G, B);
+}
 
-        vec3 L_target = mix(L_back3, L_front3, coverage);
-        vec3 Y_target = L_target * L_target;
-        return (Y_target - Y_back) / (Y_front - Y_back);
-    }
+vec3 RGB_to_PrLPb(vec3 x)
+{
+    vec3 tmp = RGB_to_PrYPb(x);
+    return vec3(tmp.r, sqrt(tmp.g), tmp.b);
+}
+
+vec3 PrLPb_to_RGB(vec3 x)
+{
+    return PrYPb_to_RGB(vec3(x.r, x.g * x.g, x.b));
+}
+
+vec3 PrYPb_to_RGB_subpixel(vec3 sub_R, vec3 sub_G, vec3 sub_B)
+{
+    float R = sub_R.r + sub_R.g;
+    float G = sub_G.g - sub_G.r * inv_Kr - sub_G.b * inv_Kb;
+    float B = sub_B.b + sub_B.g;
+
+    return vec3(R, G, B);
+}
+
+vec3 PrLPb_to_RGB_subpixel(vec3 sub_R, vec3 sub_G, vec3 sub_B)
+{
+    vec3 sub_R_ = vec3(sub_R.r, sub_R.g * sub_R.g, sub_R.b);
+    vec3 sub_G_ = vec3(sub_G.r, sub_G.g * sub_G.g, sub_G.b);
+    vec3 sub_B_ = vec3(sub_B.r, sub_B.g * sub_B.g, sub_B.b);
+    return PrYPb_to_RGB_subpixel(sub_R_, sub_G_, sub_B_);
 }
 
 void main()
@@ -75,25 +99,21 @@ void main()
         // Fully outside the fragment, early exit.
         discard;
 
-    } else if (green_radius >= 0.5) {
+    } else if (in_color.a == 1.0 && green_radius >= 0.5) {
         // Fully inside the fragment.
-        out_color = in_color;
+        out_color = vec4(in_color.rgb, 1.0);
 
     } else {
-        // Normal anti-aliasing.
-        vec4 background_color = subpassLoad(in_background_color);
-        float background_luminance =
-            0.2126 * background_color.r + 0.7152 * background_color.g + 0.0722 * background_color.b;
-        float background_lightness = sqrt(background_luminance);
+        vec4 background_RGBA = subpassLoad(in_background_color);
+        vec3 background_PrLPb = RGB_to_PrLPb(background_RGBA.rgb);
+        vec3 foreground_PrLPb = RGB_to_PrLPb(in_color.rgb);
 
         if (pushConstants.subpixel_orientation == 0) {
             // Normal anti-aliasing.
-            float coverage = clamp(green_radius + 0.5, 0.0, 1.0);
-            float alpha = coverage_to_alpha(
-                coverage, background_luminance, background_lightness, in_luminance, in_lightness);
+            float coverage = clamp(green_radius + 0.5, 0.0, 1.0) * in_color.a;
 
-            // Output alpha is always 1.0
-            out_color = vec4(mix(background_color.rgb, in_color.rgb, alpha), 1.0);
+            vec3 composit_PrLPb = mix(background_PrLPb, foreground_PrLPb, coverage);
+            out_color = vec4(PrLPb_to_RGB(composit_PrLPb), 1.0);
         
         } else {
             // Subpixel anti-aliasing
@@ -125,12 +145,16 @@ void main()
             vec2 blue_coord = in_texture_coord.xy + blue_offset;
             float blue_radius = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), blue_coord).r * distance_multiplier;
 
-            vec3 coverage = clamp(vec3(red_radius, green_radius, blue_radius) + 0.5, 0.0, 1.0);
-            vec3 alpha = coverage_to_alpha(
-                coverage, background_luminance, background_lightness, in_luminance, in_lightness);
+            vec3 coverage = clamp(vec3(red_radius, green_radius, blue_radius) + 0.5, 0.0, 1.0) * in_color.a;
+
+            vec3 R_composit_PrLPb = mix(background_PrLPb, foreground_PrLPb, coverage.r);
+            vec3 G_composit_PrLPb = mix(background_PrLPb, foreground_PrLPb, coverage.g);
+            vec3 B_composit_PrLPb = mix(background_PrLPb, foreground_PrLPb, coverage.b);
+
+            vec3 composit_RGB = PrLPb_to_RGB_subpixel(R_composit_PrLPb, G_composit_PrLPb, B_composit_PrLPb);
 
             // Output alpha is always 1.0
-            out_color = vec4(mix(background_color.rgb, in_color.rgb, alpha), 1.0);
+            out_color = vec4(composit_RGB, 1.0);
         }
     }
 }
