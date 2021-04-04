@@ -82,6 +82,7 @@ public:
     /*! Orientation of the RGB subpixels.
      */
     subpixel_orientation subpixel_orientation = subpixel_orientation::BlueRight;
+    //subpixel_orientation subpixel_orientation = subpixel_orientation::Unknown;
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as

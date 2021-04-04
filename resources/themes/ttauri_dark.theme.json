@@ -42,7 +42,7 @@
         [ 58,  58,  60],
         [ 72,  72,  74]
     ],
-
+    
     // Colors used by widgets for internal elements and disabled icons.
     "border-shades": [
         [ 72,  72,  74],
