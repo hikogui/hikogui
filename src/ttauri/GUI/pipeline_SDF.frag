@@ -16,145 +16,127 @@ layout(set = 0, binding = 2) uniform texture2D in_textures[16];
 
 layout(location = 0) in flat vec4 in_clipping_rectangle;
 layout(location = 1) in vec3 in_texture_coord;
-layout(location = 2) in vec4 in_color;
-layout(location = 3) in float in_luminance;
-layout(location = 4) in float in_lightness;
+layout(location = 2) in vec4 in_color_luv;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 out_color;
 
-bool is_clipped()
-{
-    return greaterThanEqual(gl_FragCoord.xyxy, in_clipping_rectangle) != bvec4(true, true, false, false);
+#include "utils.glsl"
+
+/** Get the red and blue subpixel offsets.
+ * @return The red subpixel offset in (x,y), the blue subpixel offset in (z,w)
+ */
+vec4 get_red_blue_subpixel_offset(vec4 texture_stride) {
+    switch (pushConstants.subpixel_orientation) {
+    case 1: // Red-left, Blue-right
+        return vec4(
+            texture_stride.xy / -3.0,
+            texture_stride.xy / 3.0);
+
+    case 2: // Blue-left, Red-right
+        return vec4(
+            texture_stride.xy / 3.0,
+            texture_stride.xy / -3.0);
+
+    case 3: // Red-bottom, Blue-top
+        return vec4(
+            texture_stride.zw / -3.0,
+            texture_stride.zw / 3.0);
+
+    case 4: // Blue-bottom, Red-top
+        return vec4(
+            texture_stride.zw / 3.0,
+            texture_stride.zw / -3.0);
+
+    default:
+        return vec4(0.0, 0.0, 0.0, 0.0);
+    }
 }
 
-float Kr = 0.2126;
-float Kg = 0.7152;
-float Kb = 0.0722;
-float inv_Kr = Kr / Kg;
-float inv_Kb = Kb / Kg;
-
-vec3 RGB_to_PrYPb(vec3 x)
-{
-    float Y = Kr * x.r + Kg * x.g + Kb * x.b;
-    float Pr = x.r - Y;
-    float Pb = x.b - Y;
-    return vec3(Pr, Y, Pb);
+/** Get the red and blue subpixel coordinates.
+ * @return The red subpixel coordinate in (x,y), the blue subpixel coordinate in (z,w)
+ */
+vec4 get_red_blue_subpixel_coord(vec4 texture_stride) {
+    vec4 rb_offset = get_red_blue_subpixel_offset(texture_stride);
+    return in_texture_coord.xyxy + rb_offset;
 }
 
-vec3 PrYPb_to_RGB(vec3 x)
-{
-    float R = x.r + x.g;
-    float G = x.g - x.r * inv_Kr - x.b * inv_Kb;
-    float B = x.b + x.g;
-
-    return vec3(R, G, B);
+/** Get the green subpixel radius to nearest edge.
+ * @return The green subpixel radius
+ */
+float get_green_subpixel_radius(float distance_multiplier) {
+    return texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), in_texture_coord.xy).r * distance_multiplier;
 }
 
-vec3 RGB_to_PrLPb(vec3 x)
-{
-    vec3 tmp = RGB_to_PrYPb(x);
-    return vec3(tmp.r, sqrt(tmp.g), tmp.b);
+/** Get the red and blue subpixel radius to nearest edge.
+ * @return The red subpixel radius in x, the blue subpixel radius in y
+ */
+vec2 get_red_blue_subpixel_radius(float distance_multiplier, vec4 texture_stride) {
+    vec4 rb_coords = get_red_blue_subpixel_coord(texture_stride);
+    return vec2(
+        texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), rb_coords.xy).r * distance_multiplier,
+        texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), rb_coords.zw).r * distance_multiplier);
 }
 
-vec3 PrLPb_to_RGB(vec3 x)
+/** Get the horizontal and vertical stride in a texture map from one fragment to the next.
+ * @return The horizontal texture stride in (x,y) and the vertical texture stride in (z,w).
+ */
+vec4 get_texture_stride()
 {
-    return PrYPb_to_RGB(vec3(x.r, x.g * x.g, x.b));
-}
-
-vec3 PrYPb_to_RGB_subpixel(vec3 sub_R, vec3 sub_G, vec3 sub_B)
-{
-    float R = sub_R.r + sub_R.g;
-    float G = sub_G.g - sub_G.r * inv_Kr - sub_G.b * inv_Kb;
-    float B = sub_B.b + sub_B.g;
-
-    return vec3(R, G, B);
-}
-
-vec3 PrLPb_to_RGB_subpixel(vec3 sub_R, vec3 sub_G, vec3 sub_B)
-{
-    vec3 sub_R_ = vec3(sub_R.r, sub_R.g * sub_R.g, sub_R.b);
-    vec3 sub_G_ = vec3(sub_G.r, sub_G.g * sub_G.g, sub_G.b);
-    vec3 sub_B_ = vec3(sub_B.r, sub_B.g * sub_B.g, sub_B.b);
-    return PrYPb_to_RGB_subpixel(sub_R_, sub_G_, sub_B_);
+    // The amount of distance and direction covered in 2D inside the texture when
+    // stepping one fragment to the right.
+    vec2 horizontal_texture_stride = dFdxCoarse(in_texture_coord.xy);
+    vec2 vertical_texture_stride = vec2(-horizontal_texture_stride.y, horizontal_texture_stride.x);
+    return vec4(horizontal_texture_stride, vertical_texture_stride);
 }
 
 void main()
 {
-    if (is_clipped()) {
+    if (!contains(in_clipping_rectangle, gl_FragCoord.xy)) {
         discard;
     }
 
     // The amount of distance and direction covered in 2D inside the texture when
     // stepping one fragment to the right.
-    vec2 horizontal_texture_stride = dFdxCoarse(in_texture_coord.xy);
-    vec2 vertical_texture_stride = vec2(-horizontal_texture_stride.y, horizontal_texture_stride.x);
-    float pixel_distance = length(horizontal_texture_stride);
+    vec4 texture_stride = get_texture_stride();
 
+    float pixel_distance = length(texture_stride.xy);
     float distance_multiplier = sdf_max_distance / (pixel_distance * atlas_image_width);
 
-    float green_radius = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), in_texture_coord.xy).r * distance_multiplier;
+    float g_radius = get_green_subpixel_radius(distance_multiplier);
 
-    if (green_radius < -0.5) {
+    if (g_radius < -0.5) {
         // Fully outside the fragment, early exit.
         discard;
 
-    } else if (in_color.a == 1.0 && green_radius >= 0.5) {
+    } else if (in_color_luv.a == 1.0 && g_radius >= 0.5) {
         // Fully inside the fragment.
-        out_color = vec4(in_color.rgb, 1.0);
+        vec3 composit_rgb = tluv_to_rgb(in_color_luv.xyz);
+        out_color = vec4(composit_rgb, 1.0);
 
     } else {
-        vec4 background_RGBA = subpassLoad(in_background_color);
-        vec3 background_PrLPb = RGB_to_PrLPb(background_RGBA.rgb);
-        vec3 foreground_PrLPb = RGB_to_PrLPb(in_color.rgb);
+        vec4 background_rgba = subpassLoad(in_background_color);
+        vec3 background_luv = rgb_to_tluv(background_rgba.rgb);
 
         if (pushConstants.subpixel_orientation == 0) {
             // Normal anti-aliasing.
-            float coverage = clamp(green_radius + 0.5, 0.0, 1.0) * in_color.a;
+            float coverage = clamp(g_radius + 0.5, 0.0, 1.0) * in_color_luv.a;
+            vec3 composit_luv = mix(background_luv, in_color_luv.xyz, coverage);
+            vec3 composit_rgb = tluv_to_rgb(composit_luv);
+            out_color = vec4(composit_rgb, 1.0);
 
-            vec3 composit_PrLPb = mix(background_PrLPb, foreground_PrLPb, coverage);
-            out_color = vec4(PrLPb_to_RGB(composit_PrLPb), 1.0);
-        
         } else {
             // Subpixel anti-aliasing
+            vec2 rb_radius = get_red_blue_subpixel_radius(distance_multiplier, texture_stride);
+            vec3 rgb_radius = vec3(rb_radius.x, g_radius, rb_radius.y);
+            vec3 rgb_coverage = clamp(rgb_radius + 0.5, 0.0, 1.0) * in_color_luv.a;
 
-            vec2 red_offset;
-            vec2 blue_offset;
-            switch (pushConstants.subpixel_orientation) {
-            case 1: // Red-left, Blue-right
-                red_offset = horizontal_texture_stride / -3.0;
-                blue_offset = horizontal_texture_stride / 3.0;
-                break;
-            case 2: // Blue-left, Red-right
-                blue_offset = horizontal_texture_stride / -3.0;
-                red_offset = horizontal_texture_stride / 3.0;
-                break;
-            case 3: // Red-bottom, Blue-top
-                red_offset = vertical_texture_stride / -3.0;
-                blue_offset = vertical_texture_stride / 3.0;
-                break;
-            case 4: // Blue-bottom, Red-top
-                blue_offset = vertical_texture_stride / -3.0;
-                red_offset = vertical_texture_stride / 3.0;
-                break;
-            }
+            vec3 r_composit_luv = mix(background_luv, in_color_luv.xyz, rgb_coverage.r);
+            vec3 g_composit_luv = mix(background_luv, in_color_luv.xyz, rgb_coverage.g);
+            vec3 b_composit_luv = mix(background_luv, in_color_luv.xyz, rgb_coverage.b);
 
-            vec2 red_coord = in_texture_coord.xy + red_offset;
-            float red_radius = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), red_coord).r * distance_multiplier;
-
-            vec2 blue_coord = in_texture_coord.xy + blue_offset;
-            float blue_radius = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), blue_coord).r * distance_multiplier;
-
-            vec3 coverage = clamp(vec3(red_radius, green_radius, blue_radius) + 0.5, 0.0, 1.0) * in_color.a;
-
-            vec3 R_composit_PrLPb = mix(background_PrLPb, foreground_PrLPb, coverage.r);
-            vec3 G_composit_PrLPb = mix(background_PrLPb, foreground_PrLPb, coverage.g);
-            vec3 B_composit_PrLPb = mix(background_PrLPb, foreground_PrLPb, coverage.b);
-
-            vec3 composit_RGB = PrLPb_to_RGB_subpixel(R_composit_PrLPb, G_composit_PrLPb, B_composit_PrLPb);
-
-            // Output alpha is always 1.0
-            out_color = vec4(composit_RGB, 1.0);
+            vec3 composit_rgb = tluv_to_rgb(r_composit_luv, g_composit_luv, b_composit_luv);
+            out_color = vec4(composit_rgb, 1.0);
         }
     }
 }
