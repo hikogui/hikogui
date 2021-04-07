@@ -8,13 +8,14 @@
 #include "memory.hpp"
 #include "URL.hpp"
 #include "required.hpp"
+#include "unfair_mutex.hpp"
 #include <mutex>
 
 namespace tt {
 
 std::shared_ptr<file_mapping> file_view::findOrCreateFileMappingObject(URL const& location, access_mode accessMode, size_t size)
 {
-    static std::mutex mutex;
+    static unfair_mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<file_mapping>>> mappedFileObjects;
 
     ttlet lock = std::scoped_lock(mutex);

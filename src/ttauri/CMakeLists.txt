@@ -53,6 +53,8 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_win32.cpp>
     date.hpp
     datum.hpp
+    dead_lock_detector.cpp
+    dead_lock_detector.hpp
     debugger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
@@ -201,6 +203,7 @@ if(TT_BUILD_TESTS)
         coroutine_tests.cpp
         counters_tests.cpp
         datum_tests.cpp
+        dead_lock_detector_tests.cpp
         decimal_tests.cpp
         exceptions_tests.cpp
         file_view_tests.cpp

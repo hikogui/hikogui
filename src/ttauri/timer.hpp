@@ -6,6 +6,7 @@
 #pragma once
 
 #include "hires_utc_clock.hpp"
+#include "unfair_mutex.hpp"
 #include <mutex>
 #include <vector>
 #include <functional>
@@ -101,7 +102,7 @@ private:
      */
     std::string name;
 
-    mutable std::mutex mutex;
+    mutable unfair_mutex mutex;
     std::thread thread;
     std::vector<callback_entry> callback_list;
     size_t callback_count = 0;

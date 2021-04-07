@@ -7,6 +7,7 @@
 #include "logger.hpp"
 #include "memory.hpp"
 #include "required.hpp"
+#include "unfair_mutex.hpp"
 #include <mutex>
 
 namespace tt {
@@ -14,7 +15,7 @@ namespace tt {
 
 std::shared_ptr<file> file_mapping::findOrOpenFile(URL const& location, access_mode accessMode)
 {
-    static std::mutex mutex;
+    static unfair_mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<tt::file>>> mappedFiles;
 
     ttlet lock = std::scoped_lock(mutex);
