@@ -83,31 +83,31 @@ public:
         _callbacks.erase(new_end, _callbacks.cend());
     }
 
+    std::vector<std::weak_ptr<callback_type>> callbacks() const noexcept
+    {
+        auto lock = std::scoped_lock(_mutex);
+
+        // Clean up all the callbacks that expired.
+        std::erase_if(_callbacks, [](auto &x){ return x.expired(); });
+
+        return _callbacks;
+    }
+
     /** Call the subscribed callbacks with the given arguments.
      * @param args The arguments to pass with the invocation of the callback
      */
     void operator()(Args const &...args) const noexcept
     {
-        auto lock = std::scoped_lock(_mutex);
-        tt_assert(!_executing_callbacks);
-        _executing_callbacks = true;
-
-        auto i = _callbacks.begin();
-        while (i != _callbacks.end()) {
-            if (auto callback = i->lock()) {
-                (*callback)(args...);
-                ++i;
-
-            } else {
-                i = _callbacks.erase(i);
+        auto callbacks_ = callbacks();
+        for (auto &callback : callbacks_) {
+            if (auto callback_ = callback.lock()) {
+                (*callback_)(args...);
             }
         };
-        _executing_callbacks = false;
     }
 
 private:
     mutable unfair_recursive_mutex _mutex;
-    mutable bool _executing_callbacks = false;
     mutable std::vector<std::weak_ptr<callback_type>> _callbacks;
 };
 

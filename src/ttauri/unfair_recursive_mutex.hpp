@@ -37,7 +37,7 @@ class unfair_recursive_mutex {
      * OTHER - Another thread while the mutex is held.
      */
 
-    unfair_mutex mutex;
+    unfair_mutex_impl<false> mutex;
 
     // FIRST=write, OWNER|OTHER=read
     std::atomic<thread_id> owner = 0;
@@ -75,6 +75,10 @@ public:
      * When `try_lock()` is called on a thread that already holds the lock true is returned.
      */
     [[nodiscard]] bool try_lock() noexcept {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        dead_lock_detector::lock(this, true);
+#endif
+
         // FIRST | OWNER | OTHER
         ttlet thread_id = current_thread_id();
 
@@ -99,6 +103,10 @@ public:
             return true;
 
         } else {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            dead_lock_detector::unlock(this);
+#endif
+
             // OTHER
             return false;
         }
@@ -112,7 +120,7 @@ public:
     *                cmp  eax,esi  
     *                jne  non_recursive  
     *                lea  r15,[rbx+8]  
-    *                inc  dword ptr [r15]  
+    *                inc  dword ptr [r15]
     *                jmp  locked
     * non_recursive: call unfair_mutex.lock()
     *                lea  r15,[r14+0A0h]  
@@ -121,6 +129,10 @@ public:
     * locked:
     */
     void lock() noexcept {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        dead_lock_detector::lock(this, true);
+#endif
+
         // FIRST | OWNER | OTHER
         ttlet thread_id = current_thread_id();
 
@@ -147,6 +159,10 @@ public:
     }
 
     void unlock() noexcept {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        dead_lock_detector::unlock(this);
+#endif
+
         // FIRST | OWNER
         tt_axiom(recurse_lock_count(), "Unlock must be called on the thread that locked the mutex");
 

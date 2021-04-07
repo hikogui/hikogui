@@ -7,12 +7,12 @@
 #include "required.hpp"
 #include "thread.hpp"
 #include "assert.hpp"
+#include "dead_lock_detector.hpp"
 #include <atomic>
 #include <memory>
 #include <thread>
 
 namespace tt {
-struct unfair_lock_wrap;
 
 /** An unfair mutex
  * This is a fast implementation of a mutex which does not fairly arbitrate
@@ -29,16 +29,28 @@ struct unfair_lock_wrap;
  *     - unlock(): LOCK XADD [],-1; CMP; JE
  * 
  */
-class unfair_mutex {
+template<bool UseDeadLockDetector>
+class unfair_mutex_impl {
 public:
-    unfair_mutex() noexcept {}
-    unfair_mutex(unfair_mutex const &) = delete;
-    unfair_mutex(unfair_mutex &&) = delete;
-    unfair_mutex &operator=(unfair_mutex const &) = delete;
-    unfair_mutex &operator=(unfair_mutex &&) = delete;
+    unfair_mutex_impl() noexcept {}
+    unfair_mutex_impl(unfair_mutex_impl const &) = delete;
+    unfair_mutex_impl(unfair_mutex_impl &&) = delete;
+    unfair_mutex_impl &operator=(unfair_mutex_impl const &) = delete;
+    unfair_mutex_impl &operator=(unfair_mutex_impl &&) = delete;
+
+    ~unfair_mutex_impl() requires (UseDeadLockDetector)
+    {
+        dead_lock_detector::remove_object(this);
+    }
+
+    ~unfair_mutex_impl() = default;
 
     void lock() noexcept
     {
+        if constexpr (UseDeadLockDetector) {
+            dead_lock_detector::lock(this);
+        }
+
         tt_axiom(semaphore.load() <= 2);
 
         // Switch to 1 means there are no waiters.
@@ -46,9 +58,7 @@ public:
         if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
             [[unlikely]] lock_contented(expected);
         }
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        locking_thread = current_thread_id();
-#endif
+
         tt_axiom(semaphore.load() <= 2);
     }
 
@@ -59,23 +69,34 @@ public:
      * Calling try_lock() in a loop will bypass the operating system's wait system,
      * meaning that no priority inversion will take place.
      */
-    bool try_lock() noexcept {
+    [[nodiscard]] bool try_lock() noexcept {
+        if constexpr (UseDeadLockDetector) {
+            dead_lock_detector::lock(this);
+        }
+
         tt_axiom(semaphore.load() <= 2);
 
         // Switch to 1 means there are no waiters.
         uint32_t expected = 0;
         if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
             tt_axiom(semaphore.load() <= 2);
+
+            if constexpr (UseDeadLockDetector) {
+                dead_lock_detector::unlock(this);
+            }
+
             [[unlikely]] return false;
         }
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        locking_thread = current_thread_id();
-#endif
+
         tt_axiom(semaphore.load() <= 2);
         return true;
     }
 
     void unlock() noexcept {
+        if constexpr (UseDeadLockDetector) {
+            dead_lock_detector::unlock(this);
+        }
+
         tt_axiom(semaphore.load() <= 2);
 
         if (semaphore.fetch_sub(1, std::memory_order::relaxed) != 1) {
@@ -85,9 +106,6 @@ public:
         } else {
             atomic_thread_fence(std::memory_order::release);
         }
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        locking_thread = 0;
-#endif
 
         tt_axiom(semaphore.load() <= 2);
     }
@@ -101,10 +119,6 @@ private:
      */
     std::atomic<uint32_t> semaphore = 0;
 
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-    thread_id locking_thread;
-#endif
-
     tt_no_inline void lock_contented(uint32_t expected) noexcept
     {
         tt_axiom(semaphore.load() <= 2);
@@ -115,11 +129,6 @@ private:
             // Set to 2 when we are waiting.
             expected = 1;
             if (should_wait || semaphore.compare_exchange_strong(expected, 2)) {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-                // This check only works because locking_thread can never be the current
-                // thread id. It is either the thread that made the lock, or it is zero.
-                tt_assert(locking_thread != current_thread_id());
-#endif
                 tt_axiom(semaphore.load() <= 2);
                 semaphore.wait(2);
             }
@@ -130,5 +139,11 @@ private:
         } while (!semaphore.compare_exchange_strong(expected, 2));
     }
 };
+
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+using unfair_mutex = unfair_mutex_impl<true>;
+#else
+using unfair_mutex = unfair_mutex_impl<false>;
+#endif
 
 }

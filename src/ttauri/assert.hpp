@@ -21,7 +21,7 @@ namespace tt {
 #define tt_assert(expression, ...) \
     do { \
         if (!(expression)) { \
-            if constexpr (::tt::nr_arguments(__VA_ARGS__) == 0) { \
+            if constexpr (__VA_OPT__(!) true) { \
                 [[unlikely]] tt_debugger_abort(#expression); \
             } else { \
                 [[unlikely]] tt_debugger_abort(__VA_ARGS__); \
