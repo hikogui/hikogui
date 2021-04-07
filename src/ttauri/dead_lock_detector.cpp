@@ -12,7 +12,7 @@ namespace tt {
 
 static unfair_mutex_impl<false> dead_lock_detector_mutex;
 
-void *dead_lock_detector::check_graph(void *object) noexcept
+[[nodiscard]] void *dead_lock_detector::check_graph(void *object) noexcept
 {
     tt_axiom(object != nullptr);
 
@@ -32,6 +32,7 @@ void *dead_lock_detector::check_graph(void *object) noexcept
 
 next_combination:;
     }
+    return nullptr;
 }
 
 void dead_lock_detector::lock(void *object, bool recursive_lock)
