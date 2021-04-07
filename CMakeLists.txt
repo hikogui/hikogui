@@ -343,6 +343,7 @@ endif()
 #-------------------------------------------------------------------
 
 add_shader(ttauri_shader_objects
+    src/ttauri/GUI/utils.glsl
     src/ttauri/GUI/pipeline_image.vert
     src/ttauri/GUI/pipeline_image.frag
     src/ttauri/GUI/pipeline_flat.vert
