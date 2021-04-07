@@ -91,6 +91,17 @@ void dead_lock_detector::unlock(void *object)
     stack.pop_back();
 }
 
+void dead_lock_detector::clear_stack() noexcept
+{
+    stack.clear();
+}
+
+void dead_lock_detector::clear_graph() noexcept
+{
+    ttlet lock = std::scoped_lock(dead_lock_detector_mutex);
+    lock_graph.clear();
+}
+
 void dead_lock_detector::remove_object(void *object) noexcept
 {
     tt_axiom(object != nullptr);

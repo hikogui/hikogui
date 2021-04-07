@@ -37,6 +37,16 @@ public:
      */
     static void remove_object(void *object) noexcept;
 
+    /** Clear the stack.
+     * Is used in unit-tests.
+     */
+    static void clear_stack() noexcept;
+
+    /** Clear the graph.
+     * Is used in unit-tests.
+     */
+    static void clear_graph() noexcept;
+
 private:
     thread_local inline static std::vector<void *> stack;
 
