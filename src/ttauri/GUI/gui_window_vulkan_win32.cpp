@@ -16,10 +16,6 @@
 
 #pragma comment(lib, "dwmapi")
 
-extern "C" {
-IMAGE_DOS_HEADER __ImageBase;
-}
-
 namespace tt {
 
 using namespace std;
@@ -38,46 +34,26 @@ static WNDCLASSW win32WindowClass = {};
 static bool win32WindowClassIsRegistered = false;
 static bool firstWindowHasBeenOpened = false;
 
-static std::unordered_map<HWND, gui_window_vulkan_win32 *> win32_window_map = {};
-static unfair_mutex win32_window_map_mutex;
-
-static void add_win32_window(HWND handle, gui_window_vulkan_win32 &window) noexcept
-{
-    ttlet lock = std::scoped_lock(win32_window_map_mutex);
-    win32_window_map[handle] = &window;
-}
-
-static gui_window_vulkan_win32 *find_win32_window(HWND handle) noexcept
-{
-    ttlet lock = std::scoped_lock(win32_window_map_mutex);
-    auto i = win32_window_map.find(handle);
-    return i != win32_window_map.end() ? i->second : nullptr;
-}
-
-static void erase_win32_window(HWND handle) noexcept
-{
-    ttlet lock = std::scoped_lock(win32_window_map_mutex);
-    auto i = win32_window_map.find(handle);
-    if (i != win32_window_map.end()) {
-        win32_window_map.erase(i);
-    }
-}
-
 /** The win32 window message handler.
  * This function should not take any locks as _WindowProc is called recursively.
  */
 static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
-    if (uMsg == WM_NCCREATE && lParam) {
+    if (uMsg == WM_CREATE && lParam) {
         ttlet createData = reinterpret_cast<CREATESTRUCT *>(lParam);
         auto *const window = static_cast<gui_window_vulkan_win32 *>(createData->lpCreateParams);
 
-        if (window != nullptr) {
-            add_win32_window(hwnd, *window);
+        SetLastError(0);
+        auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
+        if (r != 0 || GetLastError() != 0) {
+            tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
         }
     }
 
-    auto *const window = find_win32_window(hwnd);
+    // It is assumed that GWLP_USERDATA is zero when the window is created. Because messages to
+    // this window are send before WM_CREATE and there is no way to figure out to which actual window
+    // these messages belong.
+    auto window = reinterpret_cast<gui_window_vulkan_win32 *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA)); 
     if (window != nullptr) {
         tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
         LRESULT result = window->windowProc(uMsg, wParam, lParam);
@@ -85,7 +61,11 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         if (uMsg == WM_DESTROY) {
             // Remove the window now, before DefWindowProc, which could recursively
             // Reuse the window as it is being cleaned up.
-            erase_win32_window(hwnd);
+            SetLastError(0);
+            auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, NULL);
+            if (r == 0 || GetLastError() != 0) {
+                tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
+            }
         }
 
         // The call to DefWindowProc() recurses make sure we do not hold on to any locks.
@@ -100,7 +80,7 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     }
 }
 
-static void createWindowClass()
+static void createWindowClass(gui_system &system)
 {
     if (!win32WindowClassIsRegistered) {
         // Register the window class.
@@ -109,7 +89,7 @@ static void createWindowClass()
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(application::global->instance);
+        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(system.instance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -123,7 +103,7 @@ void gui_window_vulkan_win32::create_window(const std::u8string &_title, extent2
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
-    createWindowClass();
+    createWindowClass(system);
 
     auto u16title = to_wstring(_title);
 
@@ -142,7 +122,7 @@ void gui_window_vulkan_win32::create_window(const std::u8string &_title, extent2
 
         NULL, // Parent window
         NULL, // Menu
-        reinterpret_cast<HINSTANCE>(application::global->instance), // Instance handle
+        reinterpret_cast<HINSTANCE>(system.instance), // Instance handle
         this);
     if (win32Window == nullptr) {
         tt_log_fatal("Could not open a win32 window: {}", get_last_error_message());
@@ -374,9 +354,12 @@ done:
 vk::SurfaceKHR gui_window_vulkan_win32::getSurface() const
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
-    return narrow_cast<gui_system_vulkan_win32 &>(system).createWin32SurfaceKHR(
+
+    auto &win32_system = narrow_cast<gui_system_vulkan_win32 &>(system);
+
+    return win32_system.createWin32SurfaceKHR(
         {vk::Win32SurfaceCreateFlagsKHR(),
-         reinterpret_cast<HINSTANCE>(application::global->instance),
+         reinterpret_cast<HINSTANCE>(system.instance),
          reinterpret_cast<HWND>(win32Window)});
 }
 

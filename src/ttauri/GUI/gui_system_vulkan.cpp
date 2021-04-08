@@ -51,8 +51,9 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
 
 gui_system_vulkan::gui_system_vulkan(
     std::weak_ptr<gui_system_delegate> const &delegate,
+    os_handle instance,
     const std::vector<const char *> extensionNames) :
-    gui_system(delegate), requiredExtensions(std::move(extensionNames))
+    gui_system(delegate, instance), requiredExtensions(std::move(extensionNames))
 {
     applicationInfo = vk::ApplicationInfo(
         application_metadata().name.c_str(),

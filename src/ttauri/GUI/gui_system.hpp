@@ -32,13 +32,17 @@ public:
     //! List of all devices.
     std::vector<std::shared_ptr<gui_device>> devices;
 
+    /** Handle to the operating system's instance.
+     */
+    os_handle instance;
+
     /*! Keep track of the numberOfWindows in the previous render cycle.
      * This way we can call closedLastWindow on the application once.
      */
     ssize_t previousNumberOfWindows = 0;
 
-    gui_system(std::weak_ptr<gui_system_delegate> const &delegate) noexcept :
-        delegate(delegate)
+    gui_system(std::weak_ptr<gui_system_delegate> const &delegate, os_handle instance) noexcept :
+        delegate(delegate), instance(instance)
     {
         verticalSync = std::make_unique<vertical_sync>(_handlevertical_sync, this);
     }

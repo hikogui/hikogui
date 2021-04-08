@@ -66,8 +66,6 @@ private:
 
     [[nodiscard]] char32_t handleSuragates(char32_t c) noexcept;
     [[nodiscard]] mouse_event createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
-
-
 };
 
 }
