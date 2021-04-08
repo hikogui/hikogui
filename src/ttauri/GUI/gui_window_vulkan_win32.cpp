@@ -16,6 +16,10 @@
 
 #pragma comment(lib, "dwmapi")
 
+extern "C" {
+IMAGE_DOS_HEADER __ImageBase;
+}
+
 namespace tt {
 
 using namespace std;
