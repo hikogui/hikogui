@@ -41,10 +41,6 @@ public:
     */
     std::weak_ptr<application_delegate> delegate;
 
-    /** Handle to the operating system's application-instance.
-     */
-    os_handle instance;
-
     /** The initial window size for the first application window.
      */
     gui_window_size initial_window_size = gui_window_size::normal;
@@ -118,6 +114,8 @@ protected:
 private:
     typename timer::callback_ptr_type logger_maintenance_callback;
     typename timer::callback_ptr_type clock_maintenance_callback;
+
+    os_handle instance;
 };
 
 }

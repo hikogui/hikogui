@@ -57,7 +57,7 @@ private:
      */
     inline static std::vector<std::pair<void *, void *>> lock_graph;
 
-    static void *check_graph(void *object) noexcept;
+    [[nodiscard]] static void *check_graph(void *object) noexcept;
 };
 
 }

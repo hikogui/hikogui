@@ -126,7 +126,7 @@ void application::init_gui()
                 tt_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
             }
 
-            gui_system::global = std::make_unique<gui_system_vulkan_win32>(gui_delegate);
+            gui_system::global = std::make_unique<gui_system_vulkan_win32>(gui_delegate, instance);
             gui_system::global->init();
         }
     }
