@@ -13,21 +13,13 @@
 #include "../application_win32.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
+#include <new>
 
 #pragma comment(lib, "dwmapi")
 
 namespace tt {
 
 using namespace std;
-
-template<typename T>
-inline T *to_ptr(LPARAM lParam) noexcept
-{
-    T *ptr;
-    memcpy(&ptr, &lParam, sizeof(T *));
-
-    return ptr;
-}
 
 static const wchar_t *win32WindowClassName = nullptr;
 static WNDCLASSW win32WindowClass = {};
@@ -40,11 +32,10 @@ static bool firstWindowHasBeenOpened = false;
 static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     if (uMsg == WM_CREATE && lParam) {
-        ttlet createData = reinterpret_cast<CREATESTRUCT *>(lParam);
-        auto *const window = static_cast<gui_window_vulkan_win32 *>(createData->lpCreateParams);
+        ttlet createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
 
         SetLastError(0);
-        auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
+        auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, std::bit_cast<LONG_PTR>(createData->lpCreateParams));
         if (r != 0 || GetLastError() != 0) {
             tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
         }
@@ -53,8 +44,10 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     // It is assumed that GWLP_USERDATA is zero when the window is created. Because messages to
     // this window are send before WM_CREATE and there is no way to figure out to which actual window
     // these messages belong.
-    auto window = reinterpret_cast<gui_window_vulkan_win32 *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA)); 
-    if (window != nullptr) {
+    auto window_userdata = GetWindowLongPtrW(hwnd, GWLP_USERDATA);
+    if (window_userdata != nullptr) {
+        auto window = std::launder(std::bit_cast<gui_window_vulkan_win32 *>(window_userdata));
+
         tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
         LRESULT result = window->windowProc(uMsg, wParam, lParam);
 
@@ -467,7 +460,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     } break;
 
     case WM_CREATE: {
-        ttlet createstruct_ptr = to_ptr<CREATESTRUCT>(lParam);
+        ttlet createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
         RECT rectangle;
         rectangle.left = createstruct_ptr->x;
         rectangle.top = createstruct_ptr->y;
@@ -517,17 +510,17 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     } break;
 
     case WM_SIZING: {
-        ttlet rect_ptr = to_ptr<RECT>(lParam);
+        ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         setOSWindowRectangleFromRECT(*rect_ptr);
     } break;
 
     case WM_MOVING: {
-        ttlet rect_ptr = to_ptr<RECT>(lParam);
+        ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         setOSWindowRectangleFromRECT(*rect_ptr);
     } break;
 
     case WM_WINDOWPOSCHANGED: {
-        ttlet windowpos_ptr = to_ptr<WINDOWPOS>(lParam);
+        ttlet windowpos_ptr = std::launder(std::bit_cast<WINDOWPOS *>(lParam));
         RECT rectangle;
         rectangle.left = windowpos_ptr->x;
         rectangle.top = windowpos_ptr->y;
@@ -566,7 +559,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         tt_axiom(widget);
         ttlet minimum_widget_size = widget->minimum_size();
         ttlet maximum_widget_size = widget->maximum_size();
-        ttlet minmaxinfo = to_ptr<MINMAXINFO>(lParam);
+        ttlet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
         minmaxinfo->ptMaxSize.x = narrow_cast<LONG>(maximum_widget_size.width());
         minmaxinfo->ptMaxSize.y = narrow_cast<LONG>(maximum_widget_size.height());
         minmaxinfo->ptMinTrackSize.x = narrow_cast<LONG>(minimum_widget_size.width());
