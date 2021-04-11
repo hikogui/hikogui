@@ -55,25 +55,23 @@ public:
     }
 
     small_map &operator=(small_map const &other) {
-        if (this != &other) {
-            _end = items.begin();
-            for (ttlet &other_item: other) {
-                auto &this_item = *(_end++);
-                this_item = other_item;
-            }
+        tt_return_on_self_assignment(other);
+        _end = items.begin();
+        for (ttlet &other_item: other) {
+            auto &this_item = *(_end++);
+            this_item = other_item;
         }
         return *this;
     }
 
     small_map &operator=(small_map &&other) {
-        if (this != &other) {
-            _end = items.begin();
-            for (ttlet &other_item: other) {
-                auto &this_item = *(_end++);
-                this_item = std::move(other_item);
-            }
-            other._end = other.begin();
+        tt_return_on_self_assignment(other);
+        _end = items.begin();
+        for (ttlet &other_item: other) {
+            auto &this_item = *(_end++);
+            this_item = std::move(other_item);
         }
+        other._end = other.begin();
         return *this;
     }
 

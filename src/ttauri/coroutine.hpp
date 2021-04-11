@@ -96,7 +96,7 @@ public:
 
     generator &operator=(generator &&other) noexcept
     {
-        tt_short_circuit_self_assignment(other);
+        tt_return_on_self_assignment(other);
         if (_coroutine) {
             _coroutine.destroy();
         }

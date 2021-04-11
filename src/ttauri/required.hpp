@@ -42,7 +42,7 @@ constexpr ssize_t operator"" _z(unsigned long long lhs) noexcept
     return static_cast<ssize_t>(lhs);
 }
 
-#define tt_short_circuit_self_assignment(other)\
+#define tt_return_on_self_assignment(other)\
     if (&(other) == this) [[unlikely]] return *this;
 
 } // namespace tt

@@ -56,7 +56,7 @@ public:
 
     grapheme &operator=(const grapheme &other) noexcept
     {
-        tt_short_circuit_self_assignment(other);
+        tt_return_on_self_assignment(other);
         delete_pointer();
         value = other.value;
         if (other.has_pointer()) {

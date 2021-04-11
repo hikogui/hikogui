@@ -95,7 +95,7 @@ struct token_t {
 
     token_t &operator=(token_t const &other) noexcept
     {
-        tt_short_circuit_self_assignment(other);
+        tt_return_on_self_assignment(other);
         name = other.name;
         value = other.value;
         location = other.location;

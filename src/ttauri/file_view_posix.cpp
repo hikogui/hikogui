@@ -54,7 +54,7 @@ file_view::file_view(file_view const &other) noexcept :
 
 file_view &file_view::operator=(file_view const &other) noexcept
 {
-    tt_short_circuit_self_assignment(other);
+    tt_return_on_self_assignment(other);
     _file_mapping_object = other._file_mapping_object;
     _offset = other._offset;
     _bytes = other._bytes;
@@ -69,7 +69,7 @@ file_view::file_view(file_view &&other) noexcept :
 
 file_view &file_view::operator=(file_view &&other) noexcept
 {
-    tt_short_circuit_self_assignment(other);
+    tt_return_on_self_assignment(other);
     _file_mapping_object = std::move(other._file_mapping_object);
     _offset = other._offset;
     _bytes = std::move(other._bytes);

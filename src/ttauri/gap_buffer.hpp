@@ -110,7 +110,7 @@ public:
      */
     gap_buffer &operator=(gap_buffer const &other) noexcept
     {
-        tt_short_circuit_self_assignment(other);
+        tt_return_on_self_assignment(other);
 
         clear();
         if (_gap_size >= other.size()) {
@@ -169,7 +169,7 @@ public:
      */
     gap_buffer &operator=(gap_buffer &&other) noexcept
     {
-        tt_short_circuit_self_assignment(other);
+        tt_return_on_self_assignment(other);
 
         // Clear the data inside this.
         clear();

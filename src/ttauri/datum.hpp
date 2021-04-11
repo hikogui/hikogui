@@ -453,7 +453,7 @@ public:
 
     datum_impl &operator=(datum_impl const &other) noexcept
     {
-        tt_short_circuit_self_assignment(other);
+        tt_return_on_self_assignment(other);
         if (is_phy_pointer()) {
             [[unlikely]] delete_pointer();
         }
@@ -478,7 +478,7 @@ public:
 
     datum_impl &operator=(datum_impl &&other) noexcept
     {
-        tt_short_circuit_self_assignment(other);
+        tt_return_on_self_assignment(other);
         // We do a memcpy, because we don't know the type in the union.
         std::memcpy(this, &other, sizeof(*this));
         other.u64 = undefined_mask;
