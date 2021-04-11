@@ -54,9 +54,14 @@ public:
     explicit URL(std::string const &url);
     explicit URL(url_parts const &parts);
 
-    URL(URL const &other) noexcept : value(other.value) {}
+    URL(URL const &other) noexcept : value(other.value) { tt_axiom(&other != this); }
     URL(URL &&other) noexcept = default;
-    URL &operator=(URL const &other) noexcept { value = other.value; return *this; }
+    URL &operator=(URL const &other) noexcept { 
+        // Self-assignment is allowed.
+        value = other.value; 
+        return *this; 
+    }
+
     URL &operator=(URL &&other) noexcept = default;
 
     [[nodiscard]] size_t hash() const noexcept;
