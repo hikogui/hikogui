@@ -211,7 +211,7 @@ public:
 
     pixel_map &operator=(pixel_map &&other) noexcept
     {
-        // Compatible with self-move.
+        // Self assignment is allowed.
         if (_self_allocated) {
             delete[] _pixels;
         }
