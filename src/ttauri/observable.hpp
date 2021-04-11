@@ -28,6 +28,7 @@ public:
 
     observable(observable const &other) noexcept : pimpl(other.pimpl)
     {
+        tt_axiom(&other != this);
         pimpl_callback = pimpl->subscribe([this]() {
             this->notifier();
         });
@@ -35,6 +36,7 @@ public:
 
     observable &operator=(observable const &other) noexcept
     {
+        // Self-assignment is allowed.
         pimpl->unsubscribe(pimpl_callback);
         pimpl = other.pimpl;
         pimpl_callback = pimpl->subscribe([this]() {

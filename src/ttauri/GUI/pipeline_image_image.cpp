@@ -23,11 +23,13 @@ Image::Image(Image &&other) noexcept :
     height_in_pages(other.height_in_pages),
     pages(std::move(other.pages))
 {
+    tt_axiom(&other != this);
     other.parent = nullptr;
 }
 
 Image &Image::operator=(Image &&other) noexcept
 {
+    // Self-assignment is allowed.
     if (parent) {
         parent->freePages(pages);
     }

@@ -99,6 +99,7 @@ public:
 
     label &operator=(label const &other) noexcept
     {
+        // Self-assignment is allowed.
         _icon = other._icon;
         _msgid = other._msgid;
         _args = other._args->make_unique_copy();

@@ -47,6 +47,7 @@ public:
 
     grapheme(const grapheme &other) noexcept
     {
+        tt_axiom(&other != this);
         value = other.value;
         if (other.has_pointer()) {
             value = create_pointer(other.get_pointer()->data(), other.size());
@@ -55,24 +56,25 @@ public:
 
     grapheme &operator=(const grapheme &other) noexcept
     {
-        if (this != &other) {
-            delete_pointer();
-            value = other.value;
-            if (other.has_pointer()) {
-                value = create_pointer(other.get_pointer()->data(), other.size());
-            }
+        tt_short_circuit_self_assignment(other);
+        delete_pointer();
+        value = other.value;
+        if (other.has_pointer()) {
+            value = create_pointer(other.get_pointer()->data(), other.size());
         }
         return *this;
     }
 
     grapheme(grapheme &&other) noexcept
     {
+        tt_axiom(&other != this);
         value = other.value;
         other.value = 1;
     }
 
     grapheme &operator=(grapheme &&other) noexcept
     {
+        // Self-assignment is allowed.
         delete_pointer();
         value = other.value;
         other.value = 1;
