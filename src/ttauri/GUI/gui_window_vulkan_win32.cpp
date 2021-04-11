@@ -45,32 +45,31 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     // this window are send before WM_CREATE and there is no way to figure out to which actual window
     // these messages belong.
     auto window_userdata = GetWindowLongPtrW(hwnd, GWLP_USERDATA);
-    if (window_userdata != nullptr) {
-        auto window = std::launder(std::bit_cast<gui_window_vulkan_win32 *>(window_userdata));
-
-        tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
-        LRESULT result = window->windowProc(uMsg, wParam, lParam);
-
-        if (uMsg == WM_DESTROY) {
-            // Remove the window now, before DefWindowProc, which could recursively
-            // Reuse the window as it is being cleaned up.
-            SetLastError(0);
-            auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, NULL);
-            if (r == 0 || GetLastError() != 0) {
-                tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
-            }
-        }
-
-        // The call to DefWindowProc() recurses make sure we do not hold on to any locks.
-        if (result == -1) {
-            result = DefWindowProc(hwnd, uMsg, wParam, lParam);
-        }
-
-        return result;
-
-    } else {
+    if (window_userdata == 0) {
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
+
+    auto window = std::launder(std::bit_cast<gui_window_vulkan_win32 *>(window_userdata));
+
+    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
+    LRESULT result = window->windowProc(uMsg, wParam, lParam);
+
+    if (uMsg == WM_DESTROY) {
+        // Remove the window now, before DefWindowProc, which could recursively
+        // Reuse the window as it is being cleaned up.
+        SetLastError(0);
+        auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, NULL);
+        if (r == 0 || GetLastError() != 0) {
+            tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
+        }
+    }
+
+    // The call to DefWindowProc() recurses make sure we do not hold on to any locks.
+    if (result == -1) {
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
+
+    return result;
 }
 
 static void createWindowClass(gui_system &system)
