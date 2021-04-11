@@ -90,18 +90,18 @@ public:
 
     generator(generator &&other) noexcept : _coroutine{other._coroutine}
     {
+        tt_axiom(&other != this);
         other._coroutine = {};
     }
 
     generator &operator=(generator &&other) noexcept
     {
-        if (this != &other) {
-            if (_coroutine) {
-                _coroutine.destroy();
-            }
-            _coroutine = other._coroutine;
-            other._coroutine = {};
+        tt_return_on_self_assignment(other);
+        if (_coroutine) {
+            _coroutine.destroy();
         }
+        _coroutine = other._coroutine;
+        other._coroutine = {};
         return *this;
     }
 

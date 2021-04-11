@@ -110,9 +110,7 @@ public:
      */
     gap_buffer &operator=(gap_buffer const &other) noexcept
     {
-        if (&other == this) {
-            return *this;
-        }
+        tt_return_on_self_assignment(other);
 
         clear();
         if (_gap_size >= other.size()) {
@@ -171,9 +169,7 @@ public:
      */
     gap_buffer &operator=(gap_buffer &&other) noexcept
     {
-        if (&other == this) {
-            return *this;
-        }
+        tt_return_on_self_assignment(other);
 
         // Clear the data inside this.
         clear();

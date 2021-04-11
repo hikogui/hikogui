@@ -30,6 +30,7 @@ public:
 
     [[nodiscard]] constexpr indent &operator=(indent const &other) noexcept
     {
+        // Self-assignment is allowed.
         _space = other._space;
         _spaces = other._spaces;
         _depth = other._depth;
@@ -38,6 +39,7 @@ public:
 
     [[nodiscard]] constexpr indent &operator=(indent &&other) noexcept
     {
+        // Self-assignment is allowed.
         _space = other._space;
         _spaces = other._spaces;
         _depth = other._depth;

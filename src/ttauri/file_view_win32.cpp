@@ -55,30 +55,34 @@ file_view::file_view(URL const &location, access_mode accessMode, size_t offset,
 file_view::file_view(file_view const &other) noexcept:
     _file_mapping_object(other._file_mapping_object),
     _bytes(other._bytes),
-    _offset(other._offset) {}
+    _offset(other._offset)
+{
+    tt_axiom(&other != this);
+}
 
 file_view &file_view::operator=(file_view const &other) noexcept
 {
-    if (this != &other) {
-        _file_mapping_object = other._file_mapping_object;
-        _offset = other._offset;
-        _bytes = other._bytes;
-    }
+    tt_return_on_self_assignment(other);
+    _file_mapping_object = other._file_mapping_object;
+    _offset = other._offset;
+    _bytes = other._bytes;
     return *this;
 }
 
 file_view::file_view(file_view &&other) noexcept:
     _file_mapping_object(std::move(other._file_mapping_object)),
     _bytes(std::move(other._bytes)),
-    _offset(other._offset) {}
+    _offset(other._offset)
+{
+    tt_axiom(&other != this);
+}
 
 file_view &file_view::operator=(file_view &&other) noexcept
 {
-    if (this != &other) {
-        _file_mapping_object = std::move(other._file_mapping_object);
-        _offset = other._offset;
-        _bytes = std::move(other._bytes);
-    }
+    tt_return_on_self_assignment(other);
+    _file_mapping_object = std::move(other._file_mapping_object);
+    _offset = other._offset;
+    _bytes = std::move(other._bytes);
     return *this;
 }
 

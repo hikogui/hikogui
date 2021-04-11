@@ -23,6 +23,7 @@ icon::icon(ttauri_icon const &icon) noexcept : icon(to_font_glyph_ids(icon)) {}
 
 icon::icon(icon const &other) noexcept
 {
+    tt_axiom(&other != this);
     if (auto font_glyph_id = std::get_if<font_glyph_ids>(&other.image)) {
         image = *font_glyph_id;
 
@@ -39,6 +40,7 @@ icon::icon(icon const &other) noexcept
 
 icon &icon::operator=(icon const &other) noexcept
 {
+    // Self-assignment is allowed.
     if (auto font_glyph_id = std::get_if<font_glyph_ids>(&other.image)) {
         image = *font_glyph_id;
 

@@ -441,6 +441,7 @@ public:
 
     datum_impl(datum_impl const &other) noexcept
     {
+        tt_axiom(&other != this);
         if (other.is_phy_pointer()) {
             [[unlikely]] copy_pointer(other);
 
@@ -452,24 +453,24 @@ public:
 
     datum_impl &operator=(datum_impl const &other) noexcept
     {
-        if (this != &other) {
-            if (is_phy_pointer()) {
-                [[unlikely]] delete_pointer();
-            }
+        tt_return_on_self_assignment(other);
+        if (is_phy_pointer()) {
+            [[unlikely]] delete_pointer();
+        }
 
-            if (other.is_phy_pointer()) {
-                [[unlikely]] copy_pointer(other);
+        if (other.is_phy_pointer()) {
+            [[unlikely]] copy_pointer(other);
 
-            } else {
-                // We do a memcpy, because we don't know the type in the union.
-                std::memcpy(this, &other, sizeof(*this));
-            }
+        } else {
+            // We do a memcpy, because we don't know the type in the union.
+            std::memcpy(this, &other, sizeof(*this));
         }
         return *this;
     }
 
     datum_impl(datum_impl &&other) noexcept : u64(undefined_mask)
     {
+        tt_axiom(&other != this);
         // We do a memcpy, because we don't know the type in the union.
         std::memcpy(this, &other, sizeof(*this));
         other.u64 = undefined_mask;
@@ -477,10 +478,9 @@ public:
 
     datum_impl &operator=(datum_impl &&other) noexcept
     {
-        if (this != &other) {
-            // We do a memcpy, because we don't know the type in the union.
-            std::memcpy(this, &other, sizeof(*this));
-        }
+        tt_return_on_self_assignment(other);
+        // We do a memcpy, because we don't know the type in the union.
+        std::memcpy(this, &other, sizeof(*this));
         other.u64 = undefined_mask;
         return *this;
     }
