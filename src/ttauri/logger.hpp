@@ -67,7 +67,7 @@ public:
         ttlet cpu_id = _time_stamp.cpu_id();
 
         if constexpr (static_cast<bool>(Level & log_level::statistics)) {
-            return fmt::format("{} {:5} {} {} {}\n", local_timestring, to_const_string(Level), _what(), _thread_id, cpu_id);
+            return fmt::format("{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), _thread_id, cpu_id);
         } else {
             return fmt::format("{} {:5} {} ({}:{}) {} {}\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine, _thread_id, cpu_id);
         }
