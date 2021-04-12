@@ -7,6 +7,7 @@
 #include "../required.hpp"
 #include "../logger.hpp"
 #include "../exception.hpp"
+#include "../locked_memory_allocator.hpp"
 #include <Windows.h>
 #include <mmdeviceapi.h>
 
@@ -132,7 +133,8 @@ void audio_system_win32::update_device_list() noexcept
             old_devices.erase(it);
 
         } else {
-            auto device = std::make_shared<audio_device_win32>(win32_device);
+            auto device = std::allocate_shared<audio_device_win32>(locked_memory_allocator<audio_device_win32>{}, win32_device);
+            //auto device = std::make_shared<audio_device_win32>(win32_device);
             tt_log_info("Found audio device {} state={}", device->name(), device->state());
             _devices.push_back(std::move(device));
         }
