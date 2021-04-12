@@ -54,7 +54,9 @@ public:
 
     template<typename... Args>
     log_message(Args &&...args) noexcept :
-        _time_stamp(time_stamp_count::now(std::memory_order::relaxed)), _what(std::forward<Args>(args)...)
+        _time_stamp(time_stamp_count::now(std::memory_order::relaxed)), 
+        _thread_id(current_thread_id()),
+        _what(std::forward<Args>(args)...)
     {
     }
 
@@ -62,16 +64,18 @@ public:
     {
         ttlet time_point = hires_utc_clock::make(_time_stamp);
         ttlet local_timestring = format_iso8601(time_point);
+        ttlet cpu_id = _time_stamp.cpu_id();
 
         if constexpr (static_cast<bool>(Level & log_level::statistics)) {
-            return fmt::format("{} {:5} {}\n", local_timestring, to_const_string(Level), _what());
+            return fmt::format("{} {:5} {} {} {}\n", local_timestring, to_const_string(Level), _what(), _thread_id, cpu_id);
         } else {
-            return fmt::format("{} {:5} {} ({}:{})\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine);
+            return fmt::format("{} {:5} {} ({}:{}) {} {}\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine, _thread_id, cpu_id);
         }
     }
 
 private:
     time_stamp_count _time_stamp;
+    thread_id _thread_id;
     delayed_format<Fmt, Values...> _what;
 };
 
