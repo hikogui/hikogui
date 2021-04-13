@@ -28,28 +28,28 @@ using f32x4_raw = std::array<float, 4>;
 
 /** Take the ceil for each of the elements in the SSE register.
  */
-[[nodiscard]] inline f32x4_raw f32x4_sse_ceil(f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_ceil(f32x4_raw const &rhs) noexcept
 {
     return to_f32x4_raw(_mm_ceil_ps(to_m128(rhs)));
 }
 
 /** Take the floor for each of the elements in the SSE register.
  */
-[[nodiscard]] inline f32x4_raw f32x4_sse_floor(f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_floor(f32x4_raw const &rhs) noexcept
 {
     return to_f32x4_raw(_mm_floor_ps(to_m128(rhs)));
 }
 
 /** Round each of the elements in the current rounding direction in the SSE register.
  */
-[[nodiscard]] inline f32x4_raw f32x4_sse_round(f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_round(f32x4_raw const &rhs) noexcept
 {
     return to_f32x4_raw(_mm_round_ps(to_m128(rhs), _MM_FROUND_CUR_DIRECTION));
 }
 
 /** Take the reciprocal of each element in the SSE register.
  */
-[[nodiscard]] inline f32x4_raw f32x4_sse_rcp(f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_rcp(f32x4_raw const &rhs) noexcept
 {
     return to_f32x4_raw(_mm_rcp_ps(to_m128(rhs)));
 }
@@ -59,7 +59,7 @@ using f32x4_raw = std::array<float, 4>;
  * @tparam Mask '1': 0.0, '0': original value.
  */
 template<unsigned int Mask>
-[[nodiscard]] inline f32x4_raw f32x4_sse_clear(f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_clear(f32x4_raw const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0);
 
@@ -81,7 +81,7 @@ template<unsigned int Mask>
  * @tparam Mask '1': -0.0, '0': 0.0
  */
 template<unsigned int Mask>
-[[nodiscard]] inline f32x4_raw f32x4_sse_make_sign() noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_make_sign() noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0);
 
@@ -108,7 +108,7 @@ template<unsigned int Mask>
  * @tparam Mask '1': Negate element, '0': Original element
  */
 template<unsigned int Mask>
-[[nodiscard]] inline f32x4_raw f32x4_sse_neg(f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_neg(f32x4_raw const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0);
 
@@ -116,7 +116,7 @@ template<unsigned int Mask>
         return rhs;
 
     } else {
-        ttlet sign = to_m128(f32x4_sse_make_sign<Mask>());
+        ttlet sign = to_m128(f32x4_x64v2_make_sign<Mask>());
         return to_f32x4_raw(_mm_xor_ps(to_m128(rhs), sign));
     }
 }
@@ -128,7 +128,7 @@ template<unsigned int Mask>
  * w = rhs.z + rhs.w
  */
 [[nodiscard]] inline f32x4_raw
-f32x4_sse_hadd(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+f32x4_x64v2_hadd(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     return to_f32x4_raw(_mm_hadd_ps(to_m128(lhs), to_m128(rhs)));
 }
@@ -140,7 +140,7 @@ f32x4_sse_hadd(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  * w = rhs.z - rhs.w
  */
 [[nodiscard]] inline f32x4_raw
-f32x4_sse_hsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+f32x4_x64v2_hsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     return to_f32x4_raw(_mm_hsub_ps(to_m128(lhs), to_m128(rhs)));
 }
@@ -167,7 +167,7 @@ f32x4_sse_hsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  * @tparam Mask '1' add, '0' subtract.
  */
 template<unsigned int Mask>
-[[nodiscard]] inline f32x4_raw f32x4_sse_addsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_addsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
 
@@ -181,14 +181,14 @@ template<unsigned int Mask>
         return to_f32x4_raw(_mm_addsub_ps(lhs_, rhs_));
 
     } else if constexpr (Mask == 0b1010) {
-        ttlet neg_rhs = to_m128(f32x4_sse_neg<0b1111>(rhs));
+        ttlet neg_rhs = to_m128(f32x4_x64v2_neg<0b1111>(rhs));
         return to_f32x4_raw(_mm_addsub_ps(lhs_, neg_rhs));
 
     } else if constexpr (Mask == 0b1111) {
         return to_f32x4_raw(_mm_add_ps(lhs_, rhs_));
 
     } else {
-        ttlet neg_rhs = to_m128(f32x4_sse_neg<~Mask & 0xf>(rhs));
+        ttlet neg_rhs = to_m128(f32x4_x64v2_neg<~Mask & 0xf>(rhs));
         return to_f32x4_raw(_mm_add_ps(lhs_, neg_rhs));
     }
 }
@@ -201,7 +201,7 @@ template<unsigned int Mask>
  * @tparam Mask '1': include element in dot product, '0': do not include element in dot product
  */
 template<unsigned int Mask>
-[[nodiscard]] float f32x4_sse_dot(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] float f32x4_x64v2_dot(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
@@ -219,7 +219,7 @@ template<unsigned int Mask>
  * @tparam Mask '1': include element in the hypot, '0': do not include element in the hypot
  */
 template<unsigned int Mask>
-[[nodiscard]] float f32x4_sse_hypot(f32x4_raw const &rhs) noexcept
+[[nodiscard]] float f32x4_x64v2_hypot(f32x4_raw const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
@@ -238,7 +238,7 @@ template<unsigned int Mask>
  * @tparam Mask '1': include element in the hypot, '0': do not include element in the hypot
  */
 template<unsigned int Mask>
-[[nodiscard]] float f32x4_sse_rcp_hypot(f32x4_raw const &rhs) noexcept
+[[nodiscard]] float f32x4_x64v2_rcp_hypot(f32x4_raw const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
@@ -258,7 +258,7 @@ template<unsigned int Mask>
  * @tparam Mask '1': include element in the normalization, '0': Do not include and set element to zero
  */
 template<unsigned int Mask>
-[[nodiscard]] f32x4_raw f32x4_sse_normalize(f32x4_raw const &rhs) noexcept
+[[nodiscard]] f32x4_raw f32x4_x64v2_normalize(f32x4_raw const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int dp_imm8 = (Mask << 4) | Mask;
@@ -273,7 +273,7 @@ template<unsigned int Mask>
 /** Compare if equal elements of two SSE registers and return a mask.
  */
 [[nodiscard]] inline unsigned int
-f32x4_sse_eq_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+f32x4_x64v2_eq_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     auto tmp = _mm_cmpeq_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
@@ -282,7 +282,7 @@ f32x4_sse_eq_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 /** Compare if not-equal elements of two SSE registers and return a mask.
  */
 [[nodiscard]] inline unsigned int
-f32x4_sse_ne_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+f32x4_x64v2_ne_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     auto tmp = _mm_cmpneq_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
@@ -291,7 +291,7 @@ f32x4_sse_ne_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 /** Compare if less-than elements of two SSE registers and return a mask.
  */
 [[nodiscard]] inline unsigned int
-f32x4_sse_lt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+f32x4_x64v2_lt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     auto tmp = _mm_cmplt_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
@@ -300,7 +300,7 @@ f32x4_sse_lt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 /** Compare if greater-than elements of two SSE registers and return a mask.
  */
 [[nodiscard]] inline unsigned int
-f32x4_sse_gt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+f32x4_x64v2_gt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     auto tmp = _mm_cmpgt_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
@@ -309,7 +309,7 @@ f32x4_sse_gt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 /** Compare if less-or-equal elements of two SSE registers and return a mask.
  */
 [[nodiscard]] inline unsigned int
-f32x4_sse_le_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+f32x4_x64v2_le_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     auto tmp = _mm_cmple_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
@@ -318,7 +318,7 @@ f32x4_sse_le_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 /** Compare if greater-or-equal elements of two SSE registers and return a mask.
  */
 [[nodiscard]] inline unsigned int
-f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+f32x4_x64v2_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     auto tmp = _mm_cmpge_ps(to_m128(lhs), to_m128(rhs));
     return static_cast<unsigned int>(_mm_movemask_ps(tmp));
@@ -326,7 +326,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 
 /** Compare if both SSE registers are completely equal.
  */
-[[nodiscard]] inline bool f32x4_sse_eq(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline bool f32x4_x64v2_eq(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     // Example 1: lhs == rhs
     //    tmp -> (1.0, 1.0, 1.0, 1.0) != (1.0, 1.0, 1.0, 1.0) -> (0,0,0,0)
@@ -348,7 +348,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  *
  * The value returned is a single floating point value represents an angle, in some form.
  */
-[[nodiscard]] inline float f32x4_sse_viktor_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline float f32x4_x64v2_viktor_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     // a.x * b.y - a.y * b.x
     ttlet tmp1 = _mm_permute_ps(to_m128(rhs), _MM_SHUFFLE(2, 3, 0, 1));
@@ -365,7 +365,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  * z = w1*z2 + x1*y2 - y1*x2 + z1*w2
  * w = w1*w2 - x1*x2 - y1*y2 - z1*z2
  */
-[[nodiscard]] inline f32x4_raw f32x4_sse_hamilton_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_hamilton_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     ttlet lhs_ = to_m128(lhs);
     ttlet rhs_ = to_m128(rhs);
@@ -384,9 +384,9 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
     ttlet y = _mm_mul_ps(lhs_y, rhs_2);
     ttlet z = _mm_mul_ps(lhs_z, rhs_3);
 
-    ttlet s0 = f32x4_sse_addsub<0b0101>(to_f32x4_raw(w), to_f32x4_raw(x));
-    ttlet s1 = f32x4_sse_addsub<0b0011>(s0, to_f32x4_raw(y));
-    return f32x4_sse_addsub<0b0110>(s1, to_f32x4_raw(z));
+    ttlet s0 = f32x4_x64v2_addsub<0b0101>(to_f32x4_raw(w), to_f32x4_raw(x));
+    ttlet s1 = f32x4_x64v2_addsub<0b0011>(s0, to_f32x4_raw(y));
+    return f32x4_x64v2_addsub<0b0110>(s1, to_f32x4_raw(z));
 }
 
 
@@ -397,7 +397,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  * z = x1*y2 - y1*x2
  * w = w1*w2 - w1*w2
  */
-[[nodiscard]] inline f32x4_raw f32x4_sse_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 {
     ttlet a_left = _mm_permute_ps(to_m128(lhs), _MM_SHUFFLE(3, 0, 2, 1));
     ttlet b_left = _mm_permute_ps(to_m128(rhs), _MM_SHUFFLE(3, 1, 0, 2));
@@ -409,7 +409,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
     return to_f32x4_raw(_mm_sub_ps(left, right));
 }
 
-[[nodiscard]] inline std::array<f32x4_raw, 4> f32x4_sse_transpose(
+[[nodiscard]] inline std::array<f32x4_raw, 4> f32x4_x64v2_transpose(
     f32x4_raw const &col0,
     f32x4_raw const &col1,
     f32x4_raw const &col2,
@@ -429,7 +429,7 @@ f32x4_sse_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
 }
 
 template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
-[[nodiscard]] constexpr static int f32x4_sse_permute_mask() noexcept
+[[nodiscard]] constexpr static int f32x4_x64v2_permute_mask() noexcept
 {
     static_assert(A >= -3 && A < 4);
     static_assert(B >= -3 && B < 4);
@@ -473,7 +473,7 @@ template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
 }
 
 template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
-[[nodiscard]] constexpr static int f32x4_sse_not_one_mask() noexcept
+[[nodiscard]] constexpr static int f32x4_x64v2_not_one_mask() noexcept
 {
     static_assert(A >= -3 && A < 4);
     static_assert(B >= -3 && B < 4);
@@ -489,7 +489,7 @@ template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
 }
 
 template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
-[[nodiscard]] constexpr static int f32x4_sse_number_mask() noexcept
+[[nodiscard]] constexpr static int f32x4_x64v2_number_mask() noexcept
 {
     static_assert(A >= -3 && A < 4);
     static_assert(B >= -3 && B < 4);
@@ -505,16 +505,16 @@ template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
 }
 
 template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
-[[nodiscard]] f32x4_raw f32x4_sse_swizzle(f32x4_raw const &value) noexcept
+[[nodiscard]] f32x4_raw f32x4_x64v2_swizzle(f32x4_raw const &value) noexcept
 {
     static_assert(A >= -3 && A < 4);
     static_assert(B >= -3 && B < 4);
     static_assert(C >= -3 && C < 4);
     static_assert(D >= -3 && D < 4);
 
-    constexpr int permute_mask = f32x4_sse_permute_mask<A, B, C, D>();
-    constexpr int not_one_mask = f32x4_sse_not_one_mask<A, B, C, D>();
-    constexpr int number_mask = f32x4_sse_number_mask<A, B, C, D>();
+    constexpr int permute_mask = f32x4_x64v2_permute_mask<A, B, C, D>();
+    constexpr int not_one_mask = f32x4_x64v2_not_one_mask<A, B, C, D>();
+    constexpr int number_mask = f32x4_x64v2_number_mask<A, B, C, D>();
 
     __m128 swizzled;
     // Clang is able to optimize these intrinsics, MSVC is not.

@@ -4,7 +4,7 @@ target_sources(ttauri PRIVATE
     axis_aligned_rectangle.hpp
     extent.hpp
     identity.hpp
-    f32x4_sse.hpp
+    f32x4_x64v2.hpp
     matrix.hpp
     numeric_array.hpp
     point.hpp

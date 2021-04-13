@@ -8,8 +8,8 @@
 #include "../concepts.hpp"
 #include "../cast.hpp"
 #include "../type_traits.hpp"
-#if TT_PROCESSOR == TT_CPU_X64
-#include "f32x4_sse.hpp"
+#if TT_X86_64_V2
+#include "f32x4_x64v2.hpp"
 #endif
 
 #include <cstdint>
@@ -23,11 +23,9 @@
 
 namespace tt {
 
-template<arithmetic T, ssize_t N>
+template<arithmetic T, size_t N>
 class numeric_array {
 public:
-    static_assert(N >= 0);
-
     using container_type = std::array<T, N>;
     using value_type = typename container_type::value_type;
     using size_type = typename container_type::size_type;
@@ -38,6 +36,63 @@ public:
     using const_pointer = typename container_type::const_pointer;
     using iterator = typename container_type::iterator;
     using const_iterator = typename container_type::const_iterator;
+
+    constexpr static bool is_i8x1 = std::is_same_v<T, int8_t> && N == 1;
+    constexpr static bool is_i8x2 = std::is_same_v<T, int8_t> && N == 2;
+    constexpr static bool is_i8x4 = std::is_same_v<T, int8_t> && N == 4;
+    constexpr static bool is_i8x8 = std::is_same_v<T, int8_t> && N == 8;
+    constexpr static bool is_i8x16 = std::is_same_v<T, int8_t> && N == 16;
+    constexpr static bool is_i8x32 = std::is_same_v<T, int8_t> && N == 32;
+    constexpr static bool is_i8x64 = std::is_same_v<T, int8_t> && N == 64;
+    constexpr static bool is_u8x1 = std::is_same_v<T, uint8_t> && N == 1;
+    constexpr static bool is_u8x2 = std::is_same_v<T, uint8_t> && N == 2;
+    constexpr static bool is_u8x4 = std::is_same_v<T, uint8_t> && N == 4;
+    constexpr static bool is_u8x8 = std::is_same_v<T, uint8_t> && N == 8;
+    constexpr static bool is_u8x16 = std::is_same_v<T, uint8_t> && N == 16;
+    constexpr static bool is_u8x32 = std::is_same_v<T, uint8_t> && N == 32;
+    constexpr static bool is_u8x64 = std::is_same_v<T, uint8_t> && N == 64;
+
+    constexpr static bool is_i16x1 = std::is_same_v<T, int16_t> && N == 1;
+    constexpr static bool is_i16x2 = std::is_same_v<T, int16_t> && N == 2;
+    constexpr static bool is_i16x4 = std::is_same_v<T, int16_t> && N == 4;
+    constexpr static bool is_i16x8 = std::is_same_v<T, int16_t> && N == 8;
+    constexpr static bool is_i16x16 = std::is_same_v<T, int16_t> && N == 16;
+    constexpr static bool is_i16x32 = std::is_same_v<T, int16_t> && N == 32;
+    constexpr static bool is_u16x1 = std::is_same_v<T, uint16_t> && N == 1;
+    constexpr static bool is_u16x2 = std::is_same_v<T, uint16_t> && N == 2;
+    constexpr static bool is_u16x4 = std::is_same_v<T, uint16_t> && N == 4;
+    constexpr static bool is_u16x8 = std::is_same_v<T, uint16_t> && N == 8;
+    constexpr static bool is_u16x16 = std::is_same_v<T, uint16_t> && N == 16;
+    constexpr static bool is_u16x32 = std::is_same_v<T, uint16_t> && N == 32;
+
+    constexpr static bool is_i32x1 = std::is_same_v<T, int32_t> && N == 1;
+    constexpr static bool is_i32x2 = std::is_same_v<T, int32_t> && N == 2;
+    constexpr static bool is_i32x4 = std::is_same_v<T, int32_t> && N == 4;
+    constexpr static bool is_i32x8 = std::is_same_v<T, int32_t> && N == 8;
+    constexpr static bool is_i32x16 = std::is_same_v<T, int32_t> && N == 16;
+    constexpr static bool is_u32x1 = std::is_same_v<T, uint32_t> && N == 1;
+    constexpr static bool is_u32x2 = std::is_same_v<T, uint32_t> && N == 2;
+    constexpr static bool is_u32x4 = std::is_same_v<T, uint32_t> && N == 4;
+    constexpr static bool is_u32x8 = std::is_same_v<T, uint32_t> && N == 8;
+    constexpr static bool is_u32x16 = std::is_same_v<T, uint32_t> && N == 16;
+    constexpr static bool is_f32x1 = std::is_same_v<T, float> && N == 1;
+    constexpr static bool is_f32x2 = std::is_same_v<T, float> && N == 2;
+    constexpr static bool is_f32x4 = std::is_same_v<T, float> && N == 4;
+    constexpr static bool is_f32x8 = std::is_same_v<T, float> && N == 8;
+    constexpr static bool is_f32x16 = std::is_same_v<T, float> && N == 16;
+
+    constexpr static bool is_i64x1 = std::is_same_v<T, int64_t> && N == 1;
+    constexpr static bool is_i64x2 = std::is_same_v<T, int64_t> && N == 2;
+    constexpr static bool is_i64x4 = std::is_same_v<T, int64_t> && N == 4;
+    constexpr static bool is_i64x8 = std::is_same_v<T, int64_t> && N == 8;
+    constexpr static bool is_u64x1 = std::is_same_v<T, uint64_t> && N == 1;
+    constexpr static bool is_u64x2 = std::is_same_v<T, uint64_t> && N == 2;
+    constexpr static bool is_u64x4 = std::is_same_v<T, uint64_t> && N == 4;
+    constexpr static bool is_u64x8 = std::is_same_v<T, uint64_t> && N == 8;
+    constexpr static bool is_f64x1 = std::is_same_v<T, double> && N == 1;
+    constexpr static bool is_f64x2 = std::is_same_v<T, double> && N == 2;
+    constexpr static bool is_f64x4 = std::is_same_v<T, double> && N == 4;
+    constexpr static bool is_f64x8 = std::is_same_v<T, double> && N == 8;
 
     constexpr numeric_array() noexcept = default;
     constexpr numeric_array(numeric_array const &rhs) noexcept = default;
@@ -77,7 +132,7 @@ public:
     [[nodiscard]] static constexpr numeric_array broadcast(T rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r[i] = rhs;
         }
         return r;
@@ -96,55 +151,37 @@ public:
         return v;
     }
 
-    template<arithmetic U, ssize_t M>
-    [[nodiscard]] explicit constexpr numeric_array(numeric_array<U, M> const &rhs) noexcept : v()
+    /** Load a numeric array from memory.
+     * @param ptr A Pointer to an array of values in memory.
+     * @return A numeric array.
+     */
+    [[nodiscard]] static constexpr numeric_array load(T const *ptr) noexcept
     {
-        auto src = std::begin(rhs);
-        auto dst = std::begin(v);
-        auto src_last = std::end(rhs);
-        auto dst_last = std::end(v);
+        auto r = numeric_array{};
 
-        while (src != src_last && dst != dst_last) {
-            *(dst++) = narrow_cast<T>(*(src++));
+        for (auto i = 0; i != N; ++i) {
+            r.v[i] = ptr[i];
         }
-        while (dst != dst_last) {
-            *(dst++) = T{};
-        }
-        while (src != src_last) {
-            tt_axiom(*(src++) == U{});
-        }
-    }
-
-    template<arithmetic U, ssize_t M>
-    [[nodiscard]] explicit constexpr operator numeric_array<U, M>() const noexcept
-    {
-        auto r = std::array<U, M>{};
-
-        auto src = std::begin(v);
-        auto dst = std::begin(r);
-        auto src_last = std::end(v);
-        auto dst_last = std::end(r);
-
-        while (src != src_last && dst != dst_last) {
-            *(dst++) = narrow_cast<U>(*(src++));
-        }
-        while (dst != dst_last) {
-            *(dst++) = U{};
-        }
-        while (src != src_last) {
-            tt_axiom(*(src++) == T{});
-        }
-
         return r;
     }
 
-    [[nodiscard]] constexpr T const &operator[](ssize_t i) const noexcept
+    /** Store a numeric array into memory.
+     * @param [out]ptr A pointer to where the numeric array should be stored into memory.
+     */
+    constexpr void store(T *ptr) const noexcept
+    {
+        for (auto i = 0; i != N; ++i) {
+            ptr[i] = r.v[i];
+        }
+    }
+
+    [[nodiscard]] constexpr T const &operator[](size_t i) const noexcept
     {
         tt_axiom(i < N);
         return v[i];
     }
 
-    [[nodiscard]] constexpr T &operator[](ssize_t i) noexcept
+    [[nodiscard]] constexpr T &operator[](size_t i) noexcept
     {
         tt_axiom(i < N);
         return v[i];
@@ -357,7 +394,7 @@ public:
 
     constexpr numeric_array &operator+=(numeric_array const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] += rhs.v[i];
         }
         return *this;
@@ -365,7 +402,7 @@ public:
 
     constexpr numeric_array &operator+=(T const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] += rhs;
         }
         return *this;
@@ -373,7 +410,7 @@ public:
 
     constexpr numeric_array &operator-=(numeric_array const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] -= rhs.v[i];
         }
         return *this;
@@ -381,7 +418,7 @@ public:
 
     constexpr numeric_array &operator-=(T const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] -= rhs;
         }
         return *this;
@@ -389,7 +426,7 @@ public:
 
     constexpr numeric_array &operator*=(numeric_array const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] *= rhs.v[i];
         }
         return *this;
@@ -397,7 +434,7 @@ public:
 
     constexpr numeric_array &operator*=(T const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] *= rhs;
         }
         return *this;
@@ -405,7 +442,7 @@ public:
 
     constexpr numeric_array &operator/=(numeric_array const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] /= rhs.v[i];
         }
         return *this;
@@ -413,7 +450,7 @@ public:
 
     constexpr numeric_array &operator/=(T const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] /= rhs;
         }
         return *this;
@@ -421,7 +458,7 @@ public:
 
     constexpr numeric_array &operator%=(numeric_array const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] %= rhs.v[i];
         }
         return *this;
@@ -429,7 +466,7 @@ public:
 
     constexpr numeric_array &operator%=(T const &rhs) noexcept
     {
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             v[i] %= rhs;
         }
         return *this;
@@ -442,7 +479,7 @@ public:
      *
      * @tparam I Index into the array
      */
-    template<ssize_t I>
+    template<size_t I>
     [[nodiscard]] friend constexpr T &get(numeric_array &rhs) noexcept
     {
         static_assert(I >= 0 && I < N, "Index out of bounds");
@@ -457,7 +494,7 @@ public:
     template<ssize_t I>
     [[nodiscard]] friend constexpr T get(numeric_array &&rhs) noexcept
     {
-        static_assert(I >= -2 && I < N, "Index out of bounds");
+        static_assert(I >= -2 && I < narrow_cast<ssize_t>(N), "Index out of bounds");
         if constexpr (I == get_zero) {
             return T{0};
         } else if constexpr (I == get_one) {
@@ -475,7 +512,7 @@ public:
     template<ssize_t I>
     [[nodiscard]] friend constexpr T get(numeric_array const &rhs) noexcept
     {
-        static_assert(I >= -2 && I < N, "Index out of bounds");
+        static_assert(I >= -2 && I < narrow_cast<ssize_t>(N), "Index out of bounds");
         if constexpr (I == get_zero) {
             return T{0};
         } else if constexpr (I == get_one) {
@@ -494,12 +531,12 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
-                return numeric_array{f32x4_sse_zero<Mask & 0xf>(rhs.v)};
+                return numeric_array{f32x4_x64v2_zero<Mask & 0xf>(rhs.v)};
             }
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             if (static_cast<bool>((Mask >> i) & 1)) {
                 r.v[i] = T{0};
             } else {
@@ -518,12 +555,12 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
-                return numeric_array{f32x4_sse_neg<Mask & 0xf>(rhs.v)};
+                return numeric_array{f32x4_x64v2_neg<Mask & 0xf>(rhs.v)};
             }
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             if (static_cast<bool>((Mask >> i) & 1)) {
                 r.v[i] = -rhs.v[i];
             } else {
@@ -536,7 +573,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             // -rhs.v[i] will cause a memory load with msvc.
             r.v[i] = T{} - rhs.v[i];
         }
@@ -548,7 +585,7 @@ public:
         auto neg_rhs = -rhs;
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = rhs.v[i] < T{} ? neg_rhs.v[i] : rhs.v[i];
         }
         return r;
@@ -557,11 +594,11 @@ public:
     [[nodiscard]] friend constexpr numeric_array rcp(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_rcp(rhs.v)};
+            return numeric_array{f32x4_x64v2_rcp(rhs.v)};
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r[i] = 1.0f / rhs.v[i];
         }
         return r;
@@ -570,11 +607,11 @@ public:
     [[nodiscard]] friend constexpr numeric_array sqrt(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_sqrt(rhs.v)};
+            return numeric_array{f32x4_x64v2_sqrt(rhs.v)};
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r[i] = std::sqrt(rhs.v[i]);
         }
         return r;
@@ -583,11 +620,11 @@ public:
     [[nodiscard]] friend constexpr numeric_array rcp_sqrt(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_rcp_sqrt(rhs.v)};
+            return numeric_array{f32x4_x64v2_rcp_sqrt(rhs.v)};
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r[i] = 1.0f / std::sqrt(rhs.v[i]);
         }
         return r;
@@ -596,11 +633,11 @@ public:
     [[nodiscard]] friend constexpr numeric_array floor(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_floor(rhs.v)};
+            return numeric_array{f32x4_x64v2_floor(rhs.v)};
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r[i] = std::floor(rhs.v[i]);
         }
         return r;
@@ -609,11 +646,11 @@ public:
     [[nodiscard]] friend constexpr numeric_array ceil(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_ceil(rhs.v)};
+            return numeric_array{f32x4_x64v2_ceil(rhs.v)};
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r[i] = std::ceil(rhs.v[i]);
         }
         return r;
@@ -622,11 +659,11 @@ public:
     [[nodiscard]] friend constexpr numeric_array round(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_round(rhs.v)};
+            return numeric_array{f32x4_x64v2_round(rhs.v)};
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r[i] = std::round(rhs.v[i]);
         }
         return r;
@@ -639,15 +676,15 @@ public:
      * @param rhs The right hand side.
      * @return Result of the dot product.
      */
-    template<ssize_t Mask>
+    template<size_t Mask>
     [[nodiscard]] friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_dot<Mask>(lhs.v, rhs.v);
+            return f32x4_x64v2_dot<Mask>(lhs.v, rhs.v);
         }
 
         auto r = T{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             if (static_cast<bool>(Mask & (1_uz << i))) {
                 r += lhs.v[i] * rhs.v[i];
             }
@@ -662,11 +699,11 @@ public:
      * @param rhs The right hand side.
      * @return Result of the hypot calculation.
      */
-    template<ssize_t Mask>
+    template<size_t Mask>
     [[nodiscard]] friend constexpr T hypot(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_hypot<Mask>(rhs.v);
+            return f32x4_x64v2_hypot<Mask>(rhs.v);
         }
         return std::sqrt(dot<Mask>(rhs, rhs));
     }
@@ -678,7 +715,7 @@ public:
      * @param rhs The right hand side.
      * @return Result of the hypot-squared calculation.
      */
-    template<ssize_t Mask>
+    template<size_t Mask>
     [[nodiscard]] friend constexpr T squared_hypot(numeric_array const &rhs) noexcept
     {
         return dot<Mask>(rhs, rhs);
@@ -690,11 +727,11 @@ public:
      * @param rhs The right hand side.
      * @return Result of the hypot-squared calculation.
      */
-    template<ssize_t Mask>
+    template<size_t Mask>
     [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_rcp_hypot<Mask>(rhs.v);
+            return f32x4_x64v2_rcp_hypot<Mask>(rhs.v);
         }
 
         return 1.0f / hypot<Mask>(rhs);
@@ -708,13 +745,13 @@ public:
      * @param rhs The right hand side.
      * @return The normalized vector.
      */
-    template<ssize_t Mask>
+    template<size_t Mask>
     [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const &rhs) noexcept
     {
         tt_axiom(rhs.is_vector());
 
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_normalize<Mask>(rhs.v)};
+            return numeric_array{f32x4_x64v2_normalize<Mask>(rhs.v)};
         }
 
         ttlet rcp_hypot_ = rcp_hypot<Mask>(rhs);
@@ -732,10 +769,10 @@ public:
         requires(N <= sizeof(unsigned int) * CHAR_BIT)
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_eq_mask(lhs.v, rhs.v);
+            return f32x4_x64v2_eq_mask(lhs.v, rhs.v);
         } else {
             unsigned int r = 0;
-            for (ssize_t i = 0; i != N; ++i) {
+            for (size_t i = 0; i != N; ++i) {
                 r |= static_cast<unsigned int>(lhs.v[i] == rhs.v[i]) << i;
             }
             return r;
@@ -746,10 +783,10 @@ public:
         requires(N <= sizeof(unsigned int) * CHAR_BIT)
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_ne_mask(lhs.v, rhs.v);
+            return f32x4_x64v2_ne_mask(lhs.v, rhs.v);
         } else {
             unsigned int r = 0;
-            for (ssize_t i = 0; i != N; ++i) {
+            for (size_t i = 0; i != N; ++i) {
                 r |= static_cast<unsigned int>(lhs.v[i] != rhs.v[i]) << i;
             }
             return r;
@@ -760,10 +797,10 @@ public:
         requires(N <= sizeof(unsigned int) * CHAR_BIT)
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_lt_mask(lhs.v, rhs.v);
+            return f32x4_x64v2_lt_mask(lhs.v, rhs.v);
         } else {
             unsigned int r = 0;
-            for (ssize_t i = 0; i != N; ++i) {
+            for (size_t i = 0; i != N; ++i) {
                 r |= static_cast<unsigned int>(lhs.v[i] < rhs.v[i]) << i;
             }
             return r;
@@ -774,10 +811,10 @@ public:
         requires(N <= sizeof(unsigned int) * CHAR_BIT)
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_gt_mask(lhs.v, rhs.v);
+            return f32x4_x64v2_gt_mask(lhs.v, rhs.v);
         } else {
             unsigned int r = 0;
-            for (ssize_t i = 0; i != N; ++i) {
+            for (size_t i = 0; i != N; ++i) {
                 r |= static_cast<unsigned int>(lhs.v[i] > rhs.v[i]) << i;
             }
             return r;
@@ -788,10 +825,10 @@ public:
         requires(N <= sizeof(unsigned int) * CHAR_BIT)
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_le_mask(lhs.v, rhs.v);
+            return f32x4_x64v2_le_mask(lhs.v, rhs.v);
         } else {
             unsigned int r = 0;
-            for (ssize_t i = 0; i != N; ++i) {
+            for (size_t i = 0; i != N; ++i) {
                 r |= static_cast<unsigned int>(lhs.v[i] <= rhs.v[i]) << i;
             }
             return r;
@@ -802,10 +839,10 @@ public:
         requires(N <= sizeof(unsigned int) * CHAR_BIT)
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_ge_mask(lhs.v, rhs.v);
+            return f32x4_x64v2_ge_mask(lhs.v, rhs.v);
         } else {
             unsigned int r = 0;
-            for (ssize_t i = 0; i != N; ++i) {
+            for (size_t i = 0; i != N; ++i) {
                 r |= static_cast<unsigned int>(lhs.v[i] >= rhs.v[i]) << i;
             }
             return r;
@@ -817,12 +854,12 @@ public:
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
                 // MSVC cannot vectorize comparison.
-                return f32x4_sse_eq(lhs.v, rhs.v);
+                return f32x4_x64v2_eq(lhs.v, rhs.v);
             }
         }
 
         auto r = true;
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r &= (lhs.v[i] == rhs.v[i]);
         }
         return r;
@@ -836,7 +873,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] + rhs.v[i];
         }
         return r;
@@ -845,7 +882,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const &lhs, T const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] + rhs;
         }
         return r;
@@ -854,7 +891,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator+(T const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs + rhs.v[i];
         }
         return r;
@@ -863,15 +900,15 @@ public:
     [[nodiscard]] friend constexpr numeric_array hadd(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_hadd(lhs.v, rhs.v)};
+            return numeric_array{f32x4_x64v2_hadd(lhs.v, rhs.v)};
 
         } else {
             tt_axiom(N % 2 == 0);
 
             auto r = numeric_array{};
 
-            ssize_t src_i = 0;
-            ssize_t dst_i = 0;
+            size_t src_i = 0;
+            size_t dst_i = 0;
             while (src_i != N) {
                 auto tmp = lhs[src_i++];
                 tmp += lhs[src_i++];
@@ -891,15 +928,15 @@ public:
     [[nodiscard]] friend constexpr numeric_array hsub(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_sse_hsub(lhs.v, rhs.v)};
+            return numeric_array{f32x4_x64v2_hsub(lhs.v, rhs.v)};
 
         } else {
             tt_axiom(N % 2 == 0);
 
             auto r = numeric_array{};
 
-            ssize_t src_i = 0;
-            ssize_t dst_i = 0;
+            size_t src_i = 0;
+            size_t dst_i = 0;
             while (src_i != N) {
                 auto tmp = lhs[src_i++];
                 tmp -= lhs[src_i++];
@@ -919,7 +956,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] - rhs.v[i];
         }
         return r;
@@ -928,7 +965,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &lhs, T const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] - rhs;
         }
         return r;
@@ -943,12 +980,12 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
-                return numeric_array{f32x4_sse_addsub<Mask & 0xf>(lhs.v, rhs.v)};
+                return numeric_array{f32x4_x64v2_addsub<Mask & 0xf>(lhs.v, rhs.v)};
             }
         }
 
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             if (static_cast<bool>((Mask >> i) & 1)) {
                 r.v[i] = lhs.v[i] + rhs.v[i];
             } else {
@@ -961,7 +998,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator-(T const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs - rhs.v[i];
         }
         return r;
@@ -970,7 +1007,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] * rhs.v[i];
         }
         return r;
@@ -979,7 +1016,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const &lhs, T const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] * rhs;
         }
         return r;
@@ -988,7 +1025,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator*(T const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs * rhs.v[i];
         }
         return r;
@@ -997,7 +1034,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] / rhs.v[i];
         }
         return r;
@@ -1006,7 +1043,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const &lhs, T const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] / rhs;
         }
         return r;
@@ -1015,7 +1052,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator/(T const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs / rhs.v[i];
         }
         return r;
@@ -1024,7 +1061,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] % rhs.v[i];
         }
         return r;
@@ -1033,7 +1070,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const &lhs, T const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] % rhs;
         }
         return r;
@@ -1042,7 +1079,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator%(T const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs % rhs.v[i];
         }
         return r;
@@ -1051,7 +1088,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array min(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             // std::min() causes vectorization failure with msvc
             r.v[i] = lhs.v[i] < rhs.v[i] ? lhs.v[i] : rhs.v[i];
         }
@@ -1061,7 +1098,7 @@ public:
     [[nodiscard]] friend constexpr numeric_array max(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             // std::max() causes vectorization failure with msvc
             r.v[i] = lhs.v[i] > rhs.v[i] ? lhs.v[i] : rhs.v[i];
         }
@@ -1072,7 +1109,7 @@ public:
     clamp(numeric_array const &lhs, numeric_array const &low, numeric_array const &high) noexcept
     {
         auto r = numeric_array{};
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             // std::clamp() causes vectorization failure with msvc
             r.v[i] = lhs.v[i] < low.v[i] ? low.v[i] : lhs.v[i] > high.v[i] ? high.v[i] : lhs.v[i];
         }
@@ -1100,7 +1137,7 @@ public:
         requires(N >= 2)
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_sse_viktor_cross(lhs.v, rhs.v);
+            return f32x4_x64v2_viktor_cross(lhs.v, rhs.v);
 
         } else {
             return lhs.x() * rhs.y() - lhs.y() * rhs.x();
@@ -1115,7 +1152,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
-                return numeric_array{f32x4_sse_cross(lhs.v, rhs.v)};
+                return numeric_array{f32x4_x64v2_cross(lhs.v, rhs.v)};
             }
         }
 
@@ -1149,6 +1186,23 @@ public:
         };
     }
 
+    /** Shuffle a 16x byte array, using the indices from the right-hand-side.
+     */
+    [[nodiscard]] friend constexpr numeric_array shuffle(numeric_array const &lhs, numeric_array const &rhs) requires (is_i8x16)
+    {
+        auto r = numeric_array{};
+
+        for (size_t i = 0; i != N; ++i) {
+            if (rhs[i] >= 0) {
+                r[i] = lhs[rhs[i] & 0xf];
+            } else {
+                r[i] = 0;
+            }
+        }
+
+        return r;
+    }
+
     /** Find a point at the midpoint between two points.
      */
     [[nodiscard]] friend constexpr numeric_array midpoint(numeric_array const &p1, numeric_array const &p2) noexcept
@@ -1175,7 +1229,7 @@ public:
         auto r = std::array<numeric_array, N>{};
 
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            auto tmp = f32x4_sse_transpose(columns.v...);
+            auto tmp = f32x4_x64v2_transpose(columns.v...);
             for (int i = 0; i != N; ++i) {
                 r[i] = numeric_array{tmp[i]};
             }
@@ -1213,7 +1267,7 @@ public:
         auto r = std::string{};
 
         r += '(';
-        for (ssize_t i = 0; i != N; ++i) {
+        for (size_t i = 0; i != N; ++i) {
             if (i != 0) {
                 r += "; ";
             }
@@ -1242,7 +1296,7 @@ public:
 
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
-                return numeric_array{f32x4_sse_swizzle<Elements...>(v)};
+                return numeric_array{f32x4_x64v2_swizzle<Elements...>(v)};
             }
         }
 
@@ -1334,7 +1388,7 @@ private:
     friend constexpr void
     transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
     {
-        for (ssize_t j = 0; j != N; ++j) {
+        for (size_t j = 0; j != N; ++j) {
             r[j][I] = first[j];
         }
 
@@ -1346,8 +1400,8 @@ private:
     template<ssize_t I, ssize_t FirstElement, ssize_t... RestElements>
     constexpr void swizzle_detail(numeric_array &r) const noexcept
     {
-        static_assert(I < N);
-        static_assert(FirstElement >= -2 && FirstElement < N, "Index out of bounds");
+        static_assert(I < narrow_cast<ssize_t>(N));
+        static_assert(FirstElement >= -2 && FirstElement < narrow_cast<ssize_t>(N), "Index out of bounds");
 
         get<I>(r) = get<FirstElement>(*this);
         if constexpr (sizeof...(RestElements) != 0) {
@@ -1355,62 +1409,7 @@ private:
         }
     }
 
-    constexpr static bool is_i8x1 = std::is_same_v<T, int8_t> && N == 1;
-    constexpr static bool is_i8x2 = std::is_same_v<T, int8_t> && N == 2;
-    constexpr static bool is_i8x4 = std::is_same_v<T, int8_t> && N == 4;
-    constexpr static bool is_i8x8 = std::is_same_v<T, int8_t> && N == 8;
-    constexpr static bool is_i8x16 = std::is_same_v<T, int8_t> && N == 16;
-    constexpr static bool is_i8x32 = std::is_same_v<T, int8_t> && N == 32;
-    constexpr static bool is_i8x64 = std::is_same_v<T, int8_t> && N == 64;
-    constexpr static bool is_u8x1 = std::is_same_v<T, uint8_t> && N == 1;
-    constexpr static bool is_u8x2 = std::is_same_v<T, uint8_t> && N == 2;
-    constexpr static bool is_u8x4 = std::is_same_v<T, uint8_t> && N == 4;
-    constexpr static bool is_u8x8 = std::is_same_v<T, uint8_t> && N == 8;
-    constexpr static bool is_u8x16 = std::is_same_v<T, uint8_t> && N == 16;
-    constexpr static bool is_u8x32 = std::is_same_v<T, uint8_t> && N == 32;
-    constexpr static bool is_u8x64 = std::is_same_v<T, uint8_t> && N == 64;
-
-    constexpr static bool is_i16x1 = std::is_same_v<T, int16_t> && N == 1;
-    constexpr static bool is_i16x2 = std::is_same_v<T, int16_t> && N == 2;
-    constexpr static bool is_i16x4 = std::is_same_v<T, int16_t> && N == 4;
-    constexpr static bool is_i16x8 = std::is_same_v<T, int16_t> && N == 8;
-    constexpr static bool is_i16x16 = std::is_same_v<T, int16_t> && N == 16;
-    constexpr static bool is_i16x32 = std::is_same_v<T, int16_t> && N == 32;
-    constexpr static bool is_u16x1 = std::is_same_v<T, uint16_t> && N == 1;
-    constexpr static bool is_u16x2 = std::is_same_v<T, uint16_t> && N == 2;
-    constexpr static bool is_u16x4 = std::is_same_v<T, uint16_t> && N == 4;
-    constexpr static bool is_u16x8 = std::is_same_v<T, uint16_t> && N == 8;
-    constexpr static bool is_u16x16 = std::is_same_v<T, uint16_t> && N == 16;
-    constexpr static bool is_u16x32 = std::is_same_v<T, uint16_t> && N == 32;
-
-    constexpr static bool is_i32x1 = std::is_same_v<T, int32_t> && N == 1;
-    constexpr static bool is_i32x2 = std::is_same_v<T, int32_t> && N == 2;
-    constexpr static bool is_i32x4 = std::is_same_v<T, int32_t> && N == 4;
-    constexpr static bool is_i32x8 = std::is_same_v<T, int32_t> && N == 8;
-    constexpr static bool is_i32x16 = std::is_same_v<T, int32_t> && N == 16;
-    constexpr static bool is_u32x1 = std::is_same_v<T, uint32_t> && N == 1;
-    constexpr static bool is_u32x2 = std::is_same_v<T, uint32_t> && N == 2;
-    constexpr static bool is_u32x4 = std::is_same_v<T, uint32_t> && N == 4;
-    constexpr static bool is_u32x8 = std::is_same_v<T, uint32_t> && N == 8;
-    constexpr static bool is_u32x16 = std::is_same_v<T, uint32_t> && N == 16;
-    constexpr static bool is_f32x1 = std::is_same_v<T, float> && N == 1;
-    constexpr static bool is_f32x2 = std::is_same_v<T, float> && N == 2;
-    constexpr static bool is_f32x4 = std::is_same_v<T, float> && N == 4;
-    constexpr static bool is_f32x8 = std::is_same_v<T, float> && N == 8;
-    constexpr static bool is_f32x16 = std::is_same_v<T, float> && N == 16;
-
-    constexpr static bool is_i64x1 = std::is_same_v<T, int64_t> && N == 1;
-    constexpr static bool is_i64x2 = std::is_same_v<T, int64_t> && N == 2;
-    constexpr static bool is_i64x4 = std::is_same_v<T, int64_t> && N == 4;
-    constexpr static bool is_i64x8 = std::is_same_v<T, int64_t> && N == 8;
-    constexpr static bool is_u64x1 = std::is_same_v<T, uint64_t> && N == 1;
-    constexpr static bool is_u64x2 = std::is_same_v<T, uint64_t> && N == 2;
-    constexpr static bool is_u64x4 = std::is_same_v<T, uint64_t> && N == 4;
-    constexpr static bool is_u64x8 = std::is_same_v<T, uint64_t> && N == 8;
-    constexpr static bool is_f64x1 = std::is_same_v<T, double> && N == 1;
-    constexpr static bool is_f64x2 = std::is_same_v<T, double> && N == 2;
-    constexpr static bool is_f64x4 = std::is_same_v<T, double> && N == 4;
-    constexpr static bool is_f64x8 = std::is_same_v<T, double> && N == 8;
+    
 };
 
 using i8x1 = numeric_array<int8_t, 1>;
