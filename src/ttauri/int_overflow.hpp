@@ -5,7 +5,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "type_traits.hpp"
 #include "assert.hpp"
 
@@ -44,7 +44,7 @@ inline bool add_overflow(T lhs, T rhs, T *r)
 {
     static_assert(std::is_integral_v<T>, "add_overflow() requires integral arguments.");
 
-    if constexpr (Compiler::current == Compiler::gcc || Compiler::current == Compiler::clang) {
+    if constexpr (compiler::current == compiler::gcc || compiler::current == compiler::clang) {
         // ADD, JO
         return __builtin_add_overflow(lhs, rhs, r);
 
@@ -68,7 +68,7 @@ inline bool sub_overflow(T lhs, T rhs, T *r)
 {
     static_assert(std::is_integral_v<T>, "sub_overflow() requires integral arguments.");
 
-    if constexpr (Compiler::current == Compiler::gcc || Compiler::current == Compiler::clang) {
+    if constexpr (compiler::current == compiler::gcc || compiler::current == compiler::clang) {
         // SUB, JB
         return __builtin_sub_overflow(lhs, rhs, r);
 
@@ -95,10 +95,10 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
 {
     static_assert(std::is_integral_v<T>, "mul_overflow() requires integral arguments.");
 
-    if constexpr (Compiler::current == Compiler::gcc || Compiler::current == Compiler::clang) {
+    if constexpr (compiler::current == compiler::gcc || compiler::current == compiler::clang) {
         return __builtin_mul_overflow(lhs, rhs, r);
 
-    } else if constexpr (std::is_signed_v<T> && Compiler::current == Compiler::MSVC && sizeof(T) == sizeof(long long)) {
+    } else if constexpr (std::is_signed_v<T> && compiler::current == compiler::msvc && sizeof(T) == sizeof(long long)) {
         // IMUL, SAR, XOR, JNE
         long long hi = 0;
         *r = _mul128(lhs, rhs, &hi);
@@ -106,7 +106,8 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
         // Sign bit in *r should match all bits in hi.
         return (hi ^ (*r >> 63)) != 0;
 
-    } else if constexpr (std::is_unsigned_v<T> && Compiler::current == Compiler::MSVC && sizeof(T) == sizeof(unsigned long long)) {
+    } else if constexpr (
+        std::is_unsigned_v<T> && compiler::current == compiler::msvc && sizeof(T) == sizeof(unsigned long long)) {
         unsigned long long hi = 0;
         *r = _umul128(lhs, rhs, &hi);
         return hi > 0; 

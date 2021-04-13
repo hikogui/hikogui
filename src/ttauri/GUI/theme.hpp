@@ -19,15 +19,13 @@ class theme {
 public:
     static inline theme *global;
 
-    static constexpr OperatingSystem operatingSystem = OperatingSystem::Windows;
+    static constexpr operating_system operatingSystem = operating_system::windows;
 
-    float toolbarHeight =
-        (operatingSystem == OperatingSystem::Windows) ? 30.0f : 20.0f;
+    float toolbarHeight = (operatingSystem == operating_system::windows) ? 30.0f : 20.0f;
 
     /** The width of a close, minimize, maximize, system menu button.
      */
-    float toolbarDecorationButtonWidth =
-        (operatingSystem == OperatingSystem::Windows) ? 30.0f : 20.0f;
+    float toolbarDecorationButtonWidth = (operatingSystem == operating_system::windows) ? 30.0f : 20.0f;
 
     /** Distance between widgets and between widgets and the border of the container.
      */

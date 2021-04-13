@@ -7,6 +7,9 @@
 #include <exception>
 #include <cstddef>
 #include <type_traits>
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
 
 namespace tt {
 
@@ -19,54 +22,33 @@ namespace tt {
 #define TT_BUILD_TYPE TT_BT_DEBUG
 #endif
 
-enum class BuildType {
-    Debug = TT_BT_DEBUG,
-    Release = TT_BT_RELEASE,
+enum class build_type {
+    debug = TT_BT_DEBUG,
+    release = TT_BT_RELEASE,
 
     current = TT_BUILD_TYPE
 };
 
 #define TT_OS_WINDOWS 'W'
-#define TT_OS_MACOS 'M'
-#define TT_OS_IOS 'i'
-#define TT_OS_LINUX 'L'
-#define TT_OS_POSIX 'P'
-#define TT_OS_UNIX 'U'
-#define TT_OS_ANDROID 'A'
+#define TT_OS_MACOS 'A'
+#define TT_OS_MOBILE 'M'
+#define TT_OS_OTHER 'O'
 
-/* Create specific macros to detect the operating system.
- */
-#if defined(_WIN64)
-#define  TT_OPERATING_SYSTEM TT_OS_WINDOWS
-#elif defined(_WIN32)
-#define  TT_OPERATING_SYSTEM TT_OS_WINDOWS
-#elif defined(__APPLE__)
-  #include "TargetConditionals.h"
-  #if TARGET_OS_IPHONE == 1
-  #define  TT_OPERATING_SYSTEM TT_OS_IOS
-  #else
-  #define  TT_OPERATING_SYSTEM TT_OS_MACOS
-  #endif
-#elif defined(__ANDROID__)
-#define  TT_OPERATING_SYSTEM TT_OS_ANDROID
-#elif defined(__linux)
-#define  TT_OPERATING_SYSTEM TT_OS_LINUX
-#elif defined(__unix)
-#define  TT_OPERATING_SYSTEM TT_OS_UNIX
-#elif defined(__posix)
-#define  TT_OPERATING_SYSTEM TT_OS_POSIX
+#if defined(_WIN32)
+#define TT_OPERATING_SYSTEM TT_OS_WINDOWS
+#elif defined(TARGET_OS_MAC) && !defined(TARGET_OS_IPHONE)
+#define TT_OPERATING_SYSTEM TT_OS_MACOS
+#elif defined(TARGET_OS_IPHONE) || defined(__ANDROID__)
+#define TT_OPERATING_SYSTEM TT_OS_MOBILE
 #else
-#error "Could not detect the operating system."
+#define TT_OPERATING_SYSTEM TT_OS_OTHER
 #endif
 
-enum class OperatingSystem {
-    Windows = TT_OS_WINDOWS,
-    MacOS = TT_OS_MACOS,
-    iOS = TT_OS_IOS,
-    Linux = TT_OS_LINUX,
-    Android = TT_OS_ANDROID,
-    UNIX = TT_OS_UNIX,
-    Posix = TT_OS_POSIX,
+enum class operating_system {
+    windows = TT_OS_WINDOWS,
+    macos = TT_OS_MACOS,
+    mobile = TT_OS_MOBILE,
+    other = TT_OS_OTHER,
 
     current = TT_OPERATING_SYSTEM
 };
@@ -85,35 +67,19 @@ enum class OperatingSystem {
 #error "Could not detect the compiler."
 #endif
 
-enum class Compiler {
-    MSVC = TT_CC_MSVC,
+enum class compiler {
+    msvc = TT_CC_MSVC,
     gcc = TT_CC_GCC,
     clang = TT_CC_CLANG,
 
     current = TT_COMPILER
 };
 
+
 #define TT_CPU_X64 'i'
 #define TT_CPU_ARM 'a'
 
-#define TT_CPPVER_17 '7'
-#define TT_CPPVER_20 '2'
-
-#if __cplusplus > 201703L
-#define TT_CPP_VERSION TT_CPPVER_20
-#elif __cplusplus == 201703L
-#define TT_CPP_VERSION TT_CPPVER_17
-#else
-#error "Unknown C++ version"
-#endif
-enum class CPPVersion {
-    CPP17 = TT_CPPVER_17,
-    CPP20 = TT_CPPVER_20,
-
-    current = TT_CPP_VERSION
-};
-
-#if defined(__amd64__) || defined(__x86_64__) || defined(_M_AMD64)
+#if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_AMD64)
 #define TT_PROCESSOR TT_CPU_X64
 #elif defined(__arm__) || defined(_M_ARM)
 #define TT_PROCESSOR TT_CPU_ARM
@@ -121,12 +87,71 @@ enum class CPPVersion {
 #error "Could not detect processor."
 #endif
 
-enum class Processor {
+enum class processor {
     x64 = TT_CPU_X64,
-    ARM = TT_CPU_ARM,
+    arm = TT_CPU_ARM,
 
     current = TT_PROCESSOR
 };
+
+#if TT_PROCESSOR == TT_CPU_X64
+#if defined(__AVX512BW__) && defined(__AVX512CD__) && defined(__AVX512DQ__) && defined(__AVX512F__) && defined(__AVX512VL__)
+#define TT_X64V4 1
+#define TT_X64V3 1
+#define TT_X64V25 1
+#define TT_X64V2 1
+#define TT_X64V1 1
+
+#elif defined(__AVX2__)
+#define TT_X64V3 1
+#define TT_X64V25 1
+#define TT_X64V2 1
+#define TT_X64V1 1
+
+#elif defined(__AVX__)
+#define TT_X64V25 1
+#define TT_X64V2 1
+#define TT_X64V1 1
+
+// x86_64_v2 can not be selected in MSVC, but can be in gcc and clang.
+#elif defined(__SSE4_2__) && defined(__SSSE3__)
+#define TT_X64V2 1
+#define TT_X64V1 1
+
+#else
+#define TT_X64V1 1
+#endif
+#endif
+
+#if defined(TT_X64V1)
+constexpr bool x64v1 = true;
+#else
+constexpr bool x64v1 = false;
+#endif
+
+#if defined(TT_X64V2)
+constexpr bool x64v2 = true;
+#else
+constexpr bool x64v2 = false;
+#endif
+
+#if defined(TT_X64V25)
+constexpr bool x64v25 = true;
+#else
+constexpr bool x64v25 = false;
+#endif
+
+#if defined(TT_X64V3)
+constexpr bool x64v3 = true;
+#else
+constexpr bool x64v3 = false;
+#endif
+
+#if defined(TT_X64V4)
+constexpr bool x64v4 = true;
+#else
+constexpr bool x64v4 = false;
+#endif
 
 #define tt_stringify(a) #a
 
@@ -191,8 +216,6 @@ constexpr size_t hardware_constructive_interference_size = 64;
 #else
 #error "Missing implementation of hardware_destructive_interference_size and hardware_constructive_interference_size"
 #endif
-
-constexpr bool has_sse = Processor::current == Processor::x64;
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 using os_handle = void *;

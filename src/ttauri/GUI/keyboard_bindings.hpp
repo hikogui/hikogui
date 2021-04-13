@@ -6,7 +6,7 @@
 
 #include "keyboard_key.hpp"
 #include "../URL.hpp"
-#include "../os_detect.hpp"
+#include "../architecture.hpp"
 #include "../command.hpp"
 #include <unordered_map>
 #include <tuple>
@@ -130,7 +130,7 @@ public:
     /** Load system bindings.
     */
     void loadSystemBindings() {
-        if constexpr (OperatingSystem::current == OperatingSystem::Windows) {
+        if constexpr (operating_system::current == operating_system::windows) {
             return loadBindings(URL{"resource:win32.keybinds.json"}, true);
         } else {
             tt_no_default();

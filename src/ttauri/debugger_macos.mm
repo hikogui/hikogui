@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #include <sys/types.h>

@@ -8,7 +8,7 @@
 #pragma once
 
 #include "wfree_unordered_map.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "fixed_string.hpp"
 #include "statistics.hpp"
 #include <span>

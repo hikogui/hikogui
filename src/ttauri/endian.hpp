@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "memory.hpp"
 #include "assert.hpp"
 

@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "subsystem.hpp"
 #include "URL.hpp"
 #include "strings.hpp"

@@ -114,7 +114,7 @@ target_sources(ttauri PRIVATE
     cast.hpp
     observable.hpp
     operator.hpp
-    os_detect.hpp
+    architecture.hpp
     parse_location.hpp
     preferences.cpp
     preferences.hpp
@@ -188,7 +188,7 @@ if(TT_BUILD_PCH)
         debugger.hpp
         exception.hpp
         logger.hpp
-        os_detect.hpp
+        architecture.hpp
         required.hpp
         strings.hpp
         trace.hpp
@@ -239,7 +239,7 @@ if(TT_BUILD_TESTS AND TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
         debugger.hpp
         exception.hpp
         logger.hpp
-        os_detect.hpp
+        architecture.hpp
         required.hpp
         strings.hpp
         trace.hpp

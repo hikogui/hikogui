@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../os_detect.hpp"
+#include "../architecture.hpp"
 #include "../unfair_recursive_mutex.hpp"
 
 namespace tt {

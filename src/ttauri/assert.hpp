@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "debugger.hpp"
 #include "utils.hpp"
 #include <exception>

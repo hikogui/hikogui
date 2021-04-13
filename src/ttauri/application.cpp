@@ -7,7 +7,7 @@
 #include "static_resource_view.hpp"
 #include "logger.hpp"
 #include "timer.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "trace.hpp"
 #include "thread.hpp"
 #include "metadata.hpp"

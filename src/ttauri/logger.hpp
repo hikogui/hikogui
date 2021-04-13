@@ -13,7 +13,7 @@
 #include "meta.hpp"
 #include "format.hpp"
 #include "source_location.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "delayed_format.hpp"
 #include "fixed_string.hpp"
 #include "subsystem.hpp"

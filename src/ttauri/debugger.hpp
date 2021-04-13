@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "console.hpp"
 #include "dialog.hpp"
 #include <fmt/format.h>

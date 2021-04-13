@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../os_detect.hpp"
+#include "../architecture.hpp"
 
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "vertical_sync_win32.hpp"

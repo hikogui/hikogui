@@ -26,12 +26,12 @@ window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point dis
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
+        if constexpr (theme::global->operatingSystem == operating_system::windows) {
             ttlet width = theme::global->toolbarDecorationButtonWidth * 3.0f;
             ttlet height = theme::global->toolbarHeight;
             _minimum_size = _preferred_size = _maximum_size = {width, height};
 
-        } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
+        } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
             ttlet width = DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING;
             ttlet height = DIAMETER + 2.0f * MARGIN;
             _minimum_size = _preferred_size = _maximum_size = {width, height};
@@ -59,7 +59,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
         }
         auto y = rectangle().height() - extent.height();
 
-        if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
+        if constexpr (theme::global->operatingSystem == operating_system::windows) {
             closeRectangle =
                 aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
@@ -68,7 +68,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
 
             minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-        } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
+        } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
             closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
             minimizeRectangle =
@@ -84,11 +84,11 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
         closeWindowGlyph = to_font_glyph_ids(ttauri_icon::CloseWindow);
         minimizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MinimizeWindow);
 
-        if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
+        if constexpr (theme::global->operatingSystem == operating_system::windows) {
             maximizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MaximizeWindowMS);
             restoreWindowGlyph = to_font_glyph_ids(ttauri_icon::RestoreWindowMS);
 
-        } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
+        } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
             maximizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MaximizeWindowMacOS);
             restoreWindowGlyph = to_font_glyph_ids(ttauri_icon::RestoreWindowMacOS);
         } else {
@@ -100,7 +100,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
         ttlet maximizeWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(maximizeWindowGlyph);
         ttlet restoreWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(restoreWindowGlyph);
 
-        ttlet glyph_size = theme::global->operatingSystem == OperatingSystem::MacOS ? 5.0f : theme::global->small_icon_size;
+        ttlet glyph_size = theme::global->operatingSystem == operating_system::macos ? 5.0f : theme::global->small_icon_size;
 
         closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, glyph_size), alignment::middle_center);
         minimizeWindowGlyphRectangle =
@@ -196,10 +196,10 @@ void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::t
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (overlaps(context, _clipping_rectangle)) {
-        if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
+        if constexpr (theme::global->operatingSystem == operating_system::macos) {
             drawMacOS(context, display_time_point);
 
-        } else if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
+        } else if constexpr (theme::global->operatingSystem == operating_system::windows) {
             drawWindows(context, display_time_point);
 
         } else {

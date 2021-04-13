@@ -173,7 +173,7 @@ TEST(unicode_bidi, bidi_test)
             }
         }
 
-        if constexpr (BuildType::current == BuildType::Debug) {
+        if constexpr (build_type::current == build_type::debug) {
             if (test.line_nr > 10'000) {
                 break;
             }
@@ -312,7 +312,7 @@ TEST(unicode_bidi, bidi_character_test)
             ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
         }
 
-        if constexpr (BuildType::current == BuildType::Debug) {
+        if constexpr (build_type::current == build_type::debug) {
             if (test.line_nr > 10'000) {
                 break;
             }

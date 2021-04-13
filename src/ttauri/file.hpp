@@ -6,7 +6,7 @@
 
 #include "URL.hpp"
 #include "byte_string.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include <mutex>
 #include <cstdint>
 #include <map>
