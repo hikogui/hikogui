@@ -96,61 +96,61 @@ enum class processor {
 
 #if TT_PROCESSOR == TT_CPU_X64
 #if defined(__AVX512BW__) && defined(__AVX512CD__) && defined(__AVX512DQ__) && defined(__AVX512F__) && defined(__AVX512VL__)
-#define TT_X64V4 1
-#define TT_X64V3 1
-#define TT_X64V25 1
-#define TT_X64V2 1
-#define TT_X64V1 1
+#define TT_X86_64_V4 1
+#define TT_X86_64_V3 1
+#define TT_X86_64_V2_5 1
+#define TT_X86_64_V2 1
+#define TT_X86_64_V1 1
 
 #elif defined(__AVX2__)
-#define TT_X64V3 1
-#define TT_X64V25 1
-#define TT_X64V2 1
-#define TT_X64V1 1
+#define TT_X86_64_V3 1
+#define TT_X86_64_V2_5 1
+#define TT_X86_64_V2 1
+#define TT_X86_64_V1 1
 
 #elif defined(__AVX__)
-#define TT_X64V25 1
-#define TT_X64V2 1
-#define TT_X64V1 1
+#define TT_X86_64_V2_5 1
+#define TT_X86_64_V2 1
+#define TT_X86_64_V1 1
 
 // x86_64_v2 can not be selected in MSVC, but can be in gcc and clang.
 #elif defined(__SSE4_2__) && defined(__SSSE3__)
-#define TT_X64V2 1
-#define TT_X64V1 1
+#define TT_X86_64_V2 1
+#define TT_X86_64_V1 1
 
 #else
-#define TT_X64V1 1
+#define TT_X86_64_V1 1
 #endif
 #endif
 
-#if defined(TT_X64V1)
-constexpr bool x64v1 = true;
+#if defined(TT_X86_64_V1)
+constexpr bool x86_64_v1 = true;
 #else
-constexpr bool x64v1 = false;
+constexpr bool x86_64_v1 = false;
 #endif
 
-#if defined(TT_X64V2)
-constexpr bool x64v2 = true;
+#if defined(TT_X86_64_V2)
+constexpr bool x86_64_v2 = true;
 #else
-constexpr bool x64v2 = false;
+constexpr bool x86_64_v2 = false;
 #endif
 
-#if defined(TT_X64V25)
-constexpr bool x64v25 = true;
+#if defined(TT_X86_64_V2_5)
+constexpr bool x86_64_v2_5 = true;
 #else
-constexpr bool x64v25 = false;
+constexpr bool x86_64_v2_5 = false;
 #endif
 
-#if defined(TT_X64V3)
-constexpr bool x64v3 = true;
+#if defined(TT_X86_64_V3)
+constexpr bool x86_64_v3 = true;
 #else
-constexpr bool x64v3 = false;
+constexpr bool x86_64_v3 = false;
 #endif
 
-#if defined(TT_X64V4)
-constexpr bool x64v4 = true;
+#if defined(TT_X86_64_V4)
+constexpr bool x86_64_v4 = true;
 #else
-constexpr bool x64v4 = false;
+constexpr bool x86_64_v4 = false;
 #endif
 
 #define tt_stringify(a) #a
