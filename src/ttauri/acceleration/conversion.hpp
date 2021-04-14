@@ -83,52 +83,24 @@ inline __m256 sample_i16_to_f32(__m128i x, __m256 mul, __m256 &peak, __m256 &sum
     return sample_i32_to_f32(x_db, mul, peak, sum);
 }
 
-/** Convert the even 8 of the 16x 16 bit integers to 32 bit float.
- * The 16 bit integers are first converted to 32 bit integers by copying
- * by repeating the 16 bits.
- *
- * @param x A vector of 16x 16 bit integers to convert.
- * @param mul The multiplier used for the conversion of integer to float
- * @param mask Must be _mm_set_epi8(128,128, 128,128, 128,128, 128,128, 13,12, 9,8  5,4, 1,0)
- * @param [in,out]peak The continues peak value.
- * @param [in,out]sum The continues sum value.
- * @return A vector of 32 bit floating point numbers.
- */
-inline __m256 sample_i16_to_f32_stride2(__m256i x, __m256 mul, __m128i &mask, __m256 &peak, __m256 &sum) noexcept
+[[nodiscard]] constexpr i32x4 load_4x_sint(int8_t const *&in_ptr, size_t load_stride, size_t ints_per_load, i8x16 permute_mask) noexcept
 {
-    // Get the 4 shorts in the low part.
-    ttlet x0 = _mm256_extractf128_si256(x, 0);
-    auto x_packed = _mm_shuffle_epi8(x0, mask);
+    auto r = i32x4{};
 
-    // Get the 4 shorts in the high part.
-    // We flip the mask back and forth, so that we only use a single register for that.
-    ttlet x1 = _mm256_extractf128_si256(x, 1);
-    mask = _mm_shuffle_epi32(mask, 0b01'00'11'10);
-    ttlet x_packed_hi = _mm_shuffle_epi8(x0, mask)
-    mask = _mm_shuffle_epi32(mask, 0b01'00'11'10);
+    for (size_t i = 0; i != 4; i += ints_per_load) {
+        auto x = i8x16(in_ptr);
+        in_ptr += load_stride;
 
-    // Now x_packed contains all 16 shorts.
-    x_packed = _mm_or_si128(x_packed, x_packed_hi);
+        // The permute mask will make 32 bit integers, including endian change.
+        // Unused integers are set to zero.
+        auto x_unpacked = shuffle(x, permute_mask);
+        auto x_casted = std::bit_cast<i32x4>(x_unpacked);
 
-    return sample_i16_to_f32(x, mul, peak, sum);
-}
+        // Insert the integers into r0
+        r0 |= byte_shift_left(x_casted, i * 4);
+    }
 
-/** Convert 8x 16 bit integer to 32 bit float.
- * The 16 bit integers are first converted to 32 bit integers by copying
- * by repeating the 16 bits.
- *
- * @param x A vector of 16 bit integers to convert.
- * @param mul The multiplier used for the conversion of integer to float
- * @param [in,out]peak The continues peak value.
- * @param [in,out]sum The continues sum value.
- * @return A vector of 32 bit floating point numbers.
- */
-inline __m256 sample_i16_to_f32(int16_t x, float mul, float &peak, float &sum) noexcept
-{
-    ttlet x_db_lo = static_cast<uint32_t>(x);
-    ttlet x_db_hi = static_cast<uint32_t>(x) << 16;
-    ttlet x_db = x_db_hi | x_db_lo;
-    return sample_i32_to_f32(x_db, mul, peak, sum);
+    return r;
 }
 
 /** Load 8x n-bit signed integers from memory.
@@ -146,18 +118,11 @@ inline __m256 sample_i16_to_f32(int16_t x, float mul, float &peak, float &sum) n
  * @param nr_bits The number of bits of each integer, does not need to be multiple of bytes.
  * @return 8x int32_t scaled up from the input integers
  */
-__m256i load_8x_sint(char const *in_ptr, size_t nr_loads, size_t load_stride, size_t ints_per_load, __m128i permute_mask)
+i32x8 load_8x_sint(int8_t const *&in_ptr, size_t load_stride, size_t ints_per_load, i8x16 permute_mask)
 {
-    for (auto i = 0; i != nr_loads; ++i) {
-        auto x = _mm_loadu_si128(reinterpret_cast<__m128i const* >(in_ptr));
-
-        // The permute mask will make 32 bit integers, by repeating bytes and changing endian.
-        auto x_packed = _mm_shuffle_epi8(x, permute_mask);
-        in_ptr += load_stride;
-    }
-
-
-
+    auto r0 = load_4_sint(in_ptr, load_stride, ints_per_load, permute_mask);
+    auto r1 = load_4_sint(in_ptr, load_stride, ints_per_load, permute_mask);
+    return {r0, r1};
 }
 
 
