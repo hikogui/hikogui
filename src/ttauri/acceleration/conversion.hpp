@@ -172,7 +172,7 @@ struct load_samples_context {
  * @param context The context to use to extract the sample from memory.
  * @return 8 signed integer samples.
  */
-[[nodiscard]] constexpr i32x8 load_8_samples(int8_t const *&ptr, load_samples_context const &context)
+[[nodiscard]] constexpr i32x8 load_8_samples(int8_t const *&ptr, load_samples_context const &context) noexcept
 {
     ttlet r0 = load_4_samples(ptr, context);
     ttlet r1 = load_4_samples(ptr, context);
@@ -184,15 +184,40 @@ struct load_samples_context {
  * @param context The context to use to extract the sample from memory.
  * @return 8 normalized floating point samples.
  */
-[[nodiscard]] constexpr f32x8 load_8_int_samples(int8_t const *&ptr, load_samples_context const &context)
+[[nodiscard]] constexpr f32x8 load_8_int_samples(int8_t const *&ptr, load_samples_context const &context) noexcept
 {
     ttlet int_samples = f32x8{load_8_samples(int8_t const *&ptr, load_samples_context const &context)};
     return f32x8{int_samples} * context.multiplier;
 }
 
-[[nodiscard]] constexpr f32x8 load_8_float_samples(int8_t const *&ptr, load_float_samples_context const &context)
+/** Load 8 floating-point samples from memory.
+ * @param [in,out]ptr The pointer to the first sample of eight samples.
+ * @param context The context to use to extract the sample from memory.
+ * @return 8 normalized floating point samples.
+ */
+[[nodiscard]] constexpr f32x8 load_8_float_samples(int8_t const *&ptr, load_float_samples_context const &context) noexcept
 {
     return std::bit_cast<f32x8>(load_8_samples(int8_t const *&ptr, load_samples_context const &context));
 }
+
+/** Load 8 floating-point samples from memory.
+ * @param [in,out]ptr The pointer to the first sample of eight samples.
+ * @return 8 normalized floating point samples.
+ */
+[[nodiscard]] constexpr f32x8 load_8_float_samples(int8_t const *&ptr) noexcept
+{
+    ttlet r = f32x8{reinterpret_cast<float const *>(ptr)};
+    ptr += 32;
+    return r;
+}
+
+[[nodiscard]] constexpr float load_1_float_sample(int8_t const *&ptr, size_t stride) noexcept
+{
+    float r;
+    std::memcpy(&r, ptr, sizeof(float));
+    ptr += stride;
+    return r;
+}
+
 
 } // namespace tt
