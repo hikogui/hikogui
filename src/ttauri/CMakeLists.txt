@@ -4,6 +4,7 @@
 
 add_subdirectory(text)
 add_subdirectory(geometry)
+add_subdirectory(accelerate)
 add_subdirectory(color)
 add_subdirectory(GUI)
 add_subdirectory(widgets)

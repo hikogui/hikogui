@@ -19,7 +19,7 @@ class rectangle {
     std::array<point3, 4> corners;
 
 public:
-    rectangle() noexcept : corners{} {}
+    rectangle() noexcept : corners() {}
     rectangle(rectangle const &rhs) noexcept = default;
     rectangle &operator=(rectangle const &rhs) noexcept = default;
     rectangle(rectangle &&rhs) noexcept = default;
