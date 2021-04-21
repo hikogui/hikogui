@@ -89,7 +89,7 @@ static void createWindowClass(gui_system &system)
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_vulkan_win32::create_window(const std::u8string &_title, extent2 new_extent)
+void gui_window_vulkan_win32::create_window(const std::string &title, extent2 new_extent)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
@@ -97,7 +97,12 @@ void gui_window_vulkan_win32::create_window(const std::u8string &_title, extent2
 
     createWindowClass(system);
 
-    auto u16title = to_wstring(_title);
+    auto u16title = to_wstring(title);
+
+    tt_log_info("Create window of size {} with title '{}'", new_extent, title);
+
+    // Recommended to set the dpi-awareness before opening any window.
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
 
     // We are opening a popup window with a caption bar to cause drop-shadow to appear around
     // the window.
@@ -166,6 +171,8 @@ gui_window_vulkan_win32::gui_window_vulkan_win32(
     label const &title) :
     gui_window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
 {
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
     tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 }
@@ -686,6 +693,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
         ttlet lock = std::scoped_lock(gui_system_mutex);
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
+        tt_log_info("DPI has changed to {}", dpi);
         requestLayout = true;
     } break;
 

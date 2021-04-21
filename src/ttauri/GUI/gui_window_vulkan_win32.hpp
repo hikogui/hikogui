@@ -28,7 +28,7 @@ public:
     gui_window_vulkan_win32(gui_window_vulkan_win32 &&) = delete;
     gui_window_vulkan_win32 &operator=(gui_window_vulkan_win32 &&) = delete;
 
-    void create_window(const std::u8string &title, extent2 extent) override;
+    void create_window(const std::string &title, extent2 extent) override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     vk::SurfaceKHR getSurface() const override;

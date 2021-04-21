@@ -74,11 +74,11 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    extent = [this] {
+    {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         static_cast<void>(widget->update_constraints({}, true));
-        return widget->preferred_size();
-    }();
+        extent = widget->preferred_size();
+    }
 
     // Once the window is open, we should be a full constraint, layout and draw of the window.
     requestLayout = true;

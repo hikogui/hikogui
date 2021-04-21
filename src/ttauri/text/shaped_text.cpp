@@ -320,7 +320,7 @@ noexcept :
     shaped_text(makeattributed_graphemeVector(text, style), width, alignment, wrap) {}
 
 shaped_text::shaped_text(
-    std::u8string_view text,
+    std::string_view text,
     text_style const &style,
     float width,
     tt::alignment alignment,
