@@ -275,11 +275,6 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     teardown();
     build();
 
-    // Bail out when the window is not yet ready to be rendered.
-    if (state != gui_window_state::ready_to_render) {
-        return;
-    }
-
     // All widgets need constrains recalculated on these window-wide events.
     // Like theme or language changes.
     ttlet need_reconstrain = std::exchange(_request_setting_change, false);
@@ -297,10 +292,12 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
     if (requestResize.exchange(false)) {
+        tt_log_info("A new preferred window size {} was requested by one of the widget.", widget->preferred_size());
         set_window_size(extent = widget->preferred_size());
     } else {
         ttlet new_extent = clamp(extent, widget->minimum_size(), widget->maximum_size());
         if (new_extent != extent) {
+            tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", extent, new_extent);
             set_window_size(extent = new_extent);
         }
     }
@@ -312,7 +309,8 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     // Make sure the widget's layout is updated before draw, but after window resize.
     widget->update_layout(displayTimePoint, need_layout);
 
-    if (!static_cast<bool>(_request_redraw_rectangle)) {
+    // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
+    if (state != gui_window_state::ready_to_render || !static_cast<bool>(_request_redraw_rectangle)) {
         return;
     }
 
@@ -517,16 +515,16 @@ bool gui_window_vulkan::readSurfaceExtent()
     ttlet minimum_widget_size = widget->minimum_size();
     ttlet maximum_widget_size = widget->maximum_size();
 
-    if (narrow_cast<int>(swapchainImageExtent.width) < minimum_widget_size.width() ||
-        narrow_cast<int>(swapchainImageExtent.height) < minimum_widget_size.height()) {
+    if (narrow_cast<float>(swapchainImageExtent.width) < minimum_widget_size.width() ||
+        narrow_cast<float>(swapchainImageExtent.height) < minimum_widget_size.height()) {
         // Due to vulkan surface being extended across the window decoration;
         // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
         // it is 160x28 pixels.
 
-        // tt_log_info("Window too small to draw current=({}, {}), minimum=({}, {})",
-        //    swapchainImageExtent.width, swapchainImageExtent.height,
-        //    minimumWindowExtent.width(), minimumWindowExtent.height()
-        //);
+        tt_log_info("Window too small ({}, {}) to draw widgets requiring a window size between {} and {}.",
+            swapchainImageExtent.width, swapchainImageExtent.height,
+            minimum_widget_size, maximum_widget_size
+        );
         return false;
     }
 

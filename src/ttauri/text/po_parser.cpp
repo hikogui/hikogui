@@ -39,7 +39,7 @@ namespace tt {
 //    }
 //}
 
-[[nodiscard]] static parse_result<std::tuple<std::string,int,std::u8string>> parseLine(token_iterator token)
+[[nodiscard]] static parse_result<std::tuple<std::string,int,std::string>> parseLine(token_iterator token)
 {
     std::string name;
     if ((*token == tokenizer_name_t::Name)) {
@@ -66,16 +66,16 @@ namespace tt {
         }
     }
 
-    std::u8string value;
+    std::string value;
     if ((*token == tokenizer_name_t::StringLiteral)) {
-        value = static_cast<std::u8string>(*token++);
+        value = static_cast<std::string>(*token++);
     } else {
         throw parse_error("{}: Expecting a value at end of each line", token->location);
     }
 
     while (true) {
         if ((*token == tokenizer_name_t::StringLiteral)) {
-            value += static_cast<std::u8string>(*token++);
+            value += static_cast<std::string>(*token++);
         } else {
             return {std::tuple{name, index, value}, token};
         }
@@ -176,7 +176,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
                 r.translations.push_back(result.value);
 
             } else if (std::ssize(result.value.msgstr) == 1) {
-                parse_po_header(r, tt::to_string(result.value.msgstr.front()));
+                parse_po_header(r, result.value.msgstr.front());
 
             } else {
                 throw parse_error("Unknown .po header");

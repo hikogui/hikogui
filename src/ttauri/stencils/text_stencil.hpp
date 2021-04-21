@@ -15,8 +15,8 @@ class text_stencil : public stencil {
 public:
     using super = stencil;
 
-    text_stencil(alignment alignment, std::u8string_view text, text_style style) noexcept;
-    text_stencil(alignment alignment, std::u8string text, text_style style) noexcept;
+    text_stencil(alignment alignment, std::string_view text, text_style style) noexcept;
+    text_stencil(alignment alignment, std::string text, text_style style) noexcept;
 
     [[nodiscard]] extent2 minimum_size() noexcept override;
     [[nodiscard]] extent2 preferred_size() noexcept override;
@@ -25,7 +25,7 @@ public:
     void draw(draw_context context, tt::color color, matrix3 transform) noexcept override;
 
 private:
-    std::u8string _text;
+    std::string _text;
     text_style _style;
     shaped_text _shaped_text;
     matrix2 _shaped_text_transform;

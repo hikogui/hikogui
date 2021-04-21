@@ -78,7 +78,7 @@ public:
     [[nodiscard]] static std::unique_ptr<class image_stencil> make_unique(alignment alignment, icon const &icon);
 
     [[nodiscard]] static std::unique_ptr<class text_stencil>
-    make_unique(alignment alignment, std::u8string const &text, text_style const &style);
+    make_unique(alignment alignment, std::string const &text, text_style const &style);
 
     [[nodiscard]] static std::unique_ptr<class label_stencil>
     make_unique(alignment alignment, tt::label const &label, text_style const &style);
