@@ -8,9 +8,34 @@
 #include <cstdint>
 #include <bit>
 #include <memory>
+#include <numeric>
 #include "../geometry/numeric_array.hpp"
 
 namespace tt {
+
+/*
+ * To read and process samples as quick as possible we should read
+ * them in chunks of 4x4 sample/channels.
+ *
+ * This allows writing of 4 samples in a go, while also being able to
+ * do filter with 4 channels in parallel.
+ */
+
+
+[[nodiscard]] constexpr float float_to_int_multiplier(size_t nr_bits) noexcept
+{
+    tt_axiom(nr_bits >= 9, "sample formats of 8 bit and smaller are unsigned");
+    tt_axiom(nr_bits <= (sizeof(size_t) * CHAR_BIT));
+
+    return static_cast<float>((1_uz << (nr_bits - 1)) - 1);
+}
+
+[[nodiscard]] constexpr float int_to_float_multiplier(size_t nr_bits) noexcept
+{
+    return 1.0f / float_to_int_multiplier(nr_bits);
+}
+
+
 
 /** A class to read samples from memory.
  * @tparam NumBytes Number of bytes of the container of the sample.

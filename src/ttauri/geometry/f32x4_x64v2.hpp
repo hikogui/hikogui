@@ -5,6 +5,7 @@
 #pragma once
 
 #include <array>
+#include <emmintrin.h>
 #include <smmintrin.h>
 #include <xmmintrin.h>
 #include <pmmintrin.h>
@@ -13,6 +14,7 @@
 namespace tt {
 
 using f32x4_raw = std::array<float, 4>;
+using i32x4_raw = std::array<int32_t, 4>;
 
 [[nodiscard]] inline f32x4_raw to_f32x4_raw(__m128 const &rhs) noexcept
 {
@@ -24,6 +26,25 @@ using f32x4_raw = std::array<float, 4>;
 [[nodiscard]] inline __m128 to_m128(f32x4_raw const &rhs) noexcept
 {
     return _mm_loadu_ps(rhs.data());
+}
+
+[[nodiscard]] inline __m128i to_m128i(i32x4_raw const &rhs) noexcept
+{
+    return _mm_loadu_si128(reinterpret_cast<__m128i const *>(rhs.data()));
+}
+
+/** Take the ceil for each of the elements in the SSE register.
+ */
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_from_i32x4(i32x4_raw const &rhs) noexcept
+{
+    return to_f32x4_raw(_mm_cvtepi32_ps(to_m128i(rhs)));
+}
+
+/** Take the ceil for each of the elements in the SSE register.
+ */
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_mul(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+{
+    return to_f32x4_raw(_mm_mul_ps(to_m128(lhs), to_m128(rhs)));
 }
 
 /** Take the ceil for each of the elements in the SSE register.
