@@ -364,7 +364,7 @@ shaped_text::shaped_text(
     return aarectangle{p0, p3};
 }
 
-[[nodiscard]] aarectangle shaped_text::leftToRightCaret(ssize_t index, bool insertMode) const noexcept
+[[nodiscard]] aarectangle shaped_text::left_to_right_caret(ssize_t index, bool insertMode) const noexcept
 {
     auto r = rectangleOfgrapheme(index);
 
@@ -376,7 +376,7 @@ shaped_text::shaped_text(
     return r;
 }
 
-[[nodiscard]] std::vector<aarectangle> shaped_text::selectionRectangles(ssize_t first, ssize_t last) const noexcept
+[[nodiscard]] std::vector<aarectangle> shaped_text::selection_rectangles(ssize_t first, ssize_t last) const noexcept
 {
     auto r = std::vector<aarectangle>{};
 
@@ -393,7 +393,7 @@ shaped_text::shaped_text(
 }
 
 
-[[nodiscard]] std::optional<ssize_t> shaped_text::indexOfCharAtCoordinate(point2 coordinate) const noexcept
+[[nodiscard]] std::optional<ssize_t> shaped_text::index_of_grapheme_at_coordinate(point2 coordinate) const noexcept
 {
     for (ttlet &line: lines) {
         auto i = line.find(coordinate);
@@ -448,7 +448,7 @@ shaped_text::shaped_text(
     }
 }
 
-[[nodiscard]] std::pair<ssize_t,ssize_t> shaped_text::indicesOfParagraph(ssize_t logicalIndex) const noexcept
+[[nodiscard]] std::pair<ssize_t,ssize_t> shaped_text::indices_of_paragraph(ssize_t logicalIndex) const noexcept
 {
     tt_axiom(size() != 0);
     if (size() == 1) {
@@ -486,7 +486,7 @@ shaped_text::shaped_text(
 
 /** Return the index at the left side of a word
 */
-[[nodiscard]] std::pair<ssize_t,ssize_t> shaped_text::indicesOfWord(ssize_t logicalIndex) const noexcept
+[[nodiscard]] std::pair<ssize_t,ssize_t> shaped_text::indices_of_word(ssize_t logicalIndex) const noexcept
 {
     auto i = find(logicalIndex);
 
@@ -525,12 +525,12 @@ shaped_text::shaped_text(
 [[nodiscard]] std::optional<ssize_t> shaped_text::indexOfWordOnTheLeft(ssize_t logicalIndex) const noexcept
 {
     // Find edge of current word.
-    ttlet [s, e] = indicesOfWord(logicalIndex);
+    ttlet [s, e] = indices_of_word(logicalIndex);
     
     // If the cursor was already on that edge, find the edges of the previous word.
     if (s == logicalIndex) {
         if (ttlet tmp = indexOfCharOnTheLeft(s)) {
-            ttlet [s2, e2] = indicesOfWord(*tmp);
+            ttlet [s2, e2] = indices_of_word(*tmp);
             return s2;
         }
     }
@@ -540,12 +540,12 @@ shaped_text::shaped_text(
 [[nodiscard]] std::optional<ssize_t> shaped_text::indexOfWordOnTheRight(ssize_t logicalIndex) const noexcept
 {
     // Find edge of current word.
-    ttlet [s, e] = indicesOfWord(logicalIndex);
+    ttlet [s, e] = indices_of_word(logicalIndex);
 
     // If the cursor was already on that edge, find the edges of the next word.
     if (e == logicalIndex || find(e)->isWhiteSpace()) {
         if (ttlet tmp = indexOfCharOnTheRight(e)) {
-            ttlet [s2, e2] = indicesOfWord(*tmp);
+            ttlet [s2, e2] = indices_of_word(*tmp);
             return s2 == e ? e2 : s2;
         }       
     }

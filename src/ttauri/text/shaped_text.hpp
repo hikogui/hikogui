@@ -226,7 +226,7 @@ public:
      * @param overwrite When true display a overwrite cursor.
      * @return left-to-right caret rectangle to display.
      */
-    [[nodiscard]] aarectangle leftToRightCaret(ssize_t index, bool overwrite) const noexcept;
+    [[nodiscard]] aarectangle left_to_right_caret(ssize_t index, bool overwrite) const noexcept;
 
     /** Return a list of merged rectangles to display for the selection.
      * The selection may be discontinues due to bidirectional text.
@@ -235,13 +235,13 @@ public:
      * @param last One beyond the last logical grapheme that is selected.
      * @return A list of rectangles to display.
      */
-    [[nodiscard]] std::vector<aarectangle> selectionRectangles(ssize_t first, ssize_t last) const noexcept;
+    [[nodiscard]] std::vector<aarectangle> selection_rectangles(ssize_t first, ssize_t last) const noexcept;
 
     /** Get the character close to a coordinate.
     * @param coordinate The coordinate of the mouse pointer.
     * @return The logical index of the character closest to the coordinate
     */
-    [[nodiscard]] std::optional<ssize_t> indexOfCharAtCoordinate(point2 coordinate) const noexcept;
+    [[nodiscard]] std::optional<ssize_t> index_of_grapheme_at_coordinate(point2 coordinate) const noexcept;
 
     /** Get the character left of the given character
     * @param logical_index The index of the logical character pointed to.
@@ -259,13 +259,13 @@ public:
     * @param logical_index The index of the logical character pointed to.
     * @return The logical indices of the first and last character of a word.
     */
-    [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfWord(ssize_t logical_index) const noexcept;
+    [[nodiscard]] std::pair<ssize_t,ssize_t> indices_of_word(ssize_t logical_index) const noexcept;
 
     /** Get the character right of the given character
     * @param logical_index The index of the logical character pointed to.
     * @return The logical indices of the first and last character of a paragraph.
     */
-    [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfParagraph(ssize_t logical_index) const noexcept;
+    [[nodiscard]] std::pair<ssize_t,ssize_t> indices_of_paragraph(ssize_t logical_index) const noexcept;
 
     /** Get the character right of the given character
     * @param logical_index The index of the logical character pointed to.

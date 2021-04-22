@@ -15,36 +15,11 @@
 namespace tt {
 
 class editable_text {
-    gap_buffer<attributed_grapheme> text;
-    shaped_text _shapedText;
 
-    /** The maximum width when wrapping text.
-     * For single line text editing, we should never wrap.
-     */
-    float width = 0.0f;
-
-    /** Insert-mode vs overwrite-mode.
-     */
-    bool insertMode = true;
-
-    /** The index into the text where the cursor is located.
-     */
-    ssize_t cursorIndex = 0;
-
-    /** The index into the text where the start of the selection is located.
-     * When no text is selected the cursorIndex and selectionIndex are equal.
-     */
-    ssize_t selectionIndex = 0;
-
-    text_style currentStyle;
-
-    /** Partial grapheme is inserted before cursorIndex.
-     */
-    bool hasPartialgrapheme = false;
 
 public:
     editable_text(text_style style) :
-        text(), _shapedText(), currentStyle(style)
+        _text(), _shaped_text(), _current_style(style)
     {
     }
 
@@ -52,7 +27,7 @@ public:
     {
         auto r = std::string{};
         
-        for (ttlet &c : text) {
+        for (ttlet &c : _text) {
             r += to_string(c.grapheme.NFC());
         }
 
@@ -61,87 +36,85 @@ public:
 
     editable_text &operator=(std::string_view str) noexcept
     {
-        cancelPartialgrapheme();
+        tt_axiom(is_valid());
+        cancel_partial_grapheme();
 
         gstring gstr = to_gstring(str);
 
-        text.clear();
-        text.reserve(std::ssize(gstr));
+        _text.clear();
+        _text.reserve(std::ssize(gstr));
         for (ttlet &g : gstr) {
-            text.emplace_back(g, currentStyle);
+            _text.emplace_back(g, _current_style);
         }
 
-        selectionIndex = cursorIndex = 0;
-        tt_axiom(selectionIndex >= 0);
-        tt_axiom(selectionIndex <= std::ssize(text));
-        tt_axiom(cursorIndex >= 0);
-        tt_axiom(cursorIndex <= std::ssize(text));
+        _selection_index = _cursor_index = 0;
 
-        updateshaped_text();
+        update_shaped_text();
+        tt_axiom(is_valid());
         return *this;
     }
 
-    /** Update the shaped text after changed to text.
+    /** Update the shaped _text after changed to _text.
      */
-    void updateshaped_text() noexcept {
-        auto text_ = make_vector(text);
+    void update_shaped_text() noexcept {
+        auto text_ = make_vector(_text);
 
-        // Make sure there is an end-paragraph marker in the text.
-        // This allows the shapedText to figure out the style of the text of an empty paragraph.
-        if (std::ssize(text) == 0) {
-            text_.emplace_back(grapheme::PS(), currentStyle, 0);
+        // Make sure there is an end-paragraph marker in the _text.
+        // This allows the shaped_text to figure out the style of the _text of an empty paragraph.
+        if (std::ssize(_text) == 0) {
+            text_.emplace_back(grapheme::PS(), _current_style, 0);
         } else {
             text_.emplace_back(grapheme::PS(), text_.back().style, 0);
         }
 
-        _shapedText = shaped_text(text_, width, alignment::top_left, false);
+        _shaped_text = tt::shaped_text{text_, _width, alignment::top_left, false};
     }
 
-    [[nodiscard]] shaped_text shapedText() const noexcept {
-        return _shapedText;
+    [[nodiscard]] shaped_text shaped_text() const noexcept {
+        return _shaped_text;
     }
 
-    void setWidth(float _width) noexcept {
-        width = _width;
-        updateshaped_text();
+    void set_width(float width) noexcept {
+        _width = width;
+        update_shaped_text();
     }
 
-    void setCurrentStyle(text_style style) noexcept {
-        this->currentStyle = style;
+    void set_current_style(text_style style) noexcept {
+        this->_current_style = style;
     }
 
     /** Change the text style of all graphemes.
      */
-    void setStyleOfAll(text_style style) noexcept {
-        setCurrentStyle(style);
-        for (auto &c: text) {
+    void set_style_of_all(text_style style) noexcept {
+        set_current_style(style);
+        for (auto &c: _text) {
             c.style = style;
         }
-        updateshaped_text();
+        update_shaped_text();
     }
 
     size_t size() const noexcept {
-        return text.size();
+        return _text.size();
     }
 
-    /** Return the text iterator at index.
+    /** Return the _text iterator at index.
      */
     decltype(auto) it(ssize_t index) noexcept {
         tt_axiom(index >= 0);
-        // Index should never be at text.cend();
-        tt_axiom(index < std::ssize(text));
+        // Index should never be at _text.cend();
+        tt_axiom(index < std::ssize(_text));
 
-        return text.begin() + index;
+        return _text.begin() + index;
     }
 
-    /** Return the text iterator at index.
+    /** Return the _text iterator at index.
     */
     decltype(auto) cit(ssize_t index) const noexcept {
         tt_axiom(index >= 0);
-        // Index should never be beyond text.cend();
-        tt_axiom(index <= std::ssize(text));
+        // Index should never be beyond _text.cend();
+        tt_axiom(index <= std::ssize(_text));
 
-        return text.cbegin() + index;
+        return _text.cbegin() + index;
     }
 
     decltype(auto) it(ssize_t index) const noexcept {
@@ -150,10 +123,12 @@ public:
 
     /** Get carets at the cursor position.
     */
-    aarectangle partialgraphemeCaret() const noexcept {
-        if (hasPartialgrapheme) {
-            tt_axiom(cursorIndex != 0);
-            return _shapedText.leftToRightCaret(cursorIndex - 1, false);
+    aarectangle partial_grapheme_caret() const noexcept {
+        tt_axiom(is_valid());
+
+        if (_has_partial_grapheme) {
+            tt_axiom(_cursor_index != 0);
+            return _shaped_text.left_to_right_caret(_cursor_index - 1, false);
         } else {
             return {};
         }
@@ -161,376 +136,417 @@ public:
 
     /** Get carets at the cursor position.
      */
-    aarectangle leftToRightCaret() const noexcept {
-        return _shapedText.leftToRightCaret(cursorIndex, insertMode);
+    aarectangle left_to_right_caret() const noexcept {
+        tt_axiom(is_valid());
+        return _shaped_text.left_to_right_caret(_cursor_index, _insert_mode);
     }
 
-    /** Get a set of rectangles for which text is selected.
+    /** Get a set of rectangles for which _text is selected.
      */
-    std::vector<aarectangle> selectionRectangles() const noexcept {
+    std::vector<aarectangle> selection_rectangles() const noexcept {
+        tt_axiom(is_valid());
         auto r = std::vector<aarectangle>{};
-        if (selectionIndex < cursorIndex) {
-            r = _shapedText.selectionRectangles(selectionIndex, cursorIndex);
-        } else if (selectionIndex > cursorIndex) {
-            r = _shapedText.selectionRectangles(cursorIndex, selectionIndex);
+        if (_selection_index < _cursor_index) {
+            r = _shaped_text.selection_rectangles(_selection_index, _cursor_index);
+        } else if (_selection_index > _cursor_index) {
+            r = _shaped_text.selection_rectangles(_cursor_index, _selection_index);
         }
+        tt_axiom(is_valid());
         return r;
     }
 
     /** Delete a selection.
-     * This function should be called when a selection is active while new text
+     * This function should be called when a selection is active while new _text
      * is being inserted.
      */
-    void deleteSelection() noexcept {
-        if (selectionIndex < cursorIndex) {
-            text.erase(cit(selectionIndex), cit(cursorIndex));
-            cursorIndex = selectionIndex;
-            updateshaped_text();
-        } else if (selectionIndex > cursorIndex) {
-            text.erase(cit(cursorIndex), cit(selectionIndex));
-            selectionIndex = cursorIndex;
-            updateshaped_text();
+    void delete_selection() noexcept {
+        tt_axiom(is_valid());
+
+        if (_selection_index < _cursor_index) {
+            _text.erase(cit(_selection_index), cit(_cursor_index));
+            _cursor_index = _selection_index;
+            update_shaped_text();
+        } else if (_selection_index > _cursor_index) {
+            _text.erase(cit(_cursor_index), cit(_selection_index));
+            _selection_index = _cursor_index;
+            update_shaped_text();
         }
+        tt_axiom(is_valid());
     }
 
     /*! Find the nearest character at position and return it's index.
      */
-    ssize_t characterIndexAtPosition(point2 position) const noexcept;
+    ssize_t character_index_at_position(point2 position) const noexcept;
 
-    void setmouse_cursorAtCoordinate(point2 coordinate) noexcept
+    void set_cursor_at_coordinate(point2 coordinate) noexcept
     {
-        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            selectionIndex = cursorIndex = *newmouse_cursorPosition;
-            tt_axiom(selectionIndex >= 0);
-            tt_axiom(selectionIndex <= std::ssize(text));
+        tt_axiom(is_valid());
+        if (ttlet new_cursor_position = _shaped_text.index_of_grapheme_at_coordinate(coordinate)) {
+            _selection_index = _cursor_index = *new_cursor_position;
         }
+        tt_axiom(is_valid());
     }
 
-    void selectWordAtCoordinate(point2 coordinate) noexcept
+    void select_word_at_coordinate(point2 coordinate) noexcept
     {
-        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newmouse_cursorPosition);
-            tt_axiom(selectionIndex >= 0);
-            tt_axiom(selectionIndex <= std::ssize(text));
-            tt_axiom(cursorIndex >= 0);
-            tt_axiom(cursorIndex <= std::ssize(text));
+        tt_axiom(is_valid());
+
+        if (ttlet new_cursor_position = _shaped_text.index_of_grapheme_at_coordinate(coordinate)) {
+            std::tie(_selection_index, _cursor_index) = _shaped_text.indices_of_word(*new_cursor_position);
         }
+
+        tt_axiom(is_valid());
     }
 
-    void selectParagraphAtCoordinate(point2 coordinate) noexcept
+    void select_paragraph_at_coordinate(point2 coordinate) noexcept
     {
-        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfParagraph(*newmouse_cursorPosition);
-            tt_axiom(selectionIndex >= 0);
-            tt_axiom(selectionIndex <= std::ssize(text));
-            tt_axiom(cursorIndex >= 0);
-            tt_axiom(cursorIndex <= std::ssize(text));
+        tt_axiom(is_valid());
+
+        if (ttlet new_cursor_position = _shaped_text.index_of_grapheme_at_coordinate(coordinate)) {
+            std::tie(_selection_index, _cursor_index) = _shaped_text.indices_of_paragraph(*new_cursor_position);
         }
+
+        tt_axiom(is_valid());
     }
 
-    void dragmouse_cursorAtCoordinate(point2 coordinate) noexcept
+    void drag_cursor_at_coordinate(point2 coordinate) noexcept
     {
-        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            cursorIndex = *newmouse_cursorPosition;
-            tt_axiom(cursorIndex >= 0);
-            tt_axiom(cursorIndex <= std::ssize(text));
+        tt_axiom(is_valid());
+
+        if (ttlet new_cursor_position = _shaped_text.index_of_grapheme_at_coordinate(coordinate)) {
+            _cursor_index = *new_cursor_position;
         }
+        tt_axiom(is_valid());
     }
 
-    void dragWordAtCoordinate(point2 coordinate) noexcept
+    void drag_word_at_coordinate(point2 coordinate) noexcept
     {
-        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            ttlet [a, b] = _shapedText.indicesOfWord(*newmouse_cursorPosition);
+        tt_axiom(is_valid());
 
-            if (selectionIndex <= cursorIndex) {
-                if (a < selectionIndex) {
+        if (ttlet new_cursor_position = _shaped_text.index_of_grapheme_at_coordinate(coordinate)) {
+            ttlet[a, b] = _shaped_text.indices_of_word(*new_cursor_position);
+
+            if (_selection_index <= _cursor_index) {
+                if (a < _selection_index) {
                     // Reverse selection
-                    selectionIndex = cursorIndex;
-                    cursorIndex = a;
+                    _selection_index = _cursor_index;
+                    _cursor_index = a;
                 } else {
-                    cursorIndex = b;
+                    _cursor_index = b;
                 }
             } else {
-                if (b > selectionIndex) {
+                if (b > _selection_index) {
                     // Reverse selection
-                    selectionIndex = cursorIndex;
-                    cursorIndex = b;
+                    _selection_index = _cursor_index;
+                    _cursor_index = b;
                 } else {
-                    cursorIndex = a;
+                    _cursor_index = a;
                 }
             }
-
-            tt_axiom(selectionIndex >= 0);
-            tt_axiom(selectionIndex <= std::ssize(text));
-            tt_axiom(cursorIndex >= 0);
-            tt_axiom(cursorIndex <= std::ssize(text));
         }
+        tt_axiom(is_valid());
     }
 
-    void dragParagraphAtCoordinate(point2 coordinate) noexcept
+    void drag_paragraph_at_coordinate(point2 coordinate) noexcept
     {
-        if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            ttlet [a, b] = _shapedText.indicesOfParagraph(*newmouse_cursorPosition);
+        tt_axiom(is_valid());
 
-            if (selectionIndex <= cursorIndex) {
-                if (a < selectionIndex) {
+        if (ttlet new_cursor_position = _shaped_text.index_of_grapheme_at_coordinate(coordinate)) {
+            ttlet[a, b] = _shaped_text.indices_of_paragraph(*new_cursor_position);
+
+            if (_selection_index <= _cursor_index) {
+                if (a < _selection_index) {
                     // Reverse selection
-                    selectionIndex = cursorIndex;
-                    cursorIndex = a;
+                    _selection_index = _cursor_index;
+                    _cursor_index = a;
                 } else {
-                    cursorIndex = b;
+                    _cursor_index = b;
                 }
             } else {
-                if (b > selectionIndex) {
+                if (b > _selection_index) {
                     // Reverse selection
-                    selectionIndex = cursorIndex;
-                    cursorIndex = b;
+                    _selection_index = _cursor_index;
+                    _cursor_index = b;
                 } else {
-                    cursorIndex = a;
+                    _cursor_index = a;
                 }
             }
-
-            tt_axiom(selectionIndex >= 0);
-            tt_axiom(selectionIndex <= std::ssize(text));
-            tt_axiom(cursorIndex >= 0);
-            tt_axiom(cursorIndex <= std::ssize(text));
         }
+
+        tt_axiom(is_valid());
     }
 
-    void cancelPartialgrapheme() noexcept {
-        if (hasPartialgrapheme) {
-            tt_axiom(cursorIndex >= 1);
+    void cancel_partial_grapheme() noexcept {
+        tt_axiom(is_valid());
 
-            selectionIndex = --cursorIndex;
-            tt_axiom(selectionIndex >= 0);
-            tt_axiom(selectionIndex <= std::ssize(text));
-            tt_axiom(cursorIndex >= 0);
-            tt_axiom(cursorIndex <= std::ssize(text));
+        if (_has_partial_grapheme) {
+            tt_axiom(_cursor_index >= 1);
 
-            text.erase(cit(cursorIndex));
-            hasPartialgrapheme = false;
+            _selection_index = --_cursor_index;
 
-            updateshaped_text();
+            _text.erase(cit(_cursor_index));
+            _has_partial_grapheme = false;
+
+            update_shaped_text();
         }
+
+        tt_axiom(is_valid());
     }
 
     /*! Insert a temporary partial character.
      * This partial character is currently being constructed by the operating system.
      *
-     * Since the insertion has not been completed any selected text should not yet be deleted.
+     * Since the insertion has not been completed any selected _text should not yet be deleted.
      */
-    void insertPartialgrapheme(grapheme character) noexcept {
-        cancelPartialgrapheme();
-        deleteSelection();
+    void insert_partial_grapheme(grapheme character) noexcept {
+        tt_axiom(is_valid());
 
-        text.emplace_before(cit(cursorIndex), character, currentStyle);
-        selectionIndex = ++cursorIndex;
-        tt_axiom(selectionIndex >= 0);
-        tt_axiom(selectionIndex <= std::ssize(text));
-        tt_axiom(cursorIndex >= 0);
-        tt_axiom(cursorIndex <= std::ssize(text));
+        cancel_partial_grapheme();
+        delete_selection();
 
-        hasPartialgrapheme = true;
-        updateshaped_text();
+        _text.emplace_before(cit(_cursor_index), character, _current_style);
+        _selection_index = ++_cursor_index;
+
+        _has_partial_grapheme = true;
+        update_shaped_text();
+
+        tt_axiom(is_valid());
     }
 
     /*! insert character at the cursor position.
-     * Selected text will be deleted.
+     * Selected _text will be deleted.
      */
-    void insertgrapheme(grapheme character) noexcept {
-        cancelPartialgrapheme();
-        deleteSelection();
+    void insert_grapheme(grapheme character) noexcept {
+        tt_axiom(is_valid());
 
-        if (!insertMode) {
+        cancel_partial_grapheme();
+        delete_selection();
+
+        if (!_insert_mode) {
             handle_event(command::text_delete_char_next);
         }
-        text.emplace_before(cit(cursorIndex), character, currentStyle);
-        selectionIndex = ++cursorIndex;
-        tt_axiom(selectionIndex >= 0);
-        tt_axiom(selectionIndex <= std::ssize(text));
-        tt_axiom(cursorIndex >= 0);
-        tt_axiom(cursorIndex <= std::ssize(text));
+        _text.emplace_before(cit(_cursor_index), character, _current_style);
+        _selection_index = ++_cursor_index;
 
-        updateshaped_text();
+        update_shaped_text();
+
+        tt_axiom(is_valid());
     }
 
-    void handlePaste(std::string str) noexcept {
-        cancelPartialgrapheme();
-        deleteSelection();
+    void handle_paste(std::string str) noexcept {
+        tt_axiom(is_valid());
+
+        cancel_partial_grapheme();
+        delete_selection();
 
         gstring gstr = to_gstring(str);
 
         auto str_attr = std::vector<attributed_grapheme>{};
         str_attr.reserve(std::ssize(gstr));
         for (ttlet &g: gstr) {
-            str_attr.emplace_back(g, currentStyle);
+            str_attr.emplace_back(g, _current_style);
         }
 
-        text.insert_after(cit(cursorIndex), str_attr.cbegin(), str_attr.cend());
-        selectionIndex = cursorIndex += std::ssize(str_attr);
-        tt_axiom(selectionIndex >= 0);
-        tt_axiom(selectionIndex <= std::ssize(text));
-        tt_axiom(cursorIndex >= 0);
-        tt_axiom(cursorIndex <= std::ssize(text));
+        _text.insert_after(cit(_cursor_index), str_attr.cbegin(), str_attr.cend());
+        _selection_index = _cursor_index += std::ssize(str_attr);
 
-        updateshaped_text();
+        update_shaped_text();
+        tt_axiom(is_valid());
     }
 
-    std::string handleCopy() noexcept {
+    std::string handle_copy() noexcept {
+        tt_axiom(is_valid());
+
         auto r = std::string{};
         
-        if (selectionIndex < cursorIndex) {
-            r.reserve(cursorIndex - selectionIndex);
-            for (auto i = cit(selectionIndex); i != cit(cursorIndex); ++i) {
+        if (_selection_index < _cursor_index) {
+            r.reserve(_cursor_index - _selection_index);
+            for (auto i = cit(_selection_index); i != cit(_cursor_index); ++i) {
                 r += to_string(i->grapheme);
             }
-        } else if (selectionIndex > cursorIndex) {
-            r.reserve(selectionIndex - cursorIndex);
-            for (auto i = cit(cursorIndex); i != cit(selectionIndex); ++i) {
+        } else if (_selection_index > _cursor_index) {
+            r.reserve(_selection_index - _cursor_index);
+            for (auto i = cit(_cursor_index); i != cit(_selection_index); ++i) {
                 r += to_string(i->grapheme);
             }
-        } 
+        }
+
+        tt_axiom(is_valid());
         return r;
     }
 
-    std::string handleCut() noexcept {
-        auto r = handleCopy();
-        cancelPartialgrapheme();
-        deleteSelection();
+    std::string handle_cut() noexcept {
+        tt_axiom(is_valid());
+
+        auto r = handle_copy();
+        cancel_partial_grapheme();
+        delete_selection();
+
+        tt_axiom(is_valid());
         return r;
     }
 
     bool handle_event(command command) noexcept {
-        auto handled = false;
+        tt_axiom(is_valid());
 
-        tt_axiom(cursorIndex <= std::ssize(text));
-        cancelPartialgrapheme();
+        auto handled = false;
+        cancel_partial_grapheme();
 
         switch (command) {
         case command::text_cursor_char_left:
             handled = true;
-            if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
-                // XXX Change currentStyle based on the grapheme at the new cursor position.
-                selectionIndex = cursorIndex = *newmouse_cursorPosition;
+            if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheLeft(_cursor_index)) {
+                // XXX Change _current_style based on the grapheme at the new cursor position.
+                _selection_index = _cursor_index = *new_cursor_position;
             }
             break;
 
         case command::text_cursor_char_right:
             handled = true;
-            if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
-                selectionIndex = cursorIndex = *newmouse_cursorPosition;
+            if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheRight(_cursor_index)) {
+                _selection_index = _cursor_index = *new_cursor_position;
             }
             break;
 
         case command::text_cursor_word_left:
             handled = true;
-            if (ttlet newmouse_cursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
-                selectionIndex = cursorIndex = *newmouse_cursorPosition;
+            if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheLeft(_cursor_index)) {
+                _selection_index = _cursor_index = *new_cursor_position;
             }
             break;
 
         case command::text_cursor_word_right:
             handled = true;
-            if (ttlet newmouse_cursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
-                selectionIndex = cursorIndex = *newmouse_cursorPosition;
+            if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheRight(_cursor_index)) {
+                _selection_index = _cursor_index = *new_cursor_position;
             }
             break;
 
         case command::text_cursor_line_end:
             handled = true;
-            selectionIndex = cursorIndex = size() - 1;
+            _selection_index = _cursor_index = size();
             break;
 
         case command::text_cursor_line_begin:
             handled = true;
-            selectionIndex = cursorIndex = 0;
+            _selection_index = _cursor_index = 0;
             break;
 
         case command::text_select_char_left:
             handled = true;
-            if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
-                cursorIndex = *newmouse_cursorPosition;
+            if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheLeft(_cursor_index)) {
+                _cursor_index = *new_cursor_position;
             }
             break;
 
         case command::text_select_char_right:
             handled = true;
-            if (ttlet newmouse_cursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
-                cursorIndex = *newmouse_cursorPosition;
+            if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheRight(_cursor_index)) {
+                _cursor_index = *new_cursor_position;
             }
             break;
 
         case command::text_select_word_left:
             handled = true;
-            if (ttlet newmouse_cursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
-                cursorIndex = *newmouse_cursorPosition;
+            if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheLeft(_cursor_index)) {
+                _cursor_index = *new_cursor_position;
             }
             break;
 
         case command::text_select_word_right:
             handled = true;
-            if (ttlet newmouse_cursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
-                cursorIndex = *newmouse_cursorPosition;
+            if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheRight(_cursor_index)) {
+                _cursor_index = *new_cursor_position;
             }
             break;
 
         case command::text_select_word:
             handled = true;
-            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(cursorIndex);
+            std::tie(_selection_index, _cursor_index) = _shaped_text.indices_of_word(_cursor_index);
             break;
 
         case command::text_select_line_end:
             handled = true;
-            cursorIndex = size() - 1;
+            _cursor_index = size();
             break;
 
         case command::text_select_line_begin:
             handled = true;
-            cursorIndex = 0;
+            _cursor_index = 0;
             break;
 
         case command::text_select_document:
             handled = true;
-            selectionIndex = 0;
-            cursorIndex = size() - 1; // Upto end-of-paragraph marker.
+            _selection_index = 0;
+            _cursor_index = size();
             break;
 
         case command::text_mode_insert:
             handled = true;
-            insertMode = !insertMode;
+            _insert_mode = !_insert_mode;
             break;
 
         case command::text_delete_char_prev:
             handled = true;
-            if (cursorIndex != selectionIndex) {
-                deleteSelection();
+            if (_cursor_index != _selection_index) {
+                delete_selection();
 
-            } else if (cursorIndex >= 1) {
-                selectionIndex = --cursorIndex;
-                text.erase(cit(cursorIndex));
-                updateshaped_text();
+            } else if (_cursor_index >= 1) {
+                _selection_index = --_cursor_index;
+                _text.erase(cit(_cursor_index));
+                update_shaped_text();
             }
             break;
 
         case command::text_delete_char_next:
             handled = true;
-            if (cursorIndex != selectionIndex) {
-                deleteSelection();
+            if (_cursor_index != _selection_index) {
+                delete_selection();
 
-            } else if (cursorIndex < (std::ssize(text) - 1)) {
+            } else if (_cursor_index < std::ssize(_text)) {
                 // Don't delete the trailing paragraph separator.
-                text.erase(cit(cursorIndex));
-                updateshaped_text();
+                _text.erase(cit(_cursor_index));
+                update_shaped_text();
             }
         default:;
         }
 
-        tt_axiom(selectionIndex >= 0);
-        tt_axiom(selectionIndex <= std::ssize(text));
-        tt_axiom(cursorIndex >= 0);
-        tt_axiom(cursorIndex <= std::ssize(text));
+        tt_axiom(is_valid());
         return handled;
     }
+
+    bool is_valid() const noexcept
+    {
+        return _selection_index >= 0 && _selection_index <= std::ssize(_text) && _cursor_index >= 0 && _cursor_index <= std::ssize(_text);
+    }
+
+private:
+    gap_buffer<attributed_grapheme> _text;
+    tt::shaped_text _shaped_text;
+
+    /** The maximum _width when wrapping _text.
+     * For single line _text editing, we should never wrap.
+     */
+    float _width = 0.0f;
+
+    /** Insert-mode vs overwrite-mode.
+     */
+    bool _insert_mode = true;
+
+    /** The index into the _text where the cursor is located.
+     */
+    ssize_t _cursor_index = 0;
+
+    /** The index into the _text where the start of the selection is located.
+     * When no _text is selected the _cursor_index and _selection_index are equal.
+     */
+    ssize_t _selection_index = 0;
+
+    text_style _current_style;
+
+    /** Partial grapheme is inserted before _cursor_index.
+     */
+    bool _has_partial_grapheme = false;
 };
 
 

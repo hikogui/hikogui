@@ -170,9 +170,9 @@ public:
                 _error = l10n("system error: delegate missing");
             }
 
-            _field.setStyleOfAll(theme::global->labelStyle);
-            _field.setWidth(std::numeric_limits<float>::infinity());
-            _shaped_text = _field.shapedText();
+            _field.set_style_of_all(theme::global->labelStyle);
+            _field.set_width(std::numeric_limits<float>::infinity());
+            _shaped_text = _field.shaped_text();
 
             // Record the last time the text is modified, so that the caret remains lit.
             _last_update_time_point = display_time_point;
@@ -213,13 +213,13 @@ public:
         if (*enabled) {
             switch (command) {
             case command::text_edit_paste:
-                _field.handlePaste(window.get_text_from_clipboard());
+                _field.handle_paste(window.get_text_from_clipboard());
                 commit(false);
                 return true;
 
-            case command::text_edit_copy: window.set_text_on_clipboard(_field.handleCopy()); return true;
+            case command::text_edit_copy: window.set_text_on_clipboard(_field.handle_copy()); return true;
 
-            case command::text_edit_cut: window.set_text_on_clipboard(_field.handleCut()); return true;
+            case command::text_edit_cut: window.set_text_on_clipboard(_field.handle_cut()); return true;
 
             case command::gui_escape: revert(true); return true;
 
@@ -270,18 +270,18 @@ public:
                 using enum mouse_event::Type;
             case ButtonDown:
                 if (_text_rectangle.contains(event.position)) {
-                    ttlet mouseInTextPosition = _text_inv_translate * event.position;
+                    ttlet mouse_cursor_relative_to_text = _text_inv_translate * event.position;
 
                     switch (event.clickCount) {
                     case 1:
                         if (event.down.shiftKey) {
-                            _field.dragmouse_cursorAtCoordinate(mouseInTextPosition);
+                            _field.drag_cursor_at_coordinate(mouse_cursor_relative_to_text);
                         } else {
-                            _field.setmouse_cursorAtCoordinate(mouseInTextPosition);
+                            _field.set_cursor_at_coordinate(mouse_cursor_relative_to_text);
                         }
                         break;
-                    case 2: _field.selectWordAtCoordinate(mouseInTextPosition); break;
-                    case 3: _field.selectParagraphAtCoordinate(mouseInTextPosition); break;
+                    case 2: _field.select_word_at_coordinate(mouse_cursor_relative_to_text); break;
+                    case 3: _field.select_paragraph_at_coordinate(mouse_cursor_relative_to_text); break;
                     default:;
                     }
 
@@ -333,13 +333,13 @@ public:
 
             case grapheme:
                 handled = true;
-                _field.insertgrapheme(event.grapheme);
+                _field.insert_grapheme(event.grapheme);
                 commit(false);
                 break;
 
             case Partialgrapheme:
                 handled = true;
-                _field.insertPartialgrapheme(event.grapheme);
+                _field.insert_partial_grapheme(event.grapheme);
                 commit(false);
                 break;
 
@@ -448,11 +448,11 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        ttlet mouseInTextPosition = _text_inv_translate * _drag_select_position;
+        ttlet mouse_cursor_relative_to_text = _text_inv_translate * _drag_select_position;
         switch (_drag_click_count) {
-        case 1: _field.dragmouse_cursorAtCoordinate(mouseInTextPosition); break;
-        case 2: _field.dragWordAtCoordinate(mouseInTextPosition); break;
-        case 3: _field.dragParagraphAtCoordinate(mouseInTextPosition); break;
+        case 1: _field.drag_cursor_at_coordinate(mouse_cursor_relative_to_text); break;
+        case 2: _field.drag_word_at_coordinate(mouse_cursor_relative_to_text); break;
+        case 3: _field.drag_paragraph_at_coordinate(mouse_cursor_relative_to_text); break;
         default:;
         }
     }
@@ -503,7 +503,7 @@ private:
 
     void draw_selection_rectangles(draw_context context) const noexcept
     {
-        ttlet selection_rectangles = _field.selectionRectangles();
+        ttlet selection_rectangles = _field.selection_rectangles();
         for (ttlet selection_rectangle : selection_rectangles) {
             context.draw_filled_quad(_text_translate * translate_z(0.1f) * selection_rectangle, theme::global->textSelectColor);
         }
@@ -511,7 +511,7 @@ private:
 
     void draw_partial_grapheme_caret(draw_context context) const noexcept
     {
-        ttlet partial_grapheme_caret = _field.partialgraphemeCaret();
+        ttlet partial_grapheme_caret = _field.partial_grapheme_caret();
         if (partial_grapheme_caret) {
             context.draw_filled_quad(
                 _text_translate * translate_z(0.1f) * partial_grapheme_caret, theme::global->incompleteGlyphColor);
@@ -525,7 +525,7 @@ private:
         ttlet nr_half_blinks = static_cast<int64_t>(duration_since_last_update / _blink_interval);
 
         ttlet blink_is_on = nr_half_blinks % 2 == 0;
-        _left_to_right_caret = _field.leftToRightCaret();
+        _left_to_right_caret = _field.left_to_right_caret();
         if (_left_to_right_caret && blink_is_on && _focus && window.active) {
             context.draw_filled_quad(_text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global->cursorColor);
         }

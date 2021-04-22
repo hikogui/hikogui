@@ -18,7 +18,7 @@ void audio_preferences_controller::init(tt::grid_layout_widget& self) noexcept
     self.make_widget<text_field_widget<int>>("B1", preferences_controller_->radioValue);
 
     self.make_widget<label_widget>("A2", l10n("Word clock sample rate:"));
-    //self.make_widget<text_field_widget<int>>("B2", preferences_controller_->radioValue);
+    self.make_widget<text_field_widget<int>>("B2", preferences_controller_->radioValue);
 
     self.make_widget<label_widget>("A3", l10n("This is a toggle:"));
     auto toggle1 = self.make_widget<toggle_widget>("B3", preferences_controller_->toggleValue);
