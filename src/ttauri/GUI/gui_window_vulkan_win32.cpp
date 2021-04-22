@@ -102,7 +102,7 @@ void gui_window_vulkan_win32::create_window(const std::string &title, extent2 ne
     tt_log_info("Create window of size {} with title '{}'", new_extent, title);
 
     // Recommended to set the dpi-awareness before opening any window.
-    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     // We are opening a popup window with a caption bar to cause drop-shadow to appear around
     // the window.
@@ -171,7 +171,7 @@ gui_window_vulkan_win32::gui_window_vulkan_win32(
     label const &title) :
     gui_window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
 {
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
     tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
