@@ -7,13 +7,15 @@
 #include "attributed_grapheme.hpp"
 #include "shaped_text.hpp"
 #include "font.hpp"
+#include "../ranges.hpp"
+#include "../gap_buffer.hpp"
 #include <string>
 #include <vector>
 
 namespace tt {
 
 class editable_text {
-    std::vector<attributed_grapheme> text;
+    gap_buffer<attributed_grapheme> text;
     shaped_text _shapedText;
 
     /** The maximum width when wrapping text.
@@ -82,7 +84,7 @@ public:
     /** Update the shaped text after changed to text.
      */
     void updateshaped_text() noexcept {
-        auto text_ = text;
+        auto text_ = make_vector(text);
 
         // Make sure there is an end-paragraph marker in the text.
         // This allows the shapedText to figure out the style of the text of an empty paragraph.
@@ -321,7 +323,7 @@ public:
         cancelPartialgrapheme();
         deleteSelection();
 
-        text.emplace(cit(cursorIndex), character, currentStyle);
+        text.emplace_before(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
         tt_axiom(selectionIndex >= 0);
         tt_axiom(selectionIndex <= std::ssize(text));
@@ -342,7 +344,7 @@ public:
         if (!insertMode) {
             handle_event(command::text_delete_char_next);
         }
-        text.emplace(cit(cursorIndex), character, currentStyle);
+        text.emplace_before(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
         tt_axiom(selectionIndex >= 0);
         tt_axiom(selectionIndex <= std::ssize(text));
@@ -364,7 +366,7 @@ public:
             str_attr.emplace_back(g, currentStyle);
         }
 
-        text.insert(cit(cursorIndex), str_attr.cbegin(), str_attr.cend());
+        text.insert_after(cit(cursorIndex), str_attr.cbegin(), str_attr.cend());
         selectionIndex = cursorIndex += std::ssize(str_attr);
         tt_axiom(selectionIndex >= 0);
         tt_axiom(selectionIndex <= std::ssize(text));

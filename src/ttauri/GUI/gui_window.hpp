@@ -287,10 +287,9 @@ protected:
     aarectangle _request_redraw_rectangle = aarectangle{};
 
     /** Let the operating system create the actual window.
-     * @param title The title of the window.
-     * @param extent The size of the window.
+     * @pre title and extent must be set.
      */
-    virtual void create_window(const std::string &title, extent2 extent) = 0;
+    virtual void create_window() = 0;
 
     /** By how much graphic elements should be scaled to match a point.
      * The widget should not care much about this value, since the

@@ -91,7 +91,7 @@ void gui_window::init()
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
-    create_window(title.text(), extent);
+    create_window();
 }
 
 void gui_window::set_device(gui_device *new_device)
