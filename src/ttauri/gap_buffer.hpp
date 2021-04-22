@@ -400,7 +400,7 @@ public:
         return make_gap_buffer_iterator(this, _begin);
     }
 
-    [[nodiscard]] iterator cbegin() const noexcept
+    [[nodiscard]] const_iterator cbegin() const noexcept
     {
         return make_gap_buffer_iterator(this, _begin);
     }
@@ -415,7 +415,7 @@ public:
         return make_gap_buffer_iterator(this, _it_end);
     }
 
-    [[nodiscard]] iterator cend() const noexcept
+    [[nodiscard]] const_iterator cend() const noexcept
     {
         return make_gap_buffer_iterator(this, _it_end);
     }
@@ -474,10 +474,10 @@ public:
      * iterators become invalid.
      */
     template<typename... Args>
-    iterator emplace_before(iterator position, Args &&...args) noexcept
+    iterator emplace_before(const_iterator position, Args &&...args) noexcept
     {
-        tt_axiom(position.buffer() == this);
-        set_gap_offset(position.it_ptr());
+        tt_axiom(position._buffer == this);
+        set_gap_offset(position.it_rw_ptr());
         grow_to_insert(1);
 
         new (right_begin_ptr() - 1) value_type(std::forward<Args>(args)...);
@@ -493,7 +493,7 @@ public:
      * If an insert requires a reallocation (size() == capacity()) then all current
      * iterators become invalid.
      */
-    iterator insert_before(iterator position, value_type const &value) noexcept
+    iterator insert_before(const_iterator position, value_type const &value) noexcept
     {
         return emplace_before(position, value_type(value));
     }
@@ -502,7 +502,7 @@ public:
      * If an insert requires a reallocation (size() == capacity()) then all current
      * iterators become invalid.
      */
-    iterator insert_before(iterator position, value_type &&value) noexcept
+    iterator insert_before(const_iterator position, value_type &&value) noexcept
     {
         return emplace_before(position, std::move(value));
     }
@@ -517,7 +517,7 @@ public:
      * @return The iterator pointing to the first item inserted.
      */
     template<typename It>
-    iterator insert_before(iterator position, It first, It last) noexcept
+    iterator insert_before(const_iterator position, It first, It last) noexcept
     {
         auto it = last;
         while (it != first) {
@@ -531,10 +531,10 @@ public:
      * iterators become invalid.
      */
     template<typename... Args>
-    iterator emplace_after(iterator position, Args &&...args) noexcept
+    iterator emplace_after(const_iterator position, Args &&...args) noexcept
     {
-        tt_axiom(position.buffer() == this);
-        set_gap_offset(position.it_ptr() + 1);
+        tt_axiom(position._buffer == this);
+        set_gap_offset(position.it_rw_ptr() + 1);
         grow_to_insert(1);
 
         new (left_end_ptr()) value_type(std::forward<Args>(args)...);
@@ -551,7 +551,7 @@ public:
      * If an insert requires a reallocation (size() == capacity()) then all current
      * iterators become invalid.
      */
-    iterator insert_after(iterator position, value_type const &value) noexcept
+    iterator insert_after(const_iterator position, value_type const &value) noexcept
     {
         return emplace_after(position, value_type(value));
     }
@@ -560,7 +560,7 @@ public:
      * If an insert requires a reallocation (size() == capacity()) then all current
      * iterators become invalid.
      */
-    iterator insert_after(iterator position, value_type &&value) noexcept
+    iterator insert_after(const_iterator position, value_type &&value) noexcept
     {
         return emplace_after(position, std::move(value));
     }
@@ -573,12 +573,13 @@ public:
      * @return The iterator pointing to the last item inserted.
      */
     template<typename It>
-    iterator insert_after(iterator position, It first, It last) noexcept
+    iterator insert_after(const_iterator position, It first, It last) noexcept
     {
+        auto position_ = iterator{position};
         for (auto it = first; it != last; ++it) {
-            position = insert_after(position, *it);
+            position_ = insert_after(position_, *it);
         }
-        return position;
+        return position_;
     }
 
     /** Erase items
@@ -586,16 +587,16 @@ public:
      * @param last Location beyond last item to remove.
      * @return iterator pointing to the element past the removed item, or end().
      */
-    iterator erase(iterator first, iterator last) noexcept
+    iterator erase(const_iterator first, const_iterator last) noexcept
     {
         // place the gap after the last iterator, this way we can use the
         // it_ptr directly because we don't need to skip the gap.
-        tt_axiom(first.buffer() == this);
-        tt_axiom(last.buffer() == this);
+        tt_axiom(first._buffer == this);
+        tt_axiom(last._buffer == this);
 
-        set_gap_offset(last.it_ptr());
-        ttlet first_p = first.it_ptr();
-        ttlet last_p = last.it_ptr();
+        set_gap_offset(last.it_rw_ptr());
+        auto first_p = first.it_rw_ptr();
+        auto last_p = last.it_rw_ptr();
         ttlet erase_size = last_p - first_p;
 
         std::destroy(first_p, last_p);
@@ -609,7 +610,7 @@ public:
      * @param position Location of item to remove
      * @return iterator pointing to the element past the removed item, or end().
      */
-    iterator erase(iterator position) noexcept
+    iterator erase(const_iterator position) noexcept
     {
         return erase(position, position + 1);
     }
@@ -843,11 +844,24 @@ public:
 
     using gap_buffer_type = std::conditional_t<is_const, gap_buffer<value_type> const, gap_buffer<value_type>>;
 
+    friend gap_buffer<value_type const>;
+    friend gap_buffer<value_type>;
+    friend gap_buffer_iterator<value_type const>;
+    friend gap_buffer_iterator<value_type>;
+
     ~gap_buffer_iterator() noexcept = default;
     gap_buffer_iterator(gap_buffer_iterator const &) noexcept = default;
     gap_buffer_iterator(gap_buffer_iterator &&) noexcept = default;
     gap_buffer_iterator &operator=(gap_buffer_iterator const &) noexcept = default;
     gap_buffer_iterator &operator=(gap_buffer_iterator &&) noexcept = default;
+
+    gap_buffer_iterator(gap_buffer_iterator<value_type> const &other) noexcept requires(is_const) : _buffer(other._buffer), _it_ptr(other._it_ptr)
+    {
+        tt_axiom(other.is_valid());
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        _version = other._version;
+#endif
+    }
 
     gap_buffer_iterator(
         gap_buffer_type *buffer,
@@ -864,16 +878,6 @@ public:
     {
     }
 
-    gap_buffer_type *buffer() const noexcept
-    {
-        return _buffer;
-    }
-
-    T *it_ptr() const noexcept
-    {
-        return _it_ptr;
-    }
-
     reference operator*() noexcept requires(!is_const)
     {
         tt_axiom(is_valid());
@@ -884,6 +888,18 @@ public:
     {
         tt_axiom(is_valid());
         return *(_buffer->get_const_pointer_from_it(_it_ptr));
+    }
+
+    pointer operator->() noexcept requires(!is_const)
+    {
+        tt_axiom(is_valid());
+        return _buffer->get_pointer_from_it(_it_ptr);
+    }
+
+    const_pointer operator->() const noexcept
+    {
+        tt_axiom(is_valid());
+        return _buffer->get_const_pointer_from_it(_it_ptr);
     }
 
     reference operator[](std::integral auto index) noexcept requires(!is_const)
@@ -989,6 +1005,25 @@ private:
     size_t _version;
 #endif
 
+    [[nodiscard]] gap_buffer_iterator(gap_buffer_iterator<value_type const> const &other) noexcept requires(!is_const) :
+        _buffer(const_cast<gap_buffer_type *>(other._buffer)), _it_ptr(const_cast<T *>(other._it_ptr))
+    {
+        tt_axiom(other.is_valid());
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+        _version = other._version;
+#endif
+    }
+
+    [[nodiscard]] T *it_ptr() const noexcept
+    {
+        return _it_ptr;
+    }
+
+    [[nodiscard]] std::remove_cv_t<T> *it_rw_ptr() const noexcept
+    {
+        return const_cast<std::remove_cv_t<T> *>(_it_ptr);
+    }
+
     [[nodiscard]] bool is_valid() const noexcept
     {
         auto check = true;
@@ -1007,6 +1042,8 @@ private:
     {
         return is_valid() && other.is_valid() && _buffer == other._buffer;
     }
+
+    
 };
 
 template<typename T, typename Allocator>

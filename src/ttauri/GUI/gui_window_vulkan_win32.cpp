@@ -89,7 +89,7 @@ static void createWindowClass(gui_system &system)
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_vulkan_win32::create_window(const std::string &title, extent2 new_extent)
+void gui_window_vulkan_win32::create_window()
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
@@ -97,12 +97,12 @@ void gui_window_vulkan_win32::create_window(const std::string &title, extent2 ne
 
     createWindowClass(system);
 
-    auto u16title = to_wstring(title);
+    auto u16title = to_wstring(title.text());
 
-    tt_log_info("Create window of size {} with title '{}'", new_extent, title);
+    tt_log_info("Create window of size {} with title '{}'", extent, title);
 
     // Recommended to set the dpi-awareness before opening any window.
-    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     // We are opening a popup window with a caption bar to cause drop-shadow to appear around
     // the window.
@@ -114,8 +114,8 @@ void gui_window_vulkan_win32::create_window(const std::string &title, extent2 ne
         // Size and position
         500,
         500,
-        narrow_cast<int>(new_extent.width()),
-        narrow_cast<int>(new_extent.height()),
+        narrow_cast<int>(extent.width()),
+        narrow_cast<int>(extent.height()),
 
         NULL, // Parent window
         NULL, // Menu
@@ -171,7 +171,7 @@ gui_window_vulkan_win32::gui_window_vulkan_win32(
     label const &title) :
     gui_window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
 {
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
     tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
