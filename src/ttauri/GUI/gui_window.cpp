@@ -6,6 +6,7 @@
 #include "gui_device.hpp"
 #include "gui_surface.hpp"
 #include "keyboard_bindings.hpp"
+#include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
 
 namespace tt {

@@ -4,6 +4,10 @@
 
 namespace tt {
 
+#include "gui_surface.hpp"
+#include "gui_device.hpp"
+#include "gui_system.hpp"
+#include "../assert.hpp"
 
 void gui_surface::set_device(gui_device *new_device) noexcept
 {
