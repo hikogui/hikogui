@@ -161,6 +161,7 @@ constexpr bool x86_64_v4 = false;
 #define tt_assume2(condition, msg) __assume(condition)
 #define tt_force_inline __forceinline
 #define tt_no_inline __declspec(noinline)
+#define tt_restrict __restrict
 #define clang_suppress(a)
 #define msvc_suppress(a) _Pragma(tt_stringify(warning(disable:a)))
 
@@ -170,6 +171,7 @@ constexpr bool x86_64_v4 = false;
 #define tt_assume2(condition, msg) __builtin_assume(static_cast<bool>(condition))
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline __attribute__((noinline))
+#define tt_restrict __restrict__
 #define clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
 #define msvc_suppress(a)
 
@@ -179,6 +181,7 @@ constexpr bool x86_64_v4 = false;
 #define tt_assume2(condition, msg) do { if (!(condition)) tt_unreachable(); } while (false)
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline __attribute__((noinline))
+#define tt_restrict __restrict__
 #define clang_suppress(a)
 #define msvc_suppress(a)
 
@@ -188,6 +191,7 @@ constexpr bool x86_64_v4 = false;
 #define tt_assume2(condition, msg) static_assert(sizeof(condition) == 1, msg)
 #define tt_force_inline inline
 #define tt_no_inline
+#define tt_restrict
 #define clang_suppress(a)
 #define msvc_suppress(a)
 

@@ -100,6 +100,21 @@ public:
     constexpr numeric_array &operator=(numeric_array const &rhs) noexcept = default;
     constexpr numeric_array &operator=(numeric_array &&rhs) noexcept = default;
 
+    template<arithmetic O>
+    [[nodiscard]] constexpr explicit numeric_array(numeric_array<O,N> const &other) noexcept : v()
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_f32x4 && other.is_i32x4 && x86_64_v2) {
+                v = f32x4_x64v2_from_i32x4(static_cast<i32x4_raw>(other));
+                return;
+            }
+        }
+
+        for (size_t i = 0; i != N; ++i) {
+            v[i] = static_cast<value_type>(other[i]);
+        }
+    }
+
     [[nodiscard]] constexpr numeric_array(std::initializer_list<T> rhs) noexcept : v()
     {
         auto src = std::begin(rhs);
@@ -434,6 +449,14 @@ public:
 
     constexpr numeric_array &operator*=(T const &rhs) noexcept
     {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_f32x4 && x86_64_v2) {
+                // MSVC is unable to vectorize inplace multiply.
+                v = f32x4_x64v2_mul(v, rhs.v);
+                return *this;
+            }
+        }
+
         for (size_t i = 0; i != N; ++i) {
             v[i] *= rhs;
         }
