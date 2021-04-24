@@ -4,6 +4,7 @@
 
 #include "gui_window.hpp"
 #include "gui_device.hpp"
+#include "gui_surface.hpp"
 #include "keyboard_bindings.hpp"
 #include "../widgets/window_widget.hpp"
 
