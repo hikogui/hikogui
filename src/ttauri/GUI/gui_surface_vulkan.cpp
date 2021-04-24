@@ -41,10 +41,7 @@ gui_device_vulkan &gui_surface_vulkan::vulkan_device() const noexcept
 
 void gui_surface_vulkan::init()
 {
-    // This function is called just after construction in single threaded mode,
-    // and therefor should not have a lock on the window.
-    tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
+    ttlet lock = std::scoped_lock(gui_system_mutex);
 
     gui_surface::init();
     flatPipeline = std::make_unique<pipeline_flat::pipeline_flat>(*this);
@@ -198,6 +195,11 @@ void gui_surface_vulkan::build(extent2 minimum_size, extent2 maximum_size)
         buildFramebuffers(); // Framebuffer required render passes.
         buildCommandBuffers();
         buildSemaphores();
+        tt_axiom(flatPipeline);
+        tt_axiom(boxPipeline);
+        tt_axiom(imagePipeline);
+        tt_axiom(SDFPipeline);
+        tt_axiom(toneMapperPipeline);
         flatPipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
         boxPipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
         imagePipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);

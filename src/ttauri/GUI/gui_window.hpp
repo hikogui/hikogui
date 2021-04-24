@@ -251,12 +251,6 @@ public:
     }
 
 protected:
-    /** The device the window is assigned to.
-     * The device may change during the lifetime of a window,
-     * as long as the device belongs to the same GUIInstance.
-     */
-    gui_device *_device = nullptr;
-
     /*! The current rectangle of the window relative to the screen.
      * The screen rectangle is set by the operating system event loop and
      * the extent of the rectangle may lag behind the actual window extent as seen

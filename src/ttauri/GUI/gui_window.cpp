@@ -37,7 +37,7 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
 }
 
 gui_window::gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title) :
-    system(system), surface(std::move(surface)), delegate(delegate), title(title)
+    system(system), delegate(delegate), title(title)
 {
 }
 

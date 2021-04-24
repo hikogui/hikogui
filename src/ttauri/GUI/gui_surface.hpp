@@ -75,7 +75,7 @@ public:
     virtual void render_finish(draw_context const &context, color background_color) = 0;
 
 protected:
-    gui_device *_device;
+    gui_device *_device = nullptr;
 
     virtual void teardown() = 0;
 };
