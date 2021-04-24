@@ -33,7 +33,7 @@ extent2 text_stencil::maximum_size() noexcept
     return _shaped_text.maximum_size();
 }
 
-void text_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept
+bool text_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept
 {
     auto data_is_modified = std::exchange(_data_is_modified, false);
 
@@ -47,6 +47,7 @@ void text_stencil::draw(draw_context context, tt::color color, matrix3 transform
     }
 
     context.draw_text(_shaped_text, color, transform * _shaped_text_transform);
+    return false;
 }
 
 } // namespace tt

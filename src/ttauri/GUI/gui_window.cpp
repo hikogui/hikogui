@@ -37,7 +37,7 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
 }
 
 gui_window::gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title) :
-    system(system), state(gui_window_state::initializing), delegate(delegate), title(title)
+    system(system), surface(std::move(surface)), delegate(delegate), title(title)
 {
 }
 
@@ -47,9 +47,7 @@ gui_window::~gui_window()
     widget = {};
 
     try {
-        if (state != gui_window_state::no_window) {
-            tt_log_fatal("Window '{}' was not properly teardown before destruction.", title);
-        }
+        surface.reset();
         tt_log_info("Window '{}' has been propertly destructed.", title);
 
     } catch (std::exception const &e) {
@@ -77,7 +75,7 @@ void gui_window::init()
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         static_cast<void>(widget->update_constraints({}, true));
-        extent = widget->preferred_size();
+        size = widget->preferred_size();
     }
 
     // Once the window is open, we should be a full constraint, layout and draw of the window.
@@ -86,39 +84,27 @@ void gui_window::init()
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
 
-    // Finished initializing the window.
-    state = gui_window_state::no_device;
-
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
     create_window();
 }
 
-void gui_window::set_device(gui_device *new_device)
+void gui_window::deinit()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-
-    if (_device == new_device) {
-        return;
+    if (auto delegate_ = delegate.lock()) {
+        delegate_->deinit(*this);
     }
-
-    if (new_device) {
-        // The assigned device must be from the same GUI-system.
-        tt_assert(&system == &new_device->system);
-    }
-
-    if (_device) {
-        state = gui_window_state::device_lost;
-        teardown();
-    }
-
-    _device = new_device;
 }
 
-bool gui_window::is_closed()
+void gui_window::set_device(gui_device *device) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
-    return state == gui_window_state::no_window;
+    tt_axiom(surface);
+    surface->set_device(device);
+}
+
+[[nodiscard]] bool gui_window::is_closed() const noexcept
+{
+    return surface->is_closed();
 }
 
 [[nodiscard]] float gui_window::window_scale() const noexcept
@@ -128,15 +114,67 @@ bool gui_window::is_closed()
     return std::ceil(dpi / 100.0f);
 }
 
-void gui_window::window_changed_size(extent2 new_extent)
+void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
-
-    extent = new_extent;
-
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(surface);
     tt_axiom(widget);
-    widget->set_layout_parameters_from_parent(aarectangle{extent});
-    requestLayout = true;
+
+    // All widgets need constrains recalculated on these window-wide events.
+    // Like theme or language changes.
+    ttlet need_reconstrain = std::exchange(_request_setting_change, false);
+
+    // Update the size constraints of the window_widget and it children.
+    ttlet constraints_have_changed = widget->update_constraints(displayTimePoint, need_reconstrain);
+
+    // Check if the window size matches the preferred size of the window_widget.
+    // If not ask the operating system to change the size of the window, which is
+    // done asynchronously.
+    //
+    // We need to continue drawing into the incorrectly sized window, otherwise
+    // Vulkan will not detect the change of drawing surface's size.
+    //
+    // Make sure the widget does have its window rectangle match the constraints, otherwise
+    // the logic for layout and drawing becomes complicated.
+    {
+        ttlet new_size = surface->update(widget->minimum_size(), widget->maximum_size());
+        if (new_size != size) {
+            requestLayout = true;
+            size = new_size;
+        }
+    }
+
+    if (requestResize.exchange(false)) {
+        tt_log_info("A new preferred window size {} was requested by one of the widget.", widget->preferred_size());
+        set_window_size(size = widget->preferred_size());
+    } else {
+        ttlet new_size = clamp(size, widget->minimum_size(), widget->maximum_size());
+        if (new_size != size) {
+            tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", size, new_size);
+            set_window_size(size = new_size);
+        }
+    }
+    widget->set_layout_parameters_from_parent(aarectangle{size});
+
+    // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
+    ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
+
+    // Make sure the widget's layout is updated before draw, but after window resize.
+    widget->update_layout(displayTimePoint, need_layout);
+
+    if (auto optional_draw_context = surface->render_start(_request_redraw_rectangle)) {
+        auto draw_context = *optional_draw_context;
+        auto tr = trace<"window_render", "frame_buffer_index">();
+
+        _request_redraw_rectangle = aarectangle{};
+
+        auto widget_context =
+            draw_context.make_child_context(widget->parent_to_local(), widget->local_to_window(), widget->clipping_rectangle());
+
+        widget->draw(widget_context, displayTimePoint);
+
+        surface->render_finish(draw_context, widget->backgroundColor());
+    }
 }
 
 void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
@@ -218,9 +256,7 @@ void gui_window::update_keyboard_target(
     update_keyboard_target(std::move(tmp), group);
 }
 
-void gui_window::update_keyboard_target(
-    keyboard_focus_group group,
-    keyboard_focus_direction direction) noexcept
+void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept
 {
     auto current_keyboard_widget = _keyboard_target_widget.lock();
     update_keyboard_target(current_keyboard_widget, group, direction);

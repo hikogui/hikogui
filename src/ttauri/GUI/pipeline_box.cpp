@@ -11,8 +11,8 @@ namespace tt::pipeline_box {
 using namespace tt;
 using namespace std;
 
-pipeline_box::pipeline_box(gui_window const &window) :
-    pipeline_vulkan(window)
+pipeline_box::pipeline_box(gui_surface const &surface) :
+    pipeline_vulkan(surface)
 {
 }
 

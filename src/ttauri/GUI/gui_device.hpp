@@ -52,7 +52,7 @@ public:
      *
      * \returns -1 When not viable, 0 when not presentable, postive values for increasing score.
      */
-    virtual int score(gui_window const &window) const = 0;
+    virtual int score(gui_surface const &surface) const = 0;
 
     /*! Initialize the logical device.
      *
@@ -76,6 +76,10 @@ public:
         }
 
         ttlet new_end = std::remove_if(windows.begin(), windows.end(), [](ttlet &window) { return window->is_closed(); });
+
+        for (auto it = new_end; it != windows.end(); ++it) {
+            (*it)->deinit();
+        }
         windows.erase(new_end, windows.end());
     }
 

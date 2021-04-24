@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "gui_window_vulkan.hpp"
+#include "gui_surface_vulkan.hpp"
 #include "gui_system_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
 #include "pipeline_flat.hpp"
@@ -21,28 +21,32 @@ namespace tt {
 
 using namespace std;
 
-gui_window_vulkan::gui_window_vulkan(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title) :
-    gui_window(system, delegate, title), nrSwapchainImages(0), swapchainImageFormat()
+gui_surface_vulkan::gui_surface_vulkan(gui_system &system, vk::SurfaceKHR surface) :
+    gui_surface(system), intrinsic(surface)
 {
 }
 
-gui_window_vulkan::~gui_window_vulkan() {}
+gui_surface_vulkan::~gui_surface_vulkan() {
+    if (state != gui_surface_state::no_window) {
+        tt_log_fatal("The window attached to the gui_surface still exists during destruction.");
+    }
+}
 
-gui_device_vulkan &gui_window_vulkan::vulkan_device() const noexcept
+gui_device_vulkan &gui_surface_vulkan::vulkan_device() const noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
     tt_axiom(_device != nullptr);
     return narrow_cast<gui_device_vulkan &>(*_device);
 }
 
-void gui_window_vulkan::init()
+void gui_surface_vulkan::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock on the window.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
-    gui_window::init();
+    gui_surface::init();
     flatPipeline = std::make_unique<pipeline_flat::pipeline_flat>(*this);
     boxPipeline = std::make_unique<pipeline_box::pipeline_box>(*this);
     imagePipeline = std::make_unique<pipeline_image::pipeline_image>(*this);
@@ -50,7 +54,7 @@ void gui_window_vulkan::init()
     toneMapperPipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(*this);
 }
 
-void gui_window_vulkan::waitIdle()
+void gui_surface_vulkan::waitIdle()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -62,7 +66,7 @@ void gui_window_vulkan::waitIdle()
     tt_log_info("/waitIdle");
 }
 
-std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
+std::optional<uint32_t> gui_surface_vulkan::acquireNextImageFromSwapchain()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -78,17 +82,17 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
 
     case vk::Result::eSuboptimalKHR:
         tt_log_info("acquireNextImageKHR() eSuboptimalKHR");
-        state = gui_window_state::swapchain_lost;
+        state = gui_surface_state::swapchain_lost;
         return {};
 
     case vk::Result::eErrorOutOfDateKHR:
         tt_log_info("acquireNextImageKHR() eErrorOutOfDateKHR");
-        state = gui_window_state::swapchain_lost;
+        state = gui_surface_state::swapchain_lost;
         return {};
 
     case vk::Result::eErrorSurfaceLostKHR:
         tt_log_info("acquireNextImageKHR() eErrorSurfaceLostKHR");
-        state = gui_window_state::surface_lost;
+        state = gui_surface_state::surface_lost;
         return {};
 
     case vk::Result::eTimeout:
@@ -100,7 +104,7 @@ std::optional<uint32_t> gui_window_vulkan::acquireNextImageFromSwapchain()
     }
 }
 
-void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
+void gui_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -125,7 +129,7 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
 
         case vk::Result::eSuboptimalKHR:
             tt_log_info("presentKHR() eSuboptimalKHR");
-            state = gui_window_state::swapchain_lost;
+            state = gui_surface_state::swapchain_lost;
             return;
 
         default: throw gui_error("Unknown result from presentKHR(). '{}'", to_string(result));
@@ -133,34 +137,34 @@ void gui_window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semap
 
     } catch (vk::OutOfDateKHRError const &) {
         tt_log_info("presentKHR() eErrorOutOfDateKHR");
-        state = gui_window_state::swapchain_lost;
+        state = gui_surface_state::swapchain_lost;
         return;
 
     } catch (vk::SurfaceLostKHRError const &) {
         tt_log_info("presentKHR() eErrorSurfaceLostKHR");
-        state = gui_window_state::surface_lost;
+        state = gui_surface_state::surface_lost;
         return;
     }
 }
 
-void gui_window_vulkan::build()
+void gui_surface_vulkan::build(extent2 minimum_size, extent2 maximum_size)
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (state == gui_window_state::no_device) {
+    if (state == gui_surface_state::no_device) {
         if (_device) {
             flatPipeline->buildForNewDevice();
             boxPipeline->buildForNewDevice();
             imagePipeline->buildForNewDevice();
             SDFPipeline->buildForNewDevice();
             toneMapperPipeline->buildForNewDevice();
-            state = gui_window_state::no_surface;
+            state = gui_surface_state::no_surface;
         }
     }
 
-    if (state == gui_window_state::no_surface) {
+    if (state == gui_surface_state::no_surface) {
         if (!buildSurface()) {
-            state = gui_window_state::device_lost;
+            state = gui_surface_state::device_lost;
             return;
         }
         flatPipeline->buildForNewSurface();
@@ -168,18 +172,18 @@ void gui_window_vulkan::build()
         imagePipeline->buildForNewSurface();
         SDFPipeline->buildForNewSurface();
         toneMapperPipeline->buildForNewSurface();
-        state = gui_window_state::no_swapchain;
+        state = gui_surface_state::no_swapchain;
     }
 
-    if (state == gui_window_state::no_swapchain) {
-        if (!readSurfaceExtent()) {
+    if (state == gui_surface_state::no_swapchain) {
+        if (!readSurfaceExtent(minimum_size, maximum_size)) {
             // Minimized window, can not build a new swap chain.
-            state = gui_window_state::no_swapchain;
+            state = gui_surface_state::no_swapchain;
             return;
         }
 
         ttlet s = buildSwapchain();
-        if (s != gui_window_state::ready_to_render) {
+        if (s != gui_surface_state::ready_to_render) {
             state = s;
             return;
         }
@@ -200,18 +204,18 @@ void gui_window_vulkan::build()
         SDFPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
         toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
 
-        window_changed_size({narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
-        state = gui_window_state::ready_to_render;
+        size = {narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)};
+        state = gui_surface_state::ready_to_render;
     }
 }
 
-void gui_window_vulkan::teardown()
+void gui_surface_vulkan::teardown()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     auto nextState = state;
 
-    if (state >= gui_window_state::swapchain_lost) {
+    if (state >= gui_surface_state::swapchain_lost) {
         tt_log_info("Tearing down because the window lost the swapchain.");
         waitIdle();
         toneMapperPipeline->teardownForSwapchainLost();
@@ -224,9 +228,9 @@ void gui_window_vulkan::teardown()
         teardownFramebuffers();
         teardownRenderPasses();
         teardownSwapchain();
-        nextState = gui_window_state::no_swapchain;
+        nextState = gui_surface_state::no_swapchain;
 
-        if (state >= gui_window_state::surface_lost) {
+        if (state >= gui_surface_state::surface_lost) {
             tt_log_info("Tearing down because the window lost the drawable surface.");
             toneMapperPipeline->teardownForSurfaceLost();
             SDFPipeline->teardownForSurfaceLost();
@@ -234,9 +238,9 @@ void gui_window_vulkan::teardown()
             boxPipeline->teardownForSurfaceLost();
             flatPipeline->teardownForSurfaceLost();
             teardownSurface();
-            nextState = gui_window_state::no_surface;
+            nextState = gui_surface_state::no_surface;
 
-            if (state >= gui_window_state::device_lost) {
+            if (state >= gui_surface_state::device_lost) {
                 tt_log_info("Tearing down because the window lost the vulkan device.");
 
                 toneMapperPipeline->teardownForDeviceLost();
@@ -245,9 +249,9 @@ void gui_window_vulkan::teardown()
                 boxPipeline->teardownForDeviceLost();
                 flatPipeline->teardownForDeviceLost();
                 teardownDevice();
-                nextState = gui_window_state::no_device;
+                nextState = gui_surface_state::no_device;
 
-                if (state >= gui_window_state::window_lost) {
+                if (state >= gui_surface_state::window_lost) {
                     tt_log_info("Tearing down because the window doesn't exist anymore.");
 
                     toneMapperPipeline->teardownForWindowLost();
@@ -255,11 +259,7 @@ void gui_window_vulkan::teardown()
                     imagePipeline->teardownForWindowLost();
                     boxPipeline->teardownForWindowLost();
                     flatPipeline->teardownForWindowLost();
-
-                    if (auto delegate_ = delegate.lock()) {
-                        delegate_->deinit(*this);
-                    }
-                    nextState = gui_window_state::no_window;
+                    nextState = gui_surface_state::no_window;
                 }
             }
         }
@@ -267,74 +267,35 @@ void gui_window_vulkan::teardown()
     state = nextState;
 }
 
-void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
+[[nodiscard]] extent2 gui_surface_vulkan::update(extent2 minimum_size, extent2 maximum_size) noexcept
+{
+    // Tear down then buildup from the Vulkan objects that where invalid.
+    teardown();
+    build(minimum_size, maximum_size);
+    return size;
+}
+
+std::optional<draw_context> gui_surface_vulkan::render_start(aarectangle redraw_rectangle)
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    // Tear down then buildup from the Vulkan objects that where invalid.
-    teardown();
-    build();
-
-    // All widgets need constrains recalculated on these window-wide events.
-    // Like theme or language changes.
-    ttlet need_reconstrain = std::exchange(_request_setting_change, false);
-
-    // Update the size constraints of the window_widget and it children.
-    ttlet constraints_have_changed = widget->update_constraints(displayTimePoint, need_reconstrain);
-
-    // Check if the window size matches the preferred size of the window_widget.
-    // If not ask the operating system to change the size of the window, which is
-    // done asynchronously.
-    //
-    // We need to continue drawing into the incorrectly sized window, otherwise
-    // Vulkan will not detect the change of drawing surface's size.
-    //
-    // Make sure the widget does have its window rectangle match the constraints, otherwise
-    // the logic for layout and drawing becomes complicated.
-    if (requestResize.exchange(false)) {
-        tt_log_info("A new preferred window size {} was requested by one of the widget.", widget->preferred_size());
-        set_window_size(extent = widget->preferred_size());
-    } else {
-        ttlet new_extent = clamp(extent, widget->minimum_size(), widget->maximum_size());
-        if (new_extent != extent) {
-            tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", extent, new_extent);
-            set_window_size(extent = new_extent);
-        }
-    }
-    widget->set_layout_parameters_from_parent(aarectangle{extent});
-
-    // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
-    ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
-
-    // Make sure the widget's layout is updated before draw, but after window resize.
-    widget->update_layout(displayTimePoint, need_layout);
-
     // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
-    if (state != gui_window_state::ready_to_render || !static_cast<bool>(_request_redraw_rectangle)) {
-        return;
+    if (state != gui_surface_state::ready_to_render || !redraw_rectangle) {
+        return {};
     }
 
-    auto tr = trace<"window_render", "frame_buffer_index">();
-
-    ttlet optionalFrameBufferIndex = acquireNextImageFromSwapchain();
-    if (!optionalFrameBufferIndex) {
+    ttlet optional_frame_buffer_index = acquireNextImageFromSwapchain();
+    if (!optional_frame_buffer_index) {
         // No image is ready to be rendered, yet, possibly because our vertical sync function
         // is not working correctly.
-        return;
+        return {};
     }
-    ttlet frameBufferIndex = *optionalFrameBufferIndex;
-    auto &current_image = swapchain_image_infos.at(frameBufferIndex);
 
-    tr.set<"frame_buffer_index">(frameBufferIndex);
-
-    // Wait until previous rendering has finished, before the next rendering.
-    vulkan_device().waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
-
-    // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
-    vulkan_device().resetFences({renderFinishedFence});
+    ttlet frame_buffer_index = *optional_frame_buffer_index;
+    auto &current_image = swapchain_image_infos.at(frame_buffer_index);
 
     // Record which part of the image will be redrawn on the current swapchain image.
-    current_image.redraw_rectangle = _request_redraw_rectangle;
+    current_image.redraw_rectangle = redraw_rectangle;
 
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
@@ -343,35 +304,45 @@ void gui_window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
             return sum | item.redraw_rectangle;
         }));
 
+    // Wait until previous rendering has finished, before the next rendering.
+    vulkan_device().waitForFences({renderFinishedFence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
+
+    // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
+    vulkan_device().resetFences({renderFinishedFence});
+
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
-    auto drawContext = draw_context(
-        *this,
+    return draw_context{
+        *narrow_cast<gui_device_vulkan *>(_device),
+        narrow_cast<size_t>(frame_buffer_index),
+        size,
         scissor_rectangle,
         flatPipeline->vertexBufferData,
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
-        SDFPipeline->vertexBufferData);
+        SDFPipeline->vertexBufferData};
+}
 
-    _request_redraw_rectangle = aarectangle{};
-    auto widget_context =
-        drawContext.make_child_context(widget->parent_to_local(), widget->local_to_window(), widget->clipping_rectangle());
-    widget->draw(widget_context, displayTimePoint);
+void gui_surface_vulkan::render_finish(draw_context const &context, color background_color)
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    fill_command_buffer(current_image, scissor_rectangle);
+    auto &current_image = swapchain_image_infos.at(context.frame_buffer_index());
+
+    fill_command_buffer(current_image, context.scissor_rectangle(), background_color);
     submitCommandBuffer();
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
     [[maybe_unused]] ttlet submit_result = vulkan_device().graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
-    presentImageToQueue(frameBufferIndex, renderFinishedSemaphore);
+    presentImageToQueue(narrow_cast<uint32_t>(context.frame_buffer_index()), renderFinishedSemaphore);
 
     // Do an early tear down of invalid vulkan objects.
     teardown();
 }
 
-void gui_window_vulkan::fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle)
+void gui_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle, color background_color)
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -380,7 +351,6 @@ void gui_window_vulkan::fill_command_buffer(swapchain_image_info &current_image,
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    ttlet background_color = widget->backgroundColor();
     ttlet background_color_f32x4 = static_cast<f32x4>(background_color);
     ttlet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
 
@@ -442,7 +412,7 @@ void gui_window_vulkan::fill_command_buffer(swapchain_image_info &current_image,
     commandBuffer.end();
 }
 
-void gui_window_vulkan::submitCommandBuffer()
+void gui_surface_vulkan::submitCommandBuffer()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -467,7 +437,7 @@ void gui_window_vulkan::submitCommandBuffer()
     vulkan_device().graphicsQueue.submit(submitInfo, vk::Fence());
 }
 
-std::tuple<uint32_t, vk::Extent2D> gui_window_vulkan::getImageCountAndExtent()
+std::tuple<uint32_t, vk::Extent2D> gui_surface_vulkan::getImageCountAndExtent()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -499,7 +469,7 @@ std::tuple<uint32_t, vk::Extent2D> gui_window_vulkan::getImageCountAndExtent()
     return {imageCount, surfaceCapabilities.currentExtent};
 }
 
-bool gui_window_vulkan::readSurfaceExtent()
+bool gui_surface_vulkan::readSurfaceExtent(extent2 minimum_size, extent2 maximum_size)
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -507,41 +477,39 @@ bool gui_window_vulkan::readSurfaceExtent()
         std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
 
     } catch (vk::SurfaceLostKHRError const &) {
-        state = gui_window_state::surface_lost;
+        state = gui_surface_state::surface_lost;
         return false;
     }
 
-    tt_axiom(widget);
-    ttlet minimum_widget_size = widget->minimum_size();
-    ttlet maximum_widget_size = widget->maximum_size();
-
-    if (narrow_cast<float>(swapchainImageExtent.width) < minimum_widget_size.width() ||
-        narrow_cast<float>(swapchainImageExtent.height) < minimum_widget_size.height()) {
+    if (narrow_cast<float>(swapchainImageExtent.width) < minimum_size.width() ||
+        narrow_cast<float>(swapchainImageExtent.height) < minimum_size.height()) {
         // Due to vulkan surface being extended across the window decoration;
         // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
         // it is 160x28 pixels.
 
         tt_log_info("Window too small ({}, {}) to draw widgets requiring a window size between {} and {}.",
             swapchainImageExtent.width, swapchainImageExtent.height,
-            minimum_widget_size, maximum_widget_size
+            minimum_size,
+            maximum_size
         );
         return false;
     }
 
-    if (narrow_cast<int>(swapchainImageExtent.width) > maximum_widget_size.width() ||
-        narrow_cast<int>(swapchainImageExtent.height) > maximum_widget_size.height()) {
+    if (narrow_cast<int>(swapchainImageExtent.width) > maximum_size.width() ||
+        narrow_cast<int>(swapchainImageExtent.height) > maximum_size.height()) {
         tt_log_error(
-            "Window too large to draw current=({}, {}), maximum=({})",
+            "Window too large ({}, {}) to draw widgets requiring a window size between {} and {}",
             swapchainImageExtent.width,
             swapchainImageExtent.height,
-            maximum_widget_size);
+            minimum_size,
+            maximum_size);
         return false;
     }
 
     return true;
 }
 
-bool gui_window_vulkan::checkSurfaceExtent()
+bool gui_surface_vulkan::checkSurfaceExtent()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -550,25 +518,24 @@ bool gui_window_vulkan::checkSurfaceExtent()
         return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent_ == swapchainImageExtent);
 
     } catch (vk::SurfaceLostKHRError const &) {
-        state = gui_window_state::surface_lost;
+        state = gui_surface_state::surface_lost;
         return false;
     }
 }
 
-void gui_window_vulkan::buildDevice()
+void gui_surface_vulkan::buildDevice()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 }
 
-bool gui_window_vulkan::buildSurface()
+bool gui_surface_vulkan::buildSurface()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    intrinsic = getSurface();
     return vulkan_device().score(intrinsic) > 0;
 }
 
-gui_window_state gui_window_vulkan::buildSwapchain()
+gui_surface_state gui_surface_vulkan::buildSwapchain()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -604,7 +571,7 @@ gui_window_state gui_window_vulkan::buildSwapchain()
     switch (result) {
     case vk::Result::eSuccess: break;
 
-    case vk::Result::eErrorSurfaceLostKHR: return gui_window_state::surface_lost;
+    case vk::Result::eErrorSurfaceLostKHR: return gui_surface_state::surface_lost;
 
     default: throw gui_error("Unknown result from createSwapchainKHR(). '{}'", to_string(result));
     }
@@ -662,10 +629,10 @@ gui_window_state gui_window_vulkan::buildSwapchain()
     std::tie(colorImages[1], colorImageAllocations[1]) =
         vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
 
-    return gui_window_state::ready_to_render;
+    return gui_surface_state::ready_to_render;
 }
 
-void gui_window_vulkan::teardownSwapchain()
+void gui_surface_vulkan::teardownSwapchain()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -677,7 +644,7 @@ void gui_window_vulkan::teardownSwapchain()
     }
 }
 
-void gui_window_vulkan::buildFramebuffers()
+void gui_surface_vulkan::buildFramebuffers()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -730,7 +697,7 @@ void gui_window_vulkan::buildFramebuffers()
     tt_axiom(swapchain_image_infos.size() == swapchain_images.size());
 }
 
-void gui_window_vulkan::teardownFramebuffers()
+void gui_surface_vulkan::teardownFramebuffers()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -746,7 +713,7 @@ void gui_window_vulkan::teardownFramebuffers()
     }
 }
 
-void gui_window_vulkan::buildRenderPasses()
+void gui_surface_vulkan::buildRenderPasses()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -936,14 +903,14 @@ void gui_window_vulkan::buildRenderPasses()
     renderPass = vulkan_device().createRenderPass(renderPassCreateInfo);
 }
 
-void gui_window_vulkan::teardownRenderPasses()
+void gui_surface_vulkan::teardownRenderPasses()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     vulkan_device().destroy(renderPass);
 }
 
-void gui_window_vulkan::buildSemaphores()
+void gui_surface_vulkan::buildSemaphores()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -956,7 +923,7 @@ void gui_window_vulkan::buildSemaphores()
     renderFinishedFence = vulkan_device().createFence({vk::FenceCreateFlagBits::eSignaled});
 }
 
-void gui_window_vulkan::teardownSemaphores()
+void gui_surface_vulkan::teardownSemaphores()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -965,7 +932,7 @@ void gui_window_vulkan::teardownSemaphores()
     vulkan_device().destroy(renderFinishedFence);
 }
 
-void gui_window_vulkan::buildCommandBuffers()
+void gui_surface_vulkan::buildCommandBuffers()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -975,7 +942,7 @@ void gui_window_vulkan::buildCommandBuffers()
     commandBuffer = commandBuffers.at(0);
 }
 
-void gui_window_vulkan::teardownCommandBuffers()
+void gui_surface_vulkan::teardownCommandBuffers()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
     ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
@@ -983,14 +950,14 @@ void gui_window_vulkan::teardownCommandBuffers()
     vulkan_device().freeCommandBuffers(vulkan_device().graphicsCommandPool, commandBuffers);
 }
 
-void gui_window_vulkan::teardownSurface()
+void gui_surface_vulkan::teardownSurface()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     narrow_cast<gui_system_vulkan &>(system).destroySurfaceKHR(intrinsic);
 }
 
-void gui_window_vulkan::teardownDevice()
+void gui_surface_vulkan::teardownDevice()
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 

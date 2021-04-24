@@ -11,8 +11,8 @@ namespace tt::pipeline_image {
 using namespace tt;
 using namespace std;
 
-pipeline_image::pipeline_image(gui_window const &window) :
-    pipeline_vulkan(window)
+pipeline_image::pipeline_image(gui_surface const &surface) :
+    pipeline_vulkan(surface)
 {
 }
 

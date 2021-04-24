@@ -6,7 +6,7 @@
 
 #include "gui_device.hpp"
 #include "gui_window.hpp"
-#include "gui_window_vulkan_win32.hpp"
+#include "gui_window_win32.hpp"
 #include "vertical_sync.hpp"
 #include "gui_system_delegate.hpp"
 #include "../unfair_recursive_mutex.hpp"
@@ -17,6 +17,7 @@
 #include <vector>
 
 namespace tt {
+class gui_surface;
 
 /** Vulkan gui_device controller.
  * Manages Vulkan device and a set of Windows.
@@ -69,7 +70,7 @@ public:
         tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
         tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
-        auto window = std::make_shared<gui_window_vulkan_win32>(static_cast<gui_system &>(*this), std::forward<Args>(args)...);
+        auto window = std::make_shared<gui_window_win32>(static_cast<gui_system &>(*this), std::forward<Args>(args)...);
         auto window_ptr = window.get();
         window->init();
 
@@ -82,6 +83,8 @@ public:
         device->add(std::move(window));
         return window_ptr;
     }
+
+    [[nodiscard]] virtual std::unique_ptr<gui_surface> make_surface(void *os_window) const noexcept = 0;
 
     /*! Count the number of windows managed by the GUI.
      */

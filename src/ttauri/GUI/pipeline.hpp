@@ -8,13 +8,13 @@
 #include <memory>
 
 namespace tt {
-class gui_window;
+class gui_surface;
 
 class pipeline {
 public:
-    gui_window const &window;
+    gui_surface const &surface;
 
-    pipeline(gui_window const &window);
+    pipeline(gui_surface const &surface);
 
     virtual ~pipeline() = default;
     pipeline(const pipeline &) = delete;

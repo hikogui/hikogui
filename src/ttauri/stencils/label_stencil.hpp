@@ -195,14 +195,16 @@ public:
         }
     }
 
-    void draw(draw_context context, tt::color color, matrix3 transform = geo::identity{}) noexcept override
+    [[nodiscard]] bool draw(draw_context context, tt::color color, matrix3 transform = geo::identity{}) noexcept override
     {
+        auto redraw = false;
         if (_text_stencil) {
-            _text_stencil->draw(context, color, transform);
+            redraw = redraw or _text_stencil->draw(context, color, transform);
         }
         if (_icon_stencil) {
-            _icon_stencil->draw(context, color, transform);
+            redraw = redraw or _icon_stencil->draw(context, color, transform);
         }
+        return redraw;
     }
 
 private:

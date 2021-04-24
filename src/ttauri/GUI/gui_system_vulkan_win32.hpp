@@ -19,10 +19,8 @@ public:
     gui_system_vulkan_win32(gui_system_vulkan_win32 &&) = delete;
     gui_system_vulkan_win32 &operator=(gui_system_vulkan_win32 &&) = delete;
 
-    vk::ResultValueType<vk::SurfaceKHR>::type createWin32SurfaceKHR(const vk::Win32SurfaceCreateInfoKHR& createInfo) const {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return intrinsic.createWin32SurfaceKHR(createInfo);
-    }
+    [[nodiscard]] std::unique_ptr<gui_surface> make_surface(void *os_window) const noexcept override;
+
 };
 
 }

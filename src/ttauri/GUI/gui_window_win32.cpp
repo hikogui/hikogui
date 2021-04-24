@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "gui_window_vulkan_win32.hpp"
+#include "gui_window_win32.hpp"
 #include "keyboard_virtual_key.hpp"
 #include "gui_system_vulkan_win32.hpp"
 #include "theme_book.hpp"
@@ -49,7 +49,7 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
-    auto window = std::launder(std::bit_cast<gui_window_vulkan_win32 *>(window_userdata));
+    auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
 
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
     LRESULT result = window->windowProc(uMsg, wParam, lParam);
@@ -89,7 +89,7 @@ static void createWindowClass(gui_system &system)
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_vulkan_win32::create_window()
+void gui_window_win32::create_window()
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
@@ -99,7 +99,7 @@ void gui_window_vulkan_win32::create_window()
 
     auto u16title = to_wstring(title.text());
 
-    tt_log_info("Create window of size {} with title '{}'", extent, title);
+    tt_log_info("Create window of size {} with title '{}'", size, title);
 
     // Recommended to set the dpi-awareness before opening any window.
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -114,8 +114,8 @@ void gui_window_vulkan_win32::create_window()
         // Size and position
         500,
         500,
-        narrow_cast<int>(extent.width()),
-        narrow_cast<int>(extent.height()),
+        narrow_cast<int>(size.width()),
+        narrow_cast<int>(size.height()),
 
         NULL, // Parent window
         NULL, // Menu
@@ -163,13 +163,15 @@ void gui_window_vulkan_win32::create_window()
         throw gui_error("Could not retrieve dpi for window.");
     }
     dpi = narrow_cast<float>(_dpi);
+
+    surface = system.make_surface(win32Window);
 }
 
-gui_window_vulkan_win32::gui_window_vulkan_win32(
+gui_window_win32::gui_window_win32(
     gui_system &system,
     std::weak_ptr<gui_window_delegate> const &delegate,
     label const &title) :
-    gui_window_vulkan(system, delegate, title), trackMouseLeaveEventParameters()
+    gui_window(system, delegate, title), trackMouseLeaveEventParameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
@@ -177,7 +179,7 @@ gui_window_vulkan_win32::gui_window_vulkan_win32(
     tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 }
 
-gui_window_vulkan_win32::~gui_window_vulkan_win32()
+gui_window_win32::~gui_window_win32()
 {
     try {
         if (win32Window != nullptr) {
@@ -185,39 +187,39 @@ gui_window_vulkan_win32::~gui_window_vulkan_win32()
         }
 
     } catch (std::exception const &e) {
-        tt_log_fatal("Could not properly destruct gui_window_vulkan_win32. '{}'", e.what());
+        tt_log_fatal("Could not properly destruct gui_window_win32. '{}'", e.what());
     }
 }
 
-void gui_window_vulkan_win32::close_window()
+void gui_window_win32::close_window()
 {
     run_from_main_loop([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
-void gui_window_vulkan_win32::minimize_window()
+void gui_window_win32::minimize_window()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
-void gui_window_vulkan_win32::maximize_window()
+void gui_window_win32::maximize_window()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
-void gui_window_vulkan_win32::normalize_window()
+void gui_window_win32::normalize_window()
 {
     run_from_main_loop([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
 
-void gui_window_vulkan_win32::set_window_size(extent2 new_extent)
+void gui_window_win32::set_window_size(extent2 new_extent)
 {
     gui_system_mutex.lock();
     ttlet handle = reinterpret_cast<HWND>(win32Window);
@@ -235,7 +237,7 @@ void gui_window_vulkan_win32::set_window_size(extent2 new_extent)
     });
 }
 
-[[nodiscard]] extent2 gui_window_vulkan_win32::virtual_screen_size() const noexcept
+[[nodiscard]] extent2 gui_window_win32::virtual_screen_size() const noexcept
 {
     ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
     ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
@@ -245,7 +247,7 @@ void gui_window_vulkan_win32::set_window_size(extent2 new_extent)
     return {narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
-[[nodiscard]] std::string gui_window_vulkan_win32::get_text_from_clipboard() const noexcept
+[[nodiscard]] std::string gui_window_win32::get_text_from_clipboard() const noexcept
 {
     auto r = std::string{};
 
@@ -302,7 +304,7 @@ done:
     return r;
 }
 
-void gui_window_vulkan_win32::set_text_on_clipboard(std::string str) noexcept
+void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
 {
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
         tt_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
@@ -350,19 +352,8 @@ done:
     CloseClipboard();
 }
 
-vk::SurfaceKHR gui_window_vulkan_win32::getSurface() const
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    auto &win32_system = narrow_cast<gui_system_vulkan_win32 &>(system);
-
-    return win32_system.createWin32SurfaceKHR(
-        {vk::Win32SurfaceCreateFlagsKHR(),
-         reinterpret_cast<HINSTANCE>(system.instance),
-         reinterpret_cast<HWND>(win32Window)});
-}
-
-void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
+void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -379,7 +370,7 @@ void gui_window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexc
     request_redraw();
 }
 
-void gui_window_vulkan_win32::set_cursor(mouse_cursor cursor) noexcept
+void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
@@ -414,7 +405,7 @@ void gui_window_vulkan_win32::set_cursor(mouse_cursor cursor) noexcept
     SetCursor(idc);
 }
 
-[[nodiscard]] keyboard_modifiers gui_window_vulkan_win32::getkeyboard_modifiers() noexcept
+[[nodiscard]] keyboard_modifiers gui_window_win32::getkeyboard_modifiers() noexcept
 {
     auto r = keyboard_modifiers::None;
 
@@ -435,7 +426,7 @@ void gui_window_vulkan_win32::set_cursor(mouse_cursor cursor) noexcept
     return r;
 }
 
-[[nodiscard]] KeyboardState gui_window_vulkan_win32::getKeyboardState() noexcept
+[[nodiscard]] KeyboardState gui_window_win32::getKeyboardState() noexcept
 {
     auto r = KeyboardState::Idle;
 
@@ -454,15 +445,15 @@ void gui_window_vulkan_win32::set_cursor(mouse_cursor cursor) noexcept
 /** The win32 window message handler.
  * This function should not take any long-term-locks as windowProc is called recursively.
  */
-int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
+int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     mouse_event mouseEvent;
 
     switch (uMsg) {
     case WM_DESTROY: {
         ttlet lock = std::scoped_lock(gui_system_mutex);
+        surface->set_closed();
         win32Window = nullptr;
-        state = gui_window_state::window_lost;
     } break;
 
     case WM_CREATE: {
@@ -480,7 +471,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     case WM_PAINT: {
         ttlet height = [this](){
             ttlet lock = std::scoped_lock(gui_system_mutex);
-            return extent.height();
+            return size.height();
         }();
 
         PAINTSTRUCT ps;
@@ -709,7 +700,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     return -1;
 }
 
-[[nodiscard]] char32_t gui_window_vulkan_win32::handleSuragates(char32_t c) noexcept
+[[nodiscard]] char32_t gui_window_win32::handleSuragates(char32_t c) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
     ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -725,7 +716,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     return c;
 }
 
-[[nodiscard]] mouse_event gui_window_vulkan_win32::createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
+[[nodiscard]] mouse_event gui_window_win32::createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     // We have to do manual locking, since we don't want this
     // function or its caller to hold a lock while calling the windows API.
@@ -739,7 +730,7 @@ int gui_window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int6
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
     mouseEvent.position =
-        point2(narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(extent.height() - GET_Y_LPARAM(lParam)));
+        point2(narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(size.height() - GET_Y_LPARAM(lParam)));
 
     mouseEvent.wheelDelta = {};
     if (uMsg == WM_MOUSEWHEEL) {

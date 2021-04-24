@@ -66,7 +66,7 @@ void system_menu_widget::draw(draw_context context, hires_utc_clock::time_point 
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (overlaps(context, _clipping_rectangle)) {
-        _icon_stencil->draw(context);
+        tt_stencil_draw(_icon_stencil, context);
     }
 
     super::draw(std::move(context), display_time_point);

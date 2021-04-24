@@ -351,7 +351,7 @@ public:
         return _clipping_rectangle;
     }
 
-    [[nodiscard]] gui_device *device() const noexcept;
+    //[[nodiscard]] gui_device *device() const noexcept;
 
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when

@@ -12,8 +12,8 @@ namespace tt {
 
 using namespace std;
 
-pipeline_vulkan::pipeline_vulkan(gui_window const &window) :
-    pipeline(window) {}
+pipeline_vulkan::pipeline_vulkan(gui_surface const &surface) :
+    pipeline(surface) {}
 
 pipeline_vulkan::~pipeline_vulkan()
 {
@@ -21,7 +21,7 @@ pipeline_vulkan::~pipeline_vulkan()
 
 gui_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
 {
-    auto device = window.device();
+    auto device = surface.device();
     tt_axiom(device != nullptr);
     return narrow_cast<gui_device_vulkan&>(*device);
 }
