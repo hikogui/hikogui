@@ -4,6 +4,7 @@
 
 #include "pipeline_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
+#include "gui_surface.hpp"
 #include "../trace.hpp"
 #include <array>
 #include <vector>
