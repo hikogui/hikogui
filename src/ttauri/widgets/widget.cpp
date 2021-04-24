@@ -31,15 +31,6 @@ widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> p
 
 widget::~widget() {}
 
-//gui_device *widget::device() const noexcept
-//{
-//    tt_axiom(gui_system_mutex.recurse_lock_count());
-//
-//    auto device = window.device();
-//    tt_assert(device);
-//    return device;
-//}
-
 bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
