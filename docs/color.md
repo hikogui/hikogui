@@ -5,19 +5,19 @@ This document describes how color is used in the ttauri library.
 Usage of color spaces
 ---------------------
 
- | Usage         | Space | depth   | Pre-mul  |
- |:--------------|:------|:--------|:---------|
- | draw API      | tsRGB | float32 | no       |
- | vertices      | tsRGB | float16 | no       |
- | images        | tsRGB | float16 | no       |
- | texture maps  | tsRGB | float16 | no       |
- | shaders       | tsRGB | float32 | no       |
- | frame buffers | tsRGB | float16 | variable |
- | swap chain    | sRGB\*| uint8\* | -        |
+ | Usage            | Space | depth   | alpha          |
+ |:-----------------|:------|:--------|:---------------|
+ | draw API         | tsRGB | float32 | straight       |
+ | vertices         | tsRGB | float16 | straight       |
+ | images           | tsRGB | float16 | pre-multiplied |
+ | fragment shaders | tsRGB | float32 | pre-multiplied |
+ | frame buffers    | tsRGB | float16 | pre-multiplied |
+ | swap chain       | sRGB\*| uint8\* | pre-multiplied |
 
 ### PNG decoding
 TTauri's PNG decoder will create an image of float16 RGBA values
-in the tsRGB color space.
+in the tsRGB color space. The rgb values in the resulting image are
+pre-multiplied by the alpha.
 
 The PNG decoder will use the color space and transfer
 function information from the PNG data to do the conversion of
@@ -27,7 +27,7 @@ sRGB color space and transfer function is implied if color space
 information is not available in the PNG data.
 
 ### Theme files
-The colors in ttauri's theme file may be edited by users there
+The colors in ttauri's theme file may be edited by users, there
 are three different ways of specifying colors.
 
  | Format                        | Color space |
@@ -51,10 +51,10 @@ tsRGB color space
 The tsRGB color space is actually very common but never explicitly named.
 Here are examples of very simular color spaces:
 
- - scRGB, specified for 16 bit biased and scaled integers 
+ - _scRGB_, specified for 16 bit biased and scaled integers 
    with a range between -0.5 and 7.5. Often used outside of this spec as
    float16 or float32 with extended range.
- - Extended-sRGB, specified with a non-linear transfer function that is
+ - _Extended-sRGB_, specified with a non-linear transfer function that is
    mirrored for negative values. Often used outside of this spec using
    a linear transfer function.
  - The unnamed color space of float16 linear RGB swap-chain images.
@@ -62,12 +62,12 @@ Here are examples of very simular color spaces:
 The tsRGB color space has the same color primaries and white-point as the
 sRGB/BT.709 color spaces.
 
- |           | x      | y      |
- |:----------|-------:|-------:|
- | Red       | 0.6400 | 0.3300 |
- | Green     | 0.3000 | 0.6000 |
- | Blue      | 0.1500 | 0.0600 |
- | White D65 | 0.3127 | 0.3290 |
+ |           | x      | y      | Luminosity contribution |
+ |:----------|-------:|-------:|------------------------:|
+ | Red       | 0.6400 | 0.3300 |                  0.2126 |
+ | Green     | 0.3000 | 0.6000 |                  0.7152 |
+ | Blue      | 0.1500 | 0.0600 |                  0.0722 |
+ | White D65 | 0.3127 | 0.3290 |                         |
 
 The RGB values have a linearly transfer function where RGB(0.0, 0.0, 0.0)
 is black and RGB(1.0, 1.0, 1.0) is white with a luminance 80 cd/m2.
@@ -77,18 +77,34 @@ monitors.
 When all RGB values are within 0.0 and 1.0 the tsRGB color space is fully
 compatible with linear sRGB.
 
-Negative values will allow colors outside of the sRGB gamut triangle; as
-long as the luminance stays positive.
+Negative color component values will allow colors outside of the sRGB gamut
+triangle, which may be rendered on high gamut monitors. However the luminosity
+of the color must be greater or equal to zero.
 
-tYUV/tLUV
----------
-The color to luminance conversion is:
+tYUV/tLUV related color space
+-----------------------------
+The tLUV color space is used for mixing background and foreground
+colors for anti-aliasing text, where the perceived line width is
+an important attribute. For more detailed information see:
+[The trouble with anti-aliasing](https://www.ttauri-project.org/2021/03/30/the-trouble-with-anti-aliasing.html)
+
+Conversion from tRGB to tYUV/tLUV:
 
 ```
 Y = R * 0.2126 + G * 0.7152 + B * 0.0722
+L = sqrt(Y)
+U = B - Y
+V = R - Y
 ```
 
+Conversion from tYUV/tLUB to tRGB:
 
+```
+Y = L * L
+R = V + Y
+B = U + Y
+G = Y - V * 0.2973 - Y * 0.1001
+```
 
 
 The color types
@@ -101,7 +117,9 @@ The RGB values are linear and may comprise the complete floating point range,
 including values above 1.0 and value below zero.
 
 The alpha value is a linear value between 0.0 (transparent) and 1.0 (opaque).
-The RGB values are not pre-multiplied with the alpha.
+
+Depending on where the colors are used the RGB values are pre-multiplied by
+the alpha value, for example: inside fragment shaders, images and frame buffers.
 
 ### matrix3
 A color conversion matrix can be stored in the `matrix3` type. And a `color`

@@ -29,8 +29,6 @@ void main() {
     int atlasTextureIndex = int(inAtlasPosition.z);
     vec2 textureCoord = inAtlasPosition.xy;
 
-    vec4 color = texture(sampler2D(textures[atlasTextureIndex], bilinearSampler), textureCoord);
-
-    // pre-multiply alpha.
-    outColor = vec4(color.rgb * color.a, color.a);
+    // Vulkan blending operation expects pre-multiplied alpha and the texture map is in pre-multiplied alpha. 
+    outColor = texture(sampler2D(textures[atlasTextureIndex], bilinearSampler), textureCoord);
 }

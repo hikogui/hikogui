@@ -122,7 +122,7 @@ vk::PipelineDepthStencilStateCreateInfo pipeline_vulkan::getPipelineDepthStencil
     };
 }
 
-/* Pre-multiplied alpha blending.
+/* pre-multiplied alpha blending.
 */
 std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineColorBlendAttachmentStates() const
 {
@@ -132,7 +132,7 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineC
         vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
         vk::BlendOp::eAdd, // colorBlendOp
         vk::BlendFactor::eOne, // srcAlphaBlendFactor
-        vk::BlendFactor::eZero, // dstAlphaBlendFactor
+        vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
         vk::BlendOp::eAdd, // aphaBlendOp
         vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
     } };
