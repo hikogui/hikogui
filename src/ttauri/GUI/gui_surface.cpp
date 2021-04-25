@@ -2,12 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-namespace tt {
-
 #include "gui_surface.hpp"
 #include "gui_device.hpp"
 #include "gui_system.hpp"
 #include "../assert.hpp"
+
+namespace tt {
 
 void gui_surface::set_device(gui_device *new_device) noexcept
 {
