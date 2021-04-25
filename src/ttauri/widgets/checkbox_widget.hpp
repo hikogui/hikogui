@@ -200,7 +200,7 @@ private:
             this->value == this->false_value               ? _false_label_stencil :
                                                              _other_label_stencil;
 
-        labelCell->draw(context, this->label_color());
+        tt_stencil_draw(labelCell, context, this->label_color());
     }
 };
 

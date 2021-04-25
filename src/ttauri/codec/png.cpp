@@ -458,7 +458,7 @@ void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_
         auto lesRGB_color = _color_to_sRGB * linear_color;
         lesRGB_color.a() = static_cast<float>(value.w()) * alpha_mul;
 
-        line[x] = lesRGB_color;
+        line[x] = pre_multiply_alpha(lesRGB_color);
     }
 }
 

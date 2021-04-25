@@ -8,8 +8,8 @@ namespace tt {
 
 using namespace std;
 
-pipeline::pipeline(gui_window const &window) :
-    window(window)
+pipeline::pipeline(gui_surface const &surface) :
+    surface(surface)
 {
 }
 

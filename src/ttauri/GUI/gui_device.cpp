@@ -51,7 +51,7 @@ void gui_device::remove(gui_window &window) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    window.unset_device();
+    window.set_device(nullptr);
     windows.erase(std::find_if(windows.begin(), windows.end(), [&](auto &x) {
         return x.get() == &window;
     }));

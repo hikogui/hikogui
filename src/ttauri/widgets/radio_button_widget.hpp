@@ -147,7 +147,7 @@ private:
     void draw_label(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        _label_stencil->draw(context, this->label_color());
+        tt_stencil_draw(_label_stencil, context, this->label_color());
     }
 };
 

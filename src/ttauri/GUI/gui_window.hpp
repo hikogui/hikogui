@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "gui_window_state.hpp"
 #include "gui_window_size.hpp"
 #include "gui_window_delegate.hpp"
 #include "gui_system_globals.hpp"
@@ -12,7 +11,6 @@
 #include "hit_box.hpp"
 #include "mouse_event.hpp"
 #include "keyboard_event.hpp"
-#include "subpixel_orientation.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "../text/gstring.hpp"
@@ -28,6 +26,7 @@ namespace tt {
 class gui_device;
 class gui_system;
 class window_widget;
+class gui_surface;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -37,8 +36,7 @@ class window_widget;
 class gui_window {
 public:
     gui_system &system;
-
-    gui_window_state state = gui_window_state::no_device;
+    std::unique_ptr<gui_surface> surface;
 
     /** The current cursor.
      * Used for optimizing when the operating system cursor is updated.
@@ -72,17 +70,15 @@ public:
      */
     gui_window_size size_state = gui_window_size::normal;
 
-    //! The current window extent as set by the GPU library.
-    extent2 extent;
+    /** The size from the surface, clamped to combined widget's size.
+     */
+    extent2 size;
 
     std::weak_ptr<gui_window_delegate> delegate;
 
     label title;
 
-    /*! Orientation of the RGB subpixels.
-     */
-    subpixel_orientation subpixel_orientation = subpixel_orientation::BlueRight;
-    //subpixel_orientation subpixel_orientation = subpixel_orientation::Unknown;
+    
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
@@ -109,6 +105,16 @@ public:
      */
     virtual void init();
 
+    /** 2 phase constructor.
+     * Must be called directly before the destructor on the same thread,
+     *
+     * `deinit()` should not take locks on window::mutex.
+     */
+    virtual void deinit();
+
+
+    void set_device(gui_device *device) noexcept;
+
     /** Request a rectangle on the window to be redrawn
      */
     void request_redraw(aarectangle rectangle) noexcept
@@ -122,7 +128,7 @@ public:
     void request_redraw() noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        request_redraw(aarectangle{extent});
+        request_redraw(aarectangle{size});
     }
 
     /** By how much the font needs to be scaled compared to current windowScale.
@@ -133,32 +139,14 @@ public:
         return dpi / (window_scale() * 72.0f);
     }
 
-    /*! Set GPU device to manage this window.
-     * Change of the device may be done at runtime.
-     */
-    void set_device(gui_device *device);
-
-    /*! Remove the GPU device from the window, making it an orphan.
-     */
-    void unset_device()
-    {
-        set_device({});
-    }
-
-    gui_device *device() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _device;
-    }
-
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
-    virtual void render(hires_utc_clock::time_point displayTimePoint) = 0;
+    virtual void render(hires_utc_clock::time_point displayTimePoint);
 
     /** Check if the window was closed by the operating system.
      */
-    bool is_closed();
+    [[nodiscard]] bool is_closed() const noexcept;
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
@@ -263,12 +251,6 @@ public:
     }
 
 protected:
-    /** The device the window is assigned to.
-     * The device may change during the lifetime of a window,
-     * as long as the device belongs to the same GUIInstance.
-     */
-    gui_device *_device = nullptr;
-
     /*! The current rectangle of the window relative to the screen.
      * The screen rectangle is set by the operating system event loop and
      * the extent of the rectangle may lag behind the actual window extent as seen
@@ -296,18 +278,6 @@ protected:
      * transformation matrix will match the window scaling.
      */
     [[nodiscard]] float window_scale() const noexcept;
-
-    /*! Called when the GPU library has changed the window size.
-     */
-    virtual void window_changed_size(extent2 new_extent);
-
-    /*! Teardown Window based on State::*_LOST
-     */
-    virtual void teardown() = 0;
-
-    /*! Build Windows based on State::NO_*
-     */
-    virtual void build() = 0;
 
     /** Handle command event.
      * This function is called when no widget has handled the command.
