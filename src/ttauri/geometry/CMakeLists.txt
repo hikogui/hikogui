@@ -5,6 +5,8 @@ target_sources(ttauri PRIVATE
     extent.hpp
     identity.hpp
     f32x4_x64v2.hpp
+    f32x8_x64v25.hpp
+    i8x16_x64v2.hpp
     matrix.hpp
     numeric_array.hpp
     point.hpp

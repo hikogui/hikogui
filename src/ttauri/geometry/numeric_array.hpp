@@ -10,6 +10,7 @@
 #include "../type_traits.hpp"
 #if TT_X86_64_V2
 #include "f32x4_x64v2.hpp"
+#include "i8x16_x64v2.hpp"
 #endif
 
 #include <cstdint>
@@ -101,7 +102,7 @@ public:
     constexpr numeric_array &operator=(numeric_array &&rhs) noexcept = default;
 
     template<arithmetic O>
-    [[nodiscard]] constexpr explicit numeric_array(numeric_array<O,N> const &other) noexcept : v()
+    [[nodiscard]] constexpr explicit numeric_array(numeric_array<O, N> const &other) noexcept : v()
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && other.is_i32x4 && x86_64_v2) {
@@ -153,51 +154,72 @@ public:
         return r;
     }
 
-    [[nodiscard]] numeric_array(std::array<T,N> const &rhs) noexcept : v(rhs) {}
+    [[nodiscard]] static constexpr numeric_array undefined() noexcept
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_i8x16 and x86_64_v2) {
+                return numeric_array{i8x16_x64v2_undefined()};
+            }
+        }
 
-    numeric_array &operator=(std::array<T,N> const &rhs) noexcept
+        numeric_array r;
+        return r;
+    }
+
+    [[nodiscard]] numeric_array(std::array<T, N> const &rhs) noexcept : v(rhs) {}
+
+    numeric_array &operator=(std::array<T, N> const &rhs) noexcept
     {
         v = rhs;
         return *this;
     }
 
-    [[nodiscard]] operator std::array<T,N>() const noexcept
+    [[nodiscard]] operator std::array<T, N>() const noexcept
     {
         return v;
+    }
+
+    template<typename Other> requires(sizeof(Other) == sizeof(numeric_array))
+    [[nodiscard]] friend Other bit_cast(numeric_array const &rhs) noexcept
+    {
+        if constexpr (Other::is_f32x4 and rhs.is_i32x4 and x86_64_v2) {
+            return Other{f32x4_x64v2_bit_cast_from_i32x4(rhs)};
+        }
+
+        Other r;
+        std::memcpy(&r, &rhs, sizeof(r));
+        return r;
     }
 
     /** Load a numeric array from memory.
      * @param ptr A Pointer to an array of values in memory.
      * @return A numeric array.
      */
-    [[nodiscard]] static constexpr numeric_array load(T const *ptr) noexcept
+    [[nodiscard]] static constexpr numeric_array load(std::byte const *ptr) noexcept
     {
         auto r = numeric_array{};
-
-        for (auto i = 0; i != N; ++i) {
-            r.v[i] = ptr[i];
-        }
+        std::memcpy(&r, ptr, sizeof(r));
         return r;
     }
 
     /** Store a numeric array into memory.
      * @param [out]ptr A pointer to where the numeric array should be stored into memory.
      */
-    constexpr void store(T *ptr) const noexcept
+    constexpr void store(std::byte *ptr) const noexcept
     {
-        for (auto i = 0; i != N; ++i) {
-            ptr[i] = r.v[i];
-        }
+        std::memcpy(ptr, this, sizeof(*this));
     }
 
     [[nodiscard]] constexpr T const &operator[](size_t i) const noexcept
     {
+        static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         tt_axiom(i < N);
         return v[i];
     }
 
     [[nodiscard]] constexpr T &operator[](size_t i) noexcept
     {
+        static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         tt_axiom(i < N);
         return v[i];
     }
@@ -407,6 +429,50 @@ public:
         return std::get<2>(v);
     }
 
+    constexpr numeric_array &operator|=(numeric_array const &rhs) noexcept
+    {
+        *this = *this | rhs;
+        return *this;
+    }
+
+    constexpr numeric_array &operator|=(T const &rhs) noexcept
+    {
+        *this = *this | rhs;
+        return *this;
+    }
+
+    constexpr numeric_array &operator&=(numeric_array const &rhs) noexcept
+    {
+        for (size_t i = 0; i != N; ++i) {
+            v[i] &= rhs.v[i];
+        }
+        return *this;
+    }
+
+    constexpr numeric_array &operator&=(T const &rhs) noexcept
+    {
+        for (size_t i = 0; i != N; ++i) {
+            v[i] &= rhs;
+        }
+        return *this;
+    }
+
+    constexpr numeric_array &operator^=(numeric_array const &rhs) noexcept
+    {
+        for (size_t i = 0; i != N; ++i) {
+            v[i] ^= rhs.v[i];
+        }
+        return *this;
+    }
+
+    constexpr numeric_array &operator^=(T const &rhs) noexcept
+    {
+        for (size_t i = 0; i != N; ++i) {
+            v[i] ^= rhs;
+        }
+        return *this;
+    }
+
     constexpr numeric_array &operator+=(numeric_array const &rhs) noexcept
     {
         for (size_t i = 0; i != N; ++i) {
@@ -517,6 +583,7 @@ public:
     template<ssize_t I>
     [[nodiscard]] friend constexpr T get(numeric_array &&rhs) noexcept
     {
+        static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         static_assert(I >= -2 && I < narrow_cast<ssize_t>(N), "Index out of bounds");
         if constexpr (I == get_zero) {
             return T{0};
@@ -535,6 +602,7 @@ public:
     template<ssize_t I>
     [[nodiscard]] friend constexpr T get(numeric_array const &rhs) noexcept
     {
+        static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         static_assert(I >= -2 && I < narrow_cast<ssize_t>(N), "Index out of bounds");
         if constexpr (I == get_zero) {
             return T{0};
@@ -589,6 +657,21 @@ public:
             } else {
                 r.v[i] = rhs.v[i];
             }
+        }
+        return r;
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (lhs.is_i8x16 and rhs.is_i8x16 and x86_64_v2) {
+                return numeric_array{i8x16_x64v2_or(lhs.v, rhs.v)};
+            }
+        }
+
+        numeric_array r;
+        for (size_t i = 0; i != N; ++i) {
+            r[i] = lhs[i] | rhs[i];
         }
         return r;
     }
@@ -1156,8 +1239,7 @@ public:
 
     /** Calculate the cross-product between two 2D vectors.
      */
-    [[nodiscard]] friend constexpr float cross_2D(numeric_array const &lhs, numeric_array const &rhs) noexcept
-        requires(N >= 2)
+    [[nodiscard]] friend constexpr float cross_2D(numeric_array const &lhs, numeric_array const &rhs) noexcept requires(N >= 2)
     {
         if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
             return f32x4_x64v2_viktor_cross(lhs.v, rhs.v);
@@ -1209,10 +1291,48 @@ public:
         };
     }
 
+    /** Shift the elements left.
+     * Other element are set to zero.
+     */
+    [[nodiscard]] friend constexpr numeric_array shift_left(numeric_array const &lhs, int rhs) noexcept
+    {
+        numeric_array r;
+        for (size_t i = 0; i != N; ++i) {
+            if ((i - rhs) >= 0) {
+                r[i] = lhs[i - rhs];
+            } else {
+                r[i] = T{};
+            }
+        }
+        return r;
+    }
+
+    /** Shift the elements left.
+     * Other element are set to zero.
+     */
+    [[nodiscard]] friend constexpr numeric_array shift_right(numeric_array const &lhs, int rhs) noexcept
+    {
+        numeric_array r;
+        for (size_t i = 0; i != N; ++i) {
+            if ((i + rhs) < N) {
+                r[i] = lhs[i + rhs];
+            } else {
+                r[i] = T{};
+            }
+        }
+        return r;
+    }
+
     /** Shuffle a 16x byte array, using the indices from the right-hand-side.
      */
-    [[nodiscard]] friend constexpr numeric_array shuffle(numeric_array const &lhs, numeric_array const &rhs) requires (is_i8x16)
+    [[nodiscard]] friend constexpr numeric_array shuffle(numeric_array const &lhs, numeric_array const &rhs) requires(is_i8x16)
     {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (lhs.is_i8x16 and rhs.is_i8x16 and x86_64_v2) {
+                return numeric_array{i8x16_x64v2_shuffle(lhs.v, rhs.v)};
+            }
+        }
+
         auto r = numeric_array{};
 
         for (size_t i = 0; i != N; ++i) {
@@ -1408,8 +1528,7 @@ private:
     container_type v;
 
     template<int I, typename First, typename... Rest>
-    friend constexpr void
-    transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
+    friend constexpr void transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
     {
         for (size_t j = 0; j != N; ++j) {
             r[j][I] = first[j];
@@ -1431,8 +1550,6 @@ private:
             swizzle_detail<I + 1, RestElements...>(r);
         }
     }
-
-    
 };
 
 using i8x1 = numeric_array<int8_t, 1>;

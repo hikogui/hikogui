@@ -33,7 +33,14 @@ using i32x4_raw = std::array<int32_t, 4>;
     return _mm_loadu_si128(reinterpret_cast<__m128i const *>(rhs.data()));
 }
 
-/** Take the ceil for each of the elements in the SSE register.
+/** Convert integers to floats.
+ */
+[[nodiscard]] inline f32x4_raw f32x4_x64v2_bit_cast_from_i32x4(i32x4_raw const &rhs) noexcept
+{
+    return to_f32x4_raw(_mm_castsi128_ps(to_m128i(rhs)));
+}
+
+/** Convert integers to floats.
  */
 [[nodiscard]] inline f32x4_raw f32x4_x64v2_from_i32x4(i32x4_raw const &rhs) noexcept
 {

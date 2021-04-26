@@ -33,38 +33,31 @@ TEST(unpack_audio_samples, unpack_int16le_mono)
     ttlet packed_samples = make_packed_samples();
     auto flat_samples = std::array<float,256>{};
 
-    audio_sample_format packed_format;
-    packed_format.numeric_type = audio_sample_format::numeric_type::signed_int;
-    packed_format.num_bits = 16;
-    packed_format.num_bytes = 2;
-    packed_format.endian = std::endian::little;
-    packed_format.num_channels = 1;
+    ttlet unpacker = unpack_audio_samples{2, 0, 16, false, std::endian::little, 2};
 
-    auto context = unpack_audio_samples_context{};
-
-    unpack_audio_samples(packed_samples.data(), packed_format, flat_samples.data(), 1, context);
+    unpacker(packed_samples.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed_samples[1], packed_samples[0]), 0.000001f);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
-    unpack_audio_samples(packed_samples.data(), packed_format, flat_samples.data(), 2, context);
+    unpacker(packed_samples.data(), flat_samples.data(), 2);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed_samples[1], packed_samples[0]), 0.000001f);
     ASSERT_NEAR(flat_samples[1], int16_to_float(packed_samples[3], packed_samples[2]), 0.000001f);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
-    unpack_audio_samples(packed_samples.data(), packed_format, flat_samples.data(), 3, context);
+    unpacker(packed_samples.data(), flat_samples.data(), 3);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed_samples[1], packed_samples[0]), 0.000001f);
     ASSERT_NEAR(flat_samples[1], int16_to_float(packed_samples[3], packed_samples[2]), 0.000001f);
     ASSERT_NEAR(flat_samples[2], int16_to_float(packed_samples[5], packed_samples[4]), 0.000001f);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
-    unpack_audio_samples(packed_samples.data(), packed_format, flat_samples.data(), 4, context);
+    unpacker(packed_samples.data(), flat_samples.data(), 4);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed_samples[1], packed_samples[0]), 0.000001f);
     ASSERT_NEAR(flat_samples[1], int16_to_float(packed_samples[3], packed_samples[2]), 0.000001f);
     ASSERT_NEAR(flat_samples[2], int16_to_float(packed_samples[5], packed_samples[4]), 0.000001f);
     ASSERT_NEAR(flat_samples[3], int16_to_float(packed_samples[7], packed_samples[6]), 0.000001f);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
-    unpack_audio_samples(packed_samples.data(), packed_format, flat_samples.data(), 5, context);
+    unpacker(packed_samples.data(), flat_samples.data(), 5);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed_samples[1], packed_samples[0]), 0.000001f);
     ASSERT_NEAR(flat_samples[1], int16_to_float(packed_samples[3], packed_samples[2]), 0.000001f);
     ASSERT_NEAR(flat_samples[2], int16_to_float(packed_samples[5], packed_samples[4]), 0.000001f);

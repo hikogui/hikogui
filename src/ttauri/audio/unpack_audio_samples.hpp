@@ -7,33 +7,35 @@
 #include "../required.hpp"
 #include "../architecture.hpp"
 #include "../geometry/numeric_array.hpp"
-#include "audio_sample_format.hpp"
 #include <cstddef>
+#include <bit>
 
 namespace tt {
 
-struct unpack_audio_samples_context {
-    /** The amount of gain to apply to normalize samples between -1.0 and 1.0.
-     */
-    f32x4 gain;
-};
+class unpack_audio_samples {
+public:
+    unpack_audio_samples(
+        int num_bytes,
+        int num_integer_bits,
+        int num_fraction_bits,
+        bool is_float,
+        std::endian endian,
+        int stride) noexcept;
 
-/** Unpack and de-interleave samples from an audio channel.
- *
- * The destination floating point array must be a multiple of 4 floats, this function
- * may write 1 to 3 samples beyond the given count.
- *
- * @param src A pointer to the first sample of the channel.
- * @param src_format The format of the samples.
- * @param [out]dst A pointer to an flat array of floating point samples.
- * @param count The number of samples to convert.
- * @param [in,out]context The context from the previous iteration on the same channel.
- */
-void unpack_audio_samples(
-    std::byte const * tt_restrict src,
-    audio_sample_format src_format,
-    float *tt_restrict dst,
-    size_t count,
-    unpack_audio_samples_context &context);
+    void operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept;
+
+private:
+    int _num_bytes;
+    int _num_integer_bits;
+    int _num_fraction_bits;
+    bool _is_float;
+    std::endian _endian;
+    int _stride;
+
+    int _num_samples_per_load;
+    i8x16 _shuffle_load;
+    i8x16 _shuffle_shift;
+    f32x4 _gain;
+};
 
 } // namespace tt
