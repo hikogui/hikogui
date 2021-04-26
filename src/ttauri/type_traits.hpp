@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <string>
 #include <string_view>
+#include <memory>
 
 namespace tt {
 
@@ -197,5 +198,34 @@ struct use_first {
 
 template<typename First, typename Second>
 using use_first_t = use_first<First,Second>;
+
+template<typename T>
+struct acts_as_pointer : public std::false_type {};
+
+template<typename T> struct acts_as_pointer<std::shared_ptr<T>> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::shared_ptr<T> &&> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::shared_ptr<T> &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::shared_ptr<T> const &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::weak_ptr<T>> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::weak_ptr<T> &&> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::weak_ptr<T> &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::weak_ptr<T> const &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::unique_ptr<T>> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::unique_ptr<T> &&> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::unique_ptr<T> &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::unique_ptr<T> const &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<T *> : public std::true_type {};
+
+template<typename T>
+constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
+
+#define tt_call_method(object, method, ...) \
+    [&]() { \
+        if constexpr (acts_as_pointer_v<decltype(object)>) { \
+            return object->method(__VA_ARGS__); \
+        } else { \
+            return object.method(__VA_ARGS__); \
+        } \
+    }()
 
 }

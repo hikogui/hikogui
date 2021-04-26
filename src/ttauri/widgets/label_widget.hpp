@@ -82,7 +82,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, _clipping_rectangle)) {
-            _label_cell->draw(context, this->label_color());
+            tt_stencil_draw(_label_cell, context, this->label_color());
         }
 
         super::draw(std::move(context), display_time_point);

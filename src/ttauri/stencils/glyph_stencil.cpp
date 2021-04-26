@@ -10,7 +10,7 @@ namespace tt {
 
 glyph_stencil::glyph_stencil(alignment alignment, font_glyph_ids glyph) noexcept : super(alignment), _glyph(std::move(glyph)) {}
 
-void glyph_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept
+[[nodiscard]] bool glyph_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept
 {
     if (std::exchange(_data_is_modified, false)) {
         _glyph_bounding_box = pipeline_SDF::device_shared::getBoundingBox(_glyph);
@@ -25,6 +25,7 @@ void glyph_stencil::draw(draw_context context, tt::color color, matrix3 transfor
     }
 
     context.draw_glyph(_glyph, transform * _glyph_transform * _glyph_bounding_box, color);
+    return false;
 }
 
 } // namespace tt

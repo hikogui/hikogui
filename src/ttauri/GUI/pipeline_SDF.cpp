@@ -4,7 +4,7 @@
 
 #include "pipeline_SDF.hpp"
 #include "pipeline_SDF_device_shared.hpp"
-#include "gui_window_vulkan.hpp"
+#include "gui_surface_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
 
 namespace tt::pipeline_SDF {
@@ -12,8 +12,8 @@ namespace tt::pipeline_SDF {
 using namespace tt;
 using namespace std;
 
-pipeline_SDF::pipeline_SDF(gui_window const &window) :
-    pipeline_vulkan(window)
+pipeline_SDF::pipeline_SDF(gui_surface const &surface) :
+    pipeline_vulkan(surface)
 {
 }
 
@@ -34,7 +34,7 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     pushConstants.windowExtent = extent2{ narrow_cast<float>(extent.width) , narrow_cast<float>(extent.height) };
     pushConstants.viewportScale = scale2{ narrow_cast<float>(2.0f / extent.width), narrow_cast<float>(2.0f / extent.height)};
-    pushConstants.subpixel_orientation = static_cast<int>(window.subpixel_orientation);
+    pushConstants.subpixel_orientation = static_cast<int>(surface.subpixel_orientation);
 
     commandBuffer.pushConstants(
         pipelineLayout,
@@ -107,7 +107,7 @@ vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() const
             0, // arrayElement
             1, // descriptorCount
             vk::DescriptorType::eInputAttachment,
-            &(narrow_cast<gui_window_vulkan const&>(window).colorDescriptorImageInfos[0]),
+            &(narrow_cast<gui_surface_vulkan const&>(surface).colorDescriptorImageInfos[0]),
             nullptr, // bufferInfo
             nullptr // texelBufferView
         }, {

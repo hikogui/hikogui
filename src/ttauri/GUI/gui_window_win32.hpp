@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gui_window_vulkan.hpp"
+#include "gui_surface_vulkan.hpp"
 #include <unordered_map>
 
 struct HWND__;
@@ -16,22 +16,20 @@ class Application_win32;
 
 namespace tt {
 
-class gui_window_vulkan_win32 final : public gui_window_vulkan {
+class gui_window_win32 final : public gui_window {
 public:
     HWND win32Window = nullptr;
 
-    gui_window_vulkan_win32(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
-    ~gui_window_vulkan_win32();
+    gui_window_win32(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
+    ~gui_window_win32();
 
-    gui_window_vulkan_win32(const gui_window_vulkan_win32 &) = delete;
-    gui_window_vulkan_win32 &operator=(const gui_window_vulkan_win32 &) = delete;
-    gui_window_vulkan_win32(gui_window_vulkan_win32 &&) = delete;
-    gui_window_vulkan_win32 &operator=(gui_window_vulkan_win32 &&) = delete;
+    gui_window_win32(const gui_window_win32 &) = delete;
+    gui_window_win32 &operator=(const gui_window_win32 &) = delete;
+    gui_window_win32(gui_window_win32 &&) = delete;
+    gui_window_win32 &operator=(gui_window_win32 &&) = delete;
 
-    void create_window(const std::u8string &title, extent2 extent) override;
+    void create_window() override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
-
-    vk::SurfaceKHR getSurface() const override;
 
     void set_cursor(mouse_cursor cursor) noexcept override;
 

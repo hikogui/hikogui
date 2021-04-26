@@ -20,7 +20,7 @@ pixel_map_stencil::pixel_map_stencil(tt::alignment alignment, pixel_map<sfloat_r
 
 pixel_map_stencil::pixel_map_stencil(tt::alignment alignment, URL const &url) : pixel_map_stencil(alignment, png::load(url)) {}
 
-void pixel_map_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept
+[[nodiscard]] bool pixel_map_stencil::draw(draw_context context, tt::color color, matrix3 transform) noexcept
 {
     if (std::exchange(_data_is_modified, false)) {
         _backing =
@@ -40,10 +40,9 @@ void pixel_map_stencil::draw(draw_context context, tt::color color, matrix3 tran
 
     switch (_backing.state) {
     case pipeline_image::Image::State::Drawing:
-        context.window().request_redraw(aarectangle{context.transform() * context.clipping_rectangle()});
-        break;
-    case pipeline_image::Image::State::Uploaded: context.draw_image(_backing, transform * _pixel_map_transform); break;
-    default:;
+        return true;
+    case pipeline_image::Image::State::Uploaded: context.draw_image(_backing, transform * _pixel_map_transform); return false;
+    default: return false;
     }
 }
 

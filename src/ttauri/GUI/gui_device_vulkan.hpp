@@ -66,17 +66,17 @@ public:
     VmaMemoryUsage lazyMemoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     /*! Sorted list of queueFamilies and their capabilities.
-     * score(window) must be called before initialize_device(window);
+     * score(surface) must be called before initialize_device(window);
      */
     mutable std::vector<std::pair<uint32_t, uint8_t>> queueFamilyIndicesAndCapabilities;
 
-    /*! Best surfae format.
-     * score(window) must be called before initialize_device(window);
+    /*! Best surface format.
+     * score(surface) must be called before initialize_device(window);
      */
     mutable vk::SurfaceFormatKHR bestSurfaceFormat = {};
 
-    /*! Best surfae format.
-     * score(window) must be called before initialize_device(window);
+    /*! Best surface format.
+     * score(surface) must be called before initialize_device(window);
      */
     mutable vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
@@ -92,7 +92,7 @@ public:
 
     int score(vk::SurfaceKHR surface) const;
 
-    int score(gui_window const &window) const override;
+    int score(gui_surface const &surface) const override;
 
     /*! Find the minimum number of queue families to instantiate for a window.
      * This will give priority for having the Graphics and Present in the same

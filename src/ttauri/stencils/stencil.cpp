@@ -23,7 +23,7 @@ namespace tt {
     }
 }
 
-[[nodiscard]] std::unique_ptr<text_stencil> stencil::make_unique(alignment alignment, std::u8string const &text, text_style const &style)
+[[nodiscard]] std::unique_ptr<text_stencil> stencil::make_unique(alignment alignment, std::string const &text, text_style const &style)
 {
     return std::make_unique<text_stencil>(alignment, text, style);
 }

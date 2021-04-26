@@ -22,14 +22,10 @@ public:
         return !msgid.empty();
     }
 
-    l10n(std::u8string_view msgid) noexcept : msgid(msgid) {}
-    l10n(std::string_view msgid) noexcept
-    {
-        this->msgid = std::u8string(reinterpret_cast<char8_t const *>(msgid.data()), msgid.size());
-    }
+    l10n(std::string_view msgid) noexcept : msgid(msgid) {}
 
 private:
-    std::u8string msgid;
+    std::string msgid;
 
     friend class label;
 };

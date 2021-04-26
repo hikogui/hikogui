@@ -318,13 +318,13 @@ private:
 
     void draw_label(draw_context context) noexcept
     {
-        _label_stencil->draw(context, this->label_color(), translate_z(0.1f));
+        tt_stencil_draw(_label_stencil, context, this->label_color(), translate_z(0.1f));
     }
 
     void draw_check_mark(draw_context context) noexcept
     {
         if (this->value == this->true_value) {
-            _check_mark_stencil->draw(context, this->accent_color(), translate_z(0.1f));
+            tt_stencil_draw(_check_mark_stencil, context, this->accent_color(), translate_z(0.1f));
         }
     }
 };

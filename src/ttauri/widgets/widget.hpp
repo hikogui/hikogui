@@ -351,8 +351,6 @@ public:
         return _clipping_rectangle;
     }
 
-    [[nodiscard]] gui_device *device() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.

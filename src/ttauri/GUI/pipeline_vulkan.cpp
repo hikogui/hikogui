@@ -4,6 +4,7 @@
 
 #include "pipeline_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
+#include "gui_surface.hpp"
 #include "../trace.hpp"
 #include <array>
 #include <vector>
@@ -12,8 +13,8 @@ namespace tt {
 
 using namespace std;
 
-pipeline_vulkan::pipeline_vulkan(gui_window const &window) :
-    pipeline(window) {}
+pipeline_vulkan::pipeline_vulkan(gui_surface const &surface) :
+    pipeline(surface) {}
 
 pipeline_vulkan::~pipeline_vulkan()
 {
@@ -21,7 +22,7 @@ pipeline_vulkan::~pipeline_vulkan()
 
 gui_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
 {
-    auto device = window.device();
+    auto device = surface.device();
     tt_axiom(device != nullptr);
     return narrow_cast<gui_device_vulkan&>(*device);
 }
@@ -121,7 +122,7 @@ vk::PipelineDepthStencilStateCreateInfo pipeline_vulkan::getPipelineDepthStencil
     };
 }
 
-/* Pre-multiplied alpha blending.
+/* pre-multiplied alpha blending.
 */
 std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineColorBlendAttachmentStates() const
 {
@@ -131,7 +132,7 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineC
         vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
         vk::BlendOp::eAdd, // colorBlendOp
         vk::BlendFactor::eOne, // srcAlphaBlendFactor
-        vk::BlendFactor::eZero, // dstAlphaBlendFactor
+        vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
         vk::BlendOp::eAdd, // aphaBlendOp
         vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
     } };

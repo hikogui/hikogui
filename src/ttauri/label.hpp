@@ -26,7 +26,7 @@ public:
     label_arguments_base &operator=(label_arguments_base const &) = delete;
     label_arguments_base &operator=(label_arguments_base &&) = delete;
 
-    [[nodiscard]] virtual std::u8string format(std::u8string_view fmt) const noexcept = 0;
+    [[nodiscard]] virtual std::string format(std::string_view fmt) const noexcept = 0;
     [[nodiscard]] virtual std::unique_ptr<label_arguments_base> make_unique_copy() const noexcept = 0;
     [[nodiscard]] virtual bool eq(label_arguments_base &other) const noexcept = 0;
 };
@@ -37,11 +37,11 @@ public:
     template<typename... Args>
     label_arguments(Args &&... args) noexcept : _args(std::forward<Args>(args)...) {}
 
-    [[nodiscard]] std::u8string format(std::u8string_view fmt) const noexcept override
+    [[nodiscard]] std::string format(std::string_view fmt) const noexcept override
     {
         return std::apply(
             [&fmt](auto const &... args) {
-                return tt::format(fmt, args...);
+                return fmt::format(fmt, args...);
             },
             _args);
     }
@@ -90,7 +90,7 @@ public:
 
     label(tt::icon icon) noexcept : label(std::move(icon), l10n{}) {}
 
-    label() noexcept : label(tt::icon{}, std::u8string_view{}) {}
+    label() noexcept : label(tt::icon{}, std::string_view{}) {}
 
     label(label const &other) noexcept :
         _icon(other._icon), _msgid(other._msgid), _args(other._args->make_unique_copy())
@@ -124,7 +124,7 @@ public:
         return _msgid.size() != 0;
     }
 
-    [[nodiscard]] std::u8string text() const noexcept
+    [[nodiscard]] std::string text() const noexcept
     {
         auto fmt = get_translation(_msgid);
         tt_axiom(_args);
@@ -136,14 +136,9 @@ public:
         return lhs._icon == rhs._icon && lhs._msgid == rhs._msgid && lhs._args->eq(*rhs._args);
     }
 
-    [[nodiscard]] friend std::u8string to_u8string(label const &rhs) noexcept
-    {
-        return rhs.text();
-    }
-
     [[nodiscard]] friend std::string to_string(label const &rhs) noexcept
     {
-        auto tmp = to_u8string(rhs);
+        auto tmp = rhs.text();
         return std::string{reinterpret_cast<char const *>(tmp.data()), tmp.size()};
     }
 
@@ -154,7 +149,7 @@ public:
 
 private:
     tt::icon _icon;
-    std::u8string _msgid;
+    std::string _msgid;
     std::unique_ptr<detail::label_arguments_base> _args;
 };
 

@@ -564,13 +564,12 @@ int gui_device_vulkan::score(vk::SurfaceKHR surface) const
     return totalScore;
 }
 
-int gui_device_vulkan::score(gui_window const &window) const
+int gui_device_vulkan::score(gui_surface const &surface) const
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    auto surface = narrow_cast<gui_window_vulkan const &>(window).getSurface();
-    ttlet s = score(surface);
-    narrow_cast<gui_system_vulkan &>(system).destroySurfaceKHR(surface);
+    auto surface_ = narrow_cast<gui_surface_vulkan const &>(surface).intrinsic;
+    ttlet s = score(surface_);
     return s;
 }
 
