@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "unpack_audio_samples.hpp"
+#include "audio_sample_unpacker.hpp"
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../memory.hpp"
@@ -100,7 +100,7 @@ namespace tt {
     return 1.0f / narrow_cast<float>(max_value);
 }
 
-unpack_audio_samples::unpack_audio_samples(
+audio_sample_unpacker::audio_sample_unpacker(
     int num_bytes,
     int num_integer_bits,
     int num_fraction_bits,
@@ -190,7 +190,7 @@ static void store_samples(float *&dst, f32x4 samples) noexcept
     dst += 4;
 }
 
-void unpack_audio_samples::operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept
+void audio_sample_unpacker::operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept
 {
     tt_axiom(src != nullptr);
     tt_axiom(dst != nullptr);

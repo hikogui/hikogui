@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "unpack_audio_samples.hpp"
+#include "audio_sample_unpacker.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -60,12 +60,12 @@ float float32_to_float(std::byte hi, std::byte mid_hi, std::byte mid_lo, std::by
     return std::bit_cast<float>(u);
 }
 
-TEST(unpack_audio_samples, unpack_int16le_mono)
+TEST(audio_sample_unpacker, unpack_int16le_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{2, 0, 16, false, std::endian::little, 2};
+    ttlet unpacker = audio_sample_unpacker{2, 0, 16, false, std::endian::little, 2};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
@@ -100,12 +100,12 @@ TEST(unpack_audio_samples, unpack_int16le_mono)
     ASSERT_NEAR(flat_samples[7], int16_to_float(packed[15], packed[14]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int16be_mono)
+TEST(audio_sample_unpacker, unpack_int16be_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{2, 0, 16, false, std::endian::big, 2};
+    ttlet unpacker = audio_sample_unpacker{2, 0, 16, false, std::endian::big, 2};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), 0.000001f);
@@ -140,12 +140,12 @@ TEST(unpack_audio_samples, unpack_int16be_mono)
     ASSERT_NEAR(flat_samples[7], int16_to_float(packed[14], packed[15]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int16le_stereo)
+TEST(audio_sample_unpacker, unpack_int16le_stereo)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{2, 0, 16, false, std::endian::little, 4};
+    ttlet unpacker = audio_sample_unpacker{2, 0, 16, false, std::endian::little, 4};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
@@ -180,12 +180,12 @@ TEST(unpack_audio_samples, unpack_int16le_stereo)
     ASSERT_NEAR(flat_samples[7], int16_to_float(packed[29], packed[28]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int16le_trio)
+TEST(audio_sample_unpacker, unpack_int16le_trio)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{2, 0, 16, false, std::endian::little, 6};
+    ttlet unpacker = audio_sample_unpacker{2, 0, 16, false, std::endian::little, 6};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
@@ -220,12 +220,12 @@ TEST(unpack_audio_samples, unpack_int16le_trio)
     ASSERT_NEAR(flat_samples[7], int16_to_float(packed[43], packed[42]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int16le_quadro)
+TEST(audio_sample_unpacker, unpack_int16le_quadro)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{2, 0, 16, false, std::endian::little, 8};
+    ttlet unpacker = audio_sample_unpacker{2, 0, 16, false, std::endian::little, 8};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
@@ -260,12 +260,12 @@ TEST(unpack_audio_samples, unpack_int16le_quadro)
     ASSERT_NEAR(flat_samples[7], int16_to_float(packed[57], packed[56]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int24le_mono)
+TEST(audio_sample_unpacker, unpack_int24le_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{3, 0, 24, false, std::endian::little, 3};
+    ttlet unpacker = audio_sample_unpacker{3, 0, 24, false, std::endian::little, 3};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
@@ -300,12 +300,12 @@ TEST(unpack_audio_samples, unpack_int24le_mono)
     ASSERT_NEAR(flat_samples[7], int24_to_float(packed[23], packed[22], packed[21]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int24be_mono)
+TEST(audio_sample_unpacker, unpack_int24be_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{3, 0, 24, false, std::endian::big, 3};
+    ttlet unpacker = audio_sample_unpacker{3, 0, 24, false, std::endian::big, 3};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), 0.000001f);
@@ -340,12 +340,12 @@ TEST(unpack_audio_samples, unpack_int24be_mono)
     ASSERT_NEAR(flat_samples[7], int24_to_float(packed[21], packed[22], packed[23]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int24le_stereo)
+TEST(audio_sample_unpacker, unpack_int24le_stereo)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{3, 0, 24, false, std::endian::little, 6};
+    ttlet unpacker = audio_sample_unpacker{3, 0, 24, false, std::endian::little, 6};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
@@ -380,12 +380,12 @@ TEST(unpack_audio_samples, unpack_int24le_stereo)
     ASSERT_NEAR(flat_samples[7], int24_to_float(packed[44], packed[43], packed[42]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int20le_mono)
+TEST(audio_sample_unpacker, unpack_int20le_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{3, 0, 24, false, std::endian::little, 3};
+    ttlet unpacker = audio_sample_unpacker{3, 0, 24, false, std::endian::little, 3};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), 0.000001f);
@@ -420,12 +420,12 @@ TEST(unpack_audio_samples, unpack_int20le_mono)
     ASSERT_NEAR(flat_samples[7], int20_to_float(packed[23], packed[22], packed[21]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_int20be_mono)
+TEST(audio_sample_unpacker, unpack_int20be_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{3, 0, 24, false, std::endian::big, 3};
+    ttlet unpacker = audio_sample_unpacker{3, 0, 24, false, std::endian::big, 3};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), 0.000001f);
@@ -460,12 +460,12 @@ TEST(unpack_audio_samples, unpack_int20be_mono)
     ASSERT_NEAR(flat_samples[7], int20_to_float(packed[21], packed[22], packed[23]), 0.000001f);
 }
 
-TEST(unpack_audio_samples, unpack_fix8_24le_mono)
+TEST(audio_sample_unpacker, unpack_fix8_24le_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{4, 8, 24, false, std::endian::little, 4};
+    ttlet unpacker = audio_sample_unpacker{4, 8, 24, false, std::endian::little, 4};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
@@ -500,12 +500,12 @@ TEST(unpack_audio_samples, unpack_fix8_24le_mono)
     ASSERT_NEAR(flat_samples[7], fix8_24_to_float(packed[31], packed[30], packed[29], packed[28]), 0.00001f);
 }
 
-TEST(unpack_audio_samples, unpack_fix8_24be_mono)
+TEST(audio_sample_unpacker, unpack_fix8_24be_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{4, 8, 24, false, std::endian::big, 4};
+    ttlet unpacker = audio_sample_unpacker{4, 8, 24, false, std::endian::big, 4};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
@@ -540,12 +540,12 @@ TEST(unpack_audio_samples, unpack_fix8_24be_mono)
     ASSERT_NEAR(flat_samples[7], fix8_24_to_float(packed[28], packed[29], packed[30], packed[31]), 0.00001f);
 }
 
-TEST(unpack_audio_samples, unpack_float32le_mono)
+TEST(audio_sample_unpacker, unpack_float32le_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{4, 0, 32, true, std::endian::little, 4};
+    ttlet unpacker = audio_sample_unpacker{4, 0, 32, true, std::endian::little, 4};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
@@ -580,12 +580,12 @@ TEST(unpack_audio_samples, unpack_float32le_mono)
     ASSERT_NEAR(flat_samples[7], float32_to_float(packed[31], packed[30], packed[29], packed[28]), 0.00001f);
 }
 
-TEST(unpack_audio_samples, unpack_float32be_mono)
+TEST(audio_sample_unpacker, unpack_float32be_mono)
 {
     ttlet packed = make_packed();
     auto flat_samples = std::array<float, 256>{};
 
-    ttlet unpacker = unpack_audio_samples{4, 0, 32, true, std::endian::big, 4};
+    ttlet unpacker = audio_sample_unpacker{4, 0, 32, true, std::endian::big, 4};
 
     unpacker(packed.data(), flat_samples.data(), 1);
     ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
