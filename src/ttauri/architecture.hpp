@@ -153,8 +153,6 @@ constexpr bool x86_64_v4 = true;
 constexpr bool x86_64_v4 = false;
 #endif
 
-#define tt_stringify(a) #a
-
 #if TT_COMPILER == TT_CC_MSVC
 #define tt_unreachable() __assume(0)
 #define tt_assume(condition) __assume(condition)
@@ -163,7 +161,7 @@ constexpr bool x86_64_v4 = false;
 #define tt_no_inline __declspec(noinline)
 #define tt_restrict __restrict
 #define clang_suppress(a)
-#define msvc_suppress(a) _Pragma(tt_stringify(warning(disable:a)))
+#define msvc_pragma(a) _Pragma(a)
 
 #elif TT_COMPILER == TT_CC_CLANG
 #define tt_unreachable() __builtin_unreachable()
@@ -173,7 +171,7 @@ constexpr bool x86_64_v4 = false;
 #define tt_no_inline __attribute__((noinline))
 #define tt_restrict __restrict__
 #define clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
-#define msvc_suppress(a)
+#define msvc_pragma(a)
 
 #elif TT_COMPILER == TT_CC_GCC
 #define tt_unreachable() __builtin_unreachable()
@@ -183,7 +181,7 @@ constexpr bool x86_64_v4 = false;
 #define tt_no_inline __attribute__((noinline))
 #define tt_restrict __restrict__
 #define clang_suppress(a)
-#define msvc_suppress(a)
+#define msvc_pragma(a)
 
 #else
 #define tt_unreachable() std::terminate()
@@ -193,7 +191,7 @@ constexpr bool x86_64_v4 = false;
 #define tt_no_inline
 #define tt_restrict
 #define clang_suppress(a)
-#define msvc_suppress(a)
+#define msvc_pragma(a)
 
 #endif
 

@@ -22,7 +22,8 @@
 #include <bit>
 #include <climits>
 
-namespace tt {
+
+    namespace tt {
 
 template<arithmetic T, size_t N>
 class numeric_array {
@@ -154,18 +155,6 @@ public:
         return r;
     }
 
-    [[nodiscard]] static constexpr numeric_array undefined() noexcept
-    {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_i8x16 and x86_64_v2) {
-                return numeric_array{i8x16_x64v2_undefined()};
-            }
-        }
-
-        numeric_array r;
-        return r;
-    }
-
     [[nodiscard]] numeric_array(std::array<T, N> const &rhs) noexcept : v(rhs) {}
 
     numeric_array &operator=(std::array<T, N> const &rhs) noexcept
@@ -184,11 +173,10 @@ public:
     {
         if constexpr (Other::is_f32x4 and rhs.is_i32x4 and x86_64_v2) {
             return Other{f32x4_x64v2_bit_cast_from_i32x4(rhs)};
-        }
 
-        Other r;
-        std::memcpy(&r, &rhs, sizeof(r));
-        return r;
+        } else {
+            return std::bit_cast<Other>(rhs);
+        }
     }
 
     /** Load a numeric array from memory.

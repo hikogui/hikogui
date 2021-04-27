@@ -26,6 +26,25 @@ namespace tt {
     }
 }
 
+[[nodiscard]] static size_t calculate_num_fast_samples(
+    size_t num_samples,
+    int num_bytes,
+    int stride,
+    int num_samples_per_load,
+    int load_stride,
+    int num_loads_per_store) noexcept
+{
+    ttlet src_buffer_size = (num_samples - 1) * stride + num_bytes;
+
+    auto num_loads = num_samples / num_samples_per_load;
+    while ((num_loads > 0) and ((num_loads - 1) * load_stride + 16 > src_buffer_size)) {
+        --num_loads;
+    }
+    num_loads = floor(num_loads, static_cast<size_t>(num_loads_per_store));
+
+    return num_loads * num_samples_per_load;
+}
+
 [[nodiscard]] static i8x16 make_shuffle_load(int num_bytes, std::endian endian, int stride, int num_samples) noexcept
 {
     // Indices set to -1 result in a zero after a byte shuffle.
@@ -103,6 +122,8 @@ unpack_audio_samples::unpack_audio_samples(
 
 [[nodiscard]] static int32_t load_sample(std::byte const *&src, int num_bytes, std::endian endian, size_t stride) noexcept
 {
+    tt_axiom(src != nullptr);
+    tt_axiom(endian == std::endian::little or endian == std::endian::big);
     tt_axiom(num_bytes > 0 and num_bytes <= 4);
     tt_axiom(stride >= num_bytes);
 
@@ -131,6 +152,9 @@ unpack_audio_samples::unpack_audio_samples(
 
 [[nodiscard]] static i8x16 load_samples(std::byte const *&src, i8x16 shuffle_load, size_t load_stride) noexcept
 {
+    tt_axiom(src != nullptr);
+    tt_axiom(load_stride > 0);
+
     auto r = shuffle(i8x16::load(src), shuffle_load);
     src += load_stride;
     return r;
@@ -139,31 +163,44 @@ unpack_audio_samples::unpack_audio_samples(
 [[nodiscard]] static i32x4
 load_samples(std::byte const *&src, i8x16 shuffle_load, i8x16 shuffle_shift, int num_loads, size_t load_stride) noexcept
 {
-    auto int_samples = i8x16::undefined();
+    tt_axiom(src != nullptr);
+    tt_axiom(num_loads > 0 and num_loads <= 4);
+    tt_axiom(load_stride > 0);
 
-    do {
+    auto int_samples = load_samples(src, shuffle_load, load_stride);
+
+    while (--num_loads) {
         int_samples = shuffle(int_samples, shuffle_shift);
         int_samples |= load_samples(src, shuffle_load, load_stride);
-    } while (--num_loads);
+    };
 
     return std::bit_cast<i32x4>(int_samples);
 }
 
 static void store_sample(float *&dst, float sample) noexcept
 {
+    tt_axiom(dst != nullptr);
     *(dst++) = sample;
 }
 
 static void store_samples(float *&dst, f32x4 samples) noexcept
 {
+    tt_axiom(dst != nullptr);
     samples.store(reinterpret_cast<std::byte *>(dst));
     dst += 4;
 }
 
 void unpack_audio_samples::operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept
 {
+    tt_axiom(src != nullptr);
+    tt_axiom(dst != nullptr);
+    tt_axiom(_num_samples_per_load > 0 and _num_samples_per_load <= 4);
+    tt_axiom(_stride >= _num_bytes);
+    tt_axiom(_num_bytes > 0 and _num_bytes <= 4);
+
     // Calculate how many extra loads need to be done to complete a full 4 sample store.
-    ttlet num_loads = (4 / _num_samples_per_load);
+    ttlet num_loads_per_store = (4 / _num_samples_per_load);
+
     ttlet load_stride = _stride * _num_samples_per_load;
 
     ttlet shuffle_load = _shuffle_load;
@@ -171,13 +208,14 @@ void unpack_audio_samples::operator()(std::byte const *tt_restrict src, float *t
     ttlet is_float = _is_float;
     ttlet gain = _gain;
 
-    auto sample_nr = 0_uz;
-
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the src buffer.
-    ttlet num_samples_fast = floor(num_samples, 4_uz);
-    for (; sample_nr != num_samples_fast; sample_nr += 4) {
-        ttlet int_samples = load_samples(src, shuffle_load, shuffle_shift, num_loads, load_stride);
+    ttlet dst_end = dst + num_samples;
+    ttlet dst_fast_end = dst +
+        calculate_num_fast_samples(num_samples, _num_bytes, _stride, _num_samples_per_load, load_stride, num_loads_per_store);
+
+    while (dst != dst_fast_end) {
+        ttlet int_samples = load_samples(src, shuffle_load, shuffle_shift, num_loads_per_store, load_stride);
 
         auto float_samples = bit_cast<f32x4>(int_samples);
         if (!is_float) {
@@ -191,7 +229,7 @@ void unpack_audio_samples::operator()(std::byte const *tt_restrict src, float *t
     ttlet num_bytes = _num_bytes;
     ttlet endian = _endian;
     ttlet stride = _stride;
-    for (; sample_nr != num_samples; ++sample_nr) {
+    while (dst != dst_end) {
         ttlet int_sample = load_sample(src, num_bytes, endian, stride);
 
         ttlet float_sample = is_float ? std::bit_cast<float>(int_sample) : static_cast<float>(int_sample) * gain[0];
