@@ -79,7 +79,7 @@ public:
 
         if (auto parent = _parent.lock()) {
             ttlet requested_window_rectangle = aarectangle{parent->local_to_window() * requested_rectangle};
-            ttlet window_bounds = shrink(aarectangle{window.extent}, _margin);
+            ttlet window_bounds = shrink(aarectangle{window.size}, _margin);
             ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
             return aarectangle{parent->window_to_local() * response_window_rectangle};
         } else {

@@ -495,13 +495,13 @@ if(TT_ENABLE_ANALYSIS)
     if(MSVC)
         set(ttauri_do_not_analyze
             src/ttauri/GUI/pipeline_flat.cpp
-            src/ttauri/GUI/gui_window_vulkan.cpp
+            src/ttauri/GUI/gui_surface_vulkan.cpp
             src/ttauri/GUI/gui_device_vulkan.cpp
             src/ttauri/GUI/gui_system_vulkan.cpp
             src/ttauri/GUI/gui_system.cpp
             src/ttauri/GUI/gui_system_vulkan_win32.cpp
             src/ttauri/GUI/gui_window.cpp
-            src/ttauri/GUI/gui_window_vulkan_win32.cpp
+            src/ttauri/GUI/gui_window_win32.cpp
             src/ttauri/GUI/pipeline_flat_device_shared.cpp
             src/ttauri/GUI/pipeline_image.cpp
             src/ttauri/GUI/pipeline_tone_mapper.cpp

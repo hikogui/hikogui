@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gui_window.hpp"
+#include "gui_surface.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
 #include <optional>
@@ -36,7 +36,7 @@ struct swapchain_image_info {
     bool layout_is_present = false;
 };
 
-class gui_window_vulkan : public gui_window {
+class gui_surface_vulkan : public gui_surface {
 public:
     vk::SurfaceKHR intrinsic;
 
@@ -74,42 +74,42 @@ public:
     std::unique_ptr<pipeline_SDF::pipeline_SDF> SDFPipeline;
     std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> toneMapperPipeline;
 
-    gui_window_vulkan(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
-    ~gui_window_vulkan();
+    gui_surface_vulkan(gui_system &system, vk::SurfaceKHR surface);
+    ~gui_surface_vulkan();
 
-    gui_window_vulkan(const gui_window_vulkan &) = delete;
-    gui_window_vulkan &operator=(const gui_window_vulkan &) = delete;
-    gui_window_vulkan(gui_window_vulkan &&) = delete;
-    gui_window_vulkan &operator=(gui_window_vulkan &&) = delete;
+    gui_surface_vulkan(const gui_surface_vulkan &) = delete;
+    gui_surface_vulkan &operator=(const gui_surface_vulkan &) = delete;
+    gui_surface_vulkan(gui_surface_vulkan &&) = delete;
+    gui_surface_vulkan &operator=(gui_surface_vulkan &&) = delete;
 
     void init() override;
 
     gui_device_vulkan &vulkan_device() const noexcept;
 
-    void render(hires_utc_clock::time_point displayTimePoint) override;
+    [[nodiscard]] extent2 update(extent2 minimum_size, extent2 maximum_size) noexcept override;
 
-    /*! Query the surface from the operating-system window.
-     */
-    virtual vk::SurfaceKHR getSurface() const = 0;
+    [[nodiscard]] std::optional<draw_context> render_start(aarectangle redraw_rectangle) override;
+    void render_finish(draw_context const &context, color background_color) override;
 
 protected:
     void teardown() override;
-    void build() override;
-    
+
 private:
+    void build(extent2 minimum_size, extent2 maximum_size);
+
     std::optional<uint32_t> acquireNextImageFromSwapchain();
     void presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
 
-    void fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle);
+    void fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle, color background_color);
     void submitCommandBuffer();
 
-    bool readSurfaceExtent();
+    bool readSurfaceExtent(extent2 minimum_size, extent2 maximum_size);
     bool checkSurfaceExtent();
 
     void buildDevice();
     void buildSemaphores();
     void teardownSemaphores();
-    gui_window_state buildSwapchain();
+    gui_surface_state buildSwapchain();
     void teardownSwapchain();
     void buildCommandBuffers();
     void teardownCommandBuffers();

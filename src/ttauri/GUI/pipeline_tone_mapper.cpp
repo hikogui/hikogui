@@ -4,7 +4,7 @@
 
 #include "pipeline_tone_mapper.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
-#include "gui_window_vulkan.hpp"
+#include "gui_surface_vulkan.hpp"
 #include "gui_device_vulkan.hpp"
 
 namespace tt::pipeline_tone_mapper {
@@ -12,7 +12,7 @@ namespace tt::pipeline_tone_mapper {
 using namespace tt;
 using namespace std;
 
-pipeline_tone_mapper::pipeline_tone_mapper(gui_window const &window) : pipeline_vulkan(window) {}
+pipeline_tone_mapper::pipeline_tone_mapper(gui_surface const &surface) : pipeline_vulkan(surface) {}
 
 void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
@@ -30,7 +30,7 @@ std::vector<vk::PipelineShaderStageCreateInfo> pipeline_tone_mapper::createShade
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescriptorSetLayoutBindings() const
 {
-    // ttlet &color_descriptor_image_infos = narrow_cast<gui_window_vulkan const &>(window).colorDescriptorImageInfos;
+    // ttlet &color_descriptor_image_infos = narrow_cast<gui_surface_vulkan const &>(window).colorDescriptorImageInfos;
 
     return {
         {0, // binding
@@ -45,7 +45,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescript
 
 vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorSet() const
 {
-    ttlet &color_descriptor_image_infos = narrow_cast<gui_window_vulkan const &>(window).colorDescriptorImageInfos;
+    ttlet &color_descriptor_image_infos = narrow_cast<gui_surface_vulkan const &>(surface).colorDescriptorImageInfos;
 
     return {
         {

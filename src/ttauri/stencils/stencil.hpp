@@ -8,6 +8,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/matrix.hpp"
 #include "../geometry/identity.hpp"
+#include "../type_traits.hpp"
 
 namespace tt {
 class draw_context;
@@ -53,8 +54,9 @@ public:
      * @param rectangle The rectangle the stencil will be drawn into.
      * @param base_line_position The position of the base line within the rectangle.
      */
-    virtual void
-    set_layout_parameters(aarectangle const &rectangle, float base_line_position = std::numeric_limits<float>::infinity()) noexcept
+    virtual void set_layout_parameters(
+        aarectangle const &rectangle,
+        float base_line_position = std::numeric_limits<float>::infinity()) noexcept
     {
         if (_rectangle.extent() != rectangle.extent()) {
             _size_is_modified = true;
@@ -72,13 +74,16 @@ public:
      *
      * @param context The current draw context.
      * @param color The color to use for drawing.
+     * @param transform The transformation to apply when drawing.
+     * @return true if the stencil needs to be redrawn.
      */
-    virtual void draw(draw_context context, tt::color color = tt::color{}, matrix3 transform = geo::identity()) noexcept = 0;
+    [[nodiscard]] virtual bool
+    draw(draw_context context, tt::color color = tt::color{}, matrix3 transform = geo::identity()) noexcept = 0;
 
     [[nodiscard]] static std::unique_ptr<class image_stencil> make_unique(alignment alignment, icon const &icon);
 
     [[nodiscard]] static std::unique_ptr<class text_stencil>
-    make_unique(alignment alignment, std::u8string const &text, text_style const &style);
+    make_unique(alignment alignment, std::string const &text, text_style const &style);
 
     [[nodiscard]] static std::unique_ptr<class label_stencil>
     make_unique(alignment alignment, tt::label const &label, text_style const &style);
@@ -94,5 +99,18 @@ protected:
     bool _size_is_modified;
     bool _position_is_modified;
 };
+
+/** Draws a stencil and optionally request a redraw from the window.
+ * @param stencil The stencil instance to call draw on.
+ * @param context The current draw context.
+ * @param color The color to use for drawing.
+ * @param transform The transformation to apply when drawing.
+ */
+#define tt_stencil_draw(stencil, context, ...) \
+    do { \
+        if (tt_call_method(stencil, draw, context __VA_OPT__(, ) __VA_ARGS__)) {\
+            this->window.request_redraw(aarectangle{context.transform() * context.clipping_rectangle()});\
+        } \
+    } while (false)
 
 } // namespace tt

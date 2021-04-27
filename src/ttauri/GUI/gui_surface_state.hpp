@@ -6,7 +6,7 @@
 
 namespace tt {
 
-enum class gui_window_state {
+enum class gui_surface_state {
     initializing, ///< The window has not been initialized yet.
     no_window, ///< The window was destroyed, the device will drop the window on the next render cycle.
     no_device, ///< No device is associated with the Window and can therefor not be rendered on.

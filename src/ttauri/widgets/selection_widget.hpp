@@ -414,7 +414,7 @@ private:
     void draw_value(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        _text_stencil->draw(context, label_color(), translate_z(0.1f));
+        tt_stencil_draw(_text_stencil, context, label_color(), translate_z(0.1f));
     }
 };
 

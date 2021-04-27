@@ -159,7 +159,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         ttlet &label_stencil = *value ? _on_label_stencil : _off_label_stencil;
-        label_stencil->draw(draw_context, label_color());
+        tt_stencil_draw(label_stencil, draw_context, label_color());
     }
 };
 

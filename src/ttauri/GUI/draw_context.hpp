@@ -8,7 +8,6 @@
 #pragma once
 
 #include "gui_device_vulkan.hpp"
-#include "gui_window.hpp"
 #include "theme.hpp"
 #include "pipeline_image_image.hpp"
 #include "pipeline_flat_device_shared.hpp"
@@ -39,19 +38,22 @@ public:
     ~draw_context() = default;
 
     draw_context(
-        gui_window &window,
+        gui_device_vulkan &device,
+        size_t frame_buffer_index,
+        extent2 surface_size,
         aarectangle scissor_rectangle,
         vspan<pipeline_flat::vertex> &flatVertices,
         vspan<pipeline_box::vertex> &boxVertices,
         vspan<pipeline_image::vertex> &imageVertices,
         vspan<pipeline_SDF::vertex> &sdfVertices) noexcept :
-        _window(&window),
+        _device(device),
+        _frame_buffer_index(frame_buffer_index),
         _scissor_rectangle(scissor_rectangle),
         _flat_vertices(&flatVertices),
         _box_vertices(&boxVertices),
         _image_vertices(&imageVertices),
         _sdf_vertices(&sdfVertices),
-        _clipping_rectangle(window.extent)
+        _clipping_rectangle(surface_size)
     {
         _flat_vertices->clear();
         _box_vertices->clear();
@@ -69,6 +71,16 @@ public:
         return new_context;
     }
 
+    [[nodiscard]] size_t frame_buffer_index() const noexcept
+    {
+        return _frame_buffer_index;
+    }
+
+    [[nodiscard]] aarectangle scissor_rectangle() const noexcept
+    {
+        return _scissor_rectangle;
+    }
+
     [[nodiscard]] aarectangle clipping_rectangle() const noexcept
     {
         return _clipping_rectangle;
@@ -84,17 +96,9 @@ public:
         return _transform;
     }
 
-    gui_window &window() const noexcept
-    {
-        tt_axiom(_window);
-        return *_window;
-    }
-
     gui_device &device() const noexcept
     {
-        auto device = window().device();
-        tt_axiom(device);
-        return *device;
+        return _device;
     }
 
     /** Draw a polygon with four corners of one color.
@@ -310,12 +314,16 @@ public:
     }
 
 private:
-    gui_window *_window;
+    gui_device_vulkan &_device;
 
     vspan<pipeline_flat::vertex> *_flat_vertices;
     vspan<pipeline_box::vertex> *_box_vertices;
     vspan<pipeline_image::vertex> *_image_vertices;
     vspan<pipeline_SDF::vertex> *_sdf_vertices;
+
+    /** The frame buffer index of the image we are currently rendering.
+     */
+    size_t _frame_buffer_index;
 
     /** This is the rectangle of the window that is being redrawn.
      * The scissor rectangle, like drawing coordinates are relative to the widget.

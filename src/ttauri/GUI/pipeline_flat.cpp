@@ -11,8 +11,8 @@ namespace tt::pipeline_flat {
 using namespace tt;
 using namespace std;
 
-pipeline_flat::pipeline_flat(gui_window const &window) :
-    pipeline_vulkan(window)
+pipeline_flat::pipeline_flat(gui_surface const &surface) :
+    pipeline_vulkan(surface)
 {
 }
 
