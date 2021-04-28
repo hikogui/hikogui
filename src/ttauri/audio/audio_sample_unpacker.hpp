@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "audio_sample_format.hpp"
 #include "../required.hpp"
 #include "../architecture.hpp"
 #include "../geometry/numeric_array.hpp"
@@ -19,30 +20,9 @@ public:
      * from one audio-proc to the next, or for each channel in a group of
      * interleaved channels.
      *
-     * @param num_bytes
-     *        Number of bytes that a sample occupies
-     * @param num_integer_bits
-     *        Number of bits on the left of the period for fixed point samples.
-     *        This value must be 0 in signed integer format.
-     * @param num_fraction_bits
-     *        Number of bits on the right of the period for fixed point samples.
-     *        This value is the number of bits in signed integer format.
-     * @param is_float
-     *        True if the value is floating point.
-     *        False if the sample format is signed integer or fixed point format.
-     * @param endian
-     *        The byte ordering of the sample.
-     * @param stride
-     *        The number of bytes to step to the next sample in the same channel.
-     *
+     * @param format The sample format.
      */
-    audio_sample_unpacker(
-        int num_bytes,
-        int num_integer_bits,
-        int num_fraction_bits,
-        bool is_float,
-        std::endian endian,
-        int stride) noexcept;
+    audio_sample_unpacker(audio_sample_format format) noexcept;
 
     /** Unpack samples.
      *
@@ -53,17 +33,10 @@ public:
     void operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept;
 
 private:
-    int _num_bytes;
-    int _num_integer_bits;
-    int _num_fraction_bits;
-    bool _is_float;
-    std::endian _endian;
-    int _stride;
+    audio_sample_format _format;
 
-    int _num_samples_per_load;
     i8x16 _shuffle_load;
     i8x16 _shuffle_shift;
-    f32x4 _gain;
 };
 
 } // namespace tt
