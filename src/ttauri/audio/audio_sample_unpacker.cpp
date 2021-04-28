@@ -14,24 +14,6 @@
 
 namespace tt {
 
-[[nodiscard]] static size_t calculate_num_fast_samples(size_t num_samples, audio_sample_format format) noexcept
-{
-    tt_axiom(format.is_valid());
-    ttlet num_samples_per_load = format.samples_per_load();
-    ttlet num_loads_per_store = format.loads_per_store();
-    ttlet load_stride = format.load_stride();
-
-    ttlet src_buffer_size = (num_samples - 1) * format.stride + format.num_bytes;
-
-    auto num_loads = num_samples / num_samples_per_load;
-    while ((num_loads > 0) and ((num_loads - 1) * load_stride + 16 > src_buffer_size)) {
-        --num_loads;
-    }
-    num_loads = floor(num_loads, static_cast<size_t>(num_loads_per_store));
-
-    return num_loads * num_samples_per_load;
-}
-
 [[nodiscard]] static i8x16 make_shuffle_load(audio_sample_format format) noexcept
 {
     tt_axiom(format.is_valid());
@@ -78,12 +60,6 @@ namespace tt {
         }
     }
     return r;
-}
-
-audio_sample_unpacker::audio_sample_unpacker(audio_sample_format format) noexcept : _format(format)
-{
-    _shuffle_load = make_shuffle_load(format);
-    _shuffle_shift = make_shuffle_shift(format);
 }
 
 [[nodiscard]] static int32_t
@@ -152,49 +128,71 @@ static void store_samples(float *&dst, f32x4 samples) noexcept
     dst += 4;
 }
 
+audio_sample_unpacker::audio_sample_unpacker(audio_sample_format format) noexcept : _format(format)
+{
+    _shuffle_load = make_shuffle_load(format);
+    _shuffle_shift = make_shuffle_shift(format);
+
+    _gain = f32x4::broadcast(format.unpack_gain());
+    _num_samples_per_load = format.samples_per_load();
+    _num_loads_per_store = format.loads_per_store();
+    _load_stride = format.load_stride();
+
+    _direction = format.endian == std::endian::little ? -1 : 1;
+    _start_byte = format.endian == std::endian::little ? format.num_bytes - 1 : 0;
+    _align_shift = 32 - format.num_bytes * 8;
+}
+
+[[nodiscard]] size_t audio_sample_unpacker::calculate_num_fast_samples(size_t num_samples) const noexcept
+{
+    tt_axiom(_format.is_valid());
+    tt_axiom(_num_samples_per_load == 1 || _num_samples_per_load == 2 || _num_samples_per_load == 4);
+    tt_axiom(_num_loads_per_store == 1 || _num_loads_per_store == 2 || _num_loads_per_store == 4);
+    tt_axiom(_load_stride > 0);
+
+    ttlet src_buffer_size = (num_samples - 1) * _format.stride + _format.num_bytes;
+    if (src_buffer_size < 16) {
+        return 0;
+    }
+
+    auto num_loads = (src_buffer_size - 16) / _load_stride + 1;
+    auto num_stores = num_loads / _num_loads_per_store;
+    return num_stores * 4;
+}
+
 void audio_sample_unpacker::operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples)
     const noexcept
 {
     tt_axiom(src != nullptr);
     tt_axiom(dst != nullptr);
-
-    ttlet format = _format;
-    tt_axiom(format.is_valid());
+    tt_axiom(_format.is_valid());
 
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the src buffer.
     ttlet dst_end = dst + num_samples;
-    ttlet dst_fast_end = dst + calculate_num_fast_samples(num_samples, format);
+    ttlet dst_fast_end = dst + calculate_num_fast_samples(num_samples);
 
-    // Load variables outside the loop.
-    ttlet gain = f32x4::broadcast(format.unpack_gain());
-    ttlet num_loads_per_store = format.loads_per_store();
-    ttlet load_stride = format.load_stride();
-
-    ttlet direction = format.endian == std::endian::little ? -1 : 1;
-    ttlet start_byte = format.endian == std::endian::little ? format.num_bytes - 1 : 0;
-    ttlet align_shift = 32 - format.num_bytes * 8;
-
-    if (format.is_float) {
+    if (_format.is_float) {
         while (dst != dst_fast_end) {
-            ttlet int_samples = load_samples(src, _shuffle_load, _shuffle_shift, num_loads_per_store, load_stride);
+            ttlet int_samples = load_samples(src, _shuffle_load, _shuffle_shift, _num_loads_per_store, _load_stride);
             ttlet float_samples = bit_cast<f32x4>(int_samples);
             store_samples(dst, float_samples);
         }
         while (dst != dst_end) {
-            ttlet int_sample = load_sample(src, format.stride, format.num_bytes, direction, start_byte, align_shift);
+            ttlet int_sample = load_sample(src, _format.stride, _format.num_bytes, _direction, _start_byte, _align_shift);
             ttlet float_sample = std::bit_cast<float>(int_sample);
             store_sample(dst, float_sample);
         }
 
     } else {
+        ttlet gain = _gain;
         while (dst != dst_fast_end) {
-            ttlet int_samples = load_samples(src, _shuffle_load, _shuffle_shift, num_loads_per_store, load_stride);
+            ttlet int_samples = load_samples(src, _shuffle_load, _shuffle_shift, _num_loads_per_store, _load_stride);
             ttlet float_samples = static_cast<f32x4>(int_samples) * gain;
             store_samples(dst, float_samples);
         }
         while (dst != dst_end) {
-            ttlet int_sample = load_sample(src, format.stride, format.num_bytes, direction, start_byte, align_shift);
+            ttlet int_sample = load_sample(src, _format.stride, _format.num_bytes, _direction, _start_byte, _align_shift);
             ttlet float_sample = static_cast<float>(int_sample) * get<0>(gain);
             store_sample(dst, float_sample);
         }

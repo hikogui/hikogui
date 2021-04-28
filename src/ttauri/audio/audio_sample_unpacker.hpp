@@ -33,10 +33,18 @@ public:
     void operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept;
 
 private:
-    audio_sample_format _format;
-
+    f32x4 _gain;
     i8x16 _shuffle_load;
     i8x16 _shuffle_shift;
+    int _num_samples_per_load;
+    int _num_loads_per_store;
+    int _load_stride;
+    audio_sample_format _format;
+    int _direction;
+    int _start_byte;
+    int _align_shift;
+
+    [[nodiscard]] size_t calculate_num_fast_samples(size_t num_samples) const noexcept;
 };
 
 } // namespace tt
