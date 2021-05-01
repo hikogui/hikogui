@@ -19,6 +19,8 @@ target_sources(ttauri PRIVATE
     audio_system_delegate.hpp
     audio_sample_unpacker.cpp
     audio_sample_unpacker.hpp
+    #audio_sample_packer.cpp
+    #audio_sample_packer.hpp
 )
 
 if(TT_BUILD_TESTS)

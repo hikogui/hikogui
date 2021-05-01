@@ -16,15 +16,12 @@ namespace tt {
 
 [[nodiscard]] inline size_t hash_mix_two(size_t hash1, size_t hash2) noexcept
 {
-    ttlet round = _mm_set_epi64x(0x123456789abcdef0ULL, 0x0fedcba987654321ULL);
-
     auto hash = _mm_set_epi64x(hash1, hash2);
-    hash = _mm_aesenc_si128(hash, round);
-    hash = _mm_aesenc_si128(hash, round);
+    auto key = _mm_setzero_si128();
+    hash = _mm_aesenc_si128(hash, key);
+    hash = _mm_aesenc_si128(hash, key);
 
-    std::array<uint64_t,2> buffer;
-    _mm_storeu_si64(buffer.data(), hash);
-    return buffer[0];
+    return static_cast<size_t>(_mm_extract_epi64(hash, 0));
 }
 
 template<typename First, typename Second, typename... Args>

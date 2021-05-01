@@ -14,16 +14,6 @@
 
 namespace tt {
 
-static i32x4 xorshift(u32x4 &state)
-{
-	/* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
-	u32x4 x = state;
-	x ^= x << 13;
-	x ^= x >> 17;
-	x ^= x << 5;
-    state = x;
-	return bit_cast<i32x4>(x);
-}
 
 static void store_sample(std::byte *&dst, int32_t x, int num_bytes, int direction, int start_byte, int align_shift) noexcept
 {

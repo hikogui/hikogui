@@ -190,6 +190,17 @@ public:
         return r;
     }
 
+    /** Load a numeric array from memory.
+     * @param ptr A Pointer to an array of values in memory.
+     * @return A numeric array.
+     */
+    [[nodiscard]] static constexpr numeric_array load(T const *ptr) noexcept
+    {
+        auto r = numeric_array{};
+        std::memcpy(&r, ptr, sizeof(r));
+        return r;
+    }
+
     /** Store a numeric array into memory.
      * @param [out]ptr A pointer to where the numeric array should be stored into memory.
      */
