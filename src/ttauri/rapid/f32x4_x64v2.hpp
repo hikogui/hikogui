@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "raw_numeric_array.hpp"
+
 #include <array>
 #include <emmintrin.h>
 #include <smmintrin.h>
@@ -13,73 +15,18 @@
 
 namespace tt {
 
-using f32x4_raw = std::array<float, 4>;
-using i32x4_raw = std::array<int32_t, 4>;
-
-[[nodiscard]] inline f32x4_raw to_f32x4_raw(__m128 const &rhs) noexcept
+/** Convert integers to floats.
+ */
+[[nodiscard]] inline rf32x4 f32x4_x64v2_bit_cast_from_i32x4(ri32x4 const &rhs) noexcept
 {
-    std::array<float, 4> r;
-    _mm_storeu_ps(r.data(), rhs);
-    return r;
-}
-
-[[nodiscard]] inline __m128 to_m128(f32x4_raw const &rhs) noexcept
-{
-    return _mm_loadu_ps(rhs.data());
-}
-
-[[nodiscard]] inline __m128i to_m128i(i32x4_raw const &rhs) noexcept
-{
-    return _mm_loadu_si128(reinterpret_cast<__m128i const *>(rhs.data()));
+    return to_rf32x4(_mm_castsi128_ps(to_m128i(rhs)));
 }
 
 /** Convert integers to floats.
  */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_bit_cast_from_i32x4(i32x4_raw const &rhs) noexcept
+[[nodiscard]] inline rf32x4 f32x4_x64v2_from_i32x4(ri32x4 const &rhs) noexcept
 {
-    return to_f32x4_raw(_mm_castsi128_ps(to_m128i(rhs)));
-}
-
-/** Convert integers to floats.
- */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_from_i32x4(i32x4_raw const &rhs) noexcept
-{
-    return to_f32x4_raw(_mm_cvtepi32_ps(to_m128i(rhs)));
-}
-
-/** Take the ceil for each of the elements in the SSE register.
- */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_mul(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
-{
-    return to_f32x4_raw(_mm_mul_ps(to_m128(lhs), to_m128(rhs)));
-}
-
-/** Take the ceil for each of the elements in the SSE register.
- */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_ceil(f32x4_raw const &rhs) noexcept
-{
-    return to_f32x4_raw(_mm_ceil_ps(to_m128(rhs)));
-}
-
-/** Take the floor for each of the elements in the SSE register.
- */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_floor(f32x4_raw const &rhs) noexcept
-{
-    return to_f32x4_raw(_mm_floor_ps(to_m128(rhs)));
-}
-
-/** Round each of the elements in the current rounding direction in the SSE register.
- */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_round(f32x4_raw const &rhs) noexcept
-{
-    return to_f32x4_raw(_mm_round_ps(to_m128(rhs), _MM_FROUND_CUR_DIRECTION));
-}
-
-/** Take the reciprocal of each element in the SSE register.
- */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_rcp(f32x4_raw const &rhs) noexcept
-{
-    return to_f32x4_raw(_mm_rcp_ps(to_m128(rhs)));
+    return to_rf32x4(_mm_cvtepi32_ps(to_m128i(rhs)));
 }
 
 /** Clear elements of an SSE register.
@@ -87,7 +34,7 @@ using i32x4_raw = std::array<int32_t, 4>;
  * @tparam Mask '1': 0.0, '0': original value.
  */
 template<unsigned int Mask>
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_clear(f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline rf32x4 f32x4_x64v2_clear(rf32x4 const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0);
 
@@ -95,10 +42,10 @@ template<unsigned int Mask>
         return rhs;
     } else if constexpr (Mask == 0b1111) {
         // 1 cycle
-        return to_f32x4_raw(_mm_setzero_ps());
+        return to_rf32x4(_mm_setzero_ps());
     } else {
         // 1 cycle
-        return to_f32x4_raw(_mm_insert_ps(to_m128(rhs), to_m128(rhs), Mask));
+        return to_rf32x4(_mm_insert_ps(to_m128(rhs), to_m128(rhs), Mask));
     }
 }
 
@@ -109,25 +56,25 @@ template<unsigned int Mask>
  * @tparam Mask '1': -0.0, '0': 0.0
  */
 template<unsigned int Mask>
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_make_sign() noexcept
+[[nodiscard]] inline rf32x4 f32x4_x64v2_make_sign() noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0);
 
     if constexpr (Mask == 0b0000) {
-        return to_f32x4_raw(_mm_setzero_ps());
+        return to_rf32x4(_mm_setzero_ps());
 
     } else if constexpr (Mask == 0b0001) {
-        return to_f32x4_raw(_mm_set_ss(-0.0f));
+        return to_rf32x4(_mm_set_ss(-0.0f));
 
     } else if constexpr (Mask == 0b1111) {
-        return to_f32x4_raw(_mm_set_ps1(-0.0f));
+        return to_rf32x4(_mm_set_ps1(-0.0f));
 
     } else {
         constexpr float x = (Mask & 0b0001) == 0 ? 0.0f : -0.0f;
         constexpr float y = (Mask & 0b0010) == 0 ? 0.0f : -0.0f;
         constexpr float z = (Mask & 0b0100) == 0 ? 0.0f : -0.0f;
         constexpr float w = (Mask & 0b1000) == 0 ? 0.0f : -0.0f;
-        return to_f32x4_raw(_mm_set_ps(w, z, y, x));
+        return to_rf32x4(_mm_set_ps(w, z, y, x));
     }
 }
 
@@ -136,7 +83,7 @@ template<unsigned int Mask>
  * @tparam Mask '1': Negate element, '0': Original element
  */
 template<unsigned int Mask>
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_neg(f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline rf32x4 f32x4_x64v2_neg(rf32x4 const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0);
 
@@ -145,7 +92,7 @@ template<unsigned int Mask>
 
     } else {
         ttlet sign = to_m128(f32x4_x64v2_make_sign<Mask>());
-        return to_f32x4_raw(_mm_xor_ps(to_m128(rhs), sign));
+        return to_rf32x4(_mm_xor_ps(to_m128(rhs), sign));
     }
 }
 
@@ -155,10 +102,10 @@ template<unsigned int Mask>
  * z = rhs.x + rhs.y
  * w = rhs.z + rhs.w
  */
-[[nodiscard]] inline f32x4_raw
-f32x4_x64v2_hadd(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline rf32x4
+f32x4_x64v2_hadd(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
 {
-    return to_f32x4_raw(_mm_hadd_ps(to_m128(lhs), to_m128(rhs)));
+    return to_rf32x4(_mm_hadd_ps(to_m128(lhs), to_m128(rhs)));
 }
 
 /** Subtract elements horizontally together.
@@ -167,10 +114,10 @@ f32x4_x64v2_hadd(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  * z = rhs.x - rhs.y
  * w = rhs.z - rhs.w
  */
-[[nodiscard]] inline f32x4_raw
-f32x4_x64v2_hsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline rf32x4
+f32x4_x64v2_hsub(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
 {
-    return to_f32x4_raw(_mm_hsub_ps(to_m128(lhs), to_m128(rhs)));
+    return to_rf32x4(_mm_hsub_ps(to_m128(lhs), to_m128(rhs)));
 }
 
 /** Add or subtract elements of two SSE registers.
@@ -195,7 +142,7 @@ f32x4_x64v2_hsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  * @tparam Mask '1' add, '0' subtract.
  */
 template<unsigned int Mask>
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_addsub(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline rf32x4 f32x4_x64v2_addsub(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
 
@@ -203,21 +150,21 @@ template<unsigned int Mask>
     ttlet rhs_ = to_m128(rhs);
 
     if constexpr (Mask == 0b0000) {
-        return to_f32x4_raw(_mm_sub_ps(lhs_, rhs_));
+        return to_rf32x4(_mm_sub_ps(lhs_, rhs_));
 
     } else if constexpr (Mask == 0b0101) {
-        return to_f32x4_raw(_mm_addsub_ps(lhs_, rhs_));
+        return to_rf32x4(_mm_addsub_ps(lhs_, rhs_));
 
     } else if constexpr (Mask == 0b1010) {
         ttlet neg_rhs = to_m128(f32x4_x64v2_neg<0b1111>(rhs));
-        return to_f32x4_raw(_mm_addsub_ps(lhs_, neg_rhs));
+        return to_rf32x4(_mm_addsub_ps(lhs_, neg_rhs));
 
     } else if constexpr (Mask == 0b1111) {
-        return to_f32x4_raw(_mm_add_ps(lhs_, rhs_));
+        return to_rf32x4(_mm_add_ps(lhs_, rhs_));
 
     } else {
         ttlet neg_rhs = to_m128(f32x4_x64v2_neg<~Mask & 0xf>(rhs));
-        return to_f32x4_raw(_mm_add_ps(lhs_, neg_rhs));
+        return to_rf32x4(_mm_add_ps(lhs_, neg_rhs));
     }
 }
 
@@ -229,12 +176,12 @@ template<unsigned int Mask>
  * @tparam Mask '1': include element in dot product, '0': do not include element in dot product
  */
 template<unsigned int Mask>
-[[nodiscard]] float f32x4_x64v2_dot(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] float f32x4_x64v2_dot(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
-    auto tmp = to_f32x4_raw(_mm_dp_ps(to_m128(lhs), to_m128(rhs), imm8));
+    auto tmp = to_rf32x4(_mm_dp_ps(to_m128(lhs), to_m128(rhs), imm8));
     return get<0>(tmp);
 }
 
@@ -247,13 +194,13 @@ template<unsigned int Mask>
  * @tparam Mask '1': include element in the hypot, '0': do not include element in the hypot
  */
 template<unsigned int Mask>
-[[nodiscard]] float f32x4_x64v2_hypot(f32x4_raw const &rhs) noexcept
+[[nodiscard]] float f32x4_x64v2_hypot(rf32x4 const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
     auto _rhs = to_m128(rhs);
-    auto tmp = to_f32x4_raw(_mm_sqrt_ps(_mm_dp_ps(_rhs, _rhs, imm8)));
+    auto tmp = to_rf32x4(_mm_sqrt_ps(_mm_dp_ps(_rhs, _rhs, imm8)));
     return get<0>(tmp);
 }
 
@@ -266,13 +213,13 @@ template<unsigned int Mask>
  * @tparam Mask '1': include element in the hypot, '0': do not include element in the hypot
  */
 template<unsigned int Mask>
-[[nodiscard]] float f32x4_x64v2_rcp_hypot(f32x4_raw const &rhs) noexcept
+[[nodiscard]] float f32x4_x64v2_rcp_hypot(rf32x4 const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int imm8 = (Mask << 4) | 0x1;
 
     auto _rhs = to_m128(rhs);
-    auto tmp = to_f32x4_raw(_mm_rsqrt_ps(_mm_dp_ps(_rhs, _rhs, imm8)));
+    auto tmp = to_rf32x4(_mm_rsqrt_ps(_mm_dp_ps(_rhs, _rhs, imm8)));
     return get<0>(tmp);
 }
 
@@ -286,7 +233,7 @@ template<unsigned int Mask>
  * @tparam Mask '1': include element in the normalization, '0': Do not include and set element to zero
  */
 template<unsigned int Mask>
-[[nodiscard]] f32x4_raw f32x4_x64v2_normalize(f32x4_raw const &rhs) noexcept
+[[nodiscard]] rf32x4 f32x4_x64v2_normalize(rf32x4 const &rhs) noexcept
 {
     static_assert((Mask ^ (Mask & 0xf)) == 0, "Only bottom 4 lsb may be set");
     constexpr int dp_imm8 = (Mask << 4) | Mask;
@@ -295,66 +242,12 @@ template<unsigned int Mask>
     ttlet rhs_ = to_m128(rhs);
     ttlet rcp_length = _mm_rsqrt_ps(_mm_dp_ps(rhs_, rhs_, dp_imm8));
     ttlet rcp_length_ = _mm_insert_ps(rcp_length, rcp_length, zero_imm8);
-    return to_f32x4_raw(_mm_mul_ps(rhs_, rcp_length_));
-}
-
-/** Compare if equal elements of two SSE registers and return a mask.
- */
-[[nodiscard]] inline unsigned int
-f32x4_x64v2_eq_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
-{
-    auto tmp = _mm_cmpeq_ps(to_m128(lhs), to_m128(rhs));
-    return static_cast<unsigned int>(_mm_movemask_ps(tmp));
-}
-
-/** Compare if not-equal elements of two SSE registers and return a mask.
- */
-[[nodiscard]] inline unsigned int
-f32x4_x64v2_ne_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
-{
-    auto tmp = _mm_cmpneq_ps(to_m128(lhs), to_m128(rhs));
-    return static_cast<unsigned int>(_mm_movemask_ps(tmp));
-}
-
-/** Compare if less-than elements of two SSE registers and return a mask.
- */
-[[nodiscard]] inline unsigned int
-f32x4_x64v2_lt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
-{
-    auto tmp = _mm_cmplt_ps(to_m128(lhs), to_m128(rhs));
-    return static_cast<unsigned int>(_mm_movemask_ps(tmp));
-}
-
-/** Compare if greater-than elements of two SSE registers and return a mask.
- */
-[[nodiscard]] inline unsigned int
-f32x4_x64v2_gt_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
-{
-    auto tmp = _mm_cmpgt_ps(to_m128(lhs), to_m128(rhs));
-    return static_cast<unsigned int>(_mm_movemask_ps(tmp));
-}
-
-/** Compare if less-or-equal elements of two SSE registers and return a mask.
- */
-[[nodiscard]] inline unsigned int
-f32x4_x64v2_le_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
-{
-    auto tmp = _mm_cmple_ps(to_m128(lhs), to_m128(rhs));
-    return static_cast<unsigned int>(_mm_movemask_ps(tmp));
-}
-
-/** Compare if greater-or-equal elements of two SSE registers and return a mask.
- */
-[[nodiscard]] inline unsigned int
-f32x4_x64v2_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
-{
-    auto tmp = _mm_cmpge_ps(to_m128(lhs), to_m128(rhs));
-    return static_cast<unsigned int>(_mm_movemask_ps(tmp));
+    return to_rf32x4(_mm_mul_ps(rhs_, rcp_length_));
 }
 
 /** Compare if both SSE registers are completely equal.
  */
-[[nodiscard]] inline bool f32x4_x64v2_eq(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline bool f32x4_x64v2_eq(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
 {
     // Example 1: lhs == rhs
     //    tmp -> (1.0, 1.0, 1.0, 1.0) != (1.0, 1.0, 1.0, 1.0) -> (0,0,0,0)
@@ -376,7 +269,7 @@ f32x4_x64v2_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  *
  * The value returned is a single floating point value represents an angle, in some form.
  */
-[[nodiscard]] inline float f32x4_x64v2_viktor_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline float f32x4_x64v2_viktor_cross(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
 {
     // a.x * b.y - a.y * b.x
     ttlet tmp1 = _mm_permute_ps(to_m128(rhs), _MM_SHUFFLE(2, 3, 0, 1));
@@ -393,7 +286,7 @@ f32x4_x64v2_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  * z = w1*z2 + x1*y2 - y1*x2 + z1*w2
  * w = w1*w2 - x1*x2 - y1*y2 - z1*z2
  */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_hamilton_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline rf32x4 f32x4_x64v2_hamilton_cross(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
 {
     ttlet lhs_ = to_m128(lhs);
     ttlet rhs_ = to_m128(rhs);
@@ -412,9 +305,9 @@ f32x4_x64v2_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
     ttlet y = _mm_mul_ps(lhs_y, rhs_2);
     ttlet z = _mm_mul_ps(lhs_z, rhs_3);
 
-    ttlet s0 = f32x4_x64v2_addsub<0b0101>(to_f32x4_raw(w), to_f32x4_raw(x));
-    ttlet s1 = f32x4_x64v2_addsub<0b0011>(s0, to_f32x4_raw(y));
-    return f32x4_x64v2_addsub<0b0110>(s1, to_f32x4_raw(z));
+    ttlet s0 = f32x4_x64v2_addsub<0b0101>(to_rf32x4(w), to_rf32x4(x));
+    ttlet s1 = f32x4_x64v2_addsub<0b0011>(s0, to_rf32x4(y));
+    return f32x4_x64v2_addsub<0b0110>(s1, to_rf32x4(z));
 }
 
 
@@ -425,7 +318,7 @@ f32x4_x64v2_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
  * z = x1*y2 - y1*x2
  * w = w1*w2 - w1*w2
  */
-[[nodiscard]] inline f32x4_raw f32x4_x64v2_cross(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
+[[nodiscard]] inline rf32x4 f32x4_x64v2_cross(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
 {
     ttlet a_left = _mm_permute_ps(to_m128(lhs), _MM_SHUFFLE(3, 0, 2, 1));
     ttlet b_left = _mm_permute_ps(to_m128(rhs), _MM_SHUFFLE(3, 1, 0, 2));
@@ -434,14 +327,14 @@ f32x4_x64v2_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
     ttlet a_right = _mm_permute_ps(to_m128(lhs), _MM_SHUFFLE(3, 1, 0, 2));
     ttlet b_right = _mm_permute_ps(to_m128(rhs), _MM_SHUFFLE(3, 0, 2, 1));
     ttlet right = _mm_mul_ps(a_right, b_right);
-    return to_f32x4_raw(_mm_sub_ps(left, right));
+    return to_rf32x4(_mm_sub_ps(left, right));
 }
 
-[[nodiscard]] inline std::array<f32x4_raw, 4> f32x4_x64v2_transpose(
-    f32x4_raw const &col0,
-    f32x4_raw const &col1,
-    f32x4_raw const &col2,
-    f32x4_raw const &col3) noexcept
+[[nodiscard]] inline std::array<rf32x4, 4> f32x4_x64v2_transpose(
+    rf32x4 const &col0,
+    rf32x4 const &col1,
+    rf32x4 const &col2,
+    rf32x4 const &col3) noexcept
 {
     auto col0_ = to_m128(col0);
     auto col1_ = to_m128(col1);
@@ -451,9 +344,9 @@ f32x4_x64v2_ge_mask(f32x4_raw const &lhs, f32x4_raw const &rhs) noexcept
     _MM_TRANSPOSE4_PS(col0_, col1_, col2_, col3_);
 
     return {
-        to_f32x4_raw(col0_),
-        to_f32x4_raw(col1_),
-        to_f32x4_raw(col2_), to_f32x4_raw(col3_)};
+        to_rf32x4(col0_),
+        to_rf32x4(col1_),
+        to_rf32x4(col2_), to_rf32x4(col3_)};
 }
 
 template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
@@ -533,7 +426,7 @@ template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
 }
 
 template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
-[[nodiscard]] f32x4_raw f32x4_x64v2_swizzle(f32x4_raw const &value) noexcept
+[[nodiscard]] rf32x4 f32x4_x64v2_swizzle(rf32x4 const &value) noexcept
 {
     static_assert(A >= -3 && A < 4);
     static_assert(B >= -3 && B < 4);
@@ -574,7 +467,7 @@ template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
     } else {
         result = _mm_blend_ps(swizzled, numbers, number_mask);
     }
-    return to_f32x4_raw(result);
+    return to_rf32x4(result);
 }
 
 }

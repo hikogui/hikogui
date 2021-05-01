@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "color.hpp"
+#include "../color/color.hpp"
 #include "../float16.hpp"
 #include "../pixel_map.hpp"
 #include "../geometry/corner_shapes.hpp"
-#include "../geometry/numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -46,7 +46,7 @@ public:
     explicit operator f32x4() const noexcept
     {
         ttlet rhs_fp16 = _mm_loadu_si64(v.data());
-        return f32x4{to_f32x4_raw(_mm_cvtph_ps(rhs_fp16))};
+        return f32x4{to_rf32x4(_mm_cvtph_ps(rhs_fp16))};
     }
 
     sfloat_rgba16(color const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}

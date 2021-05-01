@@ -6,7 +6,7 @@
 
 #include "../required.hpp"
 #include "../pixel_map.hpp"
-#include "../color/sfloat_rgba16.hpp"
+#include "../rapid/sfloat_rgba16.hpp"
 #include "../geometry/identity.hpp"
 #include "../URL.hpp"
 #include "../resource_view.hpp"

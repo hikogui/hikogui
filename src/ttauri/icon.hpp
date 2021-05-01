@@ -6,7 +6,7 @@
 
 #include "URL.hpp"
 #include "pixel_map.hpp"
-#include "color/sfloat_rgba16.hpp"
+#include "rapid/sfloat_rgba16.hpp"
 #include "text/font_glyph_ids.hpp"
 #include "text/elusive_icon.hpp"
 #include "text/ttauri_icon.hpp"

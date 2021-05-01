@@ -7,7 +7,7 @@
 #include "pipeline_image_texture_map.hpp"
 #include "pipeline_image_page.hpp"
 #include "../required.hpp"
-#include "../color/sfloat_rgba16.hpp"
+#include "../rapid/sfloat_rgba16.hpp"
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

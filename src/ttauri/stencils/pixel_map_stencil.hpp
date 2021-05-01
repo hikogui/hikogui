@@ -7,7 +7,7 @@
 #include "image_stencil.hpp"
 #include "../GUI/pipeline_image_image.hpp"
 #include "../pixel_map.hpp"
-#include "../color/sfloat_rgba16.hpp"
+#include "../rapid/sfloat_rgba16.hpp"
 #include "../URL.hpp"
 
 namespace tt {

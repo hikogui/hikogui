@@ -2,10 +2,10 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-add_subdirectory(text)
+add_subdirectory(rapid)
 add_subdirectory(geometry)
-add_subdirectory(accelerate)
 add_subdirectory(color)
+add_subdirectory(text)
 add_subdirectory(GUI)
 add_subdirectory(widgets)
 add_subdirectory(stencils)

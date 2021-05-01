@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../geometry/numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/vector.hpp"

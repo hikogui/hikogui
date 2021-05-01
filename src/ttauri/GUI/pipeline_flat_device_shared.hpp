@@ -6,7 +6,7 @@
 
 #include "../required.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../color/sfloat_rgba16.hpp"
+#include "../rapid/sfloat_rgba16.hpp"
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

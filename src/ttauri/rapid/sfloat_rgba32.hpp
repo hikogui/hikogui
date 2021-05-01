@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "../geometry/numeric_array.hpp"
+#include "numeric_array.hpp"
 #include "../geometry/corner_shapes.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "color.hpp"
+#include "../color/color.hpp"
 #include <algorithm>
 
 namespace tt {

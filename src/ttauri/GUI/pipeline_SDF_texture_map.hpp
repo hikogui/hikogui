@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../pixel_map.hpp"
-#include "../color/sdf_r8.hpp"
+#include "../rapid/sdf_r8.hpp"
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 

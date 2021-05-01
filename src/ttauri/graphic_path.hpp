@@ -9,8 +9,8 @@
 #include "exception.hpp"
 #include "geometry/axis_aligned_rectangle.hpp"
 #include "geometry/transform.hpp"
-#include "color/sfloat_rgba16.hpp"
-#include "color/sdf_r8.hpp"
+#include "rapid/sfloat_rgba16.hpp"
+#include "rapid/sdf_r8.hpp"
 #include <vector>
 
 namespace tt {

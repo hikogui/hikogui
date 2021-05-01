@@ -7,7 +7,7 @@
 #include "audio_sample_format.hpp"
 #include "../required.hpp"
 #include "../architecture.hpp"
-#include "../geometry/numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include <cstddef>
 #include <bit>
 

@@ -7,7 +7,7 @@
 #include "../hires_utc_clock.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
-#include "../geometry/numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include <span>
 
 namespace tt {
