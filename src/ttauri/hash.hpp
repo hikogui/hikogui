@@ -6,8 +6,7 @@
 
 
 #include "required.hpp"
-#include <emmintrin.h>
-#include <wmmintrin.h>
+#include "assert.hpp"
 #include <utility>
 #include <array>
 #include <type_traits>
@@ -16,12 +15,13 @@ namespace tt {
 
 [[nodiscard]] inline size_t hash_mix_two(size_t hash1, size_t hash2) noexcept
 {
-    auto hash = _mm_set_epi64x(hash1, hash2);
-    auto key = _mm_setzero_si128();
-    hash = _mm_aesenc_si128(hash, key);
-    hash = _mm_aesenc_si128(hash, key);
-
-    return static_cast<size_t>(_mm_extract_epi64(hash, 0));
+    if constexpr (sizeof(size_t) == 8) {
+        return hash1 + 0x9e3779b97f681800 + (hash2 << 6) + (hash2 >> 2);
+    } else if constexpr (sizeof(size_t) == 4) {
+        return hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2);
+    } else {
+        tt_not_implemented();
+    }
 }
 
 template<typename First, typename Second, typename... Args>

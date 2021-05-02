@@ -128,6 +128,7 @@ target_sources(ttauri PRIVATE
     polymorphic_optional.hpp
     polynomial.hpp
     random_pcg.hpp
+    random_xorshift128p.hpp
     range_map.hpp
     ranged_numeric.hpp
     ranges.hpp
@@ -220,6 +221,7 @@ if(TT_BUILD_TESTS)
         pixel_map_tests.cpp
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp
+        random_xorshift128p_tests.cpp
         ranges_tests.cpp
         safe_int_tests.cpp
         small_map_tests.cpp

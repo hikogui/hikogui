@@ -479,136 +479,94 @@ public:
         return std::get<2>(v);
     }
 
+    constexpr numeric_array &operator<<=(unsigned int rhs) noexcept
+    {
+        return *this = *this << rhs;
+    }
+
+    constexpr numeric_array &operator>>=(unsigned int rhs) noexcept
+    {
+        return *this = *this >> rhs;
+    }
+
     constexpr numeric_array &operator|=(numeric_array const &rhs) noexcept
     {
-        *this = *this | rhs;
-        return *this;
+        return *this = *this | rhs;
     }
 
     constexpr numeric_array &operator|=(T const &rhs) noexcept
     {
-        *this = *this | rhs;
-        return *this;
+        return *this = *this | rhs;
     }
 
     constexpr numeric_array &operator&=(numeric_array const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] &= rhs.v[i];
-        }
-        return *this;
+        return *this = *this & rhs;
     }
 
     constexpr numeric_array &operator&=(T const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] &= rhs;
-        }
-        return *this;
+        return *this = *this & rhs;
     }
 
     constexpr numeric_array &operator^=(numeric_array const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] ^= rhs.v[i];
-        }
-        return *this;
+        return *this = *this ^ rhs;
     }
 
     constexpr numeric_array &operator^=(T const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] ^= rhs;
-        }
-        return *this;
+        return *this = *this ^ rhs;
     }
 
     constexpr numeric_array &operator+=(numeric_array const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] += rhs.v[i];
-        }
-        return *this;
+        return *this = *this + rhs;
     }
 
     constexpr numeric_array &operator+=(T const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] += rhs;
-        }
-        return *this;
+        return *this = *this + rhs;
     }
 
     constexpr numeric_array &operator-=(numeric_array const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] -= rhs.v[i];
-        }
-        return *this;
+        return *this = *this - rhs;
     }
 
     constexpr numeric_array &operator-=(T const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] -= rhs;
-        }
-        return *this;
+        return *this = *this - rhs;
     }
 
     constexpr numeric_array &operator*=(numeric_array const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] *= rhs.v[i];
-        }
-        return *this;
+        return *this = *this * rhs;
     }
 
     constexpr numeric_array &operator*=(T const &rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 && x86_64_v2) {
-                // MSVC is unable to vectorize inplace multiply with scalar.
-                *this = _mm_mul_ps(v, numeric_array::broadcast(rhs));
-                return *this;
-            }
-        }
-
-        for (size_t i = 0; i != N; ++i) {
-            v[i] *= rhs;
-        }
-        return *this;
+        return *this = *this * rhs;
     }
 
     constexpr numeric_array &operator/=(numeric_array const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] /= rhs.v[i];
-        }
-        return *this;
+        return *this = *this / rhs;
     }
 
     constexpr numeric_array &operator/=(T const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] /= rhs;
-        }
-        return *this;
+        return *this = *this / rhs;
     }
 
     constexpr numeric_array &operator%=(numeric_array const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] %= rhs.v[i];
-        }
-        return *this;
+        return *this = *this % rhs;
     }
 
     constexpr numeric_array &operator%=(T const &rhs) noexcept
     {
-        for (size_t i = 0; i != N; ++i) {
-            v[i] %= rhs;
-        }
-        return *this;
+        return *this = *this % rhs;
     }
 
     constexpr static ssize_t get_zero = -1;
@@ -707,21 +665,6 @@ public:
             } else {
                 r.v[i] = rhs.v[i];
             }
-        }
-        return r;
-    }
-
-    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const &lhs, numeric_array const &rhs) noexcept
-    {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (lhs.is_i8x16 and rhs.is_i8x16 and x86_64_v2) {
-                return numeric_array{i8x16_x64v2_or(lhs.v, rhs.v)};
-            }
-        }
-
-        numeric_array r;
-        for (size_t i = 0; i != N; ++i) {
-            r[i] = lhs[i] | rhs[i];
         }
         return r;
     }
@@ -1047,6 +990,97 @@ public:
         return !(lhs == rhs);
     }
 
+    [[nodiscard]] friend constexpr numeric_array operator<<(numeric_array const &lhs, unsigned int rhs) noexcept
+    {
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            r.v[i] = lhs.v[i] << rhs;
+        }
+        return r;
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator>>(numeric_array const &lhs, unsigned int rhs) noexcept
+    {
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            r.v[i] = lhs.v[i] >> rhs;
+        }
+        return r;
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (std::is_integral_v<T> and x86_64_v2) {
+                return _mm_or_si128(lhs, rhs);
+            }
+        }
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            r.v[i] = lhs.v[i] | rhs.v[i];
+        }
+        return r;
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const &lhs, T const &rhs) noexcept
+    {
+        return lhs | broadcast(rhs);
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator|(T const &lhs, numeric_array const &rhs) noexcept
+    {
+        return broadcast(lhs) | rhs;
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (std::is_integral_v<T> and x86_64_v2) {
+                return _mm_and_si128(lhs, rhs);
+            }
+        }
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            r.v[i] = lhs.v[i] & rhs.v[i];
+        }
+        return r;
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const &lhs, T const &rhs) noexcept
+    {
+        return lhs & broadcast(rhs);
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator&(T const &lhs, numeric_array const &rhs) noexcept
+    {
+        return broadcast(lhs) & rhs;
+    }
+
+
+    [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (std::is_integral_v<T> and x86_64_v2) {
+                return _mm_xor_si128(lhs, rhs);
+            }
+        }
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            r.v[i] = lhs.v[i] ^ rhs.v[i];
+        }
+        return r;
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const &lhs, T const &rhs) noexcept
+    {
+        return lhs ^ broadcast(rhs);
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator^(T const &lhs, numeric_array const &rhs) noexcept
+    {
+        return broadcast(lhs) ^ rhs;
+    }
+
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
@@ -1058,20 +1092,12 @@ public:
 
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const &lhs, T const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] + rhs;
-        }
-        return r;
+        return lhs + broadcast(rhs);
     }
 
     [[nodiscard]] friend constexpr numeric_array operator+(T const &lhs, numeric_array const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs + rhs.v[i];
-        }
-        return r;
+        return broadcast(lhs) + rhs;
     }
 
     [[nodiscard]] friend constexpr numeric_array hadd(numeric_array const &lhs, numeric_array const &rhs) noexcept
@@ -1141,11 +1167,12 @@ public:
 
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &lhs, T const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] - rhs;
-        }
-        return r;
+        return lhs - broadcast(rhs);
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator-(T const &lhs, numeric_array const &rhs) noexcept
+    {
+        return broadcast(lhs) - rhs;
     }
 
     /** Add or subtract individual elements.
@@ -1172,15 +1199,6 @@ public:
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(T const &lhs, numeric_array const &rhs) noexcept
-    {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs - rhs.v[i];
-        }
-        return r;
-    }
-
     [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         auto r = numeric_array{};
@@ -1192,20 +1210,12 @@ public:
 
     [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const &lhs, T const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] * rhs;
-        }
-        return r;
+        return lhs * broadcast(rhs);
     }
 
     [[nodiscard]] friend constexpr numeric_array operator*(T const &lhs, numeric_array const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs * rhs.v[i];
-        }
-        return r;
+        return broadcast(lhs) * rhs;
     }
 
     [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const &lhs, numeric_array const &rhs) noexcept
@@ -1219,20 +1229,12 @@ public:
 
     [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const &lhs, T const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] / rhs;
-        }
-        return r;
+        return lhs / broadcast(rhs);
     }
 
     [[nodiscard]] friend constexpr numeric_array operator/(T const &lhs, numeric_array const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs / rhs.v[i];
-        }
-        return r;
+        return broadcast(lhs) / rhs;
     }
 
     [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const &lhs, numeric_array const &rhs) noexcept
@@ -1246,20 +1248,12 @@ public:
 
     [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const &lhs, T const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] % rhs;
-        }
-        return r;
+        return lhs % broadcast(rhs);
     }
 
     [[nodiscard]] friend constexpr numeric_array operator%(T const &lhs, numeric_array const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs % rhs.v[i];
-        }
-        return r;
+        return broadcast(lhs) % rhs;
     }
 
     [[nodiscard]] friend constexpr numeric_array min(numeric_array const &lhs, numeric_array const &rhs) noexcept
@@ -1471,7 +1465,7 @@ public:
         ttlet over_color = over.xyz1();
         ttlet under_color = under.xyz1();
 
-        ttlet output_color = over_color * over_alpha + under_color * under_alpha * (1.0 - over_alpha);
+        ttlet output_color = over_color * over_alpha + under_color * under_alpha * (T{1} - over_alpha);
 
         return output_color / output_color.www1();
     }

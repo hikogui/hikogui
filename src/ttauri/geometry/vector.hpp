@@ -183,7 +183,7 @@ public:
     [[nodiscard]] constexpr friend vector operator*(float const &lhs, vector const &rhs) noexcept
     {
         tt_axiom(rhs.is_valid());
-        return vector{lhs * rhs._v};
+        return vector{f32x4::broadcast(lhs) * rhs._v};
     }
 
     /** Compare if two vectors are equal.
