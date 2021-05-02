@@ -2,17 +2,18 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-add_subdirectory(rapid)
-add_subdirectory(geometry)
-add_subdirectory(color)
-add_subdirectory(text)
-add_subdirectory(GUI)
-add_subdirectory(widgets)
-add_subdirectory(stencils)
 add_subdirectory(audio)
 add_subdirectory(codec)
+add_subdirectory(color)
 add_subdirectory(formula)
+add_subdirectory(geometry)
+add_subdirectory(GUI)
+add_subdirectory(random)
+add_subdirectory(rapid)
 add_subdirectory(skeleton)
+add_subdirectory(stencils)
+add_subdirectory(text)
+add_subdirectory(widgets)
 
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
@@ -127,8 +128,6 @@ target_sources(ttauri PRIVATE
     placement.hpp
     polymorphic_optional.hpp
     polynomial.hpp
-    random_pcg.hpp
-    random_xorshift128p.hpp
     range_map.hpp
     ranged_numeric.hpp
     ranges.hpp
@@ -221,7 +220,6 @@ if(TT_BUILD_TESTS)
         pixel_map_tests.cpp
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp
-        random_xorshift128p_tests.cpp
         ranges_tests.cpp
         safe_int_tests.cpp
         small_map_tests.cpp

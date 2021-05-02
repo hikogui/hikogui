@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "random_xorshift128p.hpp"
+#include "xorshift128p.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -11,9 +11,9 @@
 using namespace std;
 using namespace tt;
 
-TEST(random_xorshift128p, compare_64_and_128_bits)
+TEST(xorshift128p, compare_64_and_128_bits)
 {
-    auto r1 = tt::random_xorshift128p();
+    auto r1 = tt::xorshift128p();
     // Make a copy with the same seed.
     auto r2 = r1;
 

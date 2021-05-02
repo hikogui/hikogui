@@ -4,23 +4,23 @@
 
 #pragma once
 
-#include "rapid/numeric_array.hpp"
-#include "required.hpp"
+#include "../rapid/numeric_array.hpp"
+#include "../required.hpp"
 
 namespace tt {
 
 /** xorshift128+
 */
-class random_xorshift128p {
+class xorshift128p {
 public:
-    constexpr random_xorshift128p(random_xorshift128p const &) noexcept = default;
-    constexpr random_xorshift128p(random_xorshift128p &&) noexcept = default;
-    constexpr random_xorshift128p &operator=(random_xorshift128p const &) noexcept = default;
-    constexpr random_xorshift128p &operator=(random_xorshift128p &&) noexcept = default;
+    constexpr xorshift128p(xorshift128p const &) noexcept = default;
+    constexpr xorshift128p(xorshift128p &&) noexcept = default;
+    constexpr xorshift128p &operator=(xorshift128p const &) noexcept = default;
+    constexpr xorshift128p &operator=(xorshift128p &&) noexcept = default;
 
-    [[nodiscard]] constexpr explicit random_xorshift128p(u64x2 new_state) noexcept : _state(new_state) {}
+    [[nodiscard]] constexpr explicit xorshift128p(u64x2 new_state) noexcept : _state(new_state) {}
 
-    [[nodiscard]] constexpr random_xorshift128p() noexcept : _state{12, 15} {}
+    [[nodiscard]] constexpr xorshift128p() noexcept : _state{12, 15} {}
 
     template<typename T>
     [[nodiscard]] T next() noexcept;
@@ -78,6 +78,18 @@ public:
 
         // return {x + y_, y + x_}
         return s + t;
+    }
+
+    template<>
+    [[nodiscard]] u32x4 next() noexcept
+    {
+        return bit_cast<u32x4>(next<u64x2>());
+    }
+
+    template<>
+    [[nodiscard]] i32x4 next() noexcept
+    {
+        return bit_cast<i32x4>(next<u64x2>());
     }
 
 private:
