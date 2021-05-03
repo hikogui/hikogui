@@ -127,6 +127,76 @@ TEST(numeric_array, Setters)
     ASSERT_EQ(tmp, f32x4(22.0f, 23.0f, 24.0f, 25.0f));
 }
 
+TEST(numeric_array, Inserts_f32x4)
+{
+    constexpr auto tmp1 = f32x4{2.0f, 3.0f, 4.0f, 5.0f};
+    constexpr auto tmp2 = f32x4{42.0f, 43.0f, 44.0f, 45.0f};
+
+    static_assert(insert<0, 0>(tmp1, tmp2) == f32x4(42.0f, 3.0f, 4.0f, 5.0f));
+    static_assert(insert<0, 1>(tmp1, tmp2) == f32x4(2.0f, 42.0f, 4.0f, 5.0f));
+    static_assert(insert<0, 2>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 42.0f, 5.0f));
+    static_assert(insert<0, 3>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 4.0f, 42.0f));
+
+    static_assert(insert<1, 0>(tmp1, tmp2) == f32x4(43.0f, 3.0f, 4.0f, 5.0f));
+    static_assert(insert<1, 1>(tmp1, tmp2) == f32x4(2.0f, 43.0f, 4.0f, 5.0f));
+    static_assert(insert<1, 2>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 43.0f, 5.0f));
+    static_assert(insert<1, 3>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 4.0f, 43.0f));
+
+    static_assert(insert<2, 0>(tmp1, tmp2) == f32x4(44.0f, 3.0f, 4.0f, 5.0f));
+    static_assert(insert<2, 1>(tmp1, tmp2) == f32x4(2.0f, 44.0f, 4.0f, 5.0f));
+    static_assert(insert<2, 2>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 44.0f, 5.0f));
+    static_assert(insert<2, 3>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 4.0f, 44.0f));
+
+    static_assert(insert<3, 0>(tmp1, tmp2) == f32x4(45.0f, 3.0f, 4.0f, 5.0f));
+    static_assert(insert<3, 1>(tmp1, tmp2) == f32x4(2.0f, 45.0f, 4.0f, 5.0f));
+    static_assert(insert<3, 2>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 45.0f, 5.0f));
+    static_assert(insert<3, 3>(tmp1, tmp2) == f32x4(2.0f, 3.0f, 4.0f, 45.0f));
+
+    static_assert(insert<3, 0, 0b1000>(tmp1, tmp2) == f32x4(45.0f, 3.0f, 4.0f, 0.0f));
+    static_assert(insert<3, 1, 0b0100>(tmp1, tmp2) == f32x4(2.0f, 45.0f, 0.0f, 5.0f));
+    static_assert(insert<3, 2, 0b0010>(tmp1, tmp2) == f32x4(2.0f, 0.0f, 45.0f, 5.0f));
+    static_assert(insert<3, 3, 0b0001>(tmp1, tmp2) == f32x4(0.0f, 3.0f, 4.0f, 45.0f));
+
+    auto r30_1000 = insert<3, 0, 0b1000>(tmp1, tmp2);
+    ASSERT_EQ(r30_1000, f32x4(45.0f, 3.0f, 4.0f, 0.0f));
+    auto r31_0100 = insert<3, 1, 0b0100>(tmp1, tmp2);
+    ASSERT_EQ(r31_0100, f32x4(2.0f, 45.0f, 0.0f, 5.0f));
+    auto r32_0010 = insert<3, 2, 0b0010>(tmp1, tmp2);
+    ASSERT_EQ(r32_0010, f32x4(2.0f, 0.0f, 45.0f, 5.0f));
+    auto r33_0001 = insert<3, 3, 0b0001>(tmp1, tmp2);
+    ASSERT_EQ(r33_0001, f32x4(0.0f, 3.0f, 4.0f, 45.0f));
+}
+
+TEST(numeric_array, Inserts_u64x2)
+{
+    constexpr auto tmp1 = u64x2{2, 3};
+    constexpr auto tmp2 = u64x2{42, 43};
+
+    static_assert(insert<0, 0>(tmp1, tmp2) == u64x2(42, 3));
+    static_assert(insert<0, 1>(tmp1, tmp2) == u64x2(2, 42));
+    static_assert(insert<1, 0>(tmp1, tmp2) == u64x2(43, 3));
+    static_assert(insert<1, 1>(tmp1, tmp2) == u64x2(2, 43));
+
+    static_assert(insert<0, 0, 0b01>(tmp1, tmp2) == u64x2(0, 3));
+    static_assert(insert<0, 0, 0b10>(tmp1, tmp2) == u64x2(42, 0));
+    static_assert(insert<0, 0, 0b11>(tmp1, tmp2) == u64x2(0, 0));
+
+    auto r00 = insert<0, 0>(tmp1, tmp2);
+    ASSERT_EQ(r00, u64x2(42, 3));
+    auto r01 = insert<0, 1>(tmp1, tmp2);
+    ASSERT_EQ(r01, u64x2(2, 42));
+    auto r10 = insert<1, 0>(tmp1, tmp2);
+    ASSERT_EQ(r10, u64x2(43, 3));
+    auto r11 = insert<1, 1>(tmp1, tmp2);
+    ASSERT_EQ(r11, u64x2(2, 43));
+
+    auto r00_01 = insert<0, 0, 0b01>(tmp1, tmp2);
+    ASSERT_EQ(r00_01, u64x2(0, 3));
+    auto r00_10 = insert<0, 0, 0b10>(tmp1, tmp2);
+    ASSERT_EQ(r00_10, u64x2(42, 0));
+    auto r00_11 = insert<0, 0, 0b11>(tmp1, tmp2);
+    ASSERT_EQ(r00_11, u64x2(0, 0));
+}
 TEST(numeric_array, Swizzle2)
 {
     ttlet tmp = f32x2{2.0f, 3.0f};

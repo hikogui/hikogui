@@ -102,18 +102,43 @@ public:
     constexpr numeric_array &operator=(numeric_array const &rhs) noexcept = default;
     constexpr numeric_array &operator=(numeric_array &&rhs) noexcept = default;
 
-    template<arithmetic O>
-    [[nodiscard]] constexpr explicit numeric_array(numeric_array<O, N> const &other) noexcept : v()
+    template<arithmetic U, size_t M>
+    [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other) noexcept : v()
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 && other.is_i32x4 && x86_64_v2) {
-                v = f32x4_x64v2_from_i32x4(static_cast<ri32x4>(other));
+            if constexpr (is_f64x2 and other.is_i32x4 and x86_64_v2) {
+                *this = numeric_array{_mm_cvtepi32_pd(to_m128i(other))};
+                return;
+            } else if constexpr (is_f32x4 and other.is_i32x4 and x86_64_v2) {
+                *this = numeric_array{_mm_cvtepi32_ps(to_m128i(other))};
+                return;
+            } else if constexpr (is_i64x4 and other.is_i32x4 and x86_64_v2) {
+                *this = numeric_array{_mm_cvtepi32_epi64(to_m128i(other))};
+                return;
+            } else if constexpr (is_i64x4 and other.is_i16x8 and x86_64_v2) {
+                *this = numeric_array{_mm_cvtepi16_epi64(to_m128i(other))};
+                return;
+            } else if constexpr (is_i32x4 and other.is_i16x8 and x86_64_v2) {
+                *this = numeric_array{_mm_cvtepi16_epi32(to_m128i(other))};
+                return;
+            } else if constexpr (is_i64x2 and other.is_i8x16 and x86_64_v2) {
+                *this = numeric_array{_mm_cvtepi8_epi64(to_m128i(other))};
+                return;
+            } else if constexpr (is_i32x4 and other.is_i8x16 and x86_64_v2) {
+                *this = numeric_array{_mm_cvtepi8_epi32(to_m128i(other))};
+                return;
+            } else if constexpr (is_i16x8 and other.is_i8x16 and x86_64_v2) {
+                *this = numeric_array{_mm_cvtepi8_epi16(to_m128i(other))};
                 return;
             }
         }
 
         for (size_t i = 0; i != N; ++i) {
-            v[i] = static_cast<value_type>(other[i]);
+            if (i < M) {
+                v[i] = static_cast<value_type>(other[i]);
+            } else {
+                v[i] = U{};
+            }
         }
     }
 
@@ -169,32 +194,32 @@ public:
     }
 
 #if defined(TT_X86_64_V2)
-    [[nodiscard]] operator __m128i() const noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
+    [[nodiscard]] friend __m128i to_m128i(numeric_array const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
-        return _mm_loadu_si128(reinterpret_cast<__m128i const *>(v.data()));
+        return _mm_loadu_si128(reinterpret_cast<__m128i const *>(rhs.v.data()));
     }
 
-    [[nodiscard]] operator __m128() const noexcept requires(is_f32x4)
+    [[nodiscard]] friend __m128 to_m128(numeric_array const &rhs) noexcept requires(is_f32x4)
     {
-        return _mm_loadu_ps(v.data());
+        return _mm_loadu_ps(rhs.v.data());
     }
 
-    [[nodiscard]] operator __m128d() const noexcept requires(is_f64x4)
+    [[nodiscard]] friend __m128d to_m128d(numeric_array const &rhs) noexcept requires(is_f64x4)
     {
-        return _mm_loadu_pd(v.data());
+        return _mm_loadu_pd(rhs.v.data());
     }
 
-    [[nodiscard]] numeric_array(__m128i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
+    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
     }
 
-    [[nodiscard]] numeric_array(__m128 const &rhs) noexcept requires(is_f32x4)
+    [[nodiscard]] explicit numeric_array(__m128 const &rhs) noexcept requires(is_f32x4)
     {
         _mm_storeu_ps(v.data(), rhs);
     }
 
-    [[nodiscard]] numeric_array(__m128d const &rhs) noexcept requires(is_f64x4)
+    [[nodiscard]] explicit numeric_array(__m128d const &rhs) noexcept requires(is_f64x4)
     {
         _mm_storeu_pd(v.data(), rhs);
     }
@@ -222,9 +247,22 @@ public:
     template<typename Other>
     requires(sizeof(Other) == sizeof(numeric_array)) [[nodiscard]] friend Other bit_cast(numeric_array const &rhs) noexcept
     {
-        if constexpr (Other::is_f32x4 and rhs.is_i32x4 and x86_64_v2) {
-            return Other{f32x4_x64v2_bit_cast_from_i32x4(rhs)};
+        using rhs_value_type = typename std::remove_cvref_t<decltype(rhs)>::value_type;
 
+        if constexpr (Other::is_f32x4 and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+            return Other{_mm_castsi128_ps(to_m128i(rhs))};
+        } else if constexpr (Other::is_f32x4 and rhs.is_f64x2 and x86_64_v2) {
+            return Other{_mm_castpd_ps(to_m128d(rhs))};
+        } else if constexpr (Other::is_f64x2 and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+            return Other{_mm_castsi128_pd(to_m128i(rhs))};
+        } else if constexpr (Other::is_f64x2 and rhs.is_f32x4 and x86_64_v2) {
+            return Other{_mm_castps_pd(to_m128(rhs))};
+        } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f32x4 and x86_64_v2) {
+            return Other{_mm_castps_si128(to_m128(rhs))};
+        } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f64x2 and x86_64_v2) {
+            return Other{_mm_castpd_si128(to_m128d(rhs))};
+        } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+            return Other{to_m128i(rhs)};
         } else {
             return std::bit_cast<Other>(rhs);
         }
@@ -694,7 +732,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return _mm_rcp_ps(rhs);
+                return numeric_array{_mm_rcp_ps(to_m128(rhs))};
             }
         }
 
@@ -709,7 +747,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return _mm_sqrt_ps(rhs);
+                return numeric_array{_mm_sqrt_ps(to_m128(rhs))};
             }
         }
 
@@ -724,7 +762,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return _mm_rcp_sqrt_ps(rhs);
+                return numeric_array{_mm_rcp_sqrt_ps(to_m128(rhs))};
             }
         }
 
@@ -739,7 +777,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return _mm_floor_ps(rhs);
+                return numeric_array{_mm_floor_ps(to_m128(rhs))};
             }
         }
 
@@ -754,7 +792,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return _mm_ceil_ps(rhs);
+                return numeric_array{_mm_ceil_ps(to_m128(rhs))};
             }
         }
 
@@ -769,7 +807,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return _mm_round_ps(rhs, _MM_FROUND_CUR_DIRECTION);
+                return numeric_array{_mm_round_ps(to_m128(rhs), _MM_FROUND_CUR_DIRECTION)};
             }
         }
 
@@ -883,7 +921,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpeq_ps(lhs, rhs)));
+                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpeq_ps(to_m128(lhs), to_m128(rhs))));
             }
         }
 
@@ -899,7 +937,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpne_ps(lhs, rhs)));
+                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpne_ps(to_m128(lhs), to_m128(rhs))));
             }
         }
         unsigned int r = 0;
@@ -914,7 +952,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmplt_ps(lhs, rhs)));
+                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmplt_ps(to_m128(lhs), to_m128(rhs))));
             }
         }
         unsigned int r = 0;
@@ -929,7 +967,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpgt_ps(lhs, rhs)));
+                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpgt_ps(to_m128(lhs), to_m128(rhs))));
             }
         }
         unsigned int r = 0;
@@ -944,7 +982,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmple_ps(lhs, rhs)));
+                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmple_ps(to_m128(lhs), to_m128(rhs))));
             }
         }
         unsigned int r = 0;
@@ -959,7 +997,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 and x86_64_v2) {
-                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpge_ps(lhs, rhs)));
+                return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpge_ps(to_m128(lhs), to_m128(rhs))));
             }
         }
         unsigned int r = 0;
@@ -1012,7 +1050,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (std::is_integral_v<T> and x86_64_v2) {
-                return _mm_or_si128(lhs, rhs);
+                return numeric_array{_mm_or_si128(to_m128i(lhs), to_m128i(rhs))};
             }
         }
         auto r = numeric_array{};
@@ -1036,7 +1074,7 @@ public:
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (std::is_integral_v<T> and x86_64_v2) {
-                return _mm_and_si128(lhs, rhs);
+                return numeric_array{_mm_and_si128(to_m128i(lhs), to_m128i(rhs))};
             }
         }
         auto r = numeric_array{};
@@ -1056,12 +1094,11 @@ public:
         return broadcast(lhs) & rhs;
     }
 
-
     [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (!std::is_constant_evaluated()) {
             if constexpr (std::is_integral_v<T> and x86_64_v2) {
-                return _mm_xor_si128(lhs, rhs);
+                return numeric_array{_mm_xor_si128(to_m128i(lhs), to_m128i(rhs))};
             }
         }
         auto r = numeric_array{};
@@ -1102,58 +1139,76 @@ public:
 
     [[nodiscard]] friend constexpr numeric_array hadd(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
-        if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_x64v2_hadd(lhs.v, rhs.v)};
-
-        } else {
-            tt_axiom(N % 2 == 0);
-
-            auto r = numeric_array{};
-
-            size_t src_i = 0;
-            size_t dst_i = 0;
-            while (src_i != N) {
-                auto tmp = lhs[src_i++];
-                tmp += lhs[src_i++];
-                r.v[dst_i++] = tmp;
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_f64x2 and x86_64_v2) {
+                return numeric_array{_mm_hadd_pd(to_m128d(lhs), to_m128d(rhs))};
+            } else if constexpr (is_f32x4 and x86_64_v2) {
+                return numeric_array{_mm_hadd_ps(to_m128(lhs), to_m128(rhs))};
+            } else if constexpr (is_i32x4 and x86_64_v2) {
+                return numeric_array{_mm_hadd_epi32(to_m128i(lhs), to_m128i(rhs))};
+            } else if constexpr (is_i16x8 and x86_64_v2) {
+                return numeric_array{_mm_hadd_epi16(to_m128i(lhs), to_m128i(rhs))};
+            } else if constexpr (is_i8x16 and x86_64_v2) {
+                return numeric_array{_mm_hadd_epi8(to_m128i(lhs), to_m128i(rhs))};
             }
-
-            src_i = 0;
-            while (src_i != N) {
-                auto tmp = rhs[src_i++];
-                tmp += rhs[src_i++];
-                r.v[dst_i++] = tmp;
-            }
-            return r;
         }
+
+        tt_axiom(N % 2 == 0);
+
+        auto r = numeric_array{};
+
+        size_t src_i = 0;
+        size_t dst_i = 0;
+        while (src_i != N) {
+            auto tmp = lhs[src_i++];
+            tmp += lhs[src_i++];
+            r.v[dst_i++] = tmp;
+        }
+
+        src_i = 0;
+        while (src_i != N) {
+            auto tmp = rhs[src_i++];
+            tmp += rhs[src_i++];
+            r.v[dst_i++] = tmp;
+        }
+        return r;
     }
 
     [[nodiscard]] friend constexpr numeric_array hsub(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
-        if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_x64v2_hsub(lhs.v, rhs.v)};
-
-        } else {
-            tt_axiom(N % 2 == 0);
-
-            auto r = numeric_array{};
-
-            size_t src_i = 0;
-            size_t dst_i = 0;
-            while (src_i != N) {
-                auto tmp = lhs[src_i++];
-                tmp -= lhs[src_i++];
-                r.v[dst_i++] = tmp;
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_f64x2 and x86_64_v2) {
+                return numeric_array{_mm_hsub_pd(to_m128d(lhs), to_m128d(rhs))};
+            } else if constexpr (is_f32x4 and x86_64_v2) {
+                return numeric_array{_mm_hsub_ps(to_m128(lhs), to_m128(rhs))};
+            } else if constexpr (is_i32x4 and x86_64_v2) {
+                return numeric_array{_mm_hsub_epi32(to_m128i(lhs), to_m128i(rhs))};
+            } else if constexpr (is_i16x8 and x86_64_v2) {
+                return numeric_array{_mm_hsub_epi16(to_m128i(lhs), to_m128i(rhs))};
+            } else if constexpr (is_i8x16 and x86_64_v2) {
+                return numeric_array{_mm_hsub_epi8(to_m128i(lhs), to_m128i(rhs))};
             }
-
-            src_i = 0;
-            while (src_i != N) {
-                auto tmp = rhs[src_i++];
-                tmp -= rhs[src_i++];
-                r.v[dst_i++] = tmp;
-            }
-            return r;
         }
+
+        tt_axiom(N % 2 == 0);
+
+        auto r = numeric_array{};
+
+        size_t src_i = 0;
+        size_t dst_i = 0;
+        while (src_i != N) {
+            auto tmp = lhs[src_i++];
+            tmp -= lhs[src_i++];
+            r.v[dst_i++] = tmp;
+        }
+
+        src_i = 0;
+        while (src_i != N) {
+            auto tmp = rhs[src_i++];
+            tmp -= rhs[src_i++];
+            r.v[dst_i++] = tmp;
+        }
+        return r;
     }
 
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &lhs, numeric_array const &rhs) noexcept
@@ -1490,6 +1545,36 @@ public:
         return lhs << to_string(rhs);
     }
 
+    /** Insert an element from rhs into the result.
+     * This function copies the lhs, then inserts one element from rhs into the result.
+     * It also can clear any of the elements to zero.
+     */
+    template<size_t FromElement, size_t ToElement, size_t ZeroMask = 0>
+    [[nodiscard]] constexpr friend numeric_array insert(numeric_array const &lhs, numeric_array const &rhs)
+    {
+        auto r = numeric_array{};
+
+        if (!std::is_constant_evaluated()) {
+            if constexpr (is_f32x4 && x86_64_v2) {
+                return numeric_array{f32x4_x64v2_insert<FromElement, ToElement, ZeroMask>(lhs.v, rhs.v)};
+            } else if constexpr (is_u64x2 and x86_64_v2) {
+                return numeric_array{u64x2_x64v2_insert<FromElement, ToElement, ZeroMask>(lhs.v, rhs.v)};
+            }
+        }
+
+        for (size_t i = 0; i != N; ++i) {
+            if ((ZeroMask >> i) & 1) {
+                r[i] = T{};
+            } else if (i == ToElement) {
+                r[i] = rhs[FromElement];
+            } else {
+                r[i] = lhs[i];
+            }
+        }
+
+        return r;
+    }
+
     /** swizzle around the elements of the numeric array.
      *
      * @tparam Elements a list of indices pointing to an element in this array.
@@ -1505,6 +1590,8 @@ public:
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
                 return numeric_array{f32x4_x64v2_swizzle<Elements...>(v)};
+            } else if constexpr (is_u64x2 and x86_64_v2) {
+                return numeric_array{u64x2_x64v2_swizzle<Elements...>(v)};
             }
         }
 
@@ -1683,7 +1770,6 @@ using f64x8 = numeric_array<double, 8>;
 } // namespace tt
 
 namespace std {
-
 template<class T, std::size_t N>
 struct tuple_size<tt::numeric_array<T, N>> : std::integral_constant<std::size_t, N> {
 };

@@ -27,7 +27,8 @@ public:
         auto maximum_value = static_cast<float>((1_uz << num_bits) - 1);
 
         // The maximum value from the rectangular probability density function.
-        maximum_value *= 2147483647.0f;
+        // We shifted right by 1 to not overflow the triangle probably density function.
+        maximum_value *= 16383.0f;
 
         // Triangular probability density function is has twice the range.
         maximum_value *= 2.0f;
@@ -40,10 +41,10 @@ public:
      */
     [[nodiscard]] f32x4 next() noexcept
     {
-        auto rpdf1 = f32x4{_state.next<i32x4>()};
-        auto rpdf2 = f32x4{_state.next<i32x4>()};
-        auto tpdf = rpdf1 + rpdf2;
-        return tpdf * _multiplier;
+        auto rpdf_i16x8 = _state.next<i16x8>() >> 1;
+        auto tpdf_i16x4 = hadd(rpdf_i16x8, rpdf_i16x8);
+        auto tpdf_i32x4 = static_cast<i32x4>(tpdf_i16x4);
+        return static_cast<f32x4>(tpdf_i32x4) * _multiplier;
     }
 
 private:

@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "seed_generator.hpp"
 #include "../rapid/numeric_array.hpp"
 #include "../required.hpp"
+#include <random>
 
 namespace tt {
 
@@ -20,7 +22,9 @@ public:
 
     [[nodiscard]] constexpr explicit xorshift128p(u64x2 new_state) noexcept : _state(new_state) {}
 
-    [[nodiscard]] constexpr xorshift128p() noexcept : _state{12, 15} {}
+    [[nodiscard]] explicit xorshift128p(seed_generator &sg) noexcept : _state(sg.next_not_zero<u64x2>()) {}
+
+    [[nodiscard]] xorshift128p() noexcept : _state(seed_generator{}.next_not_zero<u64x2>()) {}
 
     template<typename T>
     [[nodiscard]] T next() noexcept;
@@ -67,7 +71,8 @@ public:
         auto tmp = s ^ t ^ (t >> 26);
 
         // auto x_ = x;
-        t.y() = tmp.x();
+        //t.y() = tmp.x();
+        t = insert<0,1>(t, tmp);
         
         // y ^= x_ ^ (x_ >> 26);
         s ^= t ^ (t >> 26);
@@ -90,6 +95,12 @@ public:
     [[nodiscard]] i32x4 next() noexcept
     {
         return bit_cast<i32x4>(next<u64x2>());
+    }
+
+    template<>
+    [[nodiscard]] i16x8 next() noexcept
+    {
+        return bit_cast<i16x8>(next<u64x2>());
     }
 
 private:

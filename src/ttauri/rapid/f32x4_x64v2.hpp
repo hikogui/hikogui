@@ -17,13 +17,6 @@ namespace tt {
 
 /** Convert integers to floats.
  */
-[[nodiscard]] inline rf32x4 f32x4_x64v2_bit_cast_from_i32x4(ri32x4 const &rhs) noexcept
-{
-    return to_rf32x4(_mm_castsi128_ps(to_m128i(rhs)));
-}
-
-/** Convert integers to floats.
- */
 [[nodiscard]] inline rf32x4 f32x4_x64v2_from_i32x4(ri32x4 const &rhs) noexcept
 {
     return to_rf32x4(_mm_cvtepi32_ps(to_m128i(rhs)));
@@ -96,29 +89,6 @@ template<unsigned int Mask>
     }
 }
 
-/** Add elements horizontally together.
- * x = lhs.x + lhs.y
- * y = lhs.z + lhs.w
- * z = rhs.x + rhs.y
- * w = rhs.z + rhs.w
- */
-[[nodiscard]] inline rf32x4
-f32x4_x64v2_hadd(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
-{
-    return to_rf32x4(_mm_hadd_ps(to_m128(lhs), to_m128(rhs)));
-}
-
-/** Subtract elements horizontally together.
- * x = lhs.x - lhs.y
- * y = lhs.z - lhs.w
- * z = rhs.x - rhs.y
- * w = rhs.z - rhs.w
- */
-[[nodiscard]] inline rf32x4
-f32x4_x64v2_hsub(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
-{
-    return to_rf32x4(_mm_hsub_ps(to_m128(lhs), to_m128(rhs)));
-}
 
 /** Add or subtract elements of two SSE registers.
  * This function is useful for creating cross products and generating a matrix
@@ -310,7 +280,6 @@ template<unsigned int Mask>
     return f32x4_x64v2_addsub<0b0110>(s1, to_rf32x4(z));
 }
 
-
 /** 3D Cross produce between two vectors.
  *
  * x = y1*z2 - z1*y2
@@ -330,11 +299,8 @@ template<unsigned int Mask>
     return to_rf32x4(_mm_sub_ps(left, right));
 }
 
-[[nodiscard]] inline std::array<rf32x4, 4> f32x4_x64v2_transpose(
-    rf32x4 const &col0,
-    rf32x4 const &col1,
-    rf32x4 const &col2,
-    rf32x4 const &col3) noexcept
+[[nodiscard]] inline std::array<rf32x4, 4>
+f32x4_x64v2_transpose(rf32x4 const &col0, rf32x4 const &col1, rf32x4 const &col2, rf32x4 const &col3) noexcept
 {
     auto col0_ = to_m128(col0);
     auto col1_ = to_m128(col1);
@@ -343,10 +309,7 @@ template<unsigned int Mask>
 
     _MM_TRANSPOSE4_PS(col0_, col1_, col2_, col3_);
 
-    return {
-        to_rf32x4(col0_),
-        to_rf32x4(col1_),
-        to_rf32x4(col2_), to_rf32x4(col3_)};
+    return {to_rf32x4(col0_), to_rf32x4(col1_), to_rf32x4(col2_), to_rf32x4(col3_)};
 }
 
 template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
@@ -470,4 +433,69 @@ template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
     return to_rf32x4(result);
 }
 
+template<ssize_t A = -1, ssize_t B = -1>
+[[nodiscard]] ru64x2 u64x2_x64v2_swizzle(ru64x2 const &value) noexcept
+{
+    constexpr auto A1 = A >= 0 ? A * 2 : A;
+    constexpr auto A2 = A >= 0 ? A1 + 1 : A1;
+    constexpr auto B1 = B >= 0 ? B * 2 : B;
+    constexpr auto B2 = B >= 0 ? B1 + 1 : B1;
+
+    ttlet value_ = _mm_castsi128_ps(to_m128i(value));
+    ttlet r = to_m128(f32x4_x64v2_swizzle<A1, A2, B1, B2>(to_rf32x4(value_)));
+    return to_ru64x2(_mm_castps_si128(r));
 }
+
+template<size_t FromElement, size_t ToElement, size_t ZeroMask>
+[[nodiscard]] rf32x4 f32x4_x64v2_insert(rf32x4 const &lhs, rf32x4 const &rhs) noexcept
+{
+    static_assert(FromElement < 4);
+    static_assert(ToElement < 4);
+    static_assert(ZeroMask < 16);
+
+    constexpr uint8_t insert_mask = static_cast<uint8_t>((FromElement << 6) | (ToElement << 4) | ZeroMask);
+
+    return to_rf32x4(_mm_insert_ps(to_m128(lhs), to_m128(rhs), insert_mask));
+}
+
+template<size_t FromElement, size_t ToElement, size_t ZeroMask>
+[[nodiscard]] ru64x2 u64x2_x64v2_insert(ru64x2 const &lhs, ru64x2 const &rhs) noexcept
+{
+    static_assert(FromElement < 2);
+    static_assert(ToElement < 2);
+    static_assert(ZeroMask < 4);
+
+    if constexpr (ZeroMask == 0) {
+        auto lhs_ = _mm_castsi128_pd(to_m128i(lhs));
+        auto rhs_ = _mm_castsi128_pd(to_m128i(rhs));
+
+        __m128d r;
+        if constexpr (FromElement == 0 and ToElement == 0) {
+            r = _mm_shuffle_pd(rhs_, lhs_, 0b10);
+        } else if constexpr (FromElement == 1 and ToElement == 0) {
+            r = _mm_shuffle_pd(rhs_, lhs_, 0b11);
+        } else if constexpr (FromElement == 0 and ToElement == 1) {
+            r = _mm_shuffle_pd(lhs_, rhs_, 0b00);
+        } else {
+            r = _mm_shuffle_pd(lhs_, rhs_, 0b10);
+        }
+
+        return to_ru64x2(_mm_castpd_si128(r));
+
+    } else {
+        constexpr size_t FromElement1 = FromElement * 2;
+        constexpr size_t FromElement2 = FromElement1 + 1;
+        constexpr size_t ToElement1 = ToElement * 2;
+        constexpr size_t ToElement2 = ToElement1 + 1;
+        constexpr size_t ZeroMask2 = (ZeroMask & 1 ? 0b11 : 0b00) | (ZeroMask & 2 ? 0b1100 : 0b0000);
+
+        ttlet lhs_ = to_rf32x4(_mm_castsi128_ps(to_m128i(lhs)));
+        ttlet rhs_ = to_rf32x4(_mm_castsi128_ps(to_m128i(rhs)));
+        ttlet tmp = f32x4_x64v2_insert<FromElement1, ToElement1, 0>(lhs_, rhs_);
+        ttlet r = f32x4_x64v2_insert<FromElement2, ToElement2, ZeroMask2>(tmp, rhs_);
+
+        return to_ru64x2(_mm_castps_si128(to_m128(r)));
+    }
+}
+
+} // namespace tt
