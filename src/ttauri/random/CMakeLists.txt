@@ -4,7 +4,6 @@
 
 target_sources(ttauri PRIVATE
     dither.hpp
-    pcg.hpp
     xorshift128p.hpp
 )
 
