@@ -103,6 +103,27 @@ public:
     constexpr numeric_array &operator=(numeric_array &&rhs) noexcept = default;
 
     template<arithmetic U, size_t M>
+    [[nodiscard]] constexpr explicit numeric_array(
+        numeric_array<U, M> const &other1,
+        numeric_array<U, M> const &other2) noexcept : v()
+    {
+        if (!std::is_constant_evaluated()) {
+
+
+        }
+
+        for (size_t i = 0; i != N; ++i) {
+            if (i < M) {
+                v[i] = static_cast<value_type>(other1[i]);
+            } else if (i < M*2) {
+                v[i] = static_cast<value_type>(other2[i]);
+            } else {
+                v[i] = U{};
+            }
+        }
+    }
+
+    template<arithmetic U, size_t M>
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other) noexcept : v()
     {
         if (!std::is_constant_evaluated()) {
@@ -204,7 +225,22 @@ public:
         return _mm_loadu_ps(rhs.v.data());
     }
 
-    [[nodiscard]] friend __m128d to_m128d(numeric_array const &rhs) noexcept requires(is_f64x4)
+    [[nodiscard]] friend __m128d to_m128d(numeric_array const &rhs) noexcept requires(is_f64x2)
+    {
+        return _mm_loadu_pd(rhs.v.data());
+    }
+
+    [[nodiscard]] friend __m256i to_m256i(numeric_array const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
+    {
+        return _mm_loadu_si256(reinterpret_cast<__m256i const *>(rhs.v.data()));
+    }
+
+    [[nodiscard]] friend __m256 to_m256(numeric_array const &rhs) noexcept requires(is_f32x8)
+    {
+        return _mm_loadu_ps(rhs.v.data());
+    }
+
+    [[nodiscard]] friend __m256d to_m256d(numeric_array const &rhs) noexcept requires(is_f64x4)
     {
         return _mm_loadu_pd(rhs.v.data());
     }

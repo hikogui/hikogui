@@ -9,6 +9,16 @@
 
 namespace tt {
 
+/** An object that create dither values to add to samples before rounding.
+ *
+ * Dither is created by adding two 8 bit RPDF into a 9 bit TPDF. Then
+ * this 9 bit TPDF is converted to floating point, which can be added to
+ * the original floating point sample.
+ *
+ * We start of with 128 bit from an xorshift128p random number generated
+ * that is split into 8 bit chunks.
+ *
+ */
 class dither {
 public:
     dither(dither const &) = default;
@@ -27,29 +37,35 @@ public:
         auto maximum_value = static_cast<float>((1_uz << num_bits) - 1);
 
         // The maximum value from the rectangular probability density function.
-        // We shifted right by 1 to not overflow the triangle probably density function.
-        maximum_value *= 16383.0f;
+        maximum_value *= 127.0f;
 
         // Triangular probability density function is has twice the range.
         maximum_value *= 2.0f;
 
-        _multiplier = f32x4::broadcast(1.0f / maximum_value);
+        _multiplier = f32x8::broadcast(1.0f / maximum_value);
     }
 
     /** Get 4 floating point number to add to a samples.
      * The dither is a TPDF with the maximum being 2 quantization steps.
      */
-    [[nodiscard]] f32x4 next() noexcept
+    [[nodiscard]] f32x8 next() noexcept
     {
-        auto rpdf_i16x8 = _state.next<i16x8>() >> 1;
-        auto tpdf_i16x4 = hadd(rpdf_i16x8, rpdf_i16x8);
-        auto tpdf_i32x4 = static_cast<i32x4>(tpdf_i16x4);
-        return static_cast<f32x4>(tpdf_i32x4) * _multiplier;
+        auto rand = _state.next<u64x2>();
+        auto spdf1 = i16x8{bit_cast<i8x16>(rand)};
+        rand = rand.yx();
+        auto spdf2 = i16x8{bit_cast<i8x16>(rand)};
+
+        auto tpdf = bit_cast<u64x2>(spdf1 + spdf2);
+        auto tpdf1 = i32x4{bit_cast<i16x8>(tpdf)};
+        tpdf = tpdf.yx();
+        auto tpdf2 = i32x4{bit_cast<i16x8>(tpdf)};
+
+        return f32x8{i32x8{tpdf1, tpdf2}} * _multiplier;
     }
 
 private:
+    f32x8 _multiplier;
     xorshift128p _state;
-    f32x4 _multiplier;
 };
 
 } // namespace tt
