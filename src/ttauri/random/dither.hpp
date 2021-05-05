@@ -16,7 +16,8 @@ namespace tt {
  * the original floating point sample.
  *
  * We start of with 128 bit from an xorshift128p random number generated
- * that is split into 8 bit chunks.
+ * that is split into 8 bit chunks, made into TPDF and converted to 8
+ * floating point values.
  *
  */
 class dither {
@@ -45,7 +46,7 @@ public:
         _multiplier = f32x8::broadcast(1.0f / maximum_value);
     }
 
-    /** Get 4 floating point number to add to a samples.
+    /** Get 8 floating point number to add to a samples.
      * The dither is a TPDF with the maximum being 2 quantization steps.
      */
     [[nodiscard]] f32x8 next() noexcept
@@ -61,6 +62,17 @@ public:
         auto tpdf2 = i32x4{bit_cast<i16x8>(tpdf)};
 
         return f32x8{i32x8{tpdf1, tpdf2}} * _multiplier;
+    }
+
+    /** Add dither to the given samples.
+     * Optimized for AVX this function takes 32 instructions for 8 samples.
+     * 
+     * @param sample The sample to add dithering to.
+     * @return The sample with included dither.
+     */
+    [[nodiscard]] f32x8 next(f32x8 sample) noexcept
+    {
+        return sample + next();
     }
 
 private:

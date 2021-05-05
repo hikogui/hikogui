@@ -15,8 +15,8 @@ using namespace tt;
 
 [[nodiscard]] static std::map<int,float> dither_test(int num_bits, float sample_value) noexcept
 {
-    auto sample_count = 100000;
-    auto sample_percentage = 100.0f / sample_count;
+    auto sample_count = 10000;
+    auto sample_percentage = 100.0f / (sample_count * 8);
 
     // Signed 16 bit PCM has 15 bits of fraction.
     auto d = dither(num_bits);
@@ -24,19 +24,21 @@ using namespace tt;
     // The maximum value of a 16 bit PCM sample.
     auto max_sample_value = static_cast<float>((1_uz << num_bits) - 1);
     auto rcp_max_sample_value = 1.0f / max_sample_value;
-    auto scaled_sample_value = sample_value * rcp_max_sample_value;
+    auto scaled_sample_value = f32x8::broadcast(sample_value * rcp_max_sample_value);
 
     auto results = std::map<int, float>{};
     for (auto i = 0; i != sample_count; ++i) {
-        auto dithered_sample_value = scaled_sample_value + d.next()[0];
+        auto dithered_sample_value = d.next(scaled_sample_value);
 
-        auto result_sample_value = static_cast<int>(std::round(dithered_sample_value * max_sample_value));
+        auto result_sample_value = i32x8{dithered_sample_value * max_sample_value};
 
-        auto it = results.find(result_sample_value);
-        if (it == results.end()) {
-            results[result_sample_value] = 1.0f * sample_percentage;
-        } else {
-            it->second += 1.0f * sample_percentage;
+        for (int j = 0; j != result_sample_value.size(); ++j) {
+            auto it = results.find(result_sample_value[j]);
+            if (it == results.end()) {
+                results[result_sample_value[j]] = sample_percentage;
+            } else {
+                it->second += sample_percentage;
+            }
         }
     }
 
