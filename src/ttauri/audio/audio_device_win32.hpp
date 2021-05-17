@@ -23,7 +23,7 @@ public:
     std::string name() const noexcept override;
     tt::label label() const noexcept override;
     audio_device_state state() const noexcept override;
-    audio_device_flow_direction direction() const noexcept override;
+    audio_direction direction() const noexcept override;
 
     static std::string get_id_from_device(IMMDevice *device) noexcept;
 

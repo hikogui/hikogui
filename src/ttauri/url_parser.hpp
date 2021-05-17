@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include <string_view>
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 
 namespace tt {
 
-constexpr char native_path_seperator = (OperatingSystem::current == OperatingSystem::Windows) ? '\\' : '/';
+constexpr char native_path_seperator = (operating_system::current == operating_system::windows) ? '\\' : '/';
 
 constexpr bool is_urlchar_alpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');

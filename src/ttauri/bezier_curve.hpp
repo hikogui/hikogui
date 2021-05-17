@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "color/sdf_r8.hpp"
+#include "rapid/sdf_r8.hpp"
 #include "pixel_map.hpp"
 #include "alignment.hpp"
 #include "math.hpp"

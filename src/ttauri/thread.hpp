@@ -5,7 +5,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <intrin.h>
 #endif

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "counters.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include <atomic>
 #include <thread>
 #include <chrono>

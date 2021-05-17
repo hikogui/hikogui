@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../alignment.hpp"
 #include <array>

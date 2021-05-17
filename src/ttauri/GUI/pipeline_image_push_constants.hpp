@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../color/sfloat_rg32.hpp"
+#include "../rapid/sfloat_rg32.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt::pipeline_image {

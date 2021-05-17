@@ -8,7 +8,7 @@
 #include "cast.hpp"
 #include "required.hpp"
 #include "assert.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "concepts.hpp"
 #include "exception.hpp"
 #include "codec/UTF.hpp"

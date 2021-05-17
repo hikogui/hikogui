@@ -33,7 +33,7 @@ void preferences_controller::audio_device_list_changed(tt::audio_system &system)
     auto devices = system.devices();
     auto device_list = std::vector<std::pair<std::string,tt::label>>{};
     for (auto const &device_ptr : devices) {
-        if (device_ptr->direction() == audio_device_flow_direction::output && device_ptr->state() == audio_device_state::active) {
+        if (device_ptr->direction() == audio_direction::output && device_ptr->state() == audio_device_state::active) {
             device_list.emplace_back(device_ptr->id(), device_ptr->label());
         }
     }

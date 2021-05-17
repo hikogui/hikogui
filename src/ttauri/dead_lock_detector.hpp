@@ -5,7 +5,7 @@
 #pragma once
 
 #include "assert.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include <vector>
 #include <algorithm>
 #include <tuple>

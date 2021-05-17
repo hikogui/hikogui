@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "cast.hpp"
 #include "int_carry.hpp"
 #include "thread.hpp"

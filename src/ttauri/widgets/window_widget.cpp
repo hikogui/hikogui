@@ -26,12 +26,12 @@ void window_widget::init() noexcept
 {
     _toolbar = make_widget<toolbar_widget>();
 
-    if constexpr (theme::global->operatingSystem == OperatingSystem::Windows) {
+    if constexpr (theme::global->operatingSystem == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _toolbar->make_widget<system_menu_widget>(this->title.icon());
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
-    } else if constexpr (theme::global->operatingSystem == OperatingSystem::MacOS) {
+    } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
         _toolbar->make_widget<window_traffic_lights_widget>();
     } else {
         tt_no_default();

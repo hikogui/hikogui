@@ -2,16 +2,18 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-add_subdirectory(text)
-add_subdirectory(geometry)
-add_subdirectory(color)
-add_subdirectory(GUI)
-add_subdirectory(widgets)
-add_subdirectory(stencils)
 add_subdirectory(audio)
 add_subdirectory(codec)
+add_subdirectory(color)
 add_subdirectory(formula)
+add_subdirectory(geometry)
+add_subdirectory(GUI)
+add_subdirectory(random)
+add_subdirectory(rapid)
 add_subdirectory(skeleton)
+add_subdirectory(stencils)
+add_subdirectory(text)
+add_subdirectory(widgets)
 
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
@@ -114,7 +116,7 @@ target_sources(ttauri PRIVATE
     cast.hpp
     observable.hpp
     operator.hpp
-    os_detect.hpp
+    architecture.hpp
     parse_location.hpp
     preferences.cpp
     preferences.hpp
@@ -126,7 +128,6 @@ target_sources(ttauri PRIVATE
     placement.hpp
     polymorphic_optional.hpp
     polynomial.hpp
-    random_pcg.hpp
     range_map.hpp
     ranged_numeric.hpp
     ranges.hpp
@@ -188,7 +189,7 @@ if(TT_BUILD_PCH)
         debugger.hpp
         exception.hpp
         logger.hpp
-        os_detect.hpp
+        architecture.hpp
         required.hpp
         strings.hpp
         trace.hpp
@@ -239,7 +240,7 @@ if(TT_BUILD_TESTS AND TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
         debugger.hpp
         exception.hpp
         logger.hpp
-        os_detect.hpp
+        architecture.hpp
         required.hpp
         strings.hpp
         trace.hpp

@@ -71,7 +71,7 @@ gui_system_vulkan::gui_system_vulkan(
     // VK_KHR_SURFACE extension is needed to draw in a window.
     requiredExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
-    if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
+    if constexpr (build_type::current == build_type::debug) {
         requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
@@ -83,11 +83,11 @@ gui_system_vulkan::gui_system_vulkan(
     instanceCreateInfo.setEnabledExtensionCount(narrow_cast<uint32_t>(requiredExtensions.size()));
     instanceCreateInfo.setPpEnabledExtensionNames(requiredExtensions.data());
 
-    if constexpr (BuildType::current == BuildType::Debug) {
+    if constexpr (build_type::current == build_type::debug) {
         requiredFeatures.robustBufferAccess = VK_TRUE;
     }
 
-    if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
+    if constexpr (build_type::current == build_type::debug) {
         ttlet requested_layers = std::vector<char const *>{
             "VK_LAYER_KHRONOS_validation",
             //"VK_LAYER_LUNARG_api_dump"
@@ -112,7 +112,7 @@ gui_system_vulkan::gui_system_vulkan(
 gui_system_vulkan::~gui_system_vulkan()
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
+    if constexpr (build_type::current == build_type::debug) {
         intrinsic.destroy(debugUtilsMessager, nullptr, loader());
     }
 }
@@ -121,7 +121,7 @@ void gui_system_vulkan::init() noexcept(false)
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
+    if constexpr (build_type::current == build_type::debug) {
         debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT(
             {vk::DebugUtilsMessengerCreateFlagsEXT(),
              vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |

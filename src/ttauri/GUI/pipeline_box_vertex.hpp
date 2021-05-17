@@ -6,9 +6,9 @@
 
 #include "../vspan.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../color/sfloat_rgba16.hpp"
-#include "../color/sfloat_rgba32.hpp"
-#include "../color/sfloat_rgb32.hpp"
+#include "../rapid/sfloat_rgba16.hpp"
+#include "../rapid/sfloat_rgba32.hpp"
+#include "../rapid/sfloat_rgb32.hpp"
 #include <vulkan/vulkan.hpp>
 #include <span>
 
