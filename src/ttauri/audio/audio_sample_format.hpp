@@ -61,22 +61,27 @@ struct audio_sample_format {
      */
     int stride;
 
-    [[nodiscard]] constexpr float pack_gain() const noexcept
+    [[nodiscard]] constexpr float pack_multiplier() const noexcept
     {
         tt_axiom(is_valid());
 
-        // Find the maximum value of the fraction bits as a signed number.
-        auto max_value = (1_uz << num_bits) - 1;
+        if (is_float) {
+            return 1.0f;
 
-        // Align left inside an int32_t.
-        max_value <<= 31 - num_bits - num_guard_bits;
+        } else {
+            // Find the maximum value of the fraction bits as a signed number.
+            auto max_value = (1_uz << num_bits) - 1;
 
-        return narrow_cast<float>(max_value);
+            // Align left inside an int32_t.
+            max_value <<= 31 - num_bits - num_guard_bits;
+
+            return narrow_cast<float>(max_value);
+        }
     }
 
-    [[nodiscard]] constexpr float unpack_gain() const noexcept
+    [[nodiscard]] constexpr float unpack_multiplier() const noexcept
     {
-        return 1.0f / pack_gain();
+        return 1.0f / pack_multiplier();
     }
 
     /** The number of samples that are read in a single 128 bit load.

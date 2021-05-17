@@ -25,16 +25,23 @@ enum class audio_block_state { normal, silent, corrupt };
 class audio_block {
 public:
     /** A list of pointers to non-interleaved sample buffers.
-     * For both recording and playback it is allowed to modify the samples
-     * in the buffers.
+     * It is undefined behavour to modify the samples on input.
+     *
+     * Each of the sample buffers is aligned to and a multiple of 4096 bytes in size
+     * which will allow you to over-read or over-write with vector instructions
+     * beyond the `num_samples` of samples.
      *
      * The sample buffers are NOT pre-cleared during recording.
      */
-    std::vector<float *> sample_buffers;
+    float **samples;
 
-    /** Number of samples for each channel in sample_buffers.
+    /** Number of samples for each channel in samples.
      */
     size_t num_samples;
+
+    /** Number of channels in samples.
+     */
+    size_t num_channels;
 
     /** The sample rate this block was taken at.
      * This is the word-clock rate, not the sample rate the device was configured as.

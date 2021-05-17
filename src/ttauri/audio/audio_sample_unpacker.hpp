@@ -29,11 +29,12 @@ public:
      * @param src A pointer to a byte array containing samples.
      * @param dst A pointer to a array of floating point samples of a single channel.
      * @param num_samples Number of samples.
+     * @return {peak, rms, peak * gain, rms * gain}
      */
-    void operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept;
+    f32x4 operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept;
 
 private:
-    f32x4 _gain;
+    f32x4 _multiplier;
     i8x16 _shuffle_load;
     i8x16 _shuffle_shift;
     int _num_samples_per_load;

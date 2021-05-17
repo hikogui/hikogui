@@ -7,6 +7,7 @@
 #include "../bigint.hpp"
 #include "audio_device_delegate.hpp"
 #include "audio_stream_config.hpp"
+#include "audio_channel.hpp"
 #include "../label.hpp"
 #include <string>
 #include <memory>
@@ -83,6 +84,10 @@ public:
 
     virtual audio_device_flow_direction direction() const noexcept = 0;
 
+    [[nodiscard]] virtual std::vector<audio_channel> inputs() noexcept;
+
+    [[nodiscard]] virtual std::vector<audio_channel> outputs() noexcept;
+
     /** Check if a audio configuration is supported by this device.
      * @param config Configuration such as sample rate, sample format and bit-depth.
      */
@@ -90,26 +95,26 @@ public:
 
     /** Start a session.
      * Start a session, which will cause data to be stream to and
-     * from the audio device and the delegate's processAudio() function
+     * from the audio device and the delegate's process_audio() function
      * to be called.
      *
      * This function may spawn a thread to handle the audio processing.
      * This function may throw an exception if it is not possible to start
      * a session.
      *
-     * @param sessionId a unique ID used by the operating system to remember
+     * @param id a unique ID used by the operating system to remember
      *        audio parameters for this stream, such as volume, accross reboots.
      * @param name A name used to by the operating system to display to the user
      *        when changing audio parameters through the operating system's preferences.
      * @param config Configuration such as sample rate, sample format and bit-depth.
      * XXX Windows allows for an icon to be passed to a session.
      */
-    //virtual void startSession(uuid sessionId, std::string name, AudiostreamConfig config) = 0;
+    //virtual void start_stream(std::string id, std::string name, audio_stream_config config) = 0;
 
     /** Stop a session.
      * Stop a session, which will also stop the streams of audio.
      */
-    //virtual void stopSession() noexcept = 0;
+    //virtual void stop_stream() noexcept = 0;
 
 private:
     std::shared_ptr<audio_device_delegate> delegate = {};

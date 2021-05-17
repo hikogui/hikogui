@@ -133,7 +133,7 @@ audio_sample_unpacker::audio_sample_unpacker(audio_sample_format format) noexcep
     _shuffle_load = make_shuffle_load(format);
     _shuffle_shift = make_shuffle_shift(format);
 
-    _gain = f32x4::broadcast(format.unpack_gain());
+    _multiplier = f32x4::broadcast(format.unpack_multiplier());
     _num_samples_per_load = format.samples_per_load();
     _num_loads_per_store = format.loads_per_store();
     _load_stride = format.load_stride();
@@ -172,31 +172,62 @@ void audio_sample_unpacker::operator()(std::byte const *tt_restrict src, float *
     ttlet dst_end = dst + num_samples;
     ttlet dst_fast_end = dst + calculate_num_fast_samples(num_samples);
 
+    auto square_peak = f32x4{};
+    auto square_sum = f32x4{};
+
     if (_format.is_float) {
         while (dst != dst_fast_end) {
             ttlet int_samples = load_samples(src, _shuffle_load, _shuffle_shift, _num_loads_per_store, _load_stride);
             ttlet float_samples = bit_cast<f32x4>(int_samples);
+
+            ttlet square_samples = float_samples * float_samples;
+            square_sum += square_samples
+            square_peak = max(peak, square_samples);
+
             store_samples(dst, float_samples);
         }
         while (dst != dst_end) {
             ttlet int_sample = load_sample(src, _format.stride, _format.num_bytes, _direction, _start_byte, _align_shift);
             ttlet float_sample = std::bit_cast<float>(int_sample);
+
+            ttlet square_sample = float_sample * float_sample;
+            square_sum.x() += square_sample;
+            square_peak.x() = max(square_peak.x(), square_sample);
+
             store_sample(dst, float_sample);
         }
 
     } else {
-        ttlet gain = _gain;
+        ttlet multiplier = _multiplier;
+
         while (dst != dst_fast_end) {
             ttlet int_samples = load_samples(src, _shuffle_load, _shuffle_shift, _num_loads_per_store, _load_stride);
-            ttlet float_samples = static_cast<f32x4>(int_samples) * gain;
+            ttlet float_samples = static_cast<f32x4>(int_samples) * multiplier;
+
+            ttlet square_samples = float_samples * float_samples;
+            square_sum += square_samples
+            square_peak = max(peak, square_samples);
+
             store_samples(dst, float_samples);
         }
         while (dst != dst_end) {
             ttlet int_sample = load_sample(src, _format.stride, _format.num_bytes, _direction, _start_byte, _align_shift);
-            ttlet float_sample = static_cast<float>(int_sample) * get<0>(gain);
+            ttlet float_sample = static_cast<float>(int_sample) * get<0>(multiplier);
+
+            ttlet square_sample = float_sample * float_sample;
+            square_sum.x() += square_sample
+            square_peak.x() = std::max(square_peak.x(), square_sample);
+
             store_sample(dst, float_sample);
         }
     }
+
+    square_sum = hadd(square_sum, square_sum);
+    square_sum = hadd(square_sum, square_sum);
+    square_peak = hmax(square_peak square_peak);
+    square_peak = hmax(square_peak square_peak);
+
+    return f32x4{square_peak, square_sum, static_cast<float>(num_samples), 0.0f};
 }
 
 } // namespace tt
