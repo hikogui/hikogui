@@ -11,6 +11,12 @@
 
 using namespace tt;
 
+constexpr float int16_max_diff = 1.0f / 32767.0f;
+constexpr float int20_max_diff = 1.0f / 524287.0f;
+constexpr float int24_max_diff = 1.0f / 8388607.0f;
+constexpr float fix8_24_max_diff = int24_max_diff * 256.0f;
+constexpr float float32_max_diff = 0.0f;
+
 [[nodiscard]] static std::array<std::byte, 256> make_packed() noexcept
 {
     auto r = std::array<std::byte, 256>{};
@@ -76,36 +82,36 @@ TEST(audio_sample_unpacker, unpack_int16le_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[3], packed[2]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[3], packed[2]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[3], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[5], packed[4]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[3], packed[2]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[5], packed[4]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[3], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[5], packed[4]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[7], packed[6]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[3], packed[2]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[5], packed[4]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[7], packed[6]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[3], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[5], packed[4]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[9], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[11], packed[10]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[13], packed[12]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[15], packed[14]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[3], packed[2]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[5], packed[4]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[7], packed[6]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[9], packed[8]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[11], packed[10]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[13], packed[12]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[15], packed[14]), int16_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int16be_mono)
@@ -123,36 +129,36 @@ TEST(audio_sample_unpacker, unpack_int16be_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[2], packed[3]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[2], packed[3]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[2], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[4], packed[5]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[2], packed[3]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[4], packed[5]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[2], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[4], packed[5]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[6], packed[7]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[2], packed[3]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[4], packed[5]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[6], packed[7]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[2], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[4], packed[5]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[6], packed[7]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[8], packed[9]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[10], packed[11]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[12], packed[13]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[14], packed[15]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[0], packed[1]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[2], packed[3]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[4], packed[5]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[6], packed[7]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[8], packed[9]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[10], packed[11]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[12], packed[13]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[14], packed[15]), int16_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int16le_stereo)
@@ -170,36 +176,36 @@ TEST(audio_sample_unpacker, unpack_int16le_stereo)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[5], packed[4]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[5], packed[4]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[5], packed[4]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[9], packed[8]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[5], packed[4]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[9], packed[8]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[5], packed[4]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[9], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[13], packed[12]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[5], packed[4]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[9], packed[8]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[13], packed[12]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[5], packed[4]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[9], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[13], packed[12]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[17], packed[16]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[21], packed[20]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[25], packed[24]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[29], packed[28]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[5], packed[4]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[9], packed[8]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[13], packed[12]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[17], packed[16]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[21], packed[20]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[25], packed[24]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[29], packed[28]), int16_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int16le_trio)
@@ -217,36 +223,36 @@ TEST(audio_sample_unpacker, unpack_int16le_trio)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[7], packed[6]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[7], packed[6]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[13], packed[12]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[7], packed[6]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[13], packed[12]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[13], packed[12]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[19], packed[18]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[7], packed[6]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[13], packed[12]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[19], packed[18]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[13], packed[12]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[19], packed[18]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[25], packed[24]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[31], packed[30]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[37], packed[36]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[43], packed[42]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[7], packed[6]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[13], packed[12]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[19], packed[18]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[25], packed[24]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[31], packed[30]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[37], packed[36]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[43], packed[42]), int16_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int16le_quadro)
@@ -264,36 +270,36 @@ TEST(audio_sample_unpacker, unpack_int16le_quadro)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[9], packed[8]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[9], packed[8]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[9], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[17], packed[16]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[9], packed[8]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[17], packed[16]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[9], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[17], packed[16]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[25], packed[24]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[9], packed[8]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[17], packed[16]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[25], packed[24]), int16_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[9], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[17], packed[16]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[25], packed[24]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[33], packed[32]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[41], packed[40]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[49], packed[48]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[57], packed[56]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[1], int16_to_float(packed[9], packed[8]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[2], int16_to_float(packed[17], packed[16]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[3], int16_to_float(packed[25], packed[24]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[4], int16_to_float(packed[33], packed[32]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[5], int16_to_float(packed[41], packed[40]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[6], int16_to_float(packed[49], packed[48]), int16_max_diff);
+    ASSERT_NEAR(flat_samples[7], int16_to_float(packed[57], packed[56]), int16_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int24le_mono)
@@ -311,36 +317,36 @@ TEST(audio_sample_unpacker, unpack_int24le_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[5], packed[4], packed[3]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[5], packed[4], packed[3]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[5], packed[4], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[8], packed[7], packed[6]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[5], packed[4], packed[3]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[8], packed[7], packed[6]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[5], packed[4], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[8], packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[11], packed[10], packed[9]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[5], packed[4], packed[3]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[8], packed[7], packed[6]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[11], packed[10], packed[9]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[5], packed[4], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[8], packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[11], packed[10], packed[9]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int24_to_float(packed[14], packed[13], packed[12]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int24_to_float(packed[17], packed[16], packed[15]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int24_to_float(packed[20], packed[19], packed[18]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int24_to_float(packed[23], packed[22], packed[21]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[5], packed[4], packed[3]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[8], packed[7], packed[6]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[11], packed[10], packed[9]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[4], int24_to_float(packed[14], packed[13], packed[12]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[5], int24_to_float(packed[17], packed[16], packed[15]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[6], int24_to_float(packed[20], packed[19], packed[18]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[7], int24_to_float(packed[23], packed[22], packed[21]), int24_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int24be_mono)
@@ -358,36 +364,36 @@ TEST(audio_sample_unpacker, unpack_int24be_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[3], packed[4], packed[5]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[3], packed[4], packed[5]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[3], packed[4], packed[5]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[6], packed[7], packed[8]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[3], packed[4], packed[5]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[6], packed[7], packed[8]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[3], packed[4], packed[5]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[6], packed[7], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[9], packed[10], packed[11]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[3], packed[4], packed[5]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[6], packed[7], packed[8]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[9], packed[10], packed[11]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[3], packed[4], packed[5]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[6], packed[7], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[9], packed[10], packed[11]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int24_to_float(packed[12], packed[13], packed[14]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int24_to_float(packed[15], packed[16], packed[17]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int24_to_float(packed[18], packed[19], packed[20]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int24_to_float(packed[21], packed[22], packed[23]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[0], packed[1], packed[2]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[3], packed[4], packed[5]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[6], packed[7], packed[8]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[9], packed[10], packed[11]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[4], int24_to_float(packed[12], packed[13], packed[14]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[5], int24_to_float(packed[15], packed[16], packed[17]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[6], int24_to_float(packed[18], packed[19], packed[20]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[7], int24_to_float(packed[21], packed[22], packed[23]), int24_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int24le_stereo)
@@ -405,36 +411,36 @@ TEST(audio_sample_unpacker, unpack_int24le_stereo)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[8], packed[7], packed[6]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[8], packed[7], packed[6]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[8], packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[14], packed[13], packed[12]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[8], packed[7], packed[6]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[14], packed[13], packed[12]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[8], packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[14], packed[13], packed[12]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[20], packed[19], packed[18]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[8], packed[7], packed[6]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[14], packed[13], packed[12]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[20], packed[19], packed[18]), int24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[8], packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[14], packed[13], packed[12]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[20], packed[19], packed[18]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int24_to_float(packed[26], packed[25], packed[24]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int24_to_float(packed[32], packed[31], packed[30]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int24_to_float(packed[38], packed[37], packed[36]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int24_to_float(packed[44], packed[43], packed[42]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[1], int24_to_float(packed[8], packed[7], packed[6]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[2], int24_to_float(packed[14], packed[13], packed[12]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[3], int24_to_float(packed[20], packed[19], packed[18]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[4], int24_to_float(packed[26], packed[25], packed[24]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[5], int24_to_float(packed[32], packed[31], packed[30]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[6], int24_to_float(packed[38], packed[37], packed[36]), int24_max_diff);
+    ASSERT_NEAR(flat_samples[7], int24_to_float(packed[44], packed[43], packed[42]), int24_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int20le_mono)
@@ -452,36 +458,36 @@ TEST(audio_sample_unpacker, unpack_int20le_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), int20_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[5], packed[4], packed[3]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[5], packed[4], packed[3]), int20_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[5], packed[4], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[8], packed[7], packed[6]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[5], packed[4], packed[3]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[8], packed[7], packed[6]), int20_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[5], packed[4], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[8], packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int20_to_float(packed[11], packed[10], packed[9]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[5], packed[4], packed[3]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[8], packed[7], packed[6]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[3], int20_to_float(packed[11], packed[10], packed[9]), int20_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[5], packed[4], packed[3]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[8], packed[7], packed[6]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int20_to_float(packed[11], packed[10], packed[9]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int20_to_float(packed[14], packed[13], packed[12]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int20_to_float(packed[17], packed[16], packed[15]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int20_to_float(packed[20], packed[19], packed[18]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int20_to_float(packed[23], packed[22], packed[21]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[2], packed[1], packed[0]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[5], packed[4], packed[3]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[8], packed[7], packed[6]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[3], int20_to_float(packed[11], packed[10], packed[9]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[4], int20_to_float(packed[14], packed[13], packed[12]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[5], int20_to_float(packed[17], packed[16], packed[15]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[6], int20_to_float(packed[20], packed[19], packed[18]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[7], int20_to_float(packed[23], packed[22], packed[21]), int20_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_int20be_mono)
@@ -499,36 +505,36 @@ TEST(audio_sample_unpacker, unpack_int20be_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), int20_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[3], packed[4], packed[5]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[3], packed[4], packed[5]), int20_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[3], packed[4], packed[5]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[6], packed[7], packed[8]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[3], packed[4], packed[5]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[6], packed[7], packed[8]), int20_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[3], packed[4], packed[5]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[6], packed[7], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int20_to_float(packed[9], packed[10], packed[11]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[3], packed[4], packed[5]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[6], packed[7], packed[8]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[3], int20_to_float(packed[9], packed[10], packed[11]), int20_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), 0.000001f);
-    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[3], packed[4], packed[5]), 0.000001f);
-    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[6], packed[7], packed[8]), 0.000001f);
-    ASSERT_NEAR(flat_samples[3], int20_to_float(packed[9], packed[10], packed[11]), 0.000001f);
-    ASSERT_NEAR(flat_samples[4], int20_to_float(packed[12], packed[13], packed[14]), 0.000001f);
-    ASSERT_NEAR(flat_samples[5], int20_to_float(packed[15], packed[16], packed[17]), 0.000001f);
-    ASSERT_NEAR(flat_samples[6], int20_to_float(packed[18], packed[19], packed[20]), 0.000001f);
-    ASSERT_NEAR(flat_samples[7], int20_to_float(packed[21], packed[22], packed[23]), 0.000001f);
+    ASSERT_NEAR(flat_samples[0], int20_to_float(packed[0], packed[1], packed[2]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[1], int20_to_float(packed[3], packed[4], packed[5]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[2], int20_to_float(packed[6], packed[7], packed[8]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[3], int20_to_float(packed[9], packed[10], packed[11]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[4], int20_to_float(packed[12], packed[13], packed[14]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[5], int20_to_float(packed[15], packed[16], packed[17]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[6], int20_to_float(packed[18], packed[19], packed[20]), int20_max_diff);
+    ASSERT_NEAR(flat_samples[7], int20_to_float(packed[21], packed[22], packed[23]), int20_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_fix8_24le_mono)
@@ -546,36 +552,36 @@ TEST(audio_sample_unpacker, unpack_fix8_24le_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), fix8_24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[7], packed[6], packed[5], packed[4]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[7], packed[6], packed[5], packed[4]), fix8_24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[7], packed[6], packed[5], packed[4]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[11], packed[10], packed[9], packed[8]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[7], packed[6], packed[5], packed[4]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[11], packed[10], packed[9], packed[8]), fix8_24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[7], packed[6], packed[5], packed[4]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[11], packed[10], packed[9], packed[8]), 0.00001f);
-    ASSERT_NEAR(flat_samples[3], fix8_24_to_float(packed[15], packed[14], packed[13], packed[12]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[7], packed[6], packed[5], packed[4]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[11], packed[10], packed[9], packed[8]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[3], fix8_24_to_float(packed[15], packed[14], packed[13], packed[12]), fix8_24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[7], packed[6], packed[5], packed[4]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[11], packed[10], packed[9], packed[8]), 0.00001f);
-    ASSERT_NEAR(flat_samples[3], fix8_24_to_float(packed[15], packed[14], packed[13], packed[12]), 0.00001f);
-    ASSERT_NEAR(flat_samples[4], fix8_24_to_float(packed[19], packed[18], packed[17], packed[16]), 0.00001f);
-    ASSERT_NEAR(flat_samples[5], fix8_24_to_float(packed[23], packed[22], packed[21], packed[20]), 0.00001f);
-    ASSERT_NEAR(flat_samples[6], fix8_24_to_float(packed[27], packed[26], packed[25], packed[24]), 0.00001f);
-    ASSERT_NEAR(flat_samples[7], fix8_24_to_float(packed[31], packed[30], packed[29], packed[28]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[3], packed[2], packed[1], packed[0]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[7], packed[6], packed[5], packed[4]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[11], packed[10], packed[9], packed[8]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[3], fix8_24_to_float(packed[15], packed[14], packed[13], packed[12]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[4], fix8_24_to_float(packed[19], packed[18], packed[17], packed[16]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[5], fix8_24_to_float(packed[23], packed[22], packed[21], packed[20]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[6], fix8_24_to_float(packed[27], packed[26], packed[25], packed[24]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[7], fix8_24_to_float(packed[31], packed[30], packed[29], packed[28]), fix8_24_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_fix8_24be_mono)
@@ -593,36 +599,36 @@ TEST(audio_sample_unpacker, unpack_fix8_24be_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), fix8_24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[4], packed[5], packed[6], packed[7]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[4], packed[5], packed[6], packed[7]), fix8_24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[4], packed[5], packed[6], packed[7]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[8], packed[9], packed[10], packed[11]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[4], packed[5], packed[6], packed[7]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[8], packed[9], packed[10], packed[11]), fix8_24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[4], packed[5], packed[6], packed[7]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[8], packed[9], packed[10], packed[11]), 0.00001f);
-    ASSERT_NEAR(flat_samples[3], fix8_24_to_float(packed[12], packed[13], packed[14], packed[15]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[4], packed[5], packed[6], packed[7]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[8], packed[9], packed[10], packed[11]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[3], fix8_24_to_float(packed[12], packed[13], packed[14], packed[15]), fix8_24_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[4], packed[5], packed[6], packed[7]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[8], packed[9], packed[10], packed[11]), 0.00001f);
-    ASSERT_NEAR(flat_samples[3], fix8_24_to_float(packed[12], packed[13], packed[14], packed[15]), 0.00001f);
-    ASSERT_NEAR(flat_samples[4], fix8_24_to_float(packed[16], packed[17], packed[18], packed[19]), 0.00001f);
-    ASSERT_NEAR(flat_samples[5], fix8_24_to_float(packed[20], packed[21], packed[22], packed[23]), 0.00001f);
-    ASSERT_NEAR(flat_samples[6], fix8_24_to_float(packed[24], packed[25], packed[26], packed[27]), 0.00001f);
-    ASSERT_NEAR(flat_samples[7], fix8_24_to_float(packed[28], packed[29], packed[30], packed[31]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], fix8_24_to_float(packed[0], packed[1], packed[2], packed[3]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[1], fix8_24_to_float(packed[4], packed[5], packed[6], packed[7]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[2], fix8_24_to_float(packed[8], packed[9], packed[10], packed[11]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[3], fix8_24_to_float(packed[12], packed[13], packed[14], packed[15]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[4], fix8_24_to_float(packed[16], packed[17], packed[18], packed[19]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[5], fix8_24_to_float(packed[20], packed[21], packed[22], packed[23]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[6], fix8_24_to_float(packed[24], packed[25], packed[26], packed[27]), fix8_24_max_diff);
+    ASSERT_NEAR(flat_samples[7], fix8_24_to_float(packed[28], packed[29], packed[30], packed[31]), fix8_24_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_float32le_mono)
@@ -640,36 +646,36 @@ TEST(audio_sample_unpacker, unpack_float32le_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), float32_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[7], packed[6], packed[5], packed[4]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[7], packed[6], packed[5], packed[4]), float32_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[7], packed[6], packed[5], packed[4]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[11], packed[10], packed[9], packed[8]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[7], packed[6], packed[5], packed[4]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[11], packed[10], packed[9], packed[8]), float32_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[7], packed[6], packed[5], packed[4]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[11], packed[10], packed[9], packed[8]), 0.00001f);
-    ASSERT_NEAR(flat_samples[3], float32_to_float(packed[15], packed[14], packed[13], packed[12]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[7], packed[6], packed[5], packed[4]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[11], packed[10], packed[9], packed[8]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[3], float32_to_float(packed[15], packed[14], packed[13], packed[12]), float32_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[7], packed[6], packed[5], packed[4]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[11], packed[10], packed[9], packed[8]), 0.00001f);
-    ASSERT_NEAR(flat_samples[3], float32_to_float(packed[15], packed[14], packed[13], packed[12]), 0.00001f);
-    ASSERT_NEAR(flat_samples[4], float32_to_float(packed[19], packed[18], packed[17], packed[16]), 0.00001f);
-    ASSERT_NEAR(flat_samples[5], float32_to_float(packed[23], packed[22], packed[21], packed[20]), 0.00001f);
-    ASSERT_NEAR(flat_samples[6], float32_to_float(packed[27], packed[26], packed[25], packed[24]), 0.00001f);
-    ASSERT_NEAR(flat_samples[7], float32_to_float(packed[31], packed[30], packed[29], packed[28]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[3], packed[2], packed[1], packed[0]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[7], packed[6], packed[5], packed[4]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[11], packed[10], packed[9], packed[8]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[3], float32_to_float(packed[15], packed[14], packed[13], packed[12]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[4], float32_to_float(packed[19], packed[18], packed[17], packed[16]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[5], float32_to_float(packed[23], packed[22], packed[21], packed[20]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[6], float32_to_float(packed[27], packed[26], packed[25], packed[24]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[7], float32_to_float(packed[31], packed[30], packed[29], packed[28]), float32_max_diff);
 }
 
 TEST(audio_sample_unpacker, unpack_float32be_mono)
@@ -687,34 +693,34 @@ TEST(audio_sample_unpacker, unpack_float32be_mono)
     ttlet unpacker = audio_sample_unpacker{format};
 
     unpacker(packed.data(), flat_samples.data(), 1);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), float32_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 2);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[4], packed[5], packed[6], packed[7]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[4], packed[5], packed[6], packed[7]), float32_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 3);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[4], packed[5], packed[6], packed[7]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[8], packed[9], packed[10], packed[11]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[4], packed[5], packed[6], packed[7]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[8], packed[9], packed[10], packed[11]), float32_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 4);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[4], packed[5], packed[6], packed[7]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[8], packed[9], packed[10], packed[11]), 0.00001f);
-    ASSERT_NEAR(flat_samples[3], float32_to_float(packed[12], packed[13], packed[14], packed[15]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[4], packed[5], packed[6], packed[7]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[8], packed[9], packed[10], packed[11]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[3], float32_to_float(packed[12], packed[13], packed[14], packed[15]), float32_max_diff);
 
     memset(flat_samples.data(), 0, sizeof(float) * 256);
     unpacker(packed.data(), flat_samples.data(), 8);
-    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), 0.00001f);
-    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[4], packed[5], packed[6], packed[7]), 0.00001f);
-    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[8], packed[9], packed[10], packed[11]), 0.00001f);
-    ASSERT_NEAR(flat_samples[3], float32_to_float(packed[12], packed[13], packed[14], packed[15]), 0.00001f);
-    ASSERT_NEAR(flat_samples[4], float32_to_float(packed[16], packed[17], packed[18], packed[19]), 0.00001f);
-    ASSERT_NEAR(flat_samples[5], float32_to_float(packed[20], packed[21], packed[22], packed[23]), 0.00001f);
-    ASSERT_NEAR(flat_samples[6], float32_to_float(packed[24], packed[25], packed[26], packed[27]), 0.00001f);
-    ASSERT_NEAR(flat_samples[7], float32_to_float(packed[28], packed[29], packed[30], packed[31]), 0.00001f);
+    ASSERT_NEAR(flat_samples[0], float32_to_float(packed[0], packed[1], packed[2], packed[3]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[1], float32_to_float(packed[4], packed[5], packed[6], packed[7]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[2], float32_to_float(packed[8], packed[9], packed[10], packed[11]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[3], float32_to_float(packed[12], packed[13], packed[14], packed[15]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[4], float32_to_float(packed[16], packed[17], packed[18], packed[19]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[5], float32_to_float(packed[20], packed[21], packed[22], packed[23]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[6], float32_to_float(packed[24], packed[25], packed[26], packed[27]), float32_max_diff);
+    ASSERT_NEAR(flat_samples[7], float32_to_float(packed[28], packed[29], packed[30], packed[31]), float32_max_diff);
 }
