@@ -90,19 +90,15 @@ struct audio_sample_format {
 
     /** Return a shuffle indices for loading samples into 32 bit integers.
      */
-    [[nodiscard]] i8x16 unpack_load_shuffle_indices() const noexcept;
+    [[nodiscard]] i8x16 load_shuffle_indices() const noexcept;
 
     /** Return a shuffle indices for storing 32 bit samples into packed samples.
      */
-    [[nodiscard]] i8x16 pack_store_shuffle_indices() const noexcept;
+    [[nodiscard]] i8x16 store_shuffle_indices() const noexcept;
 
     /** Return a shuffle indices to shift previous loaded samples for concatenation.
      */
-    [[nodiscard]] i8x16 unpack_concat_shuffle_indices() const noexcept;
-
-    /** Return a shuffle indices to shift previous loaded samples for concatenation.
-     */
-    [[nodiscard]] i8x16 pack_split_shuffle_indices() const noexcept;
+    [[nodiscard]] i8x16 concat_shuffle_indices() const noexcept;
 
     /** Is the audio sample format valid.
      */

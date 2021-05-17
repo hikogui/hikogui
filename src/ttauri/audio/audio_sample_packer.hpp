@@ -8,6 +8,7 @@
 #include "../required.hpp"
 #include "../architecture.hpp"
 #include "../rapid/numeric_array.hpp"
+#include "../random/dither.hpp"
 #include <cstddef>
 #include <bit>
 
@@ -34,10 +35,9 @@ public:
 
 private:
     i8x16 _store_shuffle_indices;
-    i8x16 _split_shuffle_indices;
+    i8x16 _concat_shuffle_indices;
     f32x4 _multiplier;
-    f32x4 _dither_gain;
-    i32x4 _dither_state;
+    mutable dither _dither;
     audio_sample_format _format;
     int _num_chunks_per_quad;
     int _chunk_stride;

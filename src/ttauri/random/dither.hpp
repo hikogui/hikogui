@@ -43,41 +43,53 @@ public:
         // Triangular probability density function is has twice the range.
         maximum_value *= 2.0f;
 
-        _multiplier = f32x8::broadcast(1.0f / maximum_value);
+        _multiplier = f32x4::broadcast(1.0f / maximum_value);
     }
 
     /** Get 8 floating point number to add to a samples.
      * The dither is a TPDF with the maximum being 2 quantization steps.
      */
-    [[nodiscard]] f32x8 next() noexcept
+    f32x4 next() noexcept
     {
-        auto rand = _state.next<u64x2>();
-        auto spdf1 = i16x8{bit_cast<i8x16>(rand)};
-        rand = rand.yx();
-        auto spdf2 = i16x8{bit_cast<i8x16>(rand)};
+        if (static_cast<bool>(++_counter & 1)) {
+            auto rand = _state.next<u64x2>();
+            auto spdf1 = i16x8{bit_cast<i8x16>(rand)};
+            rand = rand.yx();
+            auto spdf2 = i16x8{bit_cast<i8x16>(rand)};
 
-        auto tpdf = bit_cast<u64x2>(spdf1 + spdf2);
-        auto tpdf1 = i32x4{bit_cast<i16x8>(tpdf)};
-        tpdf = tpdf.yx();
-        auto tpdf2 = i32x4{bit_cast<i16x8>(tpdf)};
-
-        return f32x8{i32x8{tpdf1, tpdf2}} * _multiplier;
+            _tpdf = spdf1 + spdf2;
+            return f32x4{i32x4{_tpdf}} * _multiplier;
+        } else {
+            auto second_tpdf = bit_cast<i16x8>(bit_cast<u64x2>(_tpdf).yx());
+            return f32x4{i32x4{second_tpdf}} * _multiplier;
+        }
     }
 
     /** Add dither to the given samples.
-     * Optimized for AVX this function takes 32 instructions for 8 samples.
-     * 
-     * @param sample The sample to add dithering to.
+     *
+     * @param samples The samples to add dithering to.
      * @return The sample with included dither.
      */
-    [[nodiscard]] f32x8 next(f32x8 sample) noexcept
+    [[nodiscard]] f32x4 next(f32x4 samples) noexcept
     {
-        return sample + next();
+        return samples + next();
+    }
+
+    /** Add dither to the given samples.
+     *
+     * @param samples The samples to add dithering to.
+     * @return The sample with included dither.
+     */
+    [[nodiscard]] float next(float sample) noexcept
+    {
+        return get<0>(f32x4::broadcast(sample) + next());
     }
 
 private:
-    f32x8 _multiplier;
+    f32x4 _multiplier;
+    i16x8 _tpdf;
     xorshift128p _state;
+    unsigned char _counter = 0;
 };
 
 } // namespace tt

@@ -61,7 +61,7 @@ namespace tt {
     return num_chunks / num_chunks_per_quad();
 }
 
-[[nodiscard]] i8x16 audio_sample_format::unpack_load_shuffle_indices() const noexcept
+[[nodiscard]] i8x16 audio_sample_format::load_shuffle_indices() const noexcept
 {
     tt_axiom(is_valid());
     ttlet num_samples = num_samples_per_chunk();
@@ -91,7 +91,7 @@ namespace tt {
     return r;
 }
 
-[[nodiscard]] i8x16 audio_sample_format::pack_store_shuffle_indices() const noexcept
+[[nodiscard]] i8x16 audio_sample_format::store_shuffle_indices() const noexcept
 {
     tt_axiom(is_valid());
     ttlet num_samples = num_samples_per_chunk();
@@ -121,7 +121,7 @@ namespace tt {
     return r;
 }
 
-[[nodiscard]] i8x16 audio_sample_format::unpack_concat_shuffle_indices() const noexcept
+[[nodiscard]] i8x16 audio_sample_format::concat_shuffle_indices() const noexcept
 {
     tt_axiom(is_valid());
     ttlet num_samples = num_samples_per_chunk();
@@ -130,11 +130,6 @@ namespace tt {
     ttlet byte_shift = (4 - num_samples) * 4;
 
     return i8x16::byte_srl_shuffle_indices(byte_shift);
-}
-
-[[nodiscard]] i8x16 audio_sample_format::pack_split_shuffle_indices() const noexcept
-{
-    return unpack_concat_shuffle_indices();
 }
 
 [[nodiscard]] bool audio_sample_format::is_valid() const noexcept

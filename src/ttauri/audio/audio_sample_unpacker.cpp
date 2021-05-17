@@ -61,12 +61,13 @@ load_sample(std::byte const *&src, int stride, int num_bytes, int direction, int
     tt_axiom(num_chunks > 0 and num_chunks <= 4);
     tt_axiom(stride > 0);
 
-    auto int_samples = load_samples(src, load_shuffle_indices, stride);
-
-    while (--num_chunks) {
+    auto int_samples = i8x16{};
+    do {
         int_samples = shuffle(int_samples, concat_shuffle_indices);
+        // Due to int_samples reset the dependency is broken on the first iteration, the load_samples
+        // call here should be pipelined in parallel with the first shuffle.
         int_samples |= load_samples(src, load_shuffle_indices, stride);
-    };
+    } while (--num_chunks);
 
     return std::bit_cast<i32x4>(int_samples);
 }
@@ -86,8 +87,8 @@ static void store_samples(float *&dst, f32x4 samples) noexcept
 
 audio_sample_unpacker::audio_sample_unpacker(audio_sample_format format) noexcept : _format(format)
 {
-    _load_shuffle_indices = format.unpack_load_shuffle_indices();
-    _concat_shuffle_indices = format.unpack_concat_shuffle_indices();
+    _load_shuffle_indices = format.load_shuffle_indices();
+    _concat_shuffle_indices = format.concat_shuffle_indices();
 
     _multiplier = f32x4::broadcast(format.unpack_multiplier());
     _num_chunks_per_quad = format.num_chunks_per_quad();
@@ -127,7 +128,6 @@ void audio_sample_unpacker::operator()(std::byte const *tt_restrict src, float *
 
     } else {
         ttlet multiplier = _multiplier;
-
         while (dst != dst_fast_end) {
             ttlet int_samples =
                 load_samples(src, _load_shuffle_indices, _concat_shuffle_indices, _num_chunks_per_quad, _chunk_stride);

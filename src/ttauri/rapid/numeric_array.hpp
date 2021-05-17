@@ -139,6 +139,9 @@ public:
             } else if constexpr (x86_64_v2 and is_i64x2 and other.is_i8x16) {
                 *this = numeric_array{_mm_cvtepi8_epi64(other.reg())};
                 return;
+            } else if constexpr (x86_64_v2 and is_i32x4 and other.is_f32x4) {
+                *this = numeric_array{_mm_cvtps_epi32(other.reg())};
+                return;
             } else if constexpr (x86_64_v2 and is_i32x4 and other.is_i8x16) {
                 *this = numeric_array{_mm_cvtepi8_epi32(other.reg())};
                 return;
@@ -1156,6 +1159,12 @@ public:
 
     [[nodiscard]] friend constexpr numeric_array operator<<(numeric_array const &lhs, unsigned int rhs) noexcept
     {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (x86_64_v2 and is_u64x2) {
+                return numeric_array{_mm_slli_epi64(lhs.reg(), rhs)};
+            }
+        }
+
         auto r = numeric_array{};
         for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] << rhs;
@@ -1165,6 +1174,12 @@ public:
 
     [[nodiscard]] friend constexpr numeric_array operator>>(numeric_array const &lhs, unsigned int rhs) noexcept
     {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (x86_64_v2 and is_u64x2) {
+                return numeric_array{_mm_srli_epi64(lhs.reg(), rhs)};
+            }
+        }
+
         auto r = numeric_array{};
         for (size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] >> rhs;

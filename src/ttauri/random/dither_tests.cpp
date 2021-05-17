@@ -16,7 +16,7 @@ using namespace tt;
 [[nodiscard]] static std::map<int,float> dither_test(int num_bits, float sample_value) noexcept
 {
     auto sample_count = 10000;
-    auto sample_percentage = 100.0f / (sample_count * 8);
+    auto sample_percentage = 100.0f / (sample_count * 4);
 
     // Signed 16 bit PCM has 15 bits of fraction.
     auto d = dither(num_bits);
@@ -24,13 +24,13 @@ using namespace tt;
     // The maximum value of a 16 bit PCM sample.
     auto max_sample_value = static_cast<float>((1_uz << num_bits) - 1);
     auto rcp_max_sample_value = 1.0f / max_sample_value;
-    auto scaled_sample_value = f32x8::broadcast(sample_value * rcp_max_sample_value);
+    auto scaled_sample_value = f32x4::broadcast(sample_value * rcp_max_sample_value);
 
     auto results = std::map<int, float>{};
     for (auto i = 0; i != sample_count; ++i) {
         auto dithered_sample_value = d.next(scaled_sample_value);
 
-        auto result_sample_value = i32x8{dithered_sample_value * max_sample_value};
+        auto result_sample_value = i32x4{dithered_sample_value * max_sample_value};
 
         for (int j = 0; j != result_sample_value.size(); ++j) {
             auto it = results.find(result_sample_value[j]);
