@@ -7,6 +7,7 @@
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
+#include "../rapid/numeric_array.hpp"
 #include <bit>
 
 namespace tt {
@@ -61,58 +62,51 @@ struct audio_sample_format {
      */
     int stride;
 
-    [[nodiscard]] constexpr float pack_multiplier() const noexcept
-    {
-        tt_axiom(is_valid());
-
-        if (is_float) {
-            return 1.0f;
-
-        } else {
-            // Find the maximum value of the fraction bits as a signed number.
-            auto max_value = (1_uz << num_bits) - 1;
-
-            // Align left inside an int32_t.
-            max_value <<= 31 - num_bits - num_guard_bits;
-
-            return narrow_cast<float>(max_value);
-        }
-    }
-
-    [[nodiscard]] constexpr float unpack_multiplier() const noexcept
-    {
-        return 1.0f / pack_multiplier();
-    }
-
-    /** The number of samples that are read in a single 128 bit load.
-     * Always a power of two and up to maximum 4.
+    /** How much to multiply float samples to create integer samples.
      */
-    [[nodiscard]] constexpr int samples_per_load() const noexcept
-    {
-        tt_axiom(is_valid());
+    [[nodiscard]] float pack_multiplier() const noexcept;
 
-        return narrow_cast<int>(std::bit_floor((((16u - num_bytes) / stride) & 3) + 1));
-    }
-
-    /** The number of bytes to advance the load for the next set of samples.
+    /** How much to multiply integer samples to create float samples.
      */
-    [[nodiscard]] constexpr int load_stride() const noexcept
-    {
-        return stride * samples_per_load();
-    }
+    [[nodiscard]] float unpack_multiplier() const noexcept;
 
-    /** The number of loads to do before we can do a 4 sample store.
+    /** The number of packed samples that are handled in a single 128 bit load or store.
+     * Always one of: 1, 2 or 4.
      */
-    [[nodiscard]] constexpr int loads_per_store() const noexcept
-    {
-        return 4 / samples_per_load();
-    }
+    [[nodiscard]] int num_samples_per_chunk() const noexcept;
 
-    [[nodiscard]] constexpr bool is_valid() const noexcept
-    {
-        return (num_bytes >= 1 && num_bytes <= 4) && (num_bits + num_guard_bits <= num_bytes * 8) &&
-            (endian == std::endian::little || endian == std::endian::big) && (stride >= num_bytes);
-    }
+    /** The number of bytes to advance to the next chunk to be loaded or stored.
+     */
+    [[nodiscard]] int chunk_stride() const noexcept;
+
+    /** The number of chunks to load or store to handle 4 samples.
+     */
+    [[nodiscard]] int num_chunks_per_quad() const noexcept;
+
+    /** Calculate the number of 4 sample-quads can be handled as chunked loads and stores.
+     */
+    [[nodiscard]] size_t num_fast_quads(size_t num_samples) const noexcept;
+
+
+    /** Return a shuffle indices for loading samples into 32 bit integers.
+     */
+    [[nodiscard]] i8x16 unpack_load_shuffle_indices() const noexcept;
+
+    /** Return a shuffle indices for storing 32 bit samples into packed samples.
+     */
+    [[nodiscard]] i8x16 pack_store_shuffle_indices() const noexcept;
+
+    /** Return a shuffle indices to shift previous loaded samples for concatenation.
+     */
+    [[nodiscard]] i8x16 unpack_concat_shuffle_indices() const noexcept;
+
+    /** Return a shuffle indices to shift previous loaded samples for concatenation.
+     */
+    [[nodiscard]] i8x16 pack_split_shuffle_indices() const noexcept;
+
+    /** Is the audio sample format valid.
+     */
+    [[nodiscard]] bool is_valid() const noexcept;
 };
 
 } // namespace tt

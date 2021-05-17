@@ -8,6 +8,7 @@
 #include "audio_device_delegate.hpp"
 #include "audio_stream_config.hpp"
 #include "audio_channel.hpp"
+#include "audio_direction.hpp"
 #include "../label.hpp"
 #include <string>
 #include <memory>
@@ -32,12 +33,6 @@ enum class audio_device_state {
     default: tt_no_default();
     }
 }
-
-enum class audio_device_flow_direction {
-    input,
-    output,
-    bidirectional
-};
 
 [[nodiscard]] inline std::string to_string(audio_device_state const &rhs) noexcept
 {
@@ -82,11 +77,11 @@ public:
      */
     virtual audio_device_state state() const noexcept = 0;
 
-    virtual audio_device_flow_direction direction() const noexcept = 0;
+    virtual audio_direction direction() const noexcept = 0;
 
-    [[nodiscard]] virtual std::vector<audio_channel> inputs() noexcept;
+    //[[nodiscard]] virtual std::vector<audio_channel> inputs() noexcept;
 
-    [[nodiscard]] virtual std::vector<audio_channel> outputs() noexcept;
+    //[[nodiscard]] virtual std::vector<audio_channel> outputs() noexcept;
 
     /** Check if a audio configuration is supported by this device.
      * @param config Configuration such as sample rate, sample format and bit-depth.

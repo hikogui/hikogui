@@ -7,32 +7,65 @@
 #include "../cast.hpp"
 #include "../memory.hpp"
 #include "../endian.hpp"
-#include "../geometry/numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include <bit>
 #include <cstdint>
 #include <tuple>
 
 namespace tt {
 
-
-static void store_sample(std::byte *&dst, int32_t x, int num_bytes, int direction, int start_byte, int align_shift) noexcept
+static void store_sample(int32_t int_sample, std::byte *&dst, int stride, int num_bytes, int direction, int start_byte, int align_shift) noexcept
 {
-    x >>= align_shift;
+    int_sample >>= align_shift;
 
     auto p = dst + start_byte;
     do {
-        *p = static_cast<std::byte>(x);
+        *p = static_cast<std::byte>(int_sample);
         p += direction;
-        x >>= 8;
+        int_sample >>= 8;
     } while (--num_bytes);
+
+    dst += stride;
 }
 
-static void store_samples(std::byte *&dst, i32x4 x, int num_bytes, int direction, int start_byte, int align_shift) noexcept
+[[nodiscard]] static void
+store_samples(i8x16 int_samples, std::byte *&dst, i8x16 store_shuffle_indices, int stride) noexcept
 {
-    store_sample(dst, get<0>(x), num_bytes, direction, start_byte, align_shift);
-    store_sample(dst, get<1>(x), num_bytes, direction, start_byte, align_shift);
-    store_sample(dst, get<2>(x), num_bytes, direction, start_byte, align_shift);
-    store_sample(dst, get<3>(x), num_bytes, direction, start_byte, align_shift);
+    tt_axiom(dst != nullptr);
+    tt_axiom(stride > 0);
+
+    // Read out the samples from the other channels, that where packed before.
+    auto tmp = i8x16::load(dst);
+
+    auto packed_samples = shuffle(int_samples, store_shuffle_indices);
+
+    // When the shuffle-index is -1 use the samples from the other channels.
+    tmp = blend(packed_samples, tmp, store_shuffle_indices);
+
+    // Store back the samples from this channel and from the other channel.
+    tmp.store(dst);
+
+    dst += stride;
+}
+
+[[nodiscard]] static void store_samples(
+    i8x16 int_samples,
+    std::byte *&dst,
+    i8x16 store_shuffle_indices,
+    i8x16 split_shuffle_indices,
+    int num_chunks,
+    int stride) noexcept
+{
+    tt_axiom(dst != nullptr);
+    tt_axiom(num_chunks > 0 and num_chunks <= 4);
+    tt_axiom(stride > 0);
+
+    store_samples(int_samples, dst, store_shuffle_indices, stride);
+
+    while (--num_chunks) {
+        int_samples = shuffle(int_samples, split_shuffle_indices);
+        store_samples(int_samples, dst, store_shuffle_indices, stride);
+    };
 }
 
 [[nodiscard]] static float load_sample(float const *&src) noexcept
@@ -47,56 +80,54 @@ static void store_samples(std::byte *&dst, i32x4 x, int num_bytes, int direction
     return r;
 }
 
-
 audio_sample_packer::audio_sample_packer(audio_sample_format format) noexcept : _format(format)
 {
-    _gain = f32x4::broadcast(format.pack_gain());
+    _store_shuffle_indices = format.pack_store_shuffle_indices();
+    _split_shuffle_indices = format.pack_split_shuffle_indices();
+
+    _multiplier = f32x4::broadcast(format.pack_multiplier());
+    _num_chunks_per_quad = format.num_chunks_per_quad();
+    _chunk_stride = format.chunk_stride();
 
     _direction = format.endian == std::endian::little ? 1 : -1;
     _start_byte = format.endian == std::endian::little ? 0 : format.num_bytes - 1;
     _align_shift = 32 - format.num_bytes * 8;
 }
 
-[[nodiscard]] size_t audio_sample_packer::calculate_num_fast_samples(size_t num_samples) const noexcept
-{
-    return floor(num_samples, 4);
-}
-
-void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt_restrict src, size_t num_samples)
-    const noexcept
+void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt_restrict dst, size_t num_samples) const noexcept
 {
     tt_axiom(src != nullptr);
     tt_axiom(dst != nullptr);
     tt_axiom(_format.is_valid());
 
     // Calculate a conservative number of samples that can be copied quickly
-    // without overflowing the src buffer.
-    ttlet dst_end = dst + num_samples;
-    ttlet dst_fast_end = dst + calculate_num_fast_samples(num_samples);
+    // without overflowing the dst buffer.
+    ttlet src_end = src + num_samples;
+    ttlet src_fast_end = src + _format.num_fast_quads(num_samples) * 4;
 
     if (_format.is_float) {
-        while (dst != dst_fast_end) {
+        while (src != src_fast_end) {
             ttlet float_samples = load_samples(src);
-            ttlet int_samples = bit_cast<i32x4>(float_samples);
-            store_samples(dst, int_samples);
+            ttlet int_samples = bit_cast<i8x16>(float_samples);
+            store_samples(int_samples, dst, _store_shuffle_indices, _split_shuffle_indices, _num_chunks_per_quad, _chunk_stride);
         }
-        while (dst != dst_end) {
+        while (src != src_end) {
             ttlet float_sample = load_sample(src);
             ttlet int_sample = std::bit_cast<int32_t>(float_sample);
-            store_sample(dst, int_sample, _format.num_bytes,  _direction, _start_byte, _align_shift);
+            store_sample(int_sample, dst, _format.stride, _format.num_bytes, _direction, _start_byte, _align_shift);
         }
 
     } else {
-        ttlet gain = _gain;
-        while (dst != dst_fast_end) {
+        ttlet multiplier = _multiplier;
+        while (src != src_fast_end) {
             ttlet float_samples = load_samples(src);
-            ttlet int_samples = static_cast<i32x4>(float_samples) * gain;
-            store_samples(dst, int_samples);
+            ttlet int_samples = bit_cast<i8x16>(static_cast<i32x4>(float_samples * multiplier));
+            store_samples(int_samples, dst, _store_shuffle_indices, _split_shuffle_indices, _num_chunks_per_quad, _chunk_stride);
         }
-        while (dst != dst_end) {
+        while (src != src_end) {
             ttlet float_sample = load_sample(src);
-            ttlet int_sample = static_cast<int32_t>(float_sample) * get<0>(gain);
-            store_sample(dst, int_sample, _format.num_bytes, _direction, _start_byte, _align_shift);
+            ttlet int_sample = static_cast<int32_t>(std::round(float_sample * get<0>(multiplier)));
+            store_sample(int_sample, dst, _format.stride, _format.num_bytes, _direction, _start_byte, _align_shift);
         }
     }
 }

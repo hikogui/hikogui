@@ -34,13 +34,6 @@ using i8x16_raw = std::array<int8_t, 16>;
     return to_i8x16_raw(_mm_undefined_si128());
 }
 
-/** Shuffle the bytes in the SSE register
- */
-[[nodiscard]] inline i8x16_raw i8x16_x64v2_shuffle(i8x16_raw const &lhs, i8x16_raw const &rhs) noexcept
-{
-    return to_i8x16_raw(_mm_shuffle_epi8(to_m128i(lhs), to_m128i(rhs)));
-}
-
 /** Or bits in lhs with bits in rhs.
  */
 [[nodiscard]] inline i8x16_raw i8x16_x64v2_or(i8x16_raw const &lhs, i8x16_raw const &rhs) noexcept

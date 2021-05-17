@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "audio_direction.hpp"
+
 namespace tt {
 
 class audio_channel {

@@ -88,15 +88,15 @@ audio_device_state audio_device_win32::state() const noexcept
     }
 }
 
-audio_device_flow_direction audio_device_win32::direction() const noexcept
+audio_direction audio_device_win32::direction() const noexcept
 {
     EDataFlow data_flow;
     tt_hresult_check(_endpoint->GetDataFlow(&data_flow));
 
     switch (data_flow) {
-    case eRender: return audio_device_flow_direction::output;
-    case eCapture: return audio_device_flow_direction::input;
-    case eAll: return audio_device_flow_direction::bidirectional;
+    case eRender: return audio_direction::output;
+    case eCapture: return audio_direction::input;
+    case eAll: return audio_direction::bidirectional;
     default: tt_no_default();
     }
 }

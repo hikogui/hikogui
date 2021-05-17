@@ -1593,13 +1593,63 @@ public:
         return r;
     }
 
+    [[nodiscard]] friend constexpr numeric_array
+    blend(numeric_array const &a, numeric_array const &b, numeric_array const &mask) requires(is_i8x16)
+    {
+        if (!std::is_constant_evaluated()) {
+            if constexpr (x86_64_v2) {
+                return numeric_array{_mm_blendv_epi8(a.reg(), b.reg(), mask.reg())};
+            }
+        }
+
+        auto r = numeric_array{};
+
+        for (size_t i = 0; i != N; ++i) {
+            r[i] = mask[i] >= 0 ? a[i] : b[i];
+        }
+
+        return r;
+    }
+
+    [[nodiscard]] static constexpr numeric_array byte_srl_shuffle_indices(unsigned int rhs) requires(is_i8x16)
+    {
+        static_assert(std::endian::native == std::endian::little);
+
+        auto r = numeric_array{};
+        for (auto i = 0; i != 16; ++i) {
+            if ((i + rhs) < 16) {
+                r[i] = narrow_cast<int8_t>(i + rhs);
+            } else {
+                // Indices set to -1 result in a zero after a byte shuffle.
+                r[i] = -1;
+            }
+        }
+        return r;
+    }
+
+    [[nodiscard]] static constexpr numeric_array byte_sll_shuffle_indices(unsigned int rhs) requires(is_i8x16)
+    {
+        static_assert(std::endian::native == std::endian::little);
+
+        auto r = numeric_array{};
+        for (auto i = 0; i != 16; ++i) {
+            if ((i - rhs) >= 0) {
+                r[i] = narrow_cast<int8_t>(i - rhs);
+            } else {
+                // Indices set to -1 result in a zero after a byte shuffle.
+                r[i] = -1;
+            }
+        }
+        return r;
+    }
+
     /** Shuffle a 16x byte array, using the indices from the right-hand-side.
      */
     [[nodiscard]] friend constexpr numeric_array shuffle(numeric_array const &lhs, numeric_array const &rhs) requires(is_i8x16)
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (lhs.is_i8x16 and rhs.is_i8x16 and x86_64_v2) {
-                return numeric_array{i8x16_x64v2_shuffle(lhs.v, rhs.v)};
+            if constexpr (x86_64_v2) {
+                return numeric_array{_mm_shuffle_epi8(lhs.reg(), rhs.reg())};
             }
         }
 

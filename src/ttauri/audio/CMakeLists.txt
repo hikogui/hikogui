@@ -17,15 +17,18 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.hpp>
     audio_system_delegate.hpp
+    audio_sample_format.cpp
+    audio_sample_format.hpp
     audio_sample_unpacker.cpp
     audio_sample_unpacker.hpp
-    #audio_sample_packer.cpp
-    #audio_sample_packer.hpp
+    audio_sample_packer.cpp
+    audio_sample_packer.hpp
 )
 
 if(TT_BUILD_TESTS)
     target_sources(ttauri_tests PRIVATE
         audio_sample_unpacker_tests.cpp
+        audio_sample_packer_tests.cpp
     )
 endif()
 

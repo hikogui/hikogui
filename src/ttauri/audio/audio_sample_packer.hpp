@@ -7,7 +7,7 @@
 #include "audio_sample_format.hpp"
 #include "../required.hpp"
 #include "../architecture.hpp"
-#include "../geometry/numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include <cstddef>
 #include <bit>
 
@@ -33,10 +33,14 @@ public:
     void operator()(float const *tt_restrict src, std::byte *tt_restrict dst, size_t num_samples) const noexcept;
 
 private:
-    f32x4 _gain;
+    i8x16 _store_shuffle_indices;
+    i8x16 _split_shuffle_indices;
+    f32x4 _multiplier;
     f32x4 _dither_gain;
     i32x4 _dither_state;
     audio_sample_format _format;
+    int _num_chunks_per_quad;
+    int _chunk_stride;
     int _direction;
     int _start_byte;
     int _align_shift;

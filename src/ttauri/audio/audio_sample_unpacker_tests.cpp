@@ -11,7 +11,7 @@
 
 using namespace tt;
 
-[[nodiscard]] constexpr std::array<std::byte, 256> make_packed() noexcept
+[[nodiscard]] static std::array<std::byte, 256> make_packed() noexcept
 {
     auto r = std::array<std::byte, 256>{};
     for (size_t i = 0; i != 256; ++i) {
@@ -24,32 +24,32 @@ using namespace tt;
     return r;
 }
 
-float int16_to_float(std::byte hi, std::byte lo)
+[[nodiscard]] static float int16_to_float(std::byte hi, std::byte lo)
 {
     int16_t i = static_cast<int16_t>(hi) << 8 | static_cast<int16_t>(lo);
     return static_cast<float>(i) / 32767.0f;
 }
 
-float int24_to_float(std::byte hi, std::byte mid, std::byte lo)
+[[nodiscard]] static float int24_to_float(std::byte hi, std::byte mid, std::byte lo)
 {
     int32_t i = static_cast<int32_t>(hi) << 24 | static_cast<int32_t>(mid) << 16 | static_cast<int32_t>(lo) << 8;
     return static_cast<float>(i) / 2147483392.0f;
 }
 
-float int20_to_float(std::byte hi, std::byte mid, std::byte lo)
+[[nodiscard]] static float int20_to_float(std::byte hi, std::byte mid, std::byte lo)
 {
     int32_t i = static_cast<int32_t>(hi) << 24 | static_cast<int32_t>(mid) << 16 | static_cast<int32_t>(lo) << 8;
     return static_cast<float>(i) / 2147479552.0f;
 }
 
-float fix8_24_to_float(std::byte hi, std::byte mid_hi, std::byte mid_lo, std::byte lo)
+[[nodiscard]] static float fix8_24_to_float(std::byte hi, std::byte mid_hi, std::byte mid_lo, std::byte lo)
 {
     int32_t i = static_cast<int32_t>(hi) << 24 | static_cast<int32_t>(mid_hi) << 16 | static_cast<int32_t>(mid_lo) << 8 |
         static_cast<int32_t>(mid_lo);
     return static_cast<float>(i) / 8388607.0f;
 }
 
-float float32_to_float(std::byte hi, std::byte mid_hi, std::byte mid_lo, std::byte lo)
+[[nodiscard]] static float float32_to_float(std::byte hi, std::byte mid_hi, std::byte mid_lo, std::byte lo)
 {
     uint32_t u = static_cast<uint32_t>(hi) << 24 | static_cast<uint32_t>(mid_hi) << 16 | static_cast<uint32_t>(mid_lo) << 8 |
         static_cast<uint32_t>(lo);
