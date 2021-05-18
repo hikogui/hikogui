@@ -11,7 +11,7 @@ namespace tt {
 [[nodiscard]] constexpr char32_t CP1252_to_UTF32(char inputCharacter) noexcept
 {
     ttlet inputCharacter_ = static_cast<uint8_t>(inputCharacter);
-    if (inputCharacter_ >= 0 && inputCharacter_ <= 0x7f) {
+    if (inputCharacter_ <= 0x7f) {
         return inputCharacter_;
     } else if (inputCharacter_ >= 0xa0) {
         return inputCharacter_;

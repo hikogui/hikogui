@@ -102,12 +102,12 @@ int main(int argc, char* argv[])
     }
 
     auto const input_path = std::filesystem::path(argv[1]);
-    auto const input_data = read_file(input_path);
+    auto const input_data = read_file(input_path); // lgtm[cpp/path-injection]
     auto const input_filename = input_path.filename();
     auto const identifier = make_identifier(input_filename.generic_string());
 
     auto const output_path = std::filesystem::path(argv[2]);
-    auto os = open_output(output_path);
+    auto os = open_output(output_path); // lgtm[cpp/path-injection]
 
     write(os, "#include \"ttauri/static_resource_list.hpp\"\n");
     write(os, "#include <span>\n");

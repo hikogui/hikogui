@@ -746,7 +746,7 @@ public:
     template<size_t I>
     [[nodiscard]] friend constexpr T &get(numeric_array &rhs) noexcept
     {
-        static_assert(I >= 0 && I < N, "Index out of bounds");
+        static_assert(I < N, "Index out of bounds");
         return std::get<I>(rhs.v);
     }
 
@@ -1579,10 +1579,10 @@ public:
     /** Shift the elements left.
      * Other element are set to zero.
      */
-    [[nodiscard]] friend constexpr numeric_array shift_left(numeric_array const &lhs, int rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array shift_left(numeric_array const &lhs, unsigned int rhs) noexcept
     {
         numeric_array r;
-        for (size_t i = 0; i != N; ++i) {
+        for (ssize_t i = 0; i != N; ++i) {
             if ((i - rhs) >= 0) {
                 r[i] = lhs[i - rhs];
             } else {
@@ -1595,10 +1595,10 @@ public:
     /** Shift the elements left.
      * Other element are set to zero.
      */
-    [[nodiscard]] friend constexpr numeric_array shift_right(numeric_array const &lhs, int rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array shift_right(numeric_array const &lhs, unsigned int rhs) noexcept
     {
         numeric_array r;
-        for (size_t i = 0; i != N; ++i) {
+        for (ssize_t i = 0; i != N; ++i) {
             if ((i + rhs) < N) {
                 r[i] = lhs[i + rhs];
             } else {

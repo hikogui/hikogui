@@ -1196,6 +1196,9 @@ public:
 
         case phy_vector_ptr_id:
             if constexpr (HasLargeObjects) {
+                // The string representation of a vector is like a json array.
+                // Enclosed with brackets '[' and ']'. Each value separated with
+                // comma ','.
                 std::string r = "[";
                 auto count = 0;
                 for (auto i = vector_begin(); i != vector_end(); i++) {
@@ -1212,6 +1215,8 @@ public:
 
         case phy_map_ptr_id:
             if constexpr (HasLargeObjects) {
+                // We sort the map based on keys before creating a string
+                // so that the representation of a map is stable between implementations.
                 std::vector<std::pair<datum_impl, datum_impl>> items;
                 items.reserve(size());
                 std::copy(map_begin(), map_end(), std::back_inserter(items));
@@ -1219,6 +1224,9 @@ public:
                     return a.first < b.first;
                 });
 
+                // The string representation for a map is like a json object.
+                // Enclosed with braces '{' and '}' Each pair is separated with
+                // comma ',' and key and value separated with ':'.
                 std::string r = "{";
                 auto count = 0;
                 for (auto &item : items) {
@@ -1982,13 +1990,13 @@ public:
         case datum_impl::phy_integer_id:
         case datum_impl::phy_integer_ptr_id:
             return (
-                (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) ||
+                (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) || // lgtm[cpp/equality-on-floats]
                 (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
                 (rhs.is_integer() && static_cast<int64_t>(lhs) == static_cast<int64_t>(rhs)));
         case datum_impl::phy_decimal_id:
         case datum_impl::phy_decimal_ptr_id:
             return (
-                (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) ||
+                (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) || // lgtm[cpp/equality-on-floats]
                 (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
                 (rhs.is_integer() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)));
         case datum_impl::phy_ymd_id: return rhs.is_ymd() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
@@ -2006,7 +2014,7 @@ public:
         case datum_impl::phy_bytes_ptr_id: return (rhs.is_bytes() && static_cast<bstring>(lhs) == static_cast<bstring>(rhs));
         default:
             if (lhs.is_phy_float()) {
-                return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
+                return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs); // lgtm[cpp/equality-on-floats]
             } else {
                 tt_no_default();
             }
