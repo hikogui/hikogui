@@ -54,34 +54,34 @@ public:
     template<>
     u64x2 next() noexcept
     {
-        // uint64_t x = _state[0];
-        // uint64_t y = y_ = _state[1];
+        // scalar: uint64_t x = _state[0];
+        // scalar: uint64_t y = y_ = _state[1];
         auto s = _state;
         auto t = s.yx();
 
-        // x ^= x << 23;
-        // y ^= y << 23;
+        // scalar: x ^= x << 23;
+        // scalar: y ^= y << 23;
         s ^= (s << 23);
 
-        // x ^= x >> 17;
-        // y ^= y >> 17;
+        // scalar: x ^= x >> 17;
+        // scalar: y ^= y >> 17;
         s ^= (s >> 17);
 
-        // x ^= y_ ^ (y_ >> 26)
+        // scalar: x ^= y_ ^ (y_ >> 26)
         auto tmp = s ^ t ^ (t >> 26);
 
-        // auto x_ = x;
-        //t.y() = tmp.x();
+        // scalar: auto x_ = x;
+        // scalar: t.y() = tmp.x();
         t = insert<0,1>(t, tmp);
         
-        // y ^= x_ ^ (x_ >> 26);
+        // scalar: y ^= x_ ^ (x_ >> 26);
         s ^= t ^ (t >> 26);
 
-        // state[0] = x
-        // state[1] = y
+        // scalar: state[0] = x
+        // scalar: state[1] = y
         _state = s;
 
-        // return {x + y_, y + x_}
+        // scalar: return {x + y_, y + x_}
         return s + t;
     }
 
