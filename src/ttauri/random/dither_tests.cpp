@@ -13,7 +13,7 @@
 using namespace std;
 using namespace tt;
 
-[[nodiscard]] static std::map<int,float> dither_test(int num_bits, float sample_value) noexcept
+[[nodiscard]] static std::map<int, float> dither_test(int num_bits, float sample_value) noexcept
 {
     auto sample_count = 10000;
     auto sample_percentage = 100.0f / (sample_count * 4);
@@ -28,14 +28,16 @@ using namespace tt;
 
     auto results = std::map<int, float>{};
     for (auto i = 0; i != sample_count; ++i) {
-        auto dithered_sample_value = d.next(scaled_sample_value);
+        auto dither_value = d.next();
+        auto dithered_sample_value = scaled_sample_value + dither_value;
 
-        auto result_sample_value = i32x4{dithered_sample_value * max_sample_value};
+        auto result_sample_values = i32x4{dithered_sample_value * max_sample_value};
 
-        for (int j = 0; j != result_sample_value.size(); ++j) {
-            auto it = results.find(result_sample_value[j]);
+        for (int j = 0; j != result_sample_values.size(); ++j) {
+            auto result_sample_value = result_sample_values[j];
+            auto it = results.find(result_sample_value);
             if (it == results.end()) {
-                results[result_sample_value[j]] = sample_percentage;
+                results[result_sample_value] = sample_percentage;
             } else {
                 it->second += sample_percentage;
             }
@@ -49,49 +51,61 @@ TEST(dither, PCM8_1_0)
 {
     auto results = dither_test(7, 1.0f);
 
-    ASSERT_TRUE(results[0] > 11.5f and results[0] < 13.5f);
-    ASSERT_TRUE(results[1] > 74.0f and results[1] < 76.0f);
-    ASSERT_TRUE(results[2] > 11.5f and results[2] < 13.5f);
+    EXPECT_NEAR(results[-1], 0.0f, 0.1f);
+    EXPECT_NEAR(results[0], 12.5f, 5.0f);
+    EXPECT_NEAR(results[1], 75.0f, 5.0f);
+    EXPECT_NEAR(results[2], 12.5f, 5.0f);
+    EXPECT_NEAR(results[3], 0.0f, 0.1f);
 }
 
 TEST(dither, PCM16_1_0)
 {
     auto results = dither_test(15, 1.0f);
 
-    ASSERT_TRUE(results[0] > 11.5f and results[0] < 13.5f);
-    ASSERT_TRUE(results[1] > 74.0f and results[1] < 76.0f);
-    ASSERT_TRUE(results[2] > 11.5f and results[2] < 13.5f);
+    EXPECT_NEAR(results[-1], 0.0f, 0.1f);
+    EXPECT_NEAR(results[0], 12.5f, 5.0f);
+    EXPECT_NEAR(results[1], 75.0f, 5.0f);
+    EXPECT_NEAR(results[2], 12.5f, 5.0f);
+    EXPECT_NEAR(results[3], 0.0f, 0.1f);
 }
 
 TEST(dither, PCM24_1_0)
 {
     auto results = dither_test(23, 1.0f);
 
-    ASSERT_TRUE(results[0] > 11.5f and results[0] < 13.5f);
-    ASSERT_TRUE(results[1] > 74.0f and results[1] < 76.0f);
-    ASSERT_TRUE(results[2] > 11.5f and results[2] < 13.5f);
+    EXPECT_NEAR(results[-1], 0.0f, 0.1f);
+    EXPECT_NEAR(results[0], 12.5f, 5.0f);
+    EXPECT_NEAR(results[1], 75.0f, 5.0f);
+    EXPECT_NEAR(results[2], 12.5f, 5.0f);
+    EXPECT_NEAR(results[3], 0.0f, 0.1f);
 }
 
 TEST(dither, PCM8_1_5)
 {
     auto results = dither_test(7, 1.5f);
 
-    ASSERT_TRUE(results[1] > 49.0f and results[1] < 51.0f);
-    ASSERT_TRUE(results[2] > 49.0f and results[2] < 51.0f);
+    EXPECT_NEAR(results[0], 0.0f, 0.1f);
+    EXPECT_NEAR(results[1], 50.0f, 5.0f);
+    EXPECT_NEAR(results[2], 50.0f, 5.0f);
+    EXPECT_NEAR(results[3], 0.0f, 0.1f);
 }
 
 TEST(dither, PCM16_1_5)
 {
     auto results = dither_test(15, 1.5f);
 
-    ASSERT_TRUE(results[1] > 49.0f and results[1] < 51.0f);
-    ASSERT_TRUE(results[2] > 49.0f and results[2] < 51.0f);
+    EXPECT_NEAR(results[0], 0.0f, 0.1f);
+    EXPECT_NEAR(results[1], 50.0f, 5.0f);
+    EXPECT_NEAR(results[2], 50.0f, 5.0f);
+    EXPECT_NEAR(results[3], 0.0f, 0.1f);
 }
 
 TEST(dither, PCM24_1_5)
 {
     auto results = dither_test(23, 1.5f);
 
-    ASSERT_TRUE(results[1] > 49.0f and results[1] < 51.0f);
-    ASSERT_TRUE(results[2] > 49.0f and results[2] < 51.0f);
+    EXPECT_NEAR(results[0], 0.0f, 0.1f);
+    EXPECT_NEAR(results[1], 50.0f, 5.0f);
+    EXPECT_NEAR(results[2], 50.0f, 5.0f);
+    EXPECT_NEAR(results[3], 0.0f, 0.1f);
 }
