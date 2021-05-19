@@ -194,7 +194,7 @@ public:
 
         if (event.cause.leftButton) {
             handled = true;
-            if (*enabled) {
+            if (enabled()) {
                 if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
                     handle_event(command::gui_activate);
                 }
@@ -208,7 +208,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
         _request_relayout = true;
 
-        if (*enabled) {
+        if (enabled()) {
             switch (command) {
                 using enum tt::command;
             case gui_activate:
@@ -244,7 +244,7 @@ public:
         }
 
         if (_visible_rectangle.contains(position)) {
-            r = std::max(r, hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default});
+            r = std::max(r, hit_box{weak_from_this(), _draw_layer, enabled() ? hit_box::Type::Button : hit_box::Type::Default});
         }
 
         return r;
@@ -253,7 +253,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_normal(group) && *enabled;
+        return is_normal(group) && enabled();
     }
 
     template<typename T, typename... Args>
@@ -264,7 +264,7 @@ public:
 
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (*enabled && _selecting) {
+        if (enabled() && _selecting) {
             return theme::global->accentColor;
         } else {
             return super::focus_color();

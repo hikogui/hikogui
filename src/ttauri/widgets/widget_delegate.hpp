@@ -6,29 +6,32 @@
 
 #include "../required.hpp"
 #include "../notifier.hpp"
+#include "../observable.hpp"
 #include <type_traits>
 #include <memory>
 
 namespace tt {
 class widget;
 
-enum class widget_update_level {
-    redraw,
-    layout,
-    constrain
-};
+enum class widget_update_level { redraw, layout, constrain };
 
 class widget_delegate {
 public:
     using notifier_type = notifier<void(widget_update_level)>;
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
 
-    widget_delegate() = default;
     widget_delegate(widget_delegate const &) = delete;
     widget_delegate(widget_delegate &&) = delete;
     widget_delegate &operator=(widget_delegate const &) = delete;
     widget_delegate &operator=(widget_delegate &&) = delete;
     virtual ~widget_delegate() = default;
+
+    widget_delegate() noexcept : _enabled(true)
+    {
+        _enabled_callback = _enabled.subscribe([this](auto...) {
+            _notifier(widget_update_level::redraw);
+        });
+    }
 
     template<typename Func>
     [[nodiscard]] callback_ptr_type subscribe(Func &&func) noexcept
@@ -38,10 +41,22 @@ public:
 
     virtual void init(widget &self) noexcept {}
     virtual void deinit(widget &self) noexcept {}
-    [[nodiscard]] virtual bool enabled(widget &self) noexcept { return true; }
+
+    virtual bool enabled(widget const &self) const noexcept
+    {
+        return *_enabled;
+    }
+
+    virtual void set_enabled(widget &self, observable<bool> rhs) noexcept
+    {
+        _enabled = std::move(rhs);
+    }
 
 private:
     notifier_type _notifier;
+
+    observable<bool> _enabled;
+    decltype(_enabled)::callback_ptr_type _enabled_callback;
 };
 
 } // namespace tt

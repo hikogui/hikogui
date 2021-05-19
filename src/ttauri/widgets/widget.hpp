@@ -100,10 +100,6 @@ public:
      */
     gui_window &window;
 
-    /** The widget is enabled.
-     */
-    observable<bool> enabled = true;
-
     /*! Constructor for creating sub views.
      */
     widget(
@@ -119,17 +115,15 @@ public:
 
     /** Should be called right after allocating and constructing a widget.
      */
-    virtual void init() noexcept
-    {
-        _delegate->init(*this);
-    }
+    virtual void init() noexcept;
 
     /** Should be called right after allocating and constructing a widget.
      */
-    virtual void deinit() noexcept
-    {
-        _delegate->deinit(*this);
-    }
+    virtual void deinit() noexcept;
+
+    virtual bool enabled() const noexcept;
+
+    virtual void set_enabled(observable<bool> rhs) noexcept;
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
@@ -670,7 +664,6 @@ protected:
     int _logical_layer;
 
 private:
-    typename decltype(enabled)::callback_ptr_type _enabled_callback;
     typename widget_delegate::callback_ptr_type _delegate_callback;
 };
 

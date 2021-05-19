@@ -10,6 +10,7 @@
 #include "notifier.hpp"
 #include "detail/observable_value.hpp"
 #include "detail/observable_not.hpp"
+#include "algorithm.hpp"
 #include <memory>
 #include <functional>
 #include <algorithm>

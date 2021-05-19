@@ -13,7 +13,7 @@ widget::widget(
     gui_window &_window,
     std::shared_ptr<abstract_container_widget> parent,
     std::shared_ptr<widget_delegate> delegate) noexcept :
-    enabled(true), window(_window), _delegate(std::move(delegate)), _parent(std::move(parent)), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
+    window(_window), _delegate(std::move(delegate)), _parent(std::move(parent)), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
 {
     if (auto p = _parent.lock()) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -40,17 +40,33 @@ widget::widget(
         }
     });
 
-    _enabled_callback = enabled.subscribe([this](auto...) {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->request_redraw();
-    });
-
     _minimum_size = extent2::nan();
     _preferred_size = extent2::nan();
     _maximum_size = extent2::nan();
 }
 
 widget::~widget() {}
+
+void widget::init() noexcept
+{
+    return _delegate->init(*this);
+}
+
+void widget::deinit() noexcept
+{
+    return _delegate->deinit(*this);
+}
+
+    [[nodiscard]] bool widget::enabled() const noexcept
+    {
+        return _delegate->enabled(*this);
+    }
+
+void widget::set_enabled(observable<bool> rhs) noexcept
+{
+    return _delegate->set_enabled(*this, std::move(rhs));
+}
+
 
 bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
@@ -72,7 +88,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
-    if (*enabled) {
+    if (enabled()) {
         if (_hover) {
             return theme::global->fillColor(_semantic_layer + 1);
         } else {
@@ -85,7 +101,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 [[nodiscard]] color widget::foreground_color() const noexcept
 {
-    if (*enabled) {
+    if (enabled()) {
         if (_hover) {
             return theme::global->borderColor(_semantic_layer + 1);
         } else {
@@ -98,7 +114,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 [[nodiscard]] color widget::focus_color() const noexcept
 {
-    if (*enabled) {
+    if (enabled()) {
         if (_focus && window.active) {
             return theme::global->accentColor;
         } else if (_hover) {
@@ -113,7 +129,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 [[nodiscard]] color widget::accent_color() const noexcept
 {
-    if (*enabled) {
+    if (enabled()) {
         if (window.active) {
             return theme::global->accentColor;
         } else {
@@ -126,7 +142,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
-    if (*enabled) {
+    if (enabled()) {
         return theme::global->labelStyle.color;
     } else {
         return theme::global->borderColor(_semantic_layer - 1);

@@ -47,14 +47,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_normal(group) && *enabled;
+        return is_normal(group) && enabled();
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (*enabled) {
+        if (enabled()) {
             switch (command) {
             case command::gui_activate: this->_notifier(); return true;
             case command::gui_enter:
@@ -75,7 +75,7 @@ public:
 
         if (event.cause.leftButton) {
             handled = true;
-            if (*enabled) {
+            if (enabled()) {
                 if (compare_then_assign(_pressed, static_cast<bool>(event.down.leftButton))) {
                     request_redraw();
                 }
@@ -93,7 +93,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default};
+            return hit_box{weak_from_this(), _draw_layer, enabled() ? hit_box::Type::Button : hit_box::Type::Default};
         } else {
             return hit_box{};
         }

@@ -152,9 +152,9 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         if (_parent_is_toolbar) {
-            return is_toolbar(group) && *this->enabled;
+            return is_toolbar(group) && this->enabled();
         } else {
-            return is_menu(group) && *this->enabled;
+            return is_menu(group) && this->enabled();
         }
     }
 
