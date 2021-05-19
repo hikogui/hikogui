@@ -121,8 +121,14 @@ public:
      */
     virtual void deinit() noexcept;
 
+    /** Check if this widget is enabled.
+     * This call is forwarded to `widget_delegate::enabled()`.
+     */
     virtual bool enabled() const noexcept;
 
+    /** Set the widget enabled or disabled.
+     * This call is forwarded to `widget_delegate::set_enabled()`.
+     */
     virtual void set_enabled(observable<bool> rhs) noexcept;
 
     /** Get the margin around the Widget.
@@ -662,6 +668,20 @@ protected:
      * @sa logical_layer() const
      */
     int _logical_layer;
+
+    template<typename T>
+    T const &delegate() const noexcept
+    {
+        auto &d = *_delegate;
+        return narrow_cast<T const &>(d);
+    }
+
+    template<typename T>
+    T &delegate() noexcept
+    {
+        auto &d = *_delegate;
+        return narrow_cast<T &>(d);
+    }
 
 private:
     typename widget_delegate::callback_ptr_type _delegate_callback;

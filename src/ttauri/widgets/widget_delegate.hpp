@@ -52,7 +52,7 @@ public:
         _enabled = std::move(rhs);
     }
 
-private:
+protected:
     notifier_type _notifier;
 
     observable<bool> _enabled;
