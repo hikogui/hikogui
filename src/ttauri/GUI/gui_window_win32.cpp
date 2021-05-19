@@ -169,9 +169,9 @@ void gui_window_win32::create_window()
 
 gui_window_win32::gui_window_win32(
     gui_system &system,
-    std::weak_ptr<gui_window_delegate> const &delegate,
+    std::shared_ptr<gui_window_delegate> delegate,
     label const &title) :
-    gui_window(system, delegate, title), trackMouseLeaveEventParameters()
+    gui_window(system, std::move(delegate), title), trackMouseLeaveEventParameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 

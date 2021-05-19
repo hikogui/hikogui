@@ -45,7 +45,7 @@ std::shared_ptr<T> gui_window::make_widget(size_t column_nr, size_t row_nr, Args
 template<typename T, typename... Args>
 std::shared_ptr<T> gui_window::make_widget(std::string_view address, Args &&...args)
 {
-    ttlet [column_nr, row_nr] = parse_absolute_spread_sheet_address(address);
+    ttlet [column_nr, row_nr] = parse_spread_sheet_address(address);
     return make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
 }
 

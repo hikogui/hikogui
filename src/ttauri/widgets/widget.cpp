@@ -9,15 +9,36 @@
 
 namespace tt {
 
-widget::widget(gui_window &_window, std::shared_ptr<abstract_container_widget> parent) noexcept :
-    enabled(true), window(_window), _parent(parent), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
+widget::widget(
+    gui_window &_window,
+    std::shared_ptr<abstract_container_widget> parent,
+    std::shared_ptr<widget_delegate> delegate) noexcept :
+    enabled(true), window(_window), _delegate(std::move(delegate)), _parent(std::move(parent)), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
 {
-    if (parent) {
+    if (auto p = _parent.lock()) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        _draw_layer = parent->draw_layer() + 1.0f;
-        _logical_layer = parent->logical_layer() + 1;
-        _semantic_layer = parent->semantic_layer() + 1;
+        _draw_layer = p->draw_layer() + 1.0f;
+        _logical_layer = p->logical_layer() + 1;
+        _semantic_layer = p->semantic_layer() + 1;
     }
+
+    _delegate_callback = _delegate->subscribe([this](widget_update_level level) {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        
+        switch (level) {
+        case widget_update_level::redraw:
+            this->request_redraw();
+            break;
+        case widget_update_level::layout:
+            _request_relayout = true;
+            break;
+        case widget_update_level::constrain:
+            _request_reconstrain = true;
+            break;
+        default:
+            tt_no_default();
+        }
+    });
 
     _enabled_callback = enabled.subscribe([this](auto...) {
         ttlet lock = std::scoped_lock(gui_system_mutex);

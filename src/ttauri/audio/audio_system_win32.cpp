@@ -108,7 +108,8 @@ void audio_system_win32::update_device_list() noexcept
     ttlet lock = std::scoped_lock(audio_system::mutex);
 
     IMMDeviceCollection *device_collection;
-    tt_hresult_check(_device_enumerator->EnumAudioEndpoints(eAll, DEVICE_STATEMASK_ALL, &device_collection));
+    tt_hresult_check(_device_enumerator->EnumAudioEndpoints(
+        eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED, &device_collection));
     tt_assert(device_collection != nullptr);
 
     UINT number_of_devices;
@@ -134,8 +135,12 @@ void audio_system_win32::update_device_list() noexcept
 
         } else {
             auto device = std::allocate_shared<audio_device_win32>(locked_memory_allocator<audio_device_win32>{}, win32_device);
-            //auto device = std::make_shared<audio_device_win32>(win32_device);
-            tt_log_info("Found audio device {} state={}", device->name(), device->state());
+            tt_log_info(
+                "Found audio device \"{}\", state={}, channels={}, speakers={}",
+                device->name(),
+                device->state(),
+                device->full_num_channels(),
+                device->full_channel_mapping());
             _devices.push_back(std::move(device));
         }
     }

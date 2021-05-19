@@ -28,6 +28,7 @@
 #include "../unfair_recursive_mutex.hpp"
 #include "../flow_layout.hpp"
 #include "../ranged_numeric.hpp"
+#include "widget_delegate.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
@@ -105,7 +106,10 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept;
+    widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget_delegate> delegate = std::make_shared<widget_delegate>()) noexcept;
 
     virtual ~widget();
     widget(const widget &) = delete;
@@ -115,7 +119,17 @@ public:
 
     /** Should be called right after allocating and constructing a widget.
      */
-    virtual void init() noexcept {}
+    virtual void init() noexcept
+    {
+        _delegate->init(*this);
+    }
+
+    /** Should be called right after allocating and constructing a widget.
+     */
+    virtual void deinit() noexcept
+    {
+        _delegate->deinit(*this);
+    }
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
@@ -238,8 +252,10 @@ public:
      *
      * @pre `mutex` must be locked by current thread.
      */
-    void
-    set_layout_parameters(geo::transformer auto const &local_to_parent, extent2 size, aarectangle const &clipping_rectangle) noexcept
+    void set_layout_parameters(
+        geo::transformer auto const &local_to_parent,
+        extent2 size,
+        aarectangle const &clipping_rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -258,8 +274,10 @@ public:
         _visible_rectangle = intersect(aarectangle{size}, clipping_rectangle);
     }
 
-    void
-    set_layout_parameters_from_parent(aarectangle child_rectangle, aarectangle parent_clipping_rectangle, float draw_layer_delta) noexcept
+    void set_layout_parameters_from_parent(
+        aarectangle child_rectangle,
+        aarectangle parent_clipping_rectangle,
+        float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         tt_axiom(child_rectangle.extent() >= _minimum_size);
@@ -565,6 +583,8 @@ public:
     parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
 
 protected:
+    std::shared_ptr<widget_delegate> _delegate;
+
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
@@ -651,6 +671,7 @@ protected:
 
 private:
     typename decltype(enabled)::callback_ptr_type _enabled_callback;
+    typename widget_delegate::callback_ptr_type _delegate_callback;
 };
 
 } // namespace tt

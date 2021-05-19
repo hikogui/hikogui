@@ -6,9 +6,11 @@
 
 namespace demo {
 
-void license_preferences_controller::init(tt::grid_layout_widget &self) noexcept
+void license_preferences_controller::init(tt::widget &_self) noexcept
 {
     using namespace tt;
+
+    auto &self = dynamic_cast<grid_layout_widget&>(_self);
 
     auto preferences_controller_ = preferences_controller.lock();
     tt_assert(preferences_controller_);

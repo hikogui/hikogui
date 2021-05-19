@@ -9,6 +9,7 @@
 #include "audio_stream_config.hpp"
 #include "audio_channel.hpp"
 #include "audio_direction.hpp"
+#include "audio_channel_mapping.hpp"
 #include "../label.hpp"
 #include <string>
 #include <memory>
@@ -59,25 +60,34 @@ public:
 
     /** The nonephemeral unique id that for an audio device on the system.
      */
-    virtual std::string id() const noexcept = 0;
+    [[nodiscard]] virtual std::string id() const noexcept = 0;
 
     /** Get a user friendly name of the audio device.
      * This is a combination of the name of the device and
      * the name of the end-point.
      */
-    virtual std::string name() const noexcept = 0;
+    [[nodiscard]] virtual std::string name() const noexcept = 0;
 
     /** Get a user friendly label of the audio device.
      * This is a combination of the name of the device and
      * the name of the end-point, plus an icon for the driver architecture.
      */
-    virtual label label() const noexcept = 0;
+    [[nodiscard]] virtual label label() const noexcept = 0;
 
     /** Get the current state of the audio device.
      */
-    virtual audio_device_state state() const noexcept = 0;
+    [[nodiscard]] virtual audio_device_state state() const noexcept = 0;
 
-    virtual audio_direction direction() const noexcept = 0;
+    [[nodiscard]] virtual audio_direction direction() const noexcept = 0;
+
+    [[nodiscard]] virtual size_t full_num_channels() const noexcept = 0;
+
+    /** Get a bitmap of channel mappings for this audio device.
+     * The value returned is independent on the how many channels are actually configured.
+     * 
+     * @return Mapping of audio channels to speaker locations.
+     */
+    [[nodiscard]] virtual audio_channel_mapping full_channel_mapping() const noexcept = 0;
 
     //[[nodiscard]] virtual std::vector<audio_channel> inputs() noexcept;
 

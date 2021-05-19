@@ -15,8 +15,8 @@ namespace tt {
 
 using namespace std;
 
-window_widget::window_widget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept :
-    abstract_container_widget(window, {}), title(std::move(title)), _content_delegate(delegate)
+window_widget::window_widget(gui_window &window, std::shared_ptr<widget_delegate> delegate, label title) noexcept :
+    abstract_container_widget(window, {}), title(std::move(title)), _content_delegate(std::move(delegate))
 {
 }
 

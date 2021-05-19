@@ -7,6 +7,8 @@ target_sources(ttauri PRIVATE
     abstract_button_widget.hpp
     abstract_container_widget.hpp
     abstract_toggle_button_widget.hpp
+    audio_device_configuration_controller.cpp
+    audio_device_configuration_controller.hpp
     boolean_checkbox_widget.hpp
     button_widget.hpp
     checkbox_widget.hpp

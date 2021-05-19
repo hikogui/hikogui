@@ -12,13 +12,16 @@ class abstract_container_widget : public widget {
 public:
     using super = widget;
 
-    abstract_container_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept :
-        super(window, parent)
+    abstract_container_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget_delegate> delegate = std::make_shared<widget_delegate>()) noexcept :
+        super(window, std::move(parent), std::move(delegate))
     {
-        if (parent) {
+        if (auto p = _parent.lock()) {
             // Most containers will not draw itself, only its children.
             ttlet lock = std::scoped_lock(gui_system_mutex);
-            _semantic_layer = parent->semantic_layer();
+            _semantic_layer = p->semantic_layer();
         }
         _margin = 0.0f;
     }
