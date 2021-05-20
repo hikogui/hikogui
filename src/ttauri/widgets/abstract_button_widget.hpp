@@ -5,6 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
+#include "button_delegate.hpp"
 
 namespace tt {
 
@@ -17,26 +18,116 @@ class abstract_button_widget : public widget {
 public:
     using super = widget;
     using value_type = T;
+    using delegate_type = button_delegate<value_type>;
+    using callback_ptr_type = typename button_delegate<value_type>::pressed_callback_ptr_type;
 
-    value_type const true_value;
-    observable<value_type> value;
-
-    using notifier_type = notifier<void()>;
-    using callback_type = typename notifier_type::callback_type;
-    using callback_ptr_type = typename notifier_type::callback_ptr_type;
-
-    template<typename Value = observable<value_type>>
+    template<typename Value>
     [[nodiscard]] abstract_button_widget(
         gui_window &window,
         std::shared_ptr<abstract_container_widget> parent,
-        value_type true_value,
-        Value &&value = {}) :
-        super(window, parent), true_value(std::move(true_value)), value(std::forward<Value>(value))
+        std::shared_ptr<delegate_type> delegate,
+        Value &&value) :
+        super(window, parent, delegate)
     {
+        set_value(std::forward<Value>(value));
     }
 
-    color background_color() const noexcept override
+    [[nodiscard]] button_state state() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().state(*this);
+    }
+
+    [[nodiscard]] tt::label label() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().label(*this);
+    }
+
+    void set_label(tt::label const &label) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        set_on_label(label);
+        set_off_label(label);
+        set_other_label(label);
+    }
+
+    [[nodiscard]] tt::label on_label() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().on_label(*this);
+    }
+
+    void set_on_label(tt::label const &label) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_on_label(*this, label);
+    }
+
+    [[nodiscard]] tt::label off_label() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().off_label(*this);
+    }
+
+    void set_off_label(tt::label const &label) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_off_label(*this, label);
+    }
+
+    [[nodiscard]] tt::label other_label() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().other_label(*this);
+    }
+
+    void set_other_label(tt::label const &label) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_other_label(*this, label);
+    }
+
+    [[nodiscard]] value_type value() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().value(*this);
+    }
+
+    template<typename Value>
+    void set_value(Value &&value) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        return this->delegate<delegate_type>().set_value(*this, std::forward<Value>(value));
+    }
+
+    [[nodiscard]] value_type on_value() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().on_value(*this);
+    }
+
+    void set_on_value(value_type const &value) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_on_value(*this, value);
+    }
+
+    [[nodiscard]] value_type off_value() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().off_value(*this);
+    }
+
+    void set_off_value(value_type const &value) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_off_value(*this, value);
+    }
+
+    [[nodiscard]] color background_color() const noexcept override
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         if (_pressed) {
             return theme::global->fillColor(this->_semantic_layer + 2);
         } else {
@@ -56,9 +147,9 @@ public:
 
         if (enabled()) {
             switch (command) {
-            case command::gui_activate: this->_notifier(); return true;
+            case command::gui_activate: this->delegate<delegate_type>().pressed(*this, _button_type); return true;
             case command::gui_enter:
-                this->_notifier();
+                this->delegate<delegate_type>().pressed(*this, _button_type);
                 this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
                 return true;
             default:;
@@ -100,29 +191,30 @@ public:
     }
 
     /** Subscribe a callback to call when the button is activated.
-     * @see notifier::subscribe()
+     * @see button_delegate::subscribe_pressed()
      */
     template<typename Callback>
     [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
-        return _notifier.subscribe(std::forward<Callback>(callback));
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        return this->delegate<delegate_type>().subscribe_pressed(*this, std::forward<Callback>(callback));
     }
 
     /** Unsubscribe a callback.
-     * @see notifier::subscribe()
+     * @see button_delegate::unsubscribe_pressed()
      */
     void unsubscribe(callback_ptr_type &callback_ptr) noexcept
     {
-        return _notifier.unsubscribe(callback_ptr);
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        return this->delegate<delegate_type>().unsubscribe_pressed(*this, callback_ptr);
     }
 
 protected:
+    button_type _button_type = button_type::momentary;
+
     /** The button is in a pressed state.
      */
     bool _pressed = false;
-
-private:
-    notifier_type _notifier;
 };
 
 } // namespace tt

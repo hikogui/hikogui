@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_radio_button_widget.hpp"
+#include "abstract_button_widget.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../observable.hpp"
 #include "../label.hpp"
@@ -17,37 +17,30 @@
 namespace tt {
 
 template<typename T>
-class toolbar_tab_button_widget final : public abstract_radio_button_widget<T> {
+class toolbar_tab_button_widget final : public abstract_button_widget<T> {
 public:
-    using super = abstract_radio_button_widget<T>;
+    using super = abstract_button_widget<T>;
     using value_type = typename super::value_type;
+    using delegate_type = typename super::delegate_type;
 
-    observable<label> label;
-
-    template<typename Value, typename Label = observable<tt::label>>
+    template<typename Value>
     toolbar_tab_button_widget(
         gui_window &window,
         std::shared_ptr<abstract_container_widget> parent,
-        value_type true_value,
-        Value &&value,
-        Label &&label = {}) noexcept :
-        abstract_radio_button_widget<T>(window, parent, std::move(true_value), std::forward<Value>(value)),
-        label(std::forward<Label>(label))
+        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>(),
+        Value &&value = value_type{}) noexcept :
+        super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
+        this->_button_type = button_type::radio;
     }
 
-    toolbar_tab_button_widget(gui_window &window, std::shared_ptr<widget> parent, value_type true_value) noexcept :
-        toolbar_tab_button_widget(window, parent, std::move(true_value), observable<int>{}, observable<tt::label>{})
+    template<typename Value>
+    toolbar_tab_button_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        Value &&value = value_type{}) noexcept :
+        toolbar_tab_button_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
     {
-    }
-
-    ~toolbar_tab_button_widget() {}
-
-    void init() noexcept override
-    {
-        _label_callback = label.subscribe([this](auto...) {
-            this->_request_reconstrain = true;
-        });
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
@@ -61,7 +54,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(alignment::top_center, *label, theme::global->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::top_center, this->label(), theme::global->labelStyle);
             ttlet extra_size = extent2{theme::global->margin * 2.0f, 0.0f};
 
             this->_minimum_size = _label_stencil->minimum_size() + extra_size;
@@ -139,13 +132,12 @@ public:
     }
 
 private:
-    typename decltype(label)::callback_ptr_type _label_callback;
     aarectangle _button_rectangle;
     std::unique_ptr<stencil> _label_stencil;
 
     void draw_focus_line(draw_context context) noexcept
     {
-        if (this->_focus && this->window.active && *this->value == this->true_value) {
+        if (this->_focus && this->window.active && this->state() == tt::button_state::on) {
             ttlet &parent_ = this->parent();
             ttlet parent_rectangle = aarectangle{this->_parent_to_local * parent_.rectangle()};
 
@@ -174,7 +166,7 @@ private:
         // The focus line will be placed at 0.7.
         ttlet button_z = (this->_focus && this->window.active) ? translate_z(0.8f) : translate_z(0.6f);
 
-        auto button_color = (this->_hover || *this->value == this->true_value) ?
+        auto button_color = (this->_hover || this->state() == button_state::on) ?
             theme::global->fillColor(this->_semantic_layer - 1) :
             theme::global->fillColor(this->_semantic_layer);
 

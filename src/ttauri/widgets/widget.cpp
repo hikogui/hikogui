@@ -13,7 +13,12 @@ widget::widget(
     gui_window &_window,
     std::shared_ptr<abstract_container_widget> parent,
     std::shared_ptr<widget_delegate> delegate) noexcept :
-    window(_window), _delegate(std::move(delegate)), _parent(std::move(parent)), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
+    window(_window),
+    _delegate(std::move(delegate)),
+    _parent(std::move(parent)),
+    _draw_layer(0.0f),
+    _logical_layer(0),
+    _semantic_layer(0)
 {
     if (auto p = _parent.lock()) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -24,19 +29,12 @@ widget::widget(
 
     _delegate_callback = _delegate->subscribe([this](widget_update_level level) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        
+
         switch (level) {
-        case widget_update_level::redraw:
-            this->request_redraw();
-            break;
-        case widget_update_level::layout:
-            _request_relayout = true;
-            break;
-        case widget_update_level::constrain:
-            _request_reconstrain = true;
-            break;
-        default:
-            tt_no_default();
+        case widget_update_level::redraw: this->request_redraw(); break;
+        case widget_update_level::layout: _request_relayout = true; break;
+        case widget_update_level::constrain: _request_reconstrain = true; break;
+        default: tt_no_default();
         }
     });
 
@@ -57,16 +55,17 @@ void widget::deinit() noexcept
     return _delegate->deinit(*this);
 }
 
-    [[nodiscard]] bool widget::enabled() const noexcept
-    {
-        return _delegate->enabled(*this);
-    }
+[[nodiscard]] bool widget::enabled() const noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+    return _delegate->enabled(*this);
+}
 
 void widget::set_enabled(observable<bool> rhs) noexcept
 {
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     return _delegate->set_enabled(*this, std::move(rhs));
 }
-
 
 bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {

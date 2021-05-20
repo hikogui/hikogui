@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "abstract_bool_toggle_button_widget.hpp"
 #include "abstract_button_widget.hpp"
-#include "abstract_toggle_button_widget.hpp"
 #include "boolean_checkbox_widget.hpp"
 #include "button_widget.hpp"
 #include "checkbox_widget.hpp"

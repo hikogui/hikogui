@@ -3,18 +3,16 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(ttauri PRIVATE
-    abstract_bool_toggle_button_widget.hpp
     abstract_button_widget.hpp
     abstract_container_widget.hpp
-    abstract_toggle_button_widget.hpp
     audio_device_configuration_controller.cpp
     audio_device_configuration_controller.hpp
     boolean_checkbox_widget.hpp
+    button_delegate.hpp
     button_widget.hpp
     checkbox_widget.hpp
     grid_layout_widget.cpp
     grid_layout_widget.hpp
-    grid_layout_delegate.hpp
     label_widget.hpp
     text_field_delegate.hpp
     text_field_widget.hpp

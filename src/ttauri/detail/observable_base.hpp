@@ -33,8 +33,6 @@ public:
     using notifier_type = notifier<void()>;
     using callback_type = typename notifier_type::callback_type;
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
-    using time_point = typename hires_utc_clock::time_point;
-    using duration = typename hires_utc_clock::duration;
 
     observable_base(observable_base const &) = delete;
     observable_base(observable_base &&) = delete;
@@ -44,58 +42,13 @@ public:
 
     /** Constructor.
      */
-    observable_base() noexcept : _previous_value(), _last_modified(), _notifier() {}
-
-    /** Get the previous value
-     */
-    [[nodiscard]] value_type previous_value() const noexcept
-    {
-        ttlet lock = std::scoped_lock(_mutex);
-        return _previous_value;
-    }
-
-    /** Time when the value was modified last.
-     */
-    [[nodiscard]] time_point time_when_last_modified() const noexcept
-    {
-        ttlet lock = std::scoped_lock(_mutex);
-        return _last_modified;
-    }
-
-    /** Duration since the value was last modified.
-     */
-    [[nodiscard]] duration duration_since_last_modified() const noexcept
-    {
-        return hires_utc_clock::now() - time_when_last_modified();
-    }
-
-    /** The relative time since the start of the animation.
-     * The relative time since the start of the animation according to the duration of the animation.
-     *
-     * @param animation_duration A relative value between 0.0 and 1.0.
-     */
-    [[nodiscard]] float animation_progress(duration animation_duration) const noexcept
-    {
-        tt_axiom(animation_duration.count() != 0);
-
-        return std::clamp(
-            narrow_cast<float>(duration_since_last_modified().count()) / narrow_cast<float>(animation_duration.count()),
-            0.0f,
-            1.0f);
-    }
+    observable_base() noexcept : _notifier() {}
 
     /** Get the current value.
      * The value is often calculated directly from the cached values retrieved from
      * notifications down the chain.
      */
     [[nodiscard]] virtual value_type load() const noexcept = 0;
-
-    /** Get the current value animated over the animation_duration.
-     */
-    [[nodiscard]] value_type load(duration animation_duration) const noexcept
-    {
-        return mix(animation_progress(animation_duration), previous_value(), load());
-    }
 
     /** Set the value.
      * The value is often not directly stored, but instead forwarded up
@@ -127,24 +80,6 @@ public:
 
 protected:
     mutable unfair_mutex _mutex;
-
-    /** Notify listeners of a change in value.
-     * This function is used to notify listeners of this observable and also
-     * to keep track of the previous value and start the animation.
-     */
-    void notify(value_type const &old_value, value_type const &new_value) noexcept
-    {
-        {
-            ttlet lock = std::scoped_lock(_mutex);
-            _previous_value = old_value;
-            _last_modified = hires_utc_clock::now();
-        }
-        _notifier();
-    }
-
-private:
-    value_type _previous_value;
-    time_point _last_modified;
     notifier_type _notifier;
 };
 

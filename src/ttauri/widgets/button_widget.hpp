@@ -19,29 +19,26 @@ template<typename T>
 class button_widget final : public abstract_button_widget<T> {
 public:
     using super = abstract_button_widget<T>;
-    using value_type = T;
-
-    observable<label> label;
+    using delegate_type = typename super::delegate_type;
+    using value_type = typename super::value_type;
 
     template<typename Value = observable<value_type>>
     button_widget(
         gui_window &window,
         std::shared_ptr<abstract_container_widget> parent,
-        value_type true_value,
-        Value &&value = {}) noexcept :
-        super(window, parent, std::move(true_value), std::forward<Value>(value))
+        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>(),
+        Value &&value = value_type{}) noexcept :
+        super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
     }
 
-    void init() noexcept override
+    template<typename Value = observable<value_type>>
+    button_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        Value &&value) noexcept :
+        button_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
     {
-        _label_callback = label.subscribe([this](auto...) {
-            this->_request_reconstrain = true;
-        });
-
-        _callback = this->subscribe([this](auto...) {
-            this->clicked();
-        });
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -49,7 +46,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(alignment::middle_center, *label, theme::global->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::middle_center, this->label(), theme::global->labelStyle);
             this->_minimum_size = _label_stencil->minimum_size() + theme::global->margin2Dx2;
             this->_preferred_size = _label_stencil->preferred_size() + theme::global->margin2Dx2;
             this->_maximum_size = _label_stencil->maximum_size() + theme::global->margin2Dx2;
@@ -73,7 +70,7 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        if (*this->value) {
+        if (this->state() == button_state::on) {
             return this->accent_color();
         } else {
             return super::background_color();
@@ -104,9 +101,6 @@ public:
     }
 
 private:
-    typename decltype(label)::callback_ptr_type _label_callback;
-    super::callback_ptr_type _callback;
-
     std::unique_ptr<label_stencil> _label_stencil;
 };
 

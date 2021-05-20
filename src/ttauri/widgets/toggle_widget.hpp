@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "abstract_bool_toggle_button_widget.hpp"
+#include "abstract_button_widget.hpp"
 #include "../label.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../observable.hpp"
+#include "../animator.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -17,26 +18,20 @@
 
 namespace tt {
 
-class toggle_widget final : public abstract_bool_toggle_button_widget {
+class toggle_widget final : public abstract_button_widget<bool> {
 public:
-    using super = abstract_bool_toggle_button_widget;
+    using super = abstract_button_widget<bool>;
+    using value_type = typename super::value_type;
+    using delegate_type = typename super::delegate_type;
 
-    observable<label> on_label;
-    observable<label> off_label;
-
-    template<typename Value = observable<bool>>
+    template<typename Value = value_type>
     toggle_widget(
         gui_window &window,
         std::shared_ptr<abstract_container_widget> parent,
-        Value &&value = observable<bool>{}) noexcept :
-        super(window, parent, std::forward<Value>(value))
+        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>(),
+        Value &&value = value_type{}) noexcept :
+        super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
-        _on_label_callback = this->on_label.subscribe([this](auto...) {
-            _request_reconstrain = true;
-        });
-        _off_label_callback = this->off_label.subscribe([this](auto...) {
-            _request_reconstrain = true;
-        });
     }
 
     ~toggle_widget() {}
@@ -46,14 +41,11 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _on_label_stencil = stencil::make_unique(alignment::top_left, *on_label, theme::global->labelStyle);
-            _off_label_stencil = stencil::make_unique(alignment::top_left, *off_label, theme::global->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::top_left, this->label(), theme::global->labelStyle);
 
-            ttlet minimum_label_size = max(_on_label_stencil->minimum_size(), _off_label_stencil->minimum_size());
-            auto preferred_label_size = max(_on_label_stencil->preferred_size(), _off_label_stencil->preferred_size());
-            auto maximum_label_size = max(_on_label_stencil->maximum_size(), _off_label_stencil->maximum_size());
-            maximum_label_size = max(maximum_label_size, minimum_label_size);
-            preferred_label_size = clamp(preferred_label_size, minimum_label_size, maximum_label_size);
+            ttlet minimum_label_size = _label_stencil->minimum_size();
+            ttlet preferred_label_size = _label_stencil->preferred_size();
+            ttlet maximum_label_size = _label_stencil->maximum_size();
 
             _minimum_size = {
                 minimum_label_size.width() + theme::global->smallSize * 2.0f + theme::global->margin,
@@ -86,8 +78,7 @@ public:
 
             ttlet labelX = theme::global->smallSize * 2.0f + theme::global->margin;
             _label_rectangle = aarectangle{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
-            _on_label_stencil->set_layout_parameters(_label_rectangle, base_line());
-            _off_label_stencil->set_layout_parameters(_label_rectangle, base_line());
+            _label_stencil->set_layout_parameters(_label_rectangle, base_line());
 
             _slider_rectangle =
                 shrink(aarectangle{0.0f, _rail_rectangle.bottom(), _rail_rectangle.height(), _rail_rectangle.height()}, 2.5f);
@@ -105,7 +96,7 @@ public:
 
         if (overlaps(context, _clipping_rectangle)) {
             draw_rail(context);
-            draw_slider(context);
+            draw_slider(context, display_time_point);
             draw_label(context);
         }
 
@@ -122,12 +113,9 @@ private:
 
     aarectangle _label_rectangle;
 
-    std::unique_ptr<label_stencil> _on_label_stencil;
-    std::unique_ptr<label_stencil> _off_label_stencil;
+    std::unique_ptr<label_stencil> _label_stencil;
 
-    decltype(value)::callback_ptr_type _value_callback;
-    decltype(on_label)::callback_ptr_type _on_label_callback;
-    decltype(off_label)::callback_ptr_type _off_label_callback;
+    animator<float> _animated_value = animator<float>(_animation_duration);
 
     void draw_rail(draw_context draw_context) noexcept
     {
@@ -137,18 +125,19 @@ private:
             _rail_rectangle, background_color(), focus_color(), corner_shapes{_rail_rectangle.height() * 0.5f});
     }
 
-    void draw_slider(draw_context draw_context) noexcept
+    void draw_slider(draw_context draw_context, hires_utc_clock::time_point display_time_point) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
+        _animated_value.update(this->state() == button_state::on ? 1.0f : 0.0f, display_time_point);
+
         // Prepare animation values.
-        ttlet animationProgress = value.animation_progress(_animation_duration);
-        if (animationProgress < 1.0f) {
+        if (_animated_value.is_animating()) {
             request_redraw();
         }
 
-        ttlet animatedValue = to_float(value, _animation_duration);
-        ttlet positionedSliderRectangle = translate3{_slider_move_range * animatedValue, 0.0f, 0.1f} * _slider_rectangle;
+        ttlet positionedSliderRectangle =
+            translate3{_slider_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _slider_rectangle;
 
         draw_context.draw_box(
             positionedSliderRectangle, accent_color(), corner_shapes{positionedSliderRectangle.height() * 0.5f});
@@ -157,9 +146,7 @@ private:
     void draw_label(draw_context draw_context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        ttlet &label_stencil = *value ? _on_label_stencil : _off_label_stencil;
-        tt_stencil_draw(label_stencil, draw_context, label_color());
+        tt_stencil_draw(_label_stencil, draw_context, label_color());
     }
 };
 

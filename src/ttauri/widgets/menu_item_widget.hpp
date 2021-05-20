@@ -48,27 +48,26 @@ class menu_item_widget final : public abstract_button_widget<T> {
 public:
     using super = abstract_button_widget<T>;
     using value_type = typename super::value_type;
+    using delegate_type = typename super::delegate_type;
 
-    observable<label> label;
-
-    template<typename Value = observable<value_type>>
+    template<typename Value = value_type>
     menu_item_widget(
         gui_window &window,
         std::shared_ptr<abstract_container_widget> parent,
-        value_type true_value,
-        Value &&value = {}) noexcept :
-        super(window, parent, std::move(true_value), std::forward<Value>(value)), _parent_is_toolbar(parent->is_toolbar())
+        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>(),
+        Value &&value = value_type{}) noexcept :
+        super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
         // menu item buttons hug the container-border and neighbor widgets.
+        this->_button_type = button_type::momentary;
         this->_margin = 0.0f;
     }
 
-    void init() noexcept override
+    template<typename Value>
+    menu_item_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Value &&value) noexcept
+        :
+        menu_item_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
     {
-        super::init();
-        _label_callback = this->label.subscribe([this](auto...) {
-            this->_request_reconstrain = true;
-        });
     }
 
     /** Set the `show_check_mark()` flag.
@@ -216,7 +215,9 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(alignment::middle_left, *label, theme::global->labelStyle);
+            auto label = this->delegate<delegate_type>().label(*this);
+
+            _label_stencil = stencil::make_unique(alignment::middle_left, label, theme::global->labelStyle);
             _label_stencil->set_show_icon(_show_icon);
 
             _check_mark_stencil = stencil::make_unique(alignment::middle_center, elusive_icon::Ok);
@@ -301,7 +302,6 @@ public:
     }
 
 private:
-    typename decltype(label)::callback_ptr_type _label_callback;
     std::unique_ptr<label_stencil> _label_stencil;
     std::unique_ptr<image_stencil> _check_mark_stencil;
 
@@ -323,7 +323,7 @@ private:
 
     void draw_check_mark(draw_context context) noexcept
     {
-        if (this->value == this->true_value) {
+        if (this->delegate<delegate_type>().state(*this) == button_state::on) {
             tt_stencil_draw(_check_mark_stencil, context, this->accent_color(), translate_z(0.1f));
         }
     }

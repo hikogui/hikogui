@@ -33,7 +33,7 @@ public:
             if (new_value != old_value) {
                 _value = new_value;
                 this->_mutex.unlock();
-                this->notify(old_value, new_value);
+                this->_notifier();
                 return true;
             } else {
                 this->_mutex.unlock();
@@ -43,7 +43,7 @@ public:
         } else {
             _value = new_value;
             this->_mutex.unlock();
-            this->notify(old_value, new_value);
+            this->_notifier();
             return true;
         }
     }

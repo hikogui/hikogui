@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_radio_button_widget.hpp"
+#include "abstract_button_widget.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../observable.hpp"
 #include "../label.hpp"
@@ -17,47 +17,27 @@
 namespace tt {
 
 template<typename T>
-class radio_button_widget final : public abstract_radio_button_widget<T> {
+class radio_button_widget final : public abstract_button_widget<T> {
 public:
-    using super = abstract_radio_button_widget<T>;
+    using super = abstract_button_widget<T>;
     using value_type = typename super::value_type;
-
-    observable<label> label;
-
-    template<typename Value, typename Label>
-    radio_button_widget(
-        gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
-        value_type true_value,
-        Value &&value,
-        Label &&label) noexcept :
-        abstract_radio_button_widget<T>(window, parent, std::move(true_value), std::forward<Value>(value)),
-        label(std::forward<Label>(label))
-    {
-    }
+    using delegate_type = typename super::delegate_type;
 
     template<typename Value>
     radio_button_widget(
         gui_window &window,
         std::shared_ptr<abstract_container_widget> parent,
-        value_type true_value,
-        Value &&value) noexcept :
-        radio_button_widget(window, parent, std::move(true_value), std::forward<Value>(value), observable<tt::label>{})
+        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>(),
+        Value &&value = {}) noexcept :
+        super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
+        this->_button_type = button_type::radio;
     }
 
-    radio_button_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, value_type true_value) noexcept :
-        radio_button_widget(window, parent, std::move(true_value), observable<value_type>{}, observable<tt::label>{})
+    template<typename Value>
+    radio_button_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Value &&value = {}) noexcept :
+        radio_button_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
     {
-    }
-
-    ~radio_button_widget() {}
-
-    void init() noexcept override
-    {
-        label_callback = label.subscribe([this](auto...) {
-            this->_request_reconstrain = true;
-        });
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -65,7 +45,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_stencil = stencil::make_unique(alignment::top_left, *label, theme::global->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::top_left, this->label(), theme::global->labelStyle);
 
             ttlet minimum_height = std::max(_label_stencil->preferred_size().height(), theme::global->smallSize);
             ttlet minimum_width = theme::global->smallSize + theme::global->margin + _label_stencil->preferred_size().width();
@@ -94,7 +74,10 @@ public:
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             _outline_rectangle = aarectangle{
-                0.0f, std::round(this->base_line() - theme::global->smallSize * 0.5f), theme::global->smallSize, theme::global->smallSize};
+                0.0f,
+                std::round(this->base_line() - theme::global->smallSize * 0.5f),
+                theme::global->smallSize,
+                theme::global->smallSize};
 
             ttlet labelX = _outline_rectangle.right() + theme::global->margin;
             _label_rectangle = aarectangle{labelX, 0.0f, this->rectangle().width() - labelX, this->rectangle().height()};
@@ -123,8 +106,6 @@ private:
     aarectangle _label_rectangle;
     std::unique_ptr<stencil> _label_stencil;
 
-    typename decltype(label)::callback_ptr_type label_callback;
-
     void draw_outline(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -138,9 +119,8 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         // draw pip
-        if (this->value == this->true_value) {
-            context.draw_box(
-                _pip_rectangle, this->accent_color(), corner_shapes{_pip_rectangle.height() * 0.5f});
+        if (this->state() == button_state::on) {
+            context.draw_box(_pip_rectangle, this->accent_color(), corner_shapes{_pip_rectangle.height() * 0.5f});
         }
     }
 

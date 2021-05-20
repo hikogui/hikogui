@@ -13,9 +13,26 @@ namespace tt {
  */
 class boolean_checkbox_widget : public checkbox_widget<bool> {
 public:
-    template<typename Value = observable<bool>>
-    boolean_checkbox_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Value &&value = {}) noexcept :
-        checkbox_widget<bool>(window, parent, true, false, std::forward<Value>(value))
+    using super = checkbox_widget<bool>;
+    using value_type = typename super::value_type;
+    using delegate_type = typename super::delegate_type;
+
+    template<typename Value = value_type>
+    boolean_checkbox_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>(),
+        Value &&value = value_type{}) noexcept :
+        super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
+    {
+    }
+
+    template<typename Value>
+    boolean_checkbox_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        Value &&value) noexcept :
+        boolean_checkbox_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
     {
     }
 };

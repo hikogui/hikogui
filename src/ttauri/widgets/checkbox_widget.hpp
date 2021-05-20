@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_toggle_button_widget.hpp"
+#include "abstract_button_widget.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../text/font_book.hpp"
@@ -23,42 +23,30 @@ namespace tt {
  * @tparam T The type of the value to monitor/modify
  */
 template<typename T>
-class checkbox_widget : public abstract_toggle_button_widget<T> {
+class checkbox_widget : public abstract_button_widget<T> {
 public:
-    using super = abstract_toggle_button_widget<T>;
+    using super = abstract_button_widget<T>;
     using value_type = typename super::value_type;
+    using delegate_type = typename super::delegate_type;
 
-    observable<label> true_label;
-    observable<label> false_label;
-    observable<label> other_label;
-
-    template<typename Value = observable<value_type>>
+    template<typename Value = value_type>
     checkbox_widget(
         gui_window &window,
         std::shared_ptr<abstract_container_widget> parent,
-        value_type true_value,
-        value_type false_value,
-        Value &&value = {}) noexcept :
-        abstract_toggle_button_widget<T>(
-            window,
-            parent,
-            std::move(true_value),
-            std::move(false_value),
-            std::forward<Value>(value))
+        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>(),
+        Value &&value = value_type{}) noexcept :
+        super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
+        this->_button_type = button_type::toggle;
     }
 
-    void init() noexcept override
+    template<typename Value>
+    checkbox_widget(
+        gui_window &window,
+        std::shared_ptr<abstract_container_widget> parent,
+        Value &&value) noexcept :
+        checkbox_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
     {
-        _true_label_callback = true_label.subscribe([this](auto...) {
-            this->_request_reconstrain = true;
-        });
-        _false_label_callback = false_label.subscribe([this](auto...) {
-            this->_request_reconstrain = true;
-        });
-        _other_label_callback = other_label.subscribe([this](auto...) {
-            this->_request_reconstrain = true;
-        });
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -66,27 +54,11 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _true_label_stencil = stencil::make_unique(alignment::top_left, *true_label, theme::global->labelStyle);
-            _false_label_stencil = stencil::make_unique(alignment::top_left, *false_label, theme::global->labelStyle);
-            _other_label_stencil = stencil::make_unique(alignment::top_left, *other_label, theme::global->labelStyle);
+            _label_stencil = stencil::make_unique(alignment::top_left, this->label(), theme::global->labelStyle);
 
-            ttlet minimum_label_size = std::max(
-                {_true_label_stencil->minimum_size(),
-                 _false_label_stencil->minimum_size(),
-                 _other_label_stencil->minimum_size()});
-
-            auto preferred_label_size = std::max(
-                {_true_label_stencil->preferred_size(),
-                 _false_label_stencil->preferred_size(),
-                 _other_label_stencil->preferred_size()});
-
-            auto maximum_label_size = std::min(
-                {_true_label_stencil->maximum_size(),
-                 _false_label_stencil->maximum_size(),
-                 _other_label_stencil->maximum_size()});
-
-            maximum_label_size = max(maximum_label_size, minimum_label_size);
-            preferred_label_size = clamp(preferred_label_size, minimum_label_size, maximum_label_size);
+            ttlet minimum_label_size = _label_stencil->minimum_size();
+            ttlet preferred_label_size = _label_stencil->preferred_size();
+            ttlet maximum_label_size = _label_stencil->maximum_size();
 
             this->_minimum_size = {
                 minimum_label_size.width() + theme::global->smallSize + theme::global->margin,
@@ -121,9 +93,7 @@ public:
 
             ttlet label_x = _checkbox_rectangle.right() + theme::global->margin;
             _label_rectangle = aarectangle{label_x, 0.0f, this->rectangle().width() - label_x, this->rectangle().height()};
-            _true_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
-            _false_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
-            _other_label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
+            _label_stencil->set_layout_parameters(_label_rectangle, this->base_line());
 
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
@@ -153,13 +123,7 @@ public:
     }
 
 private:
-    typename decltype(true_label)::callback_ptr_type _true_label_callback;
-    typename decltype(false_label)::callback_ptr_type _false_label_callback;
-    typename decltype(other_label)::callback_ptr_type _other_label_callback;
-
-    std::unique_ptr<label_stencil> _true_label_stencil;
-    std::unique_ptr<label_stencil> _false_label_stencil;
-    std::unique_ptr<label_stencil> _other_label_stencil;
+    std::unique_ptr<label_stencil> _label_stencil;
 
     font_glyph_ids _check_glyph;
     aarectangle _check_glyph_rectangle;
@@ -182,11 +146,15 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
+        auto state_ = this->state();
+
         // Checkmark or tristate.
-        if (this->value == this->true_value) {
+        if (state_ == tt::button_state::on) {
             context.draw_glyph(_check_glyph, translate_z(0.1f) * _check_glyph_rectangle, this->accent_color());
-        } else if (this->value == this->false_value) {
+
+        } else if (state_ == tt::button_state::off) {
             ;
+
         } else {
             context.draw_glyph(_minus_glyph, translate_z(0.1f) * _minus_glyph_rectangle, this->accent_color());
         }
@@ -195,12 +163,7 @@ private:
     void draw_label(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        ttlet &labelCell = this->value == this->true_value ? _true_label_stencil :
-            this->value == this->false_value               ? _false_label_stencil :
-                                                             _other_label_stencil;
-
-        tt_stencil_draw(labelCell, context, this->label_color());
+        tt_stencil_draw(_label_stencil, context, this->label_color());
     }
 };
 

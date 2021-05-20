@@ -367,10 +367,11 @@ private:
         _menu_item_widgets.clear();
         _menu_item_callbacks.clear();
         for (ttlet & [ tag, text ] : option_list_) {
-            auto menu_item = _column_widget->make_widget<menu_item_widget<value_type>>(tag, this->value);
+            auto menu_item = _column_widget->make_widget<menu_item_widget<value_type>>(this->value);
+            menu_item->set_on_value(tag);
             menu_item->set_show_check_mark(true);
             menu_item->set_show_icon(show_icon);
-            menu_item->label = text;
+            menu_item->set_label(text);
 
             _menu_item_callbacks.push_back(menu_item->subscribe([this, tag] {
                 this->value = tag;

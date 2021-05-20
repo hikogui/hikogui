@@ -20,19 +20,32 @@ void license_preferences_controller::init(tt::widget &_self) noexcept
 
     grid->make_widget<label_widget>("A1", l10n("These is a checkbox:"));
     auto checkbox1 = grid->make_widget<boolean_checkbox_widget>("B1");
-    checkbox1->true_label = l10n("true");
-    checkbox1->false_label = l10n("false");
-    checkbox1->other_label = l10n("other");
-    checkbox1->value = preferences_controller_->toggleValue;
+    checkbox1->set_on_label(l10n("true"));
+    checkbox1->set_off_label(l10n("false"));
+    checkbox1->set_other_label(l10n("other"));
+    checkbox1->set_value(preferences_controller_->toggleValue);
 
     grid->make_widget<label_widget>("A2", l10n("These is a disabled checkbox:"));
-    auto checkbox2 = grid->make_widget<checkbox_widget<int>>("B2", 0, 2);
-    checkbox2->true_label = l10n("Checkbox, with a pretty large label.");
-    checkbox2->set_enabled(false);
-    checkbox2->value = preferences_controller_->radioValue;
+    auto checkbox2 = grid->make_widget<checkbox_widget<int>>("B2");
+    checkbox2->set_on_value(2);
+    checkbox2->set_off_value(0);
+    checkbox2->set_on_label(l10n("Checkbox, with a pretty large label."));
+    checkbox2->set_enabled(preferences_controller_->toggleValue);
+    checkbox2->set_value(preferences_controller_->radioValue);
 
-    grid->make_widget<label_widget>("A3", l10n("This is a selection box at the bottom:"));
-    auto selection3 = grid->make_widget<selection_widget<int>>("B3", preferences_controller_->radioValue);
+    grid->make_widget<label_widget>("A3", l10n("These are radio buttons:"));
+    auto radio1 = grid->make_widget<radio_button_widget<int>>("B3", preferences_controller_->radioValue);
+    radio1->set_on_value(0);
+    radio1->set_label(l10n("Radio 1"));
+    auto radio2 = grid->make_widget<radio_button_widget<int>>("B4", preferences_controller_->radioValue);
+    radio2->set_on_value(1);
+    radio2->set_label(l10n("Radio 2"));
+    auto radio3 = grid->make_widget<radio_button_widget<int>>("B5", preferences_controller_->radioValue);
+    radio3->set_on_value(2);
+    radio3->set_label(l10n("Radio 3"));
+
+    grid->make_widget<label_widget>("A6", l10n("This is a selection box at the bottom:"));
+    auto selection3 = grid->make_widget<selection_widget<int>>("B6", preferences_controller_->radioValue);
     selection3->option_list = std::vector{
         std::pair{0, label{l10n("first")}},
         std::pair{1, label{l10n("second")}},
