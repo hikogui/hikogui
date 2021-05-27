@@ -12,7 +12,7 @@
 #include "parse_location.hpp"
 #include "codec/UTF.hpp"
 #include "charconv.hpp"
-#include <date/date.h>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -38,7 +38,7 @@ enum class tokenizer_name_t : uint8_t {
     End
 };
 
-constexpr char const *to_string(tokenizer_name_t name) noexcept
+constexpr char const *to_const_string(tokenizer_name_t name) noexcept
 {
     switch (name) {
     case tokenizer_name_t::NotAssigned: return "NotAssigned";
@@ -60,8 +60,16 @@ constexpr char const *to_string(tokenizer_name_t name) noexcept
 
 inline std::ostream &operator<<(std::ostream &lhs, tokenizer_name_t rhs)
 {
-    return lhs << to_string(rhs);
+    return lhs << to_const_string(rhs);
 }
+
+template<typename CharT>
+struct std::formatter<tt::tokenizer_name_t, CharT> : std::formatter<char const *, CharT> {
+    auto format(tt::tokenizer_name_t t, auto &fc)
+    {
+        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+    }
+};
 
 struct token_t {
     tokenizer_name_t name;
@@ -177,22 +185,22 @@ struct token_t {
         return decimal{value};
     }
 
-    explicit operator date::year_month_day() const
+    explicit operator std::chrono::year_month_day() const
     {
         ttlet parts = split(value, '-');
         if (parts.size() != 3) {
             throw parse_error("Expect date to be in the format YYYY-MM-DD");
         }
 
-        ttlet year = date::year{stoi(parts[0])};
-        ttlet month = date::month{narrow_cast<unsigned int>(stoi(parts[1]))};
-        ttlet day = date::day{narrow_cast<unsigned int>(stoi(parts[2]))};
+        ttlet year = std::chrono::year{stoi(parts[0])};
+        ttlet month = std::chrono::month{narrow_cast<unsigned int>(stoi(parts[1]))};
+        ttlet day = std::chrono::day{narrow_cast<unsigned int>(stoi(parts[2]))};
         return {year, month, day};
     }
 
     std::string repr() const noexcept
     {
-        std::string r = to_string(name);
+        std::string r = to_const_string(name);
         if (value.size() > 0) {
             r += '\"';
             r += value;
@@ -279,3 +287,16 @@ struct parse_result {
 parseTokens(std::string_view::const_iterator first, std::string_view::const_iterator last) noexcept;
 
 } // namespace tt
+
+namespace std {
+
+template<typename CharT>
+struct std::formatter<tt::token_t, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(tt::token_t t, auto &fc)
+    {
+        return std::formatter<std::string_view, CharT>::format(t.repr(), fc);
+    }
+};
+
+
+} // namespace std

@@ -19,7 +19,7 @@ struct formula_unary_operator_node : formula_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("<unary_operator {}>", rhs);
+        return std::format("<unary_operator {}>", *rhs);
     }
 };
 

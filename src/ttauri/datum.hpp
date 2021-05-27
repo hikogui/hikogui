@@ -14,7 +14,7 @@
 #include "algorithm.hpp"
 #include "byte_string.hpp"
 #include "codec/base_n.hpp"
-#include <date/date.h>
+#include <chrono>
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -65,27 +65,39 @@ enum class datum_type_t {
     Bytes,
 };
 
-inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
+constexpr char const *to_const_string(datum_type_t rhs) noexcept
 {
     switch (rhs) {
-    case datum_type_t::Null: lhs << "Null"; break;
-    case datum_type_t::Break: lhs << "Break"; break;
-    case datum_type_t::Continue: lhs << "Continue"; break;
-    case datum_type_t::Undefined: lhs << "Undefined"; break;
-    case datum_type_t::Boolean: lhs << "Boolean"; break;
-    case datum_type_t::Integer: lhs << "Integer"; break;
-    case datum_type_t::Decimal: lhs << "Decimal"; break;
-    case datum_type_t::Float: lhs << "Float"; break;
-    case datum_type_t::String: lhs << "String"; break;
-    case datum_type_t::URL: lhs << "URL"; break;
-    case datum_type_t::Map: lhs << "Map"; break;
-    case datum_type_t::Vector: lhs << "Vector"; break;
-    case datum_type_t::YearMonthDay: lhs << "YearMonthDay"; break;
-    case datum_type_t::Bytes: lhs << "Bytes"; break;
+    case datum_type_t::Null: return "Null";
+    case datum_type_t::Break: return "Break";
+    case datum_type_t::Continue: return "Continue";
+    case datum_type_t::Undefined: return "Undefined";
+    case datum_type_t::Boolean: return "Boolean";
+    case datum_type_t::Integer: return "Integer";
+    case datum_type_t::Decimal: return "Decimal";
+    case datum_type_t::Float: return "Float";
+    case datum_type_t::String: return "String";
+    case datum_type_t::URL: return "URL";
+    case datum_type_t::Map: return "Map";
+    case datum_type_t::Vector: return "Vector";
+    case datum_type_t::YearMonthDay: return "YearMonthDay";
+    case datum_type_t::Bytes: return "Bytes";
     default: tt_no_default();
     }
-    return lhs;
 }
+
+inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
+{
+    return lhs << to_const_string(rhs);
+}
+
+template<typename CharT>
+struct std::formatter<tt::datum_type_t, CharT> : std::formatter<char const *, CharT> {
+    auto format(tt::datum_type_t t, auto &fc)
+    {
+        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+    }
+};
 
 /** A fixed size (64 bits) class for a generic value type.
  * A datum can hold and do calculations with the following types:
@@ -510,7 +522,7 @@ public:
             }
             else
             {
-                throw std::overflow_error(fmt::format("Constructing decimal {} to datum", value));
+                throw std::overflow_error(std::format("Constructing decimal {} to datum", value));
             }
         } else {
             int e = value.exponent();
@@ -519,7 +531,7 @@ public:
         }
     }
 
-    datum_impl(date::year_month_day const &ymd) noexcept :
+    datum_impl(std::chrono::year_month_day const &ymd) noexcept :
         u64(ymd_mask |
             (((static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
               (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
@@ -538,7 +550,7 @@ public:
             }
             else
             {
-                throw std::overflow_error(fmt::format("Constructing datum from integer {}, larger than {}", value, maximum_int));
+                throw std::overflow_error(std::format("Constructing datum from integer {}, larger than {}", value, maximum_int));
             }
         }
     }
@@ -556,7 +568,7 @@ public:
                     auto *const p = new int64_t(value);
                     u64 = make_pointer(integer_ptr_mask, p);
                 } else {
-                    throw std::overflow_error(fmt::format(
+                    throw std::overflow_error(std::format(
                         "Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int));
                 }
             }
@@ -576,7 +588,7 @@ public:
                 auto *const p = new std::string(value);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
-                throw std::overflow_error(fmt::format("Constructing string {} to datum, larger than 6 characters", value));
+                throw std::overflow_error(std::format("Constructing string {} to datum, larger than 6 characters", value));
             }
         }
     }
@@ -695,7 +707,7 @@ public:
             }
             else
             {
-                throw std::overflow_error(fmt::format("Constructing decimal {} to datum", rhs));
+                throw std::overflow_error(std::format("Constructing decimal {} to datum", rhs));
             }
         } else {
             int e = rhs.exponent();
@@ -705,7 +717,7 @@ public:
         return *this;
     }
 
-    datum_impl &operator=(date::year_month_day const &ymd) noexcept
+    datum_impl &operator=(std::chrono::year_month_day const &ymd) noexcept
     {
         if (is_phy_pointer()) {
             [[unlikely]] delete_pointer();
@@ -734,7 +746,7 @@ public:
             }
             else
             {
-                throw std::overflow_error(fmt::format("Assigning integer {} to datum, larger than {}", rhs, maximum_int));
+                throw std::overflow_error(std::format("Assigning integer {} to datum, larger than {}", rhs, maximum_int));
             }
         }
         return *this;
@@ -771,7 +783,7 @@ public:
             }
             else
             {
-                throw std::overflow_error(fmt::format("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int));
+                throw std::overflow_error(std::format("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int));
             }
         }
 
@@ -824,7 +836,7 @@ public:
                 auto *const p = new std::string(rhs);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
-                throw std::overflow_error(fmt::format("Assigning string {} to datum, larger than 6 characters", rhs));
+                throw std::overflow_error(std::format("Assigning string {} to datum, larger than 6 characters", rhs));
             }
         }
         return *this;
@@ -958,7 +970,7 @@ public:
         }
     }
 
-    explicit operator date::year_month_day() const
+    explicit operator std::chrono::year_month_day() const
     {
         if (is_phy_ymd()) {
             ttlet u = get_unsigned_integer();
@@ -975,7 +987,7 @@ public:
                 throw operation_error(
                     "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
             }
-            return date::year_month_day{date::year{year}, date::month{month}, date::day{day}};
+            return std::chrono::year_month_day{std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
         } else {
             throw operation_error(
                 "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
@@ -1154,12 +1166,12 @@ public:
             default: tt_no_default();
             }
 
-        case phy_integer_id: return fmt::format("{}", static_cast<int64_t>(*this));
-        case phy_decimal_id: return fmt::format("{}", static_cast<decimal>(*this));
-        case phy_ymd_id: return fmt::format("{}", static_cast<date::year_month_day>(*this));
+        case phy_integer_id: return std::format("{}", static_cast<int64_t>(*this));
+        case phy_decimal_id: return std::format("{}", static_cast<decimal>(*this));
+        case phy_ymd_id: return std::format("{}", static_cast<std::chrono::year_month_day>(*this));
         case phy_integer_ptr_id:
             if constexpr (HasLargeObjects) {
-                return fmt::format("{}", static_cast<int64_t>(*this));
+                return std::format("{}", static_cast<int64_t>(*this));
             } else {
                 tt_no_default();
             }
@@ -1189,7 +1201,7 @@ public:
 
         case phy_decimal_ptr_id:
             if constexpr (HasLargeObjects) {
-                return fmt::format("{}", static_cast<decimal>(*this));
+                return std::format("{}", static_cast<decimal>(*this));
             } else {
                 tt_no_default();
             }
@@ -1252,7 +1264,7 @@ public:
 
         default:
             if (is_phy_float()) {
-                auto str = fmt::format("{:g}", static_cast<double>(*this));
+                auto str = std::format("{:g}", static_cast<double>(*this));
                 if (str.find('.') == str.npos) {
                     str += ".0";
                 }
@@ -1482,7 +1494,7 @@ public:
     datum_impl year() const
     {
         if (is_ymd()) {
-            return {static_cast<signed>(static_cast<date::year_month_day>(*this).year())};
+            return {static_cast<signed>(static_cast<std::chrono::year_month_day>(*this).year())};
         } else {
             throw operation_error("Cannot get year() from type {}", type_name());
         }
@@ -1491,7 +1503,7 @@ public:
     datum_impl quarter() const
     {
         if (is_ymd()) {
-            auto month = static_cast<unsigned>(static_cast<date::year_month_day>(*this).month());
+            auto month = static_cast<unsigned>(static_cast<std::chrono::year_month_day>(*this).month());
             return {((month - 1) / 3) + 1};
         } else {
             throw operation_error("Cannot get month() from type {}", type_name());
@@ -1501,7 +1513,7 @@ public:
     datum_impl month() const
     {
         if (is_ymd()) {
-            return {static_cast<unsigned>(static_cast<date::year_month_day>(*this).month())};
+            return {static_cast<unsigned>(static_cast<std::chrono::year_month_day>(*this).month())};
         } else {
             throw operation_error("Cannot get month() from type {}", type_name());
         }
@@ -1510,7 +1522,7 @@ public:
     datum_impl day() const
     {
         if (is_ymd()) {
-            return {static_cast<unsigned>(static_cast<date::year_month_day>(*this).day())};
+            return {static_cast<unsigned>(static_cast<std::chrono::year_month_day>(*this).day())};
         } else {
             throw operation_error("Cannot get day() from type {}", type_name());
         }
@@ -1579,8 +1591,8 @@ public:
         case phy_decimal_ptr_id: return static_cast<std::string>(*this);
         case phy_ymd_id: return static_cast<std::string>(*this);
         case phy_string_id:
-        case phy_string_ptr_id: return fmt::format("\"{}\"", static_cast<std::string>(*this));
-        case phy_url_ptr_id: return fmt::format("<URL {}>", static_cast<std::string>(*this));
+        case phy_string_ptr_id: return std::format("\"{}\"", static_cast<std::string>(*this));
+        case phy_url_ptr_id: return std::format("<URL {}>", static_cast<std::string>(*this));
         case phy_vector_ptr_id: return static_cast<std::string>(*this);
         case phy_map_ptr_id: return static_cast<std::string>(*this);
         case phy_bytes_ptr_id: return static_cast<std::string>(*this);
@@ -2054,7 +2066,7 @@ public:
             }
         case datum_impl::phy_ymd_id:
             if (rhs.is_ymd()) {
-                return static_cast<date::year_month_day>(lhs) < static_cast<date::year_month_day>(rhs);
+                return static_cast<std::chrono::year_month_day>(lhs) < static_cast<std::chrono::year_month_day>(rhs);
             } else {
                 return lhs.type_order() < rhs.type_order();
             }
@@ -2542,5 +2554,21 @@ inline size_t hash<tt::datum_impl<HasLargeObjects>>::operator()(tt::datum_impl<H
 {
     return value.hash();
 }
+
+template<typename CharT>
+struct formatter<tt::datum_impl<false>, CharT> : formatter<string_view, CharT> {
+    auto format(tt::datum_impl<false> t, auto &fc)
+    {
+        return formatter<string_view, CharT>::format(to_string(t), fc);
+    }
+};
+
+template<typename CharT>
+struct formatter<tt::datum_impl<true>, CharT> : formatter<string_view, CharT> {
+    auto format(tt::datum_impl<true> t, auto &fc)
+    {
+        return formatter<string_view, CharT>::format(to_string(t), fc);
+    }
+};
 
 } // namespace std

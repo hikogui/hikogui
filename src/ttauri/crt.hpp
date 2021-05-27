@@ -39,7 +39,7 @@
 
 #endif
 
-#include <date/tz.h>
+#include <chrono>
 
 namespace tt {
 
@@ -113,15 +113,11 @@ int WINAPI WinMain(
     arguments.push_back(nullptr);
 
     // Initialize tzdata base.
-#if USE_OS_TZDB == 0
-    ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
-    date::set_install(tzdata_location.nativePath());
     try {
-        [[maybe_unused]] ttlet time_zone = date::current_zone();
+        [[maybe_unused]] ttlet time_zone = std::chrono::current_zone();
     } catch (std::runtime_error const &e) {
         tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }
-#endif
 
     // Make sure the console is in a valid state to write text to it.
     tt::console_start();
@@ -147,9 +143,9 @@ int main(int argc, char *argv[])
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
-    date::set_install(tzdata_location.nativePath());
+    std::set_install(tzdata_location.nativePath());
     try {
-        [[maybe_unused]] ttlet time_zone = date::current_zone();
+        [[maybe_unused]] ttlet time_zone = std::chrono::current_zone();
     } catch (std::runtime_error const &e) {
         tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }

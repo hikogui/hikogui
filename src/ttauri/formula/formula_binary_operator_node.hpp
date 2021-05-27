@@ -21,7 +21,7 @@ struct formula_binary_operator_node : formula_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("<binary_operator {}, {}>", lhs, rhs);
+        return std::format("<binary_operator {}, {}>", *lhs, *rhs);
     }
 };
 

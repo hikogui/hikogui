@@ -4,7 +4,7 @@
 
 #include "gui_device.hpp"
 #include "gui_window.hpp"
-#include <fmt/format.h>
+#include <format>
 #include <tuple>
 #include <vector>
 
@@ -25,7 +25,7 @@ std::string gui_device::string() const noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
 
-    return fmt::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.UUIDString());
+    return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.UUIDString());
 }
 
 void gui_device::initialize_device(gui_window const &window)

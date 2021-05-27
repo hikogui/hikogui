@@ -22,7 +22,7 @@ struct formula_increment_node final : formula_unary_operator_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("(++ {})", *rhs);
+        return std::format("(++ {})", *rhs);
     }
 };
 

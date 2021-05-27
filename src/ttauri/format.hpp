@@ -23,7 +23,7 @@ template<typename... Args>
 std::u8string format(const std::locale &loc, std::u8string_view fmt, const Args &... args)
 {
     // The current implementation assumes that `std::format()` is 8-bit clean and therefor compatible with UTF-8.
-    auto r = fmt::format(detail::u8format_argument_cast(fmt), detail::u8format_argument_cast(args)...);
+    auto r = std::format(detail::u8format_argument_cast(fmt), detail::u8format_argument_cast(args)...);
 
     // The following will need to allocate a copy of the formatted string.
     // XXX sanitize the UTF-8 string here.

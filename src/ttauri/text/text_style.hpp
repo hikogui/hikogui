@@ -8,7 +8,7 @@
 #include "text_decoration.hpp"
 #include "font_family_id.hpp"
 #include "../color/color.hpp"
-#include <fmt/format.h>
+#include <format>
 #include <ostream>
 
 namespace tt {
@@ -48,7 +48,7 @@ struct text_style {
     [[nodiscard]] friend std::string to_string(text_style const &rhs) noexcept {
         // XXX - fmt:: no longer can format tagged_ids??????
 
-        //return fmt::format("<text_style id={},v={},s={},c={},d={}>",
+        //return std::format("<text_style id={},v={},s={},c={},d={}>",
         //    rhs.family_id, rhs.variant, rhs.size, rhs.color, rhs.decoration
         //);
         tt_not_implemented();

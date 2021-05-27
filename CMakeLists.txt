@@ -96,16 +96,6 @@ endif()
 #-------------------------------------------------------------------
 
 #
-# date
-#
-find_package(date CONFIG REQUIRED)
-
-#
-# fmt
-#
-find_package(fmt CONFIG REQUIRED)
-
-#
 # GoogleTest
 #
 #find_package(GTest)
@@ -166,9 +156,6 @@ set_target_properties(ttauri PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} 
 set_target_properties(ttauri PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 target_link_libraries(ttauri PUBLIC
-    fmt::fmt
-    date::date
-    date::date-tz
     ${Vulkan_LIBRARIES}
     unofficial::vulkan-memory-allocator::vulkan-memory-allocator
 )
@@ -317,14 +304,8 @@ if (WIN32)
     # Set defines to compile a win32 application.
 	target_compile_options(ttauri PUBLIC -D_WIN64 -DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
 
-    # std::result_of used by fmt.
-    target_compile_options(ttauri PUBLIC -D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
-
-    # date library uses std::uncaught_exception
-    target_compile_options(ttauri PUBLIC -D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
-
     # winrt will include experimental headers that can not be turned off.
-    target_compile_options(ttauri PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
+    #target_compile_options(ttauri PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
 
     # Make sure that Windows.h doesn't include all kind of weird things.
     target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
@@ -365,7 +346,6 @@ target_static_resource(ttauri
 add_custom_target(ttauri_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     DEPENDS
-    resources/tzdata/version
     resources/themes/ttauri_dark.theme.json
     resources/themes/ttauri_light.theme.json
     resources/win32.keybinds.json

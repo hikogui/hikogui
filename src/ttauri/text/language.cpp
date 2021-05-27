@@ -6,15 +6,15 @@
 #include "language.hpp"
 #include "translation.hpp"
 #include "po_parser.hpp"
-#include <fmt/format.h>
+#include <format>
 
 namespace tt {
 
 language::language(language_tag tag) noexcept :
     tag(std::move(tag)), plurality_func()
 {
-    // XXX fmt::format is unable to find language_tag::operator<<
-    auto po_url = URL(fmt::format("resource:locale/{}.po", to_string(this->tag)));
+    // XXX std::format is unable to find language_tag::operator<<
+    auto po_url = URL(std::format("resource:locale/{}.po", to_string(this->tag)));
 
     tt_log_info("Loading language {} catalog {}", to_string(this->tag), po_url);
 

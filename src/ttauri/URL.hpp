@@ -25,7 +25,7 @@ class resource_view;
  * This will have the following effects:
  *  - Performance of accessors may be slow due to having to parse the url multiple times.
  *  - The size of the URL instance is small and copies/moves are fast.
- * 
+ *
  * Constructors and path manipulations will cause the url to be normalized:
  *  - Remove accidental concatenation of two slashes 'foo//bar' -> 'foo/bar'
  *  - Remove single dot directories 'foo/./bar' -> 'foo/bar'
@@ -35,7 +35,7 @@ class resource_view;
  * 'file:' scheme urls can handle the following:
  *  - May contain a server name (placed in the authority of the url)
  *  - May contain a drive-letter.
- *  - May be absolute or relative, including proper handling of relative path with a named drive. 
+ *  - May be absolute or relative, including proper handling of relative path with a named drive.
  *
  * The url instance may be relative itself; meaning it does not hold a scheme.
  * This is important, because it means that any string passed to the constructor is a valid url.
@@ -55,12 +55,16 @@ public:
     explicit URL(std::string const &url);
     explicit URL(url_parts const &parts);
 
-    URL(URL const &other) noexcept : value(other.value) { tt_axiom(&other != this); }
+    URL(URL const &other) noexcept : value(other.value)
+    {
+        tt_axiom(&other != this);
+    }
     URL(URL &&other) noexcept = default;
-    URL &operator=(URL const &other) noexcept { 
+    URL &operator=(URL const &other) noexcept
+    {
         // Self-assignment is allowed.
-        value = other.value; 
-        return *this; 
+        value = other.value;
+        return *this;
     }
 
     URL &operator=(URL &&other) noexcept = default;
@@ -89,7 +93,8 @@ public:
 
     [[nodiscard]] std::wstring nativeWPath() const noexcept;
 
-    [[nodiscard]] bool isFileScheme() const noexcept {
+    [[nodiscard]] bool isFileScheme() const noexcept
+    {
         return scheme() == "file";
     }
 
@@ -114,8 +119,8 @@ public:
     [[nodiscard]] URL urlByRemovingFilename() const noexcept;
 
     /** Load a resource.
-    * @return A pointer to a resource view.
-    */
+     * @return A pointer to a resource view.
+     */
     [[nodiscard]] std::unique_ptr<resource_view> loadView() const;
 
     /*! Return new URLs by finding matching files.
@@ -142,9 +147,9 @@ public:
     [[nodiscard]] static URL urlFromSystemfontDirectory() noexcept;
 
     /*! Return file names in the directory pointed by the url.
-    * \param path path to the directory to scan.
-    * \return A list of filenames or subdirectories (ending in '/') in the directory.
-    */
+     * \param path path to the directory to scan.
+     * \return A list of filenames or subdirectories (ending in '/') in the directory.
+     */
     [[nodiscard]] static std::vector<std::string> filenamesByScanningDirectory(std::string_view path) noexcept;
 
     [[nodiscard]] static std::string nativePathFromPath(std::string_view path) noexcept;
@@ -201,18 +206,25 @@ public:
     }
 };
 
-
-
-}
+} // namespace tt
 
 namespace std {
 
 template<>
 class hash<tt::URL> {
 public:
-    size_t operator()(tt::URL const& url) const noexcept {
+    size_t operator()(tt::URL const &url) const noexcept
+    {
         return url.hash();
     }
 };
 
-}
+template<typename CharT>
+struct std::formatter<tt::URL, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(tt::URL const &t, auto &fc)
+    {
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+    }
+};
+
+} // namespace std

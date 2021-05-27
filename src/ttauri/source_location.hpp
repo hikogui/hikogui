@@ -49,7 +49,7 @@ private:
 
 inline std::string to_string(source_location const &rhs) noexcept
 {
-    return fmt::format("{}:{}", rhs.file_name(), rhs.line());
+    return std::format("{}:{}", rhs.file_name(), rhs.line());
 }
 
 }

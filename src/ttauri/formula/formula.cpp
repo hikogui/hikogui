@@ -55,7 +55,7 @@
 #include "../operator.hpp"
 #include "../strings.hpp"
 #include "../exception.hpp"
-#include <fmt/format.h>
+#include <format>
 #include <string>
 #include <string_view>
 #include <memory>

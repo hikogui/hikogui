@@ -6,7 +6,6 @@
 
 #include "required.hpp"
 #include "unfair_mutex.hpp"
-#include <date/tz.h>
 #include <array>
 #include <atomic>
 #include <chrono>
@@ -90,6 +89,6 @@ std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp) noexce
  * @param utc_timestamp The time_point to format.
  * @param time_zone If time_zone is a nullptr then the current timezone is used.
  */
-std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone = nullptr) noexcept;
+std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, std::chrono::time_zone const *time_zone = nullptr) noexcept;
 
 } // namespace tt

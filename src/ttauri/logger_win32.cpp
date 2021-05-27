@@ -8,8 +8,7 @@
 #include "URL.hpp"
 #include "strings.hpp"
 #include "thread.hpp"
-#include <fmt/ostream.h>
-#include <fmt/format.h>
+#include <format>
 #include <exception>
 #include <memory>
 #include <iostream>

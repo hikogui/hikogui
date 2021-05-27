@@ -23,7 +23,7 @@ struct skeleton_return_node final: skeleton_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("<return {}>", *expression);
+        return std::format("<return {}>", *expression);
     }
 };
 

@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "fmt/format.h"
+#include "format"
 #include <exception>
 #include <string_view>
 
@@ -29,7 +29,7 @@ public:
 
     template<typename FirstArg, typename... Args>
     parse_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
-        parse_error(fmt::format(fmt, arg1, args...)) {}
+        parse_error(std::format(fmt, arg1, args...)) {}
 };
 
 /** Exception thrown during execution of a dynamic operation.
@@ -45,7 +45,7 @@ public:
 
     template<typename FirstArg, typename... Args>
     operation_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
-        operation_error(fmt::format(fmt, arg1, args...))
+        operation_error(std::format(fmt, arg1, args...))
     {
     }
 };
@@ -63,7 +63,7 @@ public:
 
     template<typename FirstArg, typename... Args>
     io_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
-        io_error(fmt::format(fmt, arg1, args...))
+        io_error(std::format(fmt, arg1, args...))
     {
     }
 };
@@ -79,7 +79,7 @@ public:
     using std::runtime_error::runtime_error;
 
     template<typename FirstArg, typename... Args>
-    os_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept : os_error(fmt::format(fmt, arg1, args...))
+    os_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept : os_error(std::format(fmt, arg1, args...))
     {
     }
 };
@@ -90,7 +90,7 @@ public:
 
     template<typename FirstArg, typename... Args>
     gui_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
-        gui_error(fmt::format(fmt, arg1, args...))
+        gui_error(std::format(fmt, arg1, args...))
     {
     }
 };
@@ -101,7 +101,7 @@ public:
 
     template<typename FirstArg, typename... Args>
     key_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
-        key_error(fmt::format(fmt, arg1, args...))
+        key_error(std::format(fmt, arg1, args...))
     {
     }
 };
@@ -112,7 +112,7 @@ public:
 
     template<typename FirstArg, typename... Args>
     url_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
-        url_error(fmt::format(fmt, arg1, args...))
+        url_error(std::format(fmt, arg1, args...))
     {
     }
 };
@@ -127,7 +127,7 @@ public:
 
     template<typename FirstArg, typename... Args>
     cancel_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
-        cancel_error(fmt::format(fmt, arg1, args...))
+        cancel_error(std::format(fmt, arg1, args...))
     {
     }
 };
@@ -142,7 +142,7 @@ public:
 
     template<typename FirstArg, typename... Args>
     lock_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
-        lock_error(fmt::format(fmt, arg1, args...))
+        lock_error(std::format(fmt, arg1, args...))
     {
     }
 };
