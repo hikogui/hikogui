@@ -4,16 +4,16 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include <memory>
 
 namespace tt {
 
-class toolbar_widget final : public abstract_container_widget {
+class toolbar_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
-    toolbar_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept : super(window, parent)
+    toolbar_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The toolbar widget does draw itself.
@@ -23,6 +23,7 @@ public:
             // The toolbar is a top level widget, which draws its background as the next level.
             _semantic_layer = 0;
         }
+        _margin = 0.0f;
     }
 
     ~toolbar_widget() {}
@@ -99,7 +100,7 @@ public:
 
             tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
         }
-        abstract_container_widget::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
@@ -110,7 +111,7 @@ public:
             context.draw_filled_quad(rectangle(), theme::global->fillColor(_semantic_layer + 1));
         }
 
-        abstract_container_widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
     hit_box hitbox_test(point2 position) const noexcept

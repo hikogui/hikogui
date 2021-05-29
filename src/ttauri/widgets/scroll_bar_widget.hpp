@@ -25,7 +25,7 @@ public:
     template<typename Content, typename Aperture, typename Offset>
     scroll_bar_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         Content &&content,
         Aperture &&aperture,
         Offset &&offset) noexcept :

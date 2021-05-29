@@ -20,7 +20,7 @@ class system_menu_widget final : public widget {
 public:
     using super = widget;
 
-    system_menu_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, icon const &icon) noexcept;
+    system_menu_widget(gui_window &window, std::shared_ptr<widget> parent, icon const &icon) noexcept;
     ~system_menu_widget() {}
 
     [[nodiscard]] bool

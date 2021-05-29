@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "../label.hpp"
 
 namespace tt {
@@ -12,9 +12,9 @@ namespace tt {
 class toolbar_widget;
 class grid_layout_widget;
 
-class window_widget final : public abstract_container_widget {
+class window_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
     window_widget(gui_window &window, std::shared_ptr<widget_delegate> delegate, label title) noexcept;
     ~window_widget();

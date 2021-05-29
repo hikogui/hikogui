@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "overlay_view_widget.hpp"
 #include "scroll_view_widget.hpp"
 #include "row_column_layout_widget.hpp"
@@ -23,9 +23,9 @@
 namespace tt {
 
 template<typename T>
-class selection_widget final : public abstract_container_widget {
+class selection_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
     using value_type = T;
     using option_list_type = std::vector<std::pair<value_type, label>>;
 
@@ -36,7 +36,7 @@ public:
     template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = label>
     selection_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         Value &&value = value_type{},
         OptionList &&option_list = option_list_type{},
         UnknownLabel &&unknown_label = label{l10n("<unknown>")}) noexcept :
@@ -45,7 +45,7 @@ public:
         option_list(std::forward<OptionList>(option_list)),
         unknown_label(std::forward<UnknownLabel>(unknown_label))
     {
-        // Because the super class `abstract_container_widget` forces the same semantic layer
+        // Because the super class `widget` forces the same semantic layer
         // as the a parent and _margin to zero, we need to force them back as if this is a normal widget.
         _semantic_layer = parent->semantic_layer() + 1;
         _margin = theme::global->margin;

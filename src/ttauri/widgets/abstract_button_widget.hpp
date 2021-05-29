@@ -24,7 +24,7 @@ public:
     template<typename Value>
     [[nodiscard]] abstract_button_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         std::shared_ptr<delegate_type> delegate,
         Value &&value) :
         super(window, parent, delegate)

@@ -9,11 +9,11 @@
 
 namespace tt {
 
-class overlay_view_widget final : public abstract_container_widget {
+class overlay_view_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
-    overlay_view_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept : super(window, parent)
+    overlay_view_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The overlay-widget will reset the semantic_layer as it is the bottom

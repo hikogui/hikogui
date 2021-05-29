@@ -25,7 +25,7 @@ public:
     template<typename Label>
     label_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         std::shared_ptr<label_delegate> delegate,
         alignment alignment,
         Label &&label) noexcept :
@@ -35,7 +35,7 @@ public:
     }
 
     template<typename Label>
-    label_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Label &&label) noexcept :
+    label_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
         label_widget(
             window,
             std::move(parent),

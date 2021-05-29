@@ -25,7 +25,7 @@ public:
     template<typename Value = observable<value_type>>
     button_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>(),
         Value &&value = value_type{}) noexcept :
         super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
@@ -35,7 +35,7 @@ public:
     template<typename Value = observable<value_type>>
     button_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         Value &&value) noexcept :
         button_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
     {

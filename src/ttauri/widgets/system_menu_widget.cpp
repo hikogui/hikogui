@@ -15,7 +15,7 @@ namespace tt {
 
 system_menu_widget::system_menu_widget(
     gui_window &window,
-    std::shared_ptr<abstract_container_widget> parent,
+    std::shared_ptr<widget> parent,
     icon const &icon) noexcept :
     super(window, parent), _icon_stencil(stencil::make_unique(alignment::middle_center, icon))
 {

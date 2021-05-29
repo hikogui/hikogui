@@ -50,7 +50,7 @@ struct vertex;
 }
 
 namespace tt {
-class abstract_container_widget;
+class widget;
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
@@ -104,7 +104,7 @@ public:
      */
     widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         std::shared_ptr<widget_delegate> delegate = std::make_shared<widget_delegate>()) noexcept;
 
     virtual ~widget();
@@ -376,16 +376,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hit_box hitbox_test(point2 position) const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer};
-        } else {
-            return {};
-        }
-    }
+    [[nodiscard]] virtual hit_box hitbox_test(point2 position) const noexcept;
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -467,10 +458,7 @@ public:
      * @param context The context to where the widget will draw.
      * @param display_time_point The time point when the widget will be shown on the screen.
      */
-    virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-    }
+    virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept;
 
     virtual void request_redraw() const noexcept
     {
@@ -544,23 +532,27 @@ public:
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept;
 
-    /** Get a shared_ptr to the parent.
-     */
-    [[nodiscard]] std::shared_ptr<abstract_container_widget const> shared_parent() const noexcept;
+    [[nodiscard]] std::shared_ptr<widget const> find_first_widget(keyboard_focus_group group) const noexcept;
+
+    [[nodiscard]] std::shared_ptr<widget const> find_last_widget(keyboard_focus_group group) const noexcept;
 
     /** Get a shared_ptr to the parent.
      */
-    [[nodiscard]] std::shared_ptr<abstract_container_widget> shared_parent() noexcept;
+    [[nodiscard]] std::shared_ptr<widget const> shared_parent() const noexcept;
+
+    /** Get a shared_ptr to the parent.
+     */
+    [[nodiscard]] std::shared_ptr<widget> shared_parent() noexcept;
 
     /** Get a reference to the parent.
      * It is undefined behavior to call this function when the widget does not have a parent.
      */
-    [[nodiscard]] abstract_container_widget const &parent() const noexcept;
+    [[nodiscard]] widget const &parent() const noexcept;
 
     /** Get a reference to the parent.
      * It is undefined behavior to call this function when the widget does not have a parent.
      */
-    [[nodiscard]] abstract_container_widget &parent() noexcept;
+    [[nodiscard]] widget &parent() noexcept;
 
     /** Is this widget the first widget in the parent container.
      */
@@ -580,7 +572,64 @@ public:
      * The chain includes the given widget.
      */
     [[nodiscard]] static std::vector<std::shared_ptr<widget>>
-    parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
+    parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;    
+
+    /** Remove and deallocate all child widgets.
+     */
+    void clear() noexcept
+    {
+        _children.clear();
+        _request_reconstrain = true;
+    }
+
+    /** Add a widget directly to this widget.
+     * Thread safety: locks.
+     */
+    std::shared_ptr<widget> add_widget(std::shared_ptr<widget> widget) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+
+        tt_axiom(&widget->parent() == this);
+        _children.push_back(widget);
+        _request_reconstrain = true;
+        window.requestLayout = true;
+        return widget;
+    }
+
+    /** Add a widget directly to this widget.
+     */
+    template<typename T, typename... Args>
+    std::shared_ptr<T> make_widget(Args &&...args)
+    {
+        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        tmp->init();
+        return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
+    }
+
+    [[nodiscard]] widget &front() noexcept
+    {
+        return *_children.front();
+    }
+
+    [[nodiscard]] widget const &front() const noexcept
+    {
+        return *_children.front();
+    }
+
+    [[nodiscard]] widget &back() noexcept
+    {
+        return *_children.back();
+    }
+
+    [[nodiscard]] widget const &back() const noexcept
+    {
+        return *_children.back();
+    }
+
+    [[nodiscard]] virtual bool is_toolbar() const noexcept
+    {
+        return parent().is_toolbar();
+    }
 
 protected:
     std::shared_ptr<widget_delegate> _delegate;
@@ -588,7 +637,11 @@ protected:
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    std::weak_ptr<abstract_container_widget> _parent;
+    std::weak_ptr<widget> _parent;
+
+    /** A list of child widgets.
+     */
+    std::vector<std::shared_ptr<widget>> _children;
 
     /** Mouse cursor is hovering over the widget.
      */

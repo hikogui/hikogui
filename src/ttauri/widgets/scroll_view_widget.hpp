@@ -4,22 +4,22 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "grid_layout_widget.hpp"
 #include "scroll_bar_widget.hpp"
 
 namespace tt {
 
 template<bool CanScrollHorizontally = true, bool CanScrollVertically = true, bool ControlsWindow = true>
-class scroll_view_widget final : public abstract_container_widget {
+class scroll_view_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
     static constexpr bool can_scroll_horizontally = CanScrollHorizontally;
     static constexpr bool can_scroll_vertically = CanScrollVertically;
     static constexpr bool controls_window = ControlsWindow;
 
-    scroll_view_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept : super(window, parent)
+    scroll_view_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
