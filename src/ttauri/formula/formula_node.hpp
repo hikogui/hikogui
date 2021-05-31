@@ -26,20 +26,21 @@ struct formula_node {
     virtual ~formula_node() {}
 
     /** Resolve function and method pointers.
-    * At all call-formulas resolve the function pointers from the parse_context.
-    */
-    virtual void post_process(formula_post_process_context& context) {}
+     * At all call-formulas resolve the function pointers from the parse_context.
+     */
+    virtual void post_process(formula_post_process_context &context) {}
 
     /** Resolve function and method pointers.
-    * This is called on a name-formula or member-formula to set the function pointer.
-    */
-    virtual void resolve_function_pointer(formula_post_process_context& context) {}
+     * This is called on a name-formula or member-formula to set the function pointer.
+     */
+    virtual void resolve_function_pointer(formula_post_process_context &context) {}
 
     /** Evaluate an rvalue.
-    */
-    virtual datum evaluate(formula_evaluation_context& context) const = 0;
+     */
+    virtual datum evaluate(formula_evaluation_context &context) const = 0;
 
-    datum evaluate_without_output(formula_evaluation_context& context) const {
+    datum evaluate_without_output(formula_evaluation_context &context) const
+    {
         context.disable_output();
         auto r = evaluate(context);
         context.enable_output();
@@ -47,28 +48,33 @@ struct formula_node {
     }
 
     /** Evaluate an existing lvalue.
-    */
-    virtual datum &evaluate_lvalue(formula_evaluation_context& context) const {
+     */
+    virtual datum &evaluate_lvalue(formula_evaluation_context &context) const
+    {
         throw operation_error("{}: Expression is not a modifiable value.", location);
     }
 
-    virtual bool has_evaluate_xvalue() const {
+    virtual bool has_evaluate_xvalue() const
+    {
         return false;
     }
 
     /** Evaluate an existing xvalue.
-    */
-    virtual datum const &evaluate_xvalue(formula_evaluation_context const& context) const {
+     */
+    virtual datum const &evaluate_xvalue(formula_evaluation_context const &context) const
+    {
         throw operation_error("{}: Expression is not a xvalue.", location);
     }
 
     /** Assign to a non-existing or existing lvalue.
-    */
-    virtual datum &assign(formula_evaluation_context& context, datum const &rhs) const {
+     */
+    virtual datum &assign(formula_evaluation_context &context, datum const &rhs) const
+    {
         return evaluate_lvalue(context) = rhs;
     }
 
-    datum &assign_without_output(formula_evaluation_context& context, datum const &rhs) const {
+    datum &assign_without_output(formula_evaluation_context &context, datum const &rhs) const
+    {
         context.disable_output();
         auto &r = assign(context, rhs);
         context.enable_output();
@@ -76,33 +82,46 @@ struct formula_node {
     }
 
     /** Call a function with a datum::vector as arguments.
-    */
-    virtual datum call(formula_evaluation_context& context, datum::vector const &arguments) const {
+     */
+    virtual datum call(formula_evaluation_context &context, datum::vector const &arguments) const
+    {
         throw operation_error("{}: Expression is not callable.", location);
     }
 
     /** Get the name of a formula_name_node.
-    */
-    virtual std::string get_name() const {
+     */
+    virtual std::string get_name() const
+    {
         throw parse_error("{}: Expect a name got {})", location, *this);
     }
 
     /** Get name and argument names from a function declaration.
-    * This is only implemented on the formula_call_node.
-    */
-    virtual std::vector<std::string> get_name_and_argument_names() const {
+     * This is only implemented on the formula_call_node.
+     */
+    virtual std::vector<std::string> get_name_and_argument_names() const
+    {
         throw parse_error("{}: Expect a function definition got {})", location, *this);
     }
 
     virtual std::string string() const noexcept = 0;
 
-    friend std::string to_string(formula_node const& rhs) noexcept {
+    friend std::string to_string(formula_node const &rhs) noexcept
+    {
         return rhs.string();
     }
 
-    friend std::ostream& operator<<(std::ostream& lhs, formula_node const& rhs) noexcept {
+    friend std::ostream &operator<<(std::ostream &lhs, formula_node const &rhs) noexcept
+    {
         return lhs << to_string(rhs);
     }
 };
 
-}
+template<typename CharT>
+struct std::formatter<tt::formula_node, CharT> : std::formatter<string_view, CharT> {
+    auto format(tt::formula_node const &t, auto &fc)
+    {
+        return std::formatter<string_view, CharT>::format(to_string(t), fc);
+    }
+};
+
+} // namespace tt

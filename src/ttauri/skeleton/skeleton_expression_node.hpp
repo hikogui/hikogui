@@ -19,7 +19,7 @@ struct skeleton_expression_node final: skeleton_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("<expression {}>", *expression);
+        return std::format("<expression {}>", *expression);
     }
 
     datum evaluate(formula_evaluation_context &context) override {

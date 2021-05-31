@@ -86,8 +86,8 @@ public:
         std::cerr << synopsis << "\n";
 
         for (ttlet &option: options) {
-            ttlet example = fmt::format("--{}=<{}>", option.name, option.type);
-            std::cerr << fmt::format("  {:20s}    {}\n", example, option.help);
+            ttlet example = std::format("--{}=<{}>", option.name, option.type);
+            std::cerr << std::format("  {:20s}    {}\n", example, option.help);
         }
         std::cerr.flush();
     }
@@ -120,10 +120,10 @@ public:
                         });
 
                     if (option == options.end()) {
-                        error_messages.push_back(fmt::format("Unknown option '{}'", option_name));
+                        error_messages.push_back(std::format("Unknown option '{}'", option_name));
 
                     } else if (option->type != datum_type_t::Boolean) {
-                        error_messages.push_back(fmt::format("Option '{}' requires an argument", option_name));
+                        error_messages.push_back(std::format("Option '{}' requires an argument", option_name));
 
                     } else {
                         r[option_name] = true;
@@ -138,7 +138,7 @@ public:
                         });
 
                     if (option == options.end()) {
-                        error_messages.push_back(fmt::format("Unknown option '{}'", option_name));
+                        error_messages.push_back(std::format("Unknown option '{}'", option_name));
 
                     } else {
                         switch (option->type) {
@@ -149,7 +149,7 @@ public:
                                 r[option_name] = false;
                             } else {
                                 error_messages.push_back(
-                                    fmt::format("Expected a boolean value ('true' or 'false') for option '{}' got '{}'", option_name, option_value_string)
+                                    std::format("Expected a boolean value ('true' or 'false') for option '{}' got '{}'", option_name, option_value_string)
                                 );
                             }
                             break;
@@ -161,7 +161,7 @@ public:
                                     r[option_name] = option_value_int;
                                 } else {
                                     error_messages.push_back(
-                                        fmt::format("Unknown value '{}' for option '{}'", option_value_string, option_name)
+                                        std::format("Unknown value '{}' for option '{}'", option_value_string, option_name)
                                     );
                                 }
 
@@ -171,7 +171,7 @@ public:
                                     r[option_name] = option_value_int;
                                 } catch (...) {
                                     error_messages.push_back(
-                                        fmt::format("Expected a integer value for option '{}' got '{}'", option_name, option_value_string)
+                                        std::format("Expected a integer value for option '{}' got '{}'", option_name, option_value_string)
                                     );
                                 }
                             }

@@ -33,7 +33,7 @@ struct skeleton_placeholder_node final : skeleton_node {
 
     std::string string() const noexcept override
     {
-        return fmt::format("<placeholder {}>", *expression);
+        return std::format("<placeholder {}>", *expression);
     }
 
     datum evaluate(formula_evaluation_context &context) override

@@ -60,7 +60,6 @@ private:
     std::string tag;
 };
 
-
 } // namespace tt
 
 namespace std {
@@ -71,6 +70,14 @@ public:
     [[nodiscard]] size_t operator()(tt::language_tag const &rhs) const noexcept
     {
         return rhs.hash();
+    }
+};
+
+template<typename CharT>
+struct std::formatter<tt::language_tag, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(tt::language_tag t, auto &fc)
+    {
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
 

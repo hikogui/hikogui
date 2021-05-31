@@ -12,8 +12,7 @@
 #include "timer.hpp"
 #include "unfair_recursive_mutex.hpp"
 #include "console.hpp"
-#include <fmt/ostream.h>
-#include <fmt/format.h>
+#include <format>
 #include <exception>
 #include <memory>
 #include <iostream>

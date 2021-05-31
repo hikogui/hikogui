@@ -18,9 +18,8 @@
 #include "fixed_string.hpp"
 #include "subsystem.hpp"
 #include "log_level.hpp"
-#include <date/tz.h>
-#include <fmt/format.h>
-#include <fmt/ostream.h>
+#include <chrono>
+#include <format>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -67,9 +66,9 @@ public:
         ttlet cpu_id = _time_stamp.cpu_id();
 
         if constexpr (static_cast<bool>(Level & log_level::statistics)) {
-            return fmt::format("{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), _thread_id, cpu_id);
+            return std::format("{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), _thread_id, cpu_id);
         } else {
-            return fmt::format("{} {:5} {} ({}:{}) tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine, _thread_id, cpu_id);
+            return std::format("{} {:5} {} ({}:{}) tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine, _thread_id, cpu_id);
         }
     }
 
@@ -140,7 +139,7 @@ inline void logger_stop()
  * @tparam SourceLine The source line where this function was called.
  * @tparam Fmt The format string.
  * @param timestamp The timestamp when the message is logged.
- * @param args Arguments to fmt::format.
+ * @param args Arguments to std::format.
  */
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
 void log(Args &&...args) noexcept

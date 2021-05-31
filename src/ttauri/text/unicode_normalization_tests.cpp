@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 #include <span>
-#include <fmt/format.h>
+#include <format>
 
 using namespace std;
 using namespace tt;

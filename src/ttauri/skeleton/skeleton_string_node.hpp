@@ -35,7 +35,7 @@ struct skeleton_string_node final: skeleton_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("<text {}>", text);
+        return std::format("<text {}>", text);
     }
 
     datum evaluate(formula_evaluation_context &context) override {

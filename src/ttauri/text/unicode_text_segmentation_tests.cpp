@@ -12,7 +12,7 @@
 #include <string>
 #include <string_view>
 #include <span>
-#include <fmt/format.h>
+#include <format>
 
 using namespace std;
 using namespace tt;
@@ -32,7 +32,7 @@ std::optional<graphemeBreakTest> parsegraphemeBreakTests_line(std::string_view l
     if (split_line.size() < 2) {
         return {};
     }
-    r.comment = fmt::format("{}: {}", lineNr, split_line[1]);
+    r.comment = std::format("{}: {}", lineNr, split_line[1]);
     r.lineNr = lineNr;
 
     ttlet columns = split(split_line[0]);

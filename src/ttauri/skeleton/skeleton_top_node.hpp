@@ -42,7 +42,7 @@ struct skeleton_top_node final: skeleton_node {
 
     std::string string() const noexcept override {
         ttlet children_str = transform<std::vector<std::string>>(children, [](ttlet &x) { return x->string(); });
-        return fmt::format("<top {}>", join(children_str));
+        return std::format("<top {}>", join(children_str));
     }
 };
 

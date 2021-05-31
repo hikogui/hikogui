@@ -41,7 +41,7 @@ public:
     {
         return std::apply(
             [&fmt](auto const &... args) {
-                return fmt::format(fmt, args...);
+                return std::format(fmt, args...);
             },
             _args);
     }
@@ -154,3 +154,15 @@ private:
 };
 
 } // namespace tt
+
+namespace std {
+
+template<typename CharT>
+struct std::formatter<tt::label, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(tt::label t, auto &fc)
+    {
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+    }
+};
+
+} // namespace std

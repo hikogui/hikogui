@@ -91,7 +91,7 @@ public:
     template<typename O> [[nodiscard]] constexpr friend bool operator>=(O const &lhs, tagged_id const &rhs) noexcept { return tagged_id{lhs} >= rhs; }
 
     [[nodiscard]] friend std::string to_string(tagged_id const &rhs) noexcept {
-        return fmt::format("{}:{}", Tag, rhs.value);
+        return std::format("{}:{}", Tag, rhs.value);
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, tagged_id const &rhs) {

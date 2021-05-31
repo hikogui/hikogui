@@ -6,6 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 #include "vector.hpp"
+#include <format>
 
 namespace tt {
 namespace geo {
@@ -127,8 +128,8 @@ public:
         return _v.z();
     }
 
-    template<int E> requires (E <= D)
-    constexpr point &operator+=(vector<E> const &rhs) noexcept
+    template<int E>
+    requires(E <= D) constexpr point &operator+=(vector<E> const &rhs) noexcept
     {
         tt_axiom(is_valid() && rhs.is_valid());
         _v = _v + static_cast<f32x4>(rhs);
@@ -196,7 +197,7 @@ public:
     template<int E>
     [[nodiscard]] friend constexpr auto midpoint(point const &lhs, point<E> const &rhs) noexcept
     {
-        return point<std::max(D,E)>{midpoint(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+        return point<std::max(D, E)>{midpoint(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
     }
 
     template<int E>
@@ -213,7 +214,7 @@ public:
     template<int E>
     [[nodiscard]] friend constexpr auto min(point const &lhs, point<E> const &rhs) noexcept
     {
-        return point<std::max(D,E)>{min(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
+        return point<std::max(D, E)>{min(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
     }
 
     /** Mix the two points and get the heighest value of each element.
@@ -259,9 +260,9 @@ public:
     [[nodiscard]] friend std::string to_string(point const &rhs) noexcept
     {
         if constexpr (D == 2) {
-            return fmt::format("<{}, {}>", rhs._v.x(), rhs._v.y());
+            return std::format("<{}, {}>", rhs._v.x(), rhs._v.y());
         } else if constexpr (D == 3) {
-            return fmt::format("<{}, {}, {}>", rhs._v.x(), rhs._v.y(), rhs._v.z());
+            return std::format("<{}, {}, {}>", rhs._v.x(), rhs._v.y(), rhs._v.z());
         } else {
             tt_static_no_default();
         }
@@ -282,3 +283,35 @@ using point2 = geo::point<2>;
 using point3 = geo::point<3>;
 
 } // namespace tt
+
+namespace std {
+
+template<typename CharT>
+struct formatter<tt::geo::point<2>, CharT>  {
+    auto parse(auto &pc)
+    {
+        return pc.end();
+    }
+
+    auto format(tt::geo::point<2> const &t, auto &fc)
+    {
+        //return format_to(fc.out(), "<{}, {}>", t.x(), t.y());
+        return std::vformat_to(fc.out(), "<{}, {}>", std::make_format_args(t.x(), t.y()));
+    }
+};
+
+template<typename CharT>
+struct formatter<tt::geo::point<3>, CharT> : formatter<float, CharT> {
+    auto parse(auto &pc)
+    {
+        return pc.end();
+    }
+
+    auto format(tt::geo::point<3> const &t, auto &fc)
+    {
+        // return format_to(fc.out(), "<{}, {}, {}>", t.x(), t.y(), t.z());
+        return std::vformat_to(fc.out(), "<{}, {}, {}>", std::make_format_args(t.x(), t.y(), t.z()));
+    }
+};
+
+} // namespace std

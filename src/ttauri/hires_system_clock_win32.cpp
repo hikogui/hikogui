@@ -26,7 +26,8 @@ hires_system_clock::time_point hires_system_clock::now() noexcept
     tt_assert(r);
 
     // Get the number of days since 1970-01-01.
-    ttlet date = date::year_month_day{date::year{system_time.wYear}, date::month{system_time.wMonth}, date::day{system_time.wDay}};
+    ttlet date = std::chrono::year_month_day{
+        std::chrono::year{system_time.wYear}, std::chrono::month{system_time.wMonth}, std::chrono::day{system_time.wDay}};
     int64_t ns1970 = static_cast<std::chrono::sys_days>(date).time_since_epoch() / 1h;
     ns1970 += system_time.wHour;
     ns1970 *= 60;

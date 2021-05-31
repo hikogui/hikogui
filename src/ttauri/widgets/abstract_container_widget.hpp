@@ -5,6 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
+#include <ranges>
 
 namespace tt {
 
