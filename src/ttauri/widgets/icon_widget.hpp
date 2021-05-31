@@ -20,7 +20,15 @@ class icon_widget final : public widget {
 public:
     using super = widget;
 
-    template<typename... Args>
+    icon_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        std::shared_ptr<label_delegate> delegate,
+        alignment alignment = alignment::middle_center) noexcept :
+        super(window, std::move(parent), std::move(delegate)), _alignment(alignment)
+    {
+    }
+
     icon_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
@@ -32,13 +40,14 @@ public:
         set_icon(icon);
     }
 
-    template<typename... Args>
     icon_widget(gui_window &window, std::shared_ptr<widget> parent, tt::icon icon) noexcept :
         icon_widget(window, std::move(parent), std::make_shared<label_delegate>(), alignment::middle_center, std::move(icon))
     {
     }
 
     ~icon_widget();
+
+    [[nodiscard]] bool visible() const noexcept override; 
 
     tt::icon icon() const noexcept;
 

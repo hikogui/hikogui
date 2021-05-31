@@ -131,6 +131,18 @@ public:
      */
     virtual void set_enabled(observable<bool> rhs) noexcept;
 
+    /** Check if this widget is visible.
+     * This call is forwarded to `widget_delegate::visible()`.
+     */
+    virtual bool visible() const noexcept;
+
+    /** Set the widget visible or invisible.
+     * This call is forwarded to `widget_delegate::set_visible()`.
+     */
+    virtual void set_visible(observable<bool> rhs) noexcept;
+
+
+
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
      * a way that the maximum margin of neighbouring widgets is maintained.
@@ -723,14 +735,13 @@ protected:
     int _logical_layer;
 
     template<typename T>
-    T const &delegate() const noexcept
+    [[nodiscard]] std::shared_ptr<T> delegate_ptr() const noexcept
     {
-        auto &d = *_delegate;
-        return narrow_cast<T const &>(d);
+        return std::dynamic_pointer_cast<T>(_delegate);
     }
 
     template<typename T>
-    T &delegate() noexcept
+    [[nodiscard]] T &delegate() const noexcept
     {
         auto &d = *_delegate;
         return narrow_cast<T &>(d);

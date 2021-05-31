@@ -21,6 +21,16 @@ class text_widget final : public widget {
 public:
     using super = widget;
 
+    text_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        std::shared_ptr<label_delegate> delegate,
+        alignment alignment = alignment::top_left,
+        text_style style = theme::global->labelStyle) noexcept :
+        super(window, std::move(parent), std::move(delegate)), _alignment(alignment), _style(style)
+    {
+    }
+
     template<typename... Args>
     text_widget(
         gui_window &window,

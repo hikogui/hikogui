@@ -8,18 +8,25 @@ namespace tt {
 
 icon_widget::~icon_widget() {}
 
+[[nodiscard]] bool icon_widget::visible() const noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+    return super::visible() and _icon_type != icon_type::no;
+}
+
 tt::icon icon_widget::icon() const noexcept
 {
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     return delegate<label_delegate>().icon(*this);
 }
 
 void icon_widget::set_icon(tt::icon const &icon) noexcept
 {
+    tt_axiom(gui_system_mutex.recurse_lock_count());
     return delegate<label_delegate>().set_icon(*this, icon);
 }
 
-[[nodiscard]] bool
-icon_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool icon_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -31,6 +38,7 @@ icon_widget::update_constraints(hires_utc_clock::time_point display_time_point, 
             _glyph = {};
             _pixmap_hash = 0;
             _pixmap_backing = {};
+            // For uniform scaling issues, make sure the size is not zero.
             _icon_bounding_box = {};
 
         } else if (holds_alternative<pixel_map<sfloat_rgba16>>(icon_)) {
@@ -81,7 +89,7 @@ icon_widget::update_constraints(hires_utc_clock::time_point display_time_point, 
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(this->_request_relayout, false);
-    if (need_layout) {
+    if (need_layout and visible()) {
         _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), _alignment);
     }
     super::update_layout(displayTimePoint, need_layout);
@@ -91,7 +99,7 @@ void icon_widget::draw(draw_context context, hires_utc_clock::time_point display
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (overlaps(context, _clipping_rectangle)) {
+    if (overlaps(context, _clipping_rectangle) and visible()) {
         switch (_icon_type) {
         case icon_type::no: break;
 

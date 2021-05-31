@@ -66,6 +66,18 @@ void widget::set_enabled(observable<bool> rhs) noexcept
     return _delegate->set_enabled(*this, std::move(rhs));
 }
 
+[[nodiscard]] bool widget::visible() const noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+    return _delegate->visible(*this);
+}
+
+void widget::set_visible(observable<bool> rhs) noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+    return _delegate->set_visible(*this, std::move(rhs));
+}
+
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (enabled()) {

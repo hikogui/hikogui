@@ -32,8 +32,8 @@ public:
         tt_axiom(is_valid());
     }
 
-    template<int E> requires(E <= D)
-    [[nodiscard]] constexpr explicit scale(vector<E> const &v) noexcept : _v(static_cast<f32x4>(v).xyz1())
+    template<int E>
+    requires(E <= D) [[nodiscard]] constexpr explicit scale(vector<E> const &v) noexcept : _v(static_cast<f32x4>(v).xyz1())
     {
         tt_axiom(is_valid());
     }
@@ -138,7 +138,8 @@ private:
 };
 
 template<int D>
-[[nodiscard]] constexpr matrix<D> matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
+[[nodiscard]] constexpr matrix<D>
+matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
 {
     ttlet scale = tt::geo::scale<D>::uniform(src_rectangle.size(), dst_rectangle.size());
     ttlet scaled_rectangle = scale * src_rectangle;

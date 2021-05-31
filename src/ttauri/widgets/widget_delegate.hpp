@@ -26,7 +26,7 @@ public:
     widget_delegate &operator=(widget_delegate &&) = delete;
     virtual ~widget_delegate() = default;
 
-    widget_delegate() noexcept : _enabled(true)
+    widget_delegate() noexcept : _enabled(true), _visible(true)
     {
         _enabled_callback = _enabled.subscribe([this](auto...) {
             _notifier(widget_update_level::redraw);
@@ -51,11 +51,21 @@ public:
     {
         _enabled = std::move(rhs);
     }
+    virtual bool visible(widget const &self) const noexcept
+    {
+        return *_visible;
+    }
+
+    virtual void set_visible(widget &self, observable<bool> rhs) noexcept
+    {
+        _visible = std::move(rhs);
+    }
 
 protected:
     notifier_type _notifier;
 
     observable<bool> _enabled;
+    observable<bool> _visible;
     decltype(_enabled)::callback_ptr_type _enabled_callback;
 };
 
