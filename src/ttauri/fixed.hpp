@@ -87,7 +87,7 @@ struct fixed {
     }
 
     std::string string() const noexcept {
-        return fmt::format("{}", static_cast<double>(value) / M);
+        return std::format("{}", static_cast<double>(value) / M);
     }
     
     static fixed fromValue(T value) noexcept {

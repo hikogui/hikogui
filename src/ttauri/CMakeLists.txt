@@ -130,12 +130,10 @@ target_sources(ttauri PRIVATE
     polymorphic_optional.hpp
     polynomial.hpp
     range_map.hpp
-    ranged_numeric.hpp
     ranges.hpp
     recursive_iterator.hpp
     required.hpp
     range_map.hpp
-    ranged_numeric.hpp
     resource_view.hpp
     safe_int.hpp
     semantic_version.hpp

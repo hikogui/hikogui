@@ -1749,7 +1749,7 @@ public:
             if (i != 0) {
                 r += "; ";
             }
-            r += fmt::format("{}", rhs[i]);
+            r += std::format("{}", rhs[i]);
         }
         r += ')';
         return r;

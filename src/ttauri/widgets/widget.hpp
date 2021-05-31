@@ -27,7 +27,6 @@
 #include "../command.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include "../flow_layout.hpp"
-#include "../ranged_numeric.hpp"
 #include "widget_delegate.hpp"
 #include <limits>
 #include <memory>

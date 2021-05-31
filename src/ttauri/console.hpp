@@ -6,7 +6,7 @@
 
 #include <string_view>
 #include <iostream>
-#include <fmt/format.h>
+#include <format>
 
 namespace tt {
 
@@ -32,7 +32,7 @@ void console_output(std::string_view text, std::ostream &output=std::cout) noexc
 template<typename... Args>
 void print(char const *fmt, Args const &... args) noexcept
 {
-    console_output(fmt::format(fmt, args...));
+    console_output(std::format(fmt, args...));
 }
 
 }

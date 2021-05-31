@@ -165,7 +165,7 @@ private:
     void parse(datum const &data);
 
     [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {
-        return fmt::format("{}:{}", rhs.name, rhs.mode);
+        return std::format("{}:{}", rhs.name, rhs.mode);
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, theme const &rhs) {

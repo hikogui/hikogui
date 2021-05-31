@@ -63,7 +63,7 @@ public:
     }
 
     [[nodiscard]] friend std::string to_string(font_variant const &rhs) noexcept {
-        return fmt::format("{}", rhs.weight(), rhs.italic() ? "/italic" : "");
+        return std::format("{}", rhs.weight(), rhs.italic() ? "/italic" : "");
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, font_variant const &rhs) {

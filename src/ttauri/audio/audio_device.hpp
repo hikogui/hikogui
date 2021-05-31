@@ -17,12 +17,7 @@
 
 namespace tt {
 
-enum class audio_device_state {
-    active,
-    disabled,
-    not_present,
-    unplugged
-};
+enum class audio_device_state { active, disabled, not_present, unplugged };
 
 [[nodiscard]] constexpr char const *to_const_string(audio_device_state const &rhs) noexcept
 {
@@ -96,7 +91,7 @@ public:
     /** Check if a audio configuration is supported by this device.
      * @param config Configuration such as sample rate, sample format and bit-depth.
      */
-    //virtual bool isConfigSupported(AudiostreamConfig config) const noexcept = 0;
+    // virtual bool isConfigSupported(AudiostreamConfig config) const noexcept = 0;
 
     /** Start a session.
      * Start a session, which will cause data to be stream to and
@@ -114,15 +109,23 @@ public:
      * @param config Configuration such as sample rate, sample format and bit-depth.
      * XXX Windows allows for an icon to be passed to a session.
      */
-    //virtual void start_stream(std::string id, std::string name, audio_stream_config config) = 0;
+    // virtual void start_stream(std::string id, std::string name, audio_stream_config config) = 0;
 
     /** Stop a session.
      * Stop a session, which will also stop the streams of audio.
      */
-    //virtual void stop_stream() noexcept = 0;
+    // virtual void stop_stream() noexcept = 0;
 
 private:
     std::shared_ptr<audio_device_delegate> delegate = {};
 };
 
-}
+template<typename CharT>
+struct std::formatter<tt::audio_device_state, CharT> : std::formatter<char const *, CharT> {
+    auto format(tt::audio_device_state t, auto &fc)
+    {
+        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+    }
+};
+
+} // namespace tt

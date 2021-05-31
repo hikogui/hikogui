@@ -52,7 +52,7 @@ public:
     virtual std::string to_string(sender_type &sender, value_type const &value) noexcept
     {
         // XXX Need to pass the current local to format.
-        return fmt::format("{}", value);
+        return std::format("{}", value);
     }
 
     /** Convert a string to a value.

@@ -12,7 +12,7 @@
 #include <string>
 #include <string_view>
 #include <span>
-#include <fmt/format.h>
+#include <format>
 
 using namespace tt;
 using namespace tt::detail;

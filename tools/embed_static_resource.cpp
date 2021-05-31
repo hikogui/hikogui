@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include <fmt/format.h>
+#include <format>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -14,7 +14,7 @@
 template<typename... Args>
 void print(std::string_view fmt, Args const &... args) noexcept
 {
-    std::cerr << fmt::format(fmt, args...) << std::endl;
+    std::cerr << std::format(fmt, args...) << std::endl;
 }
 
 void usage(std::string_view program, std::string_view str)
@@ -42,7 +42,7 @@ void usage(std::string_view program, std::string_view str)
 template<typename... Args>
 void write(std::ostream& stream, std::string_view fmt, Args const &... args) noexcept
 {
-    stream << fmt::format(fmt, args...);
+    stream << std::format(fmt, args...);
 }
 
 void write_bytes_as_text(std::ostream& stream, std::string_view bytes) noexcept

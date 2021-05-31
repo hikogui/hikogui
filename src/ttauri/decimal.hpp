@@ -7,7 +7,6 @@
 #include "exception.hpp"
 #include "int_overflow.hpp"
 #include "math.hpp"
-#include <fmt/ostream.h>
 #include <limits>
 #include <string_view>
 #include <string>
@@ -587,6 +586,14 @@ struct hash<tt::decimal> {
     inline size_t operator()(tt::decimal const &value) const
     {
         return value.hash();
+    }
+};
+
+template<typename CharT>
+struct std::formatter<tt::decimal, CharT> : std::formatter<double, CharT> {
+    auto format(tt::decimal t, auto &fc)
+    {
+        return std::formatter<double, CharT>::format(static_cast<double>(t), fc);
     }
 };
 
