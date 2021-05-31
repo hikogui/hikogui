@@ -154,7 +154,7 @@ public:
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
      */
-    [[nodiscard]] extent2 extent() const noexcept
+    [[nodiscard]] extent2 size() const noexcept
     {
         return extent2{v.zwzw() - v};
     }
@@ -262,7 +262,7 @@ public:
             tt_no_default();
         }
 
-        return {point2{x, y}, needle.extent()};
+        return {point2{x, y}, needle.size()};
     }
 
     /** Need to call the hiden friend function from within another class.
@@ -339,7 +339,7 @@ public:
      */
     [[nodiscard]] friend axis_aligned_rectangle scale(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
-        ttlet extent = lhs.extent();
+        ttlet extent = lhs.size();
         ttlet scaled_extent = extent * rhs;
         ttlet diff_extent = scaled_extent - extent;
         ttlet half_diff_extent = diff_extent * 0.5f;

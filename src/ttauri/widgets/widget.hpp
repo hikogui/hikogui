@@ -280,10 +280,10 @@ public:
         float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_axiom(child_rectangle.extent() >= _minimum_size);
+        tt_axiom(child_rectangle.size() >= _minimum_size);
 
         ttlet child_translate = translate2{child_rectangle};
-        ttlet child_size = child_rectangle.extent();
+        ttlet child_size = child_rectangle.size();
         ttlet rectangle = aarectangle{child_size};
         ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, expand(rectangle, margin()));
 

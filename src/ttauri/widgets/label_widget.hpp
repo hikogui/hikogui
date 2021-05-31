@@ -5,6 +5,8 @@
 #pragma once
 
 #include "widget.hpp"
+#include "text_widget.hpp"
+#include "icon_widget.hpp"
 #include "label_delegate.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../stencils/label_stencil.hpp"

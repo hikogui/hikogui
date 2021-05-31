@@ -53,7 +53,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        auto extent = rectangle().extent();
+        auto extent = rectangle().size();
         if (extent.height() > theme::global->toolbarHeight * 1.2f) {
             extent = extent2{extent.width(), theme::global->toolbarHeight};
         }

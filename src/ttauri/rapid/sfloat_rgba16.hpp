@@ -9,6 +9,7 @@
 #include "../pixel_map.hpp"
 #include "../geometry/corner_shapes.hpp"
 #include "../rapid/numeric_array.hpp"
+#include "../hash.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -70,6 +71,11 @@ public:
     // std::array<float16,4> &get() noexcept {
     //    return v;
     //}
+
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        return hash_mix(v[0], v[1], v[2], v[3]);
+    }
 
     [[nodiscard]] friend bool operator==(sfloat_rgba16 const &lhs, sfloat_rgba16 const &rhs) noexcept
     {
@@ -137,3 +143,15 @@ inline void composit(pixel_map<sfloat_rgba16> &under, color over, pixel_map<uint
 }
 
 } // namespace tt
+
+namespace std {
+
+template<>
+struct std::hash<tt::sfloat_rgba16> {
+    size_t operator()(tt::sfloat_rgba16 const &rhs) const noexcept
+    {
+        return rhs.hash();
+    }
+};
+
+}

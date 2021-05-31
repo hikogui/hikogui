@@ -58,7 +58,7 @@ public:
         aarectangle const &rectangle,
         float base_line_position = std::numeric_limits<float>::infinity()) noexcept
     {
-        if (_rectangle.extent() != rectangle.extent()) {
+        if (_rectangle.size() != rectangle.size()) {
             _size_is_modified = true;
         }
         if (get<0>(_rectangle) != get<0>(rectangle) || _base_line_position != base_line_position) {

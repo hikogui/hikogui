@@ -497,7 +497,7 @@ graphic_path graphic_path::centerScale(extent2 extent, float padding) const noex
     );
     bbox = scale2(scale) * bbox;
 
-    ttlet offset = (point2{} - get<0>(bbox)) + (extent - bbox.extent()) * 0.5;
+    ttlet offset = (point2{} - get<0>(bbox)) + (extent - bbox.size()) * 0.5;
 
     return (translate2(offset) * scale2(scale, scale)) * *this;
 }

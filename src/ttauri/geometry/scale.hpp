@@ -140,7 +140,7 @@ private:
 template<int D>
 [[nodiscard]] constexpr matrix<D> matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
 {
-    ttlet scale = tt::geo::scale<D>::uniform(src_rectangle.extent(), dst_rectangle.extent());
+    ttlet scale = tt::geo::scale<D>::uniform(src_rectangle.size(), dst_rectangle.size());
     ttlet scaled_rectangle = scale * src_rectangle;
     ttlet translation = translate<D>::align(scaled_rectangle, dst_rectangle, alignment);
     return translation * scale;
