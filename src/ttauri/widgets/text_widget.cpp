@@ -29,7 +29,7 @@ text_widget::~text_widget() {}
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(this->_request_relayout, false);
-    if (need_layout and visible()) {
+    if (need_layout) {
         _shaped_text = shaped_text{text(), _style, width(), _alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
     }
@@ -40,7 +40,7 @@ void text_widget::draw(draw_context context, hires_utc_clock::time_point display
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (overlaps(context, _clipping_rectangle) and visible()) {
+    if (overlaps(context, _clipping_rectangle)) {
         context.draw_text(_shaped_text, this->label_color(), _shaped_text_transform);
     }
 

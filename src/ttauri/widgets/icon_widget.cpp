@@ -90,7 +90,7 @@ void icon_widget::set_icon(tt::icon const &icon) noexcept
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(this->_request_relayout, false);
-    if (need_layout and visible()) {
+    if (need_layout) {
         _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), _alignment);
     }
     super::update_layout(displayTimePoint, need_layout);
@@ -100,7 +100,7 @@ void icon_widget::draw(draw_context context, hires_utc_clock::time_point display
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    if (overlaps(context, _clipping_rectangle) and visible()) {
+    if (overlaps(context, _clipping_rectangle)) {
         switch (_icon_type) {
         case icon_type::no: break;
 

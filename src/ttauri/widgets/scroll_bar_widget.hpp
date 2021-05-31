@@ -149,7 +149,7 @@ public:
      * When the content is the same size as the scroll-view then
      * the scrollbar becomes invisible.
      */
-    [[nodiscard]] bool visible() const noexcept
+    [[nodiscard]] bool visible() const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return hidden_content() >= 1.0f;

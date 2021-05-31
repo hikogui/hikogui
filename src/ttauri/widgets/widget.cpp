@@ -8,10 +8,7 @@
 
 namespace tt {
 
-widget::widget(
-    gui_window &_window,
-    std::shared_ptr<widget> parent,
-    std::shared_ptr<widget_delegate> delegate) noexcept :
+widget::widget(gui_window &_window, std::shared_ptr<widget> parent, std::shared_ptr<widget_delegate> delegate) noexcept :
     window(_window),
     _delegate(std::move(delegate)),
     _parent(std::move(parent)),
@@ -164,7 +161,9 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
     for (auto &&child : _children) {
         tt_axiom(child);
         tt_axiom(&child->parent() == this);
-        child->update_layout(display_time_point, need_layout);
+        if (child->visible()) {
+            child->update_layout(display_time_point, need_layout);
+        }
     }
 
     if (need_layout) {
@@ -180,9 +179,11 @@ void widget::draw(draw_context context, hires_utc_clock::time_point display_time
         tt_axiom(child);
         tt_axiom(&child->parent() == this);
 
-        auto child_context =
-            context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
-        child->draw(child_context, display_time_point);
+        if (child->visible()) {
+            auto child_context =
+                context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
+            child->draw(child_context, display_time_point);
+        }
     }
 }
 
@@ -233,7 +234,6 @@ bool widget::handle_event(command command) noexcept
 
     return false;
 }
-
 
 bool widget::handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept
 {
@@ -420,7 +420,5 @@ void widget::scroll_to_show(tt::rectangle rectangle) noexcept
 
     return chain;
 }
-
-
 
 } // namespace tt
