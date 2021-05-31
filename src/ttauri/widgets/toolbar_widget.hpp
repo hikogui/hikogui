@@ -6,6 +6,7 @@
 
 #include "widget.hpp"
 #include <memory>
+#include <ranges>
 
 namespace tt {
 

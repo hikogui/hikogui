@@ -135,12 +135,12 @@ void audio_system_win32::update_device_list() noexcept
 
         } else {
             auto device = std::allocate_shared<audio_device_win32>(locked_memory_allocator<audio_device_win32>{}, win32_device);
-            tt_log_info(
-                "Found audio device \"{}\", state={}, channels={}, speakers={}",
-                device->name(),
-                device->state(),
-                device->full_num_channels(),
-                device->full_channel_mapping());
+            //tt_log_info(
+            //    "Found audio device \"{}\", state={}, channels={}, speakers={}",
+            //    device->name(),
+            //    device->state(),
+            //    device->full_num_channels(),
+            //    device->full_channel_mapping());
             _devices.push_back(std::move(device));
         }
     }

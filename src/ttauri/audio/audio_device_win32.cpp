@@ -193,7 +193,7 @@ std::string audio_device_win32::end_point_name() const noexcept
         }
     }
 
-    auto mapping = full_channel_mapping();
+    [[maybe_unused]] auto mapping = full_channel_mapping();
     return r;
 }
 

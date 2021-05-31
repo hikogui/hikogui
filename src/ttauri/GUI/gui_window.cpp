@@ -227,7 +227,7 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
-    widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
+    [[maybe_unused]] ttlet handled = widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
     if (new_target_widget) {
