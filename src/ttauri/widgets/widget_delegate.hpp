@@ -51,6 +51,12 @@ public:
     {
         _enabled = std::move(rhs);
     }
+
+    virtual void set_enabled(widget &self, bool rhs) noexcept
+    {
+        _enabled = rhs;
+    }
+
     virtual bool visible(widget const &self) const noexcept
     {
         return *_visible;
@@ -59,6 +65,11 @@ public:
     virtual void set_visible(widget &self, observable<bool> rhs) noexcept
     {
         _visible = std::move(rhs);
+    }
+
+    virtual void set_visible(widget &self, bool rhs) noexcept
+    {
+        _visible = rhs;
     }
 
 protected:

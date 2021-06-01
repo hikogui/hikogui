@@ -31,80 +31,11 @@ public:
     {
     }
 
-    template<typename... Args>
-    text_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        std::shared_ptr<label_delegate> delegate,
-        alignment alignment,
-        text_style style,
-        std::string_view fmt,
-        Args &&...args) noexcept :
-        super(window, std::move(parent), std::move(delegate)), _alignment(alignment), _style(style)
-    {
-        set_text(fmt, std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    text_widget(gui_window &window, std::shared_ptr<widget> parent, std::string_view fmt, Args &&...args) noexcept :
-        text_widget(
-            window,
-            std::move(parent),
-            std::make_shared<label_delegate>(),
-            alignment::top_left,
-            theme::global->labelStyle,
-            fmt,
-            std::forward<Args>(args)...)
-    {
-    }
-
-    template<typename... Args>
-    text_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        text_style style,
-        std::string_view fmt,
-        Args &&...args) noexcept :
-        text_widget(
-            window,
-            std::move(parent),
-            std::make_shared<label_delegate>(),
-            alignment::top_left,
-            style,
-            fmt,
-            std::forward<Args>(args)...)
-    {
-    }
-
-    template<typename... Args>
-    text_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        alignment alignment,
-        std::string_view fmt,
-        Args &&...args) noexcept :
-        text_widget(
-            window,
-            std::move(parent),
-            std::make_shared<label_delegate>(),
-            alignment,
-            theme::global->labelStyle,
-            fmt,
-            std::forward<Args>(args)...)
-    {
-    }
-
     ~text_widget();
 
     std::string text() const noexcept
     {
         return delegate<label_delegate>().text(*this);
-    }
-
-    template<typename... Args>
-    void set_text(l10n fmt, Args &&...args) noexcept
-    {
-        return delegate<label_delegate>().set_text(*this, fmt, std::forward<Args>(args)...);
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;

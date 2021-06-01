@@ -144,7 +144,18 @@ public:
      */
     virtual void set_visible(observable<bool> rhs) noexcept;
 
+    [[nodiscard]] bool lineage_matches_id(std::string_view rhs) const noexcept
+    {
+        auto current = weak_from_this();
+        while (auto current_ = current.lock()) {
+            if (current_->id == rhs) {
+                return true;
+            }
 
+            current = current_->_parent;
+        }
+        return false;
+    }
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such

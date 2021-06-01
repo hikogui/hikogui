@@ -23,13 +23,22 @@ public:
     using delegate_type = button_delegate<value_type,button_type>;
     using callback_ptr_type = typename delegate_type::pressed_callback_ptr_type;
 
+
+    [[nodiscard]] abstract_button_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        std::shared_ptr<delegate_type> delegate) :
+        super(window, parent, delegate)
+    {
+    }
+
     template<typename Value>
     [[nodiscard]] abstract_button_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
         std::shared_ptr<delegate_type> delegate,
         Value &&value) :
-        super(window, parent, delegate)
+        abstract_button_widget(window, parent, delegate)
     {
         set_value(std::forward<Value>(value));
     }

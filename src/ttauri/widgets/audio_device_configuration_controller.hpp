@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "boolean_checkbox_widget.hpp"
 #include "text_field_widget.hpp"
 #include "selection_widget.hpp"
 #include "button_widget.hpp"
@@ -20,7 +19,7 @@ public:
 
 private:
     std::shared_ptr<label_button_widget<bool>> _device_config_button;
-    std::shared_ptr<boolean_checkbox_widget> _exclusivity_checkbox;
+    std::shared_ptr<checkbox_widget<bool>> _exclusivity_checkbox;
     std::shared_ptr<text_field_widget<int>> _num_input_channels_text_field;
     std::shared_ptr<text_field_widget<int>> _num_output_channels_text_field;
     std::shared_ptr<selection_widget<pcm_format>> _pcm_format_selection;

@@ -27,7 +27,7 @@ audio_device_configuration_controller::audio_device_configuration_controller(
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Exclusive mode:"));
-    _exclusivity_checkbox = grid.make_widget<boolean_checkbox_widget>(column_nr + 1, row_nr);
+    _exclusivity_checkbox = grid.make_widget<checkbox_widget<bool>>(column_nr + 1, row_nr);
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Number of input channels:"));

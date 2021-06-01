@@ -17,6 +17,21 @@ text_widget::~text_widget() {}
         _minimum_size = _shaped_text.minimum_size();
         _preferred_size = _shaped_text.preferred_size();
         _maximum_size = _shaped_text.maximum_size();
+
+        ttlet small_size = theme::global->smallSize;
+        ttlet margin_ = margin();
+
+        // Allow text to overhang into the margin of a small widget.
+        if (_minimum_size.height() > small_size && _minimum_size.height() <= small_size + margin_) {
+            _minimum_size.height() = small_size;
+        }
+        if (_preferred_size.height() > small_size && _preferred_size.height() <= small_size + margin_) {
+            _preferred_size.height() = small_size;
+        }
+        if (_maximum_size.height() > small_size && _maximum_size.height() <= small_size + margin_) {
+            _maximum_size.height() = small_size;
+        }
+
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
     } else {

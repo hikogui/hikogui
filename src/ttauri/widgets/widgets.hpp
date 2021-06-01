@@ -5,9 +5,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "boolean_checkbox_widget.hpp"
 #include "button_widget.hpp"
-#include "checkbox_widget.hpp"
 #include "label_widget.hpp"
 #include "text_field_widget.hpp"
 #include "scroll_view_widget.hpp"

@@ -45,9 +45,16 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        _inner_margin = (_text_widget->visible() and _icon_widget->visible()) ? theme::global->margin : 0.0f;
+        ttlet label_size = _text_widget->preferred_size();
+        ttlet icon_size = _icon_widget->preferred_size();
 
-        if (_icon_widget->visible()) {
+        ttlet has_text = label_size.width() > 0.0f;
+        ttlet has_icon = icon_size.width() > 0.0f;
+
+        _inner_margin = (has_text and has_icon) ? theme::global->margin : 0.0f;
+
+        if (has_icon) {
+            // Override the natural icon size.
             if (_alignment == horizontal_alignment::center) {
                 _icon_size = theme::global->large_icon_size;
             } else {
@@ -57,9 +64,8 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
             _icon_size = 0.0f;
         }
 
-        auto size = _text_widget->visible() ? _text_widget->preferred_size() : extent2{};
-
-        if (_icon_widget->visible()) {
+        auto size = label_size;
+        if (has_icon) {
             if (_alignment != horizontal_alignment::center) {
                 // If the icon is on the left or right, add the icon to the width and
                 // the minimum height is the maximum of the icon and text height.

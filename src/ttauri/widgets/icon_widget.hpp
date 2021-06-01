@@ -29,29 +29,9 @@ public:
     {
     }
 
-    icon_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        std::shared_ptr<label_delegate> delegate,
-        alignment alignment,
-        tt::icon const &icon) noexcept :
-        super(window, std::move(parent), std::move(delegate)), _alignment(alignment)
-    {
-        set_icon(icon);
-    }
-
-    icon_widget(gui_window &window, std::shared_ptr<widget> parent, tt::icon icon) noexcept :
-        icon_widget(window, std::move(parent), std::make_shared<label_delegate>(), alignment::middle_center, std::move(icon))
-    {
-    }
-
     ~icon_widget();
 
-    [[nodiscard]] bool visible() const noexcept override; 
-
     tt::icon icon() const noexcept;
-
-    void set_icon(tt::icon const &icon) noexcept;
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
 

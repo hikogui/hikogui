@@ -19,7 +19,7 @@ void license_preferences_controller::init(tt::widget &_self) noexcept
     auto grid = scroll->make_widget<>();
 
     grid->make_widget<label_widget>("A1", l10n("These is a checkbox:"));
-    auto checkbox1 = grid->make_widget<boolean_checkbox_widget>("B1");
+    auto checkbox1 = grid->make_widget<checkbox_widget<bool>>("B1");
     checkbox1->set_on_label(l10n("true"));
     checkbox1->set_off_label(l10n("false"));
     checkbox1->set_other_label(l10n("other"));

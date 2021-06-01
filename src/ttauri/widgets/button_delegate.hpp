@@ -62,11 +62,11 @@ public:
 
     [[nodiscard]] tt::label label(widget const &sender) const noexcept override
     {
-        if (sender.id == "on") {
+        if (sender.lineage_matches_id("on_label")) {
             return _on_label;
-        } else if (sender.id == "off") {
+        } else if (sender.lineage_matches_id("off_label")) {
             return _off_label;
-        } else if (sender.id == "other") {
+        } else if (sender.lineage_matches_id("other_label")) {
             return _other_label;
         } else {
             tt_log_error("depricated");
@@ -76,6 +76,19 @@ public:
             case button_state::other: return _other_label;
             default: tt_no_default();
             }
+        }
+    }
+
+    [[nodiscard]] bool visible(widget const &sender) const noexcept override
+    {
+        if (sender.lineage_matches_id("on_label")) {
+            return state(sender) == button_state::on;
+        } else if (sender.lineage_matches_id("off_label")) {
+            return state(sender) == button_state::off;
+        } else if (sender.lineage_matches_id("other_label")) {
+            return state(sender) == button_state::other;
+        } else {
+            return super::visible(sender);
         }
     }
 
@@ -140,7 +153,7 @@ public:
     virtual void set_on_label(widget &sender, tt::label const &rhs) noexcept
     {
         _on_label = rhs;
-        value_changed();
+        this->_notifier(widget_update_level::constrain);
     }
 
     [[nodiscard]] virtual tt::label off_label(widget const &sender) const noexcept
@@ -151,7 +164,7 @@ public:
     virtual void set_off_label(widget &sender, tt::label const &rhs) noexcept
     {
         _off_label = rhs;
-        value_changed();
+        this->_notifier(widget_update_level::constrain);
     }
 
     [[nodiscard]] virtual tt::label other_label(widget const &sender) const noexcept
@@ -162,7 +175,7 @@ public:
     virtual void set_other_label(widget &sender, tt::label const &rhs) noexcept
     {
         _other_label = rhs;
-        value_changed();
+        this->_notifier(widget_update_level::constrain);
     }
 
 protected:
@@ -182,22 +195,17 @@ protected:
 
     void value_changed() noexcept
     {
-        auto label_changed = false;
-
         if (_value == _on_value) {
             _state = button_state::on;
-            label_changed |= compare_then_assign(_label, _on_label);
 
         } else if (_value == _off_value) {
             _state = button_state::off;
-            label_changed |= compare_then_assign(_label, _off_label);
 
         } else {
             _state = button_state::other;
-            label_changed |= compare_then_assign(_label, _other_label);
         }
 
-        this->_notifier(label_changed ? widget_update_level::constrain : widget_update_level::redraw);
+        this->_notifier(widget_update_level::layout);
     }
 };
 

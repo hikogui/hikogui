@@ -6,13 +6,11 @@ target_sources(ttauri PRIVATE
     abstract_button_widget.hpp
     audio_device_configuration_controller.cpp
     audio_device_configuration_controller.hpp
-    boolean_checkbox_widget.hpp
     button_delegate.hpp
     button_shape.hpp
     button_state.hpp
     button_type.hpp
     button_widget.hpp
-    checkbox_widget.hpp
     grid_layout_widget.cpp
     grid_layout_widget.hpp
     icon_widget.cpp
