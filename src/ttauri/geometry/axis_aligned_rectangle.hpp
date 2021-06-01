@@ -339,14 +339,13 @@ public:
      */
     [[nodiscard]] friend axis_aligned_rectangle scale(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
-        ttlet extent = lhs.size();
-        ttlet scaled_extent = extent * rhs;
-        ttlet diff_extent = scaled_extent - extent;
-        ttlet half_diff_extent = diff_extent * 0.5f;
+        ttlet new_extent = lhs.size() * rhs;
+        ttlet diff = vector2{new_extent} - vector2{lhs.size()};
+        ttlet offset = diff * 0.5f;
 
-        ttlet p1 = get<0>(lhs) - vector2{half_diff_extent};
-        ttlet p2 = get<3>(lhs) + vector2{half_diff_extent};
-        return axis_aligned_rectangle{p1, p2};
+        ttlet p0 = get<0>(lhs) - offset;
+        ttlet p3 = max(get<3>(lhs) + offset, p0);
+        return axis_aligned_rectangle{p0, p3};
     }
 
     /** Expand the rectangle for the same amount in all directions.

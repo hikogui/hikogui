@@ -7,10 +7,12 @@
 #include "hires_utc_clock.hpp"
 #include "algorithm.hpp"
 #include <chrono>
+#include <cmath>
+#include "concepts.hpp"
 
 namespace tt {
 
-template<typename T>
+template<arithmetic T>
 class animator {
 public:
     using value_type = T;
@@ -19,7 +21,13 @@ public:
 
     void update(value_type new_value, hires_utc_clock::time_point current_time) noexcept
     {
-        if (new_value != _new_value) {
+        if (not initialized) {
+            initialized = true;
+            _old_value = new_value;
+            _new_value = new_value;
+            _start_time = current_time;
+
+        } else if (new_value != _new_value) {
             _old_value = _new_value;
             _new_value = new_value;
             _start_time = current_time;
@@ -29,11 +37,13 @@ public:
 
     [[nodiscard]] bool is_animating() const noexcept
     {
+        tt_axiom(initialized);
         return progress() < 1.0f;
     }
 
     value_type current_value() const noexcept {
-        return mix(_old_value, _new_value, progress());
+        tt_axiom(initialized);
+        return std::lerp(_old_value, _new_value, progress());
     }
 
 private:
@@ -42,11 +52,13 @@ private:
     hires_utc_clock::time_point _start_time;
     hires_utc_clock::time_point _current_time;
     hires_utc_clock::duration _animation_duration;
+    bool initialized = false;
 
     float progress() const noexcept
     {
-        auto dt = _current_time - _start_time;
-        return static_cast<float>(dt / 1ms) / static_cast<float>(_animation_duration / 1ms);
+        ttlet dt = _current_time - _start_time;
+        ttlet p = static_cast<float>(dt / 1ms) / static_cast<float>(_animation_duration / 1ms);
+        return std::clamp(p, 0.0f, 1.0f);
     }
 };
 

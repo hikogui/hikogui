@@ -9,6 +9,7 @@
 #include "label_widget.hpp"
 #include "button_shape.hpp"
 #include "button_type.hpp"
+#include "../animator.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -146,7 +147,12 @@ public:
             _minus_glyph_rectangle =
                 align(_button_rectangle, scale(minus_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
 
-            _pip_rectangle = shrink(_button_rectangle, 2.5f);
+            _pip_rectangle = aarectangle{
+                _button_rectangle.left() + 2.5f,
+                _button_rectangle.bottom() + 2.5f,
+                _button_rectangle.height() - 5.0f,
+                _button_rectangle.height() - 5.0f};
+            _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - 5.0f;
         }
         super::update_layout(displayTimePoint, need_layout);
     }
@@ -173,7 +179,11 @@ public:
                 break;
             case button_shape::radio:
                 draw_radio_button(context);
-                draw_pip(context);
+                draw_radio_pip(context, display_time_point);
+                break;
+            case button_shape::toggle:
+                draw_toggle_button(context);
+                draw_toggle_pip(context, display_time_point);
                 break;
             default: tt_no_default();
             }
@@ -183,6 +193,8 @@ public:
     }
 
 private:
+    static constexpr hires_utc_clock::duration _animation_duration = 150ms;
+
     std::shared_ptr<label_widget> _on_label_widget;
     std::shared_ptr<label_widget> _off_label_widget;
     std::shared_ptr<label_widget> _other_label_widget;
@@ -196,9 +208,14 @@ private:
     aarectangle _minus_glyph_rectangle;
 
     aarectangle _pip_rectangle;
+    float _pip_move_range;
+
+    animator<float> _animated_value = _animation_duration;
 
     void draw_label_button(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         // Move the border of the button in the middle of a pixel.
         context.draw_box_with_border_inside(
             _button_rectangle, this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
@@ -237,14 +254,45 @@ private:
             _button_rectangle, this->background_color(), this->focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
     }
 
-    void draw_pip(draw_context context) noexcept
+    void draw_radio_pip(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        // draw pip
-        if (this->state() == button_state::on) {
-            context.draw_box(_pip_rectangle, this->accent_color(), corner_shapes{_pip_rectangle.height() * 0.5f});
+        _animated_value.update(this->state() == button_state::on ? 1.0f : 0.0f, display_time_point);
+        if (_animated_value.is_animating()) {
+            this->request_redraw();
         }
+
+        // draw pip
+        auto float_value = _animated_value.current_value();
+        if (float_value > 0.0) {
+            ttlet scaled_pip_rectangle = scale(_pip_rectangle, float_value);
+            context.draw_box(scaled_pip_rectangle, this->accent_color(), corner_shapes{scaled_pip_rectangle.height() * 0.5f});
+        }
+    }
+
+    void draw_toggle_button(draw_context context) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        context.draw_box_with_border_inside(
+            _button_rectangle, this->background_color(), this->focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
+    }
+
+    void draw_toggle_pip(draw_context draw_context, hires_utc_clock::time_point display_time_point) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        _animated_value.update(this->state() == button_state::on ? 1.0f : 0.0f, display_time_point);
+        if (_animated_value.is_animating()) {
+            this->request_redraw();
+        }
+
+        ttlet positioned_pip_rectangle =
+            translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_rectangle;
+
+        draw_context.draw_box(
+            positioned_pip_rectangle, this->accent_color(), corner_shapes{positioned_pip_rectangle.height() * 0.5f});
     }
 };
 
@@ -256,5 +304,8 @@ using checkbox_widget = button_widget<T, button_shape::checkbox, button_type::to
 
 template<typename T>
 using radio_button_widget = button_widget<T, button_shape::radio, button_type::radio>;
+
+template<typename T>
+using toggle_widget = button_widget<T, button_shape::toggle, button_type::toggle>;
 
 } // namespace tt

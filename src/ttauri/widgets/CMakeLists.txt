@@ -30,7 +30,6 @@ target_sources(ttauri PRIVATE
     text_field_widget.hpp
     text_widget.cpp
     text_widget.hpp
-    toggle_widget.hpp
     toolbar_tab_button_widget.hpp
     toolbar_widget.hpp
     widget.cpp

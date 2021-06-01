@@ -10,7 +10,6 @@
 #include "text_field_widget.hpp"
 #include "scroll_view_widget.hpp"
 #include "selection_widget.hpp"
-#include "toggle_widget.hpp"
 #include "overlay_view_widget.hpp"
 #include "tab_view_widget.hpp"
 #include "toolbar_widget.hpp"
