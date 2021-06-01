@@ -198,6 +198,11 @@ public:
         return vector<D>{_v._0y00()};
     }
 
+    constexpr extent &operator+=(extent const &rhs) noexcept
+    {
+        return *this = *this + rhs;
+    }
+
     /** Add two extents from each other.
      * @param lhs The first extent.
      * @param rhs The second extent.
@@ -460,7 +465,7 @@ struct formatter<tt::geo::extent<2>, CharT> {
 
     auto format(tt::geo::extent<2> const &t, auto &fc)
     {
-        //return format_to(fc.out(), "[{}, {}]", t.width(), t.height());
+        // return format_to(fc.out(), "[{}, {}]", t.width(), t.height());
         return std::vformat_to(fc.out(), "[{}, {}]", std::make_format_args(t.width(), t.height()));
     }
 };
@@ -474,7 +479,7 @@ struct formatter<tt::geo::extent<3>, CharT> : formatter<float, CharT> {
 
     auto format(tt::geo::extent<3> const &t, auto &fc)
     {
-        //return format_to(fc.out(), "[{}, {}, {}]", t.width(), t.height(), t.depth());
+        // return format_to(fc.out(), "[{}, {}, {}]", t.width(), t.height(), t.depth());
         return std::vformat_to(fc.out(), "[{}, {}, {}]", std::make_format_args(t.width(), t.height(), t.depth()));
     }
 };

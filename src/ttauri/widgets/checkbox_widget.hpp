@@ -23,9 +23,9 @@ namespace tt {
  * @tparam T The type of the value to monitor/modify
  */
 template<typename T>
-class checkbox_widget : public abstract_button_widget<T> {
+class checkbox_widget : public abstract_button_widget<T,button_type::toggle> {
 public:
-    using super = abstract_button_widget<T>;
+    using super = abstract_button_widget<T,button_type::toggle>;
     using value_type = typename super::value_type;
     using delegate_type = typename super::delegate_type;
 
@@ -37,7 +37,6 @@ public:
         Value &&value = value_type{}) noexcept :
         super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
-        this->_button_type = button_type::toggle;
     }
 
     template<typename Value>

@@ -17,9 +17,9 @@
 namespace tt {
 
 template<typename T>
-class radio_button_widget final : public abstract_button_widget<T> {
+class radio_button_widget final : public abstract_button_widget<T,button_type::radio> {
 public:
-    using super = abstract_button_widget<T>;
+    using super = abstract_button_widget<T,button_type::radio>;
     using value_type = typename super::value_type;
     using delegate_type = typename super::delegate_type;
 
@@ -31,7 +31,6 @@ public:
         Value &&value = {}) noexcept :
         super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
-        this->_button_type = button_type::radio;
     }
 
     template<typename Value>

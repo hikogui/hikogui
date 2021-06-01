@@ -13,13 +13,15 @@ namespace tt {
  * This widgets implements the behavior for a widget where its whole
  * area is clickable, accepts and responds to gui_activate commands.
  */
-template<typename T>
+template<typename T, button_type ButtonType>
 class abstract_button_widget : public widget {
 public:
+    static constexpr button_type button_type = ButtonType;
+
     using super = widget;
     using value_type = T;
-    using delegate_type = button_delegate<value_type>;
-    using callback_ptr_type = typename button_delegate<value_type>::pressed_callback_ptr_type;
+    using delegate_type = button_delegate<value_type,button_type>;
+    using callback_ptr_type = typename delegate_type::pressed_callback_ptr_type;
 
     template<typename Value>
     [[nodiscard]] abstract_button_widget(
@@ -147,9 +149,9 @@ public:
 
         if (enabled()) {
             switch (command) {
-            case command::gui_activate: this->delegate<delegate_type>().pressed(*this, _button_type); return true;
+            case command::gui_activate: this->delegate<delegate_type>().pressed(*this); return true;
             case command::gui_enter:
-                this->delegate<delegate_type>().pressed(*this, _button_type);
+                this->delegate<delegate_type>().pressed(*this);
                 this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
                 return true;
             default:;
@@ -210,8 +212,6 @@ public:
     }
 
 protected:
-    button_type _button_type = button_type::momentary;
-
     /** The button is in a pressed state.
      */
     bool _pressed = false;

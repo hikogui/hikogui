@@ -18,9 +18,9 @@
 
 namespace tt {
 
-class toggle_widget final : public abstract_button_widget<bool> {
+class toggle_widget final : public abstract_button_widget<bool,button_type::toggle> {
 public:
-    using super = abstract_button_widget<bool>;
+    using super = abstract_button_widget<bool,button_type::toggle>;
     using value_type = typename super::value_type;
     using delegate_type = typename super::delegate_type;
 

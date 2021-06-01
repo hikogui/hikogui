@@ -1,34 +1,34 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "widget_delegate.hpp"
+#include "label_delegate.hpp"
+#include "button_type.hpp"
+#include "button_state.hpp"
 
 namespace tt {
 
-enum class button_state { off, on, other };
-
-enum class button_type { momentary, toggle, radio };
-
-template<typename T>
-class button_delegate : public widget_delegate {
+template<typename T, button_type ButtonType>
+class button_delegate : public label_delegate {
 public:
+    static constexpr button_type button_type = ButtonType;
+
+    using super = label_delegate;
     using value_type = T;
     using pressed_notifier_type = notifier<void()>;
     using pressed_callback_ptr_type = typename pressed_notifier_type::callback_ptr_type;
 
-    button_delegate() noexcept :
-        widget_delegate(), _state(button_state::off), _value()
+    button_delegate() noexcept : super(), _state(button_state::off), _value()
     {
-        if constexpr (std::is_same_v<value_type,bool>) {
+        if constexpr (std::is_same_v<value_type, bool>) {
             _on_value = true;
             _off_value = false;
         } else if constexpr (std::is_integral_v<value_type> or std::is_enum_v<value_type>) {
             _on_value = static_cast<value_type>(1);
             _off_value = static_cast<value_type>(0);
-        } else if constexpr (std::is_same_v<value_type,std::string>) {
+        } else if constexpr (std::is_same_v<value_type, std::string>) {
             _on_value = std::string{"true"};
             _off_value = std::string{};
         } else {
@@ -42,12 +42,12 @@ public:
         value_changed();
     }
 
-    virtual void pressed(widget &sender, button_type type) noexcept
+    virtual void pressed(widget &sender) noexcept
     {
-        if (type == button_type::toggle) {
+        if (button_type == button_type::toggle) {
             _value = (_value == _off_value) ? _on_value : _off_value;
 
-        } else if (type == button_type::radio) {
+        } else if (button_type == button_type::radio) {
             _value = _on_value;
         }
         value_changed();
@@ -60,9 +60,28 @@ public:
         return _state;
     }
 
-    [[nodiscard]] virtual tt::label label(widget const &sender) const noexcept
+    [[nodiscard]] tt::label label(widget const &sender) const noexcept override
     {
-        return _label;
+        if (sender.id == "on") {
+            return _on_label;
+        } else if (sender.id == "off") {
+            return _off_label;
+        } else if (sender.id == "other") {
+            return _other_label;
+        } else {
+            tt_log_error("depricated");
+            switch (_state) {
+            case button_state::on: return _on_label;
+            case button_state::off: return _off_label;
+            case button_state::other: return _other_label;
+            default: tt_no_default();
+            }
+        }
+    }
+
+    void set_label(widget &sender, observable<tt::label> rhs) noexcept override
+    {
+        tt_no_default();
     }
 
     template<typename Callback>
@@ -148,7 +167,6 @@ public:
 
 protected:
     button_state _state;
-    tt::label _label;
 
     value_type _on_value;
     value_type _off_value;

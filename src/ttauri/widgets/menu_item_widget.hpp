@@ -44,9 +44,9 @@ namespace tt {
  *
  */
 template<typename T>
-class menu_item_widget final : public abstract_button_widget<T> {
+class menu_item_widget final : public abstract_button_widget<T,button_type::momentary> {
 public:
-    using super = abstract_button_widget<T>;
+    using super = abstract_button_widget<T,button_type::momentary>;
     using value_type = typename super::value_type;
     using delegate_type = typename super::delegate_type;
 
@@ -59,7 +59,6 @@ public:
         super(window, std::move(parent), std::move(delegate), std::forward<Value>(value))
     {
         // menu item buttons hug the container-border and neighbor widgets.
-        this->_button_type = button_type::momentary;
         this->_margin = 0.0f;
     }
 

@@ -99,6 +99,10 @@ public:
      */
     gui_window &window;
 
+    /** A name of widget, should be unique between siblings.
+     */
+    std::string id;
+
     /*! Constructor for creating sub views.
      */
     widget(
