@@ -19,7 +19,6 @@ target_sources(ttauri PRIVATE
     label_widget.hpp
     menu_item_widget.hpp
     overlay_view_widget.hpp
-    radio_button_widget.hpp
     row_column_layout_widget.hpp
     scroll_bar_widget.hpp
     scroll_view_widget.hpp

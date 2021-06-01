@@ -12,7 +12,6 @@
 #include "selection_widget.hpp"
 #include "toggle_widget.hpp"
 #include "overlay_view_widget.hpp"
-#include "radio_button_widget.hpp"
 #include "tab_view_widget.hpp"
 #include "toolbar_widget.hpp"
 #include "menu_item_widget.hpp"

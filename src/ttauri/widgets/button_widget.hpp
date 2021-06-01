@@ -43,7 +43,7 @@ public:
         Value &&value) noexcept :
         button_widget(window, std::move(parent), std::move(delegate))
     {
-        set_value(std::forward<Value>(value));
+        this->set_value(std::forward<Value>(value));
     }
 
     template<typename Value>
@@ -134,17 +134,19 @@ public:
             _off_label_widget->set_layout_parameters_from_parent(label_rect);
             _other_label_widget->set_layout_parameters_from_parent(label_rect);
 
-            _button_rect = aarectangle{point2{0.0f, this->height() - button_size.height()}, button_size};
+            _button_rectangle = aarectangle{point2{0.0f, this->height() - button_size.height()}, button_size};
 
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
             _check_glyph_rectangle =
-                align(_button_rect, scale(check_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
+                align(_button_rectangle, scale(check_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
 
             _minus_glyph = to_font_glyph_ids(elusive_icon::Minus);
             ttlet minus_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_minus_glyph);
             _minus_glyph_rectangle =
-                align(_button_rect, scale(minus_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
+                align(_button_rectangle, scale(minus_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
+
+            _pip_rectangle = shrink(_button_rectangle, 2.5f);
         }
         super::update_layout(displayTimePoint, need_layout);
     }
@@ -169,6 +171,10 @@ public:
                 draw_check_box(context);
                 draw_check_mark(context);
                 break;
+            case button_shape::radio:
+                draw_radio_button(context);
+                draw_pip(context);
+                break;
             default: tt_no_default();
             }
         }
@@ -180,7 +186,7 @@ private:
     std::shared_ptr<label_widget> _on_label_widget;
     std::shared_ptr<label_widget> _off_label_widget;
     std::shared_ptr<label_widget> _other_label_widget;
-    aarectangle _button_rect;
+    aarectangle _button_rectangle;
     bool _pressed;
 
     font_glyph_ids _check_glyph;
@@ -189,18 +195,20 @@ private:
     font_glyph_ids _minus_glyph;
     aarectangle _minus_glyph_rectangle;
 
+    aarectangle _pip_rectangle;
+
     void draw_label_button(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
         // Move the border of the button in the middle of a pixel.
         context.draw_box_with_border_inside(
-            _button_rect, this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
+            _button_rectangle, this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
     }
 
     void draw_check_box(draw_context const &context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        context.draw_box_with_border_inside(_button_rect, this->background_color(), this->focus_color());
+        context.draw_box_with_border_inside(_button_rectangle, this->background_color(), this->focus_color());
     }
 
     void draw_check_mark(draw_context context) noexcept
@@ -220,6 +228,24 @@ private:
             context.draw_glyph(_minus_glyph, translate_z(0.1f) * _minus_glyph_rectangle, this->accent_color());
         }
     }
+
+    void draw_radio_button(draw_context context) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        context.draw_box_with_border_inside(
+            _button_rectangle, this->background_color(), this->focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
+    }
+
+    void draw_pip(draw_context context) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        // draw pip
+        if (this->state() == button_state::on) {
+            context.draw_box(_pip_rectangle, this->accent_color(), corner_shapes{_pip_rectangle.height() * 0.5f});
+        }
+    }
 };
 
 template<typename T>
@@ -227,5 +253,8 @@ using label_button_widget = button_widget<T, button_shape::label, button_type::m
 
 template<typename T>
 using checkbox_widget = button_widget<T, button_shape::checkbox, button_type::toggle>;
+
+template<typename T>
+using radio_button_widget = button_widget<T, button_shape::radio, button_type::radio>;
 
 } // namespace tt
