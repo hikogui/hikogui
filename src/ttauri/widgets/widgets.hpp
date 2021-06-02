@@ -13,7 +13,6 @@
 #include "overlay_view_widget.hpp"
 #include "tab_view_widget.hpp"
 #include "toolbar_widget.hpp"
-#include "menu_item_widget.hpp"
 #include "toolbar_tab_button_widget.hpp"
 #include "window_widget.hpp"
 #include "row_column_layout_widget.hpp"

@@ -24,7 +24,7 @@ void label_widget::init() noexcept
     _text_widget = super::make_widget<text_widget>(delegate_ptr<label_delegate>(), _alignment, _text_style);
 }
 
-tt::label label_widget::label() const noexcept
+[[nodiscard]] tt::label label_widget::label() const noexcept
 {
     return delegate<label_delegate>().label(*this);
 }
@@ -58,7 +58,7 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
             if (_alignment == horizontal_alignment::center) {
                 _icon_size = theme::global->large_icon_size;
             } else {
-                _icon_size = theme::global->small_icon_size;
+                _icon_size = theme::global->icon_size;
             }
         } else {
             _icon_size = 0.0f;

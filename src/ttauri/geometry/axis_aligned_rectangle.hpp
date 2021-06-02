@@ -225,14 +225,16 @@ public:
         return ge(static_cast<f32x4>(rhs).xyxy(), v) == 0b0011;
     }
 
+    
+
     /** Align a rectangle within another rectangle.
      * @param haystack The outside rectangle
-     * @param needle The inside rectangle; to be aligned.
+     * @param needle The size of the rectangle to be aligned.
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
     [[nodiscard]] friend axis_aligned_rectangle
-    align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
+    align(axis_aligned_rectangle haystack, extent2 needle, alignment alignment) noexcept
     {
         float x;
         if (alignment == horizontal_alignment::left) {
@@ -262,10 +264,22 @@ public:
             tt_no_default();
         }
 
-        return {point2{x, y}, needle.size()};
+        return {point2{x, y}, needle};
     }
 
-    /** Need to call the hiden friend function from within another class.
+    /** Align a rectangle within another rectangle.
+     * @param haystack The outside rectangle
+     * @param needle The inside rectangle; to be aligned.
+     * @param alignment How the inside rectangle should be aligned.
+     * @return The needle rectangle repositioned and aligned inside the haystack.
+     */
+    [[nodiscard]] friend axis_aligned_rectangle
+    align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
+    {
+        return align(haystack, needle.size(), alignment);
+    }
+
+    /** Need to call the hidden friend function from within another class.
      */
     [[nodiscard]] static axis_aligned_rectangle
     _align(axis_aligned_rectangle outside, axis_aligned_rectangle inside, alignment alignment) noexcept

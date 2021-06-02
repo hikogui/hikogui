@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_button_widget.hpp"
+#include "widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
 #include "button_shape.hpp"
@@ -19,13 +19,14 @@
 namespace tt {
 
 template<typename T, button_shape ButtonShape, button_type ButtonType>
-class button_widget final : public abstract_button_widget<T, ButtonType> {
+class button_widget final : public widget {
 public:
     static constexpr button_shape button_shape = ButtonShape;
+    static constexpr button_type button_type = ButtonType;
 
-    using super = abstract_button_widget<T, ButtonType>;
+    using super = widget;
     using value_type = T;
-    using delegate_type = typename button_delegate<value_type, ButtonType>;
+    using delegate_type = typename button_delegate<value_type, button_type>;
     using callback_ptr_type = typename delegate_type::pressed_callback_ptr_type;
 
     button_widget(
@@ -34,6 +35,9 @@ public:
         std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept :
         super(window, std::move(parent), std::move(delegate))
     {
+        if (button_shape == button_shape::toolbar || button_shape == button_shape::menu) {
+            this->_margin = 0.0f;
+        }
     }
 
     template<typename Value>
@@ -55,7 +59,16 @@ public:
 
     void init() noexcept override
     {
-        ttlet alignment = button_shape == button_shape::label ? tt::alignment::middle_center : tt::alignment::top_left;
+        auto alignment = tt::alignment{};
+        switch (button_shape) {
+        case button_shape::toolbar: [[fallthrough]];
+        case button_shape::menu: alignment = alignment::middle_left; break;
+        case button_shape::label: alignment = alignment::middle_center; break;
+        case button_shape::radio: [[fallthrough]];
+        case button_shape::checkbox: [[fallthrough]];
+        case button_shape::toggle: alignment = alignment::top_left; break;
+        default: tt_no_default();
+        }
 
         _on_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), alignment);
         _off_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), alignment);
@@ -66,17 +79,162 @@ public:
         _other_label_widget->id = "other_label";
     }
 
+    [[nodiscard]] button_state state() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().state(*this);
+    }
+
+    [[nodiscard]] tt::label label() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().label(*this);
+    }
+
+    void set_label(tt::label const &label) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        set_on_label(label);
+        set_off_label(label);
+        set_other_label(label);
+    }
+
+    [[nodiscard]] tt::label on_label() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().on_label(*this);
+    }
+
+    void set_on_label(tt::label const &label) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_on_label(*this, label);
+    }
+
+    [[nodiscard]] tt::label off_label() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().off_label(*this);
+    }
+
+    void set_off_label(tt::label const &label) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_off_label(*this, label);
+    }
+
+    [[nodiscard]] tt::label other_label() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().other_label(*this);
+    }
+
+    void set_other_label(tt::label const &label) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_other_label(*this, label);
+    }
+
+    [[nodiscard]] value_type value() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().value(*this);
+    }
+
+    template<typename Value>
+    void set_value(Value &&value) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        return this->delegate<delegate_type>().set_value(*this, std::forward<Value>(value));
+    }
+
+    [[nodiscard]] value_type on_value() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().on_value(*this);
+    }
+
+    void set_on_value(value_type const &value) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_on_value(*this, value);
+    }
+
+    [[nodiscard]] value_type off_value() const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        return this->delegate<delegate_type>().off_value(*this);
+    }
+
+    void set_off_value(value_type const &value) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->delegate<delegate_type>().set_off_value(*this, value);
+    }
+
+    /** Subscribe a callback to call when the button is activated.
+     * @see button_delegate::subscribe_pressed()
+     */
+    template<typename Callback>
+    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        return this->delegate<delegate_type>().subscribe_pressed(*this, std::forward<Callback>(callback));
+    }
+
+    /** Unsubscribe a callback.
+     * @see button_delegate::unsubscribe_pressed()
+     */
+    void unsubscribe(callback_ptr_type &callback_ptr) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        return this->delegate<delegate_type>().unsubscribe_pressed(*this, callback_ptr);
+    }
+
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
+            switch (button_shape) {
+            case button_shape::toolbar: [[fallthrough]];
+            case button_shape::label:
+                _button_size = {};
+                _short_cut_size = {};
+                break;
+            case button_shape::checkbox: [[fallthrough]];
+            case button_shape::radio:
+                _button_size = {theme::global->smallSize, theme::global->smallSize};
+                _short_cut_size = {};
+                break;
+            case button_shape::toggle:
+                _button_size = {theme::global->smallSize * 2.0f, theme::global->smallSize};
+                _short_cut_size = {};
+                break;
+            case button_shape::menu:
+                _button_size = {theme::global->smallSize, theme::global->smallSize};
+                _short_cut_size = {theme::global->smallSize, theme::global->smallSize};
+                break;
+            }
+
             auto extra_size = extent2{};
             switch (button_shape) {
-            case button_shape::label: extra_size = theme::global->margin2Dx2; break;
+            case button_shape::toolbar: [[fallthrough]];
+            case button_shape::label:
+                // Around the label extra margin.
+                extra_size = theme::global->margin2Dx2;
+                break;
             case button_shape::checkbox: [[fallthrough]];
-            case button_shape::radio: extra_size = extent2{theme::global->smallSize + theme::global->margin, 0.0f}; break;
-            case button_shape::toggle: extra_size = extent2{theme::global->smallSize * 2.0f + theme::global->margin, 0.0f}; break;
+            case button_shape::radio: [[fallthrough]];
+            case button_shape::toggle:
+                // On left side a radio or checkbox button.
+                extra_size = extent2{theme::global->margin + _button_size.width(), 0.0f};
+                break;
+            case button_shape::menu:
+                // On left side a check mark, on right side short-cut. Around the label extra margin.
+                extra_size = extent2{theme::global->margin * 2.0f + _button_size.width() + _short_cut_size.width(), 0.0f} +
+                    theme::global->margin2Dx2;
+                break;
             default: tt_no_default();
             }
 
@@ -117,25 +275,21 @@ public:
         if (need_layout) {
             ttlet inner_margin = theme::global->margin;
 
-            auto button_size = extent2{};
-            switch (button_shape) {
-            case button_shape::label: button_size = this->size(); break;
-            case button_shape::checkbox: [[fallthrough]];
-            case button_shape::radio: button_size = extent2{theme::global->smallSize, theme::global->smallSize}; break;
-            case button_shape::toggle: button_size = extent2{theme::global->smallSize * 2.0f, theme::global->smallSize}; break;
-            default: tt_no_default();
-            }
+            _button_rectangle = button_shape == button_shape::menu ?
+                align(this->rectangle(), _button_size, alignment::middle_left) :
+                align(this->rectangle(), _button_size, alignment::top_left);
 
-            auto label_rect = button_shape == button_shape::label ?
-                aarectangle{inner_margin, inner_margin, this->width() - inner_margin * 2, this->height() - inner_margin * 2} :
-                aarectangle{
-                    button_size.width() + inner_margin, 0.0f, this->width() - button_size.width() - inner_margin, this->height()};
+            _short_cut_rectangle = align(this->rectangle(), _short_cut_size, alignment::middle_right);
 
-            _on_label_widget->set_layout_parameters_from_parent(label_rect);
-            _off_label_widget->set_layout_parameters_from_parent(label_rect);
-            _other_label_widget->set_layout_parameters_from_parent(label_rect);
+            ttlet label_p0 = _button_rectangle ? point2{_button_rectangle.right() + inner_margin, 0.0f} : point2{0.0f, 0.0f};
+            ttlet label_p3 =
+                _short_cut_rectangle ? point2{_short_cut_rectangle.left() - inner_margin, height()} : point2{width(), height()};
 
-            _button_rectangle = aarectangle{point2{0.0f, this->height() - button_size.height()}, button_size};
+            ttlet label_rectangle = aarectangle{label_p0, label_p3};
+
+            _on_label_widget->set_layout_parameters_from_parent(label_rectangle);
+            _off_label_widget->set_layout_parameters_from_parent(label_rectangle);
+            _other_label_widget->set_layout_parameters_from_parent(label_rectangle);
 
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
@@ -150,21 +304,12 @@ public:
             _pip_rectangle = aarectangle{
                 _button_rectangle.left() + 2.5f,
                 _button_rectangle.bottom() + 2.5f,
-                _button_rectangle.height() - 5.0f,
-                _button_rectangle.height() - 5.0f};
+                theme::global->smallSize - 5.0f,
+                theme::global->smallSize - 5.0f};
             _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - 5.0f;
         }
         super::update_layout(displayTimePoint, need_layout);
     }
-
-    //[[nodiscard]] color background_color() const noexcept override
-    //{
-    //    if (this->state() == button_state::on) {
-    //        return this->accent_color();
-    //    } else {
-    //        return super::background_color();
-    //    }
-    //}
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
@@ -172,10 +317,15 @@ public:
 
         if (overlaps(context, this->_clipping_rectangle)) {
             switch (button_shape) {
-            case button_shape::label: draw_label_button(context, display_time_point); break;
+            case button_shape::toolbar: draw_toolbar_button(context); break;
+            case button_shape::label: draw_label_button(context); break;
+            case button_shape::menu:
+                draw_toolbar_button(context);
+                draw_check_mark(context, false);
+                break;
             case button_shape::checkbox:
                 draw_check_box(context);
-                draw_check_mark(context);
+                draw_check_mark(context, true);
                 break;
             case button_shape::radio:
                 draw_radio_button(context);
@@ -192,14 +342,130 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
+    [[nodiscard]] color background_color() const noexcept override
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        if (_pressed) {
+            return theme::global->fillColor(this->_semantic_layer + 2);
+        } else {
+            return super::background_color();
+        }
+    }
+
+    //[[nodiscard]] color background_color() const noexcept override
+    //{
+    //    if (this->state() == button_state::on) {
+    //        return this->accent_color();
+    //    } else {
+    //        return super::background_color();
+    //    }
+    //}
+
+    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept final
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        if (_visible_rectangle.contains(position)) {
+            return hit_box{weak_from_this(), _draw_layer, enabled() ? hit_box::Type::Button : hit_box::Type::Default};
+        } else {
+            return hit_box{};
+        }
+    }
+
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        switch (button_shape) {
+        case button_shape::menu: return is_menu(group) and this->enabled();
+        case button_shape::toolbar: return is_toolbar(group) and this->enabled();
+        default: return is_normal(group) and enabled();
+        }
+    }
+
+    [[nodiscard]] bool handle_event(command command) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+
+        if (enabled()) {
+            switch (command) {
+            case command::gui_menu_next:
+                if (button_shape == button_shape::menu and !this->is_last(keyboard_focus_group::menu)) {
+                    this->window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
+                    return true;
+                }
+                break;
+
+            case command::gui_menu_prev:
+                if (button_shape == button_shape::menu and !this->is_first(keyboard_focus_group::menu)) {
+                    this->window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
+                    return true;
+                }
+                break;
+
+            case command::gui_toolbar_next:
+                if (button_shape == button_shape::toolbar and !this->is_last(keyboard_focus_group::toolbar)) {
+                    this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+                    return true;
+                }
+                break;
+
+            case command::gui_toolbar_prev:
+                if (button_shape == button_shape::toolbar and !this->is_first(keyboard_focus_group::toolbar)) {
+                    this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+                    return true;
+                }
+                break;
+            case command::gui_activate:
+                if (button_shape == button_shape::menu) {
+                    this->delegate<delegate_type>().pressed(*this);
+                    this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                    this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
+                } else {
+                    this->delegate<delegate_type>().pressed(*this);
+                }
+                return true;
+            case command::gui_enter:
+                this->delegate<delegate_type>().pressed(*this);
+                this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                return true;
+            default:;
+            }
+        }
+
+        return super::handle_event(command);
+    }
+
+    [[nodiscard]] bool handle_event(mouse_event const &event) noexcept final
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        auto handled = super::handle_event(event);
+
+        if (event.cause.leftButton) {
+            handled = true;
+            if (enabled()) {
+                if (compare_then_assign(_pressed, static_cast<bool>(event.down.leftButton))) {
+                    request_redraw();
+                }
+
+                if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
+                    handled |= handle_event(command::gui_activate);
+                }
+            }
+        }
+        return handled;
+    }
+
 private:
     static constexpr hires_utc_clock::duration _animation_duration = 150ms;
 
     std::shared_ptr<label_widget> _on_label_widget;
     std::shared_ptr<label_widget> _off_label_widget;
     std::shared_ptr<label_widget> _other_label_widget;
+    extent2 _button_size;
     aarectangle _button_rectangle;
-    bool _pressed;
+    extent2 _short_cut_size;
+    aarectangle _short_cut_rectangle;
+    bool _pressed = false;
 
     font_glyph_ids _check_glyph;
     aarectangle _check_glyph_rectangle;
@@ -212,13 +478,21 @@ private:
 
     animator<float> _animated_value = _animation_duration;
 
-    void draw_label_button(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+    void draw_toolbar_button(draw_context const &context) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        ttlet foreground_color_ = this->_focus && this->window.active ? this->focus_color() : color::transparent();
+        context.draw_box_with_border_inside(this->rectangle(), this->background_color(), foreground_color_, corner_shapes{0.0f});
+    }
+
+    void draw_label_button(draw_context const &context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         // Move the border of the button in the middle of a pixel.
         context.draw_box_with_border_inside(
-            _button_rectangle, this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
+            this->rectangle(), this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
     }
 
     void draw_check_box(draw_context const &context) noexcept
@@ -228,7 +502,7 @@ private:
         context.draw_box_with_border_inside(_button_rectangle, this->background_color(), this->focus_color());
     }
 
-    void draw_check_mark(draw_context context) noexcept
+    void draw_check_mark(draw_context context, bool show_minus) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -241,7 +515,7 @@ private:
         } else if (state_ == tt::button_state::off) {
             ;
 
-        } else {
+        } else if (show_minus) {
             context.draw_glyph(_minus_glyph, translate_z(0.1f) * _minus_glyph_rectangle, this->accent_color());
         }
     }
@@ -291,8 +565,9 @@ private:
         ttlet positioned_pip_rectangle =
             translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_rectangle;
 
+        ttlet forground_color_ = this->state() == button_state::on ? this->accent_color() : this->foreground_color();
         draw_context.draw_box(
-            positioned_pip_rectangle, this->accent_color(), corner_shapes{positioned_pip_rectangle.height() * 0.5f});
+            positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
     }
 };
 
@@ -307,5 +582,11 @@ using radio_button_widget = button_widget<T, button_shape::radio, button_type::r
 
 template<typename T>
 using toggle_widget = button_widget<T, button_shape::toggle, button_type::toggle>;
+
+template<typename T>
+using toolbar_button_widget = button_widget<T, button_shape::toolbar, button_type::momentary>;
+
+template<typename T>
+using menu_button_widget = button_widget<T, button_shape::menu, button_type::momentary>;
 
 } // namespace tt

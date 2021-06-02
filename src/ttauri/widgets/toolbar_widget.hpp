@@ -141,11 +141,6 @@ public:
         return std::static_pointer_cast<T>(add_widget(Alignment, std::move(widget)));
     }
 
-    [[nodiscard]] bool is_toolbar() const noexcept override
-    {
-        return true;
-    }
-
 private:
     std::vector<std::shared_ptr<widget>> _left_children;
     std::vector<std::shared_ptr<widget>> _right_children;

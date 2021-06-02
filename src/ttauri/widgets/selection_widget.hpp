@@ -8,7 +8,7 @@
 #include "overlay_view_widget.hpp"
 #include "scroll_view_widget.hpp"
 #include "row_column_layout_widget.hpp"
-#include "menu_item_widget.hpp"
+#include "button_widget.hpp"
 #include "../stencils/label_stencil.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../text/font_book.hpp"
@@ -292,8 +292,8 @@ private:
     std::shared_ptr<vertical_scroll_view_widget<>> _scroll_widget;
     std::shared_ptr<column_layout_widget> _column_widget;
 
-    std::vector<std::shared_ptr<menu_item_widget<value_type>>> _menu_item_widgets;
-    std::vector<typename menu_item_widget<value_type>::callback_ptr_type> _menu_item_callbacks;
+    std::vector<std::shared_ptr<menu_button_widget<value_type>>> _menu_button_widgets;
+    std::vector<typename menu_button_widget<value_type>::callback_ptr_type> _menu_button_callbacks;
 
     [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
@@ -308,20 +308,20 @@ private:
         return -1;
     }
 
-    [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_first_menu_item() const noexcept
+    [[nodiscard]] std::shared_ptr<menu_button_widget<value_type>> get_first_menu_button() const noexcept
     {
-        if (std::ssize(_menu_item_widgets) != 0) {
-            return _menu_item_widgets.front();
+        if (std::ssize(_menu_button_widgets) != 0) {
+            return _menu_button_widgets.front();
         } else {
             return {};
         }
     }
 
-    [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_selected_menu_item() const noexcept
+    [[nodiscard]] std::shared_ptr<menu_button_widget<value_type>> get_selected_menu_button() const noexcept
     {
         ttlet i = get_value_as_index();
-        if (i >= 0 && i < std::ssize(_menu_item_widgets)) {
-            return _menu_item_widgets[i];
+        if (i >= 0 && i < std::ssize(_menu_button_widgets)) {
+            return _menu_button_widgets[i];
         } else {
             return {};
         }
@@ -332,11 +332,11 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         _selecting = true;
-        if (auto selected_menu_item = get_selected_menu_item()) {
-            this->window.update_keyboard_target(selected_menu_item, keyboard_focus_group::menu);
+        if (auto selected_menu_button = get_selected_menu_button()) {
+            this->window.update_keyboard_target(selected_menu_button, keyboard_focus_group::menu);
 
-        } else if (auto first_menu_item = get_first_menu_item()) {
-            this->window.update_keyboard_target(first_menu_item, keyboard_focus_group::menu);
+        } else if (auto first_menu_button = get_first_menu_button()) {
+            this->window.update_keyboard_target(first_menu_button, keyboard_focus_group::menu);
         }
 
         request_redraw();
@@ -364,21 +364,21 @@ private:
         }
 
         _column_widget->clear();
-        _menu_item_widgets.clear();
-        _menu_item_callbacks.clear();
+        _menu_button_widgets.clear();
+        _menu_button_callbacks.clear();
         for (ttlet & [ tag, text ] : option_list_) {
-            auto menu_item = _column_widget->make_widget<menu_item_widget<value_type>>(this->value);
-            menu_item->set_on_value(tag);
-            menu_item->set_show_check_mark(true);
-            menu_item->set_show_icon(show_icon);
-            menu_item->set_label(text);
+            auto menu_button = _column_widget->make_widget<menu_button_widget<value_type>>(this->value);
+            menu_button->set_on_value(tag);
+            //menu_button->set_show_check_mark(true);
+            //menu_button->set_show_icon(show_icon);
+            menu_button->set_label(text);
 
-            _menu_item_callbacks.push_back(menu_item->subscribe([this, tag] {
+            _menu_button_callbacks.push_back(menu_button->subscribe([this, tag] {
                 this->value = tag;
                 this->_selecting = false;
             }));
 
-            _menu_item_widgets.push_back(std::move(menu_item));
+            _menu_button_widgets.push_back(std::move(menu_button));
         }
 
         _max_option_label_height = 0.0f;

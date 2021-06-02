@@ -16,7 +16,7 @@ void main_window_controller::init(tt::gui_window& self) noexcept
     gui_window_delegate::init(self);
 
     // Add buttons to toolbar.
-    auto preferences_button = self.make_toolbar_widget<menu_item_widget<bool>>();
+    auto preferences_button = self.make_toolbar_widget<toolbar_button_widget<bool>>();
     preferences_button->set_label(label{ elusive_icon::Wrench, l10n("Preferences") });
     preferences_button_callback = preferences_button->subscribe([&self]() {
         run_from_main_loop([&self]() {

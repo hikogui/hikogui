@@ -17,7 +17,6 @@ target_sources(ttauri PRIVATE
     icon_widget.cpp
     label_widget.cpp
     label_widget.hpp
-    menu_item_widget.hpp
     overlay_view_widget.hpp
     row_column_layout_widget.hpp
     scroll_bar_widget.hpp

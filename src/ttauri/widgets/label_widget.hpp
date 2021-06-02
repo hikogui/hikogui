@@ -58,7 +58,7 @@ public:
 
     void init() noexcept override;
 
-    tt::label label() const noexcept;
+    [[nodiscard]] tt::label label() const noexcept;
 
     void set_label(observable<tt::label> label) noexcept;
 

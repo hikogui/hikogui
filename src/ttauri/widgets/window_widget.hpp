@@ -56,11 +56,6 @@ public:
         return _toolbar;
     }
 
-    [[nodiscard]] bool is_toolbar() const noexcept override
-    {
-        return false;
-    }
-
 private:
     label title;
     std::shared_ptr<widget_delegate> _content_delegate;

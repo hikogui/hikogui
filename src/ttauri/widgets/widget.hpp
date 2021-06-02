@@ -652,11 +652,6 @@ public:
         return *_children.back();
     }
 
-    [[nodiscard]] virtual bool is_toolbar() const noexcept
-    {
-        return parent().is_toolbar();
-    }
-
 protected:
     std::shared_ptr<widget_delegate> _delegate;
 

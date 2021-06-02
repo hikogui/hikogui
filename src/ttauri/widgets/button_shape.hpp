@@ -6,6 +6,6 @@
 
 namespace tt {
 
-enum class button_shape { label, checkbox, toggle, radio };
+enum class button_shape { label, checkbox, toggle, radio, toolbar, menu };
 
 }

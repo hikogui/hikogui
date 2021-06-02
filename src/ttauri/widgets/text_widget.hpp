@@ -33,7 +33,7 @@ public:
 
     ~text_widget();
 
-    std::string text() const noexcept
+    [[nodiscard]] std::string text() const noexcept
     {
         return delegate<label_delegate>().text(*this);
     }
