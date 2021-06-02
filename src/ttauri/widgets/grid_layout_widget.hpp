@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
-#include "grid_layout_delegate.hpp"
+#include "widget.hpp"
 #include "../geometry/spread_sheet_address.hpp"
 #include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
@@ -13,31 +12,14 @@
 
 namespace tt {
 
-class grid_layout_widget : public abstract_container_widget {
+class grid_layout_widget : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
     grid_layout_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
-        std::weak_ptr<grid_layout_delegate> delegate = {}) noexcept :
-        abstract_container_widget(window, parent), _delegate(delegate)
-    {
-    }
-
-    ~grid_layout_widget()
-    {
-        if (auto delegate_ = _delegate.lock()) {
-            delegate_->deinit(*this);
-        }
-    }
-
-    void init() noexcept override
-    {
-        if (auto delegate_ = _delegate.lock()) {
-            delegate_->init(*this);
-        }
-    }
+        std::shared_ptr<widget> parent,
+        std::shared_ptr<widget_delegate> delegate = std::make_shared<widget_delegate>()) noexcept;
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
@@ -66,7 +48,7 @@ public:
     template<typename T, typename... Args>
     std::shared_ptr<T> make_widget(std::string_view address, Args &&...args)
     {
-        ttlet [column_nr, row_nr] = parse_absolute_spread_sheet_address(address);
+        ttlet [column_nr, row_nr] = parse_spread_sheet_address(address);
         return make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
     }
 
@@ -91,8 +73,6 @@ private:
     };
 
     std::vector<cell> _cells;
-
-    std::weak_ptr<grid_layout_delegate> _delegate;
 
     flow_layout _rows;
     flow_layout _columns;

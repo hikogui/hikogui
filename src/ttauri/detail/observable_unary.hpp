@@ -15,23 +15,15 @@ public:
 
     observable_unary(std::shared_ptr<operand_type> const &operand) noexcept :
         observable_base<T>(),
-        _operand(operand),
-        _operand_cache(operand->load())
+        _operand(operand)
     {
         _operand_callback = _operand->subscribe([this]() {
-            ttlet old_value = this->load();
-            {
-                ttlet lock = std::scoped_lock(observable_base<T>::_mutex);
-                _operand_cache = _operand->load();
-            }
-            ttlet new_value = this->load();
-            observable_base<T>::notify(old_value, new_value);
+            this->_notifier();
         });
     }
 
 protected:
     std::shared_ptr<operand_type> _operand;
-    OT _operand_cache;
     typename operand_type::callback_ptr_type _operand_callback;
 };
 

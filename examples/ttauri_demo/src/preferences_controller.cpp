@@ -15,11 +15,13 @@ void preferences_controller::init(tt::gui_window &self) noexcept
     audio_preferences_controller = std::make_shared<demo::audio_preferences_controller>(weak_from_this());
     license_preferences_controller = std::make_shared<demo::license_preferences_controller>(weak_from_this());
 
-    auto tab0 = self.make_toolbar_widget<toolbar_tab_button_widget<int>>(0, tab_index);
-    tab0->label = {elusive_icon::Speaker , l10n("Audio")};
+    auto tab0 = self.make_toolbar_widget<toolbar_tab_button_widget<int>>(tab_index);
+    tab0->set_on_value(0);
+    tab0->set_label({elusive_icon::Speaker , l10n("Audio")});
 
-    auto tab1 = self.make_toolbar_widget<toolbar_tab_button_widget<int>>(1, tab_index);
-    tab1->label = {elusive_icon::Pencil, l10n("License")};
+    auto tab1 = self.make_toolbar_widget<toolbar_tab_button_widget<int>>(tab_index);
+    tab1->set_on_value(1);
+    tab1->set_label({elusive_icon::Pencil, l10n("License")});
 
     auto tabs = self.make_widget<tab_view_widget<int>>("A1", tab_index);
     tabs->make_widget(0, audio_preferences_controller);

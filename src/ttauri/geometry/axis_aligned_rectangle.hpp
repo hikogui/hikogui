@@ -154,7 +154,7 @@ public:
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
      */
-    [[nodiscard]] extent2 extent() const noexcept
+    [[nodiscard]] extent2 size() const noexcept
     {
         return extent2{v.zwzw() - v};
     }
@@ -225,14 +225,16 @@ public:
         return ge(static_cast<f32x4>(rhs).xyxy(), v) == 0b0011;
     }
 
+    
+
     /** Align a rectangle within another rectangle.
      * @param haystack The outside rectangle
-     * @param needle The inside rectangle; to be aligned.
+     * @param needle The size of the rectangle to be aligned.
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
     [[nodiscard]] friend axis_aligned_rectangle
-    align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
+    align(axis_aligned_rectangle haystack, extent2 needle, alignment alignment) noexcept
     {
         float x;
         if (alignment == horizontal_alignment::left) {
@@ -262,10 +264,22 @@ public:
             tt_no_default();
         }
 
-        return {point2{x, y}, needle.extent()};
+        return {point2{x, y}, needle};
     }
 
-    /** Need to call the hiden friend function from within another class.
+    /** Align a rectangle within another rectangle.
+     * @param haystack The outside rectangle
+     * @param needle The inside rectangle; to be aligned.
+     * @param alignment How the inside rectangle should be aligned.
+     * @return The needle rectangle repositioned and aligned inside the haystack.
+     */
+    [[nodiscard]] friend axis_aligned_rectangle
+    align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
+    {
+        return align(haystack, needle.size(), alignment);
+    }
+
+    /** Need to call the hidden friend function from within another class.
      */
     [[nodiscard]] static axis_aligned_rectangle
     _align(axis_aligned_rectangle outside, axis_aligned_rectangle inside, alignment alignment) noexcept
@@ -339,14 +353,13 @@ public:
      */
     [[nodiscard]] friend axis_aligned_rectangle scale(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
-        ttlet extent = lhs.extent();
-        ttlet scaled_extent = extent * rhs;
-        ttlet diff_extent = scaled_extent - extent;
-        ttlet half_diff_extent = diff_extent * 0.5f;
+        ttlet new_extent = lhs.size() * rhs;
+        ttlet diff = vector2{new_extent} - vector2{lhs.size()};
+        ttlet offset = diff * 0.5f;
 
-        ttlet p1 = get<0>(lhs) - vector2{half_diff_extent};
-        ttlet p2 = get<3>(lhs) + vector2{half_diff_extent};
-        return axis_aligned_rectangle{p1, p2};
+        ttlet p0 = get<0>(lhs) - offset;
+        ttlet p3 = max(get<3>(lhs) + offset, p0);
+        return axis_aligned_rectangle{p0, p3};
     }
 
     /** Expand the rectangle for the same amount in all directions.

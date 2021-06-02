@@ -15,12 +15,17 @@ namespace tt {
 
 system_menu_widget::system_menu_widget(
     gui_window &window,
-    std::shared_ptr<abstract_container_widget> parent,
+    std::shared_ptr<widget> parent,
     icon const &icon) noexcept :
-    super(window, parent), _icon_stencil(stencil::make_unique(alignment::middle_center, icon))
+    super(window, parent), _icon(icon)
 {
     // Toolbar buttons hug the toolbar and neighbour widgets.
     _margin = 0.0f;
+}
+
+void system_menu_widget::init() noexcept
+{
+    _icon_widget = make_widget<icon_widget>(alignment::middle_center, _icon);
 }
 
 [[nodiscard]] bool
@@ -48,7 +53,7 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
         ttlet icon_height = rectangle().height() < theme::global->toolbarHeight * 1.2f ? rectangle().height() : theme::global->toolbarHeight;
         ttlet icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
-        _icon_stencil->set_layout_parameters(icon_rectangle);
+        _icon_widget->set_layout_parameters_from_parent(icon_rectangle);
 
         // Leave space for window resize handles on the left and top.
         system_menu_rectangle = aarectangle{
@@ -59,17 +64,6 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     }
 
     super::update_layout(display_time_point, need_layout);
-}
-
-void system_menu_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-
-    if (overlaps(context, _clipping_rectangle)) {
-        tt_stencil_draw(_icon_stencil, context);
-    }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 hit_box system_menu_widget::hitbox_test(point2 position) const noexcept

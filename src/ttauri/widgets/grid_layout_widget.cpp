@@ -8,6 +8,19 @@
 
 namespace tt {
 
+grid_layout_widget::grid_layout_widget(
+    gui_window &window,
+    std::shared_ptr<widget> parent,
+    std::shared_ptr<widget_delegate> delegate) noexcept :
+    widget(window, std::move(parent), std::move(delegate))
+{
+    if (auto p = _parent.lock()) {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        _semantic_layer = p->semantic_layer();
+    }
+    _margin = 0.0f;
+}
+
 [[nodiscard]] std::pair<size_t, size_t> grid_layout_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept
 {
     size_t nr_columns = 0;
@@ -69,7 +82,7 @@ bool grid_layout_widget::address_in_use(size_t column_nr, size_t row_nr) const n
 std::shared_ptr<widget> grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::shared_ptr<widget> widget) noexcept
 {
     ttlet lock = std::scoped_lock(gui_system_mutex);
-    auto tmp = abstract_container_widget::add_widget(std::move(widget));
+    auto tmp = widget::add_widget(std::move(widget));
 
     tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
 
@@ -106,7 +119,7 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
         }
     }
 
-    abstract_container_widget::update_layout(display_time_point, need_layout);
+    super::update_layout(display_time_point, need_layout);
 }
 
 } // namespace tt

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
 #include "../alignment.hpp"
@@ -13,14 +13,19 @@
 namespace tt {
 
 template<arrangement Arrangement>
-class row_column_layout_widget final : public abstract_container_widget {
+class row_column_layout_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
     static constexpr auto arrangement = Arrangement;
 
-    row_column_layout_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept :
+    row_column_layout_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept :
         super(window, parent)
     {
+        if (auto p = _parent.lock()) {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+            _semantic_layer = p->semantic_layer();
+        }
+        _margin = 0.0f;
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
@@ -73,7 +78,7 @@ public:
 
             tt_axiom(index == std::ssize(_children));
         }
-        abstract_container_widget::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
 private:

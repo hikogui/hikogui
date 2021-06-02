@@ -9,7 +9,6 @@
 #include "observable.hpp"
 #include "icon.hpp"
 #include "l10n.hpp"
-#include "text/translation.hpp"
 #include <string>
 #include <type_traits>
 #include <memory>
@@ -78,7 +77,7 @@ public:
     template<typename... Args>
     label(tt::icon icon, l10n fmt, Args &&... args) noexcept :
         _icon(std::move(icon)),
-        _msgid(std::move(fmt.msgid)),
+        _fmt(std::move(fmt)),
         _args(std::make_unique<detail::label_arguments<std::remove_cvref_t<Args>...>>(std::forward<Args>(args)...))
     {
     }
@@ -90,10 +89,10 @@ public:
 
     label(tt::icon icon) noexcept : label(std::move(icon), l10n{}) {}
 
-    label() noexcept : label(tt::icon{}, std::string_view{}) {}
+    label() noexcept : label(tt::icon{}, l10n{}) {}
 
     label(label const &other) noexcept :
-        _icon(other._icon), _msgid(other._msgid), _args(other._args->make_unique_copy())
+        _icon(other._icon), _fmt(other._fmt), _args(other._args->make_unique_copy())
     {
     }
 
@@ -101,7 +100,7 @@ public:
     {
         // Self-assignment is allowed.
         _icon = other._icon;
-        _msgid = other._msgid;
+        _fmt = other._fmt;
         _args = other._args->make_unique_copy();
         return *this;
     }
@@ -114,32 +113,43 @@ public:
         return static_cast<bool>(_icon);
     }
 
-    [[nodiscard]] icon icon() const noexcept
+    [[nodiscard]] icon const &icon() const noexcept
     {
         return _icon;
     }
 
+    void set_icon(tt::icon icon) noexcept
+    {
+        _icon = std::move(icon);
+    }
+
     [[nodiscard]] bool has_text() const noexcept
     {
-        return _msgid.size() != 0;
+        return _fmt;
     }
 
     [[nodiscard]] std::string text() const noexcept
     {
-        auto fmt = get_translation(_msgid);
+        auto fmt_s = _fmt.get_translation();
         tt_axiom(_args);
-        return _args->format(fmt);
+        return _args->format(fmt_s);
+    }
+
+    template<typename... Args>
+    void set_text(l10n fmt, Args &&... args) noexcept
+    {
+        _fmt = fmt;
+        _args = std::make_unique<detail::label_arguments<std::remove_cvref_t<Args>...>>(std::forward<Args>(args)...);
     }
 
     [[nodiscard]] friend bool operator==(label const &lhs, label const &rhs) noexcept
     {
-        return lhs._icon == rhs._icon && lhs._msgid == rhs._msgid && lhs._args->eq(*rhs._args);
+        return lhs._icon == rhs._icon && lhs._fmt == rhs._fmt && lhs._args->eq(*rhs._args);
     }
 
     [[nodiscard]] friend std::string to_string(label const &rhs) noexcept
     {
-        auto tmp = rhs.text();
-        return std::string{reinterpret_cast<char const *>(tmp.data()), tmp.size()};
+        return rhs.text();
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, label const &rhs)
@@ -149,7 +159,7 @@ public:
 
 private:
     tt::icon _icon;
-    std::string _msgid;
+    l10n _fmt;
     std::unique_ptr<detail::label_arguments_base> _args;
 };
 

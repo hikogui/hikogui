@@ -27,6 +27,7 @@
 #include "../command.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include "../flow_layout.hpp"
+#include "widget_delegate.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
@@ -48,7 +49,7 @@ struct vertex;
 }
 
 namespace tt {
-class abstract_container_widget;
+class widget;
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
@@ -98,13 +99,16 @@ public:
      */
     gui_window &window;
 
-    /** The widget is enabled.
+    /** A name of widget, should be unique between siblings.
      */
-    observable<bool> enabled = true;
+    std::string id;
 
     /*! Constructor for creating sub views.
      */
-    widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept;
+    widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        std::shared_ptr<widget_delegate> delegate = std::make_shared<widget_delegate>()) noexcept;
 
     virtual ~widget();
     widget(const widget &) = delete;
@@ -114,7 +118,49 @@ public:
 
     /** Should be called right after allocating and constructing a widget.
      */
-    virtual void init() noexcept {}
+    virtual void init() noexcept;
+
+    /** Should be called right after allocating and constructing a widget.
+     */
+    virtual void deinit() noexcept;
+
+    /** Check if this widget is enabled.
+     * This call is forwarded to `widget_delegate::enabled()`.
+     */
+    virtual bool enabled() const noexcept;
+
+    /** Set the widget enabled or disabled.
+     * This call is forwarded to `widget_delegate::set_enabled()`.
+     */
+    virtual void set_enabled(observable<bool> rhs) noexcept;
+
+    /** Check if this widget is visible.
+     * This call is forwarded to `widget_delegate::visible()`.
+     */
+    virtual bool visible() const noexcept;
+
+    /** Set the widget visible or invisible.
+     * This call is forwarded to `widget_delegate::set_visible()`.
+     */
+    virtual void set_visible(observable<bool> rhs) noexcept;
+
+    /** Set the widget visible or invisible.
+     * This call is forwarded to `widget_delegate::set_visible()`.
+     */
+    virtual void set_visible(bool rhs) noexcept;
+
+    [[nodiscard]] bool lineage_matches_id(std::string_view rhs) const noexcept
+    {
+        auto current = weak_from_this();
+        while (auto current_ = current.lock()) {
+            if (current_->id == rhs) {
+                return true;
+            }
+
+            current = current_->_parent;
+        }
+        return false;
+    }
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
@@ -237,8 +283,10 @@ public:
      *
      * @pre `mutex` must be locked by current thread.
      */
-    void
-    set_layout_parameters(geo::transformer auto const &local_to_parent, extent2 size, aarectangle const &clipping_rectangle) noexcept
+    void set_layout_parameters(
+        geo::transformer auto const &local_to_parent,
+        extent2 size,
+        aarectangle const &clipping_rectangle) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
@@ -257,14 +305,16 @@ public:
         _visible_rectangle = intersect(aarectangle{size}, clipping_rectangle);
     }
 
-    void
-    set_layout_parameters_from_parent(aarectangle child_rectangle, aarectangle parent_clipping_rectangle, float draw_layer_delta) noexcept
+    void set_layout_parameters_from_parent(
+        aarectangle child_rectangle,
+        aarectangle parent_clipping_rectangle,
+        float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_axiom(child_rectangle.extent() >= _minimum_size);
+        tt_axiom(child_rectangle.size() >= _minimum_size);
 
         ttlet child_translate = translate2{child_rectangle};
-        ttlet child_size = child_rectangle.extent();
+        ttlet child_size = child_rectangle.size();
         ttlet rectangle = aarectangle{child_size};
         ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, expand(rectangle, margin()));
 
@@ -357,16 +407,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hit_box hitbox_test(point2 position) const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer};
-        } else {
-            return {};
-        }
-    }
+    [[nodiscard]] virtual hit_box hitbox_test(point2 position) const noexcept;
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -448,10 +489,7 @@ public:
      * @param context The context to where the widget will draw.
      * @param display_time_point The time point when the widget will be shown on the screen.
      */
-    virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-    }
+    virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept;
 
     virtual void request_redraw() const noexcept
     {
@@ -525,23 +563,27 @@ public:
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept;
 
-    /** Get a shared_ptr to the parent.
-     */
-    [[nodiscard]] std::shared_ptr<abstract_container_widget const> shared_parent() const noexcept;
+    [[nodiscard]] std::shared_ptr<widget const> find_first_widget(keyboard_focus_group group) const noexcept;
+
+    [[nodiscard]] std::shared_ptr<widget const> find_last_widget(keyboard_focus_group group) const noexcept;
 
     /** Get a shared_ptr to the parent.
      */
-    [[nodiscard]] std::shared_ptr<abstract_container_widget> shared_parent() noexcept;
+    [[nodiscard]] std::shared_ptr<widget const> shared_parent() const noexcept;
+
+    /** Get a shared_ptr to the parent.
+     */
+    [[nodiscard]] std::shared_ptr<widget> shared_parent() noexcept;
 
     /** Get a reference to the parent.
      * It is undefined behavior to call this function when the widget does not have a parent.
      */
-    [[nodiscard]] abstract_container_widget const &parent() const noexcept;
+    [[nodiscard]] widget const &parent() const noexcept;
 
     /** Get a reference to the parent.
      * It is undefined behavior to call this function when the widget does not have a parent.
      */
-    [[nodiscard]] abstract_container_widget &parent() noexcept;
+    [[nodiscard]] widget &parent() noexcept;
 
     /** Is this widget the first widget in the parent container.
      */
@@ -561,13 +603,101 @@ public:
      * The chain includes the given widget.
      */
     [[nodiscard]] static std::vector<std::shared_ptr<widget>>
-    parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
+    parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;    
+
+    /** Remove and deallocate all child widgets.
+     */
+    void clear() noexcept
+    {
+        _children.clear();
+        _request_reconstrain = true;
+    }
+
+    /** Add a widget directly to this widget.
+     * Thread safety: locks.
+     */
+    std::shared_ptr<widget> add_widget(std::shared_ptr<widget> widget) noexcept
+    {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+
+        tt_axiom(&widget->parent() == this);
+        _children.push_back(widget);
+        _request_reconstrain = true;
+        window.requestLayout = true;
+        return widget;
+    }
+
+    /** Add a widget directly to this widget.
+     */
+    template<typename T, typename... Args>
+    std::shared_ptr<T> make_widget(Args &&...args)
+    {
+        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        tmp->init();
+        return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
+    }
+
+    [[nodiscard]] widget &front() noexcept
+    {
+        return *_children.front();
+    }
+
+    [[nodiscard]] widget const &front() const noexcept
+    {
+        return *_children.front();
+    }
+
+    [[nodiscard]] widget &back() noexcept
+    {
+        return *_children.back();
+    }
+
+    [[nodiscard]] widget const &back() const noexcept
+    {
+        return *_children.back();
+    }
+
+    [[nodiscard]] auto begin() noexcept
+    {
+        return _children.begin();
+    }
+
+    [[nodiscard]] auto begin() const noexcept
+    {
+        return _children.begin();
+    }
+
+    [[nodiscard]] auto cbegin() const noexcept
+    {
+        return _children.cbegin();
+    }
+
+    [[nodiscard]] auto end() noexcept
+    {
+        return _children.end();
+    }
+
+    [[nodiscard]] auto end() const noexcept
+    {
+        return _children.end();
+    }
+
+    [[nodiscard]] auto cend() const noexcept
+    {
+        return _children.cend();
+    }
 
 protected:
+    std::shared_ptr<widget_delegate> _delegate;
+
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
-    std::weak_ptr<abstract_container_widget> _parent;
+    std::weak_ptr<widget> _parent;
+
+    /** A list of child widgets.
+     */
+    std::vector<std::shared_ptr<widget>> _children;
 
     /** Mouse cursor is hovering over the widget.
      */
@@ -648,8 +778,21 @@ protected:
      */
     int _logical_layer;
 
+    template<typename T>
+    [[nodiscard]] std::shared_ptr<T> delegate_ptr() const noexcept
+    {
+        return std::dynamic_pointer_cast<T>(_delegate);
+    }
+
+    template<typename T>
+    [[nodiscard]] T &delegate() const noexcept
+    {
+        auto &d = *_delegate;
+        return narrow_cast<T &>(d);
+    }
+
 private:
-    typename decltype(enabled)::callback_ptr_type _enabled_callback;
+    typename widget_delegate::callback_ptr_type _delegate_callback;
 };
 
 } // namespace tt

@@ -38,8 +38,8 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
     return false;
 }
 
-gui_window::gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title) :
-    system(system), delegate(delegate), title(title)
+gui_window::gui_window(gui_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title) :
+    system(system), _delegate(std::move(delegate)), title(title)
 {
 }
 
@@ -64,14 +64,9 @@ void gui_window::init()
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
-    widget = std::make_shared<window_widget>(*this, delegate, title);
+    widget = std::make_shared<window_widget>(*this, _delegate, title);
     widget->init();
-
-    // The delegate will populate the window with widgets.
-    // This needs to be done first to figure out the initial size of the window.
-    if (auto delegate_ = delegate.lock()) {
-        delegate_->init(*this);
-    }
+    _delegate->init(*this);
 
     // Execute a constraint check to determine initial window size.
     {
@@ -93,9 +88,7 @@ void gui_window::init()
 
 void gui_window::deinit()
 {
-    if (auto delegate_ = delegate.lock()) {
-        delegate_->deinit(*this);
-    }
+    _delegate->deinit(*this);
 }
 
 void gui_window::set_device(gui_device *device) noexcept
@@ -234,7 +227,7 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
-    widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
+    [[maybe_unused]] ttlet handled = widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
     if (new_target_widget) {

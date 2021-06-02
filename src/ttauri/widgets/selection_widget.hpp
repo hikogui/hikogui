@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
+#include "label_widget.hpp"
 #include "overlay_view_widget.hpp"
 #include "scroll_view_widget.hpp"
 #include "row_column_layout_widget.hpp"
-#include "menu_item_widget.hpp"
-#include "../stencils/label_stencil.hpp"
+#include "button_widget.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../text/font_book.hpp"
 #include "../text/elusive_icon.hpp"
@@ -23,9 +23,9 @@
 namespace tt {
 
 template<typename T>
-class selection_widget final : public abstract_container_widget {
+class selection_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
     using value_type = T;
     using option_list_type = std::vector<std::pair<value_type, label>>;
 
@@ -36,7 +36,7 @@ public:
     template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = label>
     selection_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         Value &&value = value_type{},
         OptionList &&option_list = option_list_type{},
         UnknownLabel &&unknown_label = label{l10n("<unknown>")}) noexcept :
@@ -45,7 +45,7 @@ public:
         option_list(std::forward<OptionList>(option_list)),
         unknown_label(std::forward<UnknownLabel>(unknown_label))
     {
-        // Because the super class `abstract_container_widget` forces the same semantic layer
+        // Because the super class `widget` forces the same semantic layer
         // as the a parent and _margin to zero, we need to force them back as if this is a normal widget.
         _semantic_layer = parent->semantic_layer() + 1;
         _margin = theme::global->margin;
@@ -55,17 +55,26 @@ public:
 
     void init() noexcept override
     {
-        _overlay_widget = super::make_widget<overlay_view_widget>();
+        _current_label_widget = make_widget<label_widget>(alignment::middle_left, theme::global->labelStyle, l10n("<current>"));
+        _current_label_widget->set_visible(false);
+        _unknown_label_widget =
+            make_widget<label_widget>(alignment::middle_left, theme::global->placeholderLabelStyle, unknown_label);
+
+        _overlay_widget = make_widget<overlay_view_widget>();
+        _overlay_widget->set_visible(false);
         _scroll_widget = _overlay_widget->make_widget<vertical_scroll_view_widget<>>();
         _column_widget = _scroll_widget->make_widget<column_layout_widget>();
 
         repopulate_options();
+        update_labels();
 
         _value_callback = this->value.subscribe([this](auto...) {
+            update_labels();
             _request_reconstrain = true;
         });
         _option_list_callback = this->option_list.subscribe([this](auto...) {
             repopulate_options();
+            update_labels();
             _request_reconstrain = true;
         });
         _unknown_label_callback = this->unknown_label.subscribe([this](auto...) {
@@ -80,34 +89,17 @@ public:
         auto updated = super::update_constraints(display_time_point, need_reconstrain);
 
         if (updated) {
-            ttlet index = get_value_as_index();
-            if (index == -1) {
-                _text_stencil =
-                    stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle);
-                _text_stencil_color = theme::global->placeholderLabelStyle.color;
-            } else {
-                _text_stencil =
-                    stencil::make_unique(alignment::middle_left, (*option_list)[index].second, theme::global->labelStyle);
-                _text_stencil_color = theme::global->labelStyle.color;
+            ttlet extra_size = extent2{theme::global->smallSize + theme::global->margin * 2.0f, theme::global->margin * 2.0f};
+
+            _minimum_size = _unknown_label_widget->minimum_size() + extra_size;
+            _preferred_size = _unknown_label_widget->preferred_size() + extra_size;
+            _maximum_size = _unknown_label_widget->maximum_size() + extra_size;
+
+            for (ttlet &child : *_column_widget) {
+                _minimum_size = max(_minimum_size, child->minimum_size());
+                _preferred_size = max(_preferred_size, child->preferred_size());
+                _maximum_size = max(_maximum_size, child->maximum_size());
             }
-
-            // Calculate the size of the widget based on the largest height of a label and the width of the overlay.
-            ttlet unknown_label_stencil =
-                stencil::make_unique(alignment::middle_left, *unknown_label, theme::global->placeholderLabelStyle);
-
-            ttlet extra_width = theme::global->smallSize + theme::global->margin * 2.0f;
-            ttlet extra_height = theme::global->margin * 2.0f;
-
-            _minimum_size = {
-                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->minimum_size().width()) + extra_width,
-                std::max(_max_option_label_height, unknown_label_stencil->minimum_size().height()) + extra_height};
-            _preferred_size = {
-                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->preferred_size().width()) +
-                    extra_width,
-                std::max(_max_option_label_height, unknown_label_stencil->preferred_size().height()) + extra_height};
-            _maximum_size = {
-                std::max(_overlay_widget->preferred_size().width(), unknown_label_stencil->maximum_size().width()) + extra_width,
-                std::max(_max_option_label_height, unknown_label_stencil->maximum_size().height()) + extra_height};
 
             tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
@@ -160,7 +152,8 @@ public:
                 rectangle().width() - _left_box_rectangle.width() - theme::global->margin * 2.0f,
                 rectangle().height()};
 
-            _text_stencil->set_layout_parameters(_option_rectangle, base_line());
+            _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
+            _current_label_widget->set_layout_parameters_from_parent(_option_rectangle);
         }
         super::update_layout(display_time_point, need_layout);
     }
@@ -173,18 +166,9 @@ public:
             draw_outline(context);
             draw_left_box(context);
             draw_chevrons(context);
-            draw_value(context);
         }
 
-        if (_selecting) {
-            super::draw(std::move(context), display_time_point);
-        }
-    }
-
-    void request_redraw() const noexcept override
-    {
-        super::request_redraw();
-        _overlay_widget->request_redraw();
+        super::draw(std::move(context), display_time_point);
     }
 
     bool handle_event(mouse_event const &event) noexcept override
@@ -194,7 +178,7 @@ public:
 
         if (event.cause.leftButton) {
             handled = true;
-            if (*enabled) {
+            if (enabled()) {
                 if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
                     handle_event(command::gui_activate);
                 }
@@ -208,7 +192,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
         _request_relayout = true;
 
-        if (*enabled) {
+        if (enabled()) {
             switch (command) {
                 using enum tt::command;
             case gui_activate:
@@ -237,14 +221,9 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        auto r = hit_box{};
-
-        if (_selecting) {
-            r = super::hitbox_test(position);
-        }
-
+        auto r = super::hitbox_test(position);
         if (_visible_rectangle.contains(position)) {
-            r = std::max(r, hit_box{weak_from_this(), _draw_layer, *enabled ? hit_box::Type::Button : hit_box::Type::Default});
+            r = std::max(r, hit_box{weak_from_this(), _draw_layer, enabled() ? hit_box::Type::Button : hit_box::Type::Default});
         }
 
         return r;
@@ -253,18 +232,12 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_normal(group) && *enabled;
-    }
-
-    template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&...args)
-    {
-        tt_no_default();
+        return is_normal(group) && enabled();
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (*enabled && _selecting) {
+        if (enabled() && _selecting) {
             return theme::global->accentColor;
         } else {
             return super::focus_color();
@@ -276,10 +249,8 @@ private:
     typename decltype(value)::callback_ptr_type _value_callback;
     typename decltype(option_list)::callback_ptr_type _option_list_callback;
 
-    std::unique_ptr<label_stencil> _text_stencil;
-    color _text_stencil_color;
-
-    float _max_option_label_height;
+    std::shared_ptr<label_widget> _current_label_widget;
+    std::shared_ptr<label_widget> _unknown_label_widget;
 
     aarectangle _option_rectangle;
     aarectangle _left_box_rectangle;
@@ -292,8 +263,8 @@ private:
     std::shared_ptr<vertical_scroll_view_widget<>> _scroll_widget;
     std::shared_ptr<column_layout_widget> _column_widget;
 
-    std::vector<std::shared_ptr<menu_item_widget<value_type>>> _menu_item_widgets;
-    std::vector<typename menu_item_widget<value_type>::callback_ptr_type> _menu_item_callbacks;
+    std::vector<std::shared_ptr<menu_button_widget<value_type>>> _menu_button_widgets;
+    std::vector<typename menu_button_widget<value_type>::callback_ptr_type> _menu_button_callbacks;
 
     [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
@@ -308,22 +279,36 @@ private:
         return -1;
     }
 
-    [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_first_menu_item() const noexcept
+    [[nodiscard]] std::shared_ptr<menu_button_widget<value_type>> get_first_menu_button() const noexcept
     {
-        if (std::ssize(_menu_item_widgets) != 0) {
-            return _menu_item_widgets.front();
+        if (std::ssize(_menu_button_widgets) != 0) {
+            return _menu_button_widgets.front();
         } else {
             return {};
         }
     }
 
-    [[nodiscard]] std::shared_ptr<menu_item_widget<value_type>> get_selected_menu_item() const noexcept
+    [[nodiscard]] std::shared_ptr<menu_button_widget<value_type>> get_selected_menu_button() const noexcept
     {
         ttlet i = get_value_as_index();
-        if (i >= 0 && i < std::ssize(_menu_item_widgets)) {
-            return _menu_item_widgets[i];
+        if (i >= 0 && i < std::ssize(_menu_button_widgets)) {
+            return _menu_button_widgets[i];
         } else {
             return {};
+        }
+    }
+
+    void update_labels() noexcept
+    {
+        ttlet index = get_value_as_index();
+        if (index == -1) {
+            _unknown_label_widget->set_visible(true);
+            _current_label_widget->set_visible(false);
+
+        } else {
+            _unknown_label_widget->set_visible(false);
+            _current_label_widget->set_label((*option_list)[index].second);
+            _current_label_widget->set_visible(true);
         }
     }
 
@@ -332,11 +317,12 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         _selecting = true;
-        if (auto selected_menu_item = get_selected_menu_item()) {
-            this->window.update_keyboard_target(selected_menu_item, keyboard_focus_group::menu);
+        _overlay_widget->set_visible(true);
+        if (auto selected_menu_button = get_selected_menu_button()) {
+            this->window.update_keyboard_target(selected_menu_button, keyboard_focus_group::menu);
 
-        } else if (auto first_menu_item = get_first_menu_item()) {
-            this->window.update_keyboard_target(first_menu_item, keyboard_focus_group::menu);
+        } else if (auto first_menu_button = get_first_menu_button()) {
+            this->window.update_keyboard_target(first_menu_button, keyboard_focus_group::menu);
         }
 
         request_redraw();
@@ -345,8 +331,8 @@ private:
     void stop_selecting() noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-
         _selecting = false;
+        _overlay_widget->set_visible(false);
         request_redraw();
     }
 
@@ -364,27 +350,21 @@ private:
         }
 
         _column_widget->clear();
-        _menu_item_widgets.clear();
-        _menu_item_callbacks.clear();
+        _menu_button_widgets.clear();
+        _menu_button_callbacks.clear();
         for (ttlet & [ tag, text ] : option_list_) {
-            auto menu_item = _column_widget->make_widget<menu_item_widget<value_type>>(tag, this->value);
-            menu_item->set_show_check_mark(true);
-            menu_item->set_show_icon(show_icon);
-            menu_item->label = text;
+            auto menu_button = _column_widget->make_widget<menu_button_widget<value_type>>(this->value);
+            menu_button->set_on_value(tag);
+            // menu_button->set_show_check_mark(true);
+            // menu_button->set_show_icon(show_icon);
+            menu_button->set_label(text);
 
-            _menu_item_callbacks.push_back(menu_item->subscribe([this, tag] {
+            _menu_button_callbacks.push_back(menu_button->subscribe([this, tag] {
                 this->value = tag;
-                this->_selecting = false;
+                this->stop_selecting();
             }));
 
-            _menu_item_widgets.push_back(std::move(menu_item));
-        }
-
-        _max_option_label_height = 0.0f;
-        for (ttlet & [ tag, text ] : *option_list) {
-            _max_option_label_height = std::max(
-                _max_option_label_height,
-                stencil::make_unique(alignment::middle_left, text, theme::global->labelStyle)->preferred_size().height());
+            _menu_button_widgets.push_back(std::move(menu_button));
         }
     }
 
@@ -409,12 +389,6 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.draw_glyph(_chevrons_glyph, translate_z(0.2f) * _chevrons_rectangle, label_color());
-    }
-
-    void draw_value(draw_context context) noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_stencil_draw(_text_stencil, context, label_color(), translate_z(0.1f));
     }
 };
 

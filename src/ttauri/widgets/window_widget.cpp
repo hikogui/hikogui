@@ -15,8 +15,8 @@ namespace tt {
 
 using namespace std;
 
-window_widget::window_widget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept :
-    abstract_container_widget(window, {}), title(std::move(title)), _content_delegate(delegate)
+window_widget::window_widget(gui_window &window, std::shared_ptr<widget_delegate> delegate, label title) noexcept :
+    widget(window, {}), title(std::move(title)), _content_delegate(std::move(delegate))
 {
 }
 
@@ -83,7 +83,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
         _content->set_layout_parameters_from_parent(content_rectangle);
     }
 
-    abstract_container_widget::update_layout(display_time_point, need_layout);
+    super::update_layout(display_time_point, need_layout);
 }
 
 hit_box window_widget::hitbox_test(point2 position) const noexcept

@@ -4,6 +4,10 @@
 
 target_sources(ttauri PRIVATE
     audio_block.hpp
+    audio_channel.hpp
+    audio_channel_mapping.cpp
+    audio_channel_mapping.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_channel_mapping_win32.cpp>
     audio_device.cpp
     audio_device.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_asio.hpp>
@@ -23,6 +27,7 @@ target_sources(ttauri PRIVATE
     audio_sample_unpacker.hpp
     audio_sample_packer.cpp
     audio_sample_packer.hpp
+    pcm_format.hpp
 )
 
 if(TT_BUILD_TESTS)

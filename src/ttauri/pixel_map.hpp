@@ -4,6 +4,7 @@
 
 #pragma once
 #include "required.hpp"
+#include "hash.hpp"
 #include "geometry/axis_aligned_rectangle.hpp"
 #include "geometry/extent.hpp"
 #include <algorithm>
@@ -101,7 +102,7 @@ class pixel_map {
 public:
     /** Construct an empty pixel-map.
      */
-    pixel_map() noexcept : _pixels(nullptr), _width(0), _height(0), _stride(0), _self_allocated(true) {}
+    pixel_map() noexcept : _pixels(nullptr), _width(0), _height(0), _stride(0), _hash(0), _self_allocated(true) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixels A pointer to pixels received from the API.
@@ -110,7 +111,7 @@ public:
      * @param stride Number of pixel elements until the next row.
      */
     pixel_map(T *pixels, ssize_t width, ssize_t height, ssize_t stride) noexcept :
-        _pixels(pixels), _width(width), _height(height), _stride(stride), _self_allocated(false)
+        _pixels(pixels), _width(width), _height(height), _stride(stride), _hash(0), _self_allocated(false)
     {
         tt_assert(_stride >= _width);
         tt_assert(_width >= 0);
@@ -155,7 +156,7 @@ public:
      */
     pixel_map(pixel_map const &other) = delete;
 
-    pixel_map copy() const noexcept
+    [[nodiscard]] pixel_map copy() const noexcept
     {
         if (_self_allocated) {
             auto r = pixel_map(_width, _height);
@@ -168,6 +169,7 @@ public:
                 }
             }
 
+            r._hash = _hash;
             return r;
         } else {
             return submap(0, 0, _width, _height);
@@ -179,6 +181,7 @@ public:
         _width(other._width),
         _height(other._height),
         _stride(other._stride),
+        _hash(other._hash),
         _self_allocated(other._self_allocated)
     {
         tt_axiom(this != &other);
@@ -205,6 +208,11 @@ public:
         return _stride;
     }
 
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        return _hash;
+    }
+
     /** Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
      */
     pixel_map &operator=(pixel_map const &other) = delete;
@@ -219,6 +227,7 @@ public:
         _width = other._width;
         _height = other._height;
         _stride = other._stride;
+        _hash = other._hash;
         _self_allocated = other._self_allocated;
         other._self_allocated = false;
         return *this;
@@ -236,17 +245,19 @@ public:
      * @param height height of the returned image.
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
-    pixel_map<T> submap(ssize_t x, ssize_t y, ssize_t width, ssize_t height) const noexcept
+    pixel_map submap(ssize_t x, ssize_t y, ssize_t width, ssize_t height) const noexcept
     {
         tt_axiom((x >= 0) && (y >= 0));
         tt_assert((x + width <= _width) && (y + height <= _height));
 
         ttlet offset = y * _stride + x;
 
-        return {_pixels + offset, width, height, _stride};
+        auto r = pixel_map{_pixels + offset, width, height, _stride};
+        r._hash = (width == _width && height == _height) ? _hash : 0;
+        return r;
     }
 
-    pixel_map<T> submap(aarectangle rectangle) const noexcept
+    pixel_map submap(aarectangle rectangle) const noexcept
     {
         tt_axiom(round(rectangle) == rectangle);
         return submap(
@@ -278,6 +289,21 @@ public:
         return (*this)[rowNr];
     }
 
+    /** Update the hash value of the pixmap.
+     * Since this is an expensive operation the calculation must be called explicitly.
+     */
+    void update_hash() noexcept
+    {
+        size_t h = hash_mix(_width, _height);
+        for (ssize_t row_nr = 0; row_nr != _height; ++row_nr) {
+            ttlet &row = (*this)[row_nr];
+            for (ssize_t col_nr = 0; col_nr != _width; ++col_nr) {
+                h = hash_mix(h, row[col_nr]);
+            }
+        }
+        _hash = h;
+    }
+
 private:
     /** Pointer to a 2D canvas of pixels.
      */
@@ -295,6 +321,10 @@ private:
      * This is used when the alignment of each row is different from the width of the canvas.
      */
     ssize_t _stride;
+
+    /** Hash value calculated over all pixel values.
+     */
+    size_t _hash;
 
     /** True if the memory was allocated by this class, false if the canvas was received from another API.
      */

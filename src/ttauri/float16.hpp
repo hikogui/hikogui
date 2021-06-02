@@ -50,12 +50,29 @@ public:
         return *this;
     }
 
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        return std::hash<uint16_t>{}(v);
+    }
+
     [[nodiscard]] friend bool operator==(float16 const &lhs, float16 const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
 
     [[nodiscard]] friend bool operator!=(float16 const &lhs, float16 const &rhs) noexcept {
         return lhs.v != rhs.v;
+    }
+};
+
+}
+
+namespace std {
+
+template<>
+struct std::hash<tt::float16> {
+    size_t operator()(tt::float16 const &rhs) noexcept
+    {
+        return rhs.hash();
     }
 };
 

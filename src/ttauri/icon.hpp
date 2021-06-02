@@ -32,18 +32,36 @@ public:
 
     [[nodiscard]] operator bool () const noexcept
     {
-        return !std::holds_alternative<std::monostate>(image);
+        return !std::holds_alternative<std::monostate>(_image);
     }
 
     [[nodiscard]] friend bool operator==(icon const &lhs, icon const &rhs) noexcept
     {
-        return lhs.image == rhs.image;
+        return lhs._image == rhs._image;
+    }
+
+    template<typename T>
+    [[nodiscard]] friend bool holds_alternative(tt::icon const &icon) noexcept
+    {
+        return std::holds_alternative<T>(icon._image);
+    }
+
+    template<typename T>
+    [[nodiscard]] friend T const &get(tt::icon const &icon) noexcept
+    {
+        return std::get<T>(icon._image);
+    }
+
+    template<typename T>
+    [[nodiscard]] friend T &get(tt::icon &icon) noexcept
+    {
+        return std::get<T>(_image);
     }
 
 private:
     using image_type = std::variant<std::monostate, font_glyph_ids, pixel_map<sfloat_rgba16>>;
 
-    image_type image;
+    image_type _image;
 
     friend class stencil;
 };

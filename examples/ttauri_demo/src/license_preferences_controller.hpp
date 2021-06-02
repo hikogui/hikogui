@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "ttauri/widgets/grid_layout_delegate.hpp"
+#include "ttauri/widgets/widget_delegate.hpp"
 #include "ttauri/assert.hpp"
 
 namespace demo {
 class preferences_controller;
 
-class license_preferences_controller : public tt::grid_layout_delegate {
+class license_preferences_controller : public tt::widget_delegate {
 public:
     license_preferences_controller(std::weak_ptr<preferences_controller> const& preferences_controller) noexcept :
         preferences_controller(preferences_controller)
@@ -17,7 +17,7 @@ public:
         tt_assert(!preferences_controller.expired());
     }
 
-    void init(tt::grid_layout_widget& self) noexcept override;
+    void init(tt::widget& self) noexcept override;
 
 protected:
     std::weak_ptr<preferences_controller> preferences_controller;

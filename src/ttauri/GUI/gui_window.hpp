@@ -74,11 +74,7 @@ public:
      */
     extent2 size;
 
-    std::weak_ptr<gui_window_delegate> delegate;
-
     label title;
-
-    
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
@@ -89,7 +85,7 @@ public:
     //! The widget covering the complete window.
     std::shared_ptr<window_widget> widget;
 
-    gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
+    gui_window(gui_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title);
     virtual ~gui_window();
 
     gui_window(gui_window const &) = delete;
@@ -251,6 +247,8 @@ public:
     }
 
 protected:
+    std::shared_ptr<gui_window_delegate> _delegate;
+
     /*! The current rectangle of the window relative to the screen.
      * The screen rectangle is set by the operating system event loop and
      * the extent of the rectangle may lag behind the actual window extent as seen

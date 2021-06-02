@@ -20,13 +20,8 @@ class gui_window_win32 final : public gui_window {
 public:
     HWND win32Window = nullptr;
 
-    gui_window_win32(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
+    gui_window_win32(gui_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title);
     ~gui_window_win32();
-
-    gui_window_win32(const gui_window_win32 &) = delete;
-    gui_window_win32 &operator=(const gui_window_win32 &) = delete;
-    gui_window_win32(gui_window_win32 &&) = delete;
-    gui_window_win32 &operator=(gui_window_win32 &&) = delete;
 
     void create_window() override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;

@@ -48,6 +48,8 @@ public:
      */
     float smallSize = 15.0f;
 
+    extent2 smallSize2D = extent2{smallSize, smallSize};
+
     /** The height of the larger widgets like buttons, text-input and drop-down-lists.
      */
     float height = 22.0f;

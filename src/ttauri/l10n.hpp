@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "text/language.hpp"
+#include "text/translation.hpp"
+
 namespace tt {
 
 /** A localizable string.
@@ -11,7 +14,7 @@ namespace tt {
  */
 class l10n {
 public:
-    l10n() noexcept : msgid() {}
+    l10n() noexcept : _msg_id() {}
     l10n(l10n const &) noexcept = default;
     l10n(l10n &&) noexcept = default;
     l10n &operator=(l10n const &) noexcept = default;
@@ -19,15 +22,19 @@ public:
 
     [[nodiscard]] operator bool() const noexcept
     {
-        return !msgid.empty();
+        return !_msg_id.empty();
     }
 
-    l10n(std::string_view msgid) noexcept : msgid(msgid) {}
+    l10n(std::string_view msg_id) noexcept : _msg_id(msg_id) {}
+
+    [[nodiscard]] std::string_view
+    get_translation(long long n = 0, std::vector<language *> const &languages = language::preferred_languages) const noexcept
+    {
+        return ::tt::get_translation(_msg_id, n, languages);
+    }
 
 private:
-    std::string msgid;
-
-    friend class label;
+    std::string _msg_id;
 };
 
-}
+} // namespace tt

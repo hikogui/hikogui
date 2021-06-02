@@ -5,9 +5,9 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/draw_context.hpp"
-#include "../stencils/label_stencil.hpp"
-#include "../observable.hpp"
+#include "text_widget.hpp"
+#include "icon_widget.hpp"
+#include "label_delegate.hpp"
 #include "../alignment.hpp"
 #include <memory>
 #include <string>
@@ -21,78 +21,73 @@ class label_widget final : public widget {
 public:
     using super = widget;
 
-    observable<label> label;
+    ~label_widget();
+
+    label_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        std::shared_ptr<label_delegate> delegate,
+        alignment alignment = alignment::middle_right,
+        text_style text_style = theme::global->labelStyle) noexcept;
 
     template<typename Label>
     label_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
+        std::shared_ptr<label_delegate> delegate,
         alignment alignment,
-        Label &&label) noexcept
-        :
-        super(window, parent),
-        _alignment(alignment),
-        label(std::forward<Label>(label))
+        text_style text_style,
+        Label &&label) noexcept :
+        label_widget(window, std::move(parent), std::move(delegate), alignment, text_style)
     {
+        set_label(std::forward<Label>(label));
     }
 
     template<typename Label>
-    label_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Label &&label) noexcept :
-        super(window, parent), _alignment(alignment::middle_right), label(std::forward<Label>(label))
+    label_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        alignment alignment,
+        text_style text_style,
+        Label &&label) noexcept :
+        label_widget(window, std::move(parent), std::make_shared<label_delegate>(), alignment, text_style)
+    {
+        set_label(std::forward<Label>(label));
+    }
+
+    template<typename Label>
+    label_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
+        label_widget(
+            window,
+            std::move(parent),
+            std::make_shared<label_delegate>(),
+            alignment::middle_right,
+            theme::global->labelStyle,
+            std::forward<Label>(label))
     {
     }
 
-    ~label_widget() {
-    }
 
-    void init() noexcept override {
-        _label_callback = label.subscribe([this](auto...) {
-            _request_reconstrain = true;
-        });
-    }
+    void init() noexcept override;
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+    [[nodiscard]] tt::label label() const noexcept;
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
-            _label_cell = stencil::make_unique(_alignment, *label, theme::global->labelStyle);
-            _minimum_size = _label_cell->minimum_size();
-            _preferred_size = _label_cell->preferred_size();
-            _maximum_size = _label_cell->maximum_size();
-            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-            return true;
-        } else {
-            return false;
-        }
-    }
+    void set_label(observable<tt::label> label) noexcept;
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+    void set_label(l10n label) noexcept;
 
-        need_layout |= std::exchange(this->_request_relayout, false);
-        if (need_layout) {
-            _label_cell->set_layout_parameters(rectangle(), this->base_line());
-        }
-        super::update_layout(displayTimePoint, need_layout);
-    }
+    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
 
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        if (overlaps(context, _clipping_rectangle)) {
-            tt_stencil_draw(_label_cell, context, this->label_color());
-        }
-
-        super::draw(std::move(context), display_time_point);
-    }
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
 
 private:
-    typename decltype(label)::callback_ptr_type _label_callback;
+    float _icon_size;
+    float _inner_margin;
 
-    std::unique_ptr<label_stencil> _label_cell;
+    std::shared_ptr<icon_widget> _icon_widget;
+    std::shared_ptr<text_widget> _text_widget;
+    text_style _text_style;
     alignment _alignment;
 };
 
-}
+} // namespace tt

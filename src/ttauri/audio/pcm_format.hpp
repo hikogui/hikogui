@@ -1,19 +1,16 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "stencil.hpp"
-
 namespace tt {
 
-class image_stencil: public stencil {
-public:
-    using super = stencil;
-
-    image_stencil(alignment alignment) : super(alignment) {}
-
+enum class pcm_format {
+    int16,
+    int20,
+    int24,
+    float32
 };
 
 }

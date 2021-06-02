@@ -11,7 +11,6 @@ add_subdirectory(GUI)
 add_subdirectory(random)
 add_subdirectory(rapid)
 add_subdirectory(skeleton)
-add_subdirectory(stencils)
 add_subdirectory(text)
 add_subdirectory(widgets)
 
@@ -23,6 +22,7 @@ target_sources(ttauri PRIVATE
     detail/observable_unary.hpp
     detail/observable_value.hpp
     algorithm.hpp
+    animator.hpp
     application.cpp
     application.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/application_macos.hpp>

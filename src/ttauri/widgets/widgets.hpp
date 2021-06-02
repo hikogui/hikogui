@@ -4,23 +4,14 @@
 
 #pragma once
 
-#include "abstract_bool_toggle_button_widget.hpp"
-#include "abstract_button_widget.hpp"
-#include "abstract_toggle_button_widget.hpp"
-#include "boolean_checkbox_widget.hpp"
 #include "button_widget.hpp"
-#include "checkbox_widget.hpp"
 #include "label_widget.hpp"
 #include "text_field_widget.hpp"
 #include "scroll_view_widget.hpp"
 #include "selection_widget.hpp"
-#include "toggle_widget.hpp"
 #include "overlay_view_widget.hpp"
-#include "radio_button_widget.hpp"
 #include "tab_view_widget.hpp"
 #include "toolbar_widget.hpp"
-#include "menu_item_widget.hpp"
-#include "toolbar_tab_button_widget.hpp"
 #include "window_widget.hpp"
 #include "row_column_layout_widget.hpp"
 #include "grid_layout_widget.hpp"
@@ -45,7 +36,7 @@ std::shared_ptr<T> gui_window::make_widget(size_t column_nr, size_t row_nr, Args
 template<typename T, typename... Args>
 std::shared_ptr<T> gui_window::make_widget(std::string_view address, Args &&...args)
 {
-    ttlet [column_nr, row_nr] = parse_absolute_spread_sheet_address(address);
+    ttlet [column_nr, row_nr] = parse_spread_sheet_address(address);
     return make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
 }
 

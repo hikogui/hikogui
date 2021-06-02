@@ -25,7 +25,7 @@ public:
     template<typename Content, typename Aperture, typename Offset>
     scroll_bar_widget(
         gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
+        std::shared_ptr<widget> parent,
         Content &&content,
         Aperture &&aperture,
         Offset &&offset) noexcept :
@@ -149,7 +149,7 @@ public:
      * When the content is the same size as the scroll-view then
      * the scrollbar becomes invisible.
      */
-    [[nodiscard]] bool visible() const noexcept
+    [[nodiscard]] bool visible() const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         return hidden_content() >= 1.0f;

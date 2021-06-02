@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "../label.hpp"
 
 namespace tt {
@@ -12,11 +12,11 @@ namespace tt {
 class toolbar_widget;
 class grid_layout_widget;
 
-class window_widget final : public abstract_container_widget {
+class window_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
-    window_widget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept;
+    window_widget(gui_window &window, std::shared_ptr<widget_delegate> delegate, label title) noexcept;
     ~window_widget();
 
     void init() noexcept override;
@@ -56,14 +56,9 @@ public:
         return _toolbar;
     }
 
-    [[nodiscard]] bool is_toolbar() const noexcept override
-    {
-        return false;
-    }
-
 private:
     label title;
-    std::weak_ptr<grid_layout_delegate> _content_delegate;
+    std::shared_ptr<widget_delegate> _content_delegate;
     std::shared_ptr<grid_layout_widget> _content;
     std::shared_ptr<toolbar_widget> _toolbar;
 

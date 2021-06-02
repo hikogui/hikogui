@@ -4,21 +4,21 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "grid_layout_widget.hpp"
 
 namespace tt {
 
 template<typename T>
-class tab_view_widget final : public abstract_container_widget {
+class tab_view_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
     using value_type = T;
 
     observable<value_type> value = 0;
 
     template<typename Value>
-    tab_view_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, Value &&value) noexcept :
+    tab_view_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
         super(window, parent), value(std::forward<Value>(value))
     {
         if (parent) {
@@ -74,11 +74,12 @@ public:
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
             child.set_layout_parameters_from_parent(rectangle());
+            request_redraw();
         }
         child.update_layout(display_time_point, need_layout);
 
-        // THIS DOES NOT CALL THROUGH THE ABSTRACT_CONTAINER_WIDGET AND SKIPS DIRECTLY TO WIDGET.
-        widget::update_layout(display_time_point, need_layout);
+        // THIS DOES NOT CALL: super::update_layout.
+        // The non visible children have not received layout-parameters.
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

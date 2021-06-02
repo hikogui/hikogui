@@ -10,6 +10,7 @@
 #include "notifier.hpp"
 #include "detail/observable_value.hpp"
 #include "detail/observable_not.hpp"
+#include "algorithm.hpp"
 #include <memory>
 #include <functional>
 #include <algorithm>
@@ -23,8 +24,6 @@ public:
     using notifier_type = notifier<void()>;
     using callback_type = typename notifier_type::callback_type;
     using callback_ptr_type = typename notifier_type::callback_ptr_type;
-    using time_point = hires_utc_clock::time_point;
-    using duration = hires_utc_clock::duration;
 
     observable(observable const &other) noexcept : pimpl(other.pimpl)
     {
@@ -79,46 +78,6 @@ public:
         return *this;
     }
 
-    [[nodiscard]] value_type previous_value() const noexcept
-    {
-        tt_axiom(pimpl);
-        return pimpl->previous_value();
-    }
-
-    /** Time when the value was modified last.
-     */
-    [[nodiscard]] time_point time_when_last_modified() const noexcept
-    {
-        tt_axiom(pimpl);
-        return pimpl->time_when_last_modified();
-    }
-
-    /** Duration since the value was last modified.
-     */
-    [[nodiscard]] duration duration_since_last_modified() const noexcept
-    {
-        tt_axiom(pimpl);
-        return pimpl->duration_since_last_modified();
-    }
-
-    /** The relative time since the start of the animation.
-     * The relative time since the start of the animation according to the duration of the animation.
-     *
-     * @param animation_duration The duration of the full animation.
-     * @return The relative animation progress between 0.0 and 1.0.
-     */
-    [[nodiscard]] float animation_progress(duration animation_duration) const noexcept
-    {
-        tt_axiom(pimpl);
-        return pimpl->animation_progress(animation_duration);
-    }
-
-    [[nodiscard]] bool animating(duration animation_duration) const noexcept
-    {
-        tt_axiom(pimpl);
-        return pimpl->animation_progress(animation_duration) < 1.0f;
-    }
-
     [[nodiscard]] value_type load() const noexcept
     {
         tt_axiom(pimpl);
@@ -129,12 +88,6 @@ public:
     {
         tt_axiom(pimpl);
         return pimpl->load();
-    }
-
-    [[nodiscard]] value_type load(duration animation_duration) const noexcept
-    {
-        tt_axiom(pimpl);
-        return pimpl->load(animation_duration);
     }
 
     bool store(value_type const &new_value) noexcept
@@ -197,14 +150,6 @@ public:
     [[nodiscard]] friend float to_float(observable const &rhs) noexcept
     {
         return narrow_cast<float>(rhs.load());
-    }
-
-    [[nodiscard]] friend float to_float(observable const &rhs, duration animation_duration) noexcept
-    {
-        ttlet previous_value = narrow_cast<float>(rhs.previous_value());
-        ttlet current_value = narrow_cast<float>(rhs.load());
-        ttlet animation_progress = rhs.animation_progress(animation_duration);
-        return mix(animation_progress, previous_value, current_value);
     }
 
     [[nodiscard]] friend std::string to_string(observable const &rhs) noexcept

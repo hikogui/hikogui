@@ -15,12 +15,11 @@ public:
         observable_unary<bool,OT>(operand) {}
 
     virtual bool load() const noexcept override {
-        ttlet lock = std::scoped_lock(observable_unary<bool,OT>::_mutex);
-        return !this->_operand_cache;
+        return not this->_operand.load();
     }
 
     virtual bool store(bool const &new_value) noexcept override {
-        return this->_operand->store(static_cast<OT>(!new_value));
+        return this->_operand->store(static_cast<OT>(not new_value));
     }
 };
 
