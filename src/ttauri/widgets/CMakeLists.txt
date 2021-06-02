@@ -3,7 +3,6 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(ttauri PRIVATE
-    abstract_button_widget.hpp
     audio_device_configuration_controller.cpp
     audio_device_configuration_controller.hpp
     button_delegate.hpp
