@@ -144,6 +144,11 @@ public:
      */
     virtual void set_visible(observable<bool> rhs) noexcept;
 
+    /** Set the widget visible or invisible.
+     * This call is forwarded to `widget_delegate::set_visible()`.
+     */
+    virtual void set_visible(bool rhs) noexcept;
+
     [[nodiscard]] bool lineage_matches_id(std::string_view rhs) const noexcept
     {
         auto current = weak_from_this();
@@ -650,6 +655,36 @@ public:
     [[nodiscard]] widget const &back() const noexcept
     {
         return *_children.back();
+    }
+
+    [[nodiscard]] auto begin() noexcept
+    {
+        return _children.begin();
+    }
+
+    [[nodiscard]] auto begin() const noexcept
+    {
+        return _children.begin();
+    }
+
+    [[nodiscard]] auto cbegin() const noexcept
+    {
+        return _children.cbegin();
+    }
+
+    [[nodiscard]] auto end() noexcept
+    {
+        return _children.end();
+    }
+
+    [[nodiscard]] auto end() const noexcept
+    {
+        return _children.end();
+    }
+
+    [[nodiscard]] auto cend() const noexcept
+    {
+        return _children.cend();
     }
 
 protected:

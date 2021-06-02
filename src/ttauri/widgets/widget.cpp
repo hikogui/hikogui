@@ -75,6 +75,12 @@ void widget::set_visible(observable<bool> rhs) noexcept
     return _delegate->set_visible(*this, std::move(rhs));
 }
 
+void widget::set_visible(bool rhs) noexcept
+{
+    tt_axiom(gui_system_mutex.recurse_lock_count());
+    return _delegate->set_visible(*this, rhs);
+}
+
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (enabled()) {
@@ -195,7 +201,9 @@ void widget::draw(draw_context context, hires_utc_clock::time_point display_time
     for (ttlet &child : _children) {
         tt_axiom(child);
         tt_axiom(&child->parent() == this);
-        r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+        if (child->visible()) {
+            r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+        }
     }
     return r;
 }

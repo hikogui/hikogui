@@ -38,7 +38,19 @@ public:
         alignment alignment,
         text_style text_style,
         Label &&label) noexcept :
-        super(window, std::move(parent), std::move(delegate)), _alignment(alignment), _text_style(text_style)
+        label_widget(window, std::move(parent), std::move(delegate), alignment, text_style)
+    {
+        set_label(std::forward<Label>(label));
+    }
+
+    template<typename Label>
+    label_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        alignment alignment,
+        text_style text_style,
+        Label &&label) noexcept :
+        label_widget(window, std::move(parent), std::make_shared<label_delegate>(), alignment, text_style)
     {
         set_label(std::forward<Label>(label));
     }
