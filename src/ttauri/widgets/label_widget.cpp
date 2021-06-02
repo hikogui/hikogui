@@ -76,7 +76,7 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
                 // If the icon is above or below the text, add the icon height and the
                 // minimum width is the maximum of the icon and text width.
                 size.width() = std::max(size.width(), _icon_size);
-                size.height() += _inner_margin + _icon_size;
+                size.height() += _icon_size;
 
             } else {
                 // The text is written across the icon. Take the maximum width and height
@@ -112,12 +112,12 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
             text_rect = {0.0f, 0.0f, text_width, height()};
 
         } else if (_alignment == vertical_alignment::top) {
-            ttlet text_height = height() - _icon_size - _inner_margin;
-            text_rect = {0.0f, _icon_size + _inner_margin, width(), text_height};
+            ttlet text_height = height() - _icon_size;
+            text_rect = {0.0f, 0.0f, width(), text_height};
 
         } else if (_alignment == vertical_alignment::bottom) {
-            ttlet text_height = height() - _icon_size - _inner_margin;
-            text_rect = {0.0f, 0.0f, width(), text_height};
+            ttlet text_height = height() - _icon_size;
+            text_rect = {0.0f, _icon_size, width(), text_height};
 
         } else {
             text_rect = rectangle();

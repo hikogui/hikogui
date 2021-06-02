@@ -59,20 +59,21 @@ public:
 
     void init() noexcept override
     {
-        auto alignment = tt::alignment{};
+        auto label_alignment = tt::alignment{};
         switch (button_shape) {
         case button_shape::toolbar: [[fallthrough]];
-        case button_shape::menu: alignment = alignment::middle_left; break;
-        case button_shape::label: alignment = alignment::middle_center; break;
+        case button_shape::menu: label_alignment = alignment::middle_left; break;
+        case button_shape::toolbar_tab: [[fallthrough]];
+        case button_shape::label: label_alignment = alignment::top_center; break;
         case button_shape::radio: [[fallthrough]];
         case button_shape::checkbox: [[fallthrough]];
-        case button_shape::toggle: alignment = alignment::top_left; break;
+        case button_shape::toggle: label_alignment = alignment::top_left; break;
         default: tt_no_default();
         }
 
-        _on_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), alignment);
-        _off_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), alignment);
-        _other_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), alignment);
+        _on_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), label_alignment);
+        _off_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), label_alignment);
+        _other_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), label_alignment);
 
         _on_label_widget->id = "on_label";
         _off_label_widget->id = "off_label";
@@ -198,6 +199,7 @@ public:
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             switch (button_shape) {
             case button_shape::toolbar: [[fallthrough]];
+            case button_shape::toolbar_tab: [[fallthrough]];
             case button_shape::label:
                 _button_size = {};
                 _short_cut_size = {};
@@ -223,6 +225,10 @@ public:
             case button_shape::label:
                 // Around the label extra margin.
                 extra_size = theme::global->margin2Dx2;
+                break;
+            case button_shape::toolbar_tab:
+                // Margin left, right and top.
+                extra_size = extent2{theme::global->margin * 2.0f, theme::global->margin};
                 break;
             case button_shape::checkbox: [[fallthrough]];
             case button_shape::radio: [[fallthrough]];
@@ -281,9 +287,11 @@ public:
 
             _short_cut_rectangle = align(this->rectangle(), _short_cut_size, alignment::middle_right);
 
+            ttlet top_margin = button_shape == button_shape::toolbar_tab ? theme::global->margin : 0.0f;
+
             ttlet label_p0 = _button_rectangle ? point2{_button_rectangle.right() + inner_margin, 0.0f} : point2{0.0f, 0.0f};
-            ttlet label_p3 =
-                _short_cut_rectangle ? point2{_short_cut_rectangle.left() - inner_margin, height()} : point2{width(), height()};
+            ttlet label_p3 = _short_cut_rectangle ? point2{_short_cut_rectangle.left() - inner_margin, height() - top_margin} :
+                                                    point2{width(), height() - top_margin};
 
             ttlet label_rectangle = aarectangle{label_p0, label_p3};
 
@@ -319,6 +327,10 @@ public:
             switch (button_shape) {
             case button_shape::toolbar: draw_toolbar_button(context); break;
             case button_shape::label: draw_label_button(context); break;
+            case button_shape::toolbar_tab:
+                draw_toolbar_tab_button(context);
+                draw_toolbar_tab_focus_line(context);
+                break;
             case button_shape::menu:
                 draw_toolbar_button(context);
                 draw_check_mark(context, false);
@@ -340,6 +352,18 @@ public:
         }
 
         super::draw(std::move(context), display_time_point);
+    }
+
+    void request_redraw() const noexcept override
+    {
+        if (button_shape == button_shape::toolbar_tab) {
+            // A toolbar tab button draws a focus line across the whole toolbar
+            // which is beyond it's own clipping rectangle. The parent is the toolbar
+            // so it will include everything that needs to be redrawn.
+            this->parent().request_redraw();
+        } else {
+            super::request_redraw();
+        }
     }
 
     [[nodiscard]] color background_color() const noexcept override
@@ -377,6 +401,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
         switch (button_shape) {
         case button_shape::menu: return is_menu(group) and this->enabled();
+        case button_shape::toolbar_tab: [[fallthrough]];
         case button_shape::toolbar: return is_toolbar(group) and this->enabled();
         default: return is_normal(group) and enabled();
         }
@@ -403,14 +428,16 @@ public:
                 break;
 
             case command::gui_toolbar_next:
-                if (button_shape == button_shape::toolbar and !this->is_last(keyboard_focus_group::toolbar)) {
+                if ((button_shape == button_shape::toolbar or button_shape == button_shape::toolbar_tab) and
+                    !this->is_last(keyboard_focus_group::toolbar)) {
                     this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
                     return true;
                 }
                 break;
 
             case command::gui_toolbar_prev:
-                if (button_shape == button_shape::toolbar and !this->is_first(keyboard_focus_group::toolbar)) {
+                if ((button_shape == button_shape::toolbar or button_shape == button_shape::toolbar_tab) and
+                    !this->is_first(keyboard_focus_group::toolbar)) {
                     this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
                     return true;
                 }
@@ -484,6 +511,56 @@ private:
 
         ttlet foreground_color_ = this->_focus && this->window.active ? this->focus_color() : color::transparent();
         context.draw_box_with_border_inside(this->rectangle(), this->background_color(), foreground_color_, corner_shapes{0.0f});
+    }
+
+    void draw_toolbar_tab_focus_line(draw_context context) noexcept
+    {
+        if (this->_focus && this->window.active && this->state() == tt::button_state::on) {
+            ttlet &parent_ = this->parent();
+            ttlet parent_rectangle = aarectangle{this->_parent_to_local * parent_.rectangle()};
+
+            // Create a line, on the bottom of the toolbar over the full width.
+            ttlet line_rectangle = aarectangle{
+                parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global->borderWidth};
+
+            context.set_clipping_rectangle(line_rectangle);
+
+            if (overlaps(context, line_rectangle)) {
+                // Draw the line above every other direct child of the toolbar, and between
+                // the selected-tab (0.6) and unselected-tabs (0.8).
+                context.draw_filled_quad(translate_z(0.7f) * line_rectangle, this->focus_color());
+            }
+        }
+    }
+
+    void draw_toolbar_tab_button(draw_context context) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        // Override the clipping rectangle to match the toolbar rectangle exactly
+        // so that the bottom border of the tab button is not drawn.
+        context.set_clipping_rectangle(aarectangle{this->_parent_to_local * this->parent().clipping_rectangle()});
+
+        ttlet offset = theme::global->margin + theme::global->borderWidth;
+        ttlet outline_rectangle = aarectangle{
+            this->rectangle().left(),
+            this->rectangle().bottom() - offset,
+            this->rectangle().width(),
+            this->rectangle().height() + offset};
+
+        // The focus line will be placed at 0.7.
+        ttlet button_z = (this->_focus && this->window.active) ? translate_z(0.8f) : translate_z(0.6f);
+
+        auto button_color = (this->_hover || this->state() == button_state::on) ?
+            theme::global->fillColor(this->_semantic_layer - 1) :
+            theme::global->fillColor(this->_semantic_layer);
+
+        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
+        context.draw_box_with_border_inside(
+            button_z * outline_rectangle,
+            button_color,
+            (this->_focus && this->window.active) ? this->focus_color() : button_color,
+            corner_shapes);
     }
 
     void draw_label_button(draw_context const &context) noexcept
@@ -588,5 +665,8 @@ using toolbar_button_widget = button_widget<T, button_shape::toolbar, button_typ
 
 template<typename T>
 using menu_button_widget = button_widget<T, button_shape::menu, button_type::momentary>;
+
+template<typename T>
+using toolbar_tab_button_widget = button_widget<T, button_shape::toolbar_tab, button_type::radio>;
 
 } // namespace tt
