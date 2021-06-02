@@ -36,11 +36,14 @@ tt::icon icon_widget::icon() const noexcept
 
             ttlet &pixmap = get<pixel_map<sfloat_rgba16>>(icon_);
 
-            auto *device = narrow_cast<gui_device_vulkan *>(window.surface->device());
+            auto *device = window.surface ? narrow_cast<gui_device_vulkan *>(window.surface->device()) : nullptr;
             if (device == nullptr) {
+                // The window does not have a surface or device assigned.
+                // We need a device to upload the image as texture map, so retry until it does.
                 _pixmap_hash = 0;
                 _pixmap_backing = {};
                 _icon_bounding_box = {};
+                _request_reconstrain = true;
 
             } else if (pixmap.hash() != _pixmap_hash) {
                 _pixmap_hash = pixmap.hash();
@@ -79,7 +82,7 @@ tt::icon icon_widget::icon() const noexcept
 
     need_layout |= std::exchange(this->_request_relayout, false);
     if (need_layout) {
-        if (_icon_type == icon_type::no) {
+        if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};
         } else {
             _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), _alignment);

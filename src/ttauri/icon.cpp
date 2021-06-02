@@ -3,8 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "icon.hpp"
-#include "stencils/pixel_map_stencil.hpp"
-#include "stencils/glyph_stencil.hpp"
 #include "codec/png.hpp"
 
 namespace tt {

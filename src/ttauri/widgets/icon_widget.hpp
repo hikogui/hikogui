@@ -29,6 +29,27 @@ public:
     {
     }
 
+    icon_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        std::shared_ptr<label_delegate> delegate,
+        alignment alignment,
+        tt::icon icon) noexcept :
+        icon_widget(window, std::move(parent), std::move(delegate), alignment)
+    {
+        this->delegate<label_delegate>().set_label(*this, label{std::move(icon)});
+    }
+
+    icon_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        alignment alignment,
+        tt::icon icon) noexcept :
+        icon_widget(window, std::move(parent), std::make_shared<label_delegate>(), alignment, std::move(icon))
+    {
+    }
+
+
     ~icon_widget();
 
     tt::icon icon() const noexcept;

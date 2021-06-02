@@ -11,7 +11,6 @@ add_subdirectory(GUI)
 add_subdirectory(random)
 add_subdirectory(rapid)
 add_subdirectory(skeleton)
-add_subdirectory(stencils)
 add_subdirectory(text)
 add_subdirectory(widgets)
 
