@@ -30,11 +30,11 @@ void main_window_controller::init(tt::gui_window& self) noexcept
     });
 
     auto column = self.make_widget<column_layout_widget>("A1");
-    auto button1 = column->make_widget<label_button_widget<bool>>();
+    auto button1 = column->make_widget<button_widget<bool>>();
     button1->set_label(l10n("Hello \u4e16\u754c"));
-    auto button2 = column->make_widget<label_button_widget<bool>>();
+    auto button2 = column->make_widget<button_widget<bool>>();
     button2->set_label(l10n("Hello world"));
-    auto button3 = column->make_widget<label_button_widget<bool>>();
+    auto button3 = column->make_widget<button_widget<bool>>();
     button3->set_label(l10n("Hello earthlings"));
 }
 

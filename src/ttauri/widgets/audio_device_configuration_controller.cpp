@@ -5,6 +5,7 @@
 #include "audio_device_configuration_controller.hpp"
 #include "grid_layout_widget.hpp"
 #include "label_widget.hpp"
+#include "checkbox_widget.hpp"
 
 namespace tt {
 
@@ -22,7 +23,7 @@ audio_device_configuration_controller::audio_device_configuration_controller(
         tt_log_fatal("audio_device_configuration_controller requires five rows on the grid, given {}", address_range);
     }
 
-    _device_config_button = grid.make_widget<label_button_widget<bool>>(column_nr + 1, row_nr);
+    _device_config_button = grid.make_widget<button_widget<bool>>(column_nr + 1, row_nr);
     _device_config_button->set_label(l10n("Sound Control Panel"));
     ++row_nr;
 

@@ -5,6 +5,13 @@
 #pragma once
 
 #include "button_widget.hpp"
+#include "checkbox_widget.hpp"
+#include "radio_button_widget.hpp"
+#include "toggle_widget.hpp"
+#include "menu_button_widget.hpp"
+#include "toolbar_button_widget.hpp"
+#include "toolbar_tab_button_widget.hpp"
+#include "abstract_button_widget.hpp"
 #include "label_widget.hpp"
 #include "text_field_widget.hpp"
 #include "scroll_view_widget.hpp"

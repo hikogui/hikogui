@@ -10,6 +10,7 @@
 #include "scroll_view_widget.hpp"
 #include "row_column_layout_widget.hpp"
 #include "button_widget.hpp"
+#include "menu_button_widget.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../text/font_book.hpp"
 #include "../text/elusive_icon.hpp"
