@@ -9,7 +9,6 @@
 #include "overlay_view_widget.hpp"
 #include "scroll_view_widget.hpp"
 #include "row_column_layout_widget.hpp"
-#include "button_widget.hpp"
 #include "menu_button_widget.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../text/font_book.hpp"
@@ -56,13 +55,13 @@ public:
 
     void init() noexcept override
     {
-        _current_label_widget = make_widget<label_widget>(alignment::middle_left, theme::global->labelStyle, l10n("<current>"));
-        _current_label_widget->set_visible(false);
+        _current_label_widget = make_widget<label_widget>(l10n("<current>"), alignment::middle_left, theme::global->labelStyle);
+        _current_label_widget->visible = false;
         _unknown_label_widget =
-            make_widget<label_widget>(alignment::middle_left, theme::global->placeholderLabelStyle, unknown_label);
+            make_widget<label_widget>(unknown_label, alignment::middle_left, theme::global->placeholderLabelStyle);
 
         _overlay_widget = make_widget<overlay_view_widget>();
-        _overlay_widget->set_visible(false);
+        _overlay_widget->visible = false;
         _scroll_widget = _overlay_widget->make_widget<vertical_scroll_view_widget<>>();
         _column_widget = _scroll_widget->make_widget<column_layout_widget>();
 
@@ -70,15 +69,23 @@ public:
         update_labels();
 
         _value_callback = this->value.subscribe([this](auto...) {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+
             update_labels();
             _request_reconstrain = true;
         });
+
         _option_list_callback = this->option_list.subscribe([this](auto...) {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+
             repopulate_options();
             update_labels();
             _request_reconstrain = true;
         });
+
         _unknown_label_callback = this->unknown_label.subscribe([this](auto...) {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+
             _request_reconstrain = true;
         });
     }
@@ -88,7 +95,6 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         auto updated = super::update_constraints(display_time_point, need_reconstrain);
-
         if (updated) {
             ttlet extra_size = extent2{theme::global->smallSize + theme::global->margin * 2.0f, theme::global->margin * 2.0f};
 
@@ -96,11 +102,16 @@ public:
             _preferred_size = _unknown_label_widget->preferred_size() + extra_size;
             _maximum_size = _unknown_label_widget->maximum_size() + extra_size;
 
-            for (ttlet &child : *_column_widget) {
+            for (ttlet &child : _menu_button_widgets) {
                 _minimum_size = max(_minimum_size, child->minimum_size());
                 _preferred_size = max(_preferred_size, child->preferred_size());
                 _maximum_size = max(_maximum_size, child->maximum_size());
             }
+
+            _minimum_size.width() = std::max(_minimum_size.width(), _overlay_widget->minimum_size().width() + extra_size.width());
+            _preferred_size.width() =
+                std::max(_preferred_size.width(), _overlay_widget->preferred_size().width() + extra_size.width());
+            _maximum_size.width() = std::max(_maximum_size.width(), _overlay_widget->maximum_size().width() + extra_size.width());
 
             tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
@@ -179,7 +190,7 @@ public:
 
         if (event.cause.leftButton) {
             handled = true;
-            if (enabled()) {
+            if (enabled) {
                 if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
                     handle_event(command::gui_activate);
                 }
@@ -190,10 +201,10 @@ public:
 
     bool handle_event(command command) noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         _request_relayout = true;
 
-        if (enabled()) {
+        if (enabled) {
             switch (command) {
                 using enum tt::command;
             case gui_activate:
@@ -224,7 +235,7 @@ public:
 
         auto r = super::hitbox_test(position);
         if (_visible_rectangle.contains(position)) {
-            r = std::max(r, hit_box{weak_from_this(), _draw_layer, enabled() ? hit_box::Type::Button : hit_box::Type::Default});
+            r = std::max(r, hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::Button : hit_box::Type::Default});
         }
 
         return r;
@@ -233,12 +244,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_normal(group) && enabled();
+        return is_normal(group) and enabled;
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (enabled() && _selecting) {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        if (enabled and _selecting) {
             return theme::global->accentColor;
         } else {
             return super::focus_color();
@@ -264,11 +277,13 @@ private:
     std::shared_ptr<vertical_scroll_view_widget<>> _scroll_widget;
     std::shared_ptr<column_layout_widget> _column_widget;
 
-    std::vector<std::shared_ptr<menu_button_widget<value_type>>> _menu_button_widgets;
-    std::vector<typename menu_button_widget<value_type>::callback_ptr_type> _menu_button_callbacks;
+    std::vector<std::shared_ptr<menu_button_widget>> _menu_button_widgets;
+    std::vector<typename menu_button_widget::callback_ptr_type> _menu_button_callbacks;
 
     [[nodiscard]] ssize_t get_value_as_index() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         ssize_t index = 0;
         for (ttlet & [ tag, unknown_label_text ] : *option_list) {
             if (value == tag) {
@@ -280,8 +295,10 @@ private:
         return -1;
     }
 
-    [[nodiscard]] std::shared_ptr<menu_button_widget<value_type>> get_first_menu_button() const noexcept
+    [[nodiscard]] std::shared_ptr<menu_button_widget> get_first_menu_button() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         if (std::ssize(_menu_button_widgets) != 0) {
             return _menu_button_widgets.front();
         } else {
@@ -289,8 +306,10 @@ private:
         }
     }
 
-    [[nodiscard]] std::shared_ptr<menu_button_widget<value_type>> get_selected_menu_button() const noexcept
+    [[nodiscard]] std::shared_ptr<menu_button_widget> get_selected_menu_button() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         ttlet i = get_value_as_index();
         if (i >= 0 && i < std::ssize(_menu_button_widgets)) {
             return _menu_button_widgets[i];
@@ -301,15 +320,17 @@ private:
 
     void update_labels() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
         ttlet index = get_value_as_index();
         if (index == -1) {
-            _unknown_label_widget->set_visible(true);
-            _current_label_widget->set_visible(false);
+            _unknown_label_widget->visible = true;
+            _current_label_widget->visible = false;
 
         } else {
-            _unknown_label_widget->set_visible(false);
-            _current_label_widget->set_label((*option_list)[index].second);
-            _current_label_widget->set_visible(true);
+            _unknown_label_widget->visible = false;
+            _current_label_widget->label = (*option_list)[index].second;
+            _current_label_widget->visible = true;
         }
     }
 
@@ -318,7 +339,7 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         _selecting = true;
-        _overlay_widget->set_visible(true);
+        _overlay_widget->visible = true;
         if (auto selected_menu_button = get_selected_menu_button()) {
             this->window.update_keyboard_target(selected_menu_button, keyboard_focus_group::menu);
 
@@ -333,7 +354,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         _selecting = false;
-        _overlay_widget->set_visible(false);
+        _overlay_widget->visible = false;
         request_redraw();
     }
 
@@ -341,26 +362,24 @@ private:
      */
     void repopulate_options() noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         auto option_list_ = *option_list;
 
         // If any of the options has a an icon, all of the options should show the icon.
         auto show_icon = false;
         for (ttlet & [ tag, label ] : option_list_) {
-            show_icon |= label.has_icon();
+            show_icon |= static_cast<bool>(label.icon);
         }
 
         _column_widget->clear();
         _menu_button_widgets.clear();
         _menu_button_callbacks.clear();
         for (ttlet & [ tag, text ] : option_list_) {
-            auto menu_button = _column_widget->make_widget<menu_button_widget<value_type>>(this->value);
-            menu_button->set_on_value(tag);
-            // menu_button->set_show_check_mark(true);
-            // menu_button->set_show_icon(show_icon);
-            menu_button->set_label(text);
+            auto menu_button = _column_widget->make_widget<menu_button_widget>(text, this->value, tag);
 
             _menu_button_callbacks.push_back(menu_button->subscribe([this, tag] {
+                ttlet lock = std::scoped_lock(gui_system_mutex);
+
                 this->value = tag;
                 this->stop_selecting();
             }));

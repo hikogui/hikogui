@@ -14,6 +14,7 @@
 #include <memory>
 #include <functional>
 #include <algorithm>
+#include <type_traits>
 
 namespace tt {
 
@@ -66,6 +67,13 @@ public:
     {
     }
 
+    /** Is the internal value true.
+     */
+    explicit operator bool () const noexcept
+    {
+        return static_cast<bool>(load());
+    }
+
     observable &operator=(value_type const &value) noexcept
     {
         store(value);
@@ -96,15 +104,15 @@ public:
         return pimpl->store(new_value);
     }
 
-    template<typename Callback>
+    template<typename Callback> requires(std::is_invocable_v<Callback>)
     [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
         return notifier.subscribe(std::forward<Callback>(callback));
     }
 
-    void subscribe_ptr(callback_ptr_type const &callback) noexcept
+    callback_ptr_type subscribe(callback_ptr_type const &callback) noexcept
     {
-        return notifier.subscribe_ptr(callback);
+        return notifier.subscribe(callback);
     }
 
     void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
@@ -195,5 +203,17 @@ private:
         return *this;
     }
 };
+
+template<typename T>
+struct is_observable : public std::false_type {};
+
+template<typename V>
+struct is_observable<observable<V>> : public std::true_type {};
+
+template<typename T>
+constexpr bool is_observable_v = is_observable<T>::value;
+
+static_assert(not is_observable_v<int>);
+static_assert(is_observable_v<observable<int>>);
 
 } // namespace tt

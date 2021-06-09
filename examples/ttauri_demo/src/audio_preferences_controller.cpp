@@ -7,7 +7,7 @@
 
 namespace demo {
 
-void audio_preferences_controller::init(tt::widget &_self) noexcept
+void audio_preferences_controller::init(tt::grid_layout_widget &_self) noexcept
 {
     using namespace tt;
 

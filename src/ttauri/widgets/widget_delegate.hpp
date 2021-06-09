@@ -26,11 +26,8 @@ public:
     widget_delegate &operator=(widget_delegate &&) = delete;
     virtual ~widget_delegate() = default;
 
-    widget_delegate() noexcept : _enabled(true), _visible(true)
+    widget_delegate() noexcept
     {
-        _enabled_callback = _enabled.subscribe([this](auto...) {
-            _notifier(widget_update_level::redraw);
-        });
     }
 
     template<typename Func>
@@ -42,42 +39,8 @@ public:
     virtual void init(widget &self) noexcept {}
     virtual void deinit(widget &self) noexcept {}
 
-    virtual bool enabled(widget const &self) const noexcept
-    {
-        return *_enabled;
-    }
-
-    virtual void set_enabled(widget &self, observable<bool> rhs) noexcept
-    {
-        _enabled = std::move(rhs);
-    }
-
-    virtual void set_enabled(widget &self, bool rhs) noexcept
-    {
-        _enabled = rhs;
-    }
-
-    virtual bool visible(widget const &self) const noexcept
-    {
-        return *_visible;
-    }
-
-    virtual void set_visible(widget &self, observable<bool> rhs) noexcept
-    {
-        _visible = std::move(rhs);
-    }
-
-    virtual void set_visible(widget &self, bool rhs) noexcept
-    {
-        _visible = rhs;
-    }
-
 protected:
     notifier_type _notifier;
-
-    observable<bool> _enabled;
-    observable<bool> _visible;
-    decltype(_enabled)::callback_ptr_type _enabled_callback;
 };
 
 } // namespace tt

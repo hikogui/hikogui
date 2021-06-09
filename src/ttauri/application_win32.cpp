@@ -22,8 +22,6 @@ application_win32::application_win32(
 
 void application_win32::run_from_main_loop(std::function<void()> function)
 {
-    tt_assert(inLoop);
-
     ttlet functionP = new std::function<void()>(std::move(function));
     tt_assert(functionP);
 
@@ -90,8 +88,6 @@ void application_win32::init()
 
 int application_win32::loop()
 {
-    inLoop = true;
-
     // Run the message loop.
     int exit_code = 0;
     MSG msg = {};
@@ -112,7 +108,6 @@ int application_win32::loop()
         DispatchMessage(&msg);
     }
 
-    inLoop = false;
     return exit_code;
 }
 

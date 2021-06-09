@@ -15,7 +15,7 @@ namespace tt {
 
 using namespace std;
 
-window_widget::window_widget(gui_window &window, std::shared_ptr<widget_delegate> delegate, label title) noexcept :
+window_widget::window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate, label title) noexcept :
     widget(window, {}), title(std::move(title)), _content_delegate(std::move(delegate))
 {
 }
@@ -28,7 +28,7 @@ void window_widget::init() noexcept
 
     if constexpr (theme::global->operatingSystem == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-        _toolbar->make_widget<system_menu_widget>(this->title.icon());
+        _toolbar->make_widget<system_menu_widget>(this->title.icon);
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
     } else if constexpr (theme::global->operatingSystem == operating_system::macos) {

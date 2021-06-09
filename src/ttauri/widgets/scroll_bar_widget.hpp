@@ -93,7 +93,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_clipping_rectangle) && visible()) {
+        if (overlaps(context, this->_clipping_rectangle) and visible) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -104,7 +104,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (visible() && _visible_rectangle.contains(position) && slider_rectangle.contains(position)) {
+        if (visible and _visible_rectangle.contains(position) and slider_rectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer};
         } else {
             return hit_box{};
@@ -143,16 +143,6 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         return false;
-    }
-
-    /** Is the scrollbar visible.
-     * When the content is the same size as the scroll-view then
-     * the scrollbar becomes invisible.
-     */
-    [[nodiscard]] bool visible() const noexcept override
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return hidden_content() >= 1.0f;
     }
 
     [[nodiscard]] color background_color() const noexcept override

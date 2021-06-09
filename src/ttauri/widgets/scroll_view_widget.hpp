@@ -145,7 +145,7 @@ public:
             auto content_width = *_scroll_content_width;
             auto content_height = *_scroll_content_height;
 
-            if (can_scroll_horizontally && !_horizontal_scroll_bar->visible()) {
+            if (can_scroll_horizontally && !_horizontal_scroll_bar->visible) {
                 ttlet delta_height = horizontal_scroll_bar_rectangle.height();
                 aperture_height += delta_height;
                 aperture_y -= delta_height;
@@ -153,15 +153,15 @@ public:
                 content_y -= delta_height;
             }
 
-            if (can_scroll_vertically && !_vertical_scroll_bar->visible()) {
+            if (can_scroll_vertically && !_vertical_scroll_bar->visible) {
                 ttlet delta_width = vertical_scroll_bar_rectangle.width();
                 aperture_width += delta_width;
                 content_width += delta_width;
             }
 
             if constexpr (controls_window) {
-                ttlet has_horizontal_scroll_bar = can_scroll_horizontally && _horizontal_scroll_bar->visible();
-                ttlet has_vertical_scroll_bar = can_scroll_vertically && _vertical_scroll_bar->visible();
+                ttlet has_horizontal_scroll_bar = can_scroll_horizontally && _horizontal_scroll_bar->visible;
+                ttlet has_vertical_scroll_bar = can_scroll_vertically && _vertical_scroll_bar->visible;
                 window.set_resize_border_priority(true, !has_vertical_scroll_bar, !has_horizontal_scroll_bar, true);
             }
 

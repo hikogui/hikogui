@@ -11,12 +11,13 @@ namespace tt {
 
 class toolbar_widget;
 class grid_layout_widget;
+class grid_layout_delegate;
 
 class window_widget final : public widget {
 public:
     using super = widget;
 
-    window_widget(gui_window &window, std::shared_ptr<widget_delegate> delegate, label title) noexcept;
+    window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate, label title) noexcept;
     ~window_widget();
 
     void init() noexcept override;
@@ -58,7 +59,7 @@ public:
 
 private:
     label title;
-    std::shared_ptr<widget_delegate> _content_delegate;
+    std::shared_ptr<grid_layout_delegate> _content_delegate;
     std::shared_ptr<grid_layout_widget> _content;
     std::shared_ptr<toolbar_widget> _toolbar;
 

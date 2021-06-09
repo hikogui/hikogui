@@ -15,7 +15,7 @@ public:
         observable_unary<bool,OT>(operand) {}
 
     virtual bool load() const noexcept override {
-        return not this->_operand.load();
+        return not this->_operand->load();
     }
 
     virtual bool store(bool const &new_value) noexcept override {

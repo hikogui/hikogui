@@ -5,6 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
+#include "grid_layout_delegate.hpp"
 #include "../geometry/spread_sheet_address.hpp"
 #include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
@@ -15,11 +16,15 @@ namespace tt {
 class grid_layout_widget : public widget {
 public:
     using super = widget;
+    using delegate_type = grid_layout_delegate;
 
     grid_layout_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
-        std::shared_ptr<widget_delegate> delegate = std::make_shared<widget_delegate>()) noexcept;
+        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept;
+
+    void init() noexcept override;
+    void deinit() noexcept override;
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
@@ -76,6 +81,8 @@ private:
 
     flow_layout _rows;
     flow_layout _columns;
+
+    std::shared_ptr<grid_layout_delegate> _delegate;
 
     [[nodiscard]] static std::pair<size_t, size_t> calculate_grid_size(std::vector<cell> const &cells) noexcept;
     [[nodiscard]] static std::tuple<extent2, extent2, extent2>

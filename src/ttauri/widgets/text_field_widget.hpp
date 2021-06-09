@@ -210,7 +210,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
         _request_relayout = true;
 
-        if (enabled()) {
+        if (enabled) {
             switch (command) {
             case command::text_edit_paste:
                 _field.handle_paste(window.get_text_from_clipboard());
@@ -262,7 +262,7 @@ public:
         if (event.cause.leftButton) {
             handled = true;
 
-            if (!enabled()) {
+            if (not *enabled) {
                 return true;
             }
 
@@ -327,7 +327,7 @@ public:
 
         auto handled = super::handle_event(event);
 
-        if (enabled()) {
+        if (enabled) {
             switch (event.type) {
                 using enum keyboard_event::Type;
 
@@ -356,7 +356,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, enabled() ? hit_box::Type::TextEdit : hit_box::Type::Default};
+            return hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::TextEdit : hit_box::Type::Default};
         } else {
             return hit_box{};
         }
@@ -365,12 +365,12 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_normal(group) && enabled();
+        return is_normal(group) and enabled;
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (enabled() && window.active && _error) {
+        if (enabled and window.active and _error) {
             return theme::global->errorLabelStyle.color;
         } else {
             return super::focus_color();

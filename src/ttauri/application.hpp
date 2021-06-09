@@ -53,8 +53,6 @@ public:
     */
     thread_id main_thread_id;
 
-    std::atomic<bool> inLoop;
-
     /**
      * This function will take ownership of the delegate and delete it
      * during destruction.

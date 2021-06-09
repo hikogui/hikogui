@@ -8,12 +8,20 @@ namespace tt {
 
 text_widget::~text_widget() {}
 
+void text_widget::init() noexcept
+{
+    _text_callback = text.subscribe([this]() {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->_request_reconstrain = true;
+    });
+}
+
 [[nodiscard]] bool text_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        _shaped_text = shaped_text{text(), _style, 0.0f, _alignment};
+        _shaped_text = shaped_text{(*text)(), _style, 0.0f, _alignment};
         _minimum_size = _shaped_text.minimum_size();
         _preferred_size = _shaped_text.preferred_size();
         _maximum_size = _shaped_text.maximum_size();
@@ -45,7 +53,7 @@ text_widget::~text_widget() {}
 
     need_layout |= std::exchange(this->_request_relayout, false);
     if (need_layout) {
-        _shaped_text = shaped_text{text(), _style, width(), _alignment};
+        _shaped_text = shaped_text{(*text)(), _style, width(), _alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
     }
     super::update_layout(displayTimePoint, need_layout);

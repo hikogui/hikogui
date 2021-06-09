@@ -103,12 +103,19 @@ public:
      */
     std::string id;
 
+    /** The widget is enabled.
+     * When a widget is disabled it is drawn in grey and will not react to user input.
+     */
+    observable<bool> enabled = true;
+
+    /** The widget is visible.
+     * When a widget is invisible it will not be layout or drawn.
+     */
+    observable<bool> visible = true;
+
     /*! Constructor for creating sub views.
      */
-    widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        std::shared_ptr<widget_delegate> delegate = std::make_shared<widget_delegate>()) noexcept;
+    widget(gui_window &window, std::shared_ptr<widget> parent) noexcept;
 
     virtual ~widget();
     widget(const widget &) = delete;
@@ -124,33 +131,9 @@ public:
      */
     virtual void deinit() noexcept;
 
-    /** Check if this widget is enabled.
-     * This call is forwarded to `widget_delegate::enabled()`.
-     */
-    virtual bool enabled() const noexcept;
-
-    /** Set the widget enabled or disabled.
-     * This call is forwarded to `widget_delegate::set_enabled()`.
-     */
-    virtual void set_enabled(observable<bool> rhs) noexcept;
-
-    /** Check if this widget is visible.
-     * This call is forwarded to `widget_delegate::visible()`.
-     */
-    virtual bool visible() const noexcept;
-
-    /** Set the widget visible or invisible.
-     * This call is forwarded to `widget_delegate::set_visible()`.
-     */
-    virtual void set_visible(observable<bool> rhs) noexcept;
-
-    /** Set the widget visible or invisible.
-     * This call is forwarded to `widget_delegate::set_visible()`.
-     */
-    virtual void set_visible(bool rhs) noexcept;
-
     [[nodiscard]] bool lineage_matches_id(std::string_view rhs) const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         auto current = weak_from_this();
         while (auto current_ = current.lock()) {
             if (current_->id == rhs) {
@@ -391,6 +374,7 @@ public:
      */
     [[nodiscard]] virtual float base_line() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return rectangle().middle();
     }
 
@@ -493,6 +477,7 @@ public:
 
     virtual void request_redraw() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         window.request_redraw(aarectangle{_local_to_window * _clipping_rectangle});
     }
 
@@ -504,6 +489,7 @@ public:
 
     [[nodiscard]] virtual bool handle_event(std::vector<command> const &commands) noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         for (ttlet command : commands) {
             if (handle_event(command)) {
                 return true;
@@ -603,12 +589,13 @@ public:
      * The chain includes the given widget.
      */
     [[nodiscard]] static std::vector<std::shared_ptr<widget>>
-    parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;    
+    parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
 
     /** Remove and deallocate all child widgets.
      */
     void clear() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         _children.clear();
         _request_reconstrain = true;
     }
@@ -618,8 +605,7 @@ public:
      */
     std::shared_ptr<widget> add_widget(std::shared_ptr<widget> widget) noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         tt_axiom(&widget->parent() == this);
         _children.push_back(widget);
         _request_reconstrain = true;
@@ -632,6 +618,7 @@ public:
     template<typename T, typename... Args>
     std::shared_ptr<T> make_widget(Args &&...args)
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
         tmp->init();
         return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
@@ -639,57 +626,65 @@ public:
 
     [[nodiscard]] widget &front() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return *_children.front();
     }
 
     [[nodiscard]] widget const &front() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return *_children.front();
     }
 
     [[nodiscard]] widget &back() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return *_children.back();
     }
 
     [[nodiscard]] widget const &back() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return *_children.back();
     }
 
     [[nodiscard]] auto begin() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _children.begin();
     }
 
     [[nodiscard]] auto begin() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _children.begin();
     }
 
     [[nodiscard]] auto cbegin() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _children.cbegin();
     }
 
     [[nodiscard]] auto end() noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _children.end();
     }
 
     [[nodiscard]] auto end() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _children.end();
     }
 
     [[nodiscard]] auto cend() const noexcept
     {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
         return _children.cend();
     }
 
 protected:
-    std::shared_ptr<widget_delegate> _delegate;
-
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
      */
@@ -778,21 +773,9 @@ protected:
      */
     int _logical_layer;
 
-    template<typename T>
-    [[nodiscard]] std::shared_ptr<T> delegate_ptr() const noexcept
-    {
-        return std::dynamic_pointer_cast<T>(_delegate);
-    }
-
-    template<typename T>
-    [[nodiscard]] T &delegate() const noexcept
-    {
-        auto &d = *_delegate;
-        return narrow_cast<T &>(d);
-    }
-
-private:
-    typename widget_delegate::callback_ptr_type _delegate_callback;
+    std::shared_ptr<std::function<void()>> _redraw_callback;
+    std::shared_ptr<std::function<void()>> _relayout_callback;
+    std::shared_ptr<std::function<void()>> _reconstrain_callback;
 };
 
 } // namespace tt

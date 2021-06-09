@@ -10,7 +10,7 @@
 namespace demo {
 class preferences_controller;
 
-class audio_preferences_controller : public tt::widget_delegate {
+class audio_preferences_controller : public tt::grid_layout_delegate {
 public:
     audio_preferences_controller(std::weak_ptr<preferences_controller> const &preferences_controller) noexcept :
         preferences_controller(preferences_controller)
@@ -18,7 +18,7 @@ public:
         tt_assert(!preferences_controller.expired());
     }
 
-    void init(tt::widget &self) noexcept override;
+    void init(tt::grid_layout_widget &self) noexcept override;
 
 protected:
     std::weak_ptr<preferences_controller> preferences_controller;

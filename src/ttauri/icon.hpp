@@ -30,7 +30,7 @@ public:
     icon &operator=(icon const &) noexcept;
     icon &operator=(icon &&) noexcept = default;
 
-    [[nodiscard]] operator bool () const noexcept
+    [[nodiscard]] explicit operator bool () const noexcept
     {
         return !std::holds_alternative<std::monostate>(_image);
     }

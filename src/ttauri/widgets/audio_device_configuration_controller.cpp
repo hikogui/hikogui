@@ -23,12 +23,11 @@ audio_device_configuration_controller::audio_device_configuration_controller(
         tt_log_fatal("audio_device_configuration_controller requires five rows on the grid, given {}", address_range);
     }
 
-    _device_config_button = grid.make_widget<button_widget<bool>>(column_nr + 1, row_nr);
-    _device_config_button->set_label(l10n("Sound Control Panel"));
+    _device_config_button = grid.make_widget<momentary_button_widget>(column_nr + 1, row_nr, l10n("Sound Control Panel"));
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Exclusive mode:"));
-    _exclusivity_checkbox = grid.make_widget<checkbox_widget<bool>>(column_nr + 1, row_nr);
+    _exclusivity_checkbox = grid.make_widget<checkbox_widget>(column_nr + 1, row_nr, false);
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Number of input channels:"));

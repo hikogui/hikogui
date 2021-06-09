@@ -17,7 +17,7 @@ public:
 
     application_preferences(tt::URL location) noexcept : super(location)
     {
-        audio_output_device_id.subscribe_ptr(_set_modified_ptr);
+        audio_output_device_id.subscribe(_set_modified_ptr);
     }
     
     void reset() noexcept override

@@ -8,6 +8,7 @@
 #include "keyboard_bindings.hpp"
 #include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
+#include "../widgets/grid_layout_widget.hpp"
 
 namespace tt {
 
@@ -60,26 +61,27 @@ gui_window::~gui_window()
 void gui_window::init()
 {
     // This function is called just after construction in single threaded mode,
-    // and therefor should not have a lock on the window.
+    // and therefor should not have a lock.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
 
-    widget = std::make_shared<window_widget>(*this, _delegate, title);
-    widget->init();
-    _delegate->init(*this);
-
-    // Execute a constraint check to determine initial window size.
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
+
+        widget = std::make_shared<window_widget>(*this, _delegate, title);
+        widget->init();
+        _delegate->init(*this);
+
+        // Execute a constraint check to determine initial window size.
         static_cast<void>(widget->update_constraints({}, true));
         size = widget->preferred_size();
+
+        // Once the window is open, we should be a full constraint, layout and draw of the window.
+        requestLayout = true;
+
+        // Reset the keyboard target to not focus anything.
+        update_keyboard_target({});
     }
-
-    // Once the window is open, we should be a full constraint, layout and draw of the window.
-    requestLayout = true;
-
-    // Reset the keyboard target to not focus anything.
-    update_keyboard_target({});
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.

@@ -11,14 +11,24 @@ namespace tt {
 grid_layout_widget::grid_layout_widget(
     gui_window &window,
     std::shared_ptr<widget> parent,
-    std::shared_ptr<widget_delegate> delegate) noexcept :
-    widget(window, std::move(parent), std::move(delegate))
+    std::shared_ptr<delegate_type> delegate) noexcept :
+    widget(window, std::move(parent)), _delegate(delegate)
 {
     if (auto p = _parent.lock()) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
         _semantic_layer = p->semantic_layer();
     }
     _margin = 0.0f;
+}
+
+void grid_layout_widget::init() noexcept
+{
+    _delegate->init(*this);
+}
+
+void grid_layout_widget::deinit() noexcept
+{
+    _delegate->deinit(*this);
 }
 
 [[nodiscard]] std::pair<size_t, size_t> grid_layout_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept

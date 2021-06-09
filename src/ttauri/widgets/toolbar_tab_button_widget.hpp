@@ -5,16 +5,15 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
+#include "value_button_delegate.hpp"
 
 namespace tt {
 
-template<typename T>
-class toolbar_tab_button_widget final : public abstract_button_widget<T, button_type::radio> {
+class toolbar_tab_button_widget final : public abstract_button_widget {
 public:
-    using super = abstract_button_widget<T, button_type::radio>;
-    using value_type = typename super::value_type;
+    using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
-    using callback_ptr_type = typename delegate_type::pressed_callback_ptr_type;
+    using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     toolbar_tab_button_widget(
         gui_window &window,
@@ -25,21 +24,19 @@ public:
         this->_label_alignment = alignment::top_center;
     }
 
-    template<typename Value>
+    template<typename Label, typename Value, typename OnValue>
     toolbar_tab_button_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
-        std::shared_ptr<delegate_type> delegate,
-        Value &&value) noexcept :
-        toolbar_tab_button_widget(window, std::move(parent), std::move(delegate))
+        Label &&label,
+        Value &&value,
+        OnValue &&on_value) noexcept :
+        toolbar_tab_button_widget(
+            window,
+            std::move(parent),
+            make_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<OnValue>(on_value)))
     {
-        this->set_value(std::forward<Value>(value));
-    }
-
-    template<typename Value>
-    toolbar_tab_button_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
-        toolbar_tab_button_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
-    {
+        set_label(std::forward<Label>(label));
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -66,17 +63,13 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            ttlet label_rectangle = aarectangle{
+            this->_label_rectangle = aarectangle{
                 theme::global->margin,
                 0.0f,
                 this->width() - theme::global->margin * 2.0f,
                 this->height() - theme::global->margin};
-
-            this->_on_label_widget->set_layout_parameters_from_parent(label_rectangle);
-            this->_off_label_widget->set_layout_parameters_from_parent(label_rectangle);
-            this->_other_label_widget->set_layout_parameters_from_parent(label_rectangle);
         }
-        widget::update_layout(displayTimePoint, need_layout);
+        super::update_layout(displayTimePoint, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -102,14 +95,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_toolbar(group) and this->enabled();
+        return is_toolbar(group) and this->enabled;
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (this->enabled()) {
+        if (this->enabled) {
             switch (command) {
             case command::gui_toolbar_next:
                 if (!this->is_last(keyboard_focus_group::toolbar)) {
@@ -135,7 +128,7 @@ public:
 private:
     void draw_toolbar_tab_focus_line(draw_context context) noexcept
     {
-        if (this->_focus && this->window.active && this->state() == tt::button_state::on) {
+        if (this->_focus and this->window.active and this->state() == tt::button_state::on) {
             ttlet &parent_ = this->parent();
             ttlet parent_rectangle = aarectangle{this->_parent_to_local * parent_.rectangle()};
 
