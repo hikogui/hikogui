@@ -78,7 +78,7 @@ public:
     }
 
     template<typename Value = observable<value_type>>
-    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value = {}) noexcept :
+    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value = observable<value_type>{}) noexcept :
         text_field_widget(window, parent, text_field_delegate_default<value_type>(), std::forward<Value>(value))
     {
     }

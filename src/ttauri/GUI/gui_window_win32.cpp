@@ -52,6 +52,11 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
 
     tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
+    if (gui_system_mutex.recurse_lock_count()) {
+        // This may happen when std::terminate() is called while holding the gui_system_mutex.
+        tt_log_error("Receiving message for window while gui_system_mutex is held.");
+    }
+
     LRESULT result = window->windowProc(uMsg, wParam, lParam);
 
     if (uMsg == WM_DESTROY) {

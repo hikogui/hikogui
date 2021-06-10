@@ -76,9 +76,6 @@ void gui_window::init()
         static_cast<void>(widget->update_constraints({}, true));
         size = widget->preferred_size();
 
-        // Once the window is open, we should be a full constraint, layout and draw of the window.
-        requestLayout = true;
-
         // Reset the keyboard target to not focus anything.
         update_keyboard_target({});
     }

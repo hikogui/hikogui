@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "abstract_button_delegate.hpp"
+#include "button_delegate.hpp"
 #include "label_widget.hpp"
 #include "button_type.hpp"
 #include "../animator.hpp"
@@ -22,7 +22,7 @@ namespace tt {
 class abstract_button_widget : public widget {
 public:
     using super = widget;
-    using delegate_type = abstract_button_delegate;
+    using delegate_type = button_delegate;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     observable<label> on_label = l10n("on");
@@ -155,7 +155,10 @@ public:
     void activate() noexcept
     {
         _delegate->activate(*this);
-        _notifier();
+
+        run_from_main_loop([this]() {
+            this->_notifier();
+        });
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept override

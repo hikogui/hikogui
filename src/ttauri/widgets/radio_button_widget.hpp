@@ -29,7 +29,7 @@ public:
         radio_button_widget(
             window,
             std::move(parent),
-            make_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<OnValue>(on_value)))
+            make_value_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<OnValue>(on_value)))
     {
         set_label(std::forward<Label>(label));
     }

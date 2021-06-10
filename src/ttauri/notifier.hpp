@@ -103,20 +103,12 @@ public:
      */
     void operator()(Args const &...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
-        auto lock = std::scoped_lock(_mutex);
-
-        for (auto &callback : _callbacks) {
+        auto callbacks_ = callbacks();
+        for (auto &callback : callbacks_) {
             if (auto callback_ = callback.lock()) {
-                run_from_main_loop([callback_, args...]() {
-                    (*callback_)(args...);
-                });
+                (*callback_)(args...);
             }
         };
-
-        // Clean up all the callbacks that expired.
-        std::erase_if(_callbacks, [](auto &x) {
-            return x.expired();
-        });
     }
 
     /** Call the subscribed callbacks with the given arguments.

@@ -29,7 +29,7 @@ public:
         toggle_widget(
             window,
             std::move(parent),
-            make_button_delegate<button_type::toggle>(std::forward<Value>(value), std::forward<Args>(args)...))
+            make_value_button_delegate<button_type::toggle>(std::forward<Value>(value), std::forward<Args>(args)...))
     {
     }
 

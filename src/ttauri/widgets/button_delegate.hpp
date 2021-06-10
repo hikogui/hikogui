@@ -11,16 +11,16 @@
 namespace tt {
 class abstract_button_widget;
 
-class abstract_button_delegate {
+class button_delegate {
 public:
     using callback_ptr_type = std::shared_ptr<std::function<void()>>;
 
-    virtual ~abstract_button_delegate() {}
-    abstract_button_delegate() noexcept {}
-    abstract_button_delegate(abstract_button_delegate const &) = delete;
-    abstract_button_delegate(abstract_button_delegate &&) = delete;
-    abstract_button_delegate &operator=(abstract_button_delegate const &) = delete;
-    abstract_button_delegate &operator=(abstract_button_delegate &&) = delete;
+    virtual ~button_delegate() {}
+    button_delegate() noexcept {}
+    button_delegate(button_delegate const &) = delete;
+    button_delegate(button_delegate &&) = delete;
+    button_delegate &operator=(button_delegate const &) = delete;
+    button_delegate &operator=(button_delegate &&) = delete;
 
     virtual void init(abstract_button_widget &sender) noexcept {}
 

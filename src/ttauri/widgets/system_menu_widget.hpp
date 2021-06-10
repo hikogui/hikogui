@@ -20,8 +20,21 @@ class system_menu_widget final : public widget {
 public:
     using super = widget;
 
-    system_menu_widget(gui_window &window, std::shared_ptr<widget> parent, icon const &icon) noexcept;
+    observable<icon> icon;
+
     ~system_menu_widget() {}
+
+    system_menu_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept;
+
+    template<typename Icon>
+    system_menu_widget(gui_window &window, std::shared_ptr<widget> parent, Icon &&icon) noexcept :
+        system_menu_widget(window, std::move(parent))
+    {
+        this->icon = std::forward<Icon>(icon);
+
+        // Toolbar buttons hug the toolbar and neighbor widgets.
+        _margin = 0.0f;
+    }
 
     void init() noexcept override;
 
@@ -32,7 +45,6 @@ public:
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override;
 
 private:
-    icon _icon;
     std::shared_ptr<icon_widget> _icon_widget;
 
     aarectangle system_menu_rectangle;

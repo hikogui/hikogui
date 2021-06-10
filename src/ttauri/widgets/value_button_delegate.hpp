@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_button_delegate.hpp"
+#include "button_delegate.hpp"
 #include "button_type.hpp"
 #include "../observable.hpp"
 #include <type_traits>
@@ -13,7 +13,7 @@
 namespace tt {
 
 template<button_type ButtonType, typename T>
-class value_button_delegate : public abstract_button_delegate {
+class value_button_delegate : public button_delegate {
 public:
     static_assert(ButtonType == button_type::radio or ButtonType == button_type::toggle);
 
@@ -92,7 +92,7 @@ public:
 };
 
 template<button_type ButtonType, typename Value, typename... Args>
-std::shared_ptr<abstract_button_delegate> make_button_delegate(Value &&value, Args &&...args) noexcept
+std::shared_ptr<button_delegate> make_value_button_delegate(Value &&value, Args &&...args) noexcept
 {
     if constexpr (is_observable_v<std::remove_cvref_t<Value>>) {
         using value_type = typename std::remove_cvref_t<Value>::value_type;

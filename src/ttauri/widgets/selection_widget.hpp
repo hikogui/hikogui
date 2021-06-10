@@ -102,6 +102,10 @@ public:
             _preferred_size = _unknown_label_widget->preferred_size() + extra_size;
             _maximum_size = _unknown_label_widget->maximum_size() + extra_size;
 
+            _minimum_size = max(_minimum_size, _current_label_widget->minimum_size() + extra_size);
+            _preferred_size = max(_preferred_size, _current_label_widget->preferred_size() + extra_size);
+            _maximum_size = max(_maximum_size, _current_label_widget->maximum_size() + extra_size);
+
             for (ttlet &child : _menu_button_widgets) {
                 _minimum_size = max(_minimum_size, child->minimum_size());
                 _preferred_size = max(_preferred_size, child->preferred_size());

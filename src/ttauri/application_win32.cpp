@@ -91,7 +91,10 @@ int application_win32::loop()
     // Run the message loop.
     int exit_code = 0;
     MSG msg = {};
-    while (GetMessage(&msg, nullptr, 0, 0)) {
+
+    BOOL more_messages;
+    do {
+        more_messages = GetMessage(&msg, nullptr, 0, 0);
         switch (msg.message) {
         case WM_APP_CALL_FUNCTION: {
             ttlet functionP = reinterpret_cast<std::function<void()> *>(msg.lParam);
@@ -106,7 +109,7 @@ int application_win32::loop()
 
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-    }
+    } while (more_messages);
 
     return exit_code;
 }

@@ -24,7 +24,7 @@ public:
 
     template<typename Label>
     toolbar_button_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
-        toolbar_button_widget(window, std::move(parent), std::make_shared<abstract_button_delegate>())
+        toolbar_button_widget(window, std::move(parent), std::make_shared<button_delegate>())
     {
         set_label(std::forward<Label>(label));
     }

@@ -23,11 +23,11 @@ public:
 
     label(tt::icon icon, l10n text) noexcept : icon(std::move(icon)), text(std::move(text)) {}
 
-    label(l10n text) noexcept : label(tt::icon{}, std::move(text)) {}
+    label(l10n text) noexcept : icon(), text(std::move(text)) {}
 
-    label(tt::icon icon) noexcept : label(std::move(icon), l10n{}) {}
+    label(tt::icon icon) noexcept : icon(std::move(icon)), text() {}
 
-    label() noexcept : label(tt::icon{}, l10n{}) {}
+    label() noexcept : icon(), text() {}
 
     label(label const &other) noexcept = default;
     label &operator=(label const &other) noexcept = default;

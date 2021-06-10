@@ -30,7 +30,7 @@ public:
         menu_button_widget(
             window,
             std::move(parent),
-            make_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
+            make_value_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
     {
         set_label(std::forward<Label>(label));
     }

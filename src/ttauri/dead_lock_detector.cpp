@@ -45,24 +45,15 @@ void dead_lock_detector::lock(void *object, bool recursive_lock)
         ;
 
     } else {
-        if (std::ranges::any_of(stack, [object](void *x) {
-                return object == x;
-            })) {
-            throw lock_error("object {} already locked by the current thread {} ", reinterpret_cast<ptrdiff_t>(object), thread_id());
-        }
+        // `object` already locked by the current thread.
+        tt_axiom(not std::ranges::any_of(stack, [object](void *x) {
+            return object == x;
+        }));
     }
 
-    if (auto before = check_graph(object)) {
-        // We needed to handle the graph checking in a separate function so that we do not
-        // throw while holding the dead_lock_detector_mutex. MSVC will not unwind the stack
-        // on a noexcepted throw, and std::abort() will call into the winproc.
-        throw lock_error(
-            "Trying to lock object {} after {} in thread {}, in previously reversed order",
-            reinterpret_cast<ptrdiff_t>(object),
-            before,
-            thread_id());
-
-    }
+    auto before = check_graph(object);
+    // Trying to lock `object` after `before` in previously reversed order
+    tt_axiom(before == nullptr);
 
     stack.push_back(object);
 }
@@ -73,20 +64,11 @@ void dead_lock_detector::unlock(void *object)
 {
     tt_axiom(object != nullptr);
 
-    if (stack.empty()) {
-        throw lock_error(
-            "Trying to unlock object {}, but nothing on this thread {} was locked.",
-            reinterpret_cast<ptrdiff_t>(object),
-            thread_id());
-    }
+    // Trying to unlock `object`, but nothing on this thread was locked.
+    tt_axiom(not stack.empty());
 
-    if (stack.back() != object) {
-        throw lock_error(
-            "Trying to unlock object {}, but this thread {} locked object {} last.",
-            reinterpret_cast<ptrdiff_t>(object),
-            thread_id(),
-            reinterpret_cast<ptrdiff_t>(stack.back()));
-    }
+    // Trying to unlock `object`, but unlocking in different order.
+    tt_axiom(stack.back() == object);
 
     stack.pop_back();
 }

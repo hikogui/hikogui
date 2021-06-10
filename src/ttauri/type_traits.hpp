@@ -190,6 +190,10 @@ constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,B
 template<typename T1, typename T2>
 constexpr bool is_different_v = !std::is_same_v<T1,T2>;
 
+template<typename T>
+constexpr bool may_be_atomic_v = std::is_trivially_copyable_v<T> and std::is_copy_constructible_v<T> and
+        std::is_move_constructible_v<T> and std::is_copy_assignable_v<T> and
+        std::is_move_assignable_v<T>;
 
 template<typename First, typename Second>
 struct use_first {
@@ -229,3 +233,4 @@ constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
     }()
 
 }
+
