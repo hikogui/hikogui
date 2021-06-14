@@ -10,6 +10,8 @@
 #include "scroll_view_widget.hpp"
 #include "row_column_layout_widget.hpp"
 #include "menu_button_widget.hpp"
+#include "selection_delegate.hpp"
+#include "value_selection_delegate.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../text/font_book.hpp"
 #include "../text/elusive_icon.hpp"
@@ -22,33 +24,28 @@
 
 namespace tt {
 
-template<typename T>
 class selection_widget final : public widget {
 public:
     using super = widget;
-    using value_type = T;
-    using option_list_type = std::vector<std::pair<value_type, label>>;
+    using delegate_type = selection_delegate;
 
     observable<label> unknown_label;
-    observable<value_type> value;
-    observable<option_list_type> option_list;
 
-    template<typename Value = value_type, typename OptionList = option_list_type, typename UnknownLabel = label>
     selection_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
-        Value &&value = value_type{},
-        OptionList &&option_list = option_list_type{},
-        UnknownLabel &&unknown_label = label{l10n("<unknown>")}) noexcept :
+        std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent),
-        value(std::forward<Value>(value)),
-        option_list(std::forward<OptionList>(option_list)),
-        unknown_label(std::forward<UnknownLabel>(unknown_label))
+        _delegate(std::move(delegate))
     {
-        // Because the super class `widget` forces the same semantic layer
-        // as the a parent and _margin to zero, we need to force them back as if this is a normal widget.
-        _semantic_layer = parent->semantic_layer() + 1;
-        _margin = theme::global->margin;
+    }
+
+    template<typename Label, typename... DelegateArgs>
+    selection_widget(gui_window &window,
+        std::shared_ptr<widget> parent,
+        Label &&label, DelegateArgs &&... delegate_args) noexcept :
+        selection_widget(window, std::move(parent), make_value_selection_delegate(std::forward<DelegateArgs>(delegate_args)...))
+    {
+        unknown_label = std::forward<Label>(label);
     }
 
     ~selection_widget() {}
@@ -65,21 +62,10 @@ public:
         _scroll_widget = _overlay_widget->make_widget<vertical_scroll_view_widget<>>();
         _column_widget = _scroll_widget->make_widget<column_layout_widget>();
 
-        repopulate_options();
-        update_labels();
-
-        _value_callback = this->value.subscribe([this](auto...) {
-            ttlet lock = std::scoped_lock(gui_system_mutex);
-
-            update_labels();
-            _request_reconstrain = true;
-        });
-
-        _option_list_callback = this->option_list.subscribe([this](auto...) {
+        _delegate_callback = _delegate->subscribe(*this, [this](auto...) {
             ttlet lock = std::scoped_lock(gui_system_mutex);
 
             repopulate_options();
-            update_labels();
             _request_reconstrain = true;
         });
 
@@ -88,6 +74,8 @@ public:
 
             _request_reconstrain = true;
         });
+
+        (*_delegate_callback)();
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -194,7 +182,7 @@ public:
 
         if (event.cause.leftButton) {
             handled = true;
-            if (enabled) {
+            if (enabled and _has_options) {
                 if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
                     handle_event(command::gui_activate);
                 }
@@ -208,7 +196,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
         _request_relayout = true;
 
-        if (enabled) {
+        if (enabled and _has_options) {
             switch (command) {
                 using enum tt::command;
             case gui_activate:
@@ -239,7 +227,7 @@ public:
 
         auto r = super::hitbox_test(position);
         if (_visible_rectangle.contains(position)) {
-            r = std::max(r, hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::Button : hit_box::Type::Default});
+            r = std::max(r, hit_box{weak_from_this(), _draw_layer, (enabled and _has_options) ? hit_box::Type::Button : hit_box::Type::Default});
         }
 
         return r;
@@ -248,14 +236,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_normal(group) and enabled;
+        return is_normal(group) and enabled and _has_options;
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (enabled and _selecting) {
+        if (enabled and _has_options and _selecting) {
             return theme::global->accentColor;
         } else {
             return super::focus_color();
@@ -263,9 +251,10 @@ public:
     }
 
 private:
+    std::shared_ptr<delegate_type> _delegate;
+
+    typename delegate_type::callback_ptr_type _delegate_callback;
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
-    typename decltype(value)::callback_ptr_type _value_callback;
-    typename decltype(option_list)::callback_ptr_type _option_list_callback;
 
     std::shared_ptr<label_widget> _current_label_widget;
     std::shared_ptr<label_widget> _unknown_label_widget;
@@ -277,27 +266,14 @@ private:
     aarectangle _chevrons_rectangle;
 
     bool _selecting = false;
+    bool _has_options = false;
+
     std::shared_ptr<overlay_view_widget> _overlay_widget;
     std::shared_ptr<vertical_scroll_view_widget<>> _scroll_widget;
     std::shared_ptr<column_layout_widget> _column_widget;
 
     std::vector<std::shared_ptr<menu_button_widget>> _menu_button_widgets;
     std::vector<typename menu_button_widget::callback_ptr_type> _menu_button_callbacks;
-
-    [[nodiscard]] ssize_t get_value_as_index() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        ssize_t index = 0;
-        for (ttlet & [ tag, unknown_label_text ] : *option_list) {
-            if (value == tag) {
-                return index;
-            }
-            ++index;
-        }
-
-        return -1;
-    }
 
     [[nodiscard]] std::shared_ptr<menu_button_widget> get_first_menu_button() const noexcept
     {
@@ -314,28 +290,12 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        ttlet i = get_value_as_index();
-        if (i >= 0 && i < std::ssize(_menu_button_widgets)) {
-            return _menu_button_widgets[i];
-        } else {
-            return {};
+        for (ttlet &button: _menu_button_widgets) {
+            if (button->state() == button_state::on) {
+                return button;
+            }
         }
-    }
-
-    void update_labels() noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        ttlet index = get_value_as_index();
-        if (index == -1) {
-            _unknown_label_widget->visible = true;
-            _current_label_widget->visible = false;
-
-        } else {
-            _unknown_label_widget->visible = false;
-            _current_label_widget->label = (*option_list)[index].second;
-            _current_label_widget->visible = true;
-        }
+        return {};
     }
 
     void start_selecting() noexcept
@@ -367,28 +327,43 @@ private:
     void repopulate_options() noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        auto option_list_ = *option_list;
+        auto [options, selected] = _delegate->options_and_selected(*this);
+
+        _has_options = std::size(options) > 0;
 
         // If any of the options has a an icon, all of the options should show the icon.
         auto show_icon = false;
-        for (ttlet & [ tag, label ] : option_list_) {
+        for (ttlet &label : options) {
             show_icon |= static_cast<bool>(label.icon);
         }
 
         _column_widget->clear();
         _menu_button_widgets.clear();
         _menu_button_callbacks.clear();
-        for (ttlet & [ tag, text ] : option_list_) {
-            auto menu_button = _column_widget->make_widget<menu_button_widget>(text, this->value, tag);
 
-            _menu_button_callbacks.push_back(menu_button->subscribe([this, tag] {
+        decltype(selected) index = 0;
+        for (auto &&label : options) {
+            auto menu_button = _column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
+
+            _menu_button_callbacks.push_back(menu_button->subscribe([this, index] {
                 ttlet lock = std::scoped_lock(gui_system_mutex);
-
-                this->value = tag;
+                this->_delegate->set_selected(*this, index);
                 this->stop_selecting();
             }));
 
             _menu_button_widgets.push_back(std::move(menu_button));
+
+            ++index;
+        }
+
+        if (selected == -1) {
+            _unknown_label_widget->visible = true;
+            _current_label_widget->visible = false;
+
+        } else {
+            _unknown_label_widget->visible = false;
+            _current_label_widget->label = options[selected];
+            _current_label_widget->visible = true;
         }
     }
 

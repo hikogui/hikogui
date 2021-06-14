@@ -34,9 +34,7 @@ void license_preferences_controller::init(tt::grid_layout_widget& _self) noexcep
     auto radio2 = grid->make_widget<radio_button_widget>("B4", l10n("Radio 2"), preferences_controller_->radioValue, 1);
     auto radio3 = grid->make_widget<radio_button_widget>("B5", l10n("Radio 3"), preferences_controller_->radioValue, 2);
 
-    grid->make_widget<label_widget>("A6", l10n("This is a selection box at the bottom:"));
-    auto selection3 = grid->make_widget<selection_widget<int>>("B6", preferences_controller_->radioValue);
-    selection3->option_list = std::vector{
+    auto option_list = std::vector{
         std::pair{0, label{l10n("first")}},
         std::pair{1, label{l10n("second")}},
         std::pair{2, label{l10n("third")}},
@@ -45,7 +43,8 @@ void license_preferences_controller::init(tt::grid_layout_widget& _self) noexcep
         std::pair{5, label{l10n("six")}},
         std::pair{6, label{l10n("seven")}}
     };
-    selection3->unknown_label = l10n("Default");
+    grid->make_widget<label_widget>("A6", l10n("This is a selection box at the bottom:"));
+    auto selection3 = grid->make_widget<selection_widget>("B6", l10n("Default"), option_list, preferences_controller_->radioValue);
     selection3->enabled = preferences_controller_->toggleValue;
 }
 

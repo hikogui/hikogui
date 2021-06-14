@@ -24,6 +24,7 @@ target_sources(ttauri PRIVATE
     row_column_layout_widget.hpp
     scroll_bar_widget.hpp
     scroll_view_widget.hpp
+    selection_delegate.hpp
     selection_widget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
@@ -36,6 +37,8 @@ target_sources(ttauri PRIVATE
     toolbar_button_widget.hpp
     toolbar_tab_button_widget.hpp
     toolbar_widget.hpp
+    value_button_delegate.hpp
+    value_selection_delegate.hpp
     widget.cpp
     widget.hpp
     widgets.hpp

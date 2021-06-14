@@ -38,14 +38,16 @@ audio_device_configuration_controller::audio_device_configuration_controller(
     _num_output_channels_text_field = grid.make_widget<text_field_widget<int>>(column_nr + 1, row_nr);
     ++row_nr;
 
-    grid.make_widget<label_widget>(column_nr, row_nr, l10n("Sample format:"));
-    _pcm_format_selection = grid.make_widget<selection_widget<pcm_format>>(column_nr + 1, row_nr);
-    _pcm_format_selection->option_list = std::vector{
+    auto pcm_option_list = std::vector{
         std::pair{pcm_format::int16, label{l10n("16 bit integer PCM")}},
         std::pair{pcm_format::int20, label{l10n("20 bit integer PCM")}},
         std::pair{pcm_format::int24, label{l10n("24 bit integer PCM")}}};
+
+    grid.make_widget<label_widget>(column_nr, row_nr, l10n("Sample format:"));
+    _pcm_format_selection =
+        grid.make_widget<selection_widget>(column_nr + 1, row_nr, l10n(), pcm_option_list, _pcm_selected, pcm_format{});
     ++row_nr;
-    
+
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Audio device sample rate:"));
     _sample_rate_text_field = grid.make_widget<text_field_widget<int>>(column_nr + 1, row_nr);
 }
