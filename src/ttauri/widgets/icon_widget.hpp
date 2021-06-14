@@ -37,7 +37,7 @@ public:
         Icon &&icon) noexcept :
         icon_widget(window, std::move(parent), alignment)
     {
-        icon = std::forward<Icon>(icon);
+        this->icon = std::forward<Icon>(icon);
     }
 
     ~icon_widget();
