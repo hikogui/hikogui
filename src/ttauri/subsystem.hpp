@@ -126,6 +126,11 @@ inline void start_system() noexcept
     detail::system_status = detail::system_status_type::running;
 }
 
+[[nodiscard]] inline bool system_shutting_down() noexcept
+{
+    return detail::system_status == detail::system_status_type::shutdown;
+}
+
 /** Shutdown the system.
  * This will shutdown all the registered deinit functions.
  *

@@ -76,9 +76,10 @@ public:
      */
     [[nodiscard]] bool try_lock() noexcept {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-        dead_lock_detector::lock(this, true);
+        ttlet other = dead_lock_detector::lock(this, true);
+        tt_axiom(other != this, "Mutex already locked.");
+        tt_axiom(other == nullptr, "Potential dead-lock.");
 #endif
-
         // FIRST | OWNER | OTHER
         ttlet thread_id = current_thread_id();
 
@@ -103,9 +104,7 @@ public:
             return true;
 
         } else {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-            dead_lock_detector::unlock(this);
-#endif
+            tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
 
             // OTHER
             return false;
@@ -130,7 +129,9 @@ public:
     */
     void lock() noexcept {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-        dead_lock_detector::lock(this, true);
+        ttlet other = dead_lock_detector::lock(this, true);
+        tt_axiom(other != this, "Mutex already locked.");
+        tt_axiom(other == nullptr, "Potential dead-lock.");
 #endif
 
         // FIRST | OWNER | OTHER
@@ -159,9 +160,7 @@ public:
     }
 
     void unlock() noexcept {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        dead_lock_detector::unlock(this);
-#endif
+        tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
 
         // FIRST | OWNER
         tt_axiom(recurse_lock_count(), "Unlock must be called on the thread that locked the mutex");

@@ -17,10 +17,6 @@ add_subdirectory(widgets)
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(ttauri PRIVATE
-    detail/observable_base.hpp
-    detail/observable_not.hpp
-    detail/observable_unary.hpp
-    detail/observable_value.hpp
     algorithm.hpp
     animator.hpp
     application.cpp
@@ -215,6 +211,7 @@ if(TT_BUILD_TESTS)
         int_overflow_tests.cpp
         math_tests.cpp
         graphic_path_tests.cpp
+        observable_tests.cpp
         pixel_map_tests.cpp
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp

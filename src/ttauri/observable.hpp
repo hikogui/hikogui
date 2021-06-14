@@ -47,9 +47,7 @@ public:
 
     virtual ~observable_base()
     {
-        for (ttlet listener : _listeners) {
-            listener->replace_operand(this, nullptr);
-        }
+        replace_with(_listeners, nullptr);
     }
 
     observable_base(observable_base const &) = delete;
@@ -100,12 +98,10 @@ public:
      */
     void replace_with(observable_base *other) noexcept
     {
-        ttlet lock = std::scoped_lock();
-        for (auto listener : _listeners) {
-            listener->replace_operand(this, other);
-        }
-        other->_listeners = std::exchange(_listeners, {});
-        other->_owner = std::exchange(_owner, nullptr);
+        _mutex.lock();
+        ttlet listeners = _listeners;
+        _mutex.unlock();
+        return replace_with(std::move(listeners), other);
     }
 
     void add_listener(observable_base *listener)
@@ -126,6 +122,17 @@ protected:
     mutable unfair_mutex _mutex;
     observable<value_type> *_owner;
     std::vector<observable_base *> _listeners;
+
+private:
+    void replace_with(std::vector<observable_base *> listeners, observable_base *other) noexcept
+    {
+        if (other) {
+            other->_owner = std::exchange(_owner, nullptr);
+        }
+        for (auto listener : listeners) {
+            listener->replace_operand(this, other);
+        }
+    }
 };
 
 template<typename T>
@@ -141,8 +148,6 @@ public:
 
     observable_value(observable<value_type> *owner, value_type const &value) noexcept : super(owner), _value(value) {}
 
-    
-
     value_type load() const noexcept override
     {
         return _load();
@@ -150,7 +155,11 @@ public:
 
     bool store(value_type const &new_value) noexcept override
     {
-        return _store(new_value);
+        ttlet changed = _store(new_value);
+        if (changed) {
+            this->notify();
+        }
+        return changed;
     }
 
 private:
@@ -166,7 +175,6 @@ private:
         if constexpr (std::equality_comparable<T>) {
             ttlet old_value = _value.exchange(new_value);
             if (old_value != new_value) {
-                this->notify();
                 return true;
             } else {
                 return false;
@@ -174,7 +182,6 @@ private:
 
         } else {
             _value.store(new_value);
-            this->notify();
             return true;
         }
     }
@@ -187,23 +194,14 @@ private:
 
     bool _store(value_type const &new_value) noexcept requires(not is_atomic)
     {
-        auto changed = false;
-        {
-            ttlet lock = std::scoped_lock(this->_mutex);
-            if constexpr (std::equality_comparable<T>) {
-                ttlet old_value = std::exchange(_value, new_value);
-                changed = old_value != new_value;
+        ttlet lock = std::scoped_lock(this->_mutex);
+        if constexpr (std::equality_comparable<T>) {
+            return std::exchange(_value, new_value) != new_value;
 
-            } else {
-                _value = new_value;
-                changed = true;
-            }
+        } else {
+            _value = new_value;
+            return true;
         }
-
-        if (changed) {
-            this->notify();
-        }
-        return changed;
     }
 };
 
@@ -254,7 +252,13 @@ public:
     void replace_operand(base *from, base *to) noexcept override
     {
         tt_axiom(from);
-        _operand.compare_exchange_strong(from, to);
+        if (_operand.compare_exchange_strong(from, to)) {
+            from->remove_listener(this);
+            if (to) {
+                to->add_listener(this);
+                this->notify();
+            }
+        }
     }
 
 private:
@@ -291,6 +295,7 @@ public:
         pimpl->replace_with(other.pimpl.get());
         std::swap(pimpl, other.pimpl);
         // Do not replace the notifier.
+        pimpl->notify();
         return *this;
     }
 
@@ -307,6 +312,7 @@ public:
         tt_axiom(pimpl);
         pimpl->replace_with(new_pimpl.get());
         pimpl = std::move(new_pimpl);
+        pimpl->notify();
         return *this;
     }
 
