@@ -345,6 +345,12 @@ public:
         return *this;
     }
 
+    observable &operator-=(value_type const &value) noexcept
+    {
+        store(load() - value);
+        return *this;
+    }
+
     [[nodiscard]] value_type load() const noexcept
     {
         tt_axiom(pimpl);
@@ -386,6 +392,11 @@ public:
         notifier();
     }
 
+    [[nodiscard]] auto operator-() const noexcept
+    {
+        return -*(*this);
+    }
+
     [[nodiscard]] friend bool operator==(observable const &lhs, observable const &rhs) noexcept
     {
         return *lhs == *rhs;
@@ -401,19 +412,49 @@ public:
         return lhs == *rhs;
     }
 
-    [[nodiscard]] friend bool operator!=(observable const &lhs, observable const &rhs) noexcept
+    [[nodiscard]] friend auto operator<=>(observable const &lhs, observable const &rhs) noexcept
     {
-        return *lhs != *rhs;
+        return *lhs <=> *rhs;
     }
 
-    [[nodiscard]] friend bool operator!=(observable const &lhs, value_type const &rhs) noexcept
+    [[nodiscard]] friend auto operator<=>(observable const &lhs, value_type const &rhs) noexcept
     {
-        return *lhs != rhs;
+        return *lhs <=> rhs;
     }
 
-    [[nodiscard]] friend bool operator!=(value_type const &lhs, observable const &rhs) noexcept
+    [[nodiscard]] friend auto operator<=>(value_type const &lhs, observable const &rhs) noexcept
     {
-        return lhs != *rhs;
+        return lhs <=> *rhs;
+    }
+
+    [[nodiscard]] friend auto operator+(observable const &lhs, observable const &rhs) noexcept
+    {
+        return *lhs + *rhs;
+    }
+
+    [[nodiscard]] friend auto operator+(observable const &lhs, value_type const &rhs) noexcept
+    {
+        return *lhs + rhs;
+    }
+
+    [[nodiscard]] friend auto operator+(value_type const &lhs, observable const &rhs) noexcept
+    {
+        return lhs + *rhs;
+    }
+
+    [[nodiscard]] friend auto operator-(observable const &lhs, observable const &rhs) noexcept
+    {
+        return *lhs - *rhs;
+    }
+
+    [[nodiscard]] friend auto operator-(observable const &lhs, value_type const &rhs) noexcept
+    {
+        return *lhs - rhs;
+    }
+
+    [[nodiscard]] friend auto operator-(value_type const &lhs, observable const &rhs) noexcept
+    {
+        return lhs - *rhs;
     }
 
     [[nodiscard]] friend float to_float(observable const &rhs) noexcept
