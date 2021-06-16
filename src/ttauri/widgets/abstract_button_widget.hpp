@@ -40,6 +40,8 @@ public:
 
     void init() noexcept override
     {
+        super::init();
+
         _on_label_widget = this->make_widget<label_widget>(_label_alignment);
         _off_label_widget = this->make_widget<label_widget>(_label_alignment);
         _other_label_widget = this->make_widget<label_widget>(_label_alignment);
@@ -48,7 +50,13 @@ public:
         _off_label_widget->label = off_label;
         _other_label_widget->label = other_label;
 
-        return super::init();
+        _delegate->init(*this);
+    }
+
+    void deinit() noexcept override
+    {
+        _delegate->deinit(*this);
+        super::deinit();
     }
 
     template<typename Label>

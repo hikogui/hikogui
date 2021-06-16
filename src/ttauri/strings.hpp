@@ -18,6 +18,7 @@
 #include <vector>
 #include <tuple>
 #include <type_traits>
+#include <cstdlib>
 
 namespace tt {
 
@@ -200,7 +201,7 @@ constexpr size_t string_size(auto str) noexcept
 
 template<typename FirstNeedle, typename... Needles>
 [[nodiscard]] std::pair<size_t, size_t>
-    string_find_any(std::string_view haystack, size_t pos, FirstNeedle const &first_needle, Needles const &...needles) noexcept
+string_find_any(std::string_view haystack, size_t pos, FirstNeedle const &first_needle, Needles const &...needles) noexcept
 {
     using std::size;
 
@@ -213,7 +214,7 @@ template<typename FirstNeedle, typename... Needles>
     }
 
     if constexpr (sizeof...(Needles) != 0) {
-        ttlet [other_first, other_last] = string_find_any(haystack, pos, needles...);
+        ttlet[other_first, other_last] = string_find_any(haystack, pos, needles...);
         if (other_first < first) {
             first = other_first;
             last = other_last;
@@ -231,7 +232,7 @@ template<typename StringType, typename... Needles>
     std::string_view::size_type current_pos = 0;
 
     while (current_pos < std::size(haystack)) {
-        ttlet [needle_first, needle_last] = string_find_any(haystack, current_pos, needles...);
+        ttlet[needle_first, needle_last] = string_find_any(haystack, current_pos, needles...);
         r.push_back(StringType{haystack.substr(current_pos, needle_first - current_pos)});
         current_pos = needle_last;
     }
@@ -391,7 +392,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
  * @return A vector of UTF-8 encoded strings.
  * @throws parse_error when the list does not terminate with a zero.
  */
-[[nodiscard]] inline std::vector<std::string> ZZWSTR_to_string(wchar_t *first, wchar_t *last, ssize_t nr_strings=-1)
+[[nodiscard]] inline std::vector<std::string> ZZWSTR_to_string(wchar_t *first, wchar_t *last, ssize_t nr_strings = -1)
 {
     auto r = std::vector<std::string>{};
 
@@ -429,7 +430,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
         size = std::strlen(c_str);
     }
 
-    auto r = new char [size + 1];
+    auto r = new char[size + 1];
     std::memcpy(r, c_str, size + 1);
     return r;
 }

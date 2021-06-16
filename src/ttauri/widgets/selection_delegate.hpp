@@ -16,13 +16,6 @@ class selection_delegate {
 public:
     using callback_ptr_type = std::shared_ptr<std::function<void()>>;
 
-    virtual ~selection_delegate() {}
-    selection_delegate() noexcept {}
-    selection_delegate(selection_delegate const &) = delete;
-    selection_delegate(selection_delegate &&) = delete;
-    selection_delegate &operator=(selection_delegate const &) = delete;
-    selection_delegate &operator=(selection_delegate &&) = delete;
-
     virtual void init(selection_widget &sender) noexcept {}
 
     virtual void deinit(selection_widget &sender) noexcept {}

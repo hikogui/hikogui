@@ -39,6 +39,7 @@ target_sources(ttauri PRIVATE
     toolbar_widget.hpp
     value_button_delegate.hpp
     value_selection_delegate.hpp
+    value_text_field_delegate.hpp
     widget.cpp
     widget.hpp
     widgets.hpp

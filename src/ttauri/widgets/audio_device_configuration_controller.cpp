@@ -31,11 +31,11 @@ audio_device_configuration_controller::audio_device_configuration_controller(
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Number of input channels:"));
-    _num_input_channels_text_field = grid.make_widget<text_field_widget<int>>(column_nr + 1, row_nr);
+    _num_input_channels_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 42);
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Number of output channels:"));
-    _num_output_channels_text_field = grid.make_widget<text_field_widget<int>>(column_nr + 1, row_nr);
+    _num_output_channels_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 43);
     ++row_nr;
 
     auto pcm_option_list = std::vector{
@@ -49,7 +49,7 @@ audio_device_configuration_controller::audio_device_configuration_controller(
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Audio device sample rate:"));
-    _sample_rate_text_field = grid.make_widget<text_field_widget<int>>(column_nr + 1, row_nr);
+    _sample_rate_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 44);
 }
 
 } // namespace tt

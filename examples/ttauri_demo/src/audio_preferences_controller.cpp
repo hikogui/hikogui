@@ -26,7 +26,7 @@ void audio_preferences_controller::init(tt::grid_layout_widget& _self) noexcept
     _audio_device_configurator = std::make_shared<audio_device_configuration_controller>(self, "A2:B7");
 
     self.make_widget<label_widget>("A8", l10n("Word clock sample rate:"));
-    self.make_widget<text_field_widget<int>>("B8", preferences_controller_->radioValue);
+    self.make_widget<text_field_widget>("B8", preferences_controller_->radioValue);
 
 }
 

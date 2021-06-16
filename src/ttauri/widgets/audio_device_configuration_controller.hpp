@@ -23,10 +23,10 @@ private:
 
     std::shared_ptr<momentary_button_widget> _device_config_button;
     std::shared_ptr<checkbox_widget> _exclusivity_checkbox;
-    std::shared_ptr<text_field_widget<int>> _num_input_channels_text_field;
-    std::shared_ptr<text_field_widget<int>> _num_output_channels_text_field;
+    std::shared_ptr<text_field_widget> _num_input_channels_text_field;
+    std::shared_ptr<text_field_widget> _num_output_channels_text_field;
     std::shared_ptr<selection_widget> _pcm_format_selection;
-    std::shared_ptr<text_field_widget<int>> _sample_rate_text_field;
+    std::shared_ptr<text_field_widget> _sample_rate_text_field;
 };
 
 }

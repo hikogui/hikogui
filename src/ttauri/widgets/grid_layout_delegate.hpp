@@ -12,12 +12,6 @@ class grid_layout_widget;
 
 class grid_layout_delegate {
 public:
-    virtual ~grid_layout_delegate() {}
-    grid_layout_delegate() noexcept {}
-    grid_layout_delegate(grid_layout_delegate const &) = delete;
-    grid_layout_delegate(grid_layout_delegate &&) = delete;
-    grid_layout_delegate &operator=(grid_layout_delegate const &) = delete;
-    grid_layout_delegate &operator=(grid_layout_delegate &&) = delete;
 
     virtual void init(grid_layout_widget &sender) noexcept {}
 

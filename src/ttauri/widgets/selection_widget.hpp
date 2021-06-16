@@ -52,6 +52,8 @@ public:
 
     void init() noexcept override
     {
+        super::init();
+
         _current_label_widget = make_widget<label_widget>(l10n("<current>"), alignment::middle_left, theme::global->labelStyle);
         _current_label_widget->visible = false;
         _unknown_label_widget =
@@ -62,6 +64,12 @@ public:
         _scroll_widget = _overlay_widget->make_widget<vertical_scroll_view_widget<>>();
         _column_widget = _scroll_widget->make_widget<column_layout_widget>();
 
+        _unknown_label_callback = this->unknown_label.subscribe([this](auto...) {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+
+            _request_reconstrain = true;
+        });
+
         _delegate_callback = _delegate->subscribe(*this, [this](auto...) {
             ttlet lock = std::scoped_lock(gui_system_mutex);
 
@@ -69,13 +77,15 @@ public:
             _request_reconstrain = true;
         });
 
-        _unknown_label_callback = this->unknown_label.subscribe([this](auto...) {
-            ttlet lock = std::scoped_lock(gui_system_mutex);
-
-            _request_reconstrain = true;
-        });
-
         (*_delegate_callback)();
+
+        _delegate->init(*this);
+    }
+
+    void deinit() noexcept override
+    {
+        _delegate->deinit(*this);
+        super::deinit();
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override

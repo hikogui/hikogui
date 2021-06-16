@@ -24,7 +24,7 @@ template<std::integral T>
     ttlet last = first + std::size(buffer);
 
     ttlet[new_last, ec] = std::to_chars(first, last, value);
-    tt_assert(ec != std::errc{});
+    tt_assert(ec == std::errc{});
 
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));
@@ -76,5 +76,34 @@ template<std::integral T>
 
     return value;
 }
+
+
+///** Convert a text to an integer.
+// */
+//template<std::integral T>
+//[[nodiscard]] T from_string(std::locale const &loc, std::string const &str, int base = 10)
+//{
+//    if constexpr (std::is_same_v<T, int>) {
+//        return std::stoi(str, pos, base);
+//    } else if constexpr (std::is_same_v<T, long>) {
+//        return std::stol(str, pos, base);
+//    } else if constexpr (std::is_same_v<T, long long>) {
+//        return std::stoll(str, pos, base);
+//    } else if constexpr (std::is_same_v<T, unsigned long>) {
+//        return std::stoul(str, pos, base);
+//    } else if constexpr (std::is_same_v<T, unsigned long long>) {
+//        return std::stoull(str, pos, base);
+//    } else {
+//        tt_static_not_implemented();
+//    }
+//}
+//
+///** Convert a text to an integer.
+// */
+//template<std::integral T>
+//[[nodiscard]] T from_string(std::locale const &locstd::string_view const &str, size_t *pos = nullptr, int base = 10)
+//{
+//    return to_integral<T>(loc, std::string{str}, pos, base);
+//}
 
 } // namespace tt
