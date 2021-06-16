@@ -9,8 +9,8 @@ target_sources(ttauri PRIVATE
     button_delegate.hpp
     button_state.hpp
     button_type.hpp
-    button_widget.hpp
     checkbox_widget.hpp
+    grid_layout_delegate.hpp
     grid_layout_widget.cpp
     grid_layout_widget.hpp
     icon_widget.cpp
@@ -18,11 +18,13 @@ target_sources(ttauri PRIVATE
     label_widget.cpp
     label_widget.hpp
     menu_button_widget.hpp
+    momentary_button_widget.hpp
     overlay_view_widget.hpp
     radio_button_widget.hpp
     row_column_layout_widget.hpp
     scroll_bar_widget.hpp
     scroll_view_widget.hpp
+    selection_delegate.hpp
     selection_widget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
@@ -35,6 +37,9 @@ target_sources(ttauri PRIVATE
     toolbar_button_widget.hpp
     toolbar_tab_button_widget.hpp
     toolbar_widget.hpp
+    value_button_delegate.hpp
+    value_selection_delegate.hpp
+    value_text_field_delegate.hpp
     widget.cpp
     widget.hpp
     widgets.hpp

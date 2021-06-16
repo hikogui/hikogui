@@ -48,12 +48,14 @@ public:
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
         if (has_updated_contraints) {
-            ttlet &child = selected_child();
-            tt_axiom(&child.parent() == this);
+            ttlet &selected_child_ = selected_child();
+            for (ttlet &child : _children) {
+                child->visible = child == selected_child_;
+            }
 
-            auto size_changed = compare_then_assign(_minimum_size, child.minimum_size());
-            size_changed |= compare_then_assign(_preferred_size, child.preferred_size());
-            size_changed |= compare_then_assign(_maximum_size, child.maximum_size());
+            auto size_changed = compare_then_assign(_minimum_size, selected_child_->minimum_size());
+            size_changed |= compare_then_assign(_preferred_size, selected_child_->preferred_size());
+            size_changed |= compare_then_assign(_maximum_size, selected_child_->maximum_size());
             tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 
             if (size_changed) {
@@ -68,33 +70,15 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        auto &child = selected_child();
-        tt_axiom(&child.parent() == this);
-
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            child.set_layout_parameters_from_parent(rectangle());
-            request_redraw();
+            for (ttlet &child : _children) {
+                if (child->visible) {
+                    child->set_layout_parameters_from_parent(rectangle());
+                }
+            }
         }
-        child.update_layout(display_time_point, need_layout);
-
-        // THIS DOES NOT CALL: super::update_layout.
-        // The non visible children have not received layout-parameters.
-    }
-
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        draw_child(context, display_time_point, selected_child());
-        // Do not call super::draw, only the selected child should be drawn.
-    }
-
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        ttlet &child = selected_child();
-        return child.hitbox_test(point2{child.parent_to_local() * position});
+        super::update_layout(display_time_point, need_layout);
     }
 
     std::shared_ptr<widget> find_next_widget(
@@ -103,7 +87,7 @@ public:
         keyboard_focus_direction direction) const noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        return selected_child().find_next_widget(current_widget, group, direction);
+        return selected_child()->find_next_widget(current_widget, group, direction);
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
@@ -161,29 +145,16 @@ private:
         return find_child(*value);
     }
 
-    [[nodiscard]] widget const &selected_child() const noexcept
+    [[nodiscard]] std::shared_ptr<widget> const &selected_child() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         tt_axiom(std::ssize(_children) != 0);
 
         auto i = find_selected_child();
         if (i != _children.cend()) {
-            return *(*i);
+            return *i;
         } else {
-            return *_children.front();
-        }
-    }
-
-    [[nodiscard]] widget &selected_child() noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_axiom(std::ssize(_children) != 0);
-
-        auto i = find_selected_child();
-        if (i != _children.cend()) {
-            return *(*i);
-        } else {
-            return *_children.front();
+            return _children.front();
         }
     }
 

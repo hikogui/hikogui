@@ -15,8 +15,8 @@ namespace tt {
 
 using namespace std;
 
-window_widget::window_widget(gui_window &window, std::shared_ptr<widget_delegate> delegate, label title) noexcept :
-    widget(window, {}), title(std::move(title)), _content_delegate(std::move(delegate))
+window_widget::window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate) noexcept :
+    widget(window, {}), _content_delegate(std::move(delegate))
 {
 }
 
@@ -28,7 +28,11 @@ void window_widget::init() noexcept
 
     if constexpr (theme::global->operatingSystem == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-        _toolbar->make_widget<system_menu_widget>(this->title.icon());
+        _system_menu = _toolbar->make_widget<system_menu_widget>();
+        _title_callback = title.subscribe([this]() {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+            this->_system_menu->icon = (*this->title).icon;
+        });
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
     } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
@@ -121,8 +125,8 @@ hit_box window_widget::hitbox_test(point2 position) const noexcept
         r.type = hit_box::Type::TopResizeBorder;
     }
 
-    if ((is_on_left_edge && left_resize_border_has_priority) || (is_on_right_edge && right_resize_border_has_priority) ||
-        (is_on_bottom_edge && bottom_resize_border_has_priority) || (is_on_top_edge && top_resize_border_has_priority)) {
+    if ((is_on_left_edge && _left_resize_border_has_priority) || (is_on_right_edge && _right_resize_border_has_priority) ||
+        (is_on_bottom_edge && _bottom_resize_border_has_priority) || (is_on_top_edge && _top_resize_border_has_priority)) {
         return r;
     }
 

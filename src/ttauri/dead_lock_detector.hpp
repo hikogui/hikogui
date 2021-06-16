@@ -19,15 +19,16 @@ public:
      * @param object The object that is being locked.
      * @param recursive_lock Allow the object to be recursive locked,
      *                       meaning that a object may be at the top of the stack.
-     * @throws lock_error The reason for failing to lock the object.
+     * @return nullptr on success, object if the mutex was already locked, a pointer to
+     *         another mutex if potential dead-lock is found.
      */
-    static void lock(void *object, bool recursive_lock = false);
+    static void *lock(void *object, bool recursive_lock = false) noexcept;
 
     /** Unlock an object on this thread.
      * @param object The object that is being locked.
-     * @throws lock_error The reason for failing to lock the object.
+     * @return true on success, false on failure.
      */
-    static void unlock(void *object);
+    static bool unlock(void *object) noexcept;
 
     /** Remove the object from the detection.
      * This function is needed when there are mutex-like objects

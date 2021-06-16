@@ -5,7 +5,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "label_delegate.hpp"
 #include "../GUI/draw_context.hpp"
 #include "../alignment.hpp"
 #include <memory>
@@ -20,39 +19,30 @@ class icon_widget final : public widget {
 public:
     using super = widget;
 
+    observable<icon> icon;
+
     icon_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
-        std::shared_ptr<label_delegate> delegate,
         alignment alignment = alignment::middle_center) noexcept :
-        super(window, std::move(parent), std::move(delegate)), _alignment(alignment)
+        super(window, std::move(parent)), _alignment(alignment)
     {
     }
 
-    icon_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        std::shared_ptr<label_delegate> delegate,
-        alignment alignment,
-        tt::icon icon) noexcept :
-        icon_widget(window, std::move(parent), std::move(delegate), alignment)
-    {
-        this->delegate<label_delegate>().set_label(*this, label{std::move(icon)});
-    }
-
+    template<typename Icon>
     icon_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
         alignment alignment,
-        tt::icon icon) noexcept :
-        icon_widget(window, std::move(parent), std::make_shared<label_delegate>(), alignment, std::move(icon))
+        Icon &&icon) noexcept :
+        icon_widget(window, std::move(parent), alignment)
     {
+        this->icon = std::forward<Icon>(icon);
     }
-
 
     ~icon_widget();
 
-    tt::icon icon() const noexcept;
+    void init() noexcept override;
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
 
@@ -62,6 +52,8 @@ public:
 
 private:
     enum class icon_type { no, glyph, pixmap };
+
+    decltype(icon)::callback_ptr_type _icon_callback;
 
     alignment _alignment;
 

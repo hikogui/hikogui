@@ -8,13 +8,8 @@
 
 namespace tt {
 
-widget::widget(gui_window &_window, std::shared_ptr<widget> parent, std::shared_ptr<widget_delegate> delegate) noexcept :
-    window(_window),
-    _delegate(std::move(delegate)),
-    _parent(std::move(parent)),
-    _draw_layer(0.0f),
-    _logical_layer(0),
-    _semantic_layer(0)
+widget::widget(gui_window &_window, std::shared_ptr<widget> parent) noexcept :
+    window(_window), _parent(std::move(parent)), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
 {
     if (auto p = _parent.lock()) {
         ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -23,16 +18,22 @@ widget::widget(gui_window &_window, std::shared_ptr<widget> parent, std::shared_
         _semantic_layer = p->semantic_layer() + 1;
     }
 
-    _delegate_callback = _delegate->subscribe([this](widget_update_level level) {
+    _redraw_callback = std::make_shared<std::function<void()>>([this]() {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-
-        switch (level) {
-        case widget_update_level::redraw: this->request_redraw(); break;
-        case widget_update_level::layout: _request_relayout = true; break;
-        case widget_update_level::constrain: _request_reconstrain = true; break;
-        default: tt_no_default();
-        }
+        this->request_redraw();
     });
+
+    _relayout_callback = std::make_shared<std::function<void()>>([this]() {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->_request_relayout = true;
+    });
+    _reconstrain_callback = std::make_shared<std::function<void()>>([this]() {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->_request_reconstrain = true;
+    });
+
+    enabled.subscribe(_redraw_callback);
+    visible.subscribe(_redraw_callback);
 
     _minimum_size = extent2::nan();
     _preferred_size = extent2::nan();
@@ -43,47 +44,15 @@ widget::~widget() {}
 
 void widget::init() noexcept
 {
-    return _delegate->init(*this);
 }
 
 void widget::deinit() noexcept
 {
-    return _delegate->deinit(*this);
-}
-
-[[nodiscard]] bool widget::enabled() const noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return _delegate->enabled(*this);
-}
-
-void widget::set_enabled(observable<bool> rhs) noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return _delegate->set_enabled(*this, std::move(rhs));
-}
-
-[[nodiscard]] bool widget::visible() const noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return _delegate->visible(*this);
-}
-
-void widget::set_visible(observable<bool> rhs) noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return _delegate->set_visible(*this, std::move(rhs));
-}
-
-void widget::set_visible(bool rhs) noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return _delegate->set_visible(*this, rhs);
 }
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
-    if (enabled()) {
+    if (enabled) {
         if (_hover) {
             return theme::global->fillColor(_semantic_layer + 1);
         } else {
@@ -96,7 +65,7 @@ void widget::set_visible(bool rhs) noexcept
 
 [[nodiscard]] color widget::foreground_color() const noexcept
 {
-    if (enabled()) {
+    if (enabled) {
         if (_hover) {
             return theme::global->borderColor(_semantic_layer + 1);
         } else {
@@ -109,7 +78,7 @@ void widget::set_visible(bool rhs) noexcept
 
 [[nodiscard]] color widget::focus_color() const noexcept
 {
-    if (enabled()) {
+    if (enabled) {
         if (_focus && window.active) {
             return theme::global->accentColor;
         } else if (_hover) {
@@ -124,7 +93,7 @@ void widget::set_visible(bool rhs) noexcept
 
 [[nodiscard]] color widget::accent_color() const noexcept
 {
-    if (enabled()) {
+    if (enabled) {
         if (window.active) {
             return theme::global->accentColor;
         } else {
@@ -137,7 +106,7 @@ void widget::set_visible(bool rhs) noexcept
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
-    if (enabled()) {
+    if (enabled) {
         return theme::global->labelStyle.color;
     } else {
         return theme::global->borderColor(_semantic_layer - 1);
@@ -167,7 +136,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
     for (auto &&child : _children) {
         tt_axiom(child);
         tt_axiom(&child->parent() == this);
-        if (child->visible()) {
+        if (child->visible) {
             child->update_layout(display_time_point, need_layout);
         }
     }
@@ -185,7 +154,7 @@ void widget::draw(draw_context context, hires_utc_clock::time_point display_time
         tt_axiom(child);
         tt_axiom(&child->parent() == this);
 
-        if (child->visible()) {
+        if (child->visible) {
             auto child_context =
                 context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
             child->draw(child_context, display_time_point);
@@ -201,7 +170,7 @@ void widget::draw(draw_context context, hires_utc_clock::time_point display_time
     for (ttlet &child : _children) {
         tt_axiom(child);
         tt_axiom(&child->parent() == this);
-        if (child->visible()) {
+        if (child->visible) {
             r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
         }
     }

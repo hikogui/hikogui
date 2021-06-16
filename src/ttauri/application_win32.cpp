@@ -22,8 +22,6 @@ application_win32::application_win32(
 
 void application_win32::run_from_main_loop(std::function<void()> function)
 {
-    tt_assert(inLoop);
-
     ttlet functionP = new std::function<void()>(std::move(function));
     tt_assert(functionP);
 
@@ -90,12 +88,13 @@ void application_win32::init()
 
 int application_win32::loop()
 {
-    inLoop = true;
-
     // Run the message loop.
     int exit_code = 0;
     MSG msg = {};
-    while (GetMessage(&msg, nullptr, 0, 0)) {
+
+    BOOL more_messages;
+    do {
+        more_messages = GetMessage(&msg, nullptr, 0, 0);
         switch (msg.message) {
         case WM_APP_CALL_FUNCTION: {
             ttlet functionP = reinterpret_cast<std::function<void()> *>(msg.lParam);
@@ -110,9 +109,8 @@ int application_win32::loop()
 
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-    }
+    } while (more_messages);
 
-    inLoop = false;
     return exit_code;
 }
 

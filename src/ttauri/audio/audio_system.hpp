@@ -6,6 +6,7 @@
 
 #include "audio_system_delegate.hpp"
 #include "audio_device.hpp"
+#include "../unfair_recursive_mutex.hpp"
 #include <vector>
 #include <memory>
 
@@ -35,4 +36,4 @@ public:
     static inline std::shared_ptr<audio_system> global;
 };
 
-}
+} // namespace tt

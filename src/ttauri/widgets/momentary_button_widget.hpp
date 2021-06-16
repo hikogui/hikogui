@@ -1,30 +1,34 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2019-2020.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "value_button_delegate.hpp"
 
 namespace tt {
 
-class toolbar_button_widget final : public abstract_button_widget {
+class momentary_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    toolbar_button_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    momentary_button_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept
+        :
         super(window, std::move(parent), std::move(delegate))
     {
-        _margin = 0.0f;
         _label_alignment = alignment::middle_left;
     }
 
     template<typename Label>
-    toolbar_button_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
-        toolbar_button_widget(window, std::move(parent), std::make_shared<button_delegate>())
+    momentary_button_widget(
+        gui_window &window,
+        std::shared_ptr<widget> parent,
+        Label &&label) noexcept :
+        momentary_button_widget(
+            window,
+            std::move(parent), std::make_shared<delegate_type>())
     {
         set_label(std::forward<Label>(label));
     }
@@ -63,52 +67,20 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, _clipping_rectangle)) {
-            draw_toolbar_button(context);
+            draw_label_button(context);
         }
 
         super::draw(std::move(context), display_time_point);
     }
 
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_toolbar(group) and enabled;
-    }
-
-    [[nodiscard]] bool handle_event(command command) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-
-        if (enabled) {
-            switch (command) {
-            case command::gui_toolbar_next:
-                if (!is_last(keyboard_focus_group::toolbar)) {
-                    window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
-                    return true;
-                }
-                break;
-
-            case command::gui_toolbar_prev:
-                if (!is_first(keyboard_focus_group::toolbar)) {
-                    window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
-                    return true;
-                }
-                break;
-
-            default:;
-            }
-        }
-
-        return super::handle_event(command);
-    }
-
 private:
-    void draw_toolbar_button(draw_context const &context) noexcept
+    void draw_label_button(draw_context const &context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        ttlet foreground_color_ = _focus && window.active ? focus_color() : color::transparent();
-        context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
+        // Move the border of the button in the middle of a pixel.
+        context.draw_box_with_border_inside(
+            rectangle(), background_color(), focus_color(), corner_shapes{theme::global->roundingRadius});
     }
 };
 

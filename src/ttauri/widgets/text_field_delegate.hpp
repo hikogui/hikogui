@@ -7,79 +7,68 @@
 #include <string>
 #include <string_view>
 #include <optional>
-#include <type_traits>
-#include <concepts>
-#include <memory>
-#include "../l10n.hpp"
-#include "../concepts.hpp"
+#include "../label.hpp"
 
 namespace tt {
-template<typename T>
 class text_field_widget;
 
-template<typename T>
 class text_field_delegate {
 public:
-    using value_type = T;
-    using sender_type = text_field_widget<value_type>;
+    using callback_ptr_type = std::shared_ptr<std::function<void()>>;
 
-    /** The width of the text field in characters.
-     *
-     * @param self The widget controlled by this delegate.
-     * @return The width of the text field box (excluding prefix and suffix) in characters.
-     */
-    size_t text_width(sender_type &sender) const noexcept
+    virtual void init(text_field_widget const &sender) noexcept {}
+    virtual void deinit(text_field_widget const &sender) noexcept {}
+
+    virtual callback_ptr_type subscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept
     {
-        return 20;
+        return callback_ptr;
     }
 
-    /** The list of suggestions to show in the popup box.
-     * 
-     * @param self The widget controlled by this delegate.
-     * @return A list of suffestion to show in the popup box.
+    /** Subscribe a callback for notifying the widget of a data change.
      */
-    std::vector<std::string> suggestions(sender_type &sender) const noexcept
+    template<typename Callback>
+    requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type
+        subscribe(text_field_widget &sender, Callback &&callback) noexcept
+    {
+        return subscribe(sender, std::make_shared<std::function<void()>>(std::forward<Callback>(callback)));
+    }
+
+    virtual void unsubscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept
+    {
+    }
+
+    /** Validate the text field.
+     * @param text The text entered by the user into the text field.
+     * @return no-value when valid, or a label to display to the user when invalid.
+     */
+    virtual std::optional<label> validate(text_field_widget &sender, std::string_view text) noexcept
     {
         return {};
     }
 
-    /** Convert a value to a string.
-     *
-     * @param self The widget controlled by this delegate.
-     * @param value The original value before editing.
-     * @return The string to be shown inside the text field box.
+    /** Get the text to show in the text field.
+     * When the user is not editing the text the text-field will request what to show
+     * using this function.
+     * 
+     * @return The text to show in the text field.
      */
-    virtual std::string to_string(sender_type &sender, value_type const &value) noexcept
+    virtual std::string text(text_field_widget &sender) noexcept
     {
-        // XXX Need to pass the current local to format.
-        return std::format("{}", value);
+        return {};
     }
 
-    /** Convert a string to a value.
-     *
-     * @param self The widget controlled by this delegate.
-     * @param text The text string to convert to a value.
-     * @param[out] error An localized error message to inform the user what is wrong.
-     * @return value_type The value if the string conversion was successful. empty when the string
-     *         conversion was NOT successful.
+    /** Set the text as entered by the user.
+     * When the user causes a text field to commit,
+     * by pressing enter, tab, or clicking outside the field and when
+     * the text was validated the widget will call this function to commit the
+     * text with the delegate.
+     * 
+     * @pre text Must have been validated as correct.
+     * @param text The text entered by the user.
      */
-    virtual std::optional<value_type> from_string(sender_type &sender, std::string_view text, l10n &error) noexcept
+    virtual void set_text(text_field_widget &sender, std::string_view text) noexcept
     {
-        try {
-            error = {};
-            return tt::from_string<value_type>(text);
-        } catch (parse_error) {
-            error = l10n("Invalid character entered.");
-            return {};
-        }
     }
 };
-
-template<typename T>
-inline std::shared_ptr<text_field_delegate<T>> text_field_delegate_default() noexcept
-{
-    static std::shared_ptr<text_field_delegate<T>> delegate = std::make_shared<text_field_delegate<T>>();
-    return delegate;
-}
 
 } // namespace tt

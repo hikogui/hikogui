@@ -10,14 +10,26 @@
 namespace tt {
 
 class toolbar_widget;
+class system_menu_widget;
 class grid_layout_widget;
+class grid_layout_delegate;
 
 class window_widget final : public widget {
 public:
     using super = widget;
 
-    window_widget(gui_window &window, std::shared_ptr<widget_delegate> delegate, label title) noexcept;
+    observable<label> title;
+
     ~window_widget();
+
+    window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate) noexcept;
+
+    template<typename Title>
+    window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate, Title &&title) noexcept :
+        window_widget(window, std::move(delegate))
+    {
+        this->title = std::forward<Title>(title);
+    }
 
     void init() noexcept override;
 
@@ -36,10 +48,10 @@ public:
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        left_resize_border_has_priority = left;
-        right_resize_border_has_priority = right;
-        bottom_resize_border_has_priority = bottom;
-        top_resize_border_has_priority = top;
+        _left_resize_border_has_priority = left;
+        _right_resize_border_has_priority = right;
+        _bottom_resize_border_has_priority = bottom;
+        _top_resize_border_has_priority = top;
     }
 
     [[nodiscard]] std::shared_ptr<grid_layout_widget> content() const noexcept
@@ -57,15 +69,19 @@ public:
     }
 
 private:
-    label title;
-    std::shared_ptr<widget_delegate> _content_delegate;
+    decltype(title)::callback_ptr_type _title_callback;
+
+    std::shared_ptr<grid_layout_delegate> _content_delegate;
     std::shared_ptr<grid_layout_widget> _content;
     std::shared_ptr<toolbar_widget> _toolbar;
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+    std::shared_ptr<system_menu_widget> _system_menu;
+#endif
 
-    bool left_resize_border_has_priority = true;
-    bool right_resize_border_has_priority = true;
-    bool bottom_resize_border_has_priority = true;
-    bool top_resize_border_has_priority = true;
+    bool _left_resize_border_has_priority = true;
+    bool _right_resize_border_has_priority = true;
+    bool _bottom_resize_border_has_priority = true;
+    bool _top_resize_border_has_priority = true;
 };
 
 } // namespace tt

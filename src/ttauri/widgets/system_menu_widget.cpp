@@ -13,19 +13,16 @@
 
 namespace tt {
 
-system_menu_widget::system_menu_widget(
-    gui_window &window,
-    std::shared_ptr<widget> parent,
-    icon const &icon) noexcept :
-    super(window, parent), _icon(icon)
+system_menu_widget::system_menu_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept :
+    super(window, std::move(parent))
 {
-    // Toolbar buttons hug the toolbar and neighbour widgets.
+    // Toolbar buttons hug the toolbar and neighbor widgets.
     _margin = 0.0f;
 }
 
 void system_menu_widget::init() noexcept
 {
-    _icon_widget = make_widget<icon_widget>(alignment::middle_center, _icon);
+    _icon_widget = make_widget<icon_widget>(alignment::middle_center, icon);
 }
 
 [[nodiscard]] bool
@@ -50,7 +47,8 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
-        ttlet icon_height = rectangle().height() < theme::global->toolbarHeight * 1.2f ? rectangle().height() : theme::global->toolbarHeight;
+        ttlet icon_height =
+            rectangle().height() < theme::global->toolbarHeight * 1.2f ? rectangle().height() : theme::global->toolbarHeight;
         ttlet icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
         _icon_widget->set_layout_parameters_from_parent(icon_rectangle);

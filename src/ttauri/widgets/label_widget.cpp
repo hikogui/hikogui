@@ -11,32 +11,21 @@ label_widget::~label_widget() {}
 label_widget::label_widget(
     gui_window &window,
     std::shared_ptr<widget> parent,
-    std::shared_ptr<label_delegate> delegate,
     alignment alignment,
     text_style text_style) noexcept :
-    super(window, std::move(parent), std::move(delegate)), _alignment(alignment), _text_style(text_style)
+    super(window, std::move(parent)), _alignment(alignment), _text_style(text_style)
 {
 }
 
 void label_widget::init() noexcept
 {
-    _icon_widget = super::make_widget<icon_widget>(delegate_ptr<label_delegate>(), _alignment);
-    _text_widget = super::make_widget<text_widget>(delegate_ptr<label_delegate>(), _alignment, _text_style);
-}
+    _icon_widget = super::make_widget<icon_widget>(_alignment);
+    _text_widget = super::make_widget<text_widget>(_alignment, _text_style);
 
-[[nodiscard]] tt::label label_widget::label() const noexcept
-{
-    return delegate<label_delegate>().label(*this);
-}
-
-void label_widget::set_label(observable<tt::label> label) noexcept
-{
-    return delegate<label_delegate>().set_label(*this, std::move(label));
-}
-
-void label_widget::set_label(l10n label) noexcept
-{
-    return delegate<label_delegate>().set_label(*this, tt::label{label});
+    _label_callback = label.subscribe([this]() {
+        this->_icon_widget->icon = (*this->label).icon;
+        this->_text_widget->text = (*this->label).text;
+    });
 }
 
 [[nodiscard]] bool

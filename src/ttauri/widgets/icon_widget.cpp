@@ -9,10 +9,12 @@ namespace tt {
 
 icon_widget::~icon_widget() {}
 
-tt::icon icon_widget::icon() const noexcept
+void icon_widget::init() noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return delegate<label_delegate>().icon(*this);
+    _icon_callback = icon.subscribe([this]() {
+        ttlet lock = std::scoped_lock(gui_system_mutex);
+        this->_request_reconstrain = true;
+    });
 }
 
 [[nodiscard]] bool icon_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
@@ -20,7 +22,7 @@ tt::icon icon_widget::icon() const noexcept
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        ttlet &icon_ = icon();
+        ttlet &icon_ = *icon;
 
         if (holds_alternative<std::monostate>(icon_)) {
             _icon_type = icon_type::no;

@@ -5,42 +5,34 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
+#include "value_button_delegate.hpp"
 
 namespace tt {
 
-template<typename T>
-class menu_button_widget final : public abstract_button_widget<T, button_type::momentary> {
+class menu_button_widget final : public abstract_button_widget {
 public:
-    using super = abstract_button_widget<T, button_type::momentary>;
-    using value_type = typename super::value_type;
+    using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
-    using callback_ptr_type = typename delegate_type::pressed_callback_ptr_type;
+    using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     menu_button_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
-        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept :
+        std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, std::move(parent), std::move(delegate))
     {
         this->_margin = 0.0f;
         this->_label_alignment = alignment::middle_left;
     }
 
-    template<typename Value>
-    menu_button_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        std::shared_ptr<delegate_type> delegate,
-        Value &&value) noexcept :
-        menu_button_widget(window, std::move(parent), std::move(delegate))
+    template<typename Label, typename Value, typename... Args>
+    menu_button_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label, Value &&value, Args &&...args) noexcept :
+        menu_button_widget(
+            window,
+            std::move(parent),
+            make_value_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
     {
-        this->set_value(std::forward<Value>(value));
-    }
-
-    template<typename Value>
-    menu_button_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
-        menu_button_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
-    {
+        set_label(std::forward<Label>(label));
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -77,22 +69,18 @@ public:
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left);
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right);
 
-            ttlet label_rectangle = aarectangle{
+            this->_label_rectangle = aarectangle{
                 _check_rectangle.right() + theme::global->margin,
                 0.0f,
                 _short_cut_rectangle.left() - theme::global->margin,
                 this->height()};
-
-            this->_on_label_widget->set_layout_parameters_from_parent(label_rectangle);
-            this->_off_label_widget->set_layout_parameters_from_parent(label_rectangle);
-            this->_other_label_widget->set_layout_parameters_from_parent(label_rectangle);
 
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
             _check_glyph_rectangle =
                 align(_check_rectangle, scale(check_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
         }
-        widget::update_layout(displayTimePoint, need_layout);
+        super::update_layout(displayTimePoint, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -110,14 +98,14 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_menu(group) and this->enabled();
+        return is_menu(group) and this->enabled;
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (this->enabled()) {
+        if (this->enabled) {
             switch (command) {
             case command::gui_menu_next:
                 if (!this->is_last(keyboard_focus_group::menu)) {
@@ -134,7 +122,7 @@ public:
                 break;
 
             case command::gui_activate:
-                this->delegate<delegate_type>().pressed(*this);
+                activate();
                 this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
                 this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
                 return true;

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "text_field_delegate.hpp"
+#include "value_text_field_delegate.hpp"
 #include "widget.hpp"
 #include "../text/editable_text.hpp"
 #include "../format.hpp"
@@ -50,60 +51,50 @@ namespace tt {
  *
  * The maximum width of the text field is defined in the number of EM of the current selected font.
  */
-template<typename T>
 class text_field_widget final : public widget {
 public:
-    using value_type = T;
-    using delegate_type = text_field_delegate<value_type>;
+    using delegate_type = text_field_delegate;
     using super = widget;
 
-    observable<value_type> value;
+    /** Continues update mode.
+     * If true then the value will update on every edit of the text field.
+     */
+    observable<bool> continues = false;
 
-    template<typename Value = observable<value_type>>
     text_field_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
-        std::weak_ptr<delegate_type> delegate,
-        Value &&value = {}) noexcept :
+        std::shared_ptr<delegate_type> delegate
+        ) noexcept :
         super(window, parent),
-        value(std::forward<Value>(value)),
         _delegate(delegate),
         _field(theme::global->labelStyle),
         _shaped_text()
     {
-        _value_callback = this->value.subscribe([this](auto...) {
+        _delegate_callback = _delegate->subscribe(*this, [this](auto...) {
             ttlet lock = std::scoped_lock(gui_system_mutex);
             _request_relayout = true;
         });
     }
 
-    template<typename Value = observable<value_type>>
-    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value = {}) noexcept :
-        text_field_widget(window, parent, text_field_delegate_default<value_type>(), std::forward<Value>(value))
+    template<typename Value>
+    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
+        text_field_widget(window, parent, make_value_text_field_delegate(std::forward<Value>(value)))
     {
     }
 
     ~text_field_widget() {}
 
-    /** Set the delegate
-     * The delegate is used to convert between the value type and the string the user sees and enters.
-     *
-     * @param delegate The delegate for this text field
-     */
-    void set_delegate(std::weak_ptr<delegate_type> &&delegate) noexcept
+    void init() noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        _delegate = delegate;
+        super::init();
+        _delegate->init(*this);
     }
 
-    /** Set or unset continues mode.
-     * @param flag If true then the value will update on every edit of the text field.
-     *             If false then the value will only update when the focus changes.
-     */
-    void set_continues(bool flag) noexcept
+    void deinit() noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        _continues = flag;
+        _delegate->deinit(*this);
+        super::deinit();
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -116,11 +107,7 @@ public:
             ttlet &text_font = font_book::global->get_font(text_font_id);
             ttlet text_digit_width = text_font.description.DigitWidth * text_style.scaled_size();
 
-            if (auto delegate = _delegate.lock()) {
-                _text_width = std::ceil(text_digit_width * narrow_cast<float>(delegate->text_width(*this)));
-            } else {
-                _text_width = 100.0;
-            }
+            _text_width = 100.0;
 
             _minimum_size = {_text_width + theme::global->margin * 2.0f, theme::global->smallSize + theme::global->margin * 2.0f};
             _preferred_size = {
@@ -153,21 +140,15 @@ public:
 
             ttlet field_str = static_cast<std::string>(_field);
 
-            if (auto delegate = _delegate.lock()) {
-                if (_focus) {
-                    // Update the optional error value from the string conversion when the
-                    // field has keyboard focus.
-                    delegate->from_string(*this, field_str, _error);
-
-                } else {
-                    // When field is not focused, simply follow the observed_value.
-                    _field = delegate->to_string(*this, *value);
-                    _error = {};
-                }
+            if (_focus) {
+                // Update the optional error value from the string conversion when the
+                // field has keyboard focus.
+                _error = _delegate->validate(*this, field_str);
 
             } else {
-                _field = {};
-                _error = l10n("system error: delegate missing");
+                // When field is not focused, simply follow the observed_value.
+                _field = _delegate->text(*this);
+                _error = {};
             }
 
             _field.set_style_of_all(theme::global->labelStyle);
@@ -210,7 +191,7 @@ public:
         ttlet lock = std::scoped_lock(gui_system_mutex);
         _request_relayout = true;
 
-        if (enabled()) {
+        if (enabled) {
             switch (command) {
             case command::text_edit_paste:
                 _field.handle_paste(window.get_text_from_clipboard());
@@ -262,7 +243,7 @@ public:
         if (event.cause.leftButton) {
             handled = true;
 
-            if (!enabled()) {
+            if (not *enabled) {
                 return true;
             }
 
@@ -327,7 +308,7 @@ public:
 
         auto handled = super::handle_event(event);
 
-        if (enabled()) {
+        if (enabled) {
             switch (event.type) {
                 using enum keyboard_event::Type;
 
@@ -356,7 +337,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, enabled() ? hit_box::Type::TextEdit : hit_box::Type::Default};
+            return hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::TextEdit : hit_box::Type::Default};
         } else {
             return hit_box{};
         }
@@ -365,12 +346,12 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_normal(group) && enabled();
+        return is_normal(group) and enabled;
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
-        if (enabled() && window.active && _error) {
+        if (enabled and window.active and _error.has_value()) {
             return theme::global->errorLabelStyle.color;
         } else {
             return super::focus_color();
@@ -378,15 +359,14 @@ public:
     }
 
 private:
-    typename decltype(value)::callback_ptr_type _value_callback;
-
-    std::weak_ptr<delegate_type> _delegate;
+    std::shared_ptr<delegate_type> _delegate;
+    typename delegate_type::callback_ptr_type _delegate_callback;
 
     bool _continues = false;
 
     /** An error string to show to the user.
      */
-    l10n _error;
+    std::optional<label>(_error);
 
     float _text_width = 0.0f;
     aarectangle _text_rectangle = {};
@@ -422,25 +402,24 @@ private:
 
     void revert(bool force) noexcept
     {
-        if (auto delegate = _delegate.lock()) {
-            _field = delegate->to_string(*this, *value);
-            _error = {};
-        } else {
-            _field = std::string{};
-            _error = l10n("missing delegate");
-        }
+        _field = _delegate->text(*this);
+        _error = {};
     }
 
     void commit(bool force) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         if (_continues || force) {
-            if (auto delegate = _delegate.lock()) {
-                auto optional_value = delegate->from_string(*this, static_cast<std::string>(_field), _error);
-                if (optional_value) {
-                    value = *optional_value;
-                }
+            auto text =  static_cast<std::string>(_field);
+
+            if (not _delegate->validate(*this, text).has_value()) {
+                // text is valid.
+                _delegate->set_text(*this, text);
             }
+
+            // After commit get the canonical text to display from the delegate.
+            _field = _delegate->text(*this);
+            _error = {};
         }
     }
 

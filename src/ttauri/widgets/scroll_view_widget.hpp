@@ -33,22 +33,16 @@ public:
 
     void init() noexcept override
     {
-        if constexpr (can_scroll_horizontally) {
-            _horizontal_scroll_bar =
-                super::make_widget<scroll_bar_widget<false>>(_scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
-        }
-        if constexpr (can_scroll_vertically) {
-            _vertical_scroll_bar =
-                super::make_widget<scroll_bar_widget<true>>(_scroll_content_height, _scroll_aperture_height, _scroll_offset_y);
-        }
+        _horizontal_scroll_bar =
+            super::make_widget<scroll_bar_widget<false>>(_scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
+        _vertical_scroll_bar =
+            super::make_widget<scroll_bar_widget<true>>(_scroll_content_height, _scroll_aperture_height, _scroll_offset_y);
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         tt_axiom(_content);
-        tt_axiom(!can_scroll_horizontally || _horizontal_scroll_bar);
-        tt_axiom(!can_scroll_vertically || _vertical_scroll_bar);
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
 
@@ -88,6 +82,24 @@ public:
         return has_updated_contraints;
     }
 
+    /** Calculate which scrollbars are needed to display the content.
+     * @return has_horizontal_scroll_baar, has_vertical_scroll_bar
+     */
+    [[nodiscard]] std::pair<bool, bool> needed_scrollbars() const noexcept
+    {
+        ttlet content_size = _content->preferred_size();
+
+        if (content_size <= size()) {
+            return {false, false};
+        } else if (content_size.width() - _vertical_scroll_bar->preferred_size().width() <= width()) {
+            return {false, true};
+        } else if (content_size.height() - _horizontal_scroll_bar->preferred_size().height() <= height()) {
+            return {true, false};
+        } else {
+            return {true, true};
+        }
+    }
+
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -95,82 +107,58 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            // Calculate the width and height of the scroll-bars, make them infinitesimal thin when they don't exist.
-            ttlet vertical_scroll_bar_width =
-                can_scroll_vertically ? _vertical_scroll_bar->preferred_size().width() : 0.0f;
-            ttlet horizontal_scroll_bar_height =
-                can_scroll_horizontally ? _horizontal_scroll_bar->preferred_size().height() : 0.0f;
-            ttlet vertical_scroll_bar_height = height() - horizontal_scroll_bar_height;
-            ttlet horizontal_scroll_bar_width = width() - vertical_scroll_bar_width;
+            ttlet vertical_scroll_bar_width = _vertical_scroll_bar->preferred_size().width();
+            ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->preferred_size().height();
 
-            // Calculate the rectangles based on the sizes of the scrollbars.
+            std::tie(_horizontal_scroll_bar->visible, _vertical_scroll_bar->visible) = needed_scrollbars();
+
+            ttlet height_adjustment = _horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f;
+            ttlet width_adjustment = _vertical_scroll_bar->visible ? vertical_scroll_bar_width : 0.0f;
+
             ttlet vertical_scroll_bar_rectangle = aarectangle{
-                rectangle().right() - vertical_scroll_bar_width,
-                rectangle().bottom() + horizontal_scroll_bar_height,
-                vertical_scroll_bar_width,
-                rectangle().height() - horizontal_scroll_bar_height};
+                width() - vertical_scroll_bar_width, height_adjustment, vertical_scroll_bar_width, height() - height_adjustment};
 
-            ttlet horizontal_scroll_bar_rectangle = aarectangle{
-                rectangle().left(), rectangle().bottom(), rectangle().width() - vertical_scroll_bar_width, horizontal_scroll_bar_height};
+            ttlet horizontal_scroll_bar_rectangle =
+                aarectangle{0.0f, 0.0f, width() - width_adjustment, horizontal_scroll_bar_height};
 
-            // Update layout parameters for both scrollbars.
-            if constexpr (can_scroll_horizontally) {
-                _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
-            }
-            if constexpr (can_scroll_vertically) {
-                _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
-            }
+            _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
+            _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
 
-            auto aperture_x = rectangle().left();
-            auto aperture_y = horizontal_scroll_bar_rectangle.top();
-            auto aperture_width = horizontal_scroll_bar_rectangle.width();
-            auto aperture_height = vertical_scroll_bar_rectangle.height();
+            _aperture_rectangle =
+                aarectangle{0.0f, height_adjustment, width() - width_adjustment, height() - height_adjustment};
 
-            // We can not use the content_rectangle is the window for the content.
-            // We need to calculate the window_content_rectangle, to positions the content after scrolling.
-            _scroll_content_width = can_scroll_horizontally ? _content->preferred_size().width() : aperture_width;
-            _scroll_content_height = can_scroll_vertically ? _content->preferred_size().height() : aperture_height;
+            // We use the preferred size of the content for determining what to scroll.
+            // This means it is possible for the scroll_content_width or scroll_content_height to be smaller
+            // than the aperture.
+            _scroll_content_width = _content->preferred_size().width();
+            _scroll_content_height = _content->preferred_size().height();
+            _scroll_aperture_width = _aperture_rectangle.width();
+            _scroll_aperture_height = _aperture_rectangle.height();
 
-            _scroll_aperture_width = aperture_width;
-            _scroll_aperture_height = aperture_height;
-
-            ttlet scroll_offset_x_max = std::max(*_scroll_content_width - aperture_width, 0.0f);
-            ttlet scroll_offset_y_max = std::max(*_scroll_content_height - aperture_height, 0.0f);
+            ttlet scroll_offset_x_max = std::max(_scroll_content_width - _scroll_aperture_width, 0.0f);
+            ttlet scroll_offset_y_max = std::max(_scroll_content_height - _scroll_aperture_height, 0.0f);
 
             _scroll_offset_x = std::clamp(std::round(*_scroll_offset_x), 0.0f, scroll_offset_x_max);
             _scroll_offset_y = std::clamp(std::round(*_scroll_offset_y), 0.0f, scroll_offset_y_max);
 
-            auto content_x = -*_scroll_offset_x;
-            auto content_y = -*_scroll_offset_y;
-            auto content_width = *_scroll_content_width;
-            auto content_height = *_scroll_content_height;
+            // Its size scroll content size, or the size of the aperture whichever is bigger.
+            ttlet content_size = extent2{
+                std::max(*_scroll_content_width, _aperture_rectangle.width()),
+                std::max(*_scroll_content_height, _aperture_rectangle.height())};
 
-            if (can_scroll_horizontally && !_horizontal_scroll_bar->visible()) {
-                ttlet delta_height = horizontal_scroll_bar_rectangle.height();
-                aperture_height += delta_height;
-                aperture_y -= delta_height;
-                content_height += delta_height;
-                content_y -= delta_height;
-            }
+            // The position of the content rectangle relative to the scroll view.
+            // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
+            ttlet content_rectangle = aarectangle{
+                -_scroll_offset_x, -_scroll_offset_y - height_adjustment, content_size.width(), content_size.height()};
 
-            if (can_scroll_vertically && !_vertical_scroll_bar->visible()) {
-                ttlet delta_width = vertical_scroll_bar_rectangle.width();
-                aperture_width += delta_width;
-                content_width += delta_width;
-            }
-
-            if constexpr (controls_window) {
-                ttlet has_horizontal_scroll_bar = can_scroll_horizontally && _horizontal_scroll_bar->visible();
-                ttlet has_vertical_scroll_bar = can_scroll_vertically && _vertical_scroll_bar->visible();
-                window.set_resize_border_priority(true, !has_vertical_scroll_bar, !has_horizontal_scroll_bar, true);
-            }
-
-            // Make a clipping rectangle that fits the content_rectangle exactly.
-            _aperture_rectangle = aarectangle{aperture_x, aperture_y, aperture_width, aperture_height};
-            ttlet content_rectangle = aarectangle{content_x, content_y, content_width, content_height};
-
+            // Make a clipping rectangle that fits the aperture_rectangle exactly.
             _content->set_layout_parameters_from_parent(
                 content_rectangle, _aperture_rectangle, _content->draw_layer() - _draw_layer);
+
+            if constexpr (controls_window) {
+                window.set_resize_border_priority(
+                    true, not _vertical_scroll_bar->visible, not _horizontal_scroll_bar->visible, true);
+            }
         }
 
         super::update_layout(display_time_point, need_layout);

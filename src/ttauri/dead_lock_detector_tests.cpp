@@ -13,6 +13,8 @@
 using namespace std;
 using namespace tt;
 
+#define ASSERT_NULL(x) ASSERT_EQ(x, nullptr);
+#define ASSERT_NOT_NULL(x) ASSERT_NE(x, nullptr);
 TEST(dead_lock_detector, good)
 {
     dead_lock_detector::clear_stack();
@@ -20,10 +22,10 @@ TEST(dead_lock_detector, good)
 
     int a, b;
 
-    ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-    ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-    ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-    ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+    ASSERT_NULL(dead_lock_detector::lock(&a));
+    ASSERT_NULL(dead_lock_detector::lock(&b));
+    ASSERT_TRUE(dead_lock_detector::unlock(&b));
+    ASSERT_TRUE(dead_lock_detector::unlock(&a));
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
 
@@ -36,9 +38,9 @@ TEST(dead_lock_detector, relock1)
 
     int a, b;
 
-    ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-    ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-    ASSERT_THROW(dead_lock_detector::lock(&a), lock_error);
+    ASSERT_NULL(dead_lock_detector::lock(&a));
+    ASSERT_NULL(dead_lock_detector::lock(&b));
+    ASSERT_NOT_NULL(dead_lock_detector::lock(&a));
 
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
@@ -51,9 +53,9 @@ TEST(dead_lock_detector, relock2)
 
     int a, b;
 
-    ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-    ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-    ASSERT_THROW(dead_lock_detector::lock(&b), lock_error);
+    ASSERT_NULL(dead_lock_detector::lock(&a));
+    ASSERT_NULL(dead_lock_detector::lock(&b));
+    ASSERT_NOT_NULL(dead_lock_detector::lock(&b));
 
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
@@ -66,9 +68,9 @@ TEST(dead_lock_detector, relock_recursive1)
 
     int a, b;
 
-    ASSERT_NO_THROW(dead_lock_detector::lock(&a, true));
-    ASSERT_NO_THROW(dead_lock_detector::lock(&b, true));
-    ASSERT_NO_THROW(dead_lock_detector::lock(&b, true));
+    ASSERT_NULL(dead_lock_detector::lock(&a, true));
+    ASSERT_NULL(dead_lock_detector::lock(&b, true));
+    ASSERT_NULL(dead_lock_detector::lock(&b, true));
 
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
@@ -81,9 +83,9 @@ TEST(dead_lock_detector, relock_recursive2)
 
     int a, b;
 
-    ASSERT_NO_THROW(dead_lock_detector::lock(&a, true));
-    ASSERT_NO_THROW(dead_lock_detector::lock(&b, true));
-    ASSERT_THROW(dead_lock_detector::lock(&a, true), lock_error);
+    ASSERT_NULL(dead_lock_detector::lock(&a, true));
+    ASSERT_NULL(dead_lock_detector::lock(&b, true));
+    ASSERT_NOT_NULL(dead_lock_detector::lock(&a, true));
 
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
@@ -96,7 +98,7 @@ TEST(dead_lock_detector, unlock1)
 
     int a, b;
 
-    ASSERT_THROW(dead_lock_detector::unlock(&a), lock_error);
+    ASSERT_FALSE(dead_lock_detector::unlock(&a));
 
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
@@ -109,8 +111,8 @@ TEST(dead_lock_detector, unlock2)
 
     int a, b;
 
-    ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-    ASSERT_THROW(dead_lock_detector::unlock(&a), lock_error);
+    ASSERT_NULL(dead_lock_detector::lock(&b));
+    ASSERT_FALSE(dead_lock_detector::unlock(&a));
 
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
@@ -125,13 +127,13 @@ TEST(dead_lock_detector, unlock_different_thread)
 
     auto at = std::thread([&a](){
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
     });
     at.join();
 
     auto bt = std::thread([&a](){
         dead_lock_detector::clear_stack();
-        ASSERT_THROW(dead_lock_detector::unlock(&a), lock_error);
+        ASSERT_FALSE(dead_lock_detector::unlock(&a));
     });
     bt.join();
 
@@ -147,19 +149,19 @@ TEST(dead_lock_detector, dead_lock1)
 
     auto at = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_THROW(dead_lock_detector::lock(&a), lock_error);
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NOT_NULL(dead_lock_detector::lock(&a));
     });
     bt.join();
 
@@ -177,19 +179,19 @@ TEST(dead_lock_detector, dead_lock2)
 
     auto at = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_THROW(dead_lock_detector::lock(&b), lock_error);
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_NOT_NULL(dead_lock_detector::lock(&b));
     });
     bt.join();
 
@@ -207,19 +209,19 @@ TEST(dead_lock_detector, dead_lock3)
 
     auto at = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_THROW(dead_lock_detector::lock(&a), lock_error);
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_NOT_NULL(dead_lock_detector::lock(&a));
     });
     bt.join();
 
@@ -237,21 +239,21 @@ TEST(dead_lock_detector, good_lock1)
 
     auto at = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     bt.join();
 
@@ -269,21 +271,21 @@ TEST(dead_lock_detector, good_lock2)
 
     auto at = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     bt.join();
 
@@ -301,21 +303,21 @@ TEST(dead_lock_detector, good_lock3)
 
     auto at = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
     });
     bt.join();
 
@@ -333,23 +335,23 @@ TEST(dead_lock_detector, good_lock4)
 
     auto at = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     at.join();
 
     auto bt = std::thread([&]() {
         dead_lock_detector::clear_stack();
-        ASSERT_NO_THROW(dead_lock_detector::lock(&a));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::lock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&c));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&b));
-        ASSERT_NO_THROW(dead_lock_detector::unlock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&a));
+        ASSERT_NULL(dead_lock_detector::lock(&b));
+        ASSERT_NULL(dead_lock_detector::lock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&c));
+        ASSERT_TRUE(dead_lock_detector::unlock(&b));
+        ASSERT_TRUE(dead_lock_detector::unlock(&a));
     });
     bt.join();
 

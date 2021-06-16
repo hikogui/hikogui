@@ -48,7 +48,9 @@ public:
     void lock() noexcept
     {
         if constexpr (UseDeadLockDetector) {
-            dead_lock_detector::lock(this);
+            ttlet other = dead_lock_detector::lock(this);
+            tt_axiom(other != this, "Mutex already locked.");
+            tt_axiom(other == nullptr, "Potential dead-lock.");
         }
 
         tt_axiom(semaphore.load() <= 2);
@@ -71,7 +73,9 @@ public:
      */
     [[nodiscard]] bool try_lock() noexcept {
         if constexpr (UseDeadLockDetector) {
-            dead_lock_detector::lock(this);
+            ttlet other = dead_lock_detector::lock(this);
+            tt_axiom(other != this, "Mutex already locked.");
+            tt_axiom(other == nullptr, "Potential dead-lock.");
         }
 
         tt_axiom(semaphore.load() <= 2);
@@ -82,7 +86,7 @@ public:
             tt_axiom(semaphore.load() <= 2);
 
             if constexpr (UseDeadLockDetector) {
-                dead_lock_detector::unlock(this);
+                tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
             }
 
             [[unlikely]] return false;
@@ -94,7 +98,7 @@ public:
 
     void unlock() noexcept {
         if constexpr (UseDeadLockDetector) {
-            dead_lock_detector::unlock(this);
+            tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
         }
 
         tt_axiom(semaphore.load() <= 2);

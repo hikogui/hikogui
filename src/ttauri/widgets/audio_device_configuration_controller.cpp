@@ -23,32 +23,33 @@ audio_device_configuration_controller::audio_device_configuration_controller(
         tt_log_fatal("audio_device_configuration_controller requires five rows on the grid, given {}", address_range);
     }
 
-    _device_config_button = grid.make_widget<button_widget<bool>>(column_nr + 1, row_nr);
-    _device_config_button->set_label(l10n("Sound Control Panel"));
+    _device_config_button = grid.make_widget<momentary_button_widget>(column_nr + 1, row_nr, l10n("Sound Control Panel"));
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Exclusive mode:"));
-    _exclusivity_checkbox = grid.make_widget<checkbox_widget<bool>>(column_nr + 1, row_nr);
+    _exclusivity_checkbox = grid.make_widget<checkbox_widget>(column_nr + 1, row_nr, false);
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Number of input channels:"));
-    _num_input_channels_text_field = grid.make_widget<text_field_widget<int>>(column_nr + 1, row_nr);
+    _num_input_channels_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 42);
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Number of output channels:"));
-    _num_output_channels_text_field = grid.make_widget<text_field_widget<int>>(column_nr + 1, row_nr);
+    _num_output_channels_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 43);
     ++row_nr;
 
-    grid.make_widget<label_widget>(column_nr, row_nr, l10n("Sample format:"));
-    _pcm_format_selection = grid.make_widget<selection_widget<pcm_format>>(column_nr + 1, row_nr);
-    _pcm_format_selection->option_list = std::vector{
+    auto pcm_option_list = std::vector{
         std::pair{pcm_format::int16, label{l10n("16 bit integer PCM")}},
         std::pair{pcm_format::int20, label{l10n("20 bit integer PCM")}},
         std::pair{pcm_format::int24, label{l10n("24 bit integer PCM")}}};
+
+    grid.make_widget<label_widget>(column_nr, row_nr, l10n("Sample format:"));
+    _pcm_format_selection =
+        grid.make_widget<selection_widget>(column_nr + 1, row_nr, l10n(), pcm_option_list, _pcm_selected, pcm_format{});
     ++row_nr;
-    
+
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Audio device sample rate:"));
-    _sample_rate_text_field = grid.make_widget<text_field_widget<int>>(column_nr + 1, row_nr);
+    _sample_rate_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 44);
 }
 
 } // namespace tt

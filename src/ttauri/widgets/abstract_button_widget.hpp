@@ -9,6 +9,8 @@
 #include "label_widget.hpp"
 #include "button_type.hpp"
 #include "../animator.hpp"
+#include "../l10n.hpp"
+#include "../notifier.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -17,164 +19,76 @@
 
 namespace tt {
 
-template<typename T, button_type ButtonType>
 class abstract_button_widget : public widget {
 public:
-    static constexpr button_type button_type = ButtonType;
-
     using super = widget;
-    using value_type = T;
-    using delegate_type = typename button_delegate<value_type, button_type>;
-    using callback_ptr_type = typename delegate_type::pressed_callback_ptr_type;
+    using delegate_type = button_delegate;
+    using callback_ptr_type = typename delegate_type::callback_ptr_type;
+
+    observable<label> on_label = l10n("on");
+    observable<label> off_label = l10n("off");
+    observable<label> other_label = l10n("other");
 
     abstract_button_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
         std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept :
-        super(window, std::move(parent), std::move(delegate))
+        super(window, std::move(parent)), _delegate(std::move(delegate))
     {
-    }
-
-    template<typename Value>
-    abstract_button_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        std::shared_ptr<delegate_type> delegate,
-        Value &&value) noexcept :
-        abstract_button_widget(window, std::move(parent), std::move(delegate))
-    {
-        this->set_value(std::forward<Value>(value));
-    }
-
-    template<typename Value>
-    abstract_button_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
-        abstract_button_widget(window, std::move(parent), std::make_shared<delegate_type>(), std::forward<Value>(value))
-    {
+        _delegate->subscribe(*this, _relayout_callback);
     }
 
     void init() noexcept override
     {
-        _on_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), _label_alignment);
-        _off_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), _label_alignment);
-        _other_label_widget = this->make_widget<label_widget>(this->delegate_ptr<label_delegate>(), _label_alignment);
+        super::init();
 
-        _on_label_widget->id = "on_label";
-        _off_label_widget->id = "off_label";
-        _other_label_widget->id = "other_label";
+        _on_label_widget = this->make_widget<label_widget>(_label_alignment);
+        _off_label_widget = this->make_widget<label_widget>(_label_alignment);
+        _other_label_widget = this->make_widget<label_widget>(_label_alignment);
 
-        return super::init();
+        _on_label_widget->label = on_label;
+        _off_label_widget->label = off_label;
+        _other_label_widget->label = other_label;
+
+        _delegate->init(*this);
+    }
+
+    void deinit() noexcept override
+    {
+        _delegate->deinit(*this);
+        super::deinit();
+    }
+
+    template<typename Label>
+    void set_label(Label const &rhs) noexcept
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+        on_label = rhs;
+        off_label = rhs;
+        other_label = rhs;
     }
 
     [[nodiscard]] button_state state() const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->delegate<delegate_type>().state(*this);
-    }
-
-    [[nodiscard]] tt::label label() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->delegate<delegate_type>().label(*this);
-    }
-
-    void set_label(tt::label const &label) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        set_on_label(label);
-        set_off_label(label);
-        set_other_label(label);
-    }
-
-    [[nodiscard]] tt::label on_label() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->delegate<delegate_type>().on_label(*this);
-    }
-
-    void set_on_label(tt::label const &label) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->delegate<delegate_type>().set_on_label(*this, label);
-    }
-
-    [[nodiscard]] tt::label off_label() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->delegate<delegate_type>().off_label(*this);
-    }
-
-    void set_off_label(tt::label const &label) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->delegate<delegate_type>().set_off_label(*this, label);
-    }
-
-    [[nodiscard]] tt::label other_label() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->delegate<delegate_type>().other_label(*this);
-    }
-
-    void set_other_label(tt::label const &label) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->delegate<delegate_type>().set_other_label(*this, label);
-    }
-
-    [[nodiscard]] value_type value() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->delegate<delegate_type>().value(*this);
-    }
-
-    template<typename Value>
-    void set_value(Value &&value) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        return this->delegate<delegate_type>().set_value(*this, std::forward<Value>(value));
-    }
-
-    [[nodiscard]] value_type on_value() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->delegate<delegate_type>().on_value(*this);
-    }
-
-    void set_on_value(value_type const &value) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->delegate<delegate_type>().set_on_value(*this, value);
-    }
-
-    [[nodiscard]] value_type off_value() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return this->delegate<delegate_type>().off_value(*this);
-    }
-
-    void set_off_value(value_type const &value) noexcept
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->delegate<delegate_type>().set_off_value(*this, value);
+        return _delegate->state(*this);
     }
 
     /** Subscribe a callback to call when the button is activated.
-     * @see button_delegate::subscribe_pressed()
      */
     template<typename Callback>
     [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        return this->delegate<delegate_type>().subscribe_pressed(*this, std::forward<Callback>(callback));
+        return _notifier.subscribe(std::forward<Callback>(callback));
     }
 
     /** Unsubscribe a callback.
-     * @see button_delegate::unsubscribe_pressed()
      */
     void unsubscribe(callback_ptr_type &callback_ptr) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
-        return this->delegate<delegate_type>().unsubscribe_pressed(*this, callback_ptr);
+        return _notifier.unsubscribe(callback_ptr);
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -201,6 +115,24 @@ public:
         }
     }
 
+    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
+    {
+        tt_axiom(gui_system_mutex.recurse_lock_count());
+
+        need_layout |= std::exchange(this->_request_relayout, false);
+        if (need_layout) {
+            auto state_ = state();
+            this->_on_label_widget->visible = state_ == button_state::on;
+            this->_off_label_widget->visible = state_ == button_state::off;
+            this->_other_label_widget->visible = state_ == button_state::other;
+
+            this->_on_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+            this->_off_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+            this->_other_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+        }
+        widget::update_layout(displayTimePoint, need_layout);
+    }
+
     [[nodiscard]] color background_color() const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
@@ -216,7 +148,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, enabled() ? hit_box::Type::Button : hit_box::Type::Default};
+            return hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::Button : hit_box::Type::Default};
         } else {
             return hit_box{};
         }
@@ -225,18 +157,27 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_normal(group) and enabled();
+        return is_normal(group) and enabled;
+    }
+
+    void activate() noexcept
+    {
+        _delegate->activate(*this);
+
+        run_from_main_loop([this]() {
+            this->_notifier();
+        });
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept override
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (enabled()) {
+        if (enabled) {
             switch (command) {
-            case command::gui_activate: this->delegate<delegate_type>().pressed(*this); return true;
+            case command::gui_activate: activate(); return true;
             case command::gui_enter:
-                this->delegate<delegate_type>().pressed(*this);
+                activate();
                 this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
                 return true;
             default:;
@@ -253,7 +194,7 @@ public:
 
         if (event.cause.leftButton) {
             handled = true;
-            if (enabled()) {
+            if (enabled) {
                 if (compare_then_assign(_pressed, static_cast<bool>(event.down.leftButton))) {
                     request_redraw();
                 }
@@ -268,21 +209,14 @@ public:
 
 protected:
     tt::alignment _label_alignment;
+    aarectangle _label_rectangle;
     std::shared_ptr<label_widget> _on_label_widget;
     std::shared_ptr<label_widget> _off_label_widget;
     std::shared_ptr<label_widget> _other_label_widget;
 
-private:
     bool _pressed = false;
-
-    void draw_label_button(draw_context const &context) noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-
-        // Move the border of the button in the middle of a pixel.
-        context.draw_box_with_border_inside(
-            this->rectangle(), this->background_color(), this->focus_color(), corner_shapes{theme::global->roundingRadius});
-    }
+    notifier<void()> _notifier;
+    std::shared_ptr<delegate_type> _delegate;
 };
 
 } // namespace tt
