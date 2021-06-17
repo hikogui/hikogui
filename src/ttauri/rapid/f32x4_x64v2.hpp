@@ -15,13 +15,6 @@
 
 namespace tt {
 
-/** Convert integers to floats.
- */
-[[nodiscard]] inline rf32x4 f32x4_x64v2_from_i32x4(ri32x4 const &rhs) noexcept
-{
-    return to_rf32x4(_mm_cvtepi32_ps(to_m128i(rhs)));
-}
-
 /** Clear elements of an SSE register.
  *
  * @tparam Mask '1': 0.0, '0': original value.
@@ -88,7 +81,6 @@ template<unsigned int Mask>
         return to_rf32x4(_mm_xor_ps(to_m128(rhs), sign));
     }
 }
-
 
 /** Add or subtract elements of two SSE registers.
  * This function is useful for creating cross products and generating a matrix
@@ -388,8 +380,8 @@ template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
     return r;
 }
 
-template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
-[[nodiscard]] rf32x4 f32x4_x64v2_swizzle(rf32x4 const &value) noexcept
+template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
+[[nodiscard]] __m128 m128_x64v2_swizzle(__m128 const &value) noexcept
 {
     static_assert(A >= -3 && A < 4);
     static_assert(B >= -3 && B < 4);
@@ -403,9 +395,9 @@ template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
     __m128 swizzled;
     // Clang is able to optimize these intrinsics, MSVC is not.
     if constexpr (permute_mask != 0b11'10'01'00) {
-        swizzled = _mm_permute_ps(to_m128(value), permute_mask);
+        swizzled = _mm_permute_ps(value, permute_mask);
     } else {
-        swizzled = to_m128(value);
+        swizzled = value;
     }
 
     __m128 numbers;
@@ -430,7 +422,31 @@ template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
     } else {
         result = _mm_blend_ps(swizzled, numbers, number_mask);
     }
-    return to_rf32x4(result);
+    return result;
+}
+
+template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
+[[nodiscard]] __m128i m128i_x64v2_swizzle(__m128i const &value) noexcept
+{
+    return _mm_castps_si128(m128_x64v2_swizzle<A, B, C, D>(_mm_castsi128_ps(value)));
+}
+
+template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
+[[nodiscard]] rf32x4 f32x4_x64v2_swizzle(rf32x4 const &value) noexcept
+{
+    return to_rf32x4(m128_x64v2_swizzle<A, B, C, D>(to_m128(value)));
+}
+
+template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
+[[nodiscard]] ri32x4 i32x4_x64v2_swizzle(ri32x4 const &value) noexcept
+{
+    return to_ri32x4(m128i_x64v2_swizzle<A, B, C, D>(to_m128i(value)));
+}
+
+template<ssize_t A = -1, ssize_t B = -1, ssize_t C = -1, ssize_t D = -1>
+[[nodiscard]] ru32x4 u32x4_x64v2_swizzle(ru32x4 const &value) noexcept
+{
+    return to_ru32x4(m128i_x64v2_swizzle<A, B, C, D>(to_m128i(value)));
 }
 
 template<ssize_t A = -1, ssize_t B = -1>

@@ -58,7 +58,7 @@ public:
         // Switch to 1 means there are no waiters.
         uint32_t expected = 0;
         if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
-            [[unlikely]] lock_contented(expected);
+            [[unlikely]] lock_contended(expected);
         }
 
         tt_axiom(semaphore.load() <= 2);
@@ -123,7 +123,7 @@ private:
      */
     std::atomic<uint32_t> semaphore = 0;
 
-    tt_no_inline void lock_contented(uint32_t expected) noexcept
+    tt_no_inline void lock_contended(uint32_t expected) noexcept
     {
         tt_axiom(semaphore.load() <= 2);
 

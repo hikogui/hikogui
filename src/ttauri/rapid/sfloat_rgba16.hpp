@@ -33,21 +33,21 @@ public:
 
     sfloat_rgba16(f32x4 const &rhs) noexcept
     {
-        ttlet rhs_fp16 = _mm_cvtps_ph(to_m128(rhs), _MM_FROUND_CUR_DIRECTION);
-        _mm_storeu_si64(v.data(), rhs_fp16);
+        ttlet rhs_fp16 = f32x4_to_f16x8(rhs);
+        rhs_fp16.store<sizeof(v)>(reinterpret_cast<std::byte *>(v.data())); 
     }
 
     sfloat_rgba16 &operator=(f32x4 const &rhs) noexcept
     {
-        ttlet rhs_fp16 = _mm_cvtps_ph(to_m128(rhs), _MM_FROUND_CUR_DIRECTION);
-        _mm_storeu_si64(v.data(), rhs_fp16);
+        ttlet rhs_fp16 = f32x4_to_f16x8(rhs);
+        rhs_fp16.store<sizeof(v)>(reinterpret_cast<std::byte *>(v.data()));
         return *this;
     }
 
     explicit operator f32x4() const noexcept
     {
-        ttlet rhs_fp16 = _mm_loadu_si64(v.data());
-        return f32x4{to_rf32x4(_mm_cvtph_ps(rhs_fp16))};
+        auto tmp = i16x8::load<sizeof(v)>(reinterpret_cast<std::byte const*>(v.data()));
+        return f16x8_to_f32x4(tmp);
     }
 
     sfloat_rgba16(color const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}

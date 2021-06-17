@@ -189,16 +189,28 @@ public:
         v()
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2_5 and is_f32x8 and other1.is_f32x4) {
+            if constexpr (x86_64_v2_5 and is_f32x8 and other1.is_f32x4 and other2.is_f32x4) {
                 *this = numeric_array{_mm256_set_m128(other2.reg(), other1.reg())};
                 return;
-            } else if constexpr (x86_64_v2_5 and is_f64x4 and other1.is_f64x2) {
+            } else if constexpr (x86_64_v2_5 and is_f64x4 and other1.is_f64x2 and other2.is_f64x2) {
                 *this = numeric_array{_mm256_set_m128d(other2.reg(), other1.reg())};
                 return;
             } else if constexpr (
                 x86_64_v2_5 and std::is_integral_v<T> and std::is_integral_v<U> and (sizeof(T) * N == 32) and
                 (sizeof(U) * M == 16)) {
                 *this = numeric_array{_mm256_set_m128i(other2.reg(), other1.reg())};
+                return;
+            } else if constexpr (x86_64_v2 and is_i16x8 and other1.is_i32x4 and other2.is_i32x4) {
+                *this = numeric_array{_mm_packs_epi32(other2.reg(), other1.reg())};
+                return;
+            } else if constexpr (x86_64_v2 and is_i8x16 and other1.is_i16x8 and other2.is_i16x8) {
+                *this = numeric_array{_mm_packs_epi16(other2.reg(), other1.reg())};
+                return;
+            } else if constexpr (x86_64_v2 and is_u16x8 and other1.is_u32x4 and other2.is_u32x4) {
+                *this = numeric_array{_mm_packus_epu32(other2.reg(), other1.reg())};
+                return;
+            } else if constexpr (x86_64_v2 and is_u8x16 and other1.is_u16x8 and other2.is_u16x8) {
+                *this = numeric_array{_mm_packus_epu16(other2.reg(), other1.reg())};
                 return;
             }
         }
@@ -374,28 +386,70 @@ public:
     }
 
     template<typename Other>
-    requires(sizeof(Other) == sizeof(numeric_array)) [[nodiscard]] friend Other bit_cast(numeric_array const &rhs) noexcept
+    requires(sizeof(Other) == sizeof(numeric_array)) [[nodiscard]] constexpr friend Other
+        bit_cast(numeric_array const &rhs) noexcept
     {
         using rhs_value_type = typename std::remove_cvref_t<decltype(rhs)>::value_type;
 
-        if constexpr (Other::is_f32x4 and std::is_integral_v<rhs_value_type> and x86_64_v2) {
-            return Other{_mm_castsi128_ps(rhs.reg())};
-        } else if constexpr (Other::is_f32x4 and rhs.is_f64x2 and x86_64_v2) {
-            return Other{_mm_castpd_ps(rhs.reg())};
-        } else if constexpr (Other::is_f64x2 and std::is_integral_v<rhs_value_type> and x86_64_v2) {
-            return Other{_mm_castsi128_pd(rhs.reg())};
-        } else if constexpr (Other::is_f64x2 and rhs.is_f32x4 and x86_64_v2) {
-            return Other{_mm_castps_pd(rhs.reg())};
-        } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f32x4 and x86_64_v2) {
-            return Other{_mm_castps_si128(rhs.reg())};
-        } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f64x2 and x86_64_v2) {
-            return Other{_mm_castpd_si128(rhs.reg())};
-        } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<rhs_value_type> and x86_64_v2) {
-            return Other{rhs.reg()};
-        } else {
-            return std::bit_cast<Other>(rhs);
+        if (not std::is_constant_evaluated()) {
+            if constexpr (Other::is_f32x4 and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+                return Other{_mm_castsi128_ps(rhs.reg())};
+            } else if constexpr (Other::is_f32x4 and rhs.is_f64x2 and x86_64_v2) {
+                return Other{_mm_castpd_ps(rhs.reg())};
+            } else if constexpr (Other::is_f64x2 and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+                return Other{_mm_castsi128_pd(rhs.reg())};
+            } else if constexpr (Other::is_f64x2 and rhs.is_f32x4 and x86_64_v2) {
+                return Other{_mm_castps_pd(rhs.reg())};
+            } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f32x4 and x86_64_v2) {
+                return Other{_mm_castps_si128(rhs.reg())};
+            } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f64x2 and x86_64_v2) {
+                return Other{_mm_castpd_si128(rhs.reg())};
+            } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+                return Other{rhs.reg()};
+            }
         }
+        return std::bit_cast<Other>(rhs);
     }
+
+    /** Interleave the first words in both arrays.
+     */
+    static constexpr numeric_array interleave_lo(numeric_array a, numeric_array b) noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (x86_64_v2 and is_f64x2) {
+                return numeric_array{_mm_unpacklo_pd(a.reg(), b.reg())};
+            } else if constexpr (x86_64_v2 and is_f32x4) {
+                return numeric_array{_mm_unpacklo_ps(a.reg(), b.reg())};
+            } else if constexpr (x86_64_v2 and is_i64x2) {
+                return numeric_array{_mm_unpacklo_epi64(a.reg(), b.reg())};
+            } else if constexpr (x86_64_v2 and is_i32x4) {
+                return numeric_array{_mm_unpacklo_epi32(a.reg(), b.reg())};
+            } else if constexpr (x86_64_v2 and is_i16x8) {
+                return numeric_array{_mm_unpacklo_epi16(a.reg(), b.reg())};
+            } else if constexpr (x86_64_v2 and is_i8x16) {
+                return numeric_array{_mm_unpacklo_epi8(a.reg(), b.reg())};
+            }
+        }
+
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            r[i] = (i % 2 == 0) ? a[i / 2] : b[i / 2];
+        }
+        return r;
+    }
+
+    /** Load a numeric array from memory.
+     * @param ptr A Pointer to an array of values in memory.
+     * @return A numeric array.
+     */
+    template<size_t S>
+    [[nodiscard]] static constexpr numeric_array load(std::byte const *ptr) noexcept
+    {
+        auto r = numeric_array{};
+        std::memcpy(&r, ptr, S);
+        return r;
+    }
+
 
     /** Load a numeric array from memory.
      * @param ptr A Pointer to an array of values in memory.
@@ -419,12 +473,18 @@ public:
         return r;
     }
 
+    template<size_t S>
+    constexpr void store(std::byte *ptr) const noexcept
+    {
+        std::memcpy(ptr, this, S);
+    }
+
     /** Store a numeric array into memory.
      * @param [out]ptr A pointer to where the numeric array should be stored into memory.
      */
     constexpr void store(std::byte *ptr) const noexcept
     {
-        std::memcpy(ptr, this, sizeof(*this));
+        store<sizeof(*this)>(ptr);
     }
 
     [[nodiscard]] constexpr T const &operator[](size_t i) const noexcept
@@ -1136,6 +1196,50 @@ public:
         return r;
     }
 
+    [[nodiscard]] friend constexpr numeric_array gt_mask(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (is_f32x4 and x86_64_v2) {
+                return numeric_array{_mm_cmpgt_ps(lhs.reg(), rhs.reg())};
+            } else if constexpr (is_i64x4 and x86_64_v2) {
+                return numeric_array{_mm_cmpgt_epi64(lhs.reg(), rhs.reg())};
+            } else if constexpr (is_i32x4 and x86_64_v2) {
+                return numeric_array{_mm_cmpgt_epi32(lhs.reg(), rhs.reg())};
+            } else if constexpr (is_i16x4 and x86_64_v2) {
+                return numeric_array{_mm_cmpgt_epi16(lhs.reg(), rhs.reg())};
+            }
+        }
+
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            if constexpr (sizeof(value_type) == 4) {
+                r[i] = std::bit_cast<value_type>((static_cast<int32_t>(lhs.v[i] > rhs.v[i]) << 31) >> 31);
+            } else {
+                tt_static_not_implemented();
+            }
+        }
+        return r;
+    }
+
+    [[nodiscard]] friend constexpr numeric_array ge_mask(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    {
+        if (not std::is_constant_evaluated()) {
+            if constexpr (is_f32x4 and x86_64_v2) {
+                return numeric_array{_mm_cmpge_ps(lhs.reg(), rhs.reg())};
+            }
+        }
+
+        auto r = numeric_array{};
+        for (size_t i = 0; i != N; ++i) {
+            if constexpr (sizeof(value_type) == 4) {
+                r[i] = std::bit_cast<value_type>((static_cast<int32_t>(lhs.v[i] >= rhs.v[i]) << 31) >> 31);
+            } else {
+                tt_static_not_implemented();
+            }
+        }
+        return r;
+    }
+
     [[nodiscard]] friend constexpr bool operator==(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (!std::is_constant_evaluated()) {
@@ -1160,8 +1264,18 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator<<(numeric_array const &lhs, unsigned int rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2 and is_u64x2) {
+            if constexpr (x86_64_v2 and is_i64x2) {
                 return numeric_array{_mm_slli_epi64(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_i32x4) {
+                return numeric_array{_mm_slli_epi32(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_i16x8) {
+                return numeric_array{_mm_slli_epi32(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_u64x2) {
+                return numeric_array{_mm_slli_epi64(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_u32x4) {
+                return numeric_array{_mm_slli_epi32(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_u16x8) {
+                return numeric_array{_mm_slli_epi32(lhs.reg(), rhs)};
             }
         }
 
@@ -1175,8 +1289,16 @@ public:
     [[nodiscard]] friend constexpr numeric_array operator>>(numeric_array const &lhs, unsigned int rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2 and is_u64x2) {
+            if constexpr (x86_64_v2 and is_i32x4) {
+                return numeric_array{_mm_srai_epi32(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_i16x8) {
+                return numeric_array{_mm_srai_epi16(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_u64x2) {
                 return numeric_array{_mm_srli_epi64(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_u32x4) {
+                return numeric_array{_mm_srli_epi32(lhs.reg(), rhs)};
+            } else if constexpr (x86_64_v2 and is_u16x8) {
+                return numeric_array{_mm_srli_epi16(lhs.reg(), rhs)};
             }
         }
 
@@ -1805,6 +1927,10 @@ public:
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
                 return numeric_array{f32x4_x64v2_swizzle<Elements...>(v)};
+            } else if constexpr (is_i32x4 && x86_64_v2) {
+                return numeric_array{i32x4_x64v2_swizzle<Elements...>(v)};
+            } else if constexpr (is_u32x4 && x86_64_v2) {
+                return numeric_array{u32x4_x64v2_swizzle<Elements...>(v)};
             } else if constexpr (is_u64x2 and x86_64_v2) {
                 return numeric_array{u64x2_x64v2_swizzle<Elements...>(v)};
             }
