@@ -92,13 +92,23 @@ namespace tt {
     return !is_alpha_num(c) && c != '_' && !is_white_space(c) && !is_quote(c) && !is_open_bracket(c) && !is_close_bracket(c);
 }
 
+[[nodiscard]] constexpr char to_lower(char c) noexcept
+{
+    return (c >= 'A' and c <= 'Z') ? (c - 'A') + 'a' : c;
+}
+
+[[nodiscard]] constexpr char to_upper(char c) noexcept
+{
+    return (c >= 'a' and c <= 'z') ? (c - 'a') + 'A' : c;
+}
+
 [[nodiscard]] inline std::string to_lower(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
 
     for (ttlet c : str) {
-        r += (c >= 'A' && c <= 'Z') ? (c - 'A') + 'a' : c;
+        r += to_lower(c);
     }
 
     return r;
@@ -110,7 +120,7 @@ namespace tt {
     r.reserve(size(str));
 
     for (ttlet c : str) {
-        r += (c >= 'a' && c <= 'z') ? (c - 'a') + 'A' : c;
+        r += to_upper(c);
     }
 
     return r;

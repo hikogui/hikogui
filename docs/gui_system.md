@@ -1,5 +1,41 @@
-GUI System
-==========
+How to GUI system 
+=================
+
+This document describes how to use widgets.
+
+
+Observable
+----------
+The first concept to learn about is the `tt::observable<>` type.
+An observable is a value that will use callbacks to notify listeners
+when its value changes.
+
+For example a `tt::widget::enable` flag is of type `tt::observable<bool>`,
+the widget listens to any changes to this enable flag and change its appearance.
+In the example below the button is disabled:
+
+```
+auto button = window.make_widget<button_widget>("A1", l10n("My Button"));
+button->enable = false;
+```
+
+It is also possible to chain observables to each other. Chaining is done
+by assigning an observable to another observable. In the example below
+we again disable the button, but now through an second observable.
+
+```
+observable<bool> enable = true;
+
+auto button = window.make_widget<button_widget>("A1", l10n("My Button"));
+button->enable = enable;
+enable = false;
+```
+
+Observables are used for many member variables of a widget, including
+the `tt::widget::enabled`, `tt::widget::visible` members and various
+labels. They are also used by value-delegates that some widget use
+by default.
+
 
 System
 ------

@@ -12,13 +12,22 @@
 
 namespace tt {
 
+/** A type that gets animated between two values.
+ */
 template<arithmetic T>
 class animator {
 public:
     using value_type = T;
 
+    /** Constructor.
+     * @param animation_duration The duration to animate from start to end value.
+     */
     animator(hires_utc_clock::duration animation_duration) noexcept : _animation_duration(animation_duration) {}
 
+    /** Update the value and time.
+     * @param new_value The value to animate toward.
+     * @param current_time The current time.
+     */
     void update(value_type new_value, hires_utc_clock::time_point current_time) noexcept
     {
         if (not initialized) {
@@ -35,12 +44,16 @@ public:
         _current_time = current_time;
     }
 
+    /** Check if the animation is currently running.
+     */
     [[nodiscard]] bool is_animating() const noexcept
     {
         tt_axiom(initialized);
         return progress() < 1.0f;
     }
 
+    /** The interpolated value between start and end value.
+     */
     value_type current_value() const noexcept {
         tt_axiom(initialized);
         return std::lerp(_old_value, _new_value, progress());

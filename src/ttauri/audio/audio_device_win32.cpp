@@ -3,9 +3,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "audio_device_win32.hpp"
+#include "audio_sample_format.hpp"
+#include "audio_channel_mapping.hpp"
 #include "../logger.hpp"
 #include "../strings.hpp"
 #include "../exception.hpp"
+#include "../cast.hpp"
 #include <Windows.h>
 #include <propsys.h>
 #include <initguid.h>
@@ -15,6 +18,48 @@
 #include <bit>
 
 namespace tt {
+
+constexpr WAVEFORMATEXTENSIBLE make_wave_format(audio_sample_format format, uint16_t num_channels, audio_channel_mapping channel_mapping, uitn32_t sample_rate) noexcept
+{
+    tt_axiom(std::pop_count<channel_mapping> <= num_channels);
+
+    bool extended = false;
+
+    // legacy format can only handle mono or stereo.
+    extended |= num_channels > 2;
+
+    // Legacy format can only handle bits equal to container size.
+    extended |= (format.num_bytes * 8) != (format.num_guard_bits + format.num_bits + 1);
+
+    // Legacy format can only handle direct channel map. This allows you to select legacy
+    // mono and stereo for old device drivers.
+    extended |= channel_mapping != audio_channel_mapping::direct;
+
+    // Legacy format can only be PCM-8, PCM-16 or PCM-float-32.
+    if (format.is_float)
+        extended |= format.num_bytes == 4;
+    } else {
+        extended |= format.num_bytes <= 2;
+    }
+
+    WAVEFORMATEXTENSIBLE r;
+    r.Format.wFormatTag = extended ? WAVE_FORMAT_EXTENSIBLE : format.is_float ? WAVE_FORMAT_IEEE_FLOAT : WAVE_FORMAT_PCM;
+    r.Format.nChannels = num_channels;
+    r.Format.nSamplesPerSec = sample_rate;
+    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(sample_rate * num_channels * format.num_bytes);
+    r.Format.nBlockAlign = narrow_cast<WORD>(num_channels * format.num_bytes);
+    r.Format.wBitsPerSample = narrow_cast<WORD>(format.num_bytes * 8);
+    r.Format.cbSize = extended ? (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)) : 0;
+    r.Samples.wValidBitsPerSample = narrow_cast<WORD>(format.num_guard_bits + format.num_bits + 1);
+    r.dwChannelMask = audio_channel_mapping_to_win32(channel_mapping);
+    r.SubFormat = format.is_foat ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT :  KSDATAFORMAT_SUBTYPE_PCM;
+    return r;
+}
+
+constexpr WAVEFORMATEXTENSIBLE make_wave_format(audio_sample_format format, uint16_t num_channels, uitn32_t sample_rate) noexcept
+{
+    return make_wave_format(format, num_channels, audio_channel_mapping::direct, sample_rate);
+}
 
 template<typename T>
 [[nodiscard]] T get_property(IPropertyStore *property_store, REFPROPERTYKEY key)
