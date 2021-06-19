@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "theme.hpp"
+#include "theme_book.hpp"
 #include "../text/font_book.hpp"
 #include "../application.hpp"
 #include "../codec/JSON.hpp"
@@ -11,6 +12,17 @@
 #include "../URL.hpp"
 
 namespace tt {
+
+[[nodiscard]] theme &theme::global() noexcept
+{
+    if (auto tmp = _global.load(std::memory_order::relaxed)) {
+        return *tmp;
+    } else {
+        // Once the theme_book is initialized, _global should be to.
+        [[maybe_unused]] ttlet &book = theme_book::global();
+        return *_global.load(std::memory_order::relaxed);
+    }
+}
 
 theme::theme(URL const &url)
 {

@@ -13,6 +13,7 @@
 #include "../datum.hpp"
 #include "../color/color.hpp"
 #include "../geometry/extent.hpp"
+#include "../subsystem.hpp"
 #include <array>
 
 namespace tt {
@@ -78,14 +79,10 @@ public:
 
     static void set_global(theme *theme) noexcept
     {
-        _global = theme;
+        _global.store(theme);
     }
 
-    [[nodiscard]] static theme &global() noexcept
-    {
-        tt_axiom(_global);
-        return *_global;
-    }
+    [[nodiscard]] static theme &global() noexcept;
 
     [[nodiscard]] static tt::color global(theme_color color, ssize_t nesting_level = 0) noexcept
     {
@@ -98,7 +95,7 @@ public:
     }
 
 private:
-    static inline theme *_global = nullptr;
+    static inline std::atomic<theme *>_global = nullptr;
 
     std::array<std::vector<tt::color>, num_theme_colors> _colors;
     std::array<tt::text_style, num_theme_text_styles> _text_styles;

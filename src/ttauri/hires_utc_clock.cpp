@@ -144,7 +144,7 @@ void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
         ttlet tp = hires_utc_clock::now(tsc);
         tt_axiom(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
 
-        tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);        
+        tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);
     }
 }
 
@@ -156,21 +156,22 @@ void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
 
 void hires_utc_clock::deinit_subsystem() noexcept
 {
-    if (hires_utc_clock::subsystem_thread.joinable()) {
-        hires_utc_clock::subsystem_thread.request_stop();
-        hires_utc_clock::subsystem_thread.join();
+    if (subsystem_is_running.exchange(false)) {
+        if (hires_utc_clock::subsystem_thread.joinable()) {
+            hires_utc_clock::subsystem_thread.request_stop();
+            hires_utc_clock::subsystem_thread.join();
+        }
     }
 }
 
 bool hires_utc_clock::start_subsystem() noexcept
 {
-    return tt::start_subsystem(
-        hires_utc_clock::subsystem_is_running, false, hires_utc_clock::init_subsystem, hires_utc_clock::deinit_subsystem);
+    return tt::start_subsystem(subsystem_is_running, false, init_subsystem, deinit_subsystem);
 }
 
 void hires_utc_clock::stop_subsystem() noexcept
 {
-    return tt::stop_subsystem(hires_utc_clock::subsystem_is_running, false, hires_utc_clock::deinit_subsystem);
+    return tt::stop_subsystem(deinit_subsystem);
 }
 
 } // namespace tt

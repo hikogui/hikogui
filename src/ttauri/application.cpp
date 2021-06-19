@@ -16,7 +16,6 @@
 #include "text/language.hpp"
 #include "text/font_book.hpp"
 #include "GUI/RenderDoc.hpp"
-#include "GUI/theme_book.hpp"
 #include "GUI/keyboard_bindings.hpp"
 #include "GUI/gui_system_vulkan_win32.hpp"
 #include "audio/audio_system.hpp"
@@ -117,8 +116,6 @@ void application::init_gui()
         if (!gui_delegate.expired()) {
             RenderDoc::global = std::make_unique<RenderDoc>();
 
-            theme_book::global = std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
-            theme_book::global->set_current_theme_mode(read_os_theme_mode());
 
             try {
                 keyboardBindings.loadSystemBindings();
@@ -174,7 +171,6 @@ void application::deinit_audio()
 void application::deinit_gui()
 {
     gui_system::global = {};
-    theme_book::global = {};
     RenderDoc::global = {};
 }
 
