@@ -47,7 +47,7 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
             if (_alignment == horizontal_alignment::center) {
                 _icon_size = theme::global->large_icon_size;
             } else {
-                _icon_size = theme::global->icon_size;
+                _icon_size = std::ceil(_text_style.scaled_size() * 1.4f);
             }
         } else {
             _icon_size = 0.0f;
@@ -56,10 +56,9 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
         auto size = label_size;
         if (has_icon) {
             if (_alignment != horizontal_alignment::center) {
-                // If the icon is on the left or right, add the icon to the width and
-                // the minimum height is the maximum of the icon and text height.
+                // If the icon is on the left or right, add the icon to the width.
+                // Since the label is inline, we do not adjust the height of the label widget on the icon size.
                 size.width() += _inner_margin + _icon_size;
-                size.height() = std::max(size.height(), _icon_size);
 
             } else if (_alignment != vertical_alignment::middle) {
                 // If the icon is above or below the text, add the icon height and the

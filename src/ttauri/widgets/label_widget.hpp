@@ -28,7 +28,7 @@ public:
         gui_window &window,
         std::shared_ptr<widget> parent,
         alignment alignment = alignment::middle_right,
-        text_style text_style = theme::global->labelStyle) noexcept;
+        text_style text_style = theme::global->label_style) noexcept;
 
     template<typename Label>
     label_widget(
@@ -36,7 +36,7 @@ public:
         std::shared_ptr<widget> parent,
         Label &&label,
         alignment alignment = alignment::middle_right,
-        text_style text_style = theme::global->labelStyle
+        text_style text_style = theme::global->label_style
         ) noexcept :
         label_widget(window, std::move(parent), alignment, text_style)
     {

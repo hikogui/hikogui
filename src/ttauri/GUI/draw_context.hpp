@@ -106,7 +106,7 @@ public:
      * This will use the current:
      *  - transform, to transform each point.
      *  - clippingRectangle
-     *  - fillColor
+     *  - fill_color
      */
     void draw_filled_quad(point3 p1, point3 p2, point3 p3, point3 p4, color fill_color) const noexcept
     {
@@ -122,7 +122,7 @@ public:
      * This will use the current:
      *  - transform, to transform each corner of the rectangle.
      *  - clippingRectangle
-     *  - fillColor
+     *  - fill_color
      */
     void draw_filled_quad(rectangle r, color fill_color) const noexcept
     {
@@ -134,9 +134,9 @@ public:
      * This will use the current:
      *  - transform, to transform the opposite corner (rotation is not recommended).
      *  - clippingRectangle
-     *  - fillColor
+     *  - fill_color
      *  - borderSize
-     *  - borderColor
+     *  - border_color
      *  - shadowSize
      *  - cornerShapes
      */
@@ -227,9 +227,9 @@ public:
      * This will use the current:
      *  - transform, to transform the opposite corner (rotation is not recommended).
      *  - clippingRectangle
-     *  - fillColor
+     *  - fill_color
      *  - borderSize
-     *  - borderColor
+     *  - border_color
      *  - shadowSize
      *  - cornerShapes
      */

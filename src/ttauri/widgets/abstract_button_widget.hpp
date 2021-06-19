@@ -137,7 +137,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         if (_pressed) {
-            return theme::global->fillColor(this->_semantic_layer + 2);
+            return theme::global->fill_color(this->_semantic_layer + 2);
         } else {
             return super::background_color();
         }

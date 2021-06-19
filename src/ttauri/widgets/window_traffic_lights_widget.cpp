@@ -26,12 +26,12 @@ window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point dis
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        if constexpr (theme::global->operatingSystem == operating_system::windows) {
-            ttlet width = theme::global->toolbarDecorationButtonWidth * 3.0f;
-            ttlet height = theme::global->toolbarHeight;
+        if constexpr (theme::global->operating_system == operating_system::windows) {
+            ttlet width = theme::global->toolbar_decoration_button_width * 3.0f;
+            ttlet height = theme::global->toolbar_height;
             _minimum_size = _preferred_size = _maximum_size = {width, height};
 
-        } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
+        } else if constexpr (theme::global->operating_system == operating_system::macos) {
             ttlet width = DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING;
             ttlet height = DIAMETER + 2.0f * MARGIN;
             _minimum_size = _preferred_size = _maximum_size = {width, height};
@@ -54,12 +54,12 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         auto extent = rectangle().size();
-        if (extent.height() > theme::global->toolbarHeight * 1.2f) {
-            extent = extent2{extent.width(), theme::global->toolbarHeight};
+        if (extent.height() > theme::global->toolbar_height * 1.2f) {
+            extent = extent2{extent.width(), theme::global->toolbar_height};
         }
         auto y = rectangle().height() - extent.height();
 
-        if constexpr (theme::global->operatingSystem == operating_system::windows) {
+        if constexpr (theme::global->operating_system == operating_system::windows) {
             closeRectangle =
                 aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
@@ -68,7 +68,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
 
             minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-        } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
+        } else if constexpr (theme::global->operating_system == operating_system::macos) {
             closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
             minimizeRectangle =
@@ -84,11 +84,11 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
         closeWindowGlyph = to_font_glyph_ids(ttauri_icon::CloseWindow);
         minimizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MinimizeWindow);
 
-        if constexpr (theme::global->operatingSystem == operating_system::windows) {
+        if constexpr (theme::global->operating_system == operating_system::windows) {
             maximizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MaximizeWindowMS);
             restoreWindowGlyph = to_font_glyph_ids(ttauri_icon::RestoreWindowMS);
 
-        } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
+        } else if constexpr (theme::global->operating_system == operating_system::macos) {
             maximizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MaximizeWindowMacOS);
             restoreWindowGlyph = to_font_glyph_ids(ttauri_icon::RestoreWindowMacOS);
         } else {
@@ -100,7 +100,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
         ttlet maximizeWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(maximizeWindowGlyph);
         ttlet restoreWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(restoreWindowGlyph);
 
-        ttlet glyph_size = theme::global->operatingSystem == operating_system::macos ? 5.0f : theme::global->small_icon_size;
+        ttlet glyph_size = theme::global->operating_system == operating_system::macos ? 5.0f : theme::global->icon_size;
 
         closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, glyph_size), alignment::middle_center);
         minimizeWindowGlyphRectangle =
@@ -161,23 +161,23 @@ void window_traffic_lights_widget::drawWindows(
     } else if (hoverClose) {
         context.draw_filled_quad(closeRectangle, color{0.5f, 0.0f, 0.0f});
     } else {
-        context.draw_filled_quad(closeRectangle, theme::global->fillColor(_semantic_layer));
+        context.draw_filled_quad(closeRectangle, theme::global->fill_color(_semantic_layer));
     }
 
     if (pressedMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme::global->fillColor(_semantic_layer + 2));
+        context.draw_filled_quad(minimizeRectangle, theme::global->fill_color(_semantic_layer + 2));
     } else if (hoverMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme::global->fillColor(_semantic_layer + 1));
+        context.draw_filled_quad(minimizeRectangle, theme::global->fill_color(_semantic_layer + 1));
     } else {
-        context.draw_filled_quad(minimizeRectangle, theme::global->fillColor(_semantic_layer));
+        context.draw_filled_quad(minimizeRectangle, theme::global->fill_color(_semantic_layer));
     }
 
     if (pressedMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme::global->fillColor(_semantic_layer + 2));
+        context.draw_filled_quad(maximizeRectangle, theme::global->fill_color(_semantic_layer + 2));
     } else if (hoverMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme::global->fillColor(_semantic_layer + 1));
+        context.draw_filled_quad(maximizeRectangle, theme::global->fill_color(_semantic_layer + 1));
     } else {
-        context.draw_filled_quad(maximizeRectangle, theme::global->fillColor(_semantic_layer));
+        context.draw_filled_quad(maximizeRectangle, theme::global->fill_color(_semantic_layer));
     }
 
     ttlet glyph_color = window.active ? label_color() : foreground_color();
@@ -196,10 +196,10 @@ void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::t
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (overlaps(context, _clipping_rectangle)) {
-        if constexpr (theme::global->operatingSystem == operating_system::macos) {
+        if constexpr (theme::global->operating_system == operating_system::macos) {
             drawMacOS(context, display_time_point);
 
-        } else if constexpr (theme::global->operatingSystem == operating_system::windows) {
+        } else if constexpr (theme::global->operating_system == operating_system::windows) {
             drawWindows(context, display_time_point);
 
         } else {

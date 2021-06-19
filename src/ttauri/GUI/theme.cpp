@@ -23,7 +23,7 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] std::string theme::parseString(datum const &data, char const *object_name)
+[[nodiscard]] std::string theme::parse_string(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -36,7 +36,7 @@ theme::theme(URL const &url)
     return static_cast<std::string>(object);
 }
 
-[[nodiscard]] float theme::parseFloat(datum const &data, char const *object_name)
+[[nodiscard]] float theme::parse_float(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error("Missing '{}'", object_name);
@@ -50,7 +50,7 @@ theme::theme(URL const &url)
     return static_cast<float>(object);
 }
 
-[[nodiscard]] bool theme::parseBool(datum const &data, char const *object_name)
+[[nodiscard]] bool theme::parse_bool(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error("Missing '{}'", object_name);
@@ -64,7 +64,7 @@ theme::theme(URL const &url)
     return static_cast<bool>(object);
 }
 
-[[nodiscard]] color theme::parseColorValue(datum const &data)
+[[nodiscard]] color theme::parse_color_value(datum const &data)
 {
     if (data.is_vector()) {
         if (std::ssize(data) != 3 && std::ssize(data) != 4) {
@@ -107,11 +107,11 @@ theme::theme(URL const &url)
         } else if (color_name == "red") { return red;
         } else if (color_name == "teal") { return teal;
         } else if (color_name == "yellow") { return yellow;
-        } else if (color_name == "foreground-color") { return foregroundColor;
-        } else if (color_name == "accent-color") { return accentColor;
-        } else if (color_name == "text-select-color") { return textSelectColor;
-        } else if (color_name == "cursor-color") { return cursorColor;
-        } else if (color_name == "incomplete-glyph-color") { return incompleteGlyphColor;
+        } else if (color_name == "foreground-color") { return foreground_color;
+        } else if (color_name == "accent-color") { return accent_color;
+        } else if (color_name == "text-select-color") { return text_select_color;
+        } else if (color_name == "cursor-color") { return cursor_color;
+        } else if (color_name == "incomplete-glyph-color") { return incomplete_glyph_color;
         } else {
             throw parse_error("Unable to parse color, got {}.", data);
         }
@@ -120,7 +120,7 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] color theme::parseColor(datum const &data, char const *object_name)
+[[nodiscard]] color theme::parse_color(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -129,13 +129,13 @@ theme::theme(URL const &url)
 
     ttlet colorObject = data[object_name];
     try {
-        return parseColorValue(colorObject);
+        return parse_color_value(colorObject);
     } catch (parse_error const &e) {
         throw parse_error("Could not parse color '{}'\n{}", object_name, e.what());
     }
 }
 
-[[nodiscard]] std::vector<color> theme::parseColorList(datum const &data, char const *object_name)
+[[nodiscard]] std::vector<color> theme::parse_color_list(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -151,7 +151,7 @@ theme::theme(URL const &url)
     ssize_t i = 0;
     for (auto it = colorListObject.vector_begin(); it != colorListObject.vector_end(); ++it, ++i) {
         try {
-            r.push_back(parseColorValue(*it));
+            r.push_back(parse_color_value(*it));
         } catch (parse_error const &e) {
             throw parse_error("Could not parse {}nd entry of color list '{}'\n{}", i + 1, name, e.what());
         }
@@ -159,7 +159,7 @@ theme::theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] font_weight theme::parsefont_weight(datum const &data, char const *object_name)
+[[nodiscard]] font_weight theme::parse_font_weight(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error("Missing '{}'", object_name);
@@ -175,7 +175,7 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] text_style theme::parsetext_styleValue(datum const &data)
+[[nodiscard]] text_style theme::parse_text_style_value(datum const &data)
 {
     if (!data.is_map()) {
         throw parse_error("Expect a text-style to be an object, got '{}'", data);
@@ -183,26 +183,26 @@ theme::theme(URL const &url)
 
     text_style r;
 
-    r.family_id = font_book::global->find_family(parseString(data, "family"));
-    r.size = parseFloat(data, "size");
+    r.family_id = font_book::global->find_family(parse_string(data, "family"));
+    r.size = parse_float(data, "size");
 
     if (data.contains("weight")) {
-        r.variant.set_weight(parsefont_weight(data, "weight"));
+        r.variant.set_weight(parse_font_weight(data, "weight"));
     } else {
         r.variant.set_weight(font_weight::Regular);
     }
 
     if (data.contains("italic")) {
-        r.variant.set_italic(parseBool(data, "italic"));
+        r.variant.set_italic(parse_bool(data, "italic"));
     } else {
         r.variant.set_italic(false);
     }
 
-    r.color = parseColor(data, "color");
+    r.color = parse_color(data, "color");
     return r;
 }
 
-[[nodiscard]] text_style theme::parsetext_style(datum const &data, char const *object_name)
+[[nodiscard]] text_style theme::parse_text_style(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -211,7 +211,7 @@ theme::theme(URL const &url)
 
     ttlet textStyleObject = data[object_name];
     try {
-        return parsetext_styleValue(textStyleObject);
+        return parse_text_style_value(textStyleObject);
     } catch (parse_error const &e) {
         throw parse_error("Could not parse text-style '{}'\n{}", object_name, e.what());
     }
@@ -221,9 +221,9 @@ void theme::parse(datum const &data)
 {
     tt_assert(data.is_map());
 
-    this->name = parseString(data, "name");
+    this->name = parse_string(data, "name");
 
-    ttlet mode_name = to_lower(parseString(data, "mode"));
+    ttlet mode_name = to_lower(parse_string(data, "mode"));
     if (mode_name == "light") {
         this->mode = theme_mode::light;
     } else if (mode_name == "dark") {
@@ -232,33 +232,33 @@ void theme::parse(datum const &data)
         throw parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name);
     }
 
-    this->blue = parseColor(data, "blue");
-    this->green = parseColor(data, "green");
-    this->indigo = parseColor(data, "indigo");
-    this->orange = parseColor(data, "orange");
-    this->pink = parseColor(data, "pink");
-    this->purple = parseColor(data, "purple");
-    this->red = parseColor(data, "red");
-    this->teal = parseColor(data, "teal");
-    this->yellow = parseColor(data, "yellow");
+    this->blue = parse_color(data, "blue");
+    this->green = parse_color(data, "green");
+    this->indigo = parse_color(data, "indigo");
+    this->orange = parse_color(data, "orange");
+    this->pink = parse_color(data, "pink");
+    this->purple = parse_color(data, "purple");
+    this->red = parse_color(data, "red");
+    this->teal = parse_color(data, "teal");
+    this->yellow = parse_color(data, "yellow");
 
-    this->grayShades = parseColorList(data, "gray-shades");
-    this->fillShades = parseColorList(data, "fill-shades");
-    this->borderShades = parseColorList(data, "border-shades");
+    this->_gray_shades = parse_color_list(data, "gray-shades");
+    this->_fill_shades = parse_color_list(data, "fill-shades");
+    this->_border_shades = parse_color_list(data, "border-shades");
 
-    this->foregroundColor = parseColor(data, "foreground-color");
-    this->accentColor = parseColor(data, "accent-color");
-    this->textSelectColor = parseColor(data, "text-select-color");
-    this->cursorColor = parseColor(data, "cursor-color");
-    this->incompleteGlyphColor = parseColor(data, "incomplete-glyph-color");
+    this->foreground_color = parse_color(data, "foreground-color");
+    this->accent_color = parse_color(data, "accent-color");
+    this->text_select_color = parse_color(data, "text-select-color");
+    this->cursor_color = parse_color(data, "cursor-color");
+    this->incomplete_glyph_color = parse_color(data, "incomplete-glyph-color");
 
-    this->labelStyle = parsetext_style(data, "label-style");
-    this->smallLabelStyle = parsetext_style(data, "small-label-style");
-    this->warningLabelStyle = parsetext_style(data, "warning-label-style");
-    this->errorLabelStyle = parsetext_style(data, "error-label-style");
-    this->helpLabelStyle = parsetext_style(data, "help-label-style");
-    this->placeholderLabelStyle = parsetext_style(data, "placeholder-label-style");
-    this->linkLabelStyle = parsetext_style(data, "link-label-style");
+    this->label_style = parse_text_style(data, "label-style");
+    this->small_label_style = parse_text_style(data, "small-label-style");
+    this->warning_label_style = parse_text_style(data, "warning-label-style");
+    this->error_label_style = parse_text_style(data, "error-label-style");
+    this->help_label_style = parse_text_style(data, "help-label-style");
+    this->placeholder_label_style = parse_text_style(data, "placeholder-label-style");
+    this->link_label_style = parse_text_style(data, "link-label-style");
 }
 
 }

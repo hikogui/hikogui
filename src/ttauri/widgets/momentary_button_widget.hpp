@@ -39,7 +39,7 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // On left side a check mark, on right side short-cut. Around the label extra margin.
-            ttlet extra_size = theme::global->margin2Dx2;
+            ttlet extra_size = extent2{theme::global->margin * 2.0f, theme::global->margin * 2.0f};
             _minimum_size += extra_size;
             _preferred_size += extra_size;
             _maximum_size += extra_size;
@@ -80,7 +80,7 @@ private:
 
         // Move the border of the button in the middle of a pixel.
         context.draw_box_with_border_inside(
-            rectangle(), background_color(), focus_color(), corner_shapes{theme::global->roundingRadius});
+            rectangle(), background_color(), focus_color(), corner_shapes{theme::global->rounding_radius});
     }
 };
 

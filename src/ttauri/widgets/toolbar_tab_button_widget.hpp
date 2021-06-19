@@ -134,7 +134,7 @@ private:
 
             // Create a line, on the bottom of the toolbar over the full width.
             ttlet line_rectangle = aarectangle{
-                parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global->borderWidth};
+                parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global->border_width};
 
             context.set_clipping_rectangle(line_rectangle);
 
@@ -154,7 +154,7 @@ private:
         // so that the bottom border of the tab button is not drawn.
         context.set_clipping_rectangle(aarectangle{this->_parent_to_local * this->parent().clipping_rectangle()});
 
-        ttlet offset = theme::global->margin + theme::global->borderWidth;
+        ttlet offset = theme::global->margin + theme::global->border_width;
         ttlet outline_rectangle = aarectangle{
             this->rectangle().left(),
             this->rectangle().bottom() - offset,
@@ -165,10 +165,10 @@ private:
         ttlet button_z = (this->_focus && this->window.active) ? translate_z(0.8f) : translate_z(0.6f);
 
         auto button_color = (this->_hover || this->state() == button_state::on) ?
-            theme::global->fillColor(this->_semantic_layer - 1) :
-            theme::global->fillColor(this->_semantic_layer);
+            theme::global->fill_color(this->_semantic_layer - 1) :
+            theme::global->fill_color(this->_semantic_layer);
 
-        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->roundingRadius, theme::global->roundingRadius};
+        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->rounding_radius, theme::global->rounding_radius};
         context.draw_box_with_border_inside(
             button_z * outline_rectangle,
             button_color,

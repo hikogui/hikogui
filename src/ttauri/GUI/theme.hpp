@@ -19,60 +19,45 @@ class theme {
 public:
     static inline theme *global;
 
-    static constexpr operating_system operatingSystem = operating_system::windows;
+    static constexpr operating_system operating_system = operating_system::windows;
 
-    float toolbarHeight = (operatingSystem == operating_system::windows) ? 30.0f : 20.0f;
+    float toolbar_height = (operating_system == operating_system::windows) ? 30.0f : 20.0f;
 
     /** The width of a close, minimize, maximize, system menu button.
      */
-    float toolbarDecorationButtonWidth = (operatingSystem == operating_system::windows) ? 30.0f : 20.0f;
+    float toolbar_decoration_button_width = (operating_system == operating_system::windows) ? 30.0f : 20.0f;
 
     /** Distance between widgets and between widgets and the border of the container.
      */
     float margin = 6.0f;
 
-    extent2 margin2D = extent2{margin, margin};
-    extent2 margin2Dx2 = extent2{margin * 2.0f, margin * 2.0f};
-
-    float scroll_bar_thickness = margin * 2.0f;
-
     /** The line-width of a border.
      */
-    float borderWidth = 1.0f;
+    float border_width = 1.0f;
 
     /** The rounding radius of boxes with rounded corners.
      */
-    float roundingRadius = 5.0f;
+    float rounding_radius = 5.0f;
 
     /** The size of small square widgets.
      */
-    float smallSize = 15.0f;
+    float size = 15.0f;
 
-    extent2 smallSize2D = extent2{smallSize, smallSize};
-
-    /** The height of the larger widgets like buttons, text-input and drop-down-lists.
+    /** The size of large widgets. Such as the minimum scroll bar size.
      */
-    float height = 22.0f;
+    float large_size = 25.0f;
 
-    /** The width of the larger widgets and smaller widgets with included labels.
+    /** Size of icons inside a widget.
      */
-    float width = 50.0f;
-
-    /** Max width of labels in widgets.
-     */
-    float maxLabelWidth = 300.0f;
-
-    /** Size of icons that represents the size of label's text.
-     */
-    float small_icon_size = 10.0f;
-
-    /** Size of icons extending from the ascender to descender of a label's text.
-     */
-    float icon_size = 20.0f;
+    float icon_size = 10.0f;
 
     /** Size of icons representing the length of am average word of a label's text.
      */
     float large_icon_size = 30.0f;
+
+    /** Size of icons being inline with a label's text.
+     */
+    float label_icon_size = 20.0f;
 
 
     std::string name;
@@ -90,19 +75,19 @@ public:
     color yellow;
 
     // Semantic colors
-    color foregroundColor;
-    color accentColor;
-    color textSelectColor;
-    color cursorColor;
-    color incompleteGlyphColor;
+    color foreground_color;
+    color accent_color;
+    color text_select_color;
+    color cursor_color;
+    color incomplete_glyph_color;
 
-    text_style labelStyle;
-    text_style smallLabelStyle;
-    text_style warningLabelStyle;
-    text_style errorLabelStyle;
-    text_style helpLabelStyle;
-    text_style placeholderLabelStyle;
-    text_style linkLabelStyle;
+    text_style label_style;
+    text_style small_label_style;
+    text_style warning_label_style;
+    text_style error_label_style;
+    text_style help_label_style;
+    text_style placeholder_label_style;
+    text_style link_label_style;
 
     theme() noexcept = delete;
     theme(theme const &) noexcept = delete;
@@ -117,21 +102,21 @@ public:
     /** Get fill color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
     */
-    [[nodiscard]] color fillColor(ssize_t nesting_level) const noexcept
+    [[nodiscard]] color fill_color(ssize_t nesting_level) const noexcept
     {
         nesting_level = std::max(ssize_t{0}, nesting_level);
-        tt_axiom(std::ssize(fillShades) > 0);
-        return fillShades[nesting_level % std::ssize(fillShades)];
+        tt_axiom(std::ssize(_fill_shades) > 0);
+        return _fill_shades[nesting_level % std::ssize(_fill_shades)];
     }
 
     /** Get border color of elements of widgets and child widgets.
     * @param nestingLevel The nesting level.
     */
-    [[nodiscard]] color borderColor(ssize_t nesting_level) const noexcept
+    [[nodiscard]] color border_color(ssize_t nesting_level) const noexcept
     {
         nesting_level = std::max(ssize_t{0}, nesting_level);
-        tt_axiom(std::ssize(borderShades) > 0);
-        return borderShades[nesting_level % std::ssize(borderShades)];
+        tt_axiom(std::ssize(_border_shades) > 0);
+        return _border_shades[nesting_level % std::ssize(_border_shades)];
     }
 
 
@@ -143,27 +128,27 @@ public:
     [[nodiscard]] color gray(ssize_t level) const noexcept
     {
         if (level < 0) {
-            level = std::ssize(grayShades) + level;
+            level = std::ssize(_gray_shades) + level;
         }
 
-        level = std::clamp(level, ssize_t{0}, std::ssize(grayShades) - 1);
-        return grayShades[level];
+        level = std::clamp(level, ssize_t{0}, std::ssize(_gray_shades) - 1);
+        return _gray_shades[level];
     }
 
 private:
-    std::vector<color> fillShades;
-    std::vector<color> borderShades;
-    std::vector<color> grayShades;
+    std::vector<color> _fill_shades;
+    std::vector<color> _border_shades;
+    std::vector<color> _gray_shades;
 
-    [[nodiscard]] float parseFloat(datum const &data, char const *name);
-    [[nodiscard]] bool parseBool(datum const &data, char const *name);
-    [[nodiscard]] std::string parseString(datum const &data, char const *name);
-    [[nodiscard]] color parseColorValue(datum const &data);
-    [[nodiscard]] std::vector<color> parseColorList(datum const &data, char const *name);
-    [[nodiscard]] color parseColor(datum const &data, char const *name);
-    [[nodiscard]] text_style parsetext_styleValue(datum const &data);
-    [[nodiscard]] font_weight parsefont_weight(datum const &data, char const *name);
-    [[nodiscard]] text_style parsetext_style(datum const &data, char const *name);
+    [[nodiscard]] float parse_float(datum const &data, char const *name);
+    [[nodiscard]] bool parse_bool(datum const &data, char const *name);
+    [[nodiscard]] std::string parse_string(datum const &data, char const *name);
+    [[nodiscard]] color parse_color_value(datum const &data);
+    [[nodiscard]] std::vector<color> parse_color_list(datum const &data, char const *name);
+    [[nodiscard]] color parse_color(datum const &data, char const *name);
+    [[nodiscard]] text_style parse_text_style_value(datum const &data);
+    [[nodiscard]] font_weight parse_font_weight(datum const &data, char const *name);
+    [[nodiscard]] text_style parse_text_style(datum const &data, char const *name);
     void parse(datum const &data);
 
     [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {

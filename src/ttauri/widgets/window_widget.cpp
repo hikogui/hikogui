@@ -26,7 +26,7 @@ void window_widget::init() noexcept
 {
     _toolbar = make_widget<toolbar_widget>();
 
-    if constexpr (theme::global->operatingSystem == operating_system::windows) {
+    if constexpr (theme::global->operating_system == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = _toolbar->make_widget<system_menu_widget>();
         _title_callback = title.subscribe([this]() {
@@ -35,7 +35,7 @@ void window_widget::init() noexcept
         });
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
-    } else if constexpr (theme::global->operatingSystem == operating_system::macos) {
+    } else if constexpr (theme::global->operating_system == operating_system::macos) {
         _toolbar->make_widget<window_traffic_lights_widget>();
     } else {
         tt_no_default();

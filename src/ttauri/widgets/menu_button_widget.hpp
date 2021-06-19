@@ -15,10 +15,7 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    menu_button_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        std::shared_ptr<delegate_type> delegate) noexcept :
+    menu_button_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, std::move(parent), std::move(delegate))
     {
         this->_margin = 0.0f;
@@ -26,7 +23,8 @@ public:
     }
 
     template<typename Label, typename Value, typename... Args>
-    menu_button_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label, Value &&value, Args &&...args) noexcept :
+    menu_button_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label, Value &&value, Args &&...args) noexcept
+        :
         menu_button_widget(
             window,
             std::move(parent),
@@ -41,12 +39,12 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // Make room for button and margin.
-            _check_size = {theme::global->smallSize, theme::global->smallSize};
-            _short_cut_size = {theme::global->smallSize, theme::global->smallSize};
+            _check_size = {theme::global->size, theme::global->size};
+            _short_cut_size = {theme::global->size, theme::global->size};
 
             // On left side a check mark, on right side short-cut. Around the label extra margin.
-            ttlet extra_size = extent2{theme::global->margin * 2.0f + _check_size.width() + _short_cut_size.width(), 0.0f} +
-                theme::global->margin2Dx2;
+            ttlet extra_size = extent2{
+                theme::global->margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme::global->margin * 2.0f};
             this->_minimum_size += extra_size;
             this->_preferred_size += extra_size;
             this->_maximum_size += extra_size;
@@ -78,7 +76,7 @@ public:
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
             _check_glyph_rectangle =
-                align(_check_rectangle, scale(check_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
+                align(_check_rectangle, scale(check_glyph_bb, theme::global->icon_size), alignment::middle_center);
         }
         super::update_layout(displayTimePoint, need_layout);
     }

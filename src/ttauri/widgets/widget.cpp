@@ -54,12 +54,12 @@ void widget::deinit() noexcept
 {
     if (enabled) {
         if (_hover) {
-            return theme::global->fillColor(_semantic_layer + 1);
+            return theme::global->fill_color(_semantic_layer + 1);
         } else {
-            return theme::global->fillColor(_semantic_layer);
+            return theme::global->fill_color(_semantic_layer);
         }
     } else {
-        return theme::global->fillColor(_semantic_layer - 1);
+        return theme::global->fill_color(_semantic_layer - 1);
     }
 }
 
@@ -67,12 +67,12 @@ void widget::deinit() noexcept
 {
     if (enabled) {
         if (_hover) {
-            return theme::global->borderColor(_semantic_layer + 1);
+            return theme::global->border_color(_semantic_layer + 1);
         } else {
-            return theme::global->borderColor(_semantic_layer);
+            return theme::global->border_color(_semantic_layer);
         }
     } else {
-        return theme::global->borderColor(_semantic_layer - 1);
+        return theme::global->border_color(_semantic_layer - 1);
     }
 }
 
@@ -80,14 +80,14 @@ void widget::deinit() noexcept
 {
     if (enabled) {
         if (_focus && window.active) {
-            return theme::global->accentColor;
+            return theme::global->accent_color;
         } else if (_hover) {
-            return theme::global->borderColor(_semantic_layer + 1);
+            return theme::global->border_color(_semantic_layer + 1);
         } else {
-            return theme::global->borderColor(_semantic_layer);
+            return theme::global->border_color(_semantic_layer);
         }
     } else {
-        return theme::global->borderColor(_semantic_layer - 1);
+        return theme::global->border_color(_semantic_layer - 1);
     }
 }
 
@@ -95,21 +95,21 @@ void widget::deinit() noexcept
 {
     if (enabled) {
         if (window.active) {
-            return theme::global->accentColor;
+            return theme::global->accent_color;
         } else {
-            return theme::global->borderColor(_semantic_layer);
+            return theme::global->border_color(_semantic_layer);
         }
     } else {
-        return theme::global->borderColor(_semantic_layer - 1);
+        return theme::global->border_color(_semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (enabled) {
-        return theme::global->labelStyle.color;
+        return theme::global->label_style.color;
     } else {
-        return theme::global->borderColor(_semantic_layer - 1);
+        return theme::global->border_color(_semantic_layer - 1);
     }
 }
 

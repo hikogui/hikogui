@@ -100,12 +100,12 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme::global->fillColor(_semantic_layer + 1);
+        return theme::global->fill_color(_semantic_layer + 1);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme::global->borderColor(_semantic_layer + 1);
+        return theme::global->border_color(_semantic_layer + 1);
     }
 
     void scroll_to_show(tt::rectangle rectangle) noexcept override

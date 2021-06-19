@@ -293,7 +293,6 @@ public:
         float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_axiom(child_rectangle.size() >= _minimum_size);
 
         ttlet child_translate = translate2{child_rectangle};
         ttlet child_size = child_rectangle.size();
