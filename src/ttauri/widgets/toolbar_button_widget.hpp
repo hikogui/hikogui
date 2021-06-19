@@ -19,7 +19,7 @@ public:
         super(window, std::move(parent), std::move(delegate))
     {
         _margin = 0.0f;
-        _label_alignment = alignment::middle_left;
+        label_alignment = alignment::middle_left;
     }
 
     template<typename Label>

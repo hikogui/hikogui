@@ -21,7 +21,7 @@ public:
         std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept :
         super(window, std::move(parent), std::move(delegate))
     {
-        this->_label_alignment = alignment::top_center;
+        label_alignment = alignment::top_center;
     }
 
     template<typename Label, typename Value, typename OnValue>
@@ -46,11 +46,11 @@ public:
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // On left side a check mark, on right side short-cut. Around the label extra margin.
             ttlet extra_size = extent2{theme::global().margin * 2.0f, theme::global().margin};
-            this->_minimum_size += extra_size;
-            this->_preferred_size += extra_size;
-            this->_maximum_size += extra_size;
+             _minimum_size += extra_size;
+             _preferred_size += extra_size;
+             _maximum_size += extra_size;
 
-            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
+            tt_axiom( _minimum_size <=  _preferred_size &&  _preferred_size <=  _maximum_size);
             return true;
         } else {
             return false;
@@ -61,13 +61,13 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        need_layout |= std::exchange(this->_request_relayout, false);
+        need_layout |= std::exchange( _request_relayout, false);
         if (need_layout) {
-            this->_label_rectangle = aarectangle{
+             _label_rectangle = aarectangle{
                 theme::global().margin,
                 0.0f,
-                this->width() - theme::global().margin * 2.0f,
-                this->height() - theme::global().margin};
+                 width() - theme::global().margin * 2.0f,
+                 height() - theme::global().margin};
         }
         super::update_layout(displayTimePoint, need_layout);
     }
@@ -76,7 +76,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        if (overlaps(context, this->_clipping_rectangle)) {
+        if (overlaps(context,  _clipping_rectangle)) {
             draw_toolbar_tab_button(context);
             draw_toolbar_tab_focus_line(context);
         }
@@ -89,31 +89,31 @@ public:
         // A toolbar tab button draws a focus line across the whole toolbar
         // which is beyond it's own clipping rectangle. The parent is the toolbar
         // so it will include everything that needs to be redrawn.
-        this->parent().request_redraw();
+         parent().request_redraw();
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return is_toolbar(group) and this->enabled;
+        return is_toolbar(group) and  enabled;
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept
     {
         ttlet lock = std::scoped_lock(gui_system_mutex);
 
-        if (this->enabled) {
+        if ( enabled) {
             switch (command) {
             case command::gui_toolbar_next:
-                if (!this->is_last(keyboard_focus_group::toolbar)) {
-                    this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+                if (! is_last(keyboard_focus_group::toolbar)) {
+                     window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
                     return true;
                 }
                 break;
 
             case command::gui_toolbar_prev:
-                if (!this->is_first(keyboard_focus_group::toolbar)) {
-                    this->window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+                if (! is_first(keyboard_focus_group::toolbar)) {
+                     window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
                     return true;
                 }
                 break;
@@ -128,9 +128,9 @@ public:
 private:
     void draw_toolbar_tab_focus_line(draw_context context) noexcept
     {
-        if (this->_focus and this->window.active and this->state() == tt::button_state::on) {
-            ttlet &parent_ = this->parent();
-            ttlet parent_rectangle = aarectangle{this->_parent_to_local * parent_.rectangle()};
+        if ( _focus and  window.active and  state() == tt::button_state::on) {
+            ttlet &parent_ =  parent();
+            ttlet parent_rectangle = aarectangle{ _parent_to_local * parent_.rectangle()};
 
             // Create a line, on the bottom of the toolbar over the full width.
             ttlet line_rectangle = aarectangle{
@@ -141,7 +141,7 @@ private:
             if (overlaps(context, line_rectangle)) {
                 // Draw the line above every other direct child of the toolbar, and between
                 // the selected-tab (0.6) and unselected-tabs (0.8).
-                context.draw_filled_quad(translate_z(0.7f) * line_rectangle, this->focus_color());
+                context.draw_filled_quad(translate_z(0.7f) * line_rectangle,  focus_color());
             }
         }
     }
@@ -152,27 +152,27 @@ private:
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
         // so that the bottom border of the tab button is not drawn.
-        context.set_clipping_rectangle(aarectangle{this->_parent_to_local * this->parent().clipping_rectangle()});
+        context.set_clipping_rectangle(aarectangle{ _parent_to_local *  parent().clipping_rectangle()});
 
         ttlet offset = theme::global().margin + theme::global().border_width;
         ttlet outline_rectangle = aarectangle{
-            this->rectangle().left(),
-            this->rectangle().bottom() - offset,
-            this->rectangle().width(),
-            this->rectangle().height() + offset};
+             rectangle().left(),
+             rectangle().bottom() - offset,
+             rectangle().width(),
+             rectangle().height() + offset};
 
         // The focus line will be placed at 0.7.
-        ttlet button_z = (this->_focus && this->window.active) ? translate_z(0.8f) : translate_z(0.6f);
+        ttlet button_z = ( _focus &&  window.active) ? translate_z(0.8f) : translate_z(0.6f);
 
-        auto button_color = (this->_hover || this->state() == button_state::on) ?
-            theme::global(theme_color::fill, this->_semantic_layer - 1) :
-            theme::global(theme_color::fill, this->_semantic_layer);
+        auto button_color = ( _hover ||  state() == button_state::on) ?
+            theme::global(theme_color::fill,  _semantic_layer - 1) :
+            theme::global(theme_color::fill,  _semantic_layer);
 
         ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global().rounding_radius, theme::global().rounding_radius};
         context.draw_box_with_border_inside(
             button_z * outline_rectangle,
             button_color,
-            (this->_focus && this->window.active) ? this->focus_color() : button_color,
+            ( _focus &&  window.active) ?  focus_color() : button_color,
             corner_shapes);
     }
 };

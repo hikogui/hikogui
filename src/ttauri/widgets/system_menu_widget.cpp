@@ -22,7 +22,7 @@ system_menu_widget::system_menu_widget(gui_window &window, std::shared_ptr<widge
 
 void system_menu_widget::init() noexcept
 {
-    _icon_widget = make_widget<icon_widget>(alignment::middle_center, icon);
+    _icon_widget = make_widget<icon_widget>(icon);
 }
 
 [[nodiscard]] bool

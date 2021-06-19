@@ -107,7 +107,7 @@ void widget::deinit() noexcept
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (enabled) {
-        return theme::global().label_style.color;
+        return theme::global(theme_text_style::label).color;
     } else {
         return theme::global(theme_color::border, _semantic_layer - 1);
     }

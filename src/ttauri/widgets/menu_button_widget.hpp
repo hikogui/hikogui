@@ -19,7 +19,7 @@ public:
         super(window, std::move(parent), std::move(delegate))
     {
         this->_margin = 0.0f;
-        this->_label_alignment = alignment::middle_left;
+        this->label_alignment = alignment::middle_left;
     }
 
     template<typename Label, typename Value, typename... Args>

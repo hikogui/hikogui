@@ -18,7 +18,7 @@ public:
     checkbox_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, std::move(parent), std::move(delegate))
     {
-        _label_alignment = alignment::top_left;
+        label_alignment = alignment::top_left;
     }
 
     template<typename Value, typename... Args>

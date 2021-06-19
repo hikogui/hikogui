@@ -35,6 +35,14 @@ theme::theme(URL const &url)
     return shades[nesting_level % std::ssize(shades)];
 }
 
+[[nodiscard]] tt::text_style const &theme::text_style(theme_text_style theme_text_style) const noexcept
+{
+    ttlet theme_text_style_i = static_cast<size_t>(theme_text_style);
+    tt_axiom(theme_text_style_i < std::size(_text_styles));
+
+    return _text_styles[theme_text_style_i];
+}
+
 [[nodiscard]] std::string theme::parse_string(datum const &data, char const *object_name)
 {
     // Extract name
@@ -180,7 +188,7 @@ theme::theme(URL const &url)
         throw parse_error("Expect a text-style to be an object, got '{}'", data);
     }
 
-    text_style r;
+    tt::text_style r;
 
     r.family_id = font_book::global->find_family(parse_string(data, "family"));
     r.size = parse_float(data, "size");
@@ -254,15 +262,18 @@ void theme::parse(datum const &data)
     std::get<static_cast<size_t>(theme_color::accent)>(this->_colors) = parse_color_list(data, "accent-color");
     std::get<static_cast<size_t>(theme_color::text_select)>(this->_colors) = parse_color_list(data, "text-select-color");
     std::get<static_cast<size_t>(theme_color::cursor)>(this->_colors) = parse_color_list(data, "cursor-color");
-    std::get<static_cast<size_t>(theme_color::incomplete_glyph)>(this->_colors) = parse_color_list(data, "incomplete-glyph-color");
+    std::get<static_cast<size_t>(theme_color::incomplete_glyph)>(this->_colors) =
+        parse_color_list(data, "incomplete-glyph-color");
 
-    this->label_style = parse_text_style(data, "label-style");
-    this->small_label_style = parse_text_style(data, "small-label-style");
-    this->warning_label_style = parse_text_style(data, "warning-label-style");
-    this->error_label_style = parse_text_style(data, "error-label-style");
-    this->help_label_style = parse_text_style(data, "help-label-style");
-    this->placeholder_label_style = parse_text_style(data, "placeholder-label-style");
-    this->link_label_style = parse_text_style(data, "link-label-style");
+    std::get<static_cast<size_t>(theme_text_style::label)>(this->_text_styles) = parse_text_style(data, "label-style");
+    std::get<static_cast<size_t>(theme_text_style::small_label)>(this->_text_styles) =
+        parse_text_style(data, "small-label-style");
+    std::get<static_cast<size_t>(theme_text_style::warning)>(this->_text_styles) = parse_text_style(data, "warning-label-style");
+    std::get<static_cast<size_t>(theme_text_style::error)>(this->_text_styles) = parse_text_style(data, "error-label-style");
+    std::get<static_cast<size_t>(theme_text_style::help)>(this->_text_styles) = parse_text_style(data, "help-label-style");
+    std::get<static_cast<size_t>(theme_text_style::placeholder)>(this->_text_styles) =
+        parse_text_style(data, "placeholder-label-style");
+    std::get<static_cast<size_t>(theme_text_style::link)>(this->_text_styles) = parse_text_style(data, "link-label-style");
 }
 
 } // namespace tt

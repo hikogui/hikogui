@@ -57,6 +57,16 @@ public:
         return {0.0f, 0.0f, 0.0f, 0.0f};
     }
 
+    [[nodiscard]] static constexpr color white() noexcept
+    {
+        return {1.0f, 1.0f, 1.0f, 1.0f};
+    }
+
+    [[nodiscard]] static constexpr color black() noexcept
+    {
+        return {0.0f, 0.0f, 0.0f, 1.0f};
+    }
+
     [[nodiscard]] constexpr float &r() noexcept
     {
         return _v.x();

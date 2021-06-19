@@ -28,6 +28,7 @@ public:
     observable<label> on_label = l10n("on");
     observable<label> off_label = l10n("off");
     observable<label> other_label = l10n("other");
+    observable<alignment> label_alignment;
 
     abstract_button_widget(
         gui_window &window,
@@ -42,9 +43,13 @@ public:
     {
         super::init();
 
-        _on_label_widget = this->make_widget<label_widget>(_label_alignment);
-        _off_label_widget = this->make_widget<label_widget>(_label_alignment);
-        _other_label_widget = this->make_widget<label_widget>(_label_alignment);
+        _on_label_widget = this->make_widget<label_widget>();
+        _off_label_widget = this->make_widget<label_widget>();
+        _other_label_widget = this->make_widget<label_widget>();
+
+        _on_label_widget->alignment = label_alignment;
+        _off_label_widget->alignment = label_alignment;
+        _other_label_widget->alignment = label_alignment;
 
         _on_label_widget->label = on_label;
         _off_label_widget->label = off_label;
@@ -208,7 +213,6 @@ public:
     }
 
 protected:
-    tt::alignment _label_alignment;
     aarectangle _label_rectangle;
     std::shared_ptr<label_widget> _on_label_widget;
     std::shared_ptr<label_widget> _off_label_widget;

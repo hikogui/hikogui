@@ -31,18 +31,14 @@ public:
 
     observable<label> unknown_label;
 
-    selection_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(window, parent),
-        _delegate(std::move(delegate))
+    selection_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(window, parent), _delegate(std::move(delegate))
     {
     }
 
     template<typename Label, typename... DelegateArgs>
-    selection_widget(gui_window &window,
-        std::shared_ptr<widget> parent,
-        Label &&label, DelegateArgs &&... delegate_args) noexcept :
+    selection_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label, DelegateArgs &&...delegate_args) noexcept
+        :
         selection_widget(window, std::move(parent), make_value_selection_delegate(std::forward<DelegateArgs>(delegate_args)...))
     {
         unknown_label = std::forward<Label>(label);
@@ -54,10 +50,12 @@ public:
     {
         super::init();
 
-        _current_label_widget = make_widget<label_widget>(l10n("<current>"), alignment::middle_left, theme::global().label_style);
+        _current_label_widget = make_widget<label_widget>(l10n("<current>"));
         _current_label_widget->visible = false;
-        _unknown_label_widget =
-            make_widget<label_widget>(unknown_label, alignment::middle_left, theme::global().placeholder_label_style);
+        _current_label_widget->alignment = alignment::middle_left;
+        _unknown_label_widget = make_widget<label_widget>(unknown_label);
+        _unknown_label_widget->alignment = alignment::middle_left;
+        _unknown_label_widget->text_style = theme_text_style::placeholder;
 
         _overlay_widget = make_widget<overlay_view_widget>();
         _overlay_widget->visible = false;
@@ -237,7 +235,10 @@ public:
 
         auto r = super::hitbox_test(position);
         if (_visible_rectangle.contains(position)) {
-            r = std::max(r, hit_box{weak_from_this(), _draw_layer, (enabled and _has_options) ? hit_box::Type::Button : hit_box::Type::Default});
+            r = std::max(
+                r,
+                hit_box{
+                    weak_from_this(), _draw_layer, (enabled and _has_options) ? hit_box::Type::Button : hit_box::Type::Default});
         }
 
         return r;
@@ -300,7 +301,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        for (ttlet &button: _menu_button_widgets) {
+        for (ttlet &button : _menu_button_widgets) {
             if (button->state() == button_state::on) {
                 return button;
             }
