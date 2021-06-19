@@ -45,7 +45,7 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // On left side a check mark, on right side short-cut. Around the label extra margin.
-            ttlet extra_size = extent2{theme::global->margin * 2.0f, theme::global->margin};
+            ttlet extra_size = extent2{theme::global().margin * 2.0f, theme::global().margin};
             this->_minimum_size += extra_size;
             this->_preferred_size += extra_size;
             this->_maximum_size += extra_size;
@@ -64,10 +64,10 @@ public:
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
             this->_label_rectangle = aarectangle{
-                theme::global->margin,
+                theme::global().margin,
                 0.0f,
-                this->width() - theme::global->margin * 2.0f,
-                this->height() - theme::global->margin};
+                this->width() - theme::global().margin * 2.0f,
+                this->height() - theme::global().margin};
         }
         super::update_layout(displayTimePoint, need_layout);
     }
@@ -134,7 +134,7 @@ private:
 
             // Create a line, on the bottom of the toolbar over the full width.
             ttlet line_rectangle = aarectangle{
-                parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global->border_width};
+                parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global().border_width};
 
             context.set_clipping_rectangle(line_rectangle);
 
@@ -154,7 +154,7 @@ private:
         // so that the bottom border of the tab button is not drawn.
         context.set_clipping_rectangle(aarectangle{this->_parent_to_local * this->parent().clipping_rectangle()});
 
-        ttlet offset = theme::global->margin + theme::global->border_width;
+        ttlet offset = theme::global().margin + theme::global().border_width;
         ttlet outline_rectangle = aarectangle{
             this->rectangle().left(),
             this->rectangle().bottom() - offset,
@@ -165,10 +165,10 @@ private:
         ttlet button_z = (this->_focus && this->window.active) ? translate_z(0.8f) : translate_z(0.6f);
 
         auto button_color = (this->_hover || this->state() == button_state::on) ?
-            theme::global->fill_color(this->_semantic_layer - 1) :
-            theme::global->fill_color(this->_semantic_layer);
+            theme::global(theme_color::fill, this->_semantic_layer - 1) :
+            theme::global(theme_color::fill, this->_semantic_layer);
 
-        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->rounding_radius, theme::global->rounding_radius};
+        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global().rounding_radius, theme::global().rounding_radius};
         context.draw_box_with_border_inside(
             button_z * outline_rectangle,
             button_color,

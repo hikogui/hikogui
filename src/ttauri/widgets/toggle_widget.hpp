@@ -36,8 +36,8 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // Make room for button and margin.
-            _button_size = {theme::global->size * 2.0f, theme::global->size};
-            ttlet extra_size = extent2{theme::global->margin + _button_size.width(), 0.0f};
+            _button_size = {theme::global().size * 2.0f, theme::global().size};
+            ttlet extra_size = extent2{theme::global().margin + _button_size.width(), 0.0f};
             _minimum_size += extra_size;
             _preferred_size += extra_size;
             _maximum_size += extra_size;
@@ -61,13 +61,13 @@ public:
         if (need_layout) {
             _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
-            _label_rectangle = aarectangle{_button_rectangle.right() + theme::global->margin, 0.0f, width(), height()};
+            _label_rectangle = aarectangle{_button_rectangle.right() + theme::global().margin, 0.0f, width(), height()};
 
             ttlet button_square =
                 aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
             _pip_rectangle = align(
-                button_square, extent2{theme::global->icon_size, theme::global->icon_size}, alignment::middle_center);
+                button_square, extent2{theme::global().icon_size, theme::global().icon_size}, alignment::middle_center);
             
             ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
             _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;

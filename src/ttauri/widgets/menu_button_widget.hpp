@@ -39,12 +39,12 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // Make room for button and margin.
-            _check_size = {theme::global->size, theme::global->size};
-            _short_cut_size = {theme::global->size, theme::global->size};
+            _check_size = {theme::global().size, theme::global().size};
+            _short_cut_size = {theme::global().size, theme::global().size};
 
             // On left side a check mark, on right side short-cut. Around the label extra margin.
             ttlet extra_size = extent2{
-                theme::global->margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme::global->margin * 2.0f};
+                theme::global().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme::global().margin * 2.0f};
             this->_minimum_size += extra_size;
             this->_preferred_size += extra_size;
             this->_maximum_size += extra_size;
@@ -62,21 +62,21 @@ public:
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
-            ttlet inside_rectangle = shrink(this->rectangle(), theme::global->margin);
+            ttlet inside_rectangle = shrink(this->rectangle(), theme::global().margin);
 
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left);
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right);
 
             this->_label_rectangle = aarectangle{
-                _check_rectangle.right() + theme::global->margin,
+                _check_rectangle.right() + theme::global().margin,
                 0.0f,
-                _short_cut_rectangle.left() - theme::global->margin,
+                _short_cut_rectangle.left() - theme::global().margin,
                 this->height()};
 
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
             _check_glyph_rectangle =
-                align(_check_rectangle, scale(check_glyph_bb, theme::global->icon_size), alignment::middle_center);
+                align(_check_rectangle, scale(check_glyph_bb, theme::global().icon_size), alignment::middle_center);
         }
         super::update_layout(displayTimePoint, need_layout);
     }

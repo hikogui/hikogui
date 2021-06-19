@@ -26,7 +26,7 @@ public:
         gui_window &window,
         std::shared_ptr<widget> parent,
         alignment alignment = alignment::top_left,
-        text_style style = theme::global->label_style) noexcept :
+        text_style style = theme::global().label_style) noexcept :
         super(window, std::move(parent)), _alignment(alignment), _style(style)
     {
     }
@@ -37,7 +37,7 @@ public:
         std::shared_ptr<widget> parent,
         Text &&text,
         alignment alignment = alignment::top_left,
-        text_style style = theme::global->label_style) noexcept :
+        text_style style = theme::global().label_style) noexcept :
         text_widget(window, std::move(parent), alignment, style)
     {
         text = std::forward<Text>(text);

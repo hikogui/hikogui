@@ -26,7 +26,7 @@ void text_widget::init() noexcept
         _preferred_size = ceil(_shaped_text.preferred_size());
         _maximum_size = ceil(_shaped_text.maximum_size());
 
-        ttlet size_ = theme::global->size;
+        ttlet size_ = theme::global().size;
         ttlet margin_ = margin();
 
         // Allow text to overhang into the margin of a small widget.

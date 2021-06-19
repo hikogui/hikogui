@@ -61,15 +61,8 @@ public:
      */
     observable<bool> continues = false;
 
-    text_field_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        std::shared_ptr<delegate_type> delegate
-        ) noexcept :
-        super(window, parent),
-        _delegate(delegate),
-        _field(theme::global->label_style),
-        _shaped_text()
+    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(window, parent), _delegate(delegate), _field(theme::global().label_style), _shaped_text()
     {
         _delegate_callback = _delegate->subscribe(*this, [this](auto...) {
             ttlet lock = std::scoped_lock(gui_system_mutex);
@@ -102,17 +95,16 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            ttlet text_style = theme::global->label_style;
+            ttlet text_style = theme::global().label_style;
             ttlet text_font_id = font_book::global->find_font(text_style.family_id, text_style.variant);
             ttlet &text_font = font_book::global->get_font(text_font_id);
             ttlet text_digit_width = text_font.description.DigitWidth * text_style.scaled_size();
 
             _text_width = 100.0;
 
-            _minimum_size = {_text_width + theme::global->margin * 2.0f, theme::global->size + theme::global->margin * 2.0f};
-            _preferred_size = {
-                _text_width + theme::global->margin * 2.0f, theme::global->size + theme::global->margin * 2.0f};
-            _maximum_size = {_text_width + theme::global->margin * 2.0f, theme::global->size + theme::global->margin * 2.0f};
+            _minimum_size = {_text_width + theme::global().margin * 2.0f, theme::global().size + theme::global().margin * 2.0f};
+            _preferred_size = {_text_width + theme::global().margin * 2.0f, theme::global().size + theme::global().margin * 2.0f};
+            _maximum_size = {_text_width + theme::global().margin * 2.0f, theme::global().size + theme::global().margin * 2.0f};
             tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
@@ -130,13 +122,13 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _text_field_rectangle = aarectangle{extent2{_text_width + theme::global->margin * 2.0f, _size.height()}};
+            _text_field_rectangle = aarectangle{extent2{_text_width + theme::global().margin * 2.0f, _size.height()}};
 
             // Set the clipping rectangle to within the border of the input field.
             // Add another border width, so glyphs do not touch the border.
             _text_field_clipping_rectangle = intersect(_clipping_rectangle, _text_field_rectangle);
 
-            _text_rectangle = shrink(_text_field_rectangle, theme::global->margin);
+            _text_rectangle = shrink(_text_field_rectangle, theme::global().margin);
 
             ttlet field_str = static_cast<std::string>(_field);
 
@@ -151,7 +143,7 @@ public:
                 _error = {};
             }
 
-            _field.set_style_of_all(theme::global->label_style);
+            _field.set_style_of_all(theme::global().label_style);
             _field.set_width(std::numeric_limits<float>::infinity());
             _shaped_text = _field.shaped_text();
 
@@ -352,7 +344,7 @@ public:
     [[nodiscard]] color focus_color() const noexcept override
     {
         if (enabled and window.active and _error.has_value()) {
-            return theme::global->error_label_style.color;
+            return theme::global().error_label_style.color;
         } else {
             return super::focus_color();
         }
@@ -410,7 +402,7 @@ private:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         if (_continues || force) {
-            auto text =  static_cast<std::string>(_field);
+            auto text = static_cast<std::string>(_field);
 
             if (not _delegate->validate(*this, text).has_value()) {
                 // text is valid.
@@ -473,7 +465,7 @@ private:
 
     void draw_background_box(draw_context context) const noexcept
     {
-        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global->rounding_radius, theme::global->rounding_radius};
+        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global().rounding_radius, theme::global().rounding_radius};
         context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
         ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
@@ -484,7 +476,8 @@ private:
     {
         ttlet selection_rectangles = _field.selection_rectangles();
         for (ttlet selection_rectangle : selection_rectangles) {
-            context.draw_filled_quad(_text_translate * translate_z(0.1f) * selection_rectangle, theme::global->text_select_color);
+            context.draw_filled_quad(
+                _text_translate * translate_z(0.1f) * selection_rectangle, theme::global(theme_color::text_select));
         }
     }
 
@@ -493,7 +486,7 @@ private:
         ttlet partial_grapheme_caret = _field.partial_grapheme_caret();
         if (partial_grapheme_caret) {
             context.draw_filled_quad(
-                _text_translate * translate_z(0.1f) * partial_grapheme_caret, theme::global->incomplete_glyph_color);
+                _text_translate * translate_z(0.1f) * partial_grapheme_caret, theme::global(theme_color::incomplete_glyph));
         }
     }
 
@@ -506,7 +499,7 @@ private:
         ttlet blink_is_on = nr_half_blinks % 2 == 0;
         _left_to_right_caret = _field.left_to_right_caret();
         if (_left_to_right_caret && blink_is_on && _focus && window.active) {
-            context.draw_filled_quad(_text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global->cursor_color);
+            context.draw_filled_quad(_text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global(theme_color::cursor));
         }
     }
 

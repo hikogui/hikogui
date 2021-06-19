@@ -743,7 +743,7 @@ protected:
     extent2 _preferred_size;
     extent2 _maximum_size;
 
-    float _margin = theme::global->margin;
+    float _margin = theme::global().margin;
 
     /** The draw layer of the widget.
      * This value translates directly to the z-axis between 0.0 (far) and 100.0 (near)

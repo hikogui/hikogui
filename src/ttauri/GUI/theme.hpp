@@ -5,6 +5,7 @@
 #pragma once
 
 #include "theme_mode.hpp"
+#include "theme_color.hpp"
 #include "../required.hpp"
 #include "../text/text_style.hpp"
 #include "../URL.hpp"
@@ -17,9 +18,7 @@ namespace tt {
 
 class theme {
 public:
-    static inline theme *global;
-
-    static constexpr operating_system operating_system = operating_system::windows;
+    operating_system operating_system = operating_system::windows;
 
     float toolbar_height = (operating_system == operating_system::windows) ? 30.0f : 20.0f;
 
@@ -63,23 +62,7 @@ public:
     std::string name;
     theme_mode mode;
 
-    // Themed bright colors.
-    color blue;
-    color green;
-    color indigo;
-    color orange;
-    color pink;
-    color purple;
-    color red;
-    color teal;
-    color yellow;
-
-    // Semantic colors
-    color foreground_color;
-    color accent_color;
-    color text_select_color;
-    color cursor_color;
-    color incomplete_glyph_color;
+    
 
     text_style label_style;
     text_style small_label_style;
@@ -99,56 +82,38 @@ public:
      */
     theme(URL const &url);
 
-    /** Get fill color of elements of widgets and child widgets.
-    * @param nestingLevel The nesting level.
-    */
-    [[nodiscard]] color fill_color(ssize_t nesting_level) const noexcept
+    [[nodiscard]] tt::color color(theme_color theme_color, ssize_t nesting_level=0) const noexcept;
+
+    static void set_global(theme *theme) noexcept
     {
-        nesting_level = std::max(ssize_t{0}, nesting_level);
-        tt_axiom(std::ssize(_fill_shades) > 0);
-        return _fill_shades[nesting_level % std::ssize(_fill_shades)];
+        _global = theme;
     }
 
-    /** Get border color of elements of widgets and child widgets.
-    * @param nestingLevel The nesting level.
-    */
-    [[nodiscard]] color border_color(ssize_t nesting_level) const noexcept
+    [[nodiscard]] static theme &global() noexcept
     {
-        nesting_level = std::max(ssize_t{0}, nesting_level);
-        tt_axiom(std::ssize(_border_shades) > 0);
-        return _border_shades[nesting_level % std::ssize(_border_shades)];
+        tt_axiom(_global);
+        return *_global;
     }
 
-
-    /** Get grey scale color
-    * This color is reversed between light and dark themes.
-    * @param level Gray level: 0 is background, positive values increase in foregroundness.
-    *              -1 is foreground, more negative values go toward background.
-    */
-    [[nodiscard]] color gray(ssize_t level) const noexcept
+    [[nodiscard]] static tt::color global(theme_color color, ssize_t nesting_level=0) noexcept
     {
-        if (level < 0) {
-            level = std::ssize(_gray_shades) + level;
-        }
-
-        level = std::clamp(level, ssize_t{0}, std::ssize(_gray_shades) - 1);
-        return _gray_shades[level];
+        return global().color(color, nesting_level);
     }
 
 private:
-    std::vector<color> _fill_shades;
-    std::vector<color> _border_shades;
-    std::vector<color> _gray_shades;
+    static inline theme *_global = nullptr;
 
-    [[nodiscard]] float parse_float(datum const &data, char const *name);
-    [[nodiscard]] bool parse_bool(datum const &data, char const *name);
-    [[nodiscard]] std::string parse_string(datum const &data, char const *name);
-    [[nodiscard]] color parse_color_value(datum const &data);
-    [[nodiscard]] std::vector<color> parse_color_list(datum const &data, char const *name);
-    [[nodiscard]] color parse_color(datum const &data, char const *name);
+    std::array<std::vector<tt::color>, num_theme_colors> _colors;
+
+    [[nodiscard]] float parse_float(datum const &data, char const *object_name);
+    [[nodiscard]] bool parse_bool(datum const &data, char const *object_name);
+    [[nodiscard]] std::string parse_string(datum const &data, char const *object_name);
+    [[nodiscard]] tt::color parse_color_value(datum const &data);
+    [[nodiscard]] tt::color parse_color(datum const &data, char const *object_name);
+    [[nodiscard]] std::vector<tt::color> parse_color_list(datum const &data, char const *object_name);
     [[nodiscard]] text_style parse_text_style_value(datum const &data);
-    [[nodiscard]] font_weight parse_font_weight(datum const &data, char const *name);
-    [[nodiscard]] text_style parse_text_style(datum const &data, char const *name);
+    [[nodiscard]] font_weight parse_font_weight(datum const &data, char const *object_name);
+    [[nodiscard]] text_style parse_text_style(datum const &data, char const *object_name);
     void parse(datum const &data);
 
     [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {

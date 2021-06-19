@@ -54,10 +54,10 @@ public:
     {
         super::init();
 
-        _current_label_widget = make_widget<label_widget>(l10n("<current>"), alignment::middle_left, theme::global->label_style);
+        _current_label_widget = make_widget<label_widget>(l10n("<current>"), alignment::middle_left, theme::global().label_style);
         _current_label_widget->visible = false;
         _unknown_label_widget =
-            make_widget<label_widget>(unknown_label, alignment::middle_left, theme::global->placeholder_label_style);
+            make_widget<label_widget>(unknown_label, alignment::middle_left, theme::global().placeholder_label_style);
 
         _overlay_widget = make_widget<overlay_view_widget>();
         _overlay_widget->visible = false;
@@ -94,7 +94,7 @@ public:
 
         auto updated = super::update_constraints(display_time_point, need_reconstrain);
         if (updated) {
-            ttlet extra_size = extent2{theme::global->size + theme::global->margin * 2.0f, theme::global->margin * 2.0f};
+            ttlet extra_size = extent2{theme::global().size + theme::global().margin * 2.0f, theme::global().margin * 2.0f};
 
             _minimum_size = _unknown_label_widget->minimum_size() + extra_size;
             _preferred_size = _unknown_label_widget->preferred_size() + extra_size;
@@ -137,11 +137,11 @@ public:
             // The height of the overlay should be the maximum height, which will show all the options.
 
             ttlet overlay_width = std::clamp(
-                rectangle().width() - theme::global->size,
+                rectangle().width() - theme::global().size,
                 _overlay_widget->minimum_size().width(),
                 _overlay_widget->maximum_size().width());
             ttlet overlay_height = _overlay_widget->preferred_size().height();
-            ttlet overlay_x = theme::global->size;
+            ttlet overlay_x = theme::global().size;
             ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
             ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
 
@@ -151,19 +151,19 @@ public:
             _overlay_widget->set_layout_parameters_from_parent(
                 overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer() - _draw_layer);
 
-            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme::global->size, rectangle().height()};
+            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme::global().size, rectangle().height()};
             _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
             ttlet chevrons_glyph_bbox = pipeline_SDF::device_shared::getBoundingBox(_chevrons_glyph);
             _chevrons_rectangle =
-                align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global->icon_size), alignment::middle_center);
+                align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global().icon_size), alignment::middle_center);
             _chevrons_rectangle =
-                align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global->icon_size), alignment::middle_center);
+                align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global().icon_size), alignment::middle_center);
 
             // The unknown_label is located to the right of the selection box icon.
             _option_rectangle = aarectangle{
-                _left_box_rectangle.right() + theme::global->margin,
+                _left_box_rectangle.right() + theme::global().margin,
                 0.0f,
-                rectangle().width() - _left_box_rectangle.width() - theme::global->margin * 2.0f,
+                rectangle().width() - _left_box_rectangle.width() - theme::global().margin * 2.0f,
                 rectangle().height()};
 
             _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
@@ -254,7 +254,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (enabled and _has_options and _selecting) {
-            return theme::global->accent_color;
+            return theme::global(theme_color::accent);
         } else {
             return super::focus_color();
         }
@@ -382,14 +382,14 @@ private:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         context.draw_box_with_border_inside(
-            rectangle(), background_color(), focus_color(), corner_shapes{theme::global->rounding_radius});
+            rectangle(), background_color(), focus_color(), corner_shapes{theme::global().rounding_radius});
     }
 
     void draw_left_box(draw_context context) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
-        ttlet corner_shapes = tt::corner_shapes{theme::global->rounding_radius, 0.0f, theme::global->rounding_radius, 0.0f};
+        ttlet corner_shapes = tt::corner_shapes{theme::global().rounding_radius, 0.0f, theme::global().rounding_radius, 0.0f};
         context.draw_box(translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
     }
 

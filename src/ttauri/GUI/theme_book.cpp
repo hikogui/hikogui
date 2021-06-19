@@ -82,20 +82,20 @@ void theme_book::update_theme() noexcept
     }
 
     if (matching_theme_and_mode) {
-        theme::global = matching_theme_and_mode;
+        theme::set_global(matching_theme_and_mode);
     } else if (matching_theme) {
-        theme::global = matching_theme;
+        theme::set_global(matching_theme);
     } else if (default_theme_and_mode) {
-        theme::global = default_theme_and_mode;
+        theme::set_global(default_theme_and_mode);
     } else if (default_theme) {
-        theme::global = default_theme;
+        theme::set_global(default_theme);
     } else if (std::ssize(themes) > 0) {
-        theme::global = themes[0].get();
+        theme::set_global(themes[0].get());
     } else {
         tt_no_default();
     }
 
-    tt_log_info("theme changed to {}, operating system mode {}", to_string(*theme::global), _current_theme_mode);
+    tt_log_info("theme changed to {}, operating system mode {}", to_string(theme::global()), _current_theme_mode);
 }
 
 

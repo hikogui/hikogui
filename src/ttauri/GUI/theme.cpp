@@ -23,6 +23,18 @@ theme::theme(URL const &url)
     }
 }
 
+[[nodiscard]] tt::color theme::color(theme_color theme_color, ssize_t nesting_level) const noexcept
+{
+    ttlet theme_color_i = static_cast<size_t>(theme_color);
+    tt_axiom(theme_color_i < std::size(_colors));
+
+    ttlet &shades = _colors[theme_color_i];
+    tt_axiom(std::ssize(shades) > 0);
+
+    nesting_level = std::max(ssize_t{0}, nesting_level);
+    return shades[nesting_level % std::ssize(shades)];
+}
+
 [[nodiscard]] std::string theme::parse_string(datum const &data, char const *object_name)
 {
     // Extract name
@@ -77,18 +89,9 @@ theme::theme(URL const &url)
 
         if (r.is_integer() && g.is_integer() && b.is_integer() && a.is_integer()) {
             return color_from_sRGB(
-                static_cast<uint8_t>(r),
-                static_cast<uint8_t>(g),
-                static_cast<uint8_t>(b),
-                static_cast<uint8_t>(a)
-            );
+                static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b), static_cast<uint8_t>(a));
         } else if (r.is_float() && g.is_float() && b.is_float() && a.is_float()) {
-            return color(
-                static_cast<float>(r),
-                static_cast<float>(g),
-                static_cast<float>(b),
-                static_cast<float>(a)
-            );
+            return tt::color(static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a));
         } else {
             throw parse_error("Expect all integers or all floating point numbers in a color, got {}.", data);
         }
@@ -98,20 +101,6 @@ theme::theme(URL const &url)
         if (color_name.starts_with("#"s)) {
             return color_from_sRGB(color_name);
 
-        } else if (color_name == "blue") { return blue;
-        } else if (color_name == "green") { return green;
-        } else if (color_name == "indigo") { return indigo;
-        } else if (color_name == "orange") { return orange;
-        } else if (color_name == "pink") { return pink;
-        } else if (color_name == "purple") { return purple;
-        } else if (color_name == "red") { return red;
-        } else if (color_name == "teal") { return teal;
-        } else if (color_name == "yellow") { return yellow;
-        } else if (color_name == "foreground-color") { return foreground_color;
-        } else if (color_name == "accent-color") { return accent_color;
-        } else if (color_name == "text-select-color") { return text_select_color;
-        } else if (color_name == "cursor-color") { return cursor_color;
-        } else if (color_name == "incomplete-glyph-color") { return incomplete_glyph_color;
         } else {
             throw parse_error("Unable to parse color, got {}.", data);
         }
@@ -120,18 +109,23 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] color theme::parse_color(datum const &data, char const *object_name)
+[[nodiscard]] tt::color theme::parse_color(datum const &data, char const *object_name)
 {
-    // Extract name
     if (!data.contains(object_name)) {
         throw parse_error("Missing color '{}'", object_name);
     }
 
-    ttlet colorObject = data[object_name];
+    ttlet color_object = data[object_name];
+
     try {
-        return parse_color_value(colorObject);
-    } catch (parse_error const &e) {
-        throw parse_error("Could not parse color '{}'\n{}", object_name, e.what());
+        return parse_color_value(color_object);
+    } catch (parse_error const &) {
+        if (color_object.is_string()) {
+            ttlet theme_color = theme_color_from_string(static_cast<std::string>(color_object));
+            return this->color(theme_color);
+        } else {
+            throw;
+        }
     }
 }
 
@@ -142,21 +136,26 @@ theme::theme(URL const &url)
         throw parse_error("Missing color list '{}'", object_name);
     }
 
-    ttlet colorListObject = data[object_name];
-    if (!colorListObject.is_vector()) {
-        throw parse_error("Expecting color list '{}' to be a list of colors, got {}", object_name, colorListObject.type_name());
-    }
+    ttlet color_list_object = data[object_name];
+    if (color_list_object.is_vector() and std::size(color_list_object) > 0 and color_list_object[0].is_vector()) {
+        auto r = std::vector<tt::color>{};
+        ssize_t i = 0;
+        for (auto it = color_list_object.vector_begin(); it != color_list_object.vector_end(); ++it, ++i) {
+            try {
+                r.push_back(parse_color_value(*it));
+            } catch (parse_error const &e) {
+                throw parse_error("Could not parse {}nd entry of color list '{}'\n{}", i + 1, object_name, e.what());
+            }
+        }
+        return r;
 
-    auto r = std::vector<color>{};
-    ssize_t i = 0;
-    for (auto it = colorListObject.vector_begin(); it != colorListObject.vector_end(); ++it, ++i) {
+    } else {
         try {
-            r.push_back(parse_color_value(*it));
+            return {parse_color_value(data[object_name])};
         } catch (parse_error const &e) {
-            throw parse_error("Could not parse {}nd entry of color list '{}'\n{}", i + 1, name, e.what());
+            throw parse_error("Could not parse color '{}'\n{}", object_name, e.what());
         }
     }
-    return r;
 }
 
 [[nodiscard]] font_weight theme::parse_font_weight(datum const &data, char const *object_name)
@@ -232,25 +231,30 @@ void theme::parse(datum const &data)
         throw parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name);
     }
 
-    this->blue = parse_color(data, "blue");
-    this->green = parse_color(data, "green");
-    this->indigo = parse_color(data, "indigo");
-    this->orange = parse_color(data, "orange");
-    this->pink = parse_color(data, "pink");
-    this->purple = parse_color(data, "purple");
-    this->red = parse_color(data, "red");
-    this->teal = parse_color(data, "teal");
-    this->yellow = parse_color(data, "yellow");
+    std::get<static_cast<size_t>(theme_color::blue)>(this->_colors) = parse_color_list(data, "blue");
+    std::get<static_cast<size_t>(theme_color::green)>(this->_colors) = parse_color_list(data, "green");
+    std::get<static_cast<size_t>(theme_color::indigo)>(this->_colors) = parse_color_list(data, "indigo");
+    std::get<static_cast<size_t>(theme_color::orange)>(this->_colors) = parse_color_list(data, "orange");
+    std::get<static_cast<size_t>(theme_color::pink)>(this->_colors) = parse_color_list(data, "pink");
+    std::get<static_cast<size_t>(theme_color::purple)>(this->_colors) = parse_color_list(data, "purple");
+    std::get<static_cast<size_t>(theme_color::red)>(this->_colors) = parse_color_list(data, "red");
+    std::get<static_cast<size_t>(theme_color::teal)>(this->_colors) = parse_color_list(data, "teal");
+    std::get<static_cast<size_t>(theme_color::yellow)>(this->_colors) = parse_color_list(data, "yellow");
 
-    this->_gray_shades = parse_color_list(data, "gray-shades");
-    this->_fill_shades = parse_color_list(data, "fill-shades");
-    this->_border_shades = parse_color_list(data, "border-shades");
+    std::get<static_cast<size_t>(theme_color::gray)>(this->_colors) = parse_color_list(data, "gray");
+    std::get<static_cast<size_t>(theme_color::gray2)>(this->_colors) = parse_color_list(data, "gray2");
+    std::get<static_cast<size_t>(theme_color::gray3)>(this->_colors) = parse_color_list(data, "gray3");
+    std::get<static_cast<size_t>(theme_color::gray4)>(this->_colors) = parse_color_list(data, "gray4");
+    std::get<static_cast<size_t>(theme_color::gray5)>(this->_colors) = parse_color_list(data, "gray5");
+    std::get<static_cast<size_t>(theme_color::gray6)>(this->_colors) = parse_color_list(data, "gray6");
 
-    this->foreground_color = parse_color(data, "foreground-color");
-    this->accent_color = parse_color(data, "accent-color");
-    this->text_select_color = parse_color(data, "text-select-color");
-    this->cursor_color = parse_color(data, "cursor-color");
-    this->incomplete_glyph_color = parse_color(data, "incomplete-glyph-color");
+    std::get<static_cast<size_t>(theme_color::foreground)>(this->_colors) = parse_color_list(data, "foreground-color");
+    std::get<static_cast<size_t>(theme_color::border)>(this->_colors) = parse_color_list(data, "border-color");
+    std::get<static_cast<size_t>(theme_color::fill)>(this->_colors) = parse_color_list(data, "fill-color");
+    std::get<static_cast<size_t>(theme_color::accent)>(this->_colors) = parse_color_list(data, "accent-color");
+    std::get<static_cast<size_t>(theme_color::text_select)>(this->_colors) = parse_color_list(data, "text-select-color");
+    std::get<static_cast<size_t>(theme_color::cursor)>(this->_colors) = parse_color_list(data, "cursor-color");
+    std::get<static_cast<size_t>(theme_color::incomplete_glyph)>(this->_colors) = parse_color_list(data, "incomplete-glyph-color");
 
     this->label_style = parse_text_style(data, "label-style");
     this->small_label_style = parse_text_style(data, "small-label-style");
@@ -261,4 +265,4 @@ void theme::parse(datum const &data)
     this->link_label_style = parse_text_style(data, "link-label-style");
 }
 
-}
+} // namespace tt

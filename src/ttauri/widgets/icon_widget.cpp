@@ -62,7 +62,7 @@ void icon_widget::init() noexcept
             _pixmap_hash = 0;
             _pixmap_backing = {};
 
-            _icon_bounding_box = scale(pipeline_SDF::device_shared::getBoundingBox(_glyph), theme::global->label_style.size);
+            _icon_bounding_box = scale(pipeline_SDF::device_shared::getBoundingBox(_glyph), theme::global().label_style.size);
 
         } else {
             tt_no_default();

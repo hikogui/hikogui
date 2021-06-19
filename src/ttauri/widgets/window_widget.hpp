@@ -40,7 +40,7 @@ public:
 
     [[nodiscard]] color backgroundColor() noexcept {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        return theme::global->fill_color(_semantic_layer);
+        return theme::global(theme_color::fill, _semantic_layer);
     }
 
     /** Defining on which edges the resize handle has priority over widget at a higher layer.

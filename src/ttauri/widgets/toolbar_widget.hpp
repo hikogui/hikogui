@@ -62,7 +62,7 @@ public:
             }
 
             // Add a space between the left and right widgets.
-            _layout.update(index++, theme::global->large_size, theme::global->large_size, 32767.0f, 0.0f);
+            _layout.update(index++, theme::global().large_size, theme::global().large_size, 32767.0f, 0.0f);
 
             for (ttlet &child : std::views::reverse(_right_children)) {
                 update_constraints_for_child(*child, index++, shared_base_line, shared_height);
@@ -109,7 +109,7 @@ public:
         tt_axiom(gui_system_mutex.recurse_lock_count());
 
         if (overlaps(context, _clipping_rectangle)) {
-            context.draw_filled_quad(rectangle(), theme::global->fill_color(_semantic_layer + 1));
+            context.draw_filled_quad(rectangle(), theme::global(theme_color::fill, _semantic_layer + 1));
         }
 
         super::draw(std::move(context), display_time_point);

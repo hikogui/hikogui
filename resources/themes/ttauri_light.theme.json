@@ -18,26 +18,16 @@
     "teal"       : [ 90, 200, 250],
     "yellow"     : [255, 204,   0],
 
-    // Gray-scale: ordered background to foreground, the middle entry must be middle gray.
-    "gray-shades": [
-        [250, 250, 255], // 0, -13
-        [242, 242, 247], // 1, -12
-        [229, 229, 234], // 2, -11
-        [209, 209, 214], // 3, -10
-        [199, 199, 204], // 4, -9
-        [174, 174, 178], // 5, -8
-        [142, 142, 147], // 6, -7
-        [ 99,  99, 102], // 7, -6
-        [ 72,  72,  74], // 8, -5
-        [ 58,  58,  60], // 9, -4
-        [ 44,  44,  46], // 10, -3
-        [ 28,  28,  30], // 11, -2
-        [  0,   0,   1]  // 12, -1
-    ],
+    "gray"       : [142, 142, 147],
+    "gray2"      : [174, 174, 178],
+    "gray3"      : [199, 199, 204],
+    "gray4"      : [209, 209, 214],
+    "gray5"      : [229, 229, 234],
+    "gray6"      : [242, 242, 247],
 
     // Colors used by widgets, to show nesting inside containers,
     // and for internal elements and disabled icons.
-    "fill-shades": [
+    "fill-color": [
         [242, 242, 247],
         [229, 229, 234],
         [209, 209, 214],
@@ -45,7 +35,7 @@
     ],
 
     // Colors used by widgets for internal elements and disabled icons.
-    "border-shades": [
+    "border-color": [
         [199, 199, 204],
         [174, 174, 178],
         [142, 142, 147],
@@ -65,20 +55,20 @@
         "family": "Arial",
         "weight": "Normal",
         "size": 10.0,
-        "color": "foreground-color"
+        "color": "foreground"
     },
 
     "label-style": {
         "family": "Arial",
         "weight": "Regular",
         "size": 12.0,
-        "color": "foreground-color"
+        "color": "foreground"
     },
     "warning-label-style": {
         "family": "Times New Roman",
         "weight": "Regular",
         "size": 12.0,
-        "color": "foreground-color"
+        "color": "foreground"
     },
     "error-label-style": {
         "family": "Arial",

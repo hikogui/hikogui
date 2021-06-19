@@ -40,12 +40,12 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
         ttlet has_text = label_size.width() > 0.0f;
         ttlet has_icon = icon_size.width() > 0.0f;
 
-        _inner_margin = (has_text and has_icon) ? theme::global->margin : 0.0f;
+        _inner_margin = (has_text and has_icon) ? theme::global().margin : 0.0f;
 
         if (has_icon) {
             // Override the natural icon size.
             if (_alignment == horizontal_alignment::center) {
-                _icon_size = theme::global->large_icon_size;
+                _icon_size = theme::global().large_icon_size;
             } else {
                 _icon_size = std::ceil(_text_style.scaled_size() * 1.4f);
             }

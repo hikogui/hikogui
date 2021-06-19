@@ -22,7 +22,7 @@ public:
             ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer() + 20.0f;
             _semantic_layer = 0;
-            _margin = theme::global->margin;
+            _margin = theme::global().margin;
         }
     }
 
@@ -100,12 +100,12 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme::global->fill_color(_semantic_layer + 1);
+        return theme::global(theme_color::fill, _semantic_layer + 1);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme::global->border_color(_semantic_layer + 1);
+        return theme::global(theme_color::border, _semantic_layer + 1);
     }
 
     void scroll_to_show(tt::rectangle rectangle) noexcept override
