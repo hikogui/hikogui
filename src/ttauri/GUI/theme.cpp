@@ -202,7 +202,7 @@ theme::theme(URL const &url)
 
     tt::text_style r;
 
-    r.family_id = font_book::global->find_family(parse_string(data, "family"));
+    r.family_id = font_book::global().find_family(parse_string(data, "family"));
     r.size = parse_float(data, "size");
 
     if (data.contains("weight")) {

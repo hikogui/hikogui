@@ -8,10 +8,22 @@
 #include "architecture.hpp"
 #include <vector>
 #include <algorithm>
-#include <tuple>
+#include <compare>
 
 
 namespace tt {
+namespace detail {
+
+struct dead_lock_detector_pair {
+    void *before;
+    void *after;
+
+    friend bool operator==(dead_lock_detector_pair const &lhs, dead_lock_detector_pair const &rhs) noexcept = default;
+    friend std::strong_ordering
+    operator<=>(dead_lock_detector_pair const &lhs, dead_lock_detector_pair const &rhs) noexcept = default;
+};
+
+}
 
 class dead_lock_detector {
 public:
@@ -56,7 +68,7 @@ private:
      * 
      * When accessing lock_order dead_lock_detector_mutex must be locked.
      */
-    inline static std::vector<std::pair<void *, void *>> lock_graph;
+    inline static std::vector<detail::dead_lock_detector_pair> lock_graph;
 
     [[nodiscard]] static void *check_graph(void *object) noexcept;
 };

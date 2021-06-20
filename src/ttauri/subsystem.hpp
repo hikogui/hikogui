@@ -5,7 +5,7 @@
 #pragma once
 
 #include "assert.hpp"
-#include "unfair_mutex.hpp"
+#include "unfair_recursive_mutex.hpp"
 #include "type_traits.hpp"
 #include <atomic>
 #include <vector>
@@ -35,7 +35,7 @@ inline std::vector<void (*)()> subsystem_deinit_list;
  * The system status is also an atomic variable so that reads on system_status
  * without holding the mutex is still possible.
  */
-inline unfair_mutex subsystem_mutex;
+inline unfair_recursive_mutex subsystem_mutex;
 
 template<typename T> requires(is_atomic_v<T>)
 tt_no_inline typename T::value_type start_subsystem(
@@ -92,13 +92,46 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem(
 {
     auto old_value = check_variable.load(std::memory_order::acquire);
     if (old_value == off_value) {
-        [[unlikely]] return detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
+        return detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
     } else {
         [[likely]] return old_value;
     }
 }
 
-/** Stop a sub-system.
+/** Start a sub-system.
+ * Initialize a subsystem. The subsystem is not started if the following conditions are true:
+ *  - System shutdown is in progress.
+ *  - The subsystem is already initialized.
+ *
+ * If the subsystem was unable to be started because of the previous conditions then
+ * this function will std::terminate() the program.
+ * 
+ * This will also register the deinit function to be called on system shutdown.
+ *
+ * @param check_variable The variable to check before initializing.
+ * @param off_value The value of the check_variable when the subsystem is off.
+ * @param init_function The init function to call to initialize the subsystem
+ * @param deinit_function the deinit function to call when shutting down the system.
+ * @return return value from the init_function; off_value if the system is shutting down.
+ */
+template<typename T>
+requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
+    T &check_variable,
+    typename T::value_type off_value,
+    typename T::value_type (*init_function)(),
+    void (*deinit_function)())
+{
+    auto old_value = check_variable.load(std::memory_order::acquire);
+    if (old_value == off_value) {
+        auto tmp = detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
+        tt_assert(tmp != off_value);
+        return tmp;
+    } else {
+        [[likely]] return old_value;
+    }
+}
+
+    /** Stop a sub-system.
  * De-initialize a subsystem.
  *
  * This will unregister and call the deinit function.

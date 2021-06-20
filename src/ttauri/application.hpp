@@ -100,8 +100,6 @@ protected:
      */
     virtual int loop() = 0;
 
-    virtual void init_foundation();
-    virtual void deinit_foundation();
     virtual void init_audio();
     virtual void deinit_audio();
     virtual void init_text();
@@ -110,9 +108,6 @@ protected:
     virtual void deinit_gui();
 
 private:
-    typename timer::callback_ptr_type logger_maintenance_callback;
-    typename timer::callback_ptr_type clock_maintenance_callback;
-
     os_handle instance;
 };
 

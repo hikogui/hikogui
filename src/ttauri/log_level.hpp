@@ -46,6 +46,6 @@ char const *to_const_string(log_level level) noexcept;
 
 int command_line_argument_to_log_level(std::string_view str);
 
-inline std::atomic<log_level> log_level_global = make_log_level(log_level::debug);
+inline std::atomic<log_level> log_level_global = make_log_level(log_level::info);
 
 }

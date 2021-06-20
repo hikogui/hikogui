@@ -39,9 +39,7 @@ public:
 
     static theme_book &global() noexcept
     {
-        auto ptr = start_subsystem(_global, nullptr, subsystem_init, subsystem_deinit);
-        tt_axiom(ptr);
-        return *ptr;
+        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
     }
 
 private:

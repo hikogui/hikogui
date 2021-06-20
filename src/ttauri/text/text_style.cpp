@@ -14,7 +14,7 @@ text_style::text_style(
     float size,
     tt::color color,
     text_decoration decoration) noexcept :
-    text_style(font_book::global->find_family(family_name), variant, size, color, decoration)
+    text_style(font_book::global().find_family(family_name), variant, size, color, decoration)
 {
 }
 

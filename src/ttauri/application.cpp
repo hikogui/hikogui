@@ -67,7 +67,6 @@ void application::init()
         delegate_->init(*this);
     }
 
-    init_foundation();
     init_text();
     init_audio();
     init_gui();
@@ -76,25 +75,8 @@ void application::init()
 }
 
 
-void application::init_foundation()
-{
-    timer::global = std::make_unique<timer>("Maintenance Timer");
-
-    main_thread_id = current_thread_id();
-
-    if (configuration.contains("log-level")) {
-        log_level_global = static_cast<log_level>(static_cast<int>(configuration["log-level"]));
-    } else {
-        log_level_global = make_log_level(log_level::info);
-    }
-}
-
 void application::init_text()
 {
-    font_book::global = std::make_unique<font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
-    elusive_icons_font_id = font_book::global->register_font(URL("resource:elusiveicons-webfont.ttf"));
-    ttauri_icons_font_id = font_book::global->register_font(URL("resource:ttauri_icons.ttf"));
-
     language::set_preferred_languages(language::read_os_preferred_languages());
 }
 
@@ -136,7 +118,6 @@ void application::deinit()
     deinit_gui();
     deinit_audio();
     deinit_text();
-    deinit_foundation();
 
     if (auto delegate_ = delegate.lock()) {
         delegate_->deinit(*this);
@@ -147,20 +128,8 @@ void application::deinit()
     application::global = nullptr;
 }
 
-void application::deinit_foundation()
-{
-    // Force all timers to finish.
-    timer::global->stop();
-    timer::global->remove_callback(clock_maintenance_callback);
-    timer::global->remove_callback(logger_maintenance_callback);
-    timer::global = {};
-}
-
 void application::deinit_text()
 {
-    elusive_icons_font_id = font_id{};
-    ttauri_icons_font_id = font_id{};
-    font_book::global = {};
 }
 
 void application::deinit_audio()

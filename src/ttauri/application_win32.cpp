@@ -18,6 +18,7 @@ application_win32::application_win32(
     os_handle instance) :
     application(delegate, instance)
 {
+    main_thread_id = current_thread_id();
 }
 
 void application_win32::run_from_main_loop(std::function<void()> function)
@@ -75,7 +76,7 @@ void application_win32::init()
 {
     application::init();
 
-    languages_maintenance_callback = timer::global->add_callback(1s, [this](auto...) {
+    languages_maintenance_callback = timer::global().add_callback(1s, [this](auto...) {
         ttlet current_language_tags = language::read_os_preferred_languages();
         static auto previous_language_tags = current_language_tags;
         

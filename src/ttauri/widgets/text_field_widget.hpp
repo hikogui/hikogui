@@ -96,8 +96,8 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             ttlet text_style = theme::global(theme_text_style::label);
-            ttlet text_font_id = font_book::global->find_font(text_style.family_id, text_style.variant);
-            ttlet &text_font = font_book::global->get_font(text_font_id);
+            ttlet text_font_id = font_book::global().find_font(text_style.family_id, text_style.variant);
+            ttlet &text_font = font_book::global().get_font(text_font_id);
             ttlet text_digit_width = text_font.description.DigitWidth * text_style.scaled_size();
 
             _text_width = 100.0;
