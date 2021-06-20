@@ -681,7 +681,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
-        theme_book::global->set_current_theme_mode(read_os_theme_mode());
+        theme_book::global().set_current_theme_mode(read_os_theme_mode());
         _request_setting_change = true;
     } break;
 
@@ -692,11 +692,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         tt_log_info("DPI has changed to {}", dpi);
         requestLayout = true;
     } break;
-
-    case WM_WIN_LANGUAGE_CHANGE:
-        language::set_preferred_languages(language::read_os_preferred_languages());
-        _request_setting_change = true;
-        break;
 
     default: break;
     }

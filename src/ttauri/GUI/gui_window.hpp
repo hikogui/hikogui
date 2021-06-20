@@ -328,6 +328,8 @@ protected:
     bool send_event(char32_t c, bool full = true) noexcept;
 
 private:
+    std::shared_ptr<std::function<void()>> _setting_change_callback;
+
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.

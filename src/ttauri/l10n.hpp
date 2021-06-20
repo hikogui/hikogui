@@ -166,14 +166,14 @@ public:
     {
     }
 
-    [[nodiscard]] std::string operator()(std::vector<language *> const &languages = language::preferred_languages) const noexcept
+    [[nodiscard]] std::string operator()(std::vector<language *> const &languages = language::preferred_languages()) const noexcept
     {
         auto fmt = ::tt::get_translation(_msg_id, _args->n(), languages);
         return _args->format(fmt);
     }
 
     [[nodiscard]] std::string
-    operator()(std::locale const &loc, std::vector<language *> const &languages = language::preferred_languages) const noexcept
+    operator()(std::locale const &loc, std::vector<language *> const &languages = language::preferred_languages()) const noexcept
     {
         auto fmt = ::tt::get_translation(_msg_id, _args->n(), languages);
         return _args->format(loc, fmt);

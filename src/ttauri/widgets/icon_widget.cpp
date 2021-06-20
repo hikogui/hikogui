@@ -62,7 +62,8 @@ void icon_widget::init() noexcept
             _pixmap_hash = 0;
             _pixmap_backing = {};
 
-            _icon_bounding_box = scale(pipeline_SDF::device_shared::getBoundingBox(_glyph), theme::global->labelStyle.size);
+            _icon_bounding_box =
+                scale(pipeline_SDF::device_shared::getBoundingBox(_glyph), theme::global(theme_text_style::label).scaled_size());
 
         } else {
             tt_no_default();
@@ -87,7 +88,7 @@ void icon_widget::init() noexcept
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};
         } else {
-            _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), _alignment);
+            _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), *alignment);
         }
     }
     super::update_layout(displayTimePoint, need_layout);
@@ -109,7 +110,7 @@ void icon_widget::draw(draw_context context, hires_utc_clock::time_point display
             }
             break;
 
-        case icon_type::glyph: context.draw_glyph(_glyph, _icon_transform * _icon_bounding_box, label_color()); break;
+        case icon_type::glyph: context.draw_glyph(_glyph, _icon_transform * _icon_bounding_box, theme::global(*color)); break;
 
         default: tt_no_default();
         }

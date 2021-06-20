@@ -22,7 +22,7 @@ system_menu_widget::system_menu_widget(gui_window &window, std::shared_ptr<widge
 
 void system_menu_widget::init() noexcept
 {
-    _icon_widget = make_widget<icon_widget>(alignment::middle_center, icon);
+    _icon_widget = make_widget<icon_widget>(icon);
 }
 
 [[nodiscard]] bool
@@ -31,8 +31,8 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        ttlet width = theme::global->toolbarDecorationButtonWidth;
-        ttlet height = theme::global->toolbarHeight;
+        ttlet width = theme::global().toolbar_decoration_button_width;
+        ttlet height = theme::global().toolbar_height;
         _minimum_size = _preferred_size = _maximum_size = {width, height};
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
@@ -48,17 +48,17 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
         ttlet icon_height =
-            rectangle().height() < theme::global->toolbarHeight * 1.2f ? rectangle().height() : theme::global->toolbarHeight;
+            rectangle().height() < theme::global().toolbar_height * 1.2f ? rectangle().height() : theme::global().toolbar_height;
         ttlet icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
         _icon_widget->set_layout_parameters_from_parent(icon_rectangle);
 
         // Leave space for window resize handles on the left and top.
         system_menu_rectangle = aarectangle{
-            rectangle().left() + theme::global->margin,
+            rectangle().left() + theme::global().margin,
             rectangle().bottom(),
-            rectangle().width() - theme::global->margin,
-            rectangle().height() - theme::global->margin};
+            rectangle().width() - theme::global().margin,
+            rectangle().height() - theme::global().margin};
     }
 
     super::update_layout(display_time_point, need_layout);

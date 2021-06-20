@@ -21,23 +21,23 @@ void text_widget::init() noexcept
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
-        _shaped_text = shaped_text{(*text)(), _style, 0.0f, _alignment};
-        _minimum_size = _shaped_text.minimum_size();
-        _preferred_size = _shaped_text.preferred_size();
-        _maximum_size = _shaped_text.maximum_size();
+        _shaped_text = shaped_text{(*text)(), theme::global(*text_style), 0.0f, *alignment};
+        _minimum_size = ceil(_shaped_text.minimum_size());
+        _preferred_size = ceil(_shaped_text.preferred_size());
+        _maximum_size = ceil(_shaped_text.maximum_size());
 
-        ttlet small_size = theme::global->smallSize;
+        ttlet size_ = theme::global().size;
         ttlet margin_ = margin();
 
         // Allow text to overhang into the margin of a small widget.
-        if (_minimum_size.height() > small_size && _minimum_size.height() <= small_size + margin_) {
-            _minimum_size.height() = small_size;
+        if (_minimum_size.height() > size_ && _minimum_size.height() <= size_ + margin_) {
+            _minimum_size.height() = size_;
         }
-        if (_preferred_size.height() > small_size && _preferred_size.height() <= small_size + margin_) {
-            _preferred_size.height() = small_size;
+        if (_preferred_size.height() > size_ && _preferred_size.height() <= size_ + margin_) {
+            _preferred_size.height() = size_;
         }
-        if (_maximum_size.height() > small_size && _maximum_size.height() <= small_size + margin_) {
-            _maximum_size.height() = small_size;
+        if (_maximum_size.height() > size_ && _maximum_size.height() <= size_ + margin_) {
+            _maximum_size.height() = size_;
         }
 
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
@@ -53,7 +53,7 @@ void text_widget::init() noexcept
 
     need_layout |= std::exchange(this->_request_relayout, false);
     if (need_layout) {
-        _shaped_text = shaped_text{(*text)(), _style, width(), _alignment};
+        _shaped_text = shaped_text{(*text)(), theme::global(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
     }
     super::update_layout(displayTimePoint, need_layout);

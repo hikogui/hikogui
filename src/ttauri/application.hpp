@@ -45,10 +45,6 @@ public:
      */
     gui_window_size initial_window_size = gui_window_size::normal;
 
-    /** The global configuration.
-    */
-    datum configuration;
-
     /** Thread id of the main thread.
     */
     thread_id main_thread_id;
@@ -100,19 +96,10 @@ protected:
      */
     virtual int loop() = 0;
 
-    virtual void init_foundation();
-    virtual void deinit_foundation();
-    virtual void init_audio();
-    virtual void deinit_audio();
-    virtual void init_text();
-    virtual void deinit_text();
     virtual void init_gui();
     virtual void deinit_gui();
 
 private:
-    typename timer::callback_ptr_type logger_maintenance_callback;
-    typename timer::callback_ptr_type clock_maintenance_callback;
-
     os_handle instance;
 };
 

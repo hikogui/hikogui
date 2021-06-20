@@ -12,7 +12,6 @@
 namespace tt {
 class gui_system;
 class gui_system_delegate;
-class audio_system_delegate;
 class application;
 
 /** application Delegate.
@@ -25,21 +24,6 @@ public:
 
     virtual void init(application &self) {}
     virtual void deinit(application &self) {}
-
-    /*! Return the possible command line argument options.
-     */
-    virtual datum configuration(application &self, int argc, char *argv[]) const noexcept
-    {
-        return {};
-    }
-
-    /** The delegate to be used for the audio system.
-     * @return The delegate to be used for the audio system, or nullptr if the audio system should not be initialized.
-     */
-    virtual std::weak_ptr<audio_system_delegate> audio_system_delegate(application &self) noexcept
-    {
-        return {};
-    }
 
     /** The delegate to be used for the gui system.
      * @return The delegate to be used for the gui system, or nullptr if the gui system should not be initialized.

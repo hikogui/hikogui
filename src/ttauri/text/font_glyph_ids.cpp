@@ -14,7 +14,7 @@ namespace tt {
     graphic_path path;
     auto boundingBox = aarectangle{};
 
-    ttlet &font = font_book::global->get_font(font_id());
+    ttlet &font = font_book::global().get_font(font_id());
     for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 
@@ -43,7 +43,7 @@ namespace tt {
     graphic_path path;
     auto boundingBox = aarectangle{};
 
-    ttlet &font = font_book::global->get_font(font_id());
+    ttlet &font = font_book::global().get_font(font_id());
     for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 

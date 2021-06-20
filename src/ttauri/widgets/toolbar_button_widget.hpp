@@ -19,7 +19,7 @@ public:
         super(window, std::move(parent), std::move(delegate))
     {
         _margin = 0.0f;
-        _label_alignment = alignment::middle_left;
+        label_alignment = alignment::middle_left;
     }
 
     template<typename Label>
@@ -35,7 +35,7 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // On left side a check mark, on right side short-cut. Around the label extra margin.
-            ttlet extra_size = theme::global->margin2Dx2;
+            ttlet extra_size = extent2{theme::global().margin * 2.0f, theme::global().margin * 2.0f};
             _minimum_size += extra_size;
             _preferred_size += extra_size;
             _maximum_size += extra_size;
@@ -53,7 +53,7 @@ public:
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
-            _label_rectangle = aarectangle{theme::global->margin, 0.0f, width() - theme::global->margin * 2.0f, height()};
+            _label_rectangle = aarectangle{theme::global().margin, 0.0f, width() - theme::global().margin * 2.0f, height()};
         }
         super::update_layout(displayTimePoint, need_layout);
     }

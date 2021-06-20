@@ -21,31 +21,24 @@ public:
     using super = widget;
 
     observable<label> label;
+    observable<theme_text_style> text_style = theme_text_style::label;
+    observable<alignment> alignment = alignment::middle_right;
 
     ~label_widget();
 
-    label_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        alignment alignment = alignment::middle_right,
-        text_style text_style = theme::global->labelStyle) noexcept;
+    label_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept;
 
     template<typename Label>
-    label_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
-        Label &&label,
-        alignment alignment = alignment::middle_right,
-        text_style text_style = theme::global->labelStyle
-        ) noexcept :
-        label_widget(window, std::move(parent), alignment, text_style)
+    label_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
+        label_widget(window, std::move(parent))
     {
         this->label = std::forward<Label>(label);
     }
 
     void init() noexcept override;
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] bool
+    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
 
@@ -57,8 +50,6 @@ private:
 
     std::shared_ptr<icon_widget> _icon_widget;
     std::shared_ptr<text_widget> _text_widget;
-    text_style _text_style;
-    alignment _alignment;
 };
 
 } // namespace tt
