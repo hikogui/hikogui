@@ -3,16 +3,32 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "theme_book.hpp"
+#include "../subsystem.hpp"
 #include "../trace.hpp"
 
 namespace tt {
 
+[[nodiscard]] theme_book *theme_book::subsystem_init() noexcept
+{
+    auto tmp = new theme_book(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
+    tmp->set_current_theme_mode(read_os_theme_mode());
+    return tmp;
+}
+
+void theme_book::subsystem_deinit() noexcept
+{
+    auto ptr = _global.exchange(nullptr);
+    delete ptr;
+}
+
+theme_book::~theme_book() {}
+
 theme_book::theme_book(std::vector<URL> const &theme_directories) noexcept :
     themes(), _current_theme_name(), _current_theme_mode(theme_mode::light)
 {
-    for (ttlet &theme_directory: theme_directories) {
+    for (ttlet &theme_directory : theme_directories) {
         ttlet theme_directory_glob = theme_directory / "**" / "*.theme.json";
-        for (ttlet &theme_url: theme_directory_glob.urlsByScanningWithGlobPattern()) {
+        for (ttlet &theme_url : theme_directory_glob.urlsByScanningWithGlobPattern()) {
             auto t = trace<"theme_scan">{};
 
             try {
@@ -30,10 +46,11 @@ theme_book::theme_book(std::vector<URL> const &theme_directories) noexcept :
     update_theme();
 }
 
-[[nodiscard]] std::vector<std::string> theme_book::theme_names() const noexcept {
+[[nodiscard]] std::vector<std::string> theme_book::theme_names() const noexcept
+{
     std::vector<std::string> names;
 
-    for (ttlet &t: themes) {
+    for (ttlet &t : themes) {
         names.push_back(t->name);
     }
 
@@ -43,16 +60,19 @@ theme_book::theme_book(std::vector<URL> const &theme_directories) noexcept :
     return names;
 }
 
-[[nodiscard]] tt::theme_mode theme_book::current_theme_mode() const noexcept {
+[[nodiscard]] tt::theme_mode theme_book::current_theme_mode() const noexcept
+{
     return _current_theme_mode;
 }
 
-void theme_book::set_current_theme_mode(tt::theme_mode theme_mode) noexcept {
+void theme_book::set_current_theme_mode(tt::theme_mode theme_mode) noexcept
+{
     _current_theme_mode = theme_mode;
     update_theme();
 }
 
-[[nodiscard]] std::string theme_book::current_theme_name() const noexcept {
+[[nodiscard]] std::string theme_book::current_theme_name() const noexcept
+{
     return _current_theme_name;
 }
 
@@ -69,7 +89,7 @@ void theme_book::update_theme() noexcept
     theme *matching_theme = nullptr;
     theme *matching_theme_and_mode = nullptr;
 
-    for (auto &t: themes) {
+    for (auto &t : themes) {
         if (t->name == _current_theme_name && t->mode == _current_theme_mode) {
             matching_theme_and_mode = t.get();
         } else if (t->name == _current_theme_name) {
@@ -82,21 +102,20 @@ void theme_book::update_theme() noexcept
     }
 
     if (matching_theme_and_mode) {
-        theme::global = matching_theme_and_mode;
+        theme::set_global(matching_theme_and_mode);
     } else if (matching_theme) {
-        theme::global = matching_theme;
+        theme::set_global(matching_theme);
     } else if (default_theme_and_mode) {
-        theme::global = default_theme_and_mode;
+        theme::set_global(default_theme_and_mode);
     } else if (default_theme) {
-        theme::global = default_theme;
+        theme::set_global(default_theme);
     } else if (std::ssize(themes) > 0) {
-        theme::global = themes[0].get();
+        theme::set_global(themes[0].get());
     } else {
         tt_no_default();
     }
 
-    tt_log_info("theme changed to {}, operating system mode {}", to_string(*theme::global), _current_theme_mode);
+    tt_log_info("theme changed to {}, operating system mode {}", to_string(theme::global()), _current_theme_mode);
 }
 
-
-}
+} // namespace tt

@@ -17,7 +17,7 @@ namespace tt {
 [[nodiscard]] std::string_view get_translation(
     std::string_view msgid,
     long long n=0,
-    std::vector<language*> const &languages=language::preferred_languages
+    std::vector<language*> const &languages=language::preferred_languages()
 ) noexcept;
 
 void add_translation(

@@ -17,6 +17,8 @@ target_sources(ttauri PRIVATE
     audio_stream_config.hpp
     audio_system.cpp
     audio_system.hpp
+    audio_system_aggregate.cpp
+    audio_system_aggregate.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_asio.hpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.hpp>

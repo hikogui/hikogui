@@ -9,6 +9,19 @@
 
 namespace tt {
 
+[[nodiscard]] timer *timer::subsystem_init() noexcept
+{
+    return new timer("Timer (global)");
+}
+
+void timer::subsystem_deinit() noexcept
+{
+    if (auto tmp = _global.exchange(nullptr)) {
+        tmp->stop();
+        delete tmp;
+    }
+}
+
 [[nodiscard]] timer::time_point timer::calculate_next_wakeup(timer::time_point current_time, timer::duration interval) noexcept
 {
     ttlet current_time_ = narrow_cast<int64_t>(current_time.time_since_epoch().count());
@@ -23,10 +36,7 @@ namespace tt {
     return next_wakeup;
 }
 
-timer::timer(std::string name) noexcept :
-    name(std::move(name))
-{
-}
+timer::timer(std::string name) noexcept : name(std::move(name)) {}
 
 timer::~timer()
 {
@@ -36,18 +46,17 @@ timer::~timer()
 
 void timer::start_with_lock_held() noexcept
 {
-    stop_thread = false;
-    thread = std::thread([this]() {
+    thread = std::jthread([this](std::stop_token stop_token) {
         set_thread_name(name);
-        return loop();
+        return loop(stop_token);
     });
 }
 
 void timer::stop_with_lock_held() noexcept
 {
-    stop_thread = true;
+    thread.request_stop();
     if (thread.joinable()) {
-        auto tmp = std::thread{};
+        auto tmp = std::jthread{};
         std::swap(tmp, thread);
 
         mutex.unlock();
@@ -70,9 +79,9 @@ void timer::stop() noexcept
     mutex.unlock();
 }
 
-[[nodiscard]] std::pair<std::vector<timer::callback_ptr_type>,timer::time_point> timer::find_triggered_callbacks(
-    timer::time_point current_time
-) noexcept {
+[[nodiscard]] std::pair<std::vector<timer::callback_ptr_type>, timer::time_point>
+timer::find_triggered_callbacks(timer::time_point current_time) noexcept
+{
     ttlet lock = std::scoped_lock(mutex);
 
     auto triggered_callbacks = std::vector<callback_ptr_type>{};
@@ -101,22 +110,20 @@ void timer::stop() noexcept
         } else {
             i = callback_list.erase(i);
         }
-
-        
     }
     return {triggered_callbacks, next_wakeup};
 }
 
-void timer::loop() noexcept
+void timer::loop(std::stop_token stop_token) noexcept
 {
     tt_log_info("Timer {}: started", name);
     while (true) {
         ttlet current_time = hires_utc_clock::now();
 
-        ttlet &[triggered_callbacks, next_wakeup] = find_triggered_callbacks(current_time);
+        ttlet & [ triggered_callbacks, next_wakeup ] = find_triggered_callbacks(current_time);
 
         // Execute all the triggered callbacks.
-        for (ttlet &callback_ptr: triggered_callbacks) {
+        for (ttlet &callback_ptr : triggered_callbacks) {
             (*callback_ptr)(current_time, false);
         }
 
@@ -127,16 +134,16 @@ void timer::loop() noexcept
         }
 
         ttlet lock = std::scoped_lock(mutex);
-        if (stop_thread || std::ssize(callback_list) == 0) {
+        if (stop_token.stop_requested() or std::ssize(callback_list) == 0) {
             break;
         }
     }
     tt_log_info("Timer {}: finishing up", name);
 
     ttlet lock = std::scoped_lock(mutex);
-    
+
     ttlet current_time = hires_utc_clock::now();
-    for (ttlet &item: callback_list) {
+    for (ttlet &item : callback_list) {
         if (auto callback_ptr_ = item.callback_ptr.lock()) {
             (*callback_ptr_)(current_time, true);
         }
@@ -157,4 +164,4 @@ void timer::remove_callback(callback_ptr_type const &callback_ptr) noexcept
     callback_list.erase(i, callback_list.end());
 }
 
-}
+} // namespace tt

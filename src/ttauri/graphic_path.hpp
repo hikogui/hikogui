@@ -95,7 +95,7 @@ struct graphic_path {
 
     [[nodiscard]] color getColorOfLayer(ssize_t layerNr) const noexcept;
 
-    void setColorOfLayer(ssize_t layerNr, color fillColor) noexcept;
+    void setColorOfLayer(ssize_t layerNr, color fill_color) noexcept;
 
     /** Return true if there is an open contour.
      */
@@ -117,7 +117,7 @@ struct graphic_path {
     /** Close current contour.
      * No operation if there is no open layer.
      */
-    void closeLayer(color fillColor) noexcept;
+    void closeLayer(color fill_color) noexcept;
 
     /** Optimize layers.
      * Merge contiguous layers with the same color.
@@ -205,7 +205,7 @@ struct graphic_path {
 
     /** Add path and close layer.
      */
-    void addPath(graphic_path const &path, color fillColor) noexcept;
+    void addPath(graphic_path const &path, color fill_color) noexcept;
 
     /** Stroke a path and close layer.
      */

@@ -7,6 +7,9 @@
 #include "../cast.hpp"
 #include "../utils.hpp"
 #include "../logger.hpp"
+#include "../subsystem.hpp"
+#include "../notifier.hpp"
+#include "../timer.hpp"
 #include "language_tag.hpp"
 #include <string>
 #include <vector>
@@ -16,7 +19,10 @@
 namespace tt {
 
 
-struct language {
+class language {
+public:
+    using callback_ptr_type = typename notifier<void()>::callback_ptr_type;
+
     language_tag tag;
     std::function<int(int)> plurality_func;
 
@@ -38,30 +44,36 @@ struct language {
         return std::clamp(narrow_cast<ssize_t>(r), ssize_t{0}, max - 1);
     }
 
-    inline static std::unordered_map<language_tag,std::unique_ptr<language>> languages;
-    inline static std::vector<language *> preferred_languages;
-    inline static std::recursive_mutex static_mutex;
-
     [[nodiscard]] static language *find(language_tag const &tag) noexcept {
-        ttlet lock = std::scoped_lock(static_mutex);
+        ttlet lock = std::scoped_lock(_mutex);
 
-        ttlet i = languages.find(tag);
-        if (i != languages.end()) {
+        ttlet i = _languages.find(tag);
+        if (i != _languages.end()) {
             return i->second.get();
         } else {
             return nullptr;
         }
     }
 
+    [[nodiscard]] static std::vector<language *> preferred_languages()
+    {
+        if (start_subsystem(_is_running, false, subsystem_init, subsystem_deinit)) {
+            ttlet lock = std::scoped_lock(_mutex);
+            return _preferred_languages;
+        } else {
+            return {};
+        }
+    }
+
     [[nodiscard]] static language &find_or_create(language_tag const &tag) noexcept
     {
-        ttlet lock = std::scoped_lock(static_mutex);
+        ttlet lock = std::scoped_lock(_mutex);
 
         auto *r = find(tag);
         if (!r) {
             auto tmp = std::make_unique<language>(tag);
             r = tmp.get();
-            languages[tag] = std::move(tmp);
+            _languages[tag] = std::move(tmp);
         }
         return *r;
     }
@@ -100,14 +112,14 @@ struct language {
 
     static void set_preferred_languages(std::vector<language_tag> tags) noexcept
     {
-        ttlet lock = std::scoped_lock(static_mutex);
+        ttlet lock = std::scoped_lock(_mutex);
 
         auto tmp = std::vector<language*>{};
         for (ttlet &tag: add_short_names(tags)) {
             tmp.push_back(&find_or_create(tag));
         }
 
-        if (compare_then_assign(preferred_languages, tmp)) {
+        if (compare_then_assign(_preferred_languages, tmp)) {
             auto language_order_string = std::string{};
             for (ttlet &language : tmp) {
                 if (language_order_string.size() != 0) {
@@ -123,6 +135,53 @@ struct language {
      * Language tags are based on IETF BCP-47/RFC-5646
      */
     [[nodiscard]] static std::vector<language_tag> read_os_preferred_languages() noexcept;
+
+    [[nodiscard]] static callback_ptr_type subscribe(callback_ptr_type const &callback) noexcept
+    {
+        return _notifier.subscribe(callback);
+    }
+
+    template<typename Callback> requires(std::is_invocable_v<Callback>)
+    [[nodiscard]] static callback_ptr_type subscribe(Callback &&callback) noexcept
+    {
+        return _notifier.subscribe(std::forward<Callback>(callback));
+    }
+
+    static void unsubscribe(callback_ptr_type const &callback) noexcept
+    {
+        _notifier.unsubscribe(callback);
+    }
+
+private:
+    inline static std::atomic<bool> _is_running;
+    inline static std::unordered_map<language_tag, std::unique_ptr<language>> _languages;
+    inline static std::vector<language_tag> _preferred_language_tags;
+    inline static std::vector<language *> _preferred_languages;
+    inline static std::recursive_mutex _mutex;
+    inline static notifier<void()> _notifier;
+    inline static typename timer::callback_ptr_type _languages_maintenance_callback;
+
+    [[nodiscard]] static bool subsystem_init() noexcept
+    {
+        _languages_maintenance_callback = timer::global().add_callback(1s, [](auto...) {
+            ttlet new_preferred_language_tags = language::read_os_preferred_languages();
+
+            if (language::_preferred_language_tags != new_preferred_language_tags) {
+                language::_preferred_language_tags = new_preferred_language_tags;
+                set_preferred_languages(language::_preferred_language_tags);
+                language::_notifier();
+            }
+        }, true);
+
+        return true;
+    }
+
+    static void subsystem_deinit() noexcept
+    {
+        if (_is_running.exchange(false)) {
+
+        }
+    }
 };
 
 }

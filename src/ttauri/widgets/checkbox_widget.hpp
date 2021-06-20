@@ -18,7 +18,7 @@ public:
     checkbox_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, std::move(parent), std::move(delegate))
     {
-        _label_alignment = alignment::top_left;
+        label_alignment = alignment::top_left;
     }
 
     template<typename Value, typename... Args>
@@ -36,13 +36,12 @@ public:
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // Make room for button and margin.
-            _button_size = {theme::global->smallSize, theme::global->smallSize};
-            ttlet extra_size = extent2{theme::global->margin + _button_size.width(), 0.0f};
+            _button_size = {theme::global().size, theme::global().size};
+            ttlet extra_size = extent2{theme::global().margin + _button_size.width(), 0.0f};
             _minimum_size += extra_size;
             _preferred_size += extra_size;
             _maximum_size += extra_size;
 
-            // Make sure the widget is at least smallSize.
             _minimum_size = max(_minimum_size, _button_size);
             _preferred_size = max(_minimum_size, _button_size);
             _maximum_size = max(_minimum_size, _button_size);
@@ -62,17 +61,17 @@ public:
         if (need_layout) {
             _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
-            _label_rectangle = aarectangle{_button_rectangle.right() + theme::global->margin, 0.0f, width(), height()};
+            _label_rectangle = aarectangle{_button_rectangle.right() + theme::global().margin, 0.0f, width(), height()};
 
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
             _check_glyph_rectangle =
-                align(_button_rectangle, scale(check_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
+                align(_button_rectangle, scale(check_glyph_bb, theme::global().icon_size), alignment::middle_center);
 
             _minus_glyph = to_font_glyph_ids(elusive_icon::Minus);
             ttlet minus_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_minus_glyph);
             _minus_glyph_rectangle =
-                align(_button_rectangle, scale(minus_glyph_bb, theme::global->small_icon_size), alignment::middle_center);
+                align(_button_rectangle, scale(minus_glyph_bb, theme::global().icon_size), alignment::middle_center);
         }
         super::update_layout(displayTimePoint, need_layout);
     }

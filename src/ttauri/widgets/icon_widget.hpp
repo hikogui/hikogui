@@ -20,12 +20,13 @@ public:
     using super = widget;
 
     observable<icon> icon;
+    observable<alignment> alignment = alignment::middle_center;
+    observable<theme_color> color = theme_color::foreground;
 
     icon_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
-        alignment alignment = alignment::middle_center) noexcept :
-        super(window, std::move(parent)), _alignment(alignment)
+        std::shared_ptr<widget> parent) noexcept :
+        super(window, std::move(parent))
     {
     }
 
@@ -33,9 +34,8 @@ public:
     icon_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
-        alignment alignment,
         Icon &&icon) noexcept :
-        icon_widget(window, std::move(parent), alignment)
+        icon_widget(window, std::move(parent))
     {
         this->icon = std::forward<Icon>(icon);
     }
@@ -54,8 +54,6 @@ private:
     enum class icon_type { no, glyph, pixmap };
 
     decltype(icon)::callback_ptr_type _icon_callback;
-
-    alignment _alignment;
 
     icon_type _icon_type;
     font_glyph_ids _glyph;

@@ -10,17 +10,18 @@ label_widget::~label_widget() {}
 
 label_widget::label_widget(
     gui_window &window,
-    std::shared_ptr<widget> parent,
-    alignment alignment,
-    text_style text_style) noexcept :
-    super(window, std::move(parent)), _alignment(alignment), _text_style(text_style)
+    std::shared_ptr<widget> parent) noexcept :
+    super(window, std::move(parent))
 {
 }
 
 void label_widget::init() noexcept
 {
-    _icon_widget = super::make_widget<icon_widget>(_alignment);
-    _text_widget = super::make_widget<text_widget>(_alignment, _text_style);
+    _icon_widget = super::make_widget<icon_widget>();
+    _icon_widget->alignment = alignment;
+    _text_widget = super::make_widget<text_widget>();
+    _text_widget->alignment = alignment;
+    _text_widget->text_style = text_style;
 
     _label_callback = label.subscribe([this]() {
         this->_icon_widget->icon = (*this->label).icon;
@@ -40,14 +41,14 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
         ttlet has_text = label_size.width() > 0.0f;
         ttlet has_icon = icon_size.width() > 0.0f;
 
-        _inner_margin = (has_text and has_icon) ? theme::global->margin : 0.0f;
+        _inner_margin = (has_text and has_icon) ? theme::global().margin : 0.0f;
 
         if (has_icon) {
             // Override the natural icon size.
-            if (_alignment == horizontal_alignment::center) {
-                _icon_size = theme::global->large_icon_size;
+            if (*alignment == horizontal_alignment::center) {
+                _icon_size = theme::global().large_icon_size;
             } else {
-                _icon_size = theme::global->icon_size;
+                _icon_size = std::ceil(theme::global(*text_style).scaled_size() * 1.4f);
             }
         } else {
             _icon_size = 0.0f;
@@ -55,13 +56,12 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
 
         auto size = label_size;
         if (has_icon) {
-            if (_alignment != horizontal_alignment::center) {
-                // If the icon is on the left or right, add the icon to the width and
-                // the minimum height is the maximum of the icon and text height.
+            if (*alignment != horizontal_alignment::center) {
+                // If the icon is on the left or right, add the icon to the width.
+                // Since the label is inline, we do not adjust the height of the label widget on the icon size.
                 size.width() += _inner_margin + _icon_size;
-                size.height() = std::max(size.height(), _icon_size);
 
-            } else if (_alignment != vertical_alignment::middle) {
+            } else if (*alignment != vertical_alignment::middle) {
                 // If the icon is above or below the text, add the icon height and the
                 // minimum width is the maximum of the icon and text width.
                 size.width() = std::max(size.width(), _icon_size);
@@ -92,19 +92,19 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
     need_layout |= std::exchange(this->_request_relayout, false);
     if (need_layout) {
         auto text_rect = aarectangle{};
-        if (_alignment == horizontal_alignment::left) {
+        if (*alignment == horizontal_alignment::left) {
             ttlet text_width = width() - _icon_size - _inner_margin;
             text_rect = {_icon_size + _inner_margin, 0.0f, text_width, height()};
 
-        } else if (_alignment == horizontal_alignment::right) {
+        } else if (*alignment == horizontal_alignment::right) {
             ttlet text_width = width() - _icon_size - _inner_margin;
             text_rect = {0.0f, 0.0f, text_width, height()};
 
-        } else if (_alignment == vertical_alignment::top) {
+        } else if (*alignment == vertical_alignment::top) {
             ttlet text_height = height() - _icon_size;
             text_rect = {0.0f, 0.0f, width(), text_height};
 
-        } else if (_alignment == vertical_alignment::bottom) {
+        } else if (*alignment == vertical_alignment::bottom) {
             ttlet text_height = height() - _icon_size;
             text_rect = {0.0f, _icon_size, width(), text_height};
 
@@ -113,7 +113,7 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
         }
 
         auto icon_pos = point2{};
-        switch (_alignment) {
+        switch (*alignment) {
         case alignment::top_left: icon_pos = {0.0f, height() - _icon_size}; break;
         case alignment::top_right: icon_pos = {width() - _icon_size, height() - _icon_size}; break;
         case alignment::top_center: icon_pos = {(width() - _icon_size) / 2.0f, height() - _icon_size}; break;

@@ -28,6 +28,7 @@ public:
     observable<label> on_label = l10n("on");
     observable<label> off_label = l10n("off");
     observable<label> other_label = l10n("other");
+    observable<alignment> label_alignment;
 
     abstract_button_widget(
         gui_window &window,
@@ -42,9 +43,13 @@ public:
     {
         super::init();
 
-        _on_label_widget = this->make_widget<label_widget>(_label_alignment);
-        _off_label_widget = this->make_widget<label_widget>(_label_alignment);
-        _other_label_widget = this->make_widget<label_widget>(_label_alignment);
+        _on_label_widget = this->make_widget<label_widget>();
+        _off_label_widget = this->make_widget<label_widget>();
+        _other_label_widget = this->make_widget<label_widget>();
+
+        _on_label_widget->alignment = label_alignment;
+        _off_label_widget->alignment = label_alignment;
+        _other_label_widget->alignment = label_alignment;
 
         _on_label_widget->label = on_label;
         _off_label_widget->label = off_label;
@@ -137,7 +142,7 @@ public:
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
         if (_pressed) {
-            return theme::global->fillColor(this->_semantic_layer + 2);
+            return theme::global(theme_color::fill, this->_semantic_layer + 2);
         } else {
             return super::background_color();
         }
@@ -208,7 +213,6 @@ public:
     }
 
 protected:
-    tt::alignment _label_alignment;
     aarectangle _label_rectangle;
     std::shared_ptr<label_widget> _on_label_widget;
     std::shared_ptr<label_widget> _off_label_widget;

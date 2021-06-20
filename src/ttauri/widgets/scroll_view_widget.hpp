@@ -48,6 +48,8 @@ public:
 
         // Recurse into the selected widget.
         if (has_updated_contraints) {
+            // As the widget will always add scrollbars if needed the minimum size is dictated to
+            // the size of the scrollbars.
             _minimum_size = _content->minimum_size();
             _preferred_size = _content->preferred_size();
             _maximum_size = _content->maximum_size();
