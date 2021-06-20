@@ -102,8 +102,6 @@ protected:
 
     virtual void init_audio();
     virtual void deinit_audio();
-    virtual void init_text();
-    virtual void deinit_text();
     virtual void init_gui();
     virtual void deinit_gui();
 

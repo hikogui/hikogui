@@ -67,18 +67,12 @@ void application::init()
         delegate_->init(*this);
     }
 
-    init_text();
     init_audio();
     init_gui();
 
     tt_log_info("Started application '{}'.", application_metadata().display_name);
 }
 
-
-void application::init_text()
-{
-    language::set_preferred_languages(language::read_os_preferred_languages());
-}
 
 void application::init_audio()
 {
@@ -117,7 +111,6 @@ void application::deinit()
 
     deinit_gui();
     deinit_audio();
-    deinit_text();
 
     if (auto delegate_ = delegate.lock()) {
         delegate_->deinit(*this);
@@ -126,10 +119,6 @@ void application::deinit()
     // Remove the singleton.
     tt_assert(application::global == this);
     application::global = nullptr;
-}
-
-void application::deinit_text()
-{
 }
 
 void application::deinit_audio()

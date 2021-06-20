@@ -170,7 +170,7 @@ private:
                 set_preferred_languages(language::_preferred_language_tags);
                 language::_notifier();
             }
-        });
+        }, true);
 
         return true;
     }

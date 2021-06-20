@@ -54,27 +54,33 @@ public:
      *
      * @param interval The interval to execute the callback at.
      * @param callback The callback function.
+     * @param immediate When true the callback is immediately called.
      * @return An shared_ptr to retain the callback function, when the shared_ptr is removed then
      *         the callback can no longer be called.
      */
     template<typename Callback> requires(std::is_invocable_v<Callback>)
-    [[nodiscard]] std::shared_ptr<callback_type> add_callback(duration interval, Callback callback) noexcept
+    [[nodiscard]] std::shared_ptr<callback_type> add_callback(duration interval, Callback callback, bool immediate=false) noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
         ttlet current_time = hires_utc_clock::now();
-
         auto callback_ptr = std::make_shared<callback_type>(std::forward<Callback>(callback));
 
-        callback_list.emplace_back(
-            interval,
-            calculate_next_wakeup(current_time, interval),
-            callback_ptr
-        );
+        {
+            ttlet lock = std::scoped_lock(mutex);
 
-        if (std::ssize(callback_list) == 1) {
-            start_with_lock_held();
+            callback_list.emplace_back(
+                interval,
+                calculate_next_wakeup(current_time, interval),
+                callback_ptr
+            );
+
+            if (std::ssize(callback_list) == 1) {
+                start_with_lock_held();
+            }
         }
 
+        if (immediate) {
+            (*callback_ptr)(current_time, false);
+        }
         return callback_ptr;
     }
 
