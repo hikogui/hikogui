@@ -43,9 +43,6 @@ public:
     /** Send a win32 message to a list of windows, on the thread associated with each of those windows.
      */
     void post_message(std::vector<void *> const &windows, unsigned int Msg, ptrdiff_t wParam = 0, ptrdiff_t lParam = 0) noexcept;
-
-protected:
-    void init_audio() override;
 };
 
 } // namespace tt

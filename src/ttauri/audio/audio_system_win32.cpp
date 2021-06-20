@@ -72,7 +72,7 @@ private:
     audio_system_win32 *_system;
 };
 
-audio_system_win32::audio_system_win32(std::weak_ptr<audio_system_delegate> const &delegate) : audio_system(delegate)
+audio_system_win32::audio_system_win32(std::shared_ptr<audio_system_delegate> delegate) : audio_system(std::move(delegate))
 {
     tt_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
@@ -94,13 +94,12 @@ audio_system_win32::~audio_system_win32()
 
 void audio_system_win32::init() noexcept
 {
-    ttlet lock = std::scoped_lock(audio_system::mutex);
-
-    audio_system::init();
-    update_device_list();
-    if (auto delegate_ = _delegate.lock()) {
-        delegate_->audio_device_list_changed(*this);
+    {
+        ttlet lock = std::scoped_lock(audio_system::mutex);
+        audio_system::init();
+        update_device_list();
     }
+    delegate().audio_device_list_changed(*this);
 }
 
 void audio_system_win32::update_device_list() noexcept
@@ -135,7 +134,7 @@ void audio_system_win32::update_device_list() noexcept
 
         } else {
             auto device = std::allocate_shared<audio_device_win32>(locked_memory_allocator<audio_device_win32>{}, win32_device);
-            //tt_log_info(
+            // tt_log_info(
             //    "Found audio device \"{}\", state={}, channels={}, speakers={}",
             //    device->name(),
             //    device->state(),
@@ -155,31 +154,23 @@ void audio_system_win32::default_device_changed() noexcept {}
 void audio_system_win32::device_added() noexcept
 {
     update_device_list();
-    if (auto delegate_ = _delegate.lock()) {
-        delegate_->audio_device_list_changed(*this);
-    }
+    _delegate->audio_device_list_changed(*this);
 }
 
 void audio_system_win32::device_removed(std::string device_id) noexcept
 {
     update_device_list();
-    if (auto delegate_ = _delegate.lock()) {
-        delegate_->audio_device_list_changed(*this);
-    }
+    _delegate->audio_device_list_changed(*this);
 }
 
 void audio_system_win32::device_state_changed(std::string device_id) noexcept
 {
-    if (auto delegate_ = _delegate.lock()) {
-        delegate_->audio_device_list_changed(*this);
-    }
+    _delegate->audio_device_list_changed(*this);
 }
 
 void audio_system_win32::device_property_value_changed(std::string device_id) noexcept
 {
-    if (auto delegate_ = _delegate.lock()) {
-        delegate_->audio_device_list_changed(*this);
-    }
+    _delegate->audio_device_list_changed(*this);
 }
 
 } // namespace tt

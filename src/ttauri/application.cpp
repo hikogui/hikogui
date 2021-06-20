@@ -67,22 +67,9 @@ void application::init()
         delegate_->init(*this);
     }
 
-    init_audio();
     init_gui();
 
     tt_log_info("Started application '{}'.", application_metadata().display_name);
-}
-
-
-void application::init_audio()
-{
-    if (auto delegate_ = delegate.lock()) {
-        ttlet audio_system_delegate = delegate_->audio_system_delegate(narrow_cast<application &>(*this));
-        if (!audio_system_delegate.expired()) {
-            audio_system::global = std::make_shared<audio_system_aggregate>(audio_system_delegate);
-            audio_system::global->init();
-        }
-    }
 }
 
 void application::init_gui()
@@ -110,7 +97,6 @@ void application::deinit()
     tt_log_info("Stopping application.");
 
     deinit_gui();
-    deinit_audio();
 
     if (auto delegate_ = delegate.lock()) {
         delegate_->deinit(*this);
@@ -119,11 +105,6 @@ void application::deinit()
     // Remove the singleton.
     tt_assert(application::global == this);
     application::global = nullptr;
-}
-
-void application::deinit_audio()
-{
-    audio_system::global = {};
 }
 
 void application::deinit_gui()
