@@ -333,7 +333,7 @@ bool gui_window::send_event(keyboard_event const &event) noexcept
 
     // If the keyboard event is not handled directly, convert the key event to a command.
     if (event.type == keyboard_event::Type::Key) {
-        ttlet commands = keyboardBindings.translate(event.key);
+        ttlet commands = keyboard_bindings::global().translate(event.key);
 
         ttlet handled = send_event_to_widget(target, commands);
 

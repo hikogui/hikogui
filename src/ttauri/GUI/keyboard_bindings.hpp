@@ -8,6 +8,7 @@
 #include "../URL.hpp"
 #include "../architecture.hpp"
 #include "../command.hpp"
+#include "../subsystem.hpp"
 #include <unordered_map>
 #include <tuple>
 
@@ -147,10 +148,17 @@ public:
      * This will save all bindings that are different from the system bindings.
      */
     void saveUserBindings(URL url);
-};
 
-/** Global keyboard bindings.
-*/
-inline keyboard_bindings keyboardBindings;
+    [[nodiscard]] static keyboard_bindings &global() noexcept
+    {
+        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
+    }
+
+private:
+    static inline std::atomic<keyboard_bindings *> _global;
+
+    [[nodiscard]] static keyboard_bindings *subsystem_init() noexcept;
+    static void subsystem_deinit() noexcept;
+};
 
 }

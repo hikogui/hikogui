@@ -78,14 +78,7 @@ void application::init_gui()
         ttlet gui_delegate = delegate_->gui_system_delegate(narrow_cast<application &>(*this));
         if (!gui_delegate.expired()) {
             RenderDoc::global = std::make_unique<RenderDoc>();
-
-
-            try {
-                keyboardBindings.loadSystemBindings();
-            } catch (std::exception const &e) {
-                tt_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
-            }
-
+           
             gui_system::global = std::make_unique<gui_system_vulkan_win32>(gui_delegate, instance);
             gui_system::global->init();
         }
