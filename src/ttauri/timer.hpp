@@ -57,7 +57,7 @@ public:
      * @return An shared_ptr to retain the callback function, when the shared_ptr is removed then
      *         the callback can no longer be called.
      */
-    template<typename Callback>
+    template<typename Callback> requires(std::is_invocable_v<Callback>)
     [[nodiscard]] std::shared_ptr<callback_type> add_callback(duration interval, Callback callback) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);

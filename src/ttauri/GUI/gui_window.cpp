@@ -78,6 +78,11 @@ void gui_window::init()
 
         // Reset the keyboard target to not focus anything.
         update_keyboard_target({});
+
+        _setting_change_callback = language::subscribe([this]() {
+            ttlet lock = std::scoped_lock(gui_system_mutex);
+            this->_request_setting_change = true;
+        });
     }
 
     // Delegate has been called, layout of widgets has been calculated for the

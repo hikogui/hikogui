@@ -117,15 +117,15 @@ void widget::deinit() noexcept
 {
     tt_axiom(gui_system_mutex.recurse_lock_count());
 
-    auto has_constrainted = std::exchange(_request_reconstrain, false);
+    need_reconstrain |= std::exchange(_request_reconstrain, false);
 
     for (auto &&child : _children) {
         tt_axiom(child);
         tt_axiom(&child->parent() == this);
-        has_constrainted |= child->update_constraints(display_time_point, need_reconstrain);
+        need_reconstrain |= child->update_constraints(display_time_point, need_reconstrain);
     }
 
-    return has_constrainted;
+    return need_reconstrain;
 }
 
 void widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept

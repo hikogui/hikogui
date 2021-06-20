@@ -76,15 +76,7 @@ void application_win32::init()
 {
     application::init();
 
-    languages_maintenance_callback = timer::global().add_callback(1s, [this](auto...) {
-        ttlet current_language_tags = language::read_os_preferred_languages();
-        static auto previous_language_tags = current_language_tags;
-        
-        if (previous_language_tags != current_language_tags) {
-            previous_language_tags = current_language_tags;
-            this->post_message(this->win32_windows(), WM_WIN_LANGUAGE_CHANGE);
-        }
-    });
+    
 }
 
 int application_win32::loop()

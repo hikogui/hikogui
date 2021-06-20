@@ -10,7 +10,6 @@ namespace tt {
 
 // WM_USER = ?-0x7fff
 // WM_APP = 0x8000-0xbfff.
-constexpr unsigned int WM_WIN_LANGUAGE_CHANGE = 0x8000 - 1;
 constexpr unsigned int WM_APP_CALL_FUNCTION = 0x8000 + 1;
 
 class application_win32 final : public application {
@@ -46,8 +45,6 @@ public:
     void post_message(std::vector<void *> const &windows, unsigned int Msg, ptrdiff_t wParam = 0, ptrdiff_t lParam = 0) noexcept;
 
 protected:
-    typename timer::callback_ptr_type languages_maintenance_callback;
-
     void init_audio() override;
 };
 

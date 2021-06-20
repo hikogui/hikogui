@@ -693,11 +693,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         requestLayout = true;
     } break;
 
-    case WM_WIN_LANGUAGE_CHANGE:
-        language::set_preferred_languages(language::read_os_preferred_languages());
-        _request_setting_change = true;
-        break;
-
     default: break;
     }
 
