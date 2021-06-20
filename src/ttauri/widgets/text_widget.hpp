@@ -21,13 +21,13 @@ public:
     using super = widget;
 
     observable<l10n> text;
+    observable<alignment> alignment = alignment::middle_center;
+    observable<theme_text_style> text_style = theme_text_style::label;
 
     text_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
-        alignment alignment = alignment::top_left,
-        text_style style = theme::global->labelStyle) noexcept :
-        super(window, std::move(parent)), _alignment(alignment), _style(style)
+        std::shared_ptr<widget> parent) noexcept :
+        super(window, std::move(parent))
     {
     }
 
@@ -35,10 +35,8 @@ public:
         text_widget(
         gui_window &window,
         std::shared_ptr<widget> parent,
-        Text &&text,
-        alignment alignment = alignment::top_left,
-        text_style style = theme::global->labelStyle) noexcept :
-        text_widget(window, std::move(parent), alignment, style)
+        Text &&text) noexcept :
+        text_widget(window, std::move(parent))
     {
         text = std::forward<Text>(text);
     }
@@ -57,8 +55,6 @@ public:
 private:
     decltype(text)::callback_ptr_type _text_callback;
 
-    alignment _alignment;
-    text_style _style;
     shaped_text _shaped_text;
     matrix2 _shaped_text_transform;
 };

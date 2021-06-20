@@ -25,13 +25,6 @@ public:
         preferences_controller = std::make_shared<demo::preferences_controller>();
     }
 
-    /** The delegate to be used for the audio system.
-    * @return The delegate to be used for the audio system, or nullptr if the audio system should not be initialized.
-    */
-    virtual std::weak_ptr<tt::audio_system_delegate> audio_system_delegate(tt::application &self) noexcept override {
-        return weak_from_this();
-    }
-
     /** The delegate to be used for the gui system.
     * @return The delegate to be used for the gui system, or nullptr if the gui system should not be initialized.
     */

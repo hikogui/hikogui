@@ -18,6 +18,7 @@ application_win32::application_win32(
     os_handle instance) :
     application(delegate, instance)
 {
+    main_thread_id = current_thread_id();
 }
 
 void application_win32::run_from_main_loop(std::function<void()> function)
@@ -75,15 +76,7 @@ void application_win32::init()
 {
     application::init();
 
-    languages_maintenance_callback = timer::global->add_callback(1s, [this](auto...) {
-        ttlet current_language_tags = language::read_os_preferred_languages();
-        static auto previous_language_tags = current_language_tags;
-        
-        if (previous_language_tags != current_language_tags) {
-            previous_language_tags = current_language_tags;
-            this->post_message(this->win32_windows(), WM_WIN_LANGUAGE_CHANGE);
-        }
-    });
+    
 }
 
 int application_win32::loop()
@@ -112,16 +105,6 @@ int application_win32::loop()
     } while (more_messages);
 
     return exit_code;
-}
-
-void application_win32::init_audio()
-{
-    application::init_audio();
-
-    if (audio_system::global) {
-        auto audio_system = std::dynamic_pointer_cast<audio_system_aggregate>(audio_system::global);
-        audio_system->make_audio_system<audio_system_win32>();
-    }
 }
 
 } // namespace tt

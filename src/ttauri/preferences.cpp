@@ -17,7 +17,7 @@ preferences::preferences(URL location) noexcept :
         this->set_modified();
     });
 
-    _check_modified_ptr = timer::global->add_callback(5s, [this](auto...) {
+    _check_modified_ptr = timer::global().add_callback(5s, [this](auto...) {
         this->check_modified();
     });
 }

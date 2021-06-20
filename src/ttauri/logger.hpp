@@ -130,7 +130,7 @@ inline bool logger_start()
  */
 inline void logger_stop()
 {
-    return stop_subsystem(detail::logger_is_running, false, detail::logger_deinit);
+    return stop_subsystem(detail::logger_deinit);
 }
 
 /** Log a message.

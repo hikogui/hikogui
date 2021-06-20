@@ -5,8 +5,27 @@
 #include "keyboard_bindings.hpp"
 #include "../codec/JSON.hpp"
 #include "../command.hpp"
+#include "../logger.hpp"
 
 namespace tt {
+
+[[nodiscard]] keyboard_bindings *keyboard_bindings::subsystem_init() noexcept
+{
+    auto tmp = new keyboard_bindings();
+    try {
+        tmp->loadSystemBindings();
+    } catch (std::exception const &e) {
+        tt_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
+    }
+    return tmp;
+}
+
+void keyboard_bindings::subsystem_deinit() noexcept
+{
+    if (auto tmp = _global.exchange(nullptr)) {
+        delete tmp;
+    }
+}
 
 void keyboard_bindings::loadBindings(URL url, bool system_binding)
 {
@@ -24,8 +43,8 @@ void keyboard_bindings::loadBindings(URL url, bool system_binding)
 
             tt_parse_check(
                 binding.contains("key") && binding.contains("command"),
-                "Expecting required 'key' and 'command' for a binding, got {}", binding
-            );
+                "Expecting required 'key' and 'command' for a binding, got {}",
+                binding);
 
             ttlet key_name = static_cast<std::string>(binding["key"]);
             ttlet key = keyboard_key(key_name);
@@ -56,8 +75,6 @@ void keyboard_bindings::loadBindings(URL url, bool system_binding)
     } catch (std::exception const &e) {
         throw io_error("{}: Could not load keyboard bindings.\n{}", url, e.what());
     }
-
 }
 
-
-}
+} // namespace tt

@@ -293,7 +293,6 @@ public:
         float draw_layer_delta) noexcept
     {
         tt_axiom(gui_system_mutex.recurse_lock_count());
-        tt_axiom(child_rectangle.size() >= _minimum_size);
 
         ttlet child_translate = translate2{child_rectangle};
         ttlet child_size = child_rectangle.size();
@@ -744,7 +743,7 @@ protected:
     extent2 _preferred_size;
     extent2 _maximum_size;
 
-    float _margin = theme::global->margin;
+    float _margin = theme::global().margin;
 
     /** The draw layer of the widget.
      * This value translates directly to the z-axis between 0.0 (far) and 100.0 (near)

@@ -191,6 +191,15 @@ template<typename T1, typename T2>
 constexpr bool is_different_v = !std::is_same_v<T1,T2>;
 
 template<typename T>
+struct is_atomic : public std::false_type {};
+
+template<typename T>
+struct is_atomic<std::atomic<T>> : public std::true_type {};
+
+template<typename T>
+constexpr bool is_atomic_v = is_atomic<T>::value;
+
+template<typename T>
 constexpr bool may_be_atomic_v = std::is_trivially_copyable_v<T> and std::is_copy_constructible_v<T> and
         std::is_move_constructible_v<T> and std::is_copy_assignable_v<T> and
         std::is_move_assignable_v<T>;

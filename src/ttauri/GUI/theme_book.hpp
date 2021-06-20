@@ -19,7 +19,11 @@ namespace tt {
  */
 class theme_book {
 public:
-    static inline std::unique_ptr<theme_book> global;
+    ~theme_book();
+    theme_book(theme_book const &) = delete;
+    theme_book(theme_book &&) = delete;
+    theme_book &operator=(theme_book const &) = delete;
+    theme_book &operator=(theme_book &&) = delete;
 
     theme_book(std::vector<URL> const &theme_directories) noexcept;
 
@@ -33,12 +37,22 @@ public:
 
     void set_current_theme_name(std::string const &themeName) noexcept;
 
+    static theme_book &global() noexcept
+    {
+        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
+    }
+
 private:
+    static inline std::atomic<theme_book *>_global = nullptr;
+
     std::vector<std::unique_ptr<theme>> themes;
     std::string _current_theme_name;
     tt::theme_mode _current_theme_mode;
 
     static inline char const *_default_theme_name = "TTauri";
+
+    [[nodiscard]] static theme_book *subsystem_init() noexcept;
+    static void subsystem_deinit() noexcept;
 
     /** Find a theme matching the current name and mode.
      */
