@@ -9,6 +9,7 @@
 #include "../logger.hpp"
 #include "../subsystem.hpp"
 #include "../notifier.hpp"
+#include "../timer.hpp"
 #include "language_tag.hpp"
 #include <string>
 #include <vector>
