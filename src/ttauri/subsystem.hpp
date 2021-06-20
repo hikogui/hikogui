@@ -90,7 +90,10 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem(
     typename T::value_type (*init_function)(),
     void (*deinit_function)())
 {
-    auto old_value = check_variable.load(std::memory_order::acquire);
+    // We can do a relaxed load, if:
+    //  - off_value, then we will lock before writing check_variable and memory order will be guaranteed
+    //  - not off_value, The system is started. If the subsystem is turning off we can't deal with that anyway.
+    auto old_value = check_variable.load(std::memory_order::relaxed);
     if (old_value == off_value) {
         return detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
     } else {
