@@ -23,7 +23,7 @@ window_traffic_lights_widget::window_traffic_lights_widget(
 [[nodiscard]] bool
 window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         if (theme::global().operating_system == operating_system::windows) {
@@ -49,7 +49,7 @@ window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point dis
 [[nodiscard]] void
 window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -116,7 +116,7 @@ void window_traffic_lights_widget::drawMacOS(
     draw_context const &drawContext,
     hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     auto context = drawContext;
 
@@ -152,7 +152,7 @@ void window_traffic_lights_widget::drawWindows(
     draw_context const &drawContext,
     hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     auto context = drawContext;
 
@@ -193,7 +193,7 @@ void window_traffic_lights_widget::drawWindows(
 
 void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     if (overlaps(context, _clipping_rectangle)) {
         if (theme::global().operating_system == operating_system::macos) {
@@ -212,7 +212,7 @@ void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::t
 
 bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
     auto handled = super::handle_event(event);
 
     // Check the hover states of each button.
@@ -266,7 +266,7 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
 
 hit_box window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     if (_visible_rectangle.contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {

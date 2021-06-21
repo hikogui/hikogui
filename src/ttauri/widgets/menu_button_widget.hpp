@@ -35,7 +35,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // Make room for button and margin.
@@ -58,7 +58,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
@@ -83,7 +83,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         if (overlaps(context, this->_clipping_rectangle)) {
             draw_menu_button(context);
@@ -95,13 +95,13 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return is_menu(group) and this->enabled;
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         if (this->enabled) {
             switch (command) {
@@ -142,7 +142,7 @@ private:
 
     void draw_menu_button(draw_context const &context) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         ttlet foreground_color_ = this->_focus && this->window.active ? this->focus_color() : color::transparent();
         context.draw_box_with_border_inside(this->rectangle(), this->background_color(), foreground_color_, corner_shapes{0.0f});
@@ -150,7 +150,7 @@ private:
 
     void draw_check_mark(draw_context const &context) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         auto state_ = this->state();
 

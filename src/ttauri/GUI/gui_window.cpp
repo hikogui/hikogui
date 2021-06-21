@@ -3,8 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_window.hpp"
-#include "gui_device.hpp"
-#include "gui_surface.hpp"
+#include "gfx_device.hpp"
+#include "gfx_surface.hpp"
 #include "keyboard_bindings.hpp"
 #include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
@@ -39,7 +39,7 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
     return false;
 }
 
-gui_window::gui_window(gui_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title) :
+gui_window::gui_window(gfx_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title) :
     system(system), _delegate(std::move(delegate)), title(title)
 {
 }
@@ -63,10 +63,10 @@ void gui_window::init()
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
     tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
+    tt_axiom(gfx_system_mutex.recurse_lock_count() == 0);
 
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         widget = std::make_shared<window_widget>(*this, _delegate, title);
         widget->init();
@@ -80,7 +80,7 @@ void gui_window::init()
         update_keyboard_target({});
 
         _setting_change_callback = language::subscribe([this]() {
-            ttlet lock = std::scoped_lock(gui_system_mutex);
+            ttlet lock = std::scoped_lock(gfx_system_mutex);
             this->_request_setting_change = true;
         });
     }
@@ -95,7 +95,7 @@ void gui_window::deinit()
     _delegate->deinit(*this);
 }
 
-void gui_window::set_device(gui_device *device) noexcept
+void gui_window::set_device(gfx_device *device) noexcept
 {
     tt_axiom(surface);
     surface->set_device(device);
@@ -108,14 +108,14 @@ void gui_window::set_device(gui_device *device) noexcept
 
 [[nodiscard]] float gui_window::window_scale() const noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     return std::ceil(dpi / 100.0f);
 }
 
 void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
     tt_axiom(surface);
     tt_axiom(widget);
 
@@ -178,14 +178,14 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 
 void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
     tt_axiom(widget);
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
 void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, point2 position) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     auto current_target_widget = _mouse_target_widget.lock();
     if (new_target_widget != current_target_widget) {
@@ -205,7 +205,7 @@ void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widg
 
 void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget, keyboard_focus_group group) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
@@ -245,7 +245,7 @@ void gui_window::update_keyboard_target(
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     auto tmp = widget->find_next_widget(start_widget, group, direction);
     if (tmp == start_widget) {
@@ -293,7 +293,7 @@ gui_window::send_event(std::shared_ptr<tt::widget> target_widget, std::vector<tt
 
 bool gui_window::send_event(mouse_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     switch (event.type) {
     case mouse_event::Type::Exited: // Mouse left window.
@@ -323,7 +323,7 @@ bool gui_window::send_event(mouse_event const &event) noexcept
 
 bool gui_window::send_event(keyboard_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     auto target = _keyboard_target_widget.lock();
 

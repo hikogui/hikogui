@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "icon_widget.hpp"
-#include "../GUI/gui_surface.hpp"
+#include "../GUI/gfx_surface.hpp"
 
 namespace tt {
 
@@ -12,14 +12,14 @@ icon_widget::~icon_widget() {}
 void icon_widget::init() noexcept
 {
     _icon_callback = icon.subscribe([this]() {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
         this->_request_reconstrain = true;
     });
 }
 
 [[nodiscard]] bool icon_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet &icon_ = *icon;
@@ -38,7 +38,7 @@ void icon_widget::init() noexcept
 
             ttlet &pixmap = get<pixel_map<sfloat_rgba16>>(icon_);
 
-            auto *device = window.surface ? narrow_cast<gui_device_vulkan *>(window.surface->device()) : nullptr;
+            auto *device = window.surface ? narrow_cast<gfx_device_vulkan *>(window.surface->device()) : nullptr;
             if (device == nullptr) {
                 // The window does not have a surface or device assigned.
                 // We need a device to upload the image as texture map, so retry until it does.
@@ -81,7 +81,7 @@ void icon_widget::init() noexcept
 
 [[nodiscard]] void icon_widget::update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(this->_request_relayout, false);
     if (need_layout) {
@@ -96,7 +96,7 @@ void icon_widget::init() noexcept
 
 void icon_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     if (overlaps(context, _clipping_rectangle)) {
         switch (_icon_type) {

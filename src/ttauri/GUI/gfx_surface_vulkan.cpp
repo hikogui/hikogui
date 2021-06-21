@@ -2,9 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "gui_surface_vulkan.hpp"
-#include "gui_system_vulkan.hpp"
-#include "gui_device_vulkan.hpp"
+#include "gfx_surface_vulkan.hpp"
+#include "gfx_system_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "pipeline_flat.hpp"
 #include "pipeline_box.hpp"
 #include "pipeline_image.hpp"
@@ -21,29 +21,29 @@ namespace tt {
 
 using namespace std;
 
-gui_surface_vulkan::gui_surface_vulkan(gui_system &system, vk::SurfaceKHR surface) :
-    gui_surface(system), intrinsic(surface)
+gfx_surface_vulkan::gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surface) :
+    gfx_surface(system), intrinsic(surface)
 {
 }
 
-gui_surface_vulkan::~gui_surface_vulkan() {
-    if (state != gui_surface_state::no_window) {
-        tt_log_fatal("The window attached to the gui_surface still exists during destruction.");
+gfx_surface_vulkan::~gfx_surface_vulkan() {
+    if (state != gfx_surface_state::no_window) {
+        tt_log_fatal("The window attached to the gfx_surface still exists during destruction.");
     }
 }
 
-gui_device_vulkan &gui_surface_vulkan::vulkan_device() const noexcept
+gfx_device_vulkan &gfx_surface_vulkan::vulkan_device() const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
     tt_axiom(_device != nullptr);
-    return narrow_cast<gui_device_vulkan &>(*_device);
+    return narrow_cast<gfx_device_vulkan &>(*_device);
 }
 
-void gui_surface_vulkan::init()
+void gfx_surface_vulkan::init()
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
-    gui_surface::init();
+    gfx_surface::init();
     flatPipeline = std::make_unique<pipeline_flat::pipeline_flat>(*this);
     boxPipeline = std::make_unique<pipeline_box::pipeline_box>(*this);
     imagePipeline = std::make_unique<pipeline_image::pipeline_image>(*this);
@@ -51,9 +51,9 @@ void gui_surface_vulkan::init()
     toneMapperPipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(*this);
 }
 
-void gui_surface_vulkan::waitIdle()
+void gfx_surface_vulkan::waitIdle()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     tt_assert(_device);
     if (renderFinishedFence) {
@@ -63,9 +63,9 @@ void gui_surface_vulkan::waitIdle()
     tt_log_info("/waitIdle");
 }
 
-std::optional<uint32_t> gui_surface_vulkan::acquireNextImageFromSwapchain()
+std::optional<uint32_t> gfx_surface_vulkan::acquireNextImageFromSwapchain()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
@@ -79,17 +79,17 @@ std::optional<uint32_t> gui_surface_vulkan::acquireNextImageFromSwapchain()
 
     case vk::Result::eSuboptimalKHR:
         tt_log_info("acquireNextImageKHR() eSuboptimalKHR");
-        state = gui_surface_state::swapchain_lost;
+        state = gfx_surface_state::swapchain_lost;
         return {};
 
     case vk::Result::eErrorOutOfDateKHR:
         tt_log_info("acquireNextImageKHR() eErrorOutOfDateKHR");
-        state = gui_surface_state::swapchain_lost;
+        state = gfx_surface_state::swapchain_lost;
         return {};
 
     case vk::Result::eErrorSurfaceLostKHR:
         tt_log_info("acquireNextImageKHR() eErrorSurfaceLostKHR");
-        state = gui_surface_state::surface_lost;
+        state = gfx_surface_state::surface_lost;
         return {};
 
     case vk::Result::eTimeout:
@@ -101,9 +101,9 @@ std::optional<uint32_t> gui_surface_vulkan::acquireNextImageFromSwapchain()
     }
 }
 
-void gui_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
+void gfx_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     tt_axiom(_device);
 
@@ -126,7 +126,7 @@ void gui_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Sema
 
         case vk::Result::eSuboptimalKHR:
             tt_log_info("presentKHR() eSuboptimalKHR");
-            state = gui_surface_state::swapchain_lost;
+            state = gfx_surface_state::swapchain_lost;
             return;
 
         default: throw gui_error("Unknown result from presentKHR(). '{}'", to_string(result));
@@ -134,34 +134,34 @@ void gui_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Sema
 
     } catch (vk::OutOfDateKHRError const &) {
         tt_log_info("presentKHR() eErrorOutOfDateKHR");
-        state = gui_surface_state::swapchain_lost;
+        state = gfx_surface_state::swapchain_lost;
         return;
 
     } catch (vk::SurfaceLostKHRError const &) {
         tt_log_info("presentKHR() eErrorSurfaceLostKHR");
-        state = gui_surface_state::surface_lost;
+        state = gfx_surface_state::surface_lost;
         return;
     }
 }
 
-void gui_surface_vulkan::build(extent2 minimum_size, extent2 maximum_size)
+void gfx_surface_vulkan::build(extent2 minimum_size, extent2 maximum_size)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
-    if (state == gui_surface_state::no_device) {
+    if (state == gfx_surface_state::no_device) {
         if (_device) {
             flatPipeline->buildForNewDevice();
             boxPipeline->buildForNewDevice();
             imagePipeline->buildForNewDevice();
             SDFPipeline->buildForNewDevice();
             toneMapperPipeline->buildForNewDevice();
-            state = gui_surface_state::no_surface;
+            state = gfx_surface_state::no_surface;
         }
     }
 
-    if (state == gui_surface_state::no_surface) {
+    if (state == gfx_surface_state::no_surface) {
         if (!buildSurface()) {
-            state = gui_surface_state::device_lost;
+            state = gfx_surface_state::device_lost;
             return;
         }
         flatPipeline->buildForNewSurface();
@@ -169,18 +169,18 @@ void gui_surface_vulkan::build(extent2 minimum_size, extent2 maximum_size)
         imagePipeline->buildForNewSurface();
         SDFPipeline->buildForNewSurface();
         toneMapperPipeline->buildForNewSurface();
-        state = gui_surface_state::no_swapchain;
+        state = gfx_surface_state::no_swapchain;
     }
 
-    if (state == gui_surface_state::no_swapchain) {
+    if (state == gfx_surface_state::no_swapchain) {
         if (!readSurfaceExtent(minimum_size, maximum_size)) {
             // Minimized window, can not build a new swap chain.
-            state = gui_surface_state::no_swapchain;
+            state = gfx_surface_state::no_swapchain;
             return;
         }
 
         ttlet s = buildSwapchain();
-        if (s != gui_surface_state::ready_to_render) {
+        if (s != gfx_surface_state::ready_to_render) {
             state = s;
             return;
         }
@@ -207,17 +207,17 @@ void gui_surface_vulkan::build(extent2 minimum_size, extent2 maximum_size)
         toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
 
         size = {narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)};
-        state = gui_surface_state::ready_to_render;
+        state = gfx_surface_state::ready_to_render;
     }
 }
 
-void gui_surface_vulkan::teardown()
+void gfx_surface_vulkan::teardown()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     auto nextState = state;
 
-    if (state >= gui_surface_state::swapchain_lost) {
+    if (state >= gfx_surface_state::swapchain_lost) {
         tt_log_info("Tearing down because the window lost the swapchain.");
         waitIdle();
         toneMapperPipeline->teardownForSwapchainLost();
@@ -230,9 +230,9 @@ void gui_surface_vulkan::teardown()
         teardownFramebuffers();
         teardownRenderPasses();
         teardownSwapchain();
-        nextState = gui_surface_state::no_swapchain;
+        nextState = gfx_surface_state::no_swapchain;
 
-        if (state >= gui_surface_state::surface_lost) {
+        if (state >= gfx_surface_state::surface_lost) {
             tt_log_info("Tearing down because the window lost the drawable surface.");
             toneMapperPipeline->teardownForSurfaceLost();
             SDFPipeline->teardownForSurfaceLost();
@@ -240,9 +240,9 @@ void gui_surface_vulkan::teardown()
             boxPipeline->teardownForSurfaceLost();
             flatPipeline->teardownForSurfaceLost();
             teardownSurface();
-            nextState = gui_surface_state::no_surface;
+            nextState = gfx_surface_state::no_surface;
 
-            if (state >= gui_surface_state::device_lost) {
+            if (state >= gfx_surface_state::device_lost) {
                 tt_log_info("Tearing down because the window lost the vulkan device.");
 
                 toneMapperPipeline->teardownForDeviceLost();
@@ -251,9 +251,9 @@ void gui_surface_vulkan::teardown()
                 boxPipeline->teardownForDeviceLost();
                 flatPipeline->teardownForDeviceLost();
                 teardownDevice();
-                nextState = gui_surface_state::no_device;
+                nextState = gfx_surface_state::no_device;
 
-                if (state >= gui_surface_state::window_lost) {
+                if (state >= gfx_surface_state::window_lost) {
                     tt_log_info("Tearing down because the window doesn't exist anymore.");
 
                     toneMapperPipeline->teardownForWindowLost();
@@ -261,7 +261,7 @@ void gui_surface_vulkan::teardown()
                     imagePipeline->teardownForWindowLost();
                     boxPipeline->teardownForWindowLost();
                     flatPipeline->teardownForWindowLost();
-                    nextState = gui_surface_state::no_window;
+                    nextState = gfx_surface_state::no_window;
                 }
             }
         }
@@ -269,7 +269,7 @@ void gui_surface_vulkan::teardown()
     state = nextState;
 }
 
-[[nodiscard]] extent2 gui_surface_vulkan::update(extent2 minimum_size, extent2 maximum_size) noexcept
+[[nodiscard]] extent2 gfx_surface_vulkan::update(extent2 minimum_size, extent2 maximum_size) noexcept
 {
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
@@ -277,12 +277,12 @@ void gui_surface_vulkan::teardown()
     return size;
 }
 
-std::optional<draw_context> gui_surface_vulkan::render_start(aarectangle redraw_rectangle)
+std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
-    if (state != gui_surface_state::ready_to_render || !redraw_rectangle) {
+    if (state != gfx_surface_state::ready_to_render || !redraw_rectangle) {
         return {};
     }
 
@@ -315,7 +315,7 @@ std::optional<draw_context> gui_surface_vulkan::render_start(aarectangle redraw_
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
     return draw_context{
-        *narrow_cast<gui_device_vulkan *>(_device),
+        *narrow_cast<gfx_device_vulkan *>(_device),
         narrow_cast<size_t>(frame_buffer_index),
         size,
         scissor_rectangle,
@@ -325,9 +325,9 @@ std::optional<draw_context> gui_surface_vulkan::render_start(aarectangle redraw_
         SDFPipeline->vertexBufferData};
 }
 
-void gui_surface_vulkan::render_finish(draw_context const &context, color background_color)
+void gfx_surface_vulkan::render_finish(draw_context const &context, color background_color)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     auto &current_image = swapchain_image_infos.at(context.frame_buffer_index());
 
@@ -344,9 +344,9 @@ void gui_surface_vulkan::render_finish(draw_context const &context, color backgr
     teardown();
 }
 
-void gui_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle, color background_color)
+void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle, color background_color)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     auto t = trace<"fill_command_buffer">{};
 
@@ -386,7 +386,7 @@ void gui_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image
     // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
     // The swapchain creates images in undefined layout, so we need to change the layout once.
     if (not current_image.layout_is_present) {
-        gui_device_vulkan::transition_layout(commandBuffer,
+        gfx_device_vulkan::transition_layout(commandBuffer,
             current_image.image, swapchainImageFormat.format, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR);
 
         current_image.layout_is_present = true;
@@ -414,9 +414,9 @@ void gui_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image
     commandBuffer.end();
 }
 
-void gui_surface_vulkan::submitCommandBuffer()
+void gfx_surface_vulkan::submitCommandBuffer()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     ttlet waitSemaphores = std::array{imageAvailableSemaphore};
 
@@ -439,9 +439,9 @@ void gui_surface_vulkan::submitCommandBuffer()
     vulkan_device().graphicsQueue.submit(submitInfo, vk::Fence());
 }
 
-std::tuple<uint32_t, vk::Extent2D> gui_surface_vulkan::getImageCountAndExtent()
+std::tuple<uint32_t, vk::Extent2D> gfx_surface_vulkan::getImageCountAndExtent()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     surfaceCapabilities = vulkan_device().getSurfaceCapabilitiesKHR(intrinsic);
@@ -471,15 +471,15 @@ std::tuple<uint32_t, vk::Extent2D> gui_surface_vulkan::getImageCountAndExtent()
     return {imageCount, surfaceCapabilities.currentExtent};
 }
 
-bool gui_surface_vulkan::readSurfaceExtent(extent2 minimum_size, extent2 maximum_size)
+bool gfx_surface_vulkan::readSurfaceExtent(extent2 minimum_size, extent2 maximum_size)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     try {
         std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
 
     } catch (vk::SurfaceLostKHRError const &) {
-        state = gui_surface_state::surface_lost;
+        state = gfx_surface_state::surface_lost;
         return false;
     }
 
@@ -511,35 +511,35 @@ bool gui_surface_vulkan::readSurfaceExtent(extent2 minimum_size, extent2 maximum
     return true;
 }
 
-bool gui_surface_vulkan::checkSurfaceExtent()
+bool gfx_surface_vulkan::checkSurfaceExtent()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     try {
         ttlet[nrImages, extent_] = getImageCountAndExtent();
         return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent_ == swapchainImageExtent);
 
     } catch (vk::SurfaceLostKHRError const &) {
-        state = gui_surface_state::surface_lost;
+        state = gfx_surface_state::surface_lost;
         return false;
     }
 }
 
-void gui_surface_vulkan::buildDevice()
+void gfx_surface_vulkan::buildDevice()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 }
 
-bool gui_surface_vulkan::buildSurface()
+bool gfx_surface_vulkan::buildSurface()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     return vulkan_device().score(intrinsic) > 0;
 }
 
-gui_surface_state gui_surface_vulkan::buildSwapchain()
+gfx_surface_state gfx_surface_vulkan::buildSwapchain()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     tt_log_info("Building swap chain");
 
@@ -573,7 +573,7 @@ gui_surface_state gui_surface_vulkan::buildSwapchain()
     switch (result) {
     case vk::Result::eSuccess: break;
 
-    case vk::Result::eErrorSurfaceLostKHR: return gui_surface_state::surface_lost;
+    case vk::Result::eErrorSurfaceLostKHR: return gfx_surface_state::surface_lost;
 
     default: throw gui_error("Unknown result from createSwapchainKHR(). '{}'", to_string(result));
     }
@@ -631,12 +631,12 @@ gui_surface_state gui_surface_vulkan::buildSwapchain()
     std::tie(colorImages[1], colorImageAllocations[1]) =
         vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
 
-    return gui_surface_state::ready_to_render;
+    return gfx_surface_state::ready_to_render;
 }
 
-void gui_surface_vulkan::teardownSwapchain()
+void gfx_surface_vulkan::teardownSwapchain()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     vulkan_device().destroy(swapchain);
     vulkan_device().destroyImage(depthImage, depthImageAllocation);
@@ -646,9 +646,9 @@ void gui_surface_vulkan::teardownSwapchain()
     }
 }
 
-void gui_surface_vulkan::buildFramebuffers()
+void gfx_surface_vulkan::buildFramebuffers()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     depthImageView = vulkan_device().createImageView(
         {vk::ImageViewCreateFlags(),
@@ -699,9 +699,9 @@ void gui_surface_vulkan::buildFramebuffers()
     tt_axiom(swapchain_image_infos.size() == swapchain_images.size());
 }
 
-void gui_surface_vulkan::teardownFramebuffers()
+void gfx_surface_vulkan::teardownFramebuffers()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     for (auto &info : swapchain_image_infos) {
         vulkan_device().destroy(info.frame_buffer);
@@ -715,9 +715,9 @@ void gui_surface_vulkan::teardownFramebuffers()
     }
 }
 
-void gui_surface_vulkan::buildRenderPasses()
+void gfx_surface_vulkan::buildRenderPasses()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     ttlet attachmentDescriptions = std::array{
         vk::AttachmentDescription{
@@ -905,16 +905,16 @@ void gui_surface_vulkan::buildRenderPasses()
     renderPass = vulkan_device().createRenderPass(renderPassCreateInfo);
 }
 
-void gui_surface_vulkan::teardownRenderPasses()
+void gfx_surface_vulkan::teardownRenderPasses()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     vulkan_device().destroy(renderPass);
 }
 
-void gui_surface_vulkan::buildSemaphores()
+void gfx_surface_vulkan::buildSemaphores()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     imageAvailableSemaphore = vulkan_device().createSemaphore({});
     renderFinishedSemaphore = vulkan_device().createSemaphore({});
@@ -925,18 +925,18 @@ void gui_surface_vulkan::buildSemaphores()
     renderFinishedFence = vulkan_device().createFence({vk::FenceCreateFlagBits::eSignaled});
 }
 
-void gui_surface_vulkan::teardownSemaphores()
+void gfx_surface_vulkan::teardownSemaphores()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     vulkan_device().destroy(renderFinishedSemaphore);
     vulkan_device().destroy(imageAvailableSemaphore);
     vulkan_device().destroy(renderFinishedFence);
 }
 
-void gui_surface_vulkan::buildCommandBuffers()
+void gfx_surface_vulkan::buildCommandBuffers()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     ttlet commandBuffers =
         vulkan_device().allocateCommandBuffers({vulkan_device().graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1});
@@ -944,24 +944,24 @@ void gui_surface_vulkan::buildCommandBuffers()
     commandBuffer = commandBuffers.at(0);
 }
 
-void gui_surface_vulkan::teardownCommandBuffers()
+void gfx_surface_vulkan::teardownCommandBuffers()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
     ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
     vulkan_device().freeCommandBuffers(vulkan_device().graphicsCommandPool, commandBuffers);
 }
 
-void gui_surface_vulkan::teardownSurface()
+void gfx_surface_vulkan::teardownSurface()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
-    narrow_cast<gui_system_vulkan &>(system).destroySurfaceKHR(intrinsic);
+    narrow_cast<gfx_system_vulkan &>(system).destroySurfaceKHR(intrinsic);
 }
 
-void gui_surface_vulkan::teardownDevice()
+void gfx_surface_vulkan::teardownDevice()
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     _device = nullptr;
 }

@@ -5,29 +5,29 @@
 target_sources(ttauri PRIVATE
     mouse_cursor.hpp
     draw_context.hpp
-    gui_device.cpp
-    gui_device.hpp
-    gui_device_vulkan.cpp
-    gui_device_vulkan.hpp
-    gui_system.cpp
-    gui_system.hpp
-    gui_system_globals.hpp
-    gui_system_vulkan.cpp
-    gui_system_vulkan.hpp
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_macos.hpp>
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_win32.hpp>
-    gui_system_delegate.hpp
+    gfx_device.cpp
+    gfx_device.hpp
+    gfx_device_vulkan.cpp
+    gfx_device_vulkan.hpp
+    gfx_surface.cpp
+    gfx_surface.hpp
+    gfx_surface_state.hpp
+    gfx_surface_vulkan.cpp
+    gfx_surface_vulkan.hpp
+    gfx_system.cpp
+    gfx_system.hpp
+    gfx_system_globals.hpp
+    gfx_system_vulkan.cpp
+    gfx_system_vulkan.hpp
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_macos.hpp>
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/fgx_system_vulkan_macos.mm>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.hpp>
+    gfx_system_delegate.hpp
     gui_window.cpp
     gui_window.hpp
     gui_window_delegate.hpp
     gui_window_size.hpp
-    gui_surface.cpp
-    gui_surface.hpp
-    gui_surface_state.hpp
-    gui_surface_vulkan.cpp
-    gui_surface_vulkan.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.hpp>
@@ -120,7 +120,7 @@ if(TT_BUILD_PCH)
     if(NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
         gui_window_win32.hpp
-        gui_device_vulkan.hpp
+        gfx_device_vulkan.hpp
     )
     endif()
  endif()

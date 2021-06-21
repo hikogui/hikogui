@@ -20,7 +20,7 @@ class pipeline_SDF : public pipeline_vulkan {
 public:
     vspan<vertex> vertexBufferData;
 
-    pipeline_SDF(gui_surface const &surface);
+    pipeline_SDF(gfx_surface const &surface);
     ~pipeline_SDF() {};
 
     pipeline_SDF(const pipeline_SDF &) = delete;

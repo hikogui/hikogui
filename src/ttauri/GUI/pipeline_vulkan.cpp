@@ -3,8 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "pipeline_vulkan.hpp"
-#include "gui_device_vulkan.hpp"
-#include "gui_surface.hpp"
+#include "gfx_device_vulkan.hpp"
+#include "gfx_surface.hpp"
 #include "../trace.hpp"
 #include <array>
 #include <vector>
@@ -13,18 +13,18 @@ namespace tt {
 
 using namespace std;
 
-pipeline_vulkan::pipeline_vulkan(gui_surface const &surface) :
+pipeline_vulkan::pipeline_vulkan(gfx_surface const &surface) :
     pipeline(surface) {}
 
 pipeline_vulkan::~pipeline_vulkan()
 {
 }
 
-gui_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
+gfx_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
 {
     auto device = surface.device();
     tt_axiom(device != nullptr);
-    return narrow_cast<gui_device_vulkan&>(*device);
+    return narrow_cast<gfx_device_vulkan&>(*device);
 }
 
 void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)

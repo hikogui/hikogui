@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "gui_device.hpp"
+#include "gfx_device.hpp"
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "vertical_sync.hpp"
-#include "gui_system_delegate.hpp"
+#include "gfx_system_delegate.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include <span>
 #include <memory>
@@ -17,21 +17,20 @@
 #include <vector>
 
 namespace tt {
-class gui_surface;
+class gfx_surface;
 
-/** Vulkan gui_device controller.
- * Manages Vulkan device and a set of Windows.
+/** Graphics system
  */
-class gui_system {
+class gfx_system {
 public:
-    static inline std::unique_ptr<gui_system> global;
+    static inline std::unique_ptr<gfx_system> global;
 
-    std::weak_ptr<gui_system_delegate> delegate;
+    std::weak_ptr<gfx_system_delegate> delegate;
 
     std::unique_ptr<vertical_sync> verticalSync;
 
     //! List of all devices.
-    std::vector<std::shared_ptr<gui_device>> devices;
+    std::vector<std::shared_ptr<gfx_device>> devices;
 
     /** Handle to the operating system's instance.
      */
@@ -42,20 +41,20 @@ public:
      */
     ssize_t previousNumberOfWindows = 0;
 
-    gui_system(std::weak_ptr<gui_system_delegate> const &delegate, os_handle instance) noexcept :
+    gfx_system(std::weak_ptr<gfx_system_delegate> const &delegate, os_handle instance) noexcept :
         delegate(delegate), instance(instance)
     {
         verticalSync = std::make_unique<vertical_sync>(_handlevertical_sync, this);
     }
 
-    virtual ~gui_system() {
+    virtual ~gfx_system() {
         verticalSync = {};
     }
 
-    gui_system(const gui_system &) = delete;
-    gui_system &operator=(const gui_system &) = delete;
-    gui_system(gui_system &&) = delete;
-    gui_system &operator=(gui_system &&) = delete;
+    gfx_system(const gfx_system &) = delete;
+    gfx_system &operator=(const gfx_system &) = delete;
+    gfx_system(gfx_system &&) = delete;
+    gfx_system &operator=(gfx_system &&) = delete;
 
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
@@ -68,13 +67,13 @@ public:
         // This function should be called from the main thread from the main loop,
         // and therefor should not have a lock on the window.
         tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
-        tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
+        tt_axiom(gfx_system_mutex.recurse_lock_count() == 0);
 
-        auto window = std::make_shared<gui_window_win32>(static_cast<gui_system &>(*this), std::forward<Args>(args)...);
+        auto window = std::make_shared<gui_window_win32>(static_cast<gfx_system &>(*this), std::forward<Args>(args)...);
         auto window_ptr = window.get();
         window->init();
 
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
         auto device = findBestDeviceForWindow(*window);
         if (!device) {
             throw gui_error("Could not find a vulkan-device matching this window");
@@ -84,14 +83,14 @@ public:
         return window_ptr;
     }
 
-    [[nodiscard]] virtual std::unique_ptr<gui_surface> make_surface(void *os_window) const noexcept = 0;
+    [[nodiscard]] virtual std::unique_ptr<gfx_surface> make_surface(void *os_window) const noexcept = 0;
 
     /*! Count the number of windows managed by the GUI.
      */
     ssize_t num_windows();
 
     void render(hires_utc_clock::time_point displayTimePoint) {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         for (auto &device: devices) {
             device->render(displayTimePoint);
@@ -116,7 +115,7 @@ public:
     static void _handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 protected:
-    gui_device *findBestDeviceForWindow(gui_window const &window);
+    gfx_device *findBestDeviceForWindow(gui_window const &window);
 };
 
 }

@@ -19,7 +19,7 @@ class pipeline_flat : public pipeline_vulkan {
 public:
     vspan<vertex> vertexBufferData;
 
-    pipeline_flat(gui_surface const &surface);
+    pipeline_flat(gfx_surface const &surface);
     ~pipeline_flat() {};
 
     pipeline_flat(const pipeline_flat &) = delete;

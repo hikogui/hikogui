@@ -5,7 +5,7 @@
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_image_image.hpp"
-#include "gui_device_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "../pixel_map.hpp"
 #include "../pixel_map.inl"
 #include "../URL.hpp"
@@ -17,7 +17,7 @@ namespace tt::pipeline_image {
 
 using namespace std;
 
-device_shared::device_shared(gui_device_vulkan const &device) : device(device)
+device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
     buildShaders();
     buildAtlas();
@@ -25,7 +25,7 @@ device_shared::device_shared(gui_device_vulkan const &device) : device(device)
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gui_device_vulkan *vulkanDevice)
+void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
     teardownShaders(vulkanDevice);
@@ -165,7 +165,7 @@ void device_shared::buildShaders()
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
-void device_shared::teardownShaders(gui_device_vulkan *vulkanDevice)
+void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);
@@ -284,7 +284,7 @@ void device_shared::buildAtlas()
     addAtlasImage();
 }
 
-void device_shared::teardownAtlas(gui_device_vulkan *vulkanDevice)
+void device_shared::teardownAtlas(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
     vulkanDevice->destroy(atlasSampler);

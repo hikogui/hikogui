@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "gui_device_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "theme.hpp"
 #include "pipeline_image_image.hpp"
 #include "pipeline_flat_device_shared.hpp"
@@ -38,7 +38,7 @@ public:
     ~draw_context() = default;
 
     draw_context(
-        gui_device_vulkan &device,
+        gfx_device_vulkan &device,
         size_t frame_buffer_index,
         extent2 surface_size,
         aarectangle scissor_rectangle,
@@ -96,7 +96,7 @@ public:
         return _transform;
     }
 
-    gui_device &device() const noexcept
+    gfx_device &device() const noexcept
     {
         return _device;
     }
@@ -292,10 +292,10 @@ public:
         tt_axiom(_sdf_vertices != nullptr);
 
         if (text_color) {
-            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+            narrow_cast<gfx_device_vulkan &>(device()).SDFPipeline->place_vertices(
                 *_sdf_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * transform, text, *text_color);
         } else {
-            narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+            narrow_cast<gfx_device_vulkan &>(device()).SDFPipeline->place_vertices(
                 *_sdf_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * transform, text);
         }
     }
@@ -304,7 +304,7 @@ public:
     {
         tt_axiom(_sdf_vertices != nullptr);
 
-        narrow_cast<gui_device_vulkan &>(device()).SDFPipeline->place_vertices(
+        narrow_cast<gfx_device_vulkan &>(device()).SDFPipeline->place_vertices(
             *_sdf_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * box, glyph, text_color);
     }
 
@@ -314,7 +314,7 @@ public:
     }
 
 private:
-    gui_device_vulkan &_device;
+    gfx_device_vulkan &_device;
 
     vspan<pipeline_flat::vertex> *_flat_vertices;
     vspan<pipeline_box::vertex> *_box_vertices;

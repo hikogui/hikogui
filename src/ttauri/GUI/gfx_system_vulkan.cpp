@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "gui_system_vulkan.hpp"
-#include "gui_device_vulkan.hpp"
+#include "gfx_system_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "ttauri/metadata.hpp"
 #include <chrono>
 #include <cstring>
@@ -49,11 +49,11 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
     return r;
 }
 
-gui_system_vulkan::gui_system_vulkan(
-    std::weak_ptr<gui_system_delegate> const &delegate,
+gfx_system_vulkan::gfx_system_vulkan(
+    std::weak_ptr<gfx_system_delegate> const &delegate,
     os_handle instance,
     const std::vector<const char *> extensionNames) :
-    gui_system(delegate, instance), requiredExtensions(std::move(extensionNames))
+    gfx_system(delegate, instance), requiredExtensions(std::move(extensionNames))
 {
     applicationInfo = vk::ApplicationInfo(
         application_metadata().name.c_str(),
@@ -109,17 +109,17 @@ gui_system_vulkan::gui_system_vulkan(
 #endif
 }
 
-gui_system_vulkan::~gui_system_vulkan()
+gfx_system_vulkan::~gfx_system_vulkan()
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
     if constexpr (build_type::current == build_type::debug) {
         intrinsic.destroy(debugUtilsMessager, nullptr, loader());
     }
 }
 
-void gui_system_vulkan::init() noexcept(false)
+void gfx_system_vulkan::init() noexcept(false)
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     if constexpr (build_type::current == build_type::debug) {
         debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT(
@@ -136,11 +136,11 @@ void gui_system_vulkan::init() noexcept(false)
     }
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-        devices.push_back(std::make_shared<gui_device_vulkan>(*this, _physicalDevice));
+        devices.push_back(std::make_shared<gfx_device_vulkan>(*this, _physicalDevice));
     }
 }
 
-VkBool32 gui_system_vulkan::debugUtilsMessageCallback(
+VkBool32 gfx_system_vulkan::debugUtilsMessageCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,

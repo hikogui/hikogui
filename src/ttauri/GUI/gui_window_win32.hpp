@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gui_surface_vulkan.hpp"
+#include "gfx_surface_vulkan.hpp"
 #include <unordered_map>
 
 struct HWND__;
@@ -20,7 +20,7 @@ class gui_window_win32 final : public gui_window {
 public:
     HWND win32Window = nullptr;
 
-    gui_window_win32(gui_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title);
+    gui_window_win32(gfx_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title);
     ~gui_window_win32();
 
     void create_window() override;

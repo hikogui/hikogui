@@ -31,7 +31,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // On left side a check mark, on right side short-cut. Around the label extra margin.
@@ -49,7 +49,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -60,7 +60,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         if (overlaps(context, _clipping_rectangle)) {
             draw_toolbar_button(context);
@@ -71,13 +71,13 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return is_toolbar(group) and enabled;
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         if (enabled) {
             switch (command) {
@@ -105,7 +105,7 @@ public:
 private:
     void draw_toolbar_button(draw_context const &context) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         ttlet foreground_color_ = _focus && window.active ? focus_color() : color::transparent();
         context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});

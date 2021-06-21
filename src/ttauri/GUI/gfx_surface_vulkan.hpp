@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "gui_surface.hpp"
+#include "gfx_surface.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
 #include <optional>
 
 namespace tt {
-class gui_device_vulkan;
+class gfx_device_vulkan;
 
 namespace pipeline_image {
 class pipeline_image;
@@ -36,7 +36,7 @@ struct swapchain_image_info {
     bool layout_is_present = false;
 };
 
-class gui_surface_vulkan : public gui_surface {
+class gfx_surface_vulkan : public gfx_surface {
 public:
     vk::SurfaceKHR intrinsic;
 
@@ -74,17 +74,17 @@ public:
     std::unique_ptr<pipeline_SDF::pipeline_SDF> SDFPipeline;
     std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> toneMapperPipeline;
 
-    gui_surface_vulkan(gui_system &system, vk::SurfaceKHR surface);
-    ~gui_surface_vulkan();
+    gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surface);
+    ~gfx_surface_vulkan();
 
-    gui_surface_vulkan(const gui_surface_vulkan &) = delete;
-    gui_surface_vulkan &operator=(const gui_surface_vulkan &) = delete;
-    gui_surface_vulkan(gui_surface_vulkan &&) = delete;
-    gui_surface_vulkan &operator=(gui_surface_vulkan &&) = delete;
+    gfx_surface_vulkan(const gfx_surface_vulkan &) = delete;
+    gfx_surface_vulkan &operator=(const gfx_surface_vulkan &) = delete;
+    gfx_surface_vulkan(gfx_surface_vulkan &&) = delete;
+    gfx_surface_vulkan &operator=(gfx_surface_vulkan &&) = delete;
 
     void init() override;
 
-    gui_device_vulkan &vulkan_device() const noexcept;
+    gfx_device_vulkan &vulkan_device() const noexcept;
 
     [[nodiscard]] extent2 update(extent2 minimum_size, extent2 maximum_size) noexcept override;
 
@@ -109,7 +109,7 @@ private:
     void buildDevice();
     void buildSemaphores();
     void teardownSemaphores();
-    gui_surface_state buildSwapchain();
+    gfx_surface_state buildSwapchain();
     void teardownSwapchain();
     void buildCommandBuffers();
     void teardownCommandBuffers();

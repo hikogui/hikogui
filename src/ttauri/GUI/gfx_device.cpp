@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "gui_device.hpp"
+#include "gfx_device.hpp"
 #include "gui_window.hpp"
 #include <format>
 #include <tuple>
@@ -12,32 +12,32 @@ namespace tt {
 
 using namespace std;
 
-gui_device::gui_device(gui_system &system) noexcept : system(system)
+gfx_device::gfx_device(gfx_system &system) noexcept : system(system)
 {
 }
 
-gui_device::~gui_device()
+gfx_device::~gfx_device()
 {
     windows.clear();
 }
 
-std::string gui_device::string() const noexcept
+std::string gfx_device::string() const noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.UUIDString());
 }
 
-void gui_device::initialize_device(gui_window const &window)
+void gfx_device::initialize_device(gui_window const &window)
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     state = state_type::ready_to_draw;
 }
 
-void gui_device::add(std::shared_ptr<gui_window> window)
+void gfx_device::add(std::shared_ptr<gui_window> window)
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     if (state == state_type::no_device) {
         initialize_device(*window);
@@ -47,9 +47,9 @@ void gui_device::add(std::shared_ptr<gui_window> window)
     windows.push_back(std::move(window));
 }
 
-void gui_device::remove(gui_window &window) noexcept
+void gfx_device::remove(gui_window &window) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     window.set_device(nullptr);
     windows.erase(std::find_if(windows.begin(), windows.end(), [&](auto &x) {

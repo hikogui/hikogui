@@ -19,7 +19,7 @@ class pipeline_box : public pipeline_vulkan {
 public:
     vspan<vertex> vertexBufferData;
 
-    pipeline_box(gui_surface const &surface);
+    pipeline_box(gfx_surface const &surface);
     ~pipeline_box() {};
 
     pipeline_box(const pipeline_box &) = delete;

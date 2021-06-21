@@ -5,7 +5,7 @@
 #pragma once
 
 #include "gui_window.hpp"
-#include "gui_system_globals.hpp"
+#include "gfx_system_globals.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"
 #include "../bigint.hpp"
@@ -15,18 +15,18 @@
 #include <tuple>
 
 namespace tt {
-class gui_system;
+class gfx_system;
 
-/*! A gui_device that handles a set of windows.
+/*! A gfx_device that handles a set of windows.
  */
-class gui_device {
+class gfx_device {
 public:
     enum class state_type {
         no_device,
         ready_to_draw,
     };
 
-    gui_system &system;
+    gfx_system &system;
 
     state_type state = state_type::no_device;
 
@@ -37,13 +37,13 @@ public:
 
     std::string string() const noexcept;
 
-    gui_device(gui_system &system) noexcept;
-    virtual ~gui_device();
+    gfx_device(gfx_system &system) noexcept;
+    virtual ~gfx_device();
 
-    gui_device(const gui_device &) = delete;
-    gui_device &operator=(const gui_device &) = delete;
-    gui_device(gui_device &&) = delete;
-    gui_device &operator=(gui_device &&) = delete;
+    gfx_device(const gfx_device &) = delete;
+    gfx_device &operator=(const gfx_device &) = delete;
+    gfx_device(gfx_device &&) = delete;
+    gfx_device &operator=(gfx_device &&) = delete;
 
     /*! Check if this device is a good match for this window.
      *
@@ -52,7 +52,7 @@ public:
      *
      * \returns -1 When not viable, 0 when not presentable, postive values for increasing score.
      */
-    virtual int score(gui_surface const &surface) const = 0;
+    virtual int score(gfx_surface const &surface) const = 0;
 
     /*! Initialize the logical device.
      *
@@ -69,7 +69,7 @@ public:
     void remove(gui_window &window) noexcept;
 
     void render(hires_utc_clock::time_point displayTimePoint) noexcept {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         for (auto &window: windows) {
             window->render(displayTimePoint);

@@ -10,13 +10,13 @@
 #include <vector>
 
 namespace tt {
-class gui_device_vulkan;
+class gfx_device_vulkan;
 
 class pipeline_vulkan : public pipeline {
 public:
     vk::Pipeline intrinsic;
 
-    pipeline_vulkan(gui_surface const &surface);
+    pipeline_vulkan(gfx_surface const &surface);
     ~pipeline_vulkan();
 
     pipeline_vulkan(const pipeline_vulkan &) = delete;
@@ -24,7 +24,7 @@ public:
     pipeline_vulkan(pipeline_vulkan &&) = delete;
     pipeline_vulkan &operator=(pipeline_vulkan &&) = delete;
 
-    gui_device_vulkan &vulkan_device() const noexcept;
+    gfx_device_vulkan &vulkan_device() const noexcept;
 
     virtual void drawInCommandBuffer(vk::CommandBuffer commandBuffer);
 

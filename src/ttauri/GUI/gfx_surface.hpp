@@ -4,19 +4,19 @@
 
 #pragma once
 
-#include "gui_surface_state.hpp"
+#include "gfx_surface_state.hpp"
 #include "draw_context.hpp"
 #include "subpixel_orientation.hpp"
 
 namespace tt {
-class gui_device;
-class gui_system;
+class gfx_device;
+class gfx_system;
 
-class gui_surface {
+class gfx_surface {
 public:
-    gui_system &system;
+    gfx_system &system;
 
-    gui_surface_state state = gui_surface_state::no_device;
+    gfx_surface_state state = gfx_surface_state::no_device;
 
     //! The current size of the surface.
     extent2 size;
@@ -26,40 +26,40 @@ public:
     subpixel_orientation subpixel_orientation = subpixel_orientation::BlueRight;
     // subpixel_orientation subpixel_orientation = subpixel_orientation::Unknown;
 
-    virtual ~gui_surface() {}
+    virtual ~gfx_surface() {}
 
-    gui_surface(const gui_surface &) = delete;
-    gui_surface &operator=(const gui_surface &) = delete;
-    gui_surface(gui_surface &&) = delete;
-    gui_surface &operator=(gui_surface &&) = delete;
+    gfx_surface(const gfx_surface &) = delete;
+    gfx_surface &operator=(const gfx_surface &) = delete;
+    gfx_surface(gfx_surface &&) = delete;
+    gfx_surface &operator=(gfx_surface &&) = delete;
 
     virtual void init() {}
 
-    gui_surface(gui_system &system) : system(system) {}
+    gfx_surface(gfx_system &system) : system(system) {}
 
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      * 
      * @param device The device to use for rendering, may be nullptr.
      */
-    void set_device(gui_device *device) noexcept;
+    void set_device(gfx_device *device) noexcept;
 
-    [[nodiscard]] gui_device *device() const noexcept
+    [[nodiscard]] gfx_device *device() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _device;
     }
 
     void set_closed() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        state = gui_surface_state::window_lost;
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        state = gfx_surface_state::window_lost;
     }
 
     [[nodiscard]] bool is_closed() const noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        return state == gui_surface_state::no_window;
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        return state == gfx_surface_state::no_window;
     }
 
     /** Update the surface.
@@ -75,7 +75,7 @@ public:
     virtual void render_finish(draw_context const &context, color background_color) = 0;
 
 protected:
-    gui_device *_device = nullptr;
+    gfx_device *_device = nullptr;
 
     virtual void teardown() = 0;
 };

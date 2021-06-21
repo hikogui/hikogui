@@ -30,7 +30,7 @@ void window_widget::init() noexcept
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = _toolbar->make_widget<system_menu_widget>();
         _title_callback = title.subscribe([this]() {
-            ttlet lock = std::scoped_lock(gui_system_mutex);
+            ttlet lock = std::scoped_lock(gfx_system_mutex);
             this->_system_menu->icon = (*this->title).icon;
         });
 #endif
@@ -47,7 +47,7 @@ void window_widget::init() noexcept
 [[nodiscard]] bool
 window_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         _minimum_size = {
@@ -75,7 +75,7 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
 
 void window_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -92,7 +92,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
 
 hit_box window_widget::hitbox_test(point2 position) const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     constexpr float BORDER_WIDTH = 10.0f;
 

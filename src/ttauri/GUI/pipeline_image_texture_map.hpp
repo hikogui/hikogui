@@ -10,7 +10,7 @@
 #include <vulkan/vulkan.hpp>
 
 namespace tt {
-class gui_device_vulkan;
+class gfx_device_vulkan;
 }
 
 namespace tt::pipeline_image {
@@ -22,7 +22,7 @@ struct texture_map {
     tt::pixel_map<sfloat_rgba16> pixel_map;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
-    void transitionLayout(const gui_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);
+    void transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);
 };
 
 }

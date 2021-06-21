@@ -13,7 +13,7 @@
 #include <mutex>
 
 namespace tt {
-class gui_device_vulkan;
+class gfx_device_vulkan;
 template<typename T> class pixel_map;
 }
 
@@ -31,7 +31,7 @@ struct device_shared final {
     static constexpr int stagingImageWidth = 1024;
     static constexpr int stagingImageHeight = 1024;
 
-    gui_device_vulkan const &device;
+    gfx_device_vulkan const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -46,7 +46,7 @@ struct device_shared final {
 
     std::vector<Page> atlasFreePages;
 
-    device_shared(gui_device_vulkan const &device);
+    device_shared(gfx_device_vulkan const &device);
     ~device_shared();
 
     device_shared(device_shared const &) = delete;
@@ -55,9 +55,9 @@ struct device_shared final {
     device_shared &operator=(device_shared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of gui_device_vulkan, therefor we can not use our `std::weak_ptr<gui_device_vulkan> device`.
+    * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan> device`.
     */
-    void destroy(gui_device_vulkan *vulkanDevice);
+    void destroy(gfx_device_vulkan *vulkanDevice);
 
     /*! Get the coordinate in the atlas from a page index.
      * \param page number in the atlas
@@ -105,10 +105,10 @@ private:
     void updateAtlasWithStagingPixelMap(Image const &image);
 
     void buildShaders();
-    void teardownShaders(gui_device_vulkan *vulkanDevice);
+    void teardownShaders(gfx_device_vulkan *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(gui_device_vulkan *vulkanDevice);
+    void teardownAtlas(gfx_device_vulkan *vulkanDevice);
 
     friend Image;
 };

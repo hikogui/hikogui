@@ -17,7 +17,7 @@
 #include "text/font_book.hpp"
 #include "GUI/RenderDoc.hpp"
 #include "GUI/keyboard_bindings.hpp"
-#include "GUI/gui_system_vulkan_win32.hpp"
+#include "GUI/gfx_system_vulkan_win32.hpp"
 #include "audio/audio_system.hpp"
 #include "audio/audio_system_aggregate.hpp"
 #include <memory>
@@ -75,12 +75,12 @@ void application::init()
 void application::init_gui()
 {
     if (auto delegate_ = delegate.lock()) {
-        ttlet gui_delegate = delegate_->gui_system_delegate(narrow_cast<application &>(*this));
+        ttlet gui_delegate = delegate_->gfx_system_delegate(narrow_cast<application &>(*this));
         if (!gui_delegate.expired()) {
             RenderDoc::global = std::make_unique<RenderDoc>();
            
-            gui_system::global = std::make_unique<gui_system_vulkan_win32>(gui_delegate, instance);
-            gui_system::global->init();
+            gfx_system::global = std::make_unique<gfx_system_vulkan_win32>(gui_delegate, instance);
+            gfx_system::global->init();
         }
     }
 }
@@ -102,7 +102,7 @@ void application::deinit()
 
 void application::deinit_gui()
 {
-    gui_system::global = {};
+    gfx_system::global = {};
     RenderDoc::global = {};
 }
 

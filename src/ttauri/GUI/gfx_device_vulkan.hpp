@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "gui_device.hpp"
-#include "gui_system_globals.hpp"
+#include "gfx_device.hpp"
+#include "gfx_system_globals.hpp"
 #include "pipeline_flat_device_shared.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_box_device_shared.hpp"
@@ -20,7 +20,7 @@ class URL;
 
 namespace tt {
 
-class gui_device_vulkan final : public gui_device {
+class gfx_device_vulkan final : public gfx_device {
 public:
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceProperties physicalProperties;
@@ -80,19 +80,19 @@ public:
      */
     mutable vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
-    gui_device_vulkan(gui_system &system, vk::PhysicalDevice physicalDevice);
-    ~gui_device_vulkan();
+    gfx_device_vulkan(gfx_system &system, vk::PhysicalDevice physicalDevice);
+    ~gfx_device_vulkan();
 
-    gui_device_vulkan(const gui_device_vulkan &) = delete;
-    gui_device_vulkan &operator=(const gui_device_vulkan &) = delete;
-    gui_device_vulkan(gui_device_vulkan &&) = delete;
-    gui_device_vulkan &operator=(gui_device_vulkan &&) = delete;
+    gfx_device_vulkan(const gfx_device_vulkan &) = delete;
+    gfx_device_vulkan &operator=(const gfx_device_vulkan &) = delete;
+    gfx_device_vulkan(gfx_device_vulkan &&) = delete;
+    gfx_device_vulkan &operator=(gfx_device_vulkan &&) = delete;
 
     void initialize_device(gui_window const &window) override;
 
     int score(vk::SurfaceKHR surface) const;
 
-    int score(gui_surface const &surface) const override;
+    int score(gfx_surface const &surface) const override;
 
     /*! Find the minimum number of queue families to instantiate for a window.
      * This will give priority for having the Graphics and Present in the same
@@ -138,7 +138,7 @@ public:
     template<typename T>
     std::span<T> mapMemory(const VmaAllocation &allocation) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         void *mapping;
         ttlet result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
@@ -150,14 +150,14 @@ public:
         T *mappingT = reinterpret_cast<T *>(mapping);
         ttlet mappingSpan = std::span<T>(mappingT, allocationInfo.size / sizeof(T));
 
-        return vk::createResultValue(result, mappingSpan, "tt::gui_device_vulkan::mapMemory");
+        return vk::createResultValue(result, mappingSpan, "tt::gfx_device_vulkan::mapMemory");
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;
 
     void flushAllocation(const VmaAllocation &allocation, VkDeviceSize offset, VkDeviceSize size) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         ttlet alignment = physicalProperties.limits.nonCoherentAtomSize;
 
@@ -176,13 +176,13 @@ public:
 
     void waitIdle() const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.waitIdle();
     }
 
     vk::Result waitForFences(vk::ArrayProxy<const vk::Fence> fences, vk::Bool32 waitAll, uint64_t timeout) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.waitForFences(fences, waitAll, timeout);
     }
 
@@ -193,13 +193,13 @@ public:
         vk::Fence fence,
         uint32_t *pImageIndex) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.acquireNextImageKHR(swapchain, timeout, semaphore, fence, pImageIndex);
     }
 
     void resetFences(vk::ArrayProxy<const vk::Fence> fences) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.resetFences(fences);
     }
 
@@ -208,85 +208,85 @@ public:
         const vk::AllocationCallbacks *pAllocator,
         vk::SwapchainKHR *pSwapchain) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createSwapchainKHR(pCreateInfo, pAllocator, pSwapchain);
     }
 
     std::vector<vk::Image> getSwapchainImagesKHR(vk::SwapchainKHR swapchain) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.getSwapchainImagesKHR(swapchain);
     }
 
     vk::ImageView createImageView(const vk::ImageViewCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createImageView(createInfo);
     }
 
     vk::Framebuffer createFramebuffer(const vk::FramebufferCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createFramebuffer(createInfo);
     }
 
     vk::RenderPass createRenderPass(const vk::RenderPassCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createRenderPass(createInfo);
     }
 
     vk::Semaphore createSemaphore(const vk::SemaphoreCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createSemaphore(createInfo);
     }
 
     vk::Fence createFence(const vk::FenceCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createFence(createInfo);
     }
 
     vk::DescriptorSetLayout createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createDescriptorSetLayout(createInfo);
     }
 
     vk::DescriptorPool createDescriptorPool(const vk::DescriptorPoolCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createDescriptorPool(createInfo);
     }
 
     vk::PipelineLayout createPipelineLayout(const vk::PipelineLayoutCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createPipelineLayout(createInfo);
     }
 
     vk::Pipeline createGraphicsPipeline(vk::PipelineCache pipelineCache, const vk::GraphicsPipelineCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createGraphicsPipeline(pipelineCache, createInfo).value;
     }
 
     vk::Sampler createSampler(const vk::SamplerCreateInfo &createInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createSampler(createInfo);
     }
 
     std::vector<vk::DescriptorSet> allocateDescriptorSets(const vk::DescriptorSetAllocateInfo &allocateInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.allocateDescriptorSets(allocateInfo);
     }
 
     std::vector<vk::CommandBuffer> allocateCommandBuffers(const vk::CommandBufferAllocateInfo &allocateInfo) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.allocateCommandBuffers(allocateInfo);
     }
 
@@ -294,26 +294,26 @@ public:
         vk::ArrayProxy<const vk::WriteDescriptorSet> descriptorWrites,
         vk::ArrayProxy<const vk::CopyDescriptorSet> descriptorCopies) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.updateDescriptorSets(descriptorWrites, descriptorCopies);
     }
 
     void freeCommandBuffers(vk::CommandPool commandPool, vk::ArrayProxy<const vk::CommandBuffer> commandBuffers) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.freeCommandBuffers(commandPool, commandBuffers);
     }
 
     template<typename T>
     void destroy(T x) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         intrinsic.destroy(x);
     }
 
     vk::SurfaceCapabilitiesKHR getSurfaceCapabilitiesKHR(vk::SurfaceKHR surface) const
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return physicalIntrinsic.getSurfaceCapabilitiesKHR(surface);
     }
 

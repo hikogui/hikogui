@@ -4,7 +4,7 @@
 
 #include "pipeline_flat.hpp"
 #include "pipeline_flat_device_shared.hpp"
-#include "gui_device_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "../pixel_map.hpp"
 #include "../URL.hpp"
 #include <array>
@@ -13,7 +13,7 @@ namespace tt::pipeline_flat {
 
 using namespace std;
 
-device_shared::device_shared(gui_device_vulkan const &device) :
+device_shared::device_shared(gfx_device_vulkan const &device) :
     device(device)
 {
     buildShaders();
@@ -24,7 +24,7 @@ device_shared::~device_shared()
 }
 
 
-void device_shared::destroy(gui_device_vulkan *vulkanDevice)
+void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
     teardownShaders(vulkanDevice);
@@ -46,7 +46,7 @@ void device_shared::buildShaders()
     };
 }
 
-void device_shared::teardownShaders(gui_device_vulkan *vulkanDevice)
+void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);

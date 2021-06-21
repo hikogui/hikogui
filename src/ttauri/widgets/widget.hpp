@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../GUI/gui_window.hpp"
-#include "../GUI/gui_device.hpp"
+#include "../GUI/gfx_device.hpp"
 #include "../GUI/mouse_event.hpp"
 #include "../GUI/hit_box.hpp"
 #include "../GUI/keyboard_event.hpp"
@@ -132,7 +132,7 @@ public:
 
     [[nodiscard]] bool lineage_matches_id(std::string_view rhs) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         auto current = weak_from_this();
         while (auto current_ = current.lock()) {
             if (current_->id == rhs) {
@@ -153,7 +153,7 @@ public:
      */
     [[nodiscard]] float margin() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _margin;
     }
 
@@ -174,7 +174,7 @@ public:
      */
     [[nodiscard]] float draw_layer() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _draw_layer;
     }
 
@@ -190,7 +190,7 @@ public:
      */
     [[nodiscard]] int logical_layer() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _logical_layer;
     }
 
@@ -214,7 +214,7 @@ public:
      */
     [[nodiscard]] int semantic_layer() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _semantic_layer;
     }
 
@@ -225,7 +225,7 @@ public:
      */
     [[nodiscard]] extent2 minimum_size() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _minimum_size;
     }
 
@@ -239,7 +239,7 @@ public:
      */
     [[nodiscard]] extent2 preferred_size() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _preferred_size;
     }
 
@@ -251,7 +251,7 @@ public:
      */
     [[nodiscard]] extent2 maximum_size() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _maximum_size;
     }
 
@@ -270,7 +270,7 @@ public:
         extent2 size,
         aarectangle const &clipping_rectangle) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         _local_to_parent = local_to_parent;
         _parent_to_local = ~local_to_parent;
@@ -292,7 +292,7 @@ public:
         aarectangle parent_clipping_rectangle,
         float draw_layer_delta) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         ttlet child_translate = translate2{child_rectangle};
         ttlet child_size = child_rectangle.size();
@@ -304,7 +304,7 @@ public:
 
     void set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
 
         if (auto parent = _parent.lock()) {
             auto parent_ = reinterpret_cast<widget *>(parent.get());
@@ -317,43 +317,43 @@ public:
 
     [[nodiscard]] matrix3 parent_to_local() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _parent_to_local;
     }
 
     [[nodiscard]] matrix3 local_to_parent() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _local_to_parent;
     }
 
     [[nodiscard]] matrix3 window_to_local() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _window_to_local;
     }
 
     [[nodiscard]] matrix3 local_to_window() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _local_to_window;
     }
 
     [[nodiscard]] extent2 size() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _size;
     }
 
     [[nodiscard]] float width() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _size.width();
     }
 
     [[nodiscard]] float height() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _size.height();
     }
 
@@ -363,7 +363,7 @@ public:
      */
     [[nodiscard]] aarectangle rectangle() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return aarectangle{_size};
     }
 
@@ -372,13 +372,13 @@ public:
      */
     [[nodiscard]] virtual float base_line() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return rectangle().middle();
     }
 
     [[nodiscard]] aarectangle clipping_rectangle() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _clipping_rectangle;
     }
 
@@ -397,7 +397,7 @@ public:
      */
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return false;
     }
 
@@ -475,7 +475,7 @@ public:
 
     virtual void request_redraw() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         window.request_redraw(aarectangle{_local_to_window * _clipping_rectangle});
     }
 
@@ -487,7 +487,7 @@ public:
 
     [[nodiscard]] virtual bool handle_event(std::vector<command> const &commands) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         for (ttlet command : commands) {
             if (handle_event(command)) {
                 return true;
@@ -593,7 +593,7 @@ public:
      */
     void clear() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         _children.clear();
         _request_reconstrain = true;
     }
@@ -603,7 +603,7 @@ public:
      */
     std::shared_ptr<widget> add_widget(std::shared_ptr<widget> widget) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         tt_axiom(&widget->parent() == this);
         _children.push_back(widget);
         _request_reconstrain = true;
@@ -616,7 +616,7 @@ public:
     template<typename T, typename... Args>
     std::shared_ptr<T> make_widget(Args &&...args)
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
         tmp->init();
         return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
@@ -624,61 +624,61 @@ public:
 
     [[nodiscard]] widget &front() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return *_children.front();
     }
 
     [[nodiscard]] widget const &front() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return *_children.front();
     }
 
     [[nodiscard]] widget &back() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return *_children.back();
     }
 
     [[nodiscard]] widget const &back() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return *_children.back();
     }
 
     [[nodiscard]] auto begin() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _children.begin();
     }
 
     [[nodiscard]] auto begin() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _children.begin();
     }
 
     [[nodiscard]] auto cbegin() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _children.cbegin();
     }
 
     [[nodiscard]] auto end() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _children.end();
     }
 
     [[nodiscard]] auto end() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _children.end();
     }
 
     [[nodiscard]] auto cend() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _children.cend();
     }
 

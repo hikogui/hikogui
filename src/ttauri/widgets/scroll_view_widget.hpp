@@ -23,7 +23,7 @@ public:
     {
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
-            ttlet lock = std::scoped_lock(gui_system_mutex);
+            ttlet lock = std::scoped_lock(gfx_system_mutex);
             _semantic_layer = parent->semantic_layer();
         }
         _margin = 0.0f;
@@ -41,7 +41,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         tt_axiom(_content);
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
@@ -104,7 +104,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         tt_axiom(_content);
 
         need_layout |= std::exchange(_request_relayout, false);
@@ -168,7 +168,7 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         tt_axiom(_content);
 
         auto r = super::hitbox_test(position);
@@ -184,7 +184,7 @@ public:
     template<typename WidgetType = grid_layout_widget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(Args &&...args) noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         tt_axiom(!_content);
@@ -194,7 +194,7 @@ public:
 
     bool handle_event(mouse_event const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
         auto handled = super::handle_event(event);
 
         if (event.type == mouse_event::Type::Wheel) {

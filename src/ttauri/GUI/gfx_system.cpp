@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "gui_system.hpp"
+#include "gfx_system.hpp"
 #include "../logger.hpp"
 #include <chrono>
 
@@ -10,16 +10,16 @@ namespace tt {
 
 using namespace std;
 
-gui_device *gui_system::findBestDeviceForWindow(gui_window const &window)
+gfx_device *gfx_system::findBestDeviceForWindow(gui_window const &window)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     int bestScore = -1;
-    gui_device *bestDevice = nullptr;
+    gfx_device *bestDevice = nullptr;
 
     for (ttlet &device : devices) {
         ttlet score = device->score(*(window.surface));
-        tt_log_info("gui_device has score={}.", score);
+        tt_log_info("gfx_device has score={}.", score);
 
         if (score >= bestScore) {
             bestScore = score;
@@ -38,9 +38,9 @@ gui_device *gui_system::findBestDeviceForWindow(gui_window const &window)
     }
 }
 
-ssize_t gui_system::num_windows()
+ssize_t gfx_system::num_windows()
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     ssize_t numberOfWindows = 0;
     for (const auto &device: devices) {
@@ -50,9 +50,9 @@ ssize_t gui_system::num_windows()
     return numberOfWindows;
 }
 
-void gui_system::_handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint)
+void gfx_system::_handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint)
 {
-    auto self = static_cast<gui_system *>(data);
+    auto self = static_cast<gfx_system *>(data);
 
     self->handlevertical_sync(displayTimePoint);
 }

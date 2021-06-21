@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "gui_system.hpp"
+#include "gfx_system.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt {
 
-/** Vulkan gui_device controller.
+/** Vulkan gfx_device controller.
  * Manages Vulkan device and a set of Windows.
  */
-class gui_system_vulkan : public gui_system {
+class gfx_system_vulkan : public gfx_system {
 protected:
     //! Vulkan dynamic loader of library functions.
     vk::DispatchLoaderDynamic _loader;
@@ -38,7 +38,7 @@ public:
     //! application info passed when the instance was created.
     vk::ApplicationInfo applicationInfo;
 
-    /** Create an instance of a gui_device.
+    /** Create an instance of a gfx_device.
      * After the constructor is completed it may be used to get a
      * Vulkan surface and passed to `Window` constructors.
      *
@@ -46,28 +46,28 @@ public:
      * @param extensions a list of Vulkan extensions required. Most useful
      *      for including operating system specific surface extensions.
      */
-    gui_system_vulkan(
-        std::weak_ptr<gui_system_delegate> const &delegate,
+    gfx_system_vulkan(
+        std::weak_ptr<gfx_system_delegate> const &delegate,
         os_handle instance,
         const std::vector<const char *> extensions);
-    ~gui_system_vulkan();
+    ~gfx_system_vulkan();
 
-    gui_system_vulkan(const gui_system_vulkan &) = delete;
-    gui_system_vulkan &operator=(const gui_system_vulkan &) = delete;
-    gui_system_vulkan(gui_system_vulkan &&) = delete;
-    gui_system_vulkan &operator=(gui_system_vulkan &&) = delete;
+    gfx_system_vulkan(const gfx_system_vulkan &) = delete;
+    gfx_system_vulkan &operator=(const gfx_system_vulkan &) = delete;
+    gfx_system_vulkan(gfx_system_vulkan &&) = delete;
+    gfx_system_vulkan &operator=(gfx_system_vulkan &&) = delete;
 
     void init() noexcept(false) override;
 
     vk::DispatchLoaderDynamic loader() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         return _loader;
     }
 
     void destroySurfaceKHR(vk::SurfaceKHR surface)
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         intrinsic.destroySurfaceKHR(surface);
     }
 

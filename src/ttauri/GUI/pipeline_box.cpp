@@ -4,14 +4,14 @@
 
 #include "pipeline_box.hpp"
 #include "pipeline_box_device_shared.hpp"
-#include "gui_device_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 
 namespace tt::pipeline_box {
 
 using namespace tt;
 using namespace std;
 
-pipeline_box::pipeline_box(gui_surface const &surface) :
+pipeline_box::pipeline_box(gfx_surface const &surface) :
     pipeline_vulkan(surface)
 {
 }

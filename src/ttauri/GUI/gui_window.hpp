@@ -6,7 +6,7 @@
 
 #include "gui_window_size.hpp"
 #include "gui_window_delegate.hpp"
-#include "gui_system_globals.hpp"
+#include "gfx_system_globals.hpp"
 #include "mouse_cursor.hpp"
 #include "hit_box.hpp"
 #include "mouse_event.hpp"
@@ -23,10 +23,10 @@
 #include <mutex>
 
 namespace tt {
-class gui_device;
-class gui_system;
+class gfx_device;
+class gfx_system;
 class window_widget;
-class gui_surface;
+class gfx_surface;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -35,8 +35,8 @@ class gui_surface;
  */
 class gui_window {
 public:
-    gui_system &system;
-    std::unique_ptr<gui_surface> surface;
+    gfx_system &system;
+    std::unique_ptr<gfx_surface> surface;
 
     /** The current cursor.
      * Used for optimizing when the operating system cursor is updated.
@@ -85,7 +85,7 @@ public:
     //! The widget covering the complete window.
     std::shared_ptr<window_widget> widget;
 
-    gui_window(gui_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title);
+    gui_window(gfx_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title);
     virtual ~gui_window();
 
     gui_window(gui_window const &) = delete;
@@ -109,13 +109,13 @@ public:
     virtual void deinit();
 
 
-    void set_device(gui_device *device) noexcept;
+    void set_device(gfx_device *device) noexcept;
 
     /** Request a rectangle on the window to be redrawn
      */
     void request_redraw(aarectangle rectangle) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         _request_redraw_rectangle |= rectangle;
     }
 
@@ -123,7 +123,7 @@ public:
      */
     void request_redraw() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
         request_redraw(aarectangle{size});
     }
 

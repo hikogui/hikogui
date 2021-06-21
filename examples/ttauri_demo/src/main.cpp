@@ -8,7 +8,7 @@
 #include "ttauri/crt.hpp"
 #include "ttauri/hires_utc_clock.hpp"
 #include "ttauri/metadata.hpp"
-#include "ttauri/GUI/gui_system.hpp"
+#include "ttauri/GUI/gfx_system.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include <Windows.h>
 #include <memory>

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "gui_window.hpp"
-#include "gui_device.hpp"
+#include "gfx_device.hpp"
 #include "pipeline_image_image.hpp"
 #include "pipeline_image_image_location.hpp"
 #include "draw_context.hpp"

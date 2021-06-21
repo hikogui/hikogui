@@ -15,7 +15,7 @@ namespace tt::pipeline_tone_mapper {
  */
 class pipeline_tone_mapper : public pipeline_vulkan {
 public:
-    pipeline_tone_mapper(gui_surface const &surface);
+    pipeline_tone_mapper(gfx_surface const &surface);
     ~pipeline_tone_mapper() {};
 
     pipeline_tone_mapper(const pipeline_tone_mapper &) = delete;

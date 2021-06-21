@@ -18,7 +18,7 @@
 #include <unordered_map>
 
 namespace tt {
-class gui_device_vulkan;
+class gfx_device_vulkan;
 template<typename T>
 class pixel_map;
 class mat;
@@ -50,7 +50,7 @@ struct device_shared final {
     static constexpr float drawBorder = sdf_r8::max_distance;
     static constexpr float scaledDrawBorder = drawBorder / drawfontSize;
 
-    gui_device_vulkan const &device;
+    gfx_device_vulkan const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -72,7 +72,7 @@ struct device_shared final {
     /// During allocation on a row, we keep track of the tallest glyph.
     int atlasAllocationMaxHeight = 0;
 
-    device_shared(gui_device_vulkan const &device);
+    device_shared(gfx_device_vulkan const &device);
     ~device_shared();
 
     device_shared(device_shared const &) = delete;
@@ -81,10 +81,10 @@ struct device_shared final {
     device_shared &operator=(device_shared &&) = delete;
 
     /*! Deallocate vulkan resources.
-     * This is called in the destructor of gui_device_vulkan, therefor we can not use our `std::weak_ptr<gui_device_vulkan>
+     * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan>
      * device`.
      */
-    void destroy(gui_device_vulkan *vulkanDevice);
+    void destroy(gfx_device_vulkan *vulkanDevice);
 
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
@@ -148,10 +148,10 @@ struct device_shared final {
 
 private:
     void buildShaders();
-    void teardownShaders(gui_device_vulkan *vulkanDevice);
+    void teardownShaders(gfx_device_vulkan *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(gui_device_vulkan *vulkanDevice);
+    void teardownAtlas(gfx_device_vulkan *vulkanDevice);
 
     /** Place vertices for a single glyph.
      * This function will not execute prepareAtlasForRendering().

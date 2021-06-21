@@ -10,8 +10,8 @@
 #include <optional>
 
 namespace tt {
-class gui_system;
-class gui_system_delegate;
+class gfx_system;
+class gfx_system_delegate;
 class application;
 
 /** application Delegate.
@@ -28,7 +28,7 @@ public:
     /** The delegate to be used for the gui system.
      * @return The delegate to be used for the gui system, or nullptr if the gui system should not be initialized.
      */
-    virtual std::weak_ptr<gui_system_delegate> gui_system_delegate(application &self) noexcept
+    virtual std::weak_ptr<gfx_system_delegate> gfx_system_delegate(application &self) noexcept
     {
         return {};
     }

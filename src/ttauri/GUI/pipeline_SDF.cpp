@@ -4,15 +4,15 @@
 
 #include "pipeline_SDF.hpp"
 #include "pipeline_SDF_device_shared.hpp"
-#include "gui_surface_vulkan.hpp"
-#include "gui_device_vulkan.hpp"
+#include "gfx_surface_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 
 namespace tt::pipeline_SDF {
 
 using namespace tt;
 using namespace std;
 
-pipeline_SDF::pipeline_SDF(gui_surface const &surface) :
+pipeline_SDF::pipeline_SDF(gfx_surface const &surface) :
     pipeline_vulkan(surface)
 {
 }
@@ -107,7 +107,7 @@ vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() const
             0, // arrayElement
             1, // descriptorCount
             vk::DescriptorType::eInputAttachment,
-            &(narrow_cast<gui_surface_vulkan const&>(surface).colorDescriptorImageInfos[0]),
+            &(narrow_cast<gfx_surface_vulkan const&>(surface).colorDescriptorImageInfos[0]),
             nullptr, // bufferInfo
             nullptr // texelBufferView
         }, {

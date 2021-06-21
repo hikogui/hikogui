@@ -4,7 +4,7 @@
 
 #include "pipeline_SDF.hpp"
 #include "pipeline_SDF_device_shared.hpp"
-#include "gui_device_vulkan.hpp"
+#include "gfx_device_vulkan.hpp"
 #include "../text/shaped_text.hpp"
 #include "../pixel_map.hpp"
 #include "../URL.hpp"
@@ -19,7 +19,7 @@ namespace tt::pipeline_SDF {
 
 using namespace std;
 
-device_shared::device_shared(gui_device_vulkan const &device) : device(device)
+device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
     buildShaders();
     buildAtlas();
@@ -27,7 +27,7 @@ device_shared::device_shared(gui_device_vulkan const &device) : device(device)
 
 device_shared::~device_shared() {}
 
-void device_shared::destroy(gui_device_vulkan *vulkanDevice)
+void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
 
@@ -301,7 +301,7 @@ void device_shared::buildShaders()
          &fragmentShaderSpecializationInfo}};
 }
 
-void device_shared::teardownShaders(gui_device_vulkan *vulkanDevice)
+void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
 
@@ -422,7 +422,7 @@ void device_shared::buildAtlas()
     addAtlasImage();
 }
 
-void device_shared::teardownAtlas(gui_device_vulkan *vulkanDevice)
+void device_shared::teardownAtlas(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
 
