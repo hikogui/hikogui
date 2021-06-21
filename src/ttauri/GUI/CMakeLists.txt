@@ -22,8 +22,11 @@ target_sources(ttauri PRIVATE
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_macos.hpp>
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/fgx_system_vulkan_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.hpp>
-    gfx_system_delegate.hpp
+    gui_system.cpp
+    gui_system.hpp
+    gui_system_delegate.hpp
+    gui_system_win32.cpp
+    gui_system_win32.hpp
     gui_window.cpp
     gui_window.hpp
     gui_window_delegate.hpp

@@ -7,7 +7,6 @@
 #include "font_id.hpp"
 #include "font_glyph_ids.hpp"
 #include "font_book.hpp"
-#include "../application.hpp"
 
 namespace tt {
 

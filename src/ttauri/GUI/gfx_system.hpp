@@ -5,11 +5,8 @@
 #pragma once
 
 #include "gfx_device.hpp"
-#include "gui_window.hpp"
-#include "gui_window_win32.hpp"
-#include "vertical_sync.hpp"
-#include "gfx_system_delegate.hpp"
 #include "../unfair_recursive_mutex.hpp"
+#include "../subsystem.hpp"
 #include <span>
 #include <memory>
 #include <mutex>
@@ -23,32 +20,14 @@ class gfx_surface;
  */
 class gfx_system {
 public:
-    static inline std::unique_ptr<gfx_system> global;
-
-    std::weak_ptr<gfx_system_delegate> delegate;
-
-    std::unique_ptr<vertical_sync> verticalSync;
-
     //! List of all devices.
     std::vector<std::shared_ptr<gfx_device>> devices;
 
-    /** Handle to the operating system's instance.
-     */
-    os_handle instance;
-
-    /*! Keep track of the numberOfWindows in the previous render cycle.
-     * This way we can call closedLastWindow on the application once.
-     */
-    ssize_t previousNumberOfWindows = 0;
-
-    gfx_system(std::weak_ptr<gfx_system_delegate> const &delegate, os_handle instance) noexcept :
-        delegate(delegate), instance(instance)
+    gfx_system() noexcept
     {
-        verticalSync = std::make_unique<vertical_sync>(_handlevertical_sync, this);
     }
 
     virtual ~gfx_system() {
-        verticalSync = {};
     }
 
     gfx_system(const gfx_system &) = delete;
@@ -59,35 +38,10 @@ public:
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
      */
-    virtual void init() = 0;
+    virtual void init() {};
+    virtual void deinit() {};
 
-    template<typename... Args>
-    gui_window *make_window(Args &&... args)
-    {
-        // This function should be called from the main thread from the main loop,
-        // and therefor should not have a lock on the window.
-        tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
-        tt_axiom(gfx_system_mutex.recurse_lock_count() == 0);
-
-        auto window = std::make_shared<gui_window_win32>(static_cast<gfx_system &>(*this), std::forward<Args>(args)...);
-        auto window_ptr = window.get();
-        window->init();
-
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-        auto device = findBestDeviceForWindow(*window);
-        if (!device) {
-            throw gui_error("Could not find a vulkan-device matching this window");
-        }
-
-        device->add(std::move(window));
-        return window_ptr;
-    }
-
-    [[nodiscard]] virtual std::unique_ptr<gfx_surface> make_surface(void *os_window) const noexcept = 0;
-
-    /*! Count the number of windows managed by the GUI.
-     */
-    ssize_t num_windows();
+    [[nodiscard]] virtual std::unique_ptr<gfx_surface> make_surface(os_handle instance, void *os_window) const noexcept = 0;
 
     void render(hires_utc_clock::time_point displayTimePoint) {
         ttlet lock = std::scoped_lock(gfx_system_mutex);
@@ -95,27 +49,20 @@ public:
         for (auto &device: devices) {
             device->render(displayTimePoint);
         }
-        ttlet currentNumberOfWindows = num_windows();
-        if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
-            application::global->run_from_main_loop([this]{
-                if (auto delegate_ = this->delegate.lock()) {
-                    delegate_->last_window_closed(*this);
-                }
-            });
-        }
-        previousNumberOfWindows = currentNumberOfWindows;
     }
 
-    void handlevertical_sync(hires_utc_clock::time_point displayTimePoint)
+    static inline gfx_system &global() noexcept
     {
-        render(displayTimePoint);
+        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
     }
 
+    gfx_device *findBestDeviceForSurface(gfx_surface const &surface);
 
-    static void _handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint);
+private:
+    static inline std::atomic<gfx_system *> _global;
 
-protected:
-    gfx_device *findBestDeviceForWindow(gui_window const &window);
+    [[nodiscard]] static gfx_system *subsystem_init() noexcept;
+    [[nodiscard]] static void subsystem_deinit() noexcept;
 };
 
 }

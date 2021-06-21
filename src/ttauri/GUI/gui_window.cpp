@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_window.hpp"
+#include "gui_system.hpp"
 #include "gfx_device.hpp"
 #include "gfx_surface.hpp"
 #include "keyboard_bindings.hpp"
@@ -39,8 +40,8 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
     return false;
 }
 
-gui_window::gui_window(gfx_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title) :
-    system(system), _delegate(std::move(delegate)), title(title)
+gui_window::gui_window(std::shared_ptr<gui_window_delegate> delegate, label const &title) :
+    _delegate(std::move(delegate)), title(title)
 {
 }
 
@@ -51,7 +52,7 @@ gui_window::~gui_window()
 
     try {
         surface.reset();
-        tt_log_info("Window '{}' has been propertly destructed.", title);
+        tt_log_info("Window '{}' has been properly destructed.", title);
 
     } catch (std::exception const &e) {
         tt_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
@@ -62,7 +63,7 @@ void gui_window::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
-    tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
+    tt_assert(gui_system::global().thread_id == current_thread_id(), "createWindow should be called from the main thread.");
     tt_axiom(gfx_system_mutex.recurse_lock_count() == 0);
 
     {

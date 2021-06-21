@@ -12,7 +12,7 @@ namespace tt {
 /** Vulkan gfx_device controller.
  * Manages Vulkan device and a set of Windows.
  */
-class gfx_system_vulkan : public gfx_system {
+class gfx_system_vulkan final : public gfx_system {
 protected:
     //! Vulkan dynamic loader of library functions.
     vk::DispatchLoaderDynamic _loader;
@@ -43,13 +43,8 @@ public:
      * Vulkan surface and passed to `Window` constructors.
      *
      * @param delegate The delegate for the gui-system.
-     * @param extensions a list of Vulkan extensions required. Most useful
-     *      for including operating system specific surface extensions.
      */
-    gfx_system_vulkan(
-        std::weak_ptr<gfx_system_delegate> const &delegate,
-        os_handle instance,
-        const std::vector<const char *> extensions);
+    gfx_system_vulkan();
     ~gfx_system_vulkan();
 
     gfx_system_vulkan(const gfx_system_vulkan &) = delete;
@@ -58,6 +53,8 @@ public:
     gfx_system_vulkan &operator=(gfx_system_vulkan &&) = delete;
 
     void init() noexcept(false) override;
+
+    [[nodiscard]] std::unique_ptr<gfx_surface> make_surface(os_handle instance, void *os_window) const noexcept override;
 
     vk::DispatchLoaderDynamic loader() const noexcept
     {

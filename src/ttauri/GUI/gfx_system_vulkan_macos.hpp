@@ -11,7 +11,7 @@ namespace tt {
 
 class gfx_system_vulkan_macos final: public gfx_system_vulkan {
 public:
-    gfx_system_vulkan_macos(gfx_system_delegate *delegate);
+    gfx_system_vulkan_macos(gui_system_delegate *delegate);
     ~gfx_system_vulkan_macos();
 
     gfx_system_vulkan_macos(const gfx_system_vulkan_macos &) = delete;

@@ -1,10 +1,8 @@
 
-#include "application_controller.hpp"
 #include "my_main_window_controller.hpp"
 #include "my_preferences_window_controller.hpp"
 #include "my_preferences.hpp"
 #include "ttauri/logger.hpp"
-#include "ttauri/application.hpp"
 #include "ttauri/crt.hpp"
 #include "ttauri/hires_utc_clock.hpp"
 #include "ttauri/metadata.hpp"
@@ -13,7 +11,7 @@
 #include <Windows.h>
 #include <memory>
 
-int tt_main(int argc, char *argv[], tt::os_handle instance)
+int tt_main(int argc, char *argv[])
 {
     // Set the version at the very beginning, because file system paths depend on it.
     auto version = tt::library_metadata();
@@ -27,8 +25,6 @@ int tt_main(int argc, char *argv[], tt::os_handle instance)
     // Start the hires_utc_clock subsystem for more accurate time stamps.
     tt::hires_utc_clock::start_subsystem();
 
-    application_controller::global = std::make_shared<::application_controller>();
-
     my_main_window_controller::global = std::make_shared<::my_main_window_controller>();
     my_preferences_window_controller::global = std::make_shared<::my_preferences_window_controller>();
 
@@ -37,9 +33,10 @@ int tt_main(int argc, char *argv[], tt::os_handle instance)
 
     tt::audio_system::global().set_delegate(my_preferences_window_controller::global);
 
-    auto app = tt_application(application_controller::global, instance);
+    auto window_label = tt::label{ tt::URL{"resource:ttauri_demo.png"}, tt::l10n("ttauri_demo") };
+    tt::gui_system::global().make_window(my_main_window_controller::global, window_label);
 
-    auto r = app.main();
+    auto r = tt::gui_system::global().loop();
 
     my_preferences::global->save();
     return r;

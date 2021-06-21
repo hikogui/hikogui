@@ -4,7 +4,7 @@
 #include "ttauri/logger.hpp"
 #include "ttauri/widgets/widgets.hpp"
 #include "ttauri/GUI/gfx_system.hpp"
-#include "ttauri/GUI/gui_window.hpp"
+#include "ttauri/GUI/gui_system.hpp"
 
 void my_main_window_controller::init(tt::gui_window& window) noexcept
 {
@@ -15,7 +15,7 @@ void my_main_window_controller::init(tt::gui_window& window) noexcept
     // Add buttons to toolbar.
     auto preferences_button = window.make_toolbar_widget<toolbar_button_widget>(label{ elusive_icon::Wrench, l10n("Preferences") });
     preferences_button_callback = preferences_button->subscribe([&window]() {
-        window.system.make_window(
+        gui_system::global().make_window(
             my_preferences_window_controller::global,
             label{ icon{URL{"resource:ttauri_demo.png"}}, l10n("TTauri Demo - Preferences") }
         );

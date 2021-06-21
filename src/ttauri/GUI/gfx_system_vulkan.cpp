@@ -4,7 +4,8 @@
 
 #include "gfx_system_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
-#include "ttauri/metadata.hpp"
+#include "../metadata.hpp"
+#include "../architecture.hpp"
 #include <chrono>
 #include <cstring>
 
@@ -49,12 +50,15 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
     return r;
 }
 
-gfx_system_vulkan::gfx_system_vulkan(
-    std::weak_ptr<gfx_system_delegate> const &delegate,
-    os_handle instance,
-    const std::vector<const char *> extensionNames) :
-    gfx_system(delegate, instance), requiredExtensions(std::move(extensionNames))
+gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
 {
+    if constexpr (operating_system::current == operating_system::windows) {
+        requiredExtensions = {VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
+    } else {
+        tt_not_implemented();
+        // XXX tt_static_not_implemented();
+    }
+
     applicationInfo = vk::ApplicationInfo(
         application_metadata().name.c_str(),
         VK_MAKE_VERSION(

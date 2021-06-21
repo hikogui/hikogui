@@ -4,7 +4,6 @@
 
 #include "hires_utc_clock.hpp"
 #include "time_stamp_count.hpp"
-#include "application.hpp"
 #include "logger.hpp"
 #include "thread.hpp"
 #include <format>

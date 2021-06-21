@@ -20,7 +20,7 @@ class gui_window_win32 final : public gui_window {
 public:
     HWND win32Window = nullptr;
 
-    gui_window_win32(gfx_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title);
+    gui_window_win32(std::shared_ptr<gui_window_delegate> delegate, label const &title);
     ~gui_window_win32();
 
     void create_window() override;

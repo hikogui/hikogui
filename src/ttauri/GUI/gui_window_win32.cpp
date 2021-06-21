@@ -3,14 +3,14 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_window_win32.hpp"
+#include "gui_system.hpp"
 #include "keyboard_virtual_key.hpp"
-#include "gfx_system_vulkan_win32.hpp"
+#include "gfx_system_vulkan.hpp"
 #include "theme_book.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../logger.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
-#include "../application_win32.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 #include <new>
@@ -77,7 +77,7 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     return result;
 }
 
-static void createWindowClass(gfx_system &system)
+static void createWindowClass()
 {
     if (!win32WindowClassIsRegistered) {
         // Register the window class.
@@ -86,7 +86,7 @@ static void createWindowClass(gfx_system &system)
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(system.instance);
+        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(gui_system::instance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -97,10 +97,10 @@ static void createWindowClass(gfx_system &system)
 void gui_window_win32::create_window()
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
-    tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
+    tt_assert(gui_system::global().thread_id == current_thread_id(), "createWindow should be called from the main thread.");
     tt_axiom(gfx_system_mutex.recurse_lock_count() == 0);
 
-    createWindowClass(system);
+    createWindowClass();
 
     auto u16title = to_wstring(title.text());
 
@@ -124,7 +124,7 @@ void gui_window_win32::create_window()
 
         NULL, // Parent window
         NULL, // Menu
-        reinterpret_cast<HINSTANCE>(system.instance), // Instance handle
+        reinterpret_cast<HINSTANCE>(gui_system::instance), // Instance handle
         this);
     if (win32Window == nullptr) {
         tt_log_fatal("Could not open a win32 window: {}", get_last_error_message());
@@ -147,7 +147,7 @@ void gui_window_win32::create_window()
 
     if (!firstWindowHasBeenOpened) {
         ttlet win32_window_ = reinterpret_cast<HWND>(win32Window);
-        switch (application::global->initial_window_size) {
+        switch (gui_window_size::normal) {
         case gui_window_size::normal: ShowWindow(win32_window_, SW_SHOWNORMAL); break;
         case gui_window_size::minimized: ShowWindow(win32_window_, SW_SHOWMINIMIZED); break;
         case gui_window_size::maximized: ShowWindow(win32_window_, SW_SHOWMAXIMIZED); break;
@@ -169,14 +169,13 @@ void gui_window_win32::create_window()
     }
     dpi = narrow_cast<float>(_dpi);
 
-    surface = system.make_surface(win32Window);
+    surface = gfx_system::global().make_surface(gui_system::instance, win32Window);
 }
 
 gui_window_win32::gui_window_win32(
-    gfx_system &system,
     std::shared_ptr<gui_window_delegate> delegate,
     label const &title) :
-    gui_window(system, std::move(delegate), title), trackMouseLeaveEventParameters()
+    gui_window(std::move(delegate), title), trackMouseLeaveEventParameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
@@ -198,28 +197,28 @@ gui_window_win32::~gui_window_win32()
 
 void gui_window_win32::close_window()
 {
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
 void gui_window_win32::minimize_window()
 {
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
 void gui_window_win32::maximize_window()
 {
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
 void gui_window_win32::normalize_window()
 {
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
@@ -230,7 +229,7 @@ void gui_window_win32::set_window_size(extent2 new_extent)
     ttlet handle = reinterpret_cast<HWND>(win32Window);
     gfx_system_mutex.unlock();
 
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         SetWindowPos(
             reinterpret_cast<HWND>(handle),
             HWND_NOTOPMOST,

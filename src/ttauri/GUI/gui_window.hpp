@@ -35,7 +35,6 @@ class gfx_surface;
  */
 class gui_window {
 public:
-    gfx_system &system;
     std::unique_ptr<gfx_surface> surface;
 
     /** The current cursor.
@@ -85,7 +84,7 @@ public:
     //! The widget covering the complete window.
     std::shared_ptr<window_widget> widget;
 
-    gui_window(gfx_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title);
+    gui_window(std::shared_ptr<gui_window_delegate> delegate, label const &title);
     virtual ~gui_window();
 
     gui_window(gui_window const &) = delete;

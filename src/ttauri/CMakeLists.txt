@@ -19,13 +19,6 @@ configure_file(metadata.cpp.in metadata.cpp @ONLY)
 target_sources(ttauri PRIVATE
     algorithm.hpp
     animator.hpp
-    application.cpp
-    application.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/application_macos.hpp>
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/application_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/application_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/application_win32.hpp>
-    application_delegate.hpp
     assert.hpp
     atomic.hpp
     alignment.hpp

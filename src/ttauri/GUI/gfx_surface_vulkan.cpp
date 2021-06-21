@@ -13,7 +13,6 @@
 #include "draw_context.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../trace.hpp"
-#include "../application.hpp"
 #include "../cast.hpp"
 #include <vector>
 

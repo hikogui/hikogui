@@ -165,14 +165,7 @@ public:
         return is_normal(group) and enabled;
     }
 
-    void activate() noexcept
-    {
-        _delegate->activate(*this);
-
-        run_from_main_loop([this]() {
-            this->_notifier();
-        });
-    }
+    void activate() noexcept;
 
     [[nodiscard]] bool handle_event(command command) noexcept override
     {

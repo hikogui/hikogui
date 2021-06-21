@@ -4,7 +4,6 @@
 
 #include "static_resource_view.hpp"
 #include "static_resource_list.hpp"
-#include "application.hpp"
 
 namespace tt {
 

@@ -26,10 +26,6 @@ namespace tt {
  */
 void set_thread_name(std::string_view name);
 
-bool is_main_thread();
-
-void run_from_main_loop(std::function<void()> f);
-
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 constexpr size_t maximum_num_cpus = 64;
 #elif TT_OPERATING_SYSTEM == TT_OS_LINUX || TT_OPERATING_SYSTEM == TT_OS_MACOS

@@ -3,6 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gfx_system.hpp"
+#include "gfx_system_vulkan.hpp"
+#include "gfx_surface.hpp"
 #include "../logger.hpp"
 #include <chrono>
 
@@ -10,7 +12,7 @@ namespace tt {
 
 using namespace std;
 
-gfx_device *gfx_system::findBestDeviceForWindow(gui_window const &window)
+gfx_device *gfx_system::findBestDeviceForSurface(gfx_surface const &surface)
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -18,7 +20,7 @@ gfx_device *gfx_system::findBestDeviceForWindow(gui_window const &window)
     gfx_device *bestDevice = nullptr;
 
     for (ttlet &device : devices) {
-        ttlet score = device->score(*(window.surface));
+        ttlet score = device->score(surface);
         tt_log_info("gfx_device has score={}.", score);
 
         if (score >= bestScore) {
@@ -38,24 +40,21 @@ gfx_device *gfx_system::findBestDeviceForWindow(gui_window const &window)
     }
 }
 
-ssize_t gfx_system::num_windows()
+[[nodiscard]] gfx_system *gfx_system::subsystem_init() noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    auto tmp = new gfx_system_vulkan();
+    tmp->init();
+    return tmp;
+}
 
-    ssize_t numberOfWindows = 0;
-    for (const auto &device: devices) {
-        numberOfWindows+= device->num_windows();
+[[nodiscard]] void gfx_system::subsystem_deinit() noexcept
+{
+    if (auto tmp = _global.exchange(nullptr)) {
+        tmp->deinit();
+        delete tmp;
     }
-
-    return numberOfWindows;
 }
 
-void gfx_system::_handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint)
-{
-    auto self = static_cast<gfx_system *>(data);
-
-    self->handlevertical_sync(displayTimePoint);
-}
 
 
 }

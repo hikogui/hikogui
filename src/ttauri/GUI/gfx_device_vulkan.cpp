@@ -7,7 +7,6 @@
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "gui_window.hpp"
-#include "../application.hpp"
 #include <span>
 
 namespace tt {

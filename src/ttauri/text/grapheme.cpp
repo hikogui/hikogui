@@ -4,7 +4,6 @@
 
 #include "grapheme.hpp"
 #include "unicode_normalization.hpp"
-#include "../application.hpp"
 
 namespace tt {
 

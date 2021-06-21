@@ -1,7 +1,5 @@
 
 target_sources(ttauri_demo PRIVATE
-    application_controller.cpp
-    application_controller.hpp
     main.cpp
     my_main_window_controller.cpp
     my_main_window_controller.hpp
