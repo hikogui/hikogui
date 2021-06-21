@@ -1,10 +1,14 @@
 
 #include "application_controller.hpp"
+#include "my_main_window_controller.hpp"
+#include "my_preferences_window_controller.hpp"
+#include "my_preferences.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/application.hpp"
 #include "ttauri/crt.hpp"
 #include "ttauri/hires_utc_clock.hpp"
 #include "ttauri/metadata.hpp"
+#include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include <Windows.h>
 #include <memory>
@@ -23,13 +27,22 @@ int tt_main(int argc, char *argv[], tt::os_handle instance)
     // Start the hires_utc_clock subsystem for more accurate time stamps.
     tt::hires_utc_clock::start_subsystem();
 
-    auto application_controller = std::make_shared<demo::application_controller>();
-    demo::application_controller::global = application_controller;
+    application_controller::global = std::make_shared<::application_controller>();
 
-    tt::audio_system::global().set_delegate(application_controller);
+    my_main_window_controller::global = std::make_shared<::my_main_window_controller>();
+    my_preferences_window_controller::global = std::make_shared<::my_preferences_window_controller>();
 
-    auto app = tt_application(application_controller, instance);
-    return app.main();
+    my_preferences::global = std::make_unique<my_preferences>(tt::URL::urlFromExecutableDirectory() / "preferences.json");
+    my_preferences::global->load();
+
+    tt::audio_system::global().set_delegate(my_preferences_window_controller::global);
+
+    auto app = tt_application(application_controller::global, instance);
+
+    auto r = app.main();
+
+    my_preferences::global->save();
+    return r;
 }
 
 //extern "C" const char *__asan_default_options() {
