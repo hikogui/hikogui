@@ -36,7 +36,8 @@ public:
     ssize_t previousNumberOfWindows = 0;
 
     gui_system() noexcept :
-        thread_id(current_thread_id())
+        thread_id(current_thread_id()),
+        _delegate(std::make_shared<gui_system_delegate>())
     {
         verticalSync = std::make_unique<vertical_sync>(_handlevertical_sync, this);
     }
@@ -106,7 +107,9 @@ public:
         ttlet currentNumberOfWindows = num_windows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
             gui_system::global().run_from_event_queue([this]{
-                this->delegate().last_window_closed(*this);
+                if (auto exit_code = this->delegate().last_window_closed(*this)) {
+                    gui_system::global().exit(*exit_code);
+                }
             });
         }
         previousNumberOfWindows = currentNumberOfWindows;
