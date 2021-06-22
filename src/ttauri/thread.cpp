@@ -5,9 +5,15 @@
 #include "thread.hpp"
 #include "logger.hpp"
 #include "exception.hpp"
+#include "GUI/gui_system.hpp"
 #include <bit>
 
 namespace tt {
+
+[[nodiscard]] bool is_gui_thread() noexcept
+{
+    return gui_system::global().is_gui_thread();
+}
 
 std::vector<bool> set_thread_affinity(size_t cpu_id)
 {

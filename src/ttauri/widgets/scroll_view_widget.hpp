@@ -41,7 +41,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
@@ -104,7 +104,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
         need_layout |= std::exchange(_request_relayout, false);
@@ -168,7 +168,7 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
         auto r = super::hitbox_test(position);

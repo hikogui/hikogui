@@ -116,7 +116,7 @@ void gui_window::set_device(gfx_device *device) noexcept
 
 void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
     tt_axiom(surface);
     tt_axiom(widget);
 
@@ -186,7 +186,7 @@ void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, 
 
 void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, point2 position) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     auto current_target_widget = _mouse_target_widget.lock();
     if (new_target_widget != current_target_widget) {

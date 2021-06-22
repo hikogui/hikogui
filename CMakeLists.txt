@@ -457,7 +457,9 @@ endif()
 if(TT_BUILD_TESTS)
     install(TARGETS ttauri_tests DESTINATION tests)
     install(DIRECTORY tests/data/ DESTINATION tests)
-    x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+    if (BUILD_SHARED_LIBS)
+        x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+    endif()
 endif()
 
 #-------------------------------------------------------------------

@@ -30,7 +30,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
 
@@ -47,7 +47,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -60,7 +60,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (overlaps(context, _clipping_rectangle)) {
             draw_background(context);
@@ -75,7 +75,7 @@ public:
      */
     [[nodiscard]] aarectangle make_overlay_rectangle_from_parent(aarectangle requested_rectangle) const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (auto parent = _parent.lock()) {
             ttlet requested_window_rectangle = aarectangle{parent->local_to_window() * requested_rectangle};

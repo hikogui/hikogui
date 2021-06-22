@@ -30,7 +30,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _layout.clear();
@@ -65,7 +65,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -91,7 +91,7 @@ private:
         float &preferred_thickness,
         float &maximum_thickness) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (arrangement == arrangement::row) {
             ttlet minimum_length = child.minimum_size().width();
@@ -117,7 +117,7 @@ private:
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet[child_offset, child_length] = _layout.get_offset_and_size(index++);
 

@@ -47,7 +47,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
@@ -81,7 +81,7 @@ public:
 
     void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -106,7 +106,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (overlaps(context, _clipping_rectangle)) {
             context.draw_filled_quad(rectangle(), theme::global(theme_color::fill, _semantic_layer + 1));
@@ -117,7 +117,7 @@ public:
 
     hit_box hitbox_test(point2 position) const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         auto r = hit_box{};
 
@@ -152,7 +152,7 @@ private:
         relative_base_line &shared_base_line,
         float &shared_height) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         _layout.update(
             index, child.minimum_size().width(), child.preferred_size().width(), child.maximum_size().width(), child.margin());
@@ -162,7 +162,7 @@ private:
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
 

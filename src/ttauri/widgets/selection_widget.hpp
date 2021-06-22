@@ -88,7 +88,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         auto updated = super::update_constraints(display_time_point, need_reconstrain);
         if (updated) {
@@ -123,7 +123,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         need_layout |= std::exchange(_request_relayout, false);
 
@@ -172,7 +172,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (overlaps(context, this->_clipping_rectangle)) {
             draw_outline(context);
@@ -201,7 +201,7 @@ public:
 
     bool handle_event(command command) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         _request_relayout = true;
 
         if (enabled and _has_options) {
@@ -231,7 +231,7 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         auto r = super::hitbox_test(position);
         if (_visible_rectangle.contains(position)) {
@@ -246,13 +246,13 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return is_normal(group) and enabled and _has_options;
     }
 
     [[nodiscard]] color focus_color() const noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (enabled and _has_options and _selecting) {
             return theme::global(theme_color::accent);
@@ -288,7 +288,7 @@ private:
 
     [[nodiscard]] std::shared_ptr<menu_button_widget> get_first_menu_button() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (std::ssize(_menu_button_widgets) != 0) {
             return _menu_button_widgets.front();
@@ -299,7 +299,7 @@ private:
 
     [[nodiscard]] std::shared_ptr<menu_button_widget> get_selected_menu_button() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         for (ttlet &button : _menu_button_widgets) {
             if (button->state() == button_state::on) {
@@ -311,7 +311,7 @@ private:
 
     void start_selecting() noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         _selecting = true;
         _overlay_widget->visible = true;
@@ -327,7 +327,7 @@ private:
 
     void stop_selecting() noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         _selecting = false;
         _overlay_widget->visible = false;
         request_redraw();
@@ -337,7 +337,7 @@ private:
      */
     void repopulate_options() noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         auto [options, selected] = _delegate->options_and_selected(*this);
 
         _has_options = std::size(options) > 0;
@@ -380,7 +380,7 @@ private:
 
     void draw_outline(draw_context context) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         context.draw_box_with_border_inside(
             rectangle(), background_color(), focus_color(), corner_shapes{theme::global().rounding_radius});
@@ -388,7 +388,7 @@ private:
 
     void draw_left_box(draw_context context) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet corner_shapes = tt::corner_shapes{theme::global().rounding_radius, 0.0f, theme::global().rounding_radius, 0.0f};
         context.draw_box(translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
@@ -396,7 +396,7 @@ private:
 
     void draw_chevrons(draw_context context) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         context.draw_glyph(_chevrons_glyph, translate_z(0.2f) * _chevrons_rectangle, label_color());
     }

@@ -32,7 +32,7 @@ void label_widget::init() noexcept
 [[nodiscard]] bool
 label_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet label_size = _text_widget->preferred_size();
@@ -87,7 +87,7 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
 
 [[nodiscard]] void label_widget::update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     need_layout |= std::exchange(this->_request_relayout, false);
     if (need_layout) {

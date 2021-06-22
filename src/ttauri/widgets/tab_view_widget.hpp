@@ -44,7 +44,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
         if (has_updated_contraints) {
@@ -68,7 +68,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         need_layout |= std::exchange(_request_relayout, false);
         if (need_layout) {
@@ -107,7 +107,7 @@ private:
 
     [[nodiscard]] auto find_child(value_type index) const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(std::size(_children_keys) == std::size(_children));
 
         ttlet child_key_it = std::find(_children_keys.cbegin(), _children_keys.cend(), index);
@@ -121,7 +121,7 @@ private:
 
     [[nodiscard]] auto find_child(value_type index) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(std::size(_children_keys) == std::size(_children));
 
         ttlet child_key_it = std::find(_children_keys.cbegin(), _children_keys.cend(), index);
@@ -135,19 +135,19 @@ private:
 
     [[nodiscard]] auto find_selected_child() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return find_child(*value);
     }
 
     [[nodiscard]] auto find_selected_child() noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return find_child(*value);
     }
 
     [[nodiscard]] std::shared_ptr<widget> const &selected_child() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(std::ssize(_children) != 0);
 
         auto i = find_selected_child();
@@ -160,7 +160,7 @@ private:
 
     void draw_child(draw_context context, hires_utc_clock::time_point displayTimePoint, widget &child) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         auto child_context =
             context.make_child_context(child.parent_to_local(), child.local_to_window(), child.clipping_rectangle());
         child.draw(child_context, displayTimePoint);

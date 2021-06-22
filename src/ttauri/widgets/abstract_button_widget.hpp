@@ -67,7 +67,7 @@ public:
     template<typename Label>
     void set_label(Label const &rhs) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         on_label = rhs;
         off_label = rhs;
         other_label = rhs;
@@ -75,7 +75,7 @@ public:
 
     [[nodiscard]] button_state state() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return _delegate->state(*this);
     }
 
@@ -98,7 +98,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             this->_minimum_size = _on_label_widget->minimum_size();
@@ -122,7 +122,7 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         need_layout |= std::exchange(this->_request_relayout, false);
         if (need_layout) {
@@ -140,7 +140,7 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         if (_pressed) {
             return theme::global(theme_color::fill, this->_semantic_layer + 2);
         } else {
@@ -150,7 +150,7 @@ public:
 
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept final
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (_visible_rectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::Button : hit_box::Type::Default};
@@ -161,7 +161,7 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return is_normal(group) and enabled;
     }
 

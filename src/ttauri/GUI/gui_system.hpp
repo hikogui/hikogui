@@ -8,7 +8,6 @@
 #include "gfx_device.hpp"
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
-#include "vertical_sync.hpp"
 #include "gui_system_delegate.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
@@ -26,8 +25,6 @@ class gui_system {
 public:
     static inline os_handle instance;
 
-    std::unique_ptr<vertical_sync> verticalSync;
-
     thread_id const thread_id;
 
     /*! Keep track of the numberOfWindows in the previous render cycle.
@@ -39,11 +36,9 @@ public:
         thread_id(current_thread_id()),
         _delegate(std::make_shared<gui_system_delegate>())
     {
-        verticalSync = std::make_unique<vertical_sync>(_handlevertical_sync, this);
     }
 
     virtual ~gui_system() {
-        verticalSync = {};
     }
 
     gui_system(const gui_system &) = delete;
@@ -100,6 +95,7 @@ public:
     ssize_t num_windows();
 
     void render(hires_utc_clock::time_point displayTimePoint) {
+        tt_axiom(is_gui_thread());
         ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         gfx_system::global().render(displayTimePoint);
@@ -115,17 +111,17 @@ public:
         previousNumberOfWindows = currentNumberOfWindows;
     }
 
-    void handlevertical_sync(hires_utc_clock::time_point displayTimePoint)
+    /** Check if this thread is the same as the gui thread.
+     */
+    [[nodiscard]] bool is_gui_thread() const noexcept
     {
-        render(displayTimePoint);
+        return thread_id == current_thread_id();
     }
 
     [[nodiscard]] static gui_system &global() noexcept
     {
         return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
     }
-
-    static void _handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 private:
     static inline std::atomic<gui_system *> _global;

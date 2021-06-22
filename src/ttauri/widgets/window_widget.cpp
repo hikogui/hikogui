@@ -47,7 +47,7 @@ void window_widget::init() noexcept
 [[nodiscard]] bool
 window_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         _minimum_size = {
@@ -75,7 +75,7 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
 
 void window_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -92,7 +92,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
 
 hit_box window_widget::hitbox_test(point2 position) const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     constexpr float BORDER_WIDTH = 10.0f;
 

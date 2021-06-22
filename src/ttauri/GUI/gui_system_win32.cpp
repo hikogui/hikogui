@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_system_win32.hpp"
+#include "vertical_sync.hpp"
 
 namespace tt {
 
@@ -29,27 +30,70 @@ void gui_system_win32::exit(int exit_code)
 int gui_system_win32::loop()
 {
     // Run the message loop.
-    int exit_code = 0;
-    MSG msg = {};
+    std::optional<int> exit_code = {};
 
-    BOOL more_messages;
+    // The first dead line is 15ms from now, in-time for the first
+    // render to be performed at 60fps.
+    auto display_time_point = hires_utc_clock::now();
+    auto dead_line = display_time_point + 15ms;
     do {
-        more_messages = GetMessage(&msg, nullptr, 0, 0);
-        switch (msg.message) {
-        case WM_APP_CALL_FUNCTION: {
-            ttlet functionP = reinterpret_cast<std::function<void()> *>(msg.lParam);
-            (*functionP)();
-            delete functionP;
-        } break;
+        // Process messages from the queue until the dead line is reached.
+        while (true) {
+            MSG msg = {};
+            if (not PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+                // Event queue is empty, continue to render and vsync.
+                break;
+            }
 
-        case WM_QUIT: exit_code = narrow_cast<int>(msg.wParam); break;
+            ttlet t = trace<"gui_system_event">();
+
+            switch (msg.message) {
+            case WM_APP_CALL_FUNCTION: {
+                ttlet functionP = std::launder(reinterpret_cast<std::function<void()> *>(msg.lParam));
+                (*functionP)();
+                delete functionP;
+            } break;
+
+            case WM_QUIT: exit_code = narrow_cast<int>(msg.wParam); break;
+            }
+
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+
+            if (msg.message == WM_NCLBUTTONDOWN) {
+                // DispatchMessage will block when the user clicks the non-client area for
+                // moving or resizing the window. Do not count these as missing the deadline.
+                goto bypass_render;
+            }
+
+            if (hires_utc_clock::now() >= dead_line) {
+                // dead line was passed while processing a message.
+                increment_counter<"gui_system_event_dead_line">();
+                break;
+            }
         }
 
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    } while (more_messages);
+        // Render right after user input has been processed by the event queue.
+        {
+            ttlet t = trace<"gui_system_render">();
+            render(display_time_point);
 
-    return exit_code;
+            if (hires_utc_clock::now() >= dead_line) {
+                // dead line was passed while processing a message.
+                increment_counter<"gui_system_render_dead_line">();
+            }
+        }
+
+bypass_render:
+        display_time_point = vertical_sync::global().wait();
+
+        // The next dead line is 5ms before the current rendered frame is to be displayed.
+        // But give the event loop at least 5ms to process messages.
+        dead_line = std::max(hires_utc_clock::now() + 5ms, display_time_point - 5ms);
+
+    } while (not exit_code);
+
+    return *exit_code;
 }
 
 }

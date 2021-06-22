@@ -39,7 +39,7 @@ public:
     [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override;
 
     [[nodiscard]] color backgroundColor() noexcept {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return theme::global(theme_color::fill, _semantic_layer);
     }
 
@@ -47,7 +47,7 @@ public:
      */
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         _left_resize_border_has_priority = left;
         _right_resize_border_has_priority = right;
         _bottom_resize_border_has_priority = bottom;
@@ -56,14 +56,14 @@ public:
 
     [[nodiscard]] std::shared_ptr<grid_layout_widget> content() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_content);
         return _content;
     }
 
     [[nodiscard]] std::shared_ptr<toolbar_widget> toolbar() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_toolbar);
         return _toolbar;
     }

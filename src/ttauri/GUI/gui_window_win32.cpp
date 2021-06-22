@@ -97,7 +97,7 @@ static void createWindowClass()
 void gui_window_win32::create_window()
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
-    tt_assert(gui_system::global().thread_id == current_thread_id(), "createWindow should be called from the main thread.");
+    tt_assert(gui_system::global().is_gui_thread(), "createWindow should be called from the main thread.");
     tt_axiom(gfx_system_mutex.recurse_lock_count() == 0);
 
     createWindowClass();
@@ -452,6 +452,7 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     mouse_event mouseEvent;
+    ttlet current_time = hires_utc_clock::now();
 
     switch (uMsg) {
     case WM_DESTROY: {
@@ -513,11 +514,23 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_SIZING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         setOSWindowRectangleFromRECT(*rect_ptr);
+        if (last_forced_redraw + 16.7ms < current_time) {
+            // During sizing the event loop is blocked.
+            // Render at about 60fps.
+            gui_system::global().render(current_time);
+            last_forced_redraw = current_time;
+        }
     } break;
 
     case WM_MOVING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         setOSWindowRectangleFromRECT(*rect_ptr);
+        if (last_forced_redraw + 16.7ms < current_time) {
+            // During moving the event loop is blocked.
+            // Render at about 60fps.
+            gui_system::global().render(current_time);
+            last_forced_redraw = current_time;
+        }
     } break;
 
     case WM_WINDOWPOSCHANGED: {

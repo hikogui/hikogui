@@ -24,13 +24,6 @@ ssize_t gui_system::num_windows()
     return numberOfWindows;
 }
 
-void gui_system::_handlevertical_sync(void *data, hires_utc_clock::time_point displayTimePoint)
-{
-    auto self = static_cast<gui_system *>(data);
-
-    self->handlevertical_sync(displayTimePoint);
-}
-
 [[nodiscard]] gui_system *gui_system::subsystem_init() noexcept
 {
     auto tmp = new gui_system_win32();

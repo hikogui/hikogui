@@ -18,7 +18,7 @@ void text_widget::init() noexcept
 
 [[nodiscard]] bool text_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         _shaped_text = shaped_text{(*text)(), theme::global(*text_style), 0.0f, *alignment};
@@ -49,7 +49,7 @@ void text_widget::init() noexcept
 
 [[nodiscard]] void text_widget::update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     need_layout |= std::exchange(this->_request_relayout, false);
     if (need_layout) {
@@ -61,7 +61,7 @@ void text_widget::init() noexcept
 
 void text_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
         context.draw_text(_shaped_text, this->label_color(), _shaped_text_transform);

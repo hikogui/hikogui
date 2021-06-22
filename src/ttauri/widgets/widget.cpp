@@ -115,7 +115,7 @@ void widget::deinit() noexcept
 
 [[nodiscard]] bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     need_reconstrain |= std::exchange(_request_reconstrain, false);
 
@@ -130,7 +130,7 @@ void widget::deinit() noexcept
 
 void widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     need_layout |= std::exchange(_request_relayout, false);
     for (auto &&child : _children) {
@@ -148,7 +148,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 void widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     for (auto &child : _children) {
         tt_axiom(child);
@@ -164,7 +164,7 @@ void widget::draw(draw_context context, hires_utc_clock::time_point display_time
 
 [[nodiscard]] hit_box widget::hitbox_test(point2 position) const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     auto r = hit_box{};
     for (ttlet &child : _children) {
@@ -179,7 +179,7 @@ void widget::draw(draw_context context, hires_utc_clock::time_point display_time
 
 bool widget::handle_event(command command) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     switch (command) {
         using enum tt::command;
@@ -214,7 +214,7 @@ bool widget::handle_event(command command) noexcept
 
 bool widget::handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     auto handled = false;
     for (auto &child : _children) {
@@ -300,7 +300,7 @@ std::shared_ptr<widget> widget::find_next_widget(
 
 [[nodiscard]] std::shared_ptr<widget const> widget::find_first_widget(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     for (ttlet child : _children) {
         if (child->accepts_keyboard_focus(group)) {
@@ -312,7 +312,7 @@ std::shared_ptr<widget> widget::find_next_widget(
 
 [[nodiscard]] std::shared_ptr<widget const> widget::find_last_widget(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     for (ttlet child : std::views::reverse(_children)) {
         if (child->accepts_keyboard_focus(group)) {
@@ -326,7 +326,7 @@ std::shared_ptr<widget> widget::find_next_widget(
  */
 [[nodiscard]] std::shared_ptr<widget const> widget::shared_parent() const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
     return _parent.lock();
 }
 
@@ -334,13 +334,13 @@ std::shared_ptr<widget> widget::find_next_widget(
  */
 [[nodiscard]] std::shared_ptr<widget> widget::shared_parent() noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
     return _parent.lock();
 }
 
 [[nodiscard]] widget const &widget::parent() const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
     if (ttlet parent_ = shared_parent()) {
         return *parent_;
     } else {
@@ -350,7 +350,7 @@ std::shared_ptr<widget> widget::find_next_widget(
 
 [[nodiscard]] widget &widget::parent() noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
     if (ttlet parent_ = shared_parent()) {
         return *parent_;
     } else {
@@ -360,19 +360,19 @@ std::shared_ptr<widget> widget::find_next_widget(
 
 [[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
     return parent().find_first_widget(group).get() == this;
 }
 
 [[nodiscard]] bool widget::is_last(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
     return parent().find_last_widget(group).get() == this;
 }
 
 void widget::scroll_to_show(tt::rectangle rectangle) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (auto parent = _parent.lock()) {
         parent->scroll_to_show(_local_to_parent * rectangle);

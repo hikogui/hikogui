@@ -56,6 +56,10 @@ inline thread_local thread_id current_thread_id_dummy = 0;
 #endif
 }
 
+/** True if the current thread is the gui thread.
+ */
+[[nodiscard]] bool is_gui_thread() noexcept;
+
 /** Get the current process CPU affinity mask.
  *
  * @return A bit mask on which CPUs the process is allowed to run on.

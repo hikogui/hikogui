@@ -114,7 +114,7 @@ public:
      */
     void request_redraw(aarectangle rectangle) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         _request_redraw_rectangle |= rectangle;
     }
 
@@ -122,7 +122,7 @@ public:
      */
     void request_redraw() noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         request_redraw(aarectangle{size});
     }
 
@@ -264,6 +264,15 @@ protected:
     bool _request_setting_change = true;
 
     aarectangle _request_redraw_rectangle = aarectangle{};
+
+    /** The time of the last forced redraw.
+     * A forced redraw may happen when needing to draw outside
+     * of the event-loop. For example when win32 moving or resizing
+     * the event-loop is stuck, so forced redraws are happening on
+     * the WM_MOVING and WM_SIZING messages that are generated outside
+     * the event loop, but on the same thread as the event loop.
+     */
+    hires_utc_clock::time_point last_forced_redraw = {};
 
     /** Let the operating system create the actual window.
      * @pre title and extent must be set.

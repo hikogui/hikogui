@@ -28,7 +28,7 @@ void system_menu_widget::init() noexcept
 [[nodiscard]] bool
 system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet width = theme::global().toolbar_decoration_button_width;
@@ -43,7 +43,7 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
 
 [[nodiscard]] void system_menu_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     need_layout |= std::exchange(_request_relayout, false);
     if (need_layout) {
@@ -66,7 +66,7 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
 
 hit_box system_menu_widget::hitbox_test(point2 position) const noexcept
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (_visible_rectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave

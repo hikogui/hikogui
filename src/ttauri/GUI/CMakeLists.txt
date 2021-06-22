@@ -110,8 +110,8 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_win32.cpp>
     utils.hpp
+    vertical_sync.cpp
     vertical_sync.hpp
-    vertical_sync_base.hpp
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.hpp>
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_win32.cpp>

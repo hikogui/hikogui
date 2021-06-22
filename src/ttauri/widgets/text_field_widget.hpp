@@ -92,7 +92,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             ttlet text_style = theme::global(theme_text_style::label);
@@ -114,7 +114,7 @@ public:
 
     void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (_focus && display_time_point >= _next_redraw_time_point) {
             request_redraw();
@@ -156,7 +156,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         _next_redraw_time_point = display_time_point + _blink_interval;
 
@@ -326,7 +326,7 @@ public:
 
     hit_box hitbox_test(point2 position) const noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (_visible_rectangle.contains(position)) {
             return hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::TextEdit : hit_box::Type::Default};
@@ -337,7 +337,7 @@ public:
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return is_normal(group) and enabled;
     }
 
@@ -400,7 +400,7 @@ private:
 
     void commit(bool force) noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         if (_continues || force) {
             auto text = static_cast<std::string>(_field);
 
@@ -417,7 +417,7 @@ private:
 
     void drag_select() noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet mouse_cursor_relative_to_text = _text_inv_translate * _drag_select_position;
         switch (_drag_click_count) {
