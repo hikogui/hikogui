@@ -17,7 +17,12 @@ namespace tt {
 
 void run_on_gui_thread(std::function<void()> function) noexcept
 {
-    gui_system::global().run_from_event_queue(std::move(function));
+    auto &gui_system_ = gui_system::global();
+    if (gui_system_.is_gui_thread()) {
+        function();
+    } else {
+        gui_system_.run_from_event_queue(std::move(function));
+    }
 }
 
 std::vector<bool> set_thread_affinity(size_t cpu_id)

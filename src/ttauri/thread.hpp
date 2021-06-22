@@ -61,6 +61,8 @@ inline thread_local thread_id current_thread_id_dummy = 0;
 [[nodiscard]] bool is_gui_thread() noexcept;
 
 /** Run a function on the gui thread.
+ * This will run the function directly when this function is called
+ * from the gui thread, otherwise it is added to the event queue.
  */
 void run_on_gui_thread(std::function<void()> function) noexcept;
 
