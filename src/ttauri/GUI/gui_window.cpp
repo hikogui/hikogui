@@ -4,9 +4,9 @@
 
 #include "gui_window.hpp"
 #include "gui_system.hpp"
-#include "gfx_device.hpp"
-#include "gfx_surface.hpp"
 #include "keyboard_bindings.hpp"
+#include "../GFX/gfx_device.hpp"
+#include "../GFX/gfx_surface.hpp"
 #include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_layout_widget.hpp"

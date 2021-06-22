@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gfx_surface_vulkan.hpp"
+#include "../GFX/gfx_surface_vulkan.hpp"
 #include <unordered_map>
 
 struct HWND__;

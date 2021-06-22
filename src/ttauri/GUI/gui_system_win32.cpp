@@ -4,6 +4,7 @@
 
 #include "gui_system_win32.hpp"
 #include "vertical_sync.hpp"
+#include "../trace.hpp"
 
 namespace tt {
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/draw_context.hpp"
+#include "../GFX/draw_context.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
 #include <memory>

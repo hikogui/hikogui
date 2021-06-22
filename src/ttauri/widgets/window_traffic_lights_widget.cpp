@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "window_traffic_lights_widget.hpp"
-#include "../GUI/utils.hpp"
 #include "../text/ttauri_icon.hpp"
 #include "../utils.hpp"
 #include <cmath>

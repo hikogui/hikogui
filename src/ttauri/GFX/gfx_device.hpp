@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gui_window.hpp"
+#include "../GUI/gui_window.hpp"
 #include "gfx_system_globals.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"

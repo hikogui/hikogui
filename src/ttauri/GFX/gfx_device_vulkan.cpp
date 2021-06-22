@@ -4,9 +4,10 @@
 
 #include "gfx_device_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
+#include "gfx_surface_vulkan.hpp"
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
-#include "gui_window.hpp"
+#include "../GUI/gui_window.hpp"
 #include <span>
 
 namespace tt {

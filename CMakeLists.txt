@@ -324,17 +324,17 @@ endif()
 #-------------------------------------------------------------------
 
 add_shader(ttauri_shader_objects
-    src/ttauri/GUI/utils.glsl
-    src/ttauri/GUI/pipeline_image.vert
-    src/ttauri/GUI/pipeline_image.frag
-    src/ttauri/GUI/pipeline_flat.vert
-    src/ttauri/GUI/pipeline_flat.frag
-    src/ttauri/GUI/pipeline_box.vert
-    src/ttauri/GUI/pipeline_box.frag
-    src/ttauri/GUI/pipeline_SDF.vert
-    src/ttauri/GUI/pipeline_SDF.frag
-    src/ttauri/GUI/pipeline_tone_mapper.vert
-    src/ttauri/GUI/pipeline_tone_mapper.frag
+    src/ttauri/GFX/utils.glsl
+    src/ttauri/GFX/pipeline_image.vert
+    src/ttauri/GFX/pipeline_image.frag
+    src/ttauri/GFX/pipeline_flat.vert
+    src/ttauri/GFX/pipeline_flat.frag
+    src/ttauri/GFX/pipeline_box.vert
+    src/ttauri/GFX/pipeline_box.frag
+    src/ttauri/GFX/pipeline_SDF.vert
+    src/ttauri/GFX/pipeline_SDF.frag
+    src/ttauri/GFX/pipeline_tone_mapper.vert
+    src/ttauri/GFX/pipeline_tone_mapper.frag
 )
 
 target_static_resource(ttauri

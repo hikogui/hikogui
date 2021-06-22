@@ -6,8 +6,6 @@
 
 #include "widget.hpp"
 #include "icon_widget.hpp"
-#include "../GUI/pipeline_image_image.hpp"
-#include "../graphic_path.hpp"
 #include "../icon.hpp"
 #include <memory>
 #include <string>

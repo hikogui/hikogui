@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "gfx_system.hpp"
-#include "gfx_device.hpp"
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
+#include "../GFX/gfx_system.hpp"
+#include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include <span>

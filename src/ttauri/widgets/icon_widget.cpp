@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "icon_widget.hpp"
-#include "../GUI/gfx_surface.hpp"
+#include "../GFX/gfx_surface_vulkan.hpp"
 
 namespace tt {
 

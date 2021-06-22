@@ -12,9 +12,6 @@
 #include "menu_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "value_selection_delegate.hpp"
-#include "../GUI/draw_context.hpp"
-#include "../text/font_book.hpp"
-#include "../text/elusive_icon.hpp"
 #include "../observable.hpp"
 #include <memory>
 #include <string>

@@ -6,7 +6,6 @@
 
 #include "gui_window_size.hpp"
 #include "gui_window_delegate.hpp"
-#include "gfx_system_globals.hpp"
 #include "mouse_cursor.hpp"
 #include "hit_box.hpp"
 #include "mouse_event.hpp"
@@ -14,7 +13,6 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "../text/gstring.hpp"
-#include "../logger.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../hires_utc_clock.hpp"
 #include "../label.hpp"

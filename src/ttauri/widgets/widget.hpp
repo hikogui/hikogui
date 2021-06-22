@@ -5,12 +5,11 @@
 #pragma once
 
 #include "../GUI/gui_window.hpp"
-#include "../GUI/gfx_device.hpp"
 #include "../GUI/mouse_event.hpp"
 #include "../GUI/hit_box.hpp"
 #include "../GUI/keyboard_event.hpp"
 #include "../GUI/theme.hpp"
-#include "../GUI/draw_context.hpp"
+#include "../GFX/draw_context.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
 #include "../text/shaped_text.hpp"

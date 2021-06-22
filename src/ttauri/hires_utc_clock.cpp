@@ -9,6 +9,8 @@
 #include <format>
 #include <bit>
 #include <iterator>
+#include <algorithm>
+#include <numeric>
 
 namespace tt {
 

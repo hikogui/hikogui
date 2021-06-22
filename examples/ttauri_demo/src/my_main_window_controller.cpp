@@ -3,7 +3,6 @@
 #include "my_preferences_window_controller.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/widgets/widgets.hpp"
-#include "ttauri/GUI/gfx_system.hpp"
 #include "ttauri/GUI/gui_system.hpp"
 
 void my_main_window_controller::init(tt::gui_window& window) noexcept

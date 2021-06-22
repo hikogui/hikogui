@@ -8,7 +8,6 @@
 #pragma once
 
 #include "gfx_device_vulkan.hpp"
-#include "theme.hpp"
 #include "pipeline_image_image.hpp"
 #include "pipeline_flat_device_shared.hpp"
 #include "pipeline_box_device_shared.hpp"
