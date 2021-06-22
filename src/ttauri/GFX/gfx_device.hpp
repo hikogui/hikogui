@@ -73,14 +73,12 @@ public:
 
         for (auto &window: windows) {
             window->render(displayTimePoint);
+            if (window->is_closed()) {
+                window->deinit();
+                window = nullptr;
+            }
         }
-
-        ttlet new_end = std::remove_if(windows.begin(), windows.end(), [](ttlet &window) { return window->is_closed(); });
-
-        for (auto it = new_end; it != windows.end(); ++it) {
-            (*it)->deinit();
-        }
-        windows.erase(new_end, windows.end());
+        std::erase(windows, nullptr);
     }
 
 protected:
