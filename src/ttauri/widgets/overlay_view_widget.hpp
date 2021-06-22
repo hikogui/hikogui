@@ -15,11 +15,12 @@ public:
 
     overlay_view_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
+        tt_axiom(is_gui_thread());
+
         if (parent) {
             // The overlay-widget will reset the semantic_layer as it is the bottom
             // layer of this virtual-window. However the draw-layer should be above
             // any other widget drawn.
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
             _draw_layer = parent->draw_layer() + 20.0f;
             _semantic_layer = 0;
             _margin = theme::global().margin;
@@ -49,7 +50,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             tt_axiom(_content);
             _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
@@ -90,7 +91,7 @@ public:
     template<typename WidgetType = grid_layout_widget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(Args &&... args) noexcept
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
 
         auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         tt_axiom(!_content);

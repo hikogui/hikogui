@@ -15,6 +15,11 @@ namespace tt {
     return gui_system::global().is_gui_thread();
 }
 
+void run_on_gui_thread(std::function<void()> function) noexcept
+{
+    gui_system::global().run_from_event_queue(std::move(function));
+}
+
 std::vector<bool> set_thread_affinity(size_t cpu_id)
 {
     auto new_mask = std::vector<bool>{};

@@ -62,17 +62,15 @@ public:
         _scroll_widget = _overlay_widget->make_widget<vertical_scroll_view_widget<>>();
         _column_widget = _scroll_widget->make_widget<column_layout_widget>();
 
-        _unknown_label_callback = this->unknown_label.subscribe([this](auto...) {
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
-
+        _unknown_label_callback = this->unknown_label.subscribe([this] {
             _request_reconstrain = true;
         });
 
-        _delegate_callback = _delegate->subscribe(*this, [this](auto...) {
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
-
-            repopulate_options();
-            _request_reconstrain = true;
+        _delegate_callback = _delegate->subscribe(*this, [this] {
+            run_on_gui_thread([this] {
+                repopulate_options();
+                _request_reconstrain = true;
+            });
         });
 
         (*_delegate_callback)();
@@ -125,8 +123,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
-
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
             // from the point of view of the selection widget.
@@ -185,7 +182,7 @@ public:
 
     bool handle_event(mouse_event const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         if (event.cause.leftButton) {
@@ -357,9 +354,10 @@ private:
             auto menu_button = _column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
             _menu_button_callbacks.push_back(menu_button->subscribe([this, index] {
-                ttlet lock = std::scoped_lock(gfx_system_mutex);
-                this->_delegate->set_selected(*this, index);
-                this->stop_selecting();
+                run_on_gui_thread([this, index] {
+                    _delegate->set_selected(*this, index);
+                    stop_selecting();
+                });
             }));
 
             _menu_button_widgets.push_back(std::move(menu_button));

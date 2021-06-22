@@ -29,9 +29,10 @@ void window_widget::init() noexcept
     if (theme::global().operating_system == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = _toolbar->make_widget<system_menu_widget>();
-        _title_callback = title.subscribe([this]() {
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
-            this->_system_menu->icon = (*this->title).icon;
+        _title_callback = title.subscribe([this]{
+            run_on_gui_thread([this]{
+                this->_system_menu->icon = (*this->title).icon;
+            });
         });
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
@@ -77,7 +78,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     if (need_layout) {
         ttlet toolbar_height = _toolbar->preferred_size().height();
         ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};

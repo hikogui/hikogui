@@ -18,8 +18,8 @@ public:
     menu_button_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, std::move(parent), std::move(delegate))
     {
-        this->_margin = 0.0f;
-        this->label_alignment = alignment::middle_left;
+        _margin = 0.0f;
+        label_alignment = alignment::middle_left;
     }
 
     template<typename Label, typename Value, typename... Args>
@@ -45,11 +45,11 @@ public:
             // On left side a check mark, on right side short-cut. Around the label extra margin.
             ttlet extra_size = extent2{
                 theme::global().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme::global().margin * 2.0f};
-            this->_minimum_size += extra_size;
-            this->_preferred_size += extra_size;
-            this->_maximum_size += extra_size;
+            _minimum_size += extra_size;
+            _preferred_size += extra_size;
+            _maximum_size += extra_size;
 
-            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
             return false;
@@ -60,18 +60,18 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(this->_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
-            ttlet inside_rectangle = shrink(this->rectangle(), theme::global().margin);
+            ttlet inside_rectangle = shrink(rectangle(), theme::global().margin);
 
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left);
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right);
 
-            this->_label_rectangle = aarectangle{
+            _label_rectangle = aarectangle{
                 _check_rectangle.right() + theme::global().margin,
                 0.0f,
                 _short_cut_rectangle.left() - theme::global().margin,
-                this->height()};
+                height()};
 
             _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
             ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
@@ -85,7 +85,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (overlaps(context, this->_clipping_rectangle)) {
+        if (overlaps(context, _clipping_rectangle)) {
             draw_menu_button(context);
             draw_check_mark(context);
         }
@@ -96,33 +96,33 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
         tt_axiom(is_gui_thread());
-        return is_menu(group) and this->enabled;
+        return is_menu(group) and enabled;
     }
 
     [[nodiscard]] bool handle_event(command command) noexcept
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
 
-        if (this->enabled) {
+        if (enabled) {
             switch (command) {
             case command::gui_menu_next:
-                if (!this->is_last(keyboard_focus_group::menu)) {
-                    this->window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
+                if (!is_last(keyboard_focus_group::menu)) {
+                    window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
                     return true;
                 }
                 break;
 
             case command::gui_menu_prev:
-                if (!this->is_first(keyboard_focus_group::menu)) {
-                    this->window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
+                if (!is_first(keyboard_focus_group::menu)) {
+                    window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
                     return true;
                 }
                 break;
 
             case command::gui_activate:
                 activate();
-                this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
-                this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
+                window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
                 return true;
 
             default:;
@@ -144,19 +144,19 @@ private:
     {
         tt_axiom(is_gui_thread());
 
-        ttlet foreground_color_ = this->_focus && this->window.active ? this->focus_color() : color::transparent();
-        context.draw_box_with_border_inside(this->rectangle(), this->background_color(), foreground_color_, corner_shapes{0.0f});
+        ttlet foreground_color_ = _focus && window.active ? focus_color() : color::transparent();
+        context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
     }
 
     void draw_check_mark(draw_context const &context) noexcept
     {
         tt_axiom(is_gui_thread());
 
-        auto state_ = this->state();
+        auto state_ = state();
 
         // Checkmark or tristate.
         if (state_ == tt::button_state::on) {
-            context.draw_glyph(_check_glyph, translate_z(0.1f) * _check_glyph_rectangle, this->accent_color());
+            context.draw_glyph(_check_glyph, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
         }
     }
 };

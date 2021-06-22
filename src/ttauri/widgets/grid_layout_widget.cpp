@@ -14,8 +14,9 @@ grid_layout_widget::grid_layout_widget(
     std::shared_ptr<delegate_type> delegate) noexcept :
     widget(window, std::move(parent)), _delegate(delegate)
 {
+    tt_axiom(is_gui_thread());
+
     if (auto p = _parent.lock()) {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
         _semantic_layer = p->semantic_layer();
     }
     _margin = 0.0f;
@@ -91,7 +92,7 @@ bool grid_layout_widget::address_in_use(size_t column_nr, size_t row_nr) const n
 
 std::shared_ptr<widget> grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::shared_ptr<widget> widget) noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    tt_axiom(is_gui_thread());
     auto tmp = widget::add_widget(std::move(widget));
 
     tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
@@ -117,7 +118,7 @@ void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     if (need_layout) {
         _columns.set_size(width());
         _rows.set_size(height());

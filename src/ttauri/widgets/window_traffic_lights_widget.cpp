@@ -51,7 +51,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     if (need_layout) {
         auto extent = rectangle().size();
         if (extent.height() > theme::global().toolbar_height * 1.2f) {
@@ -212,7 +212,7 @@ void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::t
 
 bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    tt_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
 
     // Check the hover states of each button.

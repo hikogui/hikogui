@@ -70,7 +70,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             tt_axiom(*content != 0.0f);
 
@@ -113,7 +113,7 @@ public:
 
     [[nodiscard]] bool handle_event(mouse_event const &event) noexcept
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         if (event.cause.leftButton) {

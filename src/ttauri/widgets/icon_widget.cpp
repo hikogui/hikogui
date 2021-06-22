@@ -12,8 +12,7 @@ icon_widget::~icon_widget() {}
 void icon_widget::init() noexcept
 {
     _icon_callback = icon.subscribe([this]() {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-        this->_request_reconstrain = true;
+        _request_reconstrain = true;
     });
 }
 
@@ -83,7 +82,7 @@ void icon_widget::init() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(this->_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     if (need_layout) {
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};

@@ -14,7 +14,7 @@ using namespace std;
 
 gfx_device *gfx_system::findBestDeviceForSurface(gfx_surface const &surface)
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     int bestScore = -1;
     gfx_device *bestDevice = nullptr;

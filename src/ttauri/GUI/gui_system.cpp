@@ -14,8 +14,6 @@ using namespace std;
 
 ssize_t gui_system::num_windows()
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
-
     ssize_t numberOfWindows = 0;
     for (const auto &device: gfx_system::global().devices) {
         numberOfWindows+= device->num_windows();

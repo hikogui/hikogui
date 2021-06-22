@@ -21,8 +21,9 @@ public:
     row_column_layout_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept :
         super(window, parent)
     {
+        tt_axiom(is_gui_thread());
+
         if (auto p = _parent.lock()) {
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
             _semantic_layer = p->semantic_layer();
         }
         _margin = 0.0f;
@@ -67,7 +68,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             _layout.set_size(arrangement == arrangement::row ? rectangle().width() : rectangle().height());
 

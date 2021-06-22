@@ -43,9 +43,9 @@ public:
     {
         super::init();
 
-        _on_label_widget = this->make_widget<label_widget>();
-        _off_label_widget = this->make_widget<label_widget>();
-        _other_label_widget = this->make_widget<label_widget>();
+        _on_label_widget = make_widget<label_widget>();
+        _off_label_widget = make_widget<label_widget>();
+        _other_label_widget = make_widget<label_widget>();
 
         _on_label_widget->alignment = label_alignment;
         _off_label_widget->alignment = label_alignment;
@@ -84,7 +84,7 @@ public:
     template<typename Callback>
     [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         return _notifier.subscribe(std::forward<Callback>(callback));
     }
 
@@ -92,7 +92,7 @@ public:
      */
     void unsubscribe(callback_ptr_type &callback_ptr) noexcept
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         return _notifier.unsubscribe(callback_ptr);
     }
 
@@ -101,19 +101,19 @@ public:
         tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            this->_minimum_size = _on_label_widget->minimum_size();
-            this->_preferred_size = _on_label_widget->preferred_size();
-            this->_maximum_size = _on_label_widget->maximum_size();
+            _minimum_size = _on_label_widget->minimum_size();
+            _preferred_size = _on_label_widget->preferred_size();
+            _maximum_size = _on_label_widget->maximum_size();
 
-            this->_minimum_size = max(this->_minimum_size, _off_label_widget->minimum_size());
-            this->_preferred_size = max(this->_preferred_size, _off_label_widget->preferred_size());
-            this->_maximum_size = max(this->_maximum_size, _off_label_widget->maximum_size());
+            _minimum_size = max(_minimum_size, _off_label_widget->minimum_size());
+            _preferred_size = max(_preferred_size, _off_label_widget->preferred_size());
+            _maximum_size = max(_maximum_size, _off_label_widget->maximum_size());
 
-            this->_minimum_size = max(this->_minimum_size, _other_label_widget->minimum_size());
-            this->_preferred_size = max(this->_preferred_size, _other_label_widget->preferred_size());
-            this->_maximum_size = max(this->_maximum_size, _other_label_widget->maximum_size());
+            _minimum_size = max(_minimum_size, _other_label_widget->minimum_size());
+            _preferred_size = max(_preferred_size, _other_label_widget->preferred_size());
+            _maximum_size = max(_maximum_size, _other_label_widget->maximum_size());
 
-            tt_axiom(this->_minimum_size <= this->_preferred_size && this->_preferred_size <= this->_maximum_size);
+            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
         } else {
             return false;
@@ -124,16 +124,16 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(this->_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             auto state_ = state();
-            this->_on_label_widget->visible = state_ == button_state::on;
-            this->_off_label_widget->visible = state_ == button_state::off;
-            this->_other_label_widget->visible = state_ == button_state::other;
+            _on_label_widget->visible = state_ == button_state::on;
+            _off_label_widget->visible = state_ == button_state::off;
+            _other_label_widget->visible = state_ == button_state::other;
 
-            this->_on_label_widget->set_layout_parameters_from_parent(_label_rectangle);
-            this->_off_label_widget->set_layout_parameters_from_parent(_label_rectangle);
-            this->_other_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+            _on_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+            _off_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+            _other_label_widget->set_layout_parameters_from_parent(_label_rectangle);
         }
         widget::update_layout(displayTimePoint, need_layout);
     }
@@ -142,7 +142,7 @@ public:
     {
         tt_axiom(is_gui_thread());
         if (_pressed) {
-            return theme::global(theme_color::fill, this->_semantic_layer + 2);
+            return theme::global(theme_color::fill, _semantic_layer + 2);
         } else {
             return super::background_color();
         }
@@ -169,14 +169,14 @@ public:
 
     [[nodiscard]] bool handle_event(command command) noexcept override
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
 
         if (enabled) {
             switch (command) {
             case command::gui_activate: activate(); return true;
             case command::gui_enter:
                 activate();
-                this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
+                window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
                 return true;
             default:;
             }
@@ -187,7 +187,7 @@ public:
 
     [[nodiscard]] bool handle_event(mouse_event const &event) noexcept final
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         if (event.cause.leftButton) {

@@ -52,7 +52,7 @@ public:
 
     void set_closed() noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
         state = gfx_surface_state::window_lost;
     }
 

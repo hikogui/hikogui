@@ -64,8 +64,7 @@ public:
     text_field_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent), _delegate(delegate), _field(theme::global(theme_text_style::label)), _shaped_text()
     {
-        _delegate_callback = _delegate->subscribe(*this, [this](auto...) {
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
+        _delegate_callback = _delegate->subscribe(*this, [this]{
             _request_relayout = true;
         });
     }
@@ -120,7 +119,7 @@ public:
             request_redraw();
         }
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             _text_field_rectangle = aarectangle{extent2{_text_width + theme::global().margin * 2.0f, _size.height()}};
 
@@ -180,7 +179,7 @@ public:
 
     bool handle_event(command command) noexcept override
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         _request_relayout = true;
 
         if (enabled) {
@@ -224,7 +223,7 @@ public:
 
     bool handle_event(mouse_event const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         // Make sure we only scroll when dragging outside the widget.
@@ -296,7 +295,7 @@ public:
 
     bool handle_event(keyboard_event const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
 
         auto handled = super::handle_event(event);
 

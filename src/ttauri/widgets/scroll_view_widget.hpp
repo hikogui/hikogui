@@ -21,9 +21,10 @@ public:
 
     scroll_view_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
+        tt_axiom(is_gui_thread());
+
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
             _semantic_layer = parent->semantic_layer();
         }
         _margin = 0.0f;
@@ -107,7 +108,7 @@ public:
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->preferred_size().width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->preferred_size().height();
@@ -184,7 +185,7 @@ public:
     template<typename WidgetType = grid_layout_widget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(Args &&...args) noexcept
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
 
         auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         tt_axiom(!_content);
@@ -194,7 +195,7 @@ public:
 
     bool handle_event(mouse_event const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         if (event.type == mouse_event::Type::Wheel) {

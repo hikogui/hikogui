@@ -16,9 +16,10 @@ public:
 
     toolbar_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
     {
+        tt_axiom(is_gui_thread());
+
         if (parent) {
             // The toolbar widget does draw itself.
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
             _draw_layer = parent->draw_layer() + 1.0f;
 
             // The toolbar is a top level widget, which draws its background as the next level.
@@ -83,7 +84,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             _layout.set_size(rectangle().width());
 

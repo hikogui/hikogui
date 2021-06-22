@@ -21,9 +21,10 @@ public:
     tab_view_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
         super(window, parent), value(std::forward<Value>(value))
     {
+        tt_axiom(is_gui_thread());
+
         if (parent) {
             // The tab-widget will not draw itself, only its selected child.
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
             _draw_layer = parent->draw_layer();
             _semantic_layer = parent->semantic_layer();
         }
@@ -70,7 +71,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             for (ttlet &child : _children) {
                 if (child->visible) {
@@ -86,14 +87,14 @@ public:
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
         return selected_child()->find_next_widget(current_widget, group, direction);
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
     std::shared_ptr<WidgetType> make_widget(value_type value, Args &&...args) noexcept
     {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        tt_axiom(is_gui_thread());
 
         auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         _children_keys.push_back(std::move(value));

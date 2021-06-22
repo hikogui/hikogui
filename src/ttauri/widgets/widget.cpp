@@ -11,25 +11,25 @@ namespace tt {
 widget::widget(gui_window &_window, std::shared_ptr<widget> parent) noexcept :
     window(_window), _parent(std::move(parent)), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
 {
+    tt_axiom(is_gui_thread());
+
     if (auto p = _parent.lock()) {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
         _draw_layer = p->draw_layer() + 1.0f;
         _logical_layer = p->logical_layer() + 1;
         _semantic_layer = p->semantic_layer() + 1;
     }
 
-    _redraw_callback = std::make_shared<std::function<void()>>([this]() {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-        this->request_redraw();
+    _redraw_callback = std::make_shared<std::function<void()>>([this] {
+        run_on_gui_thread([this] {
+            request_redraw();
+        });
     });
 
-    _relayout_callback = std::make_shared<std::function<void()>>([this]() {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-        this->_request_relayout = true;
+    _relayout_callback = std::make_shared<std::function<void()>>([this] {
+        _request_relayout = true;
     });
-    _reconstrain_callback = std::make_shared<std::function<void()>>([this]() {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-        this->_request_reconstrain = true;
+    _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
+        _request_reconstrain = true;
     });
 
     enabled.subscribe(_redraw_callback);
@@ -42,13 +42,9 @@ widget::widget(gui_window &_window, std::shared_ptr<widget> parent) noexcept :
 
 widget::~widget() {}
 
-void widget::init() noexcept
-{
-}
+void widget::init() noexcept {}
 
-void widget::deinit() noexcept
-{
-}
+void widget::deinit() noexcept {}
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
@@ -117,7 +113,7 @@ void widget::deinit() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_reconstrain |= std::exchange(_request_reconstrain, false);
+    need_reconstrain |= _request_reconstrain.exchange(false);
 
     for (auto &&child : _children) {
         tt_axiom(child);
@@ -132,7 +128,7 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     for (auto &&child : _children) {
         tt_axiom(child);
         tt_axiom(&child->parent() == this);
@@ -234,13 +230,13 @@ bool widget::handle_command_recursive(command command, std::vector<std::shared_p
 
 bool widget::handle_event(mouse_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    tt_axiom(is_gui_thread());
     return false;
 }
 
 bool widget::handle_event(keyboard_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    tt_axiom(is_gui_thread());
     return false;
 }
 
@@ -249,7 +245,7 @@ std::shared_ptr<widget> widget::find_next_widget(
     keyboard_focus_group group,
     keyboard_focus_direction direction) const noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    tt_axiom(is_gui_thread());
 
     auto found = false;
 
@@ -384,7 +380,7 @@ void widget::scroll_to_show(tt::rectangle rectangle) noexcept
  */
 [[nodiscard]] std::vector<std::shared_ptr<widget>> widget::parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    tt_axiom(is_gui_thread());
 
     std::vector<std::shared_ptr<widget>> chain;
 

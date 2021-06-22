@@ -73,14 +73,12 @@ public:
     {
         // This function should be called from the main thread from the main loop,
         // and therefor should not have a lock on the window.
-        tt_assert(thread_id == current_thread_id(), "createWindow should be called from the main thread.");
-        tt_axiom(gfx_system_mutex.recurse_lock_count() == 0);
+        tt_axiom(is_gui_thread());
 
         auto window = std::make_shared<gui_window_win32>(std::forward<Args>(args)...);
         auto window_ptr = window.get();
         window->init();
 
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
         auto device = gfx_system::global().findBestDeviceForSurface(*(window->surface));
         if (!device) {
             throw gui_error("Could not find a vulkan-device matching this window");
@@ -96,7 +94,6 @@ public:
 
     void render(hires_utc_clock::time_point displayTimePoint) {
         tt_axiom(is_gui_thread());
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         gfx_system::global().render(displayTimePoint);
 

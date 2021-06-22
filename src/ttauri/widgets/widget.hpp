@@ -733,11 +733,11 @@ protected:
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
-    bool _request_reconstrain = true;
+    std::atomic<bool> _request_reconstrain = true;
 
     /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
      */
-    bool _request_relayout = true;
+    std::atomic<bool> _request_relayout = true;
 
     extent2 _minimum_size;
     extent2 _preferred_size;

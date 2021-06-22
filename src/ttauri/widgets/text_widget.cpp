@@ -10,9 +10,8 @@ text_widget::~text_widget() {}
 
 void text_widget::init() noexcept
 {
-    _text_callback = text.subscribe([this]() {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-        this->_request_reconstrain = true;
+    _text_callback = text.subscribe([this] {
+        _request_reconstrain = true;
     });
 }
 
@@ -51,7 +50,7 @@ void text_widget::init() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(this->_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     if (need_layout) {
         _shaped_text = shaped_text{(*text)(), theme::global(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
@@ -64,10 +63,10 @@ void text_widget::draw(draw_context context, hires_utc_clock::time_point display
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
-        context.draw_text(_shaped_text, this->label_color(), _shaped_text_transform);
+        context.draw_text(_shaped_text, label_color(), _shaped_text_transform);
     }
 
     super::draw(std::move(context), display_time_point);
 }
 
-}
+} // namespace tt

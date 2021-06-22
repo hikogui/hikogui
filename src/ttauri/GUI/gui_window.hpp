@@ -261,7 +261,7 @@ protected:
      */
     aarectangle _screen_rectangle;
 
-    bool _request_setting_change = true;
+    std::atomic<bool> _request_setting_change = true;
 
     aarectangle _request_redraw_rectangle = aarectangle{};
 

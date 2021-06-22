@@ -32,7 +32,7 @@ namespace tt {
 template<typename T, typename... Args>
 std::shared_ptr<T> gui_window::make_widget(size_t column_nr, size_t row_nr, Args &&... args)
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    tt_axiom(is_gui_thread());
     tt_axiom(widget);
     return widget->content()->make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
 }
@@ -53,7 +53,7 @@ std::shared_ptr<T> gui_window::make_widget(std::string_view address, Args &&...a
 template<typename T, horizontal_alignment Alignment, typename... Args>
 std::shared_ptr<T> gui_window::make_toolbar_widget(Args &&... args)
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    tt_axiom(is_gui_thread());
     tt_axiom(widget);
     return widget->toolbar()->make_widget<T, Alignment>(std::forward<Args>(args)...);
 }
