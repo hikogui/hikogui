@@ -19,9 +19,7 @@ widget::widget(gui_window &_window, std::shared_ptr<widget> parent) noexcept :
     }
 
     _redraw_callback = std::make_shared<std::function<void()>>([this] {
-        run_on_gui_thread([this] {
-            request_redraw();
-        });
+        request_redraw();
     });
 
     _relayout_callback = std::make_shared<std::function<void()>>([this] {

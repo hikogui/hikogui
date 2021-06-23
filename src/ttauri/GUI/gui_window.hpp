@@ -56,12 +56,12 @@ public:
      * We can disable expensive redraws during rendering until this
      * is false again.
      */
-    std::atomic<bool> resizing = false;
+    bool resizing = false;
 
     /*! The window is currently active.
      * Widgets may want to reduce redraws, or change colors.
      */
-    std::atomic<bool> active = false;
+    bool active = false;
 
     /*! Current size state of the window.
      */
@@ -112,7 +112,6 @@ public:
      */
     void request_redraw(aarectangle rectangle) noexcept
     {
-        tt_axiom(is_gui_thread());
         _request_redraw_rectangle |= rectangle;
     }
 
@@ -261,7 +260,7 @@ protected:
 
     std::atomic<bool> _request_setting_change = true;
 
-    aarectangle _request_redraw_rectangle = aarectangle{};
+    std::atomic<aarectangle> _request_redraw_rectangle = aarectangle{};
 
     /** The time of the last forced redraw.
      * A forced redraw may happen when needing to draw outside

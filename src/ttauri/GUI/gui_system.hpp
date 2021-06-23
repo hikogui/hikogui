@@ -27,11 +27,6 @@ public:
 
     thread_id const thread_id;
 
-    /*! Keep track of the numberOfWindows in the previous render cycle.
-     * This way we can call closedLastWindow on the application once.
-     */
-    ssize_t previousNumberOfWindows = 0;
-
     gui_system() noexcept :
         thread_id(current_thread_id()),
         _delegate(std::make_shared<gui_system_delegate>())

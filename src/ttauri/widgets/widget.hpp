@@ -474,7 +474,6 @@ public:
 
     virtual void request_redraw() const noexcept
     {
-        tt_axiom(is_gui_thread());
         window.request_redraw(aarectangle{_local_to_window * _clipping_rectangle});
     }
 
