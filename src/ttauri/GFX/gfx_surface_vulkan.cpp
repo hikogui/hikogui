@@ -20,15 +20,25 @@ namespace tt {
 
 using namespace std;
 
-gfx_surface_vulkan::gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surface) :
-    gfx_surface(system), intrinsic(surface)
-{
-}
+gfx_surface_vulkan::gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surface) : gfx_surface(system), intrinsic(surface) {}
 
-gfx_surface_vulkan::~gfx_surface_vulkan() {
+gfx_surface_vulkan::~gfx_surface_vulkan()
+{
     if (state != gfx_surface_state::no_window) {
         tt_log_fatal("The window attached to the gfx_surface still exists during destruction.");
     }
+}
+
+void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
+{
+    tt_axiom(device);    
+
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    super::set_device(device);
+
+    auto device_ = narrow_cast<gfx_device_vulkan *>(device);
+    _present_queue = &device_->get_present_queue(*this);
+    _graphics_queue = &device_->get_graphics_queue(*this);
 }
 
 gfx_device_vulkan &gfx_surface_vulkan::vulkan_device() const noexcept
@@ -113,7 +123,7 @@ void gfx_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Sema
 
     try {
         // tt_log_debug("presentQueue {}", presentImageIndices.at(0));
-        ttlet result = vulkan_device().presentQueue.presentKHR(
+        ttlet result = _present_queue->queue.presentKHR(
             {narrow_cast<uint32_t>(renderFinishedSemaphores.size()),
              renderFinishedSemaphores.data(),
              narrow_cast<uint32_t>(presentSwapchains.size()),
@@ -270,6 +280,8 @@ void gfx_surface_vulkan::teardown()
 
 [[nodiscard]] extent2 gfx_surface_vulkan::update(extent2 minimum_size, extent2 maximum_size) noexcept
 {
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
+
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
     build(minimum_size, maximum_size);
@@ -278,7 +290,7 @@ void gfx_surface_vulkan::teardown()
 
 std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
     if (state != gfx_surface_state::ready_to_render || !redraw_rectangle) {
@@ -326,7 +338,7 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
 
 void gfx_surface_vulkan::render_finish(draw_context const &context, color background_color)
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     auto &current_image = swapchain_image_infos.at(context.frame_buffer_index());
 
@@ -335,7 +347,7 @@ void gfx_surface_vulkan::render_finish(draw_context const &context, color backgr
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
-    [[maybe_unused]] ttlet submit_result = vulkan_device().graphicsQueue.submit(0, nullptr, renderFinishedFence);
+    [[maybe_unused]] ttlet submit_result = _graphics_queue->queue.submit(0, nullptr, renderFinishedFence);
 
     presentImageToQueue(narrow_cast<uint32_t>(context.frame_buffer_index()), renderFinishedSemaphore);
 
@@ -343,7 +355,10 @@ void gfx_surface_vulkan::render_finish(draw_context const &context, color backgr
     teardown();
 }
 
-void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle, color background_color)
+void gfx_surface_vulkan::fill_command_buffer(
+    swapchain_image_info &current_image,
+    aarectangle scissor_rectangle,
+    color background_color)
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -385,8 +400,12 @@ void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image
     // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
     // The swapchain creates images in undefined layout, so we need to change the layout once.
     if (not current_image.layout_is_present) {
-        gfx_device_vulkan::transition_layout(commandBuffer,
-            current_image.image, swapchainImageFormat.format, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR);
+        gfx_device_vulkan::transition_layout(
+            commandBuffer,
+            current_image.image,
+            swapchainImageFormat.format,
+            vk::ImageLayout::eUndefined,
+            vk::ImageLayout::ePresentSrcKHR);
 
         current_image.layout_is_present = true;
     }
@@ -435,7 +454,7 @@ void gfx_surface_vulkan::submitCommandBuffer()
         narrow_cast<uint32_t>(signalSemaphores.size()),
         signalSemaphores.data()}};
 
-    vulkan_device().graphicsQueue.submit(submitInfo, vk::Fence());
+    _graphics_queue->queue.submit(submitInfo, vk::Fence());
 }
 
 std::tuple<uint32_t, vk::Extent2D> gfx_surface_vulkan::getImageCountAndExtent()
@@ -488,11 +507,12 @@ bool gfx_surface_vulkan::readSurfaceExtent(extent2 minimum_size, extent2 maximum
         // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
         // it is 160x28 pixels.
 
-        tt_log_info("Window too small ({}, {}) to draw widgets requiring a window size between {} and {}.",
-            swapchainImageExtent.width, swapchainImageExtent.height,
+        tt_log_info(
+            "Window too small ({}, {}) to draw widgets requiring a window size between {} and {}.",
+            swapchainImageExtent.width,
+            swapchainImageExtent.height,
             minimum_size,
-            maximum_size
-        );
+            maximum_size);
         return false;
     }
 
@@ -533,7 +553,7 @@ bool gfx_surface_vulkan::buildSurface()
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
-    return vulkan_device().score(intrinsic) > 0;
+    return vulkan_device().score(*this) > 0;
 }
 
 gfx_surface_state gfx_surface_vulkan::buildSwapchain()
@@ -542,14 +562,12 @@ gfx_surface_state gfx_surface_vulkan::buildSwapchain()
 
     tt_log_info("Building swap chain");
 
-    ttlet sharingMode = vulkan_device().graphicsQueueFamilyIndex == vulkan_device().presentQueueFamilyIndex ?
-        vk::SharingMode::eExclusive :
-        vk::SharingMode::eConcurrent;
+    ttlet sharingMode = _graphics_queue == _present_queue ? vk::SharingMode::eExclusive : vk::SharingMode::eConcurrent;
 
     std::array<uint32_t, 2> const sharingQueueFamilyAllIndices = {
-        vulkan_device().graphicsQueueFamilyIndex, vulkan_device().presentQueueFamilyIndex};
+        _graphics_queue->family_queue_index, _present_queue->family_queue_index};
 
-    swapchainImageFormat = vulkan_device().bestSurfaceFormat;
+    swapchainImageFormat = vulkan_device().get_surface_format(*this);
     vk::SwapchainCreateInfoKHR swapchainCreateInfo{
         vk::SwapchainCreateFlagsKHR(),
         intrinsic,
@@ -564,7 +582,7 @@ gfx_surface_state gfx_surface_vulkan::buildSwapchain()
         sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices.data() : nullptr,
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        vulkan_device().bestSurfacePresentMode,
+        vulkan_device().get_present_mode(*this),
         VK_TRUE, // clipped
         nullptr};
 
@@ -938,7 +956,7 @@ void gfx_surface_vulkan::buildCommandBuffers()
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     ttlet commandBuffers =
-        vulkan_device().allocateCommandBuffers({vulkan_device().graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1});
+        vulkan_device().allocateCommandBuffers({_graphics_queue->command_pool, vk::CommandBufferLevel::ePrimary, 1});
 
     commandBuffer = commandBuffers.at(0);
 }
@@ -948,7 +966,7 @@ void gfx_surface_vulkan::teardownCommandBuffers()
     tt_axiom(gfx_system_mutex.recurse_lock_count());
     ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
-    vulkan_device().freeCommandBuffers(vulkan_device().graphicsCommandPool, commandBuffers);
+    vulkan_device().freeCommandBuffers(_graphics_queue->command_pool, commandBuffers);
 }
 
 void gfx_surface_vulkan::teardownSurface()

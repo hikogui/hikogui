@@ -5,6 +5,7 @@
 #pragma once
 
 #include "gfx_surface.hpp"
+#include "gfx_queue_vulkan.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
 #include <optional>
@@ -36,8 +37,10 @@ struct swapchain_image_info {
     bool layout_is_present = false;
 };
 
-class gfx_surface_vulkan : public gfx_surface {
+class gfx_surface_vulkan final : public gfx_surface {
 public:
+    using super = gfx_surface;
+
     vk::SurfaceKHR intrinsic;
 
     vk::SwapchainKHR swapchain;
@@ -84,6 +87,8 @@ public:
 
     void init() override;
 
+    void set_device(gfx_device *device) noexcept override;
+
     gfx_device_vulkan &vulkan_device() const noexcept;
 
     [[nodiscard]] extent2 update(extent2 minimum_size, extent2 maximum_size) noexcept override;
@@ -95,6 +100,9 @@ protected:
     void teardown() override;
 
 private:
+    gfx_queue_vulkan const *_graphics_queue;
+    gfx_queue_vulkan const *_present_queue;
+
     void build(extent2 minimum_size, extent2 maximum_size);
 
     std::optional<uint32_t> acquireNextImageFromSwapchain();

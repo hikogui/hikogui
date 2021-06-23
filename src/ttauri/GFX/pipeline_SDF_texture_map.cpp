@@ -9,6 +9,8 @@ namespace tt::pipeline_SDF {
 
 void texture_map::transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout)
 {
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
+
     if (layout != nextLayout) {
         device.transition_layout(image, format, layout, nextLayout);
         layout = nextLayout;

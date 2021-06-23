@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -21,14 +21,7 @@ class gfx_system;
  */
 class gfx_device {
 public:
-    enum class state_type {
-        no_device,
-        ready_to_draw,
-    };
-
     gfx_system &system;
-
-    state_type state = state_type::no_device;
 
     std::string deviceName = "<no device>";
     uint32_t vendorID = 0;
@@ -50,41 +43,9 @@ public:
      * It is possible for a window to be created that is not presentable, in case of a headless-virtual-display,
      * however in this case it may still be able to be displayed by any device.
      *
-     * \returns -1 When not viable, 0 when not presentable, postive values for increasing score.
+     * \returns -1 When not viable, 0 when not presentable, positive values for increasing score.
      */
     virtual int score(gfx_surface const &surface) const = 0;
-
-    /*! Initialize the logical device.
-     *
-     * \param window is used as prototype for queue allocation.
-     */
-    virtual void initialize_device(gui_window const &window);
-
-    ssize_t num_windows() const noexcept {
-        return std::ssize(windows);
-    }
-
-    void add(std::shared_ptr<gui_window> window);
-
-    void remove(gui_window &window) noexcept;
-
-    void render(hires_utc_clock::time_point displayTimePoint) noexcept {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
-
-        for (auto &window: windows) {
-            window->render(displayTimePoint);
-            if (window->is_closed()) {
-                window->deinit();
-                window = nullptr;
-            }
-        }
-        std::erase(windows, nullptr);
-    }
-
-protected:
-    /** A list of windows managed by this device.
-     */
-    std::vector<std::shared_ptr<gui_window>> windows;
 };
 
 }

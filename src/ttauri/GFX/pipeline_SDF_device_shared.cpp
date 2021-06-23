@@ -102,6 +102,7 @@ void device_shared::prepareStagingPixmapForDrawing()
 
 void device_shared::prepareAtlasForRendering()
 {
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
     for (auto &atlasTexture : atlasTextures) {
         atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
@@ -143,6 +144,7 @@ atlas_rect device_shared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
     ttlet drawPath = (drawTranslate * drawScale) * glyphPath;
 
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
     prepareStagingPixmapForDrawing();
     auto atlas_rect = allocateRect(drawExtent);
     auto pixmap = stagingTexture.pixel_map.submap(aarectangle{atlas_rect.size});

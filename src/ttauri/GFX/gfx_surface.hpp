@@ -42,7 +42,7 @@ public:
      * 
      * @param device The device to use for rendering, may be nullptr.
      */
-    void set_device(gfx_device *device) noexcept;
+    virtual void set_device(gfx_device *device) noexcept;
 
     [[nodiscard]] gfx_device *device() const noexcept
     {

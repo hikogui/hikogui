@@ -16,28 +16,21 @@ gfx_device *gfx_system::findBestDeviceForSurface(gfx_surface const &surface)
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
-    int bestScore = -1;
-    gfx_device *bestDevice = nullptr;
+    int best_score = -1;
+    gfx_device *best_device = nullptr;
 
     for (ttlet &device : devices) {
         ttlet score = device->score(surface);
-        tt_log_info("gfx_device has score={}.", score);
-
-        if (score >= bestScore) {
-            bestScore = score;
-            bestDevice = device.get();
+        if (score >= best_score) {
+            best_score = score;
+            best_device = device.get();
         }
     }
 
-    switch (bestScore) {
-    case -1:
-        return nullptr;
-    case 0:
-        fprintf(stderr, "Could not really find a device that can present this window.");
-        /* FALLTHROUGH */
-    default:
-        return bestDevice;
+    if (best_score <= 0) {
+        tt_log_fatal("Could not find a graphics device suitable for presenting this window.");
     }
+    return best_device;
 }
 
 [[nodiscard]] gfx_system *gfx_system::subsystem_init() noexcept

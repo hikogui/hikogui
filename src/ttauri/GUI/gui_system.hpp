@@ -68,44 +68,46 @@ public:
 
     virtual void exit(int exit_code) = 0;
 
+    gui_window &add_window(std::unique_ptr<gui_window> window);
+
     template<typename... Args>
-    gui_window *make_window(Args &&... args)
+    gui_window &make_window(Args &&... args)
     {
-        // This function should be called from the main thread from the main loop,
-        // and therefor should not have a lock on the window.
         tt_axiom(is_gui_thread());
 
-        auto window = std::make_shared<gui_window_win32>(std::forward<Args>(args)...);
-        auto window_ptr = window.get();
+        // XXX abstract away the _win32 part.
+        auto window = std::make_unique<gui_window_win32>(std::forward<Args>(args)...);
         window->init();
 
-        auto device = gfx_system::global().findBestDeviceForSurface(*(window->surface));
-        if (!device) {
-            throw gui_error("Could not find a vulkan-device matching this window");
-        }
-
-        device->add(std::move(window));
-        return window_ptr;
+        return add_window(std::move(window));
     }
 
     /*! Count the number of windows managed by the GUI.
      */
     ssize_t num_windows();
 
-    void render(hires_utc_clock::time_point displayTimePoint) {
+    void render(hires_utc_clock::time_point display_time_point) {
         tt_axiom(is_gui_thread());
 
-        gfx_system::global().render(displayTimePoint);
-
-        ttlet currentNumberOfWindows = num_windows();
-        if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
-            gui_system::global().run_from_event_queue([this]{
-                if (auto exit_code = this->delegate().last_window_closed(*this)) {
-                    gui_system::global().exit(*exit_code);
-                }
-            });
+        for (auto &window : _windows) {
+            window->render(display_time_point);
+            if (window->is_closed()) {
+                window->deinit();
+                window = nullptr;
+            }
         }
-        previousNumberOfWindows = currentNumberOfWindows;
+        std::erase(_windows, nullptr);
+
+        ttlet num_windows = std::size(_windows);
+        if (num_windows == 0 && num_windows != _previous_num_windows) {
+            // If last_window_closed() creates a new window we should
+            // let it do that before entering the event queue again.
+            // win32 is a bit picky about running without windows.
+            if (auto exit_code = delegate().last_window_closed(*this)) {
+                gui_system::global().exit(*exit_code);
+            }
+        }
+        _previous_num_windows = num_windows;
     }
 
     /** Check if this thread is the same as the gui thread.
@@ -124,6 +126,9 @@ private:
     static inline std::atomic<gui_system *> _global;
 
     std::shared_ptr<gui_system_delegate> _delegate;
+
+    std::vector<std::unique_ptr<gui_window>> _windows;
+    size_t _previous_num_windows;
 
     [[nodiscard]] static gui_system *subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;

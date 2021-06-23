@@ -43,14 +43,6 @@ public:
 
     [[nodiscard]] virtual std::unique_ptr<gfx_surface> make_surface(os_handle instance, void *os_window) const noexcept = 0;
 
-    void render(hires_utc_clock::time_point displayTimePoint) {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-
-        for (auto &device: devices) {
-            device->render(displayTimePoint);
-        }
-    }
-
     static inline gfx_system &global() noexcept
     {
         return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);

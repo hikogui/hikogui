@@ -11,15 +11,20 @@ namespace tt {
 
 using namespace std;
 
-
-ssize_t gui_system::num_windows()
+gui_window &gui_system::add_window(std::unique_ptr<gui_window> window)
 {
-    ssize_t numberOfWindows = 0;
-    for (const auto &device: gfx_system::global().devices) {
-        numberOfWindows+= device->num_windows();
+    tt_axiom(is_gui_thread());
+
+    auto device = gfx_system::global().findBestDeviceForSurface(*(window->surface));
+    if (!device) {
+        throw gui_error("Could not find a vulkan-device matching this window");
     }
 
-    return numberOfWindows;
+    window->set_device(device);
+
+    auto window_ptr = &(*window);
+    _windows.push_back(std::move(window));
+    return *window_ptr;
 }
 
 [[nodiscard]] gui_system *gui_system::subsystem_init() noexcept

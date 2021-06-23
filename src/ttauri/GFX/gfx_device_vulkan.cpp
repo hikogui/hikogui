@@ -170,6 +170,8 @@ gfx_device_vulkan::gfx_device_vulkan(gfx_system &system, vk::PhysicalDevice phys
     deviceUUID = uuid::fromBigEndian(resultDeviceIDProperties.deviceUUID);
 
     physicalProperties = physicalIntrinsic.getProperties();
+
+    initialize_device();
 }
 
 gfx_device_vulkan::~gfx_device_vulkan()
@@ -192,20 +194,8 @@ gfx_device_vulkan::~gfx_device_vulkan()
 
         vmaDestroyAllocator(allocator);
 
-        for (uint32_t index = 0; index < 3; index++) {
-            // Destroy one command pool for each queue index.
-            if (graphicsQueueIndex == index) {
-                this->intrinsic.destroy(graphicsCommandPool);
-                continue;
-            }
-            if (presentQueueIndex == index) {
-                this->intrinsic.destroy(presentCommandPool);
-                continue;
-            }
-            if (computeQueueIndex == index) {
-                this->intrinsic.destroy(computeCommandPool);
-                continue;
-            }
+        for (ttlet &queue : _queues) {
+            intrinsic.destroy(queue.command_pool);
         }
 
         intrinsic.destroy();
@@ -215,22 +205,281 @@ gfx_device_vulkan::~gfx_device_vulkan()
     }
 }
 
-void gfx_device_vulkan::initialize_device(gui_window const &window)
+/** Get a graphics queue.
+ */
+[[nodiscard]] gfx_queue_vulkan const &gfx_device_vulkan::get_graphics_queue() const noexcept
+{
+    for (auto &queue : _queues) {
+        if (queue.flags & vk::QueueFlagBits::eGraphics) {
+            return queue;
+        }
+    }
+    tt_no_default();
+}
+
+[[nodiscard]] gfx_queue_vulkan const &gfx_device_vulkan::get_graphics_queue(gfx_surface const &surface) const noexcept
+{
+    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+
+    // First try to find a graphics queue which can also present.
+    gfx_queue_vulkan const *graphics_queue = nullptr;
+    for (auto &queue : _queues) {
+        if (queue.flags & vk::QueueFlagBits::eGraphics) {
+            if (physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface_)) {
+                return queue;
+            }
+            if (not graphics_queue) {
+                graphics_queue = &queue;
+            }
+        }
+    }
+
+    tt_axiom(graphics_queue);
+    return *graphics_queue;
+}
+
+[[nodiscard]] gfx_queue_vulkan const &gfx_device_vulkan::get_present_queue(gfx_surface const &surface) const noexcept
+{
+    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+
+    // First try to find a graphics queue which can also present.
+    gfx_queue_vulkan const *present_queue = nullptr;
+    for (auto &queue : _queues) {
+        if (physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface_)) {
+            if (queue.flags & vk::QueueFlagBits::eGraphics) {
+                return queue;
+            }
+            if (not present_queue) {
+                present_queue = &queue;
+            }
+        }
+    }
+
+    tt_axiom(present_queue);
+    return *present_queue;
+}
+
+[[nodiscard]] vk::SurfaceFormatKHR
+gfx_device_vulkan::get_surface_format(gfx_surface const &surface, int *score) const noexcept
+{
+    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+
+    auto best_surface_format = vk::SurfaceFormatKHR{};
+    auto best_surface_format_score = 0;
+    for (auto surface_format : physicalIntrinsic.getSurfaceFormatsKHR(surface_)) {
+        auto surface_format_score = 0;
+
+        switch (surface_format.colorSpace) {
+        case vk::ColorSpaceKHR::eSrgbNonlinear: surface_format_score += 1; break;
+        case vk::ColorSpaceKHR::eExtendedSrgbNonlinearEXT: surface_format_score += 100; break;
+        default: continue;
+        }
+
+        switch (surface_format.format) {
+        case vk::Format::eR16G16B16A16Sfloat: surface_format_score += 12; break;
+        case vk::Format::eR16G16B16Sfloat: surface_format_score += 11; break;
+        case vk::Format::eR8G8B8A8Srgb: surface_format_score += 4; break;
+        case vk::Format::eB8G8R8A8Srgb: surface_format_score += 4; break;
+        case vk::Format::eR8G8B8Srgb: surface_format_score += 3; break;
+        case vk::Format::eB8G8R8Srgb: surface_format_score += 3; break;
+        case vk::Format::eB8G8R8A8Unorm: surface_format_score += 2; break;
+        case vk::Format::eR8G8B8A8Unorm: surface_format_score += 2; break;
+        case vk::Format::eB8G8R8Unorm: surface_format_score += 1; break;
+        case vk::Format::eR8G8B8Unorm: surface_format_score += 1; break;
+        default: continue;
+        }
+
+        if (score) {
+            tt_log_info(
+                "    - color-space={}, format={}, score={}",
+                vk::to_string(surface_format.colorSpace),
+                vk::to_string(surface_format.format),
+                surface_format_score);
+        }
+
+        if (surface_format_score > best_surface_format_score) {
+            best_surface_format_score = surface_format_score;
+            best_surface_format = surface_format;
+        }
+    }
+
+    if (score) {
+        *score = best_surface_format_score;
+    }
+    return best_surface_format;
+}
+
+[[nodiscard]] vk::PresentModeKHR
+gfx_device_vulkan::get_present_mode(gfx_surface const &surface, int *score) const noexcept
+{
+    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+
+    auto best_present_mode = vk::PresentModeKHR{};
+    auto best_present_mode_score = 0;
+    for (ttlet &present_mode : physicalIntrinsic.getSurfacePresentModesKHR(surface_)) {
+        int present_mode_score = 0;
+
+        switch (present_mode) {
+        case vk::PresentModeKHR::eImmediate: present_mode_score += 1; break;
+        case vk::PresentModeKHR::eFifoRelaxed: present_mode_score += 2; break;
+        case vk::PresentModeKHR::eFifo: present_mode_score += 3; break;
+        case vk::PresentModeKHR::eMailbox: present_mode_score += 1; break; // mailbox does not wait for vsync.
+        default: continue;
+        }
+
+        if (score) {
+            tt_log_info("    - present-mode={} score={}", vk::to_string(present_mode), present_mode_score);
+        }
+
+        if (present_mode_score > best_present_mode_score) {
+            best_present_mode_score = present_mode_score;
+            best_present_mode = present_mode;
+        }
+    }
+
+    if (score) {
+        *score = best_present_mode_score;
+    }
+    return best_present_mode;
+}
+
+int gfx_device_vulkan::score(gfx_surface const &surface) const
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
+    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
 
-    const float defaultQueuePriority = 1.0;
+    auto total_score = 0;
 
-    std::vector<vk::DeviceQueueCreateInfo> deviceQueueCreateInfos;
-    for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
-        auto index = queueFamilyIndexAndCapabilities.first;
-        deviceQueueCreateInfos.push_back({vk::DeviceQueueCreateFlags(), index, 1, &defaultQueuePriority});
+    tt_log_info("Scoring device: {}", string());
+    if (!hasRequiredFeatures(physicalIntrinsic, narrow_cast<gfx_system_vulkan &>(system).requiredFeatures)) {
+        tt_log_info(" - Does not have the required features.");
+        return -1;
     }
+
+    if (!meetsRequiredLimits(physicalIntrinsic, narrow_cast<gfx_system_vulkan &>(system).requiredLimits)) {
+        tt_log_info(" - Does not meet the required limits.");
+        return -1;
+    }
+
+    if (!hasRequiredExtensions(physicalIntrinsic, requiredExtensions)) {
+        tt_log_info(" - Does not have the required extensions.");
+        return -1;
+    }
+    
+    bool device_has_graphics = false;
+    bool device_has_present = false;
+    bool device_has_compute = false;
+    bool device_shares_graphics_and_present = false;
+    for (ttlet &queue: _queues) {
+        ttlet has_present = static_cast<bool>(physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface_));
+        ttlet has_graphics = static_cast<bool>(queue.flags & vk::QueueFlagBits::eGraphics);
+        ttlet has_compute = static_cast<bool>(queue.flags & vk::QueueFlagBits::eCompute);
+        
+        device_has_graphics |= has_graphics;
+        device_has_present |= has_present;
+        device_has_compute |= has_compute;
+        if (has_present and has_graphics) {
+            device_shares_graphics_and_present = true;
+        }
+    }
+
+    if (not device_has_graphics) {
+        tt_log_info(" - Does not have a graphics queue.");
+        return -1;
+    }
+
+    if (not device_has_present) {
+        tt_log_info(" - Does not have a present queue.");
+        return -1;
+    }
+
+    if (device_has_compute) {
+        tt_log_info(" - Device has compute queue.");
+        total_score += 1;
+    }
+
+    if (device_shares_graphics_and_present) {
+        tt_log_info(" - Device shares graphics and present on same queue.");
+        total_score += 10;
+    }
+
+    tt_log_info(" - Surface formats:");
+    int surface_format_score = 0;
+    [[maybe_unused]] auto surface_format = get_surface_format(surface, &surface_format_score);
+    if (surface_format_score <= 0) {
+        tt_log_info(" - Does not have a suitable surface format.");
+        return -1;
+    }
+    total_score += surface_format_score;
+
+    tt_log_info(" - Present modes:");
+    int present_mode_score = 0;
+    [[maybe_unused]] auto present_mode = get_present_mode(surface, &present_mode_score);
+    if (present_mode_score <= 0) {
+        tt_log_info(" - Does not have a suitable present mode.");
+        return -1;
+    }
+    total_score += present_mode_score;
+
+    // Give score based on the performance of the device.
+    auto device_type_score = 0;
+    ttlet properties = physicalIntrinsic.getProperties();
+    switch (properties.deviceType) {
+    case vk::PhysicalDeviceType::eCpu: device_type_score = 1; break;
+    case vk::PhysicalDeviceType::eOther: device_type_score = 1; break;
+    case vk::PhysicalDeviceType::eVirtualGpu: device_type_score = 2; break;
+    case vk::PhysicalDeviceType::eIntegratedGpu: device_type_score = 3; break;
+    case vk::PhysicalDeviceType::eDiscreteGpu: device_type_score = 4; break;
+    }
+    tt_log_info(" - device-type={}, score={}", vk::to_string(properties.deviceType), device_type_score);
+    total_score += device_type_score;
+
+    tt_log_info(" - total score {}", total_score);
+    return total_score;
+}
+
+std::vector<vk::DeviceQueueCreateInfo> gfx_device_vulkan::make_device_queue_create_infos() const noexcept
+{
+    ttlet default_queue_priority = std::array{1.0f};
+    uint32_t queue_family_index = 0;
+
+    auto r = std::vector<vk::DeviceQueueCreateInfo>{};
+    for (auto queue_family_properties : physicalIntrinsic.getQueueFamilyProperties()) {
+        ttlet num_queues = 1;
+        tt_axiom(std::size(default_queue_priority) >= num_queues);
+        r.emplace_back(vk::DeviceQueueCreateFlags(), queue_family_index++, num_queues, default_queue_priority.data());
+    }
+    return r;
+}
+
+void gfx_device_vulkan::initialize_queues(std::vector<vk::DeviceQueueCreateInfo> const &device_queue_create_infos) noexcept
+{
+    ttlet queue_family_properties = physicalIntrinsic.getQueueFamilyProperties();
+
+    for (ttlet &device_queue_create_info : device_queue_create_infos) {
+        ttlet queue_family_index = device_queue_create_info.queueFamilyIndex;
+        ttlet &queue_family_property = queue_family_properties[queue_family_index];
+        ttlet queue_flags = queue_family_property.queueFlags;
+
+        for (uint32_t queue_index = 0; queue_index != device_queue_create_info.queueCount; ++queue_index) {
+            ttlet queue = intrinsic.getQueue(queue_family_index, queue_index);
+            ttlet command_pool = intrinsic.createCommandPool(
+                {vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+                 queue_family_index});
+
+            _queues.emplace_back(queue_family_index, queue_index, queue_flags, std::move(queue), std::move(command_pool));
+        }
+    }
+}
+
+void gfx_device_vulkan::initialize_device()
+{
+    ttlet device_queue_create_infos = make_device_queue_create_infos();
 
     intrinsic = physicalIntrinsic.createDevice(
         {vk::DeviceCreateFlags(),
-         narrow_cast<uint32_t>(deviceQueueCreateInfos.size()),
-         deviceQueueCreateInfos.data(),
+         narrow_cast<uint32_t>(device_queue_create_infos.size()),
+         device_queue_create_infos.data(),
          0,
          nullptr,
          narrow_cast<uint32_t>(requiredExtensions.size()),
@@ -254,35 +503,7 @@ void gfx_device_vulkan::initialize_device(gui_window const &window)
         transientImageUsageFlags = vk::ImageUsageFlagBits::eTransientAttachment;
     }
 
-    uint32_t index = 0;
-    for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
-        ttlet familyIndex = queueFamilyIndexAndCapabilities.first;
-        ttlet capabilities = queueFamilyIndexAndCapabilities.second;
-        ttlet queue = this->intrinsic.getQueue(familyIndex, index);
-        ttlet commandPool = this->intrinsic.createCommandPool(
-            {vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer, familyIndex});
-
-        if (capabilities & QUEUE_CAPABILITY_GRAPHICS) {
-            graphicsQueueFamilyIndex = familyIndex;
-            graphicsQueueIndex = index;
-            graphicsQueue = queue;
-            graphicsCommandPool = commandPool;
-        }
-        if (capabilities & QUEUE_CAPABILITY_PRESENT) {
-            presentQueueFamilyIndex = familyIndex;
-            presentQueueIndex = index;
-            presentQueue = queue;
-            presentCommandPool = commandPool;
-        }
-        if (capabilities & QUEUE_CAPABILITY_COMPUTE) {
-            computeQueueFamilyIndex = familyIndex;
-            computeQueueIndex = index;
-            computeQueue = queue;
-            graphicsCommandPool = commandPool;
-        }
-        index++;
-    }
-
+    initialize_queues(device_queue_create_infos);
     initialize_quad_index_buffer();
 
     flatPipeline = std::make_unique<pipeline_flat::device_shared>(*this);
@@ -290,8 +511,6 @@ void gfx_device_vulkan::initialize_device(gui_window const &window)
     imagePipeline = std::make_unique<pipeline_image::device_shared>(*this);
     SDFPipeline = std::make_unique<pipeline_SDF::device_shared>(*this);
     toneMapperPipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
-
-    gfx_device::initialize_device(window);
 }
 
 void gfx_device_vulkan::initialize_quad_index_buffer()
@@ -350,7 +569,8 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
         unmapMemory(stagingvertexIndexBufferAllocation);
 
         // Copy indices to vertex index buffer.
-        auto commands = allocateCommandBuffers({graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1}).at(0);
+        auto &queue = get_graphics_queue();
+        auto commands = allocateCommandBuffers({queue.command_pool, vk::CommandBufferLevel::ePrimary, 1}).at(0);
         commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
         commands.copyBuffer(
             stagingvertexIndexBuffer, quadIndexBuffer, {{0, 0, sizeof(vertex_index_type) * maximum_number_of_indices}});
@@ -365,10 +585,10 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
              commandBuffersToSubmit.data(),
              0,
              nullptr}};
-        graphicsQueue.submit(submitInfo, vk::Fence());
-        graphicsQueue.waitIdle();
+        queue.queue.submit(submitInfo, vk::Fence());
+        queue.queue.waitIdle();
 
-        freeCommandBuffers(graphicsCommandPool, {commands});
+        freeCommandBuffers(queue.command_pool, {commands});
         destroyBuffer(stagingvertexIndexBuffer, stagingvertexIndexBufferAllocation);
     }
 }
@@ -377,200 +597,6 @@ void gfx_device_vulkan::destroy_quad_index_buffer()
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
     destroyBuffer(quadIndexBuffer, quadIndexBufferAllocation);
-}
-
-std::vector<std::pair<uint32_t, uint8_t>> gfx_device_vulkan::find_best_queue_family_indices(vk::SurfaceKHR surface) const
-{
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
-
-    tt_log_info(" - Scoring QueueFamilies");
-
-    // Create a sorted list of queueFamilies depending on the scoring.
-    std::vector<std::tuple<uint32_t, uint8_t, uint32_t>> queueFamilieScores;
-    {
-        uint32_t index = 0;
-        for (auto queueFamilyProperties : physicalIntrinsic.getQueueFamilyProperties()) {
-            uint8_t capabilities = 0;
-            if (queueFamilyProperties.queueFlags & vk::QueueFlagBits::eGraphics) {
-                capabilities |= QUEUE_CAPABILITY_GRAPHICS;
-            }
-            if (physicalIntrinsic.getSurfaceSupportKHR(index, surface)) {
-                capabilities |= QUEUE_CAPABILITY_PRESENT;
-            }
-            if (queueFamilyProperties.queueFlags & vk::QueueFlagBits::eCompute) {
-                capabilities |= QUEUE_CAPABILITY_COMPUTE;
-            }
-
-            uint32_t score = 0;
-            score += capabilities == QUEUE_CAPABILITY_ALL ? 10 : 0;
-            score += capabilities == QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT ? 5 : 0;
-            score += capabilities == QUEUE_CAPABILITY_GRAPHICS ? 1 : 0;
-            score += capabilities == QUEUE_CAPABILITY_COMPUTE ? 1 : 0;
-            score += capabilities == QUEUE_CAPABILITY_PRESENT ? 1 : 0;
-
-            tt_log_info("    * {}: capabilities={:03b}, score={}", index, capabilities, score);
-
-            queueFamilieScores.push_back({index, capabilities, score});
-            index++;
-        }
-        sort(queueFamilieScores.begin(), queueFamilieScores.end(), [](const auto &a, const auto &b) {
-            return std::get<2>(a) > std::get<2>(b);
-        });
-    }
-
-    // Iteratively add indices if it completes the totalQueueCapabilities.
-    std::vector<std::pair<uint32_t, uint8_t>> queueFamilyIndicesAndQueueCapabilitiess;
-    uint8_t totalCapabilities = 0;
-    for (ttlet & [ index, capabilities, score ] : queueFamilieScores) {
-        if ((totalCapabilities & capabilities) != capabilities) {
-            queueFamilyIndicesAndQueueCapabilitiess.emplace_back(index, static_cast<uint8_t>(capabilities & ~totalCapabilities));
-            totalCapabilities |= capabilities;
-        }
-    }
-
-    return queueFamilyIndicesAndQueueCapabilitiess;
-}
-
-int gfx_device_vulkan::score(vk::SurfaceKHR surface) const
-{
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
-
-    auto formats = physicalIntrinsic.getSurfaceFormatsKHR(surface);
-    auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
-    queueFamilyIndicesAndCapabilities = find_best_queue_family_indices(surface);
-
-    tt_log_info("Scoring device: {}", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, narrow_cast<gfx_system_vulkan &>(system).requiredFeatures)) {
-        tt_log_info(" - Does not have the required features.");
-        return -1;
-    }
-
-    if (!meetsRequiredLimits(physicalIntrinsic, narrow_cast<gfx_system_vulkan &>(system).requiredLimits)) {
-        tt_log_info(" - Does not meet the required limits.");
-        return -1;
-    }
-
-    if (!hasRequiredExtensions(physicalIntrinsic, requiredExtensions)) {
-        tt_log_info(" - Does not have the required extensions.");
-        return -1;
-    }
-
-    uint8_t deviceCapabilities = 0;
-    for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
-        deviceCapabilities |= queueFamilyIndexAndCapabilities.second;
-    }
-    tt_log_info(" - Capabilities={:03b}", deviceCapabilities);
-
-    if ((deviceCapabilities & QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT) != QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT) {
-        tt_log_info(" - Does not have both the graphics and compute queues.");
-        return -1;
-
-    } else if (!(deviceCapabilities & QUEUE_CAPABILITY_PRESENT)) {
-        tt_log_info(" - Does not have a present queue.");
-        return 0;
-    }
-
-    // Give score based on color quality.
-    tt_log_info(" - Surface formats:");
-    uint32_t bestSurfaceFormatScore = 0;
-    for (auto format : formats) {
-        uint32_t score = 0;
-
-        tt_log_info("    * Found colorSpace={}, format={}", vk::to_string(format.colorSpace), vk::to_string(format.format));
-
-        switch (format.colorSpace) {
-        case vk::ColorSpaceKHR::eSrgbNonlinear: score += 1; break;
-        case vk::ColorSpaceKHR::eExtendedSrgbNonlinearEXT: score += 100; break;
-        default: continue;
-        }
-
-        switch (format.format) {
-        case vk::Format::eR16G16B16A16Sfloat: score += 12; break;
-        case vk::Format::eR16G16B16Sfloat: score += 11; break;
-
-        case vk::Format::eR8G8B8A8Srgb: score += 4; break;
-        case vk::Format::eB8G8R8A8Srgb: score += 4; break;
-        case vk::Format::eR8G8B8Srgb: score += 3; break;
-        case vk::Format::eB8G8R8Srgb: score += 3; break;
-
-        case vk::Format::eB8G8R8A8Unorm: score += 2; break;
-        case vk::Format::eR8G8B8A8Unorm: score += 2; break;
-        case vk::Format::eB8G8R8Unorm: score += 1; break;
-        case vk::Format::eR8G8B8Unorm: score += 1; break;
-        default: continue;
-        }
-
-        tt_log_info(
-            "    * Valid colorSpace={}, format={}, score={}",
-            vk::to_string(format.colorSpace),
-            vk::to_string(format.format),
-            score);
-
-        if (score > bestSurfaceFormatScore) {
-            bestSurfaceFormatScore = score;
-            bestSurfaceFormat = format;
-        }
-    }
-    auto totalScore = bestSurfaceFormatScore;
-    tt_log_info(
-        "    * bestColorSpace={}, bestFormat={}, score={}",
-        vk::to_string(bestSurfaceFormat.colorSpace),
-        vk::to_string(bestSurfaceFormat.format),
-        bestSurfaceFormatScore);
-
-    if (bestSurfaceFormatScore == 0) {
-        tt_log_info(" - Does not have a suitable surface format.");
-        return 0;
-    }
-
-    tt_log_info(" - Surface present modes:");
-    uint32_t bestSurfacePresentModeScore = 0;
-    for (ttlet &presentMode : presentModes) {
-        uint32_t score = 0;
-
-        tt_log_info("    * presentMode={}", vk::to_string(presentMode));
-
-        switch (presentMode) {
-        case vk::PresentModeKHR::eImmediate: score += 1; break;
-        case vk::PresentModeKHR::eFifoRelaxed: score += 2; break;
-        case vk::PresentModeKHR::eFifo: score += 3; break;
-        case vk::PresentModeKHR::eMailbox: score += 1; break; // mailbox does not wait for vsync.
-        default: continue;
-        }
-
-        if (score > bestSurfacePresentModeScore) {
-            bestSurfacePresentModeScore = score;
-            bestSurfacePresentMode = presentMode;
-        }
-    }
-    totalScore += bestSurfacePresentModeScore;
-
-    if (totalScore < bestSurfacePresentModeScore) {
-        tt_log_info(" - Does not have a suitable surface present mode.");
-        return 0;
-    }
-
-    // Give score based on the performance of the device.
-    ttlet properties = physicalIntrinsic.getProperties();
-    tt_log_info(" - Type of device: {}", vk::to_string(properties.deviceType));
-    switch (properties.deviceType) {
-    case vk::PhysicalDeviceType::eCpu: totalScore += 1; break;
-    case vk::PhysicalDeviceType::eOther: totalScore += 1; break;
-    case vk::PhysicalDeviceType::eVirtualGpu: totalScore += 2; break;
-    case vk::PhysicalDeviceType::eIntegratedGpu: totalScore += 3; break;
-    case vk::PhysicalDeviceType::eDiscreteGpu: totalScore += 4; break;
-    }
-
-    return totalScore;
-}
-
-int gfx_device_vulkan::score(gfx_surface const &surface) const
-{
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
-
-    auto surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
-    ttlet s = score(surface_);
-    return s;
 }
 
 std::pair<vk::Buffer, VmaAllocation> gfx_device_vulkan::createBuffer(
@@ -634,7 +660,8 @@ vk::CommandBuffer gfx_device_vulkan::beginSingleTimeCommands() const
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
-    ttlet commandBuffers = intrinsic.allocateCommandBuffers({graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1});
+    ttlet &queue = get_graphics_queue();
+    ttlet commandBuffers = intrinsic.allocateCommandBuffers({queue.command_pool, vk::CommandBufferLevel::ePrimary, 1});
     ttlet commandBuffer = commandBuffers.at(0);
 
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
@@ -649,7 +676,8 @@ void gfx_device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) c
 
     std::vector<vk::CommandBuffer> const commandBuffers = {commandBuffer};
 
-    graphicsQueue.submit(
+    ttlet &queue = get_graphics_queue();
+    queue.queue.submit(
         {{
             0,
             nullptr,
@@ -661,8 +689,8 @@ void gfx_device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) c
         }},
         vk::Fence());
 
-    graphicsQueue.waitIdle();
-    intrinsic.freeCommandBuffers(graphicsCommandPool, commandBuffers);
+    queue.queue.waitIdle();
+    intrinsic.freeCommandBuffers(queue.command_pool, commandBuffers);
 }
 
 static std::pair<vk::AccessFlags, vk::PipelineStageFlags> access_and_stage_from_layout(vk::ImageLayout layout) noexcept

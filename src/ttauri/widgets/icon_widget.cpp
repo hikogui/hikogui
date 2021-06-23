@@ -32,12 +32,20 @@ void icon_widget::init() noexcept
             _icon_bounding_box = {};
 
         } else if (holds_alternative<pixel_map<sfloat_rgba16>>(icon_)) {
+            // XXX very ugly, please fix.
+            // This requires access to internals of vulkan, wtf.
+            ttlet lock = std::scoped_lock(gfx_system_mutex);
+
             _icon_type = icon_type::pixmap;
             _glyph = {};
 
             ttlet &pixmap = get<pixel_map<sfloat_rgba16>>(icon_);
 
-            auto *device = window.surface ? narrow_cast<gfx_device_vulkan *>(window.surface->device()) : nullptr;
+            gfx_device_vulkan *device = nullptr;
+            if (window.surface) {
+                device = narrow_cast<gfx_device_vulkan *>(window.surface->device());
+            }
+
             if (device == nullptr) {
                 // The window does not have a surface or device assigned.
                 // We need a device to upload the image as texture map, so retry until it does.

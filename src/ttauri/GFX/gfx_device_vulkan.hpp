@@ -6,6 +6,7 @@
 
 #include "gfx_device.hpp"
 #include "gfx_system_globals.hpp"
+#include "gfx_queue_vulkan.hpp"
 #include "pipeline_flat_device_shared.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_box_device_shared.hpp"
@@ -22,21 +23,48 @@ namespace tt {
 
 class gfx_device_vulkan final : public gfx_device {
 public:
+    
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceProperties physicalProperties;
 
-    uint32_t graphicsQueueFamilyIndex = 0;
-    uint32_t presentQueueFamilyIndex = 0;
-    uint32_t computeQueueFamilyIndex = 0;
-    uint32_t graphicsQueueIndex = 0;
-    uint32_t presentQueueIndex = 0;
-    uint32_t computeQueueIndex = 0;
-    vk::Queue graphicsQueue;
-    vk::Queue presentQueue;
-    vk::Queue computeQueue;
-    vk::CommandPool graphicsCommandPool;
-    vk::CommandPool presentCommandPool;
-    vk::CommandPool computeCommandPool;
+    std::vector<gfx_queue_vulkan> _queues;
+    
+    /** Get a graphics queue.
+     * Always returns the first queue that can handle graphics.
+     */
+    [[nodiscard]] gfx_queue_vulkan const &get_graphics_queue() const noexcept;
+
+    /** Get a graphics queue.
+     * Always returns the first queue that can handle both graphics and presenting;
+     * or as fallback the first graphics queue.
+     */
+    [[nodiscard]] gfx_queue_vulkan const &get_graphics_queue(gfx_surface const &surface) const noexcept;
+
+    /** Get a present queue.
+     * Always returns the first queue that can handle both graphics and presenting;
+     * or as fallback the first present queue.
+     */
+    [[nodiscard]] gfx_queue_vulkan const &get_present_queue(gfx_surface const &surface) const noexcept;
+
+    /** Get the surface format.
+     * Always returns the best suitable surface format.
+     * 
+     * Prioritizes HDR, followed by sRGB.
+     * 
+     * @param surface The surface to determine the surface format for.
+     * @param [out]score Optional return parameter for the quality of the surface format.
+     */
+    [[nodiscard]] vk::SurfaceFormatKHR get_surface_format(gfx_surface const &surface, int *score = nullptr) const noexcept;
+
+    /** Get the present mode.
+     * Always returns the best suitable present mode.
+     * 
+     * Prioritized a double buffering mode.
+     *
+     * @param surface The surface to determine the present mode for.
+     * @param [out]score Optional return parameter for the quality of the present mode.
+     */
+    [[nodiscard]] vk::PresentModeKHR get_present_mode(gfx_surface const &surface, int *score = nullptr) const noexcept;
 
     /** Shared index buffer containing indices for drawing quads.
      * The index buffer uses the following index order: 0, 1, 2, 2, 1, 3
@@ -65,20 +93,6 @@ public:
     vk::ImageUsageFlags transientImageUsageFlags = vk::ImageUsageFlags{};
     VmaMemoryUsage lazyMemoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    /*! Sorted list of queueFamilies and their capabilities.
-     * score(surface) must be called before initialize_device(window);
-     */
-    mutable std::vector<std::pair<uint32_t, uint8_t>> queueFamilyIndicesAndCapabilities;
-
-    /*! Best surface format.
-     * score(surface) must be called before initialize_device(window);
-     */
-    mutable vk::SurfaceFormatKHR bestSurfaceFormat = {};
-
-    /*! Best surface format.
-     * score(surface) must be called before initialize_device(window);
-     */
-    mutable vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
     gfx_device_vulkan(gfx_system &system, vk::PhysicalDevice physicalDevice);
     ~gfx_device_vulkan();
@@ -87,8 +101,6 @@ public:
     gfx_device_vulkan &operator=(const gfx_device_vulkan &) = delete;
     gfx_device_vulkan(gfx_device_vulkan &&) = delete;
     gfx_device_vulkan &operator=(gfx_device_vulkan &&) = delete;
-
-    void initialize_device(gui_window const &window) override;
 
     int score(vk::SurfaceKHR surface) const;
 
@@ -323,6 +335,9 @@ protected:
     VmaAllocator allocator;
 
 private:
+    [[nodiscard]] std::vector<vk::DeviceQueueCreateInfo> make_device_queue_create_infos() const noexcept;
+    void initialize_queues(std::vector<vk::DeviceQueueCreateInfo> const &device_queue_create_infos) noexcept;
+    void initialize_device();
     void initialize_quad_index_buffer();
     void destroy_quad_index_buffer();
 };
