@@ -10,14 +10,14 @@ namespace tt {
 
 grid_layout_widget::grid_layout_widget(
     gui_window &window,
-    std::shared_ptr<widget> parent,
+    widget *parent,
     std::shared_ptr<delegate_type> delegate) noexcept :
-    widget(window, std::move(parent)), _delegate(delegate)
+    widget(window, parent), _delegate(delegate)
 {
     tt_axiom(is_gui_thread());
 
-    if (auto p = _parent.lock()) {
-        _semantic_layer = p->semantic_layer();
+    if (parent) {
+        _semantic_layer = parent->semantic_layer();
     }
     _margin = 0.0f;
 }
@@ -90,14 +90,13 @@ bool grid_layout_widget::address_in_use(size_t column_nr, size_t row_nr) const n
     return false;
 }
 
-std::shared_ptr<widget> grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::shared_ptr<widget> widget) noexcept
+widget &grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> widget) noexcept
 {
     tt_axiom(is_gui_thread());
-    auto tmp = widget::add_widget(std::move(widget));
-
     tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
 
-    _cells.emplace_back(column_nr, row_nr, tmp);
+    auto &tmp = super::add_widget(std::move(widget));
+    _cells.emplace_back(column_nr, row_nr, &tmp);
     return tmp;
 }
 

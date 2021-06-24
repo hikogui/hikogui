@@ -26,11 +26,11 @@ public:
 
     ~label_widget();
 
-    label_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept;
+    label_widget(gui_window &window, widget *parent) noexcept;
 
     template<typename Label>
-    label_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
-        label_widget(window, std::move(parent))
+    label_widget(gui_window &window, widget *parent, Label &&label) noexcept :
+        label_widget(window, parent)
     {
         this->label = std::forward<Label>(label);
     }
@@ -48,8 +48,8 @@ private:
 
     decltype(label)::callback_ptr_type _label_callback;
 
-    std::shared_ptr<icon_widget> _icon_widget;
-    std::shared_ptr<text_widget> _text_widget;
+    icon_widget *_icon_widget;
+    text_widget *_text_widget;
 };
 
 } // namespace tt

@@ -32,9 +32,9 @@ public:
 
     abstract_button_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        widget *parent,
         std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept :
-        super(window, std::move(parent)), _delegate(std::move(delegate))
+        super(window, parent), _delegate(std::move(delegate))
     {
         _delegate->subscribe(*this, _relayout_callback);
     }
@@ -43,9 +43,9 @@ public:
     {
         super::init();
 
-        _on_label_widget = make_widget<label_widget>();
-        _off_label_widget = make_widget<label_widget>();
-        _other_label_widget = make_widget<label_widget>();
+        _on_label_widget = &make_widget<label_widget>();
+        _off_label_widget = &make_widget<label_widget>();
+        _other_label_widget = &make_widget<label_widget>();
 
         _on_label_widget->alignment = label_alignment;
         _off_label_widget->alignment = label_alignment;
@@ -148,14 +148,14 @@ public:
         }
     }
 
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept final
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final
     {
         tt_axiom(is_gui_thread());
 
         if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::Button : hit_box::Type::Default};
+            return hitbox{this, _draw_layer, enabled ? hitbox::Type::Button : hitbox::Type::Default};
         } else {
-            return hit_box{};
+            return hitbox{};
         }
     }
 
@@ -207,9 +207,9 @@ public:
 
 protected:
     aarectangle _label_rectangle;
-    std::shared_ptr<label_widget> _on_label_widget;
-    std::shared_ptr<label_widget> _off_label_widget;
-    std::shared_ptr<label_widget> _other_label_widget;
+    label_widget *_on_label_widget;
+    label_widget *_off_label_widget;
+    label_widget *_other_label_widget;
 
     bool _pressed = false;
     notifier<void()> _notifier;

@@ -6,7 +6,7 @@
 
 #include "../GUI/gui_window.hpp"
 #include "../GUI/mouse_event.hpp"
-#include "../GUI/hit_box.hpp"
+#include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_event.hpp"
 #include "../GUI/theme.hpp"
 #include "../GFX/draw_context.hpp"
@@ -91,18 +91,23 @@ class widget;
  * entered when one of the widget's layout was changed. But if this phase is entered
  * then all the widgets' `draw()` functions are called.
  */
-class widget : public std::enable_shared_from_this<widget> {
+class widget {
 public:
     /** Convenient reference to the Window.
      */
     gui_window &window;
+
+    /** Pointer to the parent widget.
+     * May be a nullptr only when this is the top level widget.
+     */
+    widget *const parent;
 
     /** A name of widget, should be unique between siblings.
      */
     std::string id;
 
     /** The widget is enabled.
-     * When a widget is disabled it is drawn in grey and will not react to user input.
+     * When a widget is disabled it is drawn in gray and will not react to user input.
      */
     observable<bool> enabled = true;
 
@@ -113,7 +118,7 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    widget(gui_window &window, std::shared_ptr<widget> parent) noexcept;
+    widget(gui_window &window, widget *parent) noexcept;
 
     virtual ~widget();
     widget(const widget &) = delete;
@@ -132,20 +137,20 @@ public:
     [[nodiscard]] bool lineage_matches_id(std::string_view rhs) const noexcept
     {
         tt_axiom(is_gui_thread());
-        auto current = weak_from_this();
-        while (auto current_ = current.lock()) {
-            if (current_->id == rhs) {
+        auto current = this;
+        while (current) {
+            if (current->id == rhs) {
                 return true;
             }
 
-            current = current_->_parent;
+            current = current->parent;
         }
         return false;
     }
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
-     * a way that the maximum margin of neighbouring widgets is maintained.
+     * a way that the maximum margin of neighboring widgets is maintained.
      *
      * @pre `mutex` must be locked by current thread.
      * @return The margin for this widget.
@@ -165,7 +170,7 @@ public:
      * The toWindowTransfer and the DrawingContext will already include
      * the draw_layer.
      *
-     * An overlay widget such as popups will increase the layer by 25.0,
+     * An overlay widget such as pop-ups will increase the layer by 25.0,
      * to make sure the overlay will draw above other widgets in the window.
      *
      * @pre `mutex` must be locked by current thread.
@@ -273,10 +278,9 @@ public:
 
         _local_to_parent = local_to_parent;
         _parent_to_local = ~local_to_parent;
-        if (auto parent = _parent.lock()) {
-            auto parent_ = reinterpret_cast<widget *>(parent.get());
-            _local_to_window = local_to_parent * parent_->local_to_window();
-            _window_to_local = ~local_to_parent * parent_->window_to_local();
+        if (parent) {
+            _local_to_window = local_to_parent * parent->local_to_window();
+            _window_to_local = ~local_to_parent * parent->window_to_local();
         } else {
             _local_to_window = local_to_parent;
             _window_to_local = ~local_to_parent;
@@ -305,10 +309,9 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (auto parent = _parent.lock()) {
-            auto parent_ = reinterpret_cast<widget *>(parent.get());
-            ttlet draw_layer_delta = _draw_layer - parent_->draw_layer();
-            return set_layout_parameters_from_parent(child_rectangle, parent_->clipping_rectangle(), draw_layer_delta);
+        if (parent) {
+            ttlet draw_layer_delta = _draw_layer - parent->draw_layer();
+            return set_layout_parameters_from_parent(child_rectangle, parent->clipping_rectangle(), draw_layer_delta);
         } else {
             return set_layout_parameters_from_parent(child_rectangle, child_rectangle, 0.0f);
         }
@@ -388,7 +391,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hit_box hitbox_test(point2 position) const noexcept;
+    [[nodiscard]] virtual hitbox hitbox_test(point2 position) const noexcept;
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -502,7 +505,7 @@ public:
      * @return True when the command was handled by this widget or recursed child.
      */
     [[nodiscard]] virtual bool
-    handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept;
+    handle_command_recursive(command command, std::vector<widget const *> const &reject_list) noexcept;
 
     /*! Handle mouse event.
      * Called by the operating system to show the position and button state of the mouse.
@@ -540,32 +543,14 @@ public:
      * @retval currentKeyboardWidget when currentKeyboardWidget was found but no next widget was found.
      * @retval empty when currentKeyboardWidget is not found in this Widget.
      */
-    [[nodiscard]] virtual std::shared_ptr<widget> find_next_widget(
-        std::shared_ptr<widget> const &current_keyboard_widget,
+    [[nodiscard]] virtual widget const *find_next_widget(
+        widget const *current_keyboard_widget,
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept;
 
-    [[nodiscard]] std::shared_ptr<widget const> find_first_widget(keyboard_focus_group group) const noexcept;
+    [[nodiscard]] widget const *find_first_widget(keyboard_focus_group group) const noexcept;
 
-    [[nodiscard]] std::shared_ptr<widget const> find_last_widget(keyboard_focus_group group) const noexcept;
-
-    /** Get a shared_ptr to the parent.
-     */
-    [[nodiscard]] std::shared_ptr<widget const> shared_parent() const noexcept;
-
-    /** Get a shared_ptr to the parent.
-     */
-    [[nodiscard]] std::shared_ptr<widget> shared_parent() noexcept;
-
-    /** Get a reference to the parent.
-     * It is undefined behavior to call this function when the widget does not have a parent.
-     */
-    [[nodiscard]] widget const &parent() const noexcept;
-
-    /** Get a reference to the parent.
-     * It is undefined behavior to call this function when the widget does not have a parent.
-     */
-    [[nodiscard]] widget &parent() noexcept;
+    [[nodiscard]] widget const *find_last_widget(keyboard_focus_group group) const noexcept;
 
     /** Is this widget the first widget in the parent container.
      */
@@ -584,8 +569,7 @@ public:
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
-    [[nodiscard]] static std::vector<std::shared_ptr<widget>>
-    parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept;
+    [[nodiscard]] std::vector<widget const *>parent_chain() const noexcept;
 
     /** Remove and deallocate all child widgets.
      */
@@ -599,25 +583,27 @@ public:
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    std::shared_ptr<widget> add_widget(std::shared_ptr<widget> widget) noexcept
+    widget &add_widget(std::unique_ptr<widget> widget) noexcept
     {
         tt_axiom(is_gui_thread());
-        tt_axiom(&widget->parent() == this);
-        _children.push_back(widget);
+        tt_axiom(widget->parent == this);
+
+        auto widget_ptr = &(*widget);
+        _children.push_back(std::move(widget));
         _request_reconstrain = true;
         window.requestLayout = true;
-        return widget;
+        return *widget_ptr;
     }
 
     /** Add a widget directly to this widget.
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&...args)
+    T &make_widget(Args &&...args)
     {
         tt_axiom(is_gui_thread());
-        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         tmp->init();
-        return std::static_pointer_cast<T>(add_widget(std::move(tmp)));
+        return static_cast<T &>(add_widget(std::move(tmp)));
     }
 
     [[nodiscard]] widget &front() noexcept
@@ -681,14 +667,9 @@ public:
     }
 
 protected:
-    /** Pointer to the parent widget.
-     * May be a nullptr only when this is the top level widget.
-     */
-    std::weak_ptr<widget> _parent;
-
     /** A list of child widgets.
      */
-    std::vector<std::shared_ptr<widget>> _children;
+    std::vector<std::unique_ptr<widget>> _children;
 
     /** Mouse cursor is hovering over the widget.
      */

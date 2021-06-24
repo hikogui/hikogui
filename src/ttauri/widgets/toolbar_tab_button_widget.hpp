@@ -17,23 +17,22 @@ public:
 
     toolbar_tab_button_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        widget *parent,
         std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept :
-        super(window, std::move(parent), std::move(delegate))
+        super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::top_center;
     }
 
     template<typename Label, typename Value, typename OnValue>
     toolbar_tab_button_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
+        gui_window &window, widget *parent,
         Label &&label,
         Value &&value,
         OnValue &&on_value) noexcept :
         toolbar_tab_button_widget(
             window,
-            std::move(parent),
+            parent,
             make_value_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<OnValue>(on_value)))
     {
         set_label(std::forward<Label>(label));
@@ -86,7 +85,7 @@ public:
         // A toolbar tab button draws a focus line across the whole toolbar
         // which is beyond it's own clipping rectangle. The parent is the toolbar
         // so it will include everything that needs to be redrawn.
-        parent().request_redraw();
+        parent->request_redraw();
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
@@ -126,8 +125,7 @@ private:
     void draw_toolbar_tab_focus_line(draw_context context) noexcept
     {
         if (_focus and window.active and state() == tt::button_state::on) {
-            ttlet &parent_ = parent();
-            ttlet parent_rectangle = aarectangle{_parent_to_local * parent_.rectangle()};
+            ttlet parent_rectangle = aarectangle{_parent_to_local * parent->rectangle()};
 
             // Create a line, on the bottom of the toolbar over the full width.
             ttlet line_rectangle = aarectangle{
@@ -149,7 +147,7 @@ private:
 
         // Override the clipping rectangle to match the toolbar rectangle exactly
         // so that the bottom border of the tab button is not drawn.
-        context.set_clipping_rectangle(aarectangle{_parent_to_local * parent().clipping_rectangle()});
+        context.set_clipping_rectangle(aarectangle{_parent_to_local * parent->clipping_rectangle()});
 
         ttlet offset = theme::global().margin + theme::global().border_width;
         ttlet outline_rectangle =

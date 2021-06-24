@@ -15,19 +15,19 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    menu_button_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(window, std::move(parent), std::move(delegate))
+    menu_button_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(window, std::move(parent), delegate)
     {
         _margin = 0.0f;
         label_alignment = alignment::middle_left;
     }
 
     template<typename Label, typename Value, typename... Args>
-    menu_button_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label, Value &&value, Args &&...args) noexcept
+    menu_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept
         :
         menu_button_widget(
             window,
-            std::move(parent),
+            parent,
             make_value_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
     {
         set_label(std::forward<Label>(label));

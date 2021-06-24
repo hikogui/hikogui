@@ -12,7 +12,7 @@ namespace tt {
 
 window_traffic_lights_widget::window_traffic_lights_widget(
     gui_window &window,
-    std::shared_ptr<widget> parent) noexcept :
+    widget *parent) noexcept :
     super(window, parent)
 {
     // Toolbar buttons hug the toolbar and neighbor widgets.
@@ -263,15 +263,15 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
     return handled;
 }
 
-hit_box window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
+hitbox window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (_visible_rectangle.contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, hit_box::Type::Button};
+            return hitbox{this, _draw_layer, hitbox::Type::Button};
         } else {
-            return hit_box{};
+            return hitbox{};
         }
     } else {
         return {};

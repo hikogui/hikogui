@@ -28,15 +28,14 @@ public:
 
     observable<label> unknown_label;
 
-    selection_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    selection_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
     }
 
     template<typename Label, typename... DelegateArgs>
-    selection_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label, DelegateArgs &&...delegate_args) noexcept
-        :
-        selection_widget(window, std::move(parent), make_value_selection_delegate(std::forward<DelegateArgs>(delegate_args)...))
+    selection_widget(gui_window &window, widget *parent, Label &&label, DelegateArgs &&...delegate_args) noexcept :
+        selection_widget(window, parent, make_value_selection_delegate(std::forward<DelegateArgs>(delegate_args)...))
     {
         unknown_label = std::forward<Label>(label);
     }
@@ -47,17 +46,17 @@ public:
     {
         super::init();
 
-        _current_label_widget = make_widget<label_widget>(l10n("<current>"));
+        _current_label_widget = &make_widget<label_widget>(l10n("<current>"));
         _current_label_widget->visible = false;
         _current_label_widget->alignment = alignment::middle_left;
-        _unknown_label_widget = make_widget<label_widget>(unknown_label);
+        _unknown_label_widget = &make_widget<label_widget>(unknown_label);
         _unknown_label_widget->alignment = alignment::middle_left;
         _unknown_label_widget->text_style = theme_text_style::placeholder;
 
-        _overlay_widget = make_widget<overlay_view_widget>();
+        _overlay_widget = &make_widget<overlay_view_widget>();
         _overlay_widget->visible = false;
-        _scroll_widget = _overlay_widget->make_widget<vertical_scroll_view_widget<>>();
-        _column_widget = _scroll_widget->make_widget<column_layout_widget>();
+        _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_view_widget<>>();
+        _column_widget = &_scroll_widget->make_widget<column_layout_widget>();
 
         _unknown_label_callback = this->unknown_label.subscribe([this] {
             _request_reconstrain = true;
@@ -223,7 +222,7 @@ public:
         return super::handle_event(command);
     }
 
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
 
@@ -231,8 +230,8 @@ public:
         if (_visible_rectangle.contains(position)) {
             r = std::max(
                 r,
-                hit_box{
-                    weak_from_this(), _draw_layer, (enabled and _has_options) ? hit_box::Type::Button : hit_box::Type::Default});
+                hitbox{
+                    this, _draw_layer, (enabled and _has_options) ? hitbox::Type::Button : hitbox::Type::Default});
         }
 
         return r;
@@ -261,8 +260,8 @@ private:
     typename delegate_type::callback_ptr_type _delegate_callback;
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
 
-    std::shared_ptr<label_widget> _current_label_widget;
-    std::shared_ptr<label_widget> _unknown_label_widget;
+    label_widget *_current_label_widget;
+    label_widget *_unknown_label_widget;
 
     aarectangle _option_rectangle;
     aarectangle _left_box_rectangle;
@@ -273,25 +272,25 @@ private:
     bool _selecting = false;
     bool _has_options = false;
 
-    std::shared_ptr<overlay_view_widget> _overlay_widget;
-    std::shared_ptr<vertical_scroll_view_widget<>> _scroll_widget;
-    std::shared_ptr<column_layout_widget> _column_widget;
+    overlay_view_widget *_overlay_widget;
+    vertical_scroll_view_widget<> *_scroll_widget;
+    column_layout_widget *_column_widget;
 
-    std::vector<std::shared_ptr<menu_button_widget>> _menu_button_widgets;
+    std::vector<menu_button_widget *> _menu_button_widgets;
     std::vector<typename menu_button_widget::callback_ptr_type> _menu_button_callbacks;
 
-    [[nodiscard]] std::shared_ptr<menu_button_widget> get_first_menu_button() const noexcept
+    [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept
     {
         tt_axiom(is_gui_thread());
 
         if (std::ssize(_menu_button_widgets) != 0) {
             return _menu_button_widgets.front();
         } else {
-            return {};
+            return nullptr;
         }
     }
 
-    [[nodiscard]] std::shared_ptr<menu_button_widget> get_selected_menu_button() const noexcept
+    [[nodiscard]] menu_button_widget const *get_selected_menu_button() const noexcept
     {
         tt_axiom(is_gui_thread());
 
@@ -300,7 +299,7 @@ private:
                 return button;
             }
         }
-        return {};
+        return nullptr;
     }
 
     void start_selecting() noexcept
@@ -348,7 +347,7 @@ private:
 
         decltype(selected) index = 0;
         for (auto &&label : options) {
-            auto menu_button = _column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
+            auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
             _menu_button_callbacks.push_back(menu_button->subscribe([this, index] {
                 run_on_gui_thread([this, index] {

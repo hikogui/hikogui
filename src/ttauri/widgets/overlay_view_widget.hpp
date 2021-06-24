@@ -13,7 +13,7 @@ class overlay_view_widget final : public widget {
 public:
     using super = widget;
 
-    overlay_view_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    overlay_view_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
     {
         tt_axiom(is_gui_thread());
 
@@ -78,7 +78,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (auto parent = _parent.lock()) {
+        if (parent) {
             ttlet requested_window_rectangle = aarectangle{parent->local_to_window() * requested_rectangle};
             ttlet window_bounds = shrink(aarectangle{window.size}, _margin);
             ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
@@ -89,13 +89,13 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args &&... args) noexcept
+    WidgetType &make_widget(Args &&... args) noexcept
     {
         tt_axiom(is_gui_thread());
 
-        auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
+        auto &widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         tt_axiom(!_content);
-        _content = widget;
+        _content = &widget;
         return widget;
     }
 
@@ -116,7 +116,7 @@ public:
     }
 
 private:
-    std::shared_ptr<widget> _content;
+    widget *_content;
 
     void draw_background(draw_context context) noexcept
     {

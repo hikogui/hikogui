@@ -15,16 +15,16 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    toolbar_button_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(window, std::move(parent), std::move(delegate))
+    toolbar_button_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(window, parent, std::move(delegate))
     {
         _margin = 0.0f;
         label_alignment = alignment::middle_left;
     }
 
     template<typename Label>
-    toolbar_button_widget(gui_window &window, std::shared_ptr<widget> parent, Label &&label) noexcept :
-        toolbar_button_widget(window, std::move(parent), std::make_shared<button_delegate>())
+    toolbar_button_widget(gui_window &window, widget *parent, Label &&label) noexcept :
+        toolbar_button_widget(window, parent, std::make_shared<button_delegate>())
     {
         set_label(std::forward<Label>(label));
     }

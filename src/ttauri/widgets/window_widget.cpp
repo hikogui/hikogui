@@ -23,11 +23,11 @@ window_widget::~window_widget() {}
 
 void window_widget::init() noexcept
 {
-    _toolbar = make_widget<toolbar_widget>();
+    _toolbar = &make_widget<toolbar_widget>();
 
     if (theme::global().operating_system == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-        _system_menu = _toolbar->make_widget<system_menu_widget>();
+        _system_menu = &_toolbar->make_widget<system_menu_widget>();
         _title_callback = title.subscribe([this]{
             run_on_gui_thread([this]{
                 this->_system_menu->icon = (*this->title).icon;
@@ -41,7 +41,7 @@ void window_widget::init() noexcept
         tt_no_default();
     }
 
-    _content = make_widget<grid_layout_widget>(_content_delegate);
+    _content = &make_widget<grid_layout_widget>(_content_delegate);
 }
 
 [[nodiscard]] bool
@@ -90,7 +90,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
     super::update_layout(display_time_point, need_layout);
 }
 
-hit_box window_widget::hitbox_test(point2 position) const noexcept
+hitbox window_widget::hitbox_test(point2 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -106,23 +106,23 @@ hit_box window_widget::hitbox_test(point2 position) const noexcept
     ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
     ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
 
-    auto r = hit_box{weak_from_this(), _draw_layer};
+    auto r = hitbox{this, _draw_layer};
     if (is_on_bottom_left_corner) {
-        return {weak_from_this(), _draw_layer, hit_box::Type::BottomLeftResizeCorner};
+        return {this, _draw_layer, hitbox::Type::BottomLeftResizeCorner};
     } else if (is_on_bottom_right_corner) {
-        return {weak_from_this(), _draw_layer, hit_box::Type::BottomRightResizeCorner};
+        return {this, _draw_layer, hitbox::Type::BottomRightResizeCorner};
     } else if (is_on_top_left_corner) {
-        return {weak_from_this(), _draw_layer, hit_box::Type::TopLeftResizeCorner};
+        return {this, _draw_layer, hitbox::Type::TopLeftResizeCorner};
     } else if (is_on_top_right_corner) {
-        return {weak_from_this(), _draw_layer, hit_box::Type::TopRightResizeCorner};
+        return {this, _draw_layer, hitbox::Type::TopRightResizeCorner};
     } else if (is_on_left_edge) {
-        r.type = hit_box::Type::LeftResizeBorder;
+        r.type = hitbox::Type::LeftResizeBorder;
     } else if (is_on_right_edge) {
-        r.type = hit_box::Type::RightResizeBorder;
+        r.type = hitbox::Type::RightResizeBorder;
     } else if (is_on_bottom_edge) {
-        r.type = hit_box::Type::BottomResizeBorder;
+        r.type = hitbox::Type::BottomResizeBorder;
     } else if (is_on_top_edge) {
-        r.type = hit_box::Type::TopResizeBorder;
+        r.type = hitbox::Type::TopResizeBorder;
     }
 
     if ((is_on_left_edge && _left_resize_border_has_priority) || (is_on_right_edge && _right_resize_border_has_priority) ||

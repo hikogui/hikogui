@@ -7,7 +7,7 @@
 #include "gui_window_size.hpp"
 #include "gui_window_delegate.hpp"
 #include "mouse_cursor.hpp"
-#include "hit_box.hpp"
+#include "hitbox.hpp"
 #include "mouse_event.hpp"
 #include "keyboard_event.hpp"
 #include "keyboard_focus_direction.hpp"
@@ -44,7 +44,7 @@ public:
      */
     mouse_cursor currentmouse_cursor = mouse_cursor::None;
 
-    /** When set to true the widgets will be layed out.
+    /** When set to true the widgets will be laid out.
      */
     std::atomic<bool> requestLayout = true;
 
@@ -80,7 +80,7 @@ public:
     float dpi = 72.0;
 
     //! The widget covering the complete window.
-    std::shared_ptr<window_widget> widget;
+    std::unique_ptr<window_widget> widget;
 
     gui_window(std::shared_ptr<gui_window_delegate> delegate, label const &title);
     virtual ~gui_window();
@@ -104,7 +104,6 @@ public:
      * `deinit()` should not take locks on window::mutex.
      */
     virtual void deinit();
-
 
     void set_device(gfx_device *device) noexcept;
 
@@ -144,19 +143,19 @@ public:
      * The implementation is in widgets.hpp
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(size_t column_nr, size_t row_nr, Args &&...args);
+    T &make_widget(size_t column_nr, size_t row_nr, Args &&...args);
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(std::string_view address, Args &&...args);
+    T &make_widget(std::string_view address, Args &&...args);
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
     template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    std::shared_ptr<T> make_toolbar_widget(Args &&...args);
+    T &make_toolbar_widget(Args &&...args);
 
     /** Set the mouse cursor icon.
      */
@@ -192,7 +191,7 @@ public:
      */
     virtual void set_text_on_clipboard(std::string str) noexcept = 0;
 
-    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, point2 position = {}) noexcept;
+    void update_mouse_target(tt::widget const *new_target_widget, point2 position = {}) noexcept;
 
     /** Change the keyboard focus to the given widget.
      * If the group of the widget is incorrect then no widget will be in focus.
@@ -200,9 +199,7 @@ public:
      * @param widget The new widget to focus, or empty to remove all keyboard focus.
      * @param group The group the widget must belong to.
      */
-    void update_keyboard_target(
-        std::shared_ptr<tt::widget> widget,
-        keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
+    void update_keyboard_target(tt::widget const *widget, keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
 
     /** Change the keyboard focus to the previous or next widget from the given widget.
      * This function will find the closest widget from the given widget which belongs to the given
@@ -212,10 +209,7 @@ public:
      * @param group The group the widget must belong to.
      * @param direction The direction to search in, or current to select the current widget.
      */
-    void update_keyboard_target(
-        std::shared_ptr<tt::widget> const &widget,
-        keyboard_focus_group group,
-        keyboard_focus_direction direction) noexcept;
+    void update_keyboard_target(tt::widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
 
     /** Change the keyboard focus to the given, previous or next widget.
      * This function will find the closest widget from the current widget which belongs to the given
@@ -313,7 +307,7 @@ protected:
         return false;
     }
 
-    /*! Mouse mouse event.
+    /** Send Mouse event.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
@@ -339,12 +333,12 @@ private:
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
      */
-    std::weak_ptr<tt::widget> _mouse_target_widget = {};
+    tt::widget const *_mouse_target_widget = nullptr;
 
     /** Target of the keyboard
      * widget where keyboard events are sent to.
      */
-    std::weak_ptr<tt::widget> _keyboard_target_widget = {};
+    tt::widget const *_keyboard_target_widget = nullptr;
 
     /** Send event to a target widget.
      *
@@ -355,7 +349,7 @@ private:
      *  - The window itself.
      */
     template<typename Event>
-    bool send_event_to_widget(std::shared_ptr<tt::widget> target_widget, Event const &event) noexcept;
+    bool send_event_to_widget(tt::widget const *target_widget, Event const &event) noexcept;
 };
 
 } // namespace tt

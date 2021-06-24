@@ -12,8 +12,8 @@
 
 namespace tt {
 
-system_menu_widget::system_menu_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept :
-    super(window, std::move(parent))
+system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept :
+    super(window, parent)
 {
     // Toolbar buttons hug the toolbar and neighbor widgets.
     _margin = 0.0f;
@@ -21,7 +21,7 @@ system_menu_widget::system_menu_widget(gui_window &window, std::shared_ptr<widge
 
 void system_menu_widget::init() noexcept
 {
-    _icon_widget = make_widget<icon_widget>(icon);
+    _icon_widget = &make_widget<icon_widget>(icon);
 }
 
 [[nodiscard]] bool
@@ -63,14 +63,14 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     super::update_layout(display_time_point, need_layout);
 }
 
-hit_box system_menu_widget::hitbox_test(point2 position) const noexcept
+hitbox system_menu_widget::hitbox_test(point2 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (_visible_rectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return hit_box{weak_from_this(), _draw_layer, hit_box::Type::ApplicationIcon};
+        return hitbox{this, _draw_layer, hitbox::Type::ApplicationIcon};
     } else {
         return {};
     }

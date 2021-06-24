@@ -23,8 +23,7 @@ public:
 
     template<typename Content, typename Aperture, typename Offset>
     scroll_bar_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
+        gui_window &window, widget *parent,
         Content &&content,
         Aperture &&aperture,
         Offset &&offset) noexcept :
@@ -99,14 +98,14 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
-    hit_box hitbox_test(point2 position) const noexcept override
+    hitbox hitbox_test(point2 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
 
         if (visible and _visible_rectangle.contains(position) and slider_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer};
+            return hitbox{this, _draw_layer};
         } else {
-            return hit_box{};
+            return hitbox{};
         }
     }
 
@@ -244,5 +243,8 @@ private:
         context.draw_box(translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
     }
 };
+
+using horizontal_scroll_bar_widget = scroll_bar_widget<false>;
+using vertical_scroll_bar_widget = scroll_bar_widget<false>;
 
 } // namespace tt

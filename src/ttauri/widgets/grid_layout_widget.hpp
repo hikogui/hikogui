@@ -20,7 +20,7 @@ public:
 
     grid_layout_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        widget *parent,
         std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept;
 
     void init() noexcept override;
@@ -32,18 +32,18 @@ public:
 
     /* Add a widget to the grid.
      */
-    std::shared_ptr<widget> add_widget(size_t column_nr, size_t row_nr, std::shared_ptr<widget> childWidget) noexcept;
+    widget &add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> child_widget) noexcept;
 
     /** Add a widget directly to this widget.
      *
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(size_t column_nr, size_t row_nr, Args &&...args)
+    T &make_widget(size_t column_nr, size_t row_nr, Args &&...args)
     {
-        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         tmp->init();
-        return std::static_pointer_cast<T>(add_widget(column_nr, row_nr, std::move(tmp)));
+        return static_cast<T &>(add_widget(column_nr, row_nr, std::move(tmp)));
     }
 
     /** Add a widget directly to this widget.
@@ -51,7 +51,7 @@ public:
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(std::string_view address, Args &&...args)
+    T &make_widget(std::string_view address, Args &&...args)
     {
         ttlet [column_nr, row_nr] = parse_spread_sheet_address(address);
         return make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
@@ -61,10 +61,10 @@ private:
     struct cell {
         size_t column_nr;
         size_t row_nr;
-        std::shared_ptr<tt::widget> widget;
+        tt::widget *widget;
 
-        cell(size_t column_nr, size_t row_nr, std::shared_ptr<tt::widget> widget) noexcept :
-            column_nr(column_nr), row_nr(row_nr), widget(std::move(widget))
+        cell(size_t column_nr, size_t row_nr, tt::widget *widget) noexcept :
+            column_nr(column_nr), row_nr(row_nr), widget(widget)
         {
         }
 

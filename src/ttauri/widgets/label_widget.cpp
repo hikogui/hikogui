@@ -8,13 +8,13 @@ namespace tt {
 
 label_widget::~label_widget() {}
 
-label_widget::label_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, std::move(parent)) {}
+label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
 void label_widget::init() noexcept
 {
-    _icon_widget = super::make_widget<icon_widget>();
+    _icon_widget = &super::make_widget<icon_widget>();
     _icon_widget->alignment = alignment;
-    _text_widget = super::make_widget<text_widget>();
+    _text_widget = &super::make_widget<text_widget>();
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
 

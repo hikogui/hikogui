@@ -22,11 +22,11 @@ public:
 
     ~system_menu_widget() {}
 
-    system_menu_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept;
+    system_menu_widget(gui_window &window, widget *parent) noexcept;
 
     template<typename Icon>
-    system_menu_widget(gui_window &window, std::shared_ptr<widget> parent, Icon &&icon) noexcept :
-        system_menu_widget(window, std::move(parent))
+    system_menu_widget(gui_window &window, widget *parent, Icon &&icon) noexcept :
+        system_menu_widget(window, parent)
     {
         this->icon = std::forward<Icon>(icon);
 
@@ -40,10 +40,10 @@ public:
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
 
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
 
 private:
-    std::shared_ptr<icon_widget> _icon_widget;
+    icon_widget *_icon_widget;
 
     aarectangle system_menu_rectangle;
 };

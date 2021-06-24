@@ -61,7 +61,7 @@ public:
      */
     observable<bool> continues = false;
 
-    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    text_field_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent), _delegate(delegate), _field(theme::global(theme_text_style::label)), _shaped_text()
     {
         _delegate_callback = _delegate->subscribe(*this, [this]{
@@ -70,7 +70,7 @@ public:
     }
 
     template<typename Value>
-    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
+    text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept :
         text_field_widget(window, parent, make_value_text_field_delegate(std::forward<Value>(value)))
     {
     }
@@ -323,14 +323,14 @@ public:
         return handled;
     }
 
-    hit_box hitbox_test(point2 position) const noexcept override
+    hitbox hitbox_test(point2 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
 
         if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::TextEdit : hit_box::Type::Default};
+            return hitbox{this, _draw_layer, enabled ? hitbox::Type::TextEdit : hitbox::Type::Default};
         } else {
-            return hit_box{};
+            return hitbox{};
         }
     }
 

@@ -15,17 +15,17 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    checkbox_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(window, std::move(parent), std::move(delegate))
+    checkbox_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+        super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::top_left;
     }
 
     template<typename Value, typename... Args>
-    checkbox_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value, Args &&...args) noexcept :
+    checkbox_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept :
         checkbox_widget(
             window,
-            std::move(parent),
+            parent,
             make_value_button_delegate<button_type::toggle>(std::forward<Value>(value), std::forward<Args>(args)...))
     {
     }

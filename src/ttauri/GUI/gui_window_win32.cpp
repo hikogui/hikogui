@@ -660,20 +660,20 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         ttlet hitbox_type = widget->hitbox_test(screen_to_window() * screen_position).type;
 
         switch (hitbox_type) {
-        case hit_box::Type::BottomResizeBorder: set_cursor(mouse_cursor::None); return HTBOTTOM;
-        case hit_box::Type::TopResizeBorder: set_cursor(mouse_cursor::None); return HTTOP;
-        case hit_box::Type::LeftResizeBorder: set_cursor(mouse_cursor::None); return HTLEFT;
-        case hit_box::Type::RightResizeBorder: set_cursor(mouse_cursor::None); return HTRIGHT;
-        case hit_box::Type::BottomLeftResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMLEFT;
-        case hit_box::Type::BottomRightResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMRIGHT;
-        case hit_box::Type::TopLeftResizeCorner: set_cursor(mouse_cursor::None); return HTTOPLEFT;
-        case hit_box::Type::TopRightResizeCorner: set_cursor(mouse_cursor::None); return HTTOPRIGHT;
-        case hit_box::Type::ApplicationIcon: set_cursor(mouse_cursor::None); return HTSYSMENU;
-        case hit_box::Type::MoveArea: set_cursor(mouse_cursor::None); return HTCAPTION;
-        case hit_box::Type::TextEdit: set_cursor(mouse_cursor::TextEdit); return HTCLIENT;
-        case hit_box::Type::Button: set_cursor(mouse_cursor::Button); return HTCLIENT;
-        case hit_box::Type::Default: set_cursor(mouse_cursor::Default); return HTCLIENT;
-        case hit_box::Type::Outside: set_cursor(mouse_cursor::None); return HTCLIENT;
+        case hitbox::Type::BottomResizeBorder: set_cursor(mouse_cursor::None); return HTBOTTOM;
+        case hitbox::Type::TopResizeBorder: set_cursor(mouse_cursor::None); return HTTOP;
+        case hitbox::Type::LeftResizeBorder: set_cursor(mouse_cursor::None); return HTLEFT;
+        case hitbox::Type::RightResizeBorder: set_cursor(mouse_cursor::None); return HTRIGHT;
+        case hitbox::Type::BottomLeftResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMLEFT;
+        case hitbox::Type::BottomRightResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMRIGHT;
+        case hitbox::Type::TopLeftResizeCorner: set_cursor(mouse_cursor::None); return HTTOPLEFT;
+        case hitbox::Type::TopRightResizeCorner: set_cursor(mouse_cursor::None); return HTTOPRIGHT;
+        case hitbox::Type::ApplicationIcon: set_cursor(mouse_cursor::None); return HTSYSMENU;
+        case hitbox::Type::MoveArea: set_cursor(mouse_cursor::None); return HTCAPTION;
+        case hitbox::Type::TextEdit: set_cursor(mouse_cursor::TextEdit); return HTCLIENT;
+        case hitbox::Type::Button: set_cursor(mouse_cursor::Button); return HTCLIENT;
+        case hitbox::Type::Default: set_cursor(mouse_cursor::Default); return HTCLIENT;
+        case hitbox::Type::Outside: set_cursor(mouse_cursor::None); return HTCLIENT;
         default: tt_no_default();
         }
     } break;

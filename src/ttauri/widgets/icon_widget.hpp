@@ -25,17 +25,17 @@ public:
 
     icon_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent) noexcept :
-        super(window, std::move(parent))
+        widget *parent) noexcept :
+        super(window, parent)
     {
     }
 
     template<typename Icon>
     icon_widget(
         gui_window &window,
-        std::shared_ptr<widget> parent,
+        widget *parent,
         Icon &&icon) noexcept :
-        icon_widget(window, std::move(parent))
+        icon_widget(window, parent)
     {
         this->icon = std::forward<Icon>(icon);
     }

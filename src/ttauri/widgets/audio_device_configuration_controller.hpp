@@ -15,18 +15,17 @@ namespace tt {
 
 class audio_device_configuration_controller {
 public:
-
     [[nodiscard]] audio_device_configuration_controller(grid_layout_widget &grid, std::string_view address_range) noexcept;
 
 private:
     observable<pcm_format> _pcm_selected;
 
-    std::shared_ptr<momentary_button_widget> _device_config_button;
-    std::shared_ptr<checkbox_widget> _exclusivity_checkbox;
-    std::shared_ptr<text_field_widget> _num_input_channels_text_field;
-    std::shared_ptr<text_field_widget> _num_output_channels_text_field;
-    std::shared_ptr<selection_widget> _pcm_format_selection;
-    std::shared_ptr<text_field_widget> _sample_rate_text_field;
+    momentary_button_widget *_device_config_button;
+    checkbox_widget *_exclusivity_checkbox;
+    text_field_widget *_num_input_channels_text_field;
+    text_field_widget *_num_output_channels_text_field;
+    selection_widget *_pcm_format_selection;
+    text_field_widget *_sample_rate_text_field;
 };
 
-}
+} // namespace tt

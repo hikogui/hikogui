@@ -14,21 +14,20 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    momentary_button_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept
+    momentary_button_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept
         :
-        super(window, std::move(parent), std::move(delegate))
+        super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::middle_left;
     }
 
     template<typename Label>
     momentary_button_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
+        gui_window &window, widget *parent,
         Label &&label) noexcept :
         momentary_button_widget(
             window,
-            std::move(parent), std::make_shared<delegate_type>())
+            parent, std::make_shared<delegate_type>())
     {
         set_label(std::forward<Label>(label));
     }

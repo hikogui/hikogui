@@ -18,7 +18,7 @@ public:
     observable<value_type> value = 0;
 
     template<typename Value>
-    tab_view_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
+    tab_view_widget(gui_window &window, widget *parent, Value &&value) noexcept :
         super(window, parent), value(std::forward<Value>(value))
     {
         tt_axiom(is_gui_thread());
@@ -51,12 +51,12 @@ public:
         if (has_updated_contraints) {
             ttlet &selected_child_ = selected_child();
             for (ttlet &child : _children) {
-                child->visible = child == selected_child_;
+                child->visible = child.get() == &selected_child_;
             }
 
-            auto size_changed = compare_then_assign(_minimum_size, selected_child_->minimum_size());
-            size_changed |= compare_then_assign(_preferred_size, selected_child_->preferred_size());
-            size_changed |= compare_then_assign(_maximum_size, selected_child_->maximum_size());
+            auto size_changed = compare_then_assign(_minimum_size, selected_child_.minimum_size());
+            size_changed |= compare_then_assign(_preferred_size, selected_child_.preferred_size());
+            size_changed |= compare_then_assign(_maximum_size, selected_child_.maximum_size());
             tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 
             if (size_changed) {
@@ -82,8 +82,8 @@ public:
         super::update_layout(display_time_point, need_layout);
     }
 
-    std::shared_ptr<widget> find_next_widget(
-        std::shared_ptr<widget> const &current_widget,
+    widget *find_next_widget(
+        widget *current_widget,
         keyboard_focus_group group,
         keyboard_focus_direction direction) const noexcept
     {
@@ -92,11 +92,11 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(value_type value, Args &&...args) noexcept
+    WidgetType &make_widget(value_type value, Args &&...args) noexcept
     {
         tt_axiom(is_gui_thread());
 
-        auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
+        auto &widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         _children_keys.push_back(std::move(value));
         return widget;
     }
@@ -146,16 +146,16 @@ private:
         return find_child(*value);
     }
 
-    [[nodiscard]] std::shared_ptr<widget> const &selected_child() const noexcept
+    [[nodiscard]] widget &selected_child() noexcept
     {
         tt_axiom(is_gui_thread());
         tt_axiom(std::ssize(_children) != 0);
 
         auto i = find_selected_child();
         if (i != _children.cend()) {
-            return *i;
+            return **i;
         } else {
-            return _children.front();
+            return *_children.front();
         }
     }
 

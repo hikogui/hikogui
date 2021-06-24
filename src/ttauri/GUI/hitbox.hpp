@@ -6,13 +6,13 @@
 
 #include <limits>
 #include <cstdint>
-#include <memory>
 
 namespace tt {
 
 class widget;
 
-struct hit_box {
+class hitbox {
+public:
     enum class Type : uint8_t {
         Outside,
         Default,
@@ -30,34 +30,42 @@ struct hit_box {
         ApplicationIcon
     };
 
-    std::weak_ptr<widget const> widget;
-    float elevation;
     Type type;
+    widget const *widget;
 
-    hit_box() noexcept : widget({}), elevation(-std::numeric_limits<float>::max()), type(Type::Outside)
+    constexpr hitbox(hitbox const &) noexcept = default;
+    constexpr hitbox(hitbox &&) noexcept = default;
+    constexpr hitbox &operator=(hitbox const &) noexcept = default;
+    constexpr hitbox &operator=(hitbox &&) noexcept = default;
+
+    constexpr hitbox() noexcept : widget(nullptr), _elevation(-std::numeric_limits<float>::max()), type(Type::Outside)
     {
     }
 
-    hit_box(std::weak_ptr<tt::widget const> widget, float elevation = -std::numeric_limits<float>::max(), Type type = Type::Default) noexcept
+    constexpr hitbox(
+        tt::widget const *widget,
+        float elevation = -std::numeric_limits<float>::max(),
+        Type type = Type::Default) noexcept
         :
-        widget(widget), elevation(elevation), type(type)
+        widget(widget), _elevation(elevation), type(type)
     {
     }
 
-    friend bool operator<(hit_box const &lhs, hit_box const &rhs) noexcept {
-        if (lhs.widget.expired() == rhs.widget.expired()) {
-            if (lhs.elevation == rhs.elevation) {
+    friend bool operator<(hitbox const &lhs, hitbox const &rhs) noexcept {
+        if ((lhs.widget == nullptr) == (rhs.widget == nullptr)) {
+            if (lhs._elevation == rhs._elevation) {
                 return static_cast<int>(lhs.type) < static_cast<int>(rhs.type);
             } else {
                 // We actually want to check if a hitbox is above another hitbox;
                 // which means the inverse of depth.
-                return lhs.elevation < rhs.elevation;
+                return lhs._elevation < rhs._elevation;
             }
         } else {
-            return lhs.widget.expired();
+            return lhs.widget == nullptr;
         }
     }
-
+private:
+    float _elevation;
 };
 
 }

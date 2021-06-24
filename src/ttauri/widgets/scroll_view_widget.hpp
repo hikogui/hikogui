@@ -19,7 +19,7 @@ public:
     static constexpr bool can_scroll_vertically = CanScrollVertically;
     static constexpr bool controls_window = ControlsWindow;
 
-    scroll_view_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    scroll_view_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
     {
         tt_axiom(is_gui_thread());
 
@@ -35,9 +35,9 @@ public:
     void init() noexcept override
     {
         _horizontal_scroll_bar =
-            super::make_widget<scroll_bar_widget<false>>(_scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
+            &super::make_widget<horizontal_scroll_bar_widget>(_scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
         _vertical_scroll_bar =
-            super::make_widget<scroll_bar_widget<true>>(_scroll_content_height, _scroll_aperture_height, _scroll_offset_y);
+            &super::make_widget<vertical_scroll_bar_widget>(_scroll_content_height, _scroll_aperture_height, _scroll_offset_y);
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
@@ -167,7 +167,7 @@ public:
         super::update_layout(display_time_point, need_layout);
     }
 
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
@@ -176,20 +176,20 @@ public:
 
         if (_visible_rectangle.contains(position)) {
             // Claim mouse events for scrolling.
-            r = std::max(r, hit_box{weak_from_this(), _draw_layer});
+            r = std::max(r, hitbox{this, _draw_layer});
         }
 
         return r;
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args &&...args) noexcept
+    WidgetType &make_widget(Args &&...args) noexcept
     {
         tt_axiom(is_gui_thread());
 
-        auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
+        auto &widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         tt_axiom(!_content);
-        _content = widget;
+        _content = &widget;
         return widget;
     }
 
@@ -230,15 +230,15 @@ public:
         _scroll_offset_y += delta_y;
 
         // There may be recursive scroll view, and they all need to move until the rectangle is visible.
-        if (auto parent = _parent.lock()) {
+        if (parent) {
             parent->scroll_to_show(_local_to_parent * translate2(delta_x, delta_y) * rectangle);
         }
     }
 
 private:
-    std::shared_ptr<widget> _content;
-    std::shared_ptr<scroll_bar_widget<false>> _horizontal_scroll_bar;
-    std::shared_ptr<scroll_bar_widget<true>> _vertical_scroll_bar;
+    widget *_content;
+    horizontal_scroll_bar_widget *_horizontal_scroll_bar;
+    vertical_scroll_bar_widget *_vertical_scroll_bar;
 
     observable<float> _scroll_content_width;
     observable<float> _scroll_content_height;

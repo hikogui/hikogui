@@ -36,9 +36,10 @@ public:
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
 
-    [[nodiscard]] color backgroundColor() noexcept {
+    [[nodiscard]] color backgroundColor() noexcept
+    {
         tt_axiom(is_gui_thread());
         return theme::global(theme_color::fill, _semantic_layer);
     }
@@ -54,28 +55,28 @@ public:
         _top_resize_border_has_priority = top;
     }
 
-    [[nodiscard]] std::shared_ptr<grid_layout_widget> content() const noexcept
+    [[nodiscard]] grid_layout_widget &content() noexcept
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
-        return _content;
+        return *_content;
     }
 
-    [[nodiscard]] std::shared_ptr<toolbar_widget> toolbar() const noexcept
+    [[nodiscard]] toolbar_widget &toolbar() noexcept
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_toolbar);
-        return _toolbar;
+        return *_toolbar;
     }
 
 private:
     decltype(title)::callback_ptr_type _title_callback;
 
     std::shared_ptr<grid_layout_delegate> _content_delegate;
-    std::shared_ptr<grid_layout_widget> _content;
-    std::shared_ptr<toolbar_widget> _toolbar;
+    grid_layout_widget *_content;
+    toolbar_widget *_toolbar;
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-    std::shared_ptr<system_menu_widget> _system_menu;
+    system_menu_widget *_system_menu;
 #endif
 
     bool _left_resize_border_has_priority = true;

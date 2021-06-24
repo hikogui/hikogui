@@ -18,13 +18,13 @@ public:
     using super = widget;
     static constexpr auto arrangement = Arrangement;
 
-    row_column_layout_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept :
+    row_column_layout_widget(gui_window &window, widget *parent) noexcept :
         super(window, parent)
     {
         tt_axiom(is_gui_thread());
 
-        if (auto p = _parent.lock()) {
-            _semantic_layer = p->semantic_layer();
+        if (parent) {
+            _semantic_layer = parent->semantic_layer();
         }
         _margin = 0.0f;
     }

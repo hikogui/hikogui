@@ -16,7 +16,7 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.hpp>
-    hit_box.hpp
+    hitbox.hpp
     keyboard_bindings.cpp
     keyboard_bindings.hpp
     keyboard_event.hpp
