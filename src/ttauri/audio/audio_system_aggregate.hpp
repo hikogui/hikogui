@@ -12,7 +12,7 @@ class audio_system_aggregate : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_aggregate(std::shared_ptr<audio_system_delegate> delegate);
+    audio_system_aggregate(unique_or_borrow_ptr<audio_system_delegate> delegate);
 
     [[nodiscard]] std::vector<std::shared_ptr<audio_device>> devices() noexcept override
     {
@@ -35,7 +35,7 @@ public:
     template<typename T, typename... Args>
     std::shared_ptr<audio_system> make_audio_system(Args &&...args)
     {
-        auto new_audio_system = std::make_shared<T>(_aggregate_delegate, std::forward<Args>(args)...);
+        auto new_audio_system = std::make_shared<T>(*_aggregate_delegate, std::forward<Args>(args)...);
         new_audio_system->init();
         add_audio_system(new_audio_system);
         delegate().audio_device_list_changed(*this);
@@ -44,7 +44,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<audio_system>> _children;
-    std::shared_ptr<audio_system_delegate> _aggregate_delegate;
+    unique_or_borrow_ptr<audio_system_delegate> _aggregate_delegate;
 
     friend class audio_system_aggregate_delegate;
 };

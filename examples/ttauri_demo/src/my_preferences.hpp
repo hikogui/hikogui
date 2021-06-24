@@ -9,7 +9,6 @@
 class my_preferences : public tt::preferences {
 public:
     using super = tt::preferences;
-    inline static std::unique_ptr<my_preferences> global;
 
     tt::observable<std::string> audio_output_device_id;
 
@@ -47,3 +46,4 @@ public:
 
 };
 
+inline std::unique_ptr<my_preferences> g_my_preferences;

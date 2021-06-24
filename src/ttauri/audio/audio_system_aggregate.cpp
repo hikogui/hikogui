@@ -19,8 +19,8 @@ private:
     audio_system_aggregate &_owner;
 };
 
-audio_system_aggregate::audio_system_aggregate(std::shared_ptr<audio_system_delegate> delegate) :
-    super(std::move(delegate)), _aggregate_delegate(std::make_shared<audio_system_aggregate_delegate>(*this))
+audio_system_aggregate::audio_system_aggregate(unique_or_borrow_ptr<audio_system_delegate> delegate) :
+    super(std::move(delegate)), _aggregate_delegate(std::make_unique<audio_system_aggregate_delegate>(*this))
 {
 }
 

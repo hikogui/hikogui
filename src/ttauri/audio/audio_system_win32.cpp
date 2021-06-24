@@ -72,7 +72,7 @@ private:
     audio_system_win32 *_system;
 };
 
-audio_system_win32::audio_system_win32(std::shared_ptr<audio_system_delegate> delegate) : audio_system(std::move(delegate))
+audio_system_win32::audio_system_win32(unique_or_borrow_ptr<audio_system_delegate> delegate) : audio_system(std::move(delegate))
 {
     tt_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
