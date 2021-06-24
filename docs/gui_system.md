@@ -36,6 +36,37 @@ the `tt::widget::enabled`, `tt::widget::visible` members and various
 labels. They are also used by value-delegates that some widget use
 by default.
 
+Delegates
+---------
+Many widget can be controlled through a delegate object. The widget
+queries a delegate for the data to display and sends messages to
+the delegate when a user interacts with the widget.
+
+In the example below a user defined instance of `my_delegate` is
+is passed to the constructor of the `tt::checkbox_button`.
+`my_delegate` must inherint from `tt::button_delegate`.
+
+```
+auto delegate = std::make_shared<my_delegate>();
+auto button = window.make_widget<checkbox_button>("A1", delegate));
+```
+
+Many widgets also include a templated constructor allowing
+an observable of user specified type to be passed. This constructor
+will instantiate a value-delegate to control the widget. This
+allows a widget to be controlled by a user-specified observable value.
+
+In the example below we use the automatic value-delegate to control
+a checkbox using an observable on our own enum type. The value-delegate
+uses an observable and an `on_value` and `off_value`.
+
+```
+enum class my_enum_type { foo, bar, baz };
+observable<my_enum_type> my_value = my_enum_type::foo;
+
+auto button = window.make_widget<checkbox_button>("A1", my_value, my_enum_type::foo, my_enum_type::bar));
+```
+
 
 System
 ------
