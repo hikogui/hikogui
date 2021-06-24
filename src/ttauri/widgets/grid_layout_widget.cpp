@@ -11,8 +11,8 @@ namespace tt {
 grid_layout_widget::grid_layout_widget(
     gui_window &window,
     widget *parent,
-    std::shared_ptr<delegate_type> delegate) noexcept :
-    widget(window, parent), _delegate(delegate)
+    unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+    widget(window, parent), _delegate(std::move(delegate))
 {
     tt_axiom(is_gui_thread());
 

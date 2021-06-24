@@ -11,6 +11,7 @@
 #include "../animator.hpp"
 #include "../l10n.hpp"
 #include "../notifier.hpp"
+#include "../unique_or_borrow_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -33,7 +34,7 @@ public:
     abstract_button_widget(
         gui_window &window,
         widget *parent,
-        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept :
+        unique_or_borrow_ptr<delegate_type> delegate) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
         _delegate->subscribe(*this, _relayout_callback);
@@ -213,7 +214,7 @@ protected:
 
     bool _pressed = false;
     notifier<void()> _notifier;
-    std::shared_ptr<delegate_type> _delegate;
+    unique_or_borrow_ptr<delegate_type> _delegate;
 };
 
 } // namespace tt

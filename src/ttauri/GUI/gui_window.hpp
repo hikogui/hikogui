@@ -16,6 +16,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../hires_utc_clock.hpp"
 #include "../label.hpp"
+#include "../unique_or_borrow_ptr.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -82,7 +83,13 @@ public:
     //! The widget covering the complete window.
     std::unique_ptr<window_widget> widget;
 
-    gui_window(std::shared_ptr<gui_window_delegate> delegate, label const &title);
+    gui_window(label const &title, unique_or_borrow_ptr<gui_window_delegate> delegate) noexcept;
+
+    gui_window(label const &title) noexcept :
+        gui_window(title, std::make_unique<gui_window_delegate>())
+    {
+    }
+
     virtual ~gui_window();
 
     gui_window(gui_window const &) = delete;
@@ -209,7 +216,8 @@ public:
      * @param group The group the widget must belong to.
      * @param direction The direction to search in, or current to select the current widget.
      */
-    void update_keyboard_target(tt::widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
+    void
+    update_keyboard_target(tt::widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
 
     /** Change the keyboard focus to the given, previous or next widget.
      * This function will find the closest widget from the current widget which belongs to the given
@@ -237,7 +245,7 @@ public:
     }
 
 protected:
-    std::shared_ptr<gui_window_delegate> _delegate;
+    unique_or_borrow_ptr<gui_window_delegate> _delegate;
 
     /*! The current rectangle of the window relative to the screen.
      * The screen rectangle is set by the operating system event loop and

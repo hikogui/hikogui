@@ -167,10 +167,8 @@ void gui_window_win32::create_window()
     surface = gfx_system::global().make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(
-    std::shared_ptr<gui_window_delegate> delegate,
-    label const &title) :
-    gui_window(std::move(delegate), title), trackMouseLeaveEventParameters()
+gui_window_win32::gui_window_win32(label const &title, unique_or_borrow_ptr<gui_window_delegate> delegate) noexcept :
+    gui_window(title, std::move(delegate)), trackMouseLeaveEventParameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
@@ -350,7 +348,6 @@ done:
     CloseClipboard();
 }
 
-
 void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
 {
     tt_axiom(is_gui_thread());
@@ -464,7 +461,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_ERASEBKGND: return 1;
 
     case WM_PAINT: {
-        ttlet height = [this](){
+        ttlet height = [this]() {
             tt_axiom(is_gui_thread());
             return size.height();
         }();

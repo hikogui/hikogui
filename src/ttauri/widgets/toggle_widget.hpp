@@ -5,7 +5,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "value_button_delegate.hpp"
+#include "default_button_delegate.hpp"
 
 namespace tt {
 
@@ -15,18 +15,19 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    toggle_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    toggle_widget(gui_window &window, widget *parent, unique_or_borrow_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::top_left;
     }
 
     template<typename Value, typename... Args>
-    toggle_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept :
+    requires(not std::is_convertible_v<Value, unique_or_borrow_ptr<delegate_type>>)
+        toggle_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept :
         toggle_widget(
             window,
             parent,
-            make_value_button_delegate<button_type::toggle>(std::forward<Value>(value), std::forward<Args>(args)...))
+            make_unique_default_button_delegate<button_type::toggle>(std::forward<Value>(value), std::forward<Args>(args)...))
     {
     }
 
@@ -66,9 +67,9 @@ public:
             ttlet button_square =
                 aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
-            _pip_rectangle = align(
-                button_square, extent2{theme::global().icon_size, theme::global().icon_size}, alignment::middle_center);
-            
+            _pip_rectangle =
+                align(button_square, extent2{theme::global().icon_size, theme::global().icon_size}, alignment::middle_center);
+
             ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
             _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
         }

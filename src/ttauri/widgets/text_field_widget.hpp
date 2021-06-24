@@ -5,11 +5,12 @@
 #pragma once
 
 #include "text_field_delegate.hpp"
-#include "value_text_field_delegate.hpp"
+#include "default_text_field_delegate.hpp"
 #include "widget.hpp"
 #include "../text/editable_text.hpp"
 #include "../format.hpp"
 #include "../label.hpp"
+#include "../unique_or_borrow_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -61,17 +62,18 @@ public:
      */
     observable<bool> continues = false;
 
-    text_field_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(window, parent), _delegate(delegate), _field(theme::global(theme_text_style::label)), _shaped_text()
+    text_field_widget(gui_window &window, widget *parent, unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+        super(window, parent), _delegate(std::move(delegate)), _field(theme::global(theme_text_style::label)), _shaped_text()
     {
-        _delegate_callback = _delegate->subscribe(*this, [this]{
+        _delegate_callback = _delegate->subscribe(*this, [this] {
             _request_relayout = true;
         });
     }
 
     template<typename Value>
+    requires(not std::is_convertible_v<Value, unique_or_borrow_ptr<delegate_type>>)
     text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept :
-        text_field_widget(window, parent, make_value_text_field_delegate(std::forward<Value>(value)))
+        text_field_widget(window, parent, make_unique_default_text_field_delegate(std::forward<Value>(value)))
     {
     }
 
@@ -350,7 +352,7 @@ public:
     }
 
 private:
-    std::shared_ptr<delegate_type> _delegate;
+    unique_or_borrow_ptr<delegate_type> _delegate;
     typename delegate_type::callback_ptr_type _delegate_callback;
 
     bool _continues = false;
@@ -498,7 +500,8 @@ private:
         ttlet blink_is_on = nr_half_blinks % 2 == 0;
         _left_to_right_caret = _field.left_to_right_caret();
         if (_left_to_right_caret && blink_is_on && _focus && window.active) {
-            context.draw_filled_quad(_text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global(theme_color::cursor));
+            context.draw_filled_quad(
+                _text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global(theme_color::cursor));
         }
     }
 

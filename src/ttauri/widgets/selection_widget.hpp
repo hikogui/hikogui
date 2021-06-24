@@ -11,8 +11,9 @@
 #include "row_column_layout_widget.hpp"
 #include "menu_button_widget.hpp"
 #include "selection_delegate.hpp"
-#include "value_selection_delegate.hpp"
+#include "default_selection_delegate.hpp"
 #include "../observable.hpp"
+#include "../unique_or_borrow_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -28,16 +29,22 @@ public:
 
     observable<label> unknown_label;
 
-    selection_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    selection_widget(gui_window &window, widget *parent, unique_or_borrow_ptr<delegate_type> delegate) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
     }
 
-    template<typename Label, typename... DelegateArgs>
-    selection_widget(gui_window &window, widget *parent, Label &&label, DelegateArgs &&...delegate_args) noexcept :
-        selection_widget(window, parent, make_value_selection_delegate(std::forward<DelegateArgs>(delegate_args)...))
+    template<typename OptionList, typename Value, typename... Args>
+    requires(not std::is_convertible_v<Value, unique_or_borrow_ptr<delegate_type>>)
+        selection_widget(gui_window &window, widget *parent, OptionList &&option_list, Value &&value, Args &&...args) noexcept :
+        selection_widget(
+            window,
+            parent,
+            make_unique_default_selection_delegate(
+                std::forward<OptionList>(option_list),
+                std::forward<Value>(value),
+                std::forward<Args>(args)...))
     {
-        unknown_label = std::forward<Label>(label);
     }
 
     ~selection_widget() {}
@@ -228,10 +235,7 @@ public:
 
         auto r = super::hitbox_test(position);
         if (_visible_rectangle.contains(position)) {
-            r = std::max(
-                r,
-                hitbox{
-                    this, _draw_layer, (enabled and _has_options) ? hitbox::Type::Button : hitbox::Type::Default});
+            r = std::max(r, hitbox{this, _draw_layer, (enabled and _has_options) ? hitbox::Type::Button : hitbox::Type::Default});
         }
 
         return r;
@@ -255,7 +259,7 @@ public:
     }
 
 private:
-    std::shared_ptr<delegate_type> _delegate;
+    unique_or_borrow_ptr<delegate_type> _delegate;
 
     typename delegate_type::callback_ptr_type _delegate_callback;
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;

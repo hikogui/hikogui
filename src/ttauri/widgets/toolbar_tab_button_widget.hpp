@@ -5,7 +5,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "value_button_delegate.hpp"
+#include "default_button_delegate.hpp"
 
 namespace tt {
 
@@ -15,27 +15,32 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
+    template<typename Label>
     toolbar_tab_button_widget(
         gui_window &window,
         widget *parent,
-        std::shared_ptr<delegate_type> delegate = std::make_shared<delegate_type>()) noexcept :
+        Label &&label,
+        unique_or_borrow_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::top_center;
+        set_label(std::forward<Label>(label));
     }
 
-    template<typename Label, typename Value, typename OnValue>
+    template<typename Label, typename Value, typename... Args>
+    requires(not std::is_convertible_v<Value, unique_or_borrow_ptr<delegate_type>>)
     toolbar_tab_button_widget(
-        gui_window &window, widget *parent,
+        gui_window &window,
+        widget *parent,
         Label &&label,
         Value &&value,
-        OnValue &&on_value) noexcept :
+        Args &&...args) noexcept :
         toolbar_tab_button_widget(
             window,
             parent,
-            make_value_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<OnValue>(on_value)))
+            std::forward<Label>(label),
+            make_unique_default_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
     {
-        set_label(std::forward<Label>(label));
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override

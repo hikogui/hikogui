@@ -14,22 +14,26 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    momentary_button_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept
-        :
+    template<typename Label>
+    momentary_button_widget(
+        gui_window &window,
+        widget *parent,
+        Label &&label,
+        unique_or_borrow_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::middle_left;
+        set_label(std::forward<Label>(label));
     }
 
     template<typename Label>
-    momentary_button_widget(
-        gui_window &window, widget *parent,
-        Label &&label) noexcept :
+    momentary_button_widget(gui_window &window, widget *parent, Label &&label) noexcept :
         momentary_button_widget(
             window,
-            parent, std::make_shared<delegate_type>())
+            parent,
+            std::forward<Label>(label),
+            std::make_unique<delegate_type>())
     {
-        set_label(std::forward<Label>(label));
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override

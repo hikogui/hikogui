@@ -45,7 +45,7 @@ audio_device_configuration_controller::audio_device_configuration_controller(
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Sample format:"));
     _pcm_format_selection =
-        &grid.make_widget<selection_widget>(column_nr + 1, row_nr, l10n(), pcm_option_list, _pcm_selected, pcm_format{});
+        &grid.make_widget<selection_widget>(column_nr + 1, row_nr, pcm_option_list, _pcm_selected, pcm_format{});
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Audio device sample rate:"));

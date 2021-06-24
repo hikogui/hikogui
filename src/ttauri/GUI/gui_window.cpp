@@ -40,8 +40,8 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     return false;
 }
 
-gui_window::gui_window(std::shared_ptr<gui_window_delegate> delegate, label const &title) :
-    _delegate(std::move(delegate)), title(title)
+gui_window::gui_window(label const &title, unique_or_borrow_ptr<gui_window_delegate> delegate) noexcept :
+    title(title), _delegate(std::move(delegate))
 {
 }
 
@@ -66,7 +66,7 @@ void gui_window::init()
     tt_axiom(is_gui_thread());
 
     {
-        widget = std::make_unique<window_widget>(*this, _delegate, title);
+        widget = std::make_unique<window_widget>(*this, title, *_delegate);
         widget->init();
         _delegate->init(*this);
 
@@ -268,22 +268,6 @@ bool gui_window::handle_event(tt::command command) noexcept
     }
     return false;
 }
-
-/*[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, mouse_event const &event) noexcept
-{
-    tt::send_event(target_widget, event);
-}
-
-[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, keyboard_event const &event) noexcept
-{
-    tt::send_event(target_widget, event);
-}
-
-[[nodiscard]] bool
-gui_window::send_event(std::shared_ptr<tt::widget> target_widget, std::vector<tt::command> const &event) noexcept
-{
-    tt::send_event(target_widget, event);
-}*/
 
 bool gui_window::send_event(mouse_event const &event) noexcept
 {

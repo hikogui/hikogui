@@ -13,7 +13,7 @@
 namespace tt {
 
 template<button_type ButtonType, typename T>
-class value_button_delegate : public button_delegate {
+class default_button_delegate : public button_delegate {
 public:
     static_assert(ButtonType == button_type::radio or ButtonType == button_type::toggle);
 
@@ -28,26 +28,26 @@ public:
     observable<value_type> off_value;
 
     template<typename Value, typename OnValue, typename OffValue>
-    value_button_delegate(Value &&value, OnValue &&on_value, OffValue &&off_value) noexcept :
+    default_button_delegate(Value &&value, OnValue &&on_value, OffValue &&off_value) noexcept :
         value(std::forward<Value>(value)), on_value(std::forward<OnValue>(on_value)), off_value(std::forward<OnValue>(off_value))
     {
     }
 
     template<typename Value, typename OnValue>
-    value_button_delegate(Value &&value, OnValue &&on_value) noexcept
+    default_button_delegate(Value &&value, OnValue &&on_value) noexcept
         requires(can_make_defaults or button_type == button_type::radio) :
-        value_button_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), value_type{})
+        default_button_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), value_type{})
     {
     }
 
     template<typename Value>
-    value_button_delegate(Value &&value) noexcept requires(can_make_defaults) :
-        value_button_delegate(std::forward<Value>(value), static_cast<value_type>(1), value_type{})
+    default_button_delegate(Value &&value) noexcept requires(can_make_defaults) :
+        default_button_delegate(std::forward<Value>(value), static_cast<value_type>(1), value_type{})
     {
     }
 
-    value_button_delegate() noexcept requires(can_make_defaults) :
-        value_button_delegate(value_type{}, static_cast<value_type>(1), value_type{})
+    default_button_delegate() noexcept requires(can_make_defaults) :
+        default_button_delegate(value_type{}, static_cast<value_type>(1), value_type{})
     {
     }
 
@@ -92,20 +92,15 @@ public:
 };
 
 template<button_type ButtonType, typename Value, typename... Args>
-std::shared_ptr<button_delegate> make_value_button_delegate(Value &&value, Args &&...args) noexcept
+default_button_delegate(Value &&, Args &&...)
+    -> default_button_delegate<ButtonType, observable_argument_t<std::remove_cvref_t<Value>>>;
+
+template<button_type ButtonType, typename Value, typename... Args>
+std::unique_ptr<button_delegate> make_unique_default_button_delegate(Value &&value, Args &&...args) noexcept
 {
-    if constexpr (is_observable_v<std::remove_cvref_t<Value>>) {
-        using value_type = typename std::remove_cvref_t<Value>::value_type;
-
-        return std::make_shared<value_button_delegate<ButtonType, value_type>>(
-            std::forward<Value>(value), std::forward<Args>(args)...);
-
-    } else {
-        using value_type = std::remove_cvref_t<Value>;
-
-        return std::make_shared<value_button_delegate<ButtonType, value_type>>(
-            std::forward<Value>(value), std::forward<Args>(args)...);
-    }
+    using value_type = observable_argument_t<std::remove_cvref_t<Value>>;
+    return std::make_unique<default_button_delegate<ButtonType, value_type>>(
+        std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
 } // namespace tt

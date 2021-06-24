@@ -5,16 +5,12 @@
 #include "ttauri/widgets/widgets.hpp"
 #include "ttauri/audio/audio_system.hpp"
 
-void my_preferences_window_controller::init_audio_tab(tt::grid_layout_widget &grid) noexcept
+void my_preferences_window_controller::init_audio_tab(tt::grid_layout_widget& grid) noexcept
 {
     using namespace tt;
 
     grid.make_widget<label_widget>("A1", l10n("Audio device:"));
-    grid.make_widget<selection_widget>(
-        "B1",
-        l10n("No device selected."),
-        _audio_device_list,
-        my_preferences::global->audio_output_device_id);
+    grid.make_widget<selection_widget>("B1", _audio_device_list, my_preferences::global->audio_output_device_id);
 
     _audio_device_configurator = std::make_shared<audio_device_configuration_controller>(grid, "A2:B7");
 
@@ -22,18 +18,18 @@ void my_preferences_window_controller::init_audio_tab(tt::grid_layout_widget &gr
     grid.make_widget<text_field_widget>("B8", radioValue);
 }
 
-void my_preferences_window_controller::init_license_tab(tt::grid_layout_widget &grid) noexcept
+void my_preferences_window_controller::init_license_tab(tt::grid_layout_widget& grid) noexcept
 {
     using namespace tt;
 
     grid.make_widget<label_widget>("A1", l10n("This is a toggle:"));
-    auto &checkbox1 = grid.make_widget<toggle_widget>("B1", toggleValue);
+    auto& checkbox1 = grid.make_widget<toggle_widget>("B1", toggleValue);
     checkbox1.on_label = l10n("true");
     checkbox1.off_label = l10n("false");
     checkbox1.other_label = l10n("other");
 
     grid.make_widget<label_widget>("A2", l10n("These is a disabled checkbox:"));
-    auto &checkbox2 = grid.make_widget<checkbox_widget>("B2", radioValue, 2, 0);
+    auto& checkbox2 = grid.make_widget<checkbox_widget>("B2", radioValue, 2, 0);
     checkbox2.on_label = l10n("Checkbox, with a pretty large label.");
     checkbox2.enabled = toggleValue;
 
@@ -52,31 +48,31 @@ void my_preferences_window_controller::init_license_tab(tt::grid_layout_widget &
         std::pair{6, label{l10n("seven")}}
     };
     grid.make_widget<label_widget>("A6", l10n("This is a selection box at the bottom:"));
-    auto &selection3 = grid.make_widget<selection_widget>("B6", l10n("Default"), option_list, radioValue);
+    auto& selection3 = grid.make_widget<selection_widget>("B6", option_list, radioValue);
     selection3.enabled = toggleValue;
 }
 
-void my_preferences_window_controller::init(tt::gui_window &self) noexcept
+void my_preferences_window_controller::init(tt::gui_window& self) noexcept
 {
     using namespace tt;
 
     gui_window_delegate::init(self);
 
-    self.make_toolbar_widget<toolbar_tab_button_widget>(label{elusive_icon::Speaker, l10n("Audio")}, tab_index, 0);
-    self.make_toolbar_widget<toolbar_tab_button_widget>(label{elusive_icon::Pencil, l10n("License")}, tab_index, 1);
+    self.make_toolbar_widget<toolbar_tab_button_widget>(label{ elusive_icon::Speaker, l10n("Audio") }, tab_index, 0);
+    self.make_toolbar_widget<toolbar_tab_button_widget>(label{ elusive_icon::Pencil, l10n("License") }, tab_index, 1);
 
-    auto &tabs = self.make_widget<tab_view_widget<int>>("A1", tab_index);
+    auto& tabs = self.make_widget<tab_view_widget<int>>("A1", tab_index);
     init_audio_tab(tabs.make_widget(0));
     init_license_tab(tabs.make_widget<vertical_scroll_view_widget<true>>(1).make_widget());
 }
 
-void my_preferences_window_controller::audio_device_list_changed(tt::audio_system &system) noexcept
+void my_preferences_window_controller::audio_device_list_changed(tt::audio_system& system) noexcept
 {
     using namespace tt;
 
     auto devices = system.devices();
-    auto device_list = std::vector<std::pair<std::string,tt::label>>{};
-    for (auto const &device_ptr : devices) {
+    auto device_list = std::vector<std::pair<std::string, tt::label>>{};
+    for (auto const& device_ptr : devices) {
         if (device_ptr->direction() == audio_direction::output && device_ptr->state() == audio_device_state::active) {
             device_list.emplace_back(device_ptr->id(), device_ptr->label());
         }

@@ -479,18 +479,21 @@ private:
     std::unique_ptr<pimpl_type> pimpl;
 };
 
+/** The value_type of an observable from the constructor argument type.
+ * The argument type of an observable is the value_type or an observable<value_type>.
+ * This is mostly used for creating CTAD guides. 
+ */
 template<typename T>
-struct is_observable : public std::false_type {
+struct observable_argument {
+    using type = T;
 };
 
-template<typename V>
-struct is_observable<observable<V>> : public std::true_type {
+template<typename T>
+struct observable_argument<observable<T>> {
+    using type = typename observable<T>::value_type;
 };
 
 template<typename T>
-constexpr bool is_observable_v = is_observable<T>::value;
-
-static_assert(not is_observable_v<int>);
-static_assert(is_observable_v<observable<int>>);
+using observable_argument_t = typename observable_argument<T>::type;
 
 } // namespace tt

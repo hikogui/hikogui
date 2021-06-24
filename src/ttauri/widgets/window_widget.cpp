@@ -14,11 +14,6 @@ namespace tt {
 
 using namespace std;
 
-window_widget::window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate) noexcept :
-    widget(window, {}), _content_delegate(std::move(delegate))
-{
-}
-
 window_widget::~window_widget() {}
 
 void window_widget::init() noexcept
@@ -41,7 +36,7 @@ void window_widget::init() noexcept
         tt_no_default();
     }
 
-    _content = &make_widget<grid_layout_widget>(_content_delegate);
+    _content = &make_widget<grid_layout_widget>(*_content_delegate);
 }
 
 [[nodiscard]] bool

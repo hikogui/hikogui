@@ -34,7 +34,7 @@ int tt_main(int argc, char *argv[])
     tt::audio_system::global().set_delegate(my_preferences_window_controller::global);
 
     auto window_label = tt::label{ tt::URL{"resource:ttauri_demo.png"}, tt::l10n("ttauri_demo") };
-    tt::gui_system::global().make_window(my_main_window_controller::global, window_label);
+    tt::gui_system::global().make_window(window_label, *my_main_window_controller::global);
 
     auto r = tt::gui_system::global().loop();
 

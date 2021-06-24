@@ -8,6 +8,7 @@
 #include "../observable.hpp"
 #include "../label.hpp"
 #include "../charconv.hpp"
+#include "../type_traits.hpp"
 #include <type_traits>
 #include <memory>
 #include <vector>
@@ -16,17 +17,17 @@
 namespace tt {
 
 template<typename T>
-class value_text_field_delegate;
+class default_text_field_delegate;
 
 template<std::integral T>
-class value_text_field_delegate<T> : public text_field_delegate {
+class default_text_field_delegate<T> : public text_field_delegate {
 public:
     using value_type = T;
 
     observable<value_type> value;
 
     template<typename Value>
-    value_text_field_delegate(Value &&value) noexcept : value(std::forward<Value>(value))
+    default_text_field_delegate(Value &&value) noexcept : value(std::forward<Value>(value))
     {
     }
 
@@ -69,18 +70,13 @@ public:
 };
 
 template<typename Value>
-std::shared_ptr<text_field_delegate> make_value_text_field_delegate(Value &&value) noexcept
+default_text_field_delegate(Value &&) -> default_text_field_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
+
+template<typename Value, typename... Args>
+std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(Value &&value, Args &&... args) noexcept
 {
-    if constexpr (is_observable_v<std::remove_cvref_t<Value>>) {
-        using value_type = typename std::remove_cvref_t<Value>::value_type;
-
-        return std::make_shared<value_text_field_delegate<value_type>>(std::forward<Value>(value));
-
-    } else {
-        using value_type = std::remove_cvref_t<Value>;
-
-        return std::make_shared<value_text_field_delegate<value_type>>(std::forward<Value>(value));
-    }
+    using value_type = observable_argument_t<std::remove_cvref_t<Value>>;
+    return std::make_unique<default_text_field_delegate<value_type>>(std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
 } // namespace tt

@@ -153,6 +153,7 @@ target_sources(ttauri PRIVATE
     trace.cpp
     trace.hpp
     type_traits.hpp
+    unique_or_borrow_ptr.hpp
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
     URL.cpp

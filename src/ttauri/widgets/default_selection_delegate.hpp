@@ -14,7 +14,7 @@
 namespace tt {
 
 template<typename T>
-class value_selection_delegate : public selection_delegate {
+class default_selection_delegate : public selection_delegate {
 public:
     using value_type = T;
 
@@ -23,7 +23,7 @@ public:
     observable<value_type> off_value;
 
     template<typename OptionList, typename Value, typename OffValue>
-    value_selection_delegate(OptionList &&option_list, Value &&value, OffValue &&off_value) noexcept :
+    default_selection_delegate(OptionList &&option_list, Value &&value, OffValue &&off_value) noexcept :
         options(std::forward<OptionList>(option_list)),
         value(std::forward<Value>(value)),
         off_value(std::forward<OffValue>(off_value))
@@ -31,7 +31,7 @@ public:
     }
 
     template<typename OptionList, typename Value>
-    value_selection_delegate(OptionList &&option_list, Value &&value) noexcept :
+    default_selection_delegate(OptionList &&option_list, Value &&value) noexcept :
         options(std::forward<OptionList>(option_list)), value(std::forward<Value>(value)), off_value(value_type{})
     {
     }
@@ -81,22 +81,17 @@ public:
     }
 };
 
-template<typename OptionList, typename Value, typename... OffValue>
-std::shared_ptr<selection_delegate>
-make_value_selection_delegate(OptionList &&option_list, Value &&value, OffValue &&...off_value) noexcept
+template<typename OptionList, typename Value, typename... Args>
+default_selection_delegate(OptionList &&, Value &&, Args &&...)
+    -> default_selection_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
+
+template<typename OptionList, typename Value, typename... Args>
+std::unique_ptr<selection_delegate>
+make_unique_default_selection_delegate(OptionList &&option_list, Value &&value, Args &&...args) noexcept
 {
-    if constexpr (is_observable_v<std::remove_cvref_t<Value>>) {
-        using value_type = typename std::remove_cvref_t<Value>::value_type;
-
-        return std::make_shared<value_selection_delegate<value_type>>(
-            std::forward<OptionList>(option_list), std::forward<Value>(value), std::forward<OffValue>(off_value)...);
-
-    } else {
-        using value_type = std::remove_cvref_t<Value>;
-
-        return std::make_shared<value_selection_delegate<value_type>>(
-            std::forward<OptionList>(option_list), std::forward<Value>(value), std::forward<OffValue>(off_value)...);
-    }
+    using value_type = observable_argument_t<std::remove_cvref_t<Value>>;
+    return std::make_unique<default_selection_delegate<value_type>>(
+        std::forward<OptionList>(option_list), std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
 } // namespace tt

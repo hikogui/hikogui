@@ -245,6 +245,6 @@ private:
 };
 
 using horizontal_scroll_bar_widget = scroll_bar_widget<false>;
-using vertical_scroll_bar_widget = scroll_bar_widget<false>;
+using vertical_scroll_bar_widget = scroll_bar_widget<true>;
 
 } // namespace tt

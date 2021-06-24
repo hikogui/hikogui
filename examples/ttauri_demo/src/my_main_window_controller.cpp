@@ -15,8 +15,8 @@ void my_main_window_controller::init(tt::gui_window& window) noexcept
     auto &preferences_button = window.make_toolbar_widget<toolbar_button_widget>(label{ elusive_icon::Wrench, l10n("Preferences") });
     preferences_button_callback = preferences_button.subscribe([&window]() {
         gui_system::global().make_window(
-            my_preferences_window_controller::global,
-            label{ icon{URL{"resource:ttauri_demo.png"}}, l10n("TTauri Demo - Preferences") }
+            label{ icon{URL{"resource:ttauri_demo.png"}}, l10n("TTauri Demo - Preferences") },
+            *my_preferences_window_controller::global
         );
     });
 

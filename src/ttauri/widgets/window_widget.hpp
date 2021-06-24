@@ -6,6 +6,7 @@
 
 #include "widget.hpp"
 #include "../label.hpp"
+#include "../unique_or_borrow_ptr.hpp"
 
 namespace tt {
 
@@ -22,13 +23,20 @@ public:
 
     ~window_widget();
 
-    window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate) noexcept;
+    template<typename Title>
+    window_widget(gui_window &window, Title &&title, unique_or_borrow_ptr<grid_layout_delegate> delegate) noexcept :
+        super(window, nullptr), _content_delegate(std::move(delegate))
+    {
+        title = std::forward<Title>(title);
+    }
 
     template<typename Title>
-    window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate, Title &&title) noexcept :
-        window_widget(window, std::move(delegate))
+    window_widget(gui_window &window, Title &&title) noexcept :
+        window_widget(
+            window,
+            std::forward<Title>(title),
+            std::make_unique<grid_layout_delegate>())
     {
-        this->title = std::forward<Title>(title);
     }
 
     void init() noexcept override;
@@ -72,7 +80,7 @@ public:
 private:
     decltype(title)::callback_ptr_type _title_callback;
 
-    std::shared_ptr<grid_layout_delegate> _content_delegate;
+    unique_or_borrow_ptr<grid_layout_delegate> _content_delegate;
     grid_layout_widget *_content = nullptr;
     toolbar_widget *_toolbar = nullptr;
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
