@@ -48,8 +48,8 @@ private:
 
     decltype(label)::callback_ptr_type _label_callback;
 
-    icon_widget *_icon_widget;
-    text_widget *_text_widget;
+    icon_widget *_icon_widget = nullptr;
+    text_widget *_text_widget = nullptr;
 };
 
 } // namespace tt

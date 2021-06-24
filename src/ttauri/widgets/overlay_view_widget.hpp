@@ -116,7 +116,7 @@ public:
     }
 
 private:
-    widget *_content;
+    widget *_content = nullptr;
 
     void draw_background(draw_context context) noexcept
     {

@@ -20,12 +20,12 @@ public:
 private:
     observable<pcm_format> _pcm_selected;
 
-    momentary_button_widget *_device_config_button;
-    checkbox_widget *_exclusivity_checkbox;
-    text_field_widget *_num_input_channels_text_field;
-    text_field_widget *_num_output_channels_text_field;
-    selection_widget *_pcm_format_selection;
-    text_field_widget *_sample_rate_text_field;
+    momentary_button_widget *_device_config_button = nullptr;
+    checkbox_widget *_exclusivity_checkbox = nullptr;
+    text_field_widget *_num_input_channels_text_field = nullptr;
+    text_field_widget *_num_output_channels_text_field = nullptr;
+    selection_widget *_pcm_format_selection = nullptr;
+    text_field_widget *_sample_rate_text_field = nullptr;
 };
 
 } // namespace tt

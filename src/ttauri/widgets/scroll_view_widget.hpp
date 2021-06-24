@@ -236,9 +236,9 @@ public:
     }
 
 private:
-    widget *_content;
-    horizontal_scroll_bar_widget *_horizontal_scroll_bar;
-    vertical_scroll_bar_widget *_vertical_scroll_bar;
+    widget *_content = nullptr;
+    horizontal_scroll_bar_widget *_horizontal_scroll_bar = nullptr;
+    vertical_scroll_bar_widget *_vertical_scroll_bar = nullptr;
 
     observable<float> _scroll_content_width;
     observable<float> _scroll_content_height;

@@ -260,8 +260,8 @@ private:
     typename delegate_type::callback_ptr_type _delegate_callback;
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
 
-    label_widget *_current_label_widget;
-    label_widget *_unknown_label_widget;
+    label_widget *_current_label_widget = nullptr;
+    label_widget *_unknown_label_widget = nullptr;
 
     aarectangle _option_rectangle;
     aarectangle _left_box_rectangle;
@@ -272,9 +272,9 @@ private:
     bool _selecting = false;
     bool _has_options = false;
 
-    overlay_view_widget *_overlay_widget;
-    vertical_scroll_view_widget<> *_scroll_widget;
-    column_layout_widget *_column_widget;
+    overlay_view_widget *_overlay_widget = nullptr;
+    vertical_scroll_view_widget<> *_scroll_widget = nullptr;
+    column_layout_widget *_column_widget = nullptr;
 
     std::vector<menu_button_widget *> _menu_button_widgets;
     std::vector<typename menu_button_widget::callback_ptr_type> _menu_button_callbacks;

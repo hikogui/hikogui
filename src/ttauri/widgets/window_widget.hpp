@@ -73,10 +73,10 @@ private:
     decltype(title)::callback_ptr_type _title_callback;
 
     std::shared_ptr<grid_layout_delegate> _content_delegate;
-    grid_layout_widget *_content;
-    toolbar_widget *_toolbar;
+    grid_layout_widget *_content = nullptr;
+    toolbar_widget *_toolbar = nullptr;
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-    system_menu_widget *_system_menu;
+    system_menu_widget *_system_menu = nullptr;
 #endif
 
     bool _left_resize_border_has_priority = true;

@@ -207,9 +207,9 @@ public:
 
 protected:
     aarectangle _label_rectangle;
-    label_widget *_on_label_widget;
-    label_widget *_off_label_widget;
-    label_widget *_other_label_widget;
+    label_widget *_on_label_widget = nullptr;
+    label_widget *_off_label_widget = nullptr;
+    label_widget *_other_label_widget = nullptr;
 
     bool _pressed = false;
     notifier<void()> _notifier;

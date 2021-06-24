@@ -37,7 +37,11 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     _maximum_size = extent2::nan();
 }
 
-widget::~widget() {}
+widget::~widget() {
+    // The window must remove references such as mouse and keyboard targets to
+    // this widget when it is removed.
+    window.widget_is_destructing(this);
+}
 
 void widget::init() noexcept {}
 

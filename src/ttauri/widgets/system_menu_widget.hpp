@@ -43,7 +43,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
 
 private:
-    icon_widget *_icon_widget;
+    icon_widget *_icon_widget = nullptr;
 
     aarectangle system_menu_rectangle;
 };

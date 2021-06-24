@@ -340,6 +340,20 @@ private:
      */
     tt::widget const *_keyboard_target_widget = nullptr;
 
+    /** Called when a widget is being destructed.
+     * This removes internal references to widgets.
+     * Particularly the mouse and keyboard targets.
+     */
+    void widget_is_destructing(tt::widget const *sender) noexcept
+    {
+        if (_mouse_target_widget == sender) {
+            _mouse_target_widget = nullptr;
+        }
+        if (_keyboard_target_widget == sender) {
+            _keyboard_target_widget = nullptr;
+        }
+    }
+
     /** Send event to a target widget.
      *
      * The commands are send in order, until the command is handled, then processing stops immediately.
@@ -350,6 +364,8 @@ private:
      */
     template<typename Event>
     bool send_event_to_widget(tt::widget const *target_widget, Event const &event) noexcept;
+
+    friend class widget;
 };
 
 } // namespace tt
