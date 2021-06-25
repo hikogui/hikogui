@@ -9,7 +9,7 @@
 #include "../geometry/spread_sheet_address.hpp"
 #include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
-#include "../unique_or_borrow_ptr.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 
 namespace tt {
@@ -19,7 +19,7 @@ public:
     using super = widget;
     using delegate_type = grid_layout_delegate;
 
-    grid_layout_widget(gui_window &window, widget *parent, unique_or_borrow_ptr<delegate_type> delegate) noexcept;
+    grid_layout_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
 
     grid_layout_widget(gui_window &window, widget *parent) noexcept :
         grid_layout_widget(
@@ -88,7 +88,7 @@ private:
     flow_layout _rows;
     flow_layout _columns;
 
-    unique_or_borrow_ptr<delegate_type> _delegate;
+    weak_or_unique_ptr<delegate_type> _delegate;
 
     [[nodiscard]] static std::pair<size_t, size_t> calculate_grid_size(std::vector<cell> const &cells) noexcept;
     [[nodiscard]] static std::tuple<extent2, extent2, extent2>

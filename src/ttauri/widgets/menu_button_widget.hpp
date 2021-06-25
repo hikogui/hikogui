@@ -16,7 +16,7 @@ public:
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     template<typename Label>
-    menu_button_widget(gui_window &window, widget *parent, Label &&label, unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+    menu_button_widget(gui_window &window, widget *parent, Label &&label, weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, std::move(parent), std::move(delegate))
     {
         _margin = 0.0f;
@@ -25,7 +25,7 @@ public:
     }
 
     template<typename Label, typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value,unique_or_borrow_ptr<delegate_type>>)
+    requires(not std::is_convertible_v<Value,weak_or_unique_ptr<delegate_type>>)
     menu_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept :
         menu_button_widget(
             window,

@@ -20,7 +20,7 @@ public:
         gui_window &window,
         widget *parent,
         Label &&label,
-        unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+        weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         _margin = 0.0f;

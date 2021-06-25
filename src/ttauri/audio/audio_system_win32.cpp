@@ -72,7 +72,7 @@ private:
     audio_system_win32 *_system;
 };
 
-audio_system_win32::audio_system_win32(unique_or_borrow_ptr<audio_system_delegate> delegate) : audio_system(std::move(delegate))
+audio_system_win32::audio_system_win32(weak_or_unique_ptr<audio_system_delegate> delegate) : audio_system(std::move(delegate))
 {
     tt_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
@@ -99,7 +99,9 @@ void audio_system_win32::init() noexcept
         audio_system::init();
         update_device_list();
     }
-    delegate().audio_device_list_changed(*this);
+    if (auto delegate = delegate_lock()) {
+        delegate->audio_device_list_changed(*this);
+    }
 }
 
 void audio_system_win32::update_device_list() noexcept
@@ -154,23 +156,31 @@ void audio_system_win32::default_device_changed() noexcept {}
 void audio_system_win32::device_added() noexcept
 {
     update_device_list();
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->audio_device_list_changed(*this);
+    }
 }
 
 void audio_system_win32::device_removed(std::string device_id) noexcept
 {
     update_device_list();
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->audio_device_list_changed(*this);
+    }
 }
 
 void audio_system_win32::device_state_changed(std::string device_id) noexcept
 {
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->audio_device_list_changed(*this);
+    }
 }
 
 void audio_system_win32::device_property_value_changed(std::string device_id) noexcept
 {
-    _delegate->audio_device_list_changed(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->audio_device_list_changed(*this);
+    }
 }
 
 } // namespace tt

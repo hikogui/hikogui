@@ -11,7 +11,7 @@ namespace tt {
 grid_layout_widget::grid_layout_widget(
     gui_window &window,
     widget *parent,
-    unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+    weak_or_unique_ptr<delegate_type> delegate) noexcept :
     widget(window, parent), _delegate(std::move(delegate))
 {
     tt_axiom(is_gui_thread());
@@ -24,12 +24,16 @@ grid_layout_widget::grid_layout_widget(
 
 void grid_layout_widget::init() noexcept
 {
-    _delegate->init(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->init(*this);
+    }
 }
 
 void grid_layout_widget::deinit() noexcept
 {
-    _delegate->deinit(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
 }
 
 [[nodiscard]] std::pair<size_t, size_t> grid_layout_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept

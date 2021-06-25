@@ -40,7 +40,7 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     return false;
 }
 
-gui_window::gui_window(label const &title, unique_or_borrow_ptr<gui_window_delegate> delegate) noexcept :
+gui_window::gui_window(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
     title(title), _delegate(std::move(delegate))
 {
 }
@@ -65,22 +65,22 @@ void gui_window::init()
     // and therefor should not have a lock.
     tt_axiom(is_gui_thread());
 
-    {
-        widget = std::make_unique<window_widget>(*this, title, *_delegate);
-        widget->init();
-        _delegate->init(*this);
-
-        // Execute a constraint check to determine initial window size.
-        static_cast<void>(widget->update_constraints({}, true));
-        size = widget->preferred_size();
-
-        // Reset the keyboard target to not focus anything.
-        update_keyboard_target({});
-
-        _setting_change_callback = language::subscribe([this] {
-            _request_setting_change = true;
-        });
+    widget = std::make_unique<window_widget>(*this, title, _delegate);
+    widget->init();
+    if (auto delegate = _delegate.lock()) {
+        delegate->init(*this);
     }
+
+    // Execute a constraint check to determine initial window size.
+    static_cast<void>(widget->update_constraints({}, true));
+    size = widget->preferred_size();
+
+    // Reset the keyboard target to not focus anything.
+    update_keyboard_target({});
+
+    _setting_change_callback = language::subscribe([this] {
+        _request_setting_change = true;
+    });
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
@@ -89,7 +89,9 @@ void gui_window::init()
 
 void gui_window::deinit()
 {
-    _delegate->deinit(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
 }
 
 void gui_window::set_device(gfx_device *device) noexcept

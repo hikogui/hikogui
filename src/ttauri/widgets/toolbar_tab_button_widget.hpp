@@ -20,7 +20,7 @@ public:
         gui_window &window,
         widget *parent,
         Label &&label,
-        unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+        weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::top_center;
@@ -28,7 +28,7 @@ public:
     }
 
     template<typename Label, typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value, unique_or_borrow_ptr<delegate_type>>)
+    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
     toolbar_tab_button_widget(
         gui_window &window,
         widget *parent,

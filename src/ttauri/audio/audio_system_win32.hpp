@@ -18,7 +18,7 @@ class audio_system_win32: public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_win32(unique_or_borrow_ptr<audio_system_delegate> delegate);
+    audio_system_win32(weak_or_unique_ptr<audio_system_delegate> delegate);
     ~audio_system_win32();
 
     void init() noexcept override;

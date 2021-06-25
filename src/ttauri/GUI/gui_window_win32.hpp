@@ -21,7 +21,7 @@ class gui_window_win32 final : public gui_window {
 public:
     HWND win32Window = nullptr;
 
-    gui_window_win32(label const &title, unique_or_borrow_ptr<gui_window_delegate> delegate) noexcept;
+    gui_window_win32(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept;
 
     gui_window_win32(label const &title) noexcept :
         gui_window_win32(title, std::make_unique<gui_window_delegate>())

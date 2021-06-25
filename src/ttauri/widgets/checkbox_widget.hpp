@@ -15,14 +15,14 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    checkbox_widget(gui_window &window, widget *parent, unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+    checkbox_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::top_left;
     }
 
     template<typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value, unique_or_borrow_ptr<delegate_type>>)
+    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
         checkbox_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept :
         checkbox_widget(
             window,

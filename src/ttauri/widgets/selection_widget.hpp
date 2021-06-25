@@ -13,7 +13,7 @@
 #include "selection_delegate.hpp"
 #include "default_selection_delegate.hpp"
 #include "../observable.hpp"
-#include "../unique_or_borrow_ptr.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -29,13 +29,13 @@ public:
 
     observable<label> unknown_label;
 
-    selection_widget(gui_window &window, widget *parent, unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+    selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
     }
 
     template<typename OptionList, typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value, unique_or_borrow_ptr<delegate_type>>)
+    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
         selection_widget(gui_window &window, widget *parent, OptionList &&option_list, Value &&value, Args &&...args) noexcept :
         selection_widget(
             window,
@@ -69,21 +69,25 @@ public:
             _request_reconstrain = true;
         });
 
-        _delegate_callback = _delegate->subscribe(*this, [this] {
-            run_on_gui_thread([this] {
-                repopulate_options();
-                _request_reconstrain = true;
+        if (auto delegate = _delegate.lock()) {
+            _delegate_callback = delegate->subscribe(*this, [this] {
+                run_on_gui_thread([this] {
+                    repopulate_options();
+                    _request_reconstrain = true;
+                });
             });
-        });
 
-        (*_delegate_callback)();
+            (*_delegate_callback)();
 
-        _delegate->init(*this);
+            delegate->init(*this);
+        }
     }
 
     void deinit() noexcept override
     {
-        _delegate->deinit(*this);
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
         super::deinit();
     }
 
@@ -259,7 +263,7 @@ public:
     }
 
 private:
-    unique_or_borrow_ptr<delegate_type> _delegate;
+    weak_or_unique_ptr<delegate_type> _delegate;
 
     typename delegate_type::callback_ptr_type _delegate_callback;
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
@@ -335,7 +339,15 @@ private:
     void repopulate_options() noexcept
     {
         tt_axiom(is_gui_thread());
-        auto [options, selected] = _delegate->options_and_selected(*this);
+        _column_widget->clear();
+        _menu_button_widgets.clear();
+        _menu_button_callbacks.clear();
+
+        auto options = std::vector<label>{}; 
+        auto selected = -1_z;
+        if (auto delegate = _delegate.lock()) {
+            std::tie(options, selected) = delegate->options_and_selected(*this);
+        }
 
         _has_options = std::size(options) > 0;
 
@@ -345,17 +357,15 @@ private:
             show_icon |= static_cast<bool>(label.icon);
         }
 
-        _column_widget->clear();
-        _menu_button_widgets.clear();
-        _menu_button_callbacks.clear();
-
         decltype(selected) index = 0;
         for (auto &&label : options) {
             auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
             _menu_button_callbacks.push_back(menu_button->subscribe([this, index] {
                 run_on_gui_thread([this, index] {
-                    _delegate->set_selected(*this, index);
+                    if (auto delegate = _delegate.lock()) {
+                        delegate->set_selected(*this, index);
+                    }
                     stop_selecting();
                 });
             }));

@@ -36,7 +36,7 @@ void window_widget::init() noexcept
         tt_no_default();
     }
 
-    _content = &make_widget<grid_layout_widget>(*_content_delegate);
+    _content = &make_widget<grid_layout_widget>(_content_delegate);
 }
 
 [[nodiscard]] bool

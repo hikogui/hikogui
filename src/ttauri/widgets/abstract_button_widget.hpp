@@ -11,7 +11,7 @@
 #include "../animator.hpp"
 #include "../l10n.hpp"
 #include "../notifier.hpp"
-#include "../unique_or_borrow_ptr.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -34,10 +34,12 @@ public:
     abstract_button_widget(
         gui_window &window,
         widget *parent,
-        unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+        weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
-        _delegate->subscribe(*this, _relayout_callback);
+        if (auto d = _delegate.lock()) {
+            d->subscribe(*this, _relayout_callback);
+        }
     }
 
     void init() noexcept override
@@ -56,12 +58,16 @@ public:
         _off_label_widget->label = off_label;
         _other_label_widget->label = other_label;
 
-        _delegate->init(*this);
+        if (auto delegate = _delegate.lock()) {
+            delegate->init(*this);
+        }
     }
 
     void deinit() noexcept override
     {
-        _delegate->deinit(*this);
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
         super::deinit();
     }
 
@@ -77,7 +83,11 @@ public:
     [[nodiscard]] button_state state() const noexcept
     {
         tt_axiom(is_gui_thread());
-        return _delegate->state(*this);
+        if (auto delegate = _delegate.lock()) {
+            return delegate->state(*this);
+        } else {
+            return button_state::off;
+        }
     }
 
     /** Subscribe a callback to call when the button is activated.
@@ -214,7 +224,7 @@ protected:
 
     bool _pressed = false;
     notifier<void()> _notifier;
-    unique_or_borrow_ptr<delegate_type> _delegate;
+    weak_or_unique_ptr<delegate_type> _delegate;
 };
 
 } // namespace tt

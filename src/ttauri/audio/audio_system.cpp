@@ -29,18 +29,22 @@ void audio_system::subsystem_deinit() noexcept
     }
 }
 
-audio_system::audio_system(unique_or_borrow_ptr<audio_system_delegate> delegate) : _delegate(std::move(delegate)) {}
+audio_system::audio_system(weak_or_unique_ptr<audio_system_delegate> delegate) : _delegate(std::move(delegate)) {}
 
 audio_system::~audio_system() {}
 
 void audio_system::init() noexcept
 {
-    _delegate->init(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->init(*this);
+    }
 }
 
 void audio_system::deinit() noexcept
 {
-    _delegate->deinit(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
 }
 
 } // namespace tt

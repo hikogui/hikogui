@@ -10,7 +10,7 @@
 #include "../text/editable_text.hpp"
 #include "../format.hpp"
 #include "../label.hpp"
-#include "../unique_or_borrow_ptr.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -62,17 +62,19 @@ public:
      */
     observable<bool> continues = false;
 
-    text_field_widget(gui_window &window, widget *parent, unique_or_borrow_ptr<delegate_type> delegate) noexcept :
+    text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, parent), _delegate(std::move(delegate)), _field(theme::global(theme_text_style::label)), _shaped_text()
     {
-        _delegate_callback = _delegate->subscribe(*this, [this] {
-            _request_relayout = true;
-        });
+        if (auto d = _delegate.lock()) {
+            _delegate_callback = d->subscribe(*this, [this] {
+                _request_relayout = true;
+            });
+        }
     }
 
     template<typename Value>
-    requires(not std::is_convertible_v<Value, unique_or_borrow_ptr<delegate_type>>)
-    text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept :
+    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
+        text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept :
         text_field_widget(window, parent, make_unique_default_text_field_delegate(std::forward<Value>(value)))
     {
     }
@@ -82,12 +84,16 @@ public:
     void init() noexcept override
     {
         super::init();
-        _delegate->init(*this);
+        if (auto delegate = _delegate.lock()) {
+            delegate->init(*this);
+        }
     }
 
     void deinit() noexcept override
     {
-        _delegate->deinit(*this);
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
         super::deinit();
     }
 
@@ -136,11 +142,19 @@ public:
             if (_focus) {
                 // Update the optional error value from the string conversion when the
                 // field has keyboard focus.
-                _error = _delegate->validate(*this, field_str);
+                if (auto delegate = _delegate.lock()) {
+                    _error = delegate->validate(*this, field_str);
+                } else {
+                    _error = {};
+                }
 
             } else {
                 // When field is not focused, simply follow the observed_value.
-                _field = _delegate->text(*this);
+                if (auto delegate = _delegate.lock()) {
+                    _field = delegate->text(*this);
+                } else {
+                    _field = {};
+                }
                 _error = {};
             }
 
@@ -352,7 +366,7 @@ public:
     }
 
 private:
-    unique_or_borrow_ptr<delegate_type> _delegate;
+    weak_or_unique_ptr<delegate_type> _delegate;
     typename delegate_type::callback_ptr_type _delegate_callback;
 
     bool _continues = false;
@@ -395,7 +409,11 @@ private:
 
     void revert(bool force) noexcept
     {
-        _field = _delegate->text(*this);
+        if (auto delegate = _delegate.lock()) {
+            _field = delegate->text(*this);
+        } else {
+            _field = {};
+        }
         _error = {};
     }
 
@@ -405,13 +423,17 @@ private:
         if (_continues || force) {
             auto text = static_cast<std::string>(_field);
 
-            if (not _delegate->validate(*this, text).has_value()) {
-                // text is valid.
-                _delegate->set_text(*this, text);
-            }
+            if (auto delegate = _delegate.lock()) {
+                if (not delegate->validate(*this, text).has_value()) {
+                    // text is valid.
+                    delegate->set_text(*this, text);
+                }
 
-            // After commit get the canonical text to display from the delegate.
-            _field = _delegate->text(*this);
+                // After commit get the canonical text to display from the delegate.
+                _field = delegate->text(*this);
+            } else {
+                _field = {};
+            }
             _error = {};
         }
     }

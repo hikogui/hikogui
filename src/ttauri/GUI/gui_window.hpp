@@ -16,7 +16,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../hires_utc_clock.hpp"
 #include "../label.hpp"
-#include "../unique_or_borrow_ptr.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -83,7 +83,7 @@ public:
     //! The widget covering the complete window.
     std::unique_ptr<window_widget> widget;
 
-    gui_window(label const &title, unique_or_borrow_ptr<gui_window_delegate> delegate) noexcept;
+    gui_window(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept;
 
     gui_window(label const &title) noexcept :
         gui_window(title, std::make_unique<gui_window_delegate>())
@@ -245,7 +245,7 @@ public:
     }
 
 protected:
-    unique_or_borrow_ptr<gui_window_delegate> _delegate;
+    weak_or_unique_ptr<gui_window_delegate> _delegate;
 
     /*! The current rectangle of the window relative to the screen.
      * The screen rectangle is set by the operating system event loop and

@@ -7,7 +7,7 @@
 #include "audio_system_delegate.hpp"
 #include "audio_device.hpp"
 #include "../unfair_recursive_mutex.hpp"
-#include "../unique_or_borrow_ptr.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <vector>
 #include <memory>
 
@@ -20,7 +20,7 @@ class audio_system {
 public:
     static inline unfair_recursive_mutex mutex;
 
-    audio_system(unique_or_borrow_ptr<audio_system_delegate> delegate);
+    audio_system(weak_or_unique_ptr<audio_system_delegate> delegate);
     virtual ~audio_system();
     audio_system(audio_system const &) = delete;
     audio_system(audio_system &&) = delete;
@@ -32,19 +32,21 @@ public:
     virtual void init() noexcept;
     virtual void deinit() noexcept;
 
-    void set_delegate(unique_or_borrow_ptr<audio_system_delegate> delegate) noexcept
+    void set_delegate(weak_or_unique_ptr<audio_system_delegate> delegate) noexcept
     {
         {
             ttlet lock = std::scoped_lock(audio_system::mutex);
             _delegate = std::move(delegate);
         }
-        _delegate->audio_device_list_changed(*this);
+        if (auto d = delegate_lock()) {
+            d->audio_device_list_changed(*this);
+        }
     }
 
-    audio_system_delegate &delegate() const noexcept
+    [[nodiscard]] std::shared_ptr<audio_system_delegate> delegate_lock() const noexcept
     {
         ttlet lock = std::scoped_lock(audio_system::mutex);
-        return *_delegate;
+        return _delegate.lock();
     }
 
     [[nodiscard]] static audio_system &global() noexcept
@@ -53,7 +55,7 @@ public:
     }
 
 protected:
-    unique_or_borrow_ptr<audio_system_delegate> _delegate;
+    weak_or_unique_ptr<audio_system_delegate> _delegate;
 
 private:
     static inline std::atomic<audio_system *> _global;

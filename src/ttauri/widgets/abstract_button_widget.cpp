@@ -9,7 +9,9 @@ namespace tt {
 
 void abstract_button_widget::activate() noexcept
 {
-    _delegate->activate(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->activate(*this);
+    }
 
     gui_system::global().run_from_event_queue([this]() {
         this->_notifier();

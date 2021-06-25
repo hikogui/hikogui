@@ -167,7 +167,7 @@ void gui_window_win32::create_window()
     surface = gfx_system::global().make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(label const &title, unique_or_borrow_ptr<gui_window_delegate> delegate) noexcept :
+gui_window_win32::gui_window_win32(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
     gui_window(title, std::move(delegate)), trackMouseLeaveEventParameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
