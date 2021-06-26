@@ -10,25 +10,30 @@ namespace tt {
 
 grid_layout_widget::grid_layout_widget(
     gui_window &window,
-    std::shared_ptr<widget> parent,
-    std::shared_ptr<delegate_type> delegate) noexcept :
-    widget(window, std::move(parent)), _delegate(delegate)
+    widget *parent,
+    weak_or_unique_ptr<delegate_type> delegate) noexcept :
+    widget(window, parent), _delegate(std::move(delegate))
 {
-    if (auto p = _parent.lock()) {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        _semantic_layer = p->semantic_layer();
+    tt_axiom(is_gui_thread());
+
+    if (parent) {
+        _semantic_layer = parent->semantic_layer();
     }
     _margin = 0.0f;
 }
 
 void grid_layout_widget::init() noexcept
 {
-    _delegate->init(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->init(*this);
+    }
 }
 
 void grid_layout_widget::deinit() noexcept
 {
-    _delegate->deinit(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
 }
 
 [[nodiscard]] std::pair<size_t, size_t> grid_layout_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept
@@ -47,7 +52,7 @@ void grid_layout_widget::deinit() noexcept
 [[nodiscard]] std::tuple<extent2, extent2, extent2>
 grid_layout_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     rows.clear();
     columns.clear();
@@ -89,20 +94,19 @@ bool grid_layout_widget::address_in_use(size_t column_nr, size_t row_nr) const n
     return false;
 }
 
-std::shared_ptr<widget> grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::shared_ptr<widget> widget) noexcept
+widget &grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> widget) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
-    auto tmp = widget::add_widget(std::move(widget));
-
+    tt_axiom(is_gui_thread());
     tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
 
-    _cells.emplace_back(column_nr, row_nr, tmp);
+    auto &tmp = super::add_widget(std::move(widget));
+    _cells.emplace_back(column_nr, row_nr, &tmp);
     return tmp;
 }
 
 bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         std::tie(_minimum_size, _preferred_size, _maximum_size) = calculate_size(_cells, _rows, _columns);
@@ -115,9 +119,9 @@ bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_
 
 void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     if (need_layout) {
         _columns.set_size(width());
         _rows.set_size(height());

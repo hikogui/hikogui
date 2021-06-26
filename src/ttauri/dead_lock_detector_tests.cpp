@@ -61,35 +61,6 @@ TEST(dead_lock_detector, relock2)
     dead_lock_detector::remove_object(&b);
 }
 
-TEST(dead_lock_detector, relock_recursive1)
-{
-    dead_lock_detector::clear_stack();
-    dead_lock_detector::clear_graph();
-
-    int a, b;
-
-    ASSERT_NULL(dead_lock_detector::lock(&a, true));
-    ASSERT_NULL(dead_lock_detector::lock(&b, true));
-    ASSERT_NULL(dead_lock_detector::lock(&b, true));
-
-    dead_lock_detector::remove_object(&a);
-    dead_lock_detector::remove_object(&b);
-}
-
-TEST(dead_lock_detector, relock_recursive2)
-{
-    dead_lock_detector::clear_stack();
-    dead_lock_detector::clear_graph();
-
-    int a, b;
-
-    ASSERT_NULL(dead_lock_detector::lock(&a, true));
-    ASSERT_NULL(dead_lock_detector::lock(&b, true));
-    ASSERT_NOT_NULL(dead_lock_detector::lock(&a, true));
-
-    dead_lock_detector::remove_object(&a);
-    dead_lock_detector::remove_object(&b);
-}
 
 TEST(dead_lock_detector, unlock1)
 {

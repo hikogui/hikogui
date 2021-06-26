@@ -4,7 +4,6 @@
 
 #include "attributed_glyph.hpp"
 #include "font_book.hpp"
-#include "../application.hpp"
 #include "../graphic_path.hpp"
 #include "../logger.hpp"
 

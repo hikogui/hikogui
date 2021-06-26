@@ -3,33 +3,30 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "widget.hpp"
-#include "../GUI/utils.hpp"
 #include <ranges>
 
 namespace tt {
 
-widget::widget(gui_window &_window, std::shared_ptr<widget> parent) noexcept :
-    window(_window), _parent(std::move(parent)), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
+widget::widget(gui_window &_window, widget *parent) noexcept :
+    window(_window), parent(parent), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
 {
-    if (auto p = _parent.lock()) {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        _draw_layer = p->draw_layer() + 1.0f;
-        _logical_layer = p->logical_layer() + 1;
-        _semantic_layer = p->semantic_layer() + 1;
+    tt_axiom(is_gui_thread());
+
+    if (parent) {
+        _draw_layer = parent->draw_layer() + 1.0f;
+        _logical_layer = parent->logical_layer() + 1;
+        _semantic_layer = parent->semantic_layer() + 1;
     }
 
-    _redraw_callback = std::make_shared<std::function<void()>>([this]() {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->request_redraw();
+    _redraw_callback = std::make_shared<std::function<void()>>([this] {
+        request_redraw();
     });
 
-    _relayout_callback = std::make_shared<std::function<void()>>([this]() {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->_request_relayout = true;
+    _relayout_callback = std::make_shared<std::function<void()>>([this] {
+        _request_relayout = true;
     });
-    _reconstrain_callback = std::make_shared<std::function<void()>>([this]() {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-        this->_request_reconstrain = true;
+    _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
+        _request_reconstrain = true;
     });
 
     enabled.subscribe(_redraw_callback);
@@ -40,15 +37,15 @@ widget::widget(gui_window &_window, std::shared_ptr<widget> parent) noexcept :
     _maximum_size = extent2::nan();
 }
 
-widget::~widget() {}
-
-void widget::init() noexcept
-{
+widget::~widget() {
+    // The window must remove references such as mouse and keyboard targets to
+    // this widget when it is removed.
+    window.widget_is_destructing(this);
 }
 
-void widget::deinit() noexcept
-{
-}
+void widget::init() noexcept {}
+
+void widget::deinit() noexcept {}
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
@@ -115,13 +112,13 @@ void widget::deinit() noexcept
 
 [[nodiscard]] bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    need_reconstrain |= std::exchange(_request_reconstrain, false);
+    need_reconstrain |= _request_reconstrain.exchange(false);
 
     for (auto &&child : _children) {
         tt_axiom(child);
-        tt_axiom(&child->parent() == this);
+        tt_axiom(child->parent == this);
         need_reconstrain |= child->update_constraints(display_time_point, need_reconstrain);
     }
 
@@ -130,12 +127,12 @@ void widget::deinit() noexcept
 
 void widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     for (auto &&child : _children) {
         tt_axiom(child);
-        tt_axiom(&child->parent() == this);
+        tt_axiom(child->parent == this);
         if (child->visible) {
             child->update_layout(display_time_point, need_layout);
         }
@@ -148,11 +145,11 @@ void widget::update_layout(hires_utc_clock::time_point display_time_point, bool 
 
 void widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     for (auto &child : _children) {
         tt_axiom(child);
-        tt_axiom(&child->parent() == this);
+        tt_axiom(child->parent == this);
 
         if (child->visible) {
             auto child_context =
@@ -162,14 +159,14 @@ void widget::draw(draw_context context, hires_utc_clock::time_point display_time
     }
 }
 
-[[nodiscard]] hit_box widget::hitbox_test(point2 position) const noexcept
+[[nodiscard]] hitbox widget::hitbox_test(point2 position) const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    auto r = hit_box{};
+    auto r = hitbox{};
     for (ttlet &child : _children) {
         tt_axiom(child);
-        tt_axiom(&child->parent() == this);
+        tt_axiom(child->parent == this);
         if (child->visible) {
             r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
         }
@@ -179,7 +176,7 @@ void widget::draw(draw_context context, hires_utc_clock::time_point display_time
 
 bool widget::handle_event(command command) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     switch (command) {
         using enum tt::command;
@@ -212,19 +209,19 @@ bool widget::handle_event(command command) noexcept
     return false;
 }
 
-bool widget::handle_command_recursive(command command, std::vector<std::shared_ptr<widget>> const &reject_list) noexcept
+bool widget::handle_command_recursive(command command, std::vector<widget const *> const &reject_list) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     auto handled = false;
     for (auto &child : _children) {
         tt_axiom(child);
-        tt_axiom(&child->parent() == this);
+        tt_axiom(child->parent == this);
         handled |= child->handle_command_recursive(command, reject_list);
     }
 
     if (!std::ranges::any_of(reject_list, [this](ttlet &x) {
-            return x.get() == this;
+            return x == this;
         })) {
         handled |= handle_event(command);
     }
@@ -234,30 +231,30 @@ bool widget::handle_command_recursive(command command, std::vector<std::shared_p
 
 bool widget::handle_event(mouse_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
     return false;
 }
 
 bool widget::handle_event(keyboard_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
     return false;
 }
 
-std::shared_ptr<widget> widget::find_next_widget(
-    std::shared_ptr<widget> const &current_keyboard_widget,
+widget const *widget::find_next_widget(
+    widget const *current_keyboard_widget,
     keyboard_focus_group group,
     keyboard_focus_direction direction) const noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
     auto found = false;
 
     if (!current_keyboard_widget && accepts_keyboard_focus(group)) {
         // If there was no current_keyboard_widget, then return this if it accepts focus.
-        return std::const_pointer_cast<widget>(shared_from_this());
+        return this;
 
-    } else if (current_keyboard_widget == shared_from_this()) {
+    } else if (current_keyboard_widget == this) {
         // If current_keyboard_widget is this, then we need to find the first child widget that accepts focus.
         found = true;
     }
@@ -295,86 +292,50 @@ std::shared_ptr<widget> widget::find_next_widget(
         return current_keyboard_widget;
     }
 
-    return {};
+    return nullptr;
 }
 
-[[nodiscard]] std::shared_ptr<widget const> widget::find_first_widget(keyboard_focus_group group) const noexcept
+[[nodiscard]] widget const *widget::find_first_widget(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    for (ttlet child : _children) {
+    for (ttlet &child : _children) {
         if (child->accepts_keyboard_focus(group)) {
-            return child;
+            return &(*child);
         }
     }
-    return {};
+    return nullptr;
 }
 
-[[nodiscard]] std::shared_ptr<widget const> widget::find_last_widget(keyboard_focus_group group) const noexcept
+[[nodiscard]] widget const *widget::find_last_widget(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    for (ttlet child : std::views::reverse(_children)) {
+    for (ttlet &child : std::views::reverse(_children)) {
         if (child->accepts_keyboard_focus(group)) {
-            return child;
+            return &(*child);
         }
     }
-    return {};
-}
-
-/** Get a shared_ptr to the parent.
- */
-[[nodiscard]] std::shared_ptr<widget const> widget::shared_parent() const noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return _parent.lock();
-}
-
-/** Get a shared_ptr to the parent.
- */
-[[nodiscard]] std::shared_ptr<widget> widget::shared_parent() noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return _parent.lock();
-}
-
-[[nodiscard]] widget const &widget::parent() const noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    if (ttlet parent_ = shared_parent()) {
-        return *parent_;
-    } else {
-        tt_no_default();
-    }
-}
-
-[[nodiscard]] widget &widget::parent() noexcept
-{
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    if (ttlet parent_ = shared_parent()) {
-        return *parent_;
-    } else {
-        tt_no_default();
-    }
+    return nullptr;
 }
 
 [[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return parent().find_first_widget(group).get() == this;
+    tt_axiom(is_gui_thread());
+    return parent->find_first_widget(group) == this;
 }
 
 [[nodiscard]] bool widget::is_last(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
-    return parent().find_last_widget(group).get() == this;
+    tt_axiom(is_gui_thread());
+    return parent->find_last_widget(group) == this;
 }
 
 void widget::scroll_to_show(tt::rectangle rectangle) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    if (auto parent = _parent.lock()) {
+    if (parent) {
         parent->scroll_to_show(_local_to_parent * rectangle);
     }
 }
@@ -382,15 +343,15 @@ void widget::scroll_to_show(tt::rectangle rectangle) noexcept
 /** Get a list of parents of a given widget.
  * The chain includes the given widget.
  */
-[[nodiscard]] std::vector<std::shared_ptr<widget>> widget::parent_chain(std::shared_ptr<tt::widget> const &child_widget) noexcept
+[[nodiscard]] std::vector<widget const *> widget::parent_chain() const noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
-    std::vector<std::shared_ptr<widget>> chain;
+    std::vector<widget const *> chain;
 
-    if (auto w = child_widget) {
+    if (auto w = this) {
         chain.push_back(w);
-        while (w = std::static_pointer_cast<widget>(w->shared_parent())) {
+        while (static_cast<bool>(w = w->parent)) {
             chain.push_back(w);
         }
     }

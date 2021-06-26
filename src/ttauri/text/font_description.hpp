@@ -55,7 +55,7 @@ struct font_description {
 
 template<typename CharT>
 struct std::formatter<tt::font_description, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::font_description t, auto &fc)
+    auto format(tt::font_description const &t, auto &fc)
     {
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }

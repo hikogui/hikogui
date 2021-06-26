@@ -29,12 +29,10 @@ class dead_lock_detector {
 public:
     /** Lock an object on this thread.
      * @param object The object that is being locked.
-     * @param recursive_lock Allow the object to be recursive locked,
-     *                       meaning that a object may be at the top of the stack.
      * @return nullptr on success, object if the mutex was already locked, a pointer to
      *         another mutex if potential dead-lock is found.
      */
-    static void *lock(void *object, bool recursive_lock = false) noexcept;
+    static void *lock(void *object) noexcept;
 
     /** Unlock an object on this thread.
      * @param object The object that is being locked.

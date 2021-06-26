@@ -5,7 +5,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/draw_context.hpp"
 #include "../observable.hpp"
 #include <memory>
 #include <string>
@@ -24,8 +23,7 @@ public:
 
     template<typename Content, typename Aperture, typename Offset>
     scroll_bar_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
+        gui_window &window, widget *parent,
         Content &&content,
         Aperture &&aperture,
         Offset &&offset) noexcept :
@@ -49,7 +47,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             if constexpr (is_vertical) {
@@ -68,9 +66,9 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             tt_axiom(*content != 0.0f);
 
@@ -91,7 +89,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (overlaps(context, this->_clipping_rectangle) and visible) {
             draw_rails(context);
@@ -100,20 +98,20 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
-    hit_box hitbox_test(point2 position) const noexcept override
+    hitbox hitbox_test(point2 position) const noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (visible and _visible_rectangle.contains(position) and slider_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer};
+            return hitbox{this, _draw_layer};
         } else {
-            return hit_box{};
+            return hitbox{};
         }
     }
 
     [[nodiscard]] bool handle_event(mouse_event const &event) noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         if (event.cause.leftButton) {
@@ -174,13 +172,13 @@ private:
 
     [[nodiscard]] float rail_length() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return is_vertical ? rectangle().height() : rectangle().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet content_aperture_ratio = *aperture / *content;
         return std::max(rail_length() * content_aperture_ratio, theme::global().size * 2.0f);
@@ -190,7 +188,7 @@ private:
      */
     [[nodiscard]] float slider_travel_range() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return rail_length() - slider_length();
     }
 
@@ -198,7 +196,7 @@ private:
      */
     [[nodiscard]] float hidden_content() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return *content - *aperture;
     }
 
@@ -208,7 +206,7 @@ private:
      */
     [[nodiscard]] float hidden_content_vs_travel_ratio() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet _slider_travel_range = slider_travel_range();
         return _slider_travel_range != 0.0f ? hidden_content() / _slider_travel_range : 0.0f;
@@ -220,7 +218,7 @@ private:
      */
     [[nodiscard]] float travel_vs_hidden_content_ratio() const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet _hidden_content = hidden_content();
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
@@ -228,7 +226,7 @@ private:
 
     void draw_rails(draw_context context) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet corner_shapes =
             is_vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
@@ -237,7 +235,7 @@ private:
 
     void draw_slider(draw_context context) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet corner_shapes = is_vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
                                             tt::corner_shapes{slider_rectangle.height() * 0.5f};
@@ -245,5 +243,8 @@ private:
         context.draw_box(translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
     }
 };
+
+using horizontal_scroll_bar_widget = scroll_bar_widget<false>;
+using vertical_scroll_bar_widget = scroll_bar_widget<true>;
 
 } // namespace tt

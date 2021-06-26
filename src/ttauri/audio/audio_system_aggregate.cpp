@@ -12,15 +12,17 @@ public:
 
     void audio_device_list_changed(audio_system &self) override
     {
-        _owner._delegate->audio_device_list_changed(_owner);
+        if (auto delegate = _owner._delegate.lock()) {
+            delegate->audio_device_list_changed(_owner);
+        }
     }
 
 private:
     audio_system_aggregate &_owner;
 };
 
-audio_system_aggregate::audio_system_aggregate(std::shared_ptr<audio_system_delegate> delegate) :
-    super(std::move(delegate)), _aggregate_delegate(std::make_shared<audio_system_aggregate_delegate>(*this))
+audio_system_aggregate::audio_system_aggregate(weak_or_unique_ptr<audio_system_delegate> delegate) :
+    super(std::move(delegate)), _aggregate_delegate(std::make_unique<audio_system_aggregate_delegate>(*this))
 {
 }
 

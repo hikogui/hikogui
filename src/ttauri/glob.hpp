@@ -398,7 +398,6 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
             if (i == str.size() || str[i] == '/') {
                 MATCH_GLOB_RECURSE(result, next_index, end, str.substr(i));
             }
-            //found_slash = i < str.size() && ';
         }
         return result;
 

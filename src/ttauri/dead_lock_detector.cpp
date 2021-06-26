@@ -40,7 +40,7 @@ static unfair_mutex_impl<false> dead_lock_detector_mutex;
     return nullptr;
 }
 
-void *dead_lock_detector::lock(void *object, bool recursive_lock) noexcept
+void *dead_lock_detector::lock(void *object) noexcept
 {
     if (system_shutting_down()) {
         // thread_local variables used by `stack` do not work on MSVC after main() returns.
@@ -49,17 +49,10 @@ void *dead_lock_detector::lock(void *object, bool recursive_lock) noexcept
 
     tt_axiom(object != nullptr);
 
-    if (recursive_lock && !stack.empty() && stack.back() == object) {
-        // We are recursive locking and the object was locked last,
-        // so we can skip the stack test.
-        ;
-
-    } else {
-        for (ttlet &x : stack) {
-            if (object == x) {
-                // `object` already locked by the current thread.
-                return object;
-            }
+    for (ttlet &x : stack) {
+        if (object == x) {
+            // `object` already locked by the current thread.
+            return object;
         }
     }
 

@@ -23,19 +23,19 @@ audio_device_configuration_controller::audio_device_configuration_controller(
         tt_log_fatal("audio_device_configuration_controller requires five rows on the grid, given {}", address_range);
     }
 
-    _device_config_button = grid.make_widget<momentary_button_widget>(column_nr + 1, row_nr, l10n("Sound Control Panel"));
+    _device_config_button = &grid.make_widget<momentary_button_widget>(column_nr + 1, row_nr, l10n("Sound Control Panel"));
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Exclusive mode:"));
-    _exclusivity_checkbox = grid.make_widget<checkbox_widget>(column_nr + 1, row_nr, false);
+    _exclusivity_checkbox = &grid.make_widget<checkbox_widget>(column_nr + 1, row_nr, false);
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Number of input channels:"));
-    _num_input_channels_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 42);
+    _num_input_channels_text_field = &grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 42);
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Number of output channels:"));
-    _num_output_channels_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 43);
+    _num_output_channels_text_field = &grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 43);
     ++row_nr;
 
     auto pcm_option_list = std::vector{
@@ -45,11 +45,11 @@ audio_device_configuration_controller::audio_device_configuration_controller(
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Sample format:"));
     _pcm_format_selection =
-        grid.make_widget<selection_widget>(column_nr + 1, row_nr, l10n(), pcm_option_list, _pcm_selected, pcm_format{});
+        &grid.make_widget<selection_widget>(column_nr + 1, row_nr, pcm_option_list, _pcm_selected, pcm_format{});
     ++row_nr;
 
     grid.make_widget<label_widget>(column_nr, row_nr, l10n("Audio device sample rate:"));
-    _sample_rate_text_field = grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 44);
+    _sample_rate_text_field = &grid.make_widget<text_field_widget>(column_nr + 1, row_nr, 44);
 }
 
 } // namespace tt

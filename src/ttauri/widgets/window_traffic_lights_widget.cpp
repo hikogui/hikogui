@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "window_traffic_lights_widget.hpp"
-#include "../GUI/utils.hpp"
 #include "../text/ttauri_icon.hpp"
 #include "../utils.hpp"
 #include <cmath>
@@ -13,7 +12,7 @@ namespace tt {
 
 window_traffic_lights_widget::window_traffic_lights_widget(
     gui_window &window,
-    std::shared_ptr<widget> parent) noexcept :
+    widget *parent) noexcept :
     super(window, parent)
 {
     // Toolbar buttons hug the toolbar and neighbor widgets.
@@ -23,7 +22,7 @@ window_traffic_lights_widget::window_traffic_lights_widget(
 [[nodiscard]] bool
 window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         if (theme::global().operating_system == operating_system::windows) {
@@ -49,9 +48,9 @@ window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point dis
 [[nodiscard]] void
 window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     if (need_layout) {
         auto extent = rectangle().size();
         if (extent.height() > theme::global().toolbar_height * 1.2f) {
@@ -116,7 +115,7 @@ void window_traffic_lights_widget::drawMacOS(
     draw_context const &drawContext,
     hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     auto context = drawContext;
 
@@ -152,7 +151,7 @@ void window_traffic_lights_widget::drawWindows(
     draw_context const &drawContext,
     hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     auto context = drawContext;
 
@@ -193,7 +192,7 @@ void window_traffic_lights_widget::drawWindows(
 
 void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
         if (theme::global().operating_system == operating_system::macos) {
@@ -212,7 +211,7 @@ void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::t
 
 bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
 
     // Check the hover states of each button.
@@ -264,15 +263,15 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
     return handled;
 }
 
-hit_box window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
+hitbox window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (_visible_rectangle.contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, hit_box::Type::Button};
+            return hitbox{this, _draw_layer, hitbox::Type::Button};
         } else {
-            return hit_box{};
+            return hitbox{};
         }
     } else {
         return {};

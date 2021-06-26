@@ -3,6 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(ttauri PRIVATE
+    abstract_button_widget.cpp
     abstract_button_widget.hpp
     audio_device_configuration_controller.cpp
     audio_device_configuration_controller.hpp
@@ -10,6 +11,9 @@ target_sources(ttauri PRIVATE
     button_state.hpp
     button_type.hpp
     checkbox_widget.hpp
+    default_button_delegate.hpp
+    default_selection_delegate.hpp
+    default_text_field_delegate.hpp
     grid_layout_delegate.hpp
     grid_layout_widget.cpp
     grid_layout_widget.hpp
@@ -37,9 +41,6 @@ target_sources(ttauri PRIVATE
     toolbar_button_widget.hpp
     toolbar_tab_button_widget.hpp
     toolbar_widget.hpp
-    value_button_delegate.hpp
-    value_selection_delegate.hpp
-    value_text_field_delegate.hpp
     widget.cpp
     widget.hpp
     widgets.hpp
