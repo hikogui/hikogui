@@ -6,7 +6,6 @@
 #include "unicode_text_segmentation.hpp"
 #include "unicode_normalization.hpp"
 #include "../strings.hpp"
-#include "../application.hpp"
 
 namespace tt {
 

@@ -26,10 +26,6 @@ namespace tt {
  */
 void set_thread_name(std::string_view name);
 
-bool is_main_thread();
-
-void run_from_main_loop(std::function<void()> f);
-
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 constexpr size_t maximum_num_cpus = 64;
 #elif TT_OPERATING_SYSTEM == TT_OS_LINUX || TT_OPERATING_SYSTEM == TT_OS_MACOS
@@ -59,6 +55,16 @@ inline thread_local thread_id current_thread_id_dummy = 0;
     return reinterpret_cast<uint64_t>(&current_thread_id_dummy);
 #endif
 }
+
+/** True if the current thread is the gui thread.
+ */
+[[nodiscard]] bool is_gui_thread() noexcept;
+
+/** Run a function on the gui thread.
+ * This will run the function directly when this function is called
+ * from the gui thread, otherwise it is added to the event queue.
+ */
+void run_on_gui_thread(std::function<void()> function) noexcept;
 
 /** Get the current process CPU affinity mask.
  *

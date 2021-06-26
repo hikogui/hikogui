@@ -1841,7 +1841,7 @@ public:
         return r;
     }
 
-    [[nodiscard]] friend numeric_array composit(numeric_array const &under, numeric_array const &over) noexcept
+    [[nodiscard]] constexpr friend numeric_array composit(numeric_array const &under, numeric_array const &over) noexcept
         requires(N == 4 && std::is_floating_point_v<T>)
     {
         if (over.is_transparent()) {

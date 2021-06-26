@@ -3,9 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_window.hpp"
-#include "gui_device.hpp"
-#include "gui_surface.hpp"
+#include "gui_system.hpp"
 #include "keyboard_bindings.hpp"
+#include "../GFX/gfx_device.hpp"
+#include "../GFX/gfx_surface.hpp"
 #include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_layout_widget.hpp"
@@ -13,23 +14,23 @@
 namespace tt {
 
 template<typename Event>
-bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget, Event const &event) noexcept
+bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event const &event) noexcept
 {
     while (target_widget) {
         // Send a command in priority order to the widget.
         if constexpr (std::is_same_v<Event, mouse_event>) {
-            if (target_widget->handle_event(target_widget->window_to_local() * event)) {
+            if (const_cast<tt::widget *>(target_widget)->handle_event(target_widget->window_to_local() * event)) {
                 return true;
             }
 
         } else {
-            if (target_widget->handle_event(event)) {
+            if (const_cast<tt::widget *>(target_widget)->handle_event(event)) {
                 return true;
             }
         }
 
         // Forward the keyboard event to the parent of the target.
-        target_widget = target_widget->shared_parent();
+        target_widget = target_widget->parent;
     }
 
     // If non of the widget has handled the command, let the window handle the command.
@@ -39,8 +40,8 @@ bool gui_window::send_event_to_widget(std::shared_ptr<tt::widget> target_widget,
     return false;
 }
 
-gui_window::gui_window(gui_system &system, std::shared_ptr<gui_window_delegate> delegate, label const &title) :
-    system(system), _delegate(std::move(delegate)), title(title)
+gui_window::gui_window(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
+    title(title), _delegate(std::move(delegate))
 {
 }
 
@@ -51,7 +52,7 @@ gui_window::~gui_window()
 
     try {
         surface.reset();
-        tt_log_info("Window '{}' has been propertly destructed.", title);
+        tt_log_info("Window '{}' has been properly destructed.", title);
 
     } catch (std::exception const &e) {
         tt_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
@@ -62,28 +63,24 @@ void gui_window::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
-    tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
+    tt_axiom(is_gui_thread());
 
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
-
-        widget = std::make_shared<window_widget>(*this, _delegate, title);
-        widget->init();
-        _delegate->init(*this);
-
-        // Execute a constraint check to determine initial window size.
-        static_cast<void>(widget->update_constraints({}, true));
-        size = widget->preferred_size();
-
-        // Reset the keyboard target to not focus anything.
-        update_keyboard_target({});
-
-        _setting_change_callback = language::subscribe([this]() {
-            ttlet lock = std::scoped_lock(gui_system_mutex);
-            this->_request_setting_change = true;
-        });
+    widget = std::make_unique<window_widget>(*this, title, _delegate);
+    widget->init();
+    if (auto delegate = _delegate.lock()) {
+        delegate->init(*this);
     }
+
+    // Execute a constraint check to determine initial window size.
+    static_cast<void>(widget->update_constraints({}, true));
+    size = widget->preferred_size();
+
+    // Reset the keyboard target to not focus anything.
+    update_keyboard_target({});
+
+    _setting_change_callback = language::subscribe([this] {
+        _request_setting_change = true;
+    });
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
@@ -92,10 +89,12 @@ void gui_window::init()
 
 void gui_window::deinit()
 {
-    _delegate->deinit(*this);
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
 }
 
-void gui_window::set_device(gui_device *device) noexcept
+void gui_window::set_device(gfx_device *device) noexcept
 {
     tt_axiom(surface);
     surface->set_device(device);
@@ -108,20 +107,20 @@ void gui_window::set_device(gui_device *device) noexcept
 
 [[nodiscard]] float gui_window::window_scale() const noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
     return std::ceil(dpi / 100.0f);
 }
 
 void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
     tt_axiom(surface);
     tt_axiom(widget);
 
     // All widgets need constrains recalculated on these window-wide events.
     // Like theme or language changes.
-    ttlet need_reconstrain = std::exchange(_request_setting_change, false);
+    ttlet need_reconstrain = _request_setting_change.exchange(false);
 
     // Update the size constraints of the window_widget and it children.
     ttlet constraints_have_changed = widget->update_constraints(displayTimePoint, need_reconstrain);
@@ -178,20 +177,19 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 
 void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
     tt_axiom(widget);
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
-void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, point2 position) noexcept
+void gui_window::update_mouse_target(tt::widget const *new_target_widget, point2 position) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    auto current_target_widget = _mouse_target_widget.lock();
-    if (new_target_widget != current_target_widget) {
-        if (current_target_widget) {
-            if (!send_event_to_widget(current_target_widget, mouse_event::exited())) {
-                send_event_to_widget(current_target_widget, std::vector{command::gui_mouse_exit});
+    if (new_target_widget != _mouse_target_widget) {
+        if (_mouse_target_widget) {
+            if (!send_event_to_widget(_mouse_target_widget, mouse_event::exited())) {
+                send_event_to_widget(_mouse_target_widget, std::vector{command::gui_mouse_exit});
             }
         }
         _mouse_target_widget = new_target_widget;
@@ -203,13 +201,13 @@ void gui_window::update_mouse_target(std::shared_ptr<tt::widget> new_target_widg
     }
 }
 
-void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_widget, keyboard_focus_group group) noexcept
+void gui_window::update_keyboard_target(tt::widget const *new_target_widget, keyboard_focus_group group) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
-    auto new_target_parent_chain = tt::widget::parent_chain(new_target_widget);
+    auto new_target_parent_chain = new_target_widget->parent_chain();
 
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
@@ -219,15 +217,14 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
     }
 
     // Check if the keyboard focus changed.
-    ttlet current_target_widget = _keyboard_target_widget.lock();
-    if (new_target_widget == current_target_widget) {
+    if (new_target_widget == _keyboard_target_widget) {
         return;
     }
 
     // When there is a new target, tell the current widget that the keyboard focus was exited.
-    if (new_target_widget && current_target_widget) {
-        send_event_to_widget(current_target_widget, std::vector{command::gui_keyboard_exit});
-        _keyboard_target_widget = {};
+    if (new_target_widget && _keyboard_target_widget) {
+        send_event_to_widget(_keyboard_target_widget, std::vector{command::gui_keyboard_exit});
+        _keyboard_target_widget = nullptr;
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
@@ -241,59 +238,42 @@ void gui_window::update_keyboard_target(std::shared_ptr<tt::widget> new_target_w
 }
 
 void gui_window::update_keyboard_target(
-    std::shared_ptr<tt::widget> const &start_widget,
+    tt::widget const *start_widget,
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
     auto tmp = widget->find_next_widget(start_widget, group, direction);
     if (tmp == start_widget) {
         // Could not a next widget, loop around.
         tmp = widget->find_next_widget({}, group, direction);
     }
-    update_keyboard_target(std::move(tmp), group);
+    update_keyboard_target(tmp, group);
 }
 
 void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept
 {
-    auto current_keyboard_widget = _keyboard_target_widget.lock();
-    update_keyboard_target(current_keyboard_widget, group, direction);
+    update_keyboard_target(_keyboard_target_widget, group, direction);
 }
 
 bool gui_window::handle_event(tt::command command) noexcept
 {
     switch (command) {
     case command::gui_widget_next:
-        update_keyboard_target(_keyboard_target_widget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::forward);
+        update_keyboard_target(_keyboard_target_widget, keyboard_focus_group::normal, keyboard_focus_direction::forward);
         return true;
     case command::gui_widget_prev:
-        update_keyboard_target(_keyboard_target_widget.lock(), keyboard_focus_group::normal, keyboard_focus_direction::backward);
+        update_keyboard_target(_keyboard_target_widget, keyboard_focus_group::normal, keyboard_focus_direction::backward);
         return true;
     default:;
     }
     return false;
 }
 
-/*[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, mouse_event const &event) noexcept
-{
-    tt::send_event(target_widget, event);
-}
-
-[[nodiscard]] bool gui_window::send_event(std::shared_ptr<tt::widget> target_widget, keyboard_event const &event) noexcept
-{
-    tt::send_event(target_widget, event);
-}
-
-[[nodiscard]] bool
-gui_window::send_event(std::shared_ptr<tt::widget> target_widget, std::vector<tt::command> const &event) noexcept
-{
-    tt::send_event(target_widget, event);
-}*/
-
 bool gui_window::send_event(mouse_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
     switch (event.type) {
     case mouse_event::Type::Exited: // Mouse left window.
@@ -303,18 +283,16 @@ bool gui_window::send_event(mouse_event const &event) noexcept
     case mouse_event::Type::ButtonDown:
     case mouse_event::Type::Move: {
         ttlet hitbox = widget->hitbox_test(event.position);
-        update_mouse_target(std::const_pointer_cast<tt::widget>(hitbox.widget.lock()), event.position);
+        update_mouse_target(hitbox.widget, event.position);
 
         if (event.type == mouse_event::Type::ButtonDown) {
-            update_keyboard_target(std::const_pointer_cast<tt::widget>(hitbox.widget.lock()), keyboard_focus_group::any);
+            update_keyboard_target(hitbox.widget, keyboard_focus_group::any);
         }
     } break;
     default:;
     }
 
-    auto target = _mouse_target_widget.lock();
-
-    if (send_event_to_widget(target, event)) {
+    if (send_event_to_widget(_mouse_target_widget, event)) {
         return true;
     }
 
@@ -323,11 +301,9 @@ bool gui_window::send_event(mouse_event const &event) noexcept
 
 bool gui_window::send_event(keyboard_event const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
-    auto target = _keyboard_target_widget.lock();
-
-    if (send_event_to_widget(target, event)) {
+    if (send_event_to_widget(_keyboard_target_widget, event)) {
         return true;
     }
 
@@ -335,7 +311,7 @@ bool gui_window::send_event(keyboard_event const &event) noexcept
     if (event.type == keyboard_event::Type::Key) {
         ttlet commands = keyboard_bindings::global().translate(event.key);
 
-        ttlet handled = send_event_to_widget(target, commands);
+        ttlet handled = send_event_to_widget(_keyboard_target_widget, commands);
 
         for (ttlet command : commands) {
             // Intercept the keyboard generated escape.

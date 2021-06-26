@@ -384,7 +384,6 @@ struct formatter<tt::geo::vector<2>, CharT> {
 
     auto format(tt::geo::vector<2> const &t, auto &fc)
     {
-        //return format_to(fc.out(), "({}, {})", t.x(), t.y());
         return std::vformat_to(fc.out(), "({}, {})", std::make_format_args(t.x(), t.y()));
     }
 };
@@ -398,7 +397,6 @@ struct formatter<tt::geo::vector<3>, CharT> : formatter<float, CharT> {
 
     auto format(tt::geo::vector<3> const &t, auto &fc)
     {
-        //return format_to(fc.out(), "({}, {}, {})", t.x(), t.y(), t.z());
         return std::vformat_to(fc.out(), "({}, {}, {})", std::make_format_args(t.x(), t.y(), t.z()));
     }
 };

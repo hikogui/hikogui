@@ -14,11 +14,12 @@ class toolbar_widget final : public widget {
 public:
     using super = widget;
 
-    toolbar_widget(gui_window &window, std::shared_ptr<widget> parent) noexcept : super(window, parent)
+    toolbar_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
     {
+        tt_axiom(is_gui_thread());
+
         if (parent) {
             // The toolbar widget does draw itself.
-            ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer() + 1.0f;
 
             // The toolbar is a top level widget, which draws its background as the next level.
@@ -32,13 +33,13 @@ public:
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    std::shared_ptr<widget> add_widget(horizontal_alignment alignment, std::shared_ptr<widget> widget) noexcept
+    widget &add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
     {
-        auto tmp = super::add_widget(std::move(widget));
+        auto &tmp = super::add_widget(std::move(widget));
         switch (alignment) {
             using enum horizontal_alignment;
-        case left: _left_children.push_back(tmp); break;
-        case right: _right_children.push_back(tmp); break;
+        case left: _left_children.push_back(&tmp); break;
+        case right: _right_children.push_back(&tmp); break;
         default: tt_no_default();
         }
 
@@ -47,7 +48,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
@@ -81,9 +82,9 @@ public:
 
     void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             _layout.set_size(rectangle().width());
 
@@ -106,7 +107,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (overlaps(context, _clipping_rectangle)) {
             context.draw_filled_quad(rectangle(), theme::global(theme_color::fill, _semantic_layer + 1));
@@ -115,14 +116,14 @@ public:
         super::draw(std::move(context), display_time_point);
     }
 
-    hit_box hitbox_test(point2 position) const noexcept
+    hitbox hitbox_test(point2 position) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        auto r = hit_box{};
+        auto r = hitbox{};
 
         if (_visible_rectangle.contains(position)) {
-            r = hit_box{weak_from_this(), _draw_layer, hit_box::Type::MoveArea};
+            r = hitbox{this, _draw_layer, hitbox::Type::MoveArea};
         }
 
         for (ttlet &child : _children) {
@@ -134,16 +135,16 @@ public:
     /** Add a widget directly to this widget.
      */
     template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&...args)
+    T &make_widget(Args &&...args)
     {
-        auto widget = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        auto widget = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         widget->init();
-        return std::static_pointer_cast<T>(add_widget(Alignment, std::move(widget)));
+        return static_cast<T &>(add_widget(Alignment, std::move(widget)));
     }
 
 private:
-    std::vector<std::shared_ptr<widget>> _left_children;
-    std::vector<std::shared_ptr<widget>> _right_children;
+    std::vector<widget *> _left_children;
+    std::vector<widget *> _right_children;
     flow_layout _layout;
 
     void update_constraints_for_child(
@@ -152,7 +153,7 @@ private:
         relative_base_line &shared_base_line,
         float &shared_height) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         _layout.update(
             index, child.minimum_size().width(), child.preferred_size().width(), child.maximum_size().width(), child.margin());
@@ -162,7 +163,7 @@ private:
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
 

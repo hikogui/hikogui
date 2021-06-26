@@ -8,31 +8,28 @@ namespace tt {
 
 label_widget::~label_widget() {}
 
-label_widget::label_widget(
-    gui_window &window,
-    std::shared_ptr<widget> parent) noexcept :
-    super(window, std::move(parent))
-{
-}
+label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
 void label_widget::init() noexcept
 {
-    _icon_widget = super::make_widget<icon_widget>();
+    _icon_widget = &super::make_widget<icon_widget>();
     _icon_widget->alignment = alignment;
-    _text_widget = super::make_widget<text_widget>();
+    _text_widget = &super::make_widget<text_widget>();
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
 
-    _label_callback = label.subscribe([this]() {
-        this->_icon_widget->icon = (*this->label).icon;
-        this->_text_widget->text = (*this->label).text;
+    _label_callback = label.subscribe([this] {
+        run_on_gui_thread([this] {
+            _icon_widget->icon = (*label).icon;
+            _text_widget->text = (*label).text;
+        });
     });
 }
 
 [[nodiscard]] bool
 label_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
     if (super::update_constraints(display_time_point, need_reconstrain)) {
         ttlet label_size = _text_widget->preferred_size();
@@ -87,9 +84,9 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
 
 [[nodiscard]] void label_widget::update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count());
+    tt_axiom(is_gui_thread());
 
-    need_layout |= std::exchange(this->_request_relayout, false);
+    need_layout |= _request_relayout.exchange(false);
     if (need_layout) {
         auto text_rect = aarectangle{};
         if (*alignment == horizontal_alignment::left) {
@@ -133,4 +130,4 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
     super::update_layout(displayTimePoint, need_layout);
 }
 
-}
+} // namespace tt

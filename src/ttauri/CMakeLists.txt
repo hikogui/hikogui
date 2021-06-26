@@ -7,6 +7,7 @@ add_subdirectory(codec)
 add_subdirectory(color)
 add_subdirectory(formula)
 add_subdirectory(geometry)
+add_subdirectory(GFX)
 add_subdirectory(GUI)
 add_subdirectory(random)
 add_subdirectory(rapid)
@@ -19,13 +20,6 @@ configure_file(metadata.cpp.in metadata.cpp @ONLY)
 target_sources(ttauri PRIVATE
     algorithm.hpp
     animator.hpp
-    application.cpp
-    application.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/application_macos.hpp>
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/application_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/application_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/application_win32.hpp>
-    application_delegate.hpp
     assert.hpp
     atomic.hpp
     alignment.hpp
@@ -170,6 +164,7 @@ target_sources(ttauri PRIVATE
     url_parser.hpp
     utils.hpp
     vspan.hpp
+    weak_or_unique_ptr.hpp
     wfree_message_queue.hpp
     wfree_unordered_map.hpp
 )

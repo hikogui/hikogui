@@ -4,7 +4,6 @@
 
 #include "text_style.hpp"
 #include "font_book.hpp"
-#include "../application.hpp"
 
 namespace tt {
 
