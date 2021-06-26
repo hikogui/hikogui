@@ -25,9 +25,8 @@ public:
 
     template<typename Title>
     window_widget(gui_window &window, Title &&title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
-        super(window, nullptr), _content_delegate(std::move(delegate))
+        super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
     {
-        title = std::forward<Title>(title);
     }
 
     template<typename Title>
