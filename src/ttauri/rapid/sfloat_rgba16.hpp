@@ -64,14 +64,6 @@ public:
 
     [[nodiscard]] sfloat_rgba16(corner_shapes const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
 
-    // std::array<float16,4> const &get() const noexcept {
-    //    return v;
-    //}
-    //
-    // std::array<float16,4> &get() noexcept {
-    //    return v;
-    //}
-
     [[nodiscard]] size_t hash() const noexcept
     {
         return hash_mix(v[0], v[1], v[2], v[3]);

@@ -465,7 +465,6 @@ struct formatter<tt::geo::extent<2>, CharT> {
 
     auto format(tt::geo::extent<2> const &t, auto &fc)
     {
-        // return format_to(fc.out(), "[{}, {}]", t.width(), t.height());
         return std::vformat_to(fc.out(), "[{}, {}]", std::make_format_args(t.width(), t.height()));
     }
 };
@@ -479,7 +478,6 @@ struct formatter<tt::geo::extent<3>, CharT> : formatter<float, CharT> {
 
     auto format(tt::geo::extent<3> const &t, auto &fc)
     {
-        // return format_to(fc.out(), "[{}, {}, {}]", t.width(), t.height(), t.depth());
         return std::vformat_to(fc.out(), "[{}, {}, {}]", std::make_format_args(t.width(), t.height(), t.depth()));
     }
 };

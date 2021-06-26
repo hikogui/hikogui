@@ -199,7 +199,7 @@ public:
      * @return An iterator pointing on the first invalid character or last.
      */
     template<typename ItIn, typename ItOut>
-    static constexpr ItIn decode(ItIn ptr, ItIn last, ItOut output) noexcept
+    static constexpr ItIn decode(ItIn ptr, ItIn last, ItOut output)
     {
         int char_index_in_block = 0;
         long long block = 0;
@@ -271,9 +271,13 @@ private:
     }
 
     template<typename ItOut>
-    static constexpr void decode_block(long long block, long long nr_chars, ItOut output) noexcept
+    static constexpr void decode_block(long long block, long long nr_chars, ItOut output)
     {
         ttlet padding = chars_per_block - nr_chars;
+
+        if (block and bytes_per_block == padding) {
+            throw parse_error("Invalid number of character to decode.");
+        }
 
         // Construct a block in little-endian, using easy division/modulo.
         for (long long i = 0; i != (bytes_per_block - padding); ++i) {
