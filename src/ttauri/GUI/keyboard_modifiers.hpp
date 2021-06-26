@@ -106,7 +106,7 @@ struct hash<tt::keyboard_modifiers> {
 
 template<typename CharT>
 struct std::formatter<tt::keyboard_modifiers, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::keyboard_modifiers t, auto &fc)
+    auto format(tt::keyboard_modifiers const &t, auto &fc)
     {
         return std::formatter<std::string_view, CharT>::format(tt::to_string(t), fc);
     }

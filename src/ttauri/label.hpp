@@ -58,7 +58,7 @@ namespace std {
 
 template<typename CharT>
 struct std::formatter<tt::label, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::label t, auto &fc)
+    auto format(tt::label const &t, auto &fc)
     {
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }

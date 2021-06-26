@@ -65,7 +65,7 @@ inline std::ostream &operator<<(std::ostream &lhs, tokenizer_name_t rhs)
 
 template<typename CharT>
 struct std::formatter<tt::tokenizer_name_t, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::tokenizer_name_t t, auto &fc)
+    auto format(tt::tokenizer_name_t const &t, auto &fc)
     {
         return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }
@@ -292,7 +292,7 @@ namespace std {
 
 template<typename CharT>
 struct std::formatter<tt::token_t, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::token_t t, auto &fc)
+    auto format(tt::token_t const &t, auto &fc)
     {
         return std::formatter<std::string_view, CharT>::format(t.repr(), fc);
     }

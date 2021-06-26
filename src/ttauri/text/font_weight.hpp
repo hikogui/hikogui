@@ -164,7 +164,7 @@ namespace std {
 
 template<typename CharT>
 struct std::formatter<tt::font_weight, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::font_weight t, auto &fc)
+    auto format(tt::font_weight const &t, auto &fc)
     {
         return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }

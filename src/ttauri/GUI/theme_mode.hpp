@@ -40,7 +40,7 @@ namespace std {
 
 template<typename CharT>
 struct std::formatter<tt::theme_mode, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::theme_mode t, auto &fc)
+    auto format(tt::theme_mode const &t, auto &fc)
     {
         return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }

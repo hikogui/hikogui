@@ -122,7 +122,7 @@ private:
 
 template<typename CharT>
 struct std::formatter<tt::audio_device_state, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::audio_device_state t, auto &fc)
+    auto format(tt::audio_device_state const &t, auto &fc)
     {
         return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }
