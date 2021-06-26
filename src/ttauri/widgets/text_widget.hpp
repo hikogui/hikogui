@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/draw_context.hpp"
+#include "../GFX/draw_context.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
 #include <memory>
@@ -25,18 +25,16 @@ public:
     observable<theme_text_style> text_style = theme_text_style::label;
 
     text_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent) noexcept :
-        super(window, std::move(parent))
+        gui_window &window, widget *parent) noexcept :
+        super(window, parent)
     {
     }
 
     template<typename Text>
         text_widget(
-        gui_window &window,
-        std::shared_ptr<widget> parent,
+        gui_window &window, widget *parent,
         Text &&text) noexcept :
-        text_widget(window, std::move(parent))
+        text_widget(window, parent)
     {
         text = std::forward<Text>(text);
     }

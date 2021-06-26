@@ -5,7 +5,6 @@
 #include "shaped_text.hpp"
 #include "unicode_description.hpp"
 #include "../small_map.hpp"
-#include "../application.hpp"
 
 namespace tt {
 

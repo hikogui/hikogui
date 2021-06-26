@@ -93,7 +93,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
 
 template<typename CharT>
 struct std::formatter<tt::datum_type_t, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::datum_type_t t, auto &fc)
+    auto format(tt::datum_type_t const &t, auto &fc)
     {
         return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }

@@ -6,6 +6,7 @@
 
 #include "widget.hpp"
 #include "../label.hpp"
+#include "../weak_or_unique_ptr.hpp"
 
 namespace tt {
 
@@ -22,13 +23,19 @@ public:
 
     ~window_widget();
 
-    window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate) noexcept;
+    template<typename Title>
+    window_widget(gui_window &window, Title &&title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
+        super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
+    {
+    }
 
     template<typename Title>
-    window_widget(gui_window &window, std::shared_ptr<grid_layout_delegate> delegate, Title &&title) noexcept :
-        window_widget(window, std::move(delegate))
+    window_widget(gui_window &window, Title &&title) noexcept :
+        window_widget(
+            window,
+            std::forward<Title>(title),
+            std::make_unique<grid_layout_delegate>())
     {
-        this->title = std::forward<Title>(title);
     }
 
     void init() noexcept override;
@@ -36,10 +43,11 @@ public:
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
 
-    [[nodiscard]] color backgroundColor() noexcept {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+    [[nodiscard]] color backgroundColor() noexcept
+    {
+        tt_axiom(is_gui_thread());
         return theme::global(theme_color::fill, _semantic_layer);
     }
 
@@ -47,35 +55,35 @@ public:
      */
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         _left_resize_border_has_priority = left;
         _right_resize_border_has_priority = right;
         _bottom_resize_border_has_priority = bottom;
         _top_resize_border_has_priority = top;
     }
 
-    [[nodiscard]] std::shared_ptr<grid_layout_widget> content() const noexcept
+    [[nodiscard]] grid_layout_widget &content() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_content);
-        return _content;
+        return *_content;
     }
 
-    [[nodiscard]] std::shared_ptr<toolbar_widget> toolbar() const noexcept
+    [[nodiscard]] toolbar_widget &toolbar() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_toolbar);
-        return _toolbar;
+        return *_toolbar;
     }
 
 private:
     decltype(title)::callback_ptr_type _title_callback;
 
-    std::shared_ptr<grid_layout_delegate> _content_delegate;
-    std::shared_ptr<grid_layout_widget> _content;
-    std::shared_ptr<toolbar_widget> _toolbar;
+    weak_or_unique_ptr<grid_layout_delegate> _content_delegate;
+    grid_layout_widget *_content = nullptr;
+    toolbar_widget *_toolbar = nullptr;
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-    std::shared_ptr<system_menu_widget> _system_menu;
+    system_menu_widget *_system_menu = nullptr;
 #endif
 
     bool _left_resize_border_has_priority = true;

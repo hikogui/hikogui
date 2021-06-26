@@ -5,7 +5,7 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "value_button_delegate.hpp"
+#include "default_button_delegate.hpp"
 
 namespace tt {
 
@@ -15,24 +15,25 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    toggle_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(window, std::move(parent), std::move(delegate))
+    toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent, std::move(delegate))
     {
         label_alignment = alignment::top_left;
     }
 
     template<typename Value, typename... Args>
-    toggle_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value, Args &&...args) noexcept :
+    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
+        toggle_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept :
         toggle_widget(
             window,
-            std::move(parent),
-            make_value_button_delegate<button_type::toggle>(std::forward<Value>(value), std::forward<Args>(args)...))
+            parent,
+            make_unique_default_button_delegate<button_type::toggle>(std::forward<Value>(value), std::forward<Args>(args)...))
     {
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             // Make room for button and margin.
@@ -55,9 +56,9 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
@@ -66,9 +67,9 @@ public:
             ttlet button_square =
                 aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
-            _pip_rectangle = align(
-                button_square, extent2{theme::global().icon_size, theme::global().icon_size}, alignment::middle_center);
-            
+            _pip_rectangle =
+                align(button_square, extent2{theme::global().icon_size, theme::global().icon_size}, alignment::middle_center);
+
             ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
             _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
         }
@@ -77,7 +78,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (overlaps(context, _clipping_rectangle)) {
             draw_toggle_button(context);
@@ -98,7 +99,7 @@ private:
 
     void draw_toggle_button(draw_context context) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         context.draw_box_with_border_inside(
             _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
@@ -106,7 +107,7 @@ private:
 
     void draw_toggle_pip(draw_context draw_context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, display_time_point);
         if (_animated_value.is_animating()) {

@@ -32,7 +32,7 @@ namespace tt {
 template<bool UseDeadLockDetector>
 class unfair_mutex_impl {
 public:
-    unfair_mutex_impl() noexcept {}
+    constexpr unfair_mutex_impl() noexcept {}
     unfair_mutex_impl(unfair_mutex_impl const &) = delete;
     unfair_mutex_impl(unfair_mutex_impl &&) = delete;
     unfair_mutex_impl &operator=(unfair_mutex_impl const &) = delete;

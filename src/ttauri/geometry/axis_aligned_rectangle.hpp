@@ -7,9 +7,11 @@
 #include "../rapid/numeric_array.hpp"
 #include "../alignment.hpp"
 #include "../concepts.hpp"
+#include "../unfair_mutex.hpp"
 #include "extent.hpp"
 #include "point.hpp"
 #include <concepts>
+#include <mutex>
 
 namespace tt {
 
@@ -225,8 +227,6 @@ public:
         return ge(static_cast<f32x4>(rhs).xyxy(), v) == 0b0011;
     }
 
-    
-
     /** Align a rectangle within another rectangle.
      * @param haystack The outside rectangle
      * @param needle The size of the rectangle to be aligned.
@@ -438,3 +438,115 @@ public:
 using aarectangle = axis_aligned_rectangle;
 
 } // namespace tt
+
+namespace std {
+
+template<>
+class atomic<tt::axis_aligned_rectangle> {
+public:
+    static constexpr bool is_always_lock_free = false;
+
+    constexpr atomic() noexcept : _value() {}
+    atomic(atomic const &) = delete;
+    atomic(atomic &&) = delete;
+    atomic &operator=(atomic const &) = delete;
+    atomic &operator=(atomic &&) = delete;
+
+    constexpr atomic(tt::axis_aligned_rectangle const &rhs) noexcept : _value(rhs) {}
+    atomic &operator=(tt::axis_aligned_rectangle const &rhs) noexcept
+    {
+        store(rhs);
+        return *this;
+    }
+
+    operator tt::axis_aligned_rectangle() const noexcept
+    {
+        return load();
+    }
+
+    [[nodiscard]] bool is_lock_free() const noexcept
+    {
+        return is_always_lock_free;
+    }
+
+    void store(tt::axis_aligned_rectangle desired, std::memory_order = std::memory_order_seq_cst) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        _value = desired;
+    }
+
+    tt::axis_aligned_rectangle load(std::memory_order = std::memory_order_seq_cst) const noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        return _value;
+    }
+
+    tt::axis_aligned_rectangle
+    exchange(tt::axis_aligned_rectangle desired, std::memory_order = std::memory_order_seq_cst) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        return std::exchange(_value, desired);
+    }
+
+    bool compare_exchange_weak(
+        tt::axis_aligned_rectangle &expected,
+        tt::axis_aligned_rectangle desired,
+        std::memory_order,
+        std::memory_order) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        if (_value == expected) {
+            _value = desired;
+            return true;
+        } else {
+            expected = _value;
+            return false;
+        }
+    }
+
+    bool compare_exchange_strong(
+        tt::axis_aligned_rectangle &expected,
+        tt::axis_aligned_rectangle desired,
+        std::memory_order success,
+        std::memory_order failure) noexcept
+    {
+        return compare_exchange_weak(expected, desired, success, failure);
+    }
+
+    bool compare_exchange_weak(
+        tt::axis_aligned_rectangle &expected,
+        tt::axis_aligned_rectangle desired,
+        std::memory_order order = std::memory_order_seq_cst) noexcept
+    {
+        return compare_exchange_weak(expected, desired, order, order);
+    }
+
+    bool compare_exchange_strong(
+        tt::axis_aligned_rectangle &expected,
+        tt::axis_aligned_rectangle desired,
+        std::memory_order order = std::memory_order_seq_cst) noexcept
+    {
+        return compare_exchange_strong(expected, desired, order, order);
+    }
+
+    tt::axis_aligned_rectangle
+    fetch_or(tt::axis_aligned_rectangle arg, std::memory_order = std::memory_order_seq_cst) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        auto tmp = _value;
+        _value = tmp | arg;
+        return tmp;
+    }
+
+    tt::axis_aligned_rectangle operator|=(tt::axis_aligned_rectangle arg) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        return _value |= arg;
+    }
+
+private:
+    tt::axis_aligned_rectangle _value;
+    mutable tt::unfair_mutex _mutex;
+};
+
+} // namespace std

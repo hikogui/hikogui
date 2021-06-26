@@ -41,7 +41,7 @@ inline std::ostream &operator<<(std::ostream &lhs, audio_device_state const &rhs
 }
 
 /** A set of audio channels which can be rendered and/or captures at the same time.
- * On win32 this would be Audio Endpoint gui_device, which can either render or capture
+ * On win32 this would be Audio Endpoint gfx_device, which can either render or capture
  * but not at the same time.
  *
  * On MacOS this would contain all the inputs and outputs of either a physical or
@@ -122,7 +122,7 @@ private:
 
 template<typename CharT>
 struct std::formatter<tt::audio_device_state, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::audio_device_state t, auto &fc)
+    auto format(tt::audio_device_state const &t, auto &fc)
     {
         return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }

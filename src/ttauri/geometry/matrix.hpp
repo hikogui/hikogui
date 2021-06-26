@@ -271,37 +271,37 @@ public:
         ttlet t = transpose(*this);
 
         //   rc     rc          rc          rc
-        // m.i00 = (i11 *  c5 + i12 * -c4 + i13 *  c3) * invdet;
-        // m.i10 = (i10 * -c5 + i12 *  c2 + i13 * -c1) * invdet;
-        // m.i20 = (i10 *  c4 + i11 * -c2 + i13 *  c0) * invdet;
-        // m.i30 = (i10 * -c3 + i11 *  c1 + i12 * -c0) * invdet;
+        // m.i00 := (i11 *  c5 + i12 * -c4 + i13 *  c3) * invdet;
+        // m.i10 := (i10 * -c5 + i12 *  c2 + i13 * -c1) * invdet;
+        // m.i20 := (i10 *  c4 + i11 * -c2 + i13 *  c0) * invdet;
+        // m.i30 := (i10 * -c3 + i11 *  c1 + i12 * -c0) * invdet;
         auto tmp_c5543 = neg<0b1010>(c5432.xxyz());
         auto tmp_c4221 = neg<0b0101>(c5432.yww0() + c10__._000x());
         auto tmp_c3100 = neg<0b1010>(c5432.z000() + c10__._0xyy());
         ttlet inv_col0 = ((t._col1.yxxx() * tmp_c5543) + (t._col1.zzyy() * tmp_c4221) + (t._col1.wwwz() * tmp_c3100)) * invdet;
 
-        // m.i01 = (i01 * -c5 + i02 *  c4 + i03 * -c3) * invdet;
-        // m.i11 = (i00 *  c5 + i02 * -c2 + i03 *  c1) * invdet;
-        // m.i21 = (i00 * -c4 + i01 *  c2 + i03 * -c0) * invdet;
-        // m.i31 = (i00 *  c3 + i01 * -c1 + i02 *  c0) * invdet;
+        // m.i01 := (i01 * -c5 + i02 *  c4 + i03 * -c3) * invdet;
+        // m.i11 := (i00 *  c5 + i02 * -c2 + i03 *  c1) * invdet;
+        // m.i21 := (i00 * -c4 + i01 *  c2 + i03 * -c0) * invdet;
+        // m.i31 := (i00 *  c3 + i01 * -c1 + i02 *  c0) * invdet;
         tmp_c5543 = -tmp_c5543;
         tmp_c4221 = -tmp_c4221;
         tmp_c3100 = -tmp_c3100;
         ttlet inv_col1 = ((t._col0.yxxx() * tmp_c5543) + (t._col0.zzyy() * tmp_c4221) + (t._col0.wwwz() * tmp_c3100)) * invdet;
 
-        // m.i02 = (i31 *  s5 + i32 * -s4 + i33 *  s3) * invdet;
-        // m.i12 = (i30 * -s5 + i32 *  s2 + i33 * -s1) * invdet;
-        // m.i22 = (i30 *  s4 + i31 * -s2 + i33 *  s0) * invdet;
-        // m.i32 = (i30 * -s3 + i31 *  s1 + i32 * -s0) * invdet;
+        // m.i02 := (i31 *  s5 + i32 * -s4 + i33 *  s3) * invdet;
+        // m.i12 := (i30 * -s5 + i32 *  s2 + i33 * -s1) * invdet;
+        // m.i22 := (i30 *  s4 + i31 * -s2 + i33 *  s0) * invdet;
+        // m.i32 := (i30 * -s3 + i31 *  s1 + i32 * -s0) * invdet;
         auto tmp_s5543 = neg<0b1010>(s45__.yyx0() + s0123._000w());
         auto tmp_s4221 = neg<0b0101>(s45__.x000() + s0123._0zzy());
         auto tmp_s3100 = neg<0b1010>(s0123.wyxx());
         ttlet inv_col2 = ((t._col3.yxxx() * tmp_s5543) + (t._col3.zzyy() * tmp_s4221) + (t._col3.wwwz() * tmp_s3100)) * invdet;
 
-        // m.i03 = (i21 * -s5 + i22 *  s4 + i23 * -s3) * invdet;
-        // m.i13 = (i20 *  s5 + i22 * -s2 + i23 *  s1) * invdet;
-        // m.i23 = (i20 * -s4 + i21 *  s2 + i23 * -s0) * invdet;
-        // m.i33 = (i20 *  s3 + i21 * -s1 + i22 *  s0) * invdet;
+        // m.i03 := (i21 * -s5 + i22 *  s4 + i23 * -s3) * invdet;
+        // m.i13 := (i20 *  s5 + i22 * -s2 + i23 *  s1) * invdet;
+        // m.i23 := (i20 * -s4 + i21 *  s2 + i23 * -s0) * invdet;
+        // m.i33 := (i20 *  s3 + i21 * -s1 + i22 *  s0) * invdet;
         tmp_s5543 = -tmp_s5543;
         tmp_s4221 = -tmp_s4221;
         tmp_s3100 = -tmp_s3100;

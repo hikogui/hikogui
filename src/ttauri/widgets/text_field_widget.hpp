@@ -5,11 +5,12 @@
 #pragma once
 
 #include "text_field_delegate.hpp"
-#include "value_text_field_delegate.hpp"
+#include "default_text_field_delegate.hpp"
 #include "widget.hpp"
 #include "../text/editable_text.hpp"
 #include "../format.hpp"
 #include "../label.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -61,18 +62,20 @@ public:
      */
     observable<bool> continues = false;
 
-    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, std::shared_ptr<delegate_type> delegate) noexcept :
-        super(window, parent), _delegate(delegate), _field(theme::global(theme_text_style::label)), _shaped_text()
+    text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent), _delegate(std::move(delegate)), _field(theme::global(theme_text_style::label)), _shaped_text()
     {
-        _delegate_callback = _delegate->subscribe(*this, [this](auto...) {
-            ttlet lock = std::scoped_lock(gui_system_mutex);
-            _request_relayout = true;
-        });
+        if (auto d = _delegate.lock()) {
+            _delegate_callback = d->subscribe(*this, [this] {
+                _request_relayout = true;
+            });
+        }
     }
 
     template<typename Value>
-    text_field_widget(gui_window &window, std::shared_ptr<widget> parent, Value &&value) noexcept :
-        text_field_widget(window, parent, make_value_text_field_delegate(std::forward<Value>(value)))
+    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
+        text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept :
+        text_field_widget(window, parent, make_unique_default_text_field_delegate(std::forward<Value>(value)))
     {
     }
 
@@ -81,18 +84,22 @@ public:
     void init() noexcept override
     {
         super::init();
-        _delegate->init(*this);
+        if (auto delegate = _delegate.lock()) {
+            delegate->init(*this);
+        }
     }
 
     void deinit() noexcept override
     {
-        _delegate->deinit(*this);
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
         super::deinit();
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             ttlet text_style = theme::global(theme_text_style::label);
@@ -114,13 +121,13 @@ public:
 
     void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (_focus && display_time_point >= _next_redraw_time_point) {
             request_redraw();
         }
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             _text_field_rectangle = aarectangle{extent2{_text_width + theme::global().margin * 2.0f, _size.height()}};
 
@@ -135,11 +142,19 @@ public:
             if (_focus) {
                 // Update the optional error value from the string conversion when the
                 // field has keyboard focus.
-                _error = _delegate->validate(*this, field_str);
+                if (auto delegate = _delegate.lock()) {
+                    _error = delegate->validate(*this, field_str);
+                } else {
+                    _error = {};
+                }
 
             } else {
                 // When field is not focused, simply follow the observed_value.
-                _field = _delegate->text(*this);
+                if (auto delegate = _delegate.lock()) {
+                    _field = delegate->text(*this);
+                } else {
+                    _field = {};
+                }
                 _error = {};
             }
 
@@ -156,7 +171,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         _next_redraw_time_point = display_time_point + _blink_interval;
 
@@ -180,7 +195,7 @@ public:
 
     bool handle_event(command command) noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         _request_relayout = true;
 
         if (enabled) {
@@ -224,7 +239,7 @@ public:
 
     bool handle_event(mouse_event const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         // Make sure we only scroll when dragging outside the widget.
@@ -296,7 +311,7 @@ public:
 
     bool handle_event(keyboard_event const &event) noexcept override
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
 
         auto handled = super::handle_event(event);
 
@@ -324,20 +339,20 @@ public:
         return handled;
     }
 
-    hit_box hitbox_test(point2 position) const noexcept override
+    hitbox hitbox_test(point2 position) const noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (_visible_rectangle.contains(position)) {
-            return hit_box{weak_from_this(), _draw_layer, enabled ? hit_box::Type::TextEdit : hit_box::Type::Default};
+            return hitbox{this, _draw_layer, enabled ? hitbox::Type::TextEdit : hitbox::Type::Default};
         } else {
-            return hit_box{};
+            return hitbox{};
         }
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         return is_normal(group) and enabled;
     }
 
@@ -351,7 +366,7 @@ public:
     }
 
 private:
-    std::shared_ptr<delegate_type> _delegate;
+    weak_or_unique_ptr<delegate_type> _delegate;
     typename delegate_type::callback_ptr_type _delegate_callback;
 
     bool _continues = false;
@@ -394,30 +409,38 @@ private:
 
     void revert(bool force) noexcept
     {
-        _field = _delegate->text(*this);
+        if (auto delegate = _delegate.lock()) {
+            _field = delegate->text(*this);
+        } else {
+            _field = {};
+        }
         _error = {};
     }
 
     void commit(bool force) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         if (_continues || force) {
             auto text = static_cast<std::string>(_field);
 
-            if (not _delegate->validate(*this, text).has_value()) {
-                // text is valid.
-                _delegate->set_text(*this, text);
-            }
+            if (auto delegate = _delegate.lock()) {
+                if (not delegate->validate(*this, text).has_value()) {
+                    // text is valid.
+                    delegate->set_text(*this, text);
+                }
 
-            // After commit get the canonical text to display from the delegate.
-            _field = _delegate->text(*this);
+                // After commit get the canonical text to display from the delegate.
+                _field = delegate->text(*this);
+            } else {
+                _field = {};
+            }
             _error = {};
         }
     }
 
     void drag_select() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet mouse_cursor_relative_to_text = _text_inv_translate * _drag_select_position;
         switch (_drag_click_count) {
@@ -499,7 +522,8 @@ private:
         ttlet blink_is_on = nr_half_blinks % 2 == 0;
         _left_to_right_caret = _field.left_to_right_caret();
         if (_left_to_right_caret && blink_is_on && _focus && window.active) {
-            context.draw_filled_quad(_text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global(theme_color::cursor));
+            context.draw_filled_quad(
+                _text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global(theme_color::cursor));
         }
     }
 

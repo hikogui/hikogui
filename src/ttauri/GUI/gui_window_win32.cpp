@@ -3,14 +3,14 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_window_win32.hpp"
+#include "gui_system.hpp"
 #include "keyboard_virtual_key.hpp"
-#include "gui_system_vulkan_win32.hpp"
 #include "theme_book.hpp"
+#include "../GFX/gfx_system_vulkan.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../logger.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
-#include "../application_win32.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 #include <new>
@@ -31,6 +31,8 @@ static bool firstWindowHasBeenOpened = false;
  */
 static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
+    tt_axiom(is_gui_thread());
+
     if (uMsg == WM_CREATE && lParam) {
         ttlet createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
 
@@ -50,12 +52,6 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     }
 
     auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
-
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
-    if (gui_system_mutex.recurse_lock_count()) {
-        // This may happen when std::terminate() is called while holding the gui_system_mutex.
-        tt_log_error("Receiving message for window while gui_system_mutex is held.");
-    }
 
     LRESULT result = window->windowProc(uMsg, wParam, lParam);
 
@@ -77,7 +73,7 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     return result;
 }
 
-static void createWindowClass(gui_system &system)
+static void createWindowClass()
 {
     if (!win32WindowClassIsRegistered) {
         // Register the window class.
@@ -86,7 +82,7 @@ static void createWindowClass(gui_system &system)
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(system.instance);
+        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(gui_system::instance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -97,10 +93,9 @@ static void createWindowClass(gui_system &system)
 void gui_window_win32::create_window()
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
-    tt_assert(is_main_thread(), "createWindow should be called from the main thread.");
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
+    tt_assert(is_gui_thread());
 
-    createWindowClass(system);
+    createWindowClass();
 
     auto u16title = to_wstring(title.text());
 
@@ -124,7 +119,7 @@ void gui_window_win32::create_window()
 
         NULL, // Parent window
         NULL, // Menu
-        reinterpret_cast<HINSTANCE>(system.instance), // Instance handle
+        reinterpret_cast<HINSTANCE>(gui_system::instance), // Instance handle
         this);
     if (win32Window == nullptr) {
         tt_log_fatal("Could not open a win32 window: {}", get_last_error_message());
@@ -147,7 +142,7 @@ void gui_window_win32::create_window()
 
     if (!firstWindowHasBeenOpened) {
         ttlet win32_window_ = reinterpret_cast<HWND>(win32Window);
-        switch (application::global->initial_window_size) {
+        switch (gui_window_size::normal) {
         case gui_window_size::normal: ShowWindow(win32_window_, SW_SHOWNORMAL); break;
         case gui_window_size::minimized: ShowWindow(win32_window_, SW_SHOWMINIMIZED); break;
         case gui_window_size::maximized: ShowWindow(win32_window_, SW_SHOWMAXIMIZED); break;
@@ -169,14 +164,11 @@ void gui_window_win32::create_window()
     }
     dpi = narrow_cast<float>(_dpi);
 
-    surface = system.make_surface(win32Window);
+    surface = gfx_system::global().make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(
-    gui_system &system,
-    std::shared_ptr<gui_window_delegate> delegate,
-    label const &title) :
-    gui_window(system, std::move(delegate), title), trackMouseLeaveEventParameters()
+gui_window_win32::gui_window_win32(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
+    gui_window(title, std::move(delegate)), trackMouseLeaveEventParameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
@@ -198,39 +190,38 @@ gui_window_win32::~gui_window_win32()
 
 void gui_window_win32::close_window()
 {
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
 void gui_window_win32::minimize_window()
 {
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
 void gui_window_win32::maximize_window()
 {
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
 void gui_window_win32::normalize_window()
 {
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
 
 void gui_window_win32::set_window_size(extent2 new_extent)
 {
-    gui_system_mutex.lock();
+    tt_axiom(is_gui_thread());
     ttlet handle = reinterpret_cast<HWND>(win32Window);
-    gui_system_mutex.unlock();
 
-    run_from_main_loop([=]() {
+    gui_system::global().run_from_event_queue([=]() {
         SetWindowPos(
             reinterpret_cast<HWND>(handle),
             HWND_NOTOPMOST,
@@ -254,11 +245,11 @@ void gui_window_win32::set_window_size(extent2 new_extent)
 
 [[nodiscard]] std::string gui_window_win32::get_text_from_clipboard() const noexcept
 {
+    tt_axiom(is_gui_thread());
+
     auto r = std::string{};
 
-    gui_system_mutex.lock();
     ttlet handle = reinterpret_cast<HWND>(win32Window);
-    gui_system_mutex.unlock();
 
     if (!OpenClipboard(handle)) {
         tt_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
@@ -357,10 +348,9 @@ done:
     CloseClipboard();
 }
 
-
 void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
 {
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
     auto screen_extent = virtual_screen_size();
 
@@ -377,19 +367,15 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
 
 void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
+    tt_axiom(is_gui_thread());
 
-    {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+    if (currentmouse_cursor == cursor) {
+        return;
+    }
+    currentmouse_cursor = cursor;
 
-        if (currentmouse_cursor == cursor) {
-            return;
-        }
-        currentmouse_cursor = cursor;
-
-        if (cursor == mouse_cursor::None) {
-            return;
-        }
+    if (cursor == mouse_cursor::None) {
+        return;
     }
 
     static auto idcAppStarting = LoadCursorW(nullptr, IDC_APPSTARTING);
@@ -453,10 +439,11 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     mouse_event mouseEvent;
+    ttlet current_time = hires_utc_clock::now();
 
     switch (uMsg) {
     case WM_DESTROY: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         surface->set_closed();
         win32Window = nullptr;
     } break;
@@ -474,8 +461,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_ERASEBKGND: return 1;
 
     case WM_PAINT: {
-        ttlet height = [this](){
-            ttlet lock = std::scoped_lock(gui_system_mutex);
+        ttlet height = [this]() {
+            tt_axiom(is_gui_thread());
             return size.height();
         }();
 
@@ -489,7 +476,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             narrow_cast<float>(ps.rcPaint.bottom - ps.rcPaint.top)};
 
         {
-            ttlet lock = std::scoped_lock(gui_system_mutex);
+            tt_axiom(is_gui_thread());
             request_redraw(update_rectangle);
         }
 
@@ -497,12 +484,12 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_NCPAINT: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         request_redraw();
     } break;
 
     case WM_SIZE: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         switch (wParam) {
         case SIZE_MAXIMIZED: size_state = gui_window_size::maximized; break;
         case SIZE_MINIMIZED: size_state = gui_window_size::minimized; break;
@@ -514,11 +501,23 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_SIZING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         setOSWindowRectangleFromRECT(*rect_ptr);
+        if (last_forced_redraw + 16.7ms < current_time) {
+            // During sizing the event loop is blocked.
+            // Render at about 60fps.
+            gui_system::global().render(current_time);
+            last_forced_redraw = current_time;
+        }
     } break;
 
     case WM_MOVING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         setOSWindowRectangleFromRECT(*rect_ptr);
+        if (last_forced_redraw + 16.7ms < current_time) {
+            // During moving the event loop is blocked.
+            // Render at about 60fps.
+            gui_system::global().render(current_time);
+            last_forced_redraw = current_time;
+        }
     } break;
 
     case WM_WINDOWPOSCHANGED: {
@@ -532,17 +531,17 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_ENTERSIZEMOVE: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         resizing = true;
     } break;
 
     case WM_EXITSIZEMOVE: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         resizing = false;
     } break;
 
     case WM_ACTIVATE: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         switch (wParam) {
         case 1: // WA_ACTIVE
         case 2: // WA_CLICKACTIVE
@@ -557,7 +556,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_GETMINMAXINFO: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         tt_axiom(widget);
         ttlet minimum_widget_size = widget->minimum_size();
         ttlet maximum_widget_size = widget->maximum_size();
@@ -649,35 +648,35 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_NCHITTEST: {
-        gui_system_mutex.lock();
+        tt_axiom(is_gui_thread());
+
         ttlet screen_extent = virtual_screen_size();
         ttlet screen_position =
             point2(narrow_cast<float>(GET_X_LPARAM(lParam)), screen_extent.height() - narrow_cast<float>(GET_Y_LPARAM(lParam)));
 
         ttlet hitbox_type = widget->hitbox_test(screen_to_window() * screen_position).type;
-        gui_system_mutex.unlock();
 
         switch (hitbox_type) {
-        case hit_box::Type::BottomResizeBorder: set_cursor(mouse_cursor::None); return HTBOTTOM;
-        case hit_box::Type::TopResizeBorder: set_cursor(mouse_cursor::None); return HTTOP;
-        case hit_box::Type::LeftResizeBorder: set_cursor(mouse_cursor::None); return HTLEFT;
-        case hit_box::Type::RightResizeBorder: set_cursor(mouse_cursor::None); return HTRIGHT;
-        case hit_box::Type::BottomLeftResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMLEFT;
-        case hit_box::Type::BottomRightResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMRIGHT;
-        case hit_box::Type::TopLeftResizeCorner: set_cursor(mouse_cursor::None); return HTTOPLEFT;
-        case hit_box::Type::TopRightResizeCorner: set_cursor(mouse_cursor::None); return HTTOPRIGHT;
-        case hit_box::Type::ApplicationIcon: set_cursor(mouse_cursor::None); return HTSYSMENU;
-        case hit_box::Type::MoveArea: set_cursor(mouse_cursor::None); return HTCAPTION;
-        case hit_box::Type::TextEdit: set_cursor(mouse_cursor::TextEdit); return HTCLIENT;
-        case hit_box::Type::Button: set_cursor(mouse_cursor::Button); return HTCLIENT;
-        case hit_box::Type::Default: set_cursor(mouse_cursor::Default); return HTCLIENT;
-        case hit_box::Type::Outside: set_cursor(mouse_cursor::None); return HTCLIENT;
+        case hitbox::Type::BottomResizeBorder: set_cursor(mouse_cursor::None); return HTBOTTOM;
+        case hitbox::Type::TopResizeBorder: set_cursor(mouse_cursor::None); return HTTOP;
+        case hitbox::Type::LeftResizeBorder: set_cursor(mouse_cursor::None); return HTLEFT;
+        case hitbox::Type::RightResizeBorder: set_cursor(mouse_cursor::None); return HTRIGHT;
+        case hitbox::Type::BottomLeftResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMLEFT;
+        case hitbox::Type::BottomRightResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMRIGHT;
+        case hitbox::Type::TopLeftResizeCorner: set_cursor(mouse_cursor::None); return HTTOPLEFT;
+        case hitbox::Type::TopRightResizeCorner: set_cursor(mouse_cursor::None); return HTTOPRIGHT;
+        case hitbox::Type::ApplicationIcon: set_cursor(mouse_cursor::None); return HTSYSMENU;
+        case hitbox::Type::MoveArea: set_cursor(mouse_cursor::None); return HTCAPTION;
+        case hitbox::Type::TextEdit: set_cursor(mouse_cursor::TextEdit); return HTCLIENT;
+        case hitbox::Type::Button: set_cursor(mouse_cursor::Button); return HTCLIENT;
+        case hitbox::Type::Default: set_cursor(mouse_cursor::Default); return HTCLIENT;
+        case hitbox::Type::Outside: set_cursor(mouse_cursor::None); return HTCLIENT;
         default: tt_no_default();
         }
     } break;
 
     case WM_SETTINGCHANGE: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
@@ -686,7 +685,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_DPICHANGED: {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
         tt_log_info("DPI has changed to {}", dpi);
@@ -702,8 +701,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
 [[nodiscard]] char32_t gui_window_win32::handleSuragates(char32_t c) noexcept
 {
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
-    ttlet lock = std::scoped_lock(gui_system_mutex);
+    tt_axiom(is_gui_thread());
 
     if (c >= 0xd800 && c <= 0xdbff) {
         highSurrogate = ((c - 0xd800) << 10) + 0x10000;
@@ -718,11 +716,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
 [[nodiscard]] mouse_event gui_window_win32::createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
-    // We have to do manual locking, since we don't want this
-    // function or its caller to hold a lock while calling the windows API.
-    // This function should only return once, to make it easier.
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
-    gui_system_mutex.lock();
+    tt_axiom(is_gui_thread());
 
     auto mouseEvent = mouse_event{};
     mouseEvent.timePoint = hires_utc_clock::now();
@@ -789,10 +783,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         mouseEvent.clickCount = 0;
 
         if (!a_button_is_pressed) {
-            gui_system_mutex.unlock();
-            tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
             ReleaseCapture();
-            gui_system_mutex.lock();
         }
         break;
 
@@ -808,10 +799,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         tt_axiom(win32Window != 0);
         ttlet window_handle = reinterpret_cast<HWND>(win32Window);
 
-        gui_system_mutex.unlock();
-        tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
         SetCapture(window_handle);
-        gui_system_mutex.lock();
     } break;
 
     case WM_LBUTTONDBLCLK:
@@ -854,12 +842,9 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     // So that once the mouse leaves the window we receive a WM_MOUSELEAVE event.
     if (!trackingMouseLeaveEvent && uMsg != WM_MOUSELEAVE) {
         auto *track_mouse_leave_event_parameters_p = &trackMouseLeaveEventParameters;
-        gui_system_mutex.unlock();
-        tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
         if (!TrackMouseEvent(track_mouse_leave_event_parameters_p)) {
             tt_log_error("Could not track leave event '{}'", get_last_error_message());
         }
-        gui_system_mutex.lock();
         trackingMouseLeaveEvent = true;
     }
 
@@ -870,8 +855,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         mouseButtonEvent = mouseEvent;
     }
 
-    gui_system_mutex.unlock();
-    tt_axiom(gui_system_mutex.recurse_lock_count() == 0);
     return mouseEvent;
 }
 

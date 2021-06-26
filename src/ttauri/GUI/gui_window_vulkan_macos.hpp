@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "gui_surface_vulkan.hpp"
+#include "gfx_surface_vulkan.hpp"
 #include <unordered_map>
 
 namespace tt {
@@ -13,7 +13,7 @@ class Application_macos;
 
 namespace tt {
 
-class gui_window_vulkan_macos final : public gui_surface_vulkan {
+class gui_window_vulkan_macos final : public gfx_surface_vulkan {
 public:
     //HWND win32Window = nullptr;
 
