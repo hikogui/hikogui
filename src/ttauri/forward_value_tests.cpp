@@ -16,8 +16,8 @@ TEST(forward_value, string_literal)
 
 TEST(forward_value, char_ptr_literal)
 {
-    char const *hello_world = "hello world";
-    char const *const const_hello_world = "hello world";
+    [[maybe_unused]] char const *hello_world = "hello world";
+    [[maybe_unused]] char const *const const_hello_world = "hello world";
 
     static_assert(std::is_same_v<tt::forward_value_t<decltype(hello_world)>, std::string>);
     static_assert(std::is_same_v<tt::forward_value_t<decltype(const_hello_world)>, std::string>);
