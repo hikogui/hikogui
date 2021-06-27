@@ -15,7 +15,7 @@ auto create_main_window(std::shared_ptr<my_preferences_window_controller> prefer
 {
     using namespace tt;
 
-    auto window_label = label{URL{"resource:ttauri_demo.png"}, l10n("ttauri_demo")};
+    auto window_label = label{URL{"resource:ttauri_demo.png"}, l10n("TTauri demo")};
     auto &main_window = gui_system::global().make_window(window_label);
 
     auto &preferences_button = main_window.make_toolbar_widget<toolbar_button_widget>(label{elusive_icon::Wrench, l10n("Preferences")});

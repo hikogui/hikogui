@@ -232,9 +232,6 @@ elseif (MSVC)
     # Set the execution character encoding to UTF-8
     target_compile_options(ttauri PUBLIC -execution-charset:utf-8)
 
-    # Allow system headers to be imported.
-    target_compile_options(ttauri PUBLIC -experimental:module)
-
     # Support Intel's SkyLake and AMD's Excavator.
     # see hardware_support.md
     target_compile_options(ttauri PUBLIC -arch:AVX)

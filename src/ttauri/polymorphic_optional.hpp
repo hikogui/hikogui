@@ -24,7 +24,7 @@ namespace tt {
  *                  the polymorphic value.
  */
 template<typename BaseType, size_t Capacity>
-class alignas(16) polymorphic_optional {
+class polymorphic_optional {
 public:
     using value_type = BaseType;
     using reference = value_type &;
@@ -199,8 +199,9 @@ private:
     state _state;
 
     union {
-        std::array<std::byte, capacity> buffer;
         pointer pointer;
+        // The pointer will align the buffer properly.
+        std::array<std::byte, capacity> buffer;
     } _value;
 
     tt_no_inline void reset_deep() noexcept
