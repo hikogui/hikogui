@@ -82,13 +82,13 @@ public:
         super::update_layout(display_time_point, need_layout);
     }
 
-    widget *find_next_widget(
-        widget *current_widget,
+    [[nodiscard]] widget const *find_next_widget(
+        widget const *current_widget,
         keyboard_focus_group group,
-        keyboard_focus_direction direction) const noexcept
+        keyboard_focus_direction direction) const noexcept override
     {
         tt_axiom(is_gui_thread());
-        return selected_child()->find_next_widget(current_widget, group, direction);
+        return selected_child().find_next_widget(current_widget, group, direction);
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
@@ -146,7 +146,7 @@ private:
         return find_child(*value);
     }
 
-    [[nodiscard]] widget &selected_child() noexcept
+    [[nodiscard]] widget const &selected_child() const noexcept
     {
         tt_axiom(is_gui_thread());
         tt_axiom(std::ssize(_children) != 0);
