@@ -6,11 +6,11 @@ For installing the ttauri library as part of an application see the
 example application.
 
 Table of contents:
- - [MS Visual Studio with vcpkg](#ms-visual-studio-with-vcpkg)
- - [MS Visual Studio without vcpkg](#ms-visual-studio-without-vcpkg)
+ - [Visual Studio with vcpkg](#visual-studio-with-vcpkg)
+ - [Visual Studio without vcpkg](#visual-studio-without-vcpkg)
 
-MS Visual Studio with vcpkg
----------------------------
+Visual Studio with vcpkg
+------------------------
 ### Install requirements:
  - The latest **Microsoft Visual Studio** or
    **Microsoft Visual Studio Preview** from <https://visualstudio.microsoft.com/>
@@ -35,7 +35,6 @@ Cloning into 'vcpkg'...
 ...
 
 c:\tools\vcpkg>bootstrap-vcpkg.bat
-Downloading https://github.com/microsoft/vcpkg-tool/releases/download/2021-02-24-d67989bce1043b98092ac45996a8230a059a2d7e/vcpkg.exe -> C:\tools\vcpkg/vcpkg.exe
 Done.
 ...
 
@@ -63,15 +62,15 @@ To build:
  1. Select `x64-MSVC-Debug` from the project `Configuration` pull down menu.
  2. `Project / Generate Cache` menu option
  3. `Build / Build All` menu option
- 4. Select `ttauri\_demo.exe` from the `Select Startup Item...` pull-down menu.
+ 4. Select `ttauri_demo.exe` from the `Select Startup Item...` pull-down menu.
  5. `Debug / Start Debugging`
 
 _Note: A "Window Security Alert" may show up, this is due to the RenderDoc API
 creating a network server so that the RenderDoc application can remotely communicate
 to the ttauri\_demo application._
 
-MS Visual Studio without vcpkg
-------------------------------
+Visual Studio without vcpkg
+---------------------------
 
 ### Install requirements:
  - The latest **Microsoft Visual Studio** or
@@ -105,9 +104,11 @@ To build:
  1. Select `x64-MSVC-Debug` from the project `Configuration` pull down menu.
  2. `Project / Generate Cache` menu option
  3. `Build / Build All` menu option
- 4. Select `ttauri\_demo.exe` from the `Select Startup Item...` pull-down menu.
+ 4. Select `ttauri_demo.exe` from the `Select Startup Item...` pull-down menu.
  5. `Debug / Start Debugging`
 
 _Note: A "Window Security Alert" may show up, this is due to the RenderDoc API
 creating a network server so that the RenderDoc application can remotely communicate
 to the ttauri\_demo application._
+
+[directory-based project]: https://docs.microsoft.com/en-us/visualstudio/ide/develop-code-in-visual-studio-without-projects-or-solutions?view=vs-2019
