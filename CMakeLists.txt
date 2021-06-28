@@ -96,24 +96,14 @@ endif()
 #-------------------------------------------------------------------
 
 #
-# GoogleTest
-#
-#find_package(GTest)
-
-#
 # GoogleTest - non-vcpkg, directly build from externals
 #
 if(TT_BUILD_TESTS)
     set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
     set(INSTALL_GMOCK OFF CACHE INTERNAL "Don't install gmock")
-    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.10.0)
+    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.11.0)
     FetchContent_MakeAvailable(googletest)
 endif()
-
-#
-# Vulkan Memory Allocator
-#
-find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 
 #
 # Vulkan SDK Headers
@@ -125,6 +115,22 @@ if(NOT DEFINED ENV{VULKAN_SDK})
         "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
 endif()
 find_package(Vulkan REQUIRED)
+
+#
+# Vulkan Memory Allocator
+#
+if(VCPKG_TOOLCHAIN)
+    find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+else()
+    FetchContent_Declare(VulkanMemoryAllocator GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG v2.3.0)
+    FetchContent_MakeAvailable(VulkanMemoryAllocator)
+    add_library(unofficial::vulkan-memory-allocator::vulkan-memory-allocator INTERFACE IMPORTED)
+    set_target_properties(
+        unofficial::vulkan-memory-allocator::vulkan-memory-allocator
+        PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${vulkanmemoryallocator_SOURCE_DIR}/src")
+endif()
+
 
 #-------------------------------------------------------------------
 # Setup Build Targets
@@ -155,10 +161,8 @@ add_subdirectory(tools)
 set_target_properties(ttauri PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} SOVERSION ${TTAURI_MAJOR_VERSION})
 set_target_properties(ttauri PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-target_link_libraries(ttauri PUBLIC
-    ${Vulkan_LIBRARIES}
-    unofficial::vulkan-memory-allocator::vulkan-memory-allocator
-)
+target_link_libraries(ttauri PUBLIC ${Vulkan_LIBRARIES})
+target_link_libraries(ttauri PUBLIC unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
 
 if(APPLE)
     target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
