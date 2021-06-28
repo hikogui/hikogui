@@ -508,8 +508,8 @@ private:
     {
         ttlet partial_grapheme_caret = _field.partial_grapheme_caret();
         if (partial_grapheme_caret) {
-            context.draw_filled_quad(
-                _text_translate * translate_z(0.1f) * partial_grapheme_caret, theme::global(theme_color::incomplete_glyph));
+            ttlet box = round(_text_translate) * translate_z(0.1f) * round(partial_grapheme_caret);
+            context.draw_box_with_border_inside(box, color::transparent(), theme::global(theme_color::incomplete_glyph));
         }
     }
 
@@ -522,8 +522,11 @@ private:
         ttlet blink_is_on = nr_half_blinks % 2 == 0;
         _left_to_right_caret = _field.left_to_right_caret();
         if (_left_to_right_caret && blink_is_on && _focus && window.active) {
-            context.draw_filled_quad(
-                _text_translate * translate_z(0.1f) * _left_to_right_caret, theme::global(theme_color::cursor));
+            ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
+            context.draw_box_with_border_inside(
+                box,
+                color::transparent(),
+                theme::global(theme_color::cursor));
         }
     }
 

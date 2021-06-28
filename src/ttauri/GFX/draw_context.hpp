@@ -158,7 +158,8 @@ public:
             corner_shapes);
     }
 
-    void draw_box(rectangle box, color fill_color, color line_color, tt::corner_shapes corner_shapes) const noexcept
+    void draw_box(rectangle box, color fill_color, color line_color, tt::corner_shapes corner_shapes)
+        const noexcept
     {
         draw_box(box, fill_color, line_color, 1.0, corner_shapes);
     }
