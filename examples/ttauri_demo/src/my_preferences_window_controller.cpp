@@ -12,10 +12,9 @@ void my_preferences_window_controller::init_audio_tab(tt::grid_layout_widget& gr
     grid.make_widget<label_widget>("A1", l10n("Audio device:"));
     grid.make_widget<selection_widget>("B1", _audio_device_list, _preferences->audio_output_device_id);
 
-    _audio_device_configurator = std::make_shared<audio_device_configuration_controller>(grid, "A2:B7");
-
-    grid.make_widget<label_widget>("A8", l10n("Word clock sample rate:"));
-    grid.make_widget<text_field_widget>("B8", radioValue);
+    grid.make_widget<label_widget>("A2", l10n("Word clock sample rate:"));
+    grid.make_widget<text_field_widget>("B2", radioValue);
+    grid.make_widget<text_field_widget>("B3", radioValue);
 }
 
 void my_preferences_window_controller::init_license_tab(tt::grid_layout_widget& grid) noexcept

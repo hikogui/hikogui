@@ -67,7 +67,8 @@ public:
     }
 
     template<int E>
-    requires(E <= D) [[nodiscard]] constexpr explicit translate(point<E> const &other) noexcept : _v(static_cast<f32x4>(other).xyz0())
+    requires(E <= D) [[nodiscard]] constexpr explicit translate(point<E> const &other) noexcept :
+        _v(static_cast<f32x4>(other).xyz0())
     {
         tt_axiom(is_valid());
     }
@@ -82,7 +83,8 @@ public:
      * @param alignment How the source rectangle should be aligned inside the destination rectangle.
      * @return Translation to move the src_rectangle into the dst_rectangle.
      */
-    [[nodiscard]] constexpr static translate align(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
+    [[nodiscard]] constexpr static translate
+    align(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
     {
         auto x = 0.0f;
         if (alignment == horizontal_alignment::left) {
@@ -175,6 +177,11 @@ public:
     [[nodiscard]] constexpr bool is_valid() const noexcept
     {
         return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
+    }
+
+    [[nodiscard]] friend constexpr translate round(translate const &rhs) noexcept
+    {
+        return translate{round(rhs._v)};
     }
 
 private:

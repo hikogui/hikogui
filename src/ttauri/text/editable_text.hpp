@@ -390,10 +390,9 @@ public:
         tt_axiom(is_valid());
 
         auto handled = false;
-        cancel_partial_grapheme();
-
         switch (command) {
         case command::text_cursor_char_left:
+            cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheLeft(_cursor_index)) {
                 // XXX Change _current_style based on the grapheme at the new cursor position.
@@ -402,6 +401,7 @@ public:
             break;
 
         case command::text_cursor_char_right:
+            cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheRight(_cursor_index)) {
                 _selection_index = _cursor_index = *new_cursor_position;
@@ -409,6 +409,7 @@ public:
             break;
 
         case command::text_cursor_word_left:
+            cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheLeft(_cursor_index)) {
                 _selection_index = _cursor_index = *new_cursor_position;
@@ -416,6 +417,7 @@ public:
             break;
 
         case command::text_cursor_word_right:
+            cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheRight(_cursor_index)) {
                 _selection_index = _cursor_index = *new_cursor_position;
@@ -423,16 +425,19 @@ public:
             break;
 
         case command::text_cursor_line_end:
+            cancel_partial_grapheme();
             handled = true;
             _selection_index = _cursor_index = size();
             break;
 
         case command::text_cursor_line_begin:
+            cancel_partial_grapheme();
             handled = true;
             _selection_index = _cursor_index = 0;
             break;
 
         case command::text_select_char_left:
+            cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheLeft(_cursor_index)) {
                 _cursor_index = *new_cursor_position;
@@ -440,6 +445,7 @@ public:
             break;
 
         case command::text_select_char_right:
+            cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheRight(_cursor_index)) {
                 _cursor_index = *new_cursor_position;
@@ -447,6 +453,7 @@ public:
             break;
 
         case command::text_select_word_left:
+            cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheLeft(_cursor_index)) {
                 _cursor_index = *new_cursor_position;
@@ -454,6 +461,7 @@ public:
             break;
 
         case command::text_select_word_right:
+            cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheRight(_cursor_index)) {
                 _cursor_index = *new_cursor_position;
@@ -461,32 +469,38 @@ public:
             break;
 
         case command::text_select_word:
+            cancel_partial_grapheme();
             handled = true;
             std::tie(_selection_index, _cursor_index) = _shaped_text.indices_of_word(_cursor_index);
             break;
 
         case command::text_select_line_end:
+            cancel_partial_grapheme();
             handled = true;
             _cursor_index = size();
             break;
 
         case command::text_select_line_begin:
+            cancel_partial_grapheme();
             handled = true;
             _cursor_index = 0;
             break;
 
         case command::text_select_document:
+            cancel_partial_grapheme();
             handled = true;
             _selection_index = 0;
             _cursor_index = size();
             break;
 
         case command::text_mode_insert:
+            cancel_partial_grapheme();
             handled = true;
             _insert_mode = !_insert_mode;
             break;
 
         case command::text_delete_char_prev:
+            cancel_partial_grapheme();
             handled = true;
             if (_cursor_index != _selection_index) {
                 delete_selection();
@@ -499,6 +513,7 @@ public:
             break;
 
         case command::text_delete_char_next:
+            cancel_partial_grapheme();
             handled = true;
             if (_cursor_index != _selection_index) {
                 delete_selection();
