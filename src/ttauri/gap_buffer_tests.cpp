@@ -87,9 +87,22 @@ TEST(gap_buffer, insert_after)
         auto index = hash_mix_two(i, i) % i;
 
         tmp.insert_after(tmp.begin() + index, narrow_cast<int>(i * 3));
-        e.insert(e.begin() + index + 1, narrow_cast<int>(i * 3));
+        e.insert(e.begin() + index, narrow_cast<int>(i * 3));
         ASSERT_EQ(tmp, e);
     }
+}
+
+TEST(gap_buffer, insert_after_last)
+{
+    auto tmp = gap_buffer<char>{};
+    auto start_string = std::string("12");
+    tmp.insert_after(tmp.begin(), start_string.begin(), start_string.end());
+    auto append_string = std::string("3");
+
+    tmp.insert_after(tmp.begin() + 2,  append_string.begin(), append_string.end());
+
+    auto result = std::string(tmp.begin(), tmp.end());
+    ASSERT_EQ(result, "123");
 }
 
 std::pair<gap_buffer<int>, std::vector<int>> gap_buffer_test_initial_data(size_t nr_elements)

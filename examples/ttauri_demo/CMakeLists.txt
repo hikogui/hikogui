@@ -48,6 +48,7 @@ install(DIRECTORY resources/ DESTINATION examples/ttauri_demo/resources)
 install(DIRECTORY ../../resources/  DESTINATION examples/ttauri_demo/resources)
 
 # copy vcpkg dependencies (experimental)
-
-x_vcpkg_install_local_dependencies(TARGETS ttauri_demo DESTINATION examples/ttauri_demo)
+if (VCPKG_TOOLCHAIN)
+    x_vcpkg_install_local_dependencies(TARGETS ttauri_demo DESTINATION examples/ttauri_demo)
+endif()
 
