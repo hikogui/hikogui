@@ -68,7 +68,7 @@ class widget;
  * In this phases the widget will update the constraints to determine the position
  * and size of the widget inside the window.
  *
- * The `updateConstraints()` function will be called on each widget recursively.
+ * The `widget::update_constraints()` function will be called on each widget recursively.
  * You should minimize the cost of this function as much as possible.
  *
  * Since this function is called on each frame, the widget should first check
@@ -78,7 +78,7 @@ class widget;
  *
  * ## Updating Layout
  * A widget may update its internal (expensive) layout calculations from the
- * `updateLayout()` function.
+ * `widget::update_layout()` function.
  *
  * Since this function is called on each frame, the widget should first check
  * if layout calculations are needed. If a constraint has changed (the window size
@@ -87,9 +87,9 @@ class widget;
  * A widget should return true if the window needs to be redrawn.
  *
  * ## Drawing (optional)
- * A widget can draw itself when the `draw()` function is called. This phase is only
+ * A widget can draw itself when the `widget::draw()` function is called. This phase is only
  * entered when one of the widget's layout was changed. But if this phase is entered
- * then all the widgets' `draw()` functions are called.
+ * then all the widgets' `widget::draw()` functions are called.
  */
 class widget {
 public:

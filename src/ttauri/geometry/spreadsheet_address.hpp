@@ -2,6 +2,25 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file
+ * The functions in this file are for handling spreadsheet addresses.
+ * 
+ * Spreadsheet addresses are of the form:
+ * ```
+ * address_range := address ':' address;
+ * address := '$'? column '$'? row;
+ * column := [A-Z]+;
+ * row := [0-9]+;
+ * ```
+ * 
+ * Columns start at 'A' for the left most column.
+ * After 'Z' follows 'AA' then 'AB'.
+ * 
+ * Rows start at '1' for the top most row.
+ * 
+ * A column or row that is prefixed with '$' is absolute, instead of relative.
+ */
+
 #pragma once
 
 #include "../strings.hpp"
@@ -11,7 +30,8 @@
 
 namespace tt {
 
-inline std::tuple<bool, size_t, bool, size_t> _parse_spread_sheet_address(std::string_view &address)
+
+inline std::tuple<bool, size_t, bool, size_t> _parse_spreadsheet_address(std::string_view &address)
 {
     bool column_nr_is_relative = true;
     size_t column_nr = 0;
@@ -43,9 +63,16 @@ inline std::tuple<bool, size_t, bool, size_t> _parse_spread_sheet_address(std::s
     return {column_nr_is_relative, column_nr - 1, row_nr_is_relative, row_nr - 1};
 }
 
-inline std::pair<size_t, size_t> parse_spread_sheet_address(std::string_view address, size_t start_column_nr = 0, size_t start_row_nr = 0)
+/** Parse a spreadsheet address.
+ * 
+ * @param address The address to parse.
+ * @param start_column_nr A relative column in the address is added to the start-column.
+ * @param start_row_nr A relative row in the address is added to the start-row.
+ * @return The zero-based column and row index.
+ */
+inline std::pair<size_t, size_t> parse_spreadsheet_address(std::string_view address, size_t start_column_nr = 0, size_t start_row_nr = 0)
 {
-    auto [column_nr_is_relative, column_nr, row_nr_is_relative, row_nr] = _parse_spread_sheet_address(address);
+    auto [column_nr_is_relative, column_nr, row_nr_is_relative, row_nr] = _parse_spreadsheet_address(address);
     tt_parse_check(address.empty(), "Extra characters in spread sheet address {}", address);
 
     if (column_nr_is_relative) {
@@ -58,9 +85,9 @@ inline std::pair<size_t, size_t> parse_spread_sheet_address(std::string_view add
 }
 
 inline std::tuple<size_t, size_t, size_t, size_t>
-parse_spread_sheet_range(std::string_view address, size_t start_column_nr = 0, size_t start_row_nr = 0)
+parse_spreadsheet_range(std::string_view address, size_t start_column_nr = 0, size_t start_row_nr = 0)
 {
-    auto [column_nr_is_relative1, column_nr1, row_nr_is_relative1, row_nr1] = _parse_spread_sheet_address(address);
+    auto [column_nr_is_relative1, column_nr1, row_nr_is_relative1, row_nr1] = _parse_spreadsheet_address(address);
     if (column_nr_is_relative1) {
         column_nr1 += start_column_nr;
     }
@@ -70,7 +97,7 @@ parse_spread_sheet_range(std::string_view address, size_t start_column_nr = 0, s
 
     if (address.starts_with(":")) {
         address.remove_prefix(1);
-        auto [column_nr_is_relative2, column_nr2, row_nr_is_relative2, row_nr2] = _parse_spread_sheet_address(address);
+        auto [column_nr_is_relative2, column_nr2, row_nr_is_relative2, row_nr2] = _parse_spreadsheet_address(address);
         tt_parse_check(address.empty(), "Extra characters in spread sheet address {}", address);
 
         if (column_nr_is_relative2) {
