@@ -30,7 +30,13 @@ Here are some of the important changes for this release:
  * Added documentation of how to use GUI widgets.
  * Lazy or optional subsystem initialization is much more consistent.
  * Minimum CPU requirements have been reduced.
- * Reduced dependencies to only two:
-   - Vulkan
-   - Vulkan Memory Allocator.
+ * Reduced dependencies to only:
+   - Vulkan SDK
+   - CMake
+   - C++20 compiler (MSVC)
+   - Vulkan Memory Allocator (automatically installed by cmake or vcpkg)
+   - Google Test (automatically installed by cmake)
+   - Doxygen (optional)
+   - RenderDoc (optional)
+   - vcpkg (optional)
  * Can be build with or without vcpkg.

@@ -20,7 +20,7 @@ namespace tt {
 
     // Legacy format can only handle direct channel map. This allows you to select legacy
     // mono and stereo for old device drivers.
-    extended |= x.speaker_mapping != audio_channel_mapping::direct;
+    extended |= x.speaker_mapping != speaker_mapping::direct;
 
     // Legacy format can only be PCM-8, PCM-16 or PCM-float-32.
     if (x.sameple_format.is_float)
@@ -38,7 +38,7 @@ namespace tt {
     r.Format.wBitsPerSample = narrow_cast<WORD>(x.sample_format.num_bytes * 8);
     r.Format.cbSize = extended ? (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)) : 0;
     r.Samples.wValidBitsPerSample = narrow_cast<WORD>(x.sample_format.num_guard_bits + x.sample_format.num_bits + 1);
-    r.dwChannelMask = audio_channel_mapping_to_win32(x.speaker_format);
+    r.dwChannelMask = speaker_mapping_to_win32(x.speaker_format);
     r.SubFormat = x.sample_format.is_foat ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT :  KSDATAFORMAT_SUBTYPE_PCM;
     return r;
 

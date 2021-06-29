@@ -68,7 +68,7 @@ enum class ttauri_icon : char32_t {
     octagonal_8_0 = 0xf3e6,
     octagonal_8_1 = 0xf3e7,
 
-    // Surroud sound with extra top speakers.
+    // Surround sound with extra top speakers.
     surround_atmos_5_1_4 = 0xf3e8,
     surround_atmos_7_1_4 = 0xf3e9,
 
