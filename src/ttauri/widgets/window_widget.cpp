@@ -5,7 +5,7 @@
 #include "window_widget.hpp"
 #include "window_traffic_lights_widget.hpp"
 #include "toolbar_widget.hpp"
-#include "grid_layout_widget.hpp"
+#include "grid_widget.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "system_menu_widget.hpp"
 #endif
@@ -36,7 +36,7 @@ void window_widget::init() noexcept
         tt_no_default();
     }
 
-    _content = &make_widget<grid_layout_widget>(_content_delegate);
+    _content = &make_widget<grid_widget>(_content_delegate);
 }
 
 [[nodiscard]] bool

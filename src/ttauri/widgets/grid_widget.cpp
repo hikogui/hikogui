@@ -2,16 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "grid_layout_widget.hpp"
+#include "grid_widget.hpp"
 #include "../algorithm.hpp"
 #include "../alignment.hpp"
 
 namespace tt {
 
-grid_layout_widget::grid_layout_widget(
+grid_widget::grid_widget(
     gui_window &window,
     widget *parent,
-    weak_or_unique_ptr<delegate_type> delegate) noexcept :
+    std::weak_ptr<delegate_type> delegate) noexcept :
     widget(window, parent), _delegate(std::move(delegate))
 {
     tt_axiom(is_gui_thread());
@@ -22,21 +22,21 @@ grid_layout_widget::grid_layout_widget(
     _margin = 0.0f;
 }
 
-void grid_layout_widget::init() noexcept
+void grid_widget::init() noexcept
 {
     if (auto delegate = _delegate.lock()) {
         delegate->init(*this);
     }
 }
 
-void grid_layout_widget::deinit() noexcept
+void grid_widget::deinit() noexcept
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
 }
 
-[[nodiscard]] std::pair<size_t, size_t> grid_layout_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept
+[[nodiscard]] std::pair<size_t, size_t> grid_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept
 {
     size_t nr_columns = 0;
     size_t nr_rows = 0;
@@ -50,7 +50,7 @@ void grid_layout_widget::deinit() noexcept
 }
 
 [[nodiscard]] std::tuple<extent2, extent2, extent2>
-grid_layout_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
+grid_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -84,7 +84,7 @@ grid_layout_widget::calculate_size(std::vector<cell> const &cells, flow_layout &
         extent2{columns.maximum_size(), rows.maximum_size()}};
 }
 
-bool grid_layout_widget::address_in_use(size_t column_nr, size_t row_nr) const noexcept
+bool grid_widget::address_in_use(size_t column_nr, size_t row_nr) const noexcept
 {
     for (ttlet &cell : _cells) {
         if (cell.column_nr == column_nr && cell.row_nr == row_nr) {
@@ -94,7 +94,7 @@ bool grid_layout_widget::address_in_use(size_t column_nr, size_t row_nr) const n
     return false;
 }
 
-widget &grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> widget) noexcept
+widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> widget) noexcept
 {
     tt_axiom(is_gui_thread());
     tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
@@ -104,7 +104,7 @@ widget &grid_layout_widget::add_widget(size_t column_nr, size_t row_nr, std::uni
     return tmp;
 }
 
-bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+bool grid_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -117,7 +117,7 @@ bool grid_layout_widget::update_constraints(hires_utc_clock::time_point display_
     }
 }
 
-void grid_layout_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void grid_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 

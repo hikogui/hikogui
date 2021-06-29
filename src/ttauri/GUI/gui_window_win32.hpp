@@ -19,14 +19,12 @@ namespace tt {
 
 class gui_window_win32 final : public gui_window {
 public:
+    using super = gui_window;
+    using delegate_type = typename super::delegate_type;
+
     HWND win32Window = nullptr;
 
-    gui_window_win32(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept;
-
-    gui_window_win32(label const &title) noexcept :
-        gui_window_win32(title, std::make_unique<gui_window_delegate>())
-    {
-    }
+    gui_window_win32(label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     ~gui_window_win32();
 

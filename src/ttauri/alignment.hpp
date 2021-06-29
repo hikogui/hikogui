@@ -9,8 +9,6 @@
 
 namespace tt {
 
-enum class arrangement : bool { column, row };
-
 enum class vertical_alignment { top, middle, bottom };
 
 enum class horizontal_alignment { left, center, right };

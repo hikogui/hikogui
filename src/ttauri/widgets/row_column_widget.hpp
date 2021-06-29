@@ -5,21 +5,23 @@
 #pragma once
 
 #include "widget.hpp"
+#include "row_column_delegate.hpp"
 #include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
-#include "../alignment.hpp"
+#include "../geometry/axis.hpp"
 #include <memory>
 
 namespace tt {
 
-template<arrangement Arrangement>
-class row_column_layout_widget final : public widget {
+template<axis Axis>
+class row_column_widget final : public widget {
 public:
     using super = widget;
-    static constexpr auto arrangement = Arrangement;
+    using delegate_type = row_column_delegate<Axis>;
+    static constexpr tt::axis axis = Axis;
 
-    row_column_layout_widget(gui_window &window, widget *parent) noexcept :
-        super(window, parent)
+    row_column_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+        super(window, parent), _delegate(std::move(delegate))
     {
         tt_axiom(is_gui_thread());
 
@@ -27,6 +29,26 @@ public:
             _semantic_layer = parent->semantic_layer();
         }
         _margin = 0.0f;
+    }
+
+    row_column_widget(gui_window &window, widget *parent) noexcept :
+        row_column_widget(window, parent, std::weak_ptr<delegate_type>{})
+    {
+    }
+
+    void init() noexcept override
+    {
+        super::init();
+        if (auto delegate = _delegate.lock()) {
+            delegate->init(*this);
+        }
+    }
+
+    void deinit() noexcept override
+    {
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
@@ -48,7 +70,7 @@ public:
 
             tt_axiom(index == std::ssize(_children));
 
-            if constexpr (arrangement == arrangement::row) {
+            if constexpr (axis == axis::row) {
                 _minimum_size = {_layout.minimum_size(), minimum_thickness};
                 _preferred_size = {_layout.preferred_size(), preferred_thickness};
                 _maximum_size = {_layout.maximum_size(), maximum_thickness};
@@ -70,7 +92,7 @@ public:
 
         need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
-            _layout.set_size(arrangement == arrangement::row ? rectangle().width() : rectangle().height());
+            _layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
 
             ssize_t index = 0;
             for (ttlet &child : _children) {
@@ -83,6 +105,7 @@ public:
     }
 
 private:
+    std::weak_ptr<delegate_type> _delegate;
     flow_layout _layout;
 
     void update_constraints_for_child(
@@ -94,7 +117,7 @@ private:
     {
         tt_axiom(is_gui_thread());
 
-        if (arrangement == arrangement::row) {
+        if (axis == axis::row) {
             ttlet minimum_length = child.minimum_size().width();
             ttlet preferred_length = child.preferred_size().width();
             ttlet maximum_length = child.maximum_size().width();
@@ -122,7 +145,7 @@ private:
 
         ttlet[child_offset, child_length] = _layout.get_offset_and_size(index++);
 
-        ttlet child_rectangle = arrangement == arrangement::row ?
+        ttlet child_rectangle = axis == axis::row ?
             aarectangle{
                 rectangle().left() + child_offset,
                 rectangle().bottom() + child.margin(),
@@ -138,7 +161,7 @@ private:
     }
 };
 
-using row_layout_widget = row_column_layout_widget<arrangement::row>;
-using column_layout_widget = row_column_layout_widget<arrangement::column>;
+using row_widget = row_column_widget<axis::row>;
+using column_widget = row_column_widget<axis::column>;
 
 } // namespace tt

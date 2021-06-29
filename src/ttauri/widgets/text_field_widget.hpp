@@ -62,14 +62,9 @@ public:
      */
     observable<bool> continues = false;
 
-    text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-        super(window, parent), _delegate(std::move(delegate)), _field(theme::global(theme_text_style::label)), _shaped_text()
+    text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+        text_field_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
     {
-        if (auto d = _delegate.lock()) {
-            _delegate_callback = d->subscribe(*this, [this] {
-                _request_relayout = true;
-            });
-        }
     }
 
     template<typename Value>
@@ -407,6 +402,16 @@ private:
     hires_utc_clock::time_point _next_redraw_time_point;
     hires_utc_clock::time_point _last_update_time_point;
 
+    text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent), _delegate(std::move(delegate)), _field(theme::global(theme_text_style::label)), _shaped_text()
+    {
+        if (auto d = _delegate.lock()) {
+            _delegate_callback = d->subscribe(*this, [this] {
+                _request_relayout = true;
+            });
+        }
+    }
+
     void revert(bool force) noexcept
     {
         if (auto delegate = _delegate.lock()) {
@@ -523,10 +528,7 @@ private:
         _left_to_right_caret = _field.left_to_right_caret();
         if (_left_to_right_caret && blink_is_on && _focus && window.active) {
             ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
-            context.draw_box_with_border_inside(
-                box,
-                color::transparent(),
-                theme::global(theme_color::cursor));
+            context.draw_box_with_border_inside(box, color::transparent(), theme::global(theme_color::cursor));
         }
     }
 

@@ -26,7 +26,7 @@ auto create_main_window(std::shared_ptr<my_preferences_window_controller> prefer
         );
     });
 
-    auto &column = main_window.make_widget<column_layout_widget>("A1");
+    auto &column = main_window.make_widget<column_widget>("A1");
     column.make_widget<momentary_button_widget>(l10n("Hello \u4e16\u754c"));
     column.make_widget<momentary_button_widget>(l10n("Hello world"));
     column.make_widget<momentary_button_widget>(l10n("Hello earthlings"));

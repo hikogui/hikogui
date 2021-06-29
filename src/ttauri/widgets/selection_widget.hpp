@@ -6,9 +6,9 @@
 
 #include "widget.hpp"
 #include "label_widget.hpp"
-#include "overlay_view_widget.hpp"
-#include "scroll_view_widget.hpp"
-#include "row_column_layout_widget.hpp"
+#include "overlay_widget.hpp"
+#include "scroll_widget.hpp"
+#include "row_column_widget.hpp"
 #include "menu_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "default_selection_delegate.hpp"
@@ -29,8 +29,8 @@ public:
 
     observable<label> unknown_label;
 
-    selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-        super(window, parent), _delegate(std::move(delegate))
+    selection_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+        selection_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
     {
     }
 
@@ -60,10 +60,10 @@ public:
         _unknown_label_widget->alignment = alignment::middle_left;
         _unknown_label_widget->text_style = theme_text_style::placeholder;
 
-        _overlay_widget = &make_widget<overlay_view_widget>();
+        _overlay_widget = &make_widget<overlay_widget>();
         _overlay_widget->visible = false;
-        _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_view_widget<>>();
-        _column_widget = &_scroll_widget->make_widget<column_layout_widget>();
+        _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
+        _column_widget = &_scroll_widget->make_widget<column_widget>();
 
         _unknown_label_callback = this->unknown_label.subscribe([this] {
             _request_reconstrain = true;
@@ -280,12 +280,17 @@ private:
     bool _selecting = false;
     bool _has_options = false;
 
-    overlay_view_widget *_overlay_widget = nullptr;
-    vertical_scroll_view_widget<> *_scroll_widget = nullptr;
-    column_layout_widget *_column_widget = nullptr;
+    overlay_widget *_overlay_widget = nullptr;
+    vertical_scroll_widget<> *_scroll_widget = nullptr;
+    column_widget *_column_widget = nullptr;
 
     std::vector<menu_button_widget *> _menu_button_widgets;
     std::vector<typename menu_button_widget::callback_ptr_type> _menu_button_callbacks;
+
+    selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent), _delegate(std::move(delegate))
+    {
+    }
 
     [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept
     {

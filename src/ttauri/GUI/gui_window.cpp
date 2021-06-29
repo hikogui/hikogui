@@ -9,7 +9,7 @@
 #include "../GFX/gfx_surface.hpp"
 #include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
-#include "../widgets/grid_layout_widget.hpp"
+#include "../widgets/grid_widget.hpp"
 
 namespace tt {
 
@@ -40,7 +40,7 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     return false;
 }
 
-gui_window::gui_window(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
+gui_window::gui_window(label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
     title(title), _delegate(std::move(delegate))
 {
 }

@@ -15,10 +15,9 @@ public:
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-        super(window, parent, std::move(delegate))
+    toggle_widget(gui_window &window, widget *parent, std::unique_ptr<delegate_type> delegate) noexcept :
+        toggle_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
     {
-        label_alignment = alignment::top_left;
     }
 
     template<typename Value, typename... Args>
@@ -96,6 +95,12 @@ private:
     animator<float> _animated_value = _animation_duration;
     aarectangle _pip_rectangle;
     float _pip_move_range;
+
+    toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent, std::move(delegate))
+    {
+        label_alignment = alignment::top_left;
+    }
 
     void draw_toggle_button(draw_context context) noexcept
     {

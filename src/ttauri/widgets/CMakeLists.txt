@@ -5,34 +5,37 @@
 target_sources(ttauri PRIVATE
     abstract_button_widget.cpp
     abstract_button_widget.hpp
-    audio_device_configuration_controller.cpp
-    audio_device_configuration_controller.hpp
     button_delegate.hpp
     button_state.hpp
     button_type.hpp
     checkbox_widget.hpp
     default_button_delegate.hpp
     default_selection_delegate.hpp
+    default_tab_delegate.hpp
     default_text_field_delegate.hpp
-    grid_layout_delegate.hpp
-    grid_layout_widget.cpp
-    grid_layout_widget.hpp
+    grid_delegate.hpp
+    grid_widget.cpp
+    grid_widget.hpp
     icon_widget.cpp
     icon_widget.cpp
     label_widget.cpp
     label_widget.hpp
     menu_button_widget.hpp
     momentary_button_widget.hpp
-    overlay_view_widget.hpp
+    overlay_delegate.hpp
+    overlay_widget.hpp
     radio_button_widget.hpp
-    row_column_layout_widget.hpp
+    row_column_delegate.hpp
+    row_column_widget.hpp
     scroll_bar_widget.hpp
-    scroll_view_widget.hpp
+    scroll_delegate.hpp
+    scroll_widget.hpp
     selection_delegate.hpp
     selection_widget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
-    tab_view_widget.hpp
+    tab_delegate.hpp
+    tab_widget.hpp
     text_field_delegate.hpp
     text_field_widget.hpp
     text_widget.cpp

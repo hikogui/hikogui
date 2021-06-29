@@ -5,43 +5,46 @@
 #pragma once
 
 #include "widget.hpp"
-#include "grid_layout_widget.hpp"
+#include "grid_widget.hpp"
+#include "tab_delegate.hpp"
+#include "default_tab_delegate.hpp"
 
 namespace tt {
 
-template<typename T>
-class tab_view_widget final : public widget {
+class tab_widget final : public widget {
 public:
     using super = widget;
-    using value_type = T;
+    using delegate_type = tab_delegate;
 
-    observable<value_type> value = 0;
-
-    template<typename Value>
-    tab_view_widget(gui_window &window, widget *parent, Value &&value) noexcept :
-        super(window, parent), value(std::forward<Value>(value))
+    tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+        tab_widget(window, parent, weak_or_unique_ptr<delegate_type>{delegate})
     {
-        tt_axiom(is_gui_thread());
-
-        if (parent) {
-            // The tab-widget will not draw itself, only its selected child.
-            _draw_layer = parent->draw_layer();
-            _semantic_layer = parent->semantic_layer();
-        }
-        _margin = 0.0f;
-
-        _value_callback = value.subscribe([this](auto...) {
-            this->_request_reconstrain = true;
-        });
-
-        // Compare and assign would trigger the signaling NaN that widget sets.
-        _minimum_size = {};
-        _preferred_size = {};
-        _maximum_size = {32767.0f, 32767.0f};
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
-    ~tab_view_widget() {}
+    template<typename Value>
+    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
+    tab_widget(gui_window &window, widget *parent, Value && value) noexcept :
+        tab_widget(window, parent, make_unique_default_tab_delegate(std::forward<Value>(value)))
+    {
+    }
+
+    ~tab_widget() {}
+
+    void init() noexcept override
+    {
+        super::init();
+        if (auto delegate = _delegate.lock()) {
+            delegate->init(*this);
+        }
+    }
+
+    void deinit() noexcept override
+    {
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
+        super::deinit();
+    }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
@@ -91,59 +94,69 @@ public:
         return selected_child().find_next_widget(current_widget, group, direction);
     }
 
-    template<typename WidgetType = grid_layout_widget, typename... Args>
-    WidgetType &make_widget(value_type value, Args &&...args) noexcept
+    template<typename WidgetType, typename Value, typename... Args>
+    WidgetType &make_widget(Value const &value, Args &&...args) noexcept
     {
         tt_axiom(is_gui_thread());
 
+        if (auto delegate = _delegate.lock()) {
+            delegate->add_tab(*this, static_cast<size_t>(value), std::size(_children));
+        }
         auto &widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
-        _children_keys.push_back(std::move(value));
         return widget;
     }
 
 private:
-    typename decltype(value)::callback_ptr_type _value_callback;
+    weak_or_unique_ptr<delegate_type> _delegate;
+    typename delegate_type::callback_ptr_type _delegate_callback;
 
-    std::vector<value_type> _children_keys;
-
-    [[nodiscard]] auto find_child(value_type index) const noexcept
+    tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent), _delegate(std::move(delegate))
     {
         tt_axiom(is_gui_thread());
-        tt_axiom(std::size(_children_keys) == std::size(_children));
 
-        ttlet child_key_it = std::find(_children_keys.cbegin(), _children_keys.cend(), index);
-        if (child_key_it != _children_keys.cend()) {
-            ttlet child_index = std::distance(_children_keys.cbegin(), child_key_it);
-            return _children.begin() + child_index;
-        } else {
-            return _children.cend();
+        if (parent) {
+            // The tab-widget will not draw itself, only its selected child.
+            _draw_layer = parent->draw_layer();
+            _semantic_layer = parent->semantic_layer();
         }
-    }
+        _margin = 0.0f;
 
-    [[nodiscard]] auto find_child(value_type index) noexcept
-    {
-        tt_axiom(is_gui_thread());
-        tt_axiom(std::size(_children_keys) == std::size(_children));
-
-        ttlet child_key_it = std::find(_children_keys.cbegin(), _children_keys.cend(), index);
-        if (child_key_it != _children_keys.cend()) {
-            ttlet child_index = std::distance(_children_keys.cbegin(), child_key_it);
-            return _children.cbegin() + child_index;
-        } else {
-            return _children.cend();
+        if (auto d = _delegate.lock()) {
+            _delegate_callback = d->subscribe(*this, [this](auto...) {
+                this->_request_reconstrain = true;
+            });
         }
+
+        // Compare and assign would trigger the signaling NaN that widget sets.
+        _minimum_size = {};
+        _preferred_size = {};
+        _maximum_size = {32767.0f, 32767.0f};
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
     [[nodiscard]] auto find_selected_child() const noexcept
     {
         tt_axiom(is_gui_thread());
-        return find_child(*value);
+        if (auto delegate = _delegate.lock()) {
+            auto index = delegate->index(const_cast<tab_widget &>(*this));
+            if (index >= 0 and index < std::ssize(_children)) {
+                return _children.begin() + index;
+            }
+        }
+        return _children.end();
     }
 
     [[nodiscard]] auto find_selected_child() noexcept
     {
         tt_axiom(is_gui_thread());
-        return find_child(*value);
+        if (auto delegate = _delegate.lock()) {
+            auto index = delegate->index(*this);
+            if (index >= 0 and index < std::ssize(_children)) {
+                return _children.begin() + index;
+            }
+        }
+        return _children.end();
     }
 
     [[nodiscard]] widget const &selected_child() const noexcept

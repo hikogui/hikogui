@@ -19,11 +19,9 @@ public:
         gui_window &window,
         widget *parent,
         Label &&label,
-        weak_or_unique_ptr<delegate_type> delegate) noexcept :
-        super(window, parent, std::move(delegate))
+        std::weak_ptr<delegate_type> delegate) noexcept :
+        momentary_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)})
     {
-        label_alignment = alignment::middle_left;
-        set_label(std::forward<Label>(label));
     }
 
     template<typename Label>
@@ -77,6 +75,18 @@ public:
     }
 
 private:
+    template<typename Label>
+    momentary_button_widget(
+        gui_window &window,
+        widget *parent,
+        Label &&label,
+        weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent, std::move(delegate))
+    {
+        label_alignment = alignment::middle_left;
+        set_label(std::forward<Label>(label));
+    }
+
     void draw_label_button(draw_context const &context) noexcept
     {
         tt_axiom(is_gui_thread());

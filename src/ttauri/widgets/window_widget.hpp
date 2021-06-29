@@ -12,29 +12,21 @@ namespace tt {
 
 class toolbar_widget;
 class system_menu_widget;
-class grid_layout_widget;
-class grid_layout_delegate;
+class grid_widget;
+class grid_delegate;
 
 class window_widget final : public widget {
 public:
     using super = widget;
+    using delegate_type = grid_delegate;
 
     observable<label> title;
 
     ~window_widget();
 
     template<typename Title>
-    window_widget(gui_window &window, Title &&title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
+    window_widget(gui_window &window, Title &&title, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
-    {
-    }
-
-    template<typename Title>
-    window_widget(gui_window &window, Title &&title) noexcept :
-        window_widget(
-            window,
-            std::forward<Title>(title),
-            std::make_unique<grid_layout_delegate>())
     {
     }
 
@@ -62,7 +54,7 @@ public:
         _top_resize_border_has_priority = top;
     }
 
-    [[nodiscard]] grid_layout_widget &content() noexcept
+    [[nodiscard]] grid_widget &content() noexcept
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
@@ -79,8 +71,8 @@ public:
 private:
     decltype(title)::callback_ptr_type _title_callback;
 
-    weak_or_unique_ptr<grid_layout_delegate> _content_delegate;
-    grid_layout_widget *_content = nullptr;
+    std::weak_ptr<delegate_type> _content_delegate;
+    grid_widget *_content = nullptr;
     toolbar_widget *_toolbar = nullptr;
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;
@@ -90,6 +82,7 @@ private:
     bool _right_resize_border_has_priority = true;
     bool _bottom_resize_border_has_priority = true;
     bool _top_resize_border_has_priority = true;
+
 };
 
 } // namespace tt

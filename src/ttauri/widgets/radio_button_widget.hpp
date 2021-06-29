@@ -16,13 +16,9 @@ public:
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     template<typename Label>
-    radio_button_widget(gui_window &window, widget *parent, Label &&label, weak_or_unique_ptr<delegate_type> delegate) noexcept
+    radio_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept
         :
-        super(window, parent, std::move(delegate))
-    {
-        label_alignment = alignment::top_left;
-        set_label(std::forward<Label>(label));
-    }
+        radio_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)}) {}
 
     template<typename Label, typename Value, typename... Args>
     requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
@@ -93,6 +89,14 @@ private:
     aarectangle _button_rectangle;
     animator<float> _animated_value = _animation_duration;
     aarectangle _pip_rectangle;
+
+    template<typename Label>
+    radio_button_widget(gui_window &window, widget *parent, Label &&label, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent, std::move(delegate))
+    {
+        label_alignment = alignment::top_left;
+        set_label(std::forward<Label>(label));
+    }
 
     void draw_radio_button(draw_context const &context) noexcept
     {

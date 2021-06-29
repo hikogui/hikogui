@@ -16,17 +16,14 @@ public:
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     template<typename Label>
-    menu_button_widget(gui_window &window, widget *parent, Label &&label, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-        super(window, std::move(parent), std::move(delegate))
+    menu_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept :
+        menu_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)})
     {
-        _margin = 0.0f;
-        label_alignment = alignment::middle_left;
-        set_label(std::forward<Label>(label));
     }
 
     template<typename Label, typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value,weak_or_unique_ptr<delegate_type>>)
-    menu_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept :
+    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
+        menu_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept :
         menu_button_widget(
             window,
             parent,
@@ -141,6 +138,15 @@ private:
     aarectangle _check_glyph_rectangle;
     extent2 _short_cut_size;
     aarectangle _short_cut_rectangle;
+
+    template<typename Label>
+    menu_button_widget(gui_window &window, widget *parent, Label &&label, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+        super(window, parent, std::move(delegate))
+    {
+        _margin = 0.0f;
+        label_alignment = alignment::middle_left;
+        set_label(std::forward<Label>(label));
+    }
 
     void draw_menu_button(draw_context const &context) noexcept
     {

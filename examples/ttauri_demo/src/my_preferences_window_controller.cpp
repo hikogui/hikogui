@@ -5,7 +5,7 @@
 #include "ttauri/widgets/widgets.hpp"
 #include "ttauri/audio/audio_system.hpp"
 
-void my_preferences_window_controller::init_audio_tab(tt::grid_layout_widget& grid) noexcept
+void my_preferences_window_controller::init_audio_tab(tt::grid_widget& grid) noexcept
 {
     using namespace tt;
 
@@ -17,7 +17,7 @@ void my_preferences_window_controller::init_audio_tab(tt::grid_layout_widget& gr
     grid.make_widget<text_field_widget>("B3", radioValue);
 }
 
-void my_preferences_window_controller::init_license_tab(tt::grid_layout_widget& grid) noexcept
+void my_preferences_window_controller::init_license_tab(tt::grid_widget& grid) noexcept
 {
     using namespace tt;
 
@@ -60,9 +60,9 @@ void my_preferences_window_controller::init(tt::gui_window& self) noexcept
     self.make_toolbar_widget<toolbar_tab_button_widget>(label{ elusive_icon::Speaker, l10n("Audio") }, tab_index, 0);
     self.make_toolbar_widget<toolbar_tab_button_widget>(label{ elusive_icon::Pencil, l10n("License") }, tab_index, 1);
 
-    auto& tabs = self.make_widget<tab_view_widget<int>>("A1", tab_index);
-    init_audio_tab(tabs.make_widget(0));
-    init_license_tab(tabs.make_widget<vertical_scroll_view_widget<true>>(1).make_widget());
+    auto& tabs = self.make_widget<tab_widget>("A1", tab_index);
+    init_audio_tab(tabs.make_widget<grid_widget>(0));
+    init_license_tab(tabs.make_widget<vertical_scroll_widget<true>>(1).make_widget<grid_widget>());
 }
 
 void my_preferences_window_controller::audio_device_list_changed(tt::audio_system& system) noexcept

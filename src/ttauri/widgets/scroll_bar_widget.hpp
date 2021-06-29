@@ -5,6 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
+#include "../geometry/axis.hpp"
 #include "../observable.hpp"
 #include <memory>
 #include <string>
@@ -14,12 +15,12 @@
 
 namespace tt {
 
-template<bool IsVertical>
+template<axis Axis>
 class scroll_bar_widget final : public widget {
 public:
     using super = widget;
 
-    static constexpr bool is_vertical = IsVertical;
+    static constexpr tt::axis axis = Axis;
 
     template<typename Content, typename Aperture, typename Offset>
     scroll_bar_widget(
@@ -50,7 +51,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
-            if constexpr (is_vertical) {
+            if constexpr (axis == axis::vertical) {
                 _minimum_size = _preferred_size = {theme::global().icon_size, theme::global().large_size};
                 _maximum_size = {theme::global().icon_size, 32767.0f};
             } else {
@@ -75,7 +76,7 @@ public:
             // Calculate the position of the slider.
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
 
-            if constexpr (is_vertical) {
+            if constexpr (axis == axis::vertical) {
                 slider_rectangle =
                     aarectangle{rectangle().left(), rectangle().bottom() + slider_offset, rectangle().width(), slider_length()};
             } else {
@@ -127,7 +128,7 @@ public:
             case Drag: {
                 // The distance the slider has to move relative to the slider position at the
                 // start of the drag.
-                ttlet slider_movement = is_vertical ? event.delta().y() : event.delta().x();
+                ttlet slider_movement = axis == axis::vertical ? event.delta().y() : event.delta().x();
                 ttlet content_movement = slider_movement * hidden_content_vs_travel_ratio();
                 offset = offset_before_drag + content_movement;
             } break;
@@ -173,7 +174,7 @@ private:
     [[nodiscard]] float rail_length() const noexcept
     {
         tt_axiom(is_gui_thread());
-        return is_vertical ? rectangle().height() : rectangle().width();
+        return axis == axis::vertical ? rectangle().height() : rectangle().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
@@ -229,7 +230,7 @@ private:
         tt_axiom(is_gui_thread());
 
         ttlet corner_shapes =
-            is_vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
+            axis == axis::vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
         context.draw_box(rectangle(), background_color(), corner_shapes);
     }
 
@@ -237,14 +238,14 @@ private:
     {
         tt_axiom(is_gui_thread());
 
-        ttlet corner_shapes = is_vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
+        ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
                                             tt::corner_shapes{slider_rectangle.height() * 0.5f};
 
         context.draw_box(translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
     }
 };
 
-using horizontal_scroll_bar_widget = scroll_bar_widget<false>;
-using vertical_scroll_bar_widget = scroll_bar_widget<true>;
+using horizontal_scroll_bar_widget = scroll_bar_widget<axis::horizontal>;
+using vertical_scroll_bar_widget = scroll_bar_widget<axis::vertical>;
 
 } // namespace tt

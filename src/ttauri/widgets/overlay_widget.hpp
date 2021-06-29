@@ -5,15 +5,17 @@
 #pragma once
 
 #include "widget.hpp"
-#include "grid_layout_widget.hpp"
+#include "overlay_delegate.hpp"
 
 namespace tt {
 
-class overlay_view_widget final : public widget {
+class overlay_widget final : public widget {
 public:
     using super = widget;
+    using delegate_type = overlay_delegate;
 
-    overlay_view_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
+    overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
+        super(window, parent), _delegate(std::move(delegate))
     {
         tt_axiom(is_gui_thread());
 
@@ -27,7 +29,23 @@ public:
         }
     }
 
-    ~overlay_view_widget() {}
+    ~overlay_widget() {}
+
+    void init() noexcept override
+    {
+        super::init();
+        if (auto delegate = _delegate.lock()) {
+            delegate->init(*this);
+        }
+    }
+
+    void deinit() noexcept override
+    {
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
+        super::deinit();
+    }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
@@ -88,8 +106,8 @@ public:
         }
     }
 
-    template<typename WidgetType = grid_layout_widget, typename... Args>
-    WidgetType &make_widget(Args &&... args) noexcept
+    template<typename WidgetType, typename... Args>
+    WidgetType &make_widget(Args &&...args) noexcept
     {
         tt_axiom(is_gui_thread());
 
@@ -116,6 +134,8 @@ public:
     }
 
 private:
+    std::weak_ptr<delegate_type> _delegate;
+
     widget *_content = nullptr;
 
     void draw_background(draw_context context) noexcept

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "grid_layout_delegate.hpp"
+#include "grid_delegate.hpp"
 #include "../geometry/spread_sheet_address.hpp"
 #include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
@@ -14,20 +14,12 @@
 
 namespace tt {
 
-class grid_layout_widget : public widget {
+class grid_widget : public widget {
 public:
     using super = widget;
-    using delegate_type = grid_layout_delegate;
+    using delegate_type = grid_delegate;
 
-    grid_layout_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
-
-    grid_layout_widget(gui_window &window, widget *parent) noexcept :
-        grid_layout_widget(
-            window,
-            parent,
-            std::make_unique<delegate_type>())
-    {
-    }
+    grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     void init() noexcept override;
     void deinit() noexcept override;
@@ -88,7 +80,7 @@ private:
     flow_layout _rows;
     flow_layout _columns;
 
-    weak_or_unique_ptr<delegate_type> _delegate;
+    std::weak_ptr<delegate_type> _delegate;
 
     [[nodiscard]] static std::pair<size_t, size_t> calculate_grid_size(std::vector<cell> const &cells) noexcept;
     [[nodiscard]] static std::tuple<extent2, extent2, extent2>

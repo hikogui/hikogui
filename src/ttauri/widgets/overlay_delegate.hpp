@@ -8,14 +8,12 @@
 #include <functional>
 
 namespace tt {
-class grid_layout_widget;
+class overlay_widget;
 
-class grid_layout_delegate {
+class overlay_delegate {
 public:
-
-    virtual void init(grid_layout_widget &sender) noexcept {}
-
-    virtual void deinit(grid_layout_widget &sender) noexcept {}
+    virtual void init(overlay_widget &sender) noexcept {}
+    virtual void deinit(overlay_widget &sender) noexcept {}
 };
 
 } // namespace tt
