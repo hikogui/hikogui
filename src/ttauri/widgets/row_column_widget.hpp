@@ -13,14 +13,37 @@
 
 namespace tt {
 
+/** Row/Column Widget.
+ * The row/column widget lays out child widgets along a row or column.
+ * Columns are laid out from left to right, and rows from top to bottom.
+ *
+ * The row/column widget will calculate the size of the row or column based on
+ * the minimum, preferred and maximum size of each child widget contained in them.
+ * Margins are also taken into account in the spacing between the child-widgets.
+ * 
+ * When laid out, each child is sized to where it will occupy the full
+ * width of a column, or full height of the row; and divide the length of
+ * the column or row with the other children.
+ *
+ * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or `axis::vertical`.
+ */
 template<axis Axis>
 class row_column_widget final : public widget {
 public:
+    static_assert(Axis == axis::horizontal or Axis == axis::vertical);
+
     using super = widget;
     using delegate_type = row_column_delegate<Axis>;
     static constexpr tt::axis axis = Axis;
 
-    row_column_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+    /** Constructs and empty row/column widget.
+     *
+     * @param window The window.
+     * @param parent The parent widget.
+     * @param delegate An optional delegate can be used to populate the row/column widget
+     *                 during initialization.
+     */
+    row_column_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
         tt_axiom(is_gui_thread());
@@ -31,11 +54,24 @@ public:
         _margin = 0.0f;
     }
 
-    row_column_widget(gui_window &window, widget *parent) noexcept :
-        row_column_widget(window, parent, std::weak_ptr<delegate_type>{})
+    /** Add a widget directly to this grid-widget.
+     * In a column-widget the newly added widget is added below
+     * previously added child-widgets.
+     * 
+     * In a row-widget the newly added widget is added to the right
+     * of previously added child-widgets.
+     *
+     * @tparam Widget The type of the widget to be constructed.
+     * @param args The arguments passed to the constructor of the widget.
+     * @return A reference to the widget that was created.
+     */
+    template<typename Widget, typename... Args>
+    Widget &make_widget(Args &&...args)
     {
+        return super::make_widget<Widget>(std::forward<Args>(args)...);
     }
 
+    /// @privatesection
     void init() noexcept override
     {
         super::init();
@@ -51,16 +87,7 @@ public:
         }
     }
 
-    /** Add a widget directly to this row column widget.
-     */
-    template<typename Widget, typename... Args>
-    Widget &make_widget(Args &&...args)
-    {
-        return super::make_widget<Widget>(std::forward<Args>(args)...);
-    }
-
-
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
@@ -95,7 +122,7 @@ public:
         }
     }
 
-    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
@@ -112,7 +139,7 @@ public:
         }
         super::layout(display_time_point, need_layout);
     }
-
+    /// @endprivatesection
 private:
     std::weak_ptr<delegate_type> _delegate;
     flow_layout _layout;

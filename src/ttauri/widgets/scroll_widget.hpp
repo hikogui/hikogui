@@ -11,15 +11,49 @@
 
 namespace tt {
 
+/** Scroll Widget.
+ * The scroll widget allows a content widget to be shown in
+ * less space than is required. The user can then show
+ * the part of the content widget by using the scroll-bar widgets
+ * which are provided by the scroll widget.
+ *
+ * The size of the scroll widget is based on the `widget::minimum_size()`,
+ * `widget::preferred_size()` and `widget::maximum_size()` of the content
+ * widget together with the space needed for the scrollbars.
+ * 
+ * In the directions that are allowed for scrolling the minimum size of the
+ * scroll widget is adjusted to be much smaller, up to the smallest size of
+ * the scroll-bar widget in that direction.
+ *
+ * Scroll-bars are automatically added when the actual size of the scroll widget
+ * is smaller than the content, this will happen even if the template parameters
+ * given did not allow scrolling in that direction. This is useful behavior when the scroll
+ * widget is part of an overlay widget which was unable to size to the minimum size
+ * requested.
+ *
+ * @tparam Axis the axis that the content may be scrolled.
+ *              Allowed values are `axis::horizontal`, `axis::vertical` or `axis::both`.
+ * @tparam ControlsWindow If set to true, when the content changes size the window gets
+ *                        a signal to resize to its preferred size.
+ */
 template<axis Axis = axis::both, bool ControlsWindow = false>
 class scroll_widget final : public widget {
 public:
+    static_assert(Axis == axis::horizontal or Axis == axis::vertical or Axis == axis::both);
+
     using super = widget;
     using delegate_type = scroll_delegate<Axis,ControlsWindow>;
 
     static constexpr tt::axis axis = Axis;
     static constexpr bool controls_window = ControlsWindow;
 
+    /** Constructs and empty scroll widget.
+     *
+     * @param window The window.
+     * @param parent The parent widget.
+     * @param delegate An optional delegate can be used to populate the scroll widget
+     *                 during initialization.
+     */
     scroll_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
@@ -32,8 +66,27 @@ public:
         _margin = 0.0f;
     }
 
-    ~scroll_widget() {}
+    /** Add a content widget directly to this scroll widget.
+     * This widget is added as the content widget.
+     *
+     * @pre No content widgets have been added before.
+     * @tparam Widget The type of the widget to be constructed.
+     * @param args The arguments passed to the constructor of the widget.
+     * @return A reference to the widget that was created.
+     */
+    template<typename Widget, typename... Args>
+    Widget &make_widget(Args &&...args) noexcept
+    {
+        tt_axiom(is_gui_thread());
+        tt_axiom(not _content);
 
+        auto &widget = super::make_widget<Widget>(std::forward<Args>(args)...);
+        tt_axiom(!_content);
+        _content = &widget;
+        return widget;
+    }
+
+    /// @privatesection
     void init() noexcept override
     {
         super::init();
@@ -77,12 +130,12 @@ public:
                 // The content could be smaller than the scrollbar.
                 _minimum_size.width() = _horizontal_scroll_bar->minimum_size().width();
                 _preferred_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->minimum_size().width());
-                _maximum_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->minimum_size().width());
+                _maximum_size.width() = std::max(_maximum_size.width(), _horizontal_scroll_bar->minimum_size().width());
             }
             if constexpr (any(axis & axis::vertical)) {
                 _minimum_size.height() = _vertical_scroll_bar->minimum_size().height();
                 _preferred_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->minimum_size().height());
-                _maximum_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->minimum_size().height());
+                _maximum_size.height() = std::max(_maximum_size.height(), _vertical_scroll_bar->minimum_size().height());
             }
 
             // Make room for the scroll bars.
@@ -99,24 +152,6 @@ public:
         }
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return has_updated_contraints;
-    }
-
-    /** Calculate which scrollbars are needed to display the content.
-     * @return has_horizontal_scroll_baar, has_vertical_scroll_bar
-     */
-    [[nodiscard]] std::pair<bool, bool> needed_scrollbars() const noexcept
-    {
-        ttlet content_size = _content->preferred_size();
-
-        if (content_size <= size()) {
-            return {false, false};
-        } else if (content_size.width() - _vertical_scroll_bar->preferred_size().width() <= width()) {
-            return {false, true};
-        } else if (content_size.height() - _horizontal_scroll_bar->preferred_size().height() <= height()) {
-            return {true, false};
-        } else {
-            return {true, true};
-        }
     }
 
     [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
@@ -197,17 +232,6 @@ public:
         return r;
     }
 
-    template<typename WidgetType, typename... Args>
-    WidgetType &make_widget(Args &&...args) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        auto &widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
-        tt_axiom(!_content);
-        _content = &widget;
-        return widget;
-    }
-
     bool handle_event(mouse_event const &event) noexcept override
     {
         tt_axiom(is_gui_thread());
@@ -249,7 +273,7 @@ public:
             parent->scroll_to_show(_local_to_parent * translate2(delta_x, delta_y) * rectangle);
         }
     }
-
+    // @endprivatesection
 private:
     std::weak_ptr<delegate_type> _delegate;
     widget *_content = nullptr;
@@ -264,6 +288,24 @@ private:
     observable<float> _scroll_offset_y;
 
     aarectangle _aperture_rectangle;
+
+    /** Calculate which scrollbars are needed to display the content.
+     * @return has_horizontal_scroll_baar, has_vertical_scroll_bar
+     */
+    [[nodiscard]] std::pair<bool, bool> needed_scrollbars() const noexcept
+    {
+        ttlet content_size = _content->preferred_size();
+
+        if (content_size <= size()) {
+            return {false, false};
+        } else if (content_size.width() - _vertical_scroll_bar->preferred_size().width() <= width()) {
+            return {false, true};
+        } else if (content_size.height() - _horizontal_scroll_bar->preferred_size().height() <= height()) {
+            return {true, false};
+        } else {
+            return {true, true};
+        }
+    }
 };
 
 template<bool ControlsWindow = false>

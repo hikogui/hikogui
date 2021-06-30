@@ -28,6 +28,8 @@ namespace tt {
  * the minimum, preferred and maximum size of each child widget contained in them.
  * Margins are also taken into account in the spacing between columns and between rows.
  * 
+ * When laid out, each child is sized to where it will occupy the full
+ * width and height of each cell.
  */
 class grid_widget : public widget {
 public:
