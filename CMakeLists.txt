@@ -558,6 +558,11 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
 
     set(DOXYGEN_LAYOUT_FILE ${CMAKE_SOURCE_DIR}/docs/media/style/DoxygenLayout.xml)
+    set(DOXYGEN_HTML_COLORSTYLE_HUE 24)
+    set(DOXYGEN_HTML_COLORSTYLE_SAT 150)
+    set(DOXYGEN_HTML_COLORSTYLE_GAMMA 80)
+    set(DOXYGEN_HTML_EXTRA_STYLESHEET ${CMAKE_SOURCE_DIR}/docs/media/style/customdoxygen.css)
+
 
     # The following 4 settings are to get protected members to behave as private.
     set(DOXYGEN_ENABLE_PREPROCESSING YES)

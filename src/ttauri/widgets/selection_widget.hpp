@@ -147,7 +147,7 @@ public:
             ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
             ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
 
-            ttlet overlay_rectangle = _overlay_widget->make_overlay_rectangle_from_parent(overlay_rectangle_request);
+            ttlet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
             ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
 
             _overlay_widget->set_layout_parameters_from_parent(

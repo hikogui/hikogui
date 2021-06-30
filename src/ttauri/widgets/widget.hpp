@@ -653,6 +653,25 @@ protected:
         tmp->init();
         return static_cast<T &>(add_widget(std::move(tmp)));
     }
+
+    /** Make an overlay rectangle.
+     *
+     * This function tries to create a rectangle for an overlay-widget that
+     * will fit on the window. It will try and keep the rectangle in the given
+     * position and of the given size, but may return something smaller and shifted.
+     *
+     * @param requested_rectangle A rectangle in the local coordinate system.
+     * @return A rectangle that fits the window's constraints in the local coordinate system.
+     */
+    [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept
+    {
+        tt_axiom(is_gui_thread());
+
+        ttlet requested_window_rectangle = aarectangle{local_to_window() * requested_rectangle};
+        ttlet window_bounds = shrink(aarectangle{window.size}, theme::global().margin);
+        ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
+        return aarectangle{window_to_local() * response_window_rectangle};
+    }
 };
 
 } // namespace tt

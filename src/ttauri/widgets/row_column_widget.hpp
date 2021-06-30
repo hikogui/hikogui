@@ -14,18 +14,21 @@
 namespace tt {
 
 /** Row/Column Widget.
- * The row/column widget lays out child widgets along a row or column.
- * Columns are laid out from left to right, and rows from top to bottom.
+ *
+ * The row/column widget lays out child widgets along a row or column. Columns
+ * are laid out from left to right, and rows from top to bottom.
  *
  * The row/column widget will calculate the size of the row or column based on
- * the minimum, preferred and maximum size of each child widget contained in them.
- * Margins are also taken into account in the spacing between the child-widgets.
- * 
- * When laid out, each child is sized to where it will occupy the full
- * width of a column, or full height of the row; and divide the length of
- * the column or row with the other children.
+ * the minimum, preferred and maximum size of each child widget contained in
+ * them. Margins are also taken into account in the spacing between the
+ * child-widgets.
  *
- * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or `axis::vertical`.
+ * When laid out, each child is sized to where it will occupy the full width of
+ * a column, or full height of the row; and divide the length of the column or
+ * row with the other children.
+ *
+ * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or
+ * `axis::vertical`.
  */
 template<axis Axis>
 class row_column_widget final : public widget {
@@ -36,7 +39,7 @@ public:
     using delegate_type = row_column_delegate<Axis>;
     static constexpr tt::axis axis = Axis;
 
-    /** Constructs and empty row/column widget.
+    /** Constructs an empty row/column widget.
      *
      * @param window The window.
      * @param parent The parent widget.
@@ -55,11 +58,12 @@ public:
     }
 
     /** Add a widget directly to this grid-widget.
-     * In a column-widget the newly added widget is added below
+     *
+     * In a column-widget the newly added widget is added below previously added
+     * child-widgets.
+     *
+     * In a row-widget the newly added widget is added to the right of
      * previously added child-widgets.
-     * 
-     * In a row-widget the newly added widget is added to the right
-     * of previously added child-widgets.
      *
      * @tparam Widget The type of the widget to be constructed.
      * @param args The arguments passed to the constructor of the widget.

@@ -15,28 +15,30 @@
 namespace tt {
 
 /** Grid Widget.
- * The grid widget lays out child widgets in a grid pattern.
- * Each child widget occupies a single cell, which belongs into a single column and a single row.
- * 
- * Columns are laid out from left to right, and rows from top to bottom.
- * The row and columns number may be specified as integers, or
- * using an spreadsheet-like cell-address:
+ *
+ * The grid widget lays out child widgets in a grid pattern. Each child widget
+ * occupies a single cell, which belongs into a single column and a single row.
+ *
+ * Columns are laid out from left to right, and rows from top to bottom. The row
+ * and columns number may be specified as integers, or using an spreadsheet-like
+ * cell-address:
  *  - `grid_widget::make_widget<T>(size_t column_nr, size_t row_nr, ...)`
  *  - `grid_widget::make_widget<T>(std::string address, ...)`
- * 
- * The grid widget will calculate the size of each row and column based on
- * the minimum, preferred and maximum size of each child widget contained in them.
- * Margins are also taken into account in the spacing between columns and between rows.
- * 
- * When laid out, each child is sized to where it will occupy the full
- * width and height of each cell.
+ *
+ * The grid widget will calculate the size of each row and column based on the
+ * minimum, preferred and maximum size of each child widget contained in them.
+ * Margins are also taken into account in the spacing between columns and
+ * between rows.
+ *
+ * When laid out, each child is sized to where it will occupy the full width and
+ * height of each cell.
  */
 class grid_widget : public widget {
 public:
     using super = widget;
     using delegate_type = grid_delegate;
 
-    /** Constructs and empty grid widget.
+    /** Constructs an empty grid widget.
      *
      * @param window The window.
      * @param parent The parent widget.

@@ -12,29 +12,29 @@
 namespace tt {
 
 /** Scroll Widget.
- * The scroll widget allows a content widget to be shown in
- * less space than is required. The user can then show
- * the part of the content widget by using the scroll-bar widgets
- * which are provided by the scroll widget.
+ *
+ * The scroll widget allows a content widget to be shown in less space than is
+ * required. The user can then show the part of the content widget by using the
+ * scroll-bar widgets which are provided by the scroll widget.
  *
  * The size of the scroll widget is based on the `widget::minimum_size()`,
- * `widget::preferred_size()` and `widget::maximum_size()` of the content
- * widget together with the space needed for the scrollbars.
- * 
+ * `widget::preferred_size()` and `widget::maximum_size()` of the content widget
+ * together with the space needed for the scrollbars.
+ *
  * In the directions that are allowed for scrolling the minimum size of the
- * scroll widget is adjusted to be much smaller, up to the smallest size of
- * the scroll-bar widget in that direction.
+ * scroll widget is adjusted to be much smaller, up to the smallest size of the
+ * scroll-bar widget in that direction.
  *
  * Scroll-bars are automatically added when the actual size of the scroll widget
  * is smaller than the content, this will happen even if the template parameters
- * given did not allow scrolling in that direction. This is useful behavior when the scroll
- * widget is part of an overlay widget which was unable to size to the minimum size
- * requested.
+ * given did not allow scrolling in that direction. This is useful behavior when
+ * the scroll widget is part of an overlay widget which was unable to size to
+ * the minimum size requested.
  *
- * @tparam Axis the axis that the content may be scrolled.
- *              Allowed values are `axis::horizontal`, `axis::vertical` or `axis::both`.
- * @tparam ControlsWindow If set to true, when the content changes size the window gets
- *                        a signal to resize to its preferred size.
+ * @tparam Axis the axis that the content may be scrolled. Allowed values are
+ *              `axis::horizontal`, `axis::vertical` or `axis::both`.
+ * @tparam ControlsWindow If set to true, when the content changes size the
+ *                        window gets a signal to resize to its preferred size.
  */
 template<axis Axis = axis::both, bool ControlsWindow = false>
 class scroll_widget final : public widget {
@@ -47,7 +47,7 @@ public:
     static constexpr tt::axis axis = Axis;
     static constexpr bool controls_window = ControlsWindow;
 
-    /** Constructs and empty scroll widget.
+    /** Constructs an empty scroll widget.
      *
      * @param window The window.
      * @param parent The parent widget.
@@ -67,6 +67,7 @@ public:
     }
 
     /** Add a content widget directly to this scroll widget.
+     *
      * This widget is added as the content widget.
      *
      * @pre No content widgets have been added before.
@@ -81,7 +82,6 @@ public:
         tt_axiom(not _content);
 
         auto &widget = super::make_widget<Widget>(std::forward<Args>(args)...);
-        tt_axiom(!_content);
         _content = &widget;
         return widget;
     }
