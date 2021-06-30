@@ -43,18 +43,7 @@ public:
      */
     grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
-    void init() noexcept override;
-    void deinit() noexcept override;
-
-    [[nodiscard]] bool
-    constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
-
-    /* Add a widget to the grid.
-     */
-    widget &add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> child_widget) noexcept;
-
-    /** Add a widget directly to this widget.
+    /** Add a widget directly to this grid-widget.
      *
      * @tparam Widget The type of the widget to be constructed.
      * @param column_nr The zero-based index from left-to-right.
@@ -70,7 +59,7 @@ public:
         return static_cast<Widget &>(add_widget(column_nr, row_nr, std::move(tmp)));
     }
 
-    /** Add a widget directly to this widget.
+    /** Add a widget directly to this grid-widget.
      * 
      * @tparam Widget The type of the widget to be constructed.
      * @param address The spreadsheet-like address of the cell,
@@ -85,6 +74,12 @@ public:
         return make_widget<Widget>(column_nr, row_nr, std::forward<Args>(args)...);
     }
 
+    /// @privatesection
+    void init() noexcept override;
+    void deinit() noexcept override;
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
+    /// @endprivatesection
 private:
     struct cell {
         size_t column_nr;
@@ -116,6 +111,10 @@ private:
     [[nodiscard]] static std::tuple<extent2, extent2, extent2>
     calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept;
     [[nodiscard]] bool address_in_use(size_t column_nr, size_t row_nr) const noexcept;
+
+    /* Add a widget to the grid.
+     */
+    widget &add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> child_widget) noexcept;
 };
 
 } // namespace tt
