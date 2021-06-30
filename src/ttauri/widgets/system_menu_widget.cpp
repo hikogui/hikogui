@@ -25,11 +25,11 @@ void system_menu_widget::init() noexcept
 }
 
 [[nodiscard]] bool
-system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+system_menu_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         ttlet width = theme::global().toolbar_decoration_button_width;
         ttlet height = theme::global().toolbar_height;
         _minimum_size = _preferred_size = _maximum_size = {width, height};
@@ -40,11 +40,11 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     }
 }
 
-[[nodiscard]] void system_menu_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void system_menu_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         ttlet icon_height =
             rectangle().height() < theme::global().toolbar_height * 1.2f ? rectangle().height() : theme::global().toolbar_height;
@@ -60,7 +60,7 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
             rectangle().height() - theme::global().margin};
     }
 
-    super::update_layout(display_time_point, need_layout);
+    super::layout(display_time_point, need_layout);
 }
 
 hitbox system_menu_widget::hitbox_test(point2 position) const noexcept

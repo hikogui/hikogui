@@ -23,10 +23,10 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     });
 
     _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        _request_relayout = true;
+        _request_layout = true;
     });
     _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        _request_reconstrain = true;
+        _request_constrain = true;
     });
 
     enabled.subscribe(_redraw_callback);
@@ -110,31 +110,31 @@ void widget::deinit() noexcept {}
     }
 }
 
-[[nodiscard]] bool widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_reconstrain |= _request_reconstrain.exchange(false);
+    need_reconstrain |= _request_constrain.exchange(false);
 
     for (auto &&child : _children) {
         tt_axiom(child);
         tt_axiom(child->parent == this);
-        need_reconstrain |= child->update_constraints(display_time_point, need_reconstrain);
+        need_reconstrain |= child->constrain(display_time_point, need_reconstrain);
     }
 
     return need_reconstrain;
 }
 
-void widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     for (auto &&child : _children) {
         tt_axiom(child);
         tt_axiom(child->parent == this);
         if (child->visible) {
-            child->update_layout(display_time_point, need_layout);
+            child->layout(display_time_point, need_layout);
         }
     }
 

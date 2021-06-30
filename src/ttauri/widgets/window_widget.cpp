@@ -40,11 +40,11 @@ void window_widget::init() noexcept
 }
 
 [[nodiscard]] bool
-window_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+window_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         _minimum_size = {
             std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
             _toolbar->preferred_size().height() + _content->minimum_size().height()};
@@ -68,11 +68,11 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
     }
 }
 
-void window_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void window_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         ttlet toolbar_height = _toolbar->preferred_size().height();
         ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
@@ -82,7 +82,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
         _content->set_layout_parameters_from_parent(content_rectangle);
     }
 
-    super::update_layout(display_time_point, need_layout);
+    super::layout(display_time_point, need_layout);
 }
 
 hitbox window_widget::hitbox_test(point2 position) const noexcept

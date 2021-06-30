@@ -66,14 +66,14 @@ public:
         _column_widget = &_scroll_widget->make_widget<column_widget>();
 
         _unknown_label_callback = this->unknown_label.subscribe([this] {
-            _request_reconstrain = true;
+            _request_constrain = true;
         });
 
         if (auto delegate = _delegate.lock()) {
             _delegate_callback = delegate->subscribe(*this, [this] {
                 run_on_gui_thread([this] {
                     repopulate_options();
-                    _request_reconstrain = true;
+                    _request_constrain = true;
                 });
             });
 
@@ -91,11 +91,11 @@ public:
         super::deinit();
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        auto updated = super::update_constraints(display_time_point, need_reconstrain);
+        auto updated = super::constrain(display_time_point, need_reconstrain);
         if (updated) {
             ttlet extra_size = extent2{theme::global().size + theme::global().margin * 2.0f, theme::global().margin * 2.0f};
 
@@ -126,11 +126,11 @@ public:
         }
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
             // from the point of view of the selection widget.
@@ -171,7 +171,7 @@ public:
             _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
             _current_label_widget->set_layout_parameters_from_parent(_option_rectangle);
         }
-        super::update_layout(display_time_point, need_layout);
+        super::layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -206,7 +206,7 @@ public:
     bool handle_event(command command) noexcept override
     {
         tt_axiom(is_gui_thread());
-        _request_relayout = true;
+        _request_layout = true;
 
         if (enabled and _has_options) {
             switch (command) {

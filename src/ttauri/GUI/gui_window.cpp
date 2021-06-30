@@ -72,7 +72,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    static_cast<void>(widget->update_constraints({}, true));
+    static_cast<void>(widget->constrain({}, true));
     size = widget->preferred_size();
 
     // Reset the keyboard target to not focus anything.
@@ -123,7 +123,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
     ttlet need_reconstrain = _request_setting_change.exchange(false);
 
     // Update the size constraints of the window_widget and it children.
-    ttlet constraints_have_changed = widget->update_constraints(displayTimePoint, need_reconstrain);
+    ttlet constraints_have_changed = widget->constrain(displayTimePoint, need_reconstrain);
 
     // Check if the window size matches the preferred size of the window_widget.
     // If not ask the operating system to change the size of the window, which is
@@ -158,7 +158,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
     ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    widget->update_layout(displayTimePoint, need_layout);
+    widget->layout(displayTimePoint, need_layout);
 
     if (auto optional_draw_context = surface->render_start(_request_redraw_rectangle)) {
         auto draw_context = *optional_draw_context;

@@ -27,11 +27,11 @@ void label_widget::init() noexcept
 }
 
 [[nodiscard]] bool
-label_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+label_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         ttlet label_size = _text_widget->preferred_size();
         ttlet icon_size = _icon_widget->preferred_size();
 
@@ -82,11 +82,11 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
     }
 }
 
-[[nodiscard]] void label_widget::update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
+[[nodiscard]] void label_widget::layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         auto text_rect = aarectangle{};
         if (*alignment == horizontal_alignment::left) {
@@ -127,7 +127,7 @@ label_widget::update_constraints(hires_utc_clock::time_point display_time_point,
         _icon_widget->set_layout_parameters_from_parent(icon_rect);
         _text_widget->set_layout_parameters_from_parent(text_rect);
     }
-    super::update_layout(displayTimePoint, need_layout);
+    super::layout(displayTimePoint, need_layout);
 }
 
 } // namespace tt

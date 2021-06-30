@@ -56,12 +56,12 @@ public:
         super::deinit();
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
-        auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
+        auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
 
         // Recurse into the selected widget.
         if (has_updated_contraints) {
@@ -119,12 +119,12 @@ public:
         }
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->preferred_size().width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->preferred_size().height();
@@ -179,7 +179,7 @@ public:
             }
         }
 
-        super::update_layout(display_time_point, need_layout);
+        super::layout(display_time_point, need_layout);
     }
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
@@ -217,7 +217,7 @@ public:
             handled = true;
             _scroll_offset_x += event.wheelDelta.x();
             _scroll_offset_y += event.wheelDelta.y();
-            _request_relayout = true;
+            _request_layout = true;
             return true;
         }
         return handled;

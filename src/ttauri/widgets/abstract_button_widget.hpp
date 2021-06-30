@@ -107,11 +107,11 @@ public:
         return _notifier.unsubscribe(callback_ptr);
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
+        if (super::constrain(display_time_point, need_reconstrain)) {
             _minimum_size = _on_label_widget->minimum_size();
             _preferred_size = _on_label_widget->preferred_size();
             _maximum_size = _on_label_widget->maximum_size();
@@ -131,11 +131,11 @@ public:
         }
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             auto state_ = state();
             _on_label_widget->visible = state_ == button_state::on;
@@ -146,7 +146,7 @@ public:
             _off_label_widget->set_layout_parameters_from_parent(_label_rectangle);
             _other_label_widget->set_layout_parameters_from_parent(_label_rectangle);
         }
-        widget::update_layout(displayTimePoint, need_layout);
+        widget::layout(displayTimePoint, need_layout);
     }
 
     [[nodiscard]] color background_color() const noexcept override

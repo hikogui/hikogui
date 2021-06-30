@@ -31,11 +31,11 @@ public:
     {
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
+        if (super::constrain(display_time_point, need_reconstrain)) {
             // On left side a check mark, on right side short-cut. Around the label extra margin.
             ttlet extra_size = extent2{theme::global().margin * 2.0f, theme::global().margin * 2.0f};
             _minimum_size += extra_size;
@@ -49,15 +49,15 @@ public:
         }
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             _label_rectangle = aarectangle{theme::global().margin, 0.0f, width() - theme::global().margin * 2.0f, height()};
         }
-        super::update_layout(displayTimePoint, need_layout);
+        super::layout(displayTimePoint, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

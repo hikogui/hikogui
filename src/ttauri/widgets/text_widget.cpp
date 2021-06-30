@@ -11,15 +11,15 @@ text_widget::~text_widget() {}
 void text_widget::init() noexcept
 {
     _text_callback = text.subscribe([this] {
-        _request_reconstrain = true;
+        _request_constrain = true;
     });
 }
 
-[[nodiscard]] bool text_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool text_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         _shaped_text = shaped_text{(*text)(), theme::global(*text_style), 0.0f, *alignment};
         _minimum_size = ceil(_shaped_text.minimum_size());
         _preferred_size = ceil(_shaped_text.preferred_size());
@@ -46,16 +46,16 @@ void text_widget::init() noexcept
     }
 }
 
-[[nodiscard]] void text_widget::update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
+[[nodiscard]] void text_widget::layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         _shaped_text = shaped_text{(*text)(), theme::global(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
     }
-    super::update_layout(displayTimePoint, need_layout);
+    super::layout(displayTimePoint, need_layout);
 }
 
 void text_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept

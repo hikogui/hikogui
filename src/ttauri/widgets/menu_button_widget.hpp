@@ -32,11 +32,11 @@ public:
     {
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
+        if (super::constrain(display_time_point, need_reconstrain)) {
             // Make room for button and margin.
             _check_size = {theme::global().size, theme::global().size};
             _short_cut_size = {theme::global().size, theme::global().size};
@@ -55,11 +55,11 @@ public:
         }
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             ttlet inside_rectangle = shrink(rectangle(), theme::global().margin);
 
@@ -77,7 +77,7 @@ public:
             _check_glyph_rectangle =
                 align(_check_rectangle, scale(check_glyph_bb, theme::global().icon_size), alignment::middle_center);
         }
-        super::update_layout(displayTimePoint, need_layout);
+        super::layout(displayTimePoint, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

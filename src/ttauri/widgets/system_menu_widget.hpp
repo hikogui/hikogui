@@ -37,8 +37,8 @@ public:
     void init() noexcept override;
 
     [[nodiscard]] bool
-    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
+    constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
 

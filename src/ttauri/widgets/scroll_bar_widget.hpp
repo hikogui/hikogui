@@ -46,11 +46,11 @@ public:
 
     ~scroll_bar_widget() {}
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
+        if (super::constrain(display_time_point, need_reconstrain)) {
             if constexpr (axis == axis::vertical) {
                 _minimum_size = _preferred_size = {theme::global().icon_size, theme::global().large_size};
                 _maximum_size = {theme::global().icon_size, 32767.0f};
@@ -65,11 +65,11 @@ public:
         }
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             tt_axiom(*content != 0.0f);
 
@@ -85,7 +85,7 @@ public:
             }
         }
 
-        super::update_layout(display_time_point, need_layout);
+        super::layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

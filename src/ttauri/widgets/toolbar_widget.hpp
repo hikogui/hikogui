@@ -46,11 +46,11 @@ public:
         return tmp;
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
         tt_axiom(is_gui_thread());
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
+        if (super::constrain(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
             auto shared_height = 0.0f;
 
@@ -80,11 +80,11 @@ public:
         }
     }
 
-    void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+    void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             _layout.set_size(rectangle().width());
 
@@ -102,7 +102,7 @@ public:
 
             tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
         }
-        super::update_layout(display_time_point, need_layout);
+        super::layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept

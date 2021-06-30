@@ -47,11 +47,11 @@ public:
         super::deinit();
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
+        auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
 
         if (has_updated_contraints) {
             tt_axiom(_content);
@@ -64,17 +64,17 @@ public:
         return has_updated_contraints;
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             tt_axiom(_content);
             _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
         }
 
-        super::update_layout(display_time_point, need_layout);
+        super::layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

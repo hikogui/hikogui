@@ -24,8 +24,8 @@ public:
     ~window_traffic_lights_widget() {}
 
     [[nodiscard]] bool
-    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
+    constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
 
     bool handle_event(mouse_event const &event) noexcept override;

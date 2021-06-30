@@ -46,11 +46,11 @@ public:
         super::deinit();
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
+        auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
         if (has_updated_contraints) {
             ttlet &selected_child_ = selected_child();
             for (ttlet &child : _children) {
@@ -70,11 +70,11 @@ public:
         return has_updated_contraints;
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             for (ttlet &child : _children) {
                 if (child->visible) {
@@ -82,7 +82,7 @@ public:
                 }
             }
         }
-        super::update_layout(display_time_point, need_layout);
+        super::layout(display_time_point, need_layout);
     }
 
     [[nodiscard]] widget const *find_next_widget(
@@ -124,7 +124,7 @@ private:
 
         if (auto d = _delegate.lock()) {
             _delegate_callback = d->subscribe(*this, [this](auto...) {
-                this->_request_reconstrain = true;
+                this->_request_constrain = true;
             });
         }
 

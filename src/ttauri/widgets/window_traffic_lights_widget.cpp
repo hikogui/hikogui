@@ -20,11 +20,11 @@ window_traffic_lights_widget::window_traffic_lights_widget(
 }
 
 [[nodiscard]] bool
-window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         if (theme::global().operating_system == operating_system::windows) {
             ttlet width = theme::global().toolbar_decoration_button_width * 3.0f;
             ttlet height = theme::global().toolbar_height;
@@ -46,11 +46,11 @@ window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point dis
 }
 
 [[nodiscard]] void
-window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+window_traffic_lights_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         auto extent = rectangle().size();
         if (extent.height() > theme::global().toolbar_height * 1.2f) {
@@ -108,7 +108,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
             align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), alignment::middle_center);
         restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), alignment::middle_center);
     }
-    super::update_layout(display_time_point, need_layout);
+    super::layout(display_time_point, need_layout);
 }
 
 void window_traffic_lights_widget::drawMacOS(

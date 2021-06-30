@@ -31,11 +31,11 @@ public:
     {
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
+        if (super::constrain(display_time_point, need_reconstrain)) {
             // Make room for button and margin.
             _button_size = {theme::global().size, theme::global().size};
             ttlet extra_size = extent2{theme::global().margin + _button_size.width(), 0.0f};
@@ -54,11 +54,11 @@ public:
         }
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
@@ -67,7 +67,7 @@ public:
             _pip_rectangle =
                 align(_button_rectangle, extent2{theme::global().icon_size, theme::global().icon_size}, alignment::middle_center);
         }
-        super::update_layout(displayTimePoint, need_layout);
+        super::layout(displayTimePoint, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override

@@ -92,11 +92,11 @@ public:
         super::deinit();
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
+        if (super::constrain(display_time_point, need_reconstrain)) {
             ttlet text_style = theme::global(theme_text_style::label);
             ttlet text_font_id = font_book::global().find_font(text_style.family_id, text_style.variant);
             ttlet &text_font = font_book::global().get_font(text_font_id);
@@ -114,7 +114,7 @@ public:
         }
     }
 
-    void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
@@ -122,7 +122,7 @@ public:
             request_redraw();
         }
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             _text_field_rectangle = aarectangle{extent2{_text_width + theme::global().margin * 2.0f, _size.height()}};
 
@@ -161,7 +161,7 @@ public:
             _last_update_time_point = display_time_point;
         }
 
-        super::update_layout(display_time_point, need_layout);
+        super::layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -191,7 +191,7 @@ public:
     bool handle_event(command command) noexcept override
     {
         tt_axiom(is_gui_thread());
-        _request_relayout = true;
+        _request_layout = true;
 
         if (enabled) {
             switch (command) {
@@ -330,7 +330,7 @@ public:
             }
         }
 
-        _request_relayout = true;
+        _request_layout = true;
         return handled;
     }
 
@@ -407,7 +407,7 @@ private:
     {
         if (auto d = _delegate.lock()) {
             _delegate_callback = d->subscribe(*this, [this] {
-                _request_relayout = true;
+                _request_layout = true;
             });
         }
     }

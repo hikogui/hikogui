@@ -49,47 +49,14 @@ struct vertex;
 namespace tt {
 class widget;
 
-/*! View of a widget.
- * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
- * which contains that static data of an Widget and the drawing code. Backings are shared
- * between Views.
+/** An interactive graphical object as part of the user-interface.
  *
- * All methods should make sure the mutex is locked by the current thread.
+ * Rendering is done in four distinct phases:
+ *  1. Updating Constraints: `widget::constrain()`
+ *  2. Update layout parameters `widget::set_layout_parameters()`
+ *  3. Updating Layout: `widget::layout()`
+ *  4. Drawing: `widget::draw()`
  *
- * Rendering is done in three distinct phases:
- *  1. Updating Constraints
- *  2. Updating Layout
- *  3. Drawing (optional phase)
- *
- * Each of these phases is executed to completion for all widget belonging to a
- * window before the next phases is executed.
- *
- * ## Updating Constraints
- * In this phases the widget will update the constraints to determine the position
- * and size of the widget inside the window.
- *
- * The `widget::update_constraints()` function will be called on each widget recursively.
- * You should minimize the cost of this function as much as possible.
- *
- * Since this function is called on each frame, the widget should first check
- * if constraint changes are needed.
- *
- * A widget should return true if any of the constraints has changed.
- *
- * ## Updating Layout
- * A widget may update its internal (expensive) layout calculations from the
- * `widget::update_layout()` function.
- *
- * Since this function is called on each frame, the widget should first check
- * if layout calculations are needed. If a constraint has changed (the window size
- * is also a constraint) then the `forceLayout` flag is set.
- *
- * A widget should return true if the window needs to be redrawn.
- *
- * ## Drawing (optional)
- * A widget can draw itself when the `widget::draw()` function is called. This phase is only
- * entered when one of the widget's layout was changed. But if this phase is entered
- * then all the widgets' `widget::draw()` functions are called.
  */
 class widget {
 public:
@@ -369,48 +336,43 @@ public:
 
     /** Update the constraints of the widget.
      * This function is called on each vertical sync, even if no drawing is to be done.
-     * It should recursively call `updateConstraints()` on each of the visible children,
-     * so they get a chance to update.
      *
      * This function may be used for expensive calculations, such as text-shaping, which
      * should only be done when the data changes. Because this function is called on every
      * vertical sync it should cache these calculations.
      *
-     * Subclasses should call `updateConstraints()` on its base-class to check if the constraints where
-     * changed. `Widget::update_constraints()` will check if `requestConstraints` was set.
-     * `Container::update_constraints()` will check if any of the children changed constraints.
+     * Subclasses should call `constrain()` on its base-class to check if its or any of
+     * its children's constraints where changed, before doing specific constraining
      *
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
-     * it should set window.requestResize to true.
+     * it should set `window::request_resize` to `true`.
      *
-     * This function will change what is returned by `preferred_size()` and `preferred_base_line()`.
-     *
-     * @pre `mutex` must be locked by current thread.
+     * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
+     *       and `widget::maximum_size()`.
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_reconstrain Force the widget to re-constrain.
      * @return True if its or any children's constraints has changed.
      */
-    [[nodiscard]] virtual bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept;
+    [[nodiscard]] virtual bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept;
 
     /** Update the internal layout of the widget.
      * This function is called on each vertical sync, even if no drawing is to be done.
-     * It should recursively call `updateLayout()` on each of the visible children,
-     * so they get a chance to update.
      *
      * This function may be used for expensive calculations, such as geometry calculations,
      * which should only be done when the data or sizes change. Because this function is called
      * on every vertical sync it should cache these calculations.
      *
-     * This function will likely call `set_layout_parameters()` on its children.
+     * Subclasses should call `widget::set_layout_parameters()` to position and size each child
+     * relative to this widget. At the end of the function the subclass should call `layout()`
+     * on its base-class to recursively update the layout of the children.
      *
-     * Subclasses should call `updateLayout()` on its children, call `updateLayout()` on its
-     * base class with `forceLayout` argument to the result of `layoutRequest.exchange(false)`.
-     *
-     * @pre `mutex` must be locked by current thread.
+     * @pre `widget::set_layout_parameters()` should be called.
+     * @post This function will change what is returned by `widget::size()` and the transformation
+     *       matrices.
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_layout Force the widget to layout
      */
-    [[nodiscard]] virtual void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] virtual void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 
@@ -541,7 +503,7 @@ public:
     {
         tt_axiom(is_gui_thread());
         _children.clear();
-        _request_reconstrain = true;
+        _request_constrain = true;
     }
 
     /** Add a widget directly to this widget.
@@ -554,7 +516,7 @@ public:
 
         auto widget_ptr = &(*widget);
         _children.push_back(std::move(widget));
-        _request_reconstrain = true;
+        _request_constrain = true;
         window.requestLayout = true;
         return *widget_ptr;
     }
@@ -665,11 +627,11 @@ protected:
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
-    std::atomic<bool> _request_reconstrain = true;
+    std::atomic<bool> _request_constrain = true;
 
     /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
      */
-    std::atomic<bool> _request_relayout = true;
+    std::atomic<bool> _request_layout = true;
 
     extent2 _minimum_size;
     extent2 _preferred_size;

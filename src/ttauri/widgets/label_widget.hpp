@@ -38,9 +38,9 @@ public:
     void init() noexcept override;
 
     [[nodiscard]] bool
-    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
+    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
 
 private:
     float _icon_size;

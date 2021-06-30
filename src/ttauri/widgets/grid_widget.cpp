@@ -104,11 +104,11 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
     return tmp;
 }
 
-bool grid_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+bool grid_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         std::tie(_minimum_size, _preferred_size, _maximum_size) = calculate_size(_cells, _rows, _columns);
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
@@ -117,11 +117,11 @@ bool grid_widget::update_constraints(hires_utc_clock::time_point display_time_po
     }
 }
 
-void grid_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void grid_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         _columns.set_size(width());
         _rows.set_size(height());
@@ -133,7 +133,7 @@ void grid_widget::update_layout(hires_utc_clock::time_point display_time_point, 
         }
     }
 
-    super::update_layout(display_time_point, need_layout);
+    super::layout(display_time_point, need_layout);
 }
 
 } // namespace tt
