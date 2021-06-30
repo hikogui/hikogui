@@ -116,6 +116,45 @@ public:
      */
     observable<bool> visible = true;
 
+    /** The draw layer of the widget.
+     * Drawing layers start at 0.0 and go up to 100.0.
+     *
+     * Each child widget that has drawing to do increases the layer by 1.0.
+     *
+     * The widget should draw within 0.0 and 1.0 of its drawing layer.
+     * The toWindowTransfer and the DrawingContext will already include
+     * the draw_layer.
+     *
+     * An overlay widget such as pop-ups will increase the layer by 25.0,
+     * to make sure the overlay will draw above other widgets in the window.     *
+     */
+    float draw_layer;
+
+    /** The draw layer of the widget.
+     * The semantic layer is used mostly by the `draw()` function
+     * for selecting colors from the theme, to denote nesting widgets
+     * inside other widgets.
+     *
+     * Semantic layers start at 0 for the window-widget and for any pop-up
+     * widgets.
+     *
+     * The semantic layer is increased by one, whenever a user of the
+     * user-interface would understand the next layer to begin.
+     *
+     * In most cases it would mean that a container widget that does not
+     * draw itself will not increase the semantic_layer number.
+     */
+    int semantic_layer;
+
+    /** The logical layer of the widget.
+     * The logical layer can be used to determine how far away
+     * from the window-widget (root) the current widget is.
+     *
+     * Logical layers start at 0 for the window-widget.
+     * Each child widget increases the logical layer by 1.
+     */
+    int logical_layer;
+
     /*! Constructor for creating sub views.
      */
     widget(gui_window &window, widget *parent) noexcept;
@@ -134,20 +173,6 @@ public:
      */
     virtual void deinit() noexcept;
 
-    [[nodiscard]] bool lineage_matches_id(std::string_view rhs) const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        auto current = this;
-        while (current) {
-            if (current->id == rhs) {
-                return true;
-            }
-
-            current = current->parent;
-        }
-        return false;
-    }
-
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
      * a way that the maximum margin of neighboring widgets is maintained.
@@ -159,67 +184,6 @@ public:
     {
         tt_axiom(is_gui_thread());
         return _margin;
-    }
-
-    /** The first drawing layer of the widget.
-     * Drawing layers start at 0.0 and go up to 100.0.
-     *
-     * Each child widget that has drawing to do increases the layer by 1.0.
-     *
-     * The widget should draw within 0.0 and 1.0 of its drawing layer.
-     * The toWindowTransfer and the DrawingContext will already include
-     * the draw_layer.
-     *
-     * An overlay widget such as pop-ups will increase the layer by 25.0,
-     * to make sure the overlay will draw above other widgets in the window.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @return The draw layer of this widget.
-     */
-    [[nodiscard]] float draw_layer() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _draw_layer;
-    }
-
-    /** The logical layer of the widget.
-     * The logical layer can be used to determine how for away
-     * from the window-widget (root) the current widget is.
-     *
-     * Logical layers start at 0 for the window-widget.
-     * Each child widget increases the logical layer by 1.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @return The draw layer of this widget.
-     */
-    [[nodiscard]] int logical_layer() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _logical_layer;
-    }
-
-    /** The semantic layer of the widget.
-     *
-     * The semantic layer is used mostly by the `draw()` function
-     * for selecting colors from the theme, to denote nesting widgets
-     * inside other widgets.
-     *
-     * Semantic layers start at 0 for the window-widget and for any pop-up
-     * widgets.
-     *
-     * The semantic layer is increased by one, whenever a user of the
-     * user-interface would understand the next layer to begin.
-     *
-     * In most cases it would mean that a container widget that does not
-     * draw itself will not increase the semantic_layer number.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @return The draw layer of this widget.
-     */
-    [[nodiscard]] int semantic_layer() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _semantic_layer;
     }
 
     /** Minimum size.
@@ -310,7 +274,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (parent) {
-            ttlet draw_layer_delta = _draw_layer - parent->draw_layer();
+            ttlet draw_layer_delta = draw_layer - parent->draw_layer;
             return set_layout_parameters_from_parent(child_rectangle, parent->clipping_rectangle(), draw_layer_delta);
         } else {
             return set_layout_parameters_from_parent(child_rectangle, child_rectangle, 0.0f);
@@ -595,17 +559,6 @@ public:
         return *widget_ptr;
     }
 
-    /** Add a widget directly to this widget.
-     */
-    template<typename T, typename... Args>
-    T &make_widget(Args &&...args)
-    {
-        tt_axiom(is_gui_thread());
-        auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
-        tmp->init();
-        return static_cast<T &>(add_widget(std::move(tmp)));
-    }
-
     [[nodiscard]] widget &front() noexcept
     {
         tt_axiom(is_gui_thread());
@@ -724,35 +677,20 @@ protected:
 
     float _margin = theme::global().margin;
 
-    /** The draw layer of the widget.
-     * This value translates directly to the z-axis between 0.0 (far) and 100.0 (near)
-     * of the clipping volume.
-     *
-     * This value is discontinues to handle overlay-panels which should be drawn on top
-     * of widgets which may have a high `_logical_layer`.
-     *
-     * @sa draw_layer() const
-     */
-    float _draw_layer;
-
-    /** The draw layer of the widget.
-     * This value increments for each visible child-layer in the widget tree
-     * and resets on overlay-panels.
-     *
-     * @sa semantic_layer() const
-     */
-    int _semantic_layer;
-
-    /** The logical layer of the widget.
-     * This value increments for each child-layer in the widget tree.
-     *
-     * @sa logical_layer() const
-     */
-    int _logical_layer;
-
     std::shared_ptr<std::function<void()>> _redraw_callback;
     std::shared_ptr<std::function<void()>> _relayout_callback;
     std::shared_ptr<std::function<void()>> _reconstrain_callback;
+
+    /** Add a widget directly to this widget.
+     */
+    template<typename T, typename... Args>
+    T &make_widget(Args &&...args)
+    {
+        tt_axiom(is_gui_thread());
+        auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
+        tmp->init();
+        return static_cast<T &>(add_widget(std::move(tmp)));
+    }
 };
 
 } // namespace tt

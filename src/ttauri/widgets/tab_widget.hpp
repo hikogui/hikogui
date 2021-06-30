@@ -117,8 +117,8 @@ private:
 
         if (parent) {
             // The tab-widget will not draw itself, only its selected child.
-            _draw_layer = parent->draw_layer();
-            _semantic_layer = parent->semantic_layer();
+            draw_layer = parent->draw_layer;
+            semantic_layer = parent->semantic_layer;
         }
         _margin = 0.0f;
 

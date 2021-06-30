@@ -17,7 +17,7 @@ grid_widget::grid_widget(
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        _semantic_layer = parent->semantic_layer();
+        semantic_layer = parent->semantic_layer;
     }
     _margin = 0.0f;
 }

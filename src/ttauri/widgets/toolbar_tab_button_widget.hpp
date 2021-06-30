@@ -171,8 +171,8 @@ private:
         // The focus line will be placed at 0.7.
         ttlet button_z = (_focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
 
-        auto button_color = (_hover || state() == button_state::on) ? theme::global(theme_color::fill, _semantic_layer - 1) :
-                                                                      theme::global(theme_color::fill, _semantic_layer);
+        auto button_color = (_hover || state() == button_state::on) ? theme::global(theme_color::fill, semantic_layer - 1) :
+                                                                      theme::global(theme_color::fill, semantic_layer);
 
         ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global().rounding_radius, theme::global().rounding_radius};
         context.draw_box_with_border_inside(

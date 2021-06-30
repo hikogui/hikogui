@@ -160,23 +160,23 @@ void window_traffic_lights_widget::drawWindows(
     } else if (hoverClose) {
         context.draw_filled_quad(closeRectangle, color{0.5f, 0.0f, 0.0f});
     } else {
-        context.draw_filled_quad(closeRectangle, theme::global(theme_color::fill, _semantic_layer));
+        context.draw_filled_quad(closeRectangle, theme::global(theme_color::fill, semantic_layer));
     }
 
     if (pressedMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, _semantic_layer + 2));
+        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, semantic_layer + 2));
     } else if (hoverMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, _semantic_layer + 1));
+        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, semantic_layer + 1));
     } else {
-        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, _semantic_layer));
+        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, semantic_layer));
     }
 
     if (pressedMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, _semantic_layer + 2));
+        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, semantic_layer + 2));
     } else if (hoverMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, _semantic_layer + 1));
+        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, semantic_layer + 1));
     } else {
-        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, _semantic_layer));
+        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, semantic_layer));
     }
 
     ttlet glyph_color = window.active ? label_color() : foreground_color();
@@ -269,7 +269,7 @@ hitbox window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 
     if (_visible_rectangle.contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-            return hitbox{this, _draw_layer, hitbox::Type::Button};
+            return hitbox{this, draw_layer, hitbox::Type::Button};
         } else {
             return hitbox{};
         }

@@ -104,7 +104,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (visible and _visible_rectangle.contains(position) and slider_rectangle.contains(position)) {
-            return hitbox{this, _draw_layer};
+            return hitbox{this, draw_layer};
         } else {
             return hitbox{};
         }
@@ -146,15 +146,15 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme::global(theme_color::fill, _semantic_layer);
+        return theme::global(theme_color::fill, semantic_layer);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
         if (_hover) {
-            return theme::global(theme_color::fill, _semantic_layer + 2);
+            return theme::global(theme_color::fill, semantic_layer + 2);
         } else {
-            return theme::global(theme_color::fill, _semantic_layer + 1);
+            return theme::global(theme_color::fill, semantic_layer + 1);
         }
     }
 

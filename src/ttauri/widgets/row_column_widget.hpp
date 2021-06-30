@@ -26,7 +26,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (parent) {
-            _semantic_layer = parent->semantic_layer();
+            semantic_layer = parent->semantic_layer;
         }
         _margin = 0.0f;
     }
@@ -50,6 +50,15 @@ public:
             delegate->deinit(*this);
         }
     }
+
+    /** Add a widget directly to this row column widget.
+     */
+    template<typename Widget, typename... Args>
+    Widget &make_widget(Args &&...args)
+    {
+        return super::make_widget<Widget>(std::forward<Args>(args)...);
+    }
+
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {

@@ -23,8 +23,8 @@ public:
             // The overlay-widget will reset the semantic_layer as it is the bottom
             // layer of this virtual-window. However the draw-layer should be above
             // any other widget drawn.
-            _draw_layer = parent->draw_layer() + 20.0f;
-            _semantic_layer = 0;
+            draw_layer = parent->draw_layer + 20.0f;
+            semantic_layer = 0;
             _margin = theme::global().margin;
         }
     }
@@ -119,12 +119,12 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme::global(theme_color::fill, _semantic_layer + 1);
+        return theme::global(theme_color::fill, semantic_layer + 1);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme::global(theme_color::border, _semantic_layer + 1);
+        return theme::global(theme_color::border, semantic_layer + 1);
     }
 
     void scroll_to_show(tt::rectangle rectangle) noexcept override

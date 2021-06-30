@@ -70,7 +70,7 @@ hitbox system_menu_widget::hitbox_test(point2 position) const noexcept
     if (_visible_rectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return hitbox{this, _draw_layer, hitbox::Type::ApplicationIcon};
+        return hitbox{this, draw_layer, hitbox::Type::ApplicationIcon};
     } else {
         return {};
     }

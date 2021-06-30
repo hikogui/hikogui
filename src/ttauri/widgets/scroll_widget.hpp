@@ -27,7 +27,7 @@ public:
 
         if (parent) {
             // The tab-widget will not draw itself, only its selected content.
-            _semantic_layer = parent->semantic_layer();
+            semantic_layer = parent->semantic_layer;
         }
         _margin = 0.0f;
     }
@@ -171,7 +171,7 @@ public:
 
             // Make a clipping rectangle that fits the aperture_rectangle exactly.
             _content->set_layout_parameters_from_parent(
-                content_rectangle, _aperture_rectangle, _content->draw_layer() - _draw_layer);
+                content_rectangle, _aperture_rectangle, _content->draw_layer - draw_layer);
 
             if constexpr (controls_window) {
                 window.set_resize_border_priority(
@@ -191,7 +191,7 @@ public:
 
         if (_visible_rectangle.contains(position)) {
             // Claim mouse events for scrolling.
-            r = std::max(r, hitbox{this, _draw_layer});
+            r = std::max(r, hitbox{this, draw_layer});
         }
 
         return r;

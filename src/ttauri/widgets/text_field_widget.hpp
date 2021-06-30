@@ -339,7 +339,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (_visible_rectangle.contains(position)) {
-            return hitbox{this, _draw_layer, enabled ? hitbox::Type::TextEdit : hitbox::Type::Default};
+            return hitbox{this, draw_layer, enabled ? hitbox::Type::TextEdit : hitbox::Type::Default};
         } else {
             return hitbox{};
         }

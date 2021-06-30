@@ -20,10 +20,10 @@ public:
 
         if (parent) {
             // The toolbar widget does draw itself.
-            _draw_layer = parent->draw_layer() + 1.0f;
+            draw_layer = parent->draw_layer + 1.0f;
 
             // The toolbar is a top level widget, which draws its background as the next level.
-            _semantic_layer = 0;
+            semantic_layer = 0;
         }
         _margin = 0.0f;
     }
@@ -110,7 +110,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (overlaps(context, _clipping_rectangle)) {
-            context.draw_filled_quad(rectangle(), theme::global(theme_color::fill, _semantic_layer + 1));
+            context.draw_filled_quad(rectangle(), theme::global(theme_color::fill, semantic_layer + 1));
         }
 
         super::draw(std::move(context), display_time_point);
@@ -123,7 +123,7 @@ public:
         auto r = hitbox{};
 
         if (_visible_rectangle.contains(position)) {
-            r = hitbox{this, _draw_layer, hitbox::Type::MoveArea};
+            r = hitbox{this, draw_layer, hitbox::Type::MoveArea};
         }
 
         for (ttlet &child : _children) {

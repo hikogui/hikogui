@@ -101,15 +101,15 @@ hitbox window_widget::hitbox_test(point2 position) const noexcept
     ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
     ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
 
-    auto r = hitbox{this, _draw_layer};
+    auto r = hitbox{this, draw_layer};
     if (is_on_bottom_left_corner) {
-        return {this, _draw_layer, hitbox::Type::BottomLeftResizeCorner};
+        return {this, draw_layer, hitbox::Type::BottomLeftResizeCorner};
     } else if (is_on_bottom_right_corner) {
-        return {this, _draw_layer, hitbox::Type::BottomRightResizeCorner};
+        return {this, draw_layer, hitbox::Type::BottomRightResizeCorner};
     } else if (is_on_top_left_corner) {
-        return {this, _draw_layer, hitbox::Type::TopLeftResizeCorner};
+        return {this, draw_layer, hitbox::Type::TopLeftResizeCorner};
     } else if (is_on_top_right_corner) {
-        return {this, _draw_layer, hitbox::Type::TopRightResizeCorner};
+        return {this, draw_layer, hitbox::Type::TopRightResizeCorner};
     } else if (is_on_left_edge) {
         r.type = hitbox::Type::LeftResizeBorder;
     } else if (is_on_right_edge) {

@@ -151,7 +151,7 @@ public:
             ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
 
             _overlay_widget->set_layout_parameters_from_parent(
-                overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer() - _draw_layer);
+                overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer - draw_layer);
 
             _left_box_rectangle = aarectangle{0.0f, 0.0f, theme::global().size, rectangle().height()};
             _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
@@ -239,7 +239,7 @@ public:
 
         auto r = super::hitbox_test(position);
         if (_visible_rectangle.contains(position)) {
-            r = std::max(r, hitbox{this, _draw_layer, (enabled and _has_options) ? hitbox::Type::Button : hitbox::Type::Default});
+            r = std::max(r, hitbox{this, draw_layer, (enabled and _has_options) ? hitbox::Type::Button : hitbox::Type::Default});
         }
 
         return r;

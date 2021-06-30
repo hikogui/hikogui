@@ -8,14 +8,14 @@
 namespace tt {
 
 widget::widget(gui_window &_window, widget *parent) noexcept :
-    window(_window), parent(parent), _draw_layer(0.0f), _logical_layer(0), _semantic_layer(0)
+    window(_window), parent(parent), draw_layer(0.0f), logical_layer(0), semantic_layer(0)
 {
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        _draw_layer = parent->draw_layer() + 1.0f;
-        _logical_layer = parent->logical_layer() + 1;
-        _semantic_layer = parent->semantic_layer() + 1;
+        draw_layer = parent->draw_layer + 1.0f;
+        logical_layer = parent->logical_layer + 1;
+        semantic_layer = parent->semantic_layer + 1;
     }
 
     _redraw_callback = std::make_shared<std::function<void()>>([this] {
@@ -51,12 +51,12 @@ void widget::deinit() noexcept {}
 {
     if (enabled) {
         if (_hover) {
-            return theme::global(theme_color::fill, _semantic_layer + 1);
+            return theme::global(theme_color::fill, semantic_layer + 1);
         } else {
-            return theme::global(theme_color::fill, _semantic_layer);
+            return theme::global(theme_color::fill, semantic_layer);
         }
     } else {
-        return theme::global(theme_color::fill, _semantic_layer - 1);
+        return theme::global(theme_color::fill, semantic_layer - 1);
     }
 }
 
@@ -64,12 +64,12 @@ void widget::deinit() noexcept {}
 {
     if (enabled) {
         if (_hover) {
-            return theme::global(theme_color::border, _semantic_layer + 1);
+            return theme::global(theme_color::border, semantic_layer + 1);
         } else {
-            return theme::global(theme_color::border, _semantic_layer);
+            return theme::global(theme_color::border, semantic_layer);
         }
     } else {
-        return theme::global(theme_color::border, _semantic_layer - 1);
+        return theme::global(theme_color::border, semantic_layer - 1);
     }
 }
 
@@ -79,12 +79,12 @@ void widget::deinit() noexcept {}
         if (_focus && window.active) {
             return theme::global(theme_color::accent);
         } else if (_hover) {
-            return theme::global(theme_color::border, _semantic_layer + 1);
+            return theme::global(theme_color::border, semantic_layer + 1);
         } else {
-            return theme::global(theme_color::border, _semantic_layer);
+            return theme::global(theme_color::border, semantic_layer);
         }
     } else {
-        return theme::global(theme_color::border, _semantic_layer - 1);
+        return theme::global(theme_color::border, semantic_layer - 1);
     }
 }
 
@@ -94,10 +94,10 @@ void widget::deinit() noexcept {}
         if (window.active) {
             return theme::global(theme_color::accent);
         } else {
-            return theme::global(theme_color::border, _semantic_layer);
+            return theme::global(theme_color::border, semantic_layer);
         }
     } else {
-        return theme::global(theme_color::border, _semantic_layer - 1);
+        return theme::global(theme_color::border, semantic_layer - 1);
     }
 }
 
@@ -106,7 +106,7 @@ void widget::deinit() noexcept {}
     if (enabled) {
         return theme::global(theme_text_style::label).color;
     } else {
-        return theme::global(theme_color::border, _semantic_layer - 1);
+        return theme::global(theme_color::border, semantic_layer - 1);
     }
 }
 
