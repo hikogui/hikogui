@@ -165,6 +165,7 @@ target_sources(ttauri PRIVATE
     utils.hpp
     vspan.hpp
     weak_or_unique_ptr.hpp
+    wfree_fifo.hpp
     wfree_message_queue.hpp
     wfree_unordered_map.hpp
 )

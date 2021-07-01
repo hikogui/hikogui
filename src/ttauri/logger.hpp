@@ -8,7 +8,7 @@
 #include "time_stamp_count.hpp"
 #include "hires_utc_clock.hpp"
 #include "polymorphic_optional.hpp"
-#include "wfree_message_queue.hpp"
+#include "wfree_fifo.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"
 #include "format.hpp"
@@ -34,7 +34,7 @@ namespace detail {
 
 class log_message_base {
 public:
-    log_message_base() noexcept = default;
+    tt_force_inline log_message_base() noexcept = default;
     virtual ~log_message_base() = default;
 
     log_message_base(log_message_base const &) = delete;
@@ -52,7 +52,7 @@ public:
     static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
 
     template<typename... Args>
-    log_message(Args &&...args) noexcept :
+    tt_force_inline log_message(Args &&...args) noexcept :
         _time_stamp(time_stamp_count::inplace_with_thread_id{}), _what(std::forward<Args>(args)...)
     {
     }
@@ -85,15 +85,9 @@ private:
     delayed_format<Fmt, Values...> _what;
 };
 
-static constexpr size_t MAX_MESSAGE_SIZE = 240;
-static constexpr size_t MAX_NR_MESSAGES = 4096;
-
-using log_queue_item_type = polymorphic_optional<log_message_base, MAX_MESSAGE_SIZE>;
-using log_queue_type = wfree_message_queue<log_queue_item_type, MAX_NR_MESSAGES>;
-
 /** The global log queue contains messages to be displayed by the logger thread.
  */
-inline log_queue_type log_queue;
+inline wfree_fifo<log_message_base, 256> log_fifo;
 
 /** Deinitalize the logger system.
  */
@@ -146,7 +140,7 @@ inline void logger_stop()
  * @param args Arguments to std::format.
  */
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
-void log(Args &&...args) noexcept
+tt_force_inline void log(Args &&...args) noexcept
 {
     if (!static_cast<bool>(log_level_global.load(std::memory_order::relaxed) & Level)) {
         return;
@@ -159,8 +153,8 @@ void log(Args &&...args) noexcept
     // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
 
     // Emplace a message directly on the queue.
-    detail::log_queue.write<"logger_blocked">()
-        ->emplace<detail::log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(std::forward<Args>(args)...);
+    detail::log_fifo.emplace<detail::log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
+        std::forward<Args>(args)...);
 
     if (static_cast<bool>(Level & log_level::fatal) || !detail::logger_is_running.load(std::memory_order::relaxed)) {
         // If the logger did not start we will log in degraded mode and log from the current thread.
