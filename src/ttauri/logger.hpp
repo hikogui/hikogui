@@ -53,8 +53,7 @@ public:
 
     template<typename... Args>
     log_message(Args &&...args) noexcept :
-        _time_stamp(time_stamp_count::inplace_with_thread_id{}),
-        _what(std::forward<Args>(args)...)
+        _time_stamp(time_stamp_count::inplace_with_thread_id{}), _what(std::forward<Args>(args)...)
     {
     }
 
@@ -66,9 +65,18 @@ public:
         ttlet thread_id = _time_stamp.thread_id();
 
         if constexpr (static_cast<bool>(Level & log_level::statistics)) {
-            return std::format("{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), thread_id, cpu_id);
+            return std::format(
+                "{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), thread_id, cpu_id);
         } else {
-            return std::format("{} {:5} {} ({}:{}) tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine, thread_id, cpu_id);
+            return std::format(
+                "{} {:5} {} ({}:{}) tid={} cpu={}\n",
+                local_timestring,
+                to_const_string(Level),
+                _what(),
+                SourceFile,
+                SourceLine,
+                thread_id,
+                cpu_id);
         }
     }
 
@@ -171,18 +179,13 @@ void log(Args &&...args) noexcept
 
 } // namespace tt
 
-#define tt_log(level, fmt, ...) \
-    do { \
-        ::tt::log<level, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
-    } while (false)
-
-#define tt_log_debug(fmt, ...) tt_log(::tt::log_level::debug, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_info(fmt, ...) tt_log(::tt::log_level::info, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_statistics(fmt, ...) tt_log(::tt::log_level::statistics, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_trace(fmt, ...) tt_log(::tt::log_level::trace, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_audit(fmt, ...) tt_log(::tt::log_level::audit, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_warning(fmt, ...) tt_log(::tt::log_level::warning, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_error(fmt, ...) tt_log(::tt::log_level::error, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define tt_log_debug(fmt, ...) ::tt::log<::tt::log_level::debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_info(fmt, ...) ::tt::log<::tt::log_level::info, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_statistics(fmt, ...) ::tt::log<::tt::log_level::statistics, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_trace(fmt, ...) ::tt::log<::tt::log_level::trace, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_audit(fmt, ...) ::tt::log<::tt::log_level::audit, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_warning(fmt, ...) ::tt::log<::tt::log_level::warning, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_error(fmt, ...) ::tt::log<::tt::log_level::error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
 #define tt_log_fatal(fmt, ...) \
-    tt_log(::tt::log_level::fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
+    ::tt::log<::tt::log_level::fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
     tt_unreachable()

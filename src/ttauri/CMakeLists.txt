@@ -199,6 +199,7 @@ if(TT_BUILD_TESTS)
         decimal_tests.cpp
         exceptions_tests.cpp
         file_view_tests.cpp
+        fixed_string_tests.cpp
         float16_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp
