@@ -1,6 +1,6 @@
 # TTauri Stencil Template Language
 This template language was designed for code generation for different programming languages
-including HTML. The language was inspired by makotemplate.org, but with
+including HTML. The language was inspired by makotemplates.org, but with
 a simpler data model making it more easy to do more complicated stuff.
 
 ## Data model
@@ -411,8 +411,8 @@ Result:
 
 ### Including files
 The `#include` statement is evaluated during parsing, by parsing the included file at the current position
-recursively. An `#include` statement can only appear at the top-level of each file, i.e. it can not be used 
-inside the body of a flow-control statement. 
+recursively. An `#include` statement can only appear at the top-level of each file, i.e. it can not be used
+inside the body of a flow-control statement.
 
 Functions and blocks that are included by the `#include` statements are available in the global scope. See
 the data model chapter.
@@ -569,7 +569,7 @@ Iteration 0.
 Stop executing of a block inside a loop, then:
  - *continue* with the next iteration of the loop or
  - *break* out of the loop
- 
+
 Syntax:
  - `'#continue' '\n'`
  - `'#break' '\n'`
