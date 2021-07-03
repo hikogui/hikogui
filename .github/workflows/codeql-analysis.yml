@@ -191,7 +191,6 @@ jobs:
           Remove-Item -Recurse -Force "Bin32"
           Remove-Item -Recurse -Force "Demos"
           Remove-Item -Recurse -Force "Lib32"
-          Remove-Item -Recurse -Force "samples"
           Remove-Item -Recurse -Force "Templates"
           Remove-Item -Recurse -Force "Third-Party"
           Remove-Item -Recurse -Force "Tools"
