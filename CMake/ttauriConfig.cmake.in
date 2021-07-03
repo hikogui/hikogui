@@ -1,7 +1,5 @@
 @PACKAGE_INIT@
 
-find_package(date CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
 find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 find_package(Vulkan REQUIRED)
 

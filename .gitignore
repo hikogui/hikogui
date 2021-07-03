@@ -396,11 +396,3 @@ CTestTestfile.cmake
 dateTargets.cmake
 CMakeDirectoryInformation.cmake
 
-# External and google test auto generated files
-external/date/dateConfigVersion.cmake
-external/googletest/googletest/generated/gmock_main.pc
-external/googletest/googletest/generated/gmock.pc
-external/googletest/googletest/generated/gtest_main.pc
-external/googletest/googletest/generated/gtest.pc
-external/googletest/googletest/generated/GTestConfig.cmake
-external/googletest/googletest/generated/GTestConfigVersion.cmake
