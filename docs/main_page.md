@@ -12,6 +12,7 @@ Subsystems
  - [Geometry](geometry.md):
    vector, point, extent, rectangle, axis\_aligned\_rectangle, translate, scale,
    rotate, matrix.
+ - [Skeleton](skeleton.md): Template Language.
 
 Features
 --------

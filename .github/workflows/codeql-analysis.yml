@@ -146,10 +146,15 @@ jobs:
     outputs:
       VULKAN_SDK: ${{ steps.vulkan-output.outputs.VULKAN_SDK }}
 
-    env:
-      VULKAN_VERSION: 1.2.170.0
-
     steps:
+
+      - name: 📥 Set latest VULKAN_VERSION as environment variable
+        shell: pwsh
+        run: |
+          echo 'VULKAN_VERSION<<EOF' >> $env:GITHUB_ENV
+          curl https://vulkan.lunarg.com/sdk/latest/windows.txt >> $env:GITHUB_ENV
+          echo 'EOF' >> $env:GITHUB_ENV
+
       - name: 📥 Setup Environment Variables
         shell: pwsh
         run: |
@@ -191,7 +196,6 @@ jobs:
           Remove-Item -Recurse -Force "Bin32"
           Remove-Item -Recurse -Force "Demos"
           Remove-Item -Recurse -Force "Lib32"
-          Remove-Item -Recurse -Force "samples"
           Remove-Item -Recurse -Force "Templates"
           Remove-Item -Recurse -Force "Third-Party"
           Remove-Item -Recurse -Force "Tools"
