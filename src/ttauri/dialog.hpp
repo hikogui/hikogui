@@ -6,7 +6,7 @@
 
 #include <string_view>
 #include <iostream>
-#include <fmt/format.h>
+#include <format>
 
 namespace tt {
 
@@ -28,19 +28,19 @@ bool _dialog(dialog_type type, char const *title, std::string_view text);
 template<typename... Args>
 void dialog_ok(char const *title, char const *fmt, Args const &...args) noexcept
 {
-    _dialog(dialog_type::ok, title, fmt::format(fmt, args...));
+    _dialog(dialog_type::ok, title, std::format(fmt, args...));
 }
 
 template<typename... Args>
 [[nodiscard]] bool dialog_yes_no(char const *title, char const *fmt, Args const &...args) noexcept
 {
-    return _dialog(dialog_type::yes_no, title, fmt::format(fmt, args...));
+    return _dialog(dialog_type::yes_no, title, std::format(fmt, args...));
 }
 
 template<typename... Args>
 [[nodiscard]] bool dialog_yes_no_cancel(char const *title, char const *fmt, Args const &...args)
 {
-    return _dialog(dialog_type::yes_no_cancel, title, fmt::format(fmt, args...));
+    return _dialog(dialog_type::yes_no_cancel, title, std::format(fmt, args...));
 }
 
 } // namespace tt

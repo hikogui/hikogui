@@ -8,6 +8,7 @@
 #include <type_traits>
 #include <string>
 #include <string_view>
+#include <memory>
 
 namespace tt {
 
@@ -189,6 +190,19 @@ constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,B
 template<typename T1, typename T2>
 constexpr bool is_different_v = !std::is_same_v<T1,T2>;
 
+template<typename T>
+struct is_atomic : public std::false_type {};
+
+template<typename T>
+struct is_atomic<std::atomic<T>> : public std::true_type {};
+
+template<typename T>
+constexpr bool is_atomic_v = is_atomic<T>::value;
+
+template<typename T>
+constexpr bool may_be_atomic_v = std::is_trivially_copyable_v<T> and std::is_copy_constructible_v<T> and
+        std::is_move_constructible_v<T> and std::is_copy_assignable_v<T> and
+        std::is_move_assignable_v<T>;
 
 template<typename First, typename Second>
 struct use_first {
@@ -198,4 +212,34 @@ struct use_first {
 template<typename First, typename Second>
 using use_first_t = use_first<First,Second>;
 
+template<typename T>
+struct acts_as_pointer : public std::false_type {};
+
+template<typename T> struct acts_as_pointer<std::shared_ptr<T>> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::shared_ptr<T> &&> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::shared_ptr<T> &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::shared_ptr<T> const &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::weak_ptr<T>> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::weak_ptr<T> &&> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::weak_ptr<T> &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::weak_ptr<T> const &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::unique_ptr<T>> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::unique_ptr<T> &&> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::unique_ptr<T> &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<std::unique_ptr<T> const &> : public std::true_type {};
+template<typename T> struct acts_as_pointer<T *> : public std::true_type {};
+
+template<typename T>
+constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
+
+#define tt_call_method(object, method, ...) \
+    [&]() { \
+        if constexpr (acts_as_pointer_v<decltype(object)>) { \
+            return object->method(__VA_ARGS__); \
+        } else { \
+            return object.method(__VA_ARGS__); \
+        } \
+    }()
+
 }
+

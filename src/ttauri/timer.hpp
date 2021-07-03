@@ -7,6 +7,7 @@
 
 #include "hires_utc_clock.hpp"
 #include "unfair_mutex.hpp"
+#include "subsystem.hpp"
 #include <mutex>
 #include <vector>
 #include <functional>
@@ -29,11 +30,6 @@ public:
     using callback_type = std::function<void(time_point,bool)>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
-    /** Global maintenance timer.
-     */
-    inline static std::unique_ptr<timer> global;
-
-public:
     timer(std::string name) noexcept;
     ~timer();
 
@@ -58,33 +54,44 @@ public:
      *
      * @param interval The interval to execute the callback at.
      * @param callback The callback function.
+     * @param immediate When true the callback is immediately called.
      * @return An shared_ptr to retain the callback function, when the shared_ptr is removed then
      *         the callback can no longer be called.
      */
-    template<typename Callback>
-    [[nodiscard]] std::shared_ptr<callback_type> add_callback(duration interval, Callback callback) noexcept
+    template<typename Callback> requires(std::is_invocable_v<Callback>)
+    [[nodiscard]] std::shared_ptr<callback_type> add_callback(duration interval, Callback callback, bool immediate=false) noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
         ttlet current_time = hires_utc_clock::now();
-
         auto callback_ptr = std::make_shared<callback_type>(std::forward<Callback>(callback));
 
-        callback_list.emplace_back(
-            interval,
-            calculate_next_wakeup(current_time, interval),
-            callback_ptr
-        );
+        {
+            ttlet lock = std::scoped_lock(mutex);
 
-        if (std::ssize(callback_list) == 1) {
-            start_with_lock_held();
+            callback_list.emplace_back(
+                interval,
+                calculate_next_wakeup(current_time, interval),
+                callback_ptr
+            );
+
+            if (std::ssize(callback_list) == 1) {
+                start_with_lock_held();
+            }
         }
 
+        if (immediate) {
+            (*callback_ptr)(current_time, false);
+        }
         return callback_ptr;
     }
 
     /** Remove the callback function.
      */
     void remove_callback(callback_ptr_type const &callback_ptr) noexcept;
+
+    static timer &global() noexcept
+    {
+        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
+    }
 
 private:
     struct callback_entry {
@@ -98,18 +105,16 @@ private:
         }
     };
 
+    static inline std::atomic<timer *> _global;
+
     /** Name of the timer.
      */
     std::string name;
 
     mutable unfair_mutex mutex;
-    std::thread thread;
+    std::jthread thread;
     std::vector<callback_entry> callback_list;
     size_t callback_count = 0;
-
-    /** Set to true to ask the thread to exit.
-     */
-    bool stop_thread;
 
     /** Find the callbacks that have triggered.
      * This function will also update the wakup times of triggered callbacks.
@@ -121,7 +126,7 @@ private:
 
     /** The thread procedure.
      */
-    void loop() noexcept;
+    void loop(std::stop_token stop_token) noexcept;
 
     /** Start the timer thread.
      * Normally it is not needed to call this yourself. If there
@@ -136,6 +141,9 @@ private:
     void stop_with_lock_held() noexcept;
 
     [[nodiscard]] static time_point calculate_next_wakeup(time_point current_time, duration interval) noexcept;
+
+    [[nodiscard]] static timer *subsystem_init() noexcept;
+    static void subsystem_deinit() noexcept;
 };
 
 

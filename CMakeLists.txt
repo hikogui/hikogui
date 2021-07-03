@@ -96,34 +96,14 @@ endif()
 #-------------------------------------------------------------------
 
 #
-# date
-#
-find_package(date CONFIG REQUIRED)
-
-#
-# fmt
-#
-find_package(fmt CONFIG REQUIRED)
-
-#
-# GoogleTest
-#
-#find_package(GTest)
-
-#
 # GoogleTest - non-vcpkg, directly build from externals
 #
 if(TT_BUILD_TESTS)
     set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
     set(INSTALL_GMOCK OFF CACHE INTERNAL "Don't install gmock")
-    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.10.0)
+    FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.11.0)
     FetchContent_MakeAvailable(googletest)
 endif()
-
-#
-# Vulkan Memory Allocator
-#
-find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 
 #
 # Vulkan SDK Headers
@@ -135,6 +115,22 @@ if(NOT DEFINED ENV{VULKAN_SDK})
         "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
 endif()
 find_package(Vulkan REQUIRED)
+
+#
+# Vulkan Memory Allocator
+#
+if(VCPKG_TOOLCHAIN)
+    find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
+else()
+    FetchContent_Declare(VulkanMemoryAllocator GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG v2.3.0)
+    FetchContent_MakeAvailable(VulkanMemoryAllocator)
+    add_library(unofficial::vulkan-memory-allocator::vulkan-memory-allocator INTERFACE IMPORTED)
+    set_target_properties(
+        unofficial::vulkan-memory-allocator::vulkan-memory-allocator
+        PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${vulkanmemoryallocator_SOURCE_DIR}/src")
+endif()
+
 
 #-------------------------------------------------------------------
 # Setup Build Targets
@@ -165,13 +161,8 @@ add_subdirectory(tools)
 set_target_properties(ttauri PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} SOVERSION ${TTAURI_MAJOR_VERSION})
 set_target_properties(ttauri PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-target_link_libraries(ttauri PUBLIC
-    fmt::fmt
-    date::date
-    date::date-tz
-    ${Vulkan_LIBRARIES}
-    unofficial::vulkan-memory-allocator::vulkan-memory-allocator
-)
+target_link_libraries(ttauri PUBLIC ${Vulkan_LIBRARIES})
+target_link_libraries(ttauri PUBLIC unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
 
 if(APPLE)
     target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
@@ -245,9 +236,6 @@ elseif (MSVC)
     # Set the execution character encoding to UTF-8
     target_compile_options(ttauri PUBLIC -execution-charset:utf-8)
 
-    # Allow system headers to be imported.
-    target_compile_options(ttauri PUBLIC -experimental:module)
-
     # Support Intel's SkyLake and AMD's Excavator.
     # see hardware_support.md
     target_compile_options(ttauri PUBLIC -arch:AVX)
@@ -317,14 +305,8 @@ if (WIN32)
     # Set defines to compile a win32 application.
 	target_compile_options(ttauri PUBLIC -D_WIN64 -DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
 
-    # std::result_of used by fmt.
-    target_compile_options(ttauri PUBLIC -D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
-
-    # date library uses std::uncaught_exception
-    target_compile_options(ttauri PUBLIC -D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
-
     # winrt will include experimental headers that can not be turned off.
-    target_compile_options(ttauri PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
+    #target_compile_options(ttauri PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
 
     # Make sure that Windows.h doesn't include all kind of weird things.
     target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
@@ -343,17 +325,17 @@ endif()
 #-------------------------------------------------------------------
 
 add_shader(ttauri_shader_objects
-    src/ttauri/GUI/utils.glsl
-    src/ttauri/GUI/pipeline_image.vert
-    src/ttauri/GUI/pipeline_image.frag
-    src/ttauri/GUI/pipeline_flat.vert
-    src/ttauri/GUI/pipeline_flat.frag
-    src/ttauri/GUI/pipeline_box.vert
-    src/ttauri/GUI/pipeline_box.frag
-    src/ttauri/GUI/pipeline_SDF.vert
-    src/ttauri/GUI/pipeline_SDF.frag
-    src/ttauri/GUI/pipeline_tone_mapper.vert
-    src/ttauri/GUI/pipeline_tone_mapper.frag
+    src/ttauri/GFX/utils.glsl
+    src/ttauri/GFX/pipeline_image.vert
+    src/ttauri/GFX/pipeline_image.frag
+    src/ttauri/GFX/pipeline_flat.vert
+    src/ttauri/GFX/pipeline_flat.frag
+    src/ttauri/GFX/pipeline_box.vert
+    src/ttauri/GFX/pipeline_box.frag
+    src/ttauri/GFX/pipeline_SDF.vert
+    src/ttauri/GFX/pipeline_SDF.frag
+    src/ttauri/GFX/pipeline_tone_mapper.vert
+    src/ttauri/GFX/pipeline_tone_mapper.frag
 )
 
 target_static_resource(ttauri
@@ -365,7 +347,6 @@ target_static_resource(ttauri
 add_custom_target(ttauri_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     DEPENDS
-    resources/tzdata/version
     resources/themes/ttauri_dark.theme.json
     resources/themes/ttauri_light.theme.json
     resources/win32.keybinds.json
@@ -477,7 +458,9 @@ endif()
 if(TT_BUILD_TESTS)
     install(TARGETS ttauri_tests DESTINATION tests)
     install(DIRECTORY tests/data/ DESTINATION tests)
-    x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+    if (BUILD_SHARED_LIBS)
+        x_vcpkg_install_local_dependencies(TARGETS ttauri_tests DESTINATION tests)
+    endif()
 endif()
 
 #-------------------------------------------------------------------
@@ -495,13 +478,13 @@ if(TT_ENABLE_ANALYSIS)
     if(MSVC)
         set(ttauri_do_not_analyze
             src/ttauri/GUI/pipeline_flat.cpp
-            src/ttauri/GUI/gui_window_vulkan.cpp
+            src/ttauri/GUI/gui_surface_vulkan.cpp
             src/ttauri/GUI/gui_device_vulkan.cpp
             src/ttauri/GUI/gui_system_vulkan.cpp
             src/ttauri/GUI/gui_system.cpp
             src/ttauri/GUI/gui_system_vulkan_win32.cpp
             src/ttauri/GUI/gui_window.cpp
-            src/ttauri/GUI/gui_window_vulkan_win32.cpp
+            src/ttauri/GUI/gui_window_win32.cpp
             src/ttauri/GUI/pipeline_flat_device_shared.cpp
             src/ttauri/GUI/pipeline_image.cpp
             src/ttauri/GUI/pipeline_tone_mapper.cpp

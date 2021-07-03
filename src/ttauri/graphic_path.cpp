@@ -94,9 +94,9 @@ color graphic_path::getColorOfLayer(ssize_t layerNr) const noexcept
     return layerEndContours.at(layerNr).second;
 }
 
-void graphic_path::setColorOfLayer(ssize_t layerNr, color fillColor) noexcept
+void graphic_path::setColorOfLayer(ssize_t layerNr, color fill_color) noexcept
 {
-    layerEndContours.at(layerNr).second = fillColor;
+    layerEndContours.at(layerNr).second = fill_color;
 }
 
 std::pair<graphic_path,color> graphic_path::getLayer(ssize_t layerNr) const noexcept
@@ -194,11 +194,11 @@ bool graphic_path::isLayerOpen() const noexcept
     }
 }
 
-void graphic_path::closeLayer(color fillColor) noexcept
+void graphic_path::closeLayer(color fill_color) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
-        layerEndContours.emplace_back(std::ssize(contourEndPoints) - 1, fillColor);
+        layerEndContours.emplace_back(std::ssize(contourEndPoints) - 1, fill_color);
     }
 }
 
@@ -419,10 +419,10 @@ void graphic_path::addContour(std::vector<bezier_curve> const &contour) noexcept
     closeContour();
 }
 
-void graphic_path::addPath(graphic_path const &path, color fillColor) noexcept
+void graphic_path::addPath(graphic_path const &path, color fill_color) noexcept
 {
     *this += path;
-    closeLayer(fillColor);
+    closeLayer(fill_color);
 }
 
 void graphic_path::addStroke(graphic_path const &path, color strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
@@ -466,8 +466,8 @@ graphic_path &graphic_path::operator+=(graphic_path const &rhs) noexcept
     ttlet contourOffset = std::ssize(contourEndPoints);
 
     layerEndContours.reserve(layerEndContours.size() + rhs.layerEndContours.size());
-    for (ttlet &[x, fillColor]: rhs.layerEndContours) {
-        layerEndContours.emplace_back(contourOffset + x, fillColor);
+    for (ttlet &[x, fill_color]: rhs.layerEndContours) {
+        layerEndContours.emplace_back(contourOffset + x, fill_color);
     }
 
     contourEndPoints.reserve(contourEndPoints.size() + rhs.contourEndPoints.size());
@@ -497,7 +497,7 @@ graphic_path graphic_path::centerScale(extent2 extent, float padding) const noex
     );
     bbox = scale2(scale) * bbox;
 
-    ttlet offset = (point2{} - get<0>(bbox)) + (extent - bbox.extent()) * 0.5;
+    ttlet offset = (point2{} - get<0>(bbox)) + (extent - bbox.size()) * 0.5;
 
     return (translate2(offset) * scale2(scale, scale)) * *this;
 }
@@ -521,9 +521,9 @@ void composit(pixel_map<sfloat_rgba16>& dst, graphic_path const &src) noexcept
     tt_assert(src.hasLayers() && !src.isLayerOpen());
 
     for (int layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
-        ttlet [layer, fillColor] = src.getLayer(layerNr);
+        ttlet [layer, fill_color] = src.getLayer(layerNr);
 
-        composit(dst, fillColor, layer);
+        composit(dst, fill_color, layer);
     }
 }
 

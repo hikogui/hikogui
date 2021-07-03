@@ -3,21 +3,48 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "audio_system.hpp"
+#include "audio_system_aggregate.hpp"
+#include "../architecture.hpp"
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#include "audio_system_win32.hpp"
+#endif
 
 namespace tt {
 
-audio_system::audio_system(std::weak_ptr<audio_system_delegate> const &delegate) :
-    _delegate(delegate)
+[[nodiscard]] audio_system *audio_system::subsystem_init() noexcept
 {
+    auto tmp = new audio_system_aggregate(std::make_unique<audio_system_delegate>());
+    tmp->init();
+    if constexpr (operating_system::current == operating_system::windows) {
+        tmp->make_audio_system<audio_system_win32>();
+    }
+    return tmp;
 }
 
-audio_system::~audio_system()
+void audio_system::subsystem_deinit() noexcept
 {
+    if (auto tmp = _global.exchange(nullptr)) {
+        tmp->deinit();
+        delete tmp;
+    }
 }
+
+audio_system::audio_system(weak_or_unique_ptr<audio_system_delegate> delegate) : _delegate(std::move(delegate)) {}
+
+audio_system::~audio_system() {}
 
 void audio_system::init() noexcept
 {
-
+    if (auto delegate = _delegate.lock()) {
+        delegate->init(*this);
+    }
 }
 
+void audio_system::deinit() noexcept
+{
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
 }
+
+} // namespace tt

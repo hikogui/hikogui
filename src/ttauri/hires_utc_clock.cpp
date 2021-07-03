@@ -4,13 +4,13 @@
 
 #include "hires_utc_clock.hpp"
 #include "time_stamp_count.hpp"
-#include "application.hpp"
 #include "logger.hpp"
 #include "thread.hpp"
-#include <fmt/ostream.h>
-#include <fmt/format.h>
+#include <format>
 #include <bit>
 #include <iterator>
+#include <algorithm>
+#include <numeric>
 
 namespace tt {
 
@@ -19,13 +19,13 @@ using namespace std::chrono_literals;
 std::string format_engineering(hires_utc_clock::duration duration)
 {
     if (duration >= 1s) {
-        return fmt::format("{:.3g} s ", static_cast<double>(duration / 1ns) / 1'000'000'000);
+        return std::format("{:.3g} s ", static_cast<double>(duration / 1ns) / 1'000'000'000);
     } else if (duration >= 1ms) {
-        return fmt::format("{:.3g} ms", static_cast<double>(duration / 1ns) / 1'000'000);
+        return std::format("{:.3g} ms", static_cast<double>(duration / 1ns) / 1'000'000);
     } else if (duration >= 1us) {
-        return fmt::format("{:.3g} us", static_cast<double>(duration / 1ns) / 1'000);
+        return std::format("{:.3g} us", static_cast<double>(duration / 1ns) / 1'000);
     } else {
-        return fmt::format("{:.3g} ns", static_cast<double>(duration / 1ns));
+        return std::format("{:.3g} ns", static_cast<double>(duration / 1ns));
     }
 }
 
@@ -145,7 +145,7 @@ void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
         ttlet tp = hires_utc_clock::now(tsc);
         tt_axiom(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
 
-        tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);        
+        tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);
     }
 }
 
@@ -157,21 +157,22 @@ void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
 
 void hires_utc_clock::deinit_subsystem() noexcept
 {
-    if (hires_utc_clock::subsystem_thread.joinable()) {
-        hires_utc_clock::subsystem_thread.request_stop();
-        hires_utc_clock::subsystem_thread.join();
+    if (subsystem_is_running.exchange(false)) {
+        if (hires_utc_clock::subsystem_thread.joinable()) {
+            hires_utc_clock::subsystem_thread.request_stop();
+            hires_utc_clock::subsystem_thread.join();
+        }
     }
 }
 
 bool hires_utc_clock::start_subsystem() noexcept
 {
-    return tt::start_subsystem(
-        hires_utc_clock::subsystem_is_running, false, hires_utc_clock::init_subsystem, hires_utc_clock::deinit_subsystem);
+    return tt::start_subsystem(subsystem_is_running, false, init_subsystem, deinit_subsystem);
 }
 
 void hires_utc_clock::stop_subsystem() noexcept
 {
-    return tt::stop_subsystem(hires_utc_clock::subsystem_is_running, false, hires_utc_clock::deinit_subsystem);
+    return tt::stop_subsystem(deinit_subsystem);
 }
 
 } // namespace tt

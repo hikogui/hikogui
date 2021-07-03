@@ -5,10 +5,8 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/pipeline_image_image.hpp"
-#include "../graphic_path.hpp"
+#include "icon_widget.hpp"
 #include "../icon.hpp"
-#include "../stencils/image_stencil.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -20,19 +18,32 @@ class system_menu_widget final : public widget {
 public:
     using super = widget;
 
-    system_menu_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent, icon const &icon) noexcept;
+    observable<icon> icon;
+
     ~system_menu_widget() {}
+
+    system_menu_widget(gui_window &window, widget *parent) noexcept;
+
+    template<typename Icon>
+    system_menu_widget(gui_window &window, widget *parent, Icon &&icon) noexcept :
+        system_menu_widget(window, parent)
+    {
+        this->icon = std::forward<Icon>(icon);
+
+        // Toolbar buttons hug the toolbar and neighbor widgets.
+        _margin = 0.0f;
+    }
+
+    void init() noexcept override;
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
 
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
-
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
 
 private:
-    std::unique_ptr<image_stencil> _icon_stencil;
+    icon_widget *_icon_widget = nullptr;
 
     aarectangle system_menu_rectangle;
 };

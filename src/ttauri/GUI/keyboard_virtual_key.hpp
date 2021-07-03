@@ -335,3 +335,15 @@ struct hash<tt::keyboard_virtual_key> {
 };
 
 }
+
+namespace std {
+
+template<typename CharT>
+struct std::formatter<tt::keyboard_virtual_key, CharT> : std::formatter<char const *, CharT> {
+    auto format(tt::keyboard_virtual_key const &t, auto &fc)
+    {
+        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+    }
+};
+
+} // namespace std

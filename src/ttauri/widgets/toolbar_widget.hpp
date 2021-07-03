@@ -4,25 +4,28 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include <memory>
+#include <ranges>
 
 namespace tt {
 
-class toolbar_widget final : public abstract_container_widget {
+class toolbar_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
-    toolbar_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept : super(window, parent)
+    toolbar_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
     {
+        tt_axiom(is_gui_thread());
+
         if (parent) {
             // The toolbar widget does draw itself.
-            ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer() + 1.0f;
 
             // The toolbar is a top level widget, which draws its background as the next level.
             _semantic_layer = 0;
         }
+        _margin = 0.0f;
     }
 
     ~toolbar_widget() {}
@@ -30,13 +33,13 @@ public:
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    std::shared_ptr<widget> add_widget(horizontal_alignment alignment, std::shared_ptr<widget> widget) noexcept
+    widget &add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
     {
-        auto tmp = super::add_widget(std::move(widget));
+        auto &tmp = super::add_widget(std::move(widget));
         switch (alignment) {
             using enum horizontal_alignment;
-        case left: _left_children.push_back(tmp); break;
-        case right: _right_children.push_back(tmp); break;
+        case left: _left_children.push_back(&tmp); break;
+        case right: _right_children.push_back(&tmp); break;
         default: tt_no_default();
         }
 
@@ -45,7 +48,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
@@ -60,7 +63,7 @@ public:
             }
 
             // Add a space between the left and right widgets.
-            _layout.update(index++, theme::global->width, theme::global->width, 32767.0f, 0.0f);
+            _layout.update(index++, theme::global().large_size, theme::global().large_size, 32767.0f, 0.0f);
 
             for (ttlet &child : std::views::reverse(_right_children)) {
                 update_constraints_for_child(*child, index++, shared_base_line, shared_height);
@@ -79,9 +82,9 @@ public:
 
     void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             _layout.set_size(rectangle().width());
 
@@ -99,28 +102,28 @@ public:
 
             tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
         }
-        abstract_container_widget::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (overlaps(context, _clipping_rectangle)) {
-            context.draw_filled_quad(rectangle(), theme::global->fillColor(_semantic_layer + 1));
+            context.draw_filled_quad(rectangle(), theme::global(theme_color::fill, _semantic_layer + 1));
         }
 
-        abstract_container_widget::draw(std::move(context), display_time_point);
+        super::draw(std::move(context), display_time_point);
     }
 
-    hit_box hitbox_test(point2 position) const noexcept
+    hitbox hitbox_test(point2 position) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        auto r = hit_box{};
+        auto r = hitbox{};
 
         if (_visible_rectangle.contains(position)) {
-            r = hit_box{weak_from_this(), _draw_layer, hit_box::Type::MoveArea};
+            r = hitbox{this, _draw_layer, hitbox::Type::MoveArea};
         }
 
         for (ttlet &child : _children) {
@@ -132,21 +135,16 @@ public:
     /** Add a widget directly to this widget.
      */
     template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    std::shared_ptr<T> make_widget(Args &&...args)
+    T &make_widget(Args &&...args)
     {
-        auto widget = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        auto widget = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         widget->init();
-        return std::static_pointer_cast<T>(add_widget(Alignment, std::move(widget)));
-    }
-
-    [[nodiscard]] bool is_toolbar() const noexcept override
-    {
-        return true;
+        return static_cast<T &>(add_widget(Alignment, std::move(widget)));
     }
 
 private:
-    std::vector<std::shared_ptr<widget>> _left_children;
-    std::vector<std::shared_ptr<widget>> _right_children;
+    std::vector<widget *> _left_children;
+    std::vector<widget *> _right_children;
     flow_layout _layout;
 
     void update_constraints_for_child(
@@ -155,7 +153,7 @@ private:
         relative_base_line &shared_base_line,
         float &shared_height) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         _layout.update(
             index, child.minimum_size().width(), child.preferred_size().width(), child.maximum_size().width(), child.margin());
@@ -165,7 +163,7 @@ private:
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
 

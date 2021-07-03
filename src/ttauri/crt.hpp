@@ -20,26 +20,15 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "subsystem.hpp"
 #include "URL.hpp"
 #include "strings.hpp"
 #include "cast.hpp"
 #include "console.hpp"
 #include "time_stamp_count.hpp"
-
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-#include "application_win32.hpp"
-#define tt_application(...) tt::application_win32(__VA_ARGS__)
-
-#include <Windows.h>
-#elif TT_OPERATING_SYSTEM == TT_OS_MACOS
-#include "application_macos.hpp"
-#define tt_application(...) tt::application_macos(__VA_ARGS__)
-
-#endif
-
-#include <date/tz.h>
+#include "GUI/gui_system.hpp"
+#include <chrono>
 
 namespace tt {
 
@@ -58,11 +47,9 @@ void crt_configure_process() noexcept;
  *
  * @param argc Number of arguments
  * @param argv A nullptr terminated list of pointers to null terminated strings.
- * @param instance An handle to the application instance.
- *                 On windows this is used to open windows on this instance.
  * @return Exit code.
  */
-int tt_main(int argc, char *argv[], tt::os_handle instance);
+int tt_main(int argc, char *argv[]);
 
 #if not defined(TT_CRT_NO_MAIN)
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
@@ -113,22 +100,19 @@ int WINAPI WinMain(
     arguments.push_back(nullptr);
 
     // Initialize tzdata base.
-#if USE_OS_TZDB == 0
-    ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
-    date::set_install(tzdata_location.nativePath());
     try {
-        [[maybe_unused]] ttlet time_zone = date::current_zone();
+        [[maybe_unused]] ttlet time_zone = std::chrono::current_zone();
     } catch (std::runtime_error const &e) {
         tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }
-#endif
 
     // Make sure the console is in a valid state to write text to it.
     tt::console_start();
     tt::time_stamp_count::start_subsystem();
     tt::start_system();
 
-    ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data(), hInstance);
+    tt::gui_system::instance = hInstance;
+    ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data());
 
     tt::shutdown_system();
 
@@ -147,9 +131,9 @@ int main(int argc, char *argv[])
     // XXX - The URL system needs to know about the location of the executable.
 #if USE_OS_TZDB == 0
     ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
-    date::set_install(tzdata_location.nativePath());
+    std::set_install(tzdata_location.nativePath());
     try {
-        [[maybe_unused]] ttlet time_zone = date::current_zone();
+        [[maybe_unused]] ttlet time_zone = std::chrono::current_zone();
     } catch (std::runtime_error const &e) {
         tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }
@@ -160,7 +144,7 @@ int main(int argc, char *argv[])
     tt::time_stamp_count::start();
     tt::start_system();
 
-    ttlet r = tt_main(argc, argv, {});
+    ttlet r = tt_main(argc, argv);
     tt::shutdown_system();
     return r;
 }

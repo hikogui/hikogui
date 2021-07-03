@@ -60,6 +60,18 @@ The suffix "\_" may be used when a new variable needs to be introduced
 when only its type has changed using casting or conversion.
 If more than one such variable is needed the name of the type should be appended.
 
+Getters and Setters
+-------------------
+I prefer public member variables. In case a member variable must be protected or
+private due to class-invariance then we may add a getter or a setter.
+
+Since protected and private member variables are prefixed with "\_" we can
+use the non-prefixed name for the getter. And we can use the "set\_" prefix
+for setters.
+
+When the getter returns a non-constant reference to the data member, a separate
+setter is not needed.
+
 Initializing variables
 ----------------------
 I would like to see an assignment operator `=` with every variable initialization.

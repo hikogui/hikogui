@@ -11,6 +11,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <type_traits>
 
 namespace tt {
 
@@ -248,14 +249,14 @@ inline uint64_t ptr_to_uint48(auto *ptr) noexcept
 {
     tt_axiom(static_cast<uint64_t>(ptr) % 16 == 0);
 
-    if constexpr (Processor::current == Processor::x64) {
+    if constexpr (processor::current == processor::x64) {
         // Only the bottom 48 bits are needed.
         tt_axiom(
             (static_cast<uint64_t>(ptr) & 0xffff'8000'0000'0000) == 0 ||
             (static_cast<uint64_t>(ptr) & 0xffff'8000'0000'0000) == 0xffff'8000'0000'0000);
         return (static_cast<uint64_t>(ptr) << 16) >> 16;
 
-    } else if constexpr (Processor::current == Processor::ARM) {
+    } else if constexpr (processor::current == processor::arm) {
         // The top 8 bits may contain a tag.
         tt_axiom(
             (static_cast<uint64_t>(ptr) & 0x00ff'8000'0000'0000) == 0 ||
@@ -290,12 +291,12 @@ T *uint48_to_ptr(uint64_t x) noexcept
 {
     tt_axiom((x >> 48) == 0);
 
-    if constexpr (Processor::current == Processor::x64) {
+    if constexpr (processor::current == processor::x64) {
         // Shift the upper bits away and sign extend the upper 16 bits.
         auto i64 = (static_cast<int64_t>(x) << 16) >> 16;
         return reinterpret_cast<T *>(i64);
 
-    } else if constexpr (Processor::current == Processor::ARM) {
+    } else if constexpr (processor::current == processor::arm) {
         // Get 4 bit key (xor-ed with the sign bits).
         auto key = (static_cast<uint64_t>(x) >> 44) << 56;
 

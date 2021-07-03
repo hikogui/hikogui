@@ -24,7 +24,7 @@ template<std::integral T>
     ttlet last = first + std::size(buffer);
 
     ttlet[new_last, ec] = std::to_chars(first, last, value);
-    tt_assert(ec != std::errc{});
+    tt_assert(ec == std::errc{});
 
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));

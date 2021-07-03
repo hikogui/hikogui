@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../geometry/numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 
 namespace tt {
 
@@ -12,10 +12,10 @@ namespace tt {
  * The color can be converted between different color spaces using the matrix-class.
  *
  * But in most cases in the application and ttauri library this color would be in
- * the esRGBA color space. This color space is compatible with the sRGB standard
+ * the tsRGBA color space. This color space is compatible with the sRGB standard
  * IEC 61966-2-1:1999.
  *
- * esRGB details:
+ * tsRGB details:
  * - the ITU-R BT.709 color primaries.
  * - A linear transfer function (unlike sRGB).
  * - R=0.0, G=0.0, B=0.0: Black
@@ -23,18 +23,15 @@ namespace tt {
  * - RGB values above 1.0 are allowed for HDR (high dynamic range)
  * - RGB values below 0.0 are allowed for WCG (wide color gamut)
  *
- * esRGBA details:
+ * tsRGBA details:
  * - Includes an alpha value
  * - Alpha values are linear and must be between 0.0 through 1.0.
  * - A=0.0 fully transparent
  * - A=1.0 fully opaque
- * - RGB values are NOT pre-multiplied with the alpha value.
  *
  * This color format is inspired by scRGB, however scRGB only describes
  * a 12- or 16-bit integer per component encoding of RGB values between
  * -0.5 and 7.5.
- *
- * It is also inspired by Apple's extended sRGB format.
  */
 class color {
 public:
@@ -58,6 +55,16 @@ public:
     [[nodiscard]] static constexpr color transparent() noexcept
     {
         return {0.0f, 0.0f, 0.0f, 0.0f};
+    }
+
+    [[nodiscard]] static constexpr color white() noexcept
+    {
+        return {1.0f, 1.0f, 1.0f, 1.0f};
+    }
+
+    [[nodiscard]] static constexpr color black() noexcept
+    {
+        return {0.0f, 0.0f, 0.0f, 1.0f};
     }
 
     [[nodiscard]] constexpr float &r() noexcept
@@ -118,6 +125,13 @@ public:
     [[nodiscard]] constexpr friend color composit(color const &lhs, color const &rhs) noexcept
     {
         return color{composit(lhs._v, rhs._v)};
+    }
+
+    [[nodiscard]] constexpr friend color pre_multiply_alpha(color const &rhs) noexcept
+    {
+        auto r = rhs._v * rhs.a();
+        r.a() = rhs.a();
+        return color{r};
     }
 
 private:

@@ -19,7 +19,8 @@ public:
      * @param outputBlock Samples rendered to the audio device.
      * @param current_time The current time according to the audio clock.
      */
-    virtual void process_audio(audio_block const &inputBlock, audio_block &outputBlock, hires_utc_clock::time_point current_time) noexcept = 0;
+    virtual void process_audio(
+    ) noexcept = 0;
 };
 
 }

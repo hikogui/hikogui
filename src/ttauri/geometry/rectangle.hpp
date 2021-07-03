@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../alignment.hpp"
 #include <array>
@@ -19,7 +19,7 @@ class rectangle {
     std::array<point3, 4> corners;
 
 public:
-    rectangle() noexcept : corners{} {}
+    rectangle() noexcept : corners() {}
     rectangle(rectangle const &rhs) noexcept = default;
     rectangle &operator=(rectangle const &rhs) noexcept = default;
     rectangle(rectangle &&rhs) noexcept = default;

@@ -51,7 +51,7 @@ constexpr matrix3 XYZ_to_sRGB =
 
     for (int i = 0; i != 65536; ++i) {
         r[i] = static_cast<uint8_t>(
-            std::clamp(sRGB_linear_to_gamma(float16{narrow_cast<uint16_t>(i), true}), 0.0f, 1.0f) * 255.0f
+            std::clamp(sRGB_linear_to_gamma(float16::from_uint16_t(narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f
         );
     }
 

@@ -32,7 +32,7 @@ namespace tt {
 template<bool UseDeadLockDetector>
 class unfair_mutex_impl {
 public:
-    unfair_mutex_impl() noexcept {}
+    constexpr unfair_mutex_impl() noexcept {}
     unfair_mutex_impl(unfair_mutex_impl const &) = delete;
     unfair_mutex_impl(unfair_mutex_impl &&) = delete;
     unfair_mutex_impl &operator=(unfair_mutex_impl const &) = delete;
@@ -48,7 +48,9 @@ public:
     void lock() noexcept
     {
         if constexpr (UseDeadLockDetector) {
-            dead_lock_detector::lock(this);
+            ttlet other = dead_lock_detector::lock(this);
+            tt_axiom(other != this, "Mutex already locked.");
+            tt_axiom(other == nullptr, "Potential dead-lock.");
         }
 
         tt_axiom(semaphore.load() <= 2);
@@ -56,7 +58,7 @@ public:
         // Switch to 1 means there are no waiters.
         uint32_t expected = 0;
         if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
-            [[unlikely]] lock_contented(expected);
+            [[unlikely]] lock_contended(expected);
         }
 
         tt_axiom(semaphore.load() <= 2);
@@ -71,7 +73,9 @@ public:
      */
     [[nodiscard]] bool try_lock() noexcept {
         if constexpr (UseDeadLockDetector) {
-            dead_lock_detector::lock(this);
+            ttlet other = dead_lock_detector::lock(this);
+            tt_axiom(other != this, "Mutex already locked.");
+            tt_axiom(other == nullptr, "Potential dead-lock.");
         }
 
         tt_axiom(semaphore.load() <= 2);
@@ -82,7 +86,7 @@ public:
             tt_axiom(semaphore.load() <= 2);
 
             if constexpr (UseDeadLockDetector) {
-                dead_lock_detector::unlock(this);
+                tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
             }
 
             [[unlikely]] return false;
@@ -94,7 +98,7 @@ public:
 
     void unlock() noexcept {
         if constexpr (UseDeadLockDetector) {
-            dead_lock_detector::unlock(this);
+            tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
         }
 
         tt_axiom(semaphore.load() <= 2);
@@ -119,7 +123,7 @@ private:
      */
     std::atomic<uint32_t> semaphore = 0;
 
-    tt_no_inline void lock_contented(uint32_t expected) noexcept
+    tt_no_inline void lock_contended(uint32_t expected) noexcept
     {
         tt_axiom(semaphore.load() <= 2);
 

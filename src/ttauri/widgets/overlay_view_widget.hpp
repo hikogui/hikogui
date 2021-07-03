@@ -9,20 +9,21 @@
 
 namespace tt {
 
-class overlay_view_widget final : public abstract_container_widget {
+class overlay_view_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
-    overlay_view_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept : super(window, parent)
+    overlay_view_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
     {
+        tt_axiom(is_gui_thread());
+
         if (parent) {
             // The overlay-widget will reset the semantic_layer as it is the bottom
             // layer of this virtual-window. However the draw-layer should be above
             // any other widget drawn.
-            ttlet lock = std::scoped_lock(gui_system_mutex);
             _draw_layer = parent->draw_layer() + 20.0f;
             _semantic_layer = 0;
-            _margin = theme::global->margin;
+            _margin = theme::global().margin;
         }
     }
 
@@ -30,7 +31,7 @@ public:
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         auto has_updated_contraints = super::update_constraints(display_time_point, need_reconstrain);
 
@@ -47,9 +48,9 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             tt_axiom(_content);
             _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
@@ -60,7 +61,7 @@ public:
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (overlaps(context, _clipping_rectangle)) {
             draw_background(context);
@@ -75,11 +76,11 @@ public:
      */
     [[nodiscard]] aarectangle make_overlay_rectangle_from_parent(aarectangle requested_rectangle) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        if (auto parent = _parent.lock()) {
+        if (parent) {
             ttlet requested_window_rectangle = aarectangle{parent->local_to_window() * requested_rectangle};
-            ttlet window_bounds = shrink(aarectangle{window.extent}, _margin);
+            ttlet window_bounds = shrink(aarectangle{window.size}, _margin);
             ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
             return aarectangle{parent->window_to_local() * response_window_rectangle};
         } else {
@@ -88,24 +89,24 @@ public:
     }
 
     template<typename WidgetType = grid_layout_widget, typename... Args>
-    std::shared_ptr<WidgetType> make_widget(Args &&... args) noexcept
+    WidgetType &make_widget(Args &&... args) noexcept
     {
-        ttlet lock = std::scoped_lock(gui_system_mutex);
+        tt_axiom(is_gui_thread());
 
-        auto widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
+        auto &widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
         tt_axiom(!_content);
-        _content = widget;
+        _content = &widget;
         return widget;
     }
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme::global->fillColor(_semantic_layer + 1);
+        return theme::global(theme_color::fill, _semantic_layer + 1);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        return theme::global->borderColor(_semantic_layer + 1);
+        return theme::global(theme_color::border, _semantic_layer + 1);
     }
 
     void scroll_to_show(tt::rectangle rectangle) noexcept override
@@ -115,7 +116,7 @@ public:
     }
 
 private:
-    std::shared_ptr<widget> _content;
+    widget *_content = nullptr;
 
     void draw_background(draw_context context) noexcept
     {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 
 namespace tt {
 namespace geo {
@@ -183,7 +183,7 @@ public:
     [[nodiscard]] constexpr friend vector operator*(float const &lhs, vector const &rhs) noexcept
     {
         tt_axiom(rhs.is_valid());
-        return vector{lhs * rhs._v};
+        return vector{f32x4::broadcast(lhs) * rhs._v};
     }
 
     /** Compare if two vectors are equal.
@@ -302,9 +302,9 @@ public:
     [[nodiscard]] friend std::string to_string(vector const &rhs) noexcept
     {
         if constexpr (D == 2) {
-            return fmt::format("({}, {})", rhs._v.x(), rhs._v.y());
+            return std::format("({}, {})", rhs._v.x(), rhs._v.y());
         } else if constexpr (D == 3) {
-            return fmt::format("({}, {}, {})", rhs._v.x(), rhs._v.y(), rhs._v.z());
+            return std::format("({}, {}, {})", rhs._v.x(), rhs._v.y(), rhs._v.z());
         } else {
             tt_static_no_default();
         }
@@ -372,3 +372,33 @@ using vector2 = geo::vector<2>;
 using vector3 = geo::vector<3>;
 
 } // namespace tt
+
+namespace std {
+
+template<typename CharT>
+struct formatter<tt::geo::vector<2>, CharT> {
+    auto parse(auto &pc)
+    {
+        return pc.end();
+    }
+
+    auto format(tt::geo::vector<2> const &t, auto &fc)
+    {
+        return std::vformat_to(fc.out(), "({}, {})", std::make_format_args(t.x(), t.y()));
+    }
+};
+
+template<typename CharT>
+struct formatter<tt::geo::vector<3>, CharT> : formatter<float, CharT> {
+    auto parse(auto &pc)
+    {
+        return pc.end();
+    }
+
+    auto format(tt::geo::vector<3> const &t, auto &fc)
+    {
+        return std::vformat_to(fc.out(), "({}, {}, {})", std::make_format_args(t.x(), t.y(), t.z()));
+    }
+};
+
+} // namespace std

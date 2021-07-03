@@ -5,6 +5,7 @@
 #include "URL.hpp"
 #include "datum.hpp"
 #include "timer.hpp"
+#include "logger.hpp"
 #include <typeinfo>
 
 #pragma once

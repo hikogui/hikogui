@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include <fmt/format.h>
+#include <format>
 #include <tuple>
 #include "forward_value.hpp"
 #include "fixed_string.hpp"
@@ -48,8 +48,7 @@ public:
      */
     [[nodiscard]] std::string operator()() const noexcept
     {
-        auto tmp = std::tuple_cat(std::tuple{static_cast<char const *>(Fmt)}, _values);
-        return std::apply(fmt::format<char const *,Values const &...>, std::move(tmp));
+        return std::apply(format_wrapper<Values const &...>, std::tuple_cat(std::tuple{Fmt.c_str()}, _values));
     }
 
     /** Format now.
@@ -58,11 +57,23 @@ public:
      */
     [[nodiscard]] std::string operator()(std::locale const &loc) const noexcept
     {
-        tt_not_implemented();
+        return std::apply(format_locale_wrapper<Values const &...>, std::tuple_cat(std::tuple{loc, Fmt.c_str()}, _values));
     }
 
 private:
     std::tuple<Values...> _values;
+
+    template<typename... Args>
+    static std::string format_wrapper(char const *fmt, Args const &...args)
+    {
+        return std::format(fmt, args...);
+    }
+
+    template<typename... Args>
+    static std::string format_locale_wrapper(std::locale const &loc, char const *fmt, Args const &...args)
+    {
+        return std::format(loc, fmt, args...);
+    }
 };
 
 template<fixed_string Fmt, typename... Args>

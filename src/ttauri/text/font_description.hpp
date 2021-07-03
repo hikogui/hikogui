@@ -35,7 +35,7 @@ struct font_description {
     }
 
     [[nodiscard]] friend std::string to_string(font_description const &rhs) noexcept {
-        return fmt::format("{} - {}: {}{}{}{}{} {} {}",
+        return std::format("{} - {}: {}{}{}{}{} {} {}",
             rhs.family_name,
             rhs.sub_family_name,
             rhs.monospace ? 'M' : '_',
@@ -50,6 +50,14 @@ struct font_description {
 
     friend std::ostream &operator<<(std::ostream &lhs, font_description const &rhs) {
         return lhs << to_string(rhs);
+    }
+};
+
+template<typename CharT>
+struct std::formatter<tt::font_description, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(tt::font_description const &t, auto &fc)
+    {
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
 

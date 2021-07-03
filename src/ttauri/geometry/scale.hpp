@@ -32,8 +32,8 @@ public:
         tt_axiom(is_valid());
     }
 
-    template<int E> requires(E <= D)
-    [[nodiscard]] constexpr explicit scale(vector<E> const &v) noexcept : _v(static_cast<f32x4>(v).xyz1())
+    template<int E>
+    requires(E <= D) [[nodiscard]] constexpr explicit scale(vector<E> const &v) noexcept : _v(static_cast<f32x4>(v).xyz1())
     {
         tt_axiom(is_valid());
     }
@@ -92,12 +92,21 @@ public:
     }
 
     template<int E>
+    [[nodiscard]] constexpr extent<E> operator*(extent<E> const &rhs) const noexcept
+    {
+        tt_axiom(is_valid() && rhs.is_valid());
+        return extent<E>{_v * static_cast<f32x4>(rhs)};
+    }
+
+    template<int E>
     [[nodiscard]] constexpr point<E> operator*(point<E> const &rhs) const noexcept
     {
         tt_axiom(is_valid() && rhs.is_valid());
         return point<E>{_v * static_cast<f32x4>(rhs)};
     }
 
+    /** Scale a rectangle around it's center.
+     */
     [[nodiscard]] constexpr aarectangle operator*(aarectangle const &rhs) const noexcept requires(D == 2)
     {
         return aarectangle{*this * get<0>(rhs), *this * get<3>(rhs)};
@@ -138,9 +147,10 @@ private:
 };
 
 template<int D>
-[[nodiscard]] constexpr matrix<D> matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
+[[nodiscard]] constexpr matrix<D>
+matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
 {
-    ttlet scale = tt::geo::scale<D>::uniform(src_rectangle.extent(), dst_rectangle.extent());
+    ttlet scale = tt::geo::scale<D>::uniform(src_rectangle.size(), dst_rectangle.size());
     ttlet scaled_rectangle = scale * src_rectangle;
     ttlet translation = translate<D>::align(scaled_rectangle, dst_rectangle, alignment);
     return translation * scale;

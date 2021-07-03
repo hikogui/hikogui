@@ -12,8 +12,7 @@
 #include "timer.hpp"
 #include "unfair_recursive_mutex.hpp"
 #include "console.hpp"
-#include <fmt/ostream.h>
-#include <fmt/format.h>
+#include <format>
 #include <exception>
 #include <memory>
 #include <iostream>
@@ -35,10 +34,8 @@ static void logger_write(std::string const &str) noexcept
     console_output(str);
 }
 
-unfair_recursive_mutex logger_mutex;
+unfair_mutex logger_mutex;
 std::jthread logger_thread;
-
-
 
 static void logger_thread_loop(std::stop_token stop_token) noexcept
 {
@@ -55,14 +52,14 @@ static void logger_thread_loop(std::stop_token stop_token) noexcept
 
 void logger_deinit() noexcept
 {
-    ttlet lock = std::scoped_lock(logger_mutex);
+    if (logger_is_running.exchange(false)) {
+        if (logger_thread.joinable()) {
+            logger_thread.request_stop();
+            logger_thread.join();
+        }
 
-    if (logger_thread.joinable()) {
-        logger_thread.request_stop();
-        logger_thread.join();
+        logger_flush();
     }
-
-    logger_flush();
 }
 
 /** Initialize the log system.
@@ -72,7 +69,6 @@ void logger_deinit() noexcept
  */
 bool logger_init() noexcept
 {
-    ttlet lock = std::scoped_lock(logger_mutex);
     logger_thread = std::jthread(logger_thread_loop);
     return true;
 }

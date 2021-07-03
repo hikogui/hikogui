@@ -14,22 +14,22 @@
 
 namespace tt {
 
-[[nodiscard]] std::u8string_view get_translation(
-    std::u8string_view msgid,
+[[nodiscard]] std::string_view get_translation(
+    std::string_view msgid,
     long long n=0,
-    std::vector<language*> const &languages=language::preferred_languages
+    std::vector<language*> const &languages=language::preferred_languages()
 ) noexcept;
 
 void add_translation(
-    std::u8string_view msgid,
+    std::string_view msgid,
     language const &language,
-    std::vector<std::u8string> const &plural_forms
+    std::vector<std::string> const &plural_forms
 ) noexcept;
 
 void add_translation(
-    std::u8string_view msgid,
-    std::u8string const &language_tag,
-    std::vector<std::u8string> const &plural_forms
+    std::string_view msgid,
+    std::string const &language_tag,
+    std::vector<std::string> const &plural_forms
 ) noexcept;
 
 struct po_translations;

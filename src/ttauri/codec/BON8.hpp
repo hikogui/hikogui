@@ -273,7 +273,7 @@ public:
             for (ttlet _c : value) {
                 ttlet c = static_cast<uint8_t>(_c);
 
-                if constexpr (BuildType::current == BuildType::Debug) {
+                if constexpr (build_type::current == build_type::debug) {
                     if (multi_byte == 0) {
                         if (c >= 0xc2 && c <= 0xdf) {
                             multi_byte = 1;

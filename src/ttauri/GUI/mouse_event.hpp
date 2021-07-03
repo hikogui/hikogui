@@ -95,7 +95,7 @@ struct mouse_event {
         default: tt_no_default();
         }
 
-        return fmt::format("<mouse {} {}>", type_s, rhs.position);
+        return std::format("<mouse {} {}>", type_s, rhs.position);
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, mouse_event const &rhs) {

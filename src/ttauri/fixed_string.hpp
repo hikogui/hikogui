@@ -81,6 +81,11 @@ struct basic_fixed_string {
         return &_str[0];
     }
 
+    [[nodiscard]] constexpr value_type const *c_str() const noexcept
+    {
+        return &_str[0];
+    }
+
     template<int M>
     [[nodiscard]] constexpr auto operator+(basic_fixed_string<value_type, M> const &rhs) noexcept
     {
@@ -115,3 +120,14 @@ using fixed_u32string = basic_fixed_string<char32_t,N>;
 
 }
 
+namespace std {
+
+template<typename T, size_t N, typename CharT>
+struct std::formatter<tt::basic_fixed_string<T,N>, CharT> : std::formatter<T const *, CharT> {
+    auto format(tt::basic_fixed_string<T, N> const &t, auto &fc)
+    {
+        return std::formatter<T const *, CharT>::format(t.data(), fc);
+    }
+};
+
+} // namespace std

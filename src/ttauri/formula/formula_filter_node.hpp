@@ -19,7 +19,7 @@ struct formula_filter_node final : formula_binary_operator_node {
     {
         rhs_name = dynamic_cast<formula_name_node*>(this->rhs.get());
         if (rhs_name == nullptr) {
-            throw parse_error("{}: Expecting a name token on the right hand side of a filter operator. got {}.", location, rhs);
+            throw parse_error("{}: Expecting a name token on the right hand side of a filter operator. got {}.", location, *rhs);
         }
     }
 
@@ -42,7 +42,7 @@ struct formula_filter_node final : formula_binary_operator_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("({} ! {})", *lhs, *rhs);
+        return std::format("({} ! {})", *lhs, *rhs);
     }
 };
 

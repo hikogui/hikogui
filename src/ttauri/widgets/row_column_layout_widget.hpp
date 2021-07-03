@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
 #include "../alignment.hpp"
@@ -13,19 +13,25 @@
 namespace tt {
 
 template<arrangement Arrangement>
-class row_column_layout_widget final : public abstract_container_widget {
+class row_column_layout_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
     static constexpr auto arrangement = Arrangement;
 
-    row_column_layout_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept :
+    row_column_layout_widget(gui_window &window, widget *parent) noexcept :
         super(window, parent)
     {
+        tt_axiom(is_gui_thread());
+
+        if (parent) {
+            _semantic_layer = parent->semantic_layer();
+        }
+        _margin = 0.0f;
     }
 
     [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (super::update_constraints(display_time_point, need_reconstrain)) {
             _layout.clear();
@@ -60,9 +66,9 @@ public:
 
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
-        need_layout |= std::exchange(_request_relayout, false);
+        need_layout |= _request_relayout.exchange(false);
         if (need_layout) {
             _layout.set_size(arrangement == arrangement::row ? rectangle().width() : rectangle().height());
 
@@ -73,7 +79,7 @@ public:
 
             tt_axiom(index == std::ssize(_children));
         }
-        abstract_container_widget::update_layout(display_time_point, need_layout);
+        super::update_layout(display_time_point, need_layout);
     }
 
 private:
@@ -86,7 +92,7 @@ private:
         float &preferred_thickness,
         float &maximum_thickness) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         if (arrangement == arrangement::row) {
             ttlet minimum_length = child.minimum_size().width();
@@ -112,7 +118,7 @@ private:
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
 
         ttlet[child_offset, child_length] = _layout.get_offset_and_size(index++);
 

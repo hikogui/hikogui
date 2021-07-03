@@ -4,32 +4,19 @@
 
 target_sources(ttauri PRIVATE
     mouse_cursor.hpp
-    draw_context.hpp
-    gui_device.cpp
-    gui_device.hpp
-    gui_device_vulkan.cpp
-    gui_device_vulkan.hpp
     gui_system.cpp
     gui_system.hpp
-    gui_system_globals.hpp
-    gui_system_vulkan.cpp
-    gui_system_vulkan.hpp
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_macos.hpp>
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_system_vulkan_win32.hpp>
     gui_system_delegate.hpp
+    gui_system_win32.cpp
+    gui_system_win32.hpp
     gui_window.cpp
     gui_window.hpp
     gui_window_delegate.hpp
     gui_window_size.hpp
-    gui_window_state.hpp
-    gui_window_vulkan.cpp
-    gui_window_vulkan.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_win32.hpp>
-    hit_box.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.hpp>
+    hitbox.hpp
     keyboard_bindings.cpp
     keyboard_bindings.hpp
     keyboard_event.hpp
@@ -41,62 +28,6 @@ target_sources(ttauri PRIVATE
     keyboard_focus_group.hpp
     mouse_buttons.hpp
     mouse_event.hpp
-    pipeline.cpp
-    pipeline.hpp
-    pipeline_vulkan.cpp
-    pipeline_vulkan.hpp
-    pipeline_box.cpp
-    pipeline_box.frag
-    pipeline_box.hpp
-    pipeline_box.vert
-    pipeline_box_device_shared.cpp
-    pipeline_box_device_shared.hpp
-    pipeline_box_push_constants.hpp
-    pipeline_box_vertex.hpp
-    pipeline_flat.cpp
-    pipeline_flat.frag
-    pipeline_flat.hpp
-    pipeline_flat.vert
-    pipeline_flat_device_shared.cpp
-    pipeline_flat_device_shared.hpp
-    pipeline_flat_push_constants.hpp
-    pipeline_flat_vertex.hpp
-    pipeline_image.cpp
-    pipeline_image.frag
-    pipeline_image.hpp
-    pipeline_image.vert
-    pipeline_image_device_shared.cpp
-    pipeline_image_device_shared.hpp
-    pipeline_image_image.cpp
-    pipeline_image_image.hpp
-    pipeline_image_image_location.hpp
-    pipeline_image_page.hpp
-    pipeline_image_push_constants.hpp
-    pipeline_image_texture_map.cpp
-    pipeline_image_texture_map.hpp
-    pipeline_image_vertex.hpp
-    pipeline_SDF.cpp
-    pipeline_SDF.frag
-    pipeline_SDF.hpp
-    pipeline_SDF.vert
-    pipeline_SDF_atlas_rect.cpp
-    pipeline_SDF_atlas_rect.hpp
-    pipeline_SDF_device_shared.cpp
-    pipeline_SDF_device_shared.hpp
-    pipeline_SDF_push_constants.hpp
-    pipeline_SDF_specialization_constants.hpp
-    pipeline_SDF_texture_map.cpp
-    pipeline_SDF_texture_map.hpp
-    pipeline_SDF_vertex.hpp
-    pipeline_tone_mapper.cpp
-    pipeline_tone_mapper.frag
-    pipeline_tone_mapper.hpp
-    pipeline_tone_mapper.vert
-    pipeline_tone_mapper_device_shared.cpp
-    pipeline_tone_mapper_device_shared.hpp
-    RenderDoc.cpp
-    RenderDoc.hpp
-    subpixel_orientation.hpp
     theme.cpp
     theme.hpp
     theme_book.cpp
@@ -104,21 +35,18 @@ target_sources(ttauri PRIVATE
     theme_mode.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_win32.cpp>
-    utils.hpp
+    vertical_sync.cpp
     vertical_sync.hpp
-    vertical_sync_base.hpp
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.hpp>
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_win32.hpp>
-    VulkanMemoryAllocator.cpp
 )
 
 if(TT_BUILD_PCH)
     if(NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
-        gui_window_vulkan_win32.hpp
-        gui_device_vulkan.hpp
+        gui_window_win32.hpp
     )
     endif()
  endif()

@@ -4,40 +4,33 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "grid_layout_delegate.hpp"
 #include "../geometry/spread_sheet_address.hpp"
 #include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 
 namespace tt {
 
-class grid_layout_widget : public abstract_container_widget {
+class grid_layout_widget : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
+    using delegate_type = grid_layout_delegate;
 
-    grid_layout_widget(
-        gui_window &window,
-        std::shared_ptr<abstract_container_widget> parent,
-        std::weak_ptr<grid_layout_delegate> delegate = {}) noexcept :
-        abstract_container_widget(window, parent), _delegate(delegate)
+    grid_layout_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
+
+    grid_layout_widget(gui_window &window, widget *parent) noexcept :
+        grid_layout_widget(
+            window,
+            parent,
+            std::make_unique<delegate_type>())
     {
     }
 
-    ~grid_layout_widget()
-    {
-        if (auto delegate_ = _delegate.lock()) {
-            delegate_->deinit(*this);
-        }
-    }
-
-    void init() noexcept override
-    {
-        if (auto delegate_ = _delegate.lock()) {
-            delegate_->init(*this);
-        }
-    }
+    void init() noexcept override;
+    void deinit() noexcept override;
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
@@ -45,18 +38,18 @@ public:
 
     /* Add a widget to the grid.
      */
-    std::shared_ptr<widget> add_widget(size_t column_nr, size_t row_nr, std::shared_ptr<widget> childWidget) noexcept;
+    widget &add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> child_widget) noexcept;
 
     /** Add a widget directly to this widget.
      *
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(size_t column_nr, size_t row_nr, Args &&...args)
+    T &make_widget(size_t column_nr, size_t row_nr, Args &&...args)
     {
-        auto tmp = std::make_shared<T>(window, shared_from_this(), std::forward<Args>(args)...);
+        auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         tmp->init();
-        return std::static_pointer_cast<T>(add_widget(column_nr, row_nr, std::move(tmp)));
+        return static_cast<T &>(add_widget(column_nr, row_nr, std::move(tmp)));
     }
 
     /** Add a widget directly to this widget.
@@ -64,9 +57,9 @@ public:
      * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(std::string_view address, Args &&...args)
+    T &make_widget(std::string_view address, Args &&...args)
     {
-        ttlet [column_nr, row_nr] = parse_absolute_spread_sheet_address(address);
+        ttlet[column_nr, row_nr] = parse_spread_sheet_address(address);
         return make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
     }
 
@@ -74,14 +67,14 @@ private:
     struct cell {
         size_t column_nr;
         size_t row_nr;
-        std::shared_ptr<tt::widget> widget;
+        tt::widget *widget;
 
-        cell(size_t column_nr, size_t row_nr, std::shared_ptr<tt::widget> widget) noexcept :
-            column_nr(column_nr), row_nr(row_nr), widget(std::move(widget))
+        cell(size_t column_nr, size_t row_nr, tt::widget *widget) noexcept : column_nr(column_nr), row_nr(row_nr), widget(widget)
         {
         }
 
-        [[nodiscard]] aarectangle rectangle(flow_layout const &columns, flow_layout const &rows, float container_height) const noexcept
+        [[nodiscard]] aarectangle
+        rectangle(flow_layout const &columns, flow_layout const &rows, float container_height) const noexcept
         {
             ttlet[x, width] = columns.get_offset_and_size(column_nr);
             ttlet[y, height] = rows.get_offset_and_size(row_nr);
@@ -92,10 +85,10 @@ private:
 
     std::vector<cell> _cells;
 
-    std::weak_ptr<grid_layout_delegate> _delegate;
-
     flow_layout _rows;
     flow_layout _columns;
+
+    weak_or_unique_ptr<delegate_type> _delegate;
 
     [[nodiscard]] static std::pair<size_t, size_t> calculate_grid_size(std::vector<cell> const &cells) noexcept;
     [[nodiscard]] static std::tuple<extent2, extent2, extent2>

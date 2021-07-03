@@ -12,19 +12,19 @@
 namespace tt {
 
 enum class font_weight {
-    Thin,       ///< 100: Thin / Hairline
+    Thin, ///< 100: Thin / Hairline
     ExtraLight, ///< 200: Ultra-light / Extra-light
-    Light,      ///< 300: Light
-    Regular,    ///< 400: Normal / Regular
-    Medium,     ///< 500: Medium
-    SemiBold,   ///< 600: Semi-bold / Demi-bold
-    Bold,       ///< 700: Bold
-    ExtraBold,  ///< 800: Extra-bold / Ultra-bold
-    Black,      ///< 900: Heavy / Black
+    Light, ///< 300: Light
+    Regular, ///< 400: Normal / Regular
+    Medium, ///< 500: Medium
+    SemiBold, ///< 600: Semi-bold / Demi-bold
+    Bold, ///< 700: Bold
+    ExtraBold, ///< 800: Extra-bold / Ultra-bold
+    Black, ///< 900: Heavy / Black
     ExtraBlack, ///< 950: Extra-black / Ultra-black
 };
 
-inline ttlet font_weight_from_string_table = std::unordered_map<std::string,font_weight>{
+inline ttlet font_weight_from_string_table = std::unordered_map<std::string, font_weight>{
     {"thin", font_weight::Thin},
     {"hairline", font_weight::Thin},
     {"ultra-light", font_weight::ExtraLight},
@@ -51,15 +51,17 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string,font
 };
 
 /** Convert a font weight value between 50 and 1000 to a font weight.
-*/
-[[nodiscard]] constexpr font_weight font_weight_from_int(int rhs) {
+ */
+[[nodiscard]] constexpr font_weight font_weight_from_int(int rhs)
+{
     if (rhs < 50 || rhs > 1000) {
         throw parse_error("Unknown font-weight {}", rhs);
     }
     return static_cast<font_weight>(((rhs + 50) / 100) - 1);
 }
 
-[[nodiscard]] inline font_weight font_weight_from_string(std::string_view rhs) {
+[[nodiscard]] inline font_weight font_weight_from_string(std::string_view rhs)
+{
     ttlet i = font_weight_from_string_table.find(to_lower(rhs));
     if (i == font_weight_from_string_table.end()) {
         throw parse_error("Unknown font-weight {}", rhs);
@@ -67,7 +69,8 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string,font
     return i->second;
 }
 
-[[nodiscard]] constexpr char const *to_const_string(font_weight const &x) noexcept {
+[[nodiscard]] constexpr char const *to_const_string(font_weight const &x) noexcept
+{
     switch (x) {
     case font_weight::Thin: return "Thin";
     case font_weight::ExtraLight: return "ExtraLight";
@@ -83,33 +86,38 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string,font
     }
 }
 
-[[nodiscard]] inline std::string to_string(font_weight const &x) noexcept {
+[[nodiscard]] inline std::string to_string(font_weight const &x) noexcept
+{
     return to_const_string(x);
 }
 
-[[nodiscard]] inline char to_char(font_weight const &x) noexcept {
+[[nodiscard]] inline char to_char(font_weight const &x) noexcept
+{
     ttlet x_ = static_cast<int>(x);
     tt_axiom(x_ >= 0 && x_ <= 9);
     return static_cast<char>('0' + x_);
 }
 
-[[nodiscard]] constexpr int to_int(font_weight const &x) noexcept {
+[[nodiscard]] constexpr int to_int(font_weight const &x) noexcept
+{
     ttlet x_ = (static_cast<int>(x) + 1) * 100;
     return (x_ == 1000) ? 950 : x_;
 }
 
-inline std::ostream& operator<<(std::ostream& lhs, font_weight const& rhs) {
+inline std::ostream &operator<<(std::ostream &lhs, font_weight const &rhs)
+{
     return lhs << to_string(rhs);
 }
 
-inline bool almost_equal(font_weight const &lhs, font_weight const &rhs) noexcept {
+inline bool almost_equal(font_weight const &lhs, font_weight const &rhs) noexcept
+{
     // Check only if it is bold or not.
     return (lhs > font_weight::Medium) == (rhs > font_weight::Medium);
 }
 
 [[nodiscard]] constexpr auto font_weight_alternative_table_generator() noexcept
 {
-    std::array<font_weight,100> r = {font_weight::Regular};
+    std::array<font_weight, 100> r = {font_weight::Regular};
 
     for (int w = 0; w < 10; ++w) {
         auto min_w = w;
@@ -142,11 +150,24 @@ inline bool almost_equal(font_weight const &lhs, font_weight const &rhs) noexcep
 
 constexpr auto font_weight_alternative_table = font_weight_alternative_table_generator();
 
-[[nodiscard]] constexpr font_weight font_weight_alterative(font_weight weight, int i) noexcept {
+[[nodiscard]] constexpr font_weight font_weight_alterative(font_weight weight, int i) noexcept
+{
     tt_axiom(i >= 0 && i < 10);
     auto w = static_cast<int>(weight);
     tt_axiom(w >= 0 && w < 10);
     return font_weight_alternative_table[(w * 10) + i];
 }
 
-}
+} // namespace tt
+
+namespace std {
+
+template<typename CharT>
+struct std::formatter<tt::font_weight, CharT> : std::formatter<char const *, CharT> {
+    auto format(tt::font_weight const &t, auto &fc)
+    {
+        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+    }
+};
+
+} // namespace std

@@ -7,7 +7,6 @@
 #include "exception.hpp"
 #include "int_overflow.hpp"
 #include "math.hpp"
-#include <fmt/ostream.h>
 #include <limits>
 #include <string_view>
 #include <string>
@@ -112,7 +111,7 @@ public:
         return *this = static_cast<signed long long>(other);
     }
 
-    explicit operator signed long long()
+    explicit operator signed long long() const noexcept
     {
         auto e = exponent();
         auto m = mantissa();
@@ -132,51 +131,51 @@ public:
         return m;
     }
 
-    explicit operator signed long()
+    explicit operator signed long() const noexcept
     {
         return narrow_cast<signed long>(static_cast<signed long long>(*this));
     }
-    explicit operator signed int()
+    explicit operator signed int() const noexcept
     {
         return narrow_cast<signed int>(static_cast<signed long long>(*this));
     }
-    explicit operator signed short()
+    explicit operator signed short() const noexcept
     {
         return narrow_cast<signed short>(static_cast<signed long long>(*this));
     }
-    explicit operator signed char()
+    explicit operator signed char() const noexcept
     {
         return narrow_cast<signed char>(static_cast<signed long long>(*this));
     }
-    explicit operator unsigned long long()
+    explicit operator unsigned long long() const noexcept
     {
         return narrow_cast<unsigned int>(static_cast<signed long long>(*this));
     }
-    explicit operator unsigned long()
+    explicit operator unsigned long() const noexcept
     {
         return narrow_cast<unsigned long>(static_cast<signed long long>(*this));
     }
-    explicit operator unsigned int()
+    explicit operator unsigned int() const noexcept
     {
         return narrow_cast<unsigned int>(static_cast<signed long long>(*this));
     }
-    explicit operator unsigned short()
+    explicit operator unsigned short() const noexcept
     {
         return narrow_cast<unsigned short>(static_cast<signed long long>(*this));
     }
-    explicit operator unsigned char()
+    explicit operator unsigned char() const noexcept
     {
         return narrow_cast<unsigned char>(static_cast<signed long long>(*this));
     }
-    explicit operator long double()
+    explicit operator long double() const noexcept
     {
         return static_cast<long double>(mantissa()) * powl(10.0, exponent());
     }
-    explicit operator double()
+    explicit operator double() const noexcept
     {
         return static_cast<double>(static_cast<long double>(*this));
     }
-    explicit operator float()
+    explicit operator float() const noexcept
     {
         return static_cast<float>(static_cast<long double>(*this));
     }
@@ -253,27 +252,10 @@ public:
         return lhs_m == rhs_m;
     }
 
-    [[nodiscard]] friend bool operator<(decimal lhs, decimal rhs) noexcept
+    [[nodiscard]] friend auto operator<=>(decimal lhs, decimal rhs) noexcept
     {
         ttlet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
-        return lhs_m < rhs_m;
-    }
-
-    [[nodiscard]] friend bool operator!=(decimal lhs, decimal rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-    [[nodiscard]] friend bool operator>(decimal lhs, decimal rhs) noexcept
-    {
-        return rhs < lhs;
-    }
-    [[nodiscard]] friend bool operator<=(decimal lhs, decimal rhs) noexcept
-    {
-        return !(lhs > rhs);
-    }
-    [[nodiscard]] friend bool operator>=(decimal lhs, decimal rhs) noexcept
-    {
-        return !(lhs < rhs);
+        return lhs_m <=> rhs_m;
     }
 
     [[nodiscard]] friend constexpr decimal operator-(decimal rhs) noexcept
@@ -587,6 +569,14 @@ struct hash<tt::decimal> {
     inline size_t operator()(tt::decimal const &value) const
     {
         return value.hash();
+    }
+};
+
+template<typename CharT>
+struct std::formatter<tt::decimal, CharT> : std::formatter<double, CharT> {
+    auto format(tt::decimal const &t, auto &fc)
+    {
+        return std::formatter<double, CharT>::format(static_cast<double>(t), fc);
     }
 };
 

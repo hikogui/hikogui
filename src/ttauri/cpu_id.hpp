@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include <array>
 
 #if TT_COMPILER == TT_CC_MSVC

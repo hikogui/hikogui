@@ -5,29 +5,40 @@
 #pragma once
 
 #include "assert.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include <vector>
 #include <algorithm>
-#include <tuple>
+#include <compare>
 
 
 namespace tt {
+namespace detail {
+
+struct dead_lock_detector_pair {
+    void *before;
+    void *after;
+
+    friend bool operator==(dead_lock_detector_pair const &lhs, dead_lock_detector_pair const &rhs) noexcept = default;
+    friend std::strong_ordering
+    operator<=>(dead_lock_detector_pair const &lhs, dead_lock_detector_pair const &rhs) noexcept = default;
+};
+
+}
 
 class dead_lock_detector {
 public:
     /** Lock an object on this thread.
      * @param object The object that is being locked.
-     * @param recursive_lock Allow the object to be recursive locked,
-     *                       meaning that a object may be at the top of the stack.
-     * @throws lock_error The reason for failing to lock the object.
+     * @return nullptr on success, object if the mutex was already locked, a pointer to
+     *         another mutex if potential dead-lock is found.
      */
-    static void lock(void *object, bool recursive_lock = false);
+    static void *lock(void *object) noexcept;
 
     /** Unlock an object on this thread.
      * @param object The object that is being locked.
-     * @throws lock_error The reason for failing to lock the object.
+     * @return true on success, false on failure.
      */
-    static void unlock(void *object);
+    static bool unlock(void *object) noexcept;
 
     /** Remove the object from the detection.
      * This function is needed when there are mutex-like objects
@@ -55,7 +66,7 @@ private:
      * 
      * When accessing lock_order dead_lock_detector_mutex must be locked.
      */
-    inline static std::vector<std::pair<void *, void *>> lock_graph;
+    inline static std::vector<detail::dead_lock_detector_pair> lock_graph;
 
     [[nodiscard]] static void *check_graph(void *object) noexcept;
 };

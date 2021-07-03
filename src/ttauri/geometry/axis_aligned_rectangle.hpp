@@ -4,12 +4,14 @@
 
 #pragma once
 
-#include "numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 #include "../alignment.hpp"
 #include "../concepts.hpp"
+#include "../unfair_mutex.hpp"
 #include "extent.hpp"
 #include "point.hpp"
 #include <concepts>
+#include <mutex>
 
 namespace tt {
 
@@ -154,7 +156,7 @@ public:
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
      */
-    [[nodiscard]] extent2 extent() const noexcept
+    [[nodiscard]] extent2 size() const noexcept
     {
         return extent2{v.zwzw() - v};
     }
@@ -227,12 +229,12 @@ public:
 
     /** Align a rectangle within another rectangle.
      * @param haystack The outside rectangle
-     * @param needle The inside rectangle; to be aligned.
+     * @param needle The size of the rectangle to be aligned.
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
     [[nodiscard]] friend axis_aligned_rectangle
-    align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
+    align(axis_aligned_rectangle haystack, extent2 needle, alignment alignment) noexcept
     {
         float x;
         if (alignment == horizontal_alignment::left) {
@@ -262,10 +264,22 @@ public:
             tt_no_default();
         }
 
-        return {point2{x, y}, needle.extent()};
+        return {point2{x, y}, needle};
     }
 
-    /** Need to call the hiden friend function from within another class.
+    /** Align a rectangle within another rectangle.
+     * @param haystack The outside rectangle
+     * @param needle The inside rectangle; to be aligned.
+     * @param alignment How the inside rectangle should be aligned.
+     * @return The needle rectangle repositioned and aligned inside the haystack.
+     */
+    [[nodiscard]] friend axis_aligned_rectangle
+    align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
+    {
+        return align(haystack, needle.size(), alignment);
+    }
+
+    /** Need to call the hidden friend function from within another class.
      */
     [[nodiscard]] static axis_aligned_rectangle
     _align(axis_aligned_rectangle outside, axis_aligned_rectangle inside, alignment alignment) noexcept
@@ -339,14 +353,13 @@ public:
      */
     [[nodiscard]] friend axis_aligned_rectangle scale(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
-        ttlet extent = lhs.extent();
-        ttlet scaled_extent = extent * rhs;
-        ttlet diff_extent = scaled_extent - extent;
-        ttlet half_diff_extent = diff_extent * 0.5f;
+        ttlet new_extent = lhs.size() * rhs;
+        ttlet diff = vector2{new_extent} - vector2{lhs.size()};
+        ttlet offset = diff * 0.5f;
 
-        ttlet p1 = get<0>(lhs) - vector2{half_diff_extent};
-        ttlet p2 = get<3>(lhs) + vector2{half_diff_extent};
-        return axis_aligned_rectangle{p1, p2};
+        ttlet p0 = get<0>(lhs) - offset;
+        ttlet p3 = max(get<3>(lhs) + offset, p0);
+        return axis_aligned_rectangle{p0, p3};
     }
 
     /** Expand the rectangle for the same amount in all directions.
@@ -425,3 +438,115 @@ public:
 using aarectangle = axis_aligned_rectangle;
 
 } // namespace tt
+
+namespace std {
+
+template<>
+class atomic<tt::axis_aligned_rectangle> {
+public:
+    static constexpr bool is_always_lock_free = false;
+
+    constexpr atomic() noexcept : _value() {}
+    atomic(atomic const &) = delete;
+    atomic(atomic &&) = delete;
+    atomic &operator=(atomic const &) = delete;
+    atomic &operator=(atomic &&) = delete;
+
+    constexpr atomic(tt::axis_aligned_rectangle const &rhs) noexcept : _value(rhs) {}
+    atomic &operator=(tt::axis_aligned_rectangle const &rhs) noexcept
+    {
+        store(rhs);
+        return *this;
+    }
+
+    operator tt::axis_aligned_rectangle() const noexcept
+    {
+        return load();
+    }
+
+    [[nodiscard]] bool is_lock_free() const noexcept
+    {
+        return is_always_lock_free;
+    }
+
+    void store(tt::axis_aligned_rectangle desired, std::memory_order = std::memory_order_seq_cst) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        _value = desired;
+    }
+
+    tt::axis_aligned_rectangle load(std::memory_order = std::memory_order_seq_cst) const noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        return _value;
+    }
+
+    tt::axis_aligned_rectangle
+    exchange(tt::axis_aligned_rectangle desired, std::memory_order = std::memory_order_seq_cst) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        return std::exchange(_value, desired);
+    }
+
+    bool compare_exchange_weak(
+        tt::axis_aligned_rectangle &expected,
+        tt::axis_aligned_rectangle desired,
+        std::memory_order,
+        std::memory_order) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        if (_value == expected) {
+            _value = desired;
+            return true;
+        } else {
+            expected = _value;
+            return false;
+        }
+    }
+
+    bool compare_exchange_strong(
+        tt::axis_aligned_rectangle &expected,
+        tt::axis_aligned_rectangle desired,
+        std::memory_order success,
+        std::memory_order failure) noexcept
+    {
+        return compare_exchange_weak(expected, desired, success, failure);
+    }
+
+    bool compare_exchange_weak(
+        tt::axis_aligned_rectangle &expected,
+        tt::axis_aligned_rectangle desired,
+        std::memory_order order = std::memory_order_seq_cst) noexcept
+    {
+        return compare_exchange_weak(expected, desired, order, order);
+    }
+
+    bool compare_exchange_strong(
+        tt::axis_aligned_rectangle &expected,
+        tt::axis_aligned_rectangle desired,
+        std::memory_order order = std::memory_order_seq_cst) noexcept
+    {
+        return compare_exchange_strong(expected, desired, order, order);
+    }
+
+    tt::axis_aligned_rectangle
+    fetch_or(tt::axis_aligned_rectangle arg, std::memory_order = std::memory_order_seq_cst) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        auto tmp = _value;
+        _value = tmp | arg;
+        return tmp;
+    }
+
+    tt::axis_aligned_rectangle operator|=(tt::axis_aligned_rectangle arg) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        return _value |= arg;
+    }
+
+private:
+    tt::axis_aligned_rectangle _value;
+    mutable tt::unfair_mutex _mutex;
+};
+
+} // namespace std

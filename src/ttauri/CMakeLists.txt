@@ -2,32 +2,24 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-add_subdirectory(text)
-add_subdirectory(geometry)
-add_subdirectory(color)
-add_subdirectory(GUI)
-add_subdirectory(widgets)
-add_subdirectory(stencils)
 add_subdirectory(audio)
 add_subdirectory(codec)
+add_subdirectory(color)
 add_subdirectory(formula)
+add_subdirectory(geometry)
+add_subdirectory(GFX)
+add_subdirectory(GUI)
+add_subdirectory(random)
+add_subdirectory(rapid)
 add_subdirectory(skeleton)
+add_subdirectory(text)
+add_subdirectory(widgets)
 
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(ttauri PRIVATE
-    detail/observable_base.hpp
-    detail/observable_not.hpp
-    detail/observable_unary.hpp
-    detail/observable_value.hpp
     algorithm.hpp
-    application.cpp
-    application.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/application_macos.hpp>
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/application_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/application_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/application_win32.hpp>
-    application_delegate.hpp
+    animator.hpp
     assert.hpp
     atomic.hpp
     alignment.hpp
@@ -114,7 +106,7 @@ target_sources(ttauri PRIVATE
     cast.hpp
     observable.hpp
     operator.hpp
-    os_detect.hpp
+    architecture.hpp
     parse_location.hpp
     preferences.cpp
     preferences.hpp
@@ -126,14 +118,11 @@ target_sources(ttauri PRIVATE
     placement.hpp
     polymorphic_optional.hpp
     polynomial.hpp
-    random_pcg.hpp
     range_map.hpp
-    ranged_numeric.hpp
     ranges.hpp
     recursive_iterator.hpp
     required.hpp
     range_map.hpp
-    ranged_numeric.hpp
     resource_view.hpp
     safe_int.hpp
     semantic_version.hpp
@@ -175,6 +164,7 @@ target_sources(ttauri PRIVATE
     url_parser.hpp
     utils.hpp
     vspan.hpp
+    weak_or_unique_ptr.hpp
     wfree_message_queue.hpp
     wfree_unordered_map.hpp
 )
@@ -188,7 +178,7 @@ if(TT_BUILD_PCH)
         debugger.hpp
         exception.hpp
         logger.hpp
-        os_detect.hpp
+        architecture.hpp
         required.hpp
         strings.hpp
         trace.hpp
@@ -209,6 +199,7 @@ if(TT_BUILD_TESTS)
         decimal_tests.cpp
         exceptions_tests.cpp
         file_view_tests.cpp
+        float16_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp
         glob_tests.cpp
@@ -216,6 +207,7 @@ if(TT_BUILD_TESTS)
         int_overflow_tests.cpp
         math_tests.cpp
         graphic_path_tests.cpp
+        observable_tests.cpp
         pixel_map_tests.cpp
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp
@@ -239,7 +231,7 @@ if(TT_BUILD_TESTS AND TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
         debugger.hpp
         exception.hpp
         logger.hpp
-        os_detect.hpp
+        architecture.hpp
         required.hpp
         strings.hpp
         trace.hpp

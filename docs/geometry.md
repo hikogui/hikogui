@@ -4,10 +4,10 @@ TTauri Geometry System
 Low level geometry types
 ------------------------
 
-### numeric_array<T,N>
+### numeric\_array<T,N>
 
 The `numeric_array` is an array of numbers, with many mathematical operations
-on the array of numbers. The numeric_array is designed to be useable in
+on the array of numbers. The `numeric_array` is designed to be useable in
 constexpr and easily to vectorize by the optimizer.
 
 ### f32x4
@@ -42,7 +42,7 @@ A extent can be transformed like a vector.
 
 Both `extent2` and `extent3` are implemented as a `f32x4` homogeneous 4D coordinate with w = 0.0.
 
-### corner_shapes
+### corner\_shapes
 
 Corner shapes are 4 floating point numbers one for the corner in the left-bottom, right-bottom,
 left-top and right-top corner. Each number has the following meaning:
@@ -67,14 +67,14 @@ A `rectangle` can be transformed like a `point3`.
 It should be implemented as a `point3` in the left-bottom corner and two `vector3`s to the upper and right corners.
 However it is currently implemented as 4 points one for each corner.
 
-### axis_aligned_rectangle
+### axis\_aligned\_rectangle
 
 The `axis_aligned_rectangle` class is a 2D axis-aligned rectangle.
 
 When transforming an axis aligned rectangle in 3D or with rotation the result will be a normal `rectangle`.
-A rectangle can be converted back to an axis_aligned_rectangle, as a bounding rectangle around the transformed rectangle.
+A rectangle can be converted back to an `axis_aligned_rectangle`, as a bounding rectangle around the transformed rectangle.
 
-a axis_aligned_rectangle is implemented as a `f32x4` where:
+a `axis_aligned_rectangle` is implemented as a `f32x4` where:
 
  - x - left-bottom point x.
  - y - left-bottom point y.
@@ -127,14 +127,14 @@ alignment of lines to actual pixels.
 
 The alignment of borders to pixels is the responsibility of the
 widget that draws itself. The widget has access to
-the draw_context::drawBoxIncludingBorder() function to position the border's
+the `draw_context::drawBoxIncludingBorder()` function to position the border's
 edge to the edge of the given rectangle, if the rectangle is rounded to
 integer coordinates; the rectangle, border and pixel will share the same edge.
 
 At DPI-scale of 1, it is assumed that the display has a 84 DPI.
 This is the middle ground between Window's default 96 DPI and macOS's
 default 72 DPI. The ShapedText class will scale to 84 DPI automatically,
-further DPI scaling will be handled by the draw_context.
+further DPI scaling will be handled by the `draw_context`.
 
 ### Window depth
 

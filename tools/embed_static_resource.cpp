@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include <fmt/format.h>
+#include <format>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -14,7 +14,7 @@
 template<typename... Args>
 void print(std::string_view fmt, Args const &... args) noexcept
 {
-    std::cerr << fmt::format(fmt, args...) << std::endl;
+    std::cerr << std::format(fmt, args...) << std::endl;
 }
 
 void usage(std::string_view program, std::string_view str)
@@ -42,7 +42,7 @@ void usage(std::string_view program, std::string_view str)
 template<typename... Args>
 void write(std::ostream& stream, std::string_view fmt, Args const &... args) noexcept
 {
-    stream << fmt::format(fmt, args...);
+    stream << std::format(fmt, args...);
 }
 
 void write_bytes_as_text(std::ostream& stream, std::string_view bytes) noexcept
@@ -102,12 +102,12 @@ int main(int argc, char* argv[])
     }
 
     auto const input_path = std::filesystem::path(argv[1]);
-    auto const input_data = read_file(input_path);
+    auto const input_data = read_file(input_path); // lgtm[cpp/path-injection]
     auto const input_filename = input_path.filename();
     auto const identifier = make_identifier(input_filename.generic_string());
 
     auto const output_path = std::filesystem::path(argv[2]);
-    auto os = open_output(output_path);
+    auto os = open_output(output_path); // lgtm[cpp/path-injection]
 
     write(os, "#include \"ttauri/static_resource_list.hpp\"\n");
     write(os, "#include <span>\n");

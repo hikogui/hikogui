@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="tt::numeric_array&lt;*,4&gt;">
+        <DisplayString>{v[0],g}, {v[1],g}, {v[2],g}, {v[3],g}</DisplayString>
+        <Expand>
+            <Item Name="[x]">v[0],g</Item>
+            <Item Name="[y]">v[1],g</Item>
+            <Item Name="[z]">v[2],g</Item>
+            <Item Name="[w]">v[3],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::numeric_array&lt;*,8&gt;">
+        <DisplayString>{v[0],g}, {v[1],g}, {v[2],g}, {v[3],g}, {v[4],g}, {v[5],g}, {v[6],g}, {v[7],g}</DisplayString>
+        <Expand>
+            <Item Name="[0]">v[0],g</Item>
+            <Item Name="[1]">v[1],g</Item>
+            <Item Name="[2]">v[2],g</Item>
+            <Item Name="[3]">v[3],g</Item>
+            <Item Name="[4]">v[4],g</Item>
+            <Item Name="[5]">v[5],g</Item>
+            <Item Name="[6]">v[6],g</Item>
+            <Item Name="[7]">v[7],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::geo::point&lt;2&gt;">
+        <DisplayString>&lt;{_v.v[0],g}, {_v.v[1],g}&gt;</DisplayString>
+        <Expand>
+            <Item Name="[x]">_v.v[0],g</Item>
+            <Item Name="[y]">_v.v[1],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::geo::point&lt;3&gt;">
+        <DisplayString>&lt;{_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g}&gt;</DisplayString>
+        <Expand>
+            <Item Name="[x]">_v.v[0],g</Item>
+            <Item Name="[y]">_v.v[1],g</Item>
+            <Item Name="[z]">_v.v[2],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::geo::extent&lt;2&gt;">
+        <DisplayString>[{_v.v[0],g}, {_v.v[1],g}]</DisplayString>
+        <Expand>
+            <Item Name="[width]">_v.v[0],g</Item>
+            <Item Name="[height]">_v.v[1],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::geo::extent&lt;3&gt;">
+        <DisplayString>[{_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g}]</DisplayString>
+        <Expand>
+            <Item Name="[width]">_v.v[0],g</Item>
+            <Item Name="[height]">_v.v[1],g</Item>
+            <Item Name="[depth]">_v.v[2],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::color">
+        <DisplayString>{{ r={_v.v[0],g}, g={_v.v[1],g}, b={_v.v[1],g}, a={_v.v[1],g} }}</DisplayString>
+        <Expand>
+            <Item Name="[red]">_v.v[0],g</Item>
+            <Item Name="[green]">_v.v[1],g</Item>
+            <Item Name="[blue]">_v.v[2],g</Item>
+            <Item Name="[alpha]">_v.v[3],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::corner_shapes">
+        <DisplayString>{{ lb={_v.v[0],g}, rb={_v.v[1],g}, lt={_v.v[1],g}, rt={_v.v[1],g} }}</DisplayString>
+        <Expand>
+            <Item Name="[left bottom]">_v.v[0],g</Item>
+            <Item Name="[right bottom]">_v.v[1],g</Item>
+            <Item Name="[left top]">_v.v[2],g</Item>
+            <Item Name="[right top]">_v.v[3],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::rectangle">
+        <DisplayString>{{ {corners[0]}, {corners[1]}, {corners[2]}, {corners[3]} }}</DisplayString>
+        <Expand>
+            <Item Name="[0]">corners[0]</Item>
+            <Item Name="[1]">corners[1]</Item>
+            <Item Name="[2]">corners[2]</Item>
+            <Item Name="[3]">corners[3]</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::axis_aligned_rectangle">
+        <DisplayString>{{ &lt;{v.v[0],g}, {v.v[1],g}&gt;, [{v.v[2] - v.v[0],g}, {v.v[3] - v.v[1],g}] }}</DisplayString>
+        <Expand>
+            <Item Name="[left]">v.v[0],g</Item>
+            <Item Name="[bottom]">v.v[1],g</Item>
+            <Item Name="[right]">v.v[2],g</Item>
+            <Item Name="[top]">v.v[3],g</Item>
+            <Item Name="[width]">v.v[2] - v.v[0],g</Item>
+            <Item Name="[height]">v.v[3] - v.v[1],g</Item>
+        </Expand>
+    </Type>
+    <Type Name="tt::detail::observable_value&lt;*&gt;">
+        <DisplayString>.{_value}</DisplayString>
+    </Type>
+    <Type Name="tt::detail::observable_chain&lt;*&gt;">
+        <DisplayString>->{*(_operand.value())}</DisplayString>
+    </Type>
+    <Type Name="tt::observable&lt;*&gt;">
+        <DisplayString>{*(pimpl)}</DisplayString>
+    </Type>
+    <Type Name="tt::l10n">
+        <DisplayString>l10n({_msg_id})</DisplayString>
+    </Type>
+    <Type Name="tt::label">
+        <DisplayString>label({text._msg_id})</DisplayString>
+    </Type>
+    <Type Name="tt::label_widget">
+        <DisplayString>{{ label_widget {label} }}</DisplayString>
+    </Type>
+</AutoVisualizer>

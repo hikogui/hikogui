@@ -88,7 +88,7 @@ class wfree_message_queue {
     
     static constexpr index_type capacity = Capacity;
 
-    /*! Maximum number of concurent threads that can write into the queue at once.
+    /*! Maximum number of concurrent threads that can write into the queue at once.
     */
     static constexpr index_type slack = 16;
     static_assert(capacity > (slack * 2), "The capacity of the message queue should be much larger than its slack.");
@@ -106,10 +106,10 @@ public:
     ~wfree_message_queue() = default;
 
     /*! Return the number of items in the message queue.
-    * For the consumer this may show less items in the queue then there realy are.
+    * For the consumer this may show less items in the queue then there really are.
     */
     index_type size() const noexcept {
-        // head and tail are extremelly large integers, they will never wrap arround.
+        // head and tail are extremely large integers, they will never wrap around.
         return head.load(std::memory_order::relaxed) - tail.load(std::memory_order::relaxed);
     }
 
@@ -124,7 +124,7 @@ public:
     /*! Write a message into the queue.
     * This function is wait-free when the queue is not full().
     *
-    * \return A scoped write operation which can be derefenced to access the message value.
+    * \return A scoped write operation which can be dereferenced to access the message value.
     */
     template<basic_fixed_string BlockCounterTag = "">
     scoped_write_operation write() noexcept {
@@ -134,7 +134,7 @@ public:
     /*! Read a message from the queue.
     * This function will block until the message being read is completed by the writing thread.
     *
-    * \return A scoped read operation which can be derefenced to access the message value.
+    * \return A scoped read operation which can be dereferenced to access the message value.
     */
     scoped_read_operation read() noexcept {
         return {this, read_start()};

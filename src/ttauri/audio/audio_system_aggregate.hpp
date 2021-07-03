@@ -8,21 +8,18 @@
 
 namespace tt {
 
-class audio_system_aggregate :
-    public std::enable_shared_from_this<audio_system_aggregate>,
-    public audio_system,
-    public audio_system_delegate {
+class audio_system_aggregate : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_aggregate(std::weak_ptr<audio_system_delegate> const &delegate) : super(delegate) {}
+    audio_system_aggregate(weak_or_unique_ptr<audio_system_delegate> delegate);
 
     [[nodiscard]] std::vector<std::shared_ptr<audio_device>> devices() noexcept override
     {
         ttlet lock = std::scoped_lock(audio_system::mutex);
 
         auto r = std::vector<std::shared_ptr<audio_device>>{};
-        for (auto &child: _children) {
+        for (auto &child : _children) {
             auto tmp = child->devices();
             std::move(tmp.begin(), tmp.end(), std::back_inserter(r));
         }
@@ -36,26 +33,22 @@ public:
     }
 
     template<typename T, typename... Args>
-    std::shared_ptr<audio_system> make_audio_system(Args &&... args)
+    std::shared_ptr<audio_system> make_audio_system(Args &&...args)
     {
-        ttlet lock = std::scoped_lock(audio_system::mutex);
-
-        auto new_audio_system = std::make_shared<T>(weak_from_this(), std::forward<Args>(args)...);
+        auto new_audio_system = std::make_shared<T>(_aggregate_delegate, std::forward<Args>(args)...);
         new_audio_system->init();
         add_audio_system(new_audio_system);
-        audio_device_list_changed(*this);
-        return new_audio_system;
-    }
-
-    void audio_device_list_changed(tt::audio_system &self) override
-    {
-        if (auto delegate_ = this->_delegate.lock()) {
-            delegate_->audio_device_list_changed(*this);
+        if (auto delegate = _delegate.lock()) {
+            delegate->audio_device_list_changed(*this);
         }
+        return new_audio_system;
     }
 
 private:
     std::vector<std::shared_ptr<audio_system>> _children;
+    weak_or_unique_ptr<audio_system_delegate> _aggregate_delegate;
+
+    friend class audio_system_aggregate_delegate;
 };
 
-}
+} // namespace tt

@@ -4,73 +4,92 @@
 
 #pragma once
 
-#include "abstract_container_widget.hpp"
+#include "widget.hpp"
 #include "../label.hpp"
+#include "../weak_or_unique_ptr.hpp"
 
 namespace tt {
 
 class toolbar_widget;
+class system_menu_widget;
 class grid_layout_widget;
+class grid_layout_delegate;
 
-class window_widget final : public abstract_container_widget {
+class window_widget final : public widget {
 public:
-    using super = abstract_container_widget;
+    using super = widget;
 
-    window_widget(gui_window &window, std::weak_ptr<grid_layout_delegate> const &delegate, label title) noexcept;
+    observable<label> title;
+
     ~window_widget();
+
+    template<typename Title>
+    window_widget(gui_window &window, Title &&title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
+        super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
+    {
+    }
+
+    template<typename Title>
+    window_widget(gui_window &window, Title &&title) noexcept :
+        window_widget(
+            window,
+            std::forward<Title>(title),
+            std::make_unique<grid_layout_delegate>())
+    {
+    }
 
     void init() noexcept override;
 
     [[nodiscard]] bool
     update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
 
-    [[nodiscard]] color backgroundColor() noexcept {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return theme::global->fillColor(_semantic_layer);
+    [[nodiscard]] color backgroundColor() noexcept
+    {
+        tt_axiom(is_gui_thread());
+        return theme::global(theme_color::fill, _semantic_layer);
     }
 
     /** Defining on which edges the resize handle has priority over widget at a higher layer.
      */
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        left_resize_border_has_priority = left;
-        right_resize_border_has_priority = right;
-        bottom_resize_border_has_priority = bottom;
-        top_resize_border_has_priority = top;
+        tt_axiom(is_gui_thread());
+        _left_resize_border_has_priority = left;
+        _right_resize_border_has_priority = right;
+        _bottom_resize_border_has_priority = bottom;
+        _top_resize_border_has_priority = top;
     }
 
-    [[nodiscard]] std::shared_ptr<grid_layout_widget> content() const noexcept
+    [[nodiscard]] grid_layout_widget &content() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_content);
-        return _content;
+        return *_content;
     }
 
-    [[nodiscard]] std::shared_ptr<toolbar_widget> toolbar() const noexcept
+    [[nodiscard]] toolbar_widget &toolbar() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
+        tt_axiom(is_gui_thread());
         tt_axiom(_toolbar);
-        return _toolbar;
-    }
-
-    [[nodiscard]] bool is_toolbar() const noexcept override
-    {
-        return false;
+        return *_toolbar;
     }
 
 private:
-    label title;
-    std::weak_ptr<grid_layout_delegate> _content_delegate;
-    std::shared_ptr<grid_layout_widget> _content;
-    std::shared_ptr<toolbar_widget> _toolbar;
+    decltype(title)::callback_ptr_type _title_callback;
 
-    bool left_resize_border_has_priority = true;
-    bool right_resize_border_has_priority = true;
-    bool bottom_resize_border_has_priority = true;
-    bool top_resize_border_has_priority = true;
+    weak_or_unique_ptr<grid_layout_delegate> _content_delegate;
+    grid_layout_widget *_content = nullptr;
+    toolbar_widget *_toolbar = nullptr;
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+    system_menu_widget *_system_menu = nullptr;
+#endif
+
+    bool _left_resize_border_has_priority = true;
+    bool _right_resize_border_has_priority = true;
+    bool _bottom_resize_border_has_priority = true;
+    bool _top_resize_border_has_priority = true;
 };
 
 } // namespace tt

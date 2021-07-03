@@ -83,4 +83,7 @@ concept sizeable = requires(T v)
     ->std::convertible_to<size_t>;
 };
 
+template<typename T>
+concept atomical = tt::may_be_atomic_v<T>;
+
 } // namespace tt

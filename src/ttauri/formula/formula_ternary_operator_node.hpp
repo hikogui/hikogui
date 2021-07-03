@@ -41,7 +41,7 @@ struct formula_ternary_operator_node final : formula_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("({} ? {} : {})", *lhs, *rhs_true, *rhs_false);
+        return std::format("({} ? {} : {})", *lhs, *rhs_true, *rhs_false);
     }
 };
 

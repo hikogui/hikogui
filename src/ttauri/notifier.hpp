@@ -6,6 +6,7 @@
 
 #include "required.hpp"
 #include "unfair_recursive_mutex.hpp"
+#include "coroutine.hpp"
 #include <mutex>
 #include <vector>
 #include <tuple>
@@ -29,6 +30,7 @@ class notifier<Result(Args...)> {
 public:
     static_assert(std::is_same_v<Result,void>, "Result of a notifier must be void.");
 
+    using result_type = Result;
     using callback_type = std::function<Result(Args const &...)>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
@@ -39,7 +41,7 @@ public:
      *
      * @param callback_ptr A shared_ptr to a callback function.
      */
-    void subscribe_ptr(callback_ptr_type const &callback_ptr) noexcept
+    callback_ptr_type subscribe(callback_ptr_type const &callback_ptr) noexcept
     {
         auto lock = std::scoped_lock(_mutex);
 
@@ -50,6 +52,7 @@ public:
         if (i == _callbacks.cend()) {
             _callbacks.emplace_back(callback_ptr);
         }
+        return callback_ptr;
     }
 
     /** Add a callback to the notifier.
@@ -60,7 +63,7 @@ public:
      * @param callback The callback-function to register.
      * @return A shared_ptr to a function object holding the callback.
      */
-    template<typename Callback>
+    template<typename Callback> requires (std::is_invocable_v<Callback>)
     [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
         auto callback_ptr = std::make_shared<callback_type>(std::forward<decltype(callback)>(callback));
@@ -94,14 +97,32 @@ public:
     }
 
     /** Call the subscribed callbacks with the given arguments.
+     * The callbacks will be run from the main thread, asynchronously.
+     * 
      * @param args The arguments to pass with the invocation of the callback
      */
-    void operator()(Args const &...args) const noexcept
+    void operator()(Args const &...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
         auto callbacks_ = callbacks();
         for (auto &callback : callbacks_) {
             if (auto callback_ = callback.lock()) {
                 (*callback_)(args...);
+            }
+        };
+    }
+
+    /** Call the subscribed callbacks with the given arguments.
+     * The callbacks will be called from the current thread.
+     * 
+     * @param args The arguments to pass with the invocation of the callback
+     * @return The result of each callback.
+     */
+    generator<result_type> operator()(Args const &...args) const noexcept requires(not std::is_same_v<result_type,void>)
+    {
+        auto callbacks_ = callbacks();
+        for (auto &callback : callbacks_) {
+            if (auto callback_ = callback.lock()) {
+                co_yield (*callback_)(args...);
             }
         };
     }

@@ -38,14 +38,14 @@ TEST(base_n, base64_encode) {
 
 TEST(base_n, base64_decode) {
     ASSERT_EQ(base64::decode(""), to_bstring(""));
-    //ASSERT_THROW(base64::decode("Z"), parse_error);
+    ASSERT_THROW(base64::decode("Z"), parse_error);
     ASSERT_EQ(base64::decode("Zg=="), to_bstring("f"));
     ASSERT_EQ(base64::decode("Zg="), to_bstring("f"));
     ASSERT_EQ(base64::decode("Zg"), to_bstring("f"));
     ASSERT_EQ(base64::decode("Zm8="), to_bstring("fo"));
     ASSERT_EQ(base64::decode("Zm8"), to_bstring("fo"));
     ASSERT_EQ(base64::decode("Zm9v"), to_bstring("foo"));
-    //ASSERT_THROW(base64::decode("Zm9vY"), parse_error);
+    ASSERT_THROW(base64::decode("Zm9vY"), parse_error);
     ASSERT_EQ(base64::decode("Zm9vYg=="), to_bstring("foob"));
     ASSERT_EQ(base64::decode("Zm9vYg="), to_bstring("foob"));
     ASSERT_EQ(base64::decode("Zm9vYg"), to_bstring("foob"));

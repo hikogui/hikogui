@@ -8,7 +8,7 @@
 #include "math.hpp"
 #include "int_carry.hpp"
 #include "codec/base_n.hpp"
-#include <fmt/format.h>
+#include <format>
 #include <type_traits>
 #include <ostream>
 
@@ -152,7 +152,7 @@ struct bigint {
 
     std::string UUIDString() const noexcept {
         static_assert(std::is_same_v<T,uint64_t> && N == 2, "UUIDString should only be called on a uuid compatible type");
-        return fmt::format("{:08x}-{:04x}-{:04x}-{:04x}-{:012x}",
+        return std::format("{:08x}-{:04x}-{:04x}-{:04x}-{:012x}",
             static_cast<uint32_t>(digits[1] >> 32),
             static_cast<uint16_t>(digits[1] >> 16),
             static_cast<uint16_t>(digits[1]),

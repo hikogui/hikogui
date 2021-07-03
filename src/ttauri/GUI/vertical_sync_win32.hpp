@@ -4,49 +4,35 @@
 
 #pragma once
 
-#include "vertical_sync_base.hpp"
+#include "vertical_sync.hpp"
 #include <span>
 #include <thread>
 #include <array>
 
 namespace tt {
 
-class vertical_sync_win32 final : public vertical_sync_base {
-    enum class State {
-        ADAPTER_OPEN,
-        ADAPTER_CLOSED,
-        FALLBACK
-    };
+class vertical_sync_win32 final : public vertical_sync {
+public:
+    vertical_sync_win32() noexcept;
+    ~vertical_sync_win32() override;
 
-    State state;
+    [[nodiscard]] hires_utc_clock::time_point wait() noexcept override;
 
-    void *gdi;
-    unsigned int adapter;
-    unsigned int videoPresentSourceID;
+private:
+    void *_gdi;
+    unsigned int _adapter = 0;
+    unsigned int _video_present_source_id;
 
-    std::jthread verticalSyncThreadID;
+    hires_utc_clock::time_point _previous_frame_time_point;
+    std::array<hires_utc_clock::duration, 15> _frame_duration_data;
+    size_t _frame_duration_counter = 0;
 
-    hires_utc_clock::time_point previousFrameTimestamp;
-    std::array<hires_utc_clock::duration,15> frameDurationData;
-    size_t frameDurationDataCounter = 0;
-
-    void openAdapter() noexcept;
-    void closeAdapter() noexcept;
+    void open_adapter() noexcept;
+    void close_adapter() noexcept;
 
     /** Returns the median duration between two frames.
      */
-    [[nodiscard]] hires_utc_clock::duration averageFrameDuration(hires_utc_clock::time_point frameTimestamp) noexcept;
-
-    /** Waits for vertical-sync
-     * @return Timestamp when the current frame will be displayed.
-     */
-    [[nodiscard]] hires_utc_clock::time_point wait() noexcept;
-
-    void verticalSyncThread(std::stop_token stop_token) noexcept;
-
-public:
-    vertical_sync_win32(std::function<void(void *,hires_utc_clock::time_point)> callback, void *callbackData) noexcept;
-    ~vertical_sync_win32();
+    [[nodiscard]] hires_utc_clock::duration average_frame_duration(hires_utc_clock::time_point frameTimestamp) noexcept;
 };
 
 }

@@ -22,7 +22,7 @@ struct formula_logical_or_node final : formula_binary_operator_node {
     }
 
     std::string string() const noexcept override {
-        return fmt::format("({} || {})", *lhs, *rhs);
+        return std::format("({} || {})", *lhs, *rhs);
     }
 };
 

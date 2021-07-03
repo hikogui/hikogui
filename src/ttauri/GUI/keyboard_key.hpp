@@ -64,7 +64,7 @@ public:
     }
 
     [[nodiscard]] friend std::string to_string(keyboard_key const &rhs) noexcept {
-        return fmt::format("{}{}", rhs.modifiers, rhs.virtualKey);
+        return std::format("{}{}", rhs.modifiers, rhs.virtualKey);
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, keyboard_key const &rhs) {

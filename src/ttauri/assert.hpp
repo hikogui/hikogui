@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "debugger.hpp"
 #include "utils.hpp"
 #include <exception>
@@ -64,6 +64,11 @@ namespace tt {
  * This aborts the program.
  */
 #define tt_not_implemented() [[unlikely]] tt_debugger_abort("tt_not_implemented()")
+
+/** This part of the code has not been implemented yet.
+ * This function should be used in unreachable constexpr else statements.
+ */
+#define tt_static_not_implemented() tt_static_no_default()
 
 } // namespace tt
 

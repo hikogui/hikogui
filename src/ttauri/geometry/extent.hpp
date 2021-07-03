@@ -5,7 +5,7 @@
 #pragma once
 
 #include "vector.hpp"
-#include "numeric_array.hpp"
+#include "../rapid/numeric_array.hpp"
 
 namespace tt {
 namespace geo {
@@ -196,6 +196,11 @@ public:
     [[nodiscard]] constexpr vector<D> up() const noexcept
     {
         return vector<D>{_v._0y00()};
+    }
+
+    constexpr extent &operator+=(extent const &rhs) noexcept
+    {
+        return *this = *this + rhs;
     }
 
     /** Add two extents from each other.
@@ -423,9 +428,9 @@ public:
     [[nodiscard]] friend std::string to_string(extent const &rhs) noexcept
     {
         if constexpr (D == 2) {
-            return fmt::format("[{}, {}]", rhs._v.x(), rhs._v.y());
+            return std::format("[{}, {}]", rhs._v.x(), rhs._v.y());
         } else if constexpr (D == 3) {
-            return fmt::format("[{}, {}, {}]", rhs._v.x(), rhs._v.y(), rhs._v.z());
+            return std::format("[{}, {}, {}]", rhs._v.x(), rhs._v.y(), rhs._v.z());
         } else {
             tt_static_no_default();
         }
@@ -448,3 +453,33 @@ using extent2 = geo::extent<2>;
 using extent3 = geo::extent<3>;
 
 } // namespace tt
+
+namespace std {
+
+template<typename CharT>
+struct formatter<tt::geo::extent<2>, CharT> {
+    auto parse(auto &pc)
+    {
+        return pc.end();
+    }
+
+    auto format(tt::geo::extent<2> const &t, auto &fc)
+    {
+        return std::vformat_to(fc.out(), "[{}, {}]", std::make_format_args(t.width(), t.height()));
+    }
+};
+
+template<typename CharT>
+struct formatter<tt::geo::extent<3>, CharT> : formatter<float, CharT> {
+    auto parse(auto &pc)
+    {
+        return pc.end();
+    }
+
+    auto format(tt::geo::extent<3> const &t, auto &fc)
+    {
+        return std::vformat_to(fc.out(), "[{}, {}, {}]", std::make_format_args(t.width(), t.height(), t.depth()));
+    }
+};
+
+} // namespace std

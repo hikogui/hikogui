@@ -20,7 +20,7 @@ class window_traffic_lights_widget final : public widget {
 public:
     using super = widget;
 
-    window_traffic_lights_widget(gui_window &window, std::shared_ptr<abstract_container_widget> parent) noexcept;
+    window_traffic_lights_widget(gui_window &window, widget *parent) noexcept;
     ~window_traffic_lights_widget() {}
 
     [[nodiscard]] bool
@@ -29,7 +29,7 @@ public:
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
 
     bool handle_event(mouse_event const &event) noexcept override;
-    [[nodiscard]] hit_box hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
 
 private:
     static constexpr float GLYPH_SIZE = 5.0f;

@@ -4,30 +4,28 @@
 
 #pragma once
 
-#include "gui_window_state.hpp"
 #include "gui_window_size.hpp"
 #include "gui_window_delegate.hpp"
-#include "gui_system_globals.hpp"
 #include "mouse_cursor.hpp"
-#include "hit_box.hpp"
+#include "hitbox.hpp"
 #include "mouse_event.hpp"
 #include "keyboard_event.hpp"
-#include "subpixel_orientation.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "../text/gstring.hpp"
-#include "../logger.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../hires_utc_clock.hpp"
 #include "../label.hpp"
+#include "../weak_or_unique_ptr.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
 
 namespace tt {
-class gui_device;
-class gui_system;
+class gfx_device;
+class gfx_system;
 class window_widget;
+class gfx_surface;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -36,9 +34,7 @@ class window_widget;
  */
 class gui_window {
 public:
-    gui_system &system;
-
-    gui_window_state state = gui_window_state::no_device;
+    std::unique_ptr<gfx_surface> surface;
 
     /** The current cursor.
      * Used for optimizing when the operating system cursor is updated.
@@ -49,7 +45,7 @@ public:
      */
     mouse_cursor currentmouse_cursor = mouse_cursor::None;
 
-    /** When set to true the widgets will be layed out.
+    /** When set to true the widgets will be laid out.
      */
     std::atomic<bool> requestLayout = true;
 
@@ -61,28 +57,22 @@ public:
      * We can disable expensive redraws during rendering until this
      * is false again.
      */
-    std::atomic<bool> resizing = false;
+    bool resizing = false;
 
     /*! The window is currently active.
      * Widgets may want to reduce redraws, or change colors.
      */
-    std::atomic<bool> active = false;
+    bool active = false;
 
     /*! Current size state of the window.
      */
     gui_window_size size_state = gui_window_size::normal;
 
-    //! The current window extent as set by the GPU library.
-    extent2 extent;
-
-    std::weak_ptr<gui_window_delegate> delegate;
+    /** The size from the surface, clamped to combined widget's size.
+     */
+    extent2 size;
 
     label title;
-
-    /*! Orientation of the RGB subpixels.
-     */
-    subpixel_orientation subpixel_orientation = subpixel_orientation::BlueRight;
-    //subpixel_orientation subpixel_orientation = subpixel_orientation::Unknown;
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
@@ -91,9 +81,15 @@ public:
     float dpi = 72.0;
 
     //! The widget covering the complete window.
-    std::shared_ptr<window_widget> widget;
+    std::unique_ptr<window_widget> widget;
 
-    gui_window(gui_system &system, std::weak_ptr<gui_window_delegate> const &delegate, label const &title);
+    gui_window(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept;
+
+    gui_window(label const &title) noexcept :
+        gui_window(title, std::make_unique<gui_window_delegate>())
+    {
+    }
+
     virtual ~gui_window();
 
     gui_window(gui_window const &) = delete;
@@ -109,11 +105,19 @@ public:
      */
     virtual void init();
 
+    /** 2 phase constructor.
+     * Must be called directly before the destructor on the same thread,
+     *
+     * `deinit()` should not take locks on window::mutex.
+     */
+    virtual void deinit();
+
+    void set_device(gfx_device *device) noexcept;
+
     /** Request a rectangle on the window to be redrawn
      */
     void request_redraw(aarectangle rectangle) noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
         _request_redraw_rectangle |= rectangle;
     }
 
@@ -121,8 +125,8 @@ public:
      */
     void request_redraw() noexcept
     {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        request_redraw(aarectangle{extent});
+        tt_axiom(is_gui_thread());
+        request_redraw(aarectangle{size});
     }
 
     /** By how much the font needs to be scaled compared to current windowScale.
@@ -133,50 +137,32 @@ public:
         return dpi / (window_scale() * 72.0f);
     }
 
-    /*! Set GPU device to manage this window.
-     * Change of the device may be done at runtime.
-     */
-    void set_device(gui_device *device);
-
-    /*! Remove the GPU device from the window, making it an orphan.
-     */
-    void unset_device()
-    {
-        set_device({});
-    }
-
-    gui_device *device() const noexcept
-    {
-        tt_axiom(gui_system_mutex.recurse_lock_count());
-        return _device;
-    }
-
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
-    virtual void render(hires_utc_clock::time_point displayTimePoint) = 0;
+    virtual void render(hires_utc_clock::time_point displayTimePoint);
 
     /** Check if the window was closed by the operating system.
      */
-    bool is_closed();
+    [[nodiscard]] bool is_closed() const noexcept;
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(size_t column_nr, size_t row_nr, Args &&...args);
+    T &make_widget(size_t column_nr, size_t row_nr, Args &&...args);
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
     template<typename T, typename... Args>
-    std::shared_ptr<T> make_widget(std::string_view address, Args &&...args);
+    T &make_widget(std::string_view address, Args &&...args);
 
     /** Add a widget to main widget of the window.
      * The implementation is in widgets.hpp
      */
     template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    std::shared_ptr<T> make_toolbar_widget(Args &&...args);
+    T &make_toolbar_widget(Args &&...args);
 
     /** Set the mouse cursor icon.
      */
@@ -212,7 +198,7 @@ public:
      */
     virtual void set_text_on_clipboard(std::string str) noexcept = 0;
 
-    void update_mouse_target(std::shared_ptr<tt::widget> new_target_widget, point2 position = {}) noexcept;
+    void update_mouse_target(tt::widget const *new_target_widget, point2 position = {}) noexcept;
 
     /** Change the keyboard focus to the given widget.
      * If the group of the widget is incorrect then no widget will be in focus.
@@ -220,9 +206,7 @@ public:
      * @param widget The new widget to focus, or empty to remove all keyboard focus.
      * @param group The group the widget must belong to.
      */
-    void update_keyboard_target(
-        std::shared_ptr<tt::widget> widget,
-        keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
+    void update_keyboard_target(tt::widget const *widget, keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
 
     /** Change the keyboard focus to the previous or next widget from the given widget.
      * This function will find the closest widget from the given widget which belongs to the given
@@ -232,10 +216,8 @@ public:
      * @param group The group the widget must belong to.
      * @param direction The direction to search in, or current to select the current widget.
      */
-    void update_keyboard_target(
-        std::shared_ptr<tt::widget> const &widget,
-        keyboard_focus_group group,
-        keyboard_focus_direction direction) noexcept;
+    void
+    update_keyboard_target(tt::widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
 
     /** Change the keyboard focus to the given, previous or next widget.
      * This function will find the closest widget from the current widget which belongs to the given
@@ -263,11 +245,7 @@ public:
     }
 
 protected:
-    /** The device the window is assigned to.
-     * The device may change during the lifetime of a window,
-     * as long as the device belongs to the same GUIInstance.
-     */
-    gui_device *_device = nullptr;
+    weak_or_unique_ptr<gui_window_delegate> _delegate;
 
     /*! The current rectangle of the window relative to the screen.
      * The screen rectangle is set by the operating system event loop and
@@ -282,33 +260,29 @@ protected:
      */
     aarectangle _screen_rectangle;
 
-    bool _request_setting_change = true;
+    std::atomic<bool> _request_setting_change = true;
 
-    aarectangle _request_redraw_rectangle = aarectangle{};
+    std::atomic<aarectangle> _request_redraw_rectangle = aarectangle{};
+
+    /** The time of the last forced redraw.
+     * A forced redraw may happen when needing to draw outside
+     * of the event-loop. For example when win32 moving or resizing
+     * the event-loop is stuck, so forced redraws are happening on
+     * the WM_MOVING and WM_SIZING messages that are generated outside
+     * the event loop, but on the same thread as the event loop.
+     */
+    hires_utc_clock::time_point last_forced_redraw = {};
 
     /** Let the operating system create the actual window.
-     * @param title The title of the window.
-     * @param extent The size of the window.
+     * @pre title and extent must be set.
      */
-    virtual void create_window(const std::u8string &title, extent2 extent) = 0;
+    virtual void create_window() = 0;
 
     /** By how much graphic elements should be scaled to match a point.
      * The widget should not care much about this value, since the
      * transformation matrix will match the window scaling.
      */
     [[nodiscard]] float window_scale() const noexcept;
-
-    /*! Called when the GPU library has changed the window size.
-     */
-    virtual void window_changed_size(extent2 new_extent);
-
-    /*! Teardown Window based on State::*_LOST
-     */
-    virtual void teardown() = 0;
-
-    /*! Build Windows based on State::NO_*
-     */
-    virtual void build() = 0;
 
     /** Handle command event.
      * This function is called when no widget has handled the command.
@@ -341,7 +315,7 @@ protected:
         return false;
     }
 
-    /*! Mouse mouse event.
+    /** Send Mouse event.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
@@ -361,16 +335,32 @@ protected:
     bool send_event(char32_t c, bool full = true) noexcept;
 
 private:
+    std::shared_ptr<std::function<void()>> _setting_change_callback;
+
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
      */
-    std::weak_ptr<tt::widget> _mouse_target_widget = {};
+    tt::widget const *_mouse_target_widget = nullptr;
 
     /** Target of the keyboard
      * widget where keyboard events are sent to.
      */
-    std::weak_ptr<tt::widget> _keyboard_target_widget = {};
+    tt::widget const *_keyboard_target_widget = nullptr;
+
+    /** Called when a widget is being destructed.
+     * This removes internal references to widgets.
+     * Particularly the mouse and keyboard targets.
+     */
+    void widget_is_destructing(tt::widget const *sender) noexcept
+    {
+        if (_mouse_target_widget == sender) {
+            _mouse_target_widget = nullptr;
+        }
+        if (_keyboard_target_widget == sender) {
+            _keyboard_target_widget = nullptr;
+        }
+    }
 
     /** Send event to a target widget.
      *
@@ -381,7 +371,9 @@ private:
      *  - The window itself.
      */
     template<typename Event>
-    bool send_event_to_widget(std::shared_ptr<tt::widget> target_widget, Event const &event) noexcept;
+    bool send_event_to_widget(tt::widget const *target_widget, Event const &event) noexcept;
+
+    friend class widget;
 };
 
 } // namespace tt

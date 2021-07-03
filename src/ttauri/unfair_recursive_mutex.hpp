@@ -75,10 +75,6 @@ public:
      * When `try_lock()` is called on a thread that already holds the lock true is returned.
      */
     [[nodiscard]] bool try_lock() noexcept {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        dead_lock_detector::lock(this, true);
-#endif
-
         // FIRST | OWNER | OTHER
         ttlet thread_id = current_thread_id();
 
@@ -103,10 +99,6 @@ public:
             return true;
 
         } else {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-            dead_lock_detector::unlock(this);
-#endif
-
             // OTHER
             return false;
         }
@@ -129,10 +121,6 @@ public:
     * locked:
     */
     void lock() noexcept {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        dead_lock_detector::lock(this, true);
-#endif
-
         // FIRST | OWNER | OTHER
         ttlet thread_id = current_thread_id();
 
@@ -159,10 +147,6 @@ public:
     }
 
     void unlock() noexcept {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        dead_lock_detector::unlock(this);
-#endif
-
         // FIRST | OWNER
         tt_axiom(recurse_lock_count(), "Unlock must be called on the thread that locked the mutex");
 

@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "console.hpp"
 #include "dialog.hpp"
-#include <fmt/format.h>
+#include <format>
 
 namespace tt {
 
@@ -43,7 +43,7 @@ template<typename... Args>
     if constexpr (sizeof...(Args) == 0) {
         message = fmt;
     } else {
-        message = fmt::format(fmt, std::forward<Args>(args)...);
+        message = std::format(fmt, std::forward<Args>(args)...);
     }
 
     if (debugger_is_present()) {

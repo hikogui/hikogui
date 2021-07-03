@@ -6,8 +6,9 @@
 
 #include "keyboard_key.hpp"
 #include "../URL.hpp"
-#include "../os_detect.hpp"
+#include "../architecture.hpp"
 #include "../command.hpp"
+#include "../subsystem.hpp"
 #include <unordered_map>
 #include <tuple>
 
@@ -130,7 +131,7 @@ public:
     /** Load system bindings.
     */
     void loadSystemBindings() {
-        if constexpr (OperatingSystem::current == OperatingSystem::Windows) {
+        if constexpr (operating_system::current == operating_system::windows) {
             return loadBindings(URL{"resource:win32.keybinds.json"}, true);
         } else {
             tt_no_default();
@@ -147,10 +148,17 @@ public:
      * This will save all bindings that are different from the system bindings.
      */
     void saveUserBindings(URL url);
-};
 
-/** Global keyboard bindings.
-*/
-inline keyboard_bindings keyboardBindings;
+    [[nodiscard]] static keyboard_bindings &global() noexcept
+    {
+        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
+    }
+
+private:
+    static inline std::atomic<keyboard_bindings *> _global;
+
+    [[nodiscard]] static keyboard_bindings *subsystem_init() noexcept;
+    static void subsystem_deinit() noexcept;
+};
 
 }

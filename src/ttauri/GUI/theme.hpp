@@ -5,104 +5,64 @@
 #pragma once
 
 #include "theme_mode.hpp"
+#include "theme_color.hpp"
+#include "theme_text_style.hpp"
 #include "../required.hpp"
 #include "../text/text_style.hpp"
 #include "../URL.hpp"
 #include "../datum.hpp"
 #include "../color/color.hpp"
 #include "../geometry/extent.hpp"
+#include "../subsystem.hpp"
 #include <array>
 
 namespace tt {
 
 class theme {
 public:
-    static inline theme *global;
+    operating_system operating_system = operating_system::windows;
 
-    static constexpr OperatingSystem operatingSystem = OperatingSystem::Windows;
-
-    float toolbarHeight =
-        (operatingSystem == OperatingSystem::Windows) ? 30.0f : 20.0f;
+    float toolbar_height = (operating_system == operating_system::windows) ? 30.0f : 20.0f;
 
     /** The width of a close, minimize, maximize, system menu button.
      */
-    float toolbarDecorationButtonWidth =
-        (operatingSystem == OperatingSystem::Windows) ? 30.0f : 20.0f;
+    float toolbar_decoration_button_width = (operating_system == operating_system::windows) ? 30.0f : 20.0f;
 
     /** Distance between widgets and between widgets and the border of the container.
      */
     float margin = 6.0f;
 
-    extent2 margin2D = extent2{margin, margin};
-    extent2 margin2Dx2 = extent2{margin * 2.0f, margin * 2.0f};
-
-    float scroll_bar_thickness = margin * 2.0f;
-
     /** The line-width of a border.
      */
-    float borderWidth = 1.0f;
+    float border_width = 1.0f;
 
     /** The rounding radius of boxes with rounded corners.
      */
-    float roundingRadius = 5.0f;
+    float rounding_radius = 5.0f;
 
     /** The size of small square widgets.
      */
-    float smallSize = 15.0f;
+    float size = 15.0f;
 
-    /** The height of the larger widgets like buttons, text-input and drop-down-lists.
+    /** The size of large widgets. Such as the minimum scroll bar size.
      */
-    float height = 22.0f;
+    float large_size = 25.0f;
 
-    /** The width of the larger widgets and smaller widgets with included labels.
+    /** Size of icons inside a widget.
      */
-    float width = 50.0f;
-
-    /** Max width of labels in widgets.
-     */
-    float maxLabelWidth = 300.0f;
-
-    /** Size of icons that represents the size of label's text.
-     */
-    float small_icon_size = 10.0f;
-
-    /** Size of icons extending from the ascender to descender of a label's text.
-     */
-    float icon_size = 20.0f;
+    float icon_size = 10.0f;
 
     /** Size of icons representing the length of am average word of a label's text.
      */
     float large_icon_size = 30.0f;
 
+    /** Size of icons being inline with a label's text.
+     */
+    float label_icon_size = 20.0f;
+
 
     std::string name;
     theme_mode mode;
-
-    // Themed bright colors.
-    color blue;
-    color green;
-    color indigo;
-    color orange;
-    color pink;
-    color purple;
-    color red;
-    color teal;
-    color yellow;
-
-    // Semantic colors
-    color foregroundColor;
-    color accentColor;
-    color textSelectColor;
-    color cursorColor;
-    color incompleteGlyphColor;
-
-    text_style labelStyle;
-    text_style smallLabelStyle;
-    text_style warningLabelStyle;
-    text_style errorLabelStyle;
-    text_style helpLabelStyle;
-    text_style placeholderLabelStyle;
-    text_style linkLabelStyle;
 
     theme() noexcept = delete;
     theme(theme const &) noexcept = delete;
@@ -114,60 +74,45 @@ public:
      */
     theme(URL const &url);
 
-    /** Get fill color of elements of widgets and child widgets.
-    * @param nestingLevel The nesting level.
-    */
-    [[nodiscard]] color fillColor(ssize_t nesting_level) const noexcept
+    [[nodiscard]] tt::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
+    [[nodiscard]] tt::text_style const &text_style(theme_text_style theme_color) const noexcept;
+
+    static void set_global(theme *theme) noexcept
     {
-        nesting_level = std::max(ssize_t{0}, nesting_level);
-        tt_axiom(std::ssize(fillShades) > 0);
-        return fillShades[nesting_level % std::ssize(fillShades)];
+        _global.store(theme);
     }
 
-    /** Get border color of elements of widgets and child widgets.
-    * @param nestingLevel The nesting level.
-    */
-    [[nodiscard]] color borderColor(ssize_t nesting_level) const noexcept
+    [[nodiscard]] static theme &global() noexcept;
+
+    [[nodiscard]] static tt::color global(theme_color color, ssize_t nesting_level = 0) noexcept
     {
-        nesting_level = std::max(ssize_t{0}, nesting_level);
-        tt_axiom(std::ssize(borderShades) > 0);
-        return borderShades[nesting_level % std::ssize(borderShades)];
+        return global().color(color, nesting_level);
     }
 
-
-    /** Get grey scale color
-    * This color is reversed between light and dark themes.
-    * @param level Gray level: 0 is background, positive values increase in foregroundness.
-    *              -1 is foreground, more negative values go toward background.
-    */
-    [[nodiscard]] color gray(ssize_t level) const noexcept
+    [[nodiscard]] static tt::text_style const &global(theme_text_style text_style) noexcept
     {
-        if (level < 0) {
-            level = std::ssize(grayShades) + level;
-        }
-
-        level = std::clamp(level, ssize_t{0}, std::ssize(grayShades) - 1);
-        return grayShades[level];
+        return global().text_style(text_style);
     }
 
 private:
-    std::vector<color> fillShades;
-    std::vector<color> borderShades;
-    std::vector<color> grayShades;
+    static inline std::atomic<theme *>_global = nullptr;
 
-    [[nodiscard]] float parseFloat(datum const &data, char const *name);
-    [[nodiscard]] bool parseBool(datum const &data, char const *name);
-    [[nodiscard]] std::string parseString(datum const &data, char const *name);
-    [[nodiscard]] color parseColorValue(datum const &data);
-    [[nodiscard]] std::vector<color> parseColorList(datum const &data, char const *name);
-    [[nodiscard]] color parseColor(datum const &data, char const *name);
-    [[nodiscard]] text_style parsetext_styleValue(datum const &data);
-    [[nodiscard]] font_weight parsefont_weight(datum const &data, char const *name);
-    [[nodiscard]] text_style parsetext_style(datum const &data, char const *name);
+    std::array<std::vector<tt::color>, num_theme_colors> _colors;
+    std::array<tt::text_style, num_theme_text_styles> _text_styles;
+
+    [[nodiscard]] float parse_float(datum const &data, char const *object_name);
+    [[nodiscard]] bool parse_bool(datum const &data, char const *object_name);
+    [[nodiscard]] std::string parse_string(datum const &data, char const *object_name);
+    [[nodiscard]] tt::color parse_color_value(datum const &data);
+    [[nodiscard]] tt::color parse_color(datum const &data, char const *object_name);
+    [[nodiscard]] std::vector<tt::color> parse_color_list(datum const &data, char const *object_name);
+    [[nodiscard]] tt::text_style parse_text_style_value(datum const &data);
+    [[nodiscard]] font_weight parse_font_weight(datum const &data, char const *object_name);
+    [[nodiscard]] tt::text_style parse_text_style(datum const &data, char const *object_name);
     void parse(datum const &data);
 
     [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {
-        return fmt::format("{}:{}", rhs.name, rhs.mode);
+        return std::format("{}:{}", rhs.name, rhs.mode);
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, theme const &rhs) {

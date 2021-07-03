@@ -13,14 +13,13 @@
 #include "meta.hpp"
 #include "format.hpp"
 #include "source_location.hpp"
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "delayed_format.hpp"
 #include "fixed_string.hpp"
 #include "subsystem.hpp"
 #include "log_level.hpp"
-#include <date/tz.h>
-#include <fmt/format.h>
-#include <fmt/ostream.h>
+#include <chrono>
+#include <format>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -54,8 +53,7 @@ public:
 
     template<typename... Args>
     log_message(Args &&...args) noexcept :
-        _time_stamp(time_stamp_count::now(std::memory_order::relaxed)), 
-        _thread_id(current_thread_id()),
+        _time_stamp(time_stamp_count::inplace_with_thread_id{}),
         _what(std::forward<Args>(args)...)
     {
     }
@@ -65,24 +63,21 @@ public:
         ttlet time_point = hires_utc_clock::make(_time_stamp);
         ttlet local_timestring = format_iso8601(time_point);
         ttlet cpu_id = _time_stamp.cpu_id();
+        ttlet thread_id = _time_stamp.thread_id();
 
         if constexpr (static_cast<bool>(Level & log_level::statistics)) {
-            return fmt::format("{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), _thread_id, cpu_id);
+            return std::format("{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), thread_id, cpu_id);
         } else {
-            return fmt::format("{} {:5} {} ({}:{}) tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine, _thread_id, cpu_id);
+            return std::format("{} {:5} {} ({}:{}) tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine, thread_id, cpu_id);
         }
     }
 
 private:
     time_stamp_count _time_stamp;
-    thread_id _thread_id;
     delayed_format<Fmt, Values...> _what;
 };
 
-//template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
-//log_message(time_stamp_count, Args &&...) -> log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>;
-
-static constexpr size_t MAX_MESSAGE_SIZE = 224;
+static constexpr size_t MAX_MESSAGE_SIZE = 240;
 static constexpr size_t MAX_NR_MESSAGES = 4096;
 
 using log_queue_item_type = polymorphic_optional<log_message_base, MAX_MESSAGE_SIZE>;
@@ -131,7 +126,7 @@ inline bool logger_start()
  */
 inline void logger_stop()
 {
-    return stop_subsystem(detail::logger_is_running, false, detail::logger_deinit);
+    return stop_subsystem(detail::logger_deinit);
 }
 
 /** Log a message.
@@ -140,7 +135,7 @@ inline void logger_stop()
  * @tparam SourceLine The source line where this function was called.
  * @tparam Fmt The format string.
  * @param timestamp The timestamp when the message is logged.
- * @param args Arguments to fmt::format.
+ * @param args Arguments to std::format.
  */
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
 void log(Args &&...args) noexcept

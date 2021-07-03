@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "architecture.hpp"
 #include "cast.hpp"
 #include "int_carry.hpp"
 #include "thread.hpp"
@@ -20,45 +20,53 @@
 
 namespace tt {
 
-/** 
+/**
  * Since Window's 10 QueryPerformanceCounter() counts at only 10MHz which
  * is too low to measure performance in many cases.
- * 
+ *
  * Instead we will use the TSC.
  */
 class time_stamp_count {
 public:
-    constexpr time_stamp_count() noexcept :
-        _count(0), _aux(0) {}
+    struct inplace {};
+    struct inplace_with_thread_id {};
+
+    constexpr time_stamp_count() noexcept : _count(0), _aux(0) {}
 
     constexpr time_stamp_count(uint64_t count, uint32_t aux) noexcept : _count(count), _aux(aux) {}
 
-    /** Get the current count from the CPU's time stamp count.
-     * @param memory_order Memory order is one of seq_cst or relaxed.
-     * @return The current clock count and cpu-id.
+    /** Use a constructor to inplace create the timestamp.
      */
-    [[nodiscard]] static time_stamp_count now(std::memory_order memory_order = std::memory_order::seq_cst) noexcept
+    explicit time_stamp_count(time_stamp_count::inplace) noexcept
     {
-        tt_axiom(memory_order != std::memory_order::consume);
-        tt_axiom(memory_order != std::memory_order::acq_rel);
-        tt_axiom(memory_order != std::memory_order::release);
-        tt_axiom(memory_order != std::memory_order::acquire);
-
-#if TT_PROCESSOR == TT_CPU_X64
-        // rdtscp returns both a 64 bit timestamp and a 32 bit opaque cpu-id.
-        // The rdtscp instruction includes an implied lfence and mfence instruction
-        // before getting the timestamp. An explicit lfence after the rdtscp instruction
-        // satisfies the seq_cst memory order.
-        unsigned int aux;
-        auto count = __rdtscp(&aux);
-        if (memory_order == std::memory_order::seq_cst) {
-            _mm_lfence();
+        if constexpr (processor::current == processor::x64) {
+            _count = __rdtscp(&_aux);
+        } else {
+            tt_not_implemented();
         }
-
-        return time_stamp_count{narrow_cast<uint64_t>(count), narrow_cast<uint32_t>(aux)};
-#endif
     }
 
+    /** Use a constructor to inplace create the timestamp.
+     */
+    explicit time_stamp_count(time_stamp_count::inplace_with_thread_id) noexcept
+    {
+        if constexpr (processor::current == processor::x64) {
+            constexpr uint64_t NT_TIB_CurrentThreadID = 0x48;
+
+            _count = __rdtscp(&_aux);
+            _thread_id = __readgsdword(NT_TIB_CurrentThreadID);
+        } else {
+            tt_not_implemented();
+        }
+    }
+
+    /** Get the current count from the CPU's time stamp count.
+     * @return The current clock count and cpu-id.
+     */
+    [[nodiscard]] static time_stamp_count now() noexcept
+    {
+        return time_stamp_count{time_stamp_count::inplace{}};
+    }
 
     /** Get the logical cpu index.
      * This is logical CPU id that the operating system uses for things
@@ -74,6 +82,14 @@ public:
         } else {
             return cpu_id_fallback();
         }
+    }
+
+    /** Get the thread id.
+     * @pre Must call `time_stamp_count(time_stamp_count::inplace_with_thread_id)` first.
+     */
+    [[nodiscard]] constexpr uint32_t thread_id() const noexcept
+    {
+        return _thread_id;
     }
 
     /** Get the count since epoch.
@@ -126,13 +142,18 @@ public:
 private:
     uint64_t _count;
 
-    // On intel x64 this is the TSC_AUX register value for this
-    // cpu. The operating system writes this value and is often not document.
-    // 
-    // We check if the lower 12 bits match the logical cpu id to use the fast
-    // pad for aux value to cpu id conversion. Otherwise we keep track in a table
-    // of each aux value and cpu id.
+    /** On intel x64 this is the TSC_AUX register value for this
+     * cpu. The operating system writes this value and is often not document.
+     *
+     * We check if the lower 12 bits match the logical cpu id to use the fast
+     * pad for aux value to cpu id conversion. Otherwise we keep track in a table
+     * of each aux value and cpu id.
+     */
     uint32_t _aux;
+
+    /** As struct packing optimization, add the thread id in this same struct.
+     */
+    uint32_t _thread_id;
 
     /** The period in nanoseconds/cycle as Q32.32
      */
@@ -156,7 +177,7 @@ private:
      * This is logical CPU id that the operating system uses.
      * This is the fallback function that will search through the
      * table of _aux_values.
-     * 
+     *
      * @return the CPU id, or -1 if the CPU id is unknown.
      */
     [[nodiscard]] ssize_t cpu_id_fallback() const noexcept;
@@ -165,5 +186,4 @@ private:
     static void configure_frequency() noexcept;
 };
 
-}
-
+} // namespace tt
