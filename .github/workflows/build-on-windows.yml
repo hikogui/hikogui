@@ -207,7 +207,7 @@ jobs:
       VULKAN_SDK: ${{ steps.vulkan-output.outputs.VULKAN_SDK }}
 
     env:
-      VULKAN_VERSION: 1.2.170.0
+      VULKAN_VERSION: 1.2.176.1
 
     steps:
       - name: 📥 Setup Environment Variables
