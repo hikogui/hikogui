@@ -33,7 +33,8 @@ jobs:
       - name: ⚙️ Trigger Documentation Build
         run: |
           curl -X POST \
-          -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          -u "${{ secrets.DOC_DISPATCH_USER}}:${{secrets.DOC_DISPATCH_TOKEN}}" \
           -H "Accept: application/vnd.github.v3+json" \
           -d '{"ref":"${{ github.ref }}"}' \
           https://api.github.com/repos/ttauri-project/ttauri-project.github.io/actions/workflows/build-docs.yml/dispatches
+
