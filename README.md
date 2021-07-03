@@ -1,4 +1,4 @@
-TTauri GUI library [![Build status](https://ci.appveyor.com/api/projects/status/baqx98wu1ombp3d2/branch/main?svg=true)](https://ci.appveyor.com/project/takev/ttauri/branch/main)
+TTauri GUI library [![Build on Windows](https://github.com/ttauri-project/ttauri/actions/workflows/build-on-windows.yml/badge.svg?branch=main)](https://github.com/ttauri-project/ttauri/actions/workflows/build-on-windows.yml) ![Version](https://img.shields.io/badge/dynamic/json?url=https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/ttauri-project/ttauri/master/vcpkg.json&label=version&query=$[%27version%27]&color=blue) [![License](https://img.shields.io/github/license/ttauri-project/ttauri.svg)](https://github.com/ttauri-project/ttauri/blob/master/LICENSE_1_0.txt)
 ==================
 
 A portable, low latency, retained-mode GUI library written in C++.
