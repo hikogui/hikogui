@@ -27,6 +27,8 @@ namespace tt {
  * a column, or full height of the row; and divide the length of the column or
  * row with the other children.
  *
+ * ![Row Column Widget](docs/media/figures/GUI/Column%20widget.png)
+ *
  * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or
  * `axis::vertical`.
  */
