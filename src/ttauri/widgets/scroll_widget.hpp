@@ -30,6 +30,8 @@ namespace tt {
  * given did not allow scrolling in that direction. This is useful behavior when
  * the scroll widget is part of an overlay widget which was unable to size to
  * the minimum size requested.
+ * 
+ * @image html scroll_widget.png
  *
  * @tparam Axis the axis that the content may be scrolled. Allowed values are
  *              `axis::horizontal`, `axis::vertical` or `axis::both`.

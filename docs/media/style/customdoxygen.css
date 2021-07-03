@@ -257,3 +257,9 @@ code {
     color: #dddddd;
     font-weight: normal;
 }
+
+.dyncontent div.center img {
+    background: #cccccc;
+/* Only two pixel border, otherwise the map becomes offset too much. */
+    border: solid 2px #cccccc;
+}

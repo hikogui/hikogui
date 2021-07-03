@@ -32,6 +32,8 @@ namespace tt {
  *
  * When laid out, each child is sized to where it will occupy the full width and
  * height of each cell.
+ * 
+ * @image html grid_widget.png
  */
 class grid_widget : public widget {
 public:
