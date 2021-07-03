@@ -1,9 +1,11 @@
 # TTauri Stencil Template Language
+
 This template language was designed for code generation for different programming languages
 including HTML. The language was inspired by makotemplates.org, but with
 a simpler data model making it more easy to do more complicated stuff.
 
 ## Data model
+
 All assignments at the top level of a file will be added to the global scope.
 All assignments inside an included file are also made to the global scope.
 
@@ -19,6 +21,7 @@ definition. By calling `super()` from within a `#function` or `#block` you can c
 definition.
 
 ## Expressions
+
 The `tt::datum` class is used for holding and operating on all the data while executing
 an expression of the TTauri template language. A `tt::datum` class can hold the following types:
  * Undefined
@@ -33,6 +36,7 @@ an expression of the TTauri template language. A `tt::datum` class can hold the 
  * Map
 
 ### Subexpression
+
 Expressions can be enclosed inside parenthesis '(' ')' to force precedence on the expression inside.
 
 ### Operators
@@ -83,6 +87,7 @@ Expressions can be enclosed inside parenthesis '(' ')' to force precedence on th
  | 17         | expr '!' name          | String filter                        |
 
 ### Function call
+
 Call a function with zero or more arguments.
 
 A function is a name in special global scope with functions.
@@ -92,6 +97,7 @@ or added in the template by the user.
 Syntax: `name '(' ( expression ( ',' expression )* ','? )? ')'`
 
 ### String filter
+
 The string filter binary operator '!' implicitly converts the left hand side expression
 to a string, and passes this string through the filter `name`, yielding a new string.
 
@@ -102,6 +108,7 @@ Built in filters:
  * `id`: Convert string to match `[a-zA-Z_][0-9a-zA-Z_]*`.
 
 ### Assignment
+
 An assignment operator is different from inplace-operations. An inplace-operation will
 modify a value of an existing variable. An assignment operator will create or replace
 a variable at the current scope.
@@ -119,11 +126,13 @@ Syntax: `name | expr '=' expression`
 Syntax: `'[' name | expr ( ',' name | expr )* ']' '=' expression`
 
 ### Null
+
 Used by the user to denote a *nothing* value.
 
 Syntax: `null`
 
 ### Undefined
+
 Used by the system to denote a *nothing* value. This will be used
 temporarily when indexing a vector or map on a non existing key which may then be replaced
 with a new value.
@@ -131,6 +140,7 @@ with a new value.
 Syntax: `undefined`
 
 ### Boolean
+
 Syntax: `true` or `false`
 
 Explicit conversion: `boolean()`
@@ -147,6 +157,7 @@ Operations available that work on a boolean (all datum will be implicitly conver
  - `boolean >= boolean -> boolean`
 
 ### Integer
+
 A 64 bit signed integer in 2's compliment format.
 
 Syntax: `[+-]?(0[bBoOdDxX])?[0-9a-fA-F']+`
@@ -188,6 +199,7 @@ Operations available that work on a integer:
 
 
 ### Decimal
+
 A decimal floating point format in the form `mantissa + 10**exponent`.
 
 No literal available.
@@ -221,6 +233,7 @@ Operations available that work on a decimal float (integer are implicitly conver
 
 
 ### Float
+
 A binary floating point format in the form `mantissa + 2**exponent`.
 
 Syntax: `[0-9]+.[0-9]*([eE][-]?[0-9]+)?` or `[0-9]*.[0-9]+([eE][-]?[0-9]+)?`
@@ -247,6 +260,7 @@ Operations available that work on a binary float (integer and decimals are impli
  - `ceil(float)`
 
 ### String
+
 Syntax: `"([^"]|\\")*"`
 
 The literal string may include escape sequences:
@@ -277,6 +291,7 @@ Available filters:
  - `xml` For text that needs to be encoded inside a XML or HTML document.
 
 ### URL
+
 No literal available.
 
 Explicit conversion: `url()`
@@ -292,6 +307,7 @@ Operations available that work on a string:
  - `url >= url -> boolean`
 
 ### Vector
+
 A list of `tt::datum` objects.
 
 Syntax: '[' ( expression ( ',' expression )* ','? )? ']'
@@ -315,6 +331,7 @@ Operations available that work on a vector:
 
 
 ### Map
+
 A unordered map of key / value pairs; both `tt::datum` objects.
 
 Syntax: '{' ( expression ':' expression ( ',' expression ':' expression )* ','? )? '}'
@@ -336,6 +353,7 @@ Operations available that work on a map:
 
 
 ## Escape, Statements and placeholders
+
 Statements and placeholders are used to generate text.
 
 To make it so generated text will not include unexpected white space the following rules apply:
@@ -345,6 +363,7 @@ To make it so generated text will not include unexpected white space the followi
  * Text (including trailing white-spaces) are kept in front of a statement.
 
 ### Escape sequences
+
 The backslash is used to escape:
  - End of line, mostly used for formatting inside loops.
  - The `$` dollar character used in placeholders.
@@ -367,6 +386,7 @@ This linefeed is suppressed.
 ```
 
 ### Placeholder
+
 The placeholder is an expression that is evaluated and explicitly converted to a string.
 This string will then be inserted into the text.
 
@@ -383,6 +403,7 @@ Result:
 ```
 
 ### Expression Statement
+
 Expressions can be evaluated as statements themselves. This is mostly useful for
 doing assignment, modifying data or calling functions with side effects.
 
@@ -410,6 +431,7 @@ Result:
 ```
 
 ### Including files
+
 The `#include` statement is evaluated during parsing, by parsing the included file at the current position
 recursively. An `#include` statement can only appear at the top-level of each file, i.e. it can not be used
 inside the body of a flow-control statement.
@@ -439,6 +461,7 @@ This is the contents of foo.tti.
 ```
 
 ### If statement
+
 Conditional `#if` statement, with optional `#elif` statments and optional end `#else` statement.
 The expression in the `#elif` statements are only evaluated if the result of the previous `#if` or `#elif`
 expressions where `false`.
@@ -470,6 +493,7 @@ Foo is 5.
 ```
 
 ### For loop
+
 A for loop iterates over the result of an the expression. Each iteration-result is
 assigned to the name in front of the `in` keyword, optionally the iteration-result is
 unpacked into multiple names.
@@ -513,6 +537,7 @@ The value of x is hello.
 ```
 
 ### While loop
+
 A while loop executes a block multiple times until the expression yields `false`.
 
 Inside the loop extra variables are available for convenience:
@@ -541,6 +566,7 @@ Iteration 2.
 ```
 
 ### Do-while loop
+
 A do-while loop executes a block at least once until the expression yields `false`.
 
 Inside the loop extra variables are available for convenience:
@@ -566,6 +592,7 @@ Iteration 0.
 ```
 
 ### Continue and Break
+
 Stop executing of a block inside a loop, then:
  - *continue* with the next iteration of the loop or
  - *break* out of the loop
@@ -597,6 +624,7 @@ The value of y is foo.
 ```
 
 ### Function
+
 Define a function that can be called in expressions.
 A function with a return statement will simply return with its value.
 A function without a return statement will return its textual-output.
@@ -632,6 +660,7 @@ bar is foo is 42.
 ```
 
 ### Return
+
 Return data from a function
 
 Syntax: `'#return' expression '\n'`
@@ -651,6 +680,7 @@ Result:
 ```
 
 ### Named block
+
 A block is like a function without arguments which is automatically evaluated
 where it was first defined. A block can only return textual-output.
 
