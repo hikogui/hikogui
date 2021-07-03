@@ -1,8 +1,84 @@
-How to GUI system 
-=================
+How to use widgets
+==================
 
-This document describes how to use widgets.
+Creating Windows
+----------------
+You can create a window by calling the `tt::gui_system::make_window()`
+member function of a global object that can be accessed using
+`tt::gui_system::global()`.
 
+The first time `tt::gui_system::global()` is used the GUI system is
+started. From this point it is required that every call into the GUI
+system is done from the same thread, called the `gui_thread`.
+
+The first argument to make\_window() is the title of the window, of
+type `tt::label`, which consists of an icon and translatable text.
+
+The second optional argument is a subclass of `tt::window_delegate`.
+The window delegate can be used to store data with the window
+and provide initialization of the widgets.
+
+The window will automatically determine its size based on the
+widgets that will be added to window.
+
+After creating at least one window and optionally populating
+the window(s) with widgets; you should call
+`tt::gui_system::global().loop()`. This function will enter
+the system's GUI-loop, which will monitor keyboard, mouse events
+and start rendering of the windows.
+
+You can add new widgets to the window by using the
+`tt::gui_window::make_widget<>()` and
+`tt::gui_window::make_toolbar_widget()` functions.
+More information on how to add widgets is in the next chapter,
+specifics about window can be found in `tt::window_widget`
+information below.
+
+Widget
+------
+Widget are graphical elements which are shown inside a window,
+and often can be interacted with using the mouse an keyboard.
+
+Many widgets such as the grid layout widget, column layout widget
+or the scroll view widget are containers for other widgets.
+
+But most other widgets are build out of other widgets, for example:
+a label widget contains both a text and a icon widget. And
+a button widget will contain a label widget.
+
+Most widgets will have a `make_widget<>()` member function to
+add widgets to it. The template argument will
+be the type of the widget to instantiate and the arguments
+will be passed to the constructor of the widget.
+
+Certain container widgets may have extra arguments for the
+`make_widget<>()` function which are used as a position for
+the new widget inside the container.
+
+### Grid Layout Widget
+The grid layout widget calculates the size of each
+row and column, based on the minimum, preferred and
+maximum size of each child widget.
+
+This will also determine the minimum, preferred and
+maximum size of the grid layout widget itself.
+
+During layout each widget is positioned and sized based
+on the width and height of each cell.
+
+The `tt::grid_layout_widget()` constructor has one
+optional argument, a `std::weak_ptr` to a subclass
+of `tt::grid_layout_delegate`. It is mostly used to
+populate the children of the grid during initialization.
+
+The are two version of the
+`tt::grid_layout_widget::make_widget<>()` function:
+ - With the first argument a string literal with a
+   spreadsheet-like cell coordinate, A column index as
+   a combination of letters, followed by a row index
+   as a combination of digits.
+ - With the first argument the column index and
+   the second argument the row index.
 
 Observable
 ----------
@@ -43,8 +119,8 @@ queries a delegate for the data to display and sends messages to
 the delegate when a user interacts with the widget.
 
 In the example below a user defined instance of `my_delegate` is
-is passed to the constructor of the `tt::checkbox_button`.
-`my_delegate` must inherint from `tt::button_delegate`.
+passed to the constructor of the `tt::checkbox_button`.
+`my_delegate` must inherit from `tt::button_delegate`.
 
 ```
 auto delegate = std::make_shared<my_delegate>();
@@ -100,7 +176,7 @@ with the observed value.
 
 When the observed value is equal to:
 
- - **true-value**: a checkmark is shown inside the box and the
+ - **true-value**: a check mark is shown inside the box and the
    true\_label is shown to the right of the box,
  - **false-value**: the box is empty and the
    false\_label is shown to the right of the box,

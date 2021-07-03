@@ -44,6 +44,10 @@ body {
     color: #dddddd;
 }
 
+div.textblock {
+    width: 650px;
+}
+
 .directory tr.even {
     background: #1c1c1c;
 }
@@ -76,6 +80,10 @@ b {
 ul {
     padding-left: 25px;
     list-style-image: url(https://www.ttauri-project.org/assets/images/bullet.png);
+}
+
+.navpath ul {
+    list-style: none;
 }
 
 dt {
@@ -141,6 +149,17 @@ a.code, a.code:visited, a.line, a.line:visited {
 a.codeRef, a.codeRef:visited, a.lineRef, a.lineRef:visited {
     color: #ca5201;
 }
+
+a.elRef {
+    color: #cccccc;
+    text-decoration-color: blue;
+}
+
+a.elRef:visited {
+    color: #cccccc;
+    text-decoration-color: blue;
+}
+
 
 a.el {
     font-weight: normal;
@@ -213,6 +232,10 @@ code {
     color: #fffc79;
 }
 
+.memdoc > * {
+    width: 650px;
+}
+
 .memdoc {
     border-bottom: 1px solid #444444;
     border-left: 1px solid #444444;
@@ -256,6 +279,10 @@ code {
 .inherit_header {
     color: #dddddd;
     font-weight: normal;
+}
+
+.dyncontent {
+    width: 650px;
 }
 
 .dyncontent div.center img {

@@ -3,15 +3,18 @@ TTauri {#mainpage}
 
 TTauri is a cross platform C++ GUI library.
 
+Manuals
+-------
+ - [How to use Widgets](how_to_use_widgets.md)
+
+
 Subsystems
 ----------
- - [Application Lifetime](application_lifetime.md): CRT.
- - [GUI System](gui_system.md): gui\_system, gui\_window, widget.
+ - [GUI system](gui_system.md): 
+ - [Application Lifetime](application_lifetime.md)
  - [Information Reporting](information_reporting.md): exceptions, assertions,
    logging, counting and tracing.
- - [Geometry](geometry.md):
-   vector, point, extent, rectangle, axis\_aligned\_rectangle, translate, scale,
-   rotate, matrix.
+ - [Geometry](geometry.md)
 
 Features
 --------

@@ -557,6 +557,7 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
     set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
 
+    set(DOXYGEN_TAGFILES "${CMAKE_SOURCE_DIR}/docs/media/style/cppreference-doxygen-web.tag.xml=http://en.cppreference.com/w/")
     set(DOXYGEN_IMAGE_PATH "${CMAKE_SOURCE_DIR}/src/" "${CMAKE_SOURCE_DIR}/docs/")
 
     set(DOXYGEN_LAYOUT_FILE "${CMAKE_SOURCE_DIR}/docs/media/style/DoxygenLayout.xml")
