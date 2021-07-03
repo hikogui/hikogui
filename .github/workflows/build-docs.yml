@@ -24,7 +24,7 @@ jobs:
 
     name: "Trigger Documentation Build"
     runs-on: ubuntu-latest
-
+    environment: doc-trigger
     steps:
 
       # https://docs.github.com/en/rest/reference/actions#create-a-workflow-dispatch-event
@@ -33,7 +33,7 @@ jobs:
       - name: ⚙️ Trigger Documentation Build
         run: |
           curl -X POST \
-          -u "${{ secrets.DOC_DISPATCH_USER}}:${{secrets.DOC_DISPATCH_TOKEN}}" \
+          -u "${{ secrets.DOC_TRIGGER_USERNAME}}:${{secrets.DOC_TRIGGER_TOKEN}}" \
           -H "Accept: application/vnd.github.v3+json" \
           -d '{"ref":"${{ github.ref }}"}' \
           https://api.github.com/repos/ttauri-project/ttauri-project.github.io/actions/workflows/build-docs.yml/dispatches
