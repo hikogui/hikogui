@@ -8,6 +8,7 @@ target_sources(ttauri PRIVATE
     button_delegate.hpp
     button_state.hpp
     button_type.hpp
+    checkbox_widget.cpp
     checkbox_widget.hpp
     default_button_delegate.hpp
     default_selection_delegate.hpp
