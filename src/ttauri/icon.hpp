@@ -24,7 +24,8 @@ public:
     icon(elusive_icon const &icon) noexcept;
     icon(ttauri_icon const &icon) noexcept;
 
-    icon() noexcept;
+    constexpr icon() noexcept : _image(std::monostate{}) {}
+
     icon(icon const &) noexcept;
     icon(icon &&) noexcept = default;
     icon &operator=(icon const &) noexcept;

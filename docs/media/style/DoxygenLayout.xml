@@ -133,6 +133,17 @@
         <includegraph visible="$INCLUDE_GRAPH"/>
         <includedbygraph visible="$INCLUDED_BY_GRAPH"/>
         <sourcelink visible="yes"/>
+        <detaileddescription title=""/>
+        <memberdef>
+            <inlineclasses title=""/>
+            <defines title=""/>
+            <typedefs title=""/>
+            <sequences title=""/>
+            <dictionaries title=""/>
+            <enums title=""/>
+            <functions title=""/>
+            <variables title=""/>
+        </memberdef>
         <memberdecl>
             <interfaces visible="yes" title=""/>
             <classes visible="yes" title=""/>
@@ -149,17 +160,6 @@
             <variables title=""/>
             <membergroups visible="yes"/>
         </memberdecl>
-        <detaileddescription title=""/>
-        <memberdef>
-            <inlineclasses title=""/>
-            <defines title=""/>
-            <typedefs title=""/>
-            <sequences title=""/>
-            <dictionaries title=""/>
-            <enums title=""/>
-            <functions title=""/>
-            <variables title=""/>
-        </memberdef>
         <authorsection/>
     </file>
 

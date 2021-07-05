@@ -25,7 +25,6 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
-        auto shared_base_line = relative_base_line{vertical_alignment::middle, 0.0f, 100};
         auto shared_height = 0.0f;
 
         _layout.clear();
@@ -33,14 +32,14 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
 
         ssize_t index = 0;
         for (ttlet &child : _left_children) {
-            update_constraints_for_child(*child, index++, shared_base_line, shared_height);
+            update_constraints_for_child(*child, index++, shared_height);
         }
 
         // Add a space between the left and right widgets.
         _layout.update(index++, theme::global().large_size, theme::global().large_size, 32767.0f, 0.0f);
 
         for (ttlet &child : std::views::reverse(_right_children)) {
-            update_constraints_for_child(*child, index++, shared_base_line, shared_height);
+            update_constraints_for_child(*child, index++, shared_height);
         }
 
         tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
@@ -109,7 +108,6 @@ hitbox toolbar_widget::hitbox_test(point2 position) const noexcept
 void toolbar_widget::update_constraints_for_child(
     widget const &child,
     ssize_t index,
-    relative_base_line &shared_base_line,
     float &shared_height) noexcept
 {
     tt_axiom(is_gui_thread());

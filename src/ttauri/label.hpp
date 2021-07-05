@@ -14,26 +14,57 @@
 
 namespace tt {
 
-/** A localized text + icon label.
+/** A label consisting of localizable text and an icon.
+ *
+ * A label is used for user-visible information. The label is used as
+ * information displayed by the `label_widget`.
+ *
+ * The audio subsystem will use labels to return user-visible information such
+ * as the name of audio device end-points or surround sound speaker
+ * configuration which in both cases includes icons and text that needs to be
+ * translated.
  */
 class label {
 public:
+    /** The icon.
+     */
     tt::icon icon;
+
+    /** Localizable text.
+     * The text in this field is not yet translated nor formatted.
+     */
     l10n text;
 
+    /** Construct a new label from an icon and text.
+     * @param icon The icon.
+     * @param text The text.
+     */
     label(tt::icon icon, l10n text) noexcept : icon(std::move(icon)), text(std::move(text)) {}
 
+    /** Construct a new label from text.
+     * @param text The text.
+     */
     label(l10n text) noexcept : icon(), text(std::move(text)) {}
 
+    /** Construct a new label from an icon.
+     * @param icon The icon.
+     */
     label(tt::icon icon) noexcept : icon(std::move(icon)), text() {}
 
-    label() noexcept : icon(), text() {}
+    /** Construct a empty label.
+     */
+    constexpr label() noexcept : icon(), text() {}
 
     label(label const &other) noexcept = default;
     label &operator=(label const &other) noexcept = default;
     label(label &&other) noexcept = default;
     label &operator=(label &&other) noexcept = default;
 
+    /** Compare if both labels are equal.
+     * @param lhs A label.
+     * @param rhs A label.
+     * @return True is the text and icon of both labels are equal.
+     */
     [[nodiscard]] friend bool operator==(label const &lhs, label const &rhs) noexcept
     {
         return lhs.icon == rhs.icon and lhs.text == rhs.text;

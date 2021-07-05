@@ -72,7 +72,6 @@ private:
     void update_constraints_for_child(
         widget const &child,
         ssize_t index,
-        relative_base_line &shared_base_line,
         float &shared_height) noexcept;
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept;

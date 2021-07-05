@@ -2,30 +2,93 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/// @file
+
 #pragma once
 
-#include "required.hpp"
-#include <compare>
+#include "assert.hpp"
 
 namespace tt {
 
-enum class vertical_alignment { top, middle, bottom };
+/** Vertical alignment.
+ */
+enum class vertical_alignment {
+    /** Align to the top.
+     */
+    top,
 
-enum class horizontal_alignment { left, center, right };
+    /** Align to the vertical-middle.
+     */
+    middle,
 
+    /** Align to the bottom.
+     */
+    bottom
+};
+
+/** Horizontal alignment.
+ */
+enum class horizontal_alignment {
+    /** Align to the left.
+     */
+    left,
+
+    /** Align to the horizontal-center.
+     */
+    center,
+
+    /** Align to the right.
+     */
+    right
+};
+
+/** Vertical and horizontal alignment.
+ */
 enum class alignment {
+    /** Align to the top and left.
+     */
     top_left,
+
+    /** Align to the top and horizontal-center.
+     */
     top_center,
+
+    /** Align to the top and right.
+     */
     top_right,
+
+    /** Align to the vertical-middle and left.
+     */
     middle_left,
+
+    /** Align to the vertical-middle and horizontal-center.
+     */
     middle_center,
+
+    /** Align to the vertical-middle and right.
+     */
     middle_right,
+
+    /** Align to the bottom and left.
+     */
     bottom_left,
+
+    /** Align to the bottom and horizontal-center.
+     */
     bottom_center,
+
+    /** Align to the bottom and right.
+     */
     bottom_right
 };
 
-inline alignment operator|(vertical_alignment lhs, horizontal_alignment rhs) noexcept
+/** Combine vertical and horizontal alignment.
+ *
+ * @param lhs A vertical alignment.
+ * @param rhs A horizontal alignment.
+ * @return A combined vertical and horizontal alignment.
+ */
+constexpr alignment operator|(vertical_alignment lhs, horizontal_alignment rhs) noexcept
 {
     switch (lhs) {
     case vertical_alignment::top:
@@ -53,12 +116,24 @@ inline alignment operator|(vertical_alignment lhs, horizontal_alignment rhs) noe
     }
 }
 
-inline alignment operator|(horizontal_alignment lhs, vertical_alignment rhs) noexcept
+/** Combine vertical and horizontal alignment.
+ *
+ * @param lhs A horizontal alignment.
+ * @param rhs A vertical alignment.
+ * @return A combined vertical and horizontal alignment.
+ */
+constexpr alignment operator|(horizontal_alignment lhs, vertical_alignment rhs) noexcept
 {
     return rhs | lhs;
 }
 
-inline bool operator==(alignment lhs, horizontal_alignment rhs) noexcept
+/** Check if the horizontal alignments are equal.
+ *
+ * @param lhs A combined vertical and horizontal alignment.
+ * @param rhs A horizontal alignment.
+ * @return True when the horizontal alignment of both `lhs` and `rhs` are equal.
+ */
+constexpr bool operator==(alignment lhs, horizontal_alignment rhs) noexcept
 {
     switch (rhs) {
     case horizontal_alignment::left:
@@ -74,10 +149,17 @@ inline bool operator==(alignment lhs, horizontal_alignment rhs) noexcept
     }
 }
 
-inline bool operator==(alignment lhs, vertical_alignment rhs) noexcept
+/** Check if the vertical alignments are equal.
+ *
+ * @param lhs A combined vertical and horizontal alignment.
+ * @param rhs A vertical alignment.
+ * @return True when the vertical alignment of both `lhs` and `rhs` are equal.
+ */
+constexpr bool operator==(alignment lhs, vertical_alignment rhs) noexcept
 {
     switch (rhs) {
-    case vertical_alignment::top: return lhs == alignment::top_left || lhs == alignment::top_center || lhs == alignment::top_right;
+    case vertical_alignment::top:
+        return lhs == alignment::top_left || lhs == alignment::top_center || lhs == alignment::top_right;
 
     case vertical_alignment::middle:
         return lhs == alignment::middle_left || lhs == alignment::middle_center || lhs == alignment::middle_right;
@@ -88,58 +170,5 @@ inline bool operator==(alignment lhs, vertical_alignment rhs) noexcept
     default: tt_no_default();
     }
 }
-
-inline bool operator!=(alignment lhs, horizontal_alignment rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
-inline bool operator!=(alignment lhs, vertical_alignment rhs) noexcept
-{
-    return !(lhs == rhs);
-}
-
-class relative_base_line {
-    vertical_alignment alignment;
-    float offset;
-    float priority;
-
-public:
-    /* Construct a base-line.
-     * @param alignment Start position of the base line.
-     * @param offset Number of pt above the start position.
-     * @param priority Higher values will have priority over lower values.
-     */
-    constexpr relative_base_line(vertical_alignment alignment, float offset = 0.0f, float priority = 100.0f) noexcept :
-        alignment(alignment), offset(offset), priority(priority)
-    {
-    }
-
-    /** Constructs a low-priority base line in the middle.
-     */
-    constexpr relative_base_line() noexcept : relative_base_line(vertical_alignment::middle, 0.0f, 0.0f) {}
-
-    /** Get a base-line position.
-     */
-    constexpr float position(float bottom, float top) const noexcept
-    {
-        switch (alignment) {
-        case vertical_alignment::bottom: return bottom + offset;
-        case vertical_alignment::top: return top + offset;
-        case vertical_alignment::middle: return (bottom + top) * 0.5f + offset;
-        }
-        tt_no_default();
-    }
-
-    [[nodiscard]] auto operator==(relative_base_line const &rhs) const noexcept
-    {
-        return this->priority == rhs.priority;
-    }
-
-    [[nodiscard]] auto operator<=>(relative_base_line const &rhs) const noexcept
-    {
-        return this->priority <=> rhs.priority;
-    }
-};
 
 } // namespace tt
