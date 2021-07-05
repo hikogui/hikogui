@@ -9,6 +9,29 @@
 
 namespace tt {
 
+/** A radio-button widget.
+ *
+ * A radio-button has two different states with different visual
+ * representation:
+ *  - **on**: The radio button shows a solid circle inside it
+ *  - **other**: The radio button shows empty.
+ *
+ * @image html radio_button_widget.gif
+ *
+ * Each time a user activates the radio-button it switches its state to 'on'.
+ *
+ * A checkbox cannot itself switch state to 'other', this state may be
+ * caused by external factors. The canonical example is another radio button in
+ * a set, which is configured with a different `on_value`.
+ *
+ * In the following example we create three radio-button widget on the window
+ * which observes the same `value`. Each radio button is configured with a
+ * different `on_value`: 1, 2 and 3. Initially the value is 0, and therefor
+ * none of the radio buttons is selected.
+ * 
+ * @snippet widgets/radio_button_example.cpp Create three radio buttons
+ *
+ */
 class radio_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
