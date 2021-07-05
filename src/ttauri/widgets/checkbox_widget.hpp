@@ -11,14 +11,29 @@ namespace tt {
 
 /** A checkbox widget.
  *
+ * A checkbox is a button with three different states with different visual
+ * representation:
+ *  - **on**: A check-mark is shown inside the box, and the `checkbox_widget::on_label` is shown.
+ *  - **off**: An empty box is shown, and the `checkbox_widget::off_label` is shown.
+ *  - **other**: A dash is shown inside the box, and the `checkbox_widget::other_label` is shown.
+ *
+ * @image html checkbox_widget.gif
+ *
+ * Each time a user activates the checkbox-button it toggles between the 'on' and 'off' states.
+ * If the checkbox is in the 'other' state an activation will switch it to
+ * the 'off' state.
+ *
+ * A checkbox cannot itself switch state to 'other', this state may be
+ * caused by external factors. The canonical example is a tree structure
+ * of checkboxes; when child checkboxes have different values from each other
+ * the parent checkbox state is set to 'other'.
+ *
  * In the following example we create a checkbox widget on the window
  * which observes `value`. When the value is 1 the checkbox is 'on',
  * when the value is 2 the checkbox is 'off'.
  * 
  * @snippet widgets/checkbox_example.cpp Create a checkbox
  *
- * The example code above will create a widget like this:
- * @image html checkbox_widget.gif
  */
 class checkbox_widget final : public abstract_button_widget {
 public:
