@@ -80,13 +80,23 @@ bool logger_init() noexcept
 void logger_flush() noexcept
 {
     ttlet t = trace<"log_flush">{};
-    ttlet lock = std::scoped_lock(detail::logger_mutex);
 
     bool wrote_message;
     do {
-        wrote_message = detail::log_fifo.take_one([](auto &message) {
-            detail::logger_write(message.format());
-        });
+        std::unique_ptr<detail::log_message_base> copy_of_message;
+
+        {
+            ttlet lock = std::scoped_lock(detail::logger_mutex);
+
+            wrote_message = detail::log_fifo.take_one([&copy_of_message](auto &message) {
+                copy_of_message = message.make_unique_copy();
+            });
+        }
+
+        if (wrote_message) {
+            tt_axiom(copy_of_message);
+            detail::logger_write(copy_of_message->format());
+        }
     } while (wrote_message);
 }
 

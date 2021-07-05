@@ -10,6 +10,15 @@
 namespace tt {
 
 /** A checkbox widget.
+ *
+ * In the following example we create a checkbox widget on the window
+ * which observes `value`. When the value is 1 the checkbox is 'on',
+ * when the value is 2 the checkbox is 'off'.
+ * 
+ * @snippet widgets/checkbox_example.cpp Create a checkbox
+ *
+ * The example code above will create a widget like this:
+ * @image html checkbox_widget.gif
  */
 class checkbox_widget final : public abstract_button_widget {
 public:

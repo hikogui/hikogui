@@ -117,6 +117,10 @@ span.lineno {
     background: #000000;
 }
 
+span.stringliteral {
+    color: #cc0000;
+}
+
 span.mlabel {
     background: #ca5201;
     color: #fffc79;

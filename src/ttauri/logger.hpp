@@ -25,6 +25,8 @@
 #include <tuple>
 #include <mutex>
 #include <atomic>
+#include <memory>
+
 namespace tt {
 void trace_record() noexcept;
 }
@@ -37,12 +39,8 @@ public:
     tt_force_inline log_message_base() noexcept = default;
     virtual ~log_message_base() = default;
 
-    log_message_base(log_message_base const &) = delete;
-    log_message_base(log_message_base &&) = delete;
-    log_message_base &operator=(log_message_base const &) = delete;
-    log_message_base &operator=(log_message_base &&) = delete;
-
-    virtual std::string format() const noexcept = 0;
+    [[nodiscard]] virtual std::string format() const noexcept = 0;
+    [[nodiscard]] virtual std::unique_ptr<log_message_base> make_unique_copy() const noexcept = 0;
 };
 
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Values>
@@ -50,6 +48,9 @@ class log_message : public log_message_base {
 public:
     static_assert(std::is_same_v<decltype(SourceFile)::value_type, char>, "SourceFile must be a basic_fixed_string<char>");
     static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
+
+    log_message(log_message const &) noexcept = default;
+    log_message &operator=(log_message const &) noexcept = default;
 
     template<typename... Args>
     tt_force_inline log_message(Args &&...args) noexcept :
@@ -78,6 +79,11 @@ public:
                 thread_id,
                 cpu_id);
         }
+    }
+
+    [[nodiscard]] std::unique_ptr<log_message_base> make_unique_copy() const noexcept override
+    {
+        return std::make_unique<log_message>(*this);
     }
 
 private:

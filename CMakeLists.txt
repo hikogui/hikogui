@@ -468,6 +468,7 @@ endif()
 #-------------------------------------------------------------------
 if(TT_BUILD_EXAMPLES)
     add_subdirectory(examples/ttauri_demo)
+    add_subdirectory(examples/widgets)
 endif()
 
 #-------------------------------------------------------------------
@@ -541,7 +542,7 @@ endif()
 find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
-    set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
+    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp)
     set(DOXYGEN_GENERATE_HTML YES)
     set(DOXYGEN_GENERATE_LATEX NO)
     set(DOXYGEN_QUIET YES)
@@ -559,6 +560,7 @@ if(DOXYGEN_FOUND)
 
     set(DOXYGEN_TAGFILES "${CMAKE_SOURCE_DIR}/docs/media/style/cppreference-doxygen-web.tag.xml=http://en.cppreference.com/w/")
     set(DOXYGEN_IMAGE_PATH "${CMAKE_SOURCE_DIR}/src/" "${CMAKE_SOURCE_DIR}/docs/")
+    set(DOXYGEN_EXAMPLE_PATH "${CMAKE_SOURCE_DIR}/examples/")
 
     set(DOXYGEN_LAYOUT_FILE "${CMAKE_SOURCE_DIR}/docs/media/style/DoxygenLayout.xml")
     set(DOXYGEN_HTML_COLORSTYLE_HUE 24)

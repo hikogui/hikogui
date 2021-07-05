@@ -61,7 +61,7 @@ std::unordered_map<translation_key,std::vector<std::string>> translations;
             }
         }
     }
-    tt_log_warning("No translation found for '{}'", msgid);
+    tt_log_info("No translation found for '{}'", msgid);
     return msgid;
 }
 

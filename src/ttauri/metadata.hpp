@@ -76,6 +76,15 @@ inline void set_application_metadata(metadata const &rhs) noexcept
     detail::application_metadata_is_set.store(true, std::memory_order::release);
 }
 
+inline void set_application_metadata(std::string name, std::string display_name = {}, std::string vendor = {})
+{
+    auto m = metadata{};
+    m.name = name;
+    m.display_name = not display_name.empty() ? display_name : name;
+    m.vendor = not vendor.empty() ? vendor : std::string{"Unknown vendor"};
+    set_application_metadata(m);
+}
+
 [[nodiscard]] inline metadata const &library_metadata() noexcept
 {
     return detail::library_metadata;
