@@ -42,7 +42,7 @@ public:
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
      * @param label The label to show next to the radio button.
-     * @param delegate The delegate to use to manage the state of the radio button button.
+     * @param delegate The delegate to use to manage the state of the radio button.
      */
     template<typename Label>
     radio_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept
@@ -53,8 +53,8 @@ public:
      *
      * @see default_button_delegate
      * @param window The window that this widget belongs to.
-     * @param label The label to show next to the radio button.
      * @param parent The parent widget that owns this radio button widget.
+     * @param label The label to show next to the radio button.
      * @param value The value or `observable` value which represents the state
      *              of the radio button.
      * @param args An optional on-value. This value is used to determine which

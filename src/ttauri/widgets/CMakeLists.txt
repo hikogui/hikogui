@@ -45,6 +45,7 @@ target_sources(ttauri PRIVATE
     text_widget.hpp
     toggle_widget.hpp
     toolbar_button_widget.hpp
+    toolbar_tab_button_widget.cpp
     toolbar_tab_button_widget.hpp
     toolbar_widget.cpp
     toolbar_widget.hpp
