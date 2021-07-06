@@ -26,7 +26,7 @@ namespace tt {
  * a set, which is configured with a different `on_value`.
  *
  *
- * @snippet widgets/selection_example.cpp Create three menu buttons
+ * @snippet widgets/menu_button_example.cpp Create three menu buttons
  */
 class menu_button_widget final : public abstract_button_widget {
 public:

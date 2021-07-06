@@ -22,17 +22,9 @@ void abstract_button_widget::init() noexcept
 {
     super::init();
 
-    _on_label_widget = &make_widget<label_widget>();
-    _off_label_widget = &make_widget<label_widget>();
-    _other_label_widget = &make_widget<label_widget>();
-
-    _on_label_widget->alignment = label_alignment;
-    _off_label_widget->alignment = label_alignment;
-    _other_label_widget->alignment = label_alignment;
-
-    _on_label_widget->label = on_label;
-    _off_label_widget->label = off_label;
-    _other_label_widget->label = other_label;
+    _on_label_widget = &make_widget<label_widget>(on_label, label_alignment);
+    _off_label_widget = &make_widget<label_widget>(off_label, label_alignment);
+    _other_label_widget = &make_widget<label_widget>(other_label, label_alignment);
 
     if (auto delegate = _delegate.lock()) {
         delegate->init(*this);

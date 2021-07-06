@@ -6,8 +6,6 @@
 
 namespace tt {
 
-label_widget::~label_widget() {}
-
 label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
 void label_widget::init() noexcept

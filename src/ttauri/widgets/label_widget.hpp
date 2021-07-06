@@ -20,28 +20,63 @@ class label_widget final : public widget {
 public:
     using super = widget;
 
+    /** The label to display.
+     */
     observable<label> label;
-    observable<theme_text_style> text_style = theme_text_style::label;
+
+    /** How the label and icon are aligned. Different layouts:
+     *  - `alignment::top_left`: icon and text are inline with each other, with
+     *    the icon in the top-left corner.
+     *  - `alignment::top_right`: icon and text are inline with each other, with
+     *    the icon in the top-right corner.
+     *  - `alignment::middle_left`: icon and text are inline with each other, with
+     *    the icon in the middle-left.
+     *  - `alignment::middle_right`: icon and text are inline with each other, with
+     *    the icon in the middle-right.
+     *  - `alignment::bottom_left`: icon and text are inline with each other, with
+     *    the icon in the bottom-left.
+     *  - `alignment::bottom_right`: icon and text are inline with each other, with
+     *    the icon in the bottom-right.
+     *  - `alignment::top_center`: Larger icon above the text, both center aligned.
+     *  - `alignment::bottom_center`: Larger icon below the text, both center aligned.
+     *  - `alignment::middle_center`: text drawn across a large icon. Should only be
+     *    used with a `pixmap` icon.
+     */
     observable<alignment> alignment = alignment::middle_right;
 
-    ~label_widget();
+    /** The text style to display the label's text in and color of the label's (non-color) icon.
+     */
+    observable<theme_text_style> text_style = theme_text_style::label;
 
-    label_widget(gui_window &window, widget *parent) noexcept;
-
-    template<typename Label>
-    label_widget(gui_window &window, widget *parent, Label &&label) noexcept :
+    /** Construct a label widget.
+     *
+     * @see `label_widget::alignment`
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this radio button widget.
+     * @param label The label to show next to the radio button.
+     * @param alignment The alignment of the label.
+     * @param text_style The text style of the label, and color of non-color
+     *                   icons.
+     */
+    template<typename Label, typename Alignment = tt::alignment, typename TextStyle = tt::theme_text_style>
+    label_widget(
+        gui_window &window,
+        widget *parent,
+        Label &&label,
+        Alignment &&alignment = alignment::middle_right,
+        TextStyle &&text_style = theme_text_style::label) noexcept :
         label_widget(window, parent)
     {
         this->label = std::forward<Label>(label);
+        this->alignment = std::forward<Alignment>(alignment);
+        this->text_style = std::forward<TextStyle>(text_style);
     }
 
+    /// @privatesection
     void init() noexcept override;
-
-    [[nodiscard]] bool
-    constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
-
+    /// @endprivatesection
 private:
     float _icon_size;
     float _inner_margin;
@@ -50,6 +85,8 @@ private:
 
     icon_widget *_icon_widget = nullptr;
     text_widget *_text_widget = nullptr;
+
+    label_widget(gui_window &window, widget *parent) noexcept;
 };
 
 } // namespace tt
