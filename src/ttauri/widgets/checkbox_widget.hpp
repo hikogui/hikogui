@@ -31,7 +31,7 @@ namespace tt {
  * In the following example we create a checkbox widget on the window
  * which observes `value`. When the value is 1 the checkbox is 'on',
  * when the value is 2 the checkbox is 'off'.
- * 
+ *
  * @snippet widgets/checkbox_example.cpp Create a checkbox
  *
  */
@@ -59,8 +59,8 @@ public:
      *             are used to determine which value yields an on/off state.
      */
     template<typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
-        checkbox_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept :
+    checkbox_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept
+        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
         checkbox_widget(
             window,
             parent,
