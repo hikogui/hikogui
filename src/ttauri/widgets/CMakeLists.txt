@@ -26,6 +26,7 @@ target_sources(ttauri PRIVATE
     overlay_delegate.hpp
     overlay_widget.cpp
     overlay_widget.hpp
+    radio_button_widget.cpp
     radio_button_widget.hpp
     row_column_delegate.hpp
     row_column_widget.hpp
