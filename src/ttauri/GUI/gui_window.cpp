@@ -171,7 +171,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 
         widget->draw(widget_context, displayTimePoint);
 
-        surface->render_finish(draw_context, widget->backgroundColor());
+        surface->render_finish(draw_context, widget->background_color());
     }
 }
 

@@ -7,7 +7,7 @@
 
 namespace tt {
 
-icon_widget::~icon_widget() {}
+icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
 void icon_widget::init() noexcept
 {

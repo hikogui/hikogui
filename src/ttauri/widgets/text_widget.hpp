@@ -24,37 +24,33 @@ public:
     observable<alignment> alignment = alignment::middle_center;
     observable<theme_text_style> text_style = theme_text_style::label;
 
+    template<typename Text, typename Alignment = tt::alignment, typename TextStyle = tt::theme_text_style>
     text_widget(
-        gui_window &window, widget *parent) noexcept :
-        super(window, parent)
-    {
-    }
-
-    template<typename Text>
-        text_widget(
-        gui_window &window, widget *parent,
-        Text &&text) noexcept :
+        gui_window &window,
+        widget *parent,
+        Text &&text,
+        Alignment &&alignment = alignment::middle_center,
+        TextStyle &&text_style = theme_text_style::label) noexcept :
         text_widget(window, parent)
     {
         text = std::forward<Text>(text);
+        alignment = std::forward<Alignment>(alignment);
+        text_style = std::forward<TextStyle>(text_style);
     }
 
-
-    ~text_widget();
-
+    /// @privatesection
     void init() noexcept override;
-
     [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-
     [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
-
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
-
+    /// @endprivatesection
 private:
     decltype(text)::callback_ptr_type _text_callback;
 
     shaped_text _shaped_text;
     matrix2 _shaped_text_transform;
+
+    text_widget(gui_window &window, widget *parent) noexcept;
 };
 
 } // namespace tt

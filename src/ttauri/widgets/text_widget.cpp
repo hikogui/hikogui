@@ -6,7 +6,7 @@
 
 namespace tt {
 
-text_widget::~text_widget() {}
+text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
 void text_widget::init() noexcept
 {

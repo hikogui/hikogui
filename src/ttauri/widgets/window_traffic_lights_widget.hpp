@@ -21,16 +21,14 @@ public:
     using super = widget;
 
     window_traffic_lights_widget(gui_window &window, widget *parent) noexcept;
-    ~window_traffic_lights_widget() {}
 
-    [[nodiscard]] bool
-    constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    /// @privatesection
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
-
     bool handle_event(mouse_event const &event) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
-
+    /// @endprivatesection
 private:
     static constexpr float GLYPH_SIZE = 5.0f;
     static constexpr float RADIUS = 5.5f;
@@ -64,4 +62,4 @@ private:
     void drawWindows(draw_context const &context, hires_utc_clock::time_point display_time_point) noexcept;
 };
 
-}
+} // namespace tt

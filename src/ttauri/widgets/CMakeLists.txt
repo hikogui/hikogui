@@ -23,6 +23,7 @@ target_sources(ttauri PRIVATE
     label_widget.hpp
     menu_button_widget.cpp
     menu_button_widget.hpp
+    momentary_button_widget.cpp
     momentary_button_widget.hpp
     overlay_delegate.hpp
     overlay_widget.cpp
@@ -41,11 +42,13 @@ target_sources(ttauri PRIVATE
     tab_delegate.hpp
     tab_widget.hpp
     text_field_delegate.hpp
+    text_field_widget.cpp
     text_field_widget.hpp
     text_widget.cpp
     text_widget.hpp
     toggle_widget.cpp
     toggle_widget.hpp
+    toolbar_button_widget.cpp
     toolbar_button_widget.hpp
     toolbar_tab_button_widget.cpp
     toolbar_tab_button_widget.hpp
