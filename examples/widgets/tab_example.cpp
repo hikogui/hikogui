@@ -1,22 +1,20 @@
+// Copyright Take Vos 2021.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/logger.hpp"
-#include "ttauri/crt.hpp"
-#include "ttauri/hires_utc_clock.hpp"
-#include "ttauri/metadata.hpp"
 #include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/audio/audio_system.hpp"
 #include "ttauri/widgets/widgets.hpp"
-#include <Windows.h>
-#include <memory>
+#include "ttauri/metadata.hpp"
+#include "ttauri/crt.hpp"
 
 using namespace tt;
 
 int tt_main(int argc, char* argv[])
 {
-    observable<int> value = 0;
-
     set_application_metadata("tab-example");
     auto& window = gui_system::global().make_window(l10n("tab example"));
+
+    observable<int> value = 0;
 
     /// [Create three tabs]
     auto &tab_view = window.make_widget<tab_widget>("A1", value);

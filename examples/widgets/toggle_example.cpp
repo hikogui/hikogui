@@ -11,18 +11,18 @@ using namespace tt;
 
 int tt_main(int argc, char *argv[])
 {
-    set_application_metadata("checkbox-example");
-    auto &window = gui_system::global().make_window(l10n("Checkbox example"));
-    window.make_widget<label_widget>("A1", l10n("checkbox:"));
+    set_application_metadata("toggle-example");
+    auto &window = gui_system::global().make_window(l10n("Toggle example"));
+    window.make_widget<label_widget>("A1", l10n("toggle:"));
 
-/// [Create a checkbox]
+/// [Create a toggle]
     observable<int> value = 0;
 
-    auto &cb = window.make_widget<checkbox_widget>("B1", value, 1, 2);
-    cb.on_label = l10n("on");
-    cb.off_label = l10n("off");
-    cb.other_label = l10n("other");
-/// [Create a checkbox]
+    auto &tb = window.make_widget<toggle_widget>("B1", value, 1, 2);
+    tb.on_label = l10n("on");
+    tb.off_label = l10n("off");
+    tb.other_label = l10n("other");
+/// [Create a toggle]
 
     return gui_system::global().loop();
 }

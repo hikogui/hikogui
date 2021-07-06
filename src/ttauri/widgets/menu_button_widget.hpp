@@ -9,18 +9,55 @@
 
 namespace tt {
 
+/** A menu-button widget.
+ *
+ * A menu-button has two different states with different visual
+ * representation:
+ *  - **on**: The menu button shows a check mark next to the label.
+ *  - **other**: The menu button shows just the label.
+ *
+ * @image html menu_button_widget.gif
+ *
+ * Each time a user activates the menu-button it switches its state to 'on'.
+ * Most menus will close the menu after the menu button was activated.
+ *
+ * A menu button cannot itself switch state to 'other', this state may be
+ * caused by external factors. The canonical example is another menu button in
+ * a set, which is configured with a different `on_value`.
+ *
+ *
+ * @snippet widgets/selection_example.cpp Create three menu buttons
+ */
 class menu_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
+    /** Construct a menu button widget.
+     *
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this menu button widget.
+     * @param label The label to show in the menu button.
+     * @param delegate The delegate to use to manage the state of the menu button.
+     */
     template<typename Label>
     menu_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept :
         menu_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)})
     {
     }
 
+    /** Construct a menu button widget with a default button delegate.
+     *
+     * @see default_button_delegate
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this menu button widget.
+     * @param label The label to show in the menu button.
+     * @param value The value or `observable` value which represents the state
+     *              of the menu button.
+     * @param args An optional on-value. This value is used to determine which
+     *             value yields an 'on' state.
+     */
     template<typename Label, typename Value, typename... Args>
     requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
         menu_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept :
@@ -32,105 +69,13 @@ public:
     {
     }
 
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        if (super::constrain(display_time_point, need_reconstrain)) {
-            // Make room for button and margin.
-            _check_size = {theme::global().size, theme::global().size};
-            _short_cut_size = {theme::global().size, theme::global().size};
-
-            // On left side a check mark, on right side short-cut. Around the label extra margin.
-            ttlet extra_size = extent2{
-                theme::global().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme::global().margin * 2.0f};
-            _minimum_size += extra_size;
-            _preferred_size += extra_size;
-            _maximum_size += extra_size;
-
-            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        need_layout |= _request_layout.exchange(false);
-        if (need_layout) {
-            ttlet inside_rectangle = shrink(rectangle(), theme::global().margin);
-
-            _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left);
-            _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right);
-
-            _label_rectangle = aarectangle{
-                _check_rectangle.right() + theme::global().margin,
-                0.0f,
-                _short_cut_rectangle.left() - theme::global().margin,
-                height()};
-
-            _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
-            ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
-            _check_glyph_rectangle =
-                align(_check_rectangle, scale(check_glyph_bb, theme::global().icon_size), alignment::middle_center);
-        }
-        super::layout(displayTimePoint, need_layout);
-    }
-
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        if (overlaps(context, _clipping_rectangle)) {
-            draw_menu_button(context);
-            draw_check_mark(context);
-        }
-
-        super::draw(std::move(context), display_time_point);
-    }
-
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return is_menu(group) and enabled;
-    }
-
-    [[nodiscard]] bool handle_event(command command) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        if (enabled) {
-            switch (command) {
-            case command::gui_menu_next:
-                if (!is_last(keyboard_focus_group::menu)) {
-                    window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
-                    return true;
-                }
-                break;
-
-            case command::gui_menu_prev:
-                if (!is_first(keyboard_focus_group::menu)) {
-                    window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
-                    return true;
-                }
-                break;
-
-            case command::gui_activate:
-                activate();
-                window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
-                window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
-                return true;
-
-            default:;
-            }
-        }
-
-        return super::handle_event(command);
-    }
-
+    /// @privatesection
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
+    [[nodiscard]] bool handle_event(command command) noexcept override;
+    /// @endprivatesection
 private:
     font_glyph_ids _check_glyph;
     extent2 _check_size;
@@ -148,25 +93,8 @@ private:
         set_label(std::forward<Label>(label));
     }
 
-    void draw_menu_button(draw_context const &context) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        ttlet foreground_color_ = _focus && window.active ? focus_color() : color::transparent();
-        context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
-    }
-
-    void draw_check_mark(draw_context const &context) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        auto state_ = state();
-
-        // Checkmark or tristate.
-        if (state_ == tt::button_state::on) {
-            context.draw_glyph(_check_glyph, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
-        }
-    }
+    void draw_menu_button(draw_context const &context) noexcept;
+    void draw_check_mark(draw_context const &context) noexcept;
 };
 
 } // namespace tt

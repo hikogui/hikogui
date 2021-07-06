@@ -1,21 +1,17 @@
+// Copyright Take Vos 2021.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/logger.hpp"
-#include "ttauri/crt.hpp"
-#include "ttauri/hires_utc_clock.hpp"
-#include "ttauri/metadata.hpp"
 #include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/audio/audio_system.hpp"
 #include "ttauri/widgets/widgets.hpp"
-#include <Windows.h>
-#include <memory>
+#include "ttauri/metadata.hpp"
+#include "ttauri/crt.hpp"
 
 using namespace tt;
 
 int tt_main(int argc, char *argv[])
 {
     set_application_metadata("radio-button-example");
-
-
     auto &window = gui_system::global().make_window(l10n("Radio button example"));
     window.make_widget<label_widget>("A1", l10n("radio buttons:"));
 

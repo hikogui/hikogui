@@ -21,6 +21,7 @@ target_sources(ttauri PRIVATE
     icon_widget.cpp
     label_widget.cpp
     label_widget.hpp
+    menu_button_widget.cpp
     menu_button_widget.hpp
     momentary_button_widget.hpp
     overlay_delegate.hpp
@@ -43,6 +44,7 @@ target_sources(ttauri PRIVATE
     text_field_widget.hpp
     text_widget.cpp
     text_widget.hpp
+    toggle_widget.cpp
     toggle_widget.hpp
     toolbar_button_widget.hpp
     toolbar_tab_button_widget.cpp
