@@ -14,7 +14,7 @@
 
 namespace tt {
 
-/** Grid Widget.
+/** A GUI widget that lays out child-widgets in a grid with variable sized cells.
  *
  * The grid widget lays out child widgets in a grid pattern. Each child widget
  * occupies a single cell, which belongs into a single column and a single row.

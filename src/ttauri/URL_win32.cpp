@@ -73,7 +73,12 @@ URL URL::urlFromResourceDirectory() noexcept
 URL URL::urlFromApplicationDataDirectory() noexcept
 {
     // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
-    return get_folder_by_id(FOLDERID_LocalAppData) / application_metadata().vendor / application_metadata().display_name;
+    if (metadata::application().vendor.empty()) {
+        return get_folder_by_id(FOLDERID_LocalAppData) / metadata::application().display_name;
+
+    } else {
+        return get_folder_by_id(FOLDERID_LocalAppData) / metadata::application().vendor / metadata::application().display_name;
+    }
 }
 
 URL URL::urlFromSystemfontDirectory() noexcept
@@ -115,4 +120,4 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
     return filenames;
 }
 
-}
+} // namespace tt

@@ -5,14 +5,11 @@
 #pragma once
 
 #include "semantic_version.hpp"
-#include "URL.hpp"
-#include "logger.hpp"
 #include <string>
-#include <atomic>
 
 namespace tt {
 
-/** Meta for a library or application.
+/** Metadata for a library or application.
  */
 class metadata {
 public:
@@ -20,20 +17,20 @@ public:
      * The name should be in slug-format, i.e. based
      * on the following case-sensitive regular expression: [a-z-][a-z0-9-]*
      */
-    std::string name = "unknown-application";
+    std::string name;
 
     /** Display name of the application or library.
      * A free text string, may contain spaces and capital letters and letters
      * from other languages. It is however used for file and directory names.
      */
-    std::string display_name = "Unknown Application";
-    
+    std::string display_name;
+
     /** Name of the vendor of the application or library.
      * Free text name of the vendor, may contain spaces and capital letters
      * and letters from different languages. However the vendor field will
      * be used to construct file and directory paths.
      */
-    std::string vendor = "Unknown Vendor";
+    std::string vendor;
 
     /** The version number of the application or library.
      */
@@ -43,7 +40,7 @@ public:
      * This is a spdx-license-identifier of the license, not the
      * full license text.
      */
-    std::string license = "unknown-spdx";
+    std::string license;
 
     /** The homepage of the application or library.
      */
@@ -53,41 +50,30 @@ public:
      * This is a free-text description of the application of library.
      * should not be longer than a single paragraph.
      */
-    std::string description = "";
+    std::string description;
+
+    /** The global application metadata.
+     *
+     * This function returns a reference to
+     * the global application metadata. The first time this function is called
+     * the application name and display_name are set based on the name of the
+     * executable.
+     *
+     * The application metadata is used by URL to construct the locations of
+     * several directories, such as the application-data directory, or
+     * application-preferences directories.
+     *
+     * The application metadata is also used when opening the Vulkan API which
+     * request the name of the application and version number.
+     */
+    [[nodiscard]] static metadata &application() noexcept;
+
+    /** The global ttauri-library metadata.
+     *
+     * This returns a reference to the metadata of the current ttauri library.
+     * It may be useful for an application to read the version number.
+     */
+    [[nodiscard]] static metadata const &library() noexcept;
 };
-
-namespace detail {
-inline std::atomic<bool> application_metadata_is_set = false;
-inline metadata application_metadata;
-extern metadata library_metadata;
-} // namespace detail
-
-[[nodiscard]] inline metadata const &application_metadata() noexcept
-{
-    if (!detail::application_metadata_is_set.load(std::memory_order::acquire)) {
-        tt_log_fatal("Application did not call tt::set_application_metadata()");
-    }
-    return detail::application_metadata;
-}
-
-inline void set_application_metadata(metadata const &rhs) noexcept
-{
-    detail::application_metadata = rhs;
-    detail::application_metadata_is_set.store(true, std::memory_order::release);
-}
-
-inline void set_application_metadata(std::string name, std::string display_name = {}, std::string vendor = {})
-{
-    auto m = metadata{};
-    m.name = name;
-    m.display_name = not display_name.empty() ? display_name : name;
-    m.vendor = not vendor.empty() ? vendor : std::string{"Unknown vendor"};
-    set_application_metadata(m);
-}
-
-[[nodiscard]] inline metadata const &library_metadata() noexcept
-{
-    return detail::library_metadata;
-}
 
 } // namespace tt

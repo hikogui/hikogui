@@ -9,7 +9,7 @@
 
 namespace tt {
 
-/** A checkbox widget.
+/** A GUI widget that permits the user to make a binary choice.
  *
  * A checkbox is a button with three different states with different visual
  * representation:

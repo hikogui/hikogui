@@ -61,10 +61,10 @@ div.textblock {
     text-decoration: none;
 }
 
-.alphachar a:visited {
-    color: #dddddd;
-    text-decoration: none;
-}
+    .alphachar a:visited {
+        color: #dddddd;
+        text-decoration: none;
+    }
 
 body, table, div, p, dl {
     font-family: Lato;
@@ -75,6 +75,10 @@ body, table, div, p, dl {
 
 b {
     font-weight: normal;
+}
+
+em {
+    color: #fffc79;
 }
 
 ul {
@@ -159,10 +163,10 @@ a.elRef {
     text-decoration-color: blue;
 }
 
-a.elRef:visited {
-    color: #cccccc;
-    text-decoration-color: blue;
-}
+    a.elRef:visited {
+        color: #cccccc;
+        text-decoration-color: blue;
+    }
 
 
 a.el {
@@ -289,8 +293,8 @@ code {
     width: 650px;
 }
 
-.dyncontent div.center img {
-    background: #cccccc;
-/* Only two pixel border, otherwise the map becomes offset too much. */
-    border: solid 2px #cccccc;
-}
+    .dyncontent div.center img {
+        background: #cccccc;
+        /* Only two pixel border, otherwise the map becomes offset too much. */
+        border: solid 2px #cccccc;
+    }

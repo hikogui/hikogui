@@ -9,9 +9,11 @@
 
 namespace tt {
 
-/** A toolbar tab button widget. A toolbar tab button generally controls a
- * `tab_widget`, to show one of its child widgets. However technically a toolbar
- * tab button function is identical to a `radio_button_widget`.
+/** A graphical control element that allows the user to choose only one of a
+ * predefined set of mutually exclusive views of a `tab_widget`.
+ *
+ * A toolbar tab button generally controls a `tab_widget`, to show one of its
+ * child widgets.
  *
  * A toolbar tab button has two different states with different visual
  * representation:
@@ -32,6 +34,10 @@ namespace tt {
  * different `on_value`: 0, 1 and 2.
  *
  * @snippet widgets/tab_example.cpp Create three toolbar tab buttons
+ *
+ * @note A toolbar tab button does not directly control a `tab_widget`. Like
+ *       `radio_button_widget` this is accomplished by sharing a delegate or a
+ *       observable between the toolbar tab button and the tab widget.
  */
 class toolbar_tab_button_widget final : public abstract_button_widget {
 public:

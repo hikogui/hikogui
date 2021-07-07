@@ -9,7 +9,7 @@
 
 namespace tt {
 
-/** A menu-button widget.
+/** A button that is part of a menu.
  *
  * A menu-button has two different states with different visual
  * representation:

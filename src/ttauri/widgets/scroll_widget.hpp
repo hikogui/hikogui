@@ -11,10 +11,10 @@
 
 namespace tt {
 
-/** Scroll Widget.
+/** The scroll widget allows a content widget to be shown in less space than is
+ * required.
  *
- * The scroll widget allows a content widget to be shown in less space than is
- * required. The user can then show the part of the content widget by using the
+ *  The user can then show the part of the content widget by using the
  * scroll-bar widgets which are provided by the scroll widget.
  *
  * The size of the scroll widget is based on the `widget::minimum_size()`,
@@ -30,7 +30,7 @@ namespace tt {
  * given did not allow scrolling in that direction. This is useful behavior when
  * the scroll widget is part of an overlay widget which was unable to size to
  * the minimum size requested.
- * 
+ *
  * @image html scroll_widget.png
  *
  * @tparam Axis the axis that the content may be scrolled. Allowed values are

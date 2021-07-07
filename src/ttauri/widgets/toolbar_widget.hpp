@@ -10,7 +10,8 @@
 
 namespace tt {
 
-/** Toolbar Widget.
+/** A toolbar widget is located at the top of a window and lays out its children
+ * horizontally.
  *
  * The toolbar widget is shown at the top of a window, it is drawn with a
  * different background than the window's content to differentiate from it.
@@ -69,10 +70,7 @@ private:
     std::vector<widget *> _right_children;
     flow_layout _layout;
 
-    void update_constraints_for_child(
-        widget const &child,
-        ssize_t index,
-        float &shared_height) noexcept;
+    void update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept;
 
     void update_layout_for_child(widget &child, ssize_t index) const noexcept;
 

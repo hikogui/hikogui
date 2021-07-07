@@ -160,7 +160,7 @@ namespace tt {
 /** Encode a string to be usable as an id.
  * An id has the following format: [_a-zA-Z][_a-zA-Z0-9]*
  */
-[[nodiscard]] inline std::string id_encode(std::string_view str) noexcept
+[[nodiscard]] inline std::string make_identifier(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -170,6 +170,66 @@ namespace tt {
         r += is_name_next(c) ? c : '_';
     }
 
+    return r;
+}
+
+/** Create a slug from a string.
+ * A slug contains only lower case letters, digits and dashes.
+ * Duplicated dashes are eliminated.
+ */
+[[nodiscard]] inline std::string make_slug(std::string_view str) noexcept
+{
+    std::string r;
+    r.reserve(size(str));
+
+    size_t dash_count = 0;
+    for (ttlet c : str) {
+        if (is_alpha_num(c)) {
+            dash_count = 0;
+            r += to_lower(c);
+        } else if (dash_count++ == 0) {
+            r += '-';
+        }
+    }
+
+    return r;
+}
+
+/** Create a title from a string.
+ * A title contains words separated by a single space, where each word starts with
+ * a capital letter followed by lower case letters. Digits may be part of a word
+ * or form a separate word, digits are not counted as the start of a word for
+ * capitalization.
+ */
+[[nodiscard]] inline std::string make_title(std::string_view str) noexcept
+{
+    std::string r;
+    r.reserve(size(str));
+
+    // Do not start with a space.
+    size_t space_count = 1;
+    size_t letter_count = 0;
+    for (ttlet c : str) {
+        if (is_alpha_num(c)) {
+            if (is_digit(c)) {
+                r += c;
+            } else if (letter_count++ == 0) {
+                r += to_upper(c);
+            } else {
+                r += to_lower(c);
+            }
+            space_count = 0;
+
+        } else if (space_count++ == 0) {
+            r += ' ';
+            letter_count = 0;
+        }
+    }
+
+    if (space_count) {
+        // Strip trailing space.
+        r.resize(r.size() - 1);
+    }
     return r;
 }
 

@@ -252,7 +252,7 @@ formula_post_process_context::method_table formula_post_process_context::global_
 };
 
 formula_post_process_context::filter_table formula_post_process_context::global_filters = {
-    {"id"s, id_encode},
+    {"id"s, make_identifier},
     {"url"s, url_encode}
 };
 

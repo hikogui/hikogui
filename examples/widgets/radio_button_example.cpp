@@ -4,14 +4,12 @@
 
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/widgets/widgets.hpp"
-#include "ttauri/metadata.hpp"
 #include "ttauri/crt.hpp"
 
 using namespace tt;
 
 int tt_main(int argc, char *argv[])
 {
-    set_application_metadata("radio-button-example");
     auto &window = gui_system::global().make_window(l10n("Radio button example"));
     window.make_widget<label_widget>("A1", l10n("radio buttons:"));
 
@@ -25,4 +23,3 @@ int tt_main(int argc, char *argv[])
 
     return gui_system::global().loop();
 }
-

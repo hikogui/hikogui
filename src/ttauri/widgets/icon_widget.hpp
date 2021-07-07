@@ -15,7 +15,8 @@
 
 namespace tt {
 
-/** An simple widget that displays an icon.
+/** An simple GUI widget that displays an icon.
+ *
  * The icon is scaled to the size of the widget,
  * parent widgets will use this scaling to set the correct size.
  */

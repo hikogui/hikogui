@@ -4,14 +4,12 @@
 
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/widgets/widgets.hpp"
-#include "ttauri/metadata.hpp"
 #include "ttauri/crt.hpp"
 
 using namespace tt;
 
 int tt_main(int argc, char* argv[])
 {
-    set_application_metadata("tab-example");
     auto& window = gui_system::global().make_window(l10n("tab example"));
 
     observable<int> value = 0;

@@ -9,7 +9,9 @@
 
 namespace tt {
 
-/** A toggle widget. A toggle is very similar to a `checkbox_widget`. The
+/** A GUI widget that permits the user to make a binary choice. 
+ *
+ * A toggle is very similar to a `checkbox_widget`. The
  * semantic difference between a checkbox and a toggle is:
  *  - A toggle is immediately active, turning on and off a feature or service at
  *    the moment you toggle it.

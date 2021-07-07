@@ -39,10 +39,11 @@ int tt_main(int argc, char *argv[])
     using namespace tt;
 
     // Set the version at the very beginning, because file system paths depend on it.
-    auto version = library_metadata();
-    version.name = "ttauri-demo";
-    version.display_name = "TTauri Demo";
-    set_application_metadata(version);
+    auto &m = metadata::application();
+    m.name = "ttauri-demo";
+    m.display_name = "TTauri Demo";
+    m.vendor = metadata::library().vendor;
+    m.version = metadata::library().version;
 
     // Start the logger system, so logging is done asynchronously.
     logger_start();

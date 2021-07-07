@@ -9,10 +9,10 @@
 
 namespace tt {
 
-/** A radio-button widget.
+/** A graphical control element that allows the user to choose only one of a
+ * predefined set of mutually exclusive options.
  *
- * A radio-button has two different states with different visual
- * representation:
+ * A radio-button has two different states with different visual representation:
  *  - **on**: The radio button shows a solid circle inside it
  *  - **other**: The radio button shows empty.
  *
@@ -26,10 +26,14 @@ namespace tt {
  *
  * In the following example we create three radio button widgets on the window
  * which observes the same `value`. Each radio button is configured with a
- * different `on_value`: 1, 2 and 3. Initially the value is 0, and therefor
- * none of the radio buttons is selected when the application is started.
- * 
+ * different `on_value`: 1, 2 and 3. Initially the value is 0, and therefor none
+ * of the radio buttons is selected when the application is started.
+ *
  * @snippet widgets/radio_button_example.cpp Create three radio buttons
+ * 
+ * @note Unlike some other GUI toolkits a radio button is a singular widget.
+ *       Multiple radio buttons may share a delegate or an observable which
+ *       allows radio buttons to act as a set.
  */
 class radio_button_widget final : public abstract_button_widget {
 public:

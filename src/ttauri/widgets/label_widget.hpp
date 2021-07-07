@@ -16,6 +16,18 @@
 
 namespace tt {
 
+/** The GUI widget displays and lays out text together with an icon.
+ *
+ * This widget is often used by other widgets. For example
+ * checkboxes display a label representing their state next
+ * to the checkbox itself.
+ *
+ * The alignment of icon and text is shown in the following image:
+ * @image html label_widget.png
+ *
+ * Here is an example on how to create a label:
+ * @snippet widgets/checkbox_example.cpp Create a label
+ */
 class label_widget final : public widget {
 public:
     using super = widget;
@@ -55,6 +67,9 @@ public:
      * @param parent The parent widget that owns this radio button widget.
      * @param label The label to show next to the radio button.
      * @param alignment The alignment of the label.
+     *                  The default alignment is middle_right, because the most common
+     *                  usage for a label by an application programmer is to add the label
+     *                  to the left of another widget.
      * @param text_style The text style of the label, and color of non-color
      *                   icons.
      */

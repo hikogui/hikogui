@@ -9,7 +9,7 @@
 
 namespace tt {
 
-/** Overlay Widget.
+/** A GUI widget which may exist anywhere on a window overlaid above any other widget.
  *
  * The overlay widget allows a content widget to be shown on top of other
  * widgets in the window. It may be used for pop-up widgets, dialog boxes and

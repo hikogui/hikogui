@@ -13,10 +13,9 @@
 
 namespace tt {
 
-/** Row/Column Widget.
+/** A row/column widget lays out child widgets along a row or column.
  *
- * The row/column widget lays out child widgets along a row or column. Columns
- * are laid out from left to right, and rows from top to bottom.
+ * Columns are laid out from left to right, and rows from top to bottom.
  *
  * The row/column widget will calculate the size of the row or column based on
  * the minimum, preferred and maximum size of each child widget contained in
