@@ -16,14 +16,33 @@
 
 namespace tt {
 
+/** A text widget.
+ * The text widget is a simple widget that just displays text.
+ */
 class text_widget final : public widget {
 public:
     using super = widget;
 
+    /** The text to be displayed.
+     */
     observable<l10n> text;
+
+    /** The alignment of the text inside the space of the widget.
+     */
     observable<alignment> alignment = alignment::middle_center;
+
+    /** The style of the text.
+     */
     observable<theme_text_style> text_style = theme_text_style::label;
 
+    /** Construct a text widget.
+     *
+     * @param window The window the widget is displayed on.
+     * @param parent The owner of this widget.
+     * @param text The text to be displayed.
+     * @param alignment The alignment of the text inside the space of the widget.
+     * @param text_style The style of the text to be displayed.
+     */
     template<typename Text, typename Alignment = tt::alignment, typename TextStyle = tt::theme_text_style>
     text_widget(
         gui_window &window,

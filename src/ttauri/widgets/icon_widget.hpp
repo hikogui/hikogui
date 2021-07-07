@@ -15,12 +15,24 @@
 
 namespace tt {
 
+/** An simple widget that displays an icon.
+ * The icon is scaled to the size of the widget,
+ * parent widgets will use this scaling to set the correct size.
+ */
 class icon_widget final : public widget {
 public:
     using super = widget;
 
+    /** The icon to be displayed.
+     */
     observable<icon> icon;
+
+    /** The color a non-color icon will be displayed with.
+     */
     observable<theme_color> color = theme_color::foreground;
+
+    /** Alignment of the icon inside the widget.
+     */
     observable<alignment> alignment = alignment::middle_center;
 
     template<typename Icon, typename Color = tt::theme_color>
