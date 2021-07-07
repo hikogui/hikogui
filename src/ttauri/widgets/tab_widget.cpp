@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "text_widget.hpp"
+#include "tab_widget.hpp"
 
 namespace tt {
 
@@ -36,7 +36,7 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
 {
 }
 
-void tab_widget::init() noexcept override
+void tab_widget::init() noexcept
 {
     super::init();
     if (auto delegate = _delegate.lock()) {
@@ -44,7 +44,7 @@ void tab_widget::init() noexcept override
     }
 }
 
-void tab_widget::deinit() noexcept override
+void tab_widget::deinit() noexcept
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);

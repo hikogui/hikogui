@@ -65,8 +65,8 @@ public:
     text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
 
     template<typename Value>
-    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
-        text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept :
+    text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept
+        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
         text_field_widget(window, parent, make_unique_default_text_field_delegate(std::forward<Value>(value)))
     {
     }

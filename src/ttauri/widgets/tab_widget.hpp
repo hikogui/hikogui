@@ -40,10 +40,7 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate that will control this widget.
      */
-    tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-        tab_widget(window, parent, weak_or_unique_ptr<delegate_type>{delegate})
-    {
-    }
+    tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
 
     /** Construct a tab widget with an observable value.
      *
@@ -53,8 +50,8 @@ public:
      *              to display.
      */
     template<typename Value>
-    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
-        tab_widget(gui_window &window, widget *parent, Value &&value) noexcept :
+    tab_widget(gui_window &window, widget *parent, Value &&value) noexcept
+        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
         tab_widget(window, parent, make_unique_default_tab_delegate(std::forward<Value>(value)))
     {
     }

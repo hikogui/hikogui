@@ -59,8 +59,8 @@ public:
      *             value yields an 'on' state.
      */
     template<typename Label, typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
-        menu_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept :
+    menu_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept
+        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
         menu_button_widget(
             window,
             parent,

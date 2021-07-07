@@ -6,7 +6,8 @@
 #include "strings.hpp"
 #include "required.hpp"
 #include "url_parser.hpp"
-#include "ttauri/metadata.hpp"
+#include "logger.hpp"
+#include "metadata.hpp"
 #include <regex>
 
 #include <Windows.h>

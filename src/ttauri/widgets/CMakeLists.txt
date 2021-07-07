@@ -36,10 +36,12 @@ target_sources(ttauri PRIVATE
     scroll_delegate.hpp
     scroll_widget.hpp
     selection_delegate.hpp
+    selection_widget.cpp
     selection_widget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
     tab_delegate.hpp
+    tab_widget.cpp
     tab_widget.hpp
     text_field_delegate.hpp
     text_field_widget.cpp

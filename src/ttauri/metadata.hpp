@@ -5,6 +5,7 @@
 #pragma once
 
 #include "semantic_version.hpp"
+#include "URL.hpp"
 #include <string>
 
 namespace tt {

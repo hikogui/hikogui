@@ -33,6 +33,13 @@ target_link_libraries(tab_example PRIVATE ttauri)
 target_include_directories(tab_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_dependencies(tab_example widget_example_resources)
 
+add_executable(selection_example WIN32 MACOSX_BUNDLE)
+target_sources(selection_example PRIVATE selection_example.cpp)
+target_link_libraries(selection_example PRIVATE ttauri)
+target_include_directories(selection_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
+add_dependencies(selection_example widget_example_resources)
+
+
 
 #-------------------------------------------------------------------
 # Installation Rules: ttauri_demo
@@ -42,6 +49,7 @@ install(TARGETS checkbox_example DESTINATION examples/widgets)
 install(TARGETS toggle_example DESTINATION examples/widgets)
 install(TARGETS radio_button_example DESTINATION examples/widgets)
 install(TARGETS tab_example DESTINATION examples/widgets)
+install(TARGETS selection_example DESTINATION examples/widgets)
 
 # copy additional "ttauri library" resources from top-level
 install(DIRECTORY ../../resources/  DESTINATION examples/widgets/resources)
