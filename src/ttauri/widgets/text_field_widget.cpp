@@ -3,6 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_field_widget.hpp"
+#include "../GUI/theme.hpp"
+#include "../GUI/gui_window.hpp"
 
 namespace tt {
 

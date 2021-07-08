@@ -2,7 +2,13 @@
 #include "my_preferences_window_controller.hpp"
 #include "my_preferences.hpp"
 #include "ttauri/logger.hpp"
-#include "ttauri/widgets/widgets.hpp"
+#include "ttauri/widgets/selection_widget.hpp"
+#include "ttauri/widgets/text_field_widget.hpp"
+#include "ttauri/widgets/toggle_widget.hpp"
+#include "ttauri/widgets/checkbox_widget.hpp"
+#include "ttauri/widgets/radio_button_widget.hpp"
+#include "ttauri/widgets/toolbar_tab_button_widget.hpp"
+#include "ttauri/widgets/tab_widget.hpp"
 #include "ttauri/audio/audio_system.hpp"
 
 void my_preferences_window_controller::init_audio_tab(tt::grid_widget& grid) noexcept

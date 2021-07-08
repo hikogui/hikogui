@@ -4,6 +4,10 @@
 
 #include "icon_widget.hpp"
 #include "../GFX/gfx_surface_vulkan.hpp"
+#include "../GFX/gfx_device_vulkan.hpp"
+#include "../GUI/gui_window.hpp"
+#include "../GUI/theme.hpp"
+#include "../cast.hpp"
 
 namespace tt {
 
@@ -111,8 +115,8 @@ void icon_widget::draw(draw_context context, hires_utc_clock::time_point display
 
         case icon_type::pixmap:
             switch (_pixmap_backing.state) {
-            case pipeline_image::Image::State::Drawing: request_redraw(); break;
-            case pipeline_image::Image::State::Uploaded: context.draw_image(_pixmap_backing, _icon_transform); break;
+            case pipeline_image::image::State::Drawing: request_redraw(); break;
+            case pipeline_image::image::State::Uploaded: context.draw_image(_pixmap_backing, _icon_transform); break;
             default: break;
             }
             break;

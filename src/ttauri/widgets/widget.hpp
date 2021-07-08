@@ -4,50 +4,28 @@
 
 #pragma once
 
-#include "../GUI/gui_window.hpp"
-#include "../GUI/mouse_event.hpp"
-#include "../GUI/hitbox.hpp"
-#include "../GUI/keyboard_event.hpp"
-#include "../GUI/theme.hpp"
+//#include "../GUI/mouse_event.hpp"
+//#include "../GUI/keyboard_event.hpp"
+//#include "../GUI/theme.hpp"
 #include "../GFX/draw_context.hpp"
+#include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
-#include "../text/shaped_text.hpp"
-#include "../alignment.hpp"
-#include "../graphic_path.hpp"
-#include "../rapid/sfloat_rgba16.hpp"
-#include "../rapid/sfloat_rg32.hpp"
+//#include "../alignment.hpp"
+#include "../geometry/extent.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
-#include "../URL.hpp"
-#include "../vspan.hpp"
-#include "../utils.hpp"
 #include "../hires_utc_clock.hpp"
 #include "../observable.hpp"
 #include "../command.hpp"
-#include "../unfair_recursive_mutex.hpp"
-#include "../flow_layout.hpp"
-#include <limits>
 #include <memory>
 #include <vector>
-#include <mutex>
-#include <typeinfo>
-
-namespace tt::pipeline_image {
-struct Image;
-struct vertex;
-} // namespace tt::pipeline_image
-namespace tt::pipeline_SDF {
-struct vertex;
-}
-namespace tt::pipeline_flat {
-struct vertex;
-}
-namespace tt::pipeline_box {
-struct vertex;
-}
+#include <string>
 
 namespace tt {
-class widget;
+class gui_window;
+struct mouse_event;
+struct keyboard_event;
 
 /** An interactive graphical object as part of the user-interface.
  *
@@ -147,22 +125,14 @@ public:
      * @pre `mutex` must be locked by current thread.
      * @return The margin for this widget.
      */
-    [[nodiscard]] float margin() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _margin;
-    }
+    [[nodiscard]] virtual float margin() const noexcept;
 
     /** Minimum size.
      * The absolute minimum size of the widget.
      * A container will never reserve less space for the widget.
      * For windows this size becomes a hard limit for the minimum window size.
      */
-    [[nodiscard]] extent2 minimum_size() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _minimum_size;
-    }
+    [[nodiscard]] extent2 minimum_size() const noexcept;
 
     /** Preferred size.
      * The preferred size of a widget.
@@ -172,11 +142,7 @@ public:
      * For tab-views this is propagated.
      * For windows this size is used to set the initial window size.
      */
-    [[nodiscard]] extent2 preferred_size() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _preferred_size;
-    }
+    [[nodiscard]] extent2 preferred_size() const noexcept;
 
     /** Maximum size.
      * The maximum size of a widget.
@@ -184,11 +150,7 @@ public:
      * but it may do so to satisfy the minimum constraint on a neighboring widget.
      * For windows the maximum size becomes a hard limit for the window size.
      */
-    [[nodiscard]] extent2 maximum_size() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _maximum_size;
-    }
+    [[nodiscard]] extent2 maximum_size() const noexcept;
 
     /** Set the location and size of the widget inside the window.
      *
@@ -203,117 +165,41 @@ public:
     void set_layout_parameters(
         geo::transformer auto const &local_to_parent,
         extent2 size,
-        aarectangle const &clipping_rectangle) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        _local_to_parent = local_to_parent;
-        _parent_to_local = ~local_to_parent;
-        if (parent) {
-            _local_to_window = local_to_parent * parent->local_to_window();
-            _window_to_local = ~local_to_parent * parent->window_to_local();
-        } else {
-            _local_to_window = local_to_parent;
-            _window_to_local = ~local_to_parent;
-        }
-        _size = size;
-        _clipping_rectangle = clipping_rectangle;
-        _visible_rectangle = intersect(aarectangle{size}, clipping_rectangle);
-    }
+        aarectangle const &clipping_rectangle) noexcept;
 
     void set_layout_parameters_from_parent(
         aarectangle child_rectangle,
         aarectangle parent_clipping_rectangle,
-        float draw_layer_delta) noexcept
-    {
-        tt_axiom(is_gui_thread());
+        float draw_layer_delta) noexcept;
 
-        ttlet child_translate = translate2{child_rectangle};
-        ttlet child_size = child_rectangle.size();
-        ttlet rectangle = aarectangle{child_size};
-        ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, expand(rectangle, margin()));
+    void set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept;
 
-        set_layout_parameters(translate_z(draw_layer_delta) * child_translate, child_size, child_clipping_rectangle);
-    }
+    [[nodiscard]] matrix3 parent_to_local() const noexcept;
 
-    void set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept
-    {
-        tt_axiom(is_gui_thread());
+    [[nodiscard]] matrix3 local_to_parent() const noexcept;
 
-        if (parent) {
-            ttlet draw_layer_delta = draw_layer - parent->draw_layer;
-            return set_layout_parameters_from_parent(child_rectangle, parent->clipping_rectangle(), draw_layer_delta);
-        } else {
-            return set_layout_parameters_from_parent(child_rectangle, child_rectangle, 0.0f);
-        }
-    }
+    [[nodiscard]] matrix3 window_to_local() const noexcept;
 
-    [[nodiscard]] matrix3 parent_to_local() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _parent_to_local;
-    }
+    [[nodiscard]] matrix3 local_to_window() const noexcept;
 
-    [[nodiscard]] matrix3 local_to_parent() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _local_to_parent;
-    }
+    [[nodiscard]] extent2 size() const noexcept;
 
-    [[nodiscard]] matrix3 window_to_local() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _window_to_local;
-    }
+    [[nodiscard]] float width() const noexcept;
 
-    [[nodiscard]] matrix3 local_to_window() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _local_to_window;
-    }
-
-    [[nodiscard]] extent2 size() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _size;
-    }
-
-    [[nodiscard]] float width() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _size.width();
-    }
-
-    [[nodiscard]] float height() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _size.height();
-    }
+    [[nodiscard]] float height() const noexcept;
 
     /** Get the rectangle in local coordinates.
      *
      * @pre `mutex` must be locked by current thread.
      */
-    [[nodiscard]] aarectangle rectangle() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return aarectangle{_size};
-    }
+    [[nodiscard]] aarectangle rectangle() const noexcept;
 
     /** Return the base-line where the text should be located.
      * @return Number of pixels from the bottom of the widget where the base-line is located.
      */
-    [[nodiscard]] virtual float base_line() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return rectangle().middle();
-    }
+    [[nodiscard]] virtual float base_line() const noexcept;
 
-    [[nodiscard]] aarectangle clipping_rectangle() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _clipping_rectangle;
-    }
+    [[nodiscard]] aarectangle clipping_rectangle() const noexcept;
 
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
@@ -401,10 +287,7 @@ public:
      */
     virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept;
 
-    virtual void request_redraw() const noexcept
-    {
-        window.request_redraw(aarectangle{_local_to_window * _clipping_rectangle});
-    }
+    virtual void request_redraw() const noexcept;
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -412,16 +295,7 @@ public:
      */
     [[nodiscard]] virtual bool handle_event(command command) noexcept;
 
-    [[nodiscard]] virtual bool handle_event(std::vector<command> const &commands) noexcept
-    {
-        tt_axiom(is_gui_thread());
-        for (ttlet command : commands) {
-            if (handle_event(command)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    [[nodiscard]] virtual bool handle_event(std::vector<command> const &commands) noexcept;
 
     /** Handle command recursive.
      * Handle a command and pass it to each child.
@@ -499,87 +373,12 @@ public:
 
     /** Remove and deallocate all child widgets.
      */
-    void clear() noexcept
-    {
-        tt_axiom(is_gui_thread());
-        _children.clear();
-        _request_constrain = true;
-    }
+    void clear() noexcept;
 
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    widget &add_widget(std::unique_ptr<widget> widget) noexcept
-    {
-        tt_axiom(is_gui_thread());
-        tt_axiom(widget->parent == this);
-
-        auto widget_ptr = &(*widget);
-        _children.push_back(std::move(widget));
-        _request_constrain = true;
-        window.requestLayout = true;
-        return *widget_ptr;
-    }
-
-    [[nodiscard]] widget &front() noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return *_children.front();
-    }
-
-    [[nodiscard]] widget const &front() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return *_children.front();
-    }
-
-    [[nodiscard]] widget &back() noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return *_children.back();
-    }
-
-    [[nodiscard]] widget const &back() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return *_children.back();
-    }
-
-    [[nodiscard]] auto begin() noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _children.begin();
-    }
-
-    [[nodiscard]] auto begin() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _children.begin();
-    }
-
-    [[nodiscard]] auto cbegin() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _children.cbegin();
-    }
-
-    [[nodiscard]] auto end() noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _children.end();
-    }
-
-    [[nodiscard]] auto end() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _children.end();
-    }
-
-    [[nodiscard]] auto cend() const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _children.cend();
-    }
+    widget &add_widget(std::unique_ptr<widget> widget) noexcept;
 
 protected:
     /** A list of child widgets.
@@ -637,8 +436,6 @@ protected:
     extent2 _preferred_size;
     extent2 _maximum_size;
 
-    float _margin = theme::global().margin;
-
     std::shared_ptr<std::function<void()>> _redraw_callback;
     std::shared_ptr<std::function<void()>> _relayout_callback;
     std::shared_ptr<std::function<void()>> _reconstrain_callback;
@@ -663,15 +460,7 @@ protected:
      * @param requested_rectangle A rectangle in the local coordinate system.
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
-    [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        ttlet requested_window_rectangle = aarectangle{local_to_window() * requested_rectangle};
-        ttlet window_bounds = shrink(aarectangle{window.size}, theme::global().margin);
-        ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
-        return aarectangle{window_to_local() * response_window_rectangle};
-    }
+    [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
 };
 
 } // namespace tt

@@ -55,7 +55,6 @@ public:
         if (parent) {
             semantic_layer = parent->semantic_layer;
         }
-        _margin = 0.0f;
     }
 
     /** Add a widget directly to this grid-widget.
@@ -90,6 +89,11 @@ public:
         if (auto delegate = _delegate.lock()) {
             delegate->deinit(*this);
         }
+    }
+
+    [[nodiscard]] float margin() const noexcept override
+    {
+        return 0.0f;
     }
 
     [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override

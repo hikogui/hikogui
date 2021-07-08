@@ -6,8 +6,11 @@
 
 #include "widget.hpp"
 #include "../GFX/draw_context.hpp"
+#include "../GUI/theme_text_style.hpp"
+#include "../text/shaped_text.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
+#include "../l10n.hpp"
 #include <memory>
 #include <string>
 #include <array>

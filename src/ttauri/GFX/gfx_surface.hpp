@@ -7,6 +7,7 @@
 #include "gfx_surface_state.hpp"
 #include "draw_context.hpp"
 #include "subpixel_orientation.hpp"
+#include "gfx_system_globals.hpp"
 
 namespace tt {
 class gfx_device;

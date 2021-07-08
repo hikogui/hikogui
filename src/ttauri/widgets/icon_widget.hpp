@@ -6,7 +6,10 @@
 
 #include "widget.hpp"
 #include "../GFX/draw_context.hpp"
+#include "../GFX/pipeline_image_image.hpp"
+#include "../GUI/theme_color.hpp"
 #include "../alignment.hpp"
+#include "../icon.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -60,7 +63,7 @@ private:
     icon_type _icon_type;
     font_glyph_ids _glyph;
     size_t _pixmap_hash;
-    pipeline_image::Image _pixmap_backing;
+    pipeline_image::image _pixmap_backing;
 
     aarectangle _icon_bounding_box;
     matrix2 _icon_transform;

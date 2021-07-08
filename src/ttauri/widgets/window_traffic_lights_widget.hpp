@@ -6,6 +6,7 @@
 
 #include "widget.hpp"
 #include "../graphic_path.hpp"
+#include "../text/font_glyph_ids.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -23,6 +24,7 @@ public:
     window_traffic_lights_widget(gui_window &window, widget *parent) noexcept;
 
     /// @privatesection
+    [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;

@@ -7,7 +7,6 @@
 #include "widget.hpp"
 #include "grid_delegate.hpp"
 #include "../geometry/spreadsheet_address.hpp"
-#include "../GUI/theme.hpp"
 #include "../flow_layout.hpp"
 #include "../weak_or_unique_ptr.hpp"
 #include <memory>
@@ -83,6 +82,7 @@ public:
     /// @privatesection
     void init() noexcept override;
     void deinit() noexcept override;
+    [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     /// @endprivatesection

@@ -5,6 +5,8 @@
 #pragma once
 
 #include "widget.hpp"
+#include "../flow_layout.hpp"
+#include "../alignment.hpp"
 #include <memory>
 #include <ranges>
 
@@ -60,6 +62,7 @@ public:
     }
 
     /// @privatesection
+    [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept;
     void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;

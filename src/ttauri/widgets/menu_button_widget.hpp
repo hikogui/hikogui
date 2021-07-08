@@ -70,6 +70,7 @@ public:
     }
 
     /// @privatesection
+    [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
@@ -88,7 +89,6 @@ private:
     menu_button_widget(gui_window &window, widget *parent, Label &&label, weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
-        _margin = 0.0f;
         label_alignment = alignment::middle_left;
         set_label(std::forward<Label>(label));
     }

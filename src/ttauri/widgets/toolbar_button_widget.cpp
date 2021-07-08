@@ -3,8 +3,15 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_button_widget.hpp"
+#include "../GUI/theme.hpp"
+#include "../GUI/gui_window.hpp"
 
 namespace tt {
+
+[[nodiscard]] float toolbar_button_widget::margin() const noexcept
+{
+    return 0.0f;
+}
 
 [[nodiscard]] bool
 toolbar_button_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
@@ -88,4 +95,4 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noe
     context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
 }
 
-}
+} // namespace tt

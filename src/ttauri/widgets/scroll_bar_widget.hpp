@@ -5,6 +5,8 @@
 #pragma once
 
 #include "widget.hpp"
+#include "../GUI/theme.hpp"
+#include "../GUI/mouse_event.hpp"
 #include "../geometry/axis.hpp"
 #include "../observable.hpp"
 #include <memory>

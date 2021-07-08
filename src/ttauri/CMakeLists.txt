@@ -170,8 +170,7 @@ target_sources(ttauri PRIVATE
     wfree_unordered_map.hpp
 )
 
-if(TT_BUILD_PCH)
-    if(NOT TT_ENABLE_ANALYSIS)
+if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
         assert.hpp
         counters.hpp
@@ -185,7 +184,6 @@ if(TT_BUILD_PCH)
         trace.hpp
         URL.hpp
     )
-    endif()
 endif()
 
 if(TT_BUILD_TESTS)

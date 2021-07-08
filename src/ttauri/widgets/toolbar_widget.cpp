@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_widget.hpp"
+#include "../GUI/theme.hpp"
 
 namespace tt {
 
@@ -17,7 +18,11 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
         // The toolbar is a top level widget, which draws its background as the next level.
         semantic_layer = 0;
     }
-    _margin = 0.0f;
+}
+
+[[nodiscard]] float toolbar_widget::margin() const noexcept
+{
+    return 0.0f;
 }
 
 [[nodiscard]] bool toolbar_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept

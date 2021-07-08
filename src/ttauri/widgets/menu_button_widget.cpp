@@ -3,11 +3,18 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "menu_button_widget.hpp"
+#include "../GFX/pipeline_SDF_device_shared.hpp"
+#include "../GUI/gui_window.hpp"
+#include "../GUI/theme.hpp"
 
 namespace tt {
 
-[[nodiscard]] bool
-menu_button_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] float menu_button_widget::margin() const noexcept
+{
+    return 0.0f;
+}
+
+[[nodiscard]] bool menu_button_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -126,4 +133,4 @@ void menu_button_widget::draw_check_mark(draw_context const &context) noexcept
     }
 }
 
-}
+} // namespace tt

@@ -8,6 +8,7 @@
 #include "../vspan.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/matrix.hpp"
+#include <cstdlib>
 #include <span>
 #include <atomic>
 #include <string>
@@ -26,7 +27,7 @@ struct device_shared;
 
 /** This is a image that is uploaded into the texture atlas.
  */
-struct Image {
+struct image {
     enum class State { Uninitialized, Drawing, Uploaded };
 
     mutable std::atomic<State> state = State::Uninitialized;
@@ -51,10 +52,10 @@ struct Image {
 
     std::vector<Page> pages;
 
-    Image() noexcept :
+    image() noexcept :
         parent(nullptr), width_in_px(0), height_in_px(0), width_in_pages(0), height_in_pages(0), pages() {}
 
-    Image(
+    image(
         device_shared *parent,
         size_t width_in_px,
         size_t height_in_px,
@@ -68,12 +69,12 @@ struct Image {
         height_in_pages(height_in_pages),
         pages(std::move(pages)) {}
 
-    Image(Image &&other) noexcept;
-    Image &operator=(Image &&other) noexcept;
-    ~Image();
+    image(image &&other) noexcept;
+    image &operator=(image &&other) noexcept;
+    ~image();
 
-    Image(Image const &other) = delete;
-    Image &operator=(Image const &other) = delete;
+    image(image const &other) = delete;
+    image &operator=(image const &other) = delete;
 
     /** Find the image coordinates of a page in the image.
      * @param pageIndex Index in the pages-vector.

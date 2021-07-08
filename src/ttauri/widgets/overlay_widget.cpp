@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "overlay_widget.hpp"
+#include "../GUI/theme.hpp"
 
 namespace tt {
 
@@ -17,7 +18,6 @@ overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr
         // any other widget drawn.
         draw_layer = parent->draw_layer + 20.0f;
         semantic_layer = 0;
-        _margin = theme::global().margin;
     }
 }
 

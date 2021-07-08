@@ -8,6 +8,7 @@
 #include "text_widget.hpp"
 #include "icon_widget.hpp"
 #include "../alignment.hpp"
+#include "../label.hpp"
 #include <memory>
 #include <string>
 #include <array>

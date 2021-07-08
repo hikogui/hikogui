@@ -79,6 +79,7 @@ public:
     /// @privatesection
     void init() noexcept override;
     void deinit() noexcept override;
+    [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
     [[nodiscard]] widget const *find_next_widget(

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../geometry/axis_aligned_rectangle.hpp"
+#include "../geometry/matrix.hpp"
 
 namespace tt::pipeline_image {
 

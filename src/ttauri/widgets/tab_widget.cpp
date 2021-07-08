@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "tab_widget.hpp"
+#include "../GUI/gui_window.hpp"
 
 namespace tt {
 
@@ -16,7 +17,6 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
         draw_layer = parent->draw_layer;
         semantic_layer = parent->semantic_layer;
     }
-    _margin = 0.0f;
 
     if (auto d = _delegate.lock()) {
         _delegate_callback = d->subscribe(*this, [this](auto...) {
@@ -50,6 +50,11 @@ void tab_widget::deinit() noexcept
         delegate->deinit(*this);
     }
     super::deinit();
+}
+
+[[nodiscard]] float tab_widget::margin() const noexcept
+{
+    return 0.0f;
 }
 
 [[nodiscard]] bool tab_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
@@ -144,4 +149,4 @@ void tab_widget::draw_child(draw_context context, hires_utc_clock::time_point di
     child.draw(child_context, displayTimePoint);
 }
 
-}
+} // namespace tt

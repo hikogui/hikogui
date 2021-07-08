@@ -52,13 +52,13 @@ void device_shared::freePages(std::vector<Page> const &pages) noexcept
     atlasFreePages.insert(atlasFreePages.end(), pages.begin(), pages.end());
 }
 
-Image device_shared::makeImage(size_t width, size_t height) noexcept
+image device_shared::makeImage(size_t width, size_t height) noexcept
 {
     ttlet width_in_pages = (width + (Page::width - 1)) / Page::width;
     ttlet height_in_pages = (height + (Page::height - 1)) / Page::height;
     ttlet nr_pages = width_in_pages * height_in_pages;
 
-    return Image{this, width, height, width_in_pages, height_in_pages, allocatePages(nr_pages)};
+    return image{this, width, height, width_in_pages, height_in_pages, allocatePages(nr_pages)};
 }
 
 tt::pixel_map<sfloat_rgba16> device_shared::getStagingPixelMap()
@@ -69,7 +69,7 @@ tt::pixel_map<sfloat_rgba16> device_shared::getStagingPixelMap()
         Page::border, Page::border, stagingImageWidth - 2 * Page::border, stagingImageHeight - 2 * Page::border);
 }
 
-void device_shared::updateAtlasWithStagingPixelMap(const Image &image)
+void device_shared::updateAtlasWithStagingPixelMap(const image &image)
 {
     // Start with the actual image inside the stagingImage.
     auto rectangle = aarectangle{

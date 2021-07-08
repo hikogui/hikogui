@@ -3,6 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(ttauri PRIVATE
+    draw_context.cpp
     draw_context.hpp
     gfx_device.cpp
     gfx_device.hpp
@@ -80,10 +81,9 @@ target_sources(ttauri PRIVATE
     VulkanMemoryAllocator.cpp
 )
 
-if(TT_BUILD_PCH)
-    if(NOT TT_ENABLE_ANALYSIS)
+if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
-        gfx_device_vulkan.hpp
+        gfx_system.hpp
+        gfx_system_vulkan.hpp
     )
-    endif()
- endif()
+endif()

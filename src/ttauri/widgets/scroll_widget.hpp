@@ -7,6 +7,7 @@
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_delegate.hpp"
+#include "../GUI/gui_window.hpp"
 #include "../geometry/axis.hpp"
 
 namespace tt {
@@ -44,7 +45,7 @@ public:
     static_assert(Axis == axis::horizontal or Axis == axis::vertical or Axis == axis::both);
 
     using super = widget;
-    using delegate_type = scroll_delegate<Axis,ControlsWindow>;
+    using delegate_type = scroll_delegate<Axis, ControlsWindow>;
 
     static constexpr tt::axis axis = Axis;
     static constexpr bool controls_window = ControlsWindow;
@@ -65,7 +66,6 @@ public:
             // The tab-widget will not draw itself, only its selected content.
             semantic_layer = parent->semantic_layer;
         }
-        _margin = 0.0f;
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -109,6 +109,11 @@ public:
             delegate->deinit(*this);
         }
         super::deinit();
+    }
+
+    [[nodiscard]] float margin() const noexcept override
+    {
+        return 0.0f;
     }
 
     [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override

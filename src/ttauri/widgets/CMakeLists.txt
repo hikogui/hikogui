@@ -18,7 +18,7 @@ target_sources(ttauri PRIVATE
     grid_widget.cpp
     grid_widget.hpp
     icon_widget.cpp
-    icon_widget.cpp
+    icon_widget.hpp
     label_widget.cpp
     label_widget.hpp
     menu_button_widget.cpp
@@ -58,17 +58,35 @@ target_sources(ttauri PRIVATE
     toolbar_widget.hpp
     widget.cpp
     widget.hpp
-    widgets.hpp
     window_traffic_lights_widget.cpp
     window_traffic_lights_widget.hpp
     window_widget.cpp
     window_widget.hpp
 )
 
-if(TT_BUILD_PCH)
-    if(NOT TT_ENABLE_ANALYSIS)
+if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
-        Widget.hpp
+        checkbox_widget.hpp
+        grid_widget.hpp
+        label_widget.hpp
+        menu_button_widget.hpp
+        momentary_button_widget.hpp
+        overlay_delegate.hpp
+        overlay_widget.hpp
+        radio_button_widget.hpp
+        row_column_widget.hpp
+        scroll_widget.hpp
+        selection_widget.hpp
+        tab_delegate.hpp
+        tab_widget.hpp
+        text_field_widget.hpp
+        text_widget.hpp
+        toggle_widget.hpp
+        toolbar_button_widget.hpp
+        toolbar_tab_button_widget.hpp
+        toolbar_widget.hpp
+        widget.hpp
+        window_traffic_lights_widget.hpp
+        window_widget.hpp
     )
-    endif()
 endif()

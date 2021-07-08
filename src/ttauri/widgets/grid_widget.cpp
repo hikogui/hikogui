@@ -19,7 +19,6 @@ grid_widget::grid_widget(
     if (parent) {
         semantic_layer = parent->semantic_layer;
     }
-    _margin = 0.0f;
 }
 
 void grid_widget::init() noexcept
@@ -34,6 +33,11 @@ void grid_widget::deinit() noexcept
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
+}
+
+[[nodiscard]] float grid_widget::margin() const noexcept
+{
+    return 0.0f;
 }
 
 [[nodiscard]] std::pair<size_t, size_t> grid_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept

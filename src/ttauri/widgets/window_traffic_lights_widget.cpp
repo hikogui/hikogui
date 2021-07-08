@@ -3,8 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "window_traffic_lights_widget.hpp"
+#include "../GUI/theme.hpp"
+#include "../GUI/gui_window.hpp"
+#include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../text/ttauri_icon.hpp"
-#include "../utils.hpp"
 #include <cmath>
 #include <typeinfo>
 
@@ -15,8 +17,11 @@ window_traffic_lights_widget::window_traffic_lights_widget(
     widget *parent) noexcept :
     super(window, parent)
 {
-    // Toolbar buttons hug the toolbar and neighbor widgets.
-    _margin = 0.0f;
+}
+
+[[nodiscard]] float window_traffic_lights_widget::margin() const noexcept
+{
+    return 0.0f;
 }
 
 [[nodiscard]] bool

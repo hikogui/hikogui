@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/widgets/widgets.hpp"
+#include "ttauri/widgets/radio_button_widget.hpp"
 #include "ttauri/crt.hpp"
 
 using namespace tt;

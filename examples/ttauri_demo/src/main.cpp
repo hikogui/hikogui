@@ -7,7 +7,9 @@
 #include "ttauri/metadata.hpp"
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/audio/audio_system.hpp"
-#include "ttauri/widgets/widgets.hpp"
+#include "ttauri/widgets/toolbar_button_widget.hpp"
+#include "ttauri/widgets/momentary_button_widget.hpp"
+#include "ttauri/widgets/row_column_widget.hpp"
 #include <Windows.h>
 #include <memory>
 

@@ -11,7 +11,6 @@
 #include <string>
 #include <array>
 
-
 namespace tt {
 
 class system_menu_widget final : public widget {
@@ -25,27 +24,22 @@ public:
     system_menu_widget(gui_window &window, widget *parent) noexcept;
 
     template<typename Icon>
-    system_menu_widget(gui_window &window, widget *parent, Icon &&icon) noexcept :
-        system_menu_widget(window, parent)
+    system_menu_widget(gui_window &window, widget *parent, Icon &&icon) noexcept : system_menu_widget(window, parent)
     {
         this->icon = std::forward<Icon>(icon);
-
-        // Toolbar buttons hug the toolbar and neighbor widgets.
-        _margin = 0.0f;
     }
 
+    /// @privatesection
     void init() noexcept override;
-
-    [[nodiscard]] bool
-    constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] float margin() const noexcept override;
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
-
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
-
+    /// @endprivatesection
 private:
     icon_widget *_icon_widget = nullptr;
 
     aarectangle system_menu_rectangle;
 };
 
-}
+} // namespace tt

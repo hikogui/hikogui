@@ -3,25 +3,23 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "system_menu_widget.hpp"
-#include "../text/ttauri_icon.hpp"
-#include "../utils.hpp"
-#include <Windows.h>
-#include <WinUser.h>
-#include <cmath>
-#include <typeinfo>
+#include "../GUI/theme.hpp"
 
 namespace tt {
 
 system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept :
     super(window, parent)
 {
-    // Toolbar buttons hug the toolbar and neighbor widgets.
-    _margin = 0.0f;
 }
 
 void system_menu_widget::init() noexcept
 {
     _icon_widget = &make_widget<icon_widget>(icon);
+}
+
+[[nodiscard]] float system_menu_widget::margin() const noexcept
+{
+    return 0.0f;
 }
 
 [[nodiscard]] bool

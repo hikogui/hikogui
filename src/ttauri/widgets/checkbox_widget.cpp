@@ -3,6 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "checkbox_widget.hpp"
+#include "../GUI/theme.hpp"
+#include "../GFX/pipeline_SDF_device_shared.hpp"
 
 namespace tt {
 
