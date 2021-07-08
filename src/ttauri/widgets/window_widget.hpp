@@ -27,11 +27,22 @@ public:
         super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
     {
     }
-
+    /** The background color of the window.
+     * This function is used during rendering to use the optimized
+     * GPU clear function.
+     */
     [[nodiscard]] color background_color() noexcept;
 
+    /** Get a reference to the window's content widget.
+     * @see grid_widget
+     * @return A reference to a grid_widget.
+     */
     [[nodiscard]] grid_widget &content() noexcept;
 
+    /** Get a reference to window's toolbar widget.
+     * @see toolbar_widget
+     * @return A reference to a toolbar_widget.
+     */
     [[nodiscard]] toolbar_widget &toolbar() noexcept;
 
     /** Defining on which edges the resize handle has priority over widget at a higher layer.

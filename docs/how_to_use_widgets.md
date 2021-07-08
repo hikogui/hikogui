@@ -3,287 +3,169 @@ How to use widgets
 
 The following widgets exists:
 
- - Simple widgets
-   - `tt::text_widget`: Displays text.
-   - `tt::icon_widget`: Displays a small image.
-   - `tt::label_widget`: Lays out and displays text and a icon together.
- - Container widgets
-   - `tt::grid_widget`: Lays out children in a grid of variable sized cells.
-   - `tt::row_widget`: Lays out children in a row.
-   - `tt::column_widget`: Lays out children in a column.
-   - `tt::tab_widget`: Shows one child at a time.
-   - `tt::scroll_widget`: Allows a larger child to be shown in less space.
-   - `tt::overlay_widget`: Shows a child anywhere on the window, overlaying above any other widget.
- - Buttons
-   - `tt::momentary_button_widget`: A push button designed to be used with a callback function.
-   - `tt::toolbar_button_widget`: A push button designed to be used with a callback function. Specifically
-                                  for use inside a `tt::toolbar_widget`.
-   - `tt::toggle_widget`: A button representing a binary choice and indiciating an immediate effect.
-   - `tt::checkbox_widget`: A button representing a binary choice, but also being able to show
-                            a third 'other' state.
-   - `tt::radio_button_widget`: A button representing one out of mutually exclusive choices.
-   - `tt::toolbar_tab_button_widget`: A button representing one out of mutally exclusive tabs. Designed
-                                      to control the `tt::tab_widget`. For use inside a `tt::toolbar_widget`.
-   - `tt::menu_button_widget`:
- - Misc
-   - `tt::selection_widget`:
-   - `tt::text_field_widget`:
-   - `tt::window_widget`:
-   - `tt::toolbar_widget`: Lays out children in a toolbar.
-   - `tt::window_traffic_light_widget`:
-   - `tt::scroll_bar_widget`:
-   - `tt::system_menu_widget`:
+- **Simple widgets**
+  - `tt::text_widget`: Displays text.
+  - `tt::icon_widget`: Displays a small image.
+  - `tt::label_widget`: Lays out and displays text and a icon together.
 
+- **Container widgets**
+  - `tt::grid_widget`: Lays out children in a grid of variable sized cells.
+  - `tt::row_column_widget`: Lays out children in a row or column.
+  - `tt::tab_widget`: Shows one child at a time.
+  - `tt::scroll_widget`: Allows a larger child to be shown in less space.
+  - `tt::overlay_widget`: Shows a child anywhere on the window, overlaying above
+    any other widget.
+  - `tt::toolbar_widget`: Lays out children in a toolbar.
 
+- **Buttons**
+  - `tt::momentary_button_widget`: A push button designed to be used with a
+    callback function.
+  - `tt::toolbar_button_widget`: A push button designed to be used with a
+    callback function. Specifically for use inside a `tt::toolbar_widget`.
+  - `tt::toggle_widget`: A button representing a binary choice and indiciating
+    an immediate effect.
+  - `tt::checkbox_widget`: A button representing a binary choice, but also being
+    able to show a third 'other' state.
+  - `tt::radio_button_widget`: A button representing one out of mutually
+    exclusive choices.
+  - `tt::toolbar_tab_button_widget`: A button representing one out of mutally
+    exclusive tabs. Designed to control the `tt::tab_widget`. For use inside a
+    `tt::toolbar_widget`.
+  - `tt::menu_button_widget`: A button used inside menus.
+- **Misc**
+  - `tt::selection_widget`: A selection widget allows selecting one out of a set
+    of choices.
+  - `tt::text_field_widget`: A text field widgets allows a user to enter free
+    form text.
+  - `tt::window_widget`: A window widget is directly owned by a window.
+  - `tt::window_traffic_light_widget`: This widget displays the minimize,
+    maximize and close button of a window.
+  - `tt::scroll_bar_widget`: This widget shows a scroll-bar and is part of a
+    `scroll_widget`.
+  - `tt::system_menu_widget`: The system menu is a logo to show for the window
+    and also is the mouse target for the system-menu that every window has in
+    Windows 10.
 
 
 Creating Windows
 ----------------
-You can create a window by calling the `tt::gui_system::make_window()`
-member function of a global object that can be accessed using
+
+You can create a window by calling the `tt::gui_system::make_window()` member
+function of a global object that can be accessed using
 `tt::gui_system::global()`.
 
-The first time `tt::gui_system::global()` is used the GUI system is
-started. From this point it is required that every call into the GUI
-system is done from the same thread, called the `gui_thread`.
+The first time `tt::gui_system::global()` is used the GUI system is started.
+From this point it is required that every call into the GUI system is done from
+the same thread, called the `gui_thread`.
 
-The first argument to make\_window() is the title of the window, of
-type `tt::label`, which consists of an icon and translatable text.
+The first argument to `tt::gui_system::make_window()` is the title of the
+window, of type `tt::label`, which consists of an icon and translatable text.
 
-The second optional argument is a subclass of `tt::window_delegate`.
-The window delegate can be used to store data with the window
-and provide initialization of the widgets.
+The second optional argument is a subclass of `tt::gui_window_delegate`. The window
+delegate can be used to store data with the window and provide initialization of
+the widgets.
 
-The window will automatically determine its size based on the
-widgets that will be added to window.
+The window will automatically determine its size based on the widgets that will
+be added to window.
 
-After creating at least one window and optionally populating
-the window(s) with widgets; you should call
-`tt::gui_system::global().loop()`. This function will enter
-the system's GUI-loop, which will monitor keyboard, mouse events
-and start rendering of the windows.
+You can add widgets to the content area of a window, by calling
+`tt::grid_widget::make_widget()` on the reference returned by
+`tt::gui_window::content()`.
 
-You can add new widgets to the window by using the
-`tt::gui_window::make_widget<>()` and
-`tt::gui_window::make_toolbar_widget()` functions.
-More information on how to add widgets is in the next chapter,
-specifics about window can be found in `tt::window_widget`
-information below.
+You can add widgets to the toolbar of a window, by calling
+`tt::toolbar_widget::make_widget()` on the reference returned by
+`tt::gui_window::toolbar()`.
+
+After creating at least one window you should call `tt::gui_system::loop()` on
+the global object. This function will enter the system's GUI-loop, monitor
+keyboard & mouse events and render all the windows.
+
 
 Widget
 ------
-Widget are graphical elements which are shown inside a window,
-and often can be interacted with using the mouse an keyboard.
 
-Many widgets such as the grid layout widget, column layout widget
-or the scroll view widget are containers for other widgets.
+Widget are graphical elements which are shown inside a window, and often can be
+interacted with using the mouse an keyboard.
 
-But most other widgets are build out of other widgets, for example:
-a label widget contains both a text and a icon widget. And
-a button widget will contain a label widget.
+Many widgets such as the grid layout widget, column layout widget or the scroll
+view widget are containers for other widgets.
 
-Most widgets will have a `make_widget<>()` member function to
-add widgets to it. The template argument will
-be the type of the widget to instantiate and the arguments
-will be passed to the constructor of the widget.
+Most widgets are build out of other widgets, for example: a label widget
+contains both a text and a icon widget. And a button widget will contain a label
+widget.
 
-Certain container widgets may have extra arguments for the
-`make_widget<>()` function which are used as a position for
-the new widget inside the container.
+Container widgets will have a `make_widget<T>([position], args...)` member
+function to add widgets to it. This function will allocate a new widget of type
+`T`, it will set the `window` and `parent` and forward `args...` to the
+constructor of the new widget.
 
-### Grid Layout Widget
-The grid layout widget calculates the size of each
-row and column, based on the minimum, preferred and
-maximum size of each child widget.
+Certain container's `make_widget<T>([position], args...)` have one or more
+`position` arguments, these are used to position the new widget inside the
+container. The `tt::grid_widget` for example use a spreadsheet address for the
+cell-location that the new widget is positioned in.
 
-This will also determine the minimum, preferred and
-maximum size of the grid layout widget itself.
+There are often two different ways to construct a widget: with a delegate or
+with an observable.
 
-During layout each widget is positioned and sized based
-on the width and height of each cell.
+### Observable
 
-The `tt::grid_layout_widget()` constructor has one
-optional argument, a `std::weak_ptr` to a subclass
-of `tt::grid_layout_delegate`. It is mostly used to
-populate the children of the grid during initialization.
+An observable is a value that will use callbacks to notify listeners when its
+value changes. Unlike other parts of the GUI system, observables may be read and
+written from any thread.
 
-The are two version of the
-`tt::grid_layout_widget::make_widget<>()` function:
- - With the first argument a string literal with a
-   spreadsheet-like cell coordinate, A column index as
-   a combination of letters, followed by a row index
-   as a combination of digits.
- - With the first argument the column index and
-   the second argument the row index.
+In the example below a checkbox monitors the observable `my_value`;
+- when the value is `bar` the box is checked,
+- when the value is `foo` the box is unchecked,
+- when the value is anything else the box shows a dash.
 
-Observable
-----------
-The first concept to learn about is the `tt::observable<>` type.
-An observable is a value that will use callbacks to notify listeners
-when its value changes.
+```cpp
+enum class my_type {foo, bar, baz};
 
-For example a `tt::widget::enable` flag is of type `tt::observable<bool>`,
-the widget listens to any changes to this enable flag and change its appearance.
-In the example below the button is disabled:
-
-```
-auto button = window.make_widget<button_widget>("A1", l10n("My Button"));
-button->enable = false;
+observable<my_type> my_value;
+window.content().make_widget<checkbox_widget>("A1", my_value, my_type::bar, my_type::foo);
 ```
 
-It is also possible to chain observables to each other. Chaining is done
-by assigning an observable to another observable. In the example below
-we again disable the button, but now through an second observable.
+As you can see the checkbox_widget will work with custom types. For the checkbox
+the type needs to be equality comparable and assignable.
 
+It is also possible to chain observables to each other. Chaining is done by
+assigning an observable to another observable. In the example we make another
+checkbox, but now it will listen to the `my_chain` observable. When `my_value`
+gets assigned to `my_chain`, `my_chain` will start observing `my_value`. Any
+modification of `my_value` will be observed by the checkbox through the chain of
+observers.
+
+```cpp
+enum class my_type {foo, bar, baz};
+
+observable<my_type> my_value;
+observable<my_type> my_chain;
+window.content().make_widget<checkbox_widget>("A1", my_chain, my_type::bar, my_type::foo);
+
+my_chain = my_value;
+my_value = my_type::bar;
 ```
-observable<bool> enable = true;
 
-auto button = window.make_widget<button_widget>("A1", l10n("My Button"));
-button->enable = enable;
-enable = false;
-```
+Observables are used for many member variables of a widget, including the
+`tt::widget::enabled`, `tt::widget::visible` members and various labels.
 
-Observables are used for many member variables of a widget, including
-the `tt::widget::enabled`, `tt::widget::visible` members and various
-labels. They are also used by value-delegates that some widget use
-by default.
+### Delegates
 
-Delegates
----------
-Many widget can be controlled through a delegate object. The widget
-queries a delegate for the data to display and sends messages to
-the delegate when a user interacts with the widget.
+Widget may be controlled through a delegate object. The widget queries a
+delegate for the data to display and sends messages to the delegate when a user
+interacts with the widget.
 
-In the example below a user defined instance of `my_delegate` is
-passed to the constructor of the `tt::checkbox_button`.
-`my_delegate` must inherit from `tt::button_delegate`.
+Delegates are actually the primary way for controlling a widget, the
+`tt::observable` examples above are implemented by templated default-delegates.
 
-```
+In the example below a user defined instance of `my_delegate` is passed to the
+constructor of the `tt::checkbox_button`. `my_delegate` must inherit from
+`tt::button_delegate`.
+
+```cpp
 auto delegate = std::make_shared<my_delegate>();
 auto button = window.make_widget<checkbox_button>("A1", delegate));
 ```
 
-Many widgets also include a templated constructor allowing
-an observable of user specified type to be passed. This constructor
-will instantiate a value-delegate to control the widget. This
-allows a widget to be controlled by a user-specified observable value.
-
-In the example below we use the automatic value-delegate to control
-a checkbox using an observable on our own enum type. The value-delegate
-uses an observable and an `on_value` and `off_value`.
-
-```
-enum class my_enum_type { foo, bar, baz };
-observable<my_enum_type> my_value = my_enum_type::foo;
-
-auto button = window.make_widget<checkbox_button>("A1", my_value, my_enum_type::foo, my_enum_type::bar));
-```
-
-
-System
-------
-
-
-Window
-------
-
-
-Widget
-------
-
-### Label
-
-```c++
-widget.make_widget<label_widget>("A1", l10n("My Text"));
-```
-
-### Button
-
-```c++
-auto button = wiget.make_widget<button_widget<bool>>("A1", true);
-button->label = label{elusive_icon::Wrench, l10n("Preferences")};
-auto callback = button->subscribe([]{ foo(); });
-```
-
-### Checkbox
-
-The checkbox is configured with a true-value and a false-value, to match
-with the observed value.
-
-When the observed value is equal to:
-
- - **true-value**: a check mark is shown inside the box and the
-   true\_label is shown to the right of the box,
- - **false-value**: the box is empty and the
-   false\_label is shown to the right of the box,
- - neither: a dash is shown inside the box and the
-   other\_label is shown to the right of the box.
-
-Each of these labels may be empty.
-
-```c++
-// Many button widget can work with custom types.
-enum class value_t { A, B, C };
-
-// A value which can be observed by widgets and other things.
-observable<value_t> value;
-
-// Create a check button: A is true, B is false, anything else is other.
-auto button = widget.make_widget<checkbox_widget<value_t>>("A1", value_t::A, value_t::B, value);
-
-// We can set a label for each checkbox value.
-button->true_label = l10n("true");
-button->false_label = l10n("false");
-button->other_label = l10n("other");
-```
-
-### Radio button
-
-In ttauri a set of radio buttons are a set of `tt::radio_button_widget`s.
-Each of the widgets in a set observe the same value and each widget is configured with
-a different true-value.
-
-When a `tt::radio_button_widget`'s true-value matches the observed value the radio button
-is checked, otherwise it is unchecked. When a radio button is clicked the observed value
-is set to that widget's true value.
-
-The label on the right side of a radio button is always shown, but the label may be set
-to empty to not show a label.
-
-```c++
-// Many button widget can work with custom types.
-enum class value_t { A, B, C };
-
-// A value which can be observed by widgets and other things.
-observable<value_t> value;
-
-// Create a radio button which is active on A, with the label "A"
-auto button1 = widget.make_widget<radio_button_widget<value_t>>("A1", value_t::A, value, l10n("A"));
-
-// Create a radio button which is active on B, with the label "B"
-auto button2 = widget.make_widget<radio_button_widget<value_t>>("A2", value_t::B, value, l10n("B")));
-
-```
-
-### Toggle
-
-
-### Text field
-
-
-### Selection
-
-
-### Row/Column layout
-
-### Grid layout
-
-### Tab View
-
-### Toolbar
-
-### Toolbar Tab Button
-
-### Menu Item
-
-
+The `tt::gui_system`, `tt::gui_window` and the widgets will retain only
+a std::weak_ptr to the given delegate.

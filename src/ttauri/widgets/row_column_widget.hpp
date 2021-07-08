@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/// @file
+
 #pragma once
 
 #include "widget.hpp"
@@ -206,7 +208,12 @@ private:
     }
 };
 
+/** Lays out children in a row.
+ */
 using row_widget = row_column_widget<axis::row>;
+
+/** Lays out children in a column.
+ */
 using column_widget = row_column_widget<axis::column>;
 
 } // namespace tt

@@ -20,7 +20,7 @@ auto create_main_window(std::shared_ptr<my_preferences_window_controller> prefer
     auto window_label = label{URL{"resource:ttauri_demo.png"}, l10n("TTauri demo")};
     auto &main_window = gui_system::global().make_window(window_label);
 
-    auto &preferences_button = main_window.make_toolbar_widget<toolbar_button_widget>(label{elusive_icon::Wrench, l10n("Preferences")});
+    auto &preferences_button = main_window.toolbar().make_widget<toolbar_button_widget>(label{elusive_icon::Wrench, l10n("Preferences")});
     auto callback = preferences_button.subscribe([=]{
         gui_system::global().make_window(
             label{icon{URL{"resource:ttauri_demo.png"}}, l10n("TTauri Demo - Preferences")},
@@ -28,7 +28,7 @@ auto create_main_window(std::shared_ptr<my_preferences_window_controller> prefer
         );
     });
 
-    auto &column = main_window.make_widget<column_widget>("A1");
+    auto &column = main_window.content().make_widget<column_widget>("A1");
     column.make_widget<momentary_button_widget>(l10n("Hello \u4e16\u754c"));
     column.make_widget<momentary_button_widget>(l10n("Hello world"));
     column.make_widget<momentary_button_widget>(l10n("Hello earthlings"));

@@ -63,10 +63,10 @@ void my_preferences_window_controller::init(tt::gui_window& self) noexcept
 
     gui_window_delegate::init(self);
 
-    self.make_toolbar_widget<toolbar_tab_button_widget>(label{ elusive_icon::Speaker, l10n("Audio") }, tab_index, 0);
-    self.make_toolbar_widget<toolbar_tab_button_widget>(label{ elusive_icon::Pencil, l10n("License") }, tab_index, 1);
+    self.toolbar().make_widget<toolbar_tab_button_widget>(label{ elusive_icon::Speaker, l10n("Audio") }, tab_index, 0);
+    self.toolbar().make_widget<toolbar_tab_button_widget>(label{ elusive_icon::Pencil, l10n("License") }, tab_index, 1);
 
-    auto& tabs = self.make_widget<tab_widget>("A1", tab_index);
+    auto& tabs = self.content().make_widget<tab_widget>("A1", tab_index);
     init_audio_tab(tabs.make_widget<grid_widget>(0));
     init_license_tab(tabs.make_widget<vertical_scroll_widget<true>>(1).make_widget<grid_widget>());
 }

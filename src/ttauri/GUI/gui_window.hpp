@@ -144,36 +144,26 @@ public:
      */
     [[nodiscard]] bool is_closed() const noexcept;
 
-    /** Add a widget to the main widget of the window.
-     * The implementation is located here so that widget is a concrete type.
+        /** Get a reference to the window's content widget.
+     * @see grid_widget
+     * @return A reference to a grid_widget.
      */
-    template<typename T, typename... Args>
-    T &make_widget(size_t column_nr, size_t row_nr, Args &&...args)
+    [[nodiscard]] grid_widget &content() noexcept
     {
         tt_axiom(is_gui_thread());
         tt_axiom(widget);
-        return widget->content().make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
+        return widget->content();
     }
 
-    /** Add a widget to the main widget of the window.
-     * The implementation is located here so that widget is a concrete type.
+    /** Get a reference to window's toolbar widget.
+     * @see toolbar_widget
+     * @return A reference to a toolbar_widget.
      */
-    template<typename T, typename... Args>
-    T &make_widget(std::string_view address, Args &&...args)
-    {
-        ttlet[column_nr, row_nr] = parse_spreadsheet_address(address);
-        return make_widget<T>(column_nr, row_nr, std::forward<Args>(args)...);
-    }
-
-    /** Add a widget to the toolbar of the window.
-     * The implementation is located here so that widget is a concrete type.
-     */
-    template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    T &make_toolbar_widget(Args &&...args)
+    [[nodiscard]] toolbar_widget &toolbar() noexcept
     {
         tt_axiom(is_gui_thread());
         tt_axiom(widget);
-        return widget->toolbar().make_widget<T, Alignment>(std::forward<Args>(args)...);
+        return widget->toolbar();
     }
 
     /** Set the mouse cursor icon.

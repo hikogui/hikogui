@@ -27,14 +27,9 @@ public:
 
     thread_id const thread_id;
 
-    gui_system() noexcept :
-        thread_id(current_thread_id()),
-        _delegate(std::make_shared<gui_system_delegate>())
-    {
-    }
+    gui_system() noexcept : thread_id(current_thread_id()), _delegate() {}
 
-    virtual ~gui_system() {
-    }
+    virtual ~gui_system() {}
 
     gui_system(const gui_system &) = delete;
     gui_system &operator=(const gui_system &) = delete;
@@ -44,29 +39,52 @@ public:
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
      */
-    virtual void init() {}
-    virtual void deinit() {}
+    virtual void init() noexcept
+    {
+        if (auto delegate = _delegate.lock()) {
+            delegate->init(*this);
+        }
+    }
 
-    void set_delegate(std::shared_ptr<gui_system_delegate> delegate) noexcept
+    virtual void deinit() noexcept
+    {
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
+    }
+
+    void set_delegate(std::weak_ptr<gui_system_delegate> delegate) noexcept
     {
         _delegate = std::move(delegate);
     }
 
-    gui_system_delegate &delegate() const noexcept
-    {
-        return *_delegate;
-    }
-
     virtual void run_from_event_queue(std::function<void()> function) = 0;
 
+    /** Start the GUI event loop.
+     *
+     * This function will start the GUI event loop.
+     * The event loop will monitor keyboard & mouse event, changes in window
+     * size & position and rendering of all windows.
+     *
+     * When all windows are closed this function will return with an exit
+     * code of zero, or the return value from the delegate.
+     * Calling `exit()` will also cause this function to return.
+     *
+     * @return exit code.
+     */
     virtual int loop() = 0;
 
     virtual void exit(int exit_code) = 0;
 
     gui_window &add_window(std::unique_ptr<gui_window> window);
 
+    /** Create a new window.
+     * @param args The arguments that are forwarded to the constructor of
+     *             `tt::gui_window_win32`.
+     * @return A reference to the new window.
+     */
     template<typename... Args>
-    gui_window &make_window(Args &&... args)
+    gui_window &make_window(Args &&...args)
     {
         tt_axiom(is_gui_thread());
 
@@ -81,7 +99,8 @@ public:
      */
     ssize_t num_windows();
 
-    void render(hires_utc_clock::time_point display_time_point) {
+    void render(hires_utc_clock::time_point display_time_point)
+    {
         tt_axiom(is_gui_thread());
 
         for (auto &window : _windows) {
@@ -98,8 +117,12 @@ public:
             // If last_window_closed() creates a new window we should
             // let it do that before entering the event queue again.
             // win32 is a bit picky about running without windows.
-            if (auto exit_code = delegate().last_window_closed(*this)) {
-                gui_system::global().exit(*exit_code);
+            if (auto delegate = _delegate.lock()) {
+                if (auto exit_code = delegate->last_window_closed(*this)) {
+                    gui_system::global().exit(*exit_code);
+                }
+            } else {
+                gui_system::global().exit(0);
             }
         }
         _previous_num_windows = num_windows;
@@ -112,6 +135,12 @@ public:
         return thread_id == current_thread_id();
     }
 
+    /** Get a reference to the global gui_system.
+     *
+     * The first time this function is called it will initialize the gui_system.
+     *
+     * @return A reference to the global gui_system.
+     */
     [[nodiscard]] static gui_system &global() noexcept
     {
         return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
@@ -120,7 +149,7 @@ public:
 private:
     static inline std::atomic<gui_system *> _global;
 
-    std::shared_ptr<gui_system_delegate> _delegate;
+    std::weak_ptr<gui_system_delegate> _delegate;
 
     std::vector<std::unique_ptr<gui_window>> _windows;
     size_t _previous_num_windows;
@@ -129,4 +158,4 @@ private:
     static void subsystem_deinit() noexcept;
 };
 
-}
+} // namespace tt

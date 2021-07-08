@@ -11,7 +11,7 @@ using namespace tt;
 int tt_main(int argc, char *argv[])
 {
     auto &window = gui_system::global().make_window(l10n("Radio button example"));
-    window.make_widget<label_widget>("A1", l10n("Selection Box"), alignment::middle_center);
+    window.content().make_widget<label_widget>("A1", l10n("Selection Box"), alignment::middle_center);
 
     /// [Create selection]
     auto option_list = std::vector<std::pair<int,label>>{
@@ -21,7 +21,7 @@ int tt_main(int argc, char *argv[])
     };
 
     observable<int> value = 0;
-    window.make_widget<selection_widget>("A2", option_list, value);
+    window.content().make_widget<selection_widget>("A2", option_list, value);
     /// [Create selection]
 
     return gui_system::global().loop();

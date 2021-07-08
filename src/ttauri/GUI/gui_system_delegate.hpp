@@ -10,6 +10,10 @@ class gui_system;
 
 class gui_system_delegate {
 public:
+    [[nodiscard]] virtual void init(gui_system &self) noexcept {};
+
+    [[nodiscard]] virtual void deinit(gui_system &self) noexcept {};
+
     /** This function is called when the last window is closed.
      * @param An exit code if the gui-system's event-loop should exit; otherwise empty.
      */
