@@ -3,10 +3,15 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "audio_device_win32.hpp"
+#include "audio_sample_format.hpp"
+#include "speaker_mapping.hpp"
+#include "speaker_mapping_win32.hpp"
 #include "../logger.hpp"
 #include "../strings.hpp"
 #include "../exception.hpp"
+#include "../cast.hpp"
 #include <Windows.h>
+#include <mmreg.h>
 #include <propsys.h>
 #include <initguid.h>
 #include <functiondiscoverykeys_devpkey.h>
@@ -15,6 +20,48 @@
 #include <bit>
 
 namespace tt {
+
+[[nodiscard]] static WAVEFORMATEXTENSIBLE make_wave_format(audio_sample_format format, uint16_t num_channels, speaker_mapping speaker_mapping, uint32_t sample_rate) noexcept
+{
+    tt_axiom(std::popcount(static_cast<size_t>(speaker_mapping)) <= num_channels);
+
+    bool extended = false;
+
+    // legacy format can only handle mono or stereo.
+    extended |= num_channels > 2;
+
+    // Legacy format can only handle bits equal to container size.
+    extended |= (format.num_bytes * 8) != (format.num_guard_bits + format.num_bits + 1);
+
+    // Legacy format can only handle direct channel map. This allows you to select legacy
+    // mono and stereo for old device drivers.
+    extended |= speaker_mapping != speaker_mapping::direct;
+
+    // Legacy format can only be PCM-8, PCM-16 or PCM-float-32.
+    if (format.is_float) {
+        extended |= format.num_bytes == 4;
+    } else {
+        extended |= format.num_bytes <= 2;
+    }
+
+    WAVEFORMATEXTENSIBLE r;
+    r.Format.wFormatTag = extended ? WAVE_FORMAT_EXTENSIBLE : format.is_float ? WAVE_FORMAT_IEEE_FLOAT : WAVE_FORMAT_PCM;
+    r.Format.nChannels = num_channels;
+    r.Format.nSamplesPerSec = sample_rate;
+    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(sample_rate * num_channels * format.num_bytes);
+    r.Format.nBlockAlign = narrow_cast<WORD>(num_channels * format.num_bytes);
+    r.Format.wBitsPerSample = narrow_cast<WORD>(format.num_bytes * 8);
+    r.Format.cbSize = extended ? (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)) : 0;
+    r.Samples.wValidBitsPerSample = narrow_cast<WORD>(format.num_guard_bits + format.num_bits + 1);
+    r.dwChannelMask = speaker_mapping_to_win32(speaker_mapping);
+    r.SubFormat = format.is_float ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT :  KSDATAFORMAT_SUBTYPE_PCM;
+    return r;
+}
+
+[[nodiscard]] static WAVEFORMATEXTENSIBLE make_wave_format(audio_sample_format format, uint16_t num_channels, uint32_t sample_rate) noexcept
+{
+    return make_wave_format(format, num_channels, speaker_mapping::direct, sample_rate);
+}
 
 template<typename T>
 [[nodiscard]] T get_property(IPropertyStore *property_store, REFPROPERTYKEY key)
@@ -197,13 +244,13 @@ std::string audio_device_win32::end_point_name() const noexcept
     return r;
 }
 
-[[nodiscard]] audio_channel_mapping audio_device_win32::full_channel_mapping() const noexcept
+[[nodiscard]] speaker_mapping audio_device_win32::full_channel_mapping() const noexcept
 {
     try {
         ttlet win32_spaker_mapping = get_property<uint32_t>(_property_store, PKEY_AudioEndpoint_PhysicalSpeakers);
-        return audio_channel_mapping_from_win32(win32_spaker_mapping);
+        return speaker_mapping_from_win32(win32_spaker_mapping);
     } catch (io_error const &) {
-        return audio_channel_mapping::front_left | audio_channel_mapping::front_right;
+        return speaker_mapping::front_left | speaker_mapping::front_right;
     }
 }
 

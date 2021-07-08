@@ -15,7 +15,7 @@
 
 namespace tt::pipeline_image {
 
-Image::Image(Image &&other) noexcept :
+image::image(image &&other) noexcept :
     parent(other.parent),
     width_in_px(other.width_in_px),
     height_in_px(other.height_in_px),
@@ -27,7 +27,7 @@ Image::Image(Image &&other) noexcept :
     other.parent = nullptr;
 }
 
-Image &Image::operator=(Image &&other) noexcept
+image &image::operator=(image &&other) noexcept
 {
     // Self-assignment is allowed.
     if (parent) {
@@ -44,27 +44,27 @@ Image &Image::operator=(Image &&other) noexcept
     return *this;
 }
 
-Image::~Image()
+image::~image()
 {
     if (parent) {
         parent->freePages(pages);
     }
 }
 
-void Image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
+void image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 {
     tt_axiom(parent);
 
     state = State::Drawing;
 
-    auto stagingImage = parent->getStagingPixelMap(width_in_px, height_in_px);
-    copy(image, stagingImage);
+    auto stagingimage = parent->getStagingPixelMap(width_in_px, height_in_px);
+    copy(image, stagingimage);
     parent->updateAtlasWithStagingPixelMap(*this);
 
     state = State::Uploaded;
 }
 
-aarectangle Image::index_to_rect(size_t page_index) const noexcept
+aarectangle image::index_to_rect(size_t page_index) const noexcept
 {
     ttlet left = (page_index % width_in_pages) * Page::width;
     ttlet bottom = (page_index / width_in_pages) * Page::height;
@@ -85,7 +85,7 @@ calculatePosition(size_t x, size_t y, size_t width, size_t height, matrix3 trans
     return {p, e, i};
 }
 
-void Image::calculateVertexPositions(matrix3 transform, aarectangle clippingRectangle)
+void image::calculateVertexPositions(matrix3 transform, aarectangle clippingRectangle)
 {
     tmpvertexPositions.clear();
 
@@ -118,7 +118,7 @@ void Image::calculateVertexPositions(matrix3 transform, aarectangle clippingRect
  *    v   \ |
  *    0 --> 1
  */
-void Image::placePageVertices(vspan<vertex> &vertices, size_t index, aarectangle clippingRectangle) const
+void image::placePageVertices(vspan<vertex> &vertices, size_t index, aarectangle clippingRectangle) const
 {
     ttlet page = pages.at(index);
 
@@ -162,7 +162,7 @@ void Image::placePageVertices(vspan<vertex> &vertices, size_t index, aarectangle
  * \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in
  * radials.
  */
-void Image::place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, matrix3 transform)
+void image::place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, matrix3 transform)
 {
     calculateVertexPositions(transform, clipping_rectangle);
 

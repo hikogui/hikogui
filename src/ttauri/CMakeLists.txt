@@ -165,12 +165,12 @@ target_sources(ttauri PRIVATE
     utils.hpp
     vspan.hpp
     weak_or_unique_ptr.hpp
+    wfree_fifo.hpp
     wfree_message_queue.hpp
     wfree_unordered_map.hpp
 )
 
-if(TT_BUILD_PCH)
-    if(NOT TT_ENABLE_ANALYSIS)
+if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
         assert.hpp
         counters.hpp
@@ -184,7 +184,6 @@ if(TT_BUILD_PCH)
         trace.hpp
         URL.hpp
     )
-    endif()
 endif()
 
 if(TT_BUILD_TESTS)
@@ -199,6 +198,7 @@ if(TT_BUILD_TESTS)
         decimal_tests.cpp
         exceptions_tests.cpp
         file_view_tests.cpp
+        fixed_string_tests.cpp
         float16_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp

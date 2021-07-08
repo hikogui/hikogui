@@ -80,17 +80,24 @@ bool logger_init() noexcept
 void logger_flush() noexcept
 {
     ttlet t = trace<"log_flush">{};
-    ttlet lock = std::scoped_lock(detail::logger_mutex);
 
-    while (!detail::log_queue.empty()) {
-        auto message = detail::log_queue.read();
+    bool wrote_message;
+    do {
+        std::unique_ptr<detail::log_message_base> copy_of_message;
 
-        detail::logger_write((*message)->format());
+        {
+            ttlet lock = std::scoped_lock(detail::logger_mutex);
 
-        // Call the virtual-destructor of the `log_message_base`, so that it can skip this when
-        // adding messages to the queue.
-        message->reset();
-    }
+            wrote_message = detail::log_fifo.take_one([&copy_of_message](auto &message) {
+                copy_of_message = message.make_unique_copy();
+            });
+        }
+
+        if (wrote_message) {
+            tt_axiom(copy_of_message);
+            detail::logger_write(copy_of_message->format());
+        }
+    } while (wrote_message);
 }
 
 } // namespace tt

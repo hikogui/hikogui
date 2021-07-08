@@ -9,7 +9,6 @@
 #include "hires_utc_clock.hpp"
 #include "required.hpp"
 #include "tagged_map.hpp"
-#include "wfree_message_queue.hpp"
 #include "fixed_string.hpp"
 #include "statistics.hpp"
 #include <format>

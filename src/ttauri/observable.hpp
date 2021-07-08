@@ -267,6 +267,15 @@ private:
 
 } // namespace detail
 
+/** An observable value.
+ *
+ * An observable-value will notify listeners when a value changes. An
+ * observable-value can also observe another observable-value.
+ *
+ * For widgets this allows changes to values to be reflected on the screen in
+ * multiple places. Or values to be written automatically to a configuration
+ * file.
+ */
 template<typename T>
 class observable {
 public:
@@ -316,11 +325,16 @@ public:
         return *this;
     }
 
+    /** Default construct a observable holding a default constructed value.
+     */
     observable() noexcept : pimpl(std::make_unique<detail::observable_value<value_type>>(this))
     {
         tt_axiom(pimpl);
     }
 
+    /** Construct a observable holding value.
+     * @param value The value to set the internal value to.
+     */
     observable(value_type const &value) noexcept : pimpl(std::make_unique<detail::observable_value<value_type>>(this, value))
     {
         tt_axiom(pimpl);
@@ -333,42 +347,97 @@ public:
         return static_cast<bool>(load());
     }
 
+    /** Assign a new value.
+     *
+     * Updates the internal value or the value that is being observed.
+     *
+     * @param value The value to assign.
+     * @return *this.
+     * @post Listeners will be notified.
+     */
     observable &operator=(value_type const &value) noexcept
     {
         store(value);
         return *this;
     }
 
+    /** Inplace add a value.
+     *
+     * Updates the internal value or the value that is being observed non-atomically.
+     *
+     * @param value The value to add.
+     * @return *this.
+     * @post Listeners will be notified.
+     */
     observable &operator+=(value_type const &value) noexcept
     {
         store(load() + value);
         return *this;
     }
 
+    /** Inplace subtract a value.
+     *
+     * Updates the internal value or the value that is being observed non-atomically.
+     *
+     * @param value The value to subtract.
+     * @return *this.
+     * @post Listeners will be notified.
+     */
     observable &operator-=(value_type const &value) noexcept
     {
         store(load() - value);
         return *this;
     }
 
+    /** Load the value.
+     *
+     * Loads the internal or observed value.
+     *
+     * @return The internal or observed value.
+     */
     [[nodiscard]] value_type load() const noexcept
     {
         tt_axiom(pimpl);
         return pimpl->load();
     }
 
+    /** Load the value.
+     *
+     * Loads the internal or observed value.
+     *
+     * @return The internal or observed value.
+     */
     [[nodiscard]] value_type operator*() const noexcept
     {
         tt_axiom(pimpl);
         return pimpl->load();
     }
 
+    /** Assign a new value.
+     *
+     * Updates the internal value or the value that is being observed.
+     *
+     * @param value The value to assign.
+     * @return *this.
+     * @post Listeners will be notified.
+     */
     bool store(value_type const &new_value) noexcept
     {
         tt_axiom(pimpl);
         return pimpl->store(new_value);
     }
 
+    /** Subscribe a callback function.
+     *
+     * The subscribed callback function will be called when the value is
+     * modified.
+     *
+     * @tparam Callback A callback-type of the form `void()`.
+     * @param callback The callback function to subscribe.
+     * @return A `std::shared_ptr` to the callback function.
+     * @post A `std::weak_ptr` to the callback function is retained by the observable.
+     *       When this pointer is expired the callback will be automatically unsubscribed.
+     */
     template<typename Callback>
     requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
@@ -377,99 +446,175 @@ public:
         return callback_ptr;
     }
 
+    /** Subscribe a callback function.
+     *
+     * The subscribed callback function will be called when the value is
+     * modified.
+     *
+     * @param callback The callback function to subscribe.
+     * @return A `std::shared_ptr` to the callback function.
+     * @post A `std::weak_ptr` to the callback function is retained by the observable.
+     *       When this pointer is expired the callback will be automatically unsubscribed.
+     */
     callback_ptr_type subscribe(callback_ptr_type const &callback) noexcept
     {
         return notifier.subscribe(callback);
     }
 
+    /** Unsubscribe a callback function.
+     *
+     * @param callback The callback function to subscribe.
+     */
     void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
     {
         return notifier.unsubscribe(callback_ptr);
     }
 
-    void notify() noexcept
-    {
-        notifier();
-    }
-
-    [[nodiscard]] auto operator-() const noexcept
+    /** Negate and return the value.
+     *
+     * @return The negative of the internal or observed value.
+     */
+    [[nodiscard]] value_type operator-() const noexcept
     {
         return -*(*this);
     }
 
+    /** Compare the value of two observables.
+     *
+     * @param lhs An observable-value.
+     * @param rhs An observable-value.
+     * @return True if the internal or observed value of both lhs and rhs are equal.
+     */
     [[nodiscard]] friend bool operator==(observable const &lhs, observable const &rhs) noexcept
     {
         return *lhs == *rhs;
     }
 
+    /** Compare and observable with a value.
+     *
+     * @param lhs An observable-value.
+     * @param rhs A value.
+     * @return True if the internal or observed value of lhs is equal to rhs.
+     */
     [[nodiscard]] friend bool operator==(observable const &lhs, value_type const &rhs) noexcept
     {
         return *lhs == rhs;
     }
 
+    /** Compare and observable with a value.
+     *
+     * @param lhs A value.
+     * @param rhs An observable-value.
+     * @return True if lhs is equal to the internal or observed value of rhs.
+     */
     [[nodiscard]] friend bool operator==(value_type const &lhs, observable const &rhs) noexcept
     {
         return lhs == *rhs;
     }
 
+    /** Compare the value of two observables.
+     *
+     * @param lhs An observable-value.
+     * @param rhs An observable-value.
+     * @return True the comparison result of the internal or observed value of both lhs and rhs.
+     */
     [[nodiscard]] friend auto operator<=>(observable const &lhs, observable const &rhs) noexcept
     {
         return *lhs <=> *rhs;
     }
 
+    /** Compare and observable with a value.
+     *
+     * @param lhs An observable-value.
+     * @param rhs A value.
+     * @return The comparison result between the internal or observed value of lhs and the rhs.
+     */
     [[nodiscard]] friend auto operator<=>(observable const &lhs, value_type const &rhs) noexcept
     {
         return *lhs <=> rhs;
     }
 
+    /** Compare and observable with a value.
+     *
+     * @param lhs A value.
+     * @param rhs An observable-value.
+     * @return The comparison result between the lhs and to the internal or observed value of rhs.
+     */
     [[nodiscard]] friend auto operator<=>(value_type const &lhs, observable const &rhs) noexcept
     {
         return lhs <=> *rhs;
     }
 
+    /** Add the value of two observables.
+     *
+     * @param lhs An observable-value
+     * @param rhs An observable-value
+     * @return The sum of the internal or observed value of lhs and rhs.
+     */
     [[nodiscard]] friend auto operator+(observable const &lhs, observable const &rhs) noexcept
     {
         return *lhs + *rhs;
     }
 
+    /** Add the value of observables to a value.
+     *
+     * @param lhs An observable-value
+     * @param rhs A value
+     * @return The sum of the internal or observed value of lhs and rhs.
+     */
     [[nodiscard]] friend auto operator+(observable const &lhs, value_type const &rhs) noexcept
     {
         return *lhs + rhs;
     }
 
+    /** Add the value of observables to a value.
+     *
+     * @param lhs A value
+     * @param rhs An observable-value
+     * @return The sum of lhs with the internal or observed value of rhs.
+     */
     [[nodiscard]] friend auto operator+(value_type const &lhs, observable const &rhs) noexcept
     {
         return lhs + *rhs;
     }
 
+    /** Subtract the value of two observables.
+     *
+     * @param lhs An observable-value
+     * @param rhs An observable-value
+     * @return The difference between of the internal or observed value of lhs and rhs.
+     */
     [[nodiscard]] friend auto operator-(observable const &lhs, observable const &rhs) noexcept
     {
         return *lhs - *rhs;
     }
 
+    /** Subtract a value from an observable to a value.
+     *
+     * @param lhs An observable-value
+     * @param rhs A value
+     * @return The different between the internal or observed value of lhs and rhs.
+     */
     [[nodiscard]] friend auto operator-(observable const &lhs, value_type const &rhs) noexcept
     {
         return *lhs - rhs;
     }
 
+    /** Subtract an observable value from a value.
+     *
+     * @param lhs A value
+     * @param rhs An observable-value
+     * @return The difference between the lhs and the internal or observed value of rhs.
+     */
     [[nodiscard]] friend auto operator-(value_type const &lhs, observable const &rhs) noexcept
     {
         return lhs - *rhs;
     }
 
-    [[nodiscard]] friend float to_float(observable const &rhs) noexcept
+protected:
+    void notify() const noexcept
     {
-        return narrow_cast<float>(rhs.load());
-    }
-
-    [[nodiscard]] friend std::string to_string(observable const &rhs) noexcept
-    {
-        return to_string(rhs.load());
-    }
-
-    friend std::ostream &operator<<(std::ostream &lhs, observable const &rhs) noexcept
-    {
-        return lhs << rhs.load();
+        notifier();
     }
 
 private:
@@ -477,11 +622,13 @@ private:
 
     notifier_type notifier;
     std::unique_ptr<pimpl_type> pimpl;
+
+    friend class detail::observable_base<value_type>;
 };
 
 /** The value_type of an observable from the constructor argument type.
  * The argument type of an observable is the value_type or an observable<value_type>.
- * This is mostly used for creating CTAD guides. 
+ * This is mostly used for creating CTAD guides.
  */
 template<typename T>
 struct observable_argument {

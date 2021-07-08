@@ -19,7 +19,7 @@ template<typename T> class pixel_map;
 
 namespace tt::pipeline_image {
 
-struct Image;
+struct image;
 
 struct device_shared final {
     static constexpr int atlasNrHorizontalPages = 16;
@@ -89,7 +89,7 @@ struct device_shared final {
      * @param height of the image.
      * @return An image with allocated pages in the atlas.
      */
-    Image makeImage(size_t width, size_t height) noexcept;
+    image makeImage(size_t width, size_t height) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -102,7 +102,7 @@ private:
         return getStagingPixelMap().submap(0, 0, width, height);
     }
 
-    void updateAtlasWithStagingPixelMap(Image const &image);
+    void updateAtlasWithStagingPixelMap(image const &image);
 
     void buildShaders();
     void teardownShaders(gfx_device_vulkan *vulkanDevice);
@@ -110,7 +110,7 @@ private:
     void buildAtlas();
     void teardownAtlas(gfx_device_vulkan *vulkanDevice);
 
-    friend Image;
+    friend image;
 };
 
 }

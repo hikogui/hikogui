@@ -9,7 +9,7 @@
 #include "../GFX/gfx_surface.hpp"
 #include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
-#include "../widgets/grid_layout_widget.hpp"
+#include "../widgets/grid_widget.hpp"
 
 namespace tt {
 
@@ -40,7 +40,7 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     return false;
 }
 
-gui_window::gui_window(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
+gui_window::gui_window(label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
     title(title), _delegate(std::move(delegate))
 {
 }
@@ -72,7 +72,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    static_cast<void>(widget->update_constraints({}, true));
+    static_cast<void>(widget->constrain({}, true));
     size = widget->preferred_size();
 
     // Reset the keyboard target to not focus anything.
@@ -123,7 +123,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
     ttlet need_reconstrain = _request_setting_change.exchange(false);
 
     // Update the size constraints of the window_widget and it children.
-    ttlet constraints_have_changed = widget->update_constraints(displayTimePoint, need_reconstrain);
+    ttlet constraints_have_changed = widget->constrain(displayTimePoint, need_reconstrain);
 
     // Check if the window size matches the preferred size of the window_widget.
     // If not ask the operating system to change the size of the window, which is
@@ -158,7 +158,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
     ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    widget->update_layout(displayTimePoint, need_layout);
+    widget->layout(displayTimePoint, need_layout);
 
     if (auto optional_draw_context = surface->render_start(_request_redraw_rectangle)) {
         auto draw_context = *optional_draw_context;
@@ -171,7 +171,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 
         widget->draw(widget_context, displayTimePoint);
 
-        surface->render_finish(draw_context, widget->backgroundColor());
+        surface->render_finish(draw_context, widget->background_color());
     }
 }
 

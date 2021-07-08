@@ -43,10 +43,9 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_win32.hpp>
 )
 
-if(TT_BUILD_PCH)
-    if(NOT TT_ENABLE_ANALYSIS)
+if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
     target_precompile_headers(ttauri PRIVATE
-        gui_window_win32.hpp
+        gui_system.hpp
+        gui_system_win32.hpp
     )
-    endif()
- endif()
+endif()

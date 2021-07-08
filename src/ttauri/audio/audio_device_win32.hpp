@@ -27,7 +27,7 @@ public:
     [[nodiscard]] audio_device_state state() const noexcept override;
     [[nodiscard]] audio_direction direction() const noexcept override;
     [[nodiscard]] size_t full_num_channels() const noexcept override;
-    [[nodiscard]] audio_channel_mapping full_channel_mapping() const noexcept override;
+    [[nodiscard]] speaker_mapping full_channel_mapping() const noexcept override;
 
     static std::string get_id_from_device(IMMDevice *device) noexcept;
 

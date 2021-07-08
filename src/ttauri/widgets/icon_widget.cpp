@@ -4,23 +4,27 @@
 
 #include "icon_widget.hpp"
 #include "../GFX/gfx_surface_vulkan.hpp"
+#include "../GFX/gfx_device_vulkan.hpp"
+#include "../GUI/gui_window.hpp"
+#include "../GUI/theme.hpp"
+#include "../cast.hpp"
 
 namespace tt {
 
-icon_widget::~icon_widget() {}
+icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
 void icon_widget::init() noexcept
 {
     _icon_callback = icon.subscribe([this]() {
-        _request_reconstrain = true;
+        _request_constrain = true;
     });
 }
 
-[[nodiscard]] bool icon_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool icon_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         ttlet &icon_ = *icon;
 
         if (holds_alternative<std::monostate>(icon_)) {
@@ -52,7 +56,7 @@ void icon_widget::init() noexcept
                 _pixmap_hash = 0;
                 _pixmap_backing = {};
                 _icon_bounding_box = {};
-                _request_reconstrain = true;
+                _request_constrain = true;
 
             } else if (pixmap.hash() != _pixmap_hash) {
                 _pixmap_hash = pixmap.hash();
@@ -86,11 +90,11 @@ void icon_widget::init() noexcept
     }
 }
 
-[[nodiscard]] void icon_widget::update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
+[[nodiscard]] void icon_widget::layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};
@@ -98,7 +102,7 @@ void icon_widget::init() noexcept
             _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), *alignment);
         }
     }
-    super::update_layout(displayTimePoint, need_layout);
+    super::layout(displayTimePoint, need_layout);
 }
 
 void icon_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
@@ -111,8 +115,8 @@ void icon_widget::draw(draw_context context, hires_utc_clock::time_point display
 
         case icon_type::pixmap:
             switch (_pixmap_backing.state) {
-            case pipeline_image::Image::State::Drawing: request_redraw(); break;
-            case pipeline_image::Image::State::Uploaded: context.draw_image(_pixmap_backing, _icon_transform); break;
+            case pipeline_image::image::State::Drawing: request_redraw(); break;
+            case pipeline_image::image::State::Uploaded: context.draw_image(_pixmap_backing, _icon_transform); break;
             default: break;
             }
             break;

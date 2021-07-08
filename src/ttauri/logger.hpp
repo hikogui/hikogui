@@ -8,7 +8,7 @@
 #include "time_stamp_count.hpp"
 #include "hires_utc_clock.hpp"
 #include "polymorphic_optional.hpp"
-#include "wfree_message_queue.hpp"
+#include "wfree_fifo.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"
 #include "format.hpp"
@@ -25,6 +25,8 @@
 #include <tuple>
 #include <mutex>
 #include <atomic>
+#include <memory>
+
 namespace tt {
 void trace_record() noexcept;
 }
@@ -34,15 +36,11 @@ namespace detail {
 
 class log_message_base {
 public:
-    log_message_base() noexcept = default;
+    tt_force_inline log_message_base() noexcept = default;
     virtual ~log_message_base() = default;
 
-    log_message_base(log_message_base const &) = delete;
-    log_message_base(log_message_base &&) = delete;
-    log_message_base &operator=(log_message_base const &) = delete;
-    log_message_base &operator=(log_message_base &&) = delete;
-
-    virtual std::string format() const noexcept = 0;
+    [[nodiscard]] virtual std::string format() const noexcept = 0;
+    [[nodiscard]] virtual std::unique_ptr<log_message_base> make_unique_copy() const noexcept = 0;
 };
 
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Values>
@@ -51,10 +49,12 @@ public:
     static_assert(std::is_same_v<decltype(SourceFile)::value_type, char>, "SourceFile must be a basic_fixed_string<char>");
     static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
 
+    log_message(log_message const &) noexcept = default;
+    log_message &operator=(log_message const &) noexcept = default;
+
     template<typename... Args>
-    log_message(Args &&...args) noexcept :
-        _time_stamp(time_stamp_count::inplace_with_thread_id{}),
-        _what(std::forward<Args>(args)...)
+    tt_force_inline log_message(Args &&...args) noexcept :
+        _time_stamp(time_stamp_count::inplace_with_thread_id{}), _what(std::forward<Args>(args)...)
     {
     }
 
@@ -66,10 +66,24 @@ public:
         ttlet thread_id = _time_stamp.thread_id();
 
         if constexpr (static_cast<bool>(Level & log_level::statistics)) {
-            return std::format("{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), thread_id, cpu_id);
+            return std::format(
+                "{} {:5} {} tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), thread_id, cpu_id);
         } else {
-            return std::format("{} {:5} {} ({}:{}) tid={} cpu={}\n", local_timestring, to_const_string(Level), _what(), SourceFile, SourceLine, thread_id, cpu_id);
+            return std::format(
+                "{} {:5} {} ({}:{}) tid={} cpu={}\n",
+                local_timestring,
+                to_const_string(Level),
+                _what(),
+                SourceFile,
+                SourceLine,
+                thread_id,
+                cpu_id);
         }
+    }
+
+    [[nodiscard]] std::unique_ptr<log_message_base> make_unique_copy() const noexcept override
+    {
+        return std::make_unique<log_message>(*this);
     }
 
 private:
@@ -77,15 +91,9 @@ private:
     delayed_format<Fmt, Values...> _what;
 };
 
-static constexpr size_t MAX_MESSAGE_SIZE = 240;
-static constexpr size_t MAX_NR_MESSAGES = 4096;
-
-using log_queue_item_type = polymorphic_optional<log_message_base, MAX_MESSAGE_SIZE>;
-using log_queue_type = wfree_message_queue<log_queue_item_type, MAX_NR_MESSAGES>;
-
 /** The global log queue contains messages to be displayed by the logger thread.
  */
-inline log_queue_type log_queue;
+inline wfree_fifo<log_message_base, 256> log_fifo;
 
 /** Deinitalize the logger system.
  */
@@ -138,7 +146,7 @@ inline void logger_stop()
  * @param args Arguments to std::format.
  */
 template<log_level Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
-void log(Args &&...args) noexcept
+tt_force_inline void log(Args &&...args) noexcept
 {
     if (!static_cast<bool>(log_level_global.load(std::memory_order::relaxed) & Level)) {
         return;
@@ -151,8 +159,8 @@ void log(Args &&...args) noexcept
     // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
 
     // Emplace a message directly on the queue.
-    detail::log_queue.write<"logger_blocked">()
-        ->emplace<detail::log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(std::forward<Args>(args)...);
+    detail::log_fifo.emplace<detail::log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
+        std::forward<Args>(args)...);
 
     if (static_cast<bool>(Level & log_level::fatal) || !detail::logger_is_running.load(std::memory_order::relaxed)) {
         // If the logger did not start we will log in degraded mode and log from the current thread.
@@ -171,18 +179,13 @@ void log(Args &&...args) noexcept
 
 } // namespace tt
 
-#define tt_log(level, fmt, ...) \
-    do { \
-        ::tt::log<level, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
-    } while (false)
-
-#define tt_log_debug(fmt, ...) tt_log(::tt::log_level::debug, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_info(fmt, ...) tt_log(::tt::log_level::info, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_statistics(fmt, ...) tt_log(::tt::log_level::statistics, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_trace(fmt, ...) tt_log(::tt::log_level::trace, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_audit(fmt, ...) tt_log(::tt::log_level::audit, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_warning(fmt, ...) tt_log(::tt::log_level::warning, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define tt_log_error(fmt, ...) tt_log(::tt::log_level::error, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define tt_log_debug(fmt, ...) ::tt::log<::tt::log_level::debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_info(fmt, ...) ::tt::log<::tt::log_level::info, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_statistics(fmt, ...) ::tt::log<::tt::log_level::statistics, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_trace(fmt, ...) ::tt::log<::tt::log_level::trace, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_audit(fmt, ...) ::tt::log<::tt::log_level::audit, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_warning(fmt, ...) ::tt::log<::tt::log_level::warning, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_error(fmt, ...) ::tt::log<::tt::log_level::error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
 #define tt_log_fatal(fmt, ...) \
-    tt_log(::tt::log_level::fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
+    ::tt::log<::tt::log_level::fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
     tt_unreachable()

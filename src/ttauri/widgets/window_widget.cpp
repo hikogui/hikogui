@@ -5,16 +5,15 @@
 #include "window_widget.hpp"
 #include "window_traffic_lights_widget.hpp"
 #include "toolbar_widget.hpp"
-#include "grid_layout_widget.hpp"
+#include "grid_widget.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "system_menu_widget.hpp"
 #endif
+#include "../GUI/theme.hpp"
 
 namespace tt {
 
 using namespace std;
-
-window_widget::~window_widget() {}
 
 void window_widget::init() noexcept
 {
@@ -36,15 +35,15 @@ void window_widget::init() noexcept
         tt_no_default();
     }
 
-    _content = &make_widget<grid_layout_widget>(_content_delegate);
+    _content = &make_widget<grid_widget>(_content_delegate);
 }
 
 [[nodiscard]] bool
-window_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+window_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         _minimum_size = {
             std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
             _toolbar->preferred_size().height() + _content->minimum_size().height()};
@@ -68,11 +67,11 @@ window_widget::update_constraints(hires_utc_clock::time_point display_time_point
     }
 }
 
-void window_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void window_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         ttlet toolbar_height = _toolbar->preferred_size().height();
         ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
@@ -82,7 +81,7 @@ void window_widget::update_layout(hires_utc_clock::time_point display_time_point
         _content->set_layout_parameters_from_parent(content_rectangle);
     }
 
-    super::update_layout(display_time_point, need_layout);
+    super::layout(display_time_point, need_layout);
 }
 
 hitbox window_widget::hitbox_test(point2 position) const noexcept
@@ -101,15 +100,15 @@ hitbox window_widget::hitbox_test(point2 position) const noexcept
     ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
     ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
 
-    auto r = hitbox{this, _draw_layer};
+    auto r = hitbox{this, draw_layer};
     if (is_on_bottom_left_corner) {
-        return {this, _draw_layer, hitbox::Type::BottomLeftResizeCorner};
+        return {this, draw_layer, hitbox::Type::BottomLeftResizeCorner};
     } else if (is_on_bottom_right_corner) {
-        return {this, _draw_layer, hitbox::Type::BottomRightResizeCorner};
+        return {this, draw_layer, hitbox::Type::BottomRightResizeCorner};
     } else if (is_on_top_left_corner) {
-        return {this, _draw_layer, hitbox::Type::TopLeftResizeCorner};
+        return {this, draw_layer, hitbox::Type::TopLeftResizeCorner};
     } else if (is_on_top_right_corner) {
-        return {this, _draw_layer, hitbox::Type::TopRightResizeCorner};
+        return {this, draw_layer, hitbox::Type::TopRightResizeCorner};
     } else if (is_on_left_edge) {
         r.type = hitbox::Type::LeftResizeBorder;
     } else if (is_on_right_edge) {
@@ -130,6 +129,37 @@ hitbox window_widget::hitbox_test(point2 position) const noexcept
     }
 
     return r;
+}
+
+[[nodiscard]] color window_widget::background_color() noexcept
+{
+    tt_axiom(is_gui_thread());
+    return theme::global(theme_color::fill, semantic_layer);
+}
+
+/** Defining on which edges the resize handle has priority over widget at a higher layer.
+ */
+void window_widget::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
+{
+    tt_axiom(is_gui_thread());
+    _left_resize_border_has_priority = left;
+    _right_resize_border_has_priority = right;
+    _bottom_resize_border_has_priority = bottom;
+    _top_resize_border_has_priority = top;
+}
+
+[[nodiscard]] grid_widget &window_widget::content() noexcept
+{
+    tt_axiom(is_gui_thread());
+    tt_axiom(_content);
+    return *_content;
+}
+
+[[nodiscard]] toolbar_widget &window_widget::toolbar() noexcept
+{
+    tt_axiom(is_gui_thread());
+    tt_axiom(_toolbar);
+    return *_toolbar;
 }
 
 } // namespace tt

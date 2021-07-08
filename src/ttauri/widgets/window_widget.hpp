@@ -12,75 +12,54 @@ namespace tt {
 
 class toolbar_widget;
 class system_menu_widget;
-class grid_layout_widget;
-class grid_layout_delegate;
+class grid_widget;
+class grid_delegate;
 
 class window_widget final : public widget {
 public:
     using super = widget;
+    using delegate_type = grid_delegate;
 
     observable<label> title;
 
-    ~window_widget();
-
     template<typename Title>
-    window_widget(gui_window &window, Title &&title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept :
+    window_widget(gui_window &window, Title &&title, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
     {
     }
+    /** The background color of the window.
+     * This function is used during rendering to use the optimized
+     * GPU clear function.
+     */
+    [[nodiscard]] color background_color() noexcept;
 
-    template<typename Title>
-    window_widget(gui_window &window, Title &&title) noexcept :
-        window_widget(
-            window,
-            std::forward<Title>(title),
-            std::make_unique<grid_layout_delegate>())
-    {
-    }
+    /** Get a reference to the window's content widget.
+     * @see grid_widget
+     * @return A reference to a grid_widget.
+     */
+    [[nodiscard]] grid_widget &content() noexcept;
 
-    void init() noexcept override;
-
-    [[nodiscard]] bool
-    update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
-
-    [[nodiscard]] color backgroundColor() noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return theme::global(theme_color::fill, _semantic_layer);
-    }
+    /** Get a reference to window's toolbar widget.
+     * @see toolbar_widget
+     * @return A reference to a toolbar_widget.
+     */
+    [[nodiscard]] toolbar_widget &toolbar() noexcept;
 
     /** Defining on which edges the resize handle has priority over widget at a higher layer.
      */
-    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
-    {
-        tt_axiom(is_gui_thread());
-        _left_resize_border_has_priority = left;
-        _right_resize_border_has_priority = right;
-        _bottom_resize_border_has_priority = bottom;
-        _top_resize_border_has_priority = top;
-    }
+    void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
 
-    [[nodiscard]] grid_layout_widget &content() noexcept
-    {
-        tt_axiom(is_gui_thread());
-        tt_axiom(_content);
-        return *_content;
-    }
-
-    [[nodiscard]] toolbar_widget &toolbar() noexcept
-    {
-        tt_axiom(is_gui_thread());
-        tt_axiom(_toolbar);
-        return *_toolbar;
-    }
-
+    /// @privatesection
+    void init() noexcept override;
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
+    /// @endprivatesection
 private:
     decltype(title)::callback_ptr_type _title_callback;
 
-    weak_or_unique_ptr<grid_layout_delegate> _content_delegate;
-    grid_layout_widget *_content = nullptr;
+    std::weak_ptr<delegate_type> _content_delegate;
+    grid_widget *_content = nullptr;
     toolbar_widget *_toolbar = nullptr;
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;

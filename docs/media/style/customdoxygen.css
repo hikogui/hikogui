@@ -1,0 +1,300 @@
+
+@font-face {
+    font-family: 'Lato';
+    src: url("https://www.ttauri-project.org/assets/fonts/Lato-Regular.eot");
+    src: url("https://www.ttauri-project.org/assets/fonts/Lato-Regular.eot?#iefix") format("embedded-opentype"), url("https://www.ttauri-project.org/assets/fonts/Lato-Regular.woff") format("woff"), url("https://www.ttauri-project.org/assets/fonts/Lato-Regular.ttf") format("truetype"), url("https://www.ttauri-project.org/assets/fonts/Lato-Regular.svg#OpenSansLight") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Lato';
+    src: url("https://www.ttauri-project.org/assets/fonts/Lato-Light.eot");
+    src: url("https://www.ttauri-project.org/assets/fonts/Lato-Light.eot?#iefix") format("embedded-opentype"), url("https://www.ttauri-project.org/assets/fonts/Lato-Light.woff") format("woff"), url("https://www.ttauri-project.org/assets/fonts/Lato-Light.ttf") format("truetype"), url("https://www.ttauri-project.org/assets/fonts/Lato-Light.svg#OpenSansLight") format("svg");
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Lato';
+    src: url("https://www.ttauri-project.org/assets/fonts/Lato-LightItalic.eot");
+    src: url("https://www.ttauri-project.org/assets/fonts/Lato-LightItalic.eot?#iefix") format("embedded-opentype"), url("https://www.ttauri-project.org/assets/fonts/Lato-LightItalic.woff") format("woff"), url("https://www.ttauri-project.org/assets/fonts/Lato-LightItalic.ttf") format("truetype"), url("https://www.ttauri-project.org/assets/fonts/Lato-LightItalic.svg#OpenSansLight") format("svg");
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'GentiumBasic';
+    src: url("https://www.ttauri-project.org/assets/fonts/GentiumBasic-Italic.eot");
+    src: url("https://www.ttauri-project.org/assets/fonts/GentiumBasic-Italic.eot?#iefix") format("embedded-opentype"), url("https://www.ttauri-project.org/assets/fonts/GentiumBasic-Italic.woff") format("woff"), url("https://www.ttauri-project.org/assets/fonts/GentiumBasic-Italic.ttf") format("truetype"), url("https://www.ttauri-project.org/assets/fonts/GentiumBasic-Italic.svg#OpenSansLight") format("svg");
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url("https://www.ttauri-project.org/assets/fonts/Montserrat-Bold.eot");
+    src: url("https://www.ttauri-project.org/assets/fonts/Montserrat-Bold.eot?#iefix") format("embedded-opentype"), url("https://www.ttauri-project.org/assets/fonts/Montserrat-Bold.woff") format("woff"), url("https://www.ttauri-project.org/assets/fonts/Montserrat-Bold.ttf") format("truetype"), url("https://www.ttauri-project.org/assets/fonts/Montserrat-Bold.svg#OpenSansLight") format("svg");
+    font-weight: bold;
+    font-style: normal;
+}
+
+body {
+    background: #252525;
+    color: #dddddd;
+}
+
+div.textblock {
+    width: 650px;
+}
+
+.directory tr.even {
+    background: #1c1c1c;
+}
+
+.classindex dl.odd {
+    background: #1c1c1c;
+}
+
+.alphachar a {
+    color: #dddddd;
+    text-decoration: none;
+}
+
+    .alphachar a:visited {
+        color: #dddddd;
+        text-decoration: none;
+    }
+
+body, table, div, p, dl {
+    font-family: Lato;
+    font-size: 12pt;
+    font-style: normal;
+    font-weight: 300;
+}
+
+b {
+    font-weight: normal;
+}
+
+em {
+    color: #fffc79;
+}
+
+ul {
+    padding-left: 25px;
+    list-style-image: url(https://www.ttauri-project.org/assets/images/bullet.png);
+}
+
+.navpath ul {
+    list-style: none;
+}
+
+dt {
+    font-weight: normal;
+}
+
+dd {
+    font-weight: normal;
+}
+
+hr {
+    border-top: 1px solid #ca5201;
+}
+
+div hr {
+    visibility: hidden;
+}
+
+div.header {
+    background: #252525;
+    border: 0;
+}
+
+div.fragment {
+    background: #111111;
+    padding: 5px;
+    border: 1px solid #444444;
+}
+
+span.lineno {
+    background: #000000;
+}
+
+span.stringliteral {
+    color: #cc0000;
+}
+
+span.mlabel {
+    background: #ca5201;
+    color: #fffc79;
+    border-color: #882200;
+    font-family: Lato;
+    font-size: 12pt;
+    font-style: normal;
+    font-weight: 300;
+}
+
+a {
+    color: #ca5201;
+    text-decoration: underline dashed;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 1px;
+}
+
+span.permalink a {
+    text-decoration: none;
+}
+
+.contents a:visited {
+    color: #ca5201;
+}
+
+a.code, a.code:visited, a.line, a.line:visited {
+    color: #ca5201;
+}
+
+a.codeRef, a.codeRef:visited, a.lineRef, a.lineRef:visited {
+    color: #ca5201;
+}
+
+a.elRef {
+    color: #cccccc;
+    text-decoration-color: blue;
+}
+
+    a.elRef:visited {
+        color: #cccccc;
+        text-decoration-color: blue;
+    }
+
+
+a.el {
+    font-weight: normal;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+    h2.groupheader {
+        border: unset;
+        font-family: Montserrat;
+        font-size: 24px;
+        font-weight: bold;
+        color: #ffffff;
+    }
+
+code {
+    font-family: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, monospace;
+    font-size: 12pt;
+}
+
+.memitem {
+    padding-bottom: 0;
+}
+
+.memtitle {
+    border-top: 1px solid #444444;
+    border-left: 1px solid #444444;
+    border-right: 1px solid #444444;
+    background: #1c1c1c;
+    margin-top: 0;
+}
+
+.memtemplate {
+    color: #ca5201;
+}
+
+.memproto {
+    border-top: 1px solid #444444;
+    border-left: 1px solid #444444;
+    border-right: 1px solid #444444;
+    background: #1c1c1c;
+    text-shadow: unset;
+    color: #dddddd;
+}
+
+    .memproto a.el {
+        color: #dddddd;
+    }
+
+        .memproto a.el:visited {
+            color: #dddddd;
+        }
+
+.paramtype {
+    color: #ca5201;
+}
+
+    .paramtype a.el {
+        color: #ca5201;
+    }
+
+        .paramtype a.el:visited {
+            color: #ca5201;
+        }
+
+.paramname {
+    color: #fffc79;
+}
+
+.memdoc > * {
+    width: 650px;
+}
+
+.memdoc {
+    border-bottom: 1px solid #444444;
+    border-left: 1px solid #444444;
+    border-right: 1px solid #444444;
+    background: #111111;
+}
+
+.params .paramname, .retval .paramname, .tparams .paramname, .exception .paramname {
+    font-weight: normal;
+}
+
+.mdescLeft, .mdescRight,
+.memItemLeft, .memItemRight,
+.memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+    background: #111111;
+    color: #fffc79;
+}
+
+    .mdescLeft a, .mdescRight a,
+    .memItemLeft a, .memItemRight a, .memTemplItemLeft a, .memTemplItemRight a {
+        color: #fffc79;
+    }
+
+        .mdescLeft a:visited, .mdescRight a:visited,
+        .memItemLeft a:visited, .memItemRight a:visited, .memTemplItemLeft a:visited, .memTemplItemRight a:visited {
+            color: #fffc79;
+        }
+
+.memTemplParams {
+    color: #ca5201;
+}
+
+.mdescRight {
+    color: #dddddd;
+}
+
+.memSeparator {
+    border-bottom: 1px solid #252525;
+}
+
+.inherit_header {
+    color: #dddddd;
+    font-weight: normal;
+}
+
+.dyncontent {
+    width: 650px;
+}
+
+    .dyncontent div.center img {
+        background: #cccccc;
+        /* Only two pixel border, otherwise the map becomes offset too much. */
+        border: solid 2px #cccccc;
+    }

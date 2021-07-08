@@ -5,6 +5,9 @@
 #pragma once
 
 #include "widget.hpp"
+#include "../GUI/theme.hpp"
+#include "../GUI/mouse_event.hpp"
+#include "../geometry/axis.hpp"
 #include "../observable.hpp"
 #include <memory>
 #include <string>
@@ -14,12 +17,12 @@
 
 namespace tt {
 
-template<bool IsVertical>
+template<axis Axis>
 class scroll_bar_widget final : public widget {
 public:
     using super = widget;
 
-    static constexpr bool is_vertical = IsVertical;
+    static constexpr tt::axis axis = Axis;
 
     template<typename Content, typename Aperture, typename Offset>
     scroll_bar_widget(
@@ -45,12 +48,12 @@ public:
 
     ~scroll_bar_widget() {}
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
-            if constexpr (is_vertical) {
+        if (super::constrain(display_time_point, need_reconstrain)) {
+            if constexpr (axis == axis::vertical) {
                 _minimum_size = _preferred_size = {theme::global().icon_size, theme::global().large_size};
                 _maximum_size = {theme::global().icon_size, 32767.0f};
             } else {
@@ -64,18 +67,18 @@ public:
         }
     }
 
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_relayout.exchange(false);
+        need_layout |= _request_layout.exchange(false);
         if (need_layout) {
             tt_axiom(*content != 0.0f);
 
             // Calculate the position of the slider.
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
 
-            if constexpr (is_vertical) {
+            if constexpr (axis == axis::vertical) {
                 slider_rectangle =
                     aarectangle{rectangle().left(), rectangle().bottom() + slider_offset, rectangle().width(), slider_length()};
             } else {
@@ -84,7 +87,7 @@ public:
             }
         }
 
-        super::update_layout(display_time_point, need_layout);
+        super::layout(display_time_point, need_layout);
     }
 
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
@@ -103,7 +106,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (visible and _visible_rectangle.contains(position) and slider_rectangle.contains(position)) {
-            return hitbox{this, _draw_layer};
+            return hitbox{this, draw_layer};
         } else {
             return hitbox{};
         }
@@ -127,7 +130,7 @@ public:
             case Drag: {
                 // The distance the slider has to move relative to the slider position at the
                 // start of the drag.
-                ttlet slider_movement = is_vertical ? event.delta().y() : event.delta().x();
+                ttlet slider_movement = axis == axis::vertical ? event.delta().y() : event.delta().x();
                 ttlet content_movement = slider_movement * hidden_content_vs_travel_ratio();
                 offset = offset_before_drag + content_movement;
             } break;
@@ -145,15 +148,15 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme::global(theme_color::fill, _semantic_layer);
+        return theme::global(theme_color::fill, semantic_layer);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
         if (_hover) {
-            return theme::global(theme_color::fill, _semantic_layer + 2);
+            return theme::global(theme_color::fill, semantic_layer + 2);
         } else {
-            return theme::global(theme_color::fill, _semantic_layer + 1);
+            return theme::global(theme_color::fill, semantic_layer + 1);
         }
     }
 
@@ -173,7 +176,7 @@ private:
     [[nodiscard]] float rail_length() const noexcept
     {
         tt_axiom(is_gui_thread());
-        return is_vertical ? rectangle().height() : rectangle().width();
+        return axis == axis::vertical ? rectangle().height() : rectangle().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
@@ -229,7 +232,7 @@ private:
         tt_axiom(is_gui_thread());
 
         ttlet corner_shapes =
-            is_vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
+            axis == axis::vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
         context.draw_box(rectangle(), background_color(), corner_shapes);
     }
 
@@ -237,14 +240,14 @@ private:
     {
         tt_axiom(is_gui_thread());
 
-        ttlet corner_shapes = is_vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
+        ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
                                             tt::corner_shapes{slider_rectangle.height() * 0.5f};
 
         context.draw_box(translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
     }
 };
 
-using horizontal_scroll_bar_widget = scroll_bar_widget<false>;
-using vertical_scroll_bar_widget = scroll_bar_widget<true>;
+using horizontal_scroll_bar_widget = scroll_bar_widget<axis::horizontal>;
+using vertical_scroll_bar_widget = scroll_bar_widget<axis::vertical>;
 
 } // namespace tt

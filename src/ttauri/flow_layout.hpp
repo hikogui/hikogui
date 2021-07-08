@@ -9,6 +9,7 @@
 #include "alignment.hpp"
 #include <vector>
 #include <optional>
+#include <numeric>
 
 namespace tt {
 

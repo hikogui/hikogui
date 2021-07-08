@@ -468,6 +468,7 @@ endif()
 #-------------------------------------------------------------------
 if(TT_BUILD_EXAMPLES)
     add_subdirectory(examples/ttauri_demo)
+    add_subdirectory(examples/widgets)
 endif()
 
 #-------------------------------------------------------------------
@@ -541,26 +542,40 @@ endif()
 find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
-    set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
+    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp)
     set(DOXYGEN_GENERATE_HTML YES)
-    set(DOXYGEN_GENERATE_XML NO)
     set(DOXYGEN_GENERATE_LATEX NO)
-    set(DOXYGEN_GENERATE_PDF NO)
     set(DOXYGEN_QUIET YES)
     set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
     set(DOXYGEN_WARN_NO_PARAMDOC NO)
-
     set(DOXYGEN_STRIP_FROM_PATH src)
     set(DOXYGEN_STRIP_FROM_INC_PATH src)
 
     set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
     set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
-    set(DOXYGEN_INLINE_INHERITED_MEMB YES)
-    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
-    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
     set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
 
-    set(DOXYGEN_EXTRACT_ALL YES)
+    set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
+    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+    #set(DOXYGEN_CLANG_ASSISTED_PARSING YES)
+    #set(DOXYGEN_CLANG_OPTIONS "-std:c++20")
+
+    set(DOXYGEN_TAGFILES "${CMAKE_SOURCE_DIR}/docs/media/style/cppreference-doxygen-web.tag.xml=http://en.cppreference.com/w/")
+    set(DOXYGEN_IMAGE_PATH "${CMAKE_SOURCE_DIR}/src/" "${CMAKE_SOURCE_DIR}/docs/")
+    set(DOXYGEN_EXAMPLE_PATH "${CMAKE_SOURCE_DIR}/examples/")
+
+    set(DOXYGEN_LAYOUT_FILE "${CMAKE_SOURCE_DIR}/docs/media/style/DoxygenLayout.xml")
+    set(DOXYGEN_HTML_COLORSTYLE_HUE 24)
+    set(DOXYGEN_HTML_COLORSTYLE_SAT 150)
+    set(DOXYGEN_HTML_COLORSTYLE_GAMMA 80)
+    set(DOXYGEN_HTML_EXTRA_STYLESHEET "${CMAKE_SOURCE_DIR}/docs/media/style/customdoxygen.css")
+
+
+    # The following 4 settings are to get protected members to behave as private.
+    set(DOXYGEN_ENABLE_PREPROCESSING YES)
+    set(DOXYGEN_MACRO_EXPANSION YES)
+    set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
+    set(DOXYGEN_PREDEFINED "protected=private")
 
     doxygen_add_docs(doc src/ttauri docs)
 else()

@@ -1,5 +1,6 @@
 
 target_sources(ttauri PRIVATE
+    axis.hpp
     axis_aligned_rectangle.cpp
     axis_aligned_rectangle.hpp
     extent.hpp
@@ -9,7 +10,7 @@ target_sources(ttauri PRIVATE
     rectangle.hpp
     rotate.hpp
     scale.hpp
-    spread_sheet_address.hpp
+    spreadsheet_address.hpp
     transform.hpp
     translate.hpp
     vector.hpp
@@ -21,7 +22,7 @@ if(TT_BUILD_TESTS)
         matrix_tests.cpp
         point_tests.cpp
         scale_tests.cpp
-        spread_sheet_address_tests.cpp
+        spreadsheet_address_tests.cpp
         transform_tests.cpp
         translate_tests.cpp
         vector_tests.cpp

@@ -9,7 +9,7 @@
 #include "audio_stream_config.hpp"
 #include "audio_channel.hpp"
 #include "audio_direction.hpp"
-#include "audio_channel_mapping.hpp"
+#include "speaker_mapping.hpp"
 #include "../label.hpp"
 #include <string>
 #include <memory>
@@ -82,7 +82,7 @@ public:
      * 
      * @return Mapping of audio channels to speaker locations.
      */
-    [[nodiscard]] virtual audio_channel_mapping full_channel_mapping() const noexcept = 0;
+    [[nodiscard]] virtual speaker_mapping full_channel_mapping() const noexcept = 0;
 
     //[[nodiscard]] virtual std::vector<audio_channel> inputs() noexcept;
 

@@ -16,7 +16,9 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../hires_utc_clock.hpp"
 #include "../label.hpp"
-#include "../weak_or_unique_ptr.hpp"
+#include "../widgets/window_widget.hpp"
+#include "../widgets/grid_widget.hpp"
+#include "../widgets/toolbar_widget.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -24,7 +26,6 @@
 namespace tt {
 class gfx_device;
 class gfx_system;
-class window_widget;
 class gfx_surface;
 
 /*! A Window.
@@ -34,6 +35,8 @@ class gfx_surface;
  */
 class gui_window {
 public:
+    using delegate_type = gui_window_delegate;
+
     std::unique_ptr<gfx_surface> surface;
 
     /** The current cursor.
@@ -83,12 +86,7 @@ public:
     //! The widget covering the complete window.
     std::unique_ptr<window_widget> widget;
 
-    gui_window(label const &title, weak_or_unique_ptr<gui_window_delegate> delegate) noexcept;
-
-    gui_window(label const &title) noexcept :
-        gui_window(title, std::make_unique<gui_window_delegate>())
-    {
-    }
+    gui_window(label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     virtual ~gui_window();
 
@@ -146,23 +144,27 @@ public:
      */
     [[nodiscard]] bool is_closed() const noexcept;
 
-    /** Add a widget to main widget of the window.
-     * The implementation is in widgets.hpp
+        /** Get a reference to the window's content widget.
+     * @see grid_widget
+     * @return A reference to a grid_widget.
      */
-    template<typename T, typename... Args>
-    T &make_widget(size_t column_nr, size_t row_nr, Args &&...args);
+    [[nodiscard]] grid_widget &content() noexcept
+    {
+        tt_axiom(is_gui_thread());
+        tt_axiom(widget);
+        return widget->content();
+    }
 
-    /** Add a widget to main widget of the window.
-     * The implementation is in widgets.hpp
+    /** Get a reference to window's toolbar widget.
+     * @see toolbar_widget
+     * @return A reference to a toolbar_widget.
      */
-    template<typename T, typename... Args>
-    T &make_widget(std::string_view address, Args &&...args);
-
-    /** Add a widget to main widget of the window.
-     * The implementation is in widgets.hpp
-     */
-    template<typename T, horizontal_alignment Alignment = horizontal_alignment::left, typename... Args>
-    T &make_toolbar_widget(Args &&...args);
+    [[nodiscard]] toolbar_widget &toolbar() noexcept
+    {
+        tt_axiom(is_gui_thread());
+        tt_axiom(widget);
+        return widget->toolbar();
+    }
 
     /** Set the mouse cursor icon.
      */
@@ -245,7 +247,7 @@ public:
     }
 
 protected:
-    weak_or_unique_ptr<gui_window_delegate> _delegate;
+    std::weak_ptr<delegate_type> _delegate;
 
     /*! The current rectangle of the window relative to the screen.
      * The screen rectangle is set by the operating system event loop and

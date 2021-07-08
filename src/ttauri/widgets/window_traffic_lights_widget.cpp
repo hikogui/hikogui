@@ -3,8 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "window_traffic_lights_widget.hpp"
+#include "../GUI/theme.hpp"
+#include "../GUI/gui_window.hpp"
+#include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../text/ttauri_icon.hpp"
-#include "../utils.hpp"
 #include <cmath>
 #include <typeinfo>
 
@@ -15,16 +17,19 @@ window_traffic_lights_widget::window_traffic_lights_widget(
     widget *parent) noexcept :
     super(window, parent)
 {
-    // Toolbar buttons hug the toolbar and neighbor widgets.
-    _margin = 0.0f;
+}
+
+[[nodiscard]] float window_traffic_lights_widget::margin() const noexcept
+{
+    return 0.0f;
 }
 
 [[nodiscard]] bool
-window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         if (theme::global().operating_system == operating_system::windows) {
             ttlet width = theme::global().toolbar_decoration_button_width * 3.0f;
             ttlet height = theme::global().toolbar_height;
@@ -46,11 +51,11 @@ window_traffic_lights_widget::update_constraints(hires_utc_clock::time_point dis
 }
 
 [[nodiscard]] void
-window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+window_traffic_lights_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         auto extent = rectangle().size();
         if (extent.height() > theme::global().toolbar_height * 1.2f) {
@@ -108,7 +113,7 @@ window_traffic_lights_widget::update_layout(hires_utc_clock::time_point display_
             align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), alignment::middle_center);
         restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), alignment::middle_center);
     }
-    super::update_layout(display_time_point, need_layout);
+    super::layout(display_time_point, need_layout);
 }
 
 void window_traffic_lights_widget::drawMacOS(
@@ -160,23 +165,23 @@ void window_traffic_lights_widget::drawWindows(
     } else if (hoverClose) {
         context.draw_filled_quad(closeRectangle, color{0.5f, 0.0f, 0.0f});
     } else {
-        context.draw_filled_quad(closeRectangle, theme::global(theme_color::fill, _semantic_layer));
+        context.draw_filled_quad(closeRectangle, theme::global(theme_color::fill, semantic_layer));
     }
 
     if (pressedMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, _semantic_layer + 2));
+        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, semantic_layer + 2));
     } else if (hoverMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, _semantic_layer + 1));
+        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, semantic_layer + 1));
     } else {
-        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, _semantic_layer));
+        context.draw_filled_quad(minimizeRectangle, theme::global(theme_color::fill, semantic_layer));
     }
 
     if (pressedMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, _semantic_layer + 2));
+        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, semantic_layer + 2));
     } else if (hoverMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, _semantic_layer + 1));
+        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, semantic_layer + 1));
     } else {
-        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, _semantic_layer));
+        context.draw_filled_quad(maximizeRectangle, theme::global(theme_color::fill, semantic_layer));
     }
 
     ttlet glyph_color = window.active ? label_color() : foreground_color();
@@ -269,7 +274,7 @@ hitbox window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
 
     if (_visible_rectangle.contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-            return hitbox{this, _draw_layer, hitbox::Type::Button};
+            return hitbox{this, draw_layer, hitbox::Type::Button};
         } else {
             return hitbox{};
         }

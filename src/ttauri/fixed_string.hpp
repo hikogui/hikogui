@@ -2,9 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
-
 #pragma once
+
+#include <string>
+#include <format>
 
 namespace tt {
 
@@ -29,7 +30,7 @@ template<typename CharT, int N>
 struct basic_fixed_string {
     using value_type = CharT;
 
-    value_type _str[N + 1];
+    CharT _str[N];
 
     constexpr basic_fixed_string(basic_fixed_string const &) noexcept = default;
     constexpr basic_fixed_string(basic_fixed_string &&) noexcept = default;
@@ -38,25 +39,29 @@ struct basic_fixed_string {
 
     [[nodiscard]] constexpr basic_fixed_string() noexcept : _str()
     {
-        std::memset(&_str[0], 0, sizeof(CharT) * N);
+        for (size_t i = 0; i != N; ++i) {
+            _str[i] = CharT{};
+        }
     }
 
-    [[nodiscard]] constexpr basic_fixed_string(value_type const (&str)[N + 1]) noexcept : _str()
+    [[nodiscard]] constexpr basic_fixed_string(CharT const (&str)[N]) noexcept : _str()
     {
-        std::copy_n(str, N + 1, _str);
+        for (size_t i = 0; i != N; ++i) {
+            _str[i] = str[i];
+        }
     }
 
-    [[nodiscard]] operator std::basic_string<value_type>() const noexcept
+    [[nodiscard]] operator std::basic_string<CharT>() const noexcept
     {
-        return std::basic_string<value_type>{data(), size()};
+        return std::basic_string<CharT>{data(), size()};
     }
 
-    [[nodiscard]] operator std::basic_string_view<value_type>() const noexcept
+    [[nodiscard]] operator std::basic_string_view<CharT>() const noexcept
     {
-        return std::basic_string_view<value_type>{data(), size()};
+        return std::basic_string_view<CharT>{data(), size()};
     }
 
-    [[nodiscard]] operator value_type const *() const noexcept
+    [[nodiscard]] operator CharT const *() const noexcept
     {
         return data();
     }
@@ -73,57 +78,37 @@ struct basic_fixed_string {
 
     [[nodiscard]] constexpr size_t size() const noexcept
     {
-        return N;
+        return N - 1;
     }
 
-    [[nodiscard]] constexpr value_type const *data() const noexcept
+    [[nodiscard]] constexpr CharT const *data() const noexcept
     {
         return &_str[0];
     }
 
-    [[nodiscard]] constexpr value_type const *c_str() const noexcept
+    [[nodiscard]] constexpr CharT const *c_str() const noexcept
     {
         return &_str[0];
-    }
-
-    template<int M>
-    [[nodiscard]] constexpr auto operator+(basic_fixed_string<value_type, M> const &rhs) noexcept
-    {
-        auto r = basic_fixed_string<value_type, N+M>{};
-        std::copy_n(data(), N, &r._str[0]);
-        std::copy_n(rhs.data(), M + 1, &r._str[N]);
-        return r;
     }
 
     [[nodiscard]] friend bool operator==(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
 };
 
-template<typename CharT, size_t N>
-basic_fixed_string(CharT const (&)[N]) -> basic_fixed_string<CharT, N - 1>;
-
-
-template<size_t N>
-using fixed_string = basic_fixed_string<char,N>;
-
-template<size_t N>
-using fixed_wstring = basic_fixed_string<wchar_t,N>;
-
-template<size_t N>
-using fixed_u8string = basic_fixed_string<char8_t,N>;
-
-template<size_t N>
-using fixed_u16string = basic_fixed_string<char16_t,N>;
-
-template<size_t N>
-using fixed_u32string = basic_fixed_string<char32_t,N>;
-
-
+template<typename CharT>
+[[nodiscard]] constexpr size_t basic_fixed_string_length_(CharT const *str) noexcept
+{
+    size_t i = 0;
+    while (str[i++] != CharT{}) {
+    }
+    return i;
 }
+
+} // namespace tt
 
 namespace std {
 
 template<typename T, size_t N, typename CharT>
-struct std::formatter<tt::basic_fixed_string<T,N>, CharT> : std::formatter<T const *, CharT> {
+struct std::formatter<tt::basic_fixed_string<T, N>, CharT> : std::formatter<T const *, CharT> {
     auto format(tt::basic_fixed_string<T, N> const &t, auto &fc)
     {
         return std::formatter<T const *, CharT>::format(t.data(), fc);

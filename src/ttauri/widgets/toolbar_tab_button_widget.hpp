@@ -9,12 +9,86 @@
 
 namespace tt {
 
+/** A graphical control element that allows the user to choose only one of a
+ * predefined set of mutually exclusive views of a `tab_widget`.
+ *
+ * A toolbar tab button generally controls a `tab_widget`, to show one of its
+ * child widgets.
+ *
+ * A toolbar tab button has two different states with different visual
+ * representation:
+ *  - **on**: The toolbar tab button shows raised among the other tabs.
+ *  - **other**: The toolbar tab button is at equal height to other tabs.
+ *
+ * @image html toolbar_tab_button_widget.gif
+ *
+ * Each time a user activates the toolbar tab button it switches its state to
+ * 'on'.
+ *
+ * A toolbar tab button cannot itself switch state to 'other', this state may be
+ * caused by external factors. The canonical example is another toolbar tab
+ * button in a set, which is configured with a different `on_value`.
+ *
+ * In the following example we create three toolbar tab button widgets on the
+ * window which observes the same `value`. Each tab button is configured with a
+ * different `on_value`: 0, 1 and 2.
+ *
+ * @snippet widgets/tab_example.cpp Create three toolbar tab buttons
+ *
+ * @note A toolbar tab button does not directly control a `tab_widget`. Like
+ *       `radio_button_widget` this is accomplished by sharing a delegate or a
+ *       observable between the toolbar tab button and the tab widget.
+ */
 class toolbar_tab_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
+    /** Construct a toolbar tab button widget.
+     *
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this radio button widget.
+     * @param label The label to show in the tab button.
+     * @param delegate The delegate to use to manage the state of the tab button widget.
+     */
+    template<typename Label>
+    toolbar_tab_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept :
+        toolbar_tab_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)})
+    {
+    }
+
+    /** Construct a toolbar tab button widget with a default button delegate.
+     *
+     * @see default_button_delegate
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this radio button widget.
+     * @param label The label to show in the tab button.
+     * @param value The value or `observable` value which represents the state
+     *              of the tab button.
+     * @param args An optional on-value. This value is used to determine which
+     *             value yields an 'on' state.
+     */
+    template<typename Label, typename Value, typename... Args>
+    toolbar_tab_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept
+        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
+        toolbar_tab_button_widget(
+            window,
+            parent,
+            std::forward<Label>(label),
+            make_unique_default_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
+    {
+    }
+
+    /// @privatesection
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
+    void request_redraw() const noexcept override;
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
+    [[nodiscard]] bool handle_event(command command) noexcept override;
+    // @endprivatesection
+private:
     template<typename Label>
     toolbar_tab_button_widget(
         gui_window &window,
@@ -27,147 +101,8 @@ public:
         set_label(std::forward<Label>(label));
     }
 
-    template<typename Label, typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
-    toolbar_tab_button_widget(
-        gui_window &window,
-        widget *parent,
-        Label &&label,
-        Value &&value,
-        Args &&...args) noexcept :
-        toolbar_tab_button_widget(
-            window,
-            parent,
-            std::forward<Label>(label),
-            make_unique_default_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
-    {
-    }
-
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
-            // On left side a check mark, on right side short-cut. Around the label extra margin.
-            ttlet extra_size = extent2{theme::global().margin * 2.0f, theme::global().margin};
-            _minimum_size += extra_size;
-            _preferred_size += extra_size;
-            _maximum_size += extra_size;
-
-            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        need_layout |= _request_relayout.exchange(false);
-        if (need_layout) {
-            _label_rectangle = aarectangle{
-                theme::global().margin, 0.0f, width() - theme::global().margin * 2.0f, height() - theme::global().margin};
-        }
-        super::update_layout(displayTimePoint, need_layout);
-    }
-
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        if (overlaps(context, _clipping_rectangle)) {
-            draw_toolbar_tab_button(context);
-            draw_toolbar_tab_focus_line(context);
-        }
-
-        super::draw(std::move(context), display_time_point);
-    }
-
-    void request_redraw() const noexcept override
-    {
-        // A toolbar tab button draws a focus line across the whole toolbar
-        // which is beyond it's own clipping rectangle. The parent is the toolbar
-        // so it will include everything that needs to be redrawn.
-        parent->request_redraw();
-    }
-
-    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return is_toolbar(group) and enabled;
-    }
-
-    [[nodiscard]] bool handle_event(command command) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        if (enabled) {
-            switch (command) {
-            case command::gui_toolbar_next:
-                if (!is_last(keyboard_focus_group::toolbar)) {
-                    window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
-                    return true;
-                }
-                break;
-
-            case command::gui_toolbar_prev:
-                if (!is_first(keyboard_focus_group::toolbar)) {
-                    window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
-                    return true;
-                }
-                break;
-
-            default:;
-            }
-        }
-
-        return super::handle_event(command);
-    }
-
-private:
-    void draw_toolbar_tab_focus_line(draw_context context) noexcept
-    {
-        if (_focus and window.active and state() == tt::button_state::on) {
-            ttlet parent_rectangle = aarectangle{_parent_to_local * parent->rectangle()};
-
-            // Create a line, on the bottom of the toolbar over the full width.
-            ttlet line_rectangle = aarectangle{
-                parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global().border_width};
-
-            context.set_clipping_rectangle(line_rectangle);
-
-            if (overlaps(context, line_rectangle)) {
-                // Draw the line above every other direct child of the toolbar, and between
-                // the selected-tab (0.6) and unselected-tabs (0.8).
-                context.draw_filled_quad(translate_z(0.7f) * line_rectangle, focus_color());
-            }
-        }
-    }
-
-    void draw_toolbar_tab_button(draw_context context) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        // Override the clipping rectangle to match the toolbar rectangle exactly
-        // so that the bottom border of the tab button is not drawn.
-        context.set_clipping_rectangle(aarectangle{_parent_to_local * parent->clipping_rectangle()});
-
-        ttlet offset = theme::global().margin + theme::global().border_width;
-        ttlet outline_rectangle =
-            aarectangle{rectangle().left(), rectangle().bottom() - offset, rectangle().width(), rectangle().height() + offset};
-
-        // The focus line will be placed at 0.7.
-        ttlet button_z = (_focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
-
-        auto button_color = (_hover || state() == button_state::on) ? theme::global(theme_color::fill, _semantic_layer - 1) :
-                                                                      theme::global(theme_color::fill, _semantic_layer);
-
-        ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global().rounding_radius, theme::global().rounding_radius};
-        context.draw_box_with_border_inside(
-            button_z * outline_rectangle, button_color, (_focus && window.active) ? focus_color() : button_color, corner_shapes);
-    }
+    void draw_toolbar_tab_focus_line(draw_context context) noexcept;
+    void draw_toolbar_tab_button(draw_context context) noexcept;
 };
 
 } // namespace tt

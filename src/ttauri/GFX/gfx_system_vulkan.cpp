@@ -60,11 +60,11 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
     }
 
     applicationInfo = vk::ApplicationInfo(
-        application_metadata().name.c_str(),
+        metadata::application().name.c_str(),
         VK_MAKE_VERSION(
-            application_metadata().version.major, application_metadata().version.minor, application_metadata().version.patch),
-        library_metadata().name.c_str(),
-        VK_MAKE_VERSION(library_metadata().version.major, library_metadata().version.minor, library_metadata().version.patch),
+            metadata::application().version.major, metadata::application().version.minor, metadata::application().version.patch),
+        metadata::library().name.c_str(),
+        VK_MAKE_VERSION(metadata::library().version.major, metadata::library().version.minor, metadata::library().version.patch),
         VK_API_VERSION_1_2);
 
     // VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2 extension is needed to retrieve unique identifiers for
@@ -150,14 +150,24 @@ VkBool32 gfx_system_vulkan::debugUtilsMessageCallback(
     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
     void *pUserData)
 {
-    switch (messageSeverity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        // tt_log_debug("Vulkan: {}", pCallbackData->pMessage);
-        break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: tt_log_info("Vulkan: {}", pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: tt_log_warning("Vulkan: {}", pCallbackData->pMessage); break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: tt_log_error("Vulkan: {}", pCallbackData->pMessage); break;
-    default: tt_no_default();
+    auto message = std::string_view(pCallbackData->pMessage);
+
+    if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+        tt_log_info("Vulkan: {}", message);
+
+    } else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+        tt_log_warning("Vulkan: {}", message);
+
+    } else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+        if (message.starts_with("Failed to open dynamic library")) {
+            // Steelseries mouse driver will inject:
+            // C:\ProgramData\obs-studio-hook\graphics-hook{32,64}.dll
+            // One of them will always fail to load.
+            tt_log_warning("Vulkan: {}", pCallbackData->pMessage);
+
+        } else {
+            tt_log_error("Vulkan: {}", pCallbackData->pMessage);
+        }
     }
 
     return VK_FALSE;

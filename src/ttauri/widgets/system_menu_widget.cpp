@@ -3,20 +3,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "system_menu_widget.hpp"
-#include "../text/ttauri_icon.hpp"
-#include "../utils.hpp"
-#include <Windows.h>
-#include <WinUser.h>
-#include <cmath>
-#include <typeinfo>
+#include "../GUI/theme.hpp"
 
 namespace tt {
 
 system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept :
     super(window, parent)
 {
-    // Toolbar buttons hug the toolbar and neighbor widgets.
-    _margin = 0.0f;
 }
 
 void system_menu_widget::init() noexcept
@@ -24,12 +17,17 @@ void system_menu_widget::init() noexcept
     _icon_widget = &make_widget<icon_widget>(icon);
 }
 
+[[nodiscard]] float system_menu_widget::margin() const noexcept
+{
+    return 0.0f;
+}
+
 [[nodiscard]] bool
-system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+system_menu_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::update_constraints(display_time_point, need_reconstrain)) {
+    if (super::constrain(display_time_point, need_reconstrain)) {
         ttlet width = theme::global().toolbar_decoration_button_width;
         ttlet height = theme::global().toolbar_height;
         _minimum_size = _preferred_size = _maximum_size = {width, height};
@@ -40,11 +38,11 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
     }
 }
 
-[[nodiscard]] void system_menu_widget::update_layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void system_menu_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_relayout.exchange(false);
+    need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         ttlet icon_height =
             rectangle().height() < theme::global().toolbar_height * 1.2f ? rectangle().height() : theme::global().toolbar_height;
@@ -60,7 +58,7 @@ system_menu_widget::update_constraints(hires_utc_clock::time_point display_time_
             rectangle().height() - theme::global().margin};
     }
 
-    super::update_layout(display_time_point, need_layout);
+    super::layout(display_time_point, need_layout);
 }
 
 hitbox system_menu_widget::hitbox_test(point2 position) const noexcept
@@ -70,7 +68,7 @@ hitbox system_menu_widget::hitbox_test(point2 position) const noexcept
     if (_visible_rectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return hitbox{this, _draw_layer, hitbox::Type::ApplicationIcon};
+        return hitbox{this, draw_layer, hitbox::Type::ApplicationIcon};
     } else {
         return {};
     }

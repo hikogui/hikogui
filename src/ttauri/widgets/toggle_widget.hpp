@@ -9,21 +9,68 @@
 
 namespace tt {
 
+/** A GUI widget that permits the user to make a binary choice. 
+ *
+ * A toggle is very similar to a `checkbox_widget`. The
+ * semantic difference between a checkbox and a toggle is:
+ *  - A toggle is immediately active, turning on and off a feature or service at
+ *    the moment you toggle it.
+ *  - A checkbox determines what happens when another action takes place. Or
+ *    only becomes active after pressing the "Apply" or "Save" button on a form.
+ *    Or becomes part of a record together with other information to be stored
+ *    together in a database of some sort.
+ *
+ * A toggle is a button with three different states with different visual
+ * representation:
+ *  - **on**: The switch is thrown to the right and is highlighted, and the
+ *    `toggle_widget::on_label` is shown.
+ *  - **off**: The switch is thrown to the left and is not highlighted, and the
+ *    `toggle_widget::off_label` is shown.
+ *  - **other**: The switch is thrown to the left and is not highlighted, and
+ *    the `toggle_widget::other_label` is shown.
+ *
+ * @image html toggle_widget.gif
+ *
+ * Each time a user activates the toggle-button it toggles between the 'on' and
+ * 'off' states. If the toggle is in the 'other' state an activation will switch
+ * it to the 'off' state.
+ *
+ * A toggle cannot itself switch state to 'other', this state may be caused by
+ * external factors.
+ *
+ * In the following example we create a toggle widget on the window which
+ * observes `value`. When the value is 1 the toggle is 'on', when the value is 2
+ * the toggle is 'off'.
+ *
+ * @snippet widgets/toggle_example.cpp Create a toggle
+ *
+ */
 class toggle_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
-    toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-        super(window, parent, std::move(delegate))
-    {
-        label_alignment = alignment::top_left;
-    }
+    /** Construct a toggle widget.
+     *
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this toggle widget.
+     * @param delegate The delegate to use to manage the state of the toggle button.
+     */
+    toggle_widget(gui_window &window, widget *parent, std::unique_ptr<delegate_type> delegate) noexcept;
 
+    /** Construct a toggle widget with a default button delegate.
+     *
+     * @see default_button_delegate
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this toggle widget.
+     * @param value The value or `observable` value which represents the state of the toggle.
+     * @param args An optional on-value, followed by an optional off-value. These two values
+     *             are used to determine which value yields an on/off state.
+     */
     template<typename Value, typename... Args>
-    requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>)
-        toggle_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept :
+    toggle_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept
+        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
         toggle_widget(
             window,
             parent,
@@ -31,63 +78,11 @@ public:
     {
     }
 
-    [[nodiscard]] bool update_constraints(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        if (super::update_constraints(display_time_point, need_reconstrain)) {
-            // Make room for button and margin.
-            _button_size = {theme::global().size * 2.0f, theme::global().size};
-            ttlet extra_size = extent2{theme::global().margin + _button_size.width(), 0.0f};
-            _minimum_size += extra_size;
-            _preferred_size += extra_size;
-            _maximum_size += extra_size;
-
-            _minimum_size = max(_minimum_size, _button_size);
-            _preferred_size = max(_minimum_size, _button_size);
-            _maximum_size = max(_minimum_size, _button_size);
-
-            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    [[nodiscard]] void update_layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        need_layout |= _request_relayout.exchange(false);
-        if (need_layout) {
-            _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
-
-            _label_rectangle = aarectangle{_button_rectangle.right() + theme::global().margin, 0.0f, width(), height()};
-
-            ttlet button_square =
-                aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
-
-            _pip_rectangle =
-                align(button_square, extent2{theme::global().icon_size, theme::global().icon_size}, alignment::middle_center);
-
-            ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
-            _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
-        }
-        super::update_layout(displayTimePoint, need_layout);
-    }
-
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override
-    {
-        tt_axiom(is_gui_thread());
-
-        if (overlaps(context, _clipping_rectangle)) {
-            draw_toggle_button(context);
-            draw_toggle_pip(context, display_time_point);
-        }
-
-        super::draw(std::move(context), display_time_point);
-    }
-
+    /// @privatesection
+    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
+    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
+    /// @endprivatesection
 private:
     static constexpr hires_utc_clock::duration _animation_duration = 150ms;
 
@@ -97,30 +92,9 @@ private:
     aarectangle _pip_rectangle;
     float _pip_move_range;
 
-    void draw_toggle_button(draw_context context) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        context.draw_box_with_border_inside(
-            _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
-    }
-
-    void draw_toggle_pip(draw_context draw_context, hires_utc_clock::time_point display_time_point) noexcept
-    {
-        tt_axiom(is_gui_thread());
-
-        _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, display_time_point);
-        if (_animated_value.is_animating()) {
-            request_redraw();
-        }
-
-        ttlet positioned_pip_rectangle =
-            translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_rectangle;
-
-        ttlet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();
-        draw_context.draw_box(
-            positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
-    }
+    toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
+    void draw_toggle_button(draw_context context) noexcept;
+    void draw_toggle_pip(draw_context draw_context, hires_utc_clock::time_point display_time_point) noexcept;
 };
 
 } // namespace tt
