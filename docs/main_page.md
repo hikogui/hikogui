@@ -14,7 +14,10 @@ Subsystems
  - [Application Lifetime](application_lifetime.md)
  - [Information Reporting](information_reporting.md): exceptions, assertions,
    logging, counting and tracing.
- - [Geometry](geometry.md)
+ - [Geometry](geometry.md):
+   vector, point, extent, rectangle, axis\_aligned\_rectangle, translate, scale,
+   rotate, matrix.
+ - [Skeleton](skeleton.md): Template Language.
 
 Features
 --------

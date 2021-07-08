@@ -1,6 +1,42 @@
 How to use widgets
 ==================
 
+The following widgets exists:
+
+ - Simple widgets
+   - `tt::text_widget`: Displays text.
+   - `tt::icon_widget`: Displays a small image.
+   - `tt::label_widget`: Lays out and displays text and a icon together.
+ - Container widgets
+   - `tt::grid_widget`: Lays out children in a grid of variable sized cells.
+   - `tt::row_widget`: Lays out children in a row.
+   - `tt::column_widget`: Lays out children in a column.
+   - `tt::tab_widget`: Shows one child at a time.
+   - `tt::scroll_widget`: Allows a larger child to be shown in less space.
+   - `tt::overlay_widget`: Shows a child anywhere on the window, overlaying above any other widget.
+ - Buttons
+   - `tt::momentary_button_widget`: A push button designed to be used with a callback function.
+   - `tt::toolbar_button_widget`: A push button designed to be used with a callback function. Specifically
+                                  for use inside a `tt::toolbar_widget`.
+   - `tt::toggle_widget`: A button representing a binary choice and indiciating an immediate effect.
+   - `tt::checkbox_widget`: A button representing a binary choice, but also being able to show
+                            a third 'other' state.
+   - `tt::radio_button_widget`: A button representing one out of mutually exclusive choices.
+   - `tt::toolbar_tab_button_widget`: A button representing one out of mutally exclusive tabs. Designed
+                                      to control the `tt::tab_widget`. For use inside a `tt::toolbar_widget`.
+   - `tt::menu_button_widget`:
+ - Misc
+   - `tt::selection_widget`:
+   - `tt::text_field_widget`:
+   - `tt::window_widget`:
+   - `tt::toolbar_widget`: Lays out children in a toolbar.
+   - `tt::window_traffic_light_widget`:
+   - `tt::scroll_bar_widget`:
+   - `tt::system_menu_widget`:
+
+
+
+
 Creating Windows
 ----------------
 You can create a window by calling the `tt::gui_system::make_window()`

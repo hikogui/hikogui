@@ -43,11 +43,15 @@ Here is a description on how to install for the development of ttauri.
 
 Installation requirements:
 
- - The latest Microsoft Visual Studio from <https://visualstudio.microsoft.com/downloads/>
-   - C++ core desktop features
-   - C++ CMake tools for Windows
-   - Test Adapter for Google Test
-   - Windows 10 SDK
+ - Microsoft Visual Studio 2019 from <https://visualstudio.microsoft.com/downloads/>
+   - With the following workload and component selection:
+     - C++ core desktop features
+     - C++ CMake tools for Windows
+     - Test Adapter for Google Test
+     - Windows 10 SDK
+   - Alternatively, you can import our Visual Studio installation configuration file
+     ([.vsconfig](https://github.com/ttauri-project/ttauri/blob/main/.github/.vsconfig))
+     to configure the required workload and component selection.
  - git from <https://git-scm.com>
  - vcpkg from <https://github.com/microsoft/vcpkg> (see below for instructions)
  - Vulkan SDK from <https://www.lunarg.com/vulkan-sdk/>
@@ -74,7 +78,8 @@ c:\Users\Tjienta\Projects> git clone https://github.com/ttauri-project/ttauri
 You can open ttauri directly in Visual Studio using the
 "[open folder](https://docs.microsoft.com/en-us/cpp/build/open-folder-projects-cpp?view=msvc-160)" method.
 
-Since it is a large project you may have to wait a minute before Visual Studio is finished with fully loading the project. Once it is loaded you will see a selection box with a set of build configurations:
+Since it is a large project you may have to wait a minute before Visual Studio is finished with fully loading the project.
+Once it is loaded you will see a selection box with a set of build configurations:
 
  - x64-MSVC-Debug
  - x64-MSVC-Release
