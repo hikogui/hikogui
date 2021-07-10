@@ -1,6 +1,38 @@
 Change log
 ==========
 
+0.4.0 Lovely Lizard
+-------------------
+This version is focused on making it practical for application developers
+to start using the TTauri framework to create GUI application.
+
+For this reason a lot of work has gone into improving the consistancy
+between widgets and adding documentation and example code.
+
+The GUI system itself and application instantiation has been simplified
+to reduce the amount of unnessary preamble code.
+
+Here are some of the important changes for this release:
+ * The GUI system and widgets are easier to use and more consistant.
+   - Simple unique pointer ownership of windows and widgets.
+   - Widgets track delegates and callbacks using weak pointers.
+   - Most widgets are non-template classes.
+   - Simplified construction for widgets using the observer patern.
+ * Added examples and documentation on how to use GUI widgets.
+ * Easier to use optional subsystems initialization.
+ * The event loop and rendering are now done on the same thread.
+ * Minimum CPU requirements x86-64-v2: Sandy Bridge and Jaguar/Bulldozer
+ * Reduced dependencies to only:
+   - Vulkan SDK
+   - CMake
+   - C++20 compiler (MSVC)
+   - Vulkan Memory Allocator (automatically installed by cmake or vcpkg)
+   - Google Test (automatically installed by cmake)
+ * And optional dependencies:
+   - Doxygen
+   - RenderDoc
+   - vcpkg
+
 0.3.0 Fancy Frog
 ----------------
 In this version we concentrated on making it easy for developers
@@ -18,25 +50,3 @@ Here are some of the important changes for this release:
  * Made several documentation improvements.
  * Improved the pull-request work flow with continuous integration requirements before merging.
 
-0.4.0 Lovely Lizard
--------------------
-This version is focused on simplifying the API for the usage of GUI widgets.
-
-Here are some of the important changes for this release:
- * Most widgets are no longer templates.
-   - Some widgets will automatically instantiate an appropriate default delegate based on
-     the arguments passed to the widget's constructor.
- * The event loop and rendering are now done on the same thread removing the need for locking.
- * Added documentation of how to use GUI widgets.
- * Lazy or optional subsystem initialization is much more consistent.
- * Minimum CPU requirements have been reduced.
- * Reduced dependencies to only:
-   - Vulkan SDK
-   - CMake
-   - C++20 compiler (MSVC)
-   - Vulkan Memory Allocator (automatically installed by cmake or vcpkg)
-   - Google Test (automatically installed by cmake)
-   - Doxygen (optional)
-   - RenderDoc (optional)
-   - vcpkg (optional)
- * Can be build with or without vcpkg.
