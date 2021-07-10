@@ -233,8 +233,8 @@ elseif (MSVC)
     target_compile_options(ttauri PUBLIC -Zc:preprocessor)
     target_compile_options(ttauri PUBLIC -wd5105)
 
-    # Set the execution character encoding to UTF-8
-    target_compile_options(ttauri PUBLIC -execution-charset:utf-8)
+    # Set the execution and source character encoding to UTF-8
+    target_compile_options(ttauri PUBLIC -utf-8)
 
     # Support Intel's SkyLake and AMD's Excavator.
     # see hardware_support.md
