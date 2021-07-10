@@ -1,7 +1,7 @@
 TTauri GUI library [![Build on Windows](https://github.com/ttauri-project/ttauri/actions/workflows/build-on-windows.yml/badge.svg?branch=main)](https://github.com/ttauri-project/ttauri/actions/workflows/build-on-windows.yml) [![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/ttauri-project/ttauri/main/vcpkg.json&label=Latest%20Version&query=$[%27version%27]&color=blue)](https://github.com/ttauri-project/ttauri/releases/latest) [![License](https://img.shields.io/github/license/ttauri-project/ttauri.svg)](https://github.com/ttauri-project/ttauri/blob/main/LICENSE_1_0.txt)
 ==================
 
-A portable, low latency, retained-mode GUI library written in C++.
+A portable, low latency, retained-mode GUI framework written in C++.
 
 ![Screenshot](docs/media/screenshots/demo_v0.2.0.gif)
 
@@ -25,7 +25,7 @@ Features
  - Text is drawn using subpixel anti-aliasing and proper kerning.
  - High dynamic range and high gamut color handling.
  - High level API to make simple desktop applications.
- - Themes, including light/dark support.
+ - Themes; including light/dark support.
  - Editable key-bindings.
  - Localization and translation.
  - Automatic application preferences storage.
@@ -48,7 +48,7 @@ If you like to help with the development or want to modify ttauri you can
 find instruction how to install the dependencies and how to build ttauri in the
 [CONTRIBUTING](docs/CONTRIBUTING.md) document.
 
-If you want to use ttauri as a linrary for your own application you can
+If you want to use ttauri as a library for your own application you can
 find instructions in the [ttauri_hello_world](https://github.com/ttauri-project/ttauri_hello_world)
 example application's [README](https://github.com/ttauri-project/ttauri_hello_world/blob/main/README.md).
 
@@ -60,3 +60,4 @@ The following people and companies are platinum sponsors:
 _There are currently no platinum sponsors._
 
 for more sponsers please see [SPONSORS](SPONSORS.md).
+

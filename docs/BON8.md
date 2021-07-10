@@ -57,8 +57,8 @@ This table gives an overview on the encoding:
  :----------------------- | -:|:-------------------------   | ----:| --------:| ----------:
   00-7f                   | 1 | UTF-8 One byte sequence     |    7 |   U+0000 |    U+007f
   c2-df 80-bf             | 2 | UTF-8 Two byte sequence     |   11 |   U+0080 |    U+07ff
-  e0-ef 80-bf byte*1      | 3 | UTF-8 Three byte sequence   |   16 |   U+0800 |    U+ffff
-  f0-f7 80-bf byte*2      | 4 | UTF-8 Four byte sequence    |   21 | U+100000 |  U+10ffff
+  e0-ef 80-bf byte\*1     | 3 | UTF-8 Three byte sequence   |   16 |   U+0800 |    U+ffff
+  f0-f7 80-bf byte\*2     | 4 | UTF-8 Four byte sequence    |   21 | U+100000 |  U+10ffff
   80-af                   | 1 | Positive Integer            |      |        0 |        47
   b0-b9                   | 1 | Negative Integer            |      |       -1 |       -10
   ba                      | 1 | Floating point -1.0         |      |          |
@@ -70,15 +70,15 @@ This table gives an overview on the encoding:
   c0                      | 1 | False                       |      |          |
   c1                      | 1 | True                        |      |          |
   c2-df 00-7f             | 2 | Positive Integer (30 * 128) |      |        0 |      3839
-  e0-ef 00-7f byte*1      | 3 | Positive Integer            |   19 |        0 |    524287
-  f0-f7 00-7f byte*2      | 4 | Positive Integer            |   26 |        0 |  67108863
+  e0-ef 00-7f byte\*1     | 3 | Positive Integer            |   19 |        0 |    524287
+  f0-f7 00-7f byte\*2     | 4 | Positive Integer            |   26 |        0 |  67108863
   c2-df c0-ff             | 2 | Negative Integer (30 * 64)  |      |       -1 |     -1920
-  e0-ef c0-ff byte*1      | 3 | Negative Integer            |   18 |       -1 |   -262144
-  f0-f7 c0-ff byte*2      | 4 | Negative Integer            |   25 |       -1 | -33554432
-  f8 byte*4               | 5 | Signed integer              |   32 |    -2^31 |  2^31 - 1
-  f9 byte*8               | 9 | Signed integer              |   64 |    -2^63 |  2^63 - 1
-  fa byte*4               | 5 | Floating point              |   32 |          |
-  fb byte*8               | 9 | Floating point              |   64 |          |
+  e0-ef c0-ff byte\*1     | 3 | Negative Integer            |   18 |       -1 |   -262144
+  f0-f7 c0-ff byte\*2     | 4 | Negative Integer            |   25 |       -1 | -33554432
+  f8 byte\*4              | 5 | Signed integer              |   32 |    -2^31 |  2^31 - 1
+  f9 byte\*8              | 9 | Signed integer              |   64 |    -2^63 |  2^63 - 1
+  fa byte\*4              | 5 | Floating point              |   32 |          |
+  fb byte\*8              | 9 | Floating point              |   64 |          |
   fc                      | 1 | Start Array                 |      |          |
   fd                      | 1 | Start Object                |      |          |
   fe                      | 1 | End Of Container (eoc)      |      |          |
@@ -97,5 +97,6 @@ signing of the message repeatably. All encoders MUST follow these rules.
  - Integers MUST be encoded in the least amount of bytes.
  - Floating point numbers MUST be encoded in the least amount of bytes
    while preserving precision. In other words: a binary64 number needs to be converted to
-   binary32 and back to determine, if it can be encoded as binary32 while preserving precision.
+   binary32 and back to determine if it can be encoded as binary32 while preserving precision.
  - Object keys MUST be lexically ordered based on UTF-8 code units.
+
