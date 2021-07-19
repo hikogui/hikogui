@@ -174,20 +174,92 @@ a.el {
 }
 
 h1, h2, h3, h4, h5, h6 {
+    font-family: Montserrat;
     margin-bottom: 0;
     font-weight: normal;
 }
 
-    h2.groupheader {
-        border: unset;
-        font-family: Montserrat;
-        font-size: 24px;
-        font-weight: bold;
-        color: #ffffff;
-    }
+body {
+    counter-reset: section1;
+}
+
+h1 {
+    counter-reset: section2;
+    font-size: 24px;
+}
+
+h2 {
+    counter-reset: section3;
+    font-size: 20px;
+}
+
+h3 {
+    counter-reset: section4;
+    font-size: 18px;
+}
+
+h4 {
+    counter-reset: section5;
+    font-size: 16px;
+}
+
+h5 {
+    counter-reset: section6;
+    font-size: 16px;
+}
+
+h6 {
+    font-size: 16px;
+}
+
+
+div.PageDoc h1::before {
+    counter-increment: section1;
+    content: counter(section1) ".";
+}
+
+div.PageDoc h2::before {
+    counter-increment: section2;
+    content: counter(section1) "." counter(section2) ".";
+}
+
+div.PageDoc h3::before {
+    counter-increment: section3;
+    content: counter(section1) "." counter(section2) "." counter(section3) ".";
+}
+
+div.PageDoc h4::before {
+    counter-increment: section4;
+    content: counter(section1) "." counter(section2) "." counter(section3) "." counter(section4) ".";
+}
+
+div.PageDoc h5::before {
+    counter-increment: section5;
+    content: counter(section1) "." counter(section2) "." counter(section3) "." counter(section4) "." counter(section5) ".";
+}
+
+div.PageDoc h6::before {
+    counter-increment: section6;
+    content: counter(section1) "." counter(section2) "." counter(section3) "." counter(section4) "." counter(section5) "." counter(section6) ".";
+}
+
+.title {
+    font-family: Montserrat;
+    font-size: 32px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+h2.groupheader {
+    border: unset;
+    font-family: Montserrat;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+}
 
 code {
-    font-family: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, monospace;
+    font-family: monospace, fixed;
     font-size: 12pt;
 }
 
