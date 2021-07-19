@@ -33,19 +33,6 @@ static URL get_folder_by_id(const KNOWNFOLDERID &folder_id) noexcept
     return folder;
 }
 
-URL URL::urlFromCurrentWorkingDirectory() noexcept
-{
-    DWORD required_buffer_size = GetCurrentDirectoryW(0, nullptr);
-    if (!required_buffer_size) {
-        tt_log_fatal("Could not get required buffer size.");
-    }
-    auto current_directory = std::make_unique<wchar_t[]>(required_buffer_size);
-    if (GetCurrentDirectoryW(required_buffer_size, current_directory.get()) == 0) {
-        tt_log_fatal("Could not get current directory: {}", get_last_error_message());
-    }
-    return URL::urlFromWPath(current_directory.get());
-}
-
 URL URL::urlFromExecutableFile() noexcept
 {
     std::wstring module_path;

@@ -15,25 +15,15 @@
 
 namespace tt {
 
-URL::URL(std::string_view url) :
-    value(normalize_url(url))
-{
-}
+URL URL::_urlOfCurrentWorkingDirectory;
 
-URL::URL(char const *url) :
-    value(normalize_url(url))
-{
-}
+URL::URL(std::string_view url) : value(normalize_url(url)) {}
 
-URL::URL(std::string const &url) :
-    value(normalize_url(url))
-{
-}
+URL::URL(char const *url) : value(normalize_url(url)) {}
 
-URL::URL(url_parts const &parts) :
-    value(generate_url(parts))
-{
-}
+URL::URL(std::string const &url) : value(normalize_url(url)) {}
+
+URL::URL(url_parts const &parts) : value(generate_url(parts)) {}
 
 size_t URL::hash() const noexcept
 {
@@ -95,7 +85,7 @@ std::vector<std::string> URL::pathSegments() const noexcept
     ttlet parts = parse_url(value);
     return transform<std::vector<std::string>>(parts.segments, [](auto x) {
         return url_decode(x);
-        });
+    });
 }
 
 std::string URL::path() const noexcept
@@ -127,7 +117,6 @@ bool URL::isRootDirectory() const noexcept
 {
     return parse_url(value).segments.size() == 0;
 }
-
 
 URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
@@ -195,7 +184,7 @@ URL URL::urlByRemovingFilename() const noexcept
 
 static void urlsByRecursiveScanning(std::string const &base, glob_token_list_t const &glob, std::vector<URL> &result) noexcept
 {
-    for (ttlet &filename: URL::filenamesByScanningDirectory(base)) {
+    for (ttlet &filename : URL::filenamesByScanningDirectory(base)) {
         if (filename.back() == '/') {
             ttlet directory = std::string_view(filename.data(), filename.size() - 1);
             auto recursePath = base + "/";
@@ -236,6 +225,16 @@ URL URL::urlFromWPath(std::wstring_view const path) noexcept
     return urlFromPath(to_string(path));
 }
 
+void URL::setUrlForCurrentWorkingDirectory(URL url) noexcept
+{
+    _urlOfCurrentWorkingDirectory = std::move(url);
+}
+
+URL URL::urlFromCurrentWorkingDirectory() noexcept
+{
+    return _urlOfCurrentWorkingDirectory;
+}
+
 URL URL::urlFromExecutableDirectory() noexcept
 {
     static auto r = urlFromExecutableFile().urlByRemovingFilename();
@@ -251,7 +250,7 @@ std::string URL::nativePathFromPath(std::string_view path) noexcept
 {
     std::string r = static_cast<std::string>(path);
 
-    for (auto &c: r) {
+    for (auto &c : r) {
         if (c == '/') {
             c = native_path_seperator;
         }
@@ -289,4 +288,4 @@ std::unique_ptr<resource_view> URL::loadView() const
     }
 }
 
-}
+} // namespace tt

@@ -45,11 +45,8 @@ class resource_view;
  * But this is no different from having a meaningless path in the first place.
  */
 class URL {
-private:
-    std::string value;
-
 public:
-    URL() = default;
+    constexpr URL() noexcept = default;
     explicit URL(std::string_view url);
     explicit URL(char const *url);
     explicit URL(std::string const &url);
@@ -138,6 +135,7 @@ public:
     [[nodiscard]] static URL urlFromPath(std::string_view const path) noexcept;
     [[nodiscard]] static URL urlFromWPath(std::wstring_view const path) noexcept;
 
+    static void setUrlForCurrentWorkingDirectory(URL url) noexcept;
     [[nodiscard]] static URL urlFromCurrentWorkingDirectory() noexcept;
     [[nodiscard]] static URL urlFromResourceDirectory() noexcept;
     [[nodiscard]] static URL urlFromExecutableDirectory() noexcept;
@@ -204,6 +202,11 @@ public:
     {
         return lhs << to_string(rhs);
     }
+
+private:
+    std::string value;
+
+    static URL _urlOfCurrentWorkingDirectory;
 };
 
 } // namespace tt

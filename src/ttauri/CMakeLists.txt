@@ -42,7 +42,8 @@ target_sources(ttauri PRIVATE
     #cpu_id.hpp
     #$<${TT_X64}:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
     crt.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_win32.cpp>
+    crt_utils.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32.cpp>
     date.hpp
     datum.hpp
     dead_lock_detector.cpp
