@@ -20,28 +20,9 @@
 
 #pragma once
 
-#include "architecture.hpp"
-#include "subsystem.hpp"
-#include "URL.hpp"
-#include "strings.hpp"
-#include "cast.hpp"
-#include "console.hpp"
-#include "time_stamp_count.hpp"
-#include "GUI/gui_system.hpp"
-#include <chrono>
+#include "crt_utils.hpp"
 
-namespace tt {
-
-/** Configure the process for use with ttauri library.
- * This function is used to put the process in a state
- * that is compatible with the ttauri library.
- * 
- * Examples of configurations:
- *  - win32: GetSystemTimePreciseAsFileTime() should include leap-seconds.
- */
-void crt_configure_process() noexcept;
-
-}
+#if not defined(TT_CRT_NO_MAIN)
 
 /** Main entry-point.
  *
@@ -51,8 +32,8 @@ void crt_configure_process() noexcept;
  */
 int tt_main(int argc, char *argv[]);
 
-#if not defined(TT_CRT_NO_MAIN)
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#include <Windows.h>
 
 /** Windows entry-point.
  * This function will call `tt_main()`.
@@ -70,84 +51,12 @@ int WINAPI WinMain(
     [[maybe_unused]] _In_ LPSTR lpCmdLine,
     _In_ int nShowCmd)
 {
-    tt::crt_configure_process();
-    
-    // lpCmdLine does not handle UTF-8 command line properly.
-    // So use GetCommandLineW() to get wide string arguments.
-    // CommandLineToArgW properly unescapes the command line
-    // and splits in separate arguments.
-    int argc;
-    auto argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-
-    // Convert the wchar arguments to UTF-8 and create nul terminated
-    // c-strings. main() compatibility requires writable strings, so
-    // we need to allocate old-style.
-    auto arguments = std::vector<char *>{};
-    arguments.reserve(argc + 2);
-    for (auto i = 0; i != argc; ++i) {
-        arguments.push_back(tt::make_cstr(tt::to_string(std::wstring(argv[i]))));
-    }
-    LocalFree(argv);
-
-    // Pass nShowCmd as a the second command line argument.
-    if (nShowCmd == 3) {
-        arguments.insert(std::next(std::begin(arguments)), tt::make_cstr("--window-state=maximize"));
-    } else if (nShowCmd == 0 || nShowCmd == 2 || nShowCmd == 6 || nShowCmd == 7 || nShowCmd == 11) {
-        arguments.insert(std::next(std::begin(arguments)), tt::make_cstr("--window-state=minimize"));
-    }
-
-    // Add a nullptr to the end of the argument list.
-    arguments.push_back(nullptr);
-
-    // Initialize tzdata base.
-    try {
-        [[maybe_unused]] ttlet time_zone = std::chrono::current_zone();
-    } catch (std::runtime_error const &e) {
-        tt_log_error("Could not get current time zone: \"{}\"", e.what());
-    }
-
-    // Make sure the console is in a valid state to write text to it.
-    tt::console_start();
-    tt::time_stamp_count::start_subsystem();
-    tt::start_system();
-
-    tt::gui_system::instance = hInstance;
-    ttlet r = tt_main(tt::narrow_cast<int>(arguments.size() - 1), arguments.data());
-
-    tt::shutdown_system();
-
-    for (auto argument: arguments) {
-        delete [] argument;
-    }
-    return r;
+    auto [argc, argv] = tt::crt_start(hInstance, nShowCmd);
+    ttlet r = tt_main(argc, argv);
+    return tt::crt_finish(argc, argv, r);
 }
 
 #else
-
-int main(int argc, char *argv[])
-{
-    crt_configure_process();
-
-    // XXX - The URL system needs to know about the location of the executable.
-#if USE_OS_TZDB == 0
-    ttlet tzdata_location = tt::URL::urlFromResourceDirectory() / "tzdata";
-    std::set_install(tzdata_location.nativePath());
-    try {
-        [[maybe_unused]] ttlet time_zone = std::chrono::current_zone();
-    } catch (std::runtime_error const &e) {
-        tt_log_error("Could not get current time zone: \"{}\"", e.what());
-    }
-#endif
-
-    // Make sure the console is in a valid state to write text to it.
-    tt::console_start();
-    tt::time_stamp_count::start();
-    tt::start_system();
-
-    ttlet r = tt_main(argc, argv);
-    tt::shutdown_system();
-    return r;
-}
-
+#error "Need entry point for this architecture"
 #endif
 #endif
