@@ -46,8 +46,8 @@ void toolbar_tab_button_widget::draw(draw_context context, hires_utc_clock::time
 
     if (overlaps(context, _clipping_rectangle)) {
         draw_toolbar_tab_button(context);
-        draw_toolbar_tab_focus_line(context);
     }
+    draw_toolbar_tab_focus_line(context);
 
     super::draw(std::move(context), display_time_point);
 }
