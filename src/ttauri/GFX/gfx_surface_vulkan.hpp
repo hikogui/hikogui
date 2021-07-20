@@ -47,7 +47,7 @@ public:
 
     static constexpr uint32_t defaultNumberOfSwapchainImages = 2;
 
-    int nrSwapchainImages;
+    uint32_t nrSwapchainImages;
     vk::Extent2D swapchainImageExtent;
     vk::SurfaceFormatKHR swapchainImageFormat;
     std::vector<swapchain_image_info> swapchain_image_infos;
@@ -90,8 +90,9 @@ public:
     void set_device(gfx_device *device) noexcept override;
 
     gfx_device_vulkan &vulkan_device() const noexcept;
+    [[nodiscard]] extent2 size() const noexcept override;
 
-    [[nodiscard]] extent2 update(extent2 minimum_size, extent2 maximum_size) noexcept override;
+    [[nodiscard]] void update(extent2 new_size) noexcept override;
 
     [[nodiscard]] std::optional<draw_context> render_start(aarectangle redraw_rectangle) override;
     void render_finish(draw_context const &context, color background_color) override;
@@ -103,7 +104,7 @@ private:
     gfx_queue_vulkan const *_graphics_queue;
     gfx_queue_vulkan const *_present_queue;
 
-    void build(extent2 minimum_size, extent2 maximum_size);
+    void build(extent2 new_size);
 
     std::optional<uint32_t> acquireNextImageFromSwapchain();
     void presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
@@ -117,7 +118,7 @@ private:
     void buildDevice();
     void buildSemaphores();
     void teardownSemaphores();
-    gfx_surface_state buildSwapchain();
+    gfx_surface_state buildSwapchain(size_t new_count, extent2 new_size);
     void teardownSwapchain();
     void buildCommandBuffers();
     void teardownCommandBuffers();
@@ -132,7 +133,16 @@ private:
     void teardownDevice();
 
     void waitIdle();
-    std::tuple<uint32_t, vk::Extent2D> getImageCountAndExtent();
+
+    /** Get the image size and image count from the Vulkan surface.
+    * 
+    * This function will return an appropriate 
+    * 
+    * @param new_count Request the number of images in the swapchain.
+    * @param new_size Request the image size in the swapchain.
+    * @return A valid swapchain image count, swapchain image size.
+     */
+    std::tuple<size_t, extent2> get_image_count_and_size(size_t new_count, extent2 new_size);
 };
 
 }

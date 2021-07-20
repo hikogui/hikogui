@@ -565,7 +565,7 @@ widget &widget::add_widget(std::unique_ptr<widget> widget) noexcept
     auto widget_ptr = &(*widget);
     _children.push_back(std::move(widget));
     _request_constrain = true;
-    window.requestLayout = true;
+    window.request_layout = true;
     return *widget_ptr;
 }
 
@@ -574,7 +574,7 @@ widget &widget::add_widget(std::unique_ptr<widget> widget) noexcept
     tt_axiom(is_gui_thread());
 
     ttlet requested_window_rectangle = aarectangle{local_to_window() * requested_rectangle};
-    ttlet window_bounds = shrink(aarectangle{window.size}, theme::global().margin);
+    ttlet window_bounds = shrink(aarectangle{window.screen_rectangle.size()}, theme::global().margin);
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return aarectangle{window_to_local() * response_window_rectangle};
 }

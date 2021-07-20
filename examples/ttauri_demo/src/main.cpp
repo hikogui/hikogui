@@ -48,7 +48,8 @@ int tt_main(int argc, char *argv[])
     m.version = metadata::library().version;
 
     // Start the logger system, so logging is done asynchronously.
-    logger_start();
+    //logger_start();
+    log_level_global = make_log_level(log_level::info);
 
     auto preferences = std::make_shared<my_preferences>(tt::URL::urlFromExecutableDirectory() / "preferences.json");
     preferences->load();

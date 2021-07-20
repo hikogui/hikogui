@@ -529,8 +529,7 @@ public:
         return compare_exchange_strong(expected, desired, order, order);
     }
 
-    tt::axis_aligned_rectangle
-    fetch_or(tt::axis_aligned_rectangle arg, std::memory_order = std::memory_order_seq_cst) noexcept
+    tt::axis_aligned_rectangle fetch_or(tt::axis_aligned_rectangle arg, std::memory_order = std::memory_order_seq_cst) noexcept
     {
         ttlet lock = std::scoped_lock(_mutex);
         auto tmp = _value;
@@ -547,6 +546,19 @@ public:
 private:
     tt::axis_aligned_rectangle _value;
     mutable tt::unfair_mutex _mutex;
+};
+
+template<typename CharT>
+struct formatter<tt::axis_aligned_rectangle, CharT> : formatter<float, CharT> {
+    auto parse(auto &pc)
+    {
+        return pc.end();
+    }
+
+    auto format(tt::axis_aligned_rectangle const &t, auto &fc)
+    {
+        return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
+    }
 };
 
 } // namespace std

@@ -28,7 +28,7 @@ public:
 
     ~gui_window_win32();
 
-    void create_window() override;
+    void create_window(extent2 new_size) override;
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     void set_cursor(mouse_cursor cursor) noexcept override;
@@ -58,7 +58,7 @@ private:
     mouse_event mouseButtonEvent;
     hires_utc_clock::time_point doubleClickTimePoint;
     hires_utc_clock::duration doubleClickMaximumDuration;
-
+    UINT_PTR move_and_resize_timer_id;
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;
     [[nodiscard]] keyboard_modifiers getkeyboard_modifiers() noexcept;
 
