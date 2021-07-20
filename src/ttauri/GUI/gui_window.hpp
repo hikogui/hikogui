@@ -39,6 +39,17 @@ public:
 
     std::unique_ptr<gfx_surface> surface;
 
+    /** The current rectangle of the window relative to the screen.
+     * The screen rectangle is set by the operating system event loop.
+     *
+     * This rectangle is used by the operating system event loop hit-testing
+     * to determine the position of screen coordinates to window coordinates.
+     *
+     * The size of this rectangle is used to laying out widgets and setting
+     * the size of the gfx_surface during rendering.
+     */
+    aarectangle screen_rectangle;
+
     /** The current cursor.
      * Used for optimizing when the operating system cursor is updated.
      * Set to mouse_cursor::None at the start (for the wait icon) and when the
@@ -50,11 +61,11 @@ public:
 
     /** When set to true the widgets will be laid out.
      */
-    std::atomic<bool> requestLayout = true;
+    std::atomic<bool> request_layout = true;
 
-    /** When set to true the window will resize to the size of the contained widget.
+    /** When set to true the window will resize to the preferred size of the contained widget.
      */
-    std::atomic<bool> requestResize = true;
+    std::atomic<bool> request_resize = true;
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
@@ -70,10 +81,6 @@ public:
     /*! Current size state of the window.
      */
     gui_window_size size_state = gui_window_size::normal;
-
-    /** The size from the surface, clamped to combined widget's size.
-     */
-    extent2 size;
 
     label title;
 
@@ -124,7 +131,7 @@ public:
     void request_redraw() noexcept
     {
         tt_axiom(is_gui_thread());
-        request_redraw(aarectangle{size});
+        request_redraw(aarectangle{screen_rectangle.size()});
     }
 
     /** By how much the font needs to be scaled compared to current windowScale.
@@ -238,7 +245,7 @@ public:
 
     [[nodiscard]] translate2 window_to_screen() const noexcept
     {
-        return translate2{_screen_rectangle.left(), _screen_rectangle.bottom()};
+        return translate2{screen_rectangle.left(), screen_rectangle.bottom()};
     }
 
     [[nodiscard]] translate2 screen_to_window() const noexcept
@@ -248,19 +255,6 @@ public:
 
 protected:
     std::weak_ptr<delegate_type> _delegate;
-
-    /*! The current rectangle of the window relative to the screen.
-     * The screen rectangle is set by the operating system event loop and
-     * the extent of the rectangle may lag behind the actual window extent as seen
-     * by the GPU library.
-     *
-     * This rectangle is used by the operating system event loop hit-testing
-     * to determine the position of screen coordinates to window coordinates.
-     *
-     * It may also be used for the extent of the window when the GPU
-     * library is unable to determine the extent of the surface.
-     */
-    aarectangle _screen_rectangle;
 
     std::atomic<bool> _request_setting_change = true;
 
@@ -278,7 +272,7 @@ protected:
     /** Let the operating system create the actual window.
      * @pre title and extent must be set.
      */
-    virtual void create_window() = 0;
+    virtual void create_window(extent2 new_size) = 0;
 
     /** By how much graphic elements should be scaled to match a point.
      * The widget should not care much about this value, since the

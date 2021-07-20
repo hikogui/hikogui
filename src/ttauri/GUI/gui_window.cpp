@@ -73,7 +73,7 @@ void gui_window::init()
 
     // Execute a constraint check to determine initial window size.
     static_cast<void>(widget->constrain({}, true));
-    size = widget->preferred_size();
+    ttlet new_size = widget->preferred_size();
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -84,7 +84,7 @@ void gui_window::init()
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
-    create_window();
+    create_window(new_size);
 }
 
 void gui_window::deinit()
@@ -134,28 +134,33 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
     //
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
-    {
-        ttlet new_size = surface->update(widget->minimum_size(), widget->maximum_size());
-        if (new_size != size) {
-            requestLayout = true;
-            size = new_size;
-        }
-    }
 
-    if (requestResize.exchange(false)) {
-        tt_log_info("A new preferred window size {} was requested by one of the widget.", widget->preferred_size());
-        set_window_size(size = widget->preferred_size());
+    if (request_resize.exchange(false)) {
+        // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
+        ttlet current_size = screen_rectangle.size();
+        ttlet new_size = widget->preferred_size();
+        if (new_size != current_size) {
+            tt_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
+            set_window_size(new_size);
+        }
+
     } else {
-        ttlet new_size = clamp(size, widget->minimum_size(), widget->maximum_size());
-        if (new_size != size) {
-            tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", size, new_size);
-            set_window_size(size = new_size);
+        // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize. 
+        ttlet current_size = screen_rectangle.size();
+        ttlet new_size = clamp(current_size, widget->minimum_size(), widget->maximum_size());
+        if (new_size != current_size) {
+            tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
+            set_window_size(new_size);
         }
     }
-    widget->set_layout_parameters_from_parent(aarectangle{size});
 
-    // When a window message was received, such as a resize, redraw, language-change; the requestLayout is set to true.
-    ttlet need_layout = requestLayout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
+    // Update the graphics' surface to the current size of the window.
+    surface->update(screen_rectangle.size());
+
+    widget->set_layout_parameters_from_parent(aarectangle{screen_rectangle.size()});
+
+    // When a window message was received, such as a resize, redraw, language-change; the request_layout is set to true.
+    ttlet need_layout = request_layout.exchange(false, std::memory_order::relaxed) || constraints_have_changed;
 
     // Make sure the widget's layout is updated before draw, but after window resize.
     widget->layout(displayTimePoint, need_layout);

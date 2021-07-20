@@ -19,9 +19,6 @@ public:
 
     gfx_surface_state state = gfx_surface_state::no_device;
 
-    //! The current size of the surface.
-    extent2 size;
-
     /*! Orientation of the RGB subpixels.
      */
     subpixel_orientation subpixel_orientation = subpixel_orientation::BlueRight;
@@ -51,6 +48,10 @@ public:
         return _device;
     }
 
+    /** Get the size of the surface.
+     */
+    [[nodiscard]] virtual extent2 size() const noexcept = 0;
+
     void set_closed() noexcept
     {
         ttlet lock = std::scoped_lock(gfx_system_mutex);
@@ -67,10 +68,9 @@ public:
      * This function will check if the graphic pipeline and swapchain
      * needs to be build, rebuild, or torn down.
      * 
-     * @param minimum_size The minimum size that the surface is allowed to be.
-     * @param maximum_size The maximum size that the surface is allowed to be.
+     * @param new_size The size of the window.
      */
-    [[nodiscard]] virtual extent2 update(extent2 minimum_size, extent2 maximum_size) noexcept = 0;
+    virtual void update(extent2 new_size) noexcept = 0;
 
     [[nodiscard]] virtual std::optional<draw_context> render_start(aarectangle redraw_rectangle) = 0;
     virtual void render_finish(draw_context const &context, color background_color) = 0;

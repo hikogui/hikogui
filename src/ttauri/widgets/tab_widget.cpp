@@ -74,7 +74,7 @@ void tab_widget::deinit() noexcept
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 
         if (size_changed) {
-            window.requestResize = true;
+            window.request_resize = true;
         }
     }
 

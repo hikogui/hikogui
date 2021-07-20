@@ -90,7 +90,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void gui_window_win32::create_window()
+void gui_window_win32::create_window(extent2 new_size)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
     tt_assert(is_gui_thread());
@@ -99,7 +99,7 @@ void gui_window_win32::create_window()
 
     auto u16title = to_wstring(title.text());
 
-    tt_log_info("Create window of size {} with title '{}'", size, title);
+    tt_log_info("Create window of size {} with title '{}'", new_size, title);
 
     // Recommended to set the dpi-awareness before opening any window.
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -114,8 +114,8 @@ void gui_window_win32::create_window()
         // Size and position
         500,
         500,
-        narrow_cast<int>(size.width()),
-        narrow_cast<int>(size.height()),
+        narrow_cast<int>(new_size.width()),
+        narrow_cast<int>(new_size.height()),
 
         NULL, // Parent window
         NULL, // Menu
@@ -221,16 +221,14 @@ void gui_window_win32::set_window_size(extent2 new_extent)
     tt_axiom(is_gui_thread());
     ttlet handle = reinterpret_cast<HWND>(win32Window);
 
-    gui_system::global().run_from_event_queue([=]() {
-        SetWindowPos(
-            reinterpret_cast<HWND>(handle),
-            HWND_NOTOPMOST,
-            0,
-            0,
-            narrow_cast<int>(std::ceil(new_extent.width())),
-            narrow_cast<int>(std::ceil(new_extent.height())),
-            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
-    });
+    SetWindowPos(
+        reinterpret_cast<HWND>(handle),
+        HWND_NOTOPMOST,
+        0,
+        0,
+        narrow_cast<int>(std::ceil(new_extent.width())),
+        narrow_cast<int>(std::ceil(new_extent.height())),
+        SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
 }
 
 [[nodiscard]] extent2 gui_window_win32::virtual_screen_size() const noexcept
@@ -354,15 +352,15 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
 
     auto screen_extent = virtual_screen_size();
 
-    _screen_rectangle = aarectangle{
+    screen_rectangle = aarectangle{
         narrow_cast<float>(rectangle.left),
         narrow_cast<float>(screen_extent.height() - rectangle.bottom),
         narrow_cast<float>(rectangle.right - rectangle.left),
         narrow_cast<float>(rectangle.bottom - rectangle.top)};
 
-    // Force a redraw, so that the swapchain is used and causes out-of-date results on window resize,
-    // which in turn will cause a forceLayout.
-    request_redraw();
+    tt_log_info("win32 changed window size and position to {}", screen_rectangle);
+
+    request_layout = true;
 }
 
 void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
@@ -463,7 +461,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_PAINT: {
         ttlet height = [this]() {
             tt_axiom(is_gui_thread());
-            return size.height();
+            return screen_rectangle.height();
         }();
 
         PAINTSTRUCT ps;
@@ -498,9 +496,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     } break;
 
-    case WM_SIZING: {
-        ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-        setOSWindowRectangleFromRECT(*rect_ptr);
+    case WM_TIMER: {
         if (last_forced_redraw + 16.7ms < current_time) {
             // During sizing the event loop is blocked.
             // Render at about 60fps.
@@ -509,15 +505,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     } break;
 
+    case WM_SIZING: {
+        ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
+        setOSWindowRectangleFromRECT(*rect_ptr);
+    } break;
+
     case WM_MOVING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         setOSWindowRectangleFromRECT(*rect_ptr);
-        if (last_forced_redraw + 16.7ms < current_time) {
-            // During moving the event loop is blocked.
-            // Render at about 60fps.
-            gui_system::global().render(current_time);
-            last_forced_redraw = current_time;
-        }
     } break;
 
     case WM_WINDOWPOSCHANGED: {
@@ -532,11 +527,17 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_ENTERSIZEMOVE: {
         tt_axiom(is_gui_thread());
+        if ((move_and_resize_timer_id = SetTimer(win32Window, 0, 16, NULL)) == 0) {
+            tt_log_error("Could not set timer before move/resize. {}", get_last_error_message());
+        }
         resizing = true;
     } break;
 
     case WM_EXITSIZEMOVE: {
         tt_axiom(is_gui_thread());
+        if (not KillTimer(win32Window, move_and_resize_timer_id)) {
+            tt_log_error("Could not kill timer after move/resize. {}", get_last_error_message());
+        }
         resizing = false;
     } break;
 
@@ -552,7 +553,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             break;
         default: tt_log_error("Unknown WM_ACTIVE value.");
         }
-        requestLayout = true;
+        request_layout = true;
     } break;
 
     case WM_GETMINMAXINFO: {
@@ -689,7 +690,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
         tt_log_info("DPI has changed to {}", dpi);
-        requestLayout = true;
+        request_layout = true;
     } break;
 
     default: break;
@@ -724,7 +725,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
     mouseEvent.position =
-        point2(narrow_cast<float>(GET_X_LPARAM(lParam)), narrow_cast<float>(size.height() - GET_Y_LPARAM(lParam)));
+        point2(narrow_cast<float>(GET_X_LPARAM(lParam)), screen_rectangle.height() - narrow_cast<float>(GET_Y_LPARAM(lParam)));
 
     mouseEvent.wheelDelta = {};
     if (uMsg == WM_MOUSEWHEEL) {

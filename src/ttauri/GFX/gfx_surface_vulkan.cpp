@@ -31,7 +31,7 @@ gfx_surface_vulkan::~gfx_surface_vulkan()
 
 void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
 {
-    tt_axiom(device);    
+    tt_axiom(device);
 
     ttlet lock = std::scoped_lock(gfx_system_mutex);
     super::set_device(device);
@@ -58,6 +58,11 @@ void gfx_surface_vulkan::init()
     imagePipeline = std::make_unique<pipeline_image::pipeline_image>(*this);
     SDFPipeline = std::make_unique<pipeline_SDF::pipeline_SDF>(*this);
     toneMapperPipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(*this);
+}
+
+[[nodiscard]] extent2 gfx_surface_vulkan::size() const noexcept
+{
+    return extent2{narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)};
 }
 
 void gfx_surface_vulkan::waitIdle()
@@ -153,7 +158,7 @@ void gfx_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Sema
     }
 }
 
-void gfx_surface_vulkan::build(extent2 minimum_size, extent2 maximum_size)
+void gfx_surface_vulkan::build(extent2 new_size)
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -182,41 +187,52 @@ void gfx_surface_vulkan::build(extent2 minimum_size, extent2 maximum_size)
     }
 
     if (state == gfx_surface_state::no_swapchain) {
-        if (!readSurfaceExtent(minimum_size, maximum_size)) {
-            // Minimized window, can not build a new swap chain.
-            state = gfx_surface_state::no_swapchain;
+        try {
+            ttlet[clamped_count, clamped_size] = get_image_count_and_size(defaultNumberOfSwapchainImages, new_size);
+            if (not new_size) {
+                // Minimized window, can not build a new swap chain.
+                state = gfx_surface_state::no_swapchain;
+                return;
+            }
+
+            ttlet s = buildSwapchain(clamped_count, clamped_size);
+            if (s != gfx_surface_state::ready_to_render) {
+                state = s;
+                return;
+            }
+
+            ttlet[clamped_count_check, clamped_size_check] = get_image_count_and_size(clamped_count, clamped_size);
+            if (clamped_count_check != clamped_count or clamped_size_check != clamped_size) {
+                // Window has changed during swap chain creation, it is in a inconsistent bad state.
+                // This is a bug in the Vulkan specification.
+                teardownSwapchain();
+                state = gfx_surface_state::no_swapchain;
+                return;
+            }
+
+            buildRenderPasses(); // Render-pass requires the swapchain/color/depth image-format.
+            buildFramebuffers(); // Framebuffer required render passes.
+            buildCommandBuffers();
+            buildSemaphores();
+            tt_axiom(flatPipeline);
+            tt_axiom(boxPipeline);
+            tt_axiom(imagePipeline);
+            tt_axiom(SDFPipeline);
+            tt_axiom(toneMapperPipeline);
+            flatPipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
+            boxPipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
+            imagePipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
+            SDFPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
+            toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
+
+            state = gfx_surface_state::ready_to_render;
+
+        } catch (vk::SurfaceLostKHRError const &) {
+            // During swapchain build we lost the surface.
+            // This state will cause the swapchain to be teardown.
+            state = gfx_surface_state::surface_lost;
             return;
         }
-
-        ttlet s = buildSwapchain();
-        if (s != gfx_surface_state::ready_to_render) {
-            state = s;
-            return;
-        }
-
-        if (!checkSurfaceExtent()) {
-            // Window has changed during swap chain creation, it is in a inconsistent bad state.
-            // This is a bug in the Vulkan specification.
-            teardownSwapchain();
-            return;
-        }
-        buildRenderPasses(); // Render-pass requires the swapchain/color/depth image-format.
-        buildFramebuffers(); // Framebuffer required render passes.
-        buildCommandBuffers();
-        buildSemaphores();
-        tt_axiom(flatPipeline);
-        tt_axiom(boxPipeline);
-        tt_axiom(imagePipeline);
-        tt_axiom(SDFPipeline);
-        tt_axiom(toneMapperPipeline);
-        flatPipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
-        boxPipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
-        imagePipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
-        SDFPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
-        toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
-
-        size = {narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)};
-        state = gfx_surface_state::ready_to_render;
     }
 }
 
@@ -278,14 +294,18 @@ void gfx_surface_vulkan::teardown()
     state = nextState;
 }
 
-[[nodiscard]] extent2 gfx_surface_vulkan::update(extent2 minimum_size, extent2 maximum_size) noexcept
+[[nodiscard]] void gfx_surface_vulkan::update(extent2 new_size) noexcept
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
+    if (size() != new_size and state == gfx_surface_state::ready_to_render) {
+        // On resize lose the swapchain, which will be cleaned up at teardown().
+        state = gfx_surface_state::swapchain_lost;
+    }
+
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
-    build(minimum_size, maximum_size);
-    return size;
+    build(new_size);
 }
 
 std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
@@ -328,7 +348,7 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
     return draw_context{
         *narrow_cast<gfx_device_vulkan *>(_device),
         narrow_cast<size_t>(frame_buffer_index),
-        size,
+        size(),
         scissor_rectangle,
         flatPipeline->vertexBufferData,
         boxPipeline->vertexBufferData,
@@ -457,91 +477,29 @@ void gfx_surface_vulkan::submitCommandBuffer()
     _graphics_queue->queue.submit(submitInfo, vk::Fence());
 }
 
-std::tuple<uint32_t, vk::Extent2D> gfx_surface_vulkan::getImageCountAndExtent()
+std::tuple<size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(size_t new_count, extent2 new_size)
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
-    vk::SurfaceCapabilitiesKHR surfaceCapabilities;
-    surfaceCapabilities = vulkan_device().getSurfaceCapabilitiesKHR(intrinsic);
+    ttlet surfaceCapabilities = vulkan_device().getSurfaceCapabilitiesKHR(intrinsic);
 
+    ttlet min_count = narrow_cast<size_t>(surfaceCapabilities.minImageCount);
+    ttlet max_count = narrow_cast<size_t>(surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 3);
+    ttlet clamped_count = std::clamp(new_count, min_count, max_count);
     tt_log_info(
-        "minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {})",
-        surfaceCapabilities.minImageExtent.width,
-        surfaceCapabilities.minImageExtent.height,
-        surfaceCapabilities.maxImageExtent.width,
-        surfaceCapabilities.maxImageExtent.height,
-        surfaceCapabilities.currentExtent.width,
-        surfaceCapabilities.currentExtent.height);
+        "gfx_surface min_count={}, max_count={}, requested_count={}, count={}", min_count, max_count, new_count, clamped_count);
 
-    ttlet currentExtentSet = (surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) &&
-        (surfaceCapabilities.currentExtent.height != std::numeric_limits<uint32_t>::max());
+    // minImageExtent and maxImageExtent are always valid. currentImageExtent may be 0xffffffff.
+    ttlet min_size = extent2{
+        narrow_cast<float>(surfaceCapabilities.minImageExtent.width),
+        narrow_cast<float>(surfaceCapabilities.minImageExtent.height)};
+    ttlet max_size = extent2{
+        narrow_cast<float>(surfaceCapabilities.maxImageExtent.width),
+        narrow_cast<float>(surfaceCapabilities.maxImageExtent.height)};
+    ttlet clamped_size = clamp(new_size, min_size, max_size);
 
-    if (!currentExtentSet) {
-        // XXX On wayland, the window size is based on the size of the swapchain, so I need
-        // to build a way of manual resizing the window outside of the operating system.
-        tt_log_fatal("getSurfaceCapabilitiesKHR() does not supply currentExtent");
-    }
-
-    ttlet minImageCount = surfaceCapabilities.minImageCount;
-    ttlet maxImageCount = surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 10;
-    ttlet imageCount = std::clamp(defaultNumberOfSwapchainImages, minImageCount, maxImageCount);
-    tt_log_info("minImageCount={}, maxImageCount={}, currentImageCount={}", minImageCount, maxImageCount, imageCount);
-    return {imageCount, surfaceCapabilities.currentExtent};
-}
-
-bool gfx_surface_vulkan::readSurfaceExtent(extent2 minimum_size, extent2 maximum_size)
-{
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
-
-    try {
-        std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
-
-    } catch (vk::SurfaceLostKHRError const &) {
-        state = gfx_surface_state::surface_lost;
-        return false;
-    }
-
-    if (narrow_cast<float>(swapchainImageExtent.width) < minimum_size.width() ||
-        narrow_cast<float>(swapchainImageExtent.height) < minimum_size.height()) {
-        // Due to vulkan surface being extended across the window decoration;
-        // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
-        // it is 160x28 pixels.
-
-        tt_log_info(
-            "Window too small ({}, {}) to draw widgets requiring a window size between {} and {}.",
-            swapchainImageExtent.width,
-            swapchainImageExtent.height,
-            minimum_size,
-            maximum_size);
-        return false;
-    }
-
-    if (narrow_cast<int>(swapchainImageExtent.width) > maximum_size.width() ||
-        narrow_cast<int>(swapchainImageExtent.height) > maximum_size.height()) {
-        tt_log_error(
-            "Window too large ({}, {}) to draw widgets requiring a window size between {} and {}",
-            swapchainImageExtent.width,
-            swapchainImageExtent.height,
-            minimum_size,
-            maximum_size);
-        return false;
-    }
-
-    return true;
-}
-
-bool gfx_surface_vulkan::checkSurfaceExtent()
-{
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
-
-    try {
-        ttlet[nrImages, extent_] = getImageCountAndExtent();
-        return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent_ == swapchainImageExtent);
-
-    } catch (vk::SurfaceLostKHRError const &) {
-        state = gfx_surface_state::surface_lost;
-        return false;
-    }
+    tt_log_info("gfx_surface min_size={}, max_size={}, requested_size={}, size={}", min_size, max_size, new_size, clamped_size);
+    return {clamped_count, clamped_size};
 }
 
 void gfx_surface_vulkan::buildDevice()
@@ -556,7 +514,7 @@ bool gfx_surface_vulkan::buildSurface()
     return vulkan_device().score(*this) > 0;
 }
 
-gfx_surface_state gfx_surface_vulkan::buildSwapchain()
+gfx_surface_state gfx_surface_vulkan::buildSwapchain(size_t new_count, extent2 new_size)
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -568,10 +526,12 @@ gfx_surface_state gfx_surface_vulkan::buildSwapchain()
         _graphics_queue->family_queue_index, _present_queue->family_queue_index};
 
     swapchainImageFormat = vulkan_device().get_surface_format(*this);
+    nrSwapchainImages = narrow_cast<uint32_t>(new_count);
+    swapchainImageExtent = VkExtent2D{narrow_cast<uint32_t>(new_size.width()), narrow_cast<uint32_t>(new_size.height())};
     vk::SwapchainCreateInfoKHR swapchainCreateInfo{
         vk::SwapchainCreateFlagsKHR(),
         intrinsic,
-        static_cast<uint32_t>(nrSwapchainImages),
+        nrSwapchainImages,
         swapchainImageFormat.format,
         swapchainImageFormat.colorSpace,
         swapchainImageExtent,
