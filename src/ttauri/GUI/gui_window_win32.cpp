@@ -358,8 +358,6 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
         narrow_cast<float>(rectangle.right - rectangle.left),
         narrow_cast<float>(rectangle.bottom - rectangle.top)};
 
-    tt_log_info("win32 changed window size and position to {}", screen_rectangle);
-
     request_layout = true;
 }
 

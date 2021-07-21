@@ -11,6 +11,11 @@ It is specifically designed to display information with low-latency,
 and at the screen's refresh rate. Special care is taken for making
 it easy for GUI element to observe and modify data external to the GUI.
 
+You can find a lot more information,
+[documentation](https://www.ttauri-project.org/docs/ttauri/main/index.html),
+[example code](https://github.com/ttauri-project/ttauri_hello_world/blob/main/src/main.cpp),
+news and blog posts on the main web site: <https://www.ttauri-project.org/>
+
 Features
 --------
 
@@ -18,14 +23,8 @@ Features
  - Modern C++20 library.
  - Retained-mode GUI.
  - GUI will dynamically track the state of the application.
- - Animation at the screen's refresh rate.
-
-![Audio Selection tracking devices in real time](docs/media/screenshots/audio_device_change.gif)
-
  - Localization and translation.
-
-![Multiple language support](docs/media/screenshots/language_change.gif)
-
+ - Animation at the screen's refresh rate.
  - Themes; including light/dark support.
  - Editable key-bindings.
 
@@ -45,6 +44,26 @@ Features
    + text template language,
    + expression language,
    + dynamic type system.
+
+Example
+-------
+Here is some example code for an application with three radio buttons,
+who form a set by sharing a single `value` observable.
+
+```
+int tt_main(int argc, char *argv[])
+{
+    observable<int> value = 0;
+
+    auto &window = gui_system::global().make_window(l10n("Radio button example"));
+    window.content().make_widget<label_widget>("A1", l10n("radio buttons:"));
+    window.content().make_widget<radio_button_widget>("B1", l10n("one"), value, 1);
+    window.content().make_widget<radio_button_widget>("B2", l10n("two"), value, 2);
+    window.content().make_widget<radio_button_widget>("B3", l10n("three"), value, 3);
+
+    return gui_system::global().loop();
+}
+```
 
 Platform support
 ----------------
