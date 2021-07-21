@@ -10,8 +10,6 @@ namespace tt {
 
 class RenderDoc {
 public:
-    static inline std::unique_ptr<RenderDoc> global;
-
     RenderDoc() noexcept;
 
     void set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept;

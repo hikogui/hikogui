@@ -5,6 +5,7 @@
 #include "ttauri/crt.hpp"
 #include "ttauri/hires_utc_clock.hpp"
 #include "ttauri/metadata.hpp"
+#include "ttauri/GFX/RenderDoc.hpp"
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include "ttauri/widgets/toolbar_button_widget.hpp"
@@ -48,8 +49,12 @@ int tt_main(int argc, char *argv[])
     m.version = metadata::library().version;
 
     // Start the logger system, so logging is done asynchronously.
-    //logger_start();
+    logger_start();
     log_level_global = make_log_level(log_level::info);
+
+    // Startup renderdoc for debugging
+    auto render_doc = RenderDoc();
+
 
     auto preferences = std::make_shared<my_preferences>(tt::URL::urlFromExecutableDirectory() / "preferences.json");
     preferences->load();
