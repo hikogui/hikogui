@@ -17,7 +17,7 @@ namespace tt {
 static void store_sample(
     int32_t int_sample,
     std::byte *&dst,
-    int stride,
+    size_t stride,
     int num_bytes,
     int direction,
     int start_byte,
@@ -35,7 +35,7 @@ static void store_sample(
     dst += stride;
 }
 
-[[nodiscard]] static void store_samples(i8x16 int_samples, std::byte *&dst, i8x16 store_shuffle_indices, int stride) noexcept
+[[nodiscard]] static void store_samples(i8x16 int_samples, std::byte *&dst, i8x16 store_shuffle_indices, size_t stride) noexcept
 {
     tt_axiom(dst != nullptr);
     tt_axiom(stride > 0);
@@ -59,8 +59,8 @@ static void store_sample(
     std::byte *&dst,
     i8x16 store_shuffle_indices,
     i8x16 concat_shuffle_indices,
-    int num_chunks,
-    int stride) noexcept
+    size_t num_chunks,
+    size_t stride) noexcept
 {
     tt_axiom(dst != nullptr);
     tt_axiom(num_chunks > 0 and num_chunks <= 4);
@@ -85,15 +85,15 @@ static void store_sample(
     return r;
 }
 
-audio_sample_packer::audio_sample_packer(audio_sample_format format) noexcept : _dither(format.num_bits), _format(format)
+audio_sample_packer::audio_sample_packer(audio_sample_format format, size_t stride) noexcept : _dither(format.num_bits), _format(format), _stride(stride)
 {
-    _store_shuffle_indices = format.store_shuffle_indices();
-    _concat_shuffle_indices = format.concat_shuffle_indices();
+    _store_shuffle_indices = format.store_shuffle_indices(stride);
+    _concat_shuffle_indices = format.concat_shuffle_indices(stride);
 
     _multiplier = f32x4::broadcast(format.pack_multiplier());
 
-    _num_chunks_per_quad = format.num_chunks_per_quad();
-    _chunk_stride = format.chunk_stride();
+    _num_chunks_per_quad = format.num_chunks_per_quad(stride);
+    _chunk_stride = format.chunk_stride(stride);
 
     _direction = format.endian == std::endian::little ? 1 : -1;
     _start_byte = format.endian == std::endian::little ? 0 : format.num_bytes - 1;
@@ -104,12 +104,11 @@ void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt
 {
     tt_axiom(src != nullptr);
     tt_axiom(dst != nullptr);
-    tt_axiom(_format.is_valid());
 
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the dst buffer.
     ttlet src_end = src + num_samples;
-    ttlet src_fast_end = src + _format.num_fast_quads(num_samples) * 4;
+    ttlet src_fast_end = src + _format.num_fast_quads(_stride, num_samples) * 4;
 
     ttlet store_shuffle_indices = _store_shuffle_indices;
     ttlet concat_shuffle_indices = _concat_shuffle_indices;
@@ -125,7 +124,7 @@ void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt
         while (src != src_end) {
             ttlet float_sample = load_sample(src);
             ttlet int_sample = std::bit_cast<int32_t>(float_sample);
-            store_sample(int_sample, dst, _format.stride, _format.num_bytes, _direction, _start_byte, _align_shift);
+            store_sample(int_sample, dst, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
         }
 
     } else {
@@ -155,7 +154,7 @@ void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt
             float_sample = max(float_sample, min_one);
             float_sample *= multiplier;
             ttlet int_sample = get<0>(static_cast<i32x4>(float_sample));
-            store_sample(int_sample, dst, _format.stride, _format.num_bytes, _direction, _start_byte, _align_shift);
+            store_sample(int_sample, dst, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
         }
 
         _dither = dither;

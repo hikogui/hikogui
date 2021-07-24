@@ -22,8 +22,9 @@ public:
      * interleaved channels.
      *
      * @param format The sample format.
+     * @param stride Number of bytes to step for the next sample of the same channel.
      */
-    audio_sample_packer(audio_sample_format format) noexcept;
+    audio_sample_packer(audio_sample_format format, size_t stride) noexcept;
 
     /** Unpack samples.
      *
@@ -39,8 +40,9 @@ private:
     f32x4 _multiplier;
     mutable dither _dither;
     audio_sample_format _format;
-    int _num_chunks_per_quad;
-    int _chunk_stride;
+    size_t _num_chunks_per_quad;
+    size_t _stride;
+    size_t _chunk_stride;
     int _direction;
     int _start_byte;
     int _align_shift;

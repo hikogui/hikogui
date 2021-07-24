@@ -11,6 +11,7 @@ struct IPropertyStore;
 struct IMMEndpoint;
 struct IAudioEndpointVolume;
 struct IAudioMeterInformation;
+struct IAudioClient;
 
 namespace tt {
 
@@ -31,12 +32,15 @@ public:
 
     static std::string get_id_from_device(IMMDevice *device) noexcept;
 
+    [[nodiscard]] bool supports_format(audio_stream_format const &format) const noexcept;
+
 private:
     IMMDevice *_device;
     IMMEndpoint *_end_point;
     IPropertyStore *_property_store;
     IAudioEndpointVolume *_end_point_volume;
     IAudioMeterInformation *_audio_meter_information;
+    IAudioClient *_audio_client;
 
     /** Get a user friendly name of the audio device.
      * This is the name of the audio device itself, such as

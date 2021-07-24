@@ -2,13 +2,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "audio_x_win32.hpp"
+#include "audio_stream_format_win32.hpp"
+#include "../required.hpp"
+#include <mmeapi.h>
+#include <bit>
 
 namespace tt {
 
-[[nodiscard]] WAVEFORMATEXTENSIBLE audio_x_to_win32(audio_x x) noexcept
+[[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format stream_format x) noexcept
 {
-    tt_axiom(std::pop_count<x.speaker_mapping> <= x.num_channels);
+    tt_axiom(std::popcount<x.speaker_mapping> <= x.num_channels);
+
+    ttlet sample_rate = narrow_cast<DWORD>(std::round(sample_rate));
 
     bool extended = false;
 
@@ -32,8 +37,8 @@ namespace tt {
     WAVEFORMATEXTENSIBLE r;
     r.Format.wFormatTag = extended ? WAVE_FORMAT_EXTENSIBLE : x.sample_format.is_float ? WAVE_FORMAT_IEEE_FLOAT : WAVE_FORMAT_PCM;
     r.Format.nChannels = x.num_channels;
-    r.Format.nSamplesPerSec = x.sample_rate;
-    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(x.sample_rate * x.num_channels * x.sample_format.num_bytes);
+    r.Format.nSamplesPerSec = sample_rate;
+    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(sample_rate * x.num_channels * x.sample_format.num_bytes);
     r.Format.nBlockAlign = narrow_cast<WORD>(x.num_channels * x.sample_format.num_bytes);
     r.Format.wBitsPerSample = narrow_cast<WORD>(x.sample_format.num_bytes * 8);
     r.Format.cbSize = extended ? (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)) : 0;

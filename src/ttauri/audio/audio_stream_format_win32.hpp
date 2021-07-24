@@ -8,6 +8,6 @@
 
 namespace tt {
 
-[[nodiscard]] WAVEFORMATEXTENSIBLE speaker_mapping_to_win32(audio_stream_format stream_format) noexcept;
+[[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format stream_format) noexcept;
 
 }

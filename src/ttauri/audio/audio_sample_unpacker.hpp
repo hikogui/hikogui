@@ -22,7 +22,7 @@ public:
      *
      * @param format The sample format.
      */
-    audio_sample_unpacker(audio_sample_format format) noexcept;
+    audio_sample_unpacker(audio_sample_format format, size_t stride) noexcept;
 
     /** Unpack samples.
      *
@@ -36,8 +36,9 @@ private:
     f32x4 _multiplier;
     i8x16 _load_shuffle_indices;
     i8x16 _concat_shuffle_indices;
-    int _num_chunks_per_quad;
-    int _chunk_stride;
+    size_t _num_chunks_per_quad;
+    size_t _stride;
+    size_t _chunk_stride;
     audio_sample_format _format;
     int _direction;
     int _start_byte;

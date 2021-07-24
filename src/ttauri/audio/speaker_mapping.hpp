@@ -11,8 +11,9 @@
 
 namespace tt {
 
-enum class speaker_mapping : uint32_t {
+enum class speaker_mapping : uint64_t {
     /** Direct. speakers are not assigned, and no matrix-mixing is done.
+    * Upper 32 bits contains the number of channels.
      */
     direct = 0x0'0000,
 
@@ -81,26 +82,29 @@ enum class speaker_mapping : uint32_t {
     surround_atmos_7_1_4 = surround_7_1 | top_front_left | top_front_right | top_back_left | top_back_right,
 };
 
-
-[[nodiscard]] inline bool to_bool(speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(speaker_mapping const &rhs) noexcept
 {
-    return static_cast<bool>(static_cast<uint32_t>(rhs));
+    return static_cast<bool>(static_cast<uint64_t>(rhs));
 }
 
-[[nodiscard]] inline speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr bool holds_invariant(speaker_mapping const &rhs) noexcept
 {
-    return static_cast<speaker_mapping>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+    auto rhs_ = static_cast<uint64_t>(rhs);
+    return static_cast<uint32_t>(rhs_) ? (rhs_ >> 32) == 0 : (rhs_ >> 32) > 0;
 }
 
-[[nodiscard]] inline speaker_mapping operator&(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr bool is_direct(speaker_mapping const &rhs) noexcept
 {
-    return static_cast<speaker_mapping>(static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
+    return static_cast<uint32_t>(static_cast<uint64_t>(rhs)) == 0;
 }
 
-inline speaker_mapping &operator|=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr size_t num_channels(speaker_mapping const &rhs) noexcept
 {
-    lhs = lhs | rhs;
-    return lhs;
+    if (is_direct(rhs)) {
+        return static_cast<uint64_t>(rhs) >> 32;
+    } else {
+        return std::popcount(static_cast<uint64_t>(rhs));
+    }
 }
 
 [[nodiscard]] std::string to_string(speaker_mapping rhs) noexcept;

@@ -4,6 +4,8 @@
 
 #include "audio_device_win32.hpp"
 #include "audio_sample_format.hpp"
+#include "audio_stream_format.hpp"
+#include "audio_stream_format_win32.hpp"
 #include "speaker_mapping.hpp"
 #include "speaker_mapping_win32.hpp"
 #include "../logger.hpp"
@@ -17,11 +19,16 @@
 #include <functiondiscoverykeys_devpkey.h>
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
+#include <audioclient.h>
 #include <bit>
 
 namespace tt {
 
-[[nodiscard]] static WAVEFORMATEXTENSIBLE make_wave_format(audio_sample_format format, uint16_t num_channels, speaker_mapping speaker_mapping, uint32_t sample_rate) noexcept
+[[nodiscard]] static WAVEFORMATEXTENSIBLE make_wave_format(
+    audio_sample_format format,
+    uint16_t num_channels,
+    speaker_mapping speaker_mapping,
+    uint32_t sample_rate) noexcept
 {
     tt_axiom(std::popcount(static_cast<size_t>(speaker_mapping)) <= num_channels);
 
@@ -54,11 +61,12 @@ namespace tt {
     r.Format.cbSize = extended ? (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)) : 0;
     r.Samples.wValidBitsPerSample = narrow_cast<WORD>(format.num_guard_bits + format.num_bits + 1);
     r.dwChannelMask = speaker_mapping_to_win32(speaker_mapping);
-    r.SubFormat = format.is_float ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT :  KSDATAFORMAT_SUBTYPE_PCM;
+    r.SubFormat = format.is_float ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT : KSDATAFORMAT_SUBTYPE_PCM;
     return r;
 }
 
-[[nodiscard]] static WAVEFORMATEXTENSIBLE make_wave_format(audio_sample_format format, uint16_t num_channels, uint32_t sample_rate) noexcept
+[[nodiscard]] static WAVEFORMATEXTENSIBLE
+make_wave_format(audio_sample_format format, uint16_t num_channels, uint32_t sample_rate) noexcept
 {
     return make_wave_format(format, num_channels, speaker_mapping::direct, sample_rate);
 }
@@ -127,6 +135,11 @@ audio_device_win32::audio_device_win32(IMMDevice *device) : audio_device(), _dev
         tt_log_warning("Audio device {} does not have IAudioMeterInformation interface", name());
         _audio_meter_information = nullptr;
     }
+
+    if (FAILED(_device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, reinterpret_cast<void **>(&_audio_client)))) {
+        tt_log_warning("Audio device {} does not have IAudioClient interface", name());
+        _audio_client = nullptr;
+    }
 }
 
 audio_device_win32::~audio_device_win32()
@@ -140,6 +153,87 @@ audio_device_win32::~audio_device_win32()
     if (_audio_meter_information != nullptr) {
         _audio_meter_information->Release();
     }
+    if (_audio_client != nullptr) {
+        _audio_client->Release();
+    }
+}
+
+[[nodiscard]] bool audio_device_win32::supports_format(audio_stream_format const &format) const noexcept
+{
+    auto format_ = audio_stream_format_to_win32(format);
+
+    auto r = _audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_EXCLUSIVE, &format_, NULL);
+    if (r == S_OK) {
+        return true;
+    } else if (r == S_FALSE or r == AUDCLNT_E_UNSUPPORTED_FORMAT) {
+        return false;
+    } else {
+        tt_log_error("Failed to check format. {}", get_last_error_message());
+        return false;
+    }
+}
+
+[[nodiscard]] std::optional<audio_stream_format>
+audio_device_win32::best_format(double sample_rate, tt::speaker_mapping speaker_mapping) const noexcept
+{
+    constexpr auto sample_formats = std::array{
+        audio_sample_format::float32(),
+        audio_sample_format::fix8_23(),
+        audio_sample_format::int24(),
+        audio_sample_format::int20(),
+        audio_sample_format::int16()};
+
+    for (ttlet &sample_format : sample_formats) {
+        ttlet format = audio_stream_format{sample_format, sample_rate, speaker_mapping};
+        if (supports_format(format)) {
+            return format;
+        }
+    }
+    return {};
+}
+
+[[nodiscard]] std::optional<audio_stream_format> audio_device_win32::best_format(double sample_rate, int num_channels) const noexcept
+{
+    constexpr auto sample_formats = std::array{
+        audio_sample_format::float32(),
+        audio_sample_format::fix8_23(),
+        audio_sample_format::int24(),
+        audio_sample_format::int20(),
+        audio_sample_format::int16()};
+
+    for (ttlet &sample_format : sample_formats) {
+        ttlet format = audio_stream_format{sample_format, sample_rate, num_channels};
+        if (supports_format(format)) {
+            return format;
+        }
+    }
+    return {};
+}
+
+[[nodiscard]] std::vector<audio_stream_format> audio_device_win32::enumerate_formats(double sample_rate) const noexcept
+{
+    constexpr max_num_channels = 128;
+
+    auto r = std::vector<audio_stream_format>{};
+    r.reserve(std::size(speaker_mappings) + (max_num_channels / 2) + 2);
+
+    for (ttlet &info: speaker_mappings) {
+        if (auto f = best_format(sample_rate, info.mapping)) {
+            r.push_back(*std::move(f));
+        }
+    }
+    for (auto num_channels = 1; num_channels != 4; ++num_channels) {
+        if (auto f = best_format(sample_rate, num_channels)) {
+            r.push_back(*std::move(f));
+        }
+    }
+    for (auto num_channels = 4; num_channels <= max_num_channels; num_channels += 2) {
+        if (auto f = best_format(sample_rate, num_channels)) {
+            r.push_back(*std::move(f));
+        }
+    }
+
+    return r;
 }
 
 std::string audio_device_win32::get_id_from_device(IMMDevice *device) noexcept
