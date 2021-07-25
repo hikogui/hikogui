@@ -14,104 +14,133 @@
 
 namespace tt {
 
-//template<typename T, int N, bool SIGNED=false>
-//struct bigint;
-
-//template<typename T, int N, int O>
-//bigint<T,N> bigint_reciprocal(bigint<T,O> const &divider);
-
-//template<typename T, int N, typename U>
-//constexpr bigint<T,N> bigint_reciprocal(U const &divider);
-
-/*! High performance big integer implementation.
+/** High performance big integer implementation.
  * The bigint is a fixed width integer which will allow the compiler
  * to make aggressive optimizations, unrolling most loops and easy inlining.
  */
-template<typename T, int N>
+template<std::unsigned_integral DigitType, size_t NrDigits, bool IsSigned>
 struct bigint {
-    static_assert(N >= 0, "bigint must have zero or more digits.");
-    static_assert(std::is_integral_v<T> && std::is_unsigned_v<T>, "bigint's digit must be unsigned integers.");
+    using digit_type = DigitType;
+    using signed_digit_type = std::make_signed_t<DigitType>;
+    static constexpr int nr_digits = NrDigits;
+    static constexpr bool is_signed = IsSigned;
 
-    using digit_type = T;
-    static constexpr int nr_digits = N;
-    static constexpr int bits_per_digit = sizeof(digit_type) * 8;
+    static constexpr int bits_per_digit = sizeof(digit_type) * CHAR_BIT;
     static constexpr int nr_bits = nr_digits * bits_per_digit;
 
-    /*! Digits, in little endian order.
-    */
+    /** Digits, in little endian order.
+     */
     std::array<digit_type,nr_digits> digits;
 
-    bigint() noexcept = default;
-    ~bigint() = default;
-    bigint(bigint const &) noexcept = default;
-    bigint &operator=(bigint const &) noexcept = default;
-    bigint(bigint &&) noexcept = default;
-    bigint &operator=(bigint &&) noexcept = default;
-
-    template<int R, std::enable_if_t<R < N, int> = 0>
-    bigint(bigint<T,R> const &rhs) noexcept {
-        int i = 0;
-        for (; i != R; ++i) {
-            digits[i] = rhs.digits[i];
-        }
-        for (; i != N; ++i) {
-            digits[i] = 0;
+    /** Construct and clear an bigint.
+     */
+    constexpr bigint() noexcept {
+        for (size_t i = 0; i != nr_digits; ++i) {
+            digits[i] = digit_type{0};
         }
     }
 
-    template<int R, std::enable_if_t<R < N, int> = 0>
-    bigint &operator=(bigint<T,R> const &rhs) noexcept {
-        int i = 0;
-        for (; i != R; ++i) {
+    constexpr bigint(bigint const &) noexcept = default;
+    constexpr bigint &operator=(bigint const &) noexcept = default;
+    constexpr bigint(bigint &&) noexcept = default;
+    constexpr bigint &operator=(bigint &&) noexcept = default;
+
+    /** Construct from a small bigint.
+     */
+    template<size_t N, bool S>
+    constexpr bigint(bigint<digit_type,N,S> const &rhs) noexcept requires(N < nr_digits) {
+        size_t i = 0;
+
+        // Copy the data from a smaller bigint.
+        for (; i != N; ++i) {
             digits[i] = rhs.digits[i];
         }
-        for (; i != N; ++i) {
-            digits[i] = 0;
+
+        // Sign extent the most-siginificant-digit.
+        ttlet sign = rhs.get_sign();
+        for (; i != nr_digits; ++i) {
+            digits[i] = sign;
+        }
+    }
+
+    /** Assign from a small bigint.
+     */
+    template<size_t N, bool S>
+    constexpr bigint &operator=(bigint<digit_type,N,S> const &rhs) noexcept requires(N < nr_digits) {
+        size_t i = 0;
+
+        // Copy the data from a smaller bigint.
+        for (; i != O; ++i) {
+            digits[i] = rhs.digits[i];
+        }
+
+        // Sign extent the most-siginificant-digit.
+        ttlet sign = rhs.get_sign();
+        for (; i != nr_digits; ++i) {
+            digits[i] = sign;
         }
         return *this;
     }
 
-    template<typename R, std::enable_if_t<std::is_integral_v<R>, int> = 0>
-    bigint(R value) noexcept {
-        digits[0] = static_cast<digit_type>(value);
-        for (auto i = 1; i < nr_digits; i++) {
-            digits[i] = 0;
+    constexpr bigint(std::integral auto value) noexcept {
+        static_assert(sizeof(value) <= sizeof(digit_type));
+        static_assert(nr_digits > 0);
+
+        if constexpr (std::is_signed_v<decltype(value)>) {
+            // Sign extent the value to the size of the first digit.
+            digits[0] = static_cast<digit_type>(static_cast<signed_digit_type>(value));
+        } else {
+            digits[0] = static_cast<digit_type>(value);
+        }
+
+        // Sign extent to the rest of the digits.
+        ttlet sign = get_sign_of_value(value);
+        for (size_t i = 1; i != nr_digits; ++i) {
+            digits[i] = sign;
         }
     }
 
-    template<typename R, std::enable_if_t<std::is_integral_v<R>, int> = 0>
-    bigint &operator=(R value) noexcept {
-        digits[0] = value;
-        for (auto i = 1; i < nr_digits; i++) {
-            digits[i] = 0;
+    constexpr bigint &operator=(std::unsigned_integral auto value) noexcept {
+        static_assert(sizeof(value) <= sizeof(digit_type));
+        static_assert(nr_digits > 0);
+
+        if constexpr (std::is_signed_v<decltype(value)>) {
+            // Sign extent the value to the size of the first digit.
+            digits[0] = static_cast<digit_type>(static_cast<signed_digit_type>(value));
+        } else {
+            digits[0] = static_cast<digit_type>(value);
+        }
+
+        // Sign extent to the rest of the digits.
+        ttlet sign = get_sign_of_value(value);
+        for (size_t i = 1; i != nr_digits; ++i) {
+            digits[i] = sign;
         }
         return *this;
     }
 
-    explicit bigint(std::string_view str, int base=10) noexcept :
-        bigint(0)
+    constexpr explicit bigint(std::string_view str, int base=10) noexcept : bigint()
     {
-        for (auto i = 0; i < str.size(); i++) {
-            auto nibble = base16::int_from_char<int>(str[i]);
+        size_t i = 0;
+        for (; i < str.size(); ++i) {
             (*this) *= base;
-            (*this) += nibble;
+            (*this) += base16::int_from_char<int>(str[i]);
         }
     }
 
-    explicit operator unsigned long long () const noexcept { return static_cast<unsigned long long>(digits[0]); }
-    explicit operator signed long long () const noexcept { return static_cast<signed long long>(digits[0]); }
-    explicit operator unsigned long () const noexcept { return static_cast<unsigned long>(digits[0]); }
-    explicit operator signed long () const noexcept { return static_cast<signed long>(digits[0]); }
-    explicit operator unsigned int () const noexcept { return static_cast<unsigned int>(digits[0]); }
-    explicit operator signed int () const noexcept { return static_cast<signed int>(digits[0]); }
-    explicit operator unsigned short () const noexcept { return static_cast<unsigned short>(digits[0]); }
-    explicit operator signed short () const noexcept { return static_cast<signed short>(digits[0]); }
-    explicit operator unsigned char () const noexcept { return static_cast<unsigned char>(digits[0]); }
-    explicit operator signed char () const noexcept { return static_cast<signed char>(digits[0]); }
-    explicit operator char () const noexcept { return static_cast<char>(digits[0]); }
+    constexpr explicit operator unsigned long long () const noexcept { return static_cast<unsigned long long>(digits[0]); }
+    constexpr explicit operator signed long long () const noexcept { return static_cast<signed long long>(digits[0]); }
+    constexpr explicit operator unsigned long () const noexcept { return static_cast<unsigned long>(digits[0]); }
+    constexpr explicit operator signed long () const noexcept { return static_cast<signed long>(digits[0]); }
+    constexpr explicit operator unsigned int () const noexcept { return static_cast<unsigned int>(digits[0]); }
+    constexpr explicit operator signed int () const noexcept { return static_cast<signed int>(digits[0]); }
+    constexpr explicit operator unsigned short () const noexcept { return static_cast<unsigned short>(digits[0]); }
+    constexpr explicit operator signed short () const noexcept { return static_cast<signed short>(digits[0]); }
+    constexpr explicit operator unsigned char () const noexcept { return static_cast<unsigned char>(digits[0]); }
+    constexpr explicit operator signed char () const noexcept { return static_cast<signed char>(digits[0]); }
 
-    explicit operator bool () const noexcept {
-        for (ssize_t i = 0; i != N; ++i) {
+    constexpr explicit operator bool () const noexcept {
+        for (size_t i = 0; i != nr_digits; ++i) {
             if (digits[i] != 0) {
                 return true;
             }
@@ -119,12 +148,12 @@ struct bigint {
         return false;
     }
 
-    template<int O>
-    explicit operator bigint<T,O> () const noexcept {
+    template<size_t O>
+    constexpr explicit operator bigint<T,O> () const noexcept {
         auto r = bigint<T,O>{};
 
-        for (auto i = 0; i < O; i++) {
-            r.digits[i] = i < N ? digits[i] : 0;
+        for (auto i = 0; i != O; ++i) {
+            r.digits[i] = i < nr_digits ? digits[i] : T{0};
         }
         return r;
     }
@@ -161,60 +190,100 @@ struct bigint {
         );
     }
 
-    digit_type get_bit(unsigned int count) const noexcept {
+    /** Get the sign of the integer argument.
+     * This returns a digit, that can be used for sign extension.
+     * For unsigned values this always returns 0.
+     *
+     * @return 0 if positive, -1 if negative.
+     */
+    [[nodiscard]] constexpr static digit_type get_sign_from_value(std::integral auto value) noexcept
+    {
+        if constexpr (std::is_signed_v<decltype(value)>) {
+            ttlet svalue = static_cast<std::make_signed_t<decltype(value)>>(value);
+            ttlet svalue_ = static_cast<signed_digit_type>(svalue);
+            return static_cast<digit_type>(svalue_ >> (bits_per_digit - 1));
+
+        } else {
+            return 0;
+        }
+    }
+
+    /** Get the sign.
+     * This returns a digit, that can be used for sign extension.
+     * For unsigned numbers this always returns 0.
+     *
+     * @return 0 if positive, -1 if negative.
+     */
+    [[nodiscard]] constexpr digit_type get_sign() const noexcept
+    {
+        if constexpr (is_signed and nr_digits > 0) {
+            ttlet last_digit = static_cast<signed_digit_type>(digits[nr_digits - 1]);
+            // Duplicate the sign bit throughout the whole digit.
+            return static_cast<digit_type>(last_digit >> (bits_per_digit - 1));
+        } else {
+            return 0;
+        }
+    }
+
+    [[nodiscard]] constexpr digit_type get_bit(size_t count) const noexcept {
+        tt_axiom(count < nr_digits * bits_per_digit);
+
         ttlet digit_count = count / bits_per_digit;
         ttlet bit_count = count % bits_per_digit;
 
         return (digits[digit_count] >> bit_count) & 1;
     }
 
-    void set_bit(unsigned int count, digit_type value = 1) noexcept {
+    constexpr void set_bit(size_t count, digit_type value = 1) noexcept {
+        tt_axiom(value == 0 || value == 1);
+        tt_axiom(count < nr_digits * bits_per_digit);
+
         ttlet digit_count = count / bits_per_digit;
         ttlet bit_count = count % bits_per_digit;
 
-        digits[digit_count] |= (value << bit_count);
+        value <<= bit_count;
+        ttlet mask = ~(digit_type{1} << bit_count);
+        digits[digit_count] = (digits[digit_count] & mask) | value;
     }
 
-    template<typename R, std::enable_if_t<std::is_integral_v<R>, int> = 0>
-    bigint &operator<<=(R rhs) noexcept {
-        bigint_shift_left(*this, *this, static_cast<int>(rhs));
+    constexpr bigint &operator<<=(size_t rhs) noexcept {
+        bigint_shift_left(*this, *this, rhs);
         return *this;
     }
 
-    template<typename R, std::enable_if_t<std::is_integral_v<R>, int> = 0>
-    constexpr bigint &operator>>=(R rhs) noexcept {
-        bigint_shift_right(*this, *this, static_cast<int>(rhs));
+    constexpr bigint &operator>>=(size_t rhs) noexcept {
+        bigint_shift_right(*this, *this, rhs);
         return *this;
     }
 
-    bigint &operator*=(bigint const &rhs) noexcept {
-        auto r = bigint<T,N>{0};
+    constexpr bigint &operator*=(bigint const &rhs) noexcept {
+        auto r = bigint{0};
         bigint_multiply(r, *this, rhs);
         *this = r;
         return *this;
     }
 
-    bigint &operator+=(bigint const &rhs) noexcept {
+    constexpr bigint &operator+=(bigint const &rhs) noexcept {
         bigint_add(*this, *this, rhs);
         return *this;
     }
 
-    bigint &operator-=(bigint const &rhs) noexcept {
+    constexpr bigint &operator-=(bigint const &rhs) noexcept {
         bigint_subtract(*this, *this, rhs);
         return *this;
     }
 
-    bigint &operator&=(bigint const &rhs) noexcept {
+    constexpr bigint &operator&=(bigint const &rhs) noexcept {
         bigint_and(*this, *this, rhs);
         return *this;
     }
 
-    bigint &operator|=(bigint const &rhs) noexcept {
+    constexpr bigint &operator|=(bigint const &rhs) noexcept {
         bigint_or(*this, *this, rhs);
         return *this;
     }
 
-    bigint &operator^=(bigint const &rhs) noexcept {
+    constexpr bigint &operator^=(bigint const &rhs) noexcept {
         bigint_xor(*this, *this, rhs);
         return *this;
     }
@@ -227,7 +296,7 @@ struct bigint {
         auto r = bigint{};
         for (int i = N - 1; i >= 0; i--) {
             digit_type d = 0;
-            for (ssize_t j = 0; j < sizeof(digit_type); j++) {
+            for (size_t j = 0; j < sizeof(digit_type); j++) {
                 d <<= 8;
                 d |= *(data++);
             }
@@ -237,9 +306,9 @@ struct bigint {
     }
     static bigint fromLittleEndian(uint8_t const *data) noexcept {
         auto r = bigint{};
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < N; ++i) {
             digit_type d = 0;
-            for (ssize_t j = 0; j < sizeof(digit_type); j++) {
+            for (size_t j = 0; j < sizeof(digit_type); j++) {
                 d |= static_cast<digit_type>(*(data++)) << (j*8);
             }
             r.digits[i] = d;
@@ -255,11 +324,11 @@ struct bigint {
         return fromLittleEndian(static_cast<uint8_t const *>(data));
     }
 
-    [[nodiscard]] friend int bigint_compare(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] constexpr friend int bigint_compare(bigint const &lhs, bigint const &rhs) noexcept
     {
-        for (int i = N - 1; i >= 0; --i) {
-            auto lhs_digit = lhs.digits[i];
-            auto rhs_digit = rhs.digits[i];
+        for (ssize_t i = N - 1; i >= 0; --i) {
+            ttlet lhs_digit = lhs.digits[i];
+            ttlet rhs_digit = rhs.digits[i];
             if (lhs_digit != rhs_digit) {
                 return lhs_digit < rhs_digit ? -1 : 1;
             }
@@ -269,14 +338,14 @@ struct bigint {
 
     friend void bigint_invert(bigint &o, bigint const &rhs) noexcept
     {
-        for (auto i = 0; i < N; i++) {
+        for (size_t i = 0; i != N; ++i) {
             o.digits[i] = ~rhs.digits[i];
         }
     }
 
     friend void bigint_add(bigint &o, bigint const &lhs, bigint const &rhs, T carry=0) noexcept
     {
-        for (auto i = 0; i < N; i++) {
+        for (size_t i = 0; i != N; ++i) {
             std::tie(o.digits[i], carry) = add_carry(lhs.digits[i], rhs.digits[i], carry);
         }
     }

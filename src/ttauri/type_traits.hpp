@@ -2,6 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file
+ */
+
 #pragma once
 
 #include <cstdint>
@@ -13,23 +16,68 @@
 namespace tt {
 
 // clang-format off
-template<typename T> struct is_numeric_integer : std::false_type {}; 
-template<> struct is_numeric_integer<signed char> : std::true_type {};
-template<> struct is_numeric_integer<unsigned char> : std::true_type {};
-template<> struct is_numeric_integer<signed short> : std::true_type {};
-template<> struct is_numeric_integer<unsigned short> : std::true_type {};
-template<> struct is_numeric_integer<signed int> : std::true_type {};
-template<> struct is_numeric_integer<unsigned int> : std::true_type {};
-template<> struct is_numeric_integer<signed long> : std::true_type {};
-template<> struct is_numeric_integer<unsigned long> : std::true_type {};
-template<> struct is_numeric_integer<signed long long> : std::true_type {};
-template<> struct is_numeric_integer<unsigned long long> : std::true_type {};
 
-/*! True is the supplied type is a numeric integer.
- * This distinguishes between integer characters/bytes/boolean and integer numbers.
+/** Is a numeric signed integer.
+ *
+ * The following types are numeric integers: signed char,
+ * signed short, signed int, signed long, signed long long.
+ *
+ * @tparam T type to check for being a numeric integer.
+ */
+template<typename T> struct is_numeric_signed_integral : std::false_type {}; 
+template<> struct is_numeric_signed_integral<signed char> : std::true_type {};
+template<> struct is_numeric_signed_integral<signed short> : std::true_type {};
+template<> struct is_numeric_signed_integral<signed int> : std::true_type {};
+template<> struct is_numeric_signed_integral<signed long> : std::true_type {};
+template<> struct is_numeric_signed_integral<signed long long> : std::true_type {};
+
+/** @sa is_numeric_signed_integral
  */
 template<typename T>
-inline constexpr bool is_numeric_integer_v = is_numeric_integer<T>::value;
+inline constexpr bool is_numeric_signed_integral_v = is_numeric_signed_integral<T>::value;
+
+/** Is a numeric unsigned integer.
+ *
+ * The following types are numeric integers: unsigned char,
+ * unsigned short, unsigned int, unsigned long, unsigned long long
+ *
+ * @tparam T type to check for being a numeric integer.
+ */
+template<typename T> struct is_numeric_unsigned_integral : std::false_type {}; 
+template<> struct is_numeric_unsigned_integral<unsigned int> : std::true_type {};
+template<> struct is_numeric_unsigned_integral<unsigned char> : std::true_type {};
+template<> struct is_numeric_unsigned_integral<unsigned short> : std::true_type {};
+template<> struct is_numeric_unsigned_integral<unsigned long> : std::true_type {};
+template<> struct is_numeric_unsigned_integral<unsigned long long> : std::true_type {};
+
+/** @sa is_numeric_unsigned_integral
+ */
+template<typename T>
+inline constexpr bool is_numeric_unsigned_integral_v = is_numeric_unsigned_integral<T>::value;
+
+/** Is a numeric integer.
+ *
+ * The following types are numeric integers: signed char, unsigned char,
+ * signed short, unsigned short, signed int, unsigned int, signed long,
+ * unsigned long, signed long long, unsigned long long
+ *
+ * @tparam T type to check for being a numeric integer.
+ */
+template<typename T> struct is_numeric_integral : std::false_type {}; 
+template<> struct is_numeric_integral<unsigned int> : std::true_type {};
+template<> struct is_numeric_integral<unsigned char> : std::true_type {};
+template<> struct is_numeric_integral<unsigned short> : std::true_type {};
+template<> struct is_numeric_integral<unsigned long> : std::true_type {};
+template<> struct is_numeric_integral<unsigned long long> : std::true_type {};
+template<> struct is_numeric_integral<signed char> : std::true_type {};
+template<> struct is_numeric_integral<signed short> : std::true_type {};
+template<> struct is_numeric_integral<signed int> : std::true_type {};
+template<> struct is_numeric_integral<signed long> : std::true_type {};
+template<> struct is_numeric_integral<signed long long> : std::true_type {};
+
+/** @sa is_numeric_integral
+ */
+template<typename T> inline constexpr bool is_numeric_integral_v = is_numeric_integral<T>::value;
 
 template<typename T> struct is_character : std::false_type {}; 
 template<> struct is_character<char> : std::true_type {};
@@ -41,8 +89,7 @@ template<> struct is_character<char32_t> : std::true_type {};
 /*! True is the supplied type is a character integer.
 * This distinguishes between integer characters and integer numbers.
 */
-template<typename T>
-inline constexpr bool is_character_v = is_character<T>::value;
+template<typename T> inline constexpr bool is_character_v = is_character<T>::value;
 
 /** type-trait to convert a character to a string type.
  */
@@ -55,8 +102,7 @@ template<> struct make_string<char32_t> { using type = std::u32string; };
 
 /** type-trait to convert a character to a string type.
  */
-template<typename T>
-using make_string_t = typename make_string<T>::type;
+template<typename T> using make_string_t = typename make_string<T>::type;
 
 /** type-trait to convert a character to a string_view type.
  */
@@ -98,24 +144,70 @@ struct make_intmax<T,std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<
 template<typename T>
 using make_intmax_t = typename make_intmax<T>::type;
 
-/** Type-trait to increase the size of an integral type.
+/** Has an signed integer of a specific size.
+ * @tparam N The number of bits of the signed integer.
  */
-template<typename T> struct make_larger { using type = T; };
-template<> struct make_larger<signed long> { using type = signed long long; };
-template<> struct make_larger<signed int> { using type = signed long; };
-template<> struct make_larger<signed short> { using type = signed int; };
-template<> struct make_larger<signed char> { using type = signed short; };
-template<> struct make_larger<unsigned long> { using type = unsigned long long; };
-template<> struct make_larger<unsigned int> { using type = unsigned long; };
-template<> struct make_larger<unsigned short> { using type = unsigned int; };
-template<> struct make_larger<unsigned char> { using type = unsigned short; };
-template<> struct make_larger<double> { using type = long double; };
-template<> struct make_larger<float> { using type = double; };
+template<size_t N> struct has_intxx : public std::false_type {};
 
-/** Type-trait to increase the size of an integral type.
+/** Has an unsigned integer of a specific size.
+ * @tparam N The number of bits of the unsigned integer.
  */
-template<typename T>
-using make_larger_t = typename make_larger<T>::type;
+template<size_t N> struct has_uintxx : public std::false_type {};
+
+/** Has an float of a specific size.
+ * @tparam N The number of bits of the float.
+ */
+template<size_t N> struct has_floatxx : public std::false_type {};
+
+/** Make an signed integer.
+ * @tparam N The number of bits of the signed integer.
+ */
+template<size_t N> struct make_intxx {};
+
+/** Make an unsigned integer.
+ * @tparam N The number of bits of the unsigned integer.
+ */
+template<size_t N> struct make_uintxx {};
+
+/** Make an floating point.
+ * @tparam N The number of bits of the floating point.
+ */
+template<size_t N> struct make_floatxx {};
+
+#if (TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC) && (TT_PROCESSOR == TT_X64)
+template<> struct has_intxx<128> : public std::true_type {}
+template<> struct has_uintxx<128> : public std::true_type {}
+template<> struct make_intxx<128> { using type = __int128; }
+template<> struct make_uintxx<128> { using type = unsigned __int128; }
+#endif
+template<> struct has_intxx<64> : public std::true_type {}
+template<> struct has_uintxx<64> : public std::true_type {}
+template<> struct has_floatxx<64> : public std::true_type {}
+template<> struct make_intxx<64> { using type = int64_t; }
+template<> struct make_uintxx<64> { using type = uint64_t; }
+template<> struct make_floatxx<64> { using type = double; }
+template<> struct has_intxx<32> : public std::true_type {}
+template<> struct has_uintxx<32> : public std::true_type {}
+template<> struct has_floatxx<32> : public std::true_type {}
+template<> struct make_intxx<32> { using type = int32_t; }
+template<> struct make_uintxx<32> { using type = uint32_t; }
+template<> struct make_floatxx<32> { using type = float; }
+template<> struct has_intxx<16> : public std::true_type {}
+template<> struct has_uintxx<16> : public std::true_type {}
+template<> struct make_intxx<16> { using type = int16_t; }
+template<> struct make_uintxx<16> { using type = uint16_t; }
+template<> struct has_intxx<8> : public std::true_type {}
+template<> struct has_uintxx<8> : public std::true_type {}
+template<> struct make_intxx<8> { using type = int8_t; }
+template<> struct make_uintxx<8> { using type = uint8_t; }
+
+template<size_t N> constexpr bool has_intxx_v = has_intxx<T>::value;
+template<size_t N> constexpr bool has_uintxx_v = has_uintxx<T>::value;
+template<size_t N> constexpr bool has_floatxx_v = has_floatxx<T>::value;
+template<size_t N> using make_intxx_t = typename make_intxx<T>::type;
+template<size_t N> using make_uintxx_t = typename make_uintxx<T>::type;
+template<size_t N> using make_floatxx_t = typename make_floatxx<T>::type;
+
 
 /** Type-trait to copy const volitile qualifiers from one type to another.
  */

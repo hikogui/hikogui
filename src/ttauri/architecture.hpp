@@ -196,6 +196,19 @@ constexpr bool x86_64_v4 = false;
 #endif
 
 #if TT_PROCESSOR == TT_CPU_X64
+/** The native scaler register on the CPU.
+ */
+using register_int = long long;
+
+/** The native scaler register on the CPU.
+ */
+using register_uint = unsigned long long;
+
+#else
+#error "Missing implementation for register_int and register_uint"
+#endif
+
+#if TT_PROCESSOR == TT_CPU_X64
 /** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
  * Part of c++17 but never implemented by clang or gcc.
  */

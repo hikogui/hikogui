@@ -12,6 +12,15 @@
 namespace tt {
 
 template<typename T>
+concept numeric_integral = is_numeric_integral_v<T>;
+
+template<typename T>
+concept numeric_signed_integral = is_numeric_signed_integral_v<T>;
+
+template<typename T>
+concept numeric_unsigned_integral = is_numeric_unsigned_integral_v<T>;
+
+template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
 template<typename T>
