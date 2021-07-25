@@ -5,7 +5,11 @@
 #pragma once
 
 #include "required.hpp"
-#include "cast.hpp"
+#include "architecture.hpp"
+tt_warning_push()
+// C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
+tt_msvc_pragma("warning( disable : 4702 )")
+
 #include <complex>
 #include <cmath>
 #include <limits>
@@ -22,6 +26,46 @@
 
 namespace tt {
 
+/** Get a bit from an array of unsigned integers.
+ * The integers are arranged in little-endian order.
+ *
+ * @param lhs The array of integers from which to take the bit.
+ * @param index The index of the bit
+ * @return The value of the bit, either 0 or 1, with the same type as the integers of the array.
+ */
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr T get_bit(T const *lhs, size_t index) noexcept
+{
+    constexpr size_t bits_per_digit = sizeof(T) * CHAR_BIT;
+
+    ttlet digit_count = index / bits_per_digit;
+    ttlet bit_count = index % bits_per_digit;
+
+    return (lhs[digit_count] >> bit_count) & 1;
+}
+
+/** Set a bit from an array of unsigned integers.
+ * The integers are arranged in little-endian order.
+ *
+ * @param r The array of integers on which to set the bit.
+ * @param index The index of the bit
+ * @param value The value of the bit, either 0 or 1.
+ */
+template<std::unsigned_integral T>
+constexpr void set_bit(T *r, size_t index, T value = T{1}) noexcept
+{
+    tt_axiom(value <= 1);
+
+    constexpr size_t bits_per_digit = sizeof(T) * CHAR_BIT;
+
+    ttlet digit_count = index / bits_per_digit;
+    ttlet bit_count = index % bits_per_digit;
+
+    value <<= bit_count;
+    ttlet mask = ~(T{1} << bit_count);
+    r[digit_count] = (r[digit_count] & mask) | value;
+}
+
 /** Shift logical left with carry chain.
  * @param lhs The original value
  * @param rhs The count by how much to shift lhs left.
@@ -29,10 +73,10 @@ namespace tt {
  * @return (result, carry); the carry which can be used to pass into the next iteration.
  */
 template<std::unsigned_integral T>
-constexpr std::pair<T, T> shift_left_carry(T lhs, unsigned int rhs, T carry = 0) noexcept
+tt_force_inline constexpr std::pair<T, T> sll_carry(T lhs, size_t rhs, T carry = T{0}) noexcept
 {
-    constexpr unsigned int num_bits = sizeof(T) * 8;
-    unsigned int reverse_count = num_bits - rhs;
+    constexpr auto num_bits = sizeof(T) * CHAR_BIT;
+    ttlet reverse_count = num_bits - rhs;
 
     return {(lhs << rhs) | carry, lhs >> reverse_count};
 }
@@ -44,12 +88,28 @@ constexpr std::pair<T, T> shift_left_carry(T lhs, unsigned int rhs, T carry = 0)
  * @return (result, carry); the carry which can be used to pass into the next iteration.
  */
 template<std::unsigned_integral T>
-constexpr std::pair<T, T> shift_right_carry(T lhs, unsigned int rhs, T carry = 0) noexcept
+tt_force_inline constexpr std::pair<T, T> srl_carry(T lhs, size_t rhs, T carry = T{0}) noexcept
 {
-    constexpr unsigned int num_bits = sizeof(T) * 8;
-    unsigned int reverse_count = num_bits - rhs;
+    constexpr auto num_bits = sizeof(T) * CHAR_BIT;
+    ttlet reverse_count = num_bits - rhs;
 
     return {(lhs >> rhs) | carry, lhs << reverse_count};
+}
+
+/** Shift arithmetic right with carry chain.
+ * @param lhs The original value
+ * @param rhs The count by how much to shift lhs right.
+ * @return (result, carry); the carry which can be used to pass into the next iteration.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr std::pair<T, T> sra_carry(T lhs, size_t rhs) noexcept
+{
+    using S = std::make_signed_t<T>;
+
+    constexpr auto num_bits = sizeof(T) * CHAR_BIT;
+    ttlet reverse_count = num_bits - rhs;
+
+    return {(static_cast<S>(lhs) >> rhs), lhs << reverse_count};
 }
 
 /** Add two numbers with carry chain.
@@ -59,7 +119,7 @@ constexpr std::pair<T, T> shift_right_carry(T lhs, unsigned int rhs, T carry = 0
  * @return (result, carry) pair
  */
 template<std::unsigned_integral T>
-constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = 0) noexcept
+tt_force_inline constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = T{0}) noexcept
 {
     tt_axiom(carry <= 1);
 
@@ -73,7 +133,7 @@ constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = 0) noexcept
         return {static_cast<T>(r), static_cast<T>(r >> num_bits)};
 
     } else if (not std::is_constant_evaluated()) {
-#if TT_COMPILER == TT_MSVC
+#if TT_COMPILER == TT_CC_MSVC
         uint64_t r;
         ttlet c = _addcarry_u64(static_cast<unsigned char>(carry), lhs, rhs, &r);
         return {r, static_cast<T>(c)};
@@ -81,8 +141,8 @@ constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = 0) noexcept
     }
 
     // Carry can directly be added the sum without a double overflow.
-    ttlet r = lhs + rhs + carry;
-    ttlet c = static_cast<T>(r1 < lhs);
+    ttlet r = static_cast<T>(lhs + rhs + carry);
+    ttlet c = static_cast<T>(r < lhs);
     return {r, c};
 }
 
@@ -98,7 +158,7 @@ constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = 0) noexcept
  * @return low, high of the result.
  */
 template<std::unsigned_integral T>
-constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = 0, T accumulator = 0) noexcept
+tt_force_inline constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = T{0}, T accumulator = T{0}) noexcept
 {
     constexpr size_t num_bits = sizeof(T) * CHAR_BIT;
 
@@ -111,7 +171,7 @@ constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = 0, T accumulator = 0
 
     } else if (not std::is_constant_evaluated()) {
 #if TT_COMPILER == TT_CC_MSVC
-        if constexpr (sizeof(T) == 8)
+        if constexpr (sizeof(T) == 8) {
             uint64_t hi = 0;
             uint64_t lo = _umul128(lhs, rhs, &hi);
             uint64_t c = 0;
@@ -141,7 +201,7 @@ constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = 0, T accumulator = 0
     auto lo = BD;
     auto c = T{0};
 
-    // AD and BC are shifted half way accross the lo and hi of the result.
+    // AD and BC are shifted half way across the lo and hi of the result.
     ttlet AD_lo = AD << num_half_bits;
     ttlet AD_hi = AD >> num_half_bits;
     ttlet BC_lo = BC << num_half_bits;
@@ -163,14 +223,14 @@ constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = 0, T accumulator = 0
 /** Wide divide.
  * Can be used to divide a wide unsigned integer by a unsigned integer,
  * as long as the result fits in an unsigned integer.
- * 
+ *
  * @param lhs_lo The low side of a wide left-hand-side
  * @param lhs_hi The high side of a wide left-hand-side
  * @param rhs The right hand side
  * @retrun The result.
  */
 template<std::unsigned_integral T>
-constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
+tt_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
 {
     if constexpr (sizeof(T) == 1) {
         ttlet lhs = static_cast<uint16_t>(lhs_hi) << 8 | static_cast<uint16_t>(lhs_lo);
@@ -198,4 +258,367 @@ constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
     }
 }
 
+/** Bit scan reverse.
+ *
+ * @param lhs The array of unsigned integers to find the highest set bit off.
+ * @param n The number of unsigned integers in the array.
+ * @return index of leading one, or -1 when rhs is zero.
+ */
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr ssize_t bsr_carry_chain(T const *lhs, size_t n) noexcept
+{
+    constexpr size_t bits_per_digit = sizeof(T) * CHAR_BIT;
+
+    for (ssize_t i = static_cast<ssize_t>(n) - 1; i >= 0; i--) {
+        auto tmp = std::countl_zero(lhs[i]);
+        if (tmp < bits_per_digit) {
+            return i * bits_per_digit + bits_per_digit - tmp - 1;
+        }
+    }
+    return -1;
+}
+
+/** Invert unsigned integers using a carry-chain
+ * Technically this is not an carry chain.
+ *
+ * @param r The result of the inversion.
+ * @param rhs The right hand side operand.
+ * @param n The number of digits of @a r and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void invert_carry_chain(T *r, T const *rhs, size_t n) noexcept
+{
+    for (size_t i = 0; i != n; ++i) {
+        r[i] = ~rhs[i];
+    }
+}
+
+/** shift logical right using a carry-chain
+ *
+ * @param r The result of the logical-shift-right.
+ * @param lhs The left hand side operand of the lsr.
+ * @param rhs The right hand side operand of the lsr, the number of bits to shift.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void sll_carry_chain(T *r, T const *lhs, size_t rhs, size_t n) noexcept
+{
+    constexpr size_t bits_per_digit = sizeof(T) * CHAR_BIT;
+
+    ttlet digit_count = static_cast<ssize_t>(rhs / bits_per_digit);
+    ttlet bit_count = rhs % bits_per_digit;
+
+    if (r != lhs or digit_count > 0) {
+        ssize_t i;
+        for (i = static_cast<ssize_t>(n) - 1; i >= digit_count; --i) {
+            r[i] = lhs[i - digit_count];
+        }
+        for (; i >= 0; --i) {
+            r[i] = T{0};
+        }
+    }
+
+    if (bit_count > 0) {
+        auto carry = T{0};
+        for (size_t i = 0; i != n; ++i) {
+            std::tie(r[i], carry) = sll_carry(r[i], bit_count, carry);
+        }
+    }
+}
+
+/** shift logical right using a carry-chain
+ *
+ * @param r The result of the logical-shift-right.
+ * @param lhs The left hand side operand of the lsr.
+ * @param rhs The right hand side operand of the lsr, the number of bits to shift.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void srl_carry_chain(T *r, T const *lhs, size_t rhs, size_t n) noexcept
+{
+    constexpr size_t bits_per_digit = sizeof(T) * CHAR_BIT;
+
+    ttlet digit_count = rhs / bits_per_digit;
+    ttlet bit_count = rhs % bits_per_digit;
+
+    if (r != lhs or digit_count > 0) {
+        size_t i = 0;
+        for (; i != (n - digit_count); ++i) {
+            r[i] = lhs[i + digit_count];
+        }
+        for (; i != n; ++i) {
+            r[i] = T{0};
+        }
+    }
+
+    if (bit_count > 0) {
+        auto carry = T{0};
+
+        for (ssize_t i = static_cast<ssize_t>(n) - digit_count - 1; i >= 0; --i) {
+            std::tie(r[i], carry) = srl_carry(r[i], bit_count, carry);
+        }
+    }
+}
+
+/** shift arithmetic right using a carry-chain
+ * This sign-extends the left most bit.
+ *
+ * @param r The result of the logical-shift-right.
+ * @param lhs The left hand side operand of the lsr.
+ * @param rhs The right hand side operand of the lsr, the number of bits to shift.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void sra_carry_chain(T *r, T const *lhs, size_t rhs, size_t n) noexcept
+{
+    using S = std::make_signed_t<T>;
+    constexpr size_t bits_per_digit = sizeof(T) * CHAR_BIT;
+
+    ttlet digit_count = rhs / bits_per_digit;
+    ttlet bit_count = rhs % bits_per_digit;
+
+    if (r != lhs or digit_count > 0) {
+        tt_axiom(digit_count < n);
+
+        size_t i = 0;
+        for (; i != (n - digit_count); ++i) {
+            r[i] = lhs[i + digit_count];
+        }
+
+        // Sign extent the digits that are unused after a large shift.
+        ttlet sign = lhs[n - 1] < 0 ? S{-1} : S{0};
+        for (; i != n; ++i) {
+            r[i] = sign;
+        }
+    }
+
+    if (bit_count > 0) {
+        tt_axiom(n > 0);
+        auto carry = T{};
+
+        // The most significant digit is sign extended.
+        ssize_t i = static_cast<ssize_t>(n) - digit_count - 1;
+        std::tie(r[i], carry) = sra_carry(r[i], bit_count);
+        --i;
+
+        // The rest of the digits pass through the carry.
+        for (; i >= 0; --i) {
+            std::tie(r[i], carry) = srl_carry(r[i], bit_count, carry);
+        }
+    }
+}
+
+/** and-operation unsigned integers using a carry-chain
+ *
+ * @param r The result of the and-operation.
+ * @param lhs The left hand side operand of the and-operation.
+ * @param rhs The right hand side operand of the and-operation.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void and_carry_chain(T *r, T const *lhs, T const *rhs, size_t n) noexcept
+{
+    for (size_t i = 0; i != n; ++i) {
+        r[i] = lhs[i] & rhs[i];
+    }
+}
+
+/** or-operation unsigned integers using a carry-chain
+ *
+ * @param r The result of the and-operation.
+ * @param lhs The left hand side operand of the or-operation.
+ * @param rhs The right hand side operand of the or-operation.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void or_carry_chain(T *r, T const *lhs, T const *rhs, size_t n) noexcept
+{
+    for (size_t i = 0; i != n; ++i) {
+        r[i] = lhs[i] | rhs[i];
+    }
+}
+
+/** xor-operation unsigned integers using a carry-chain
+ *
+ * @param r The result of the and-operation.
+ * @param lhs The left hand side operand of the xor-operation.
+ * @param rhs The right hand side operand of the xor-operation.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void xor_carry_chain(T *r, T const *lhs, T const *rhs, size_t n) noexcept
+{
+    for (size_t i = 0; i != n; ++i) {
+        r[i] = lhs[i] ^ rhs[i];
+    }
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr bool eq_carry_chain(T const *lhs, T const *rhs, size_t n) noexcept
+{
+    for (size_t i = 0; i != n; ++i) {
+        if (lhs[i] != rhs[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr bool ne_carry_chain(T const *lhs, T const *rhs, size_t n) noexcept
+{
+    return not eq_carry_chain(lhs, rhs, n);
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr std::strong_ordering
+cmp_unsigned_carry_chain(T const *lhs, T const *rhs, size_t n) noexcept
+{
+    for (ssize_t i = static_cast<ssize_t>(n) - 1; i >= 0; --i) {
+        ttlet r = lhs[i] <=> rhs[i];
+        if (r != std::strong_ordering::equal) {
+            return r;
+        }
+    }
+    return std::strong_ordering::equal;
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr std::strong_ordering cmp_signed_carry_chain(T const *lhs, T const *rhs, size_t n) noexcept
+{
+    using S = std::make_signed_t<T>;
+
+    // Compare the ms-digit using signed comparison, because it includes the sign-bit
+    if (n > 0) {
+        ttlet r = static_cast<S>(lhs[n - 1]) <=> static_cast<S>(rhs[n - 1]);
+        if (r != std::strong_ordering::equal) {
+            return r;
+        }
+    }
+
+    // At this point both values have the same sign, and since the rest of the digits
+    // do not have a sign bit, use unsigned comparison.
+    for (ssize_t i = static_cast<ssize_t>(n) - 2; i >= 0; --i) {
+        ttlet r = lhs[i] <=> rhs[i];
+        if (r != std::strong_ordering::equal) {
+            return r;
+        }
+    }
+    return std::strong_ordering::equal;
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr bool lt_unsigned_carry_chain(T const *lhs, T const *rhs, size_t n) noexcept
+{
+    return cmp_unsigned_carry_chain(lhs, rhs, n) == std::strong_ordering::less;
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr bool gt_unsigned_carry_chain(T const *lhs, T const *rhs, size_t n) noexcept
+{
+    return cmp_unsigned_carry_chain(lhs, rhs, n) == std::strong_ordering::greater;
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr bool ge_unsigned_carry_chain(T const *lhs, T const *rhs, size_t n) noexcept
+{
+    return lt_unsigned_carry_chain(rhs, lhs, n);
+}
+
+template<std::unsigned_integral T>
+[[nodiscard]] tt_force_inline constexpr bool le_unsigned_carry_chain(T const *lhs, T const *rhs, size_t n) noexcept
+{
+    return gt_unsigned_carry_chain(rhs, lhs, n);
+}
+
+/** Add unsigned integers using a carry-chain
+ *
+ * @param r The result of the addition.
+ * @param lhs The left hand side operand of the addition.
+ * @param rhs The right hand side operand of the addition.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void add_carry_chain(T *r, T const *lhs, T const *rhs, size_t n) noexcept
+{
+    auto carry = T{0};
+    for (size_t i = 0; i != n; ++i) {
+        std::tie(r[i], carry) = add_carry(lhs[i], rhs[i], carry);
+    }
+}
+
+/** Subtract unsigned integers using a carry-chain
+ *
+ * @param r The result of the addition.
+ * @param lhs The left hand side operand of the addition.
+ * @param rhs The right hand side operand of the addition.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void sub_carry_chain(T *r, T const *lhs, T const *rhs, size_t n) noexcept
+{
+    auto carry = T{1};
+    for (size_t i = 0; i != n; ++i) {
+        std::tie(r[i], carry) = add_carry(lhs[i], ~rhs[i], carry);
+    }
+}
+
+/** Multiply unsigned integers using a carry-chain
+ *
+ * @note @a r May not alias with @a lhs or @a rhs.
+ * @param r The result of the multiplication.
+ * @param lhs The left hand side operand.
+ * @param rhs The right hand side operand.
+ * @param n The number of digits of @a r, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+tt_force_inline constexpr void mul_carry_chain(T *tt_restrict r, T const *lhs, T const *rhs, size_t n) noexcept
+{
+    tt_axiom(r != lhs and r != rhs);
+
+    for (auto rhs_index = 0; rhs_index < n; rhs_index++) {
+        ttlet rhs_digit = rhs[rhs_index];
+
+        T carry = 0;
+        for (auto lhs_index = 0; (lhs_index + rhs_index) < n; lhs_index++) {
+            ttlet lhs_digit = lhs[lhs_index];
+
+            T result;
+            T accumulator = r[rhs_index + lhs_index];
+            std::tie(result, carry) = mul_carry(lhs_digit, rhs_digit, carry, accumulator);
+            r[rhs_index + lhs_index] = result;
+        }
+    }
+}
+
+/** Divide unsigned integers using a carry-chain
+ * This function does a bit-wise division.
+ *
+ * @note @a quotient and @a remainder may not alias with @a lhs or @a rhs or with each other.
+ * @param quotient The result of the division.
+ * @param remainder The remainder of the division.
+ * @param lhs The left hand side operand.
+ * @param rhs The right hand side operand.
+ * @param n The number of digits of @a quotient, @remainder, @a lhs and @a rhs.
+ */
+template<std::unsigned_integral T>
+constexpr void div_carry_chain(T *tt_restrict quotient, T *tt_restrict remainder, T const *lhs, T const *rhs, size_t n) noexcept
+{
+    tt_axiom(quotient != lhs and quotient != rhs and quotient != remainder);
+    tt_axiom(remainder != lhs and remainder != rhs);
+
+    ttlet nr_bits = static_cast<ssize_t>(n * sizeof(T) * CHAR_BIT);
+
+    for (ssize_t i = nr_bits - 1; i >= 0; i--) {
+        sll_carry_chain(remainder, remainder, 1, n);
+        remainder[0] |= get_bit(lhs, i);
+        if (ge_unsigned_carry_chain(remainder, rhs, n)) {
+            sub_carry_chain(remainder, remainder, rhs, n);
+            set_bit(quotient, i);
+        }
+    }
+}
+
 } // namespace tt
+
+tt_warning_pop()

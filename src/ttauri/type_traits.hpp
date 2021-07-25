@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "architecture.hpp"
 #include <cstdint>
 #include <type_traits>
 #include <string>
@@ -175,38 +176,38 @@ template<size_t N> struct make_uintxx {};
 template<size_t N> struct make_floatxx {};
 
 #if (TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC) && (TT_PROCESSOR == TT_X64)
-template<> struct has_intxx<128> : public std::true_type {}
-template<> struct has_uintxx<128> : public std::true_type {}
-template<> struct make_intxx<128> { using type = __int128; }
-template<> struct make_uintxx<128> { using type = unsigned __int128; }
+template<> struct has_intxx<128> : public std::true_type {};
+template<> struct has_uintxx<128> : public std::true_type {};
+template<> struct make_intxx<128> { using type = __int128; };
+template<> struct make_uintxx<128> { using type = unsigned __int128; };
 #endif
-template<> struct has_intxx<64> : public std::true_type {}
-template<> struct has_uintxx<64> : public std::true_type {}
-template<> struct has_floatxx<64> : public std::true_type {}
-template<> struct make_intxx<64> { using type = int64_t; }
-template<> struct make_uintxx<64> { using type = uint64_t; }
-template<> struct make_floatxx<64> { using type = double; }
-template<> struct has_intxx<32> : public std::true_type {}
-template<> struct has_uintxx<32> : public std::true_type {}
-template<> struct has_floatxx<32> : public std::true_type {}
-template<> struct make_intxx<32> { using type = int32_t; }
-template<> struct make_uintxx<32> { using type = uint32_t; }
-template<> struct make_floatxx<32> { using type = float; }
-template<> struct has_intxx<16> : public std::true_type {}
-template<> struct has_uintxx<16> : public std::true_type {}
-template<> struct make_intxx<16> { using type = int16_t; }
-template<> struct make_uintxx<16> { using type = uint16_t; }
-template<> struct has_intxx<8> : public std::true_type {}
-template<> struct has_uintxx<8> : public std::true_type {}
-template<> struct make_intxx<8> { using type = int8_t; }
-template<> struct make_uintxx<8> { using type = uint8_t; }
+template<> struct has_intxx<64> : public std::true_type {};
+template<> struct has_uintxx<64> : public std::true_type {};
+template<> struct has_floatxx<64> : public std::true_type {};
+template<> struct make_intxx<64> { using type = int64_t; };
+template<> struct make_uintxx<64> { using type = uint64_t; };
+template<> struct make_floatxx<64> { using type = double; };
+template<> struct has_intxx<32> : public std::true_type {};
+template<> struct has_uintxx<32> : public std::true_type {};
+template<> struct has_floatxx<32> : public std::true_type {};
+template<> struct make_intxx<32> { using type = int32_t; };
+template<> struct make_uintxx<32> { using type = uint32_t; };
+template<> struct make_floatxx<32> { using type = float; };
+template<> struct has_intxx<16> : public std::true_type {};
+template<> struct has_uintxx<16> : public std::true_type {};
+template<> struct make_intxx<16> { using type = int16_t; };
+template<> struct make_uintxx<16> { using type = uint16_t; };
+template<> struct has_intxx<8> : public std::true_type {};
+template<> struct has_uintxx<8> : public std::true_type {};
+template<> struct make_intxx<8> { using type = int8_t; };
+template<> struct make_uintxx<8> { using type = uint8_t; };
 
-template<size_t N> constexpr bool has_intxx_v = has_intxx<T>::value;
-template<size_t N> constexpr bool has_uintxx_v = has_uintxx<T>::value;
-template<size_t N> constexpr bool has_floatxx_v = has_floatxx<T>::value;
-template<size_t N> using make_intxx_t = typename make_intxx<T>::type;
-template<size_t N> using make_uintxx_t = typename make_uintxx<T>::type;
-template<size_t N> using make_floatxx_t = typename make_floatxx<T>::type;
+template<size_t N> constexpr bool has_intxx_v = has_intxx<N>::value;
+template<size_t N> constexpr bool has_uintxx_v = has_uintxx<N>::value;
+template<size_t N> constexpr bool has_floatxx_v = has_floatxx<N>::value;
+template<size_t N> using make_intxx_t = typename make_intxx<N>::type;
+template<size_t N> using make_uintxx_t = typename make_uintxx<N>::type;
+template<size_t N> using make_floatxx_t = typename make_floatxx<N>::type;
 
 
 /** Type-trait to copy const volitile qualifiers from one type to another.
@@ -234,7 +235,7 @@ struct copy_cv<To,From,std::enable_if_t<std::is_const_v<From> && std::is_volatil
     using type = std::remove_cv_t<To> const volatile;
 };
 
-/** Type-trait to copy const volitile qualifiers from one type to another.
+/** Type-trait to copy const volatile qualifiers from one type to another.
  */
 template<typename To, typename From>
 using copy_cv_t = typename copy_cv<To,From>::type;
@@ -333,5 +334,6 @@ constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
         } \
     }()
 
-}
+// clang-format on
 
+} // namespace tt

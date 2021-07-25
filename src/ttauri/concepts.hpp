@@ -61,8 +61,7 @@ concept to_stringable = requires(T v)
 {
     {
         to_string(v)
-    }
-    ->std::convertible_to<std::string>;
+        } -> std::convertible_to<std::string>;
 };
 
 template<typename T>
@@ -70,8 +69,7 @@ concept from_stringable = requires()
 {
     {
         from_string<T>(std::string_view{})
-    }
-    ->std::convertible_to<T>;
+        } -> std::convertible_to<T>;
 };
 
 template<typename From, typename To>
@@ -79,8 +77,7 @@ concept static_castableable = requires(From v)
 {
     {
         static_cast<To>(v)
-    }
-    ->std::convertible_to<To>;
+        } -> std::convertible_to<To>;
 };
 
 template<typename T>
@@ -88,8 +85,7 @@ concept sizeable = requires(T v)
 {
     {
         size(v)
-    }
-    ->std::convertible_to<size_t>;
+        } -> std::convertible_to<size_t>;
 };
 
 template<typename T>
