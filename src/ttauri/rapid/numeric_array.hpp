@@ -121,51 +121,81 @@ public:
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other) noexcept : v()
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2 and is_f64x2 and other.is_i32x4) {
+            if constexpr (is_f64x2 and other.is_i32x4) {
+#if defined(TT_HAS_SSE2)
                 *this = numeric_array{_mm_cvtepi32_pd(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2 and is_f32x4 and other.is_i32x4) {
+#endif
+            } else if constexpr (is_f32x4 and other.is_i32x4) {
+#if defined(TT_HAS_SSE2)
                 *this = numeric_array{_mm_cvtepi32_ps(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2 and is_i64x4 and other.is_i32x4) {
-                *this = numeric_array{_mm_cvtepi32_epi64(other.reg())};
-                return;
-            } else if constexpr (x86_64_v2 and is_i64x4 and other.is_i16x8) {
-                *this = numeric_array{_mm_cvtepi16_epi64(other.reg())};
-                return;
-            } else if constexpr (x86_64_v2 and is_i32x4 and other.is_i16x8) {
-                *this = numeric_array{_mm_cvtepi16_epi32(other.reg())};
-                return;
-            } else if constexpr (x86_64_v2 and is_i64x2 and other.is_i8x16) {
-                *this = numeric_array{_mm_cvtepi8_epi64(other.reg())};
-                return;
-            } else if constexpr (x86_64_v2 and is_i32x4 and other.is_f32x4) {
+#endif
+            } else if constexpr (is_i32x4 and other.is_f32x4) {
+#if defined(TT_HAS_SSE2)
                 *this = numeric_array{_mm_cvtps_epi32(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2 and is_i32x4 and other.is_i8x16) {
+#endif
+            } else if constexpr (is_i64x4 and other.is_i32x4) {
+#if defined(TT_HAS_SSE4_1)
+                *this = numeric_array{_mm_cvtepi32_epi64(other.reg())};
+                return;
+#endif
+            } else if constexpr (is_i64x4 and other.is_i16x8) {
+#if defined(TT_HAS_SSE4_1)
+                *this = numeric_array{_mm_cvtepi16_epi64(other.reg())};
+                return;
+#endif
+            } else if constexpr (is_i32x4 and other.is_i16x8) {
+#if defined(TT_HAS_SSE4_1)
+                *this = numeric_array{_mm_cvtepi16_epi32(other.reg())};
+                return;
+#endif
+            } else if constexpr (is_i64x2 and other.is_i8x16) {
+#if defined(TT_HAS_SSE4_1)
+                *this = numeric_array{_mm_cvtepi8_epi64(other.reg())};
+                return;
+#endif
+            } else if constexpr (is_i32x4 and other.is_i8x16) {
+#if defined(TT_HAS_SSE4_1)
                 *this = numeric_array{_mm_cvtepi8_epi32(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2 and is_i16x8 and other.is_i8x16) {
+#endif
+            } else if constexpr (is_i16x8 and other.is_i8x16) {
+#if defined(TT_HAS_SSE4_1)
                 *this = numeric_array{_mm_cvtepi8_epi16(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2_5 and is_f64x4 and other.is_f32x4) {
+#endif
+            } else if constexpr (is_f64x4 and other.is_f32x4) {
+#if defined(TT_HAS_AVX)
                 *this = numeric_array{_mm256_cvteps_pd(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2_5 and is_f64x4 and other.is_i32x4) {
+#endif
+            } else if constexpr (is_f64x4 and other.is_i32x4) {
+#if defined(TT_HAS_AVX)
                 *this = numeric_array{_mm256_cvtepi32_pd(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2_5 and is_f32x4 and other.is_f64x4) {
+#endif
+            } else if constexpr (is_f32x4 and other.is_f64x4) {
+#if defined(TT_HAS_AVX)
                 *this = numeric_array{_mm256_cvtpd_ps(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2_5 and is_i32x4 and other.is_f64x4) {
+#endif
+            } else if constexpr (is_i32x4 and other.is_f64x4) {
+#if defined(TT_HAS_AVX)
                 *this = numeric_array{_mm256_cvtpd_epi32(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2_5 and is_i32x8 and other.is_f32x8) {
+#endif
+            } else if constexpr (is_i32x8 and other.is_f32x8) {
+#if defined(TT_HAS_AVX)
                 *this = numeric_array{_mm256_cvtps_epi32(other.reg())};
                 return;
-            } else if constexpr (x86_64_v2_5 and is_f32x8 and other.is_i32x8) {
+#endif
+            } else if constexpr (is_f32x8 and other.is_i32x8) {
+#if defined(TT_HAS_AVX)
                 *this = numeric_array{_mm256_cvtepi32_ps(other.reg())};
                 return;
+#endif
             }
         }
 
@@ -189,29 +219,42 @@ public:
         v()
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2_5 and is_f32x8 and other1.is_f32x4 and other2.is_f32x4) {
-                *this = numeric_array{_mm256_set_m128(other2.reg(), other1.reg())};
-                return;
-            } else if constexpr (x86_64_v2_5 and is_f64x4 and other1.is_f64x2 and other2.is_f64x2) {
-                *this = numeric_array{_mm256_set_m128d(other2.reg(), other1.reg())};
-                return;
-            } else if constexpr (
-                x86_64_v2_5 and std::is_integral_v<T> and std::is_integral_v<U> and (sizeof(T) * N == 32) and
-                (sizeof(U) * M == 16)) {
-                *this = numeric_array{_mm256_set_m128i(other2.reg(), other1.reg())};
-                return;
-            } else if constexpr (x86_64_v2 and is_i16x8 and other1.is_i32x4 and other2.is_i32x4) {
+            if constexpr (is_i16x8 and other1.is_i32x4 and other2.is_i32x4) {
+#if defined(TT_HAS_SSE2)
                 *this = numeric_array{_mm_packs_epi32(other2.reg(), other1.reg())};
                 return;
-            } else if constexpr (x86_64_v2 and is_i8x16 and other1.is_i16x8 and other2.is_i16x8) {
+#endif
+            } else if constexpr (is_i8x16 and other1.is_i16x8 and other2.is_i16x8) {
+#if defined(TT_HAS_SSE2)
                 *this = numeric_array{_mm_packs_epi16(other2.reg(), other1.reg())};
                 return;
-            } else if constexpr (x86_64_v2 and is_u16x8 and other1.is_u32x4 and other2.is_u32x4) {
-                *this = numeric_array{_mm_packus_epu32(other2.reg(), other1.reg())};
-                return;
-            } else if constexpr (x86_64_v2 and is_u8x16 and other1.is_u16x8 and other2.is_u16x8) {
+#endif
+            } else if constexpr (is_u8x16 and other1.is_u16x8 and other2.is_u16x8) {
+#if defined(TT_HAS_SSE2)
                 *this = numeric_array{_mm_packus_epu16(other2.reg(), other1.reg())};
                 return;
+#endif
+            } else if constexpr (is_u16x8 and other1.is_u32x4 and other2.is_u32x4) {
+#if defined(TT_HAS_SSE4_1)
+                *this = numeric_array{_mm_packus_epu32(other2.reg(), other1.reg())};
+                return;
+#endif
+            } else if constexpr (is_f32x8 and other1.is_f32x4 and other2.is_f32x4) {
+#if defined(TT_HAS_AVX)
+                *this = numeric_array{_mm256_set_m128(other2.reg(), other1.reg())};
+                return;
+#endif
+            } else if constexpr (is_f64x4 and other1.is_f64x2 and other2.is_f64x2) {
+#if defined(TT_HAS_AVX)
+                *this = numeric_array{_mm256_set_m128d(other2.reg(), other1.reg())};
+                return;
+#endif
+            } else if constexpr (
+                std::is_integral_v<T> and std::is_integral_v<U> and (sizeof(T) * N == 32) and (sizeof(U) * M == 16)) {
+#if defined(TT_HAS_AVX)
+                *this = numeric_array{_mm256_set_m128i(other2.reg(), other1.reg())};
+                return;
+#endif
             }
         }
 
@@ -287,125 +330,173 @@ public:
         return v;
     }
 
-    [[nodiscard]] __m128i reg() const noexcept requires(x86_64_v2 and std::is_integral_v<T> and sizeof(T) * N == 16)
+#if defined(TT_HAS_SSE2)
+    [[nodiscard]] __m128i reg() const noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         return _mm_loadu_si128(reinterpret_cast<__m128i const *>(v.data()));
     }
+#endif
 
-    [[nodiscard]] __m128 reg() const noexcept requires(x86_64_v2 and is_f32x4)
+#if defined(TT_HAS_SSE2)
+    [[nodiscard]] __m128 reg() const noexcept requires(is_f32x4)
     {
         return _mm_loadu_ps(v.data());
     }
+#endif
 
-    [[nodiscard]] __m128d reg() const noexcept requires(x86_64_v2 and is_f64x2)
+#if defined(TT_HAS_SSE2)
+    [[nodiscard]] __m128d reg() const noexcept requires(is_f64x2)
     {
         return _mm_loadu_pd(v.data());
     }
+#endif
 
-    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept
-        requires(x86_64_v2 and std::is_integral_v<T> and sizeof(T) * N == 16)
+#if defined(TT_HAS_SSE2)
+    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
     }
+#endif
 
-    [[nodiscard]] explicit numeric_array(__m128 const &rhs) noexcept requires(x86_64_v2 and is_f32x4)
+#if defined(TT_HAS_SSE2)
+    [[nodiscard]] explicit numeric_array(__m128 const &rhs) noexcept requires(is_f32x4)
     {
         _mm_storeu_ps(v.data(), rhs);
     }
+#endif
 
-    [[nodiscard]] explicit numeric_array(__m128d const &rhs) noexcept requires(x86_64_v2 and is_f64x2)
+#if defined(TT_HAS_SSE2)
+    [[nodiscard]] explicit numeric_array(__m128d const &rhs) noexcept requires(is_f64x2)
     {
         _mm_storeu_pd(v.data(), rhs);
     }
+#endif
 
-    numeric_array &operator=(__m128i const &rhs) noexcept requires(x86_64_v2 and std::is_integral_v<T> and sizeof(T) * N == 16)
+#if defined(TT_HAS_SSE2)
+    numeric_array &operator=(__m128i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
         return *this;
     }
+#endif
 
-    numeric_array &operator=(__m128 const &rhs) noexcept requires(x86_64_v2 and is_f32x4)
+#if defined(TT_HAS_SSE2)
+    numeric_array &operator=(__m128 const &rhs) noexcept requires(is_f32x4)
     {
         _mm_storeu_ps(v.data(), rhs);
         return *this;
     }
+#endif
 
-    numeric_array &operator=(__m128d const &rhs) noexcept requires(x86_64_v2 and is_f64x2)
+#if defined(TT_HAS_SSE2)
+    numeric_array &operator=(__m128d const &rhs) noexcept requires(is_f64x2)
     {
         _mm_storeu_pd(v.data(), rhs);
         return *this;
     }
+#endif
 
-    [[nodiscard]] __m256i reg() const noexcept requires(x86_64_v2_5 and std::is_integral_v<T> and sizeof(T) * N == 32)
+#if defined(TT_HAS_AVX)
+    [[nodiscard]] __m256i reg() const noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
     {
         return _mm256_loadu_si256(reinterpret_cast<__m256i const *>(v.data()));
     }
+#endif
 
-    [[nodiscard]] __m256 reg() const noexcept requires(x86_64_v2_5 and is_f32x8)
+#if defined(TT_HAS_AVX)
+    [[nodiscard]] __m256 reg() const noexcept requires(is_f32x8)
     {
         return _mm256_loadu_ps(v.data());
     }
+#endif
 
-    [[nodiscard]] __m256d reg() const noexcept requires(x86_64_v2_5 and is_f64x4)
+#if defined(TT_HAS_AVX)
+    [[nodiscard]] __m256d reg() const noexcept requires(is_f64x4)
     {
         return _mm256_loadu_pd(v.data());
     }
+#endif
 
-    [[nodiscard]] explicit numeric_array(__m256i const &rhs) noexcept
-        requires(x86_64_v2_5 and std::is_integral_v<T> and sizeof(T) * N == 32)
+#if defined(TT_HAS_AVX)
+    [[nodiscard]] explicit numeric_array(__m256i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
     {
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(v.data()), rhs);
     }
+#endif
 
-    [[nodiscard]] explicit numeric_array(__m256 const &rhs) noexcept requires(x86_64_v2_5 and is_f32x8)
+#if defined(TT_HAS_AVX)
+    [[nodiscard]] explicit numeric_array(__m256 const &rhs) noexcept requires(is_f32x8)
     {
         _mm256_storeu_ps(v.data(), rhs);
     }
+#endif
 
-    [[nodiscard]] explicit numeric_array(__m256d const &rhs) noexcept requires(x86_64_v2_5 and is_f64x4)
+#if defined(TT_HAS_AVX)
+    [[nodiscard]] explicit numeric_array(__m256d const &rhs) noexcept requires(is_f64x4)
     {
         _mm256_storeu_pd(v.data(), rhs);
     }
+#endif
 
-    numeric_array &operator=(__m256i const &rhs) noexcept requires(x86_64_v2_5 and std::is_integral_v<T> and sizeof(T) * N == 32)
+#if defined(TT_HAS_AVX)
+    numeric_array &operator=(__m256i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
     {
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(v.data()), rhs);
         return *this;
     }
+#endif
 
-    numeric_array &operator=(__m256 const &rhs) noexcept requires(x86_64_v2_5 and is_f32x8)
+#if defined(TT_HAS_AVX)
+    numeric_array &operator=(__m256 const &rhs) noexcept requires(is_f32x8)
     {
         _mm256_storeu_ps(v.data(), rhs);
         return *this;
     }
+#endif
 
-    numeric_array &operator=(__m256d const &rhs) noexcept requires(x86_64_v2_5 and is_f64x4)
+#if defined(TT_HAS_AVX)
+    numeric_array &operator=(__m256d const &rhs) noexcept requires(is_f64x4)
     {
         _mm256_storeu_pd(v.data(), rhs);
         return *this;
     }
+#endif
 
     template<typename Other>
-    requires(sizeof(Other) == sizeof(numeric_array)) [[nodiscard]] constexpr friend Other
-        bit_cast(numeric_array const &rhs) noexcept
+    [[nodiscard]] constexpr friend Other bit_cast(numeric_array const &rhs) noexcept
+        requires(sizeof(Other) == sizeof(numeric_array))
     {
         using rhs_value_type = typename std::remove_cvref_t<decltype(rhs)>::value_type;
 
         if (not std::is_constant_evaluated()) {
-            if constexpr (Other::is_f32x4 and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+            if constexpr (Other::is_f32x4 and std::is_integral_v<rhs_value_type>) {
+#if defined(TT_HAS_SSE2)
                 return Other{_mm_castsi128_ps(rhs.reg())};
-            } else if constexpr (Other::is_f32x4 and rhs.is_f64x2 and x86_64_v2) {
+#endif
+            } else if constexpr (Other::is_f32x4 and rhs.is_f64x2) {
+#if defined(TT_HAS_SSE2)
                 return Other{_mm_castpd_ps(rhs.reg())};
-            } else if constexpr (Other::is_f64x2 and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+#endif
+            } else if constexpr (Other::is_f64x2 and std::is_integral_v<rhs_value_type>) {
+#if defined(TT_HAS_SSE2)
                 return Other{_mm_castsi128_pd(rhs.reg())};
-            } else if constexpr (Other::is_f64x2 and rhs.is_f32x4 and x86_64_v2) {
+#endif
+            } else if constexpr (Other::is_f64x2 and rhs.is_f32x4) {
+#if defined(TT_HAS_SSE2)
                 return Other{_mm_castps_pd(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f32x4 and x86_64_v2) {
+#endif
+            } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f32x4) {
+#if defined(TT_HAS_SSE2)
                 return Other{_mm_castps_si128(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f64x2 and x86_64_v2) {
+#endif
+            } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f64x2) {
+#if defined(TT_HAS_SSE2)
                 return Other{_mm_castpd_si128(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<rhs_value_type> and x86_64_v2) {
+#endif
+            } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<rhs_value_type>) {
+#if defined(TT_HAS_SSE2)
                 return Other{rhs.reg()};
+#endif
             }
         }
         return std::bit_cast<Other>(rhs);
@@ -449,7 +540,6 @@ public:
         std::memcpy(&r, ptr, S);
         return r;
     }
-
 
     /** Load a numeric array from memory.
      * @param ptr A Pointer to an array of values in memory.

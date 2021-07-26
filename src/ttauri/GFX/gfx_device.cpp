@@ -24,7 +24,7 @@ std::string gfx_device::string() const noexcept
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
-    return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.UUIDString());
+    return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.uuid_string());
 }
 
 }
