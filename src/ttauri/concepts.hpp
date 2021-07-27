@@ -8,8 +8,12 @@
 #include <type_traits>
 #include <string>
 #include <concepts>
+#include <limits>
 
 namespace tt {
+
+template<typename T>
+concept numeric_limited = std::numeric_limits<T>::is_specialized;
 
 template<typename T>
 concept numeric_integral = is_numeric_integral_v<T>;

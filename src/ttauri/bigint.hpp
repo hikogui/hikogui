@@ -524,6 +524,18 @@ struct bigint {
     }
 };
 
+template<std::unsigned_integral T, size_t N>
+struct is_numeric_unsigned_integral<bigint<T, N, false>> : std::true_type {
+};
+
+template<std::unsigned_integral T, size_t N>
+struct is_numeric_signed_integral<bigint<T, N, true>> : std::true_type {
+};
+
+template<std::unsigned_integral T, size_t N, bool S>
+struct is_numeric_integral<bigint<T, N, S>> : std::true_type {
+};
+
 using ubig128 = bigint<uint64_t, 2, false>;
 using uuid = bigint<uint64_t, 2, false>;
 
