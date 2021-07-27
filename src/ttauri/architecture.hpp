@@ -101,25 +101,61 @@ enum class processor {
 #define TT_X86_64_V2_5 1
 #define TT_X86_64_V2 1
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
+#define TT_HAS_SSE3
+#define TT_HAS_SSE4_1
+#define TT_HAS_SSE4_2
+#define TT_HAS_SSSE3
+#define TT_HAS_AVX
+#define TT_HAS_AVX2
+#define TT_HAS_AVX512F
+#define TT_HAS_AVX512BW
+#define TT_HAS_AVX512CD
+#define TT_HAS_AVX512DQ
+#define TT_HAS_AVX512VL
 
 #elif defined(__AVX2__)
 #define TT_X86_64_V3 1
 #define TT_X86_64_V2_5 1
 #define TT_X86_64_V2 1
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
+#define TT_HAS_SSE3
+#define TT_HAS_SSE4_1
+#define TT_HAS_SSE4_2
+#define TT_HAS_SSSE3
+#define TT_HAS_AVX
+#define TT_HAS_AVX2
 
 #elif defined(__AVX__)
 #define TT_X86_64_V2_5 1
 #define TT_X86_64_V2 1
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
+#define TT_HAS_SSE3
+#define TT_HAS_SSE4_1
+#define TT_HAS_SSE4_2
+#define TT_HAS_SSSE3
+#define TT_HAS_AVX
 
 // x86_64_v2 can not be selected in MSVC, but can be in gcc and clang.
 #elif defined(__SSE4_2__) && defined(__SSSE3__)
 #define TT_X86_64_V2 1
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
+#define TT_HAS_SSE3
+#define TT_HAS_SSE4_1
+#define TT_HAS_SSE4_2
+#define TT_HAS_SSSE3
 
 #else
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
 #endif
 #endif
 
