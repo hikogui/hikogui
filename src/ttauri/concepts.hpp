@@ -16,6 +16,9 @@ template<typename T>
 concept numeric_limited = std::numeric_limits<T>::is_specialized;
 
 template<typename T>
+concept numeric = is_numeric_v<T>;
+
+template<typename T>
 concept numeric_integral = is_numeric_integral_v<T>;
 
 template<typename T>

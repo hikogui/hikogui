@@ -80,6 +80,34 @@ template<> struct is_numeric_integral<signed long long> : std::true_type {};
  */
 template<typename T> inline constexpr bool is_numeric_integral_v = is_numeric_integral<T>::value;
 
+/** Is a numeric.
+ *
+ * The following types are numeric: signed char, unsigned char,
+ * signed short, unsigned short, signed int, unsigned int, signed long,
+ * unsigned long, signed long long, unsigned long long, register_long,
+ * half, float, double, long double
+ *
+ * @tparam T type to check for being a numeric integer.
+ */
+template<typename T> struct is_numeric : std::false_type {}; 
+template<> struct is_numeric<unsigned char> : std::true_type {};
+template<> struct is_numeric<unsigned short> : std::true_type {};
+template<> struct is_numeric<unsigned int> : std::true_type {};
+template<> struct is_numeric<unsigned long> : std::true_type {};
+template<> struct is_numeric<unsigned long long> : std::true_type {};
+template<> struct is_numeric<signed char> : std::true_type {};
+template<> struct is_numeric<signed short> : std::true_type {};
+template<> struct is_numeric<signed int> : std::true_type {};
+template<> struct is_numeric<signed long> : std::true_type {};
+template<> struct is_numeric<signed long long> : std::true_type {};
+template<> struct is_numeric<float> : std::true_type {};
+template<> struct is_numeric<double> : std::true_type {};
+template<> struct is_numeric<long double> : std::true_type {};
+
+/** @sa is_numeric_integral
+ */
+template<typename T> inline constexpr bool is_numeric_integral_v = is_numeric_integral<T>::value;
+
 template<typename T> struct is_character : std::false_type {}; 
 template<> struct is_character<char> : std::true_type {};
 template<> struct is_character<wchar_t> : std::true_type {};
