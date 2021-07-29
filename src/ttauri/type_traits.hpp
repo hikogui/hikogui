@@ -104,9 +104,9 @@ template<> struct is_numeric<float> : std::true_type {};
 template<> struct is_numeric<double> : std::true_type {};
 template<> struct is_numeric<long double> : std::true_type {};
 
-/** @sa is_numeric_integral
+/** @sa is_numeric
  */
-template<typename T> inline constexpr bool is_numeric_integral_v = is_numeric_integral<T>::value;
+template<typename T> inline constexpr bool is_numeric_v = is_numeric<T>::value;
 
 template<typename T> struct is_character : std::false_type {}; 
 template<> struct is_character<char> : std::true_type {};

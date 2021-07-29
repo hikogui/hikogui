@@ -3,56 +3,44 @@
 
 #include "concepts.hpp"
 #include "register_int.hpp"
+#include "interval.hpp"
 
 namespace tt {
 
 /** Bound integer.
  *
- * @tparam L lower bound.
- * @tparam U upper bound.
  */
-template<register_long L, register_long U>
+template<interval<register_long> Bounds>
 struct bound_integer {
-    static_assert(L <= H);
+    using bound_type = interval<register_long>;
 
-    constexpr long long lower_bound = L;
-    constexpr long long upper_bound = U;
+    constexpr bound_type bounds = Bounds;
 
     /** Check if all the values of a type are within the bounds.
      */
     template<typename T>
     static constexpr bool values_of_type_are_within_bounds_v =
-        lower_bound <= std::numeric_limits<T>::min() and std::numeric_limits<T>::max() <= upper_bound;
+        bounds.lower() <= std::numeric_limits<T>::min() and std::numeric_limits<T>::max() <= bounds.upper();
 
     /** Check if all the values between bounds can be represented by the type.
      */
     template<typename T>
-    static constexpr bool values_between_bounds_fit_in_type_v = std::numeric_limits<T>::min() <= lower_bound and upper_bound
-        <= std::numeric_limits<T>::max();
+    static constexpr bool values_between_bounds_fit_in_type_v =
+        std::numeric_limits<T>::min() <= bounds.lower() and bounds.upper() <= std::numeric_limits<T>::max();
 
     // clang-format off
     using value_type =
-        std::conditional_t<values_between_bounds_fit_in_type_v<signed char,L,U>, signed char,
-        std::conditional_t<values_between_bounds_fit_in_type_v<signed short,L,U>, signed short,
-        std::conditional_t<values_between_bounds_fit_in_type_v<signed int,L,U>, signed int,
-        std::conditional_t<values_between_bounds_fit_in_type_v<signed long,L,U>, signed long,
-        std::conditional_t<values_between_bounds_fit_in_type_v<signed long long,L,U>, signed long long,
+        std::conditional_t<values_between_bounds_fit_in_type_v<signed char>, signed char,
+        std::conditional_t<values_between_bounds_fit_in_type_v<signed short>, signed short,
+        std::conditional_t<values_between_bounds_fit_in_type_v<signed int>, signed int,
+        std::conditional_t<values_between_bounds_fit_in_type_v<signed long>, signed long,
+        std::conditional_t<values_between_bounds_fit_in_type_v<signed long long>, signed long long,
         register_long>>>>>;
     // clang-format on
 
     /** The value of the integer.
      */
     value_type value;
-
-    /** Check if the given value is within bounds.
-     *
-     * @param other The value to check.
-     * @return True if @a other is between the `lower_bound` and `upper_bound`.
-     */
-    [[nodiscard]] static bool within_bounds(numeric_integral auto other) const noexcept
-    {
-        return lower_bound <= other and other <= upper_bound;
-    }
 
     constexpr bound_integer() noexcept : value(0) {}
     constexpr bound_integer(bound_integer const &) noexcept = default;
@@ -64,7 +52,7 @@ struct bound_integer {
         value(static_cast<value_type>(other))
     {
         if constexpr (not values_of_type_are_within_bounds_v<decltype(other)>) {
-            if (not within_bounds(other)) {
+            if (other != bounds) {
                 throw std::overflow_error("bound_integer(std::integral)")
             }
         }
@@ -74,7 +62,7 @@ struct bound_integer {
     constexpr bound_integer &operator=(numeric_integral auto other) noexcept(values_of_type_are_within_bounds_v<decltype(other)>)
     {
         if constexpr (not values_of_type_are_within_bounds_v<decltype(other)>) {
-            if (not within_bounds(other)) {
+            if (other != bounds) {
                 throw std::overflow_error("bound_integer(std::integral)")
             }
         }
@@ -83,23 +71,23 @@ struct bound_integer {
         return *this;
     }
 
-    template<register_long OL, register_long OU>
-    constexpr bound_integer(bound_integer<OL, OU> other) noexcept(lower_bound <= OL and OH <= upper_bound) :
+    template<bound_type OtherBound>
+    constexpr bound_integer(bound_integer<OtherBound> other) noexcept(OtherBound.is_fully_inside(bounds)) :
         _value(static_cast<value_type>(other.value))
     {
-        if constexpr (not(lower_bound <= OL and OH <= upper_bound)) {
-            if (not within_bounds(other.value)) {
+        if constexpr (not OtherBound.is_fully_inside(bounds)) {
+            if (other.value != bounds) {
                 throw std::overflow_error("bound_integer(bound_integer)")
             }
         }
         tt_axiom(holds_invariant());
     }
 
-    template<register_long OL, register_long OH>
-    constexpr bound_integer &operator=(bound_integer<OL, OH> other) noexcept(lower_bound <= OL and OH <= upper_bound)
+    template<bound_type OtherBound>
+    constexpr bound_integer &operator=(bound_integer<OtherBound> other) noexcept(OtherBound.is_fully_inside(bounds))
     {
-        if constexpr (not(lower_bound <= OL and OH <= upper_bound)) {
-            if (not within_bounds(other.value)) {
+        if constexpr (not OtherBound.is_fully_inside(bounds)) {
+            if (other.value != bounds) {
                 throw std::overflow_error("bound_integer(bound_integer)")
             }
         }
@@ -122,35 +110,35 @@ struct bound_integer {
 
     explicit constexpr operator bool() noexcept
     {
-        if constexpr (lower_bound > 0 or upper_bound < 0) {
+        if constexpr (bounds.lower() > 0 or bounds.upper() < 0) {
             return true;
-        } else if constexpr (lower_bound == 0 and upper_bound == 0) {
-            return false;
-        } else {
+        } else if constexpr (bounds) {
             return value != value_type{0};
+        } else {
+            return false;
         }
     }
 
     [[nodiscard]] constexpr bool holds_invariant() noexcept
     {
-        return lower_bound <= value and value <= upper_bound;
+        return value == bounds;
     }
 
     [[nodiscard]] auto operator-() const noexcept
     {
-        using r_type = bound_integer<-upper_bound, -lower_bound>;
+        using r_type = bound_integer<-bounds>;
         using t_type = typename r_type::value_type;
         return r_type{-static_cast<t_type>(value)};
     }
 
     /** Compare equality of two integers.
      */
-    template<register_long RL, register_long RU>
-    [[nodiscard]] constexpr bool operator==(bound_integer<RL, RU> const &rhs) noexcept
+    template<bound_type RHSBounds>
+    [[nodiscard]] constexpr bool operator==(bound_integer<RHSBounds> const &rhs) noexcept
     {
-        if constexpr (upper_bound < RL or lower_bound > RU) {
+        if constexpr (bounds.upper() < RHSBounds.lower() or bounds.lower() > RHSBounds.upper) {
             return false;
-        } else if (lower_bound == upper_bound and lower_bound == RL and upper_bound == RU) {
+        } else if (bounds.is_value() and RHSBounds.is_value() and bounds.lower() == RHSBounds.lower()) {
             return true;
         } else {
             return value == rhs.value;
@@ -159,120 +147,94 @@ struct bound_integer {
 
     /** Compare two integers.
      */
-    template<register_long RL, register_long RU>
-    [[nodiscard]] constexpr std::strong_ordering operator<=>(bound_integer<RL, RU> const &rhs) noexcept
+    template<bound_type RHSBounds>
+    [[nodiscard]] constexpr std::strong_ordering operator<=>(bound_integer<RHSBounds> const &rhs) noexcept
     {
-        if constexpr (upper_bound < RL) {
+        if constexpr (bounds.upper() < RHSBounds.lower()) {
             return std::strong_ordering::less;
-        } else if constexpr (lower_bound > RU) {
+        } else if constexpr (bound.lower() > RHSBounds.upper()) {
             return std::strong_ordering::greater;
-        } else if constexpr (lower_bound == upper_bound and lower_bound == RL and upper_bound == RU) {
+        } else if constexpr (bounds.is_value() and RHSBounds.is_value() and bounds.lower() == RHSBounds.lower()) {
             return std::strong_ordering::equal;
         } else {
             return value <=> rhs.value;
         }
     }
 
-    template<register_long RL, register_long RU>
-    [[nodiscard]] constexpr auto operator+(bound_integer<RL, RU> const &rhs) noexcept
+    template<bound_type RHSBounds>
+    [[nodiscard]] constexpr auto operator+(bound_integer<RHSBounds> const &rhs) noexcept
     {
-        static_assert(lower_bound >= (std::numeric_limits<register_long>::min() >> 1), "lhs lower bound overflow");
-        static_assert(upper_bound <= (std::numeric_limits<register_long>::max() >> 1), "lhs upper bound overflow");
-        static_assert(RL >= (std::numeric_limits<register_long>::min() >> 1), "rhs lower bound overflow");
-        static_assert(RU <= (std::numeric_limits<register_long>::max() >> 1), "rhs upper bound overflow");
+        static_assert(bounds.lower() >= (std::numeric_limits<register_long>::min() >> 1), "lhs lower bound overflow");
+        static_assert(bounds.upper() <= (std::numeric_limits<register_long>::max() >> 1), "lhs upper bound overflow");
+        static_assert(RHSBounds.lower() >= (std::numeric_limits<register_long>::min() >> 1), "rhs lower bound overflow");
+        static_assert(RHSBounds.upper() <= (std::numeric_limits<register_long>::max() >> 1), "rhs upper bound overflow");
 
-        using r_type = bound_integer<lower_bound + RL, upper_bound + RU>;
+        using r_type = bound_integer<bound + RHSBounds>;
         using t_type = typename r_type::value_type;
-
         return rtype{static_cast<t_type>(lhs.value) + static_cast<t_type>(rhs.value)};
     }
 
-    template<register_long RL, register_long RU>
-    [[nodiscard]] constexpr auto operator-(bound_integer<RL, RU> const &rhs) noexcept
+    template<bound_type RHSBounds>
+    [[nodiscard]] constexpr auto operator-(bound_integer<RHSBounds> const &rhs) noexcept
     {
-        static_assert(lower_bound >= (std::numeric_limits<register_long>::min() >> 1), "lhs lower bound overflow");
-        static_assert(upper_bound <= (std::numeric_limits<register_long>::max() >> 1), "lhs upper bound overflow");
-        static_assert(RL >= (std::numeric_limits<register_long>::min() >> 1), "rhs lower bound overflow");
-        static_assert(RU <= (std::numeric_limits<register_long>::max() >> 1), "rhs upper bound overflow");
+        static_assert(bounds.lower() >= (std::numeric_limits<register_long>::min() >> 1), "lhs lower bound overflow");
+        static_assert(bounds.upper() <= (std::numeric_limits<register_long>::max() >> 1), "lhs upper bound overflow");
+        static_assert(RHSBounds.lower() >= (std::numeric_limits<register_long>::min() >> 1), "rhs lower bound overflow");
+        static_assert(RHSBounds.upper() <= (std::numeric_limits<register_long>::max() >> 1), "rhs upper bound overflow");
 
-        using r_type = bound_integer<lower_bound - RU, upper_bound - RL>;
+        using r_type = bound_integer<bounds - RHSBounds>;
         using t_type = typename r_type::value_type;
-
         return rtype{static_cast<t_type>(lhs.value) - static_cast<t_type>(rhs.value)};
     }
 
-    template<register_long RL, register_long RU>
-    [[nodiscard]] constexpr auto operator*(bound_integer<RL, RU> const &rhs) noexcept
+    template<bound_type RHSBounds>
+    [[nodiscard]] constexpr auto operator*(bound_integer<RHSBounds> const &rhs) noexcept
     {
-        static_assert(lower_bound >= (std::numeric_limits<register_int>::min()), "lhs lower bound overflow");
-        static_assert(upper_bound <= (std::numeric_limits<register_int>::max()), "lhs upper bound overflow");
-        static_assert(RL >= (std::numeric_limits<register_int>::min()), "rhs lower bound overflow");
-        static_assert(RU <= (std::numeric_limits<register_int>::max()), "rhs upper bound overflow");
+        static_assert(bounds.lower() >= (std::numeric_limits<register_int>::min()), "lhs lower bound overflow");
+        static_assert(bounds.upper() <= (std::numeric_limits<register_int>::max()), "lhs upper bound overflow");
+        static_assert(RHSBounds.lower() >= (std::numeric_limits<register_int>::min()), "rhs lower bound overflow");
+        static_assert(RHSBounds.upper() <= (std::numeric_limits<register_int>::max()), "rhs upper bound overflow");
 
-        constexpr auto a = lower_bound * RL;
-        constexpr auto b = lower_bound * RU;
-        constexpr auto c = upper_bound * RL;
-        constexpr auto d = upper_bound * RU;
-        constexpr auto r_lower_bound = std::min({a, b, c, d});
-        constexpr auto r_upper_bound = std::max({a, b, c, d});
-
-        using r_type = bound_integer<r_lower_bound, r_upper_bound>;
+        using r_type = bound_integer<bounds * RHSBounds>;
         using t_type = typename r_type::value_type;
-
         return rtype{static_cast<t_type>(lhs.value) * static_cast<t_type>(rhs.value)};
     }
 
-    template<register_long RL, register_long RU>
-    [[nodiscard]] constexpr auto operator/(bound_integer<RL, RU> const &rhs) noexcept(RL > 0 or RU < 0)
+    template<bound_type RHSBounds>
+    [[nodiscard]] constexpr auto operator/(bound_integer<RHSBounds> const &rhs) noexcept(0 != RHSBounds)
     {
-        static_assert(lower_bound >= ((std::numeric_limits<register_long>::min() + 1)), "lhs lower bound overflow");
-        static_assert(upper_bound <= (std::numeric_limits<register_long>::max()), "lhs upper bound overflow");
+        static_assert(bounds.lower() >= ((std::numeric_limits<register_long>::min() + 1)), "lhs lower bound overflow");
+        static_assert(bounds.upper() <= (std::numeric_limits<register_long>::max()), "lhs upper bound overflow");
+        static_assert(RHSBounds, "divide by zero");
 
-        // Since divide by zero is not allowed, the limits are as if divided by -1 or 1.
-        constexpr auto a = RL ? (lower_bound / RL) : (RL < 0 : -lower_bound : lower_bound);
-        constexpr auto b = RU ? (lower_bound / RU) : (RU < 0 : -lower_bound : lower_bound);
-        constexpr auto c = RL ? (upper_bound / RL) : (RL < 0 : -upper_bound : upper_bound);
-        constexpr auto d = RU ? (upper_bound / RU) : (RU < 0 : -upper_bound : upper_bound);
-        constexpr auto r_lower_bound = std::min({a, b, c, d});
-        constexpr auto r_upper_bound = std::max({a, b, c, d});
-
-        using r_type = bound_integer<r_lower_bound, r_upper_bound>;
-        using t_type = typename r_type::value_type;
-
-        static_assert(RL == 0 and RU == 0, "divide by zero");
-        if constexpr (not(RL > 0 or RU < 0)) {
+        if constexpr (0 == RHSBounds) {
             if (rhs.value == 0) {
                 throw std::domain_error("divide by zero");
             }
         }
 
+        using r_type = bound_integer<bounds / RHSBounds>;
+        using t_type = typename r_type::value_type;
         return rtype{static_cast<t_type>(lhs.value) / static_cast<t_type>(rhs.value)};
+    }
+
+    template<bound_type RHSBounds>
+    [[nodiscard]] constexpr auto operator%(bound_integer<RHSBounds> const &rhs) noexcept(0 != RHSBounds)
+    {
+        static_assert(RHSBounds, "divide by zero");
+
+        if constexpr (0 == RHSBounds) {
+            if (rhs.value == 0) {
+                throw std::domain_error("divide by zero");
+            }
+        }
+
+        return bound_integer<bounds % RHSBounds>{lhs.value % rhs.value};
     }
 
     template<register_long lower_bound, register_long upper_bound, register_long RL, register_long RU>
     [[nodiscard]] constexpr auto
-    operator%(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept(RL > 0 or RU < 0)
-    {
-        constexpr auto t_lower_bound = std::min(lower_bound < 0 ? -RU : RL, lower_bound);
-        constexpr auto t_upper_bound = std::max(upper_bound < 0 ? -RL : RU, upper_bound);
-        using t_type = typename bound_integer<t_lower_bound, t_upper_bound>::value_type;
-
-        constexpr auto r_lower_bound = std::max(lower_bound < 0 ? -RU : RL, lower_bound);
-        constexpr auto r_upper_bound = std::min(upper_bound < 0 ? -RL : RU, upper_bound);
-        using r_type = bound_integer<r_lower_bound, r_upper_bound>;
-
-        static_assert(RL == 0 and RU == 0, "divide by zero");
-        if (not(RL > 0 or RU < 0)) {
-            if (rhs.value == 0) {
-                throw std::domain_error("divide by zero");
-            }
-        }
-
-        return rtype{static_cast<t_type>(lhs.value) % static_cast<t_type>(rhs.value)};
-    }
-
-    template<register_long lower_bound, register_long upper_bound, register_long RL, register_long RU>
-    [[nodiscard]] constexpr auto operator|(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
+    operator|(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
     {
         constexpr auto a = lower_bound | RL;
         constexpr auto b = lower_bound | RU;
@@ -287,7 +249,8 @@ struct bound_integer {
     }
 
     template<register_long lower_bound, register_long upper_bound, register_long RL, register_long RU>
-    [[nodiscard]] constexpr auto operator&(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
+    [[nodiscard]] constexpr auto
+    operator&(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
     {
         constexpr auto a = lower_bound & RL;
         constexpr auto b = lower_bound & RU;
@@ -302,7 +265,8 @@ struct bound_integer {
     }
 
     template<register_long lower_bound, register_long upper_bound, register_long RL, register_long RU>
-    [[nodiscard]] constexpr auto operator^(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
+    [[nodiscard]] constexpr auto
+    operator^(bound_integer<lower_bound, upper_bound> const &lhs, bound_integer<RL, RU> const &rhs) noexcept
     {
         // Use 'or' and 'and' for limits on 'xor'.
         constexpr auto a = lower_bound | RL;
@@ -322,7 +286,7 @@ struct bound_integer {
     }
 
     template<register_long RL, register_long RU>
-    bound_integer &operator+=(bound_integer<RL, RU> const &rhs) noexcept (RL == 0 and RU == 0)
+    bound_integer &operator+=(bound_integer<RL, RU> const &rhs) noexcept(RL == 0 and RU == 0)
     {
         return *this = *this + rhs;
     }

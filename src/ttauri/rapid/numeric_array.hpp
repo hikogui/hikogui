@@ -41,8 +41,7 @@
 namespace tt {
 
 template<arithmetic T, size_t N>
-class numeric_array {
-public:
+struct numeric_array {
     using container_type = std::array<T, N>;
     using value_type = typename container_type::value_type;
     using size_type = typename container_type::size_type;
@@ -110,6 +109,8 @@ public:
     constexpr static bool is_f64x2 = std::is_same_v<T, double> && N == 2;
     constexpr static bool is_f64x4 = std::is_same_v<T, double> && N == 4;
     constexpr static bool is_f64x8 = std::is_same_v<T, double> && N == 8;
+
+    container_type v;
 
     constexpr numeric_array() noexcept = default;
     constexpr numeric_array(numeric_array const &rhs) noexcept = default;
@@ -1286,6 +1287,26 @@ public:
         return r;
     }
 
+    [[nodiscard]] static constexpr value_type zero_mask() noexcept
+    {
+        std::array<unsigned char, sizeof(value_type)> bytes;
+        for (size_t i = 0; i != bytes.size(); ++i) {
+            bytes[i] = 0;
+        }
+        return std::bit_cast<value_type>(bytes);
+    }
+
+    [[nodiscard]] static constexpr value_type ones_mask() noexcept
+    {
+        static_assert(CHAR_BIT == 8);
+
+        std::array<unsigned char, sizeof(value_type)> bytes;
+        for (size_t i = 0; i != bytes.size(); ++i) {
+            bytes[i] = 0xff;
+        }
+        return std::bit_cast<value_type>(bytes);
+    }
+    
     [[nodiscard]] friend constexpr numeric_array gt_mask(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -1300,17 +1321,17 @@ public:
             }
         }
 
+        constexpr value_type zero = zero_mask();
+        constexpr value_type ones = ones_mask();
+
         auto r = numeric_array{};
         for (size_t i = 0; i != N; ++i) {
-            if constexpr (sizeof(value_type) == 4) {
-                r[i] = std::bit_cast<value_type>((static_cast<int32_t>(lhs.v[i] > rhs.v[i]) << 31) >> 31);
-            } else {
-                tt_static_not_implemented();
-            }
+            r[i] = lhs.v[i] > rhs.v[i] ? ones : zero;
         }
         return r;
     }
 
+    
     [[nodiscard]] friend constexpr numeric_array ge_mask(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -1319,13 +1340,12 @@ public:
             }
         }
 
+        constexpr value_type zero = zero_mask();
+        constexpr value_type ones = ones_mask();
+
         auto r = numeric_array{};
         for (size_t i = 0; i != N; ++i) {
-            if constexpr (sizeof(value_type) == 4) {
-                r[i] = std::bit_cast<value_type>((static_cast<int32_t>(lhs.v[i] >= rhs.v[i]) << 31) >> 31);
-            } else {
-                tt_static_not_implemented();
-            }
+            r[i] = lhs.v[i] >= rhs.v[i] ? ones : zero;
         }
         return r;
     }
@@ -2107,8 +2127,6 @@ public:
 #undef SWIZZLE_3D_GEN2
 #undef SWIZZLE_2D_GEN1
 
-private:
-    container_type v;
 
     template<int I, typename First, typename... Rest>
     friend constexpr void transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
