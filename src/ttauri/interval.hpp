@@ -194,6 +194,24 @@ public:
         return raw(min(a_mb, b_ma));
     }
 
+    [[nodiscard]] constexpr interval operator%(interval const &rhs) const noexcept
+    {
+        if (rhs.v[0] <= 0 and 0 <= rhs.v[1]) {
+            // Return an infinite interval when it is possible to divide by zero.
+            return interval{};
+        }
+
+        // In C++ the sign of the modulo operator's result is the same as the left operand.
+        ttlet rhs_abs = abs(rhs);
+        if (v[0] > 0) {
+            return rhs_abs;
+        } else if (v[1] > 0) {
+            return -rhs_abs;
+        } else {
+            return raw(rhs_abs.yy());
+        }
+    }
+
     [[nodiscard]] friend constexpr interval reciprocal(interval const &rhs) noexcept
     {
         if (rhs.v[0] <= 0 and 0 <= rhs.v[1]) {
