@@ -271,13 +271,16 @@ gfx_device_vulkan::get_surface_format(gfx_surface const &surface, int *score) co
 
         switch (surface_format.colorSpace) {
         case vk::ColorSpaceKHR::eSrgbNonlinear: surface_format_score += 1; break;
-        case vk::ColorSpaceKHR::eExtendedSrgbNonlinearEXT: surface_format_score += 100; break;
-        default: continue;
+        case vk::ColorSpaceKHR::eExtendedSrgbNonlinearEXT: surface_format_score += 10; break;
+        default:;
         }
 
         switch (surface_format.format) {
         case vk::Format::eR16G16B16A16Sfloat: surface_format_score += 12; break;
         case vk::Format::eR16G16B16Sfloat: surface_format_score += 11; break;
+        case vk::Format::eA2B10G10R10UnormPack32:
+            // This is a wire format for HDR, the GPU will not automatically convert linear shader-space to this wire format.
+            surface_format_score -= 100; break;
         case vk::Format::eR8G8B8A8Srgb: surface_format_score += 4; break;
         case vk::Format::eB8G8R8A8Srgb: surface_format_score += 4; break;
         case vk::Format::eR8G8B8Srgb: surface_format_score += 3; break;
@@ -286,7 +289,7 @@ gfx_device_vulkan::get_surface_format(gfx_surface const &surface, int *score) co
         case vk::Format::eR8G8B8A8Unorm: surface_format_score += 2; break;
         case vk::Format::eB8G8R8Unorm: surface_format_score += 1; break;
         case vk::Format::eR8G8B8Unorm: surface_format_score += 1; break;
-        default: continue;
+        default:;
         }
 
         if (score) {
