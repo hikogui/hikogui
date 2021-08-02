@@ -101,25 +101,61 @@ enum class processor {
 #define TT_X86_64_V2_5 1
 #define TT_X86_64_V2 1
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
+#define TT_HAS_SSE3
+#define TT_HAS_SSE4_1
+#define TT_HAS_SSE4_2
+#define TT_HAS_SSSE3
+#define TT_HAS_AVX
+#define TT_HAS_AVX2
+#define TT_HAS_AVX512F
+#define TT_HAS_AVX512BW
+#define TT_HAS_AVX512CD
+#define TT_HAS_AVX512DQ
+#define TT_HAS_AVX512VL
 
 #elif defined(__AVX2__)
 #define TT_X86_64_V3 1
 #define TT_X86_64_V2_5 1
 #define TT_X86_64_V2 1
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
+#define TT_HAS_SSE3
+#define TT_HAS_SSE4_1
+#define TT_HAS_SSE4_2
+#define TT_HAS_SSSE3
+#define TT_HAS_AVX
+#define TT_HAS_AVX2
 
 #elif defined(__AVX__)
 #define TT_X86_64_V2_5 1
 #define TT_X86_64_V2 1
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
+#define TT_HAS_SSE3
+#define TT_HAS_SSE4_1
+#define TT_HAS_SSE4_2
+#define TT_HAS_SSSE3
+#define TT_HAS_AVX
 
 // x86_64_v2 can not be selected in MSVC, but can be in gcc and clang.
 #elif defined(__SSE4_2__) && defined(__SSSE3__)
 #define TT_X86_64_V2 1
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
+#define TT_HAS_SSE3
+#define TT_HAS_SSE4_1
+#define TT_HAS_SSE4_2
+#define TT_HAS_SSSE3
 
 #else
 #define TT_X86_64_V1 1
+#define TT_HAS_SSE
+#define TT_HAS_SSE2
 #endif
 #endif
 
@@ -160,8 +196,10 @@ constexpr bool x86_64_v4 = false;
 #define tt_force_inline __forceinline
 #define tt_no_inline __declspec(noinline)
 #define tt_restrict __restrict
+#define tt_warning_push() _Pragma("warning( push )")
+#define tt_warning_pop() _Pragma("warning( pop )")
+#define tt_msvc_pragma(a) _Pragma(a)
 #define clang_suppress(a)
-#define msvc_pragma(a) _Pragma(a)
 
 #elif TT_COMPILER == TT_CC_CLANG
 #define tt_unreachable() __builtin_unreachable()
@@ -170,8 +208,10 @@ constexpr bool x86_64_v4 = false;
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline __attribute__((noinline))
 #define tt_restrict __restrict__
+#define tt_warning_push() _Pragma(warning(push))
+#define tt_warning_pop() _Pragma(warning(push))
+#define tt_msvc_pragma(a)
 #define clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
-#define msvc_pragma(a)
 
 #elif TT_COMPILER == TT_CC_GCC
 #define tt_unreachable() __builtin_unreachable()
@@ -180,6 +220,9 @@ constexpr bool x86_64_v4 = false;
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline __attribute__((noinline))
 #define tt_restrict __restrict__
+#define tt_warning_push() _Pragma("warning(push)")
+#define tt_warning_pop() _Pragma("warning(pop)")
+#define tt_msvc_pragma(a)
 #define clang_suppress(a)
 #define msvc_pragma(a)
 
@@ -190,6 +233,9 @@ constexpr bool x86_64_v4 = false;
 #define tt_force_inline inline
 #define tt_no_inline
 #define tt_restrict
+#define tt_warning_push()
+#define tt_warning_pop()
+#define tt_msvc_pragma(a)
 #define clang_suppress(a)
 #define msvc_pragma(a)
 

@@ -8,8 +8,24 @@
 #include <type_traits>
 #include <string>
 #include <concepts>
+#include <limits>
 
 namespace tt {
+
+template<typename T>
+concept numeric_limited = std::numeric_limits<T>::is_specialized;
+
+template<typename T>
+concept numeric = is_numeric_v<T>;
+
+template<typename T>
+concept numeric_integral = is_numeric_integral_v<T>;
+
+template<typename T>
+concept numeric_signed_integral = is_numeric_signed_integral_v<T>;
+
+template<typename T>
+concept numeric_unsigned_integral = is_numeric_unsigned_integral_v<T>;
 
 template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
@@ -52,8 +68,7 @@ concept to_stringable = requires(T v)
 {
     {
         to_string(v)
-    }
-    ->std::convertible_to<std::string>;
+        } -> std::convertible_to<std::string>;
 };
 
 template<typename T>
@@ -61,8 +76,7 @@ concept from_stringable = requires()
 {
     {
         from_string<T>(std::string_view{})
-    }
-    ->std::convertible_to<T>;
+        } -> std::convertible_to<T>;
 };
 
 template<typename From, typename To>
@@ -70,8 +84,7 @@ concept static_castableable = requires(From v)
 {
     {
         static_cast<To>(v)
-    }
-    ->std::convertible_to<To>;
+        } -> std::convertible_to<To>;
 };
 
 template<typename T>
@@ -79,8 +92,7 @@ concept sizeable = requires(T v)
 {
     {
         size(v)
-    }
-    ->std::convertible_to<size_t>;
+        } -> std::convertible_to<size_t>;
 };
 
 template<typename T>

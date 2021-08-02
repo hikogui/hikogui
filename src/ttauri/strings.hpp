@@ -64,12 +64,12 @@ namespace tt {
 
 [[nodiscard]] constexpr bool is_name_first(char c) noexcept
 {
-    return is_alpha(c) || c == '_' || c == '$';
+    return is_alpha(c) or c == '_' or c == '$' or (c & 0x80);
 }
 
 [[nodiscard]] constexpr bool is_name_next(char c) noexcept
 {
-    return is_alpha_num(c) || c == '_' || c == '$';
+    return is_alpha_num(c) or c == '_' or c == '$' or (c & 0x80);
 }
 
 [[nodiscard]] constexpr bool is_quote(char c) noexcept
