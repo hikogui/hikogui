@@ -144,7 +144,7 @@ tt_warning_push()
 
         // Carry can directly be added the sum without a double overflow.
         ttlet r = static_cast<T>(lhs + rhs + carry);
-        ttlet c = static_cast<T>(r < lhs);
+        ttlet c = static_cast<T>(r < lhs or r < rhs);
         return {r, c};
     }
 
@@ -546,7 +546,7 @@ tt_warning_push()
     {
         auto carry = T{1};
         for (size_t i = 0; i != n; ++i) {
-            std::tie(r[i], carry) = add_carry(~rhs[i], 0, carry);
+            std::tie(r[i], carry) = add_carry(~rhs[i], T{0}, carry);
         }
     }
 

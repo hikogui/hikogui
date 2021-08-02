@@ -40,7 +40,7 @@
 
 namespace tt {
 
-template<arithmetic T, size_t N>
+template<numeric_limited T, size_t N>
 struct numeric_array {
     using container_type = std::array<T, N>;
     using value_type = typename container_type::value_type;

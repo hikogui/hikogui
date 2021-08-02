@@ -11,6 +11,7 @@
 #include <format>
 #include <type_traits>
 #include <ostream>
+#include <concepts>
 
 namespace tt {
 
@@ -208,7 +209,7 @@ struct bigint {
 
     std::string string() const noexcept
     {
-        static auto oneOver10 = reciprocal(bigint<digit_type, num_digits * 2, is_signed>{10});
+        constexpr auto oneOver10 = reciprocal(bigint<digit_type, num_digits * 2, is_signed>{10});
 
         auto tmp = *this;
 
@@ -240,6 +241,13 @@ struct bigint {
             static_cast<uint16_t>(digits[1]),
             static_cast<uint16_t>(digits[0] >> 48),
             digits[0] & 0x0000ffff'ffffffffULL);
+    }
+
+    [[nodiscard]] constexpr bigint operator-() const noexcept
+    {
+        bigint r;
+        neg_carry_chain(r.digits, digits, num_digits);
+        return r;
     }
 
     constexpr bigint &operator<<=(size_t rhs) noexcept
@@ -309,6 +317,7 @@ struct bigint {
         }
         return r;
     }
+
     static bigint from_little_endian(uint8_t const *data) noexcept
     {
         auto r = bigint{};
@@ -337,7 +346,7 @@ struct bigint {
      * \param lhs The number to check.
      * \param rhs Polynomial.
      */
-    [[nodiscard]] friend bigint crc(bigint const &lhs, bigint const &rhs) noexcept requires(not is_signed)
+    [[nodiscard]] constexpr friend bigint crc(bigint const &lhs, bigint const &rhs) noexcept requires(not is_signed)
     {
         ttlet polynomialOrder = bsr_carry_chain(rhs.digits, rhs.num_digits);
         tt_assert(polynomialOrder >= 0);
@@ -363,7 +372,7 @@ struct bigint {
      * \param divider The divider of 1.
      * \return (1 << (K*sizeof(T)*8)) / divider
      */
-    [[nodiscard]] friend bigint reciprocal(bigint const &rhs)
+    [[nodiscard]] constexpr friend bigint reciprocal(bigint const &rhs)
     {
         auto r = bigint<digit_type, num_digits + 1, is_signed>(0);
         r.digits[num_digits] = 1;
@@ -537,13 +546,14 @@ struct is_numeric_integral<bigint<T, N, S>> : std::true_type {
 };
 
 using ubig128 = bigint<uint64_t, 2, false>;
+using big128 = bigint<uint64_t, 2, true>;
 using uuid = bigint<uint64_t, 2, false>;
 
 } // namespace tt
 
 namespace std {
 
-template<std::unsigned_integral DigitType, size_t NumDigits, bool IsSigned>
+template<unsigned_integral DigitType, size_t NumDigits, bool IsSigned>
 struct numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
     using value_type = tt::bigint<DigitType, NumDigits, IsSigned>;
 
@@ -554,34 +564,34 @@ struct numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
     static constexpr bool has_infinity = false;
     static constexpr bool has_quiet_NaN = false;
     static constexpr bool has_signaling_NaN = false;
-    static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+    static constexpr float_denorm_style has_denorm = std::denorm_absent;
     static constexpr bool has_denorm_loss = false;
-    static constexpr std::float_round_style round_style = std::round_toward_zero;
+    static constexpr float_round_style round_style = std::round_toward_zero;
     static constexpr bool is_iec559 = false;
     static constexpr bool is_bounded = true;
     static constexpr bool is_modulo = true;
-    static constexpr int digits = std::numeric_limits<DigitType>::digits * NumDigits;
-    static constexpr int digits10 = std::numeric_limits<DigitType>::digits10 * NumDigits;
+    static constexpr int digits = numeric_limits<DigitType>::digits * NumDigits;
+    static constexpr int digits10 = numeric_limits<DigitType>::digits10 * NumDigits;
     static constexpr int max_digits10 = 0;
     static constexpr int min_exponent = 0;
     static constexpr int min_exponent10 = 0;
     static constexpr int max_exponent = 0;
     static constexpr int max_exponent10 = 0;
-    static constexpr bool traps = std::numeric_limits<DigitType>::traps;
+    static constexpr bool traps = numeric_limits<DigitType>::traps;
     static constexpr bool tinyness_before = false;
 
     static constexpr value_type min() noexcept
     {
         auto r = value_type{};
-        constexpr auto smin = std::numeric_limits<value_type::signed_digit_type>::min();
-        constexpr auto umin = std::numeric_limits<value_type::digit_type>::min();
+        constexpr auto smin = numeric_limits<value_type::signed_digit_type>::min();
+        constexpr auto umin = numeric_limits<value_type::digit_type>::min();
 
-        for (size_t i = 0; i != value_type::nr_digits; ++i) {
+        for (size_t i = 0; i != value_type::num_digits; ++i) {
             r.digits[i] = umin;
         }
 
-        if constexpr (value_type::is_signed and value_type::nr_digits > 0) {
-            r.digits[value_type::nr_digits - 1] = smin;
+        if constexpr (value_type::is_signed and value_type::num_digits > 0) {
+            r.digits[value_type::num_digits - 1] = static_cast<value_type::digit_type>(smin);
         }
 
         return r;
@@ -595,15 +605,15 @@ struct numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
     static constexpr value_type max() noexcept
     {
         auto r = value_type{};
-        constexpr auto smax = std::numeric_limits<value_type::signed_digit_type>::max();
-        constexpr auto umax = std::numeric_limits<value_type::digit_type>::max();
+        constexpr auto smax = numeric_limits<value_type::signed_digit_type>::max();
+        constexpr auto umax = numeric_limits<value_type::digit_type>::max();
 
-        for (size_t i = 0; i != value_type::nr_digits; ++i) {
+        for (size_t i = 0; i != value_type::num_digits; ++i) {
             r.digits[i] = umax;
         }
 
-        if constexpr (value_type::is_signed and value_type::nr_digits > 0) {
-            r.digits[value_type::nr_digits - 1] = smax;
+        if constexpr (value_type::is_signed and value_type::num_digits > 0) {
+            r.digits[value_type::num_digits - 1] = smax;
         }
 
         return r;

@@ -78,9 +78,9 @@ public:
         return r;
     }
     
-    [[nodiscard]] bool constexpr holds_invariant() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
-        return -lower <= upper;
+        return v[0] <= -v[1];
     }
 
     /** Get the lower bound of the interval.
@@ -126,6 +126,22 @@ public:
     [[nodiscard]] constexpr bool is_range() const noexcept
     {
         return delta() > 0;
+    }
+
+    /** Check if a given type can hold all values in the interval.
+     */
+    template<numeric_limited T>
+    [[nodiscard]] constexpr bool type_contains_range() const noexcept
+    {
+        return std::numeric_limits<T>::lower() <= lower() and upper() <= std::numeric_limits<T>::max();
+    }
+
+    /** Check if all the values in a type is inside the interval.
+     */
+    template<numeric_limited T>
+    [[nodiscard]] constexpr bool range_contains_type() const noexcept
+    {
+        return lower() <= std::numeric_limits<T>::lower() and std::numeric_limits<T>::max() <= upper();
     }
 
     /** Check if the interval is true.
@@ -256,7 +272,7 @@ public:
         return rhs.lower() <= lhs and lhs <= rhs.upper();
     }
 
-    [[nodiscard]] friend constexpr auto<=>(value_type const &lhs, interval const &rhs) noexcept
+    [[nodiscard]] friend constexpr auto operator<=>(value_type const &lhs, interval const &rhs) noexcept
     {
         if constexpr (std::is_floating_point_v<value_type>) {
             if (lhs < rhs.lower()) {

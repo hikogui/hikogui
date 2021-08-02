@@ -5,6 +5,7 @@
 #pragma once
 
 #include "architecture.hpp"
+#include "bigint.hpp"
 #include <cstdint>
 
 /** @file

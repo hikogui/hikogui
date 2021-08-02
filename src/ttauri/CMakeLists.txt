@@ -29,6 +29,7 @@ target_sources(ttauri PRIVATE
     bezier_point.hpp
     bigint.hpp
     bits.hpp
+    bound_integer.hpp
     byte_string.hpp
     check.hpp
     concepts.hpp
@@ -192,6 +193,7 @@ if(TT_BUILD_TESTS)
         algorithm_tests.cpp
         bezier_curve_tests.cpp
         bigint_tests.cpp
+        bound_integer_tests.cpp
         coroutine_tests.cpp
         counters_tests.cpp
         datum_tests.cpp
@@ -204,6 +206,7 @@ if(TT_BUILD_TESTS)
         forward_value_tests.cpp
         gap_buffer_tests.cpp
         glob_tests.cpp
+        interval_tests.cpp
         int_carry_tests.cpp
         int_overflow_tests.cpp
         math_tests.cpp
