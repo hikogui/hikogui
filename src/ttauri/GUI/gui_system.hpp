@@ -25,9 +25,11 @@ class gui_system {
 public:
     static inline os_handle instance;
 
+    std::unique_ptr<gfx_system> gfx;
+
     thread_id const thread_id;
 
-    virtual ~gui_system() {}
+    virtual ~gui_system();
 
     gui_system(const gui_system &) = delete;
     gui_system &operator=(const gui_system &) = delete;
@@ -156,7 +158,7 @@ public:
     [[nodiscard]] static std::unique_ptr<gui_system> make_unique() noexcept;
 
 protected:
-    gui_system() noexcept : thread_id(current_thread_id()), _delegate() {}
+    gui_system(std::unique_ptr<gfx_system> gfx) noexcept;
 
 private:
     std::weak_ptr<gui_system_delegate> _delegate;

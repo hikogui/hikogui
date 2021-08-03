@@ -9,13 +9,22 @@
 
 namespace tt {
 
-using namespace std;
+gui_system::gui_system(std::unique_ptr<gfx_system> gfx) noexcept :
+    gfx(std::move(gfx)), thread_id(current_thread_id()), _delegate(), _previous_num_windows(0)
+{
+    this->gfx->init();
+}
+
+gui_system::~gui_system()
+{
+    gfx->deinit();
+}
 
 gui_window &gui_system::add_window(std::unique_ptr<gui_window> window)
 {
     tt_axiom(is_gui_thread());
 
-    auto device = gfx_system::global().findBestDeviceForSurface(*(window->surface));
+    auto device = gfx->find_best_device_for_surface(*(window->surface));
     if (!device) {
         throw gui_error("Could not find a vulkan-device matching this window");
     }
@@ -27,4 +36,4 @@ gui_window &gui_system::add_window(std::unique_ptr<gui_window> window)
     return *window_ptr;
 }
 
-}
+} // namespace tt

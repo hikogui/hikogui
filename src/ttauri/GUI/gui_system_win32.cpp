@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_system_win32.hpp"
+#include "../GFX/gfx_system_vulkan.hpp"
 #include "vertical_sync.hpp"
 #include "../trace.hpp"
 
@@ -10,8 +11,12 @@ namespace tt {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique() noexcept
 {
-    return std::make_unique<gui_system_win32>();
+    auto r = std::make_unique<gui_system_win32>();
+    r->init();
+    return r;
 }
+
+gui_system_win32::gui_system_win32() : gui_system(std::make_unique<gfx_system_vulkan>()) {}
 
 // WM_USER = ?-0x7fff
 // WM_APP = 0x8000-0xbfff.

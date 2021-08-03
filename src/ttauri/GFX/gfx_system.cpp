@@ -12,7 +12,7 @@ namespace tt {
 
 using namespace std;
 
-gfx_device *gfx_system::findBestDeviceForSurface(gfx_surface const &surface)
+gfx_device *gfx_system::find_best_device_for_surface(gfx_surface const &surface)
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -33,20 +33,6 @@ gfx_device *gfx_system::findBestDeviceForSurface(gfx_surface const &surface)
     return best_device;
 }
 
-[[nodiscard]] gfx_system *gfx_system::subsystem_init() noexcept
-{
-    auto tmp = new gfx_system_vulkan();
-    tmp->init();
-    return tmp;
-}
-
-[[nodiscard]] void gfx_system::subsystem_deinit() noexcept
-{
-    if (auto tmp = _global.exchange(nullptr)) {
-        tmp->deinit();
-        delete tmp;
-    }
-}
 
 
 

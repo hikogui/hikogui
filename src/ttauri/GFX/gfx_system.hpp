@@ -43,18 +43,7 @@ public:
 
     [[nodiscard]] virtual std::unique_ptr<gfx_surface> make_surface(os_handle instance, void *os_window) const noexcept = 0;
 
-    static inline gfx_system &global() noexcept
-    {
-        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
-    }
-
-    gfx_device *findBestDeviceForSurface(gfx_surface const &surface);
-
-private:
-    static inline std::atomic<gfx_system *> _global;
-
-    [[nodiscard]] static gfx_system *subsystem_init() noexcept;
-    [[nodiscard]] static void subsystem_deinit() noexcept;
+    gfx_device *find_best_device_for_surface(gfx_surface const &surface);
 };
 
 }

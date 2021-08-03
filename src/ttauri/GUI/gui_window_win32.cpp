@@ -163,7 +163,7 @@ void gui_window_win32::create_window(extent2 new_size)
     }
     dpi = narrow_cast<float>(_dpi);
 
-    surface = gfx_system::global().make_surface(gui_system::instance, win32Window);
+    surface = system.gfx->make_surface(gui_system::instance, win32Window);
 }
 
 gui_window_win32::gui_window_win32(gui_system &system, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
