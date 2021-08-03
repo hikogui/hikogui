@@ -74,6 +74,7 @@ target_sources(ttauri PRIVATE
     format.hpp
     forward_value.hpp
     gap_buffer.hpp
+    global_state.hpp
     glob.hpp
     hash.hpp
     #hires_system_clock.hpp
@@ -93,8 +94,6 @@ target_sources(ttauri PRIVATE
     label.hpp
     locked_memory_allocator.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
-    log_level.cpp
-    log_level.hpp
     logger.cpp
     logger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/logger_macos.mm>
