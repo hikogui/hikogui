@@ -4,7 +4,7 @@
 
 #include "gui_system_win32.hpp"
 #include "../GFX/gfx_system_vulkan.hpp"
-#include "vertical_sync.hpp"
+#include "vertical_sync_win32.hpp"
 #include "../trace.hpp"
 
 namespace tt {
@@ -16,7 +16,9 @@ namespace tt {
     return r;
 }
 
-gui_system_win32::gui_system_win32() : gui_system(std::make_unique<gfx_system_vulkan>()) {}
+gui_system_win32::gui_system_win32() : gui_system(std::make_unique<gfx_system_vulkan>(), std::make_unique<vertical_sync_win32>())
+{
+}
 
 // WM_USER = ?-0x7fff
 // WM_APP = 0x8000-0xbfff.
@@ -96,7 +98,7 @@ int gui_system_win32::loop()
         }
 
 bypass_render:
-        display_time_point = vertical_sync::global().wait();
+        display_time_point = vsync->wait();
 
         // The next dead line is 5ms before the current rendered frame is to be displayed.
         // But give the event loop at least 5ms to process messages.
@@ -107,4 +109,4 @@ bypass_render:
     return *exit_code;
 }
 
-}
+} // namespace tt

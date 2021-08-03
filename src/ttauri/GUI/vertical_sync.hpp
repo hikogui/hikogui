@@ -20,17 +20,6 @@ public:
      * @return The time when the frame that is currently rendered will be displayed.
      */
     virtual hires_utc_clock::time_point wait() noexcept = 0;
-
-    [[nodiscard]] static vertical_sync &global() noexcept
-    {
-        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
-    }
-
-private:
-    static inline std::atomic<vertical_sync *> _global;
-
-    [[nodiscard]] static vertical_sync *subsystem_init() noexcept;
-    static void subsystem_deinit() noexcept;
 };
 
 }

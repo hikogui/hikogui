@@ -7,6 +7,7 @@
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
+#include "vertical_sync.hpp"
 #include "../GFX/gfx_system.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
@@ -26,6 +27,7 @@ public:
     static inline os_handle instance;
 
     std::unique_ptr<gfx_system> gfx;
+    std::unique_ptr<vertical_sync> vsync;
 
     thread_id const thread_id;
 
@@ -158,7 +160,7 @@ public:
     [[nodiscard]] static std::unique_ptr<gui_system> make_unique() noexcept;
 
 protected:
-    gui_system(std::unique_ptr<gfx_system> gfx) noexcept;
+    gui_system(std::unique_ptr<gfx_system> gfx, std::unique_ptr<vertical_sync> vsync) noexcept;
 
 private:
     std::weak_ptr<gui_system_delegate> _delegate;

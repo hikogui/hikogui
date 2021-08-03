@@ -9,8 +9,8 @@
 
 namespace tt {
 
-gui_system::gui_system(std::unique_ptr<gfx_system> gfx) noexcept :
-    gfx(std::move(gfx)), thread_id(current_thread_id()), _delegate(), _previous_num_windows(0)
+gui_system::gui_system(std::unique_ptr<gfx_system> gfx, std::unique_ptr<vertical_sync> vsync) noexcept :
+    gfx(std::move(gfx)), vsync(std::move(vsync)), thread_id(current_thread_id()), _delegate(), _previous_num_windows(0)
 {
     this->gfx->init();
 }
