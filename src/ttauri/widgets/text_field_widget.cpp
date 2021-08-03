@@ -3,13 +3,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_field_widget.hpp"
-#include "../GUI/theme.hpp"
 #include "../GUI/gui_window.hpp"
 
 namespace tt {
 
 text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), _delegate(std::move(delegate)), _field(theme::global(theme_text_style::label)), _shaped_text()
+    super(window, parent), _delegate(std::move(delegate)), _field(theme().text_style(theme_text_style::label)), _shaped_text()
 {
     if (auto d = _delegate.lock()) {
         _delegate_callback = d->subscribe(*this, [this] {
@@ -45,16 +44,16 @@ text_field_widget::constrain(hires_utc_clock::time_point display_time_point, boo
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
-        ttlet text_style = theme::global(theme_text_style::label);
+        ttlet text_style = theme().text_style(theme_text_style::label);
         ttlet text_font_id = font_book::global().find_font(text_style.family_id, text_style.variant);
         ttlet &text_font = font_book::global().get_font(text_font_id);
         ttlet text_digit_width = text_font.description.DigitWidth * text_style.scaled_size();
 
         _text_width = 100.0;
 
-        _minimum_size = {_text_width + theme::global().margin * 2.0f, theme::global().size + theme::global().margin * 2.0f};
-        _preferred_size = {_text_width + theme::global().margin * 2.0f, theme::global().size + theme::global().margin * 2.0f};
-        _maximum_size = {_text_width + theme::global().margin * 2.0f, theme::global().size + theme::global().margin * 2.0f};
+        _minimum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+        _preferred_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+        _maximum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
     } else {
@@ -72,13 +71,13 @@ void text_field_widget::layout(hires_utc_clock::time_point display_time_point, b
 
     need_layout |= _request_layout.exchange(false);
     if (need_layout) {
-        _text_field_rectangle = aarectangle{extent2{_text_width + theme::global().margin * 2.0f, _size.height()}};
+        _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, _size.height()}};
 
         // Set the clipping rectangle to within the border of the input field.
         // Add another border width, so glyphs do not touch the border.
         _text_field_clipping_rectangle = intersect(_clipping_rectangle, _text_field_rectangle);
 
-        _text_rectangle = shrink(_text_field_rectangle, theme::global().margin);
+        _text_rectangle = shrink(_text_field_rectangle, theme().margin);
 
         ttlet field_str = static_cast<std::string>(_field);
 
@@ -101,7 +100,7 @@ void text_field_widget::layout(hires_utc_clock::time_point display_time_point, b
             _error = {};
         }
 
-        _field.set_style_of_all(theme::global(theme_text_style::label));
+        _field.set_style_of_all(theme().text_style(theme_text_style::label));
         _field.set_width(std::numeric_limits<float>::infinity());
         _shaped_text = _field.shaped_text();
 
@@ -302,7 +301,7 @@ hitbox text_field_widget::hitbox_test(point2 position) const noexcept
 [[nodiscard]] color text_field_widget::focus_color() const noexcept
 {
     if (enabled and window.active and _error.has_value()) {
-        return theme::global(theme_text_style::error).color;
+        return theme().text_style(theme_text_style::error).color;
     } else {
         return super::focus_color();
     }
@@ -389,7 +388,7 @@ void text_field_widget::scroll_text() noexcept
 
 void text_field_widget::draw_background_box(draw_context context) const noexcept
 {
-    ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global().rounding_radius, theme::global().rounding_radius};
+    ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
     ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
@@ -401,7 +400,7 @@ void text_field_widget::draw_selection_rectangles(draw_context context) const no
     ttlet selection_rectangles = _field.selection_rectangles();
     for (ttlet selection_rectangle : selection_rectangles) {
         context.draw_filled_quad(
-            _text_translate * translate_z(0.1f) * selection_rectangle, theme::global(theme_color::text_select));
+            _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
     }
 }
 
@@ -410,7 +409,7 @@ void text_field_widget::draw_partial_grapheme_caret(draw_context context) const 
     ttlet partial_grapheme_caret = _field.partial_grapheme_caret();
     if (partial_grapheme_caret) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(partial_grapheme_caret);
-        context.draw_box_with_border_inside(box, color::transparent(), theme::global(theme_color::incomplete_glyph));
+        context.draw_box_with_border_inside(box, color::transparent(), theme().color(theme_color::incomplete_glyph));
     }
 }
 
@@ -424,7 +423,7 @@ void text_field_widget::draw_caret(draw_context context, hires_utc_clock::time_p
     _left_to_right_caret = _field.left_to_right_caret();
     if (_left_to_right_caret && blink_is_on && _focus && window.active) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
-        context.draw_box_with_border_inside(box, color::transparent(), theme::global(theme_color::cursor));
+        context.draw_box_with_border_inside(box, color::transparent(), theme().color(theme_color::cursor));
     }
 }
 

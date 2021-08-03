@@ -159,6 +159,25 @@ public:
      */
     [[nodiscard]] static std::unique_ptr<gui_system> make_unique() noexcept;
 
+    /** Set the theme for the system.
+     *
+     * @param new_theme The new theme to use for the gui system.
+     */
+    void set_theme(tt::theme *new_theme) noexcept
+    {
+        _theme = new_theme;
+    }
+
+    /** Get the theme set for the window.
+     *
+     * @return The current theme of the window, or the system if not set.
+     */
+    tt::theme const theme() const noexcept
+    {
+        tt_axiom(_theme);
+        return _theme;
+    }
+
 protected:
     gui_system(std::unique_ptr<gfx_system> gfx, std::unique_ptr<vertical_sync> vsync) noexcept;
 
@@ -166,7 +185,12 @@ private:
     std::weak_ptr<gui_system_delegate> _delegate;
 
     std::vector<std::unique_ptr<gui_window>> _windows;
-    size_t _previous_num_windows;
+    size_t _previous_num_windows = 0;
+
+    /** The theme of the system.
+     * Should never be nullptr in reality.
+     */
+    tt::theme const *_theme = nullptr;
 };
 
 } // namespace tt

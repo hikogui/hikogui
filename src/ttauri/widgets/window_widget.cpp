@@ -11,7 +11,6 @@
 #endif
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
-#include "../GUI/theme.hpp"
 
 namespace tt {
 
@@ -21,7 +20,7 @@ void window_widget::init() noexcept
 {
     _toolbar = &make_widget<toolbar_widget>();
 
-    if (theme::global().operating_system == operating_system::windows) {
+    if (theme().operating_system == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
         _title_callback = title.subscribe([this]{
@@ -31,7 +30,7 @@ void window_widget::init() noexcept
         });
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
-    } else if (theme::global().operating_system == operating_system::macos) {
+    } else if (theme().operating_system == operating_system::macos) {
         _toolbar->make_widget<window_traffic_lights_widget>();
     } else {
         tt_no_default();
@@ -136,7 +135,7 @@ hitbox window_widget::hitbox_test(point2 position) const noexcept
 [[nodiscard]] color window_widget::background_color() noexcept
 {
     tt_axiom(is_gui_thread());
-    return theme::global(theme_color::fill, semantic_layer);
+    return theme().color(theme_color::fill, semantic_layer);
 }
 
 /** Defining on which edges the resize handle has priority over widget at a higher layer.

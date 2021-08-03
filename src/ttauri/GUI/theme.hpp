@@ -77,26 +77,7 @@ public:
     [[nodiscard]] tt::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
     [[nodiscard]] tt::text_style const &text_style(theme_text_style theme_color) const noexcept;
 
-    static void set_global(theme *theme) noexcept
-    {
-        _global.store(theme);
-    }
-
-    [[nodiscard]] static theme &global() noexcept;
-
-    [[nodiscard]] static tt::color global(theme_color color, ssize_t nesting_level = 0) noexcept
-    {
-        return global().color(color, nesting_level);
-    }
-
-    [[nodiscard]] static tt::text_style const &global(theme_text_style text_style) noexcept
-    {
-        return global().text_style(text_style);
-    }
-
 private:
-    static inline std::atomic<theme *>_global = nullptr;
-
     std::array<std::vector<tt::color>, num_theme_colors> _colors;
     std::array<tt::text_style, num_theme_text_styles> _text_styles;
 

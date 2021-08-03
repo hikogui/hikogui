@@ -5,7 +5,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/theme.hpp"
 #include "../GUI/mouse_event.hpp"
 #include "../geometry/axis.hpp"
 #include "../observable.hpp"
@@ -54,11 +53,11 @@ public:
 
         if (super::constrain(display_time_point, need_reconstrain)) {
             if constexpr (axis == axis::vertical) {
-                _minimum_size = _preferred_size = {theme::global().icon_size, theme::global().large_size};
-                _maximum_size = {theme::global().icon_size, 32767.0f};
+                _minimum_size = _preferred_size = {theme().icon_size, theme().large_size};
+                _maximum_size = {theme().icon_size, 32767.0f};
             } else {
-                _minimum_size = _preferred_size = {theme::global().large_size, theme::global().icon_size};
-                _maximum_size = {32767.0f, theme::global().icon_size};
+                _minimum_size = _preferred_size = {theme().large_size, theme().icon_size};
+                _maximum_size = {32767.0f, theme().icon_size};
             }
             tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
             return true;
@@ -148,15 +147,15 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme::global(theme_color::fill, semantic_layer);
+        return theme().color(theme_color::fill, semantic_layer);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
         if (_hover) {
-            return theme::global(theme_color::fill, semantic_layer + 2);
+            return theme().color(theme_color::fill, semantic_layer + 2);
         } else {
-            return theme::global(theme_color::fill, semantic_layer + 1);
+            return theme().color(theme_color::fill, semantic_layer + 1);
         }
     }
 
@@ -184,7 +183,7 @@ private:
         tt_axiom(is_gui_thread());
 
         ttlet content_aperture_ratio = *aperture / *content;
-        return std::max(rail_length() * content_aperture_ratio, theme::global().size * 2.0f);
+        return std::max(rail_length() * content_aperture_ratio, theme().size * 2.0f);
     }
 
     /** The amount of travel that the slider can make.

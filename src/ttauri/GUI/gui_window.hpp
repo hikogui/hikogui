@@ -12,6 +12,7 @@
 #include "keyboard_event.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
+#include "theme.hpp"
 #include "../text/gstring.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../hires_utc_clock.hpp"
@@ -120,7 +121,27 @@ public:
      */
     virtual void deinit();
 
+    /** Check if the current thread is the same as the gui_system loop.
+     */
     [[nodiscard]] bool is_gui_thread() const noexcept;
+
+    /** Set the theme for this window.
+     *
+     * @param new_theme The new theme to use for this window.
+     */
+    void set_theme(tt::theme *new_theme = nullptr) noexcept
+    {
+        _theme = new_theme;
+    }
+
+    /** Get the theme set for the window.
+     *
+     * @return The current theme of the window, or the system if not set.
+     */
+    tt::theme const theme() const noexcept
+    {
+        return _theme ? *_theme : system.theme();
+    }
 
     void set_device(gfx_device *device) noexcept;
 
@@ -337,6 +358,11 @@ protected:
 
 private:
     std::shared_ptr<std::function<void()>> _setting_change_callback;
+
+    /** The current theme of the window.
+     * If nullptr, then use the theme of the system.
+     */
+    tt::theme const *_theme = nullptr;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used

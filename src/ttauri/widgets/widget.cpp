@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "widget.hpp"
-#include "../GUI/theme.hpp"
 #include "../GUI/gui_window.hpp"
 #include <ranges>
 
@@ -54,22 +53,27 @@ void widget::deinit() noexcept {}
     return window.is_gui_thread();
 }
 
+tt::theme const widget::theme() const noexcept
+{
+    return window.theme();
+}
+
 [[nodiscard]] float widget::margin() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return theme::global().margin;
+    return theme().margin;
 }
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (enabled) {
         if (_hover) {
-            return theme::global(theme_color::fill, semantic_layer + 1);
+            return theme().color(theme_color::fill, semantic_layer + 1);
         } else {
-            return theme::global(theme_color::fill, semantic_layer);
+            return theme().color(theme_color::fill, semantic_layer);
         }
     } else {
-        return theme::global(theme_color::fill, semantic_layer - 1);
+        return theme().color(theme_color::fill, semantic_layer - 1);
     }
 }
 
@@ -77,12 +81,12 @@ void widget::deinit() noexcept {}
 {
     if (enabled) {
         if (_hover) {
-            return theme::global(theme_color::border, semantic_layer + 1);
+            return theme().color(theme_color::border, semantic_layer + 1);
         } else {
-            return theme::global(theme_color::border, semantic_layer);
+            return theme().color(theme_color::border, semantic_layer);
         }
     } else {
-        return theme::global(theme_color::border, semantic_layer - 1);
+        return theme().color(theme_color::border, semantic_layer - 1);
     }
 }
 
@@ -90,14 +94,14 @@ void widget::deinit() noexcept {}
 {
     if (enabled) {
         if (_focus && window.active) {
-            return theme::global(theme_color::accent);
+            return theme().color(theme_color::accent);
         } else if (_hover) {
-            return theme::global(theme_color::border, semantic_layer + 1);
+            return theme().color(theme_color::border, semantic_layer + 1);
         } else {
-            return theme::global(theme_color::border, semantic_layer);
+            return theme().color(theme_color::border, semantic_layer);
         }
     } else {
-        return theme::global(theme_color::border, semantic_layer - 1);
+        return theme().color(theme_color::border, semantic_layer - 1);
     }
 }
 
@@ -105,21 +109,21 @@ void widget::deinit() noexcept {}
 {
     if (enabled) {
         if (window.active) {
-            return theme::global(theme_color::accent);
+            return theme().color(theme_color::accent);
         } else {
-            return theme::global(theme_color::border, semantic_layer);
+            return theme().color(theme_color::border, semantic_layer);
         }
     } else {
-        return theme::global(theme_color::border, semantic_layer - 1);
+        return theme().color(theme_color::border, semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (enabled) {
-        return theme::global(theme_text_style::label).color;
+        return theme().color(theme_text_style::label).color;
     } else {
-        return theme::global(theme_color::border, semantic_layer - 1);
+        return theme().color(theme_color::border, semantic_layer - 1);
     }
 }
 
@@ -579,7 +583,7 @@ widget &widget::add_widget(std::unique_ptr<widget> widget) noexcept
     tt_axiom(is_gui_thread());
 
     ttlet requested_window_rectangle = aarectangle{local_to_window() * requested_rectangle};
-    ttlet window_bounds = shrink(aarectangle{window.screen_rectangle.size()}, theme::global().margin);
+    ttlet window_bounds = shrink(aarectangle{window.screen_rectangle.size()}, theme().margin);
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return aarectangle{window_to_local() * response_window_rectangle};
 }

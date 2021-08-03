@@ -12,17 +12,6 @@
 
 namespace tt {
 
-[[nodiscard]] theme &theme::global() noexcept
-{
-    if (auto tmp = _global.load(std::memory_order::relaxed)) {
-        return *tmp;
-    } else {
-        // Once the theme_book is initialized, _global should be to.
-        [[maybe_unused]] ttlet &book = theme_book::global();
-        return *_global.load(std::memory_order::relaxed);
-    }
-}
-
 theme::theme(URL const &url)
 {
     try {

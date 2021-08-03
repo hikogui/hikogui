@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "checkbox_widget.hpp"
-#include "../GUI/theme.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 
 namespace tt {
@@ -25,8 +24,8 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
 
     if (super::constrain(display_time_point, need_reconstrain)) {
         // Make room for button and margin.
-        _button_size = {theme::global().size, theme::global().size};
-        ttlet extra_size = extent2{theme::global().margin + _button_size.width(), 0.0f};
+        _button_size = {theme().size, theme().size};
+        ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
         _minimum_size += extra_size;
         _preferred_size += extra_size;
         _maximum_size += extra_size;
@@ -50,17 +49,17 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
     if (need_layout) {
         _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme::global().margin, 0.0f, width(), height()};
+        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
         _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
         ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
         _check_glyph_rectangle =
-            align(_button_rectangle, scale(check_glyph_bb, theme::global().icon_size), alignment::middle_center);
+            align(_button_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);
 
         _minus_glyph = to_font_glyph_ids(elusive_icon::Minus);
         ttlet minus_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_minus_glyph);
         _minus_glyph_rectangle =
-            align(_button_rectangle, scale(minus_glyph_bb, theme::global().icon_size), alignment::middle_center);
+            align(_button_rectangle, scale(minus_glyph_bb, theme().icon_size), alignment::middle_center);
     }
     super::layout(displayTimePoint, need_layout);
 }
