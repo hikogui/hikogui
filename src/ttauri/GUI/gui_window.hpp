@@ -27,6 +27,7 @@ namespace tt {
 class gfx_device;
 class gfx_system;
 class gfx_surface;
+class gui_system;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -36,6 +37,8 @@ class gfx_surface;
 class gui_window {
 public:
     using delegate_type = gui_window_delegate;
+
+    gui_system &system;
 
     std::unique_ptr<gfx_surface> surface;
 
@@ -93,7 +96,7 @@ public:
     //! The widget covering the complete window.
     std::unique_ptr<window_widget> widget;
 
-    gui_window(label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    gui_window(gui_system &system, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     virtual ~gui_window();
 
@@ -116,6 +119,8 @@ public:
      * `deinit()` should not take locks on window::mutex.
      */
     virtual void deinit();
+
+    [[nodiscard]] bool is_gui_thread() const noexcept;
 
     void set_device(gfx_device *device) noexcept;
 

@@ -118,6 +118,8 @@ public:
      */
     virtual void deinit() noexcept;
 
+    [[nodiscard]] bool is_gui_thread() const noexcept;
+
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
      * a way that the maximum margin of neighboring widgets is maintained.

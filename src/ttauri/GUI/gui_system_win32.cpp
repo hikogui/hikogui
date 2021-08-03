@@ -8,6 +8,11 @@
 
 namespace tt {
 
+[[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique() noexcept
+{
+    return std::make_unique<gui_system_win32>();
+}
+
 // WM_USER = ?-0x7fff
 // WM_APP = 0x8000-0xbfff.
 constexpr unsigned int WM_APP_CALL_FUNCTION = 0x8000 + 1;

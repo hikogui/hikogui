@@ -27,19 +27,4 @@ gui_window &gui_system::add_window(std::unique_ptr<gui_window> window)
     return *window_ptr;
 }
 
-[[nodiscard]] gui_system *gui_system::subsystem_init() noexcept
-{
-    auto tmp = new gui_system_win32();
-    tmp->init();
-    return tmp;
-}
-
-void gui_system::subsystem_deinit() noexcept
-{
-    if (auto tmp = _global.exchange(nullptr)) {
-        tmp->deinit();
-        delete tmp;
-    }
-}
-
 }

@@ -31,8 +31,6 @@ static bool firstWindowHasBeenOpened = false;
  */
 static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (uMsg == WM_CREATE && lParam) {
         ttlet createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
 
@@ -52,6 +50,7 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     }
 
     auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
+    tt_axiom(window->is_gui_thread());
 
     LRESULT result = window->windowProc(uMsg, wParam, lParam);
 
@@ -167,8 +166,8 @@ void gui_window_win32::create_window(extent2 new_size)
     surface = gfx_system::global().make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
-    gui_window(title, std::move(delegate)), trackMouseLeaveEventParameters()
+gui_window_win32::gui_window_win32(gui_system &system, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
+    gui_window(system, title, std::move(delegate)), trackMouseLeaveEventParameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
@@ -190,28 +189,28 @@ gui_window_win32::~gui_window_win32()
 
 void gui_window_win32::close_window()
 {
-    gui_system::global().run_from_event_queue([=]() {
+    system.run_from_event_queue([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
 void gui_window_win32::minimize_window()
 {
-    gui_system::global().run_from_event_queue([=]() {
+    system.run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
 void gui_window_win32::maximize_window()
 {
-    gui_system::global().run_from_event_queue([=]() {
+    system.run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
 void gui_window_win32::normalize_window()
 {
-    gui_system::global().run_from_event_queue([=]() {
+    system.run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
@@ -498,7 +497,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         if (last_forced_redraw + 16.7ms < current_time) {
             // During sizing the event loop is blocked.
             // Render at about 60fps.
-            gui_system::global().render(current_time);
+            system.render(current_time);
             last_forced_redraw = current_time;
         }
     } break;

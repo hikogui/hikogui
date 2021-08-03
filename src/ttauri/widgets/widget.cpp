@@ -49,6 +49,11 @@ void widget::init() noexcept {}
 
 void widget::deinit() noexcept {}
 
+[[nodiscard]] bool widget::is_gui_thread() const noexcept
+{
+    return window.is_gui_thread();
+}
+
 [[nodiscard]] float widget::margin() const noexcept
 {
     tt_axiom(is_gui_thread());

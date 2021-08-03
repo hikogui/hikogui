@@ -40,8 +40,8 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     return false;
 }
 
-gui_window::gui_window(label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
-    title(title), _delegate(std::move(delegate))
+gui_window::gui_window(gui_system &system, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
+    system(system), title(title), _delegate(std::move(delegate))
 {
 }
 
@@ -92,6 +92,11 @@ void gui_window::deinit()
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
+}
+
+[[nodiscard]] bool gui_window::is_gui_thread() const noexcept
+{
+    return system.is_gui_thread();
 }
 
 void gui_window::set_device(gfx_device *device) noexcept
@@ -212,12 +217,12 @@ void gui_window::update_keyboard_target(tt::widget const *new_target_widget, key
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
-    auto new_target_parent_chain = new_target_widget->parent_chain();
+    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<tt::widget const *>{};
 
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
     // In that case no widget will get focus.
-    if (!new_target_widget || !new_target_widget->accepts_keyboard_focus(group)) {
+    if (not new_target_widget or not new_target_widget->accepts_keyboard_focus(group)) {
         new_target_widget = {};
     }
 
@@ -227,7 +232,7 @@ void gui_window::update_keyboard_target(tt::widget const *new_target_widget, key
     }
 
     // When there is a new target, tell the current widget that the keyboard focus was exited.
-    if (new_target_widget && _keyboard_target_widget) {
+    if (new_target_widget and _keyboard_target_widget) {
         send_event_to_widget(_keyboard_target_widget, std::vector{command::gui_keyboard_exit});
         _keyboard_target_widget = nullptr;
     }

@@ -27,8 +27,6 @@ public:
 
     thread_id const thread_id;
 
-    gui_system() noexcept : thread_id(current_thread_id()), _delegate() {}
-
     virtual ~gui_system() {}
 
     gui_system(const gui_system &) = delete;
@@ -58,8 +56,6 @@ public:
         _delegate = std::move(delegate);
     }
 
-    virtual void run_from_event_queue(std::function<void()> function) = 0;
-
     /** Start the GUI event loop.
      *
      * This function will start the GUI event loop.
@@ -76,6 +72,21 @@ public:
 
     virtual void exit(int exit_code) = 0;
 
+    /** Run the function from the GUI's event queue.
+     */
+    virtual void run_from_event_queue(std::function<void()> function) = 0;
+
+    /** Run the function now or on from the GUI's event loop.
+     */
+    void run(std::function<void()> function) noexcept
+    {
+        if (is_gui_thread()) {
+            function();
+        } else {
+            run_from_event_queue(std::move(function));
+        }
+    }
+
     gui_window &add_window(std::unique_ptr<gui_window> window);
 
     /** Create a new window.
@@ -89,7 +100,7 @@ public:
         tt_axiom(is_gui_thread());
 
         // XXX abstract away the _win32 part.
-        auto window = std::make_unique<gui_window_win32>(std::forward<Args>(args)...);
+        auto window = std::make_unique<gui_window_win32>(*this, std::forward<Args>(args)...);
         window->init();
 
         return add_window(std::move(window));
@@ -119,10 +130,10 @@ public:
             // win32 is a bit picky about running without windows.
             if (auto delegate = _delegate.lock()) {
                 if (auto exit_code = delegate->last_window_closed(*this)) {
-                    gui_system::global().exit(*exit_code);
+                    this->exit(*exit_code);
                 }
             } else {
-                gui_system::global().exit(0);
+                this->exit(0);
             }
         }
         _previous_num_windows = num_windows;
@@ -135,27 +146,23 @@ public:
         return thread_id == current_thread_id();
     }
 
-    /** Get a reference to the global gui_system.
+    /** Make a gui_system instance.
      *
-     * The first time this function is called it will initialize the gui_system.
-     *
-     * @return A reference to the global gui_system.
+     * This will instantiate a gui_system instance appropriate for the current
+     * operating system.
+     * 
+     * @return A unique pointer to a gui_system instance.
      */
-    [[nodiscard]] static gui_system &global() noexcept
-    {
-        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
-    }
+    [[nodiscard]] static std::unique_ptr<gui_system> make_unique() noexcept;
+
+protected:
+    gui_system() noexcept : thread_id(current_thread_id()), _delegate() {}
 
 private:
-    static inline std::atomic<gui_system *> _global;
-
     std::weak_ptr<gui_system_delegate> _delegate;
 
     std::vector<std::unique_ptr<gui_window>> _windows;
     size_t _previous_num_windows;
-
-    [[nodiscard]] static gui_system *subsystem_init() noexcept;
-    static void subsystem_deinit() noexcept;
 };
 
 } // namespace tt

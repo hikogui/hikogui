@@ -23,7 +23,7 @@ void window_widget::init() noexcept
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
         _title_callback = title.subscribe([this]{
-            run_on_gui_thread([this]{
+            window.system.run([this] {
                 this->_system_menu->icon = (*this->title).icon;
             });
         });

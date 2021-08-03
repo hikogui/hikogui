@@ -10,7 +10,8 @@ using namespace tt;
 
 int tt_main(int argc, char *argv[])
 {
-    auto &window = gui_system::global().make_window(l10n("Toggle example"));
+    auto gui = gui_system::make_unique();
+    auto &window = gui->make_window(l10n("Toggle example"));
     window.content().make_widget<label_widget>("A1", l10n("toggle:"));
 
 /// [Create a toggle]
@@ -22,5 +23,5 @@ int tt_main(int argc, char *argv[])
     tb.other_label = l10n("other");
 /// [Create a toggle]
 
-    return gui_system::global().loop();
+    return gui->loop();
 }

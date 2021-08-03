@@ -46,7 +46,7 @@ void abstract_button_widget::activate() noexcept
         delegate->activate(*this);
     }
 
-    gui_system::global().run_from_event_queue([this]() {
+    window.system.run_from_event_queue([this]() {
         this->_notifier();
     });
 }

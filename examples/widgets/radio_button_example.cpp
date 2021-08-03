@@ -10,7 +10,8 @@ using namespace tt;
 
 int tt_main(int argc, char *argv[])
 {
-    auto &window = gui_system::global().make_window(l10n("Radio button example"));
+    auto gui = gui_system::make_unique();
+    auto &window = gui->make_window(l10n("Radio button example"));
     window.content().make_widget<label_widget>("A1", l10n("radio buttons:"));
 
 /// [Create three radio buttons]
@@ -21,5 +22,5 @@ int tt_main(int argc, char *argv[])
     window.content().make_widget<radio_button_widget>("B3", l10n("three"), value, 3);
 /// [Create three radio buttons]
 
-    return gui_system::global().loop();
+    return gui->loop();
 }

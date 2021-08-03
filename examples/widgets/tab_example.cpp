@@ -11,7 +11,8 @@ using namespace tt;
 
 int tt_main(int argc, char* argv[])
 {
-    auto& window = gui_system::global().make_window(l10n("tab example"));
+    auto gui = gui_system::make_unique();
+    auto& window = gui->make_window(l10n("tab example"));
 
     observable<int> value = 0;
 
@@ -32,6 +33,6 @@ int tt_main(int argc, char* argv[])
     window.toolbar().make_widget<toolbar_tab_button_widget>(l10n("three"), value, 2);
     /// [Create three toolbar tab buttons]
 
-    return gui_system::global().loop();
+    return gui->loop();
 }
 
