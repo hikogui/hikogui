@@ -9,6 +9,8 @@
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "system_menu_widget.hpp"
 #endif
+#include "../GUI/gui_window.hpp"
+#include "../GUI/gui_system.hpp"
 #include "../GUI/theme.hpp"
 
 namespace tt {
