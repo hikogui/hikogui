@@ -202,7 +202,7 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
     return narrow_cast<OutType>(merge_bit_cast<UOutType>(hi, lo));
 }
 
-[[nodiscard]] constexpr auto underlying_cast(scoped_enum auto rhs) noexcept
+[[nodiscard]] constexpr auto to_underlying(scoped_enum auto rhs) noexcept
 {
     return static_cast<std::underlying_type_t<decltype(rhs)>>(rhs);
 }

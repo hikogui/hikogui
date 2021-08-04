@@ -38,22 +38,22 @@ enum class global_state_type : uint64_t {
 
 [[nodiscard]] constexpr global_state_type operator|(global_state_type lhs, global_state_type rhs) noexcept
 {
-    return static_cast<global_state_type>(underlying_cast(lhs) | underlying_cast(rhs));
+    return static_cast<global_state_type>(to_underlying(lhs) | to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr global_state_type operator&(global_state_type lhs, global_state_type rhs) noexcept
 {
-    return static_cast<global_state_type>(underlying_cast(lhs) & underlying_cast(rhs));
+    return static_cast<global_state_type>(to_underlying(lhs) & to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr global_state_type operator~(global_state_type rhs) noexcept
 {
-    return static_cast<global_state_type>(~underlying_cast(rhs));
+    return static_cast<global_state_type>(~to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr bool to_bool(global_state_type rhs) noexcept
 {
-    return static_cast<bool>(underlying_cast(rhs));
+    return static_cast<bool>(to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr bool is_system_running(global_state_type rhs) noexcept
@@ -79,7 +79,7 @@ struct atomic<tt::global_state_type> {
     static constexpr bool is_always_lock_free = atomic_type::is_always_lock_free;
 
     constexpr atomic() noexcept = default;
-    constexpr atomic(value_type desired) noexcept : v(underlying_cast(desired)) {}
+    constexpr atomic(value_type desired) noexcept : v(to_underlying(desired)) {}
     constexpr atomic(atomic const &) = delete;
 
     atomic &operator=(const atomic &) = delete;
@@ -91,7 +91,7 @@ struct atomic<tt::global_state_type> {
 
     void store(value_type desired, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
-        return v.store(tt::underlying_cast(desired), order);
+        return v.store(tt::to_underlying(desired), order);
     }
 
     [[nodiscard]] value_type load(std::memory_order order = std::memory_order::seq_cst) const noexcept
@@ -101,14 +101,14 @@ struct atomic<tt::global_state_type> {
 
     [[nodiscard]] value_type exchange(value_type desired, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
-        return static_cast<value_type>(v.exchange(tt::underlying_cast(desired), order));
+        return static_cast<value_type>(v.exchange(tt::to_underlying(desired), order));
     }
 
     [[nodiscard]] bool
     compare_exchange_weak(value_type &expected, value_type desired, std::memory_order success, std::memory_order failure) noexcept
     {
         return v.compare_exchange_weak(
-            reinterpret_cast<underlying_type_t<value_type> &>(expected), tt::underlying_cast(desired), success, failure);
+            reinterpret_cast<underlying_type_t<value_type> &>(expected), tt::to_underlying(desired), success, failure);
     }
 
     [[nodiscard]] bool
@@ -124,7 +124,7 @@ struct atomic<tt::global_state_type> {
         std::memory_order failure) noexcept
     {
         return v.compare_exchange_weak(
-            reinterpret_cast<underlying_type_t<value_type> &>(expected), tt::underlying_cast(desired), success, failure);
+            reinterpret_cast<underlying_type_t<value_type> &>(expected), tt::to_underlying(desired), success, failure);
     }
 
     [[nodiscard]] bool compare_exchange_strong(
@@ -137,12 +137,12 @@ struct atomic<tt::global_state_type> {
 
     value_type fetch_and(value_type arg, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
-        return static_cast<value_type>(v.fetch_and(tt::underlying_cast(arg), order));
+        return static_cast<value_type>(v.fetch_and(tt::to_underlying(arg), order));
     }
 
     value_type fetch_or(value_type arg, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
-        return static_cast<value_type>(v.fetch_or(tt::underlying_cast(arg), order));
+        return static_cast<value_type>(v.fetch_or(tt::to_underlying(arg), order));
     }
 
     operator value_type() const noexcept
