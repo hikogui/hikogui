@@ -50,7 +50,7 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
     return r;
 }
 
-gfx_system_vulkan::gfx_system_vulkan(std::unique_ptr<tt::font_book> font_book) : gfx_system(std::move(font_book))
+gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
 {
     if constexpr (operating_system::current == operating_system::windows) {
         requiredExtensions = {VK_KHR_WIN32_SURFACE_EXTENSION_NAME};

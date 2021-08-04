@@ -78,7 +78,7 @@ void icon_widget::init() noexcept
 
         } else if (holds_alternative<elusive_icon>(icon_)) {
             _icon_type = icon_type::glyph;
-            _glyph = to_font_glyph_ids(font_book(), get<elusive_icon>(icon_));
+            _glyph = font_book().find_glyph(get<elusive_icon>(icon_));
             _pixmap_hash = 0;
             _pixmap_backing = {};
 
@@ -87,7 +87,7 @@ void icon_widget::init() noexcept
 
         } else if (holds_alternative<ttauri_icon>(icon_)) {
             _icon_type = icon_type::glyph;
-            _glyph = to_font_glyph_ids(font_book(), get<ttauri_icon>(icon_));
+            _glyph = font_book().find_gylph(get<ttauri_icon>(icon_));
             _pixmap_hash = 0;
             _pixmap_backing = {};
 

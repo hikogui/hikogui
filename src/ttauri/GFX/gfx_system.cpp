@@ -5,14 +5,13 @@
 #include "gfx_system.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface.hpp"
-#include "../text/font_book.hpp"
 #include "../logger.hpp"
 #include <chrono>
 
 namespace tt {
 
-gfx_system::gfx_system(std::unique_ptr<tt::font_book> font_book) noexcept :
-    font_book(std::move(font_book)) {}
+gfx_system::gfx_system() noexcept :
+    font_book() {}
 
 gfx_system::~gfx_system() {}
 

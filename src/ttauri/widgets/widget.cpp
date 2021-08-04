@@ -61,7 +61,7 @@ tt::theme const &widget::theme() const noexcept
 
 tt::font_book &widget::font_book() const noexcept
 {
-    return window.gui.font_book();
+    return *window.gui.font_book;
 }
 
 [[nodiscard]] float widget::margin() const noexcept

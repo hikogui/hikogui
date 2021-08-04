@@ -5,6 +5,7 @@
 #include "gui_system.hpp"
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
+#include "theme_book.hpp"
 #include "../logger.hpp"
 #include <chrono>
 
@@ -13,11 +14,13 @@ namespace tt {
 gui_system::gui_system(
     std::unique_ptr<gfx_system> gfx,
     std::unique_ptr<tt::vertical_sync> vertical_sync,
+    std::unique_ptr<tt::font_book> font_book,
     std::unique_ptr<tt::theme_book> theme_book,
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) noexcept :
     gfx(std::move(gfx)),
     vertical_sync(std::move(vertical_sync)),
+    font_book(std::move(font_book)),
     theme_book(std::move(theme_book)),
     keyboard_bindings(std::move(keyboard_bindings)),
     thread_id(current_thread_id()),
@@ -64,13 +67,6 @@ tt::theme const &gui_system::theme() const noexcept
 {
     tt_axiom(_theme);
     return *_theme;
-}
-
-tt::font_book &gui_system::font_book() const noexcept
-{
-    tt_axiom(gfx);
-    tt_axiom(gfx->font_book);
-    return *gfx->font_book;
 }
 
 void gui_system::set_theme_mode(tt::theme_mode mode) noexcept

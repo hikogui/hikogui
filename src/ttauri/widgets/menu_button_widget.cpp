@@ -53,7 +53,7 @@ namespace tt {
             _short_cut_rectangle.left() - theme().margin,
             height()};
 
-        _check_glyph = to_font_glyph_ids(font_book(), elusive_icon::Ok);
+        _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         ttlet check_glyph_bb = _check_glyph.get_bounding_box();
         _check_glyph_rectangle =
             align(_check_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);

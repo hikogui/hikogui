@@ -7,9 +7,6 @@
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
-#include "vertical_sync.hpp"
-#include "theme_book.hpp"
-#include "../GFX/gfx_system.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
@@ -20,6 +17,10 @@
 #include <vector>
 
 namespace tt {
+class gfx_system;
+class vertical_sync;
+class font_book;
+class theme_book;
 class keyboard_bindings;
 
 /** Graphics system
@@ -30,6 +31,7 @@ public:
 
     std::unique_ptr<gfx_system> gfx;
     std::unique_ptr<tt::vertical_sync> vertical_sync;
+    std::unique_ptr<tt::font_book> font_book;
     std::unique_ptr<tt::theme_book> theme_book;
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings;
 
@@ -178,12 +180,6 @@ public:
 
     void set_theme_mode(tt::theme_mode mode) noexcept;
 
-    /** Get the font book.
-    * 
-    * The font book is owned by the gfx_system.
-    */
-    tt::font_book &font_book() const noexcept;
-
     /** Request all windows to constrain.
      */
     void request_constrain() noexcept;
@@ -192,6 +188,7 @@ protected:
     gui_system(
         std::unique_ptr<gfx_system> gfx,
         std::unique_ptr<tt::vertical_sync> vertical_sync,
+        std::unique_ptr<tt::font_book> font_book,
         std::unique_ptr<tt::theme_book> theme_book,
         std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;

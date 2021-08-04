@@ -123,7 +123,7 @@ void selection_widget::deinit() noexcept
             overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer - draw_layer);
 
         _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
-        _chevrons_glyph = to_font_glyph_ids(font_book(), elusive_icon::ChevronUp);
+        _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
         ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
         _chevrons_rectangle =
             align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme().icon_size), alignment::middle_center);

@@ -78,16 +78,16 @@ window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time
             tt_no_default();
         }
 
-        closeWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::CloseWindow);
-        minimizeWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::MinimizeWindow);
+        closeWindowGlyph = font_book.find_glyph(ttauri_icon::CloseWindow);
+        minimizeWindowGlyph = font_book.find_glyph(ttauri_icon::MinimizeWindow);
 
         if (theme().operating_system == operating_system::windows) {
-            maximizeWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::MaximizeWindowMS);
-            restoreWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::RestoreWindowMS);
+            maximizeWindowGlyph = font_book.find_glyph(ttauri_icon::MaximizeWindowMS);
+            restoreWindowGlyph = font_book.find_glyph(ttauri_icon::RestoreWindowMS);
 
         } else if (theme().operating_system == operating_system::macos) {
-            maximizeWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::MaximizeWindowMacOS);
-            restoreWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::RestoreWindowMacOS);
+            maximizeWindowGlyph = font_book.find_glyph(ttauri_icon::MaximizeWindowMacOS);
+            restoreWindowGlyph = font_book.find_glyph(ttauri_icon::RestoreWindowMacOS);
         } else {
             tt_no_default();
         }

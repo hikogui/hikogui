@@ -13,9 +13,13 @@ namespace tt {
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
     auto font_book = std::make_unique<tt::font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
+    font_book->register_elusive_icon_font(URL("resource:elusiveicons-webfont.ttf"));
+    font_book->register_ttauri_icon_font(URL("resource:ttauri_icons.ttf"));
+    font_book->post_process();
+
     auto theme_book = std::make_unique<tt::theme_book>(*font_book, std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
 
-    auto gfx_system = std::make_unique<tt::gfx_system_vulkan>(std::move(font_book));
+    auto gfx_system = std::make_unique<tt::gfx_system_vulkan>();
 
     auto keyboard_bindings = std::make_unique<tt::keyboard_bindings>();
     try {
@@ -27,6 +31,7 @@ namespace tt {
     auto r = std::make_unique<gui_system_win32>(
         std::move(gfx_system),
         std::make_unique<tt::vertical_sync_win32>(),
+        std::move(font_book),
         std::move(theme_book),
         std::move(keyboard_bindings),
         std::move(delegate));

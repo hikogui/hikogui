@@ -15,7 +15,6 @@
 
 namespace tt {
 class gfx_surface;
-class font_book;
 
 /** Graphics system
  */
@@ -24,18 +23,7 @@ public:
     //! List of all devices.
     std::vector<std::shared_ptr<gfx_device>> devices;
 
-    /** The font book to request glyphs from.
-    * 
-    * The font_book is owned by the graphics system because
-    * draw operations for glyphs is handled by the graphics system.
-    * 
-    * The GUI system and its widgets will also need the font book
-    * to handle text shaping. In this case the GUI system will request
-    * a reference from the graphics system.
-    */
-    std::unique_ptr<tt::font_book> font_book;
-
-    gfx_system(std::unique_ptr<tt::font_book> font_book) noexcept;
+    gfx_system() noexcept;
 
     virtual ~gfx_system();
 

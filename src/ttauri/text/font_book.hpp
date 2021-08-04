@@ -44,6 +44,18 @@ public:
      */
     font_id register_font(URL url, bool post_process = true);
 
+    void register_elusive_icon_font(URL url)
+    {
+        auto id = register_font(url, false);
+        elusive_icon_font = &get_font(id);
+    }
+
+    void register_ttauri_icon_font(URL url)
+    {
+        auto id = register_font(url, false);
+        ttauri_icon_font = &get_font(id);
+    }
+
     /** Post process font_book
      * Should be called after a set of register_font() calls
      * This calculates font fallbacks.
@@ -101,6 +113,18 @@ public:
      */
     [[nodiscard]] font_glyph_ids find_glyph(font_id font_id, grapheme grapheme) const noexcept;
 
+    [[nodiscard]] font_glyph_ids find_glyph(elusive_icon rhs) noexcept
+    {
+        tt_axiom(elusive_icon_font);
+        return elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
+    }
+
+    [[nodiscard]] font_glyph_ids find_glyph(ttauri_icon rhs) noexcept
+    {
+        tt_axiom(ttuari_icon_font);
+        return ttauri_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
+    }
+
 private:
     struct fontEntry {
         URL url;
@@ -113,6 +137,9 @@ private:
         {
         }
     };
+
+    font const *elusive_icon_font = nullptr;
+    font const *ttauri_icon_font = nullptr;
 
     /** Table of font_family_ids index using the family-name.
      */
