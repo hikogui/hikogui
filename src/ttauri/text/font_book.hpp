@@ -101,11 +101,6 @@ public:
      */
     [[nodiscard]] font_glyph_ids find_glyph(font_id font_id, grapheme grapheme) const noexcept;
 
-    [[nodiscard]] static font_book &global() noexcept
-    {
-        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
-    }
-
 private:
     struct fontEntry {
         URL url;
@@ -118,8 +113,6 @@ private:
         {
         }
     };
-
-    static inline std::atomic<font_book *> _global;
 
     /** Table of font_family_ids index using the family-name.
      */
@@ -173,18 +166,6 @@ private:
     [[nodiscard]] std::string const &find_fallback_family_name(std::string const &name) const noexcept;
 
     void create_family_name_fallback_chain() noexcept;
-
-    [[nodiscard]] static font_book *subsystem_init() noexcept
-    {
-        return new font_book(std::vector<URL>{URL::urlFromSystemfontDirectory()});
-    }
-
-    static void subsystem_deinit() noexcept
-    {
-        if (auto tmp = _global.exchange(nullptr)) {
-            delete tmp;
-        }
-    }
 };
 
 } // namespace tt

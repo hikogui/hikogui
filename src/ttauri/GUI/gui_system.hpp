@@ -178,6 +178,12 @@ public:
 
     void set_theme_mode(tt::theme_mode mode) noexcept;
 
+    /** Get the font book.
+    * 
+    * The font book is owned by the gfx_system.
+    */
+    tt::font_book &font_book() const noexcept;
+
     /** Request all windows to constrain.
      */
     void request_constrain() noexcept;

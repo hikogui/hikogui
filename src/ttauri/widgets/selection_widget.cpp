@@ -123,8 +123,8 @@ void selection_widget::deinit() noexcept
             overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer - draw_layer);
 
         _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
-        _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
-        ttlet chevrons_glyph_bbox = pipeline_SDF::device_shared::getBoundingBox(_chevrons_glyph);
+        _chevrons_glyph = to_font_glyph_ids(font_book(), elusive_icon::ChevronUp);
+        ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box(font_book());
         _chevrons_rectangle =
             align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme().icon_size), alignment::middle_center);
         _chevrons_rectangle =
@@ -350,7 +350,7 @@ void selection_widget::draw_chevrons(draw_context context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    context.draw_glyph(_chevrons_glyph, translate_z(0.2f) * _chevrons_rectangle, label_color());
+    context.draw_glyph(_chevrons_glyph, theme().icon_size, translate_z(0.2f) * _chevrons_rectangle, label_color());
 }
 
 } // namespace tt

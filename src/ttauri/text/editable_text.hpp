@@ -18,8 +18,8 @@ class editable_text {
 
 
 public:
-    editable_text(text_style style) :
-        _text(), _shaped_text(), _current_style(style)
+    editable_text(tt::font_book const &font_book, text_style style) :
+        _font_book(font_book), _text(), _shaped_text(), _current_style(style)
     {
     }
 
@@ -67,7 +67,7 @@ public:
             text_.emplace_back(grapheme::PS(), text_.back().style, 0);
         }
 
-        _shaped_text = tt::shaped_text{text_, _width, alignment::top_left, false};
+        _shaped_text = tt::shaped_text{_font_book, text_, _width, alignment::top_left, false};
     }
 
     [[nodiscard]] shaped_text shaped_text() const noexcept {
@@ -536,6 +536,7 @@ public:
     }
 
 private:
+    font_book const &_font_book;
     gap_buffer<attributed_grapheme> _text;
     tt::shaped_text _shaped_text;
 

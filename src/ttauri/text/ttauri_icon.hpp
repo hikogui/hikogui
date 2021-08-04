@@ -10,9 +10,9 @@
 
 namespace tt {
 
-inline font_id ttauri_icons_font_id() noexcept
+inline font_id ttauri_icons_font_id(tt::font_book &font_book) noexcept
 {
-    static font_id tmp = font_book::global().register_font(URL("resource:ttauri_icons.ttf"));
+    static font_id tmp = font_book.register_font(URL("resource:ttauri_icons.ttf"));
     return tmp;
 }
 
@@ -74,8 +74,9 @@ enum class ttauri_icon : char32_t {
 
 };
 
-inline font_glyph_ids to_font_glyph_ids(ttauri_icon rhs) noexcept {
-    return font_book::global().find_glyph(ttauri_icons_font_id(), grapheme{static_cast<char32_t>(rhs)});
+inline font_glyph_ids to_font_glyph_ids(tt::font_book &font_book, ttauri_icon rhs) noexcept
+{
+    return font_book.find_glyph(ttauri_icons_font_id(font_book), grapheme{static_cast<char32_t>(rhs)});
 }
 
 

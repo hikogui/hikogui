@@ -12,6 +12,11 @@ namespace tt {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
+    auto font_book = std::make_unique<tt::font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
+    auto theme_book = std::make_unique<tt::theme_book>(*font_book, std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
+
+    auto gfx_system = std::make_unique<tt::gfx_system_vulkan>(std::move(font_book));
+
     auto keyboard_bindings = std::make_unique<tt::keyboard_bindings>();
     try {
         keyboard_bindings->load_bindings(URL{"resource:win32.keybinds.json"}, true);
@@ -20,9 +25,9 @@ namespace tt {
     }
 
     auto r = std::make_unique<gui_system_win32>(
-        std::make_unique<gfx_system_vulkan>(),
+        std::move(gfx_system),
         std::make_unique<tt::vertical_sync_win32>(),
-        std::make_unique<tt::theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"}),
+        std::move(theme_book),
         std::move(keyboard_bindings),
         std::move(delegate));
     r->init();

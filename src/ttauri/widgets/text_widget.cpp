@@ -20,7 +20,7 @@ void text_widget::init() noexcept
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
-        _shaped_text = shaped_text{(*text)(), theme().text_style(*text_style), 0.0f, *alignment};
+        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
         _minimum_size = ceil(_shaped_text.minimum_size());
         _preferred_size = ceil(_shaped_text.preferred_size());
         _maximum_size = ceil(_shaped_text.maximum_size());
@@ -52,7 +52,7 @@ void text_widget::init() noexcept
 
     need_layout |= _request_layout.exchange(false);
     if (need_layout) {
-        _shaped_text = shaped_text{(*text)(), theme().text_style(*text_style), width(), *alignment};
+        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
     }
     super::layout(displayTimePoint, need_layout);

@@ -13,9 +13,7 @@
 
 namespace tt {
 struct graphic_path;
-}
-
-namespace tt {
+class font_book;
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
@@ -206,8 +204,8 @@ public:
         }
     }
 
-    [[nodiscard]] std::pair<graphic_path,aarectangle> getPathAndBoundingBox() const noexcept;
-    [[nodiscard]] aarectangle getBoundingBox() const noexcept;
+    [[nodiscard]] std::pair<graphic_path,aarectangle> get_path_and_bounding_box(tt::font_book const &font_book) const noexcept;
+    [[nodiscard]] aarectangle get_bounding_box(tt::font_book const &font_book) const noexcept;
 
 private:
     [[nodiscard]] bool has_pointer() const noexcept {

@@ -153,10 +153,17 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize. 
         ttlet current_size = screen_rectangle.size();
         ttlet new_size = clamp(current_size, widget->minimum_size(), widget->maximum_size());
-        if (new_size != current_size) {
+        if (new_size != current_size and size_state != gui_window_size::minimized) {
             tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);
         }
+    }
+
+    if (screen_rectangle.size() < widget->minimum_size() or screen_rectangle.size() > widget->maximum_size()) {
+        // Even after the resize above it is possible to have an incorrect window size.
+        // For example when minimizing the window.
+        // Stop processing rendering for this window here.
+        return;
     }
 
     // Update the graphics' surface to the current size of the window.

@@ -5,6 +5,7 @@
 #include "pipeline_SDF.hpp"
 #include "pipeline_SDF_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
+#include "gfx_system.hpp"
 #include "../text/shaped_text.hpp"
 #include "../pixel_map.hpp"
 #include "../URL.hpp"
@@ -26,6 +27,12 @@ device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 }
 
 device_shared::~device_shared() {}
+
+font_book const &device_shared::font_book() const noexcept
+{
+    tt_axiom(device.system.font_book);
+    return *device.system.font_book;
+}
 
 void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
@@ -124,9 +131,9 @@ void device_shared::prepareAtlasForRendering()
  *  |                     |
  *  O---------------------+
  */
-atlas_rect device_shared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
+atlas_rect device_shared::add_glyph_to_atlas(font_glyph_ids glyph) noexcept
 {
-    ttlet[glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
+    ttlet[glyphPath, glyphBoundingBox] = glyph.get_path_and_bounding_box(font_book());
 
     ttlet drawScale = scale2{drawfontSize, drawfontSize};
     ttlet scaledBoundingBox = drawScale * glyphBoundingBox;
@@ -154,23 +161,23 @@ atlas_rect device_shared::addGlyphToAtlas(font_glyph_ids glyph) noexcept
     return atlas_rect;
 }
 
-std::pair<atlas_rect, bool> device_shared::getGlyphFromAtlas(font_glyph_ids glyph) noexcept
+std::pair<atlas_rect, bool> device_shared::get_glyph_from_atlas(font_glyph_ids glyph) noexcept
 {
     ttlet i = glyphs_in_atlas.find(glyph);
     if (i != glyphs_in_atlas.cend()) {
         return {i->second, false};
 
     } else {
-        ttlet aarectangle = addGlyphToAtlas(glyph);
+        ttlet aarectangle = add_glyph_to_atlas(glyph);
         glyphs_in_atlas.emplace(glyph, aarectangle);
         return {aarectangle, true};
     }
 }
 
-aarectangle device_shared::getBoundingBox(font_glyph_ids const &glyphs) noexcept
+aarectangle device_shared::get_bounding_box(font_glyph_ids const &glyphs) const noexcept
 {
     // Adjust bounding box by adding a border based on 1EM.
-    return expand(glyphs.getBoundingBox(), scaledDrawBorder);
+    return expand(glyphs.get_bounding_box(font_book()), scaledDrawBorder);
 }
 
 bool device_shared::_place_vertices(
@@ -180,7 +187,7 @@ bool device_shared::_place_vertices(
     font_glyph_ids const &glyphs,
     color color) noexcept
 {
-    ttlet[atlas_rect, glyph_was_added] = getGlyphFromAtlas(glyphs);
+    ttlet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
 
     ttlet p0 = get<0>(box);
     ttlet p1 = get<1>(box);
@@ -232,10 +239,11 @@ void device_shared::place_vertices(
     aarectangle clippingRectangle,
     rectangle box,
     font_glyph_ids const &glyphs,
+    float glyph_size,
     color color
     ) noexcept
 {
-    if (_place_vertices(vertices, clippingRectangle, box, glyphs, color)) {
+    if (_place_vertices(vertices, clippingRectangle, expand(box, glyph_size * scaledDrawBorder), glyphs, color)) {
         prepareAtlasForRendering();
     }
 }

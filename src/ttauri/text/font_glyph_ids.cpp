@@ -9,11 +9,13 @@
 
 namespace tt {
 
-[[nodiscard]] std::pair<graphic_path,aarectangle> font_glyph_ids::getPathAndBoundingBox() const noexcept {
+[[nodiscard]] std::pair<graphic_path, aarectangle>
+font_glyph_ids::get_path_and_bounding_box(tt::font_book const &font_book) const noexcept
+{
     graphic_path path;
     auto boundingBox = aarectangle{};
 
-    ttlet &font = font_book::global().get_font(font_id());
+    ttlet &font = font_book.get_font(font_id());
     for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 
@@ -38,11 +40,12 @@ namespace tt {
     return {path, boundingBox};
 }
 
-[[nodiscard]] aarectangle font_glyph_ids::getBoundingBox() const noexcept {
+[[nodiscard]] aarectangle font_glyph_ids::get_bounding_box(tt::font_book const &font_book) const noexcept
+{
     graphic_path path;
     auto boundingBox = aarectangle{};
 
-    ttlet &font = font_book::global().get_font(font_id());
+    ttlet &font = font_book.get_font(font_id());
     for (ssize_t i = 0; i < std::ssize(*this); i++) {
         ttlet glyph_id = (*this)[i];
 

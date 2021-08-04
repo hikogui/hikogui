@@ -59,6 +59,11 @@ tt::theme const &widget::theme() const noexcept
     return window.gui.theme();
 }
 
+tt::font_book &widget::font_book() const noexcept
+{
+    return window.gui.font_book();
+}
+
 [[nodiscard]] float widget::margin() const noexcept
 {
     tt_axiom(is_gui_thread());

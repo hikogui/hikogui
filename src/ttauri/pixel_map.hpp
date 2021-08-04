@@ -152,27 +152,29 @@ public:
         }
     }
 
-    /** Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
+    /** Copy constructor of other.
+     *
+     * If the data in other is self allocated a new copy is created.
+     * If other is a view, then a new view is creted.
      */
-    pixel_map(pixel_map const &other) = delete;
-
-    [[nodiscard]] pixel_map copy() const noexcept
+    pixel_map(pixel_map const &other) noexcept :
+        _pixels(other._pixels),
+        _width(other._width),
+        _height(other._height),
+        _stride(other._stride),
+        _hash(other._hash),
+        _self_allocated(other._self_allocated)
     {
         if (_self_allocated) {
-            auto r = pixel_map(_width, _height);
+            _pixels = new T[_height * _stride];
 
             for (ssize_t y = 0; y != _height; ++y) {
-                ttlet src_row = (*this)[y];
-                auto dst_row = r[y];
+                ttlet src_row = other[y];
+                auto dst_row = (*this)[y];
                 for (ssize_t x = 0; x != _width; ++x) {
                     dst_row[x] = src_row[x];
                 }
             }
-
-            r._hash = _hash;
-            return r;
-        } else {
-            return submap(0, 0, _width, _height);
         }
     }
 
@@ -215,7 +217,30 @@ public:
 
     /** Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
      */
-    pixel_map &operator=(pixel_map const &other) = delete;
+    pixel_map &operator=(pixel_map const &other)
+    {
+        tt_return_on_self_assignment(other);
+
+        _pixels = other._pixels;
+        _width = other._width;
+        _height = other._height;
+        _stride = other._stride;
+        _hash = other._hash;
+        _self_allocated = other._self_allocated;
+
+        if (_self_allocated) {
+            _pixels = new T[_height * _stride];
+
+            for (ssize_t y = 0; y != _height; ++y) {
+                ttlet src_row = other[y];
+                auto dst_row = (*this)[y];
+                for (ssize_t x = 0; x != _width; ++x) {
+                    dst_row[x] = src_row[x];
+                }
+            }
+        }
+        return *this;
+    }
 
     pixel_map &operator=(pixel_map &&other) noexcept
     {

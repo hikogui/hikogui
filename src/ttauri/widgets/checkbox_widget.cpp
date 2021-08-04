@@ -51,13 +51,13 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
 
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
-        _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
-        ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
+        _check_glyph = to_font_glyph_ids(font_book(), elusive_icon::Ok);
+        ttlet check_glyph_bb = _check_glyph.get_bounding_box(font_book());
         _check_glyph_rectangle =
             align(_button_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);
 
-        _minus_glyph = to_font_glyph_ids(elusive_icon::Minus);
-        ttlet minus_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_minus_glyph);
+        _minus_glyph = to_font_glyph_ids(font_book(), elusive_icon::Minus);
+        ttlet minus_glyph_bb = _minus_glyph.get_bounding_box(font_book());
         _minus_glyph_rectangle =
             align(_button_rectangle, scale(minus_glyph_bb, theme().icon_size), alignment::middle_center);
     }
@@ -90,13 +90,13 @@ void checkbox_widget::draw_check_mark(draw_context context) noexcept
 
     // Checkmark or tristate.
     if (state_ == tt::button_state::on) {
-        context.draw_glyph(_check_glyph, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
+        context.draw_glyph(_check_glyph, theme().icon_size, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
 
     } else if (state_ == tt::button_state::off) {
         ;
 
     } else {
-        context.draw_glyph(_minus_glyph, translate_z(0.1f) * _minus_glyph_rectangle, accent_color());
+        context.draw_glyph(_minus_glyph, theme().icon_size, translate_z(0.1f) * _minus_glyph_rectangle, accent_color());
     }
 }
 

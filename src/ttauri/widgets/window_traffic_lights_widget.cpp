@@ -11,12 +11,7 @@
 
 namespace tt {
 
-window_traffic_lights_widget::window_traffic_lights_widget(
-    gui_window &window,
-    widget *parent) noexcept :
-    super(window, parent)
-{
-}
+window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
 [[nodiscard]] float window_traffic_lights_widget::margin() const noexcept
 {
@@ -49,8 +44,7 @@ window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time
     }
 }
 
-[[nodiscard]] void
-window_traffic_lights_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void window_traffic_lights_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -84,33 +78,34 @@ window_traffic_lights_widget::layout(hires_utc_clock::time_point display_time_po
             tt_no_default();
         }
 
-        closeWindowGlyph = to_font_glyph_ids(ttauri_icon::CloseWindow);
-        minimizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MinimizeWindow);
+        closeWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::CloseWindow);
+        minimizeWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::MinimizeWindow);
 
         if (theme().operating_system == operating_system::windows) {
-            maximizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MaximizeWindowMS);
-            restoreWindowGlyph = to_font_glyph_ids(ttauri_icon::RestoreWindowMS);
+            maximizeWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::MaximizeWindowMS);
+            restoreWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::RestoreWindowMS);
 
         } else if (theme().operating_system == operating_system::macos) {
-            maximizeWindowGlyph = to_font_glyph_ids(ttauri_icon::MaximizeWindowMacOS);
-            restoreWindowGlyph = to_font_glyph_ids(ttauri_icon::RestoreWindowMacOS);
+            maximizeWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::MaximizeWindowMacOS);
+            restoreWindowGlyph = to_font_glyph_ids(font_book(), ttauri_icon::RestoreWindowMacOS);
         } else {
             tt_no_default();
         }
 
-        ttlet closeWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(closeWindowGlyph);
-        ttlet minimizeWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(minimizeWindowGlyph);
-        ttlet maximizeWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(maximizeWindowGlyph);
-        ttlet restoreWindowGlyphBB = pipeline_SDF::device_shared::getBoundingBox(restoreWindowGlyph);
+        ttlet closeWindowGlyphBB = closeWindowGlyph.get_bounding_box(font_book());
+        ttlet minimizeWindowGlyphBB = minimizeWindowGlyph.get_bounding_box(font_book());
+        ttlet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box(font_book());
+        ttlet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box(font_book());
 
-        ttlet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
+        _glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
 
-        closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, glyph_size), alignment::middle_center);
+        closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, _glyph_size), alignment::middle_center);
         minimizeWindowGlyphRectangle =
-            align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), alignment::middle_center);
+            align(minimizeRectangle, scale(minimizeWindowGlyphBB, _glyph_size), alignment::middle_center);
         maximizeWindowGlyphRectangle =
-            align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), alignment::middle_center);
-        restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), alignment::middle_center);
+            align(maximizeRectangle, scale(maximizeWindowGlyphBB, _glyph_size), alignment::middle_center);
+        restoreWindowGlyphRectangle =
+            align(maximizeRectangle, scale(restoreWindowGlyphBB, _glyph_size), alignment::middle_center);
     }
     super::layout(display_time_point, need_layout);
 }
@@ -140,13 +135,17 @@ void window_traffic_lights_widget::drawMacOS(
     context.draw_box(maximizeRectangle, maximize_circle_color, corner_shapes{RADIUS});
 
     if (_hover) {
-        context.draw_glyph(closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
-        context.draw_glyph(minimizeWindowGlyph, translate_z(0.1f) * minimizeWindowGlyphRectangle, color{0.212f, 0.1f, 0.0f});
+        context.draw_glyph(
+            closeWindowGlyph, _glyph_size, translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
+        context.draw_glyph(
+            minimizeWindowGlyph, _glyph_size, translate_z(0.1f) * minimizeWindowGlyphRectangle, color{0.212f, 0.1f, 0.0f});
 
         if (window.size_state == gui_window_size::maximized) {
-            context.draw_glyph(restoreWindowGlyph, translate_z(0.1f) * restoreWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
+            context.draw_glyph(
+                restoreWindowGlyph, _glyph_size, translate_z(0.1f) * restoreWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
         } else {
-            context.draw_glyph(maximizeWindowGlyph, translate_z(0.1f) * maximizeWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
+            context.draw_glyph(
+                maximizeWindowGlyph, _glyph_size, translate_z(0.1f) * maximizeWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
         }
     }
 }
@@ -185,12 +184,12 @@ void window_traffic_lights_widget::drawWindows(
 
     ttlet glyph_color = window.active ? label_color() : foreground_color();
 
-    context.draw_glyph(closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color);
-    context.draw_glyph(minimizeWindowGlyph, translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color);
+    context.draw_glyph(closeWindowGlyph, _glyph_size, translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color);
+    context.draw_glyph(minimizeWindowGlyph, _glyph_size, translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color);
     if (window.size_state == gui_window_size::maximized) {
-        context.draw_glyph(restoreWindowGlyph, translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color);
+        context.draw_glyph(restoreWindowGlyph, _glyph_size, translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color);
     } else {
-        context.draw_glyph(maximizeWindowGlyph, translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color);
+        context.draw_glyph(maximizeWindowGlyph, _glyph_size, translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color);
     }
 }
 

@@ -66,6 +66,13 @@ tt::theme const &gui_system::theme() const noexcept
     return *_theme;
 }
 
+tt::font_book &gui_system::font_book() const noexcept
+{
+    tt_axiom(gfx);
+    tt_axiom(gfx->font_book);
+    return *gfx->font_book;
+}
+
 void gui_system::set_theme_mode(tt::theme_mode mode) noexcept
 {
     if (theme().mode != mode) {

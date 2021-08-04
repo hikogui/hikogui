@@ -17,6 +17,7 @@
 #include <array>
 
 namespace tt {
+class font_book;
 
 class theme {
 public:
@@ -72,7 +73,7 @@ public:
 
     /** Open and parse a theme file.
      */
-    theme(URL const &url);
+    theme(tt::font_book const &font_book, URL const &url);
 
     [[nodiscard]] tt::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
     [[nodiscard]] tt::text_style const &text_style(theme_text_style theme_color) const noexcept;
@@ -87,10 +88,10 @@ private:
     [[nodiscard]] tt::color parse_color_value(datum const &data);
     [[nodiscard]] tt::color parse_color(datum const &data, char const *object_name);
     [[nodiscard]] std::vector<tt::color> parse_color_list(datum const &data, char const *object_name);
-    [[nodiscard]] tt::text_style parse_text_style_value(datum const &data);
+    [[nodiscard]] tt::text_style parse_text_style_value(tt::font_book const &font_book, datum const &data);
     [[nodiscard]] font_weight parse_font_weight(datum const &data, char const *object_name);
-    [[nodiscard]] tt::text_style parse_text_style(datum const &data, char const *object_name);
-    void parse(datum const &data);
+    [[nodiscard]] tt::text_style parse_text_style(tt::font_book const &font_book, datum const &data, char const *object_name);
+    void parse(tt::font_book const &font_book, datum const &data);
 
     [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {
         return std::format("{}:{}", rhs.name, rhs.mode);

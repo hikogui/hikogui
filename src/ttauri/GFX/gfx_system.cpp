@@ -5,12 +5,16 @@
 #include "gfx_system.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface.hpp"
+#include "../text/font_book.hpp"
 #include "../logger.hpp"
 #include <chrono>
 
 namespace tt {
 
-using namespace std;
+gfx_system::gfx_system(std::unique_ptr<tt::font_book> font_book) noexcept :
+    font_book(std::move(font_book)) {}
+
+gfx_system::~gfx_system() {}
 
 gfx_device *gfx_system::find_best_device_for_surface(gfx_surface const &surface)
 {

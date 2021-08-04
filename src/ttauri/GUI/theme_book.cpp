@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "theme_book.hpp"
+#include "../text/font_book.hpp"
 #include "../subsystem.hpp"
 #include "../trace.hpp"
 
@@ -10,7 +11,7 @@ namespace tt {
 
 theme_book::~theme_book() {}
 
-theme_book::theme_book(std::vector<URL> const &theme_directories) noexcept : themes()
+theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &theme_directories) noexcept : themes()
 {
     for (ttlet &theme_directory : theme_directories) {
         ttlet theme_directory_glob = theme_directory / "**" / "*.theme.json";
@@ -18,7 +19,7 @@ theme_book::theme_book(std::vector<URL> const &theme_directories) noexcept : the
             auto t = trace<"theme_scan">{};
 
             try {
-                themes.push_back(std::make_unique<theme>(theme_url));
+                themes.push_back(std::make_unique<theme>(font_book, theme_url));
             } catch (std::exception const &e) {
                 tt_log_error("Failed parsing theme at {}. \"{}\"", theme_url, e.what());
             }

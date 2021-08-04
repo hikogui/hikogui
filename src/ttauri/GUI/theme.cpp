@@ -12,12 +12,12 @@
 
 namespace tt {
 
-theme::theme(URL const &url)
+theme::theme(tt::font_book const &font_book, URL const &url)
 {
     try {
         tt_log_info("Parsing theme at {}", url);
         ttlet data = parse_JSON(url);
-        parse(data);
+        parse(font_book, data);
     } catch (std::exception const &e) {
         throw io_error("{}: Could not load theme.\n{}", url, e.what());
     }
@@ -182,7 +182,7 @@ theme::theme(URL const &url)
     }
 }
 
-[[nodiscard]] text_style theme::parse_text_style_value(datum const &data)
+[[nodiscard]] text_style theme::parse_text_style_value(tt::font_book const &font_book, datum const &data)
 {
     if (!data.is_map()) {
         throw parse_error("Expect a text-style to be an object, got '{}'", data);
@@ -190,7 +190,7 @@ theme::theme(URL const &url)
 
     tt::text_style r;
 
-    r.family_id = font_book::global().find_family(parse_string(data, "family"));
+    r.family_id = font_book.find_family(parse_string(data, "family"));
     r.size = parse_float(data, "size");
 
     if (data.contains("weight")) {
@@ -209,7 +209,7 @@ theme::theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] text_style theme::parse_text_style(datum const &data, char const *object_name)
+[[nodiscard]] text_style theme::parse_text_style(tt::font_book const &font_book, datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -218,13 +218,13 @@ theme::theme(URL const &url)
 
     ttlet textStyleObject = data[object_name];
     try {
-        return parse_text_style_value(textStyleObject);
+        return parse_text_style_value(font_book, textStyleObject);
     } catch (parse_error const &e) {
         throw parse_error("Could not parse text-style '{}'\n{}", object_name, e.what());
     }
 }
 
-void theme::parse(datum const &data)
+void theme::parse(tt::font_book const &font_book, datum const &data)
 {
     tt_assert(data.is_map());
 
@@ -265,15 +265,19 @@ void theme::parse(datum const &data)
     std::get<static_cast<size_t>(theme_color::incomplete_glyph)>(this->_colors) =
         parse_color_list(data, "incomplete-glyph-color");
 
-    std::get<static_cast<size_t>(theme_text_style::label)>(this->_text_styles) = parse_text_style(data, "label-style");
+    std::get<static_cast<size_t>(theme_text_style::label)>(this->_text_styles) = parse_text_style(font_book, data, "label-style");
     std::get<static_cast<size_t>(theme_text_style::small_label)>(this->_text_styles) =
-        parse_text_style(data, "small-label-style");
-    std::get<static_cast<size_t>(theme_text_style::warning)>(this->_text_styles) = parse_text_style(data, "warning-label-style");
-    std::get<static_cast<size_t>(theme_text_style::error)>(this->_text_styles) = parse_text_style(data, "error-label-style");
-    std::get<static_cast<size_t>(theme_text_style::help)>(this->_text_styles) = parse_text_style(data, "help-label-style");
+        parse_text_style(font_book, data, "small-label-style");
+    std::get<static_cast<size_t>(theme_text_style::warning)>(this->_text_styles) =
+        parse_text_style(font_book, data, "warning-label-style");
+    std::get<static_cast<size_t>(theme_text_style::error)>(this->_text_styles) =
+        parse_text_style(font_book, data, "error-label-style");
+    std::get<static_cast<size_t>(theme_text_style::help)>(this->_text_styles) =
+        parse_text_style(font_book, data, "help-label-style");
     std::get<static_cast<size_t>(theme_text_style::placeholder)>(this->_text_styles) =
-        parse_text_style(data, "placeholder-label-style");
-    std::get<static_cast<size_t>(theme_text_style::link)>(this->_text_styles) = parse_text_style(data, "link-label-style");
+        parse_text_style(font_book, data, "placeholder-label-style");
+    std::get<static_cast<size_t>(theme_text_style::link)>(this->_text_styles) =
+        parse_text_style(font_book, data, "link-label-style");
 }
 
 } // namespace tt

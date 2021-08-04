@@ -16,7 +16,7 @@
 #include <optional>
 
 namespace tt {
-
+class font_book;
 
 /** shaped_text represent a piece of text shaped to be displayed.
  */
@@ -65,6 +65,7 @@ public:
      * @param wrap True when text should be wrapped to fit inside the given width.
      */
     shaped_text(
+        tt::font_book const &font_book,
         std::vector<attributed_grapheme> const &text,
         float width,
         tt::alignment const alignment=alignment::middle_center,
@@ -81,6 +82,7 @@ public:
      * @param wrap When fitting the text in the extent wrap lines when needed.
      */
     shaped_text(
+        tt::font_book const &font_book,
         gstring const &text,
         text_style const &style,
         float width,
@@ -98,6 +100,7 @@ public:
      * @param wrap When fitting the text in the extent wrap lines when needed.
      */
     shaped_text(
+        tt::font_book const &font_book,
         std::string_view text,
         text_style const &style,
         float width,
@@ -287,7 +290,7 @@ public:
 
     /** Convert the whole shaped text into a layered path.
      */
-    [[nodiscard]] graphic_path get_path() const noexcept;
+    [[nodiscard]] graphic_path get_path(tt::font_book const &font_book) const noexcept;
 
 
     /** Get the index into the text from a coordinate.

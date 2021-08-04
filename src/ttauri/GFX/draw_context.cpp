@@ -211,12 +211,12 @@ void draw_context::draw_text(shaped_text const &text, std::optional<color> text_
     }
 }
 
-void draw_context::draw_glyph(font_glyph_ids const &glyph, rectangle box, color text_color) const noexcept
+void draw_context::draw_glyph(font_glyph_ids const &glyph, float glyph_size, rectangle box, color text_color) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
 
     narrow_cast<gfx_device_vulkan &>(device()).SDFPipeline->place_vertices(
-        *_sdf_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * box, glyph, text_color);
+        *_sdf_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * box, glyph, glyph_size, text_color);
 }
 
 }

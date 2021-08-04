@@ -44,7 +44,7 @@ public:
      *
      * @param delegate The delegate for the gui-system.
      */
-    gfx_system_vulkan();
+    gfx_system_vulkan(std::unique_ptr<tt::font_book> font_book);
     ~gfx_system_vulkan();
 
     gfx_system_vulkan(const gfx_system_vulkan &) = delete;

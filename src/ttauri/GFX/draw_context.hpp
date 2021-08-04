@@ -171,7 +171,15 @@ public:
     void
     draw_text(shaped_text const &text, std::optional<color> text_color = {}, matrix3 transform = geo::identity{}) const noexcept;
 
-    void draw_glyph(font_glyph_ids const &glyph, rectangle box, color text_color) const noexcept;
+    /** Draw a glyph.
+    * 
+    * @param glyph The glyphs to draw.
+    * @param glyph_size The scale with which the glyph is being drawn.
+    * @param box The size and position of the glyph. The size must be the size of the bounding box of the glyph
+    *            multiplied by @a glyph_size.
+    * @param text_color The color that the glyph should be drawn in.
+    */
+    void draw_glyph(font_glyph_ids const &glyph, float glyph_size, rectangle box, color text_color) const noexcept;
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, aarectangle const &rectangle) noexcept
     {
