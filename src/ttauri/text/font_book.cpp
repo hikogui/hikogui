@@ -272,10 +272,7 @@ void font_book::post_process() noexcept
 [[nodiscard]] font_glyph_ids font_book::find_glyph_actual(font_id font_id, grapheme grapheme) const noexcept
 {
     ttlet &font = get_font(font_id);
-
-    auto glyph_ids = font.find_glyph(grapheme);
-    glyph_ids.set_font_id(font_id);
-    return glyph_ids;
+    return font.find_glyph(grapheme);
 }
 
 [[nodiscard]] font_glyph_ids font_book::find_glyph(font_id font_id, grapheme g) const noexcept
@@ -306,7 +303,7 @@ void font_book::post_process() noexcept
 
     // If all everything has failed, use the tofu block of the original font.
     glyph_ids += glyph_id{0};
-    glyph_ids.set_font_id(font_id);
+    glyph_ids.set_font(get_font(font_id));
     glyph_cache[{font_id, g}] = glyph_ids;
     return glyph_ids;
 }

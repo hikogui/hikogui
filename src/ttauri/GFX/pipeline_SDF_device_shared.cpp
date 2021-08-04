@@ -28,12 +28,6 @@ device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 
 device_shared::~device_shared() {}
 
-font_book const &device_shared::font_book() const noexcept
-{
-    tt_axiom(device.system.font_book);
-    return *device.system.font_book;
-}
-
 void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
     tt_axiom(vulkanDevice);
@@ -133,7 +127,7 @@ void device_shared::prepareAtlasForRendering()
  */
 atlas_rect device_shared::add_glyph_to_atlas(font_glyph_ids glyph) noexcept
 {
-    ttlet[glyphPath, glyphBoundingBox] = glyph.get_path_and_bounding_box(font_book());
+    ttlet[glyphPath, glyphBoundingBox] = glyph.get_path_and_bounding_box();
 
     ttlet drawScale = scale2{drawfontSize, drawfontSize};
     ttlet scaledBoundingBox = drawScale * glyphBoundingBox;
@@ -177,7 +171,7 @@ std::pair<atlas_rect, bool> device_shared::get_glyph_from_atlas(font_glyph_ids g
 aarectangle device_shared::get_bounding_box(font_glyph_ids const &glyphs) const noexcept
 {
     // Adjust bounding box by adding a border based on 1EM.
-    return expand(glyphs.get_bounding_box(font_book()), scaledDrawBorder);
+    return expand(glyphs.get_bounding_box(), scaledDrawBorder);
 }
 
 bool device_shared::_place_vertices(

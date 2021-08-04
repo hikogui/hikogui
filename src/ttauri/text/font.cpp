@@ -10,7 +10,7 @@ namespace tt {
 
 [[nodiscard]] font_glyph_ids font::find_glyph(grapheme g) const noexcept
 {
-    font_glyph_ids r;
+    auto r = font_glyph_ids(*this);
 
     // First try composed normalization
     for (ssize_t i = 0; i != std::ssize(g); ++i) {

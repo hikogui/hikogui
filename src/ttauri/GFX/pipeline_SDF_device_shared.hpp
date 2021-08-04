@@ -80,10 +80,6 @@ struct device_shared final {
     device_shared(device_shared &&) = delete;
     device_shared &operator=(device_shared &&) = delete;
 
-    /** Get reference of the gfx_system's font_book.
-     */
-    font_book const &font_book() const noexcept;
-
     /*! Deallocate vulkan resources.
      * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan>
      * device`.

@@ -52,12 +52,12 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
         _check_glyph = to_font_glyph_ids(font_book(), elusive_icon::Ok);
-        ttlet check_glyph_bb = _check_glyph.get_bounding_box(font_book());
+        ttlet check_glyph_bb = _check_glyph.get_bounding_box();
         _check_glyph_rectangle =
             align(_button_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);
 
         _minus_glyph = to_font_glyph_ids(font_book(), elusive_icon::Minus);
-        ttlet minus_glyph_bb = _minus_glyph.get_bounding_box(font_book());
+        ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
         _minus_glyph_rectangle =
             align(_button_rectangle, scale(minus_glyph_bb, theme().icon_size), alignment::middle_center);
     }

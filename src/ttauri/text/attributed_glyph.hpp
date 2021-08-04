@@ -128,7 +128,7 @@ struct attributed_glyph {
         return narrow_cast<ssize_t>(std::round(relativePositionPergrapheme));
     }
 
-    [[nodiscard]] graphic_path get_path(tt::font_book const &font_book) const noexcept;
+    [[nodiscard]] graphic_path get_path() const noexcept;
 };
 
 }

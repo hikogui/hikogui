@@ -556,7 +556,7 @@ shaped_text::shaped_text(
     return e;
 }
 
-[[nodiscard]] graphic_path shaped_text::get_path(tt::font_book const &font_book) const noexcept
+[[nodiscard]] graphic_path shaped_text::get_path() const noexcept
 {
     graphic_path r;
 
@@ -565,7 +565,7 @@ shaped_text::shaped_text(
     }
 
     for (ttlet &attr_glyph: *this) {
-        r += attr_glyph.get_path(font_book);
+        r += attr_glyph.get_path();
     }
     r.optimizeLayers();
 

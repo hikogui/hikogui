@@ -290,7 +290,7 @@ public:
 
     /** Convert the whole shaped text into a layered path.
      */
-    [[nodiscard]] graphic_path get_path(tt::font_book const &font_book) const noexcept;
+    [[nodiscard]] graphic_path get_path() const noexcept;
 
 
     /** Get the index into the text from a coordinate.

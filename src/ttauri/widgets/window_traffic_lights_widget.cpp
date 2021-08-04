@@ -92,10 +92,10 @@ window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time
             tt_no_default();
         }
 
-        ttlet closeWindowGlyphBB = closeWindowGlyph.get_bounding_box(font_book());
-        ttlet minimizeWindowGlyphBB = minimizeWindowGlyph.get_bounding_box(font_book());
-        ttlet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box(font_book());
-        ttlet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box(font_book());
+        ttlet closeWindowGlyphBB = closeWindowGlyph.get_bounding_box();
+        ttlet minimizeWindowGlyphBB = minimizeWindowGlyph.get_bounding_box();
+        ttlet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box();
+        ttlet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box();
 
         _glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
 

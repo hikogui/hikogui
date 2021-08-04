@@ -74,7 +74,7 @@ void icon_widget::init() noexcept
             _pixmap_backing = {};
 
             _icon_bounding_box =
-                scale(_glyph.get_bounding_box(font_book()), theme().text_style(theme_text_style::label).scaled_size());
+                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
 
         } else if (holds_alternative<elusive_icon>(icon_)) {
             _icon_type = icon_type::glyph;
@@ -83,7 +83,7 @@ void icon_widget::init() noexcept
             _pixmap_backing = {};
 
             _icon_bounding_box =
-                scale(_glyph.get_bounding_box(font_book()), theme().text_style(theme_text_style::label).scaled_size());
+                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
 
         } else if (holds_alternative<ttauri_icon>(icon_)) {
             _icon_type = icon_type::glyph;
@@ -92,7 +92,7 @@ void icon_widget::init() noexcept
             _pixmap_backing = {};
 
             _icon_bounding_box =
-                scale(_glyph.get_bounding_box(font_book()), theme().text_style(theme_text_style::label).scaled_size());
+                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
 
         } else {
             tt_no_default();
