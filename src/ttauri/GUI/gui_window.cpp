@@ -79,7 +79,7 @@ void gui_window::init()
     update_keyboard_target({});
 
     _setting_change_callback = language::subscribe([this] {
-        _request_setting_change = true;
+        request_constrain = true;
     });
 
     // Delegate has been called, layout of widgets has been calculated for the
@@ -125,7 +125,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 
     // All widgets need constrains recalculated on these window-wide events.
     // Like theme or language changes.
-    ttlet need_reconstrain = _request_setting_change.exchange(false);
+    ttlet need_reconstrain = request_constrain.exchange(false);
 
     // Update the size constraints of the window_widget and it children.
     ttlet constraints_have_changed = widget->constrain(displayTimePoint, need_reconstrain);

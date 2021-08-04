@@ -8,6 +8,7 @@
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
 #include "vertical_sync.hpp"
+#include "theme_book.hpp"
 #include "../GFX/gfx_system.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
@@ -28,8 +29,19 @@ public:
 
     std::unique_ptr<gfx_system> gfx;
     std::unique_ptr<vertical_sync> vsync;
+    std::unique_ptr<theme_book> themes;
 
     thread_id const thread_id;
+
+    /** Make a gui_system instance.
+     *
+     * This will instantiate a gui_system instance appropriate for the current
+     * operating system.
+     *
+     * @param delegate An optional delegate.
+     * @return A unique pointer to a gui_system instance.
+     */
+    [[nodiscard]] static std::unique_ptr<gui_system> make_unique(std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
     virtual ~gui_system();
 
@@ -150,36 +162,42 @@ public:
         return thread_id == current_thread_id();
     }
 
-    /** Make a gui_system instance.
-     *
-     * This will instantiate a gui_system instance appropriate for the current
-     * operating system.
-     * 
-     * @return A unique pointer to a gui_system instance.
-     */
-    [[nodiscard]] static std::unique_ptr<gui_system> make_unique() noexcept;
-
     /** Set the theme for the system.
      *
      * @param new_theme The new theme to use for the gui system.
      */
-    void set_theme(tt::theme *new_theme) noexcept
+    void set_theme(tt::theme const &new_theme) noexcept
     {
-        _theme = new_theme;
+        _theme = &new_theme;
     }
 
     /** Get the theme set for the window.
      *
      * @return The current theme of the window, or the system if not set.
      */
-    tt::theme const theme() const noexcept
+    tt::theme const &theme() const noexcept
     {
         tt_axiom(_theme);
-        return _theme;
+        return *_theme;
     }
 
+    void set_theme_mode(tt::theme_mode mode) noexcept
+    {
+        if (theme().mode != mode) {
+            set_theme(themes->find(theme().name, mode));
+        }
+    }
+
+    /** Request all windows to constrain.
+     */
+    void request_constrain() noexcept;
+
 protected:
-    gui_system(std::unique_ptr<gfx_system> gfx, std::unique_ptr<vertical_sync> vsync) noexcept;
+    gui_system(
+        std::unique_ptr<gfx_system> gfx,
+        std::unique_ptr<vertical_sync> vsync,
+        std::unique_ptr<theme_book> themes,
+        std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
 private:
     std::weak_ptr<gui_system_delegate> _delegate;

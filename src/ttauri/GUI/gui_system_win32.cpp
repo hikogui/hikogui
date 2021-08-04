@@ -9,14 +9,23 @@
 
 namespace tt {
 
-[[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique() noexcept
+[[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
-    auto r = std::make_unique<gui_system_win32>();
+    auto r = std::make_unique<gui_system_win32>(
+        std::make_unique<gfx_system_vulkan>(),
+        std::make_unique<vertical_sync_win32>(),
+        std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"}),
+        std::move(delegate));
     r->init();
     return r;
 }
 
-gui_system_win32::gui_system_win32() : gui_system(std::make_unique<gfx_system_vulkan>(), std::make_unique<vertical_sync_win32>())
+gui_system_win32::gui_system_win32(
+    std::unique_ptr<gfx_system> gfx,
+    std::unique_ptr<vertical_sync> vsync,
+    std::unique_ptr<theme_book> themes,
+    std::weak_ptr<gui_system_delegate> delegate) :
+    gui_system(std::move(gfx), std::move(vsync), std::move(themes), std::move(delegate))
 {
 }
 

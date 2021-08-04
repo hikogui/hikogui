@@ -9,10 +9,15 @@
 
 namespace tt {
 
-gui_system::gui_system(std::unique_ptr<gfx_system> gfx, std::unique_ptr<vertical_sync> vsync) noexcept :
-    gfx(std::move(gfx)), vsync(std::move(vsync)), thread_id(current_thread_id()), _delegate(), _previous_num_windows(0)
+gui_system::gui_system(
+    std::unique_ptr<gfx_system> gfx,
+    std::unique_ptr<vertical_sync> vsync,
+    std::unique_ptr<theme_book> themes,
+    std::weak_ptr<gui_system_delegate> delegate) noexcept :
+    gfx(std::move(gfx)), vsync(std::move(vsync)), themes(std::move(themes)), thread_id(current_thread_id()), _delegate(delegate)
 {
     this->gfx->init();
+    set_theme(this->themes->find("default", read_os_theme_mode()));
 }
 
 gui_system::~gui_system()
@@ -34,6 +39,13 @@ gui_window &gui_system::add_window(std::unique_ptr<gui_window> window)
     auto window_ptr = &(*window);
     _windows.push_back(std::move(window));
     return *window_ptr;
+}
+
+void gui_system::request_constrain() noexcept
+{
+    for (auto &window: _windows) {
+        window->request_constrain = true;
+    }
 }
 
 } // namespace tt

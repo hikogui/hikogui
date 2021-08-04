@@ -63,13 +63,17 @@ public:
      */
     mouse_cursor currentmouse_cursor = mouse_cursor::None;
 
-    /** When set to true the widgets will be laid out.
+    /** When set to true the widget will calculate their constraints.
      */
-    std::atomic<bool> request_layout = true;
+    std::atomic<bool> request_constrain = true;
 
     /** When set to true the window will resize to the preferred size of the contained widget.
      */
     std::atomic<bool> request_resize = true;
+
+    /** When set to true the widgets will be laid out.
+     */
+    std::atomic<bool> request_layout = true;
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
@@ -124,24 +128,6 @@ public:
     /** Check if the current thread is the same as the gui_system loop.
      */
     [[nodiscard]] bool is_gui_thread() const noexcept;
-
-    /** Set the theme for this window.
-     *
-     * @param new_theme The new theme to use for this window.
-     */
-    void set_theme(tt::theme *new_theme = nullptr) noexcept
-    {
-        _theme = new_theme;
-    }
-
-    /** Get the theme set for the window.
-     *
-     * @return The current theme of the window, or the system if not set.
-     */
-    tt::theme const theme() const noexcept
-    {
-        return _theme ? *_theme : system.theme();
-    }
 
     void set_device(gfx_device *device) noexcept;
 
@@ -282,8 +268,6 @@ public:
 protected:
     std::weak_ptr<delegate_type> _delegate;
 
-    std::atomic<bool> _request_setting_change = true;
-
     std::atomic<aarectangle> _request_redraw_rectangle = aarectangle{};
 
     /** The time of the last forced redraw.
@@ -358,11 +342,6 @@ protected:
 
 private:
     std::shared_ptr<std::function<void()>> _setting_change_callback;
-
-    /** The current theme of the window.
-     * If nullptr, then use the theme of the system.
-     */
-    tt::theme const *_theme = nullptr;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used

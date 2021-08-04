@@ -10,7 +10,11 @@ namespace tt {
 
 class gui_system_win32 final : public gui_system {
 public:
-    gui_system_win32();
+    gui_system_win32(
+        std::unique_ptr<gfx_system> gfx,
+        std::unique_ptr<vertical_sync> vsync,
+        std::unique_ptr<theme_book> themes,
+        std::weak_ptr<gui_system_delegate> delegate = {});
 
     void run_from_event_queue(std::function<void()> function) override;
 

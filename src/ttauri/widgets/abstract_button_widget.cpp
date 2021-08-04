@@ -107,7 +107,7 @@ abstract_button_widget::layout(hires_utc_clock::time_point displayTimePoint, boo
 {
     tt_axiom(is_gui_thread());
     if (_pressed) {
-        return theme::global(theme_color::fill, semantic_layer + 2);
+        return theme().color(theme_color::fill, semantic_layer + 2);
     } else {
         return super::background_color();
     }

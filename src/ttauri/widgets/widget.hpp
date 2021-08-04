@@ -6,7 +6,7 @@
 
 //#include "../GUI/mouse_event.hpp"
 //#include "../GUI/keyboard_event.hpp"
-//#include "../GUI/theme.hpp"
+#include "../GUI/theme.hpp"
 #include "../GFX/draw_context.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
@@ -124,7 +124,7 @@ public:
      *
      * @return The current theme of the window, or the system if not set.
      */
-    tt::theme const theme() const noexcept;
+    tt::theme const &theme() const noexcept;
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such

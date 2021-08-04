@@ -10,12 +10,10 @@
 #include <vector>
 #include <new>
 
-
 namespace tt {
 
 /** theme_book keeps track of multiple themes.
- * The theme_book is instantiated during application startup
- * 
+ *
  */
 class theme_book {
 public:
@@ -29,34 +27,16 @@ public:
 
     [[nodiscard]] std::vector<std::string> theme_names() const noexcept;
 
-    [[nodiscard]] tt::theme_mode current_theme_mode() const noexcept;
-
-    void set_current_theme_mode(tt::theme_mode theme_mode) noexcept;
-
-    [[nodiscard]] std::string current_theme_name() const noexcept;
-
-    void set_current_theme_name(std::string const &themeName) noexcept;
-
-    static theme_book &global() noexcept
-    {
-        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
-    }
+    /** Find a theme matching the name and mode.
+     *
+     * @param name The name of the theme to select.
+     * @param mode The mode of the theme to select.
+     * @return A theme most closely matching the requested theme.
+     */
+    [[nodiscard]] theme const &find(std::string name, theme_mode mode) const noexcept;
 
 private:
-    static inline std::atomic<theme_book *>_global = nullptr;
-
     std::vector<std::unique_ptr<theme>> themes;
-    std::string _current_theme_name;
-    tt::theme_mode _current_theme_mode;
-
-    static inline char const *_default_theme_name = "TTauri";
-
-    [[nodiscard]] static theme_book *subsystem_init() noexcept;
-    static void subsystem_deinit() noexcept;
-
-    /** Find a theme matching the current name and mode.
-     */
-    void update_theme() noexcept;
 };
 
-}
+} // namespace tt

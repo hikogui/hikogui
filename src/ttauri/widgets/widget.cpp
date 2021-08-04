@@ -4,6 +4,7 @@
 
 #include "widget.hpp"
 #include "../GUI/gui_window.hpp"
+#include "../GUI/gui_system.hpp"
 #include <ranges>
 
 namespace tt {
@@ -53,9 +54,9 @@ void widget::deinit() noexcept {}
     return window.is_gui_thread();
 }
 
-tt::theme const widget::theme() const noexcept
+tt::theme const &widget::theme() const noexcept
 {
-    return window.theme();
+    return window.system.theme();
 }
 
 [[nodiscard]] float widget::margin() const noexcept
@@ -121,7 +122,7 @@ tt::theme const widget::theme() const noexcept
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (enabled) {
-        return theme().color(theme_text_style::label).color;
+        return theme().text_style(theme_text_style::label).color;
     } else {
         return theme().color(theme_color::border, semantic_layer - 1);
     }
