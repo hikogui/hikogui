@@ -19,7 +19,7 @@ void label_widget::init() noexcept
     _text_widget->text_style = text_style;
 
     _label_callback = label.subscribe([this] {
-        this->window.system.run([this] {
+        this->window.gui.run([this] {
             _icon_widget->icon = (*label).icon;
             _text_widget->text = (*label).text;
         });

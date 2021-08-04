@@ -21,8 +21,8 @@ namespace tt {
 
     auto r = std::make_unique<gui_system_win32>(
         std::make_unique<gfx_system_vulkan>(),
-        std::make_unique<vertical_sync_win32>(),
-        std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"}),
+        std::make_unique<tt::vertical_sync_win32>(),
+        std::make_unique<tt::theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"}),
         std::move(keyboard_bindings),
         std::move(delegate));
     r->init();
@@ -31,11 +31,11 @@ namespace tt {
 
 gui_system_win32::gui_system_win32(
     std::unique_ptr<gfx_system> gfx,
-    std::unique_ptr<vertical_sync> vsync,
-    std::unique_ptr<theme_book> themes,
+    std::unique_ptr<tt::vertical_sync> vertical_sync,
+    std::unique_ptr<tt::theme_book> theme_book,
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) :
-    gui_system(std::move(gfx), std::move(vsync), std::move(themes), std::move(keyboard_bindings), std::move(delegate))
+    gui_system(std::move(gfx), std::move(vertical_sync), std::move(theme_book), std::move(keyboard_bindings), std::move(delegate))
 {
 }
 
@@ -117,7 +117,7 @@ int gui_system_win32::loop()
         }
 
 bypass_render:
-        display_time_point = vsync->wait();
+        display_time_point = vertical_sync->wait();
 
         // The next dead line is 5ms before the current rendered frame is to be displayed.
         // But give the event loop at least 5ms to process messages.

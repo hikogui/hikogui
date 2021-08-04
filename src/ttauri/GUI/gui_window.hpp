@@ -40,7 +40,7 @@ class gui_window {
 public:
     using delegate_type = gui_window_delegate;
 
-    gui_system &system;
+    gui_system &gui;
 
     std::unique_ptr<gfx_surface> surface;
 
@@ -102,7 +102,7 @@ public:
     //! The widget covering the complete window.
     std::unique_ptr<window_widget> widget;
 
-    gui_window(gui_system &system, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    gui_window(gui_system &gui, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     virtual ~gui_window();
 

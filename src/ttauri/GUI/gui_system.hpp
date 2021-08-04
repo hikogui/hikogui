@@ -29,8 +29,8 @@ public:
     static inline os_handle instance;
 
     std::unique_ptr<gfx_system> gfx;
-    std::unique_ptr<vertical_sync> vsync;
-    std::unique_ptr<theme_book> themes;
+    std::unique_ptr<tt::vertical_sync> vertical_sync;
+    std::unique_ptr<tt::theme_book> theme_book;
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings;
 
     thread_id const thread_id;
@@ -168,27 +168,15 @@ public:
      *
      * @param new_theme The new theme to use for the gui system.
      */
-    void set_theme(tt::theme const &new_theme) noexcept
-    {
-        _theme = &new_theme;
-    }
+    void set_theme(tt::theme const &new_theme) noexcept;
 
-    /** Get the theme set for the window.
+    /** Get the theme.
      *
-     * @return The current theme of the window, or the system if not set.
+     * @return The current theme.
      */
-    tt::theme const &theme() const noexcept
-    {
-        tt_axiom(_theme);
-        return *_theme;
-    }
+    tt::theme const &theme() const noexcept;
 
-    void set_theme_mode(tt::theme_mode mode) noexcept
-    {
-        if (theme().mode != mode) {
-            set_theme(themes->find(theme().name, mode));
-        }
-    }
+    void set_theme_mode(tt::theme_mode mode) noexcept;
 
     /** Request all windows to constrain.
      */
@@ -197,8 +185,8 @@ public:
 protected:
     gui_system(
         std::unique_ptr<gfx_system> gfx,
-        std::unique_ptr<vertical_sync> vsync,
-        std::unique_ptr<theme_book> themes,
+        std::unique_ptr<tt::vertical_sync> vertical_sync,
+        std::unique_ptr<tt::theme_book> theme_book,
         std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 

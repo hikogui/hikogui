@@ -56,7 +56,7 @@ void widget::deinit() noexcept {}
 
 tt::theme const &widget::theme() const noexcept
 {
-    return window.system.theme();
+    return window.gui.theme();
 }
 
 [[nodiscard]] float widget::margin() const noexcept

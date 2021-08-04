@@ -163,11 +163,11 @@ void gui_window_win32::create_window(extent2 new_size)
     }
     dpi = narrow_cast<float>(_dpi);
 
-    surface = system.gfx->make_surface(gui_system::instance, win32Window);
+    surface = gui.gfx->make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(gui_system &system, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
-    gui_window(system, title, std::move(delegate)), trackMouseLeaveEventParameters()
+gui_window_win32::gui_window_win32(gui_system &gui, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
+    gui_window(gui, title, std::move(delegate)), trackMouseLeaveEventParameters()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
@@ -189,28 +189,28 @@ gui_window_win32::~gui_window_win32()
 
 void gui_window_win32::close_window()
 {
-    system.run_from_event_queue([=]() {
+    gui.run_from_event_queue([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
 void gui_window_win32::minimize_window()
 {
-    system.run_from_event_queue([=]() {
+    gui.run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
 void gui_window_win32::maximize_window()
 {
-    system.run_from_event_queue([=]() {
+    gui.run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
 void gui_window_win32::normalize_window()
 {
-    system.run_from_event_queue([=]() {
+    gui.run_from_event_queue([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
@@ -497,7 +497,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         if (last_forced_redraw + 16.7ms < current_time) {
             // During sizing the event loop is blocked.
             // Render at about 60fps.
-            system.render(current_time);
+            gui.render(current_time);
             last_forced_redraw = current_time;
         }
     } break;
@@ -678,7 +678,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
-        system.set_theme_mode(read_os_theme_mode());
+        gui.set_theme_mode(read_os_theme_mode());
         request_constrain = true;
     } break;
 

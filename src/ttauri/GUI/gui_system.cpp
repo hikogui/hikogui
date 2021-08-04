@@ -12,19 +12,19 @@ namespace tt {
 
 gui_system::gui_system(
     std::unique_ptr<gfx_system> gfx,
-    std::unique_ptr<vertical_sync> vsync,
-    std::unique_ptr<theme_book> themes,
+    std::unique_ptr<tt::vertical_sync> vertical_sync,
+    std::unique_ptr<tt::theme_book> theme_book,
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) noexcept :
     gfx(std::move(gfx)),
-    vsync(std::move(vsync)),
-    themes(std::move(themes)),
+    vertical_sync(std::move(vertical_sync)),
+    theme_book(std::move(theme_book)),
     keyboard_bindings(std::move(keyboard_bindings)),
     thread_id(current_thread_id()),
     _delegate(delegate)
 {
     this->gfx->init();
-    set_theme(this->themes->find("default", read_os_theme_mode()));
+    set_theme(this->theme_book->find("default", read_os_theme_mode()));
 }
 
 gui_system::~gui_system()
@@ -52,6 +52,24 @@ void gui_system::request_constrain() noexcept
 {
     for (auto &window : _windows) {
         window->request_constrain = true;
+    }
+}
+
+void gui_system::set_theme(tt::theme const &new_theme) noexcept
+{
+    _theme = &new_theme;
+}
+
+tt::theme const &gui_system::theme() const noexcept
+{
+    tt_axiom(_theme);
+    return *_theme;
+}
+
+void gui_system::set_theme_mode(tt::theme_mode mode) noexcept
+{
+    if (theme().mode != mode) {
+        set_theme(theme_book->find(theme().name, mode));
     }
 }
 

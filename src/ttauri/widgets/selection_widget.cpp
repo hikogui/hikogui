@@ -40,7 +40,7 @@ void selection_widget::init() noexcept
 
     if (auto delegate = _delegate.lock()) {
         _delegate_callback = delegate->subscribe(*this, [this] {
-            window.system.run([this] {
+            window.gui.run([this] {
                 repopulate_options();
                 _request_constrain = true;
             });
@@ -306,7 +306,7 @@ void selection_widget::repopulate_options() noexcept
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
         _menu_button_callbacks.push_back(menu_button->subscribe([this, index] {
-            window.system.run([this, index] {
+            window.gui.run([this, index] {
                 if (auto delegate = _delegate.lock()) {
                     delegate->set_selected(*this, index);
                 }

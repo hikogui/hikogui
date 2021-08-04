@@ -40,8 +40,8 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     return false;
 }
 
-gui_window::gui_window(gui_system &system, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
-    system(system), title(title), _delegate(std::move(delegate))
+gui_window::gui_window(gui_system &gui, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
+    gui(gui), title(title), _delegate(std::move(delegate))
 {
 }
 
@@ -96,7 +96,7 @@ void gui_window::deinit()
 
 [[nodiscard]] bool gui_window::is_gui_thread() const noexcept
 {
-    return system.is_gui_thread();
+    return gui.is_gui_thread();
 }
 
 void gui_window::set_device(gfx_device *device) noexcept
@@ -213,8 +213,8 @@ void gui_window::update_mouse_target(tt::widget const *new_target_widget, point2
 
 tt::keyboard_bindings const &gui_window::keyboard_bindings() const noexcept
 {
-    tt_axiom(system.keyboard_bindings);
-    return *system.keyboard_bindings;
+    tt_axiom(gui.keyboard_bindings);
+    return *gui.keyboard_bindings;
 }
 
 void gui_window::update_keyboard_target(tt::widget const *new_target_widget, keyboard_focus_group group) noexcept
