@@ -3,18 +3,27 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_system_win32.hpp"
-#include "../GFX/gfx_system_vulkan.hpp"
 #include "vertical_sync_win32.hpp"
+#include "keyboard_bindings.hpp"
+#include "../GFX/gfx_system_vulkan.hpp"
 #include "../trace.hpp"
 
 namespace tt {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
+    auto keyboard_bindings = std::make_unique<tt::keyboard_bindings>();
+    try {
+        keyboard_bindings->load_bindings(URL{"resource:win32.keybinds.json"}, true);
+    } catch (std::exception const &e) {
+        tt_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
+    }
+
     auto r = std::make_unique<gui_system_win32>(
         std::make_unique<gfx_system_vulkan>(),
         std::make_unique<vertical_sync_win32>(),
         std::make_unique<theme_book>(std::vector<URL>{URL::urlFromResourceDirectory() / "themes"}),
+        std::move(keyboard_bindings),
         std::move(delegate));
     r->init();
     return r;
@@ -24,8 +33,9 @@ gui_system_win32::gui_system_win32(
     std::unique_ptr<gfx_system> gfx,
     std::unique_ptr<vertical_sync> vsync,
     std::unique_ptr<theme_book> themes,
+    std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) :
-    gui_system(std::move(gfx), std::move(vsync), std::move(themes), std::move(delegate))
+    gui_system(std::move(gfx), std::move(vsync), std::move(themes), std::move(keyboard_bindings), std::move(delegate))
 {
 }
 

@@ -14,6 +14,7 @@ public:
         std::unique_ptr<gfx_system> gfx,
         std::unique_ptr<vertical_sync> vsync,
         std::unique_ptr<theme_book> themes,
+        std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {});
 
     void run_from_event_queue(std::function<void()> function) override;

@@ -29,6 +29,7 @@ class gfx_device;
 class gfx_system;
 class gfx_surface;
 class gui_system;
+class keyboard_bindings;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -130,6 +131,10 @@ public:
     [[nodiscard]] bool is_gui_thread() const noexcept;
 
     void set_device(gfx_device *device) noexcept;
+
+    /** Get the keyboard binding.
+     */
+    tt::keyboard_bindings const &keyboard_bindings() const noexcept;
 
     /** Request a rectangle on the window to be redrawn
      */

@@ -90,15 +90,15 @@ public:
     keyboard_bindings() noexcept :
         bindings() {}
 
-    void addSystemBinding(keyboard_key key, command command) noexcept {
+    void add_system_binding(keyboard_key key, command command) noexcept {
         bindings[key].add_system_command(command);
     }
 
-    void addIgnoredBinding(keyboard_key key, command command) noexcept {
+    void add_ignored_binding(keyboard_key key, command command) noexcept {
         bindings[key].add_ignored_command(command);
     }
 
-    void addUserBinding(keyboard_key key, command command) noexcept {
+    void add_user_binding(keyboard_key key, command command) noexcept {
         bindings[key].add_user_command(command);
     }
 
@@ -126,39 +126,12 @@ public:
 
     /** Load bindings from a JSON file.
      */
-    void loadBindings(URL url, bool system_binding);
-
-    /** Load system bindings.
-    */
-    void loadSystemBindings() {
-        if constexpr (operating_system::current == operating_system::windows) {
-            return loadBindings(URL{"resource:win32.keybinds.json"}, true);
-        } else {
-            tt_no_default();
-        }
-    }
-
-    void loadUserBindings(URL url) {
-        clear();
-        loadSystemBindings();
-        loadBindings(url, false);
-    }
+    void load_bindings(URL url, bool system_binding=false);
 
     /** Save user bindings
      * This will save all bindings that are different from the system bindings.
      */
-    void saveUserBindings(URL url);
-
-    [[nodiscard]] static keyboard_bindings &global() noexcept
-    {
-        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
-    }
-
-private:
-    static inline std::atomic<keyboard_bindings *> _global;
-
-    [[nodiscard]] static keyboard_bindings *subsystem_init() noexcept;
-    static void subsystem_deinit() noexcept;
+    //void save_user_bindings(URL url);
 };
 
 }

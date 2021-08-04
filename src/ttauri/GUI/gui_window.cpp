@@ -211,6 +211,12 @@ void gui_window::update_mouse_target(tt::widget const *new_target_widget, point2
     }
 }
 
+tt::keyboard_bindings const &gui_window::keyboard_bindings() const noexcept
+{
+    tt_axiom(system.keyboard_bindings);
+    return *system.keyboard_bindings;
+}
+
 void gui_window::update_keyboard_target(tt::widget const *new_target_widget, keyboard_focus_group group) noexcept
 {
     tt_axiom(is_gui_thread());
@@ -319,7 +325,7 @@ bool gui_window::send_event(keyboard_event const &event) noexcept
 
     // If the keyboard event is not handled directly, convert the key event to a command.
     if (event.type == keyboard_event::Type::Key) {
-        ttlet commands = keyboard_bindings::global().translate(event.key);
+        ttlet commands = keyboard_bindings().translate(event.key);
 
         ttlet handled = send_event_to_widget(_keyboard_target_widget, commands);
 
