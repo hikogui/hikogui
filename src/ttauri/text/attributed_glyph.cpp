@@ -36,7 +36,7 @@ attributed_glyph::attributed_glyph(
         next_attr_glyph->glyphs.front() :
         glyph_id{};
 
-    if (not glyphs.font().loadglyph_metrics(this_glyph, metrics, next_glyph)) {
+    if (not glyphs.font().load_glyph_metrics(this_glyph, metrics, next_glyph)) {
         tt_log_error(
             "Could not load metrics for glyph {} in font {} - {}",
             static_cast<int>(this_glyph),
@@ -47,7 +47,7 @@ attributed_glyph::attributed_glyph(
         glyphs.clear();
         glyphs.set_font(style_font);
         glyphs += glyph_id{0};
-        if (not glyphs.font().loadglyph_metrics(glyphs.front(), metrics)) {
+        if (not glyphs.font().load_glyph_metrics(glyphs.front(), metrics)) {
             // Using null-metrics when even the null-glyph can not be found.
             tt_log_error(
                 "Could not load metrics for null-glyph in font {} - {}",

@@ -18,7 +18,7 @@ namespace tt {
         ttlet glyph_id = (*this)[i];
 
         graphic_path glyph_path;
-        if (not font().loadGlyph(glyph_id, glyph_path)) {
+        if (not font().load_glyph(glyph_id, glyph_path)) {
             tt_log_error(
                 "Could not load glyph {} in font {} - {}",
                 static_cast<int>(glyph_id),
@@ -28,7 +28,7 @@ namespace tt {
         path += glyph_path;
 
         glyph_metrics glyph_metrics;
-        if (not font().loadglyph_metrics(glyph_id, glyph_metrics)) {
+        if (not font().load_glyph_metrics(glyph_id, glyph_metrics)) {
             tt_log_error(
                 "Could not load glyph-metrics {} in font {} - {}",
                 static_cast<int>(glyph_id),
@@ -55,7 +55,7 @@ namespace tt {
         ttlet glyph_id = (*this)[i];
 
         glyph_metrics glyph_metrics;
-        if (not font().loadglyph_metrics(glyph_id, glyph_metrics)) {
+        if (not font().load_glyph_metrics(glyph_id, glyph_metrics)) {
             tt_log_error(
                 "Could not load glyph-metrics {} in font {} - {}",
                 static_cast<int>(glyph_id),
