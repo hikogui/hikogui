@@ -6,6 +6,9 @@
 #include "gui_system_win32.hpp"
 #include "keyboard_bindings.hpp"
 #include "theme_book.hpp"
+#include "vertical_sync.hpp"
+#include "../GFX/gfx_system.hpp"
+#include "../text/font_book.hpp"
 #include "../logger.hpp"
 #include <chrono>
 

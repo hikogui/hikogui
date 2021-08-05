@@ -3,13 +3,14 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_field_widget.hpp"
+#include "../text/font_book.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
 
 namespace tt {
 
 text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), _delegate(std::move(delegate)), _field(window.gui.font_book(), theme().text_style(theme_text_style::label)), _shaped_text()
+    super(window, parent), _delegate(std::move(delegate)), _field(font_book(), theme().text_style(theme_text_style::label)), _shaped_text()
 {
     if (auto d = _delegate.lock()) {
         _delegate_callback = d->subscribe(*this, [this] {

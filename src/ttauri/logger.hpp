@@ -164,7 +164,7 @@ inline void logger_stop()
 template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
 tt_force_inline void log(Args &&...args) noexcept
 {
-    static_assert(std::popcount(underlying_cast(Level)) == 1);
+    static_assert(std::popcount(to_underlying(Level)) == 1);
 
     ttlet state = global_state.load(std::memory_order::relaxed);
     if (not to_bool(state & Level)) {

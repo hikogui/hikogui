@@ -10,8 +10,7 @@
 
 namespace tt {
 
-gfx_system::gfx_system() noexcept :
-    font_book() {}
+gfx_system::gfx_system() noexcept {}
 
 gfx_system::~gfx_system() {}
 

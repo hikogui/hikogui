@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "checkbox_widget.hpp"
+#include "../text/font_book.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 
 namespace tt {
@@ -51,7 +52,7 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
 
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
-        _check_glyph = font_book().find_gylph(elusive_icon::Ok);
+        _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         ttlet check_glyph_bb = _check_glyph.get_bounding_box();
         _check_glyph_rectangle =
             align(_button_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);

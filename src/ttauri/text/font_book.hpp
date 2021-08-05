@@ -11,6 +11,8 @@
 #include "font_id.hpp"
 #include "font_grapheme_id.hpp"
 #include "font_glyph_ids.hpp"
+#include "elusive_icon.hpp"
+#include "ttauri_icon.hpp"
 #include "../URL.hpp"
 #include "../alignment.hpp"
 #include "../subsystem.hpp"
@@ -47,13 +49,13 @@ public:
     void register_elusive_icon_font(URL url)
     {
         auto id = register_font(url, false);
-        elusive_icon_font = &get_font(id);
+        _elusive_icon_font = &get_font(id);
     }
 
     void register_ttauri_icon_font(URL url)
     {
         auto id = register_font(url, false);
-        ttauri_icon_font = &get_font(id);
+        _ttauri_icon_font = &get_font(id);
     }
 
     /** Post process font_book
@@ -113,16 +115,16 @@ public:
      */
     [[nodiscard]] font_glyph_ids find_glyph(font_id font_id, grapheme grapheme) const noexcept;
 
-    [[nodiscard]] font_glyph_ids find_glyph(elusive_icon rhs) noexcept
+    [[nodiscard]] font_glyph_ids find_glyph(elusive_icon rhs) const noexcept
     {
-        tt_axiom(elusive_icon_font);
-        return elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
+        tt_axiom(_elusive_icon_font);
+        return _elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 
-    [[nodiscard]] font_glyph_ids find_glyph(ttauri_icon rhs) noexcept
+    [[nodiscard]] font_glyph_ids find_glyph(ttauri_icon rhs) const noexcept
     {
-        tt_axiom(ttuari_icon_font);
-        return ttauri_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
+        tt_axiom(_ttauri_icon_font);
+        return _ttauri_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 
 private:
@@ -138,8 +140,8 @@ private:
         }
     };
 
-    font const *elusive_icon_font = nullptr;
-    font const *ttauri_icon_font = nullptr;
+    font const *_elusive_icon_font = nullptr;
+    font const *_ttauri_icon_font = nullptr;
 
     /** Table of font_family_ids index using the family-name.
      */

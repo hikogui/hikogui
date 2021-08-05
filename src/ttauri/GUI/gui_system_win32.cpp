@@ -5,7 +5,9 @@
 #include "gui_system_win32.hpp"
 #include "vertical_sync_win32.hpp"
 #include "keyboard_bindings.hpp"
+#include "theme_book.hpp"
 #include "../GFX/gfx_system_vulkan.hpp"
+#include "../text/font_book.hpp"
 #include "../trace.hpp"
 
 namespace tt {
@@ -42,10 +44,17 @@ namespace tt {
 gui_system_win32::gui_system_win32(
     std::unique_ptr<gfx_system> gfx,
     std::unique_ptr<tt::vertical_sync> vertical_sync,
+    std::unique_ptr<tt::font_book> font_book,
     std::unique_ptr<tt::theme_book> theme_book,
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) :
-    gui_system(std::move(gfx), std::move(vertical_sync), std::move(theme_book), std::move(keyboard_bindings), std::move(delegate))
+    gui_system(
+        std::move(gfx),
+        std::move(vertical_sync),
+        std::move(font_book),
+        std::move(theme_book),
+        std::move(keyboard_bindings),
+        std::move(delegate))
 {
 }
 

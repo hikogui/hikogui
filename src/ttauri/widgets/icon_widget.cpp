@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "icon_widget.hpp"
+#include "../text/font_book.hpp"
 #include "../GFX/gfx_surface_vulkan.hpp"
 #include "../GFX/gfx_device_vulkan.hpp"
 #include "../GUI/gui_window.hpp"
@@ -87,7 +88,7 @@ void icon_widget::init() noexcept
 
         } else if (holds_alternative<ttauri_icon>(icon_)) {
             _icon_type = icon_type::glyph;
-            _glyph = font_book().find_gylph(get<ttauri_icon>(icon_));
+            _glyph = font_book().find_glyph(get<ttauri_icon>(icon_));
             _pixmap_hash = 0;
             _pixmap_backing = {};
 
