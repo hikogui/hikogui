@@ -14,7 +14,15 @@ namespace tt {
 
 class true_type_font final : public font {
 private:
-    std::unique_ptr<resource_view> view;
+    /** The url to retrieve the view.
+     */
+    std::optional<URL> url;
+
+    /** The resource view of the font-file.
+    * 
+    * This view may be reset if there is a url available.
+     */
+    mutable std::unique_ptr<resource_view> view;
 
     uint16_t OS2_xHeight = 0;
     uint16_t OS2_HHeight = 0;
@@ -31,27 +39,20 @@ private:
     int numGlyphs;
 
 public:
-    /** Load a true type font.
-     * The methods in this class will parse the true-type font at run time.
-     * This also means that the bytes passed into this constructor will need to
-     * remain available.
-     */
-    //true_type_font(std::span<std::byte const> bytes) : file_bytes(bytes)
-    //{
-    //    parse_font_directory();
-    //}
-
-    true_type_font(std::unique_ptr<resource_view> view) : view(std::move(view))
+    true_type_font(std::unique_ptr<resource_view> view) : url(), view(std::move(view))
     {
-        //file_bytes = this->view->bytes();
         parse_font_directory();
     }
 
-    true_type_font(URL const &url) : view(url.loadView())
+    true_type_font(URL const &url) : url(url), view(url.loadView())
     {
-        //file_bytes = this->view->bytes();
+        increment_counter<"ttf:map">();
         try {
             parse_font_directory();
+
+            // Clear the view to reclaim resources.
+            view = {};
+            increment_counter<"ttf:unmap">();
 
         } catch (std::exception const &e) {
             throw parse_error("{}: Could not parse font directory.\n{}", to_string(url), e.what());

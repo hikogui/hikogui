@@ -1352,6 +1352,12 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &me
 
 [[nodiscard]] std::span<std::byte const> true_type_font::getTableBytes(char const *table_name) const
 {
+    if (not view) {
+        tt_axiom(url);
+        view = url->loadView();
+        increment_counter<"ttf:map">();
+    }
+
     ttlet bytes = view->bytes();
 
     ssize_t offset = 0;
