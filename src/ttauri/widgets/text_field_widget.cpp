@@ -47,8 +47,7 @@ text_field_widget::constrain(hires_utc_clock::time_point display_time_point, boo
 
     if (super::constrain(display_time_point, need_reconstrain)) {
         ttlet text_style = theme().text_style(theme_text_style::label);
-        ttlet text_font_id = font_book().find_font(text_style.family_id, text_style.variant);
-        ttlet &text_font = font_book().get_font(text_font_id);
+        ttlet &text_font = font_book().find_font(text_style.family_id, text_style.variant);
         ttlet text_digit_width = text_font.description.DigitWidth * text_style.scaled_size();
 
         _text_width = 100.0;

@@ -25,6 +25,10 @@ namespace tt {
  */
 class font {
 public:
+    /** The description is filled with information parsed from the font.
+     */
+    font_description description;
+
     font() = default;
     virtual ~font() = default;
     font(font const &) = delete;
@@ -32,9 +36,6 @@ public:
     font(font &&) = delete;
     font &operator=(font &&) = delete;
 
-    /** The description is filled with information parsed from the font.
-     */
-    font_description description;
 
     /** Get the glyph for a code-point.
      * @return glyph-id, or invalid when not found or error.
@@ -68,6 +69,7 @@ public:
         glyph_metrics &metrics,
         tt::glyph_id lookahead_glyph_id = tt::glyph_id{})
         const noexcept = 0;
+
 };
 
 }

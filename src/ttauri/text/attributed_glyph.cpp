@@ -19,15 +19,14 @@ attributed_glyph::attributed_glyph(
     style(attr_grapheme.style)
 {
     // Get the font_id that matches the requested style.
-    ttlet style_font_id = font_book.find_font(attr_grapheme.style.family_id, attr_grapheme.style.variant);
-    ttlet &style_font = font_book.get_font(style_font_id);
+    ttlet &style_font = font_book.find_font(attr_grapheme.style.family_id, attr_grapheme.style.variant);
 
-    // The end-of-paragraph is represented by a space glyph, which is usefull for
+    // The end-of-paragraph is represented by a space glyph, which is useful for
     // producing a correct cursor at an empty line at the end of a paragraph.
     ttlet g = (attr_grapheme.grapheme == '\n') ? grapheme{0} : attr_grapheme.grapheme;
 
     // The glyph returned here may be of a different font from the given style font.
-    glyphs = font_book.find_glyph(style_font_id, g);
+    glyphs = font_book.find_glyph(style_font, g);
 
     // Get the metrics of the main glyph.
     ttlet this_glyph = glyphs.front();

@@ -8,7 +8,6 @@
 #include "grapheme.hpp"
 #include "font.hpp"
 #include "font_family_id.hpp"
-#include "font_id.hpp"
 #include "font_grapheme_id.hpp"
 #include "font_glyph_ids.hpp"
 #include "elusive_icon.hpp"
@@ -44,18 +43,16 @@ public:
      * @param url Location of font.
      * @param post_process Calculate font fallback
      */
-    font_id register_font(URL url, bool post_process = true);
+    font &register_font(URL url, bool post_process = true);
 
     void register_elusive_icon_font(URL url)
     {
-        auto id = register_font(url, false);
-        _elusive_icon_font = &get_font(id);
+        _elusive_icon_font = &register_font(url, false);
     }
 
     void register_ttauri_icon_font(URL url)
     {
-        auto id = register_font(url, false);
-        _ttauri_icon_font = &get_font(id);
+        _ttauri_icon_font = &register_font(url, false);
     }
 
     /** Post process font_book
@@ -81,7 +78,7 @@ public:
      * @param variant The variant of the font to select.
      * @return a valid font id.
      */
-    [[nodiscard]] font_id find_font(font_family_id family_id, font_variant variant) const noexcept;
+    [[nodiscard]] font const &find_font(font_family_id family_id, font_variant variant) const noexcept;
 
     /** Find a font closest to the variant.
      * This function will always return a valid font_id.
@@ -91,7 +88,7 @@ public:
      * @param italic If the font to select should be italic or not.
      * @return a valid font id.
      */
-    [[nodiscard]] font_id find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept;
+    [[nodiscard]] font const &find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept;
 
     /** Find a font closest to the variant.
      * This function will always return a valid font_id.
@@ -101,9 +98,7 @@ public:
      * @param italic If the font to select should be italic or not.
      * @return a font id, possibly from a fallback font.
      */
-    [[nodiscard]] font_id find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept;
-
-    [[nodiscard]] font const &get_font(font_id font_id) const noexcept;
+    [[nodiscard]] font const &find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
@@ -113,7 +108,7 @@ public:
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] font_glyph_ids find_glyph(font_id font_id, grapheme grapheme) const noexcept;
+    [[nodiscard]] font_glyph_ids find_glyph(font const &font, grapheme grapheme) const noexcept;
 
     [[nodiscard]] font_glyph_ids find_glyph(elusive_icon rhs) const noexcept
     {
@@ -128,18 +123,6 @@ public:
     }
 
 private:
-    struct fontEntry {
-        URL url;
-        font_description description;
-        mutable std::unique_ptr<font> font;
-        std::vector<font_id> fallbacks;
-
-        fontEntry(URL url, font_description description) noexcept :
-            url(std::move(url)), description(std::move(description)), font(), fallbacks()
-        {
-        }
-    };
-
     font const *_elusive_icon_font = nullptr;
     font const *_ttauri_icon_font = nullptr;
 
@@ -153,9 +136,9 @@ private:
 
     /** Different fonts; variants of a family.
      */
-    std::vector<std::array<font_id, font_variant::max()>> font_variants;
+    std::vector<std::array<font const *, font_variant::max()>> font_variants;
 
-    std::vector<fontEntry> font_entries;
+    std::vector<std::unique_ptr<font>> font_entries;
 
     /** Same as family_name, but will also have resolved font families from the fallback_chain.
      * Must be cleared when a new font family is registered.
@@ -166,14 +149,12 @@ private:
      * Must be cleared when a new font is registered.
      */
     mutable std::unordered_map<font_grapheme_id, font_glyph_ids> glyph_cache;
-    void calculate_fallback_fonts(
-        fontEntry &entry,
-        std::function<bool(font_description const &, font_description const &)> predicate) noexcept;
 
-    /** Find the glyph for this specific font.
-     * This will open the font file if needed.
-     */
-    [[nodiscard]] font_glyph_ids find_glyph_actual(font_id font_id, grapheme grapheme) const noexcept;
+    mutable std::unordered_map<font const *, std::vector<font *>> font_fallback_chains;
+
+    void calculate_fallback_fonts(
+        std::vector<tt::font *> &font_fallback_chain, font *entry,
+        std::function<bool(font_description const &, font_description const &)> predicate) noexcept;
 
     /** Morph the set of glyphs using the font's morph tables.
      */

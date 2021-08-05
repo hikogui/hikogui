@@ -5,7 +5,6 @@
 #pragma once
 
 #include "glyph_id.hpp"
-#include "font_id.hpp"
 #include "../hash.hpp"
 #include "../tagged_id.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
