@@ -447,9 +447,9 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
     return {};
 }
 
-[[nodiscard]] static unicode_ranges parseCharacterMapFormat4(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_mask parseCharacterMapFormat4(std::span<std::byte const> bytes)
 {
-    unicode_ranges r;
+    unicode_mask r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
@@ -490,9 +490,9 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
     return glyph_id{glyphIndexArray[charOffset].value()};
 }
 
-[[nodiscard]] static unicode_ranges parseCharacterMapFormat6(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_mask parseCharacterMapFormat6(std::span<std::byte const> bytes)
 {
-    unicode_ranges r;
+    unicode_mask r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
@@ -539,9 +539,9 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     }
 }
 
-[[nodiscard]] static unicode_ranges parseCharacterMapFormat12(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_mask parseCharacterMapFormat12(std::span<std::byte const> bytes)
 {
-    unicode_ranges r;
+    unicode_mask r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
@@ -554,7 +554,7 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     return r;
 }
 
-[[nodiscard]] unicode_ranges true_type_font::parseCharacterMap()
+[[nodiscard]] unicode_mask true_type_font::parseCharacterMap()
 {
     ttlet cmapTableBytes = getTableBytes("cmap");
     ttlet cmapBytes = parseCharacterMapDirectory(cmapTableBytes);
@@ -744,8 +744,6 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
     }
 }
 
-
-
 void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<OS2Table0>(table_bytes);
@@ -805,11 +803,6 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
     } else if (letterform_value >= 9 && letterform_value <= 15) {
         description.italic = true;
     }
-
-    description.unicode_ranges.value[0] = table->ulUnicodeRange1.value();
-    description.unicode_ranges.value[1] = table->ulUnicodeRange2.value();
-    description.unicode_ranges.value[2] = table->ulUnicodeRange3.value();
-    description.unicode_ranges.value[3] = table->ulUnicodeRange4.value();
 
     if (version >= 2) {
         ttlet table_v2 = make_placement_ptr<OS2Table2>(table_bytes);
@@ -1403,9 +1396,9 @@ void true_type_font::parse_font_directory()
         parseNameTable(nameTableBytes);
     }
 
-    if (!description.unicode_ranges) {
-        description.unicode_ranges = parseCharacterMap();
-    }
+    description.unicode_mask = parseCharacterMap();
+    description.unicode_mask.optimize();
+    description.unicode_mask.shrink_to_fit();
 
     if (OS2_xHeight > 0) {
         description.xHeight = emScale * OS2_xHeight;

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "unicode_ranges.hpp"
+#include "unicode_mask.hpp"
 #include "glyph_id.hpp"
 #include "font_weight.hpp"
 #include "font_variant.hpp"
@@ -24,7 +24,7 @@ struct font_description {
     font_weight weight = font_weight::Regular;
     float optical_size = 12.0;
 
-    unicode_ranges unicode_ranges;
+    tt::unicode_mask unicode_mask;
 
     float xHeight = 0.0;
     float HHeight = 0.0;
@@ -35,7 +35,7 @@ struct font_description {
     }
 
     [[nodiscard]] friend std::string to_string(font_description const &rhs) noexcept {
-        return std::format("{} - {}: {}{}{}{}{} {} {}",
+        return std::format("{} - {}: {}{}{}{}{} {} num-code-points={}",
             rhs.family_name,
             rhs.sub_family_name,
             rhs.monospace ? 'M' : '_',
@@ -44,7 +44,7 @@ struct font_description {
             rhs.condensed ? 'C': '_',
             to_char(rhs.weight),
             rhs.optical_size,
-            rhs.unicode_ranges
+            rhs.unicode_mask.size()
         );
     }
 

@@ -8,6 +8,7 @@
 #include "../graphic_path.hpp"
 #include "../resource_view.hpp"
 #include "../URL.hpp"
+#include "../counters.hpp"
 #include <memory>
 
 namespace tt {
@@ -119,7 +120,7 @@ private:
 
     /** Parse the character map to create unicode_ranges.
      */
-    [[nodiscard]] unicode_ranges parseCharacterMap();
+    [[nodiscard]] unicode_mask parseCharacterMap();
 
     /** Parses the maxp table of the font file.
     * 

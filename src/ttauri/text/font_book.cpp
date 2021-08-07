@@ -107,16 +107,16 @@ void font_book::calculate_fallback_fonts(
     std::function<bool(font_description const &, font_description const &)> predicate) noexcept
 {
     // First calculate total_ranges for the current fallback fonts.
-    auto total_ranges = font->description.unicode_ranges;
+    auto total_ranges = font->description.unicode_mask;
     for (ttlet fallback_font : font_fallback_chain) {
-        total_ranges |= fallback_font->description.unicode_ranges;
+        total_ranges |= fallback_font->description.unicode_mask;
     }
 
     // Repeatably find the font that matches the predicate and improves the
     // total_ranges most by being included in the fallback list.
     while (true) {
         tt::font *max_font = nullptr;
-        int max_popcount = total_ranges.popcount();
+        size_t max_popcount = total_ranges.size();
 
         // Find a font that matches the predicate and has the largest improvement.
         for (ttlet &potential_fallback_font : font_entries) {
@@ -124,8 +124,8 @@ void font_book::calculate_fallback_fonts(
                 continue;
             }
 
-            auto current_range = total_ranges | potential_fallback_font->description.unicode_ranges;
-            auto current_popcount = current_range.popcount();
+            auto current_range = total_ranges | potential_fallback_font->description.unicode_mask;
+            auto current_popcount = current_range.size();
 
             if (current_popcount > max_popcount) {
                 max_font = potential_fallback_font.get();
@@ -136,7 +136,7 @@ void font_book::calculate_fallback_fonts(
         // Add the new best fallback font, or stop.
         if (max_font) {
             font_fallback_chain.push_back(max_font);
-            total_ranges |= max_font->description.unicode_ranges;
+            total_ranges |= max_font->description.unicode_mask;
         } else {
             return;
         }
@@ -266,9 +266,11 @@ void font_book::post_process() noexcept
 
     // Scan fonts which are fallback to this.
     for (ttlet fallback: font_fallback_chains[&font]) {
-        if (glyph_ids = fallback->find_glyph(g)) {
-            glyph_cache[key] = glyph_ids;
-            return glyph_ids;
+        if (fallback->description.unicode_mask.contains(g)) {
+            if (glyph_ids = fallback->find_glyph(g)) {
+                glyph_cache[key] = glyph_ids;
+                return glyph_ids;
+            }
         }
     }
 
