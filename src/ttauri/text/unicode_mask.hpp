@@ -10,6 +10,82 @@
 #include <cstddef>
 
 namespace tt {
+namespace detail {
+
+class unicode_mask_entry {
+public:
+    static constexpr size_t size_bit = 11;
+    static constexpr size_t size_mask = (1_uz << size_bit) - 1;
+
+    constexpr unicode_mask_entry() noexcept : _value(0) {}
+
+    constexpr unicode_mask_entry(char32_t first, char32_t last) noexcept :
+        _value(static_cast<uint32_t>((first << size_bit) | (last - first)))
+    {
+        tt_axiom(last >= first);
+        tt_axiom(last - first <= capacity());
+    }
+
+    constexpr unicode_mask_entry(unicode_mask_entry const &) noexcept = default;
+    constexpr unicode_mask_entry(unicode_mask_entry &&) noexcept = default;
+    constexpr unicode_mask_entry &operator=(unicode_mask_entry const &) noexcept = default;
+    constexpr unicode_mask_entry &operator=(unicode_mask_entry &&) noexcept = default;
+
+    [[nodiscard]] static constexpr size_t capacity() noexcept
+    {
+        return size_mask;
+    }
+
+    [[nodiscard]] constexpr size_t size() const noexcept
+    {
+        return static_cast<size_t>(_value & size_mask);
+    }
+
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return size() == 0;
+    }
+
+    [[nodiscard]] constexpr bool full() const noexcept
+    {
+        return size() == capacity();
+    }
+
+    [[nodiscard]] constexpr size_t room() const noexcept
+    {
+        return capacity() - size();
+    }
+
+    [[nodiscard]] constexpr char32_t begin() const noexcept
+    {
+        return static_cast<char32_t>(_value >> size_bit);
+    }
+
+    [[nodiscard]] constexpr char32_t end() const noexcept
+    {
+        return begin() + static_cast<char32_t>(size());
+    }
+
+    constexpr unicode_mask_entry &add_back(size_t num_code_points) noexcept
+    {
+        return *this = unicode_mask_entry{begin(), static_cast<char32_t>(end() + num_code_points)};
+    }
+
+    constexpr unicode_mask_entry &remove_front(size_t num_code_points) noexcept
+    {
+        return *this = unicode_mask_entry{static_cast<char32_t>(begin() + num_code_points), end()};
+    }
+
+    [[nodiscard]] constexpr bool contains(char32_t rhs) const noexcept
+    {
+        return (begin() <= rhs) and (rhs < end());
+    }
+
+private:
+    uint32_t _value;
+};
+
+}
 
 /** A mask of unicode code-points.
  *
@@ -30,87 +106,41 @@ public:
     constexpr unicode_mask &operator=(unicode_mask const &) noexcept = default;
     constexpr unicode_mask &operator=(unicode_mask &&) noexcept = default;
 
-    constexpr size_t size() const noexcept
+    [[nodiscard]] constexpr size_t size() const noexcept
     {
         return _size;
     }
 
-    [[nodiscard]] constexpr bool contains(char32_t c) const noexcept
-    {
-        auto it = std::upper_bound(std::begin(_entries), std::end(_entries), c, [](char32_t const &c, entry_type const &item) {
-            return c < item.begin();
-        });
+    /** Check if the given code point is covered by this mask.
+     */
+    [[nodiscard]] bool contains(char32_t c) const noexcept;
 
-        if (it != std::begin(_entries)) {
-            return (it - 1)->contains(c);
-        } else {
-            return false;
-        }
-    }
+    /** Check if the full grapheme normalized to NFC is covered by this mask.
+     */
+    [[nodiscard]] bool contains_NFC(grapheme g) const noexcept;
 
-    [[nodiscard]] bool contains_NFC(grapheme g) const noexcept
-    {
-        for (ttlet c : g.NFC()) {
-            if (not contains(c)) {
-                return false;
-            }
-        }
-        return true;
-    }
+    /** Check if the full grapheme normalized to NFD is covered by this mask.
+     */
+    [[nodiscard]] bool contains_NFD(grapheme g) const noexcept;
 
-    [[nodiscard]] bool contains_NFD(grapheme g) const noexcept
-    {
-        for (ttlet c : g.NFD()) {
-            if (not contains(c)) {
-                return false;
-            }
-        }
-        return true;
-    }
+    /** Check if the full grapheme is covered by this mask.
+     */
+    [[nodiscard]] bool contains(grapheme g) const noexcept;
 
-    [[nodiscard]] bool contains(grapheme g) const noexcept
-    {
-       return contains_NFC(g) or contains_NFD(g);
-    }
+    /** Check if all the code-points in other are covered by this mask.
+     */
+    [[nodiscard]] bool contains(unicode_mask const &other) const noexcept;
 
-    constexpr void add(char32_t first, char32_t last) noexcept
-    {
-        auto it = std::lower_bound(std::begin(_entries), std::end(_entries), first, [](ttlet &item, ttlet &c) {
-            return item.begin() < c;
-        });
+    /** Add a range of unicode code points to this mask.
+     *
+     * @param first The first code-point to add.
+     * @param last One beyond the last code-point to add.
+     */
+    void add(char32_t first, char32_t last) noexcept;
 
-        while (first != last) {
-            if (it == _entries.end()) {
-                // Append the items.
-                ttlet last_to_insert = std::min({last, static_cast<char32_t>(first + entry_type::capacity())});
-
-                it = _entries.emplace(it, first, last_to_insert) + 1;
-                _size += last_to_insert - first;
-
-                first = last_to_insert;
-
-            } else if (first < it->begin()) {
-                // Insert the left side before the current entry.
-                ttlet last_to_insert = std::min({last, it->begin(), static_cast<char32_t>(first + entry_type::capacity())});
-
-                it = _entries.emplace(it, first, last_to_insert) + 1;
-                _size += last_to_insert - first;
-
-                first = last_to_insert;
-
-            } else if (first < it->end()) {
-                // Ignore the left side that overlaps with the current entry.
-                first = std::min(it->end(), last);
-                ++it;
-
-            } else {
-                // We are behind the current entry, skip to the next entry.
-                ++it;
-            }
-        }
-    }
-
-    [[nodiscard]] friend constexpr unicode_mask operator|(unicode_mask const &lhs, unicode_mask const &rhs) noexcept
+    /** Combine two masks.
+     */
+    [[nodiscard]] friend unicode_mask operator|(unicode_mask const &lhs, unicode_mask const &rhs) noexcept
     {
         auto r = unicode_mask{};
         r._entries.reserve(lhs._entries.size() * 2 + rhs._entries.size() * 2);
@@ -137,159 +167,30 @@ public:
             ++it;
         }
 
-        //r.optimize();
+        // r.optimize();
         return r;
     }
 
-    constexpr unicode_mask &operator|=(unicode_mask const &rhs) noexcept
+    /** Combine two masks.
+     */
+    unicode_mask &operator|=(unicode_mask const &rhs) noexcept
     {
         return *this = *this | rhs;
     }
 
     /** Optimize storage.
      */
-    constexpr void optimize() noexcept
-    {
-        auto it = std::begin(_entries);
-        auto next_it = it;
-        while (next_it != std::end(_entries)) {
-            if (it == next_it) {
-                ++next_it;
+    void optimize() noexcept;
 
-            } else if (it->full()) {
-                // Can't optimize into a full entry, skip it.
-                ++it;
+    void shrink_to_fit() noexcept;
 
-            } else if (next_it->empty()) {
-                // Next element was fully optimized, skip it.
-                ++next_it;
-
-            } else if (it->empty()) {
-                // Current element was deleted copy next into it.
-                *it = std::exchange(*next_it, {});
-
-            } else if (it->end() == next_it->begin()) {
-                // Current and next element are touching, optimize it.
-                ttlet to_move = std::min(it->room(), next_it->size());
-                it->add_back(to_move);
-                next_it->remove_front(to_move);
-
-            } else {
-                // Current and next elements are not touching, advance only
-                // the current iterator, so that the element may be moved in
-                // the next iteration.
-                ++it;
-            }
-        }
-
-        if (it != std::end(_entries) and not it->empty()) {
-            // The current entry was the last element that is still in use.
-            ++it;
-        }
-        tt_axiom(it == std::end(_entries) or it->empty());
-
-        _entries.erase(it, std::end(_entries));
-        tt_axiom(holds_invariant());
-    }
-
-    void shrink_to_fit() noexcept
-    {
-        _entries.shrink_to_fit();
-    }
-
-    [[nodiscard]] constexpr bool holds_invariant() const noexcept
-    {
-        size_t total_size = 0;
-
-        for (ttlet entry: _entries) {
-            if (entry.empty()) {
-                return false;
-            }
-
-            total_size += entry.size();
-        }
-
-        if (total_size != _size) {
-            return false;
-        }
-
-        return true;
-    }
+    /** Check to see if the mask is still valid.
+     */
+    [[nodiscard]] bool holds_invariant() const noexcept;
 
 private:
-    class entry_type {
-    public:
-        static constexpr size_t size_bit = 11;
-        static constexpr size_t size_mask = (1_uz << size_bit) - 1;
-
-        constexpr entry_type() noexcept : _value(0) {}
-
-        constexpr entry_type(char32_t first, char32_t last) noexcept :
-            _value(static_cast<uint32_t>((first << size_bit) | (last - first)))
-        {
-            tt_axiom(last >= first);
-            tt_axiom(last - first <= capacity());
-        }
-
-        constexpr entry_type(entry_type const &) noexcept = default;
-        constexpr entry_type(entry_type &&) noexcept = default;
-        constexpr entry_type &operator=(entry_type const &) noexcept = default;
-        constexpr entry_type &operator=(entry_type &&) noexcept = default;
-
-        [[nodiscard]] static constexpr size_t capacity() noexcept
-        {
-            return size_mask;
-        }
-
-        [[nodiscard]] constexpr size_t size() const noexcept
-        {
-            return static_cast<size_t>(_value & size_mask);
-        }
-
-        [[nodiscard]] constexpr bool empty() const noexcept
-        {
-            return size() == 0;
-        }
-
-        [[nodiscard]] constexpr bool full() const noexcept
-        {
-            return size() == capacity();
-        }
-
-        [[nodiscard]] constexpr size_t room() const noexcept
-        {
-            return capacity() - size();
-        }
-
-        [[nodiscard]] constexpr char32_t begin() const noexcept
-        {
-            return static_cast<char32_t>(_value >> size_bit);
-        }
-
-        [[nodiscard]] constexpr char32_t end() const noexcept
-        {
-            return begin() + static_cast<char32_t>(size());
-        }
-
-        constexpr entry_type &add_back(size_t num_code_points) noexcept
-        {
-            return *this = entry_type{begin(), static_cast<char32_t>(end() + num_code_points)};
-        }
-
-        constexpr entry_type &remove_front(size_t num_code_points) noexcept
-        {
-            return *this = entry_type{static_cast<char32_t>(begin() + num_code_points), end()};
-        }
-
-        [[nodiscard]] constexpr bool contains(char32_t rhs) const noexcept
-        {
-            return (begin() <= rhs) and (rhs < end());
-        }
-
-    private:
-        uint32_t _value;
-    };
-
+    
+    using entry_type = detail::unicode_mask_entry;
     using entries_type = std::vector<entry_type>;
     using iterator = typename entries_type::iterator;
     using const_iterator = typename entries_type::const_iterator;

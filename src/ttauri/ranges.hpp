@@ -114,10 +114,13 @@ namespace views = tt::ranges::views;
  * This function will make a vector with a copy of the elements of a view.
  */
 template<typename View>
-[[nodiscard]] std::vector<typename View::value_type> make_vector(View &view)
+[[nodiscard]] std::vector<typename View::value_type> make_vector(View const &view)
 {
     auto r = std::vector<View::value_type>{};
-    std::copy(std::begin(view), std::end(view), std::back_inserter(r));
+    auto first = std::begin(view);
+    auto last = std::end(view);
+    r.reserve(std::distance(first, last));
+    std::copy(first, last, std::back_inserter(r));
     return r;
 }
 
@@ -128,7 +131,10 @@ template<typename View>
 [[nodiscard]] std::vector<typename View::value_type> make_vector(View &&view)
 {
     auto r = std::vector<View::value_type>{};
-    std::move(std::begin(view), std::end(view), std::back_inserter(r));
+    auto first = std::begin(view);
+    auto last = std::end(view);
+    r.reserve(std::distance(first, last));
+    std::move(first, last, std::back_inserter(r));
     return r;
 }
 

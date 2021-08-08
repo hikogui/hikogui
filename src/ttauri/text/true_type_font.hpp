@@ -20,8 +20,8 @@ private:
     std::optional<URL> url;
 
     /** The resource view of the font-file.
-    * 
-    * This view may be reset if there is a url available.
+     *
+     * This view may be reset if there is a url available.
      */
     mutable std::unique_ptr<resource_view> view;
 
@@ -67,6 +67,11 @@ public:
     true_type_font &operator=(true_type_font &&other) = delete;
     ~true_type_font() = default;
 
+    [[nodiscard]] bool loaded() const noexcept override
+    {
+        return static_cast<bool>(view);
+    }
+
     /** Get the glyph for a code-point.
      * @return glyph-index, or invalid when not found or error.
      */
@@ -100,14 +105,14 @@ private:
     [[nodiscard]] std::span<std::byte const> getTableBytes(char const *table_name) const;
 
     /** Parses the directory table of the font file.
-    * 
+     *
      * This function is called by the constructor to set up references
      * inside the file for each table.
      */
     void parse_font_directory();
 
     /** Parses the head table of the font file.
-    * 
+     *
      * This function is called by parse_font_directory().
      */
     void parseHeadTable(std::span<std::byte const> headTableBytes);
@@ -120,10 +125,10 @@ private:
 
     /** Parse the character map to create unicode_ranges.
      */
-    [[nodiscard]] unicode_mask parseCharacterMap();
+    [[nodiscard]] tt::unicode_mask parseCharacterMap();
 
     /** Parses the maxp table of the font file.
-    * 
+     *
      * This function is called by parse_font_directory().
      */
     void parseMaxpTable(std::span<std::byte const> bytes);

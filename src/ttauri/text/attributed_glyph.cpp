@@ -40,8 +40,8 @@ attributed_glyph::attributed_glyph(
         tt_log_error(
             "Could not load metrics for glyph {} in font {} - {}",
             static_cast<int>(this_glyph),
-            glyphs.font().description.family_name,
-            glyphs.font().description.sub_family_name);
+            glyphs.font().family_name,
+            glyphs.font().sub_family_name);
 
         // failed to load metrics. Switch to glyph zero and load again.
         glyphs.clear();
@@ -51,8 +51,8 @@ attributed_glyph::attributed_glyph(
             // Using null-metrics when even the null-glyph can not be found.
             tt_log_error(
                 "Could not load metrics for null-glyph in font {} - {}",
-                glyphs.font().description.family_name,
-                glyphs.font().description.sub_family_name);
+                glyphs.font().family_name,
+                glyphs.font().sub_family_name);
         }
     }
 

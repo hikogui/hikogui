@@ -22,8 +22,8 @@ namespace tt {
             tt_log_error(
                 "Could not load glyph {} in font {} - {}",
                 static_cast<int>(glyph_id),
-                font().description.family_name,
-                font().description.sub_family_name);
+                font().family_name,
+                font().sub_family_name);
         }
         path += glyph_path;
 
@@ -32,8 +32,8 @@ namespace tt {
             tt_log_error(
                 "Could not load glyph-metrics {} in font {} - {}",
                 static_cast<int>(glyph_id),
-                font().description.family_name,
-                font().description.sub_family_name);
+                font().family_name,
+                font().sub_family_name);
         }
 
         if (i == 0) {
@@ -59,8 +59,8 @@ namespace tt {
             tt_log_error(
                 "Could not load glyph-metrics {} in font {} - {}",
                 static_cast<int>(glyph_id),
-                font().description.family_name,
-                font().description.sub_family_name);
+                font().family_name,
+                font().sub_family_name);
         }
 
         if (i == 0) {

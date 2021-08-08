@@ -10,6 +10,12 @@ namespace tt {
 
 [[nodiscard]] font_glyph_ids font::find_glyph(grapheme g) const noexcept
 {
+    if (not loaded() and not unicode_mask.contains(g)) {
+        // If the grapheme is not available in the font prevent font loading.
+        // However if the font is loaded, then just look up the grapheme directly from the font.
+        return {};
+    }
+
     auto r = font_glyph_ids(*this);
 
     // First try composed normalization

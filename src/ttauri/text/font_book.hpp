@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "font_description.hpp"
 #include "grapheme.hpp"
 #include "font.hpp"
 #include "font_family_id.hpp"
@@ -138,7 +137,8 @@ private:
      */
     std::vector<std::array<font const *, font_variant::max()>> font_variants;
 
-    std::vector<std::unique_ptr<font>> font_entries;
+    std::vector<std::unique_ptr<font>> _fonts;
+    std::vector<tt::font *> _font_ptrs;
 
     /** Same as family_name, but will also have resolved font families from the fallback_chain.
      * Must be cleared when a new font family is registered.
@@ -150,11 +150,7 @@ private:
      */
     mutable std::unordered_map<font_grapheme_id, font_glyph_ids> glyph_cache;
 
-    mutable std::unordered_map<font const *, std::vector<font *>> font_fallback_chains;
-
-    void calculate_fallback_fonts(
-        std::vector<tt::font *> &font_fallback_chain, font *entry,
-        std::function<bool(font_description const &, font_description const &)> predicate) noexcept;
+    [[nodiscard]] std::vector<tt::font *> make_fallback_chain(font_weight weight, bool italic) noexcept;
 
     /** Morph the set of glyphs using the font's morph tables.
      */

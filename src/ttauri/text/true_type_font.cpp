@@ -708,7 +708,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
             if (!familyIsTypographic) {
                 auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
-                    description.family_name = std::move(*s);
+                    family_name = std::move(*s);
                 }
             }
             } break;
@@ -717,7 +717,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
             if (!subFamilyIsTypographic) {
                 auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
-                    description.sub_family_name = std::move(*s);
+                    sub_family_name = std::move(*s);
                 }
             }
             } break;
@@ -725,7 +725,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
         case 16: { // Typographic family.
             auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
             if (s) {
-                description.family_name = std::move(*s);
+                family_name = std::move(*s);
                 familyIsTypographic = true;
             }
             } break;
@@ -733,7 +733,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
         case 17: { // Typographic sub-family.
             auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
             if (s) {
-                description.sub_family_name = std::move(*s);
+                sub_family_name = std::move(*s);
                 subFamilyIsTypographic = true;
             }
             } break;
@@ -752,37 +752,37 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
 
     ttlet weight_value = table->usWeightClass.value();
     if (weight_value >= 1 && weight_value <= 1000) {
-        description.weight = font_weight_from_int(weight_value);
+        weight = font_weight_from_int(weight_value);
     }
 
     ttlet width_value = table->usWidthClass.value();
     if (width_value >= 1 && width_value <= 4) {
-        description.condensed = true;
+        condensed = true;
     } else if (width_value >= 5 && width_value <= 9) {
-        description.condensed = false;
+        condensed = false;
     }
 
     ttlet serif_value = table->panose.bSerifStyle;
     if ((serif_value >= 2 && serif_value <= 10) || (serif_value >= 14 && serif_value <= 15)) {
-        description.serif = true;
+        serif = true;
     } else if (serif_value >= 11 && serif_value <= 13) {
-        description.serif = false;
+        serif = false;
     }
 
     // The Panose weight table is odd, assuming the integer values are
     // increasing with boldness, Thin is bolder then Light.
     // The table below uses the integer value as an indication of boldness.
     switch (table->panose.bWeight) {
-    case 2: description.weight = font_weight::Thin; break;
-    case 3: description.weight = font_weight::ExtraLight; break;
-    case 4: description.weight = font_weight::Light; break;
-    case 5: description.weight = font_weight::Regular; break;
-    case 6: description.weight = font_weight::Medium; break;
-    case 7: description.weight = font_weight::SemiBold; break;
-    case 8: description.weight = font_weight::Bold; break;
-    case 9: description.weight = font_weight::ExtraBold; break;
-    case 10: description.weight = font_weight::Black; break;
-    case 11: description.weight = font_weight::ExtraBlack; break;
+    case 2: weight = font_weight::Thin; break;
+    case 3: weight = font_weight::ExtraLight; break;
+    case 4: weight = font_weight::Light; break;
+    case 5: weight = font_weight::Regular; break;
+    case 6: weight = font_weight::Medium; break;
+    case 7: weight = font_weight::SemiBold; break;
+    case 8: weight = font_weight::Bold; break;
+    case 9: weight = font_weight::ExtraBold; break;
+    case 10: weight = font_weight::Black; break;
+    case 11: weight = font_weight::ExtraBlack; break;
     default: break;
     }
 
@@ -791,17 +791,17 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
     case 3: [[fallthrough]];
     case 4: [[fallthrough]];
     case 5: [[fallthrough]];
-    case 7: description.monospace = false; description.condensed = false; break;
+    case 7: monospace = false; condensed = false; break;
     case 6: [[fallthrough]];
-    case 8: description.monospace = false; description.condensed = true; break;
-    case 9: description.monospace = true; description.condensed = false; break;
+    case 8: monospace = false; condensed = true; break;
+    case 9: monospace = true; condensed = false; break;
     }
 
     ttlet letterform_value = table->panose.bLetterform;
     if (letterform_value >= 2 && letterform_value <= 8) {
-        description.italic = false;
+        italic = false;
     } else if (letterform_value >= 9 && letterform_value <= 15) {
-        description.italic = true;
+        italic = true;
     }
 
     if (version >= 2) {
@@ -1001,8 +1001,8 @@ bool true_type_font::update_glyph_metrics(
     metrics.ascender = ascender;
     metrics.descender = -descender;
     metrics.lineGap = lineGap;
-    metrics.xHeight = description.xHeight;
-    metrics.capHeight = description.HHeight;
+    metrics.xHeight = xHeight;
+    metrics.capHeight = HHeight;
 
     if (kern_glyph1_id && kern_glyph2_id) {
         ttlet kernTableBytes = getTableBytes("kern");
@@ -1396,29 +1396,29 @@ void true_type_font::parse_font_directory()
         parseNameTable(nameTableBytes);
     }
 
-    description.unicode_mask = parseCharacterMap();
-    description.unicode_mask.optimize();
-    description.unicode_mask.shrink_to_fit();
+    unicode_mask = parseCharacterMap();
+    unicode_mask.optimize();
+    unicode_mask.shrink_to_fit();
 
     if (OS2_xHeight > 0) {
-        description.xHeight = emScale * OS2_xHeight;
+        xHeight = emScale * OS2_xHeight;
     } else {
         ttlet glyph_id = find_glyph('x');
         if (glyph_id) {
             glyph_metrics metrics;
             load_glyph_metrics(glyph_id, metrics);
-            description.xHeight = metrics.boundingBox.height();
+            xHeight = metrics.boundingBox.height();
         }
     }
 
     if (OS2_HHeight > 0) {
-        description.HHeight = emScale * OS2_HHeight;
+        HHeight = emScale * OS2_HHeight;
     } else {
         ttlet glyph_id = find_glyph('H');
         if (glyph_id) {
             glyph_metrics metrics;
             load_glyph_metrics(glyph_id, metrics);
-            description.HHeight = metrics.boundingBox.height();
+            HHeight = metrics.boundingBox.height();
         }
     }
 
@@ -1426,7 +1426,7 @@ void true_type_font::parse_font_directory()
     if (glyph_id) {
         glyph_metrics metrics;
         load_glyph_metrics(glyph_id, metrics);
-        description.DigitWidth = metrics.advance.x();
+        DigitWidth = metrics.advance.x();
     }
 }
 

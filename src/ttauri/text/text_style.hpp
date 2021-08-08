@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "font_description.hpp"
+#include "font_variant.hpp"
 #include "text_decoration.hpp"
 #include "font_family_id.hpp"
 #include "../color/color.hpp"
