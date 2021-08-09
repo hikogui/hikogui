@@ -18,50 +18,27 @@ namespace tt {
  */
 class audio_system {
 public:
-    static inline unfair_recursive_mutex mutex;
+    [[nodiscard]] static std::unique_ptr<audio_system> make_unique(std::weak_ptr<audio_system_delegate> delegate) noexcept;
 
-    audio_system(weak_or_unique_ptr<audio_system_delegate> delegate);
+    audio_system(std::weak_ptr<audio_system_delegate> delegate);
     virtual ~audio_system();
     audio_system(audio_system const &) = delete;
     audio_system(audio_system &&) = delete;
     audio_system &operator=(audio_system const &) = delete;
     audio_system &operator=(audio_system &&) = delete;
 
-    [[nodiscard]] virtual std::vector<std::shared_ptr<audio_device>> devices() noexcept = 0;
-
     virtual void init() noexcept;
     virtual void deinit() noexcept;
 
-    void set_delegate(weak_or_unique_ptr<audio_system_delegate> delegate) noexcept
-    {
-        {
-            ttlet lock = std::scoped_lock(audio_system::mutex);
-            _delegate = std::move(delegate);
-        }
-        if (auto d = delegate_lock()) {
-            d->audio_device_list_changed(*this);
-        }
-    }
-
-    [[nodiscard]] std::shared_ptr<audio_system_delegate> delegate_lock() const noexcept
-    {
-        ttlet lock = std::scoped_lock(audio_system::mutex);
-        return _delegate.lock();
-    }
-
-    [[nodiscard]] static audio_system &global() noexcept
-    {
-        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
-    }
+    /** The devices that are part of the audio system.
+     *
+     * Due to complicated threading and callback function interactions
+     * audio devices are not destroyed until application shutdown.
+     */
+    [[nodiscard]] virtual std::vector<audio_device *> devices() noexcept = 0;
 
 protected:
-    weak_or_unique_ptr<audio_system_delegate> _delegate;
-
-private:
-    static inline std::atomic<audio_system *> _global;
-
-    [[nodiscard]] static audio_system *subsystem_init() noexcept;
-    static void subsystem_deinit() noexcept;
+    std::weak_ptr<audio_system_delegate> _delegate;
 };
 
 } // namespace tt

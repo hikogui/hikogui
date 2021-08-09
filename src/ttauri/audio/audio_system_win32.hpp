@@ -14,25 +14,39 @@ namespace tt {
 
 class audio_system_win32_notification_client;
 
-class audio_system_win32: public audio_system {
+class audio_system_win32 : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_win32(weak_or_unique_ptr<audio_system_delegate> delegate);
+    audio_system_win32(std::weak_ptr<audio_system_delegate> delegate);
     ~audio_system_win32();
 
     void init() noexcept override;
 
-    [[nodiscard]] std::vector<std::shared_ptr<audio_device>> devices() noexcept override
+    [[nodiscard]] std::vector<audio_device *> devices() noexcept override
     {
-        ttlet lock = std::scoped_lock(audio_system::mutex);
-        return _devices;
+        auto r = std::vector<audio_device *>{};
+        r.reserve(std::size(_devices));
+        for (ttlet &device : _devices) {
+            r.push_back(device.get());
+        }
+        return r;
     }
 
     void update_device_list() noexcept;
 
 private:
+    /** The devices that are part of the audio system.
+     *
+     * Due to complicated threading and callback function interactions
+     * audio devices are not destroyed until application shutdown.
+     *
+     * The audio system is the only owner of audio devices, however
+     * audio devices need to be allocated on locked memory, and
+     * unique_ptr does not support allocators.
+     */
     std::vector<std::shared_ptr<audio_device>> _devices;
+
     IMMDeviceEnumerator *_device_enumerator;
     audio_system_win32_notification_client *_notification_client;
 
@@ -45,4 +59,4 @@ private:
     friend audio_system_win32_notification_client;
 };
 
-}
+} // namespace tt

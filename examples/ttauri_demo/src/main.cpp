@@ -59,7 +59,7 @@ int tt_main(int argc, char *argv[])
     preferences->load();
 
     auto preferences_controller = std::make_shared<my_preferences_window_controller>(preferences);
-    audio_system::global().set_delegate(preferences_controller);
+    auto audio = audio_system::make_unique(preferences_controller);
 
     auto gui = gui_system::make_unique();
 

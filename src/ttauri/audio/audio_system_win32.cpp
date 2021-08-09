@@ -4,6 +4,7 @@
 
 #include "audio_system_win32.hpp"
 #include "audio_device_win32.hpp"
+#include "audio_system_aggregate.hpp"
 #include "../required.hpp"
 #include "../logger.hpp"
 #include "../exception.hpp"
@@ -12,6 +13,16 @@
 #include <mmdeviceapi.h>
 
 namespace tt {
+
+[[nodiscard]] std::unique_ptr<audio_system> audio_system::make_unique(std::weak_ptr<audio_system_delegate> delegate) noexcept
+{
+    auto tmp = std::make_unique<audio_system_aggregate>(delegate);
+    tmp->init();
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+    tmp->make_audio_system<audio_system_win32>();
+#endif
+    return tmp;
+}
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
@@ -72,7 +83,7 @@ private:
     audio_system_win32 *_system;
 };
 
-audio_system_win32::audio_system_win32(weak_or_unique_ptr<audio_system_delegate> delegate) : audio_system(std::move(delegate))
+audio_system_win32::audio_system_win32(std::weak_ptr<audio_system_delegate> delegate) : audio_system(std::move(delegate))
 {
     tt_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
@@ -94,20 +105,15 @@ audio_system_win32::~audio_system_win32()
 
 void audio_system_win32::init() noexcept
 {
-    {
-        ttlet lock = std::scoped_lock(audio_system::mutex);
-        audio_system::init();
-        update_device_list();
-    }
-    if (auto delegate = delegate_lock()) {
+    audio_system::init();
+    update_device_list();
+    if (auto delegate = _delegate.lock()) {
         delegate->audio_device_list_changed(*this);
     }
 }
 
 void audio_system_win32::update_device_list() noexcept
 {
-    ttlet lock = std::scoped_lock(audio_system::mutex);
-
     IMMDeviceCollection *device_collection;
     tt_hresult_check(_device_enumerator->EnumAudioEndpoints(
         eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED, &device_collection));

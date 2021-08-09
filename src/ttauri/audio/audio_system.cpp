@@ -11,25 +11,7 @@
 
 namespace tt {
 
-[[nodiscard]] audio_system *audio_system::subsystem_init() noexcept
-{
-    auto tmp = new audio_system_aggregate(std::make_unique<audio_system_delegate>());
-    tmp->init();
-    if constexpr (operating_system::current == operating_system::windows) {
-        tmp->make_audio_system<audio_system_win32>();
-    }
-    return tmp;
-}
-
-void audio_system::subsystem_deinit() noexcept
-{
-    if (auto tmp = _global.exchange(nullptr)) {
-        tmp->deinit();
-        delete tmp;
-    }
-}
-
-audio_system::audio_system(weak_or_unique_ptr<audio_system_delegate> delegate) : _delegate(std::move(delegate)) {}
+audio_system::audio_system(std::weak_ptr<audio_system_delegate> delegate) : _delegate(std::move(delegate)) {}
 
 audio_system::~audio_system() {}
 
