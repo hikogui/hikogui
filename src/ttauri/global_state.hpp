@@ -63,7 +63,7 @@ enum class global_state_type : uint64_t {
 
 [[nodiscard]] constexpr bool is_system_shutting_down(global_state_type rhs) noexcept
 {
-    return to_bool(global_state_type::system_mask & global_state_type::system_is_shutting_down);
+    return to_bool(rhs & global_state_type::system_is_shutting_down);
 }
 
 } // namespace tt
