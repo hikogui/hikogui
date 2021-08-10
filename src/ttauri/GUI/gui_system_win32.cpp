@@ -9,11 +9,15 @@
 #include "../GFX/gfx_system_vulkan.hpp"
 #include "../text/font_book.hpp"
 #include "../trace.hpp"
+#include "../locked_memory_allocator.hpp"
+#include <memory>
 
 namespace tt {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
+    auto event_queue = std::allocate_shared<tt::event_queue>(locked_memory_allocator<tt::event_queue>{});
+
     auto font_book = std::make_unique<tt::font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
     font_book->register_elusive_icon_font(URL("resource:elusiveicons-webfont.ttf"));
     font_book->register_ttauri_icon_font(URL("resource:ttauri_icons.ttf"));
@@ -31,6 +35,7 @@ namespace tt {
     }
 
     auto r = std::make_unique<gui_system_win32>(
+        std::move(event_queue),
         std::move(gfx_system),
         std::make_unique<tt::vertical_sync_win32>(),
         std::move(font_book),
@@ -42,6 +47,7 @@ namespace tt {
 }
 
 gui_system_win32::gui_system_win32(
+    std::shared_ptr<tt::event_queue> event_queue,
     std::unique_ptr<gfx_system> gfx,
     std::unique_ptr<tt::vertical_sync> vertical_sync,
     std::unique_ptr<tt::font_book> font_book,
@@ -49,6 +55,7 @@ gui_system_win32::gui_system_win32(
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) :
     gui_system(
+        std::move(event_queue),
         std::move(gfx),
         std::move(vertical_sync),
         std::move(font_book),
@@ -56,19 +63,6 @@ gui_system_win32::gui_system_win32(
         std::move(keyboard_bindings),
         std::move(delegate))
 {
-}
-
-// WM_USER = ?-0x7fff
-// WM_APP = 0x8000-0xbfff.
-constexpr unsigned int WM_APP_CALL_FUNCTION = 0x8000 + 1;
-
-void gui_system_win32::run_from_event_queue(std::function<void()> function)
-{
-    ttlet functionP = new std::function<void()>(std::move(function));
-    tt_assert(functionP);
-
-    auto r = PostThreadMessageW(thread_id, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
-    tt_assert(r != 0);
 }
 
 void gui_system_win32::exit(int exit_code)
@@ -96,16 +90,10 @@ int gui_system_win32::loop()
                 break;
             }
 
-            ttlet t = trace<"gui_system_event">();
+            ttlet t = trace<"gui_system_win32_event">();
 
-            switch (msg.message) {
-            case WM_APP_CALL_FUNCTION: {
-                ttlet functionP = std::launder(reinterpret_cast<std::function<void()> *>(msg.lParam));
-                (*functionP)();
-                delete functionP;
-            } break;
-
-            case WM_QUIT: exit_code = narrow_cast<int>(msg.wParam); break;
+            if (msg.message == WM_QUIT) {
+                exit_code = narrow_cast<int>(msg.wParam);
             }
 
             TranslateMessage(&msg);
@@ -122,6 +110,11 @@ int gui_system_win32::loop()
                 increment_counter<"gui_system_event_dead_line">();
                 break;
             }
+        }
+
+        {
+            ttlet t = trace<"gui_system_event">();
+            event_queue->take_all([](ttlet &event) { event(); });
         }
 
         // Render right after user input has been processed by the event queue.

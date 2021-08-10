@@ -10,6 +10,7 @@
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
+#include "../event_queue.hpp"
 #include <span>
 #include <memory>
 #include <mutex>
@@ -29,11 +30,19 @@ class gui_system {
 public:
     static inline os_handle instance;
 
+    /** The event queue to invoke events on the gui thread.
+     *
+     * The event queue is a shared_ptr to allow the event queue to be allocated
+     * in locked memory. To ensure non-blocking emplace().
+     */
+    std::shared_ptr<tt::event_queue> event_queue;
+
     std::unique_ptr<gfx_system> gfx;
     std::unique_ptr<tt::vertical_sync> vertical_sync;
     std::unique_ptr<tt::font_book> font_book;
     std::unique_ptr<tt::theme_book> theme_book;
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings;
+
 
     thread_id const thread_id;
 
@@ -94,16 +103,19 @@ public:
 
     /** Run the function from the GUI's event queue.
      */
-    virtual void run_from_event_queue(std::function<void()> function) = 0;
+    void run_from_event_queue(std::invocable auto &&function) noexcept
+    {
+        event_queue->emplace(std::forward<decltype(function)>(function));
+    }
 
     /** Run the function now or on from the GUI's event loop.
      */
-    void run(std::function<void()> function) noexcept
+    void run(std::invocable auto &&function) noexcept
     {
         if (is_gui_thread()) {
             function();
         } else {
-            run_from_event_queue(std::move(function));
+            run_from_event_queue(std::forward<decltype(function)>(function));
         }
     }
 
@@ -186,12 +198,14 @@ public:
 
 protected:
     gui_system(
+        std::shared_ptr<tt::event_queue> event_queue,
         std::unique_ptr<gfx_system> gfx,
         std::unique_ptr<tt::vertical_sync> vertical_sync,
         std::unique_ptr<tt::font_book> font_book,
         std::unique_ptr<tt::theme_book> theme_book,
         std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
+
 
 private:
     std::weak_ptr<gui_system_delegate> _delegate;

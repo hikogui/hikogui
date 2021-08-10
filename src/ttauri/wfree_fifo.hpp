@@ -79,6 +79,18 @@ public:
         }
     }
 
+    /** Take all message from the queue.
+     * Reads each message from the ring buffer and passes it to a call of operation.
+     * If no message are available this function returns without calling operation.
+     *
+     * @param operation A `void(value_type const &)` which is called when a message is available.
+     */
+    template<typename Operation>
+    void take_all(Operation const &operation) noexcept
+    {
+        while (take_one(operation)) {}
+    }
+
     tt_no_inline void contended() noexcept
     {
         // If we get here, that would suck, but nothing to do about it.
@@ -87,7 +99,7 @@ public:
     }
 
     /** Create an message in-place on the fifo.
-     * @tparam Message Message type derived from value_type to be stored in a free slot.
+     * @tparam Message The message type derived from value_type to be stored in a free slot.
      * @param args The arguments passed to the constructor of Message.
      */
     template<typename Message, typename... Args>
@@ -109,7 +121,7 @@ public:
         // auto &slot = _slots[index / slot_size];
 
         // Wait until the slot.pointer is a nullptr.
-        // And aquire the buffer to start overwriting it.
+        // And acquire the buffer to start overwriting it.
         // There are no other threads that will make this non-null afterwards.
         while (slot.pointer.load(std::memory_order_acquire)) {
             // If we get here, that would suck, but nothing to do about it.
@@ -124,7 +136,7 @@ public:
     }
 
     /** Create an message in-place on the fifo.
-     * @tparam Message Message type derived from value_type to be stored in a free slot.
+     * @tparam Message The message type derived from value_type to be stored in a free slot.
      * @param args The arguments passed to the constructor of Message.
      */
     template<typename Message, typename... Args>

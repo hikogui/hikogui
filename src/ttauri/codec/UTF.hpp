@@ -15,30 +15,43 @@ namespace tt {
 
 /** Convert a UTF-16 encoded code-point to a UTF-32 encoded code-point
  *
- * It is undefined behavior when the iterator does not point to a valid
- * and complete UTF-16 encoded code-point.
+ * Invalid code units, such as unpaired surrogates are converted to U+fffd.
  *
  * @tparam Iterator A LegacyInputIterator
  * @param [in,out] it An iterator pointing to the first UTF-16 code unit of a code point.
  *                    After the call the iterator points beyond the code point.
+ * @param last An iterator pointing one beyond the last UTF-16 code unit.
  * @return The encoded code point
  */
-template<typename Iterator>
-[[nodiscard]] constexpr char32_t utf16_to_utf32(Iterator &it) noexcept
+template<typename Iterator, typename Sentinel>
+[[nodiscard]] constexpr char32_t utf16_to_utf32(Iterator &it, Sentinel last) noexcept
 {
     using value_type = typename std::iterator_traits<Iterator>::value_type;
-    static_assert(std::is_same_v<value_type, char16_t>, "Iterator must point to a char16_t");
+    static_assert(
+        std::is_same_v<value_type, char16_t> or (std::is_same_v<value_type, wchar_t> and sizeof(wchar_t) == 2),
+        "Iterator must point to a char16_t or 16 bit wchar_t");
 
-    ttlet first = *(it++);
-    if (first <= 0xd7ff || first >= 0xe000) {
+    ttlet first = static_cast<char16_t>(*(it++));
+    if (first <= 0xd7ff or first >= 0xe000) {
         return first;
 
-    } else {
-        tt_axiom(first <= 0xdbff, "Expecting the high surrogate");
-        ttlet second = *(it++);
-        tt_axiom(second >= 0xdc00 && second <= 0xdfff, "Expecting the low surrogate");
+    } else if (first <= 0xdbff) {
+        if (it == last or static_cast<char16_t>(*it) < 0xdc00 or static_cast<char16_t>(*it) > 0xdfff) {
+            // Unpaired high surrogate. Don't increment `it` yet.
+            [[unlikely]] return 0xfffd;
 
-        return ((static_cast<char32_t>(first - 0xd800) << 10) | (static_cast<char32_t>(second - 0xdc00))) + 0x01'0000;
+        } else {
+            // High surrogate.
+            ttlet second = static_cast<char16_t>(*(it++));
+            return ((static_cast<char32_t>(first - 0xd800) << 10) | (static_cast<char32_t>(second - 0xdc00))) + 0x01'0000;
+        }
+
+    } else if (first <= 0xdfff) {
+        // Unpaired low surrogate.
+        return 0xfffd;
+
+    } else {
+        return first;
     }
 }
 
@@ -198,39 +211,81 @@ constexpr void utf32_to_utf16(char32_t code_point, BackInsertIterator &it) noexc
 }
 
 /** Convert a UTF-32 encoded code point to a UTF-8 encoded code point.
- * It is undefined behavior when the code-point is outside the Unicode range or if it is a surrogate-code.
+ *
+ * Invalid code-points are converted to U+fffd.
+ *
+ * Either the full code-point is added to the @a it, or when it doesn't fit
+ * before @a nul characters are added. When @a it == @a last nothing will be inserted.
  *
  * @tparam Iterator A LegacyOutputIterator
  * @param code_point The code point to encode.
  * @param [in,out] it An iterator pointing to where the UTF-8 code units should be inserted.
  *                    After the call the iterator points beyond the code point.
  */
-template<typename BackInsertIterator>
-constexpr void utf32_to_utf8(char32_t code_point, BackInsertIterator &it) noexcept
+template<typename Iterator>
+constexpr void utf32_to_utf8(char32_t code_point, Iterator &it) noexcept
 {
-    using value_type = typename BackInsertIterator::container_type::value_type;
-    static_assert(sizeof(value_type) == 1, "UTF-8 values must be stored in a 1 byte character type");
+    if ((code_point >= 0xd800 and code_point <= 0xdfff) or code_point > 0x10ffff) {
+        // Code point is invalid.
+        code_point = 0xfffd;
+    }
 
     if (code_point <= 0x7f) {
-        *(it++) = static_cast<value_type>(code_point);
+        *(it++) = static_cast<uint8_t>(code_point);
 
     } else if (code_point <= 0x07ff) {
-        *(it++) = static_cast<value_type>(code_point >> 6) | 0xc0;
-        *(it++) = static_cast<value_type>(code_point) & 0x3f | 0x80;
+        *(it++) = static_cast<uint8_t>(code_point >> 6) | 0xc0;
+        *(it++) = static_cast<uint8_t>(code_point) & 0x3f | 0x80;
 
     } else if (code_point <= 0xffff) {
-        tt_axiom(!(code_point >= 0xd800 && code_point <= 0xdfff), "Code Point must not be a surrogate");
-        *(it++) = static_cast<value_type>(code_point >> 12) | 0xe0;
-        *(it++) = static_cast<value_type>(code_point >> 6) & 0x3f | 0x80;
-        *(it++) = static_cast<value_type>(code_point) & 0x3f | 0x80;
+        *(it++) = static_cast<uint8_t>(code_point >> 12) | 0xe0;
+        *(it++) = static_cast<uint8_t>(code_point >> 6) & 0x3f | 0x80;
+        *(it++) = static_cast<uint8_t>(code_point) & 0x3f | 0x80;
 
     } else {
-        tt_axiom(code_point <= 0x10ffff, "Code Point must be in range of the 17 planes");
-        *(it++) = static_cast<value_type>(code_point >> 18) | 0xf0;
-        *(it++) = static_cast<value_type>(code_point >> 12) & 0x3f | 0x80;
-        *(it++) = static_cast<value_type>(code_point >> 6) & 0x3f | 0x80;
-        *(it++) = static_cast<value_type>(code_point) & 0x3f | 0x80;
+        *(it++) = static_cast<uint8_t>(code_point >> 18) | 0xf0;
+        *(it++) = static_cast<uint8_t>(code_point >> 12) & 0x3f | 0x80;
+        *(it++) = static_cast<uint8_t>(code_point >> 6) & 0x3f | 0x80;
+        *(it++) = static_cast<uint8_t>(code_point) & 0x3f | 0x80;
     }
+}
+
+/** Convert a UTF-32 encoded code point to a UTF-8 encoded code point.
+ * 
+ * Invalid code-points are converted to U+fffd.
+ * 
+ * Either the full code-point is added to the @a it, or when it doesn't fit
+ * before @a nul characters are added. When @a it == @a last nothing will be inserted.
+ *
+ * @tparam Iterator A LegacyOutputIterator
+ * @param code_point The code point to encode.
+ * @param [in,out] it An iterator pointing to where the UTF-8 code units should be inserted.
+ *                    After the call the iterator points beyond the code point.
+ * @param last One beyond the last position to insert.
+ */
+template<typename Iterator, typename Sentinel>
+constexpr void utf32_to_utf8(char32_t code_point, Iterator &it, Sentinel last) noexcept
+{
+    if ((code_point >= 0xd800 and code_point <= 0xdfff) or code_point > 0x10ffff) {
+        // Code point is invalid.
+        code_point = 0xfffd;
+    }
+
+    // clang-format off
+    if (
+        (it == last) or
+        (code_point >= 0x80 and it + 1 == last) or
+        (code_point >= 0x800 and it + 2 == last) or
+        (code_point >= 0x10000 and it + 3 == last) 
+    ) {
+        // No space for writing. Fill rest with nul chars.
+        while (it != last) {
+            *(it++) = uint8_t{0};
+        }
+    } else {
+        utf32_to_utf8(code_point, it);
+    }
+    // clang-format on
 }
 
 /** Sanitize a UTF-32 string so it contains only valid encoded Unicode code points.
@@ -425,7 +480,7 @@ template<typename StringT>
     auto r_it = std::back_inserter(r);
 
     for (auto it = std::begin(rhs); it != std::end(rhs);) {
-        ttlet c32 = utf16_to_utf32(it);
+        ttlet c32 = utf16_to_utf32(it, std::end(rhs));
         utf32_to_utf8(c32, r_it);
     }
     return r;
@@ -460,7 +515,7 @@ template<typename StringT>
 
 /** UTF-8 to string conversion.
  * It is undefined behavior if the given string is not a valid UTF-8 string.
- * 
+ *
  * @param rhs The given valid UTF-8 encoded string.
  * @return A UTF-8 encoded string.
  */
@@ -579,7 +634,7 @@ template<typename StringT>
     r.reserve(rhs.size());
 
     for (auto it = std::begin(rhs); it != std::end(rhs);) {
-        r += utf16_to_utf32(it);
+        r += utf16_to_utf32(it, std::end(rhs));
     }
     return r;
 }

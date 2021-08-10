@@ -6,6 +6,8 @@
 
 #include "audio_system.hpp"
 #include "audio_system_delegate.hpp"
+#include "audio_device_id.hpp"
+#include "../wfree_fifo.hpp"
 #include <memory>
 
 struct IMMDeviceEnumerator;
@@ -14,11 +16,17 @@ namespace tt {
 
 class audio_system_win32_notification_client;
 
+class audio_system_win32;
+
+struct audio_system_win32_event {
+    virtual void handle_event(audio_system_win32 *self) noexcept = 0;
+};
+
 class audio_system_win32 : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_win32(std::weak_ptr<audio_system_delegate> delegate);
+    audio_system_win32(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate);
     ~audio_system_win32();
 
     void init() noexcept override;
@@ -50,11 +58,11 @@ private:
     IMMDeviceEnumerator *_device_enumerator;
     audio_system_win32_notification_client *_notification_client;
 
-    void default_device_changed() noexcept;
-    void device_added() noexcept;
-    void device_removed(std::string device_id) noexcept;
-    void device_state_changed(std::string device_id) noexcept;
-    void device_property_value_changed(std::string device_id) noexcept;
+    void default_device_changed(tt::audio_device_id const &device_id) noexcept;
+    void device_added(tt::audio_device_id const &device_id) noexcept;
+    void device_removed(tt::audio_device_id const &device_id) noexcept;
+    void device_state_changed(tt::audio_device_id const &device_id) noexcept;
+    void device_property_value_changed(tt::audio_device_id const &device_id) noexcept;
 
     friend audio_system_win32_notification_client;
 };

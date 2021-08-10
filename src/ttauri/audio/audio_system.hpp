@@ -12,15 +12,17 @@
 #include <memory>
 
 namespace tt {
+class event_queue;
 
 /*! An system of audio devices.
  * Systems are for example: Window Audio Session API (WASAPI), ASIO, Apple CoreAudio
  */
 class audio_system {
 public:
-    [[nodiscard]] static std::unique_ptr<audio_system> make_unique(std::weak_ptr<audio_system_delegate> delegate) noexcept;
+    [[nodiscard]] static std::unique_ptr<audio_system>
+    make_unique(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate) noexcept;
 
-    audio_system(std::weak_ptr<audio_system_delegate> delegate);
+    audio_system(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate);
     virtual ~audio_system();
     audio_system(audio_system const &) = delete;
     audio_system(audio_system &&) = delete;
@@ -38,6 +40,8 @@ public:
     [[nodiscard]] virtual std::vector<audio_device *> devices() noexcept = 0;
 
 protected:
+    tt::event_queue const &_event_queue;
+
     std::weak_ptr<audio_system_delegate> _delegate;
 };
 

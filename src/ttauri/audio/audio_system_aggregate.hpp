@@ -12,7 +12,7 @@ class audio_system_aggregate : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_aggregate(std::weak_ptr<audio_system_delegate> delegate);
+    audio_system_aggregate(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate);
 
     [[nodiscard]] std::vector<audio_device *> devices() noexcept override
     {
@@ -27,7 +27,7 @@ public:
     template<typename T, typename... Args>
     audio_system &make_audio_system(Args &&...args)
     {
-        auto new_audio_system = std::make_unique<T>(_aggregate_delegate, std::forward<Args>(args)...);
+        auto new_audio_system = std::make_unique<T>(_event_queue, _aggregate_delegate, std::forward<Args>(args)...);
         auto new_audio_system_ptr = new_audio_system.get();
 
         new_audio_system->init();
