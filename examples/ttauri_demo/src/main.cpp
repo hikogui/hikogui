@@ -61,7 +61,7 @@ int tt_main(int argc, char *argv[])
     auto preferences_controller = std::make_shared<my_preferences_window_controller>(preferences);
 
     auto gui = gui_system::make_unique();
-    auto audio = audio_system::make_unique(*gui->event_queue, preferences_controller);
+    auto audio = audio_system::make_unique(gui->event_queue(), preferences_controller);
 
     auto callback = create_main_window(*gui, preferences_controller);
 

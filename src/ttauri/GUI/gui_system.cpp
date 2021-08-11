@@ -22,7 +22,7 @@ gui_system::gui_system(
     std::unique_ptr<tt::theme_book> theme_book,
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) noexcept :
-    event_queue(std::move(event_queue)),
+    _event_queue(std::move(event_queue)),
     gfx(std::move(gfx)),
     vertical_sync(std::move(vertical_sync)),
     font_book(std::move(font_book)),

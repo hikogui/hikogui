@@ -114,7 +114,7 @@ int gui_system_win32::loop()
 
         {
             ttlet t = trace<"gui_system_event">();
-            event_queue->take_all([](ttlet &event) { event(); });
+            _event_queue->take_all([](ttlet &event) { event(); });
         }
 
         // Render right after user input has been processed by the event queue.

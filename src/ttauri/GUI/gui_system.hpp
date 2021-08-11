@@ -30,13 +30,6 @@ class gui_system {
 public:
     static inline os_handle instance;
 
-    /** The event queue to invoke events on the gui thread.
-     *
-     * The event queue is a shared_ptr to allow the event queue to be allocated
-     * in locked memory. To ensure non-blocking emplace().
-     */
-    std::shared_ptr<tt::event_queue> event_queue;
-
     std::unique_ptr<gfx_system> gfx;
     std::unique_ptr<tt::vertical_sync> vertical_sync;
     std::unique_ptr<tt::font_book> font_book;
@@ -101,11 +94,21 @@ public:
 
     virtual void exit(int exit_code) = 0;
 
+    /** Get the event queue.
+    * 
+    * This queue allows for adding jobs to the queue which will
+    * be executed on the gui thread.
+    */
+    tt::event_queue const &event_queue() const noexcept
+    {
+        return *_event_queue;
+    }
+
     /** Run the function from the GUI's event queue.
      */
     void run_from_event_queue(std::invocable auto &&function) noexcept
     {
-        event_queue->emplace(std::forward<decltype(function)>(function));
+        event_queue().emplace(std::forward<decltype(function)>(function));
     }
 
     /** Run the function now or on from the GUI's event loop.
@@ -206,6 +209,12 @@ protected:
         std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
+    /** The event queue to invoke events on the gui thread.
+     *
+     * The event queue is a shared_ptr to allow the event queue to be allocated
+     * in locked memory. To ensure non-blocking emplace().
+     */
+    std::shared_ptr<tt::event_queue> _event_queue;
 
 private:
     std::weak_ptr<gui_system_delegate> _delegate;
