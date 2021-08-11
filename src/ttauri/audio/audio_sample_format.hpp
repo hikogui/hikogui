@@ -58,6 +58,9 @@ struct audio_sample_format {
      */
     std::endian endian;
 
+    constexpr audio_sample_format() noexcept :
+        num_bytes(0), num_guard_bits(0), num_bits(0), is_float(false), endian(std::endian::native) {}
+
     constexpr audio_sample_format(audio_sample_format const &) noexcept = default;
     constexpr audio_sample_format(audio_sample_format &&) noexcept = default;
     constexpr audio_sample_format &operator=(audio_sample_format const &) noexcept = default;
@@ -171,6 +174,11 @@ struct audio_sample_format {
     [[nodiscard]] static constexpr audio_sample_format fix8_23() noexcept
     {
         return {4, 8, 23, false, std::endian::native};
+    }
+
+    constexpr explicit operator bool () const noexcept
+    {
+        return num_bytes != 0;
     }
 
     /** How much to multiply float samples to create integer samples.

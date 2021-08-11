@@ -76,13 +76,6 @@ public:
 
     [[nodiscard]] virtual audio_direction direction() const noexcept = 0;
 
-
-    /** Check for valid configuration.
-    * 
-    * @return Empty is configuration is valid, or an user-facing error message.
-     */
-    [[nodiscard]] virtual std::optional<l10n> check_configuration() const noexcept = 0; 
-
     /** Check if the device is in exclusive mode.
      *
      * @return True to if exclusive mode, False if shared mode
@@ -129,6 +122,12 @@ public:
      */
     virtual void set_input_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept = 0;
 
+    /** Speaker mapping that are available in the current configuration.
+     *
+     * @return A list of speaker mappings.
+     */
+    [[nodiscard]] virtual std::vector<tt::speaker_mapping> available_input_speaker_mappings() const noexcept = 0;
+
     /** Get the currently configured output speaker mapping.
      *
      * @return The current configured output speaker mapping.
@@ -141,12 +140,11 @@ public:
      */
     virtual void set_output_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept = 0;
 
-    /** Speaker mapping that are available at the current configured sample
-     * rate.
+    /** Speaker mapping that are available in the current configuration.
      *
      * @return A list of speaker mappings.
      */
-    [[nodiscard]] virtual std::vector<tt::speaker_mapping> available_speaker_mappings() const noexcept = 0;
+    [[nodiscard]] virtual std::vector<tt::speaker_mapping> available_output_speaker_mappings() const noexcept = 0;
 
     /** Start a session. Start a session, which will cause data to be stream to
      * and from the audio device and the delegate's process_audio() function to

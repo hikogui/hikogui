@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "../architecture.hpp"
+#include "../assert.hpp"
+#include "../cast.hpp"
 #include "../text/ttauri_icon.hpp"
 #include <array>
 #include <string>
@@ -14,7 +15,7 @@ namespace tt {
 
 enum class speaker_mapping : uint64_t {
     /** Direct. speakers are not assigned, and no matrix-mixing is done.
-    * Upper 32 bits contains the number of channels.
+     * Upper 32 bits contains the number of channels.
      */
     direct = 0x0'0000,
 
@@ -99,6 +100,42 @@ enum class speaker_mapping : uint64_t {
     return static_cast<uint32_t>(static_cast<uint64_t>(rhs)) == 0;
 }
 
+[[nodiscard]] constexpr speaker_mapping make_direct_speaker_mapping(size_t num_speakers) noexcept
+{
+    tt_axiom(num_speakers <= std::numeric_limits<uint32_t>::max());
+    ttlet r = static_cast<speaker_mapping>(num_speakers << 32);
+    tt_axiom(holds_invariant(r));
+    return r;
+}
+
+[[nodiscard]] constexpr speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+{
+    tt_axiom(not is_direct(lhs) and not is_direct(rhs));
+
+    ttlet r = static_cast<speaker_mapping>(to_underlying(lhs) | to_underlying(rhs));
+    tt_axiom(holds_invariant(r));
+    return r;
+}
+
+[[nodiscard]] constexpr speaker_mapping operator&(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+{
+    tt_axiom(not is_direct(lhs) and not is_direct(rhs));
+
+    ttlet r = static_cast<speaker_mapping>(to_underlying(lhs) & to_underlying(rhs));
+    tt_axiom(holds_invariant(r));
+    return r;
+}
+
+constexpr speaker_mapping &operator|=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
+{
+    return lhs = lhs | rhs;
+}
+
+constexpr speaker_mapping &operator&=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
+{
+    return lhs = lhs & rhs;
+}
+
 [[nodiscard]] constexpr size_t num_channels(speaker_mapping const &rhs) noexcept
 {
     if (is_direct(rhs)) {
@@ -157,4 +194,4 @@ constexpr auto speaker_mappings = std::array{
     speaker_mapping_info{speaker_mapping::surround_atmos_7_1_4, ttauri_icon::surround_atmos_7_1_4, "Atmos 7.1.4"},
 };
 
-}
+} // namespace tt

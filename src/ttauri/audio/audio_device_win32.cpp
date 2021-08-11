@@ -136,22 +136,13 @@ audio_device_win32::audio_device_win32(IMMDevice *device) : audio_device(), _dev
     tt_hresult_check(_device->QueryInterface(&_end_point));
     tt_hresult_check(_device->OpenPropertyStore(STGM_READ, &_property_store));
 
-    if (FAILED(
-            _device->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_ALL, NULL, reinterpret_cast<void **>(&_end_point_volume)))) {
-        tt_log_warning("Audio device {} does not have IAudioEndPointVolume interface", name());
-        _end_point_volume = nullptr;
-    }
-
-    if (FAILED(_device->Activate(
-            __uuidof(IAudioMeterInformation), CLSCTX_ALL, NULL, reinterpret_cast<void **>(&_audio_meter_information)))) {
-        tt_log_warning("Audio device {} does not have IAudioMeterInformation interface", name());
-        _audio_meter_information = nullptr;
-    }
-
     if (FAILED(_device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, reinterpret_cast<void **>(&_audio_client)))) {
         tt_log_warning("Audio device {} does not have IAudioClient interface", name());
         _audio_client = nullptr;
     }
+
+    // By setting exclusivity to false at the start the audio stream format is initialized properly.
+    set_exclusive(false);
 }
 
 audio_device_win32::~audio_device_win32()
@@ -159,12 +150,7 @@ audio_device_win32::~audio_device_win32()
     _property_store->Release();
     _end_point->Release();
     _device->Release();
-    if (_end_point_volume != nullptr) {
-        _end_point_volume->Release();
-    }
-    if (_audio_meter_information != nullptr) {
-        _audio_meter_information->Release();
-    }
+
     if (_audio_client != nullptr) {
         _audio_client->Release();
     }
@@ -174,7 +160,7 @@ audio_device_win32::~audio_device_win32()
 {
     auto format_ = audio_stream_format_to_win32(format);
 
-    auto r = _audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_EXCLUSIVE, &format_, NULL);
+    auto r = _audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_EXCLUSIVE, reinterpret_cast<WAVEFORMATEX *>(&format_), NULL);
     if (r == S_OK) {
         return true;
     } else if (r == S_FALSE or r == AUDCLNT_E_UNSUPPORTED_FORMAT) {
@@ -185,7 +171,39 @@ audio_device_win32::~audio_device_win32()
     }
 }
 
-[[nodiscard]] std::optional<audio_stream_format>
+[[nodiscard]] bool audio_device_win32::exclusive() const noexcept
+{
+    return _exclusive;
+}
+
+void audio_device_win32::set_exclusive(bool exclusive) noexcept
+{
+    if (exclusive) {
+        _current_stream_format = find_exclusive_stream_format(_current_stream_format);
+    } else {
+        _current_stream_format = shared_stream_format();
+    }
+
+    _exclusive = exclusive;
+}
+
+[[nodiscard]] double audio_device_win32::sample_rate() const noexcept {}
+
+void audio_device_win32::set_sample_rate(double sample_rate) noexcept {}
+
+[[nodiscard]] tt::speaker_mapping audio_device_win32::input_speaker_mapping() const noexcept {}
+
+void audio_device_win32::set_input_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept {}
+
+[[nodiscard]] std::vector<tt::speaker_mapping> audio_device_win32::available_input_speaker_mappings() const noexcept {}
+
+[[nodiscard]] tt::speaker_mapping audio_device_win32::output_speaker_mapping() const noexcept {}
+
+void audio_device_win32::set_output_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept {}
+
+[[nodiscard]] std::vector<tt::speaker_mapping> audio_device_win32::available_output_speaker_mappings() const noexcept {}
+
+/*[[nodiscard]] std::optional<audio_stream_format>
 audio_device_win32::best_format(double sample_rate, tt::speaker_mapping speaker_mapping) const noexcept
 {
     constexpr auto sample_formats = std::array{
@@ -204,7 +222,8 @@ audio_device_win32::best_format(double sample_rate, tt::speaker_mapping speaker_
     return {};
 }
 
-[[nodiscard]] std::optional<audio_stream_format> audio_device_win32::best_format(double sample_rate, int num_channels) const noexcept
+[[nodiscard]] std::optional<audio_stream_format> audio_device_win32::best_format(double sample_rate, int num_channels) const
+noexcept
 {
     constexpr auto sample_formats = std::array{
         audio_sample_format::float32(),
@@ -246,7 +265,7 @@ audio_device_win32::best_format(double sample_rate, tt::speaker_mapping speaker_
     }
 
     return r;
-}
+}*/
 
 std::string audio_device_win32::name() const noexcept
 {
@@ -307,40 +326,19 @@ std::string audio_device_win32::end_point_name() const noexcept
     }
 }
 
-[[nodiscard]] size_t audio_device_win32::full_num_channels() const noexcept
+/** Get the shared stream format for the device.
+ */
+[[nodiscard]] audio_stream_format audio_device_win32::shared_stream_format() const
 {
-    auto r = 0_uz;
-
-    if (_end_point_volume != nullptr) {
-        try {
-            UINT channel_count;
-            tt_hresult_check(_end_point_volume->GetChannelCount(&channel_count));
-            r = std::max(r, narrow_cast<size_t>(channel_count));
-        } catch (io_error const &) {
-        }
+    if (not _audio_client) {
+        return {};
     }
 
-    if (_audio_meter_information != nullptr) {
-        try {
-            UINT channel_count;
-            tt_hresult_check(_audio_meter_information->GetMeteringChannelCount(&channel_count));
-            r = std::max(r, narrow_cast<size_t>(channel_count));
-        } catch (io_error const &) {
-        }
-    }
-
-    [[maybe_unused]] auto mapping = full_channel_mapping();
-    return r;
-}
-
-[[nodiscard]] speaker_mapping audio_device_win32::full_channel_mapping() const noexcept
-{
-    try {
-        ttlet win32_spaker_mapping = get_property<uint32_t>(_property_store, PKEY_AudioEndpoint_PhysicalSpeakers);
-        return speaker_mapping_from_win32(win32_spaker_mapping);
-    } catch (io_error const &) {
-        return speaker_mapping::front_left | speaker_mapping::front_right;
-    }
+    WAVEFORMATEX *ex;
+    tt_hresult_check(_audio_client->GetMixFormat(&ex));
+    tt_axiom(ex);
+    ttlet r = audio_stream_format_from_win32(*ex);
+    CoTaskMemFree(ex);
 }
 
 } // namespace tt
