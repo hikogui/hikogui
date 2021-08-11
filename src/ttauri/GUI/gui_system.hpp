@@ -7,10 +7,10 @@
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
-#include "../GFX/gfx_system.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
+#include "../event_queue.hpp"
 #include <span>
 #include <memory>
 #include <mutex>
@@ -18,6 +18,11 @@
 #include <vector>
 
 namespace tt {
+class gfx_system;
+class vertical_sync;
+class font_book;
+class theme_book;
+class keyboard_bindings;
 
 /** Graphics system
  */
@@ -25,11 +30,26 @@ class gui_system {
 public:
     static inline os_handle instance;
 
+    std::unique_ptr<gfx_system> gfx;
+    std::unique_ptr<tt::vertical_sync> vertical_sync;
+    std::unique_ptr<tt::font_book> font_book;
+    std::unique_ptr<tt::theme_book> theme_book;
+    std::unique_ptr<tt::keyboard_bindings> keyboard_bindings;
+
+
     thread_id const thread_id;
 
-    gui_system() noexcept : thread_id(current_thread_id()), _delegate() {}
+    /** Make a gui_system instance.
+     *
+     * This will instantiate a gui_system instance appropriate for the current
+     * operating system.
+     *
+     * @param delegate An optional delegate.
+     * @return A unique pointer to a gui_system instance.
+     */
+    [[nodiscard]] static std::unique_ptr<gui_system> make_unique(std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
-    virtual ~gui_system() {}
+    virtual ~gui_system();
 
     gui_system(const gui_system &) = delete;
     gui_system &operator=(const gui_system &) = delete;
@@ -58,8 +78,6 @@ public:
         _delegate = std::move(delegate);
     }
 
-    virtual void run_from_event_queue(std::function<void()> function) = 0;
-
     /** Start the GUI event loop.
      *
      * This function will start the GUI event loop.
@@ -76,6 +94,34 @@ public:
 
     virtual void exit(int exit_code) = 0;
 
+    /** Get the event queue.
+    * 
+    * This queue allows for adding jobs to the queue which will
+    * be executed on the gui thread.
+    */
+    tt::event_queue const &event_queue() const noexcept
+    {
+        return *_event_queue;
+    }
+
+    /** Run the function from the GUI's event queue.
+     */
+    void run_from_event_queue(std::invocable auto &&function) noexcept
+    {
+        event_queue().emplace(std::forward<decltype(function)>(function));
+    }
+
+    /** Run the function now or on from the GUI's event loop.
+     */
+    void run(std::invocable auto &&function) noexcept
+    {
+        if (is_gui_thread()) {
+            function();
+        } else {
+            run_from_event_queue(std::forward<decltype(function)>(function));
+        }
+    }
+
     gui_window &add_window(std::unique_ptr<gui_window> window);
 
     /** Create a new window.
@@ -89,7 +135,7 @@ public:
         tt_axiom(is_gui_thread());
 
         // XXX abstract away the _win32 part.
-        auto window = std::make_unique<gui_window_win32>(std::forward<Args>(args)...);
+        auto window = std::make_unique<gui_window_win32>(*this, std::forward<Args>(args)...);
         window->init();
 
         return add_window(std::move(window));
@@ -119,10 +165,10 @@ public:
             // win32 is a bit picky about running without windows.
             if (auto delegate = _delegate.lock()) {
                 if (auto exit_code = delegate->last_window_closed(*this)) {
-                    gui_system::global().exit(*exit_code);
+                    this->exit(*exit_code);
                 }
             } else {
-                gui_system::global().exit(0);
+                this->exit(0);
             }
         }
         _previous_num_windows = num_windows;
@@ -135,27 +181,51 @@ public:
         return thread_id == current_thread_id();
     }
 
-    /** Get a reference to the global gui_system.
+    /** Set the theme for the system.
      *
-     * The first time this function is called it will initialize the gui_system.
-     *
-     * @return A reference to the global gui_system.
+     * @param new_theme The new theme to use for the gui system.
      */
-    [[nodiscard]] static gui_system &global() noexcept
-    {
-        return *start_subsystem_or_terminate(_global, nullptr, subsystem_init, subsystem_deinit);
-    }
+    void set_theme(tt::theme const &new_theme) noexcept;
+
+    /** Get the theme.
+     *
+     * @return The current theme.
+     */
+    tt::theme const &theme() const noexcept;
+
+    void set_theme_mode(tt::theme_mode mode) noexcept;
+
+    /** Request all windows to constrain.
+     */
+    void request_constrain() noexcept;
+
+protected:
+    gui_system(
+        std::shared_ptr<tt::event_queue> event_queue,
+        std::unique_ptr<gfx_system> gfx,
+        std::unique_ptr<tt::vertical_sync> vertical_sync,
+        std::unique_ptr<tt::font_book> font_book,
+        std::unique_ptr<tt::theme_book> theme_book,
+        std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
+        std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
+
+    /** The event queue to invoke events on the gui thread.
+     *
+     * The event queue is a shared_ptr to allow the event queue to be allocated
+     * in locked memory. To ensure non-blocking emplace().
+     */
+    std::shared_ptr<tt::event_queue> _event_queue;
 
 private:
-    static inline std::atomic<gui_system *> _global;
-
     std::weak_ptr<gui_system_delegate> _delegate;
 
     std::vector<std::unique_ptr<gui_window>> _windows;
-    size_t _previous_num_windows;
+    size_t _previous_num_windows = 0;
 
-    [[nodiscard]] static gui_system *subsystem_init() noexcept;
-    static void subsystem_deinit() noexcept;
+    /** The theme of the system.
+     * Should never be nullptr in reality.
+     */
+    tt::theme const *_theme = nullptr;
 };
 
 } // namespace tt

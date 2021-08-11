@@ -98,4 +98,11 @@ concept sizeable = requires(T v)
 template<typename T>
 concept atomical = tt::may_be_atomic_v<T>;
 
+/** Concept for std::is_scoped_enum_v<T>.
+* 
+* XXX std::is_scoped_enum_v<T> ios a c++23 feature, so right now we use std::is_enum_v<T> instead.
+*/
+template<typename T>
+concept scoped_enum = std::is_enum_v<T>;
+
 } // namespace tt

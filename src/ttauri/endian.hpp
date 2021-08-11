@@ -120,6 +120,17 @@ struct endian_buf_t {
         }
     }
 
+    operator T() const noexcept {
+        T aligned_value;
+        std::memcpy(&aligned_value, &_value[0], sizeof(T));
+
+        if constexpr (E == std::endian::native) {
+            return aligned_value;
+        } else {
+            return byte_swap(aligned_value);
+        }
+    }
+
     endian_buf_t &operator=(T x) noexcept {
         T aligned_value;
         if constexpr (E == std::endian::native) {

@@ -279,7 +279,7 @@ elseif (MSVC)
     # C4648: standard attribute 'no_unique_address' is ignored
     target_compile_options(ttauri PUBLIC -wd4648)
 
-    if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
+    if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         # Enable Security Development Lifecycle checks.
         # This includes run-time checks, don't include this in the Release type
         # Do include it with ReleaseWithDebug.

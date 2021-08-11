@@ -163,7 +163,7 @@ private:
 
     [[nodiscard]] static bool subsystem_init() noexcept
     {
-        _languages_maintenance_callback = timer::global().add_callback(1s, [](auto...) {
+        _languages_maintenance_callback = timer::global().add_callback(5s, [](auto...) {
             ttlet new_preferred_language_tags = language::read_os_preferred_languages();
 
             if (language::_preferred_language_tags != new_preferred_language_tags) {

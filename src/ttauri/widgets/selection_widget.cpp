@@ -3,6 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "selection_widget.hpp"
+#include "../text/font_book.hpp"
+#include "../GUI/gui_system.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 
 namespace tt {
@@ -39,7 +41,7 @@ void selection_widget::init() noexcept
 
     if (auto delegate = _delegate.lock()) {
         _delegate_callback = delegate->subscribe(*this, [this] {
-            run_on_gui_thread([this] {
+            window.gui.run([this] {
                 repopulate_options();
                 _request_constrain = true;
             });
@@ -65,7 +67,7 @@ void selection_widget::deinit() noexcept
 
     auto updated = super::constrain(display_time_point, need_reconstrain);
     if (updated) {
-        ttlet extra_size = extent2{theme::global().size + theme::global().margin * 2.0f, theme::global().margin * 2.0f};
+        ttlet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
 
         _minimum_size = _unknown_label_widget->minimum_size() + extra_size;
         _preferred_size = _unknown_label_widget->preferred_size() + extra_size;
@@ -107,11 +109,11 @@ void selection_widget::deinit() noexcept
         // The height of the overlay should be the maximum height, which will show all the options.
 
         ttlet overlay_width = std::clamp(
-            rectangle().width() - theme::global().size,
+            rectangle().width() - theme().size,
             _overlay_widget->minimum_size().width(),
             _overlay_widget->maximum_size().width());
         ttlet overlay_height = _overlay_widget->preferred_size().height();
-        ttlet overlay_x = theme::global().size;
+        ttlet overlay_x = theme().size;
         ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
         ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
 
@@ -121,19 +123,19 @@ void selection_widget::deinit() noexcept
         _overlay_widget->set_layout_parameters_from_parent(
             overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer - draw_layer);
 
-        _left_box_rectangle = aarectangle{0.0f, 0.0f, theme::global().size, rectangle().height()};
-        _chevrons_glyph = to_font_glyph_ids(elusive_icon::ChevronUp);
-        ttlet chevrons_glyph_bbox = pipeline_SDF::device_shared::getBoundingBox(_chevrons_glyph);
+        _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
+        _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
+        ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
         _chevrons_rectangle =
-            align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global().icon_size), alignment::middle_center);
+            align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme().icon_size), alignment::middle_center);
         _chevrons_rectangle =
-            align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme::global().icon_size), alignment::middle_center);
+            align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme().icon_size), alignment::middle_center);
 
         // The unknown_label is located to the right of the selection box icon.
         _option_rectangle = aarectangle{
-            _left_box_rectangle.right() + theme::global().margin,
+            _left_box_rectangle.right() + theme().margin,
             0.0f,
-            rectangle().width() - _left_box_rectangle.width() - theme::global().margin * 2.0f,
+            rectangle().width() - _left_box_rectangle.width() - theme().margin * 2.0f,
             rectangle().height()};
 
         _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
@@ -224,7 +226,7 @@ bool selection_widget::handle_event(command command) noexcept
     tt_axiom(is_gui_thread());
 
     if (enabled and _has_options and _selecting) {
-        return theme::global(theme_color::accent);
+        return theme().color(theme_color::accent);
     } else {
         return super::focus_color();
     }
@@ -305,7 +307,7 @@ void selection_widget::repopulate_options() noexcept
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
         _menu_button_callbacks.push_back(menu_button->subscribe([this, index] {
-            run_on_gui_thread([this, index] {
+            window.gui.run([this, index] {
                 if (auto delegate = _delegate.lock()) {
                     delegate->set_selected(*this, index);
                 }
@@ -334,14 +336,14 @@ void selection_widget::draw_outline(draw_context context) noexcept
     tt_axiom(is_gui_thread());
 
     context.draw_box_with_border_inside(
-        rectangle(), background_color(), focus_color(), corner_shapes{theme::global().rounding_radius});
+        rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
 }
 
 void selection_widget::draw_left_box(draw_context context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    ttlet corner_shapes = tt::corner_shapes{theme::global().rounding_radius, 0.0f, theme::global().rounding_radius, 0.0f};
+    ttlet corner_shapes = tt::corner_shapes{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
     context.draw_box(translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
 }
 
@@ -349,7 +351,7 @@ void selection_widget::draw_chevrons(draw_context context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    context.draw_glyph(_chevrons_glyph, translate_z(0.2f) * _chevrons_rectangle, label_color());
+    context.draw_glyph(_chevrons_glyph, theme().icon_size, translate_z(0.2f) * _chevrons_rectangle, label_color());
 }
 
 } // namespace tt

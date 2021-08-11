@@ -81,12 +81,12 @@ void overlay_widget::draw(draw_context context, hires_utc_clock::time_point disp
 
 [[nodiscard]] color overlay_widget::background_color() const noexcept
 {
-    return theme::global(theme_color::fill, semantic_layer + 1);
+    return theme().color(theme_color::fill, semantic_layer + 1);
 }
 
 [[nodiscard]] color overlay_widget::foreground_color() const noexcept
 {
-    return theme::global(theme_color::border, semantic_layer + 1);
+    return theme().color(theme_color::border, semantic_layer + 1);
 }
 
 void overlay_widget::scroll_to_show(tt::rectangle rectangle) noexcept

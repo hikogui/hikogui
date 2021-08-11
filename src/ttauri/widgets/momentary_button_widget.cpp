@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "momentary_button_widget.hpp"
-#include "../GUI/theme.hpp"
 
 namespace tt {
 
@@ -14,7 +13,7 @@ momentary_button_widget::constrain(hires_utc_clock::time_point display_time_poin
 
     if (super::constrain(display_time_point, need_reconstrain)) {
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        ttlet extra_size = extent2{theme::global().margin * 2.0f, theme::global().margin * 2.0f};
+        ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
         _minimum_size += extra_size;
         _preferred_size += extra_size;
         _maximum_size += extra_size;
@@ -32,7 +31,7 @@ momentary_button_widget::constrain(hires_utc_clock::time_point display_time_poin
 
     need_layout |= _request_layout.exchange(false);
     if (need_layout) {
-        _label_rectangle = aarectangle{theme::global().margin, 0.0f, width() - theme::global().margin * 2.0f, height()};
+        _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height()};
     }
     super::layout(displayTimePoint, need_layout);
 }
@@ -54,7 +53,7 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
 
     // Move the border of the button in the middle of a pixel.
     context.draw_box_with_border_inside(
-        rectangle(), background_color(), focus_color(), corner_shapes{theme::global().rounding_radius});
+        rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
 }
 
 } // namespace tt

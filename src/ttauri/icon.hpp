@@ -26,9 +26,9 @@ public:
 
     constexpr icon() noexcept : _image(std::monostate{}) {}
 
-    icon(icon const &) noexcept;
+    icon(icon const &) noexcept = default;
     icon(icon &&) noexcept = default;
-    icon &operator=(icon const &) noexcept;
+    icon &operator=(icon const &) noexcept = default;
     icon &operator=(icon &&) noexcept = default;
 
     [[nodiscard]] explicit operator bool () const noexcept
@@ -60,7 +60,7 @@ public:
     }
 
 private:
-    using image_type = std::variant<std::monostate, font_glyph_ids, pixel_map<sfloat_rgba16>>;
+    using image_type = std::variant<std::monostate, elusive_icon, ttauri_icon, font_glyph_ids, pixel_map<sfloat_rgba16>>;
 
     image_type _image;
 

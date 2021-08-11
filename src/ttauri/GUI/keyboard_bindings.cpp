@@ -9,25 +9,7 @@
 
 namespace tt {
 
-[[nodiscard]] keyboard_bindings *keyboard_bindings::subsystem_init() noexcept
-{
-    auto tmp = new keyboard_bindings();
-    try {
-        tmp->loadSystemBindings();
-    } catch (std::exception const &e) {
-        tt_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
-    }
-    return tmp;
-}
-
-void keyboard_bindings::subsystem_deinit() noexcept
-{
-    if (auto tmp = _global.exchange(nullptr)) {
-        delete tmp;
-    }
-}
-
-void keyboard_bindings::loadBindings(URL url, bool system_binding)
+void keyboard_bindings::load_bindings(URL url, bool system_binding)
 {
     ttlet data = parse_JSON(url);
 
@@ -64,11 +46,11 @@ void keyboard_bindings::loadBindings(URL url, bool system_binding)
             }
 
             if (ignored_binding) {
-                addIgnoredBinding(key, command);
+                add_ignored_binding(key, command);
             } else if (system_binding) {
-                addSystemBinding(key, command);
+                add_system_binding(key, command);
             } else {
-                addUserBinding(key, command);
+                add_user_binding(key, command);
             }
         }
 

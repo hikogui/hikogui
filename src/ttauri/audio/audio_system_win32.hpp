@@ -6,6 +6,8 @@
 
 #include "audio_system.hpp"
 #include "audio_system_delegate.hpp"
+#include "audio_device_id.hpp"
+#include "../wfree_fifo.hpp"
 #include <memory>
 
 struct IMMDeviceEnumerator;
@@ -14,35 +16,55 @@ namespace tt {
 
 class audio_system_win32_notification_client;
 
-class audio_system_win32: public audio_system {
+class audio_system_win32;
+
+struct audio_system_win32_event {
+    virtual void handle_event(audio_system_win32 *self) noexcept = 0;
+};
+
+class audio_system_win32 : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_win32(weak_or_unique_ptr<audio_system_delegate> delegate);
+    audio_system_win32(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate);
     ~audio_system_win32();
 
     void init() noexcept override;
 
-    [[nodiscard]] std::vector<std::shared_ptr<audio_device>> devices() noexcept override
+    [[nodiscard]] std::vector<audio_device *> devices() noexcept override
     {
-        ttlet lock = std::scoped_lock(audio_system::mutex);
-        return _devices;
+        auto r = std::vector<audio_device *>{};
+        r.reserve(std::size(_devices));
+        for (ttlet &device : _devices) {
+            r.push_back(device.get());
+        }
+        return r;
     }
 
     void update_device_list() noexcept;
 
 private:
+    /** The devices that are part of the audio system.
+     *
+     * Due to complicated threading and callback function interactions
+     * audio devices are not destroyed until application shutdown.
+     *
+     * The audio system is the only owner of audio devices, however
+     * audio devices need to be allocated on locked memory, and
+     * unique_ptr does not support allocators.
+     */
     std::vector<std::shared_ptr<audio_device>> _devices;
+
     IMMDeviceEnumerator *_device_enumerator;
     audio_system_win32_notification_client *_notification_client;
 
-    void default_device_changed() noexcept;
-    void device_added() noexcept;
-    void device_removed(std::string device_id) noexcept;
-    void device_state_changed(std::string device_id) noexcept;
-    void device_property_value_changed(std::string device_id) noexcept;
+    void default_device_changed(tt::audio_device_id const &device_id) noexcept;
+    void device_added(tt::audio_device_id const &device_id) noexcept;
+    void device_removed(tt::audio_device_id const &device_id) noexcept;
+    void device_state_changed(tt::audio_device_id const &device_id) noexcept;
+    void device_property_value_changed(tt::audio_device_id const &device_id) noexcept;
 
     friend audio_system_win32_notification_client;
 };
 
-}
+} // namespace tt

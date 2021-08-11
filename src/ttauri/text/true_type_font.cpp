@@ -11,7 +11,8 @@
 #include "../geometry/vector.hpp"
 #include "../geometry/point.hpp"
 #include <cstddef>
-
+#include <span>
+#include <cstddef>
 
 #define assert_or_return(x, y) if (!(x)) { [[unlikely]] return y; }
 
@@ -42,6 +43,17 @@ struct uFWord_buf_t {
     float value(float unitsPerEm) const noexcept { return static_cast<float>(x.value()) / unitsPerEm; }
 };
 
+struct CMAPHeader {
+    big_uint16_buf_t version;
+    big_uint16_buf_t numTables;
+};
+
+struct CMAPEntry {
+    big_uint16_buf_t platformID;
+    big_uint16_buf_t platformSpecificID;
+    big_uint32_buf_t offset;
+};
+
 struct CMAPFormat4 {
     big_uint16_buf_t format;
     big_uint16_buf_t length;
@@ -52,6 +64,316 @@ struct CMAPFormat4 {
     big_uint16_buf_t rangeShift;
 };
 
+struct CMAPFormat6 {
+    big_uint16_buf_t format;
+    big_uint16_buf_t length;
+    big_uint16_buf_t language;
+    big_uint16_buf_t firstCode;
+    big_uint16_buf_t entryCount;
+};
+
+struct CMAPFormat12 {
+    big_uint32_buf_t format;
+    big_uint32_buf_t length;
+    big_uint32_buf_t language;
+    big_uint32_buf_t numGroups;
+};
+
+struct CMAPFormat12Group {
+    big_uint32_buf_t startCharCode;
+    big_uint32_buf_t endCharCode;
+    big_uint32_buf_t startglyph_id;
+};
+
+struct PanoseTable {
+    uint8_t bFamilyType;
+    uint8_t bSerifStyle;
+    uint8_t bWeight;
+    uint8_t bProportion;
+    uint8_t bContrast;
+    uint8_t bStrokeVariation;
+    uint8_t bArmStyle;
+    uint8_t bLetterform;
+    uint8_t bMidline;
+    uint8_t bXHeight;
+};
+
+struct OS2Table2 {
+    big_uint16_buf_t version;
+    big_int16_buf_t xAvgCharWidth;
+    big_uint16_buf_t usWeightClass;
+    big_uint16_buf_t usWidthClass;
+    big_uint16_buf_t fsType;
+    big_int16_buf_t ySubscriptXSize;
+    big_int16_buf_t ySubscriptYSize;
+    big_int16_buf_t ySubscriptXOffset;
+    big_int16_buf_t ySubscriptYOffset;
+    big_int16_buf_t ySuperscriptXSize;
+    big_int16_buf_t ySuperscriptYSize;
+    big_int16_buf_t ySuperscriptXOffset;
+    big_int16_buf_t ySuperscriptYOffset;
+    big_int16_buf_t yStrikeoutSize;
+    big_int16_buf_t yStrikeoutPosition;
+    big_int16_buf_t sFamilyClass;
+    PanoseTable panose;
+    big_uint32_buf_t ulUnicodeRange1;
+    big_uint32_buf_t ulUnicodeRange2;
+    big_uint32_buf_t ulUnicodeRange3;
+    big_uint32_buf_t ulUnicodeRange4;
+    big_uint32_buf_t achVendID;
+    big_uint16_buf_t fsSelection;
+    big_uint16_buf_t usFirstCharIndex;
+    big_uint16_buf_t usLastCharIndex;
+    big_int16_buf_t sTypoAscender;
+    big_int16_buf_t sTypoDescender;
+    big_int16_buf_t sTypoLineGap;
+    big_uint16_buf_t usWinAscent;
+    big_uint16_buf_t usWinDescent;
+    big_uint32_buf_t ulCodePageRange1;
+    big_uint32_buf_t ulCodePageRange2;
+    big_int16_buf_t sxHeight;
+    big_int16_buf_t sCapHeight;
+    big_uint16_buf_t usDefaultChar;
+    big_uint16_buf_t usBreakChar;
+    big_uint16_buf_t usMaxContext;
+};
+
+struct OS2Table0 {
+    big_uint16_buf_t version;
+    big_int16_buf_t xAvgCharWidth;
+    big_uint16_buf_t usWeightClass;
+    big_uint16_buf_t usWidthClass;
+    big_uint16_buf_t fsType;
+    big_int16_buf_t ySubscriptXSize;
+    big_int16_buf_t ySubscriptYSize;
+    big_int16_buf_t ySubscriptXOffset;
+    big_int16_buf_t ySubscriptYOffset;
+    big_int16_buf_t ySuperscriptXSize;
+    big_int16_buf_t ySuperscriptYSize;
+    big_int16_buf_t ySuperscriptXOffset;
+    big_int16_buf_t ySuperscriptYOffset;
+    big_int16_buf_t yStrikeoutSize;
+    big_int16_buf_t yStrikeoutPosition;
+    big_int16_buf_t sFamilyClass;
+    PanoseTable panose;
+    big_uint32_buf_t ulUnicodeRange1;
+    big_uint32_buf_t ulUnicodeRange2;
+    big_uint32_buf_t ulUnicodeRange3;
+    big_uint32_buf_t ulUnicodeRange4;
+    big_uint32_buf_t achVendID;
+    big_uint16_buf_t fsSelection;
+    big_uint16_buf_t usFirstCharIndex;
+    big_uint16_buf_t usLastCharIndex;
+    // For legacy reasons don't include the next 5 fields.
+    // big_int16_buf_t sTypoAscender;
+    // big_int16_buf_t sTypoDescender;
+    // big_int16_buf_t sTypoLineGap;
+    // big_uint16_buf_t usWinAscent;
+    // big_uint16_buf_t usWinDescent;
+};
+
+struct SFNTHeader {
+    big_uint32_buf_t scalerType;
+    big_uint16_buf_t numTables;
+    big_uint16_buf_t searchRange;
+    big_uint16_buf_t entrySelector;
+    big_uint16_buf_t rangeShift;
+};
+
+struct SFNTEntry {
+    big_uint32_buf_t tag;
+    big_uint32_buf_t checkSum;
+    big_uint32_buf_t offset;
+    big_uint32_buf_t length;
+};
+
+struct HHEATable {
+    big_int16_buf_t majorVersion;
+    big_int16_buf_t minorVersion;
+    FWord_buf_t ascender;
+    FWord_buf_t descender;
+    FWord_buf_t lineGap;
+    uFWord_buf_t advanceWidthMax;
+    FWord_buf_t minLeftSideBearing;
+    FWord_buf_t minRightSideBearing;
+    FWord_buf_t xMaxExtent;
+    big_int16_buf_t caretSlopeRise;
+    big_int16_buf_t caretSlopRun;
+    big_int16_buf_t caretOffset;
+    big_int16_buf_t reserved0;
+    big_int16_buf_t reserved1;
+    big_int16_buf_t reserved2;
+    big_int16_buf_t reserved3;
+    big_int16_buf_t metricDataFormat;
+    big_uint16_buf_t numberOfHMetrics;
+};
+
+struct HEADTable {
+    big_uint16_buf_t majorVersion;
+    big_uint16_buf_t minorVersion;
+    Fixed_buf_t fontRevision;
+    big_uint32_buf_t checkSumAdjustment;
+    big_uint32_buf_t magicNumber;
+    big_uint16_buf_t flags;
+    big_uint16_buf_t unitsPerEm;
+    big_uint64_buf_t created;
+    big_uint64_buf_t modified;
+    FWord_buf_t xMin;
+    FWord_buf_t yMin;
+    FWord_buf_t xMax;
+    FWord_buf_t yMax;
+    big_uint16_buf_t macStyle;
+    big_uint16_buf_t lowestRecPPEM;
+    big_int16_buf_t fontDirectionHint;
+    big_int16_buf_t indexToLocFormat;
+    big_int16_buf_t glyphDataFormat;
+};
+
+struct NAMETable {
+    big_uint16_buf_t format;
+    big_uint16_buf_t count;
+    big_uint16_buf_t stringOffset;
+};
+
+struct NAMERecord {
+    big_uint16_buf_t platformID;
+    big_uint16_buf_t platformSpecificID;
+    big_uint16_buf_t languageID;
+    big_uint16_buf_t nameID;
+    big_uint16_buf_t length;
+    big_uint16_buf_t offset;
+};
+
+struct MAXPTable05 {
+    big_uint32_buf_t version;
+    big_uint16_buf_t numGlyphs;
+};
+
+struct MAXPTable10 {
+    big_uint32_buf_t version;
+    big_uint16_buf_t numGlyphs;
+    big_uint16_buf_t maxPoints;
+    big_uint16_buf_t maxContours;
+    big_uint16_buf_t maxComponentPoints;
+    big_uint16_buf_t maxComponentContours;
+    big_uint16_buf_t maxZones;
+    big_uint16_buf_t maxTwilightPoints;
+    big_uint16_buf_t maxStorage;
+    big_uint16_buf_t maxFunctionDefs;
+    big_uint16_buf_t maxInstructionDefs;
+    big_uint16_buf_t maxStackElements;
+    big_uint16_buf_t maxSizeOfInstructions;
+    big_uint16_buf_t maxComponentElements;
+    big_uint16_buf_t maxComponentDepth;
+};
+
+struct KERNTable_ver0 {
+    big_uint16_buf_t version;
+    big_uint16_buf_t nTables;
+};
+
+struct KERNTable_ver1 {
+    big_uint32_buf_t version;
+    big_uint32_buf_t nTables;
+};
+
+struct KERNSubtable_ver0 {
+    big_uint16_buf_t version;
+    big_uint16_buf_t length;
+    big_uint16_buf_t coverage;
+};
+
+struct KERNSubtable_ver1 {
+    big_uint32_buf_t length;
+    big_uint16_buf_t coverage;
+    big_uint16_buf_t tupleIndex;
+};
+
+struct KERNFormat0 {
+    big_uint16_buf_t nPairs;
+    big_uint16_buf_t searchRange;
+    big_uint16_buf_t entrySelector;
+    big_uint16_buf_t rangeShift;
+};
+
+struct KERNFormat0_entry {
+    big_uint16_buf_t left;
+    big_uint16_buf_t right;
+    FWord_buf_t value;
+};
+
+struct HMTXEntry {
+    uFWord_buf_t advanceWidth;
+    FWord_buf_t leftSideBearing;
+};
+
+struct GLYFEntry {
+    big_int16_buf_t numberOfContours;
+    FWord_buf_t xMin;
+    FWord_buf_t yMin;
+    FWord_buf_t xMax;
+    FWord_buf_t yMax;
+};
+
+static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte const> bytes)
+{
+    ssize_t offset = 0;
+
+    ttlet header = make_placement_ptr<CMAPHeader>(bytes, offset);
+    tt_parse_check(header->version.value() == 0, "CMAP version is not 0");
+
+    uint16_t numTables = header->numTables.value();
+    ttlet entries = make_placement_array<CMAPEntry>(bytes, offset, numTables);
+
+    // Entries are ordered by platformID, then platformSpecificID.
+    // This allows us to search reasonable quickly for the best entries.
+    // The following order is searched: 0.4,0.3,0.2,0.1,3.10,3.1,3.0.
+    CMAPEntry const *bestEntry = nullptr;
+    for (ttlet &entry : entries) {
+        switch (entry.platformID.value()) {
+        case 0: {
+            // Unicode.
+            switch (entry.platformSpecificID.value()) {
+            case 0: // Default
+            case 1: // Version 1.1
+            case 2: // ISO 10646 1993
+            case 3: // Unicode 2.0 BMP-only
+            case 4: // Unicode 2.0 non-BMP
+                // The best entry is the last one.
+                bestEntry = &entry;
+                break;
+            default:
+                // Not interesting
+                break;
+            }
+        } break;
+
+        case 3: {
+            // Microsoft Windows
+            switch (entry.platformSpecificID.value()) {
+            case 0: // Symbol
+            case 1: // Unicode 16-bit
+            case 10: // Unicode 32-bit
+                // The best entry is the last one.
+                bestEntry = &entry;
+                break;
+            default:
+                // Not unicode
+                break;
+            }
+        } break;
+        default: break;
+        }
+    }
+
+    // There must be a bestEntry because a unicode table is required by the true-type standard.
+    tt_parse_check(bestEntry != nullptr, "Missing Unicode CMAP entry");
+
+    ttlet entry_offset = bestEntry->offset.value();
+    tt_parse_check(entry_offset < bytes.size(), "CMAP entry is located beyond buffer");
+
+    return bytes.subspan(entry_offset, bytes.size() - entry_offset);
+}
 
 static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c) noexcept
 {
@@ -125,9 +447,9 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
     return {};
 }
 
-[[nodiscard]] static unicode_ranges parseCharacterMapFormat4(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_mask parseCharacterMapFormat4(std::span<std::byte const> bytes)
 {
-    unicode_ranges r;
+    unicode_mask r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
@@ -145,14 +467,6 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 
     return r;
 }
-
-struct CMAPFormat6 {
-    big_uint16_buf_t format;
-    big_uint16_buf_t length;
-    big_uint16_buf_t language;
-    big_uint16_buf_t firstCode;
-    big_uint16_buf_t entryCount;
-};
 
 static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c) noexcept
 {
@@ -176,9 +490,9 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
     return glyph_id{glyphIndexArray[charOffset].value()};
 }
 
-[[nodiscard]] static unicode_ranges parseCharacterMapFormat6(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_mask parseCharacterMapFormat6(std::span<std::byte const> bytes)
 {
-    unicode_ranges r;
+    unicode_mask r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
@@ -190,18 +504,7 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
     return r;
 }
 
-struct CMAPFormat12 {
-    big_uint32_buf_t format;
-    big_uint32_buf_t length;
-    big_uint32_buf_t language;
-    big_uint32_buf_t numGroups;
-};
 
-struct CMAPFormat12Group {
-    big_uint32_buf_t startCharCode;
-    big_uint32_buf_t endCharCode;
-    big_uint32_buf_t startglyph_id;
-};
 
 static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c) noexcept
 {
@@ -236,9 +539,9 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     }
 }
 
-[[nodiscard]] static unicode_ranges parseCharacterMapFormat12(std::span<std::byte const> bytes)
+[[nodiscard]] static unicode_mask parseCharacterMapFormat12(std::span<std::byte const> bytes)
 {
-    unicode_ranges r;
+    unicode_mask r;
 
     ssize_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
@@ -251,8 +554,10 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     return r;
 }
 
-[[nodiscard]] unicode_ranges true_type_font::parseCharacterMap()
+[[nodiscard]] unicode_mask true_type_font::parseCharacterMap()
 {
+    ttlet cmapTableBytes = getTableBytes("cmap");
+    ttlet cmapBytes = parseCharacterMapDirectory(cmapTableBytes);
     ttlet format = make_placement_ptr<big_uint16_buf_t>(cmapBytes);
 
     switch (format->value()) {
@@ -266,6 +571,8 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
 
 [[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const noexcept
 {
+    ttlet cmapTableBytes = getTableBytes("cmap");
+    ttlet cmapBytes = parseCharacterMapDirectory(cmapTableBytes);
     assert_or_return(check_placement_ptr<big_uint16_buf_t>(cmapBytes), {});
     ttlet format = unsafe_make_placement_ptr<big_uint16_buf_t>(cmapBytes);
 
@@ -277,98 +584,6 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     }
 }
 
-struct CMAPHeader {
-    big_uint16_buf_t version;
-    big_uint16_buf_t numTables;
-};
-
-struct CMAPEntry {
-    big_uint16_buf_t platformID;
-    big_uint16_buf_t platformSpecificID;
-    big_uint32_buf_t offset;
-};
-
-static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte const> bytes)
-{
-    ssize_t offset = 0;
-
-    ttlet header = make_placement_ptr<CMAPHeader>(bytes, offset);
-    tt_parse_check(header->version.value() == 0, "CMAP version is not 0");
-
-    uint16_t numTables = header->numTables.value();
-    ttlet entries = make_placement_array<CMAPEntry>(bytes, offset, numTables);
-
-    // Entries are ordered by platformID, then platformSpecificID.
-    // This allows us to search reasonable quickly for the best entries.
-    // The following order is searched: 0.4,0.3,0.2,0.1,3.10,3.1,3.0.
-    CMAPEntry const *bestEntry = nullptr;
-    for (ttlet &entry: entries) {
-        switch (entry.platformID.value()) {
-        case 0: {
-                // Unicode.
-                switch (entry.platformSpecificID.value()) {
-                case 0: // Default
-                case 1: // Version 1.1
-                case 2: // ISO 10646 1993
-                case 3: // Unicode 2.0 BMP-only
-                case 4: // Unicode 2.0 non-BMP
-                    // The best entry is the last one.
-                    bestEntry = &entry;
-                    break;
-                default:
-                    // Not interesting
-                    break;
-                }
-            } break;
-
-        case 3: {
-                // Microsoft Windows
-                switch (entry.platformSpecificID.value()) {
-                case 0: // Symbol
-                case 1: // Unicode 16-bit
-                case 10: // Unicode 32-bit
-                    // The best entry is the last one.
-                    bestEntry = &entry;
-                    break;
-                default:
-                    // Not unicode
-                    break;
-                }
-            } break;
-        default:
-            break;
-        }
-    }
-
-    // There must be a bestEntry because a unicode table is required by the true-type standard.
-    tt_parse_check(bestEntry != nullptr, "Missing Unicode CMAP entry");
-
-    ttlet entry_offset = bestEntry->offset.value();
-    tt_parse_check(entry_offset < bytes.size(), "CMAP entry is located beyond buffer");
-
-    return bytes.subspan(entry_offset, bytes.size() - entry_offset);
-}
-
-struct HHEATable {
-    big_int16_buf_t majorVersion;
-    big_int16_buf_t minorVersion;
-    FWord_buf_t ascender;
-    FWord_buf_t descender;
-    FWord_buf_t lineGap;
-    uFWord_buf_t advanceWidthMax;
-    FWord_buf_t minLeftSideBearing;
-    FWord_buf_t minRightSideBearing;
-    FWord_buf_t xMaxExtent;
-    big_int16_buf_t caretSlopeRise;
-    big_int16_buf_t caretSlopRun;
-    big_int16_buf_t caretOffset;
-    big_int16_buf_t reserved0;
-    big_int16_buf_t reserved1;
-    big_int16_buf_t reserved2;
-    big_int16_buf_t reserved3;
-    big_int16_buf_t metricDataFormat;
-    big_uint16_buf_t numberOfHMetrics;
-};
 
 void true_type_font::parseHheaTable(std::span<std::byte const> table_bytes)
 {
@@ -381,26 +596,6 @@ void true_type_font::parseHheaTable(std::span<std::byte const> table_bytes)
     numberOfHMetrics = table->numberOfHMetrics.value();
 }
 
-struct HEADTable {
-    big_uint16_buf_t majorVersion;
-    big_uint16_buf_t minorVersion;
-    Fixed_buf_t fontRevision;
-    big_uint32_buf_t checkSumAdjustment;
-    big_uint32_buf_t magicNumber;
-    big_uint16_buf_t flags;
-    big_uint16_buf_t unitsPerEm;
-    big_uint64_buf_t created;
-    big_uint64_buf_t modified;
-    FWord_buf_t xMin;
-    FWord_buf_t yMin;
-    FWord_buf_t xMax;
-    FWord_buf_t yMax;
-    big_uint16_buf_t macStyle;
-    big_uint16_buf_t lowestRecPPEM;
-    big_int16_buf_t fontDirectionHint;
-    big_int16_buf_t indexToLocFormat;
-    big_int16_buf_t glyphDataFormat;
-};
 
 void true_type_font::parseHeadTable(std::span<std::byte const> table_bytes)
 {
@@ -417,20 +612,6 @@ void true_type_font::parseHeadTable(std::span<std::byte const> table_bytes)
     emScale = 1.0f / unitsPerEm;
 }
 
-struct NAMETable {
-    big_uint16_buf_t format;
-    big_uint16_buf_t count;
-    big_uint16_buf_t stringOffset;
-};
-
-struct NAMERecord {
-    big_uint16_buf_t platformID;
-    big_uint16_buf_t platformSpecificID;
-    big_uint16_buf_t languageID;
-    big_uint16_buf_t nameID;
-    big_uint16_buf_t length;
-    big_uint16_buf_t offset;
-};
 
 static std::optional<std::string> getStringFromNameTable(std::span<std::byte const> bytes, size_t offset, size_t lengthInBytes, uint16_t platformID, uint16_t platformSpecificID, uint16_t languageID)
 {
@@ -527,7 +708,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
             if (!familyIsTypographic) {
                 auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
-                    description.family_name = std::move(*s);
+                    family_name = std::move(*s);
                 }
             }
             } break;
@@ -536,7 +717,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
             if (!subFamilyIsTypographic) {
                 auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
-                    description.sub_family_name = std::move(*s);
+                    sub_family_name = std::move(*s);
                 }
             }
             } break;
@@ -544,7 +725,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
         case 16: { // Typographic family.
             auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
             if (s) {
-                description.family_name = std::move(*s);
+                family_name = std::move(*s);
                 familyIsTypographic = true;
             }
             } break;
@@ -552,7 +733,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
         case 17: { // Typographic sub-family.
             auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
             if (s) {
-                description.sub_family_name = std::move(*s);
+                sub_family_name = std::move(*s);
                 subFamilyIsTypographic = true;
             }
             } break;
@@ -563,93 +744,6 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
     }
 }
 
-struct PanoseTable {
-    uint8_t bFamilyType;
-    uint8_t bSerifStyle;
-    uint8_t bWeight;
-    uint8_t bProportion;
-    uint8_t bContrast;
-    uint8_t bStrokeVariation;
-    uint8_t bArmStyle;
-    uint8_t bLetterform;
-    uint8_t bMidline;
-    uint8_t bXHeight;
-};
-
-struct OS2Table2 {
-    big_uint16_buf_t version;
-    big_int16_buf_t xAvgCharWidth;
-    big_uint16_buf_t usWeightClass;
-    big_uint16_buf_t usWidthClass;
-    big_uint16_buf_t fsType;
-    big_int16_buf_t ySubscriptXSize;
-    big_int16_buf_t ySubscriptYSize;
-    big_int16_buf_t ySubscriptXOffset;
-    big_int16_buf_t ySubscriptYOffset;
-    big_int16_buf_t ySuperscriptXSize;
-    big_int16_buf_t ySuperscriptYSize;
-    big_int16_buf_t ySuperscriptXOffset;
-    big_int16_buf_t ySuperscriptYOffset;
-    big_int16_buf_t yStrikeoutSize;
-    big_int16_buf_t yStrikeoutPosition;
-    big_int16_buf_t sFamilyClass;
-    PanoseTable panose;
-    big_uint32_buf_t ulUnicodeRange1;
-    big_uint32_buf_t ulUnicodeRange2;
-    big_uint32_buf_t ulUnicodeRange3;
-    big_uint32_buf_t ulUnicodeRange4;
-    big_uint32_buf_t achVendID;
-    big_uint16_buf_t fsSelection;
-    big_uint16_buf_t usFirstCharIndex;
-    big_uint16_buf_t usLastCharIndex;
-    big_int16_buf_t sTypoAscender;
-    big_int16_buf_t sTypoDescender;
-    big_int16_buf_t sTypoLineGap;
-    big_uint16_buf_t usWinAscent;
-    big_uint16_buf_t usWinDescent;
-    big_uint32_buf_t ulCodePageRange1;
-    big_uint32_buf_t ulCodePageRange2;
-    big_int16_buf_t sxHeight;
-    big_int16_buf_t sCapHeight;
-    big_uint16_buf_t usDefaultChar;
-    big_uint16_buf_t usBreakChar;
-    big_uint16_buf_t usMaxContext;
-};
-
-struct OS2Table0 {
-    big_uint16_buf_t version;
-    big_int16_buf_t xAvgCharWidth;
-    big_uint16_buf_t usWeightClass;
-    big_uint16_buf_t usWidthClass;
-    big_uint16_buf_t fsType;
-    big_int16_buf_t ySubscriptXSize;
-    big_int16_buf_t ySubscriptYSize;
-    big_int16_buf_t ySubscriptXOffset;
-    big_int16_buf_t ySubscriptYOffset;
-    big_int16_buf_t ySuperscriptXSize;
-    big_int16_buf_t ySuperscriptYSize;
-    big_int16_buf_t ySuperscriptXOffset;
-    big_int16_buf_t ySuperscriptYOffset;
-    big_int16_buf_t yStrikeoutSize;
-    big_int16_buf_t yStrikeoutPosition;
-    big_int16_buf_t sFamilyClass;
-    PanoseTable panose;
-    big_uint32_buf_t ulUnicodeRange1;
-    big_uint32_buf_t ulUnicodeRange2;
-    big_uint32_buf_t ulUnicodeRange3;
-    big_uint32_buf_t ulUnicodeRange4;
-    big_uint32_buf_t achVendID;
-    big_uint16_buf_t fsSelection;
-    big_uint16_buf_t usFirstCharIndex;
-    big_uint16_buf_t usLastCharIndex;
-    // For legacy reasons don't include the next 5 fields.
-    //big_int16_buf_t sTypoAscender;
-    //big_int16_buf_t sTypoDescender;
-    //big_int16_buf_t sTypoLineGap;
-    //big_uint16_buf_t usWinAscent;
-    //big_uint16_buf_t usWinDescent;
-};
-
 void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<OS2Table0>(table_bytes);
@@ -658,37 +752,37 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
 
     ttlet weight_value = table->usWeightClass.value();
     if (weight_value >= 1 && weight_value <= 1000) {
-        description.weight = font_weight_from_int(weight_value);
+        weight = font_weight_from_int(weight_value);
     }
 
     ttlet width_value = table->usWidthClass.value();
     if (width_value >= 1 && width_value <= 4) {
-        description.condensed = true;
+        condensed = true;
     } else if (width_value >= 5 && width_value <= 9) {
-        description.condensed = false;
+        condensed = false;
     }
 
     ttlet serif_value = table->panose.bSerifStyle;
     if ((serif_value >= 2 && serif_value <= 10) || (serif_value >= 14 && serif_value <= 15)) {
-        description.serif = true;
+        serif = true;
     } else if (serif_value >= 11 && serif_value <= 13) {
-        description.serif = false;
+        serif = false;
     }
 
     // The Panose weight table is odd, assuming the integer values are
     // increasing with boldness, Thin is bolder then Light.
     // The table below uses the integer value as an indication of boldness.
     switch (table->panose.bWeight) {
-    case 2: description.weight = font_weight::Thin; break;
-    case 3: description.weight = font_weight::ExtraLight; break;
-    case 4: description.weight = font_weight::Light; break;
-    case 5: description.weight = font_weight::Regular; break;
-    case 6: description.weight = font_weight::Medium; break;
-    case 7: description.weight = font_weight::SemiBold; break;
-    case 8: description.weight = font_weight::Bold; break;
-    case 9: description.weight = font_weight::ExtraBold; break;
-    case 10: description.weight = font_weight::Black; break;
-    case 11: description.weight = font_weight::ExtraBlack; break;
+    case 2: weight = font_weight::Thin; break;
+    case 3: weight = font_weight::ExtraLight; break;
+    case 4: weight = font_weight::Light; break;
+    case 5: weight = font_weight::Regular; break;
+    case 6: weight = font_weight::Medium; break;
+    case 7: weight = font_weight::SemiBold; break;
+    case 8: weight = font_weight::Bold; break;
+    case 9: weight = font_weight::ExtraBold; break;
+    case 10: weight = font_weight::Black; break;
+    case 11: weight = font_weight::ExtraBlack; break;
     default: break;
     }
 
@@ -697,23 +791,18 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
     case 3: [[fallthrough]];
     case 4: [[fallthrough]];
     case 5: [[fallthrough]];
-    case 7: description.monospace = false; description.condensed = false; break;
+    case 7: monospace = false; condensed = false; break;
     case 6: [[fallthrough]];
-    case 8: description.monospace = false; description.condensed = true; break;
-    case 9: description.monospace = true; description.condensed = false; break;
+    case 8: monospace = false; condensed = true; break;
+    case 9: monospace = true; condensed = false; break;
     }
 
     ttlet letterform_value = table->panose.bLetterform;
     if (letterform_value >= 2 && letterform_value <= 8) {
-        description.italic = false;
+        italic = false;
     } else if (letterform_value >= 9 && letterform_value <= 15) {
-        description.italic = true;
+        italic = true;
     }
-
-    description.unicode_ranges.value[0] = table->ulUnicodeRange1.value();
-    description.unicode_ranges.value[1] = table->ulUnicodeRange2.value();
-    description.unicode_ranges.value[2] = table->ulUnicodeRange3.value();
-    description.unicode_ranges.value[3] = table->ulUnicodeRange4.value();
 
     if (version >= 2) {
         ttlet table_v2 = make_placement_ptr<OS2Table2>(table_bytes);
@@ -723,28 +812,6 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
     }
 }
 
-struct MAXPTable05 {
-    big_uint32_buf_t version;
-    big_uint16_buf_t numGlyphs;
-};
-
-struct MAXPTable10 {
-    big_uint32_buf_t version;
-    big_uint16_buf_t numGlyphs;
-    big_uint16_buf_t maxPoints;
-    big_uint16_buf_t maxContours;
-    big_uint16_buf_t maxComponentPoints;
-    big_uint16_buf_t maxComponentContours;
-    big_uint16_buf_t maxZones;
-    big_uint16_buf_t maxTwilightPoints;
-    big_uint16_buf_t maxStorage;
-    big_uint16_buf_t maxFunctionDefs;
-    big_uint16_buf_t maxInstructionDefs;
-    big_uint16_buf_t maxStackElements;
-    big_uint16_buf_t maxSizeOfInstructions;
-    big_uint16_buf_t maxComponentElements;
-    big_uint16_buf_t maxComponentDepth;
-};
 
 void true_type_font::parseMaxpTable(std::span<std::byte const> table_bytes)
 {
@@ -760,6 +827,9 @@ void true_type_font::parseMaxpTable(std::span<std::byte const> table_bytes)
 bool true_type_font::getGlyphBytes(glyph_id glyph_id, std::span<std::byte const> &glyph_bytes) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
+
+    ttlet locaTableBytes = getTableBytes("loca");
+    ttlet glyfTableBytes = getTableBytes("glyf");
 
     size_t startOffset = 0;
     size_t endOffset = 0;
@@ -786,40 +856,6 @@ bool true_type_font::getGlyphBytes(glyph_id glyph_id, std::span<std::byte const>
     return true;
 }
 
-struct KERNTable_ver0 {
-    big_uint16_buf_t version;
-    big_uint16_buf_t nTables;
-};
-
-struct KERNTable_ver1 {
-    big_uint32_buf_t version;
-    big_uint32_buf_t nTables;
-};
-
-struct KERNSubtable_ver0 {
-    big_uint16_buf_t version;
-    big_uint16_buf_t length;
-    big_uint16_buf_t coverage;
-};
-
-struct KERNSubtable_ver1 {
-    big_uint32_buf_t length;
-    big_uint16_buf_t coverage;
-    big_uint16_buf_t tupleIndex;
-};
-
-struct KERNFormat0 {
-    big_uint16_buf_t nPairs;
-    big_uint16_buf_t searchRange;
-    big_uint16_buf_t entrySelector;
-    big_uint16_buf_t rangeShift;
-};
-
-struct KERNFormat0_entry {
-    big_uint16_buf_t left;
-    big_uint16_buf_t right;
-    FWord_buf_t value;
-};
 
 static void getKerningFormat0(
     std::span<std::byte const> const &bytes,
@@ -930,12 +966,7 @@ static void getKerningFormat3(
     return r;
 }
 
-struct HMTXEntry {
-    uFWord_buf_t advanceWidth;
-    FWord_buf_t leftSideBearing;
-};
-
-bool true_type_font::updateglyph_metrics(
+bool true_type_font::update_glyph_metrics(
     tt::glyph_id glyph_id,
     glyph_metrics &metrics,
     tt::glyph_id kern_glyph1_id,
@@ -944,6 +975,8 @@ bool true_type_font::updateglyph_metrics(
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
     ssize_t offset = 0;
+
+    ttlet hmtxTableBytes = getTableBytes("hmtx");
 
     assert_or_return(check_placement_array<HMTXEntry>(hmtxTableBytes, offset, numberOfHMetrics), false);
     ttlet longHorizontalMetricTable = unsafe_make_placement_array<HMTXEntry>(hmtxTableBytes, offset, numberOfHMetrics);
@@ -968,23 +1001,16 @@ bool true_type_font::updateglyph_metrics(
     metrics.ascender = ascender;
     metrics.descender = -descender;
     metrics.lineGap = lineGap;
-    metrics.xHeight = description.xHeight;
-    metrics.capHeight = description.HHeight;
+    metrics.xHeight = xHeight;
+    metrics.capHeight = HHeight;
 
     if (kern_glyph1_id && kern_glyph2_id) {
+        ttlet kernTableBytes = getTableBytes("kern");
         metrics.advance += getKerning(kernTableBytes, unitsPerEm, kern_glyph1_id, kern_glyph2_id);
     }
 
     return true;
 }
-
-struct GLYFEntry {
-    big_int16_buf_t numberOfContours;
-    FWord_buf_t xMin;
-    FWord_buf_t yMin;
-    FWord_buf_t xMax;
-    FWord_buf_t yMax;
-};
 
 constexpr uint8_t FLAG_ON_CURVE = 0x01;
 constexpr uint8_t FLAG_X_SHORT = 0x02;
@@ -1134,7 +1160,7 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, g
         ttlet subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
 
         graphic_path subGlyph;
-        assert_or_return(loadGlyph(glyph_id{subGlyphIndex}, subGlyph), false);
+        assert_or_return(load_glyph(glyph_id{subGlyphIndex}, subGlyph), false);
 
         auto subGlyphOffset = vector2{};
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
@@ -1210,7 +1236,7 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, g
     return true;
 }
 
-std::optional<glyph_id> true_type_font::loadGlyph(glyph_id glyph_id, graphic_path &glyph) const noexcept
+std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path &glyph) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, {});
 
@@ -1283,7 +1309,7 @@ bool true_type_font::loadCompoundglyph_metrics(std::span<std::byte const> bytes,
     return true;
 }
 
-bool true_type_font::loadglyph_metrics(tt::glyph_id glyph_id, glyph_metrics &metrics, tt::glyph_id lookahead_glyph_id)
+bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &metrics, tt::glyph_id lookahead_glyph_id)
     const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
@@ -1314,131 +1340,93 @@ bool true_type_font::loadglyph_metrics(tt::glyph_id glyph_id, glyph_metrics &met
         // Empty glyph, such as white-space ' '.
     }
 
-    return updateglyph_metrics(metricsGlyphIndex, metrics, glyph_id, lookahead_glyph_id);
+    return update_glyph_metrics(metricsGlyphIndex, metrics, glyph_id, lookahead_glyph_id);
 }
 
-struct SFNTHeader {
-    big_uint32_buf_t scalerType;
-    big_uint16_buf_t numTables;
-    big_uint16_buf_t searchRange;
-    big_uint16_buf_t entrySelector;
-    big_uint16_buf_t rangeShift;
-};
-
-struct SFNTEntry {
-    big_uint32_buf_t tag;
-    big_uint32_buf_t checkSum;
-    big_uint32_buf_t offset;
-    big_uint32_buf_t length;
-};
-
-void true_type_font::parsefontDirectory()
+[[nodiscard]] std::span<std::byte const> true_type_font::getTableBytes(char const *table_name) const
 {
+    if (not view) {
+        tt_axiom(url);
+        view = url->loadView();
+        increment_counter<"ttf:map">();
+    }
+
+    ttlet bytes = view->bytes();
+
     ssize_t offset = 0;
-    ttlet header = make_placement_ptr<SFNTHeader>(file_bytes, offset);
+    ttlet header = make_placement_ptr<SFNTHeader>(bytes, offset);
 
     if (!(header->scalerType.value() == fourcc("true") || header->scalerType.value() == 0x00010000)) {
         throw parse_error("sfnt.scalerType is not 'true' or 0x00010000");
     }
 
-    ttlet entries = make_placement_array<SFNTEntry>(file_bytes, offset, header->numTables.value());
-    for (ttlet &entry: entries) {
-        if ((entry.offset.value() + entry.length.value()) > std::ssize(file_bytes)) {
-            throw parse_error("sfnt table-entry is out of range");
-        }
+    ttlet entries = make_placement_array<SFNTEntry>(bytes, offset, header->numTables.value());
 
-        ttlet tableBytes = file_bytes.subspan(entry.offset.value(), entry.length.value());
-        switch (entry.tag.value()) {
-        case fourcc("cmap"):
-            cmapTableBytes = tableBytes;
-            cmapBytes = parseCharacterMapDirectory(cmapTableBytes);
-            break;
-        case fourcc("glyf"):
-            glyfTableBytes = tableBytes;
-            break;
-        case fourcc("head"):
-            headTableBytes = tableBytes;
-            break;
-        case fourcc("hhea"):
-            hheaTableBytes = tableBytes;
-            break;
-        case fourcc("hmtx"):
-            hmtxTableBytes = tableBytes;
-            break;
-        case fourcc("loca"):
-            locaTableBytes = tableBytes;
-            break;
-        case fourcc("maxp"):
-            maxpTableBytes = tableBytes;
-            break;
-        case fourcc("name"):
-            nameTableBytes = tableBytes;
-            break;
-        case fourcc("post"):
-            postTableBytes = tableBytes;
-            break;
-        case fourcc("OS/2"):
-            os2TableBytes = tableBytes;
-            break;
-        case fourcc("kern"):
-            kernTableBytes = tableBytes;
-            break;
-        default:
-            break;
-        }
+    ttlet tag = fourcc(table_name);
+    auto it = std::lower_bound(std::cbegin(entries), std::cend(entries), tag, [](auto const &entry, auto const &tag) {
+        return entry.tag < tag;
+    });
+
+    if (it != std::cend(entries) and it->tag == tag) {
+        return bytes.subspan(it->offset.value(), it->length.value());
+    } else {
+        return {};
     }
+}
 
-    if (std::ssize(headTableBytes) > 0) {
+void true_type_font::parse_font_directory()
+{
+    if (auto headTableBytes = getTableBytes("head"); not headTableBytes.empty()) {
         parseHeadTable(headTableBytes);
     }
 
-    if (std::ssize(maxpTableBytes) > 0) {
+    if (auto maxpTableBytes = getTableBytes("maxp"); not maxpTableBytes.empty()) {
         parseMaxpTable(maxpTableBytes);
     }
 
-    if (std::ssize(hheaTableBytes) > 0) {
+    if (auto hheaTableBytes = getTableBytes("hhea"); not hheaTableBytes.empty()) {
         parseHheaTable(hheaTableBytes);
     }
 
-    if (std::ssize(os2TableBytes) > 0) {
+    if (auto os2TableBytes = getTableBytes("OS/2"); not os2TableBytes.empty()) {
         parseOS2Table(os2TableBytes);
     }
 
-    if (std::ssize(nameTableBytes) > 0) {
+    if (auto nameTableBytes = getTableBytes("name"); not nameTableBytes.empty()) {
         parseNameTable(nameTableBytes);
     }
 
-    if (!description.unicode_ranges) {
-        description.unicode_ranges = parseCharacterMap();
-    }
+    unicode_mask = parseCharacterMap();
+    unicode_mask.optimize();
+    unicode_mask.shrink_to_fit();
 
     if (OS2_xHeight > 0) {
-        description.xHeight = emScale * OS2_xHeight;
+        xHeight = emScale * OS2_xHeight;
     } else {
         ttlet glyph_id = find_glyph('x');
         if (glyph_id) {
             glyph_metrics metrics;
-            loadglyph_metrics(glyph_id, metrics);
-            description.xHeight = metrics.boundingBox.height();
+            load_glyph_metrics(glyph_id, metrics);
+            xHeight = metrics.boundingBox.height();
         }
     }
 
     if (OS2_HHeight > 0) {
-        description.HHeight = emScale * OS2_HHeight;
+        HHeight = emScale * OS2_HHeight;
     } else {
         ttlet glyph_id = find_glyph('H');
         if (glyph_id) {
             glyph_metrics metrics;
-            loadglyph_metrics(glyph_id, metrics);
-            description.HHeight = metrics.boundingBox.height();
+            load_glyph_metrics(glyph_id, metrics);
+            HHeight = metrics.boundingBox.height();
         }
     }
 
     ttlet glyph_id = find_glyph('8');
     if (glyph_id) {
         glyph_metrics metrics;
-        loadglyph_metrics(glyph_id, metrics);
-        description.DigitWidth = metrics.advance.x();
+        load_glyph_metrics(glyph_id, metrics);
+        DigitWidth = metrics.advance.x();
     }
 }
 

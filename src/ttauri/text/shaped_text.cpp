@@ -4,6 +4,7 @@
 
 #include "shaped_text.hpp"
 #include "unicode_description.hpp"
+#include "font_book.hpp"
 #include "../small_map.hpp"
 
 namespace tt {
@@ -25,7 +26,7 @@ namespace tt {
     return r;
 }
 
-[[nodiscard]] static std::vector<attributed_glyph> graphemes_to_glyphs(std::vector<attributed_grapheme> const &text) noexcept
+[[nodiscard]] static std::vector<attributed_glyph> graphemes_to_glyphs(tt::font_book const &font_book, std::vector<attributed_grapheme> const &text) noexcept
 {
     // The end-of-paragraph must end text.
     tt_axiom(std::ssize(text) >= 1 && text.back().grapheme == grapheme::PS());
@@ -37,7 +38,7 @@ namespace tt {
 
     // Reverse through the text, since the metrics of a glyph depend on the next glyph.
     for (auto i = text.crbegin(); i != text.crend(); ++i) {
-        next_glyph = &glyphs.emplace_back(*i, next_glyph);
+        next_glyph = &glyphs.emplace_back(font_book, *i, next_glyph);
     }
 
     // Reverse it back.
@@ -247,6 +248,7 @@ struct shape_text_result {
 * @return preferred size of the text, size of the resulting text, shaped text.
 */
 [[nodiscard]] static shape_text_result shape_text(
+    tt::font_book const &font_book,
     std::vector<attributed_grapheme> text,
     float width,
     alignment alignment,
@@ -266,7 +268,7 @@ struct shape_text_result {
     tt_axiom(text.back().general_category == unicode_general_category::Zp);
 
     // Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
-    auto glyphs = graphemes_to_glyphs(text);
+    auto glyphs = graphemes_to_glyphs(font_book, text);
 
     // Split the text up in lines, based on line-feeds and line-wrapping.
     auto lines = make_lines(std::move(glyphs));
@@ -295,6 +297,7 @@ struct shape_text_result {
 
 
 shaped_text::shaped_text(
+    tt::font_book const &font_book,
     std::vector<attributed_grapheme> const &text,
     float width,
     tt::alignment alignment,
@@ -303,29 +306,31 @@ shaped_text::shaped_text(
     alignment(alignment),
     width(width)
 {
-    auto result = shape_text(text, width, alignment, wrap);
+    auto result = shape_text(font_book, text, width, alignment, wrap);
     _preferred_extent = result.preferred_extent;
     boundingBox = result.boundingBox;
     lines = std::move(result.lines);
 }
 
 shaped_text::shaped_text(
+    tt::font_book const &font_book,
     gstring const &text,
     text_style const &style,
     float width,
     tt::alignment alignment,
     bool wrap)
 noexcept :
-    shaped_text(makeattributed_graphemeVector(text, style), width, alignment, wrap) {}
+    shaped_text(font_book, makeattributed_graphemeVector(text, style), width, alignment, wrap) {}
 
 shaped_text::shaped_text(
+    tt::font_book const &font_book,
     std::string_view text,
     text_style const &style,
     float width,
     tt::alignment alignment,
     bool wrap
 ) noexcept :
-    shaped_text(to_gstring(text), style, width, alignment, wrap) {}
+    shaped_text(font_book, to_gstring(text), style, width, alignment, wrap) {}
 
 
 [[nodiscard]] shaped_text::const_iterator shaped_text::find(ssize_t index) const noexcept

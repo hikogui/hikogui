@@ -21,8 +21,10 @@ private:
     audio_system_aggregate &_owner;
 };
 
-audio_system_aggregate::audio_system_aggregate(weak_or_unique_ptr<audio_system_delegate> delegate) :
-    super(std::move(delegate)), _aggregate_delegate(std::make_unique<audio_system_aggregate_delegate>(*this))
+audio_system_aggregate::audio_system_aggregate(
+    tt::event_queue const &event_queue,
+    std::weak_ptr<audio_system_delegate> delegate) :
+    super(event_queue, std::move(delegate)), _aggregate_delegate(std::make_shared<audio_system_aggregate_delegate>(*this))
 {
 }
 

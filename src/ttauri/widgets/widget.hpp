@@ -6,7 +6,7 @@
 
 //#include "../GUI/mouse_event.hpp"
 //#include "../GUI/keyboard_event.hpp"
-//#include "../GUI/theme.hpp"
+#include "../GUI/theme.hpp"
 #include "../GFX/draw_context.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
@@ -26,6 +26,7 @@ namespace tt {
 class gui_window;
 struct mouse_event;
 struct keyboard_event;
+class font_book;
 
 /** An interactive graphical object as part of the user-interface.
  *
@@ -117,6 +118,20 @@ public:
     /** Should be called right after allocating and constructing a widget.
      */
     virtual void deinit() noexcept;
+
+    [[nodiscard]] bool is_gui_thread() const noexcept;
+
+    /** Get the theme.
+     *
+     * @return The current theme.
+     */
+    tt::theme const &theme() const noexcept;
+
+    /** Get the font book.
+     *
+     * @return The font book.
+     */
+    tt::font_book &font_book() const noexcept;
 
     /** Get the margin around the Widget.
      * A container widget should layout the children in such
@@ -304,8 +319,7 @@ public:
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
      */
-    [[nodiscard]] virtual bool
-    handle_command_recursive(command command, std::vector<widget const *> const &reject_list) noexcept;
+    [[nodiscard]] virtual bool handle_command_recursive(command command, std::vector<widget const *> const &reject_list) noexcept;
 
     /*! Handle mouse event.
      * Called by the operating system to show the position and button state of the mouse.
@@ -369,7 +383,7 @@ public:
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
-    [[nodiscard]] std::vector<widget const *>parent_chain() const noexcept;
+    [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
     /** Remove and deallocate all child widgets.
      */

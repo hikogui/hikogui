@@ -56,8 +56,6 @@ void grid_widget::deinit() noexcept
 [[nodiscard]] std::tuple<extent2, extent2, extent2>
 grid_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     rows.clear();
     columns.clear();
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "font_description.hpp"
+#include "font_variant.hpp"
 #include "text_decoration.hpp"
 #include "font_family_id.hpp"
 #include "../color/color.hpp"
@@ -12,6 +12,7 @@
 #include <ostream>
 
 namespace tt {
+class font_book;
 
 struct text_style {
     static constexpr float default_dpi = 84.0f;
@@ -28,13 +29,6 @@ struct text_style {
 
     text_style(tt::font_family_id family_id, tt::font_variant variant, float size, tt::color color, text_decoration decoration) noexcept :
         family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
-
-    text_style(
-        std::string_view family_name,
-        tt::font_variant variant,
-        float size,
-        tt::color color,
-        text_decoration decoration) noexcept;
 
     text_style(text_style const &) noexcept = default;
     text_style(text_style &&) noexcept = default;

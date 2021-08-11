@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_tab_button_widget.hpp"
-#include "../GUI/theme.hpp"
 #include "../GUI/gui_window.hpp"
 
 namespace tt {
@@ -15,7 +14,7 @@ toolbar_tab_button_widget::constrain(hires_utc_clock::time_point display_time_po
 
     if (super::constrain(display_time_point, need_reconstrain)) {
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        ttlet extra_size = extent2{theme::global().margin * 2.0f, theme::global().margin};
+        ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin};
         _minimum_size += extra_size;
         _preferred_size += extra_size;
         _maximum_size += extra_size;
@@ -35,7 +34,7 @@ toolbar_tab_button_widget::layout(hires_utc_clock::time_point displayTimePoint, 
     need_layout |= _request_layout.exchange(false);
     if (need_layout) {
         _label_rectangle =
-            aarectangle{theme::global().margin, 0.0f, width() - theme::global().margin * 2.0f, height() - theme::global().margin};
+            aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
     }
     super::layout(displayTimePoint, need_layout);
 }
@@ -100,7 +99,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_focus_line(draw_context context
 
         // Create a line, on the bottom of the toolbar over the full width.
         ttlet line_rectangle = aarectangle{
-            parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme::global().border_width};
+            parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme().border_width};
 
         context.set_clipping_rectangle(line_rectangle);
 
@@ -120,17 +119,17 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context context) no
     // so that the bottom border of the tab button is not drawn.
     context.set_clipping_rectangle(aarectangle{_parent_to_local * parent->clipping_rectangle()});
 
-    ttlet offset = theme::global().margin + theme::global().border_width;
+    ttlet offset = theme().margin + theme().border_width;
     ttlet outline_rectangle =
         aarectangle{rectangle().left(), rectangle().bottom() - offset, rectangle().width(), rectangle().height() + offset};
 
     // The focus line will be placed at 0.7.
     ttlet button_z = (_focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
 
-    auto button_color = (_hover || state() == button_state::on) ? theme::global(theme_color::fill, semantic_layer - 1) :
-                                                                  theme::global(theme_color::fill, semantic_layer);
+    auto button_color = (_hover || state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
+                                                                  theme().color(theme_color::fill, semantic_layer);
 
-    ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme::global().rounding_radius, theme::global().rounding_radius};
+    ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box_with_border_inside(
         button_z * outline_rectangle, button_color, (_focus && window.active) ? focus_color() : button_color, corner_shapes);
 }

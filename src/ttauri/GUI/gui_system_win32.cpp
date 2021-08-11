@@ -3,22 +3,66 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gui_system_win32.hpp"
-#include "vertical_sync.hpp"
+#include "vertical_sync_win32.hpp"
+#include "keyboard_bindings.hpp"
+#include "theme_book.hpp"
+#include "../GFX/gfx_system_vulkan.hpp"
+#include "../text/font_book.hpp"
 #include "../trace.hpp"
+#include "../locked_memory_allocator.hpp"
+#include <memory>
 
 namespace tt {
 
-// WM_USER = ?-0x7fff
-// WM_APP = 0x8000-0xbfff.
-constexpr unsigned int WM_APP_CALL_FUNCTION = 0x8000 + 1;
-
-void gui_system_win32::run_from_event_queue(std::function<void()> function)
+[[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
-    ttlet functionP = new std::function<void()>(std::move(function));
-    tt_assert(functionP);
+    auto event_queue = std::allocate_shared<tt::event_queue>(locked_memory_allocator<tt::event_queue>{});
 
-    auto r = PostThreadMessageW(thread_id, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
-    tt_assert(r != 0);
+    auto font_book = std::make_unique<tt::font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
+    font_book->register_elusive_icon_font(URL("resource:elusiveicons-webfont.ttf"));
+    font_book->register_ttauri_icon_font(URL("resource:ttauri_icons.ttf"));
+    font_book->post_process();
+
+    auto theme_book = std::make_unique<tt::theme_book>(*font_book, std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
+
+    auto gfx_system = std::make_unique<tt::gfx_system_vulkan>();
+
+    auto keyboard_bindings = std::make_unique<tt::keyboard_bindings>();
+    try {
+        keyboard_bindings->load_bindings(URL{"resource:win32.keybinds.json"}, true);
+    } catch (std::exception const &e) {
+        tt_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
+    }
+
+    auto r = std::make_unique<gui_system_win32>(
+        std::move(event_queue),
+        std::move(gfx_system),
+        std::make_unique<tt::vertical_sync_win32>(),
+        std::move(font_book),
+        std::move(theme_book),
+        std::move(keyboard_bindings),
+        std::move(delegate));
+    r->init();
+    return r;
+}
+
+gui_system_win32::gui_system_win32(
+    std::shared_ptr<tt::event_queue> event_queue,
+    std::unique_ptr<gfx_system> gfx,
+    std::unique_ptr<tt::vertical_sync> vertical_sync,
+    std::unique_ptr<tt::font_book> font_book,
+    std::unique_ptr<tt::theme_book> theme_book,
+    std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
+    std::weak_ptr<gui_system_delegate> delegate) :
+    gui_system(
+        std::move(event_queue),
+        std::move(gfx),
+        std::move(vertical_sync),
+        std::move(font_book),
+        std::move(theme_book),
+        std::move(keyboard_bindings),
+        std::move(delegate))
+{
 }
 
 void gui_system_win32::exit(int exit_code)
@@ -46,16 +90,10 @@ int gui_system_win32::loop()
                 break;
             }
 
-            ttlet t = trace<"gui_system_event">();
+            ttlet t = trace<"gui_system_win32_event">();
 
-            switch (msg.message) {
-            case WM_APP_CALL_FUNCTION: {
-                ttlet functionP = std::launder(reinterpret_cast<std::function<void()> *>(msg.lParam));
-                (*functionP)();
-                delete functionP;
-            } break;
-
-            case WM_QUIT: exit_code = narrow_cast<int>(msg.wParam); break;
+            if (msg.message == WM_QUIT) {
+                exit_code = narrow_cast<int>(msg.wParam);
             }
 
             TranslateMessage(&msg);
@@ -74,6 +112,11 @@ int gui_system_win32::loop()
             }
         }
 
+        {
+            ttlet t = trace<"gui_system_event">();
+            _event_queue->take_all([](ttlet &event) { event(); });
+        }
+
         // Render right after user input has been processed by the event queue.
         {
             ttlet t = trace<"gui_system_render">();
@@ -86,7 +129,7 @@ int gui_system_win32::loop()
         }
 
 bypass_render:
-        display_time_point = vertical_sync::global().wait();
+        display_time_point = vertical_sync->wait();
 
         // The next dead line is 5ms before the current rendered frame is to be displayed.
         // But give the event loop at least 5ms to process messages.
@@ -97,4 +140,4 @@ bypass_render:
     return *exit_code;
 }
 
-}
+} // namespace tt
