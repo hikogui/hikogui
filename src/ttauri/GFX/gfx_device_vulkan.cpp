@@ -8,6 +8,7 @@
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "../GUI/gui_window.hpp"
+#include "../resource_view.hpp"
 #include <span>
 
 namespace tt {
@@ -167,7 +168,7 @@ gfx_device_vulkan::gfx_device_vulkan(gfx_system &system, vk::PhysicalDevice phys
     deviceID = resultDeviceProperties2.properties.deviceID;
     vendorID = resultDeviceProperties2.properties.vendorID;
     deviceName = std::string(resultDeviceProperties2.properties.deviceName.data());
-    deviceUUID = uuid::fromBigEndian(resultDeviceIDProperties.deviceUUID);
+    deviceUUID = uuid::from_big_endian(resultDeviceIDProperties.deviceUUID);
 
     physicalProperties = physicalIntrinsic.getProperties();
 

@@ -6,6 +6,7 @@
 
 #include "../architecture.hpp"
 #include "../text/ttauri_icon.hpp"
+#include <array>
 #include <string>
 #include <iostream>
 

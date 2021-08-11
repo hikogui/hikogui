@@ -29,6 +29,7 @@ target_sources(ttauri PRIVATE
     bezier_point.hpp
     bigint.hpp
     bits.hpp
+    bound_integer.hpp
     byte_string.hpp
     check.hpp
     concepts.hpp
@@ -73,6 +74,7 @@ target_sources(ttauri PRIVATE
     format.hpp
     forward_value.hpp
     gap_buffer.hpp
+    global_state.hpp
     glob.hpp
     hash.hpp
     #hires_system_clock.hpp
@@ -92,8 +94,6 @@ target_sources(ttauri PRIVATE
     label.hpp
     locked_memory_allocator.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
-    log_level.cpp
-    log_level.hpp
     logger.cpp
     logger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/logger_macos.mm>
@@ -167,7 +167,6 @@ target_sources(ttauri PRIVATE
     vspan.hpp
     weak_or_unique_ptr.hpp
     wfree_fifo.hpp
-    wfree_message_queue.hpp
     wfree_unordered_map.hpp
 )
 
@@ -192,6 +191,7 @@ if(TT_BUILD_TESTS)
         algorithm_tests.cpp
         bezier_curve_tests.cpp
         bigint_tests.cpp
+        bound_integer_tests.cpp
         coroutine_tests.cpp
         counters_tests.cpp
         datum_tests.cpp
@@ -204,6 +204,7 @@ if(TT_BUILD_TESTS)
         forward_value_tests.cpp
         gap_buffer_tests.cpp
         glob_tests.cpp
+        interval_tests.cpp
         int_carry_tests.cpp
         int_overflow_tests.cpp
         math_tests.cpp

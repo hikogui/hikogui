@@ -4,14 +4,28 @@
 
 #include "audio_system_win32.hpp"
 #include "audio_device_win32.hpp"
+#include "audio_system_aggregate.hpp"
+#include "audio_device_id.hpp"
 #include "../required.hpp"
 #include "../logger.hpp"
 #include "../exception.hpp"
 #include "../locked_memory_allocator.hpp"
+#include "../event_queue.hpp"
 #include <Windows.h>
 #include <mmdeviceapi.h>
 
 namespace tt {
+
+[[nodiscard]] std::unique_ptr<audio_system>
+audio_system::make_unique(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate) noexcept
+{
+    auto tmp = std::make_unique<audio_system_aggregate>(event_queue, delegate);
+    tmp->init();
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+    tmp->make_audio_system<audio_system_win32>();
+#endif
+    return tmp;
+}
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
@@ -22,34 +36,54 @@ public:
 
     STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role, LPCWSTR device_id)
     {
-        _system->default_device_changed();
+        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        _system->_event_queue.emplace([this, device_id_]() {
+            _system->default_device_changed(device_id_);
+        });
         return S_OK;
     }
 
     STDMETHOD(OnDeviceAdded)(LPCWSTR device_id)
     {
-        _system->device_added();
+        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        _system->_event_queue.emplace([this, device_id_]() {
+            this->_system->device_added(device_id_);
+        });
         return S_OK;
     }
 
     STDMETHOD(OnDeviceRemoved)(LPCWSTR device_id)
     {
-        auto device_id_ = device_id == nullptr ? "win32:"s : "win32:"s + to_string(std::wstring(device_id));
-        _system->device_removed(device_id_);
+        // OnDeviceRemoved can not be implemented according to the win32 specification due
+        // to conflicting requirements.
+        // 1. This function may not block.
+        // 2. The string pointed by device_id will not exist after this function.
+        // 2. We need to copy device_id which has an unbounded size.
+        // 3. Allocating a string blocks.
+
+        tt_axiom(device_id);
+        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        _system->_event_queue.emplace([this, device_id_]() {
+            this->_system->device_added(device_id_);
+        });
         return S_OK;
     }
 
     STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD state)
     {
-        auto device_id_ = device_id == nullptr ? "win32:"s : "win32:"s + to_string(std::wstring(device_id));
-        _system->device_state_changed(device_id_);
+        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        _system->_event_queue.emplace([this, device_id_]() {
+            this->_system->device_state_changed(device_id_);
+        });
         return S_OK;
     }
 
     STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id, PROPERTYKEY const key)
     {
-        auto device_id_ = device_id == nullptr ? "win32:"s : "win32:"s + to_string(std::wstring(device_id));
-        _system->device_property_value_changed(device_id_);
+        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        _system->_event_queue.emplace([this, device_id_]() {
+            this->_system->device_property_value_changed(device_id_);
+        });
         return S_OK;
     }
 
@@ -72,7 +106,8 @@ private:
     audio_system_win32 *_system;
 };
 
-audio_system_win32::audio_system_win32(weak_or_unique_ptr<audio_system_delegate> delegate) : audio_system(std::move(delegate))
+audio_system_win32::audio_system_win32(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate) :
+    audio_system(event_queue, std::move(delegate))
 {
     tt_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
@@ -94,20 +129,15 @@ audio_system_win32::~audio_system_win32()
 
 void audio_system_win32::init() noexcept
 {
-    {
-        ttlet lock = std::scoped_lock(audio_system::mutex);
-        audio_system::init();
-        update_device_list();
-    }
-    if (auto delegate = delegate_lock()) {
+    audio_system::init();
+    update_device_list();
+    if (auto delegate = _delegate.lock()) {
         delegate->audio_device_list_changed(*this);
     }
 }
 
 void audio_system_win32::update_device_list() noexcept
 {
-    ttlet lock = std::scoped_lock(audio_system::mutex);
-
     IMMDeviceCollection *device_collection;
     tt_hresult_check(_device_enumerator->EnumAudioEndpoints(
         eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED, &device_collection));
@@ -151,9 +181,9 @@ void audio_system_win32::update_device_list() noexcept
     // Any devices in old_devices that are left over will be deallocated.
 }
 
-void audio_system_win32::default_device_changed() noexcept {}
+void audio_system_win32::default_device_changed(tt::audio_device_id const &device_id) noexcept {}
 
-void audio_system_win32::device_added() noexcept
+void audio_system_win32::device_added(tt::audio_device_id const &device_id) noexcept
 {
     update_device_list();
     if (auto delegate = _delegate.lock()) {
@@ -161,7 +191,7 @@ void audio_system_win32::device_added() noexcept
     }
 }
 
-void audio_system_win32::device_removed(std::string device_id) noexcept
+void audio_system_win32::device_removed(tt::audio_device_id const &device_id) noexcept
 {
     update_device_list();
     if (auto delegate = _delegate.lock()) {
@@ -169,14 +199,14 @@ void audio_system_win32::device_removed(std::string device_id) noexcept
     }
 }
 
-void audio_system_win32::device_state_changed(std::string device_id) noexcept
+void audio_system_win32::device_state_changed(tt::audio_device_id const &device_id) noexcept
 {
     if (auto delegate = _delegate.lock()) {
         delegate->audio_device_list_changed(*this);
     }
 }
 
-void audio_system_win32::device_property_value_changed(std::string device_id) noexcept
+void audio_system_win32::device_property_value_changed(tt::audio_device_id const &device_id) noexcept
 {
     if (auto delegate = _delegate.lock()) {
         delegate->audio_device_list_changed(*this);

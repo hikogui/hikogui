@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "radio_button_widget.hpp"
-#include "../GUI/theme.hpp"
 
 namespace tt {
 
@@ -13,8 +12,8 @@ namespace tt {
 
     if (super::constrain(display_time_point, need_reconstrain)) {
         // Make room for button and margin.
-        _button_size = {theme::global().size, theme::global().size};
-        ttlet extra_size = extent2{theme::global().margin + _button_size.width(), 0.0f};
+        _button_size = {theme().size, theme().size};
+        ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
         _minimum_size += extra_size;
         _preferred_size += extra_size;
         _maximum_size += extra_size;
@@ -38,10 +37,10 @@ namespace tt {
     if (need_layout) {
         _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme::global().margin, 0.0f, width(), height()};
+        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
         _pip_rectangle =
-            align(_button_rectangle, extent2{theme::global().icon_size, theme::global().icon_size}, alignment::middle_center);
+            align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
     }
     super::layout(displayTimePoint, need_layout);
 }

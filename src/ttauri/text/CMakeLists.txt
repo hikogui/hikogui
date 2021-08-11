@@ -15,12 +15,10 @@ target_sources(ttauri PRIVATE
     font.hpp
     font_book.cpp
     font_book.hpp
-    font_description.hpp
     font_family_id.hpp
     font_glyph_ids.cpp
     font_glyph_ids.hpp
     font_grapheme_id.hpp
-    font_id.hpp
     font_variant.hpp
     font_weight.hpp
     glyph_id.hpp
@@ -57,12 +55,12 @@ target_sources(ttauri PRIVATE
     unicode_description.hpp
     unicode_general_category.hpp
     unicode_grapheme_cluster_break.hpp
+    unicode_mask.cpp
+    unicode_mask.hpp
     unicode_normalization.cpp
     unicode_normalization.hpp
     unicode_text_segmentation.cpp
     unicode_text_segmentation.hpp
-    unicode_ranges.cpp
-    unicode_ranges.hpp
 )
 
 if(TT_BUILD_TESTS)

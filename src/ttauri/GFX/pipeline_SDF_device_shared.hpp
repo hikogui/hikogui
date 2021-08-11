@@ -112,17 +112,24 @@ struct device_shared final {
 
     /** Get the bounding box, including draw border of a glyph.
      */
-    static aarectangle getBoundingBox(font_glyph_ids const &glyphs) noexcept;
+    aarectangle get_bounding_box(font_glyph_ids const &glyphs) const noexcept;
 
     /** Place vertices for a single glyph.
      * @param vertices The list of vertices to add to.
      * @param glyphs The font-id, composed-glyphs to render
-     * @param box The rectangle of the glyph in window coordinates; including the draw border.
+     * @param glyph_size The size of the glyph.
+     * @param box The rectangle of the glyph in window coordinates. The box's size must be the size
+     *            of the glyph's bounding box times @a glyph_size.
      * @param color The color of the glyph.
      * @param clippingRectangle The rectangle to clip the glyph.
      */
-    void
-    place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, rectangle box, font_glyph_ids const &glyphs, color color) noexcept;
+    void place_vertices(
+        vspan<vertex> &vertices,
+        aarectangle clipping_rectangle,
+        rectangle box,
+        font_glyph_ids const &glyphs,
+        float glyph_size,
+        color color) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -130,7 +137,11 @@ struct device_shared final {
      * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
      * @param vertices The vertices to draw the glyphs to.
      */
-    void place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, matrix3 transform, shaped_text const &text) noexcept;
+    void place_vertices(
+        vspan<vertex> &vertices,
+        aarectangle clipping_rectangle,
+        matrix3 transform,
+        shaped_text const &text) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -204,12 +215,12 @@ private:
         attributed_glyph const &attr_glyph,
         color color) noexcept;
 
-    atlas_rect addGlyphToAtlas(font_glyph_ids glyph) noexcept;
+    atlas_rect add_glyph_to_atlas(font_glyph_ids glyph) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    std::pair<atlas_rect, bool> getGlyphFromAtlas(font_glyph_ids glyph) noexcept;
+    std::pair<atlas_rect, bool> get_glyph_from_atlas(font_glyph_ids glyph) noexcept;
 };
 
 } // namespace tt::pipeline_SDF

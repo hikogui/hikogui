@@ -40,8 +40,8 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     return false;
 }
 
-gui_window::gui_window(label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
-    title(title), _delegate(std::move(delegate))
+gui_window::gui_window(gui_system &gui, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
+    gui(gui), title(title), _delegate(std::move(delegate))
 {
 }
 
@@ -79,7 +79,7 @@ void gui_window::init()
     update_keyboard_target({});
 
     _setting_change_callback = language::subscribe([this] {
-        _request_setting_change = true;
+        request_constrain = true;
     });
 
     // Delegate has been called, layout of widgets has been calculated for the
@@ -92,6 +92,11 @@ void gui_window::deinit()
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
+}
+
+[[nodiscard]] bool gui_window::is_gui_thread() const noexcept
+{
+    return gui.is_gui_thread();
 }
 
 void gui_window::set_device(gfx_device *device) noexcept
@@ -120,7 +125,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 
     // All widgets need constrains recalculated on these window-wide events.
     // Like theme or language changes.
-    ttlet need_reconstrain = _request_setting_change.exchange(false);
+    ttlet need_reconstrain = request_constrain.exchange(false);
 
     // Update the size constraints of the window_widget and it children.
     ttlet constraints_have_changed = widget->constrain(displayTimePoint, need_reconstrain);
@@ -148,10 +153,17 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize. 
         ttlet current_size = screen_rectangle.size();
         ttlet new_size = clamp(current_size, widget->minimum_size(), widget->maximum_size());
-        if (new_size != current_size) {
+        if (new_size != current_size and size_state != gui_window_size::minimized) {
             tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);
         }
+    }
+
+    if (screen_rectangle.size() < widget->minimum_size() or screen_rectangle.size() > widget->maximum_size()) {
+        // Even after the resize above it is possible to have an incorrect window size.
+        // For example when minimizing the window.
+        // Stop processing rendering for this window here.
+        return;
     }
 
     // Update the graphics' surface to the current size of the window.
@@ -206,18 +218,24 @@ void gui_window::update_mouse_target(tt::widget const *new_target_widget, point2
     }
 }
 
+tt::keyboard_bindings const &gui_window::keyboard_bindings() const noexcept
+{
+    tt_axiom(gui.keyboard_bindings);
+    return *gui.keyboard_bindings;
+}
+
 void gui_window::update_keyboard_target(tt::widget const *new_target_widget, keyboard_focus_group group) noexcept
 {
     tt_axiom(is_gui_thread());
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
-    auto new_target_parent_chain = new_target_widget->parent_chain();
+    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<tt::widget const *>{};
 
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
     // In that case no widget will get focus.
-    if (!new_target_widget || !new_target_widget->accepts_keyboard_focus(group)) {
+    if (not new_target_widget or not new_target_widget->accepts_keyboard_focus(group)) {
         new_target_widget = {};
     }
 
@@ -227,7 +245,7 @@ void gui_window::update_keyboard_target(tt::widget const *new_target_widget, key
     }
 
     // When there is a new target, tell the current widget that the keyboard focus was exited.
-    if (new_target_widget && _keyboard_target_widget) {
+    if (new_target_widget and _keyboard_target_widget) {
         send_event_to_widget(_keyboard_target_widget, std::vector{command::gui_keyboard_exit});
         _keyboard_target_widget = nullptr;
     }
@@ -314,7 +332,7 @@ bool gui_window::send_event(keyboard_event const &event) noexcept
 
     // If the keyboard event is not handled directly, convert the key event to a command.
     if (event.type == keyboard_event::Type::Key) {
-        ttlet commands = keyboard_bindings::global().translate(event.key);
+        ttlet commands = keyboard_bindings().translate(event.key);
 
         ttlet handled = send_event_to_widget(_keyboard_target_widget, commands);
 

@@ -24,7 +24,7 @@ public:
 
     HWND win32Window = nullptr;
 
-    gui_window_win32(label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    gui_window_win32(gui_system &gui, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     ~gui_window_win32();
 

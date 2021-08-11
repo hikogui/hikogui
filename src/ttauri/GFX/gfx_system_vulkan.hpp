@@ -39,10 +39,10 @@ public:
     vk::ApplicationInfo applicationInfo;
 
     /** Create an instance of a gfx_device.
+     *
      * After the constructor is completed it may be used to get a
      * Vulkan surface and passed to `Window` constructors.
      *
-     * @param delegate The delegate for the gui-system.
      */
     gfx_system_vulkan();
     ~gfx_system_vulkan();

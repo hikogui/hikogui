@@ -11,6 +11,16 @@
 using namespace std;
 using namespace tt;
 
+static_assert(std::numeric_limits<ubig128>::min() == 0);
+static_assert(std::numeric_limits<ubig128>::max() > 0);
+static_assert(std::numeric_limits<big128>::min() < 0);
+static_assert(std::numeric_limits<big128>::max() > 0);
+
+static_assert(0 == std::numeric_limits<ubig128>::min());
+static_assert(0 < std::numeric_limits<ubig128>::max());
+static_assert(0 > std::numeric_limits<big128>::min());
+static_assert(0 < std::numeric_limits<big128>::max());
+
 TEST(BigInt, Construct) {
     ASSERT_EQ(ubig128("1").string(), "1");
     ASSERT_EQ(ubig128("10").string(), "10");
@@ -123,6 +133,23 @@ TEST(BigInt, LessThan) {
 
 }
 
+TEST(BigInt, LessThanOrEqual)
+{
+    static_assert(std::numeric_limits<signed char>::min() <= big128{0});
+    static_assert(std::numeric_limits<signed short>::min() <= big128{0});
+    static_assert(std::numeric_limits<signed int>::min() <= big128{0});
+    static_assert(std::numeric_limits<signed long>::min() <= big128{0});
+    static_assert(std::numeric_limits<signed long long>::min() <= big128{0});
+    static_assert(std::numeric_limits<big128>::min() <= big128{0});
+
+    static_assert(big128{0} <= std::numeric_limits<signed char>::max());
+    static_assert(big128{0} <= std::numeric_limits<signed short>::max());
+    static_assert(big128{0} <= std::numeric_limits<signed int>::max());
+    static_assert(big128{0} <= std::numeric_limits<signed long>::max());
+    static_assert(big128{0} <= std::numeric_limits<signed long long>::max());
+    static_assert(big128{0} <= std::numeric_limits<big128>::max());
+}
+
 TEST(BigInt, GreaterOrEqual) {
     ASSERT_TRUE(ubig128{"10000000000000000000000000000"} >= 32);
     ASSERT_TRUE(ubig128{"33"} >= 32);
@@ -160,6 +187,21 @@ TEST(BigInt, Divide) {
     ASSERT_EQ(quotient, ubig128{"39670417362816240034"});
     ASSERT_EQ(remainder, 38);
 }
+
+TEST(BigInt, reciprocal)
+{
+    auto t = ubig128{10};
+    auto r = reciprocal(static_cast<bigint<uint64_t, 4, false>>(t));
+    constexpr auto r2 = reciprocal(bigint<uint64_t, 4, false>{10});
+
+    ASSERT_EQ(r.digits[3], uint64_t{0x19999999'99999999});
+    ASSERT_EQ(r.digits[2], uint64_t{0x99999999'99999999});
+    ASSERT_EQ(r.digits[1], uint64_t{0x99999999'99999999});
+    ASSERT_EQ(r.digits[0], uint64_t{0x99999999'99999999});
+    ASSERT_EQ(r, r2);
+}
+
+
 
 TEST(BigInt, Multiply) {
     auto t = ubig128{0x1f2e3d4c5b6a7988};
@@ -205,5 +247,4 @@ TEST(BigInt, Default) {
         u+= 50;
         ASSERT_EQ(t, u);
     }
-
 }

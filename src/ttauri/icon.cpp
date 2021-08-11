@@ -16,43 +16,8 @@ icon::icon(font_glyph_ids const &image) noexcept : _image(image) {}
 
 icon::icon(URL const &url) : icon(png::load(url)) {}
 
-icon::icon(elusive_icon const &icon) noexcept : icon(to_font_glyph_ids(icon)) {}
+icon::icon(elusive_icon const &icon) noexcept : _image(icon) {}
 
-icon::icon(ttauri_icon const &icon) noexcept : icon(to_font_glyph_ids(icon)) {}
-
-icon::icon(icon const &other) noexcept
-{
-    tt_axiom(&other != this);
-    if (auto font_glyph_id = std::get_if<font_glyph_ids>(&other._image)) {
-        _image = *font_glyph_id;
-
-    } else if (auto pixmap = std::get_if<pixel_map<sfloat_rgba16>>(&other._image)) {
-        _image = pixmap->copy();
-
-    } else if (std::holds_alternative<std::monostate>(other._image)) {
-        _image = std::monostate{};
-
-    } else {
-        tt_no_default();
-    }
-}
-
-icon &icon::operator=(icon const &other) noexcept
-{
-    // Self-assignment is allowed.
-    if (auto font_glyph_id = std::get_if<font_glyph_ids>(&other._image)) {
-        _image = *font_glyph_id;
-
-    } else if (auto pixmap = std::get_if<pixel_map<sfloat_rgba16>>(&other._image)) {
-        _image = pixmap->copy();
-
-    } else if (std::holds_alternative<std::monostate>(other._image)) {
-        _image = std::monostate{};
-
-    } else {
-        tt_no_default();
-    }
-    return *this;
-}
+icon::icon(ttauri_icon const &icon) noexcept : _image(icon) {}
 
 } // namespace tt

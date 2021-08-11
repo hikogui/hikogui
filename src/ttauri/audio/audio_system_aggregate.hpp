@@ -12,13 +12,11 @@ class audio_system_aggregate : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_aggregate(weak_or_unique_ptr<audio_system_delegate> delegate);
+    audio_system_aggregate(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate);
 
-    [[nodiscard]] std::vector<std::shared_ptr<audio_device>> devices() noexcept override
+    [[nodiscard]] std::vector<audio_device *> devices() noexcept override
     {
-        ttlet lock = std::scoped_lock(audio_system::mutex);
-
-        auto r = std::vector<std::shared_ptr<audio_device>>{};
+        auto r = std::vector<audio_device *>{};
         for (auto &child : _children) {
             auto tmp = child->devices();
             std::move(tmp.begin(), tmp.end(), std::back_inserter(r));
@@ -26,27 +24,27 @@ public:
         return r;
     }
 
-    void add_audio_system(std::shared_ptr<audio_system> const &new_audio_system) noexcept
-    {
-        ttlet lock = std::scoped_lock(audio_system::mutex);
-        _children.push_back(new_audio_system);
-    }
-
     template<typename T, typename... Args>
-    std::shared_ptr<audio_system> make_audio_system(Args &&...args)
+    audio_system &make_audio_system(Args &&...args)
     {
-        auto new_audio_system = std::make_shared<T>(_aggregate_delegate, std::forward<Args>(args)...);
+        auto new_audio_system = std::make_unique<T>(_event_queue, _aggregate_delegate, std::forward<Args>(args)...);
+        auto new_audio_system_ptr = new_audio_system.get();
+
         new_audio_system->init();
-        add_audio_system(new_audio_system);
+        _children.push_back(std::move(new_audio_system));
+
         if (auto delegate = _delegate.lock()) {
             delegate->audio_device_list_changed(*this);
         }
-        return new_audio_system;
+        return *new_audio_system_ptr;
     }
 
 private:
-    std::vector<std::shared_ptr<audio_system>> _children;
-    weak_or_unique_ptr<audio_system_delegate> _aggregate_delegate;
+    std::vector<std::unique_ptr<audio_system>> _children;
+
+    /** The child audio systems take a weak_ptr to the aggregate_delegate.
+     */
+    std::shared_ptr<audio_system_delegate> _aggregate_delegate;
 
     friend class audio_system_aggregate_delegate;
 };

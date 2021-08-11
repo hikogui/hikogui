@@ -17,6 +17,7 @@
 #include <array>
 
 namespace tt {
+class font_book;
 
 class theme {
 public:
@@ -72,31 +73,12 @@ public:
 
     /** Open and parse a theme file.
      */
-    theme(URL const &url);
+    theme(tt::font_book const &font_book, URL const &url);
 
     [[nodiscard]] tt::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
     [[nodiscard]] tt::text_style const &text_style(theme_text_style theme_color) const noexcept;
 
-    static void set_global(theme *theme) noexcept
-    {
-        _global.store(theme);
-    }
-
-    [[nodiscard]] static theme &global() noexcept;
-
-    [[nodiscard]] static tt::color global(theme_color color, ssize_t nesting_level = 0) noexcept
-    {
-        return global().color(color, nesting_level);
-    }
-
-    [[nodiscard]] static tt::text_style const &global(theme_text_style text_style) noexcept
-    {
-        return global().text_style(text_style);
-    }
-
 private:
-    static inline std::atomic<theme *>_global = nullptr;
-
     std::array<std::vector<tt::color>, num_theme_colors> _colors;
     std::array<tt::text_style, num_theme_text_styles> _text_styles;
 
@@ -106,10 +88,10 @@ private:
     [[nodiscard]] tt::color parse_color_value(datum const &data);
     [[nodiscard]] tt::color parse_color(datum const &data, char const *object_name);
     [[nodiscard]] std::vector<tt::color> parse_color_list(datum const &data, char const *object_name);
-    [[nodiscard]] tt::text_style parse_text_style_value(datum const &data);
+    [[nodiscard]] tt::text_style parse_text_style_value(tt::font_book const &font_book, datum const &data);
     [[nodiscard]] font_weight parse_font_weight(datum const &data, char const *object_name);
-    [[nodiscard]] tt::text_style parse_text_style(datum const &data, char const *object_name);
-    void parse(datum const &data);
+    [[nodiscard]] tt::text_style parse_text_style(tt::font_book const &font_book, datum const &data, char const *object_name);
+    void parse(tt::font_book const &font_book, datum const &data);
 
     [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {
         return std::format("{}:{}", rhs.name, rhs.mode);

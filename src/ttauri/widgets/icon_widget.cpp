@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "icon_widget.hpp"
+#include "../text/font_book.hpp"
 #include "../GFX/gfx_surface_vulkan.hpp"
 #include "../GFX/gfx_device_vulkan.hpp"
 #include "../GUI/gui_window.hpp"
@@ -74,7 +75,25 @@ void icon_widget::init() noexcept
             _pixmap_backing = {};
 
             _icon_bounding_box =
-                scale(pipeline_SDF::device_shared::getBoundingBox(_glyph), theme::global(theme_text_style::label).scaled_size());
+                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
+
+        } else if (holds_alternative<elusive_icon>(icon_)) {
+            _icon_type = icon_type::glyph;
+            _glyph = font_book().find_glyph(get<elusive_icon>(icon_));
+            _pixmap_hash = 0;
+            _pixmap_backing = {};
+
+            _icon_bounding_box =
+                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
+
+        } else if (holds_alternative<ttauri_icon>(icon_)) {
+            _icon_type = icon_type::glyph;
+            _glyph = font_book().find_glyph(get<ttauri_icon>(icon_));
+            _pixmap_hash = 0;
+            _pixmap_backing = {};
+
+            _icon_bounding_box =
+                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
 
         } else {
             tt_no_default();
@@ -121,7 +140,12 @@ void icon_widget::draw(draw_context context, hires_utc_clock::time_point display
             }
             break;
 
-        case icon_type::glyph: context.draw_glyph(_glyph, _icon_transform * _icon_bounding_box, theme::global(*color)); break;
+        case icon_type::glyph: {
+            ttlet box = _icon_transform * _icon_bounding_box;
+            ttlet scale = box.width() /
+                _icon_bounding_box.width();
+            context.draw_glyph(_glyph, scale, box, theme().color(*color));
+        } break;
 
         default: tt_no_default();
         }

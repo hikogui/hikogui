@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "menu_button_widget.hpp"
+#include "../text/font_book.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../GUI/gui_window.hpp"
-#include "../GUI/theme.hpp"
 
 namespace tt {
 
@@ -20,12 +20,12 @@ namespace tt {
 
     if (super::constrain(display_time_point, need_reconstrain)) {
         // Make room for button and margin.
-        _check_size = {theme::global().size, theme::global().size};
-        _short_cut_size = {theme::global().size, theme::global().size};
+        _check_size = {theme().size, theme().size};
+        _short_cut_size = {theme().size, theme().size};
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         ttlet extra_size =
-            extent2{theme::global().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme::global().margin * 2.0f};
+            extent2{theme().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin * 2.0f};
         _minimum_size += extra_size;
         _preferred_size += extra_size;
         _maximum_size += extra_size;
@@ -43,21 +43,21 @@ namespace tt {
 
     need_layout |= _request_layout.exchange(false);
     if (need_layout) {
-        ttlet inside_rectangle = shrink(rectangle(), theme::global().margin);
+        ttlet inside_rectangle = shrink(rectangle(), theme().margin);
 
         _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left);
         _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right);
 
         _label_rectangle = aarectangle{
-            _check_rectangle.right() + theme::global().margin,
+            _check_rectangle.right() + theme().margin,
             0.0f,
-            _short_cut_rectangle.left() - theme::global().margin,
+            _short_cut_rectangle.left() - theme().margin,
             height()};
 
-        _check_glyph = to_font_glyph_ids(elusive_icon::Ok);
-        ttlet check_glyph_bb = pipeline_SDF::device_shared::getBoundingBox(_check_glyph);
+        _check_glyph = font_book().find_glyph(elusive_icon::Ok);
+        ttlet check_glyph_bb = _check_glyph.get_bounding_box();
         _check_glyph_rectangle =
-            align(_check_rectangle, scale(check_glyph_bb, theme::global().icon_size), alignment::middle_center);
+            align(_check_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);
     }
     super::layout(displayTimePoint, need_layout);
 }
@@ -129,7 +129,7 @@ void menu_button_widget::draw_check_mark(draw_context const &context) noexcept
 
     // Checkmark or tristate.
     if (state_ == tt::button_state::on) {
-        context.draw_glyph(_check_glyph, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
+        context.draw_glyph(_check_glyph, theme().icon_size, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
     }
 }
 

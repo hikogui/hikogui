@@ -46,7 +46,7 @@ void abstract_button_widget::activate() noexcept
         delegate->activate(*this);
     }
 
-    gui_system::global().run_from_event_queue([this]() {
+    window.gui.run_from_event_queue([this]() {
         this->_notifier();
     });
 }
@@ -107,7 +107,7 @@ abstract_button_widget::layout(hires_utc_clock::time_point displayTimePoint, boo
 {
     tt_axiom(is_gui_thread());
     if (_pressed) {
-        return theme::global(theme_color::fill, semantic_layer + 2);
+        return theme().color(theme_color::fill, semantic_layer + 2);
     } else {
         return super::background_color();
     }

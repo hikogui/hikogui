@@ -12,6 +12,7 @@
 #include "keyboard_event.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
+#include "theme.hpp"
 #include "../text/gstring.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../hires_utc_clock.hpp"
@@ -27,6 +28,8 @@ namespace tt {
 class gfx_device;
 class gfx_system;
 class gfx_surface;
+class gui_system;
+class keyboard_bindings;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -36,6 +39,8 @@ class gfx_surface;
 class gui_window {
 public:
     using delegate_type = gui_window_delegate;
+
+    gui_system &gui;
 
     std::unique_ptr<gfx_surface> surface;
 
@@ -59,13 +64,17 @@ public:
      */
     mouse_cursor currentmouse_cursor = mouse_cursor::None;
 
-    /** When set to true the widgets will be laid out.
+    /** When set to true the widget will calculate their constraints.
      */
-    std::atomic<bool> request_layout = true;
+    std::atomic<bool> request_constrain = true;
 
     /** When set to true the window will resize to the preferred size of the contained widget.
      */
     std::atomic<bool> request_resize = true;
+
+    /** When set to true the widgets will be laid out.
+     */
+    std::atomic<bool> request_layout = true;
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
@@ -93,7 +102,7 @@ public:
     //! The widget covering the complete window.
     std::unique_ptr<window_widget> widget;
 
-    gui_window(label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    gui_window(gui_system &gui, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     virtual ~gui_window();
 
@@ -117,7 +126,15 @@ public:
      */
     virtual void deinit();
 
+    /** Check if the current thread is the same as the gui_system loop.
+     */
+    [[nodiscard]] bool is_gui_thread() const noexcept;
+
     void set_device(gfx_device *device) noexcept;
+
+    /** Get the keyboard binding.
+     */
+    tt::keyboard_bindings const &keyboard_bindings() const noexcept;
 
     /** Request a rectangle on the window to be redrawn
      */
@@ -255,8 +272,6 @@ public:
 
 protected:
     std::weak_ptr<delegate_type> _delegate;
-
-    std::atomic<bool> _request_setting_change = true;
 
     std::atomic<aarectangle> _request_redraw_rectangle = aarectangle{};
 

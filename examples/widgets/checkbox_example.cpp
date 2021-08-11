@@ -10,7 +10,8 @@ using namespace tt;
 
 int tt_main(int argc, char* argv[])
 {
-    auto& window = gui_system::global().make_window(l10n("Checkbox example"));
+    auto gui = gui_system::make_unique();
+    auto& window = gui->make_window(l10n("Checkbox example"));
 
     /// [Create a label]
     window.content().make_widget<label_widget>("A1", l10n("checkbox:"));
@@ -25,5 +26,5 @@ int tt_main(int argc, char* argv[])
     cb.other_label = l10n("other");
     /// [Create a checkbox]
 
-    return gui_system::global().loop();
+    return gui->loop();
 }

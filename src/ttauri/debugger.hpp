@@ -11,6 +11,7 @@
 #include <format>
 
 namespace tt {
+tt_no_inline void logger_flush() noexcept;
 
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 void _debugger_break();
@@ -38,8 +39,9 @@ bool debugger_is_present() noexcept;
 template<typename... Args>
 [[noreturn]] tt_no_inline void debugger_abort(char const *source_file, int source_line, std::string_view fmt, Args &&... args)
 {
-    std::string message;
+    logger_flush();
 
+    std::string message;
     if constexpr (sizeof...(Args) == 0) {
         message = fmt;
     } else {

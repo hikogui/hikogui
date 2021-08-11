@@ -20,115 +20,65 @@ public:
     T value_;
 };
 
-using int_carry_test_types =
-    ::testing::Types<unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
+using int_carry_test_types = ::testing::Types<unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
 TYPED_TEST_SUITE(int_carry_test, int_carry_test_types);
 
 TYPED_TEST(int_carry_test, Add)
 {
-    std::pair<TypeParam,TypeParam> r;
+    constexpr TypeParam zero = 0;
+    constexpr TypeParam one = 1;
+    constexpr TypeParam two = 2;
+    constexpr TypeParam three = 3;
+    constexpr TypeParam maximum = numeric_limits<TypeParam>::max();
+    constexpr TypeParam high = maximum - 1;
 
-    TypeParam zero = 0;
-    TypeParam one = 1;
-    TypeParam two = 2;
-    TypeParam three = 3;
-    TypeParam maximum = numeric_limits<TypeParam>::max();
-    TypeParam high = maximum - 1;
+    ASSERT_EQ(add_carry(zero, zero, zero), std::pair(zero, zero));
+    ASSERT_EQ(add_carry(zero, zero, one), std::pair(one, zero));
+    ASSERT_EQ(add_carry(zero, one, zero), std::pair(one, zero));
+    ASSERT_EQ(add_carry(zero, one, one), std::pair(two, zero));
+    ASSERT_EQ(add_carry(one, zero, zero), std::pair(one, zero));
+    ASSERT_EQ(add_carry(one, zero, one), std::pair(two, zero));
+    ASSERT_EQ(add_carry(one, one, zero), std::pair(two, zero));
+    ASSERT_EQ(add_carry(one, one, one), std::pair(three, zero));
+    ASSERT_EQ(add_carry(high, zero, zero), std::pair(high, zero));
+    ASSERT_EQ(add_carry(high, zero, one), std::pair(maximum, zero));
+    ASSERT_EQ(add_carry(high, one, zero), std::pair(maximum, zero));
+    ASSERT_EQ(add_carry(high, one, one), std::pair(zero, one));
+    ASSERT_EQ(add_carry(zero, high, zero), std::pair(high, zero));
+    ASSERT_EQ(add_carry(zero, high, one), std::pair(maximum, zero));
+    ASSERT_EQ(add_carry(one, high, zero), std::pair(maximum, zero));
+    ASSERT_EQ(add_carry(one, high, one), std::pair(zero, one));
+    ASSERT_EQ(add_carry(maximum, zero, zero), std::pair(maximum, zero));
+    ASSERT_EQ(add_carry(maximum, zero, one), std::pair(zero, one));
+    ASSERT_EQ(add_carry(maximum, one, zero), std::pair(zero, one));
+    ASSERT_EQ(add_carry(maximum, one, one), std::pair(one, one));
+    ASSERT_EQ(add_carry(zero, maximum, zero), std::pair(maximum, zero));
+    ASSERT_EQ(add_carry(zero, maximum, one), std::pair(zero, one));
+    ASSERT_EQ(add_carry(one, maximum, zero), std::pair(zero, one));
+    ASSERT_EQ(add_carry(one, maximum, one), std::pair(one, one));
 
-    r = add_carry(zero, zero, zero);
-    ASSERT_EQ(r.first, zero);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(zero, zero, one);
-    ASSERT_EQ(r.first, one);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(zero, one, zero);
-    ASSERT_EQ(r.first, one);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(zero, one, one);
-    ASSERT_EQ(r.first, two);
-    ASSERT_EQ(r.second, zero);
-
-        r = add_carry(one, zero, zero);
-    ASSERT_EQ(r.first, one);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(one, zero, one);
-    ASSERT_EQ(r.first, two);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(one, one, zero);
-    ASSERT_EQ(r.first, two);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(one, one, one);
-    ASSERT_EQ(r.first, three);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(high, zero, zero);
-    ASSERT_EQ(r.first, high);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(high, zero, one);
-    ASSERT_EQ(r.first, maximum);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(high, one, zero);
-    ASSERT_EQ(r.first, maximum);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(high, one, one);
-    ASSERT_EQ(r.first, zero);
-    ASSERT_EQ(r.second, one);
-
-    r = add_carry(zero, high, zero);
-    ASSERT_EQ(r.first, high);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(zero, high, one);
-    ASSERT_EQ(r.first, maximum);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(one, high, zero);
-    ASSERT_EQ(r.first, maximum);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(one, high, one);
-    ASSERT_EQ(r.first, zero);
-    ASSERT_EQ(r.second, one);
-
-    r = add_carry(maximum, zero, zero);
-    ASSERT_EQ(r.first, maximum);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(maximum, zero, one);
-    ASSERT_EQ(r.first, zero);
-    ASSERT_EQ(r.second, one);
-
-    r = add_carry(maximum, one, zero);
-    ASSERT_EQ(r.first, zero);
-    ASSERT_EQ(r.second, one);
-
-    r = add_carry(maximum, one, one);
-    ASSERT_EQ(r.first, one);
-    ASSERT_EQ(r.second, one);
-
-    r = add_carry(zero, maximum, zero);
-    ASSERT_EQ(r.first, maximum);
-    ASSERT_EQ(r.second, zero);
-
-    r = add_carry(zero, maximum, one);
-    ASSERT_EQ(r.first, zero);
-    ASSERT_EQ(r.second, one);
-
-    r = add_carry(one, maximum, zero);
-    ASSERT_EQ(r.first, zero);
-    ASSERT_EQ(r.second, one);
-
-    r = add_carry(one, maximum, one);
-    ASSERT_EQ(r.first, one);
-    ASSERT_EQ(r.second, one);
+    static_assert(add_carry(zero, zero, zero) == std::pair(zero, zero));
+    static_assert(add_carry(zero, zero, one) == std::pair(one, zero));
+    static_assert(add_carry(zero, one, zero) == std::pair(one, zero));
+    static_assert(add_carry(zero, one, one) == std::pair(two, zero));
+    static_assert(add_carry(one, zero, zero) == std::pair(one, zero));
+    static_assert(add_carry(one, zero, one) == std::pair(two, zero));
+    static_assert(add_carry(one, one, zero) == std::pair(two, zero));
+    static_assert(add_carry(one, one, one) == std::pair(three, zero));
+    static_assert(add_carry(high, zero, zero) == std::pair(high, zero));
+    static_assert(add_carry(high, zero, one) == std::pair(maximum, zero));
+    static_assert(add_carry(high, one, zero) == std::pair(maximum, zero));
+    static_assert(add_carry(high, one, one) == std::pair(zero, one));
+    static_assert(add_carry(zero, high, zero) == std::pair(high, zero));
+    static_assert(add_carry(zero, high, one) == std::pair(maximum, zero));
+    static_assert(add_carry(one, high, zero) == std::pair(maximum, zero));
+    static_assert(add_carry(one, high, one) == std::pair(zero, one));
+    static_assert(add_carry(maximum, zero, zero) == std::pair(maximum, zero));
+    static_assert(add_carry(maximum, zero, one) == std::pair(zero, one));
+    static_assert(add_carry(maximum, one, zero) == std::pair(zero, one));
+    static_assert(add_carry(maximum, one, one) == std::pair(one, one));
+    static_assert(add_carry(zero, maximum, zero) == std::pair(maximum, zero));
+    static_assert(add_carry(zero, maximum, one) == std::pair(zero, one));
+    static_assert(add_carry(one, maximum, zero) == std::pair(zero, one));
+    static_assert(add_carry(one, maximum, one) == std::pair(one, one));
 }
-

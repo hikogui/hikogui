@@ -10,17 +10,5 @@
 
 namespace tt {
 
-[[nodiscard]] vertical_sync *vertical_sync::subsystem_init() noexcept
-{
-    return new vertical_sync_win32();
-}
-
-void vertical_sync::subsystem_deinit() noexcept
-{
-    if (auto tmp = _global.exchange(nullptr)) {
-        delete tmp;
-    }
-}
-
 
 }

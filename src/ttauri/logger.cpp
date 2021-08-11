@@ -52,7 +52,7 @@ static void logger_thread_loop(std::stop_token stop_token) noexcept
 
 void logger_deinit() noexcept
 {
-    if (logger_is_running.exchange(false)) {
+    if (to_bool(global_state.fetch_and(~global_state_type::logger_is_running) & global_state_type::logger_is_running)) {
         if (logger_thread.joinable()) {
             logger_thread.request_stop();
             logger_thread.join();

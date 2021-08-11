@@ -8,8 +8,24 @@
 #include <type_traits>
 #include <string>
 #include <concepts>
+#include <limits>
 
 namespace tt {
+
+template<typename T>
+concept numeric_limited = std::numeric_limits<T>::is_specialized;
+
+template<typename T>
+concept numeric = is_numeric_v<T>;
+
+template<typename T>
+concept numeric_integral = is_numeric_integral_v<T>;
+
+template<typename T>
+concept numeric_signed_integral = is_numeric_signed_integral_v<T>;
+
+template<typename T>
+concept numeric_unsigned_integral = is_numeric_unsigned_integral_v<T>;
 
 template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
@@ -52,8 +68,7 @@ concept to_stringable = requires(T v)
 {
     {
         to_string(v)
-    }
-    ->std::convertible_to<std::string>;
+        } -> std::convertible_to<std::string>;
 };
 
 template<typename T>
@@ -61,8 +76,7 @@ concept from_stringable = requires()
 {
     {
         from_string<T>(std::string_view{})
-    }
-    ->std::convertible_to<T>;
+        } -> std::convertible_to<T>;
 };
 
 template<typename From, typename To>
@@ -70,8 +84,7 @@ concept static_castableable = requires(From v)
 {
     {
         static_cast<To>(v)
-    }
-    ->std::convertible_to<To>;
+        } -> std::convertible_to<To>;
 };
 
 template<typename T>
@@ -79,11 +92,17 @@ concept sizeable = requires(T v)
 {
     {
         size(v)
-    }
-    ->std::convertible_to<size_t>;
+        } -> std::convertible_to<size_t>;
 };
 
 template<typename T>
 concept atomical = tt::may_be_atomic_v<T>;
+
+/** Concept for std::is_scoped_enum_v<T>.
+* 
+* XXX std::is_scoped_enum_v<T> ios a c++23 feature, so right now we use std::is_enum_v<T> instead.
+*/
+template<typename T>
+concept scoped_enum = std::is_enum_v<T>;
 
 } // namespace tt

@@ -7,6 +7,7 @@
 #include "assert.hpp"
 #include "unfair_recursive_mutex.hpp"
 #include "type_traits.hpp"
+#include "global_state.hpp"
 #include <atomic>
 #include <vector>
 #include <functional>
@@ -16,16 +17,6 @@
 
 namespace tt {
 namespace detail {
-
-/** The status of the system, as an atomic value.
- * The status of the system is used as a bit field, so that multiple status flags can
- * be checked with a single read.
- *
- * The system status should only be written to when holding the system_status_mutex.
- */
-enum class system_status_type { not_started, running, shutdown };
-
-inline system_status_type system_status = system_status_type::not_started;
 
 /** A list of deinit function to be called on shutdown.
  */
@@ -37,8 +28,8 @@ inline std::vector<void (*)()> subsystem_deinit_list;
  */
 inline unfair_recursive_mutex subsystem_mutex;
 
-template<typename T> requires(is_atomic_v<T>)
-tt_no_inline typename T::value_type start_subsystem(
+template<typename T>
+requires(is_atomic_v<T>) tt_no_inline typename T::value_type start_subsystem(
     T &check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
@@ -52,7 +43,7 @@ tt_no_inline typename T::value_type start_subsystem(
         return old_value;
     }
 
-    if (system_status != system_status_type::running) {
+    if (not is_system_running()) {
         // Only when the system is running can subsystems be started.
         // otherwise they have to run in degraded mode.
         return off_value;
@@ -66,6 +57,30 @@ tt_no_inline typename T::value_type start_subsystem(
     }
 
     return new_value;
+}
+
+tt_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
+{
+    ttlet lock = std::scoped_lock(subsystem_mutex);
+
+    ttlet old_state = global_state.load(std::memory_order::acquire);
+    if (not is_system_running(old_state)) {
+        // Only when the system is running can subsystems be started.
+        // otherwise they have to run in degraded mode.
+        return false;
+
+    } else if (to_bool(old_state & state_bit)) {
+        // In the short time before the lock the subsystem became available.
+        return true;
+    }
+
+    if (init_function()) {
+        subsystem_deinit_list.emplace_back(deinit_function);
+        global_state.fetch_or(state_bit, std::memory_order::release);
+        return true;
+    }
+
+    return false;
 }
 
 } // namespace detail
@@ -106,9 +121,33 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem(
  *  - System shutdown is in progress.
  *  - The subsystem is already initialized.
  *
+ * This will also register the deinit function to be called on system shutdown.
+ *
+ * @param state_bit The global state bit to check if the subsystem is already initialized.
+ * @param init_function The init function to call to initialize the subsystem
+ * @param deinit_function the deinit function to call when shutting down the system.
+ * @return return value from the init_function; off_value if the system is shutting down.
+ */
+inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
+{
+    // We can do a relaxed load, if:
+    //  - off_value, then we will lock before writing check_variable and memory order will be guaranteed
+    //  - not off_value, The system is started. If the subsystem is turning off we can't deal with that anyway.
+    if (not to_bool(global_state.load(std::memory_order::relaxed) & state_bit)) {
+        return detail::start_subsystem(state_bit, init_function, deinit_function);
+    } else {
+        [[likely]] return true;
+    }
+}
+
+/** Start a sub-system.
+ * Initialize a subsystem. The subsystem is not started if the following conditions are true:
+ *  - System shutdown is in progress.
+ *  - The subsystem is already initialized.
+ *
  * If the subsystem was unable to be started because of the previous conditions then
  * this function will std::terminate() the program.
- * 
+ *
  * This will also register the deinit function to be called on system shutdown.
  *
  * @param check_variable The variable to check before initializing.
@@ -134,7 +173,7 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
     }
 }
 
-    /** Stop a sub-system.
+/** Stop a sub-system.
  * De-initialize a subsystem.
  *
  * This will unregister and call the deinit function.
@@ -154,13 +193,7 @@ inline void stop_subsystem(void (*deinit_function)())
  */
 inline void start_system() noexcept
 {
-    ttlet lock = std::scoped_lock(detail::subsystem_mutex);
-    detail::system_status = detail::system_status_type::running;
-}
-
-[[nodiscard]] inline bool system_shutting_down() noexcept
-{
-    return detail::system_status == detail::system_status_type::shutdown;
+    global_state |= global_state_type::system_is_running;
 }
 
 /** Shutdown the system.
@@ -172,7 +205,7 @@ inline void start_system() noexcept
 inline void shutdown_system() noexcept
 {
     detail::subsystem_mutex.lock();
-    detail::system_status = detail::system_status_type::shutdown;
+    global_state |= global_state_type::system_is_shutting_down;
 
     while (!detail::subsystem_deinit_list.empty()) {
         auto deinit = std::move(detail::subsystem_deinit_list.back());

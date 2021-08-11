@@ -43,10 +43,13 @@ struct attributed_glyph {
      *
      * The string of graphemes should already be in display-order; after Unicode-bidi-algorithm.
      *
+     * @param font_book The font book to use to look up the glyphs from the given grapheme.
      * @param attr_grapheme The grapheme to turn into a glyph.
      * @param next_attr_glyph The next glyph in display-ordering, used for kerning.
      */
-    attributed_glyph(attributed_grapheme const &attr_grapheme, attributed_glyph const *next_attr_glyph=nullptr) noexcept;
+    attributed_glyph(
+        tt::font_book const &font_book, attributed_grapheme const &attr_grapheme,
+        attributed_glyph const *next_attr_glyph = nullptr) noexcept;
 
     attributed_glyph(attributed_glyph const &other) = default;
     attributed_glyph(attributed_glyph &&other) noexcept = default;
@@ -116,7 +119,7 @@ struct attributed_glyph {
     }
 
     /** Find the logical index closest to the coordinate.
-     * For a non-ligature, left of the halfway-point returnes the current logicalIndex,
+     * For a non-ligature, left of the halfway-point returns the current logicalIndex,
      * right of the halfway-point return the next logicalIndex.
      */
     [[nodiscard]] ssize_t relativeIndexAtCoordinate(point2 coordinate) const noexcept {

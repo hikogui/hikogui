@@ -72,7 +72,7 @@ namespace tt {
     // Calculate the frequency by dividing the delta-tsc by the duration.
     // We scale both the delta-tsc and duration by 1'000'000'000 before the
     // division. The duration is scaled by 1'000'000'000 by dividing by 1ns.
-    ttlet[delta_tsc_lo, delta_tsc_hi] = wide_mul(tsc2.count() - tsc1.count(), uint64_t{1'000'000'000});
+    ttlet[delta_tsc_lo, delta_tsc_hi] = mul_carry(tsc2.count() - tsc1.count(), uint64_t{1'000'000'000});
     auto duration = narrow_cast<uint64_t>((tp2 - tp1) / 1ns);
     return wide_div(delta_tsc_lo, delta_tsc_hi, duration);
 }

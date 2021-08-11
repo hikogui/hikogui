@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_widget.hpp"
-#include "../GUI/theme.hpp"
 
 namespace tt {
 
@@ -41,7 +40,7 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
         }
 
         // Add a space between the left and right widgets.
-        _layout.update(index++, theme::global().large_size, theme::global().large_size, 32767.0f, 0.0f);
+        _layout.update(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
 
         for (ttlet &child : std::views::reverse(_right_children)) {
             update_constraints_for_child(*child, index++, shared_height);
@@ -88,7 +87,7 @@ void toolbar_widget::draw(draw_context context, hires_utc_clock::time_point disp
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
-        context.draw_filled_quad(rectangle(), theme::global(theme_color::fill, semantic_layer + 1));
+        context.draw_filled_quad(rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
     }
 
     super::draw(std::move(context), display_time_point);

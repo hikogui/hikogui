@@ -42,7 +42,7 @@ static unfair_mutex_impl<false> dead_lock_detector_mutex;
 
 void *dead_lock_detector::lock(void *object) noexcept
 {
-    if (system_shutting_down()) {
+    if (is_system_shutting_down()) {
         // thread_local variables used by `stack` do not work on MSVC after main() returns.
         return nullptr;
     }
@@ -69,7 +69,7 @@ void *dead_lock_detector::lock(void *object) noexcept
  */
 bool dead_lock_detector::unlock(void *object) noexcept
 {
-    if (system_shutting_down()) {
+    if (is_system_shutting_down()) {
         // thread_local variables used by `stack` do not work on MSVC when main() returns.
         return true;
     }

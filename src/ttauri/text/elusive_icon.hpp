@@ -4,17 +4,7 @@
 
 #pragma once
 
-#include "font_id.hpp"
-#include "font_glyph_ids.hpp"
-#include "font_book.hpp"
-
 namespace tt {
-
-inline font_id elusive_icons_font_id() noexcept
-{
-    static font_id tmp = font_book::global().register_font(URL("resource:elusiveicons-webfont.ttf"));
-    return tmp;
-}
 
 enum class elusive_icon : char32_t {
     AddressBook = 0xf102,
@@ -323,9 +313,6 @@ enum class elusive_icon : char32_t {
     ZoomOut = 0xf230,
 };
 
-inline font_glyph_ids to_font_glyph_ids(elusive_icon rhs) noexcept {
-    return font_book::global().find_glyph(elusive_icons_font_id(), grapheme{static_cast<char32_t>(rhs)});
-}
 
 
 
