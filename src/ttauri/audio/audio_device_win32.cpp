@@ -118,9 +118,21 @@ template<>
     }
 }
 
+[[nodiscard]] audio_device_id audio_device_win32::get_id(IMMDevice *device) noexcept
+{
+    // Get the cross-reboot-unique-id-string of the device.
+    LPWSTR device_id;
+    tt_hresult_check(device->GetId(&device_id));
+    auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+
+    CoTaskMemFree(device_id);
+    return device_id_;
+}
+
 audio_device_win32::audio_device_win32(IMMDevice *device) : audio_device(), _device(device)
 {
     tt_assert(_device != nullptr);
+    id = get_id(_device);
     tt_hresult_check(_device->QueryInterface(&_end_point));
     tt_hresult_check(_device->OpenPropertyStore(STGM_READ, &_property_store));
 
@@ -234,23 +246,6 @@ audio_device_win32::best_format(double sample_rate, tt::speaker_mapping speaker_
     }
 
     return r;
-}
-
-std::string audio_device_win32::get_id_from_device(IMMDevice *device) noexcept
-{
-    // Get the cross-reboot-unique-id-string of the device.
-    LPWSTR id_wcharstr;
-    tt_hresult_check(device->GetId(&id_wcharstr));
-
-    ttlet id_wstring = std::wstring_view(id_wcharstr);
-    auto id = to_string(id_wstring);
-    CoTaskMemFree(id_wcharstr);
-    return "win32:"s + id;
-}
-
-std::string audio_device_win32::id() const noexcept
-{
-    return get_id_from_device(_device);
 }
 
 std::string audio_device_win32::name() const noexcept

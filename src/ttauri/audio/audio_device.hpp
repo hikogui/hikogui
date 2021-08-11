@@ -10,6 +10,7 @@
 #include "audio_channel.hpp"
 #include "audio_direction.hpp"
 #include "speaker_mapping.hpp"
+#include "audio_device_id.hpp"
 #include "../label.hpp"
 #include <string>
 #include <memory>
@@ -55,7 +56,7 @@ public:
 
     /** The nonephemeral unique id that for an audio device on the system.
      */
-    [[nodiscard]] virtual std::string id() const noexcept = 0;
+    audio_device_id id;
 
     /** Get a user friendly name of the audio device.
      * This is a combination of the name of the device and

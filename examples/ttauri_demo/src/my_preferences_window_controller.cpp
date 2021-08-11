@@ -76,10 +76,10 @@ void my_preferences_window_controller::audio_device_list_changed(tt::audio_syste
     using namespace tt;
 
     auto devices = system.devices();
-    auto device_list = std::vector<std::pair<std::string, tt::label>>{};
+    auto device_list = std::vector<std::pair<audio_device_id, tt::label>>{};
     for (auto const& device_ptr : devices) {
         if (device_ptr->direction() == audio_direction::output && device_ptr->state() == audio_device_state::active) {
-            device_list.emplace_back(device_ptr->id(), device_ptr->label());
+            device_list.emplace_back(device_ptr->id, device_ptr->label());
         }
     }
 

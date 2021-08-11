@@ -6,6 +6,7 @@
 #include "my_preferences.hpp"
 #include "ttauri/GUI/gui_window_delegate.hpp"
 #include "ttauri/audio/audio_system_delegate.hpp"
+#include "ttauri/audio/audio_device_id.hpp"
 #include "ttauri/observable.hpp"
 #include "ttauri/label.hpp"
 
@@ -26,7 +27,7 @@ private:
     tt::observable<int> tab_index = 0;
     tt::observable<bool> toggleValue;
     tt::observable<int> radioValue = 0;
-    tt::observable<std::vector<std::pair<std::string, tt::label>>> _audio_device_list;
+    tt::observable<std::vector<std::pair<tt::audio_device_id, tt::label>>> _audio_device_list;
 
     void init_audio_tab(tt::grid_widget &grid) noexcept;
     void init_license_tab(tt::grid_widget &grid) noexcept;

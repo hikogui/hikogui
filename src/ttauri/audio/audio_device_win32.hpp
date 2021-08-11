@@ -22,7 +22,6 @@ public:
     audio_device_win32(IMMDevice *device);
     ~audio_device_win32();
 
-    [[nodiscard]] std::string id() const noexcept override;
     [[nodiscard]] std::string name() const noexcept override;
     [[nodiscard]] tt::label label() const noexcept override;
     [[nodiscard]] audio_device_state state() const noexcept override;
@@ -30,10 +29,11 @@ public:
     [[nodiscard]] size_t full_num_channels() const noexcept override;
     [[nodiscard]] speaker_mapping full_channel_mapping() const noexcept override;
 
-    static std::string get_id_from_device(IMMDevice *device) noexcept;
-
     [[nodiscard]] bool supports_format(audio_stream_format const &format) const noexcept;
 
+    /** Get the device id for the given win32 audio end-point.
+     */
+    [[nodiscard]] static audio_device_id get_id(IMMDevice *device) noexcept;
 private:
     IMMDevice *_device;
     IMMEndpoint *_end_point;
