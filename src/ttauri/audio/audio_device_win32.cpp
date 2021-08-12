@@ -176,10 +176,16 @@ audio_device_win32::~audio_device_win32()
     return _exclusive;
 }
 
+[[nodiscard]] audio_stream_format
+audio_device_win32::find_exclusive_stream_format(double sample_rate, tt::speaker_mapping speaker_mapping) noexcept
+{
+    return {};
+}
+
 void audio_device_win32::set_exclusive(bool exclusive) noexcept
 {
     if (exclusive) {
-        _current_stream_format = find_exclusive_stream_format(_current_stream_format);
+        _current_stream_format = find_exclusive_stream_format(_sample_rate, _speaker_mapping);
     } else {
         _current_stream_format = shared_stream_format();
     }
@@ -187,21 +193,65 @@ void audio_device_win32::set_exclusive(bool exclusive) noexcept
     _exclusive = exclusive;
 }
 
-[[nodiscard]] double audio_device_win32::sample_rate() const noexcept {}
+[[nodiscard]] double audio_device_win32::sample_rate() const noexcept
+{
+    return _sample_rate;
+}
 
-void audio_device_win32::set_sample_rate(double sample_rate) noexcept {}
+void audio_device_win32::set_sample_rate(double sample_rate) noexcept
+{
+    _sample_rate = sample_rate;
+}
 
-[[nodiscard]] tt::speaker_mapping audio_device_win32::input_speaker_mapping() const noexcept {}
+[[nodiscard]] tt::speaker_mapping audio_device_win32::input_speaker_mapping() const noexcept
+{
+    switch (_direction) {
+    case audio_direction::input: [[fallthrough]];
+    case audio_direction::bidirectional: return _speaker_mapping;
+    case audio_direction::output: return tt::speaker_mapping::direct;
+    default: tt_no_default();
+    }
+}
 
-void audio_device_win32::set_input_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept {}
+void audio_device_win32::set_input_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept
+{
+    switch (_direction) {
+    case audio_direction::input: [[fallthrough]];
+    case audio_direction::bidirectional: _speaker_mapping = speaker_mapping; break;
+    case audio_direction::output: break;
+    default: tt_no_default();
+    }
+}
 
-[[nodiscard]] std::vector<tt::speaker_mapping> audio_device_win32::available_input_speaker_mappings() const noexcept {}
+[[nodiscard]] std::vector<tt::speaker_mapping> audio_device_win32::available_input_speaker_mappings() const noexcept
+{
+    return {};
+}
 
-[[nodiscard]] tt::speaker_mapping audio_device_win32::output_speaker_mapping() const noexcept {}
+[[nodiscard]] tt::speaker_mapping audio_device_win32::output_speaker_mapping() const noexcept
+{
+    switch (_direction) {
+    case audio_direction::output: [[fallthrough]];
+    case audio_direction::bidirectional: return _speaker_mapping;
+    case audio_direction::input: return tt::speaker_mapping::direct;
+    default: tt_no_default();
+    }
+}
 
-void audio_device_win32::set_output_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept {}
+void audio_device_win32::set_output_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept
+{
+    switch (_direction) {
+    case audio_direction::output: [[fallthrough]];
+    case audio_direction::bidirectional: _speaker_mapping = speaker_mapping; break;
+    case audio_direction::input: break;
+    default: tt_no_default();
+    }
+}
 
-[[nodiscard]] std::vector<tt::speaker_mapping> audio_device_win32::available_output_speaker_mappings() const noexcept {}
+[[nodiscard]] std::vector<tt::speaker_mapping> audio_device_win32::available_output_speaker_mappings() const noexcept
+{
+    return {};
+}
 
 /*[[nodiscard]] std::optional<audio_stream_format>
 audio_device_win32::best_format(double sample_rate, tt::speaker_mapping speaker_mapping) const noexcept
@@ -339,6 +389,7 @@ std::string audio_device_win32::end_point_name() const noexcept
     tt_axiom(ex);
     ttlet r = audio_stream_format_from_win32(*ex);
     CoTaskMemFree(ex);
+    return r;
 }
 
 } // namespace tt

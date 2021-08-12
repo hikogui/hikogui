@@ -63,7 +63,6 @@ grid_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, f
     rows.reserve(nr_rows);
     columns.reserve(nr_columns);
 
-    ttlet max_row_nr = nr_rows - 1;
     for (auto &&cell : cells) {
         rows.update(
             cell.row_nr,

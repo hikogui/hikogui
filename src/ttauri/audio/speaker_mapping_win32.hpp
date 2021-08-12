@@ -8,7 +8,7 @@
 
 namespace tt {
 
-[[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from) noexcept;
+[[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from);
 
 [[nodiscard]] uint32_t speaker_mapping_to_win32(speaker_mapping from) noexcept;
 

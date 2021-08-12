@@ -14,6 +14,9 @@ target_sources(ttauri PRIVATE
     audio_device_id.cpp
     audio_device_delegate.hpp
     audio_stream_config.hpp
+    audio_stream_format.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_stream_format_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_stream_format_win32.hpp>
     audio_system.cpp
     audio_system.hpp
     audio_system_aggregate.cpp

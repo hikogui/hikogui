@@ -28,7 +28,7 @@ public:
     {
         auto r = super::serialize();
 
-        r["audio_output_device_id"] = *audio_output_device_id;
+        //r["audio_output_device_id"] = *audio_output_device_id;
         return r;
     }
 
@@ -36,7 +36,7 @@ public:
     {
         super::deserialize(data);
 
-        deserialize_value<std::string>(audio_output_device_id, data, "audio_output_device_id");
+        //deserialize_value<std::string>(audio_output_device_id, data, "audio_output_device_id");
     }
 
 };
