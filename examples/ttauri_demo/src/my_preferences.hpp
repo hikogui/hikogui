@@ -12,6 +12,7 @@ public:
     using super = tt::preferences;
 
     tt::observable<tt::audio_device_id> audio_output_device_id;
+    tt::observable<double> sample_rate;
 
     my_preferences(tt::URL location) noexcept : super(location)
     {
@@ -28,7 +29,7 @@ public:
     {
         auto r = super::serialize();
 
-        //r["audio_output_device_id"] = *audio_output_device_id;
+        //r["audio_output_device_id"] = string_codec<audio_device_id>::serialize(*audio_output_device_id);
         return r;
     }
 
@@ -36,7 +37,11 @@ public:
     {
         super::deserialize(data);
 
-        //deserialize_value<std::string>(audio_output_device_id, data, "audio_output_device_id");
+        //if (auto device_id_string = get_optional_by_path<std::string>("audio_output_device_id")) {
+        //    audio_output_device_id = string_codec<audio_device_id>::deserialize(*device_id_string);
+        //} else {
+        //    audio_output_device_id = {};
+        //}
     }
 
 };

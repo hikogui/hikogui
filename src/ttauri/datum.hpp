@@ -1643,18 +1643,33 @@ public:
     {
         if (key.size() > 0 && is_map()) {
             ttlet index = key.at(0);
-            ttlet next = (*this)[index];
+            ttlet &next = (*this)[index];
             return next.get_by_path({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0 && is_vector()) {
             size_t const index = std::stoll(key.at(0));
-            ttlet next = (*this)[index];
+            ttlet &next = (*this)[index];
             return next.get_by_path({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0) {
             throw operation_error("type {} does not support get() with '{}'", type_name(), key.at(0));
         } else {
             return *this;
+        }
+    }
+
+    template<typename T>
+    [[nodiscard]] std::optional<T> get_optional_by_path(std::vector<std::string> const &key) const noexcept
+    {
+        try {
+            auto r = get_by_path(key);
+            if (holds_alternative<T>(r)) {
+                return {static_cast<T>(r)};
+            } else {
+                return {};
+            }
+        } catch (...) {
+            return {};
         }
     }
 
