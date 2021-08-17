@@ -56,16 +56,51 @@ class long_datum;
 
 /** A 64 bit dynamic data type.
  *
- * The datum can contain one of the following types:
- * - integer
- * - double
- * - decimal
- * - std::date
- * - boolean
- * - null
- * - undefined
- * - break/continue
  *
+ * By default a datum is encoded as a double-precision floating-point value. Other
+ * types are encoded in the mantissa-and-sign when the exponent is all '1'.
+ *
+ *   S | code  | sub | type
+ *  :- |:----- |:--- |:--------
+ *   0 | \-000 |     | +infinite or NaN.
+ *   0 | \-001 |     | 48 bit signed integer.
+ *   0 | \-010 |     | 40+8 bit decimal.
+ *   0 | \-011 |     | `std::year_month_day`
+ *   0 | \-100 |     | 6 char string encoded lsb to msb in uint64_t
+ *   0 | \-101 | sss | 0-5 char string encoded lsb to msb in uint64_t
+ *   0 | \-110 |     |
+ *   0 | \-111 | 000 | false
+ *   0 | \-111 | 001 | true
+ *   0 | \-111 | 010 | null
+ *   0 | \-111 | 011 | undefined
+ *   0 | \-111 | 100 |
+ *   0 | \-111 | 101 |
+ *   0 | \-111 | 110 | flow-continue
+ *   0 | \-111 | 111 | flow-break
+ *   1 |  00   |     | -infinite or signaling NaN.
+ *   1 |  01   |     | `std::string *`
+ *   1 |  10   |     | `std::vector<datum> *`
+ *   1 |  11   |     | `std::unordered_map<datum,datum> *`
+ *
+ * Pointers are encoded when the sign bit is '1'; the 2 msb bits of the mantissa
+ * are used to encoded the pointer type. The pointer itself is stored in the
+ * remaining 50 bits.
+ *
+ * Intel 5-level paging gives us a pointer of 57 bits. Bits [63:56] are
+ * zero in user space programs on Linux and Windows. This leaves us with
+ * 56 - 50 = 6 bits short. With an alignment to 64 bytes the bottom 6 bits
+ * will be zero.
+ *
+ * ARM64 A pointer is 48 bits, with an extra 8 bits [63:56] used for tagging pointers.
+ * As previous, bits [55:47] are '0' for user space programs, for a total of 55 bits.
+ * This leaves us with 55 - 50 = 5 bits short. With an alignment to 32 bytes the bottom
+ * 5 bits will be zero.
+ *
+ * ARM64 Also has an extended format which is 52 bits. This will not be supported yet,
+ * or maybe through a special option.
+ * ARM64 Also supports pointer authentication which uses all unused upper bits. On Linux
+ * this is only supported for instruction pointers. These will not be supported by datum,
+ * unless we extent datum to 128 bits.
  */
 class short_datum {
 public:
@@ -553,22 +588,49 @@ private:
         uint64_t u64;
     };
 
-    value_type _v;
+    value_type _value;
 
-    [[nodiscard]] constexpr detail::short_datum_type type() const noexcept
-    {
-        static_assert(sizeof(_v) == sizeof(uint64_t));
+    struct type_type {
+        constexpr type_type(value_type const &value) noexcept :  {
+            auto u64 = std::bit_cast<uint64_t>(_v);
 
-        auto type = static_cast<uint16_t>(std::bit_cast<uint64_t>(_v) >> 48);
-        if (type & 0x7ff0 == 0x7ff0) {
-            // Infinite or NaN. Type is encoded in the lower 3 bits.
-            // An infinite or a signaling/quite-NaN (with only bottom 48 bits used) are
-            // treated as floating point.
-            return static_cast<detail::short_datum_type>(type & 0x7);
-        } else {
-            return detail::short_datum_type::floating_point;
+            // Move the sign bit to bit 7.
+            ttlet sign = static_cast<uint8_t>(u64 >> (63 - 7));
+
+            // Move the 7 bit msb of the mantissa in the bottom 7 bits.
+            ttlet mantissa_msb = static_cast<uint8_t>(u64 >> (52 - 7));
+
+            // Concatenate the sign bit with the 7 bit msb of the mantissa.
+            // The unused bits (the exponent) of both sign and mantissa_msb are '1' when the type is non-double.
+            ttlet type = sign & mantissa_msb;
+
+            // Move the exponent in the msb of the uint16_t, stripping off the sign bit.
+            ttlet exponent = static_cast<uint16_t>(u64 >> 47);
+
+            // If all exponent bits are '1' and any mantissa bits are '1', then type is a non-double
+            _t = exponent > 0xffe0 ? type : 0;
         }
-    }
+
+        [[nodiscard]] constexpr bool is_pointer() const noexcept
+        {
+            return _t >= 0xfff4'0000 and _t <= 0xfffc'0000;
+        }
+
+        [[nodiscard]] constexpr bool is_double() const noexcept
+        {
+            return (_t & 0x7fff'ffff) < 0x7ff1'0000;
+        }
+
+        [[nodiscard]] constexpr bool is_integral() const noexcept
+        {
+            return (_t & 0xffff'0000) == 0x7ff1'0000'
+        }
+
+
+
+        uint8_t _t;
+    };
+
 
     [[nodiscard]] constexpr detail::short_datum_subtype subtype() const noexcept
     {
