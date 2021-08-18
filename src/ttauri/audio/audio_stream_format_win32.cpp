@@ -62,7 +62,7 @@ namespace tt {
         throw parse_error("Unknown SubFormat");
     }
 
-    tt_parse_check(wave_format.Format.wBitsPerSample % 8 != 0, "wBitsPerSample is not multiple of 8");
+    tt_parse_check(wave_format.Format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");
     tt_parse_check(wave_format.Format.wBitsPerSample > 0, "wBitsPerSample is 0");
     tt_parse_check(wave_format.Format.wBitsPerSample <= 32, "wBitsPerSample is more than 32");
     r.sample_format.num_bytes = narrow_cast<uint8_t>(wave_format.Format.wBitsPerSample / 8);

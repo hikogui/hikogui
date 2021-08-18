@@ -100,6 +100,11 @@ enum class speaker_mapping : uint64_t {
     return static_cast<uint32_t>(static_cast<uint64_t>(rhs)) == 0;
 }
 
+[[nodiscard]] constexpr bool is_empty(speaker_mapping const &rhs) noexcept
+{
+    return to_underlying(rhs) == 0;
+}
+
 [[nodiscard]] constexpr speaker_mapping make_direct_speaker_mapping(size_t num_speakers) noexcept
 {
     tt_axiom(num_speakers <= std::numeric_limits<uint32_t>::max());
@@ -110,7 +115,7 @@ enum class speaker_mapping : uint64_t {
 
 [[nodiscard]] constexpr speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
 {
-    tt_axiom(not is_direct(lhs) and not is_direct(rhs));
+    tt_axiom((is_empty(lhs) or not is_direct(lhs)) and (is_empty(rhs) or not is_direct(rhs)));
 
     ttlet r = static_cast<speaker_mapping>(to_underlying(lhs) | to_underlying(rhs));
     tt_axiom(holds_invariant(r));
