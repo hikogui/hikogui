@@ -19,41 +19,6 @@
 namespace tt {
 namespace detail {
 
-/** The type of the value stored in the short datum.
- *
- * By using only three bits for the type we can handle
- * floating point infinites and quiet and signaling NaNs as long
- * as those NaNs use only the bottom 48 bits for their value.
- */
-enum class short_datum_type : uint8_t {
-    /** Float must be the first type, so that the bit pattern of
-     * infinite and NaN will match.
-     */
-    floating_point = 0,
-    decimal = 1,
-    integer = 2,
-    year_month_day = 3,
-
-    /** A simple value encodes the value+subtype as the 48 bit value.
-     *
-     * @see short_datum_subtype
-     */
-    simple = 4,
-};
-
-enum class short_datum_subtype : uint8_t {
-    bool_false = 0,
-    bool_true = 1,
-    null = 2,
-    undefined = 3,
-    flow_continue = 4,
-    flow_break = 5
-}
-
-} // namespace detail
-
-class long_datum;
-
 /** A 64 bit dynamic data type.
  *
  *
@@ -104,6 +69,11 @@ class long_datum;
  */
 class short_datum {
 public:
+    constexpr ~short_datum() noexcept
+    {
+        clear();
+    }
+
     constexpr short_datum(short_datum const &) noexcept = default;
     constexpr short_datum(short_datum &&) noexcept = default;
     constexpr short_datum() noexcept : _v(make()) {}
@@ -591,6 +561,11 @@ private:
     value_type _value;
 
     struct type_type {
+        /** The constructor which creates a type from a value.
+         *
+         * The type is a 8 bit value, which contains the sign
+         * bit and the 7 msb of the mantissa from the double.
+         */
         constexpr type_type(value_type const &value) noexcept :  {
             auto u64 = std::bit_cast<uint64_t>(_v);
 
@@ -608,35 +583,135 @@ private:
             ttlet exponent = static_cast<uint16_t>(u64 >> 47);
 
             // If all exponent bits are '1' and any mantissa bits are '1', then type is a non-double
-            _t = exponent > 0xffe0 ? type : 0;
-        }
-
-        [[nodiscard]] constexpr bool is_pointer() const noexcept
-        {
-            return _t >= 0xfff4'0000 and _t <= 0xfffc'0000;
+            _type_id = exponent > 0xffe0 ? type : 0;
         }
 
         [[nodiscard]] constexpr bool is_double() const noexcept
         {
-            return (_t & 0x7fff'ffff) < 0x7ff1'0000;
+            // The constructor already has combined all non-NaN together into the type_id being zero.
+            return _type_id == 0;
         }
 
         [[nodiscard]] constexpr bool is_integral() const noexcept
         {
-            return (_t & 0xffff'0000) == 0x7ff1'0000'
+            return (_type_id >> 3) == 1;
         }
 
+        [[nodiscard]] constexpr bool is_decimal() const noexcept
+        {
+            return (_type_id >> 3) == 2;
+        }
 
+        [[nodiscard]] constexpr bool is_year_month_day() const noexcept
+        {
+            return (_type_id >> 3) == 3;
+        }
 
-        uint8_t _t;
+        [[nodiscard]] constexpr bool is_6char() const noexcept
+        {
+            return (_type_id >> 3) == 4;
+        }
+
+        [[nodiscard]] constexpr bool is_nchar() const noexcept
+        {
+            return (_type_id >> 3) == 5;
+        }
+
+        [[nodiscard]] constexpr bool is_bool() const noexcept
+        {
+            return (_type_id >> 3) == 6;
+        }
+
+        [[nodiscard]] constexpr bool is_undefined() const noexcept
+        {
+            return _type_id == 0x78;
+        }
+
+        [[nodiscard]] constexpr bool is_null() const noexcept
+        {
+            return _type_id == 0x79;
+        }
+
+        [[nodiscard]] constexpr bool is_continue() const noexcept
+        {
+            return _type_id == 0x7e;
+        }
+
+        [[nodiscard]] constexpr bool is_break() const noexcept
+        {
+            return _type_id == 0x7f;
+        }
+
+        [[nodiscard]] constexpr bool is_pointer() const noexcept
+        {
+            return (_type_id >> 5) >= 5;
+        }
+
+        [[nodiscard]] constexpr bool is_pointer_to_vector() const noexcept
+        {
+            return (_type_id >> 5) == 1;
+        }
+
+        [[nodiscard]] constexpr bool is_pointer_to_map() const noexcept
+        {
+            return (_type_id >> 5) == 2;
+        }
+
+        [[nodiscard]] constexpr bool is_pointer_to_string() const noexcept
+        {
+            return (_type_id >> 5) == 3;
+        }
+
+        [[nodiscard]] constexpr size_t is_string() const noexcept
+        {
+            return is_pointer_to_string() or (_type_id >> 4) == 2;
+        }
+
+        [[nodiscard]] constexpr size_t char_size() const noexcept
+        {
+            if (is_nchar()) {
+                return _type_id & 7;
+            } else {
+                tt_axiom(is_6char());
+                return 6;
+            }
+        }
+
+        uint8_t _type_id;
     };
 
-
-    [[nodiscard]] constexpr detail::short_datum_subtype subtype() const noexcept
+    constexpr type_type type() const noexcept
     {
-        tt_axiom(type() == detail::short_datum_type::simple);
-        return static_cast<detail::short_datum_subtype>(static_cast<uint8_t>(_v.u64));
+        return {_value};
     }
+
+    /** Free the pointer.
+     * 
+     * It is undefined behaviour to call this function on a non-pointer datum.
+     */
+    tt_no_inline void free_pointer(type_type t) noexcept
+    {
+        tt_axiom(t.is_pointer());
+        if (t.is_pointer_to_string()) {
+            delete get_pointer<std::string *>();
+        } else if (t.is_pointer_to_vector()) {
+            delete get_pointer<datum_vector *>();
+        } else {
+            tt_axiom(t.is_pointer_to_map());
+            delete get_pointer<datum_map *>();
+        }
+    }
+
+    /** Clear the value.
+     */
+    constexpr void clear(type_type t) noexcept
+    {
+        if (t.is_pointer()) {
+            free_pointer(t);
+        }
+        _value = make();
+    }
+
 
     [[nodiscard]] static constexpr value_type make(std::floating_point auto value) noexcept
     {
