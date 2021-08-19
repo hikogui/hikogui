@@ -508,6 +508,17 @@ public:
         return get<std::string>(*this);
     }
 
+    explicit operator std::string_view() const
+    {
+        if (auto s = get_if<std::string>(*this)) {
+            return std::string_view{*s};
+        } else if (auto u = get_if<URL>(*this)) {
+            return std::string_view{to_string(*u)};
+        } else {
+            throw std::domain_error(std::format("Can't convert {} to an std::string_view", repr(*this)));
+        }
+    }
+
     explicit operator vector_type() const
     {
         // XXX should be able to copy the keys of a map sorted.
@@ -834,9 +845,9 @@ public:
     }
 
     template<typename Arg>
-    [[nodiscard]] constexpr bool contains(Arg &&arg) const
+    [[nodiscard]] constexpr bool contains(Arg const &arg) const
     {
-        return contains(datum{std::forward<Arg>(arg)});
+        return contains(datum{arg});
     }
 
     [[nodiscard]] constexpr datum const &operator[](datum const &rhs) const
@@ -943,22 +954,22 @@ public:
         }
     }
 
-#define X(op) \
+#define X(op, inner_op) \
     constexpr datum &operator op(auto const &rhs) \
     { \
-        return *this = *this op rhs; \
+        return (*this) = (*this) inner_op rhs; \
     }
 
-    X(+=)
-    X(-=)
-    X(*=)
-    X(/=)
-    X(%=)
-    X(&=)
-    X(|=)
-    X(^=)
-    X(<<=)
-    X(>>=)
+    X(+=, +)
+    X(-=, -)
+    X(*=, *)
+    X(/=, /)
+    X(%=, %)
+    X(&=, &)
+    X(|=, |)
+    X(^=, ^)
+    X(<<=, <<)
+    X(>>=, >>)
 #undef X
 
     [[nodiscard]] friend constexpr bool operator==(datum const &lhs, datum const &rhs) noexcept
@@ -1193,6 +1204,19 @@ public:
 
         } else {
             throw std::domain_error(std::format("Can not evaluate {} '%' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum pow(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+            return datum{pow(doubles.lhs(), doubles.rhs())};
+
+        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return datum{pow(long_longs.lhs(), long_longs.rhs())};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate pow({}, {})", repr(lhs), repr(rhs)));
         }
     }
 

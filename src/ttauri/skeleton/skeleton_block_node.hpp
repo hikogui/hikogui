@@ -52,7 +52,7 @@ struct skeleton_block_node final: skeleton_node {
     datum evaluate(formula_evaluation_context &context) override {
         datum tmp;
         try {
-            tmp = function(context, datum::vector{});
+            tmp = function(context, datum::vector_type{});
 
         } catch (std::exception const &e) {
             throw operation_error("{}: Could not evaluate block.\n{}", location, e.what());

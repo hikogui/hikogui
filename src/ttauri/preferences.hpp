@@ -54,7 +54,7 @@ public:
      */
     [[nodiscard]] virtual datum serialize() const noexcept
     {
-        return {datum::map{}};
+        return datum::make_map();
     }
 
     /** Deserialize the preferences.

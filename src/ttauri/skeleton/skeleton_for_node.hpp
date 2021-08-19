@@ -68,8 +68,7 @@ struct skeleton_for_node final: skeleton_node {
         if (list_data.size() > 0) {
             ttlet loop_size = std::ssize(list_data);
             ssize_t loop_count = 0;
-            for (auto i = list_data.vector_begin(); i != list_data.vector_end(); ++i) {
-                ttlet &item = *i;
+            for (ttlet &item : list_data) {
                 try {
                     name_expression->assign_without_output(context, item);
 

@@ -26,7 +26,7 @@ struct skeleton_function_node final: skeleton_node {
         argument_names = std::move(name_and_arguments);
 
         super_function = context.set_function(name,
-            [this,&location](formula_evaluation_context &context, datum::vector const &arguments) {
+            [this,&location](formula_evaluation_context &context, datum::vector_type const &arguments) {
             try {
                 return this->evaluate_call(context, arguments);
 

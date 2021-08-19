@@ -363,29 +363,37 @@ public:
     }
 
     /** Add a map of key/values pairs.
-     * @tparam Key A type convertable to a u8string_view; a valid UTF-8 string.
+     * @tparam Key A type convertible to a string_view; a valid UTF-8 string.
      * @tparam Value The type of the Value.
      * @param items The map of key/value pairs.
      */
     template<typename Key, typename Value>
-    void add(std::map<Key, Value> const &items)
+    void add(std::unordered_map<Key, Value> const &items)
     {
-        using item_type = typename std::map<Key, Value>::value_type;
+        using key_type = typename std::remove_cvref_t<decltype(items)>::key_type;
 
         open_string = false;
         if (std::ssize(items) == 0) {
             output += static_cast<std::byte>(BON8_code_object_empty);
+
         } else {
             // Keys must be ordered lexically.
-            auto sorted_items = std::vector<std::reference_wrapper<item_type>>{items.begin(), items.end()};
-            std::sort(sorted_items.begin(), sorted_items.end(), [](item_type const &a, item_type const &b) {
-                return static_cast<std::u8string_view>(a.first) < static_cast<std::u8string_view>(b.first);
+            auto keys = std::vector<key_type const *>();
+            keys.reserve(std::size(items));
+            for (ttlet &item : items) {
+                keys.push_back(&(item.first));
+            }
+            std::sort(keys.begin(), keys.end(), [](ttlet &a, ttlet &b) {
+                return static_cast<std::string_view>(*a) < static_cast<std::string_view>(*b);
             });
 
             output += static_cast<std::byte>(BON8_code_object);
-            for (item_type const &item : sorted_items) {
-                add(static_cast<std::u8string_view>(item.first));
-                add(item.second);
+            for (ttlet &key : keys) {
+                auto it = items.find(*key);
+                tt_axiom(it != items.end());
+
+                add(static_cast<std::string_view>(it->first));
+                add(it->second);
             }
             output += static_cast<std::byte>(BON8_code_eoc);
         }
@@ -395,22 +403,22 @@ public:
 
 void BON8_encoder::add(datum const &value)
 {
-    if (holds_alternative<std::string>(value)) {
-        add(get<std::string>(value));
-    } else if (holds_alternative<URL>(value)) {
-        add(static_cast<std::string>(value));
-    } else if (holds_alternative<bool>(value)) {
-        add(get<bool>(value));
+    if (auto s = get_if<std::string>(value)) {
+        add(*s);
+    } else if (auto u = get_if<URL>(value)) {
+        add(to_string(*u));
+    } else if (auto b = get_if<bool>(value)) {
+        add(*b);
     } else if (holds_alternative<nullptr_t>(value)) {
         add(nullptr);
-    } else if (holds_alternative<long long>(value)) {
-        add(get<long long>(value));
-    } else if (holds_alternative<double>(value)) {
-        add(get<double>(value));
-    } else if (holds_alternative<datum::vector_type>(value)) {
-        add(get<datum::vector_type>(value));
-    } else if (holds_alternative<datum::map_type>(value)) {
-        add(get<datum::map_type>(value));
+    } else if (auto i = get_if<long long>(value)) {
+        add(*i);
+    } else if (auto f = get_if<double>(value)) {
+        add(*f);
+    } else if (auto v = get_if<datum::vector_type>(value)) {
+        add(*v);
+    } else if (auto m = get_if<datum::map_type>(value)) {
+        add(*m);
     } else {
         throw operation_error("Datum value can not be encoded to BON8");
     }
@@ -515,7 +523,7 @@ void BON8_encoder::add(datum const &value)
 
         } else {
             auto key = decode_BON8(ptr, last);
-            tt_parse_check(key.is_string(), "Key in object is not a string");
+            tt_parse_check(holds_alternative<std::string>(key), "Key in object is not a string");
 
             auto value = decode_BON8(ptr, last);
             r.emplace(std::move(key), std::move(value));
