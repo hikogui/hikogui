@@ -11,7 +11,8 @@ using namespace std;
 using namespace std::literals;
 using namespace tt;
 
-TEST(Formula, Literals) {
+TEST(Formula, Literals)
+{
     std::unique_ptr<formula_node> e;
 
     ASSERT_NO_THROW(e = parse_formula("42"));
@@ -36,7 +37,8 @@ TEST(Formula, Literals) {
     ASSERT_EQ(e->string(), "foo");
 }
 
-TEST(Formula, BinaryOperatorsLeftToRightAssociativity) {
+TEST(Formula, BinaryOperatorsLeftToRightAssociativity)
+{
     std::unique_ptr<formula_node> e;
     datum r;
     formula_evaluation_context context;
@@ -47,12 +49,10 @@ TEST(Formula, BinaryOperatorsLeftToRightAssociativity) {
 
     ASSERT_NO_THROW(e = parse_formula("depth - data.level - 1"));
     ASSERT_EQ(e->string(), "((depth - (data . level)) - 1)");
-
-
-    
 }
 
-TEST(Formula, BinaryOperatorsRightToLeftAssociativity) {
+TEST(Formula, BinaryOperatorsRightToLeftAssociativity)
+{
     std::unique_ptr<formula_node> e;
     datum r;
     formula_evaluation_context context;
@@ -61,8 +61,8 @@ TEST(Formula, BinaryOperatorsRightToLeftAssociativity) {
     ASSERT_EQ(e->string(), "(4 -= (2 -= 1))");
 }
 
-
-TEST(Formula, BinaryOperators) {
+TEST(Formula, BinaryOperators)
+{
     std::unique_ptr<formula_node> e;
     datum r;
     formula_evaluation_context context;
@@ -249,7 +249,8 @@ TEST(Formula, BinaryOperators) {
     ASSERT_EQ(context.get("a"), 23);
 }
 
-TEST(Formula, UnaryOperators) {
+TEST(Formula, UnaryOperators)
+{
     std::unique_ptr<formula_node> e;
     datum r;
     formula_evaluation_context context;
@@ -286,11 +287,14 @@ TEST(Formula, UnaryOperators) {
     ASSERT_NO_THROW(r = e->evaluate(context));
     ASSERT_EQ(r, 42);
 
-    ASSERT_NO_THROW(e = parse_formula("++ 1")); ASSERT_EQ(e->string(), "(++ 1)");
-    ASSERT_NO_THROW(e = parse_formula("-- 1")); ASSERT_EQ(e->string(), "(-- 1)");
+    ASSERT_NO_THROW(e = parse_formula("++ 1"));
+    ASSERT_EQ(e->string(), "(++ 1)");
+    ASSERT_NO_THROW(e = parse_formula("-- 1"));
+    ASSERT_EQ(e->string(), "(-- 1)");
 }
 
-TEST(Formula, IndexOperator) {
+TEST(Formula, IndexOperator)
+{
     std::unique_ptr<formula_node> e;
     datum r;
     datum expected;
@@ -308,7 +312,7 @@ TEST(Formula, IndexOperator) {
     ASSERT_NO_THROW(e = parse_formula("foo = [1, 2, 42, 3]"));
     ASSERT_EQ(e->string(), "(foo = [1, 2, 42, 3])");
     ASSERT_NO_THROW(r = e->evaluate(context));
-    expected = datum::vector{1, 2, 42, 3};
+    expected = datum::make_vector(1, 2, 42, 3);
     ASSERT_EQ(r, expected);
     ASSERT_EQ(context.get("foo"), expected);
 
@@ -321,25 +325,26 @@ TEST(Formula, IndexOperator) {
     ASSERT_EQ(e->string(), "((foo[1]) = 33)");
     ASSERT_NO_THROW(r = e->evaluate(context));
     ASSERT_EQ(r, 33);
-    expected = datum::vector{1, 33, 42, 3};
+    expected = datum::make_vector(1, 33, 42, 3);
     ASSERT_EQ(context.get("foo"), expected);
 
     ASSERT_NO_THROW(e = parse_formula("foo[1] += 33"));
     ASSERT_EQ(e->string(), "((foo[1]) += 33)");
     ASSERT_NO_THROW(r = e->evaluate(context));
     ASSERT_EQ(r, 66);
-    expected = datum::vector{1, 66, 42, 3};
+    expected = datum::make_vector(1, 66, 42, 3);
     ASSERT_EQ(context.get("foo"), expected);
 
     ASSERT_NO_THROW(e = parse_formula("foo += 4"));
     ASSERT_EQ(e->string(), "(foo += 4)");
     ASSERT_NO_THROW(r = e->evaluate(context));
-    expected = datum::vector{1, 66, 42, 3, 4};
+    expected = datum::make_vector(1, 66, 42, 3, 4);
     ASSERT_EQ(r, expected);
     ASSERT_EQ(context.get("foo"), expected);
 }
 
-TEST(Formula, Binding) {
+TEST(Formula, Binding)
+{
     std::unique_ptr<formula_node> e;
     datum r;
     datum expected;
@@ -348,7 +353,7 @@ TEST(Formula, Binding) {
     ASSERT_NO_THROW(e = parse_formula("foo = [33, 42]"));
     ASSERT_EQ(e->string(), "(foo = [33, 42])");
     ASSERT_NO_THROW(r = e->evaluate(context));
-    expected = datum::vector{33, 42};
+    expected = datum::make_vector(33, 42);
     ASSERT_EQ(r, expected);
     ASSERT_EQ(context.get("foo"), expected);
 
@@ -363,11 +368,12 @@ TEST(Formula, Binding) {
     ASSERT_EQ(e->string(), "([(foo[1]), (foo[0])] = foo)");
     ASSERT_NO_THROW(r = e->evaluate(context));
     ASSERT_EQ(r, 42);
-    expected = datum::vector{42, 33};
+    expected = datum::make_vector(42, 33);
     ASSERT_EQ(context.get("foo"), expected);
 }
 
-TEST(Formula, FunctionCall) {
+TEST(Formula, FunctionCall)
+{
     std::unique_ptr<formula_node> e;
     datum r;
     formula_evaluation_context context;
@@ -391,37 +397,37 @@ TEST(Formula, FunctionCall) {
     ASSERT_EQ(e->string(), "(float(5))");
     ASSERT_NO_THROW(r = e->evaluate(context));
     ASSERT_EQ(to_string(r), "5.0");
-
 }
 
-TEST(Formula, MethodCall) {
+TEST(Formula, MethodCall)
+{
     std::unique_ptr<formula_node> e;
     datum r;
     formula_evaluation_context context;
-    datum::vector expected;
+    datum expected;
 
     ASSERT_NO_THROW(e = parse_formula("foo = [1, 2, 3]"));
     ASSERT_EQ(e->string(), "(foo = [1, 2, 3])");
     ASSERT_NO_THROW(r = e->evaluate(context));
-    expected = datum::vector{1, 2, 3};
+    expected = datum::make_vector(1, 2, 3);
     ASSERT_EQ(r, expected);
 
     ASSERT_NO_THROW(e = parse_formula("foo.append(4.2)"));
     ASSERT_EQ(e->string(), "((foo . append)(4.2))");
     ASSERT_NO_THROW(r = e->evaluate(context));
-    expected = datum::vector{datum{1}, datum{2}, datum{3}, datum{4.2}};
+    expected = datum::make_vector(datum{1}, datum{2}, datum{3}, datum{4.2});
     ASSERT_EQ(context.get("foo"), expected);
 
     ASSERT_NO_THROW(e = parse_formula("foo.pop()"));
     ASSERT_EQ(e->string(), "((foo . pop)())");
     ASSERT_NO_THROW(r = e->evaluate(context));
     ASSERT_EQ(r, 4.2);
-    expected = datum::vector{1, 2, 3};
+    expected = datum::make_vector(1, 2, 3);
     ASSERT_EQ(context.get("foo"), expected);
-
 }
 
-TEST(Formula, Members) {
+TEST(Formula, Members)
+{
     std::unique_ptr<formula_node> e;
 
     ASSERT_NO_THROW(e = parse_formula("foo.bar"));
@@ -431,7 +437,8 @@ TEST(Formula, Members) {
     ASSERT_EQ(e->string(), "((foo . append)(2, 3))");
 }
 
-TEST(Formula, Vector) {
+TEST(Formula, Vector)
+{
     std::unique_ptr<formula_node> e;
 
     ASSERT_NO_THROW(e = parse_formula("[]"));
@@ -447,7 +454,8 @@ TEST(Formula, Vector) {
     ASSERT_EQ(e->string(), "[1, 2, 3]");
 }
 
-TEST(Formula, Map) {
+TEST(Formula, Map)
+{
     std::unique_ptr<formula_node> e;
 
     ASSERT_NO_THROW(e = parse_formula("{}"));

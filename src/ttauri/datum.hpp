@@ -1,2588 +1,1604 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
-#include "URL.hpp"
-#include "decimal.hpp"
-#include "memory.hpp"
-#include "type_traits.hpp"
 #include "exception.hpp"
-#include "math.hpp"
-#include "algorithm.hpp"
+#include "assert.hpp"
+#include "concepts.hpp"
+#include "required.hpp"
+#include "decimal.hpp"
+#include "URL.hpp"
 #include "byte_string.hpp"
-#include "codec/base_n.hpp"
+#include "hash.hpp"
+#include <cstdint>
+#include <concepts>
+#include <bit>
+#include <exception>
 #include <chrono>
+#include <limits>
 #include <vector>
 #include <unordered_map>
-#include <memory>
-#include <cstring>
-#include <cstdint>
-#include <variant>
-#include <limits>
-#include <type_traits>
-#include <typeinfo>
-#include <ostream>
-#include <numeric>
-#include <string_view>
-#include <cmath>
-#include <stdexcept>
 
 namespace tt {
-template<bool HasLargeObjects>
-class datum_impl;
-
+class datum;
 }
 
 namespace std {
 
-template<bool HasLargeObjects>
-class hash<tt::datum_impl<HasLargeObjects>> {
-public:
-    size_t operator()(tt::datum_impl<HasLargeObjects> const &value) const;
+template<>
+struct hash<tt::datum> {
+    [[nodiscard]] constexpr size_t operator()(tt::datum const &rhs) const noexcept;
 };
 
 } // namespace std
 
 namespace tt {
+namespace detail {
 
-enum class datum_type_t {
-    Null,
-    Undefined,
-    Break,
-    Continue,
-    Boolean,
-    Integer,
-    Decimal,
-    Float,
-    String,
-    URL,
-    Map,
-    Vector,
-    YearMonthDay,
-    Bytes,
-};
-
-constexpr char const *to_const_string(datum_type_t rhs) noexcept
-{
-    switch (rhs) {
-    case datum_type_t::Null: return "Null";
-    case datum_type_t::Break: return "Break";
-    case datum_type_t::Continue: return "Continue";
-    case datum_type_t::Undefined: return "Undefined";
-    case datum_type_t::Boolean: return "Boolean";
-    case datum_type_t::Integer: return "Integer";
-    case datum_type_t::Decimal: return "Decimal";
-    case datum_type_t::Float: return "Float";
-    case datum_type_t::String: return "String";
-    case datum_type_t::URL: return "URL";
-    case datum_type_t::Map: return "Map";
-    case datum_type_t::Vector: return "Vector";
-    case datum_type_t::YearMonthDay: return "YearMonthDay";
-    case datum_type_t::Bytes: return "Bytes";
-    default: tt_no_default();
-    }
-}
-
-inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
-{
-    return lhs << to_const_string(rhs);
-}
-
-template<typename CharT>
-struct std::formatter<tt::datum_type_t, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::datum_type_t const &t, auto &fc)
-    {
-        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
-    }
-};
-
-/** A fixed size (64 bits) class for a generic value type.
- * A datum can hold and do calculations with the following types:
- *  - Floating point number (double, without NaN)
- *  - Signed integer number (52 bits)
- *  - Boolean
- *  - Null
- *  - Break
- *  - Continue
- *  - Undefined
- *  - String
- *  - Vector of datum
- *  - Unordered map of datum:datum.
- *  - YearMonthDay.
- *  - Bytes.
+/** Promotion result.
  *
- * Due to the recursive nature of the datum type (through vector and map)
- * you can serialize your own types by adding conversion constructor and
- * operator to and from the datum on your type.
- *
- * @param HasLargeObjects true when the datum will manage memory for large objects
+ * @tparam To The type to promote the values to.
  */
-template<bool HasLargeObjects>
-class datum_impl {
-private:
-    /** Encode 0 to 6 UTF-8 code units in to a uint64_t.
-     *
-     * @param str String to encode into an uint64_t
-     * @return Encoded string, or zero if `str` did not fit.
-     */
-    static constexpr uint64_t make_string(std::string_view str)
-    {
-        ttlet len = str.size();
-
-        if (len > 5) {
-            return 0;
-        }
-
-        uint64_t x = 0;
-        for (uint64_t i = 0; i < len; i++) {
-            x <<= 8;
-            x |= str[i];
-        }
-        return (string_mask + (len << 40)) | x;
-    }
-
-    /** Encode a pointer into a uint64_t.
-     *
-     * @param mask A mask signifying the type of the pointer.
-     * @param ptr Pointer to encode.
-     * @return Encoded pointer.
-     */
-    static uint64_t make_pointer(uint64_t mask, void *ptr)
-    {
-        return mask | (reinterpret_cast<uint64_t>(ptr) & pointer_mask);
-    }
-
-    /** Convert an type_id to a mask.
-     *
-     * @param id Type id
-     * @return Encoded type id.
-     */
-    static constexpr uint64_t id_to_mask(uint64_t id)
-    {
-        return id << 48;
-    }
-
-    /** Make an id from a 5 bit integer.
-     * Encodes the 5 bit integer into the top 16 bits of a floating
-     * point NaN. The msb is encoded into the sign-bit the other 4 bits
-     * in bits 52:49.
-     *
-     * @param id 5 bit integer.
-     * @return 16-bit type id.
-     */
-    static constexpr uint16_t make_id(uint16_t id)
-    {
-        return ((id & 0x10) << 11) | (id & 0xf) | 0x7ff0;
-    }
-
-    /// Lowest integer that can be encoded into datum's storage.
-    static constexpr int64_t minimum_int = 0xffff'8000'0000'0000LL;
-    /// Highest integer that can be encoded into datum's storage.
-    static constexpr int64_t maximum_int = 0x0000'7fff'ffff'ffffLL;
-
-    static constexpr int64_t minimum_mantissa = 0xffff'ff80'0000'0000LL;
-    static constexpr int64_t maximum_mantissa = 0x0000'007f'ffff'ffffLL;
-
-    static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
-    static constexpr uint64_t pointer_mask = 0x0000'ffff'ffff'ffff;
-
-    static constexpr uint64_t small_undefined = 0;
-    static constexpr uint64_t small_null = 1;
-    static constexpr uint64_t small_true = 2;
-    static constexpr uint64_t small_false = 3;
-    static constexpr uint64_t small_break = 4;
-    static constexpr uint64_t small_continue = 5;
-
-    static constexpr uint16_t phy_small_id = make_id(0b00001);
-    static constexpr uint16_t phy_decimal_id = make_id(0b00010);
-    static constexpr uint16_t phy_ymd_id = make_id(0b00011);
-    static constexpr uint16_t phy_integer_id = make_id(0b00100);
-    static constexpr uint16_t phy_string_id = make_id(0b00101);
-    static constexpr uint16_t phy_reserved_id0 = make_id(0b00110);
-    static constexpr uint16_t phy_reserved_id1 = make_id(0b00111);
-    static constexpr uint16_t phy_reserved_id2 = make_id(0b01000);
-    static constexpr uint16_t phy_reserved_id3 = make_id(0b01001);
-    static constexpr uint16_t phy_reserved_id4 = make_id(0b01010);
-    static constexpr uint16_t phy_reserved_id5 = make_id(0b01011);
-    static constexpr uint16_t phy_reserved_id6 = make_id(0b01100);
-    static constexpr uint16_t phy_reserved_id7 = make_id(0b01101);
-    static constexpr uint16_t phy_reserved_id8 = make_id(0b01110);
-    static constexpr uint16_t phy_reserved_id9 = make_id(0b01111);
-
-    static constexpr uint16_t phy_string_ptr_id = make_id(0b10001);
-    static constexpr uint16_t phy_url_ptr_id = make_id(0b10010);
-    static constexpr uint16_t phy_integer_ptr_id = make_id(0b10011);
-    static constexpr uint16_t phy_vector_ptr_id = make_id(0b10100);
-    static constexpr uint16_t phy_map_ptr_id = make_id(0b10101);
-    static constexpr uint16_t phy_decimal_ptr_id = make_id(0b10110);
-    static constexpr uint16_t phy_bytes_ptr_id = make_id(0b10111);
-    static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11000);
-    static constexpr uint16_t phy_reserved_ptr_id1 = make_id(0b11001);
-    static constexpr uint16_t phy_reserved_ptr_id2 = make_id(0b11010);
-    static constexpr uint16_t phy_reserved_ptr_id3 = make_id(0b11011);
-    static constexpr uint16_t phy_reserved_ptr_id4 = make_id(0b11100);
-    static constexpr uint16_t phy_reserved_ptr_id5 = make_id(0b11101);
-    static constexpr uint16_t phy_reserved_ptr_id6 = make_id(0b11110);
-    static constexpr uint16_t phy_reserved_ptr_id7 = make_id(0b11111);
-
-    static constexpr uint64_t small_mask = id_to_mask(phy_small_id);
-    static constexpr uint64_t undefined_mask = small_mask | small_undefined;
-    static constexpr uint64_t null_mask = small_mask | small_null;
-    static constexpr uint64_t true_mask = small_mask | small_true;
-    static constexpr uint64_t false_mask = small_mask | small_false;
-    static constexpr uint64_t break_mask = small_mask | small_break;
-    static constexpr uint64_t continue_mask = small_mask | small_continue;
-    static constexpr uint64_t string_mask = id_to_mask(phy_string_id);
-    static constexpr uint64_t integer_mask = id_to_mask(phy_integer_id);
-    static constexpr uint64_t decimal_mask = id_to_mask(phy_decimal_id);
-    static constexpr uint64_t ymd_mask = id_to_mask(phy_ymd_id);
-    static constexpr uint64_t string_ptr_mask = id_to_mask(phy_string_ptr_id);
-    static constexpr uint64_t url_ptr_mask = id_to_mask(phy_url_ptr_id);
-    static constexpr uint64_t integer_ptr_mask = id_to_mask(phy_integer_ptr_id);
-    static constexpr uint64_t vector_ptr_mask = id_to_mask(phy_vector_ptr_id);
-    static constexpr uint64_t map_ptr_mask = id_to_mask(phy_map_ptr_id);
-    static constexpr uint64_t decimal_ptr_mask = id_to_mask(phy_decimal_ptr_id);
-    static constexpr uint64_t bytes_ptr_mask = id_to_mask(phy_bytes_ptr_id);
-
-    union {
-        double f64;
-        uint64_t u64;
-    };
-
-    /** Extract the type_id from datum's storage.
-     * This function will get the most significant 16 bits from
-     * the datum's storage. It uses std::memcpy() to make sure
-     * there is no undefined behavior, due to not knowing
-     * ahead of time if a double or uint64_t was stored.
-     *
-     * @return The type_id of the stored object.
-     */
-    uint16_t type_id() const noexcept
-    {
-        uint64_t data;
-        std::memcpy(&data, this, sizeof(data));
-        return static_cast<uint16_t>(data >> 48);
-    }
-
-    bool is_phy_float() const noexcept
-    {
-        ttlet id = type_id();
-        return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
-    }
-
-    bool is_phy_integer() const noexcept
-    {
-        return type_id() == phy_integer_id;
-    }
-
-    bool is_phy_string() const noexcept
-    {
-        return type_id() == phy_string_id;
-    }
-
-    bool is_phy_decimal() const noexcept
-    {
-        return type_id() == phy_decimal_id;
-    }
-
-    bool is_phy_ymd() const noexcept
-    {
-        return type_id() == phy_ymd_id;
-    }
-
-    bool is_phy_small() const noexcept
-    {
-        return type_id() == phy_small_id;
-    }
-
-    bool is_phy_pointer() const noexcept
-    {
-        return HasLargeObjects && (type_id() & 0xfff0) == 0xfff0;
-    }
-
-    bool is_phy_string_ptr() const noexcept
-    {
-        return HasLargeObjects && type_id() == phy_string_ptr_id;
-    }
-
-    bool is_phy_url_ptr() const noexcept
-    {
-        return HasLargeObjects && type_id() == phy_url_ptr_id;
-    }
-
-    bool is_phy_integer_ptr() const noexcept
-    {
-        return HasLargeObjects && type_id() == phy_integer_ptr_id;
-    }
-
-    bool is_phy_vector_ptr() const noexcept
-    {
-        return HasLargeObjects && type_id() == phy_vector_ptr_id;
-    }
-
-    bool is_phy_map_ptr() const noexcept
-    {
-        return HasLargeObjects && type_id() == phy_map_ptr_id;
-    }
-
-    bool is_phy_decimal_ptr() const noexcept
-    {
-        return HasLargeObjects && type_id() == phy_decimal_ptr_id;
-    }
-
-    bool is_phy_bytes_ptr() const noexcept
-    {
-        return HasLargeObjects && type_id() == phy_bytes_ptr_id;
-    }
-
-    /** Extract the 48 bit unsigned integer from datum's storage.
-     */
-    uint64_t get_unsigned_integer() const noexcept
-    {
-        return (u64 << 16) >> 16;
-    }
-
-    /** Extract the 48 bit signed integer from datum's storage and sign extent to 64 bit.
-     */
-    int64_t get_signed_integer() const noexcept
-    {
-        return static_cast<int64_t>(u64 << 16) >> 16;
-    }
-
-    /** Extract a pointer for an existing object from datum's storage.
-     * Canonical pointers on x86 and ARM are at most 48 bit and are sign extended to 64 bit.
-     * Since the pointer is stored as a 48 bit integer, this function will launder it.
-     */
-    template<typename O>
-    O *get_pointer() const
-    {
-        return std::launder(reinterpret_cast<O *>(get_signed_integer()));
-    }
-
-    /** Delete the object that the datum is pointing to.
-     * This function should only be called on a datum that holds a pointer.
-     */
-    void delete_pointer() noexcept
-    {
-        if constexpr (HasLargeObjects) {
-            switch (type_id()) {
-            case phy_integer_ptr_id: delete get_pointer<int64_t>(); break;
-            case phy_string_ptr_id: delete get_pointer<std::string>(); break;
-            case phy_url_ptr_id: delete get_pointer<URL>(); break;
-            case phy_vector_ptr_id: delete get_pointer<datum_impl::vector>(); break;
-            case phy_map_ptr_id: delete get_pointer<datum_impl::map>(); break;
-            case phy_decimal_ptr_id: delete get_pointer<decimal>(); break;
-            case phy_bytes_ptr_id: delete get_pointer<bstring>(); break;
-            default: tt_no_default();
-            }
-        }
-    }
-
-    /** Copy the object pointed to by the other datum into this datum.
-     * Other datum must point to an object. This datum must not point to an object.
-     *
-     * @param other The other datum which holds a pointer to an object.
-     */
-    void copy_pointer(datum_impl const &other) noexcept
-    {
-        if constexpr (HasLargeObjects) {
-            switch (other.type_id()) {
-            case phy_integer_ptr_id: {
-                auto *const p = new int64_t(*other.get_pointer<int64_t>());
-                u64 = make_pointer(integer_ptr_mask, p);
-            } break;
-
-            case phy_string_ptr_id: {
-                auto *const p = new std::string(*other.get_pointer<std::string>());
-                u64 = make_pointer(string_ptr_mask, p);
-            } break;
-
-            case phy_url_ptr_id: {
-                auto *const p = new URL(*other.get_pointer<URL>());
-                u64 = make_pointer(url_ptr_mask, p);
-            } break;
-
-            case phy_vector_ptr_id: {
-                auto *const p = new datum_impl::vector(*other.get_pointer<datum_impl::vector>());
-                u64 = make_pointer(vector_ptr_mask, p);
-            } break;
-
-            case phy_map_ptr_id: {
-                auto *const p = new datum_impl::map(*other.get_pointer<datum_impl::map>());
-                u64 = make_pointer(map_ptr_mask, p);
-            } break;
-
-            case phy_decimal_ptr_id: {
-                auto *const p = new decimal(*other.get_pointer<decimal>());
-                u64 = make_pointer(decimal_ptr_mask, p);
-            } break;
-
-            case phy_bytes_ptr_id: {
-                auto *const p = new bstring(*other.get_pointer<bstring>());
-                u64 = make_pointer(bytes_ptr_mask, p);
-            } break;
-
-            default: tt_no_default();
-            }
-        }
-    }
-
+template<typename To>
+class datum_promotion_result {
 public:
-    using vector = std::vector<datum_impl>;
-    using map = std::unordered_map<datum_impl, datum_impl>;
-    struct undefined {
-    };
-    struct null {
-    };
-    struct _continue {
-    };
-    struct _break {
-    };
+    using value_type = To;
+    static constexpr bool data_is_pointer = sizeof(value_type) > sizeof(void *);
+    static constexpr bool data_is_scalar = not data_is_pointer;
 
-    datum_impl() noexcept : u64(undefined_mask) {}
-
-    ~datum_impl() noexcept
+    constexpr void clear() noexcept requires(data_is_scalar) {}
+    constexpr void clear() noexcept requires(data_is_pointer)
     {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
+        if (_owns_lhs) {
+            delete _lhs;
+        }
+        if (_owns_rhs) {
+            delete _rhs;
         }
     }
 
-    datum_impl(datum_impl const &other) noexcept
+    constexpr ~datum_promotion_result()
     {
-        tt_axiom(&other != this);
-        if (other.is_phy_pointer()) {
-            [[unlikely]] copy_pointer(other);
+        clear();
+    }
 
-        } else {
-            // We do a memcpy, because we don't know the type in the union.
-            std::memcpy(this, &other, sizeof(*this));
+    constexpr datum_promotion_result() noexcept = default;
+
+    datum_promotion_result(datum_promotion_result const &) = delete;
+    datum_promotion_result &operator=(datum_promotion_result const &) = delete;
+
+    constexpr datum_promotion_result(datum_promotion_result &&other) noexcept :
+        _lhs(other._lhs),
+        _rhs(other._rhs),
+        _is_result(other._is_result),
+        _owns_lhs(std::exchange(other._owns_lhs, false)),
+        _owns_rhs(std::exchange(other._owns_rhs, false))
+    {
+    }
+
+    constexpr datum_promotion_result &operator=(datum_promotion_result &&other) noexcept
+    {
+        clear();
+        _lhs = other.lhs;
+        _rhs = other.rhs;
+        _is_result = other._is_result;
+        _owns_lhs = std::exchange(other._owns_lhs, false);
+        _owns_rhs = std::exchange(other._owns_rhs, false);
+        return *this;
+    }
+
+    constexpr explicit operator bool() const noexcept
+    {
+        return _is_result;
+    }
+
+    constexpr void set(value_type lhs, value_type rhs) noexcept requires(data_is_scalar)
+    {
+        _lhs = lhs;
+        _rhs = rhs;
+        _is_result = true;
+    }
+
+    constexpr void set(value_type const &lhs, value_type const &rhs) noexcept requires(data_is_pointer)
+    {
+        _lhs = &lhs;
+        _rhs = &rhs;
+        _is_result = true;
+    }
+
+    constexpr void set(value_type &&lhs, value_type const &rhs) noexcept requires(data_is_pointer)
+    {
+        _lhs = new value_type(std::move(lhs));
+        _rhs = &rhs;
+        _is_result = true;
+        _owns_lhs = true;
+    }
+
+    constexpr void set(value_type const &lhs, value_type &&rhs) noexcept requires(data_is_pointer)
+    {
+        _lhs = &lhs;
+        _rhs = new value_type(std::move(rhs));
+        _is_result = true;
+        _owns_rhs = true;
+    }
+
+    constexpr void set(value_type &&lhs, value_type &&rhs) noexcept requires(data_is_pointer)
+    {
+        _lhs = new value_type(std::move(lhs));
+        _rhs = new value_type(std::move(rhs));
+        _is_result = true;
+        _owns_lhs = true;
+        _owns_rhs = true;
+    }
+
+    [[nodiscard]] constexpr value_type const &lhs() const noexcept requires(data_is_pointer)
+    {
+        tt_axiom(_is_result);
+        return *_lhs;
+    }
+
+    [[nodiscard]] constexpr value_type const &rhs() const noexcept requires(data_is_pointer)
+    {
+        tt_axiom(_is_result);
+        return *_rhs;
+    }
+
+    [[nodiscard]] constexpr value_type lhs() const noexcept requires(data_is_scalar)
+    {
+        tt_axiom(_is_result);
+        return _lhs;
+    }
+
+    [[nodiscard]] constexpr value_type rhs() const noexcept requires(data_is_scalar)
+    {
+        tt_axiom(_is_result);
+        return _rhs;
+    }
+
+private :
+
+    using data_type = std::conditional_t<data_is_pointer, value_type const *, value_type>;
+    data_type _lhs = data_type{};
+    data_type _rhs = data_type{};
+    bool _is_result = false;
+    bool _owns_lhs = false;
+    bool _owns_rhs = false;
+};
+
+} // namespace detail
+
+/** A 64 bit dynamic data type.
+ *
+ *
+ * By default a datum is encoded as a double-precision floating-point value. Other
+ * types are encoded in the mantissa-and-sign when the exponent is all '1'.
+ *
+ *   S | code  | sub | type
+ *  :- |:----- |:--- |:--------
+ *   0 | \-000 |     | +infinite or NaN.
+ *   0 | \-001 |     | 48 bit signed integral.
+ *   0 | \-010 |     | 40+8 bit decimal.
+ *   0 | \-011 |     | `std::chrono::year_month_day`
+ *   0 | \-100 |     | 6 char string encoded lsb to msb in uint64_t
+ *   0 | \-101 | sss | 0-5 char string encoded lsb to msb in uint64_t
+ *   0 | \-110 |     |
+ *   0 | \-111 | 000 | false
+ *   0 | \-111 | 001 | true
+ *   0 | \-111 | 010 | null
+ *   0 | \-111 | 011 | monostate
+ *   0 | \-111 | 100 |
+ *   0 | \-111 | 101 |
+ *   0 | \-111 | 110 | flow-continue
+ *   0 | \-111 | 111 | flow-break
+ *   1 |  00   |     | -infinite or signaling NaN.
+ *   1 |  01   |     | `std::string *`
+ *   1 |  10   |     | `std::vector<datum> *`
+ *   1 |  11   |     | `std::unordered_map<datum,datum> *`
+ *
+ * Pointers are encoded when the sign bit is '1'; the 2 msb bits of the mantissa
+ * are used to encoded the pointer type. The pointer itself is stored in the
+ * remaining 50 bits.
+ *
+ * Intel 5-level paging gives us a pointer of 57 bits. Bits [63:56] are
+ * zero in user space programs on Linux and Windows. This leaves us with
+ * 56 - 50 = 6 bits short. With an alignment to 64 bytes the bottom 6 bits
+ * will be zero.
+ *
+ * ARM64 A pointer is 48 bits, with an extra 8 bits [63:56] used for tagging pointers.
+ * As previous, bits [55:47] are '0' for user space programs, for a total of 55 bits.
+ * This leaves us with 55 - 50 = 5 bits short. With an alignment to 32 bytes the bottom
+ * 5 bits will be zero.
+ *
+ * ARM64 Also has an extended format which is 52 bits. This will not be supported yet,
+ * or maybe through a special option.
+ * ARM64 Also supports pointer authentication which uses all unused upper bits. On Linux
+ * this is only supported for instruction pointers. These will not be supported by datum,
+ * unless we extent datum to 128 bits.
+ */
+class datum {
+public:
+    using vector_type = std::vector<datum>;
+    using map_type = std::unordered_map<datum, datum>;
+    struct break_type {};
+    struct continue_type {};
+
+    constexpr ~datum() noexcept
+    {
+        delete_pointer();
+    }
+
+    constexpr datum(datum const &other) noexcept : _tag(other._tag), _value(other._value)
+    {
+        if (other.is_pointer()) {
+            copy_pointer(other);
         }
     }
 
-    datum_impl &operator=(datum_impl const &other) noexcept
+    constexpr datum(datum &&other) noexcept : _tag(other._tag), _value(other._value)
+    {
+        other._tag = tag_type::monostate;
+        other._value._long_long = 0;
+    }
+
+    constexpr datum() noexcept : _tag(tag_type::monostate), _value(0) {}
+    constexpr explicit datum(std::monostate) noexcept : _tag(tag_type::monostate), _value(0) {}
+    constexpr explicit datum(nullptr_t) noexcept : _tag(tag_type::null), _value(0) {}
+    constexpr explicit datum(continue_type) noexcept : _tag(tag_type::flow_continue), _value(0) {}
+    constexpr explicit datum(break_type) noexcept : _tag(tag_type::flow_break), _value(0) {}
+    constexpr explicit datum(bool value) noexcept : _tag(tag_type::boolean), _value(value) {}
+    constexpr explicit datum(std::floating_point auto value) noexcept :
+        _tag(tag_type::floating_point), _value(static_cast<double>(value))
+    {
+    }
+
+    constexpr explicit datum(numeric_integral auto value) noexcept :
+        _tag(tag_type::integral), _value(static_cast<long long>(value))
+    {
+    }
+
+    constexpr explicit datum(decimal value) noexcept : _tag(tag_type::decimal), _value(value) {}
+    constexpr explicit datum(std::chrono::year_month_day value) noexcept : _tag(tag_type::year_month_day), _value(value) {}
+    explicit datum(std::string value) noexcept : _tag(tag_type::string), _value(new std::string{std::move(value)}) {}
+    explicit datum(std::string_view value) noexcept : _tag(tag_type::string), _value(new std::string{value}) {}
+    explicit datum(char const *value) noexcept : _tag(tag_type::string), _value(new std::string{value}) {}
+    explicit datum(vector_type value) noexcept : _tag(tag_type::vector), _value(new vector_type{std::move(value)}) {}
+    explicit datum(map_type value) noexcept : _tag(tag_type::map), _value(new map_type{std::move(value)}) {}
+    explicit datum(URL value) noexcept : _tag(tag_type::url), _value(new URL{std::move(value)}) {}
+    explicit datum(bstring value) noexcept : _tag(tag_type::bstring), _value(new bstring{std::move(value)}) {}
+
+    template<typename... Args>
+    [[nodiscard]] static datum make_vector(Args const &...args) noexcept
+    {
+        return datum{vector_type{datum{args}...}};
+    }
+
+    [[nodiscard]] static datum make_map() noexcept
+    {
+        return datum{map_type{}};
+    }
+
+    [[nodiscard]] static datum make_break() noexcept
+    {
+        return datum{break_type{}};
+    }
+
+    [[nodiscard]] static datum make_continue() noexcept
+    {
+        return datum{continue_type{}};
+    }
+
+    constexpr datum &operator=(datum const &other) noexcept
     {
         tt_return_on_self_assignment(other);
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
 
-        if (other.is_phy_pointer()) {
-            [[unlikely]] copy_pointer(other);
-
-        } else {
-            // We do a memcpy, because we don't know the type in the union.
-            std::memcpy(this, &other, sizeof(*this));
+        delete_pointer();
+        _tag = other._tag;
+        _value = other._value;
+        if (other.is_pointer()) {
+            copy_pointer(other);
         }
         return *this;
     }
 
-    datum_impl(datum_impl &&other) noexcept : u64(undefined_mask)
+    constexpr datum &operator=(datum &&other) noexcept
     {
-        tt_axiom(&other != this);
-        // We do a memcpy, because we don't know the type in the union.
-        std::memcpy(this, &other, sizeof(*this));
-        other.u64 = undefined_mask;
-    }
-
-    datum_impl &operator=(datum_impl &&other) noexcept
-    {
-        tt_return_on_self_assignment(other);
-        // We do a memcpy, because we don't know the type in the union.
-        std::memcpy(this, &other, sizeof(*this));
-        other.u64 = undefined_mask;
+        std::swap(_tag, other._tag);
+        std::swap(_value, other._value);
         return *this;
     }
 
-    datum_impl(datum_impl::undefined) noexcept : u64(undefined_mask) {}
-    datum_impl(datum_impl::null) noexcept : u64(null_mask) {}
-    datum_impl(datum_impl::_break) noexcept : u64(break_mask) {}
-    datum_impl(datum_impl::_continue) noexcept : u64(continue_mask) {}
-
-    datum_impl(double value) noexcept : f64(value)
+    constexpr datum &operator=(std::floating_point auto value) noexcept(sizeof(value) <= 4)
     {
-        if (value != value) {
-            u64 = undefined_mask;
+        delete_pointer();
+        _tag = tag_type::floating_point;
+        _value = static_cast<double>(value);
+        return *this;
+    }
+
+    constexpr datum &operator=(numeric_integral auto value) noexcept(sizeof(value) <= 4)
+    {
+        delete_pointer();
+        _tag = tag_type::integral;
+        _value = static_cast<long long>(value);
+        return *this;
+    }
+
+    constexpr datum &operator=(decimal value)
+    {
+        delete_pointer();
+        _tag = tag_type::decimal;
+        _value = value;
+        return *this;
+    }
+    constexpr datum &operator=(bool value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::boolean;
+        _value = value;
+        return *this;
+    }
+
+    constexpr datum &operator=(std::chrono::year_month_day value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::year_month_day;
+        _value = value;
+        return *this;
+    }
+
+    constexpr datum &operator=(std::monostate) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::monostate;
+        _value = 0;
+        return *this;
+    }
+
+    constexpr datum &operator=(nullptr_t) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::null;
+        _value = 0;
+        return *this;
+    }
+
+    datum &operator=(std::string value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::string;
+        _value = new std::string{std::move(value)};
+        return *this;
+    }
+
+    datum &operator=(char const *value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::string;
+        _value = new std::string{value};
+        return *this;
+    }
+
+    datum &operator=(std::string_view value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::string;
+        _value = new std::string{value};
+        return *this;
+    }
+
+    datum &operator=(vector_type value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::vector;
+        _value = new vector_type{std::move(value)};
+        return *this;
+    }
+
+    datum &operator=(map_type value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::map;
+        _value = new map_type{std::move(value)};
+        return *this;
+    }
+
+    datum &operator=(URL value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::url;
+        _value = new URL{std::move(value)};
+        return *this;
+    }
+
+    datum &operator=(bstring value) noexcept
+    {
+        delete_pointer();
+        _tag = tag_type::bstring;
+        _value = new bstring{std::move(value)};
+        return *this;
+    }
+
+    constexpr explicit operator bool() const noexcept
+    {
+        switch (_tag) {
+        case tag_type::floating_point: return static_cast<bool>(get<double>(*this));
+        case tag_type::decimal: return static_cast<bool>(get<decimal>(*this));
+        case tag_type::boolean: return get<bool>(*this);
+        case tag_type::integral: return static_cast<bool>(get<long long>(*this));
+        case tag_type::year_month_day: return true;
+        case tag_type::string: return static_cast<bool>(std::size(get<std::string>(*this)));
+        case tag_type::vector: return static_cast<bool>(std::size(get<vector_type>(*this)));
+        case tag_type::map: return static_cast<bool>(std::size(get<map_type>(*this)));
+        case tag_type::url: return static_cast<bool>(get<URL>(*this));
+        case tag_type::bstring: return static_cast<bool>(std::size(get<bstring>(*this)));
+        default: return false;
         }
     }
-    datum_impl(float value) noexcept : datum_impl(static_cast<double>(value)) {}
 
-    datum_impl(decimal value) noexcept
+    template<std::floating_point T>
+    constexpr explicit operator T() const
     {
-        long long m = value.mantissa();
+        switch (_tag) {
+        case tag_type::floating_point: return static_cast<T>(get<double>(*this));
+        case tag_type::integral: return static_cast<T>(get<long long>(*this));
+        case tag_type::decimal: return static_cast<T>(get<decimal>(*this));
+        case tag_type::boolean: return static_cast<T>(get<bool>(*this));
+        default: throw std::domain_error(std::format("Can't convert {} to floating point", *this));
+        }
+    }
 
-        if (m < minimum_mantissa || m > maximum_mantissa) {
-            [[unlikely]] if constexpr (HasLargeObjects)
-            {
-                auto *const p = new decimal(value);
-                u64 = make_pointer(decimal_ptr_mask, p);
+    constexpr explicit operator decimal() const
+    {
+        switch (_tag) {
+        case tag_type::floating_point: return decimal(get<double>(*this));
+        case tag_type::integral: return decimal(get<long long>(*this));
+        case tag_type::decimal: return get<decimal>(*this);
+        case tag_type::boolean: return decimal(get<bool>(*this));
+        default: throw std::domain_error(std::format("Can't convert {} to floating point", *this));
+        }
+    }
+
+    template<numeric_integral T>
+    constexpr explicit operator T() const
+    {
+        switch (_tag) {
+        case tag_type::floating_point: {
+            errno = 0;
+            auto r = std::round(get<double>(*this));
+            if (errno == EDOM or errno == ERANGE or r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
+                throw std::overflow_error("double to integral");
             }
-            else
-            {
-                throw std::overflow_error(std::format("Constructing decimal {} to datum", value));
+            return static_cast<T>(r);
+        }
+        case tag_type::integral: {
+            auto r = get<long long>(*this);
+            if (r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
+                throw std::overflow_error("long long to integral");
             }
-        } else {
-            int e = value.exponent();
-
-            u64 = decimal_mask | static_cast<uint8_t>(e) | ((static_cast<uint64_t>(m) << 24) >> 16);
+            return static_cast<T>(r);
         }
-    }
-
-    datum_impl(std::chrono::year_month_day const &ymd) noexcept :
-        u64(ymd_mask |
-            (((static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
-              (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
-              static_cast<uint64_t>(static_cast<unsigned>(ymd.day()))) &
-             0x0000ffff'ffffffff))
-    {
-    }
-
-    datum_impl(unsigned long long value) noexcept : u64(integer_mask | value)
-    {
-        if (value > maximum_int) {
-            [[unlikely]] if constexpr (HasLargeObjects)
-            {
-                auto *const p = new uint64_t(value);
-                u64 = make_pointer(integer_ptr_mask, p);
+        case tag_type::decimal: {
+            auto r = static_cast<long long>(get<decimal>(*this));
+            if (r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
+                throw std::overflow_error("decimal to integral");
             }
-            else
-            {
-                throw std::overflow_error(std::format("Constructing datum from integer {}, larger than {}", value, maximum_int));
-            }
+            return static_cast<T>(r);
         }
-    }
-    datum_impl(unsigned long value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
-    datum_impl(unsigned int value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
-    datum_impl(unsigned short value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
-    datum_impl(unsigned char value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
-
-    datum_impl(signed long long value) noexcept : u64(integer_mask | (static_cast<uint64_t>(value) & 0x0000ffff'ffffffff))
-    {
-        if (value < minimum_int || value > maximum_int)
-            [[unlikely]]
-            {
-                if constexpr (HasLargeObjects) {
-                    auto *const p = new int64_t(value);
-                    u64 = make_pointer(integer_ptr_mask, p);
-                } else {
-                    throw std::overflow_error(std::format(
-                        "Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int));
-                }
-            }
-    }
-    datum_impl(signed long value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
-    datum_impl(signed int value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
-    datum_impl(signed short value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
-    datum_impl(signed char value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
-
-    datum_impl(bool value) noexcept : u64(value ? true_mask : false_mask) {}
-    datum_impl(char value) noexcept : u64(string_mask | (uint64_t{1} << 40) | value) {}
-
-    datum_impl(std::string_view value) noexcept : u64(make_string(value))
-    {
-        if (u64 == 0) {
-            if constexpr (HasLargeObjects) {
-                auto *const p = new std::string(value);
-                u64 = make_pointer(string_ptr_mask, p);
-            } else {
-                throw std::overflow_error(std::format("Constructing string {} to datum, larger than 6 characters", value));
-            }
+        case tag_type::boolean: return static_cast<T>(get<bool>(*this));
+        default: throw std::domain_error(std::format("Can't convert {} to an integral", repr(*this)));
         }
     }
 
-    datum_impl(std::string const &value) noexcept : datum_impl(std::string_view(value)) {}
-    datum_impl(char const *value) noexcept : datum_impl(std::string_view(value)) {}
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl(URL const &value) noexcept
+    constexpr explicit operator std::chrono::year_month_day() const
     {
-        auto *const p = new URL(value);
-        u64 = make_pointer(url_ptr_mask, p);
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl(URL &&value) noexcept
-    {
-        auto *const p = new URL(std::move(value));
-        u64 = make_pointer(url_ptr_mask, p);
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl(datum_impl::vector const &value) noexcept
-    {
-        auto *const p = new datum_impl::vector(value);
-        u64 = make_pointer(vector_ptr_mask, p);
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl(datum_impl::vector &&value) noexcept
-    {
-        auto *const p = new datum_impl::vector(std::move(value));
-        u64 = make_pointer(vector_ptr_mask, p);
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl(datum_impl::map const &value) noexcept
-    {
-        auto *const p = new datum_impl::map(value);
-        u64 = make_pointer(map_ptr_mask, p);
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl(datum_impl::map &&value) noexcept
-    {
-        auto *const p = new datum_impl::map(std::move(value));
-        u64 = make_pointer(map_ptr_mask, p);
-    }
-
-    datum_impl &operator=(datum_impl::undefined rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
+        if (_tag != tag_type::year_month_day) {
+            throw std::domain_error(std::format("Can't convert {} to an std::chrono::year_month_day", repr(*this)));
         }
-        u64 = undefined_mask;
-        return *this;
-    }
-
-    datum_impl &operator=(datum_impl::null rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-        u64 = null_mask;
-        return *this;
-    }
-
-    datum_impl &operator=(datum_impl::_break rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-        u64 = break_mask;
-        return *this;
-    }
-
-    datum_impl &operator=(datum_impl::_continue rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-        u64 = continue_mask;
-        return *this;
-    }
-
-    datum_impl &operator=(double rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        if (rhs == rhs) {
-            f64 = rhs;
-        } else {
-            u64 = undefined_mask;
-        }
-        return *this;
-    }
-    datum_impl &operator=(float rhs) noexcept
-    {
-        return *this = static_cast<double>(rhs);
-    }
-
-    datum_impl &operator=(decimal rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        long long m = rhs.mantissa();
-        if (m < minimum_mantissa || m > maximum_mantissa) {
-            [[unlikely]] if constexpr (HasLargeObjects)
-            {
-                auto *const p = new decimal(rhs);
-                u64 = make_pointer(decimal_ptr_mask, p);
-            }
-            else
-            {
-                throw std::overflow_error(std::format("Constructing decimal {} to datum", rhs));
-            }
-        } else {
-            int e = rhs.exponent();
-
-            u64 = decimal_mask | static_cast<uint8_t>(e) | ((static_cast<uint64_t>(m) << 24) >> 16);
-        }
-        return *this;
-    }
-
-    datum_impl &operator=(std::chrono::year_month_day const &ymd) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        u64 = ymd_mask |
-            (((static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
-              (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
-              static_cast<uint64_t>(static_cast<unsigned>(ymd.day()))) &
-             0x0000ffff'ffffffff);
-        return *this;
-    }
-
-    datum_impl &operator=(unsigned long long rhs)
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        u64 = integer_mask | static_cast<uint64_t>(rhs);
-        if (rhs > maximum_int) {
-            [[unlikely]] if constexpr (HasLargeObjects)
-            {
-                auto *const p = new uint64_t(rhs);
-                u64 = make_pointer(integer_ptr_mask, p);
-            }
-            else
-            {
-                throw std::overflow_error(std::format("Assigning integer {} to datum, larger than {}", rhs, maximum_int));
-            }
-        }
-        return *this;
-    }
-    datum_impl &operator=(unsigned long rhs) noexcept
-    {
-        return *this = static_cast<unsigned long long>(rhs);
-    }
-    datum_impl &operator=(unsigned int rhs) noexcept
-    {
-        return *this = static_cast<unsigned long long>(rhs);
-    }
-    datum_impl &operator=(unsigned short rhs) noexcept
-    {
-        return *this = static_cast<unsigned long long>(rhs);
-    }
-    datum_impl &operator=(unsigned char rhs) noexcept
-    {
-        return *this = static_cast<unsigned long long>(rhs);
-    }
-
-    datum_impl &operator=(signed long long rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0000ffff'ffffffff);
-        if (rhs < minimum_int || rhs > maximum_int) {
-            [[unlikely]] if constexpr (HasLargeObjects)
-            {
-                auto *const p = new int64_t(rhs);
-                u64 = make_pointer(integer_ptr_mask, p);
-            }
-            else
-            {
-                throw std::overflow_error(std::format("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int));
-            }
-        }
-
-        return *this;
-    }
-    datum_impl &operator=(signed long rhs) noexcept
-    {
-        return *this = static_cast<signed long long>(rhs);
-    }
-    datum_impl &operator=(signed int rhs) noexcept
-    {
-        return *this = static_cast<signed long long>(rhs);
-    }
-    datum_impl &operator=(signed short rhs) noexcept
-    {
-        return *this = static_cast<signed long long>(rhs);
-    }
-    datum_impl &operator=(signed char rhs) noexcept
-    {
-        return *this = static_cast<signed long long>(rhs);
-    }
-
-    datum_impl &operator=(bool rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-        u64 = rhs ? true_mask : false_mask;
-        return *this;
-    }
-
-    datum_impl &operator=(char rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-        u64 = string_mask | (uint64_t{1} << 40) | static_cast<uint64_t>(rhs);
-        return *this;
-    }
-
-    datum_impl &operator=(std::string_view rhs)
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        u64 = make_string(rhs);
-        if (u64 == 0) {
-            if constexpr (HasLargeObjects) {
-                auto *const p = new std::string(rhs);
-                u64 = make_pointer(string_ptr_mask, p);
-            } else {
-                throw std::overflow_error(std::format("Assigning string {} to datum, larger than 6 characters", rhs));
-            }
-        }
-        return *this;
-    }
-
-    datum_impl &operator=(std::string const &rhs)
-    {
-        *this = std::string_view{rhs};
-        return *this;
-    }
-
-    datum_impl &operator=(char const *rhs)
-    {
-        *this = std::string_view{rhs};
-        return *this;
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl &operator=(URL const &rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        auto *const p = new URL(rhs);
-        u64 = make_pointer(url_ptr_mask, p);
-        return *this;
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl &operator=(URL &&rhs) noexcept
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        auto *const p = new URL(std::move(rhs));
-        u64 = make_pointer(url_ptr_mask, p);
-        return *this;
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl &operator=(datum_impl::vector const &rhs)
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        auto *const p = new datum_impl::vector(rhs);
-        u64 = make_pointer(vector_ptr_mask, p);
-
-        return *this;
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl &operator=(datum_impl::vector &&rhs)
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        auto *const p = new datum_impl::vector(std::move(rhs));
-        u64 = make_pointer(vector_ptr_mask, p);
-
-        return *this;
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl &operator=(datum_impl::map const &rhs)
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        auto *const p = new datum_impl::map(rhs);
-        u64 = make_pointer(map_ptr_mask, p);
-
-        return *this;
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl &operator=(datum_impl::map &&rhs)
-    {
-        if (is_phy_pointer()) {
-            [[unlikely]] delete_pointer();
-        }
-
-        auto *const p = new datum_impl::map(std::move(rhs));
-        u64 = make_pointer(map_ptr_mask, p);
-
-        return *this;
-    }
-
-    explicit operator double() const
-    {
-        if (is_phy_float()) {
-            return f64;
-        } else if (is_decimal()) {
-            return static_cast<double>(static_cast<decimal>(*this));
-        } else if (is_phy_integer()) {
-            return static_cast<double>(get_signed_integer());
-        } else if (is_phy_integer_ptr()) {
-            return static_cast<double>(*get_pointer<int64_t>());
-        } else {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a double", this->repr(), this->type_name());
-        }
-    }
-
-    explicit operator float() const
-    {
-        return static_cast<float>(static_cast<double>(*this));
-    }
-
-    explicit operator decimal() const
-    {
-        if (is_phy_decimal()) {
-            uint64_t v = get_unsigned_integer();
-            int e = static_cast<int8_t>(v);
-            long long m = static_cast<int64_t>(v << 16) >> 24;
-            return decimal{e, m};
-        } else if (is_phy_decimal_ptr()) {
-            return *get_pointer<decimal>();
-        } else if (is_phy_integer() || is_phy_integer_ptr()) {
-            return decimal{static_cast<signed long long>(*this)};
-        } else if (is_phy_float()) {
-            return decimal{static_cast<double>(*this)};
-        } else {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a decimal", this->repr(), this->type_name());
-        }
-    }
-
-    explicit operator std::chrono::year_month_day() const
-    {
-        if (is_phy_ymd()) {
-            ttlet u = get_unsigned_integer();
-            ttlet i = get_signed_integer();
-            ttlet day = static_cast<unsigned>(u & 0x1f);
-            ttlet month = static_cast<unsigned>((u >> 5) & 0xf);
-            ttlet year = static_cast<signed>(i >> 9);
-
-            if (day == 0) {
-                throw operation_error(
-                    "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
-            }
-            if (month == 0) {
-                throw operation_error(
-                    "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
-            }
-            return std::chrono::year_month_day{std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
-        } else {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
-        }
-    }
-
-    explicit operator signed long long() const
-    {
-        if (is_phy_integer()) {
-            return get_signed_integer();
-        } else if (is_phy_integer_ptr()) {
-            return *get_pointer<signed long long>();
-        } else if (is_phy_float()) {
-            return static_cast<signed long long>(f64);
-        } else if (is_phy_small()) {
-            switch (get_unsigned_integer()) {
-            case small_true: return 1;
-            case small_false: return 0;
-            }
-        }
-        throw operation_error(
-            "Value {} of type {} can not be converted to a signed long long", this->repr(), this->type_name());
-    }
-
-    explicit operator signed long() const
-    {
-        ttlet v = static_cast<signed long long>(*this);
-        if (v < std::numeric_limits<signed long>::min() || v > std::numeric_limits<signed long>::max()) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a signed long", this->repr(), this->type_name());
-        }
-        return static_cast<signed long>(v);
-    }
-
-    explicit operator signed int() const
-    {
-        ttlet v = static_cast<signed long long>(*this);
-        if (v < std::numeric_limits<signed int>::min() || v > std::numeric_limits<signed int>::max()) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a signed int", this->repr(), this->type_name());
-        }
-        return static_cast<signed int>(v);
-    }
-
-    explicit operator signed short() const
-    {
-        ttlet v = static_cast<signed long long>(*this);
-        if (v < std::numeric_limits<signed short>::min() || v > std::numeric_limits<signed short>::max()) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a signed short", this->repr(), this->type_name());
-        }
-        return static_cast<signed short>(v);
-    }
-
-    explicit operator signed char() const
-    {
-        ttlet v = static_cast<int64_t>(*this);
-        if (v < std::numeric_limits<signed char>::min() || v > std::numeric_limits<signed char>::max()) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a signed char", this->repr(), this->type_name());
-        }
-        return static_cast<signed char>(v);
-    }
-
-    explicit operator unsigned long long() const
-    {
-        ttlet v = static_cast<signed long long>(*this);
-        if (v < 0) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a unsigned long long", this->repr(), this->type_name());
-        }
-        return static_cast<unsigned long long>(v);
-    }
-
-    explicit operator unsigned long() const
-    {
-        ttlet v = static_cast<unsigned long long>(*this);
-        if (v > std::numeric_limits<unsigned long>::max()) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a unsigned long", this->repr(), this->type_name());
-        }
-        return static_cast<unsigned long>(v);
-    }
-
-    explicit operator unsigned int() const
-    {
-        ttlet v = static_cast<unsigned long long>(*this);
-        if (v > std::numeric_limits<unsigned int>::max()) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a unsigned int", this->repr(), this->type_name());
-        }
-        return static_cast<unsigned int>(v);
-    }
-
-    explicit operator unsigned short() const
-    {
-        ttlet v = static_cast<unsigned long long>(*this);
-        if (v > std::numeric_limits<unsigned short>::max()) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a unsigned short", this->repr(), this->type_name());
-        }
-        return static_cast<unsigned short>(v);
-    }
-
-    explicit operator unsigned char() const
-    {
-        ttlet v = static_cast<unsigned long long>(*this);
-        if (v > std::numeric_limits<unsigned char>::max()) {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a unsigned char", this->repr(), this->type_name());
-        }
-        return static_cast<unsigned char>(v);
-    }
-
-    explicit operator bool() const noexcept
-    {
-        switch (type_id()) {
-        case phy_small_id: return get_unsigned_integer() == small_true;
-        case phy_integer_id: return static_cast<int64_t>(*this) != 0;
-        case phy_decimal_id: return static_cast<decimal>(*this) != 0;
-        case phy_ymd_id: return true;
-        case phy_integer_ptr_id: return *get_pointer<int64_t>() != 0;
-        case phy_string_id:
-        case phy_string_ptr_id: return this->size() > 0;
-        case phy_url_ptr_id: return true;
-        case phy_vector_ptr_id: return this->size() > 0;
-        case phy_map_ptr_id: return this->size() > 0;
-        case phy_decimal_ptr_id: return static_cast<decimal>(*this) != 0;
-        case phy_bytes_ptr_id: return this->size() > 0;
-        default:
-            if (is_phy_float()) {
-                return static_cast<double>(*this) != 0.0;
-            } else {
-                tt_no_default();
-            };
-        }
-    }
-
-    explicit operator char() const
-    {
-        if (is_phy_string() && size() == 1) {
-            return u64 & 0xff;
-        } else if (is_phy_string_ptr() && size() == 1) {
-            return get_pointer<std::string>()->at(0);
-        } else {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a char", this->repr(), this->type_name());
-        }
-    }
-
-    explicit operator bstring() const
-    {
-        if (is_bytes()) {
-            if constexpr (HasLargeObjects) {
-                return *get_pointer<bstring>();
-            } else {
-                tt_no_default();
-            }
-        } else {
-            throw operation_error(
-                "Value {} of type {} can not be converted to bytes", this->repr(), this->type_name());
-        }
+        return get<std::chrono::year_month_day>(*this);
     }
 
     explicit operator std::string() const noexcept
     {
-        switch (type_id()) {
-        case phy_small_id:
-            switch (get_unsigned_integer()) {
-            case small_undefined: return "undefined";
-            case small_null: return "null";
-            case small_true: return "true";
-            case small_false: return "false";
-            case small_break: return "break";
-            case small_continue: return "continue";
-            default: tt_no_default();
-            }
-
-        case phy_integer_id: return std::format("{}", static_cast<int64_t>(*this));
-        case phy_decimal_id: return std::format("{}", static_cast<decimal>(*this));
-        case phy_ymd_id: return std::format("{}", static_cast<std::chrono::year_month_day>(*this));
-        case phy_integer_ptr_id:
-            if constexpr (HasLargeObjects) {
-                return std::format("{}", static_cast<int64_t>(*this));
-            } else {
-                tt_no_default();
-            }
-
-        case phy_string_id: {
-            ttlet length = size();
-            char buffer[5];
-            for (int i = 0; i < length; i++) {
-                buffer[i] = (u64 >> ((length - i - 1) * 8)) & 0xff;
-            }
-            return std::string(buffer, length);
+        // XXX should handle every type.
+        if (_tag != tag_type::string) {
+            tt_not_implemented();
         }
-
-        case phy_string_ptr_id:
-            if constexpr (HasLargeObjects) {
-                return *get_pointer<std::string>();
-            } else {
-                tt_no_default();
-            }
-
-        case phy_url_ptr_id:
-            if constexpr (HasLargeObjects) {
-                return to_string(*get_pointer<URL>());
-            } else {
-                tt_no_default();
-            }
-
-        case phy_decimal_ptr_id:
-            if constexpr (HasLargeObjects) {
-                return std::format("{}", static_cast<decimal>(*this));
-            } else {
-                tt_no_default();
-            }
-
-        case phy_vector_ptr_id:
-            if constexpr (HasLargeObjects) {
-                // The string representation of a vector is like a json array.
-                // Enclosed with brackets '[' and ']'. Each value separated with
-                // comma ','.
-                std::string r = "[";
-                auto count = 0;
-                for (auto i = vector_begin(); i != vector_end(); i++) {
-                    if (count++ > 0) {
-                        r += ", ";
-                    }
-                    r += i->repr();
-                }
-                r += "]";
-                return r;
-            } else {
-                tt_no_default();
-            }
-
-        case phy_map_ptr_id:
-            if constexpr (HasLargeObjects) {
-                // We sort the map based on keys before creating a string
-                // so that the representation of a map is stable between implementations.
-                std::vector<std::pair<datum_impl, datum_impl>> items;
-                items.reserve(size());
-                std::copy(map_begin(), map_end(), std::back_inserter(items));
-                std::sort(items.begin(), items.end(), [](auto &a, auto &b) {
-                    return a.first < b.first;
-                });
-
-                // The string representation for a map is like a json object.
-                // Enclosed with braces '{' and '}' Each pair is separated with
-                // comma ',' and key and value separated with ':'.
-                std::string r = "{";
-                auto count = 0;
-                for (auto &item : items) {
-                    if (count++ > 0) {
-                        r += ", ";
-                    }
-                    r += item.first.repr();
-                    r += ": ";
-                    r += item.second.repr();
-                }
-                r += "}";
-                return r;
-            } else {
-                tt_no_default();
-            }
-
-        case phy_bytes_ptr_id:
-            if constexpr (HasLargeObjects) {
-                return base16::encode(*get_pointer<bstring>());
-            } else {
-                tt_no_default();
-            }
-
-        default:
-            if (is_phy_float()) {
-                auto str = std::format("{:g}", static_cast<double>(*this));
-                if (str.find('.') == str.npos) {
-                    str += ".0";
-                }
-                return str;
-            } else {
-                tt_no_default();
-            }
-        }
+        return get<std::string>(*this);
     }
 
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
+    explicit operator vector_type() const
+    {
+        // XXX should be able to copy the keys of a map sorted.
+        if (_tag != tag_type::vector) {
+            throw std::domain_error(std::format("Can't convert {} to an vector", repr(*this)));
+        }
+        return get<vector_type>(*this);
+    }
+
+    explicit operator map_type() const
+    {
+        if (_tag != tag_type::map) {
+            throw std::domain_error(std::format("Can't convert {} to an map", repr(*this)));
+        }
+        return get<map_type>(*this);
+    }
+
     explicit operator URL() const
     {
-        if (is_string()) {
-            return URL{static_cast<std::string>(*this)};
-        } else if (is_url()) {
-            return *get_pointer<URL>();
-        } else {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a URL", this->repr(), this->type_name());
+        // XXX should be able to cast from a std::string.
+        if (_tag != tag_type::url) {
+            throw std::domain_error(std::format("Can't convert {} to an URL", repr(*this)));
         }
+        return get<URL>(*this);
     }
 
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    explicit operator datum_impl::vector() const
+    explicit operator bstring() const
     {
-        if (is_vector()) {
-            return *get_pointer<datum_impl::vector>();
-        } else {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a Vector", this->repr(), this->type_name());
+        // XXX should be able to base-64 decode a std::string.
+        if (_tag != tag_type::bstring) {
+            throw std::domain_error(std::format("Can't convert {} to an bstring", repr(*this)));
         }
+        return get<bstring>(*this);
     }
 
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    explicit operator datum_impl::map() const
+    [[nodiscard]] constexpr char const *type_name() const noexcept
     {
-        if (is_map()) {
-            return *get_pointer<datum_impl::map>();
-        } else {
-            throw operation_error(
-                "Value {} of type {} can not be converted to a Map", this->repr(), this->type_name());
+        switch (_tag) {
+        case tag_type::floating_point: return "float";
+        case tag_type::decimal: return "decimal";
+        case tag_type::integral: return "int";
+        case tag_type::boolean: return "bool";
+        case tag_type::year_month_day: return "date";
+        case tag_type::string: return "string";
+        case tag_type::url: return "url";
+        case tag_type::vector: return "vector";
+        case tag_type::map: return "map";
+        case tag_type::bstring: return "bytes";
+        default: tt_no_default();
         }
     }
 
-    /** Index into a datum::map or datum::vector.
-     * This datum must hold a vector, map or undefined.
-     * When this datum holds undefined it is treated as if datum holds an empty map.
-     * When this datum holds a vector, the index must be datum holding an integer.
-     *
-     * @param rhs An index into the map or vector.
+    /** Check if the datum has an undefined value.
      */
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl &operator[](datum_impl const &rhs)
+    [[nodiscard]] constexpr bool is_undefined() const noexcept
     {
-        if (is_undefined()) {
-            // When accessing a name on an undefined it means we need replace it with an empty map.
-            auto *p = new datum_impl::map();
-            u64 = map_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        return _tag == tag_type::monostate;
+    }
+
+    /** Check if the result of a expression was a break flow control statement.
+     * @see skeleton_node
+     */
+    [[nodiscard]] constexpr bool is_break() const noexcept
+    {
+        return _tag == tag_type::flow_break;
+    }
+
+    /** Check if the result of a expression was a continue flow control statement.
+     * @see skeleton_node
+     */
+    [[nodiscard]] constexpr bool is_continue() const noexcept
+    {
+        return _tag == tag_type::flow_continue;
+    }
+
+    [[nodiscard]] constexpr size_t hash() const noexcept
+    {
+        switch (_tag) {
+        case tag_type::floating_point: return std::hash<double>{}(_value._double);
+        case tag_type::decimal: return std::hash<decimal>{}(_value._decimal);
+        case tag_type::integral: return std::hash<long long>{}(_value._long_long);
+        case tag_type::boolean: return std::hash<bool>{}(_value._bool);
+        case tag_type::year_month_day: {
+            uint32_t r = 0;
+            r |= static_cast<uint32_t>(static_cast<int>(_value._year_month_day.year())) << 16;
+            r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.month())) << 8;
+            r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.day()));
+            return std::hash<uint32_t>{}(r);
         }
-
-        if (is_map()) {
-            auto &m = *get_pointer<datum_impl::map>();
-            auto [i, did_insert] = m.try_emplace(rhs);
-            return i->second;
-
-        } else if (is_vector() && rhs.is_integer()) {
-            auto index = static_cast<int64_t>(rhs);
-            auto &v = *get_pointer<datum_impl::vector>();
-
-            if (index < 0) {
-                index = std::ssize(v) + index;
+        case tag_type::string: return std::hash<std::string>{}(*_value._string);
+        case tag_type::vector: {
+            size_t r = 0;
+            for (ttlet &v : *_value._vector) {
+                r = hash_mix(r, v.hash());
             }
-
-            if (index < 0 || index >= std::ssize(v)) {
-                throw operation_error(
-                    "Index {} out of range to access value in vector of size {}", index, std::ssize(v));
-            } else {
-                return v[index];
+            return r;
+        }
+        case tag_type::map: {
+            size_t r = 0;
+            for (ttlet &kv : *_value._map) {
+                r = hash_mix(r, kv.first.hash(), kv.second.hash());
             }
-        } else {
-            throw operation_error(
-                "Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
+            return r;
+        }
+        case tag_type::url: return std::hash<URL>{}(*_value._url);
+        case tag_type::bstring: return std::hash<bstring>{}(*_value._bstring);
+        default: tt_no_default();
         }
     }
 
-    /** Index into a datum::map or datum::vector.
-     * This datum must hold a vector, map or undefined.
-     * When this datum holds undefined it is treated as if datum holds an empty map.
-     * When this datum holds a vector, the index must be datum holding an integer.
-     *
-     * @param rhs An index into the map or vector.
-     */
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl operator[](datum_impl const &rhs) const
+    [[nodiscard]] constexpr size_t size() const
     {
-        if (is_map()) {
-            ttlet &m = *get_pointer<datum_impl::map>();
-            ttlet i = m.find(rhs);
-            if (i == m.cend()) {
-                throw operation_error("Could not find key {} in map of size {}", rhs.repr(), std::ssize(m));
-            }
-            return i->second;
-
-        } else if (is_vector() && rhs.is_integer()) {
-            auto index = static_cast<int64_t>(rhs);
-            ttlet &v = *get_pointer<datum_impl::vector>();
-
-            if (index < 0) {
-                index = std::ssize(v) + index;
-            }
-
-            if (index < 0 || index >= std::ssize(v)) {
-                throw operation_error(
-                    "Index {} out of range to access value in vector of size {}", index, std::ssize(v));
-            } else {
-                return v[index];
-            }
+        if (ttlet *s = get_if<std::string>(*this)) {
+            return std::size(*s);
+        } else if (ttlet *v = get_if<vector_type>(*this)) {
+            return std::size(*v);
+        } else if (ttlet *m = get_if<map_type>(*this)) {
+            return std::size(*m);
+        } else if (ttlet *b = get_if<bstring>(*this)) {
+            return std::size(get<bstring>(*this));
         } else {
-            throw operation_error(
-                "Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
+            throw std::domain_error(std::format("Can not evaluate {}.size()", repr(*this)));
         }
     }
 
-    /** Check if an index is contained in a datum.
-     * This datum must hold a vector, map or undefined.
-     * When this datum holds undefined it is treated as if datum holds an empty map.
-     * When this datum holds a vector, the index must be datum holding an integer.
-     *
-     * @param rhs An index into the map or vector.
-     * @return true if the index is in the map or vector.
-     */
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    bool contains(datum_impl const &rhs) const noexcept
+    [[nodiscard]] constexpr datum const &back() const
     {
-        if (is_map()) {
-            ttlet &m = *get_pointer<datum_impl::map>();
-            ttlet i = m.find(rhs);
-            return i != m.cend();
-
-        } else if (is_vector() && rhs.is_integer()) {
-            auto index = static_cast<int64_t>(rhs);
-            ttlet &v = *get_pointer<datum_impl::vector>();
-
-            if (index < 0) {
-                index = std::ssize(v) + index;
+        if (ttlet *v = get_if<vector_type>(*this)) {
+            if (v->empty()) {
+                throw std::domain_error(std::format("Empty vector {}.back()", repr(*this)));
             }
-
-            return index >= 0 && index < std::ssize(v);
-
-        } else {
-            return false;
-        }
-    }
-
-    /** Append and return a reference to a datum holding undefined to this datum.
-     * This datum holding a undefined will be treated as if it is holding an empty vector.
-     * This datum must hold a vector.
-     * @return a reference to datum holding a vector.
-     */
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    datum_impl &append()
-    {
-        if (is_undefined()) {
-            // When appending on undefined it means we need replace it with an empty vector.
-            auto *p = new datum_impl::vector();
-            u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
-        }
-
-        if (is_vector()) {
-            auto *v = get_pointer<datum_impl::vector>();
-            v->emplace_back();
             return v->back();
-
         } else {
-            throw operation_error("Cannot append new item onto type {}", type_name());
+            throw std::domain_error(std::format("Can not evaluate {}.back()", repr(*this)));
         }
     }
 
-    template<typename... Args>
-    void emplace_back(Args &&... args)
+    [[nodiscard]] constexpr datum &back()
     {
-        if (is_undefined()) {
-            // When appending on undefined it means we need replace it with an empty vector.
-            auto *p = new datum_impl::vector();
-            u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
-        }
-
-        if (is_vector()) {
-            auto *v = get_pointer<datum_impl::vector>();
-            v->emplace_back(std::forward<Args>(args)...);
-
+        if (auto *v = get_if<vector_type>(*this)) {
+            if (v->empty()) {
+                throw std::domain_error(std::format("Empty vector {}.back()", repr(*this)));
+            }
+            return v->back();
         } else {
-            throw operation_error("Cannot append new item onto type {}", type_name());
+            throw std::domain_error(std::format("Can not evaluate {}.back()", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr datum const &front() const
+    {
+        if (ttlet *v = get_if<vector_type>(*this)) {
+            if (v->empty()) {
+                throw std::domain_error(std::format("Empty vector {}.front()", repr(*this)));
+            }
+            return v->front();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.front()", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr datum &front()
+    {
+        if (auto *v = get_if<vector_type>(*this)) {
+            if (v->empty()) {
+                throw std::domain_error(std::format("Empty vector {}.front()", repr(*this)));
+            }
+            return v->front();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.front()", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr auto cbegin() const
+    {
+        if (ttlet *v = get_if<vector_type>(*this)) {
+            return v->cbegin();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.cbegin()", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr auto begin() const
+    {
+        if (ttlet *v = get_if<vector_type>(*this)) {
+            return v->begin();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.begin()", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr auto begin()
+    {
+        if (ttlet *v = get_if<vector_type>(*this)) {
+            return v->begin();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.begin()", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr auto cend() const
+    {
+        if (ttlet *v = get_if<vector_type>(*this)) {
+            return v->cend();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.cend()", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr auto end() const
+    {
+        if (ttlet *v = get_if<vector_type>(*this)) {
+            return v->end();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.end()", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr auto end()
+    {
+        if (ttlet *v = get_if<vector_type>(*this)) {
+            return v->end();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.end()", repr(*this)));
+        }
+    }
+
+    /** Get the sorted list of keys of a map.
+     */
+    [[nodiscard]] constexpr vector_type keys() const
+    {
+        if (ttlet *m = get_if<map_type>(*this)) {
+            auto r = vector_type{};
+            r.reserve(std::size(*m));
+            for (ttlet &kv : *m) {
+                r.push_back(kv.first);
+            }
+            std::sort(r.begin(), r.end());
+            return r;
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.keys()", repr(*this)));
+        }
+    }
+
+    /** Get the list of values of a map.
+     */
+    [[nodiscard]] constexpr vector_type values() const
+    {
+        if (ttlet *m = get_if<map_type>(*this)) {
+            auto r = vector_type{};
+            r.reserve(std::size(*m));
+            for (ttlet &kv : *m) {
+                r.push_back(kv.second);
+            }
+            return r;
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.values()", repr(*this)));
+        }
+    }
+
+    /** Get key value pairs of items of a map sorted by the key.
+     */
+    [[nodiscard]] constexpr vector_type items() const
+    {
+        if (ttlet *m = get_if<map_type>(*this)) {
+            auto r = vector_type{};
+            r.reserve(std::size(*m));
+
+            ttlet keys_ = keys();
+            for (ttlet &key : keys_) {
+                auto it = m->find(key);
+                tt_axiom(it != m->end());
+                r.push_back(make_vector(it->first, it->second));
+            }
+            return r;
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.items()", repr(*this)));
+        }
+    }
+
+    constexpr void push_back(datum const &rhs)
+    {
+        if (auto *v = get_if<vector_type>(*this)) {
+            return v->push_back(rhs);
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.push_back({})", repr(*this), repr(rhs)));
+        }
+    }
+
+    constexpr void push_back(datum &&rhs)
+    {
+        if (auto *v = get_if<vector_type>(*this)) {
+            return v->push_back(std::move(rhs));
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.push_back({})", repr(*this), repr(rhs)));
         }
     }
 
     template<typename Arg>
-    void push_back(Arg &&arg)
+    constexpr void push_back(Arg &&arg)
     {
-        if (is_undefined()) {
-            // When appending on undefined it means we need replace it with an empty vector.
-            auto *p = new datum_impl::vector();
-            u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
-        }
-
-        if (is_vector()) {
-            auto *v = get_pointer<datum_impl::vector>();
-            v->push_back(std::forward<Arg>(arg));
-
-        } else {
-            throw operation_error("Cannot append new item onto type {}", type_name());
-        }
+        push_back(datum{std::forward<Arg>(arg)});
     }
 
-    void pop_back()
+    constexpr void pop_back()
     {
-        if (is_vector()) {
-            auto *v = get_pointer<datum_impl::vector>();
-            v->pop_back();
-
-        } else {
-            throw operation_error("Cannot pop_back() onto type {}", type_name());
-        }
-    }
-
-    datum_impl year() const
-    {
-        if (is_ymd()) {
-            return {static_cast<signed>(static_cast<std::chrono::year_month_day>(*this).year())};
-        } else {
-            throw operation_error("Cannot get year() from type {}", type_name());
-        }
-    }
-
-    datum_impl quarter() const
-    {
-        if (is_ymd()) {
-            auto month = static_cast<unsigned>(static_cast<std::chrono::year_month_day>(*this).month());
-            return {((month - 1) / 3) + 1};
-        } else {
-            throw operation_error("Cannot get month() from type {}", type_name());
-        }
-    }
-
-    datum_impl month() const
-    {
-        if (is_ymd()) {
-            return {static_cast<unsigned>(static_cast<std::chrono::year_month_day>(*this).month())};
-        } else {
-            throw operation_error("Cannot get month() from type {}", type_name());
-        }
-    }
-
-    datum_impl day() const
-    {
-        if (is_ymd()) {
-            return {static_cast<unsigned>(static_cast<std::chrono::year_month_day>(*this).day())};
-        } else {
-            throw operation_error("Cannot get day() from type {}", type_name());
-        }
-    }
-
-    datum_impl const &front() const
-    {
-        if (is_vector()) {
-            ttlet *v = get_pointer<datum_impl::vector>();
-            return v->front();
-
-        } else {
-            throw operation_error("Cannot front() onto type {}", type_name());
-        }
-    }
-
-    datum_impl &front()
-    {
-        if (is_vector()) {
-            auto *v = get_pointer<datum_impl::vector>();
-            return v->front();
-
-        } else {
-            throw operation_error("Cannot front() onto type {}", type_name());
-        }
-    }
-
-    datum_impl const &back() const
-    {
-        if (is_vector()) {
-            ttlet *v = get_pointer<datum_impl::vector>();
-            return v->back();
-
-        } else {
-            throw operation_error("Cannot back() onto type {}", type_name());
-        }
-    }
-
-    datum_impl &back()
-    {
-        if (is_vector()) {
-            auto *v = get_pointer<datum_impl::vector>();
-            return v->back();
-
-        } else {
-            throw operation_error("Cannot back() onto type {}", type_name());
-        }
-    }
-
-    std::string repr() const noexcept
-    {
-        switch (type_id()) {
-        case phy_small_id:
-            switch (get_unsigned_integer()) {
-            case small_undefined: return "undefined";
-            case small_null: return "null";
-            case small_true: return "true";
-            case small_false: return "false";
-            case small_break: return "break";
-            case small_continue: return "continue";
-            default: tt_no_default();
+        if (auto *v = get_if<vector_type>(*this)) {
+            if (v->empty()) {
+                throw std::domain_error(std::format("Empty vector {}.pop_back()", repr(*this)));
             }
-        case phy_integer_id:
-        case phy_integer_ptr_id: return static_cast<std::string>(*this);
-        case phy_decimal_id:
-        case phy_decimal_ptr_id: return static_cast<std::string>(*this);
-        case phy_ymd_id: return static_cast<std::string>(*this);
-        case phy_string_id:
-        case phy_string_ptr_id: return std::format("\"{}\"", static_cast<std::string>(*this));
-        case phy_url_ptr_id: return std::format("<URL {}>", static_cast<std::string>(*this));
-        case phy_vector_ptr_id: return static_cast<std::string>(*this);
-        case phy_map_ptr_id: return static_cast<std::string>(*this);
-        case phy_bytes_ptr_id: return static_cast<std::string>(*this);
-        default:
-            if (is_phy_float()) {
-                return static_cast<std::string>(*this);
-            } else {
-                tt_no_default();
-            }
+            return v->pop_back();
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.pop_back()", repr(*this)));
         }
     }
 
-    /*! Return ordering of types.
-     * Used in less-than comparison between different types.
+    [[nodiscard]] constexpr bool contains(datum const &rhs) const
+    {
+        if (auto *m = get_if<map_type>(*this)) {
+            return m->contains(rhs);
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}.contains({})", repr(*this), repr(rhs)));
+        }
+    }
+
+    template<typename Arg>
+    [[nodiscard]] constexpr bool contains(Arg &&arg) const
+    {
+        return contains(datum{std::forward<Arg>(arg)});
+    }
+
+    [[nodiscard]] constexpr datum const &operator[](datum const &rhs) const
+    {
+        if (holds_alternative<vector_type>(*this) and holds_alternative<long long>(rhs)) {
+            ttlet &v = get<vector_type>(*this);
+
+            auto index = get<long long>(rhs);
+            if (index < 0) {
+                index = std::ssize(v) + index;
+            }
+            if (index < 0 or index >= std::ssize(v)) {
+                throw std::overflow_error(std::format("Index {} beyond bounds of vector", repr(rhs)));
+            }
+
+            return v[index];
+
+        } else if (holds_alternative<map_type>(*this)) {
+            ttlet &m = get<map_type>(*this);
+            ttlet it = m.find(rhs);
+            if (it == m.end()) {
+                throw std::overflow_error(std::format("Key {} not found in map", repr(rhs)));
+            }
+
+            return it->second;
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}[{}]", repr(*this), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] constexpr datum &operator[](datum const &rhs)
+    {
+        if (holds_alternative<vector_type>(*this) and holds_alternative<long long>(rhs)) {
+            auto &v = get<vector_type>(*this);
+
+            auto index = get<long long>(rhs);
+            if (index < 0) {
+                index = std::ssize(v) + index;
+            }
+            if (index < 0 or index >= std::ssize(v)) {
+                throw std::overflow_error(std::format("Index {} beyond bounds of vector", repr(rhs)));
+            }
+
+            return v[index];
+
+        } else if (holds_alternative<map_type>(*this)) {
+            auto &m = get<map_type>(*this);
+            return m[rhs];
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}[{}]", repr(*this), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] constexpr datum const &operator[](auto const &rhs) const
+    {
+        return (*this)[datum{rhs}];
+    }
+
+    [[nodiscard]] constexpr datum &operator[](auto const &rhs)
+    {
+        return (*this)[datum{rhs}];
+    }
+
+    [[nodiscard]] constexpr datum &operator++()
+    {
+        if (holds_alternative<long long>(*this)) {
+            ++_value._long_long;
+            return *this;
+        } else {
+            throw std::domain_error(std::format("Can not evaluate ++{}", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr datum &operator--()
+    {
+        if (holds_alternative<long long>(*this)) {
+            --_value._long_long;
+            return *this;
+        } else {
+            throw std::domain_error(std::format("Can not evaluate --{}", repr(*this)));
+        }
+    }
+
+    [[nodiscard]] constexpr datum operator++(int)
+    {
+        if (holds_alternative<long long>(*this)) {
+            auto tmp = *this;
+            _value._long_long++;
+            return tmp;
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}++", repr(*this)));
+        }
+    }
+    [[nodiscard]] constexpr datum operator--(int)
+    {
+        if (holds_alternative<long long>(*this)) {
+            auto tmp = *this;
+            _value._long_long--;
+            return tmp;
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {}--", repr(*this)));
+        }
+    }
+
+#define X(op) \
+    constexpr datum &operator op(auto const &rhs) \
+    { \
+        return *this = *this op rhs; \
+    }
+
+    X(+=)
+    X(-=)
+    X(*=)
+    X(/=)
+    X(%=)
+    X(&=)
+    X(|=)
+    X(^=)
+    X(<<=)
+    X(>>=)
+#undef X
+
+    [[nodiscard]] friend constexpr bool operator==(datum const &lhs, datum const &rhs) noexcept
+    {
+        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+            return doubles.lhs() == doubles.rhs();
+
+        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+            return decimals.lhs() == decimals.rhs();
+
+        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return long_longs.lhs() == long_longs.rhs();
+
+        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+            return bools.lhs() == bools.rhs();
+
+        } else if (ttlet ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
+            return ymds.lhs() == ymds.rhs();
+
+        } else if (ttlet urls = promote_if<URL>(lhs, rhs)) {
+            return urls.lhs() == urls.rhs();
+
+        } else if (ttlet strings = promote_if<std::string>(lhs, rhs)) {
+            return strings.lhs() == strings.rhs();
+
+        } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
+            return vectors.lhs() == vectors.rhs();
+
+        } else if (ttlet maps = promote_if<map_type>(lhs, rhs)) {
+            return maps.lhs() == maps.rhs();
+
+        } else {
+            return false;
+        }
+    }
+
+    /** Compare datums.
+     *
+     * First promote numeric datums to the highest of @a lhs and @a rhs, then compare.
+     * - promotion order: long long -> decimal -> double.
+     * - NaNs compare equal
+     * - NaN is lower than any other value or type.
+     *
+     * If types compare equal, then compare the values of those types.
+     *
+     * If types are not equal then ordering is as follows:
+     * - NaN
+     * - numeric
+     * - year-month-day
+     * - boolean
+     * - null
+     * - monostate
+     * - flow continue
+     * - flow break
      */
-    int type_order() const noexcept
+    [[nodiscard]] friend constexpr std::partial_ordering operator<=>(datum const &lhs, datum const &rhs) noexcept
     {
-        if (is_numeric()) {
-            // Fold all numeric values into the same group (literal integers).
-            return phy_integer_id;
+        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+            return doubles.lhs() <=> doubles.rhs();
+
+        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+            return decimals.lhs() <=> decimals.rhs();
+
+        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return long_longs.lhs() <=> long_longs.rhs();
+
+        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+            return bools.lhs() <=> bools.rhs();
+
+        } else if (ttlet year_month_days = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
+            return year_month_days.lhs() <=> year_month_days.rhs();
+
+        } else if (ttlet urls = promote_if<URL>(lhs, rhs)) {
+            return urls.lhs() <=> urls.rhs();
+
+        } else if (ttlet strings = promote_if<std::string>(lhs, rhs)) {
+            return strings.lhs() <=> strings.rhs();
+
+        } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
+            return vectors.lhs() <=> vectors.rhs();
+
+            //} else if (ttlet maps = promote_if<map_type>(lhs, rhs)) {
+            //    ttlet lhs_keys = maps.lhs().keys();
+            //    ttlet rhs_keys = maps.rhs().keys();
+            //    auto lhs_it = lhs_keys.begin();
+            //    auto rhs_it = rhs_keys.begin();
+            //    while (lhs_it != lhs_keys.end() and rhs_it != rhs_keys.end()) {
+            //        ttlet key_cmp = *lhs_it <=> *rhs_it;
+            //        if (key_cmp != std::partial_ordering::equal) {
+            //            return key_cmp;
+            //        }
+            //
+            //        ttlet &lhs_value = maps.lhs()[*lhs_key];
+            //        ttlet &rhs_value = maps.rhs()[*rhs_key];
+            //        ttlet value_cmp = lhs_value <=> rhs_value;
+            //        if (value_cmp != std::partial_ordering::equal) {
+            //            return value_cmp;
+            //        }
+            //
+            //        ++lhs_it;
+            //        ++rhs_it;
+            //    }
+            //    if (lhs != lhs_keys.end()) {
+            //        return std::partial_ordering::greater;
+            //    } else if (rhs != rhs_keys.end()) {
+            //        return std::partial_ordering::smaller;
+            //    } else {
+            //        return std::partial_ordering::equal;
+            //    }
         } else {
-            return type_id();
+            return lhs._tag <=> rhs._tag;
         }
     }
 
-    datum_impl &get_by_path(std::vector<std::string> const &key)
+    [[nodiscard]] friend constexpr datum operator-(datum const &rhs)
     {
-        if (key.size() > 0 && is_map()) {
-            ttlet index = key.at(0);
-            auto &next = (*this)[index];
-            ttlet next_key = std::vector<std::string>{key.begin() + 1, key.end()};
-            return next.get_by_path(next_key);
+        if (ttlet rhs_double = get_if<double>(rhs)) {
+            return datum{-*rhs_double};
 
-        } else if (key.size() > 0 && is_vector()) {
-            size_t const index = std::stoll(key.at(0));
-            auto &next = (*this)[index];
-            ttlet next_key = std::vector<std::string>{key.begin() + 1, key.end()};
-            return next.get_by_path(next_key);
+        } else if (ttlet rhs_decimal = get_if<decimal>(rhs)) {
+            return datum{-*rhs_decimal};
 
-        } else if (key.size() > 0) {
-            throw operation_error("type {} does not support get() with '{}'", type_name(), key.at(0));
+        } else if (ttlet rhs_long_long = get_if<long long>(rhs)) {
+            return datum{-*rhs_long_long};
+
         } else {
-            return *this;
+            throw std::domain_error(std::format("Can not evaluate -{}", repr(rhs)));
         }
     }
 
-    datum_impl get_by_path(std::vector<std::string> const &key) const
+    [[nodiscard]] friend constexpr datum operator~(datum const &rhs)
     {
-        if (key.size() > 0 && is_map()) {
-            ttlet index = key.at(0);
-            ttlet &next = (*this)[index];
-            return next.get_by_path({key.begin() + 1, key.end()});
+        if (ttlet rhs_long_long = get_if<long long>(rhs)) {
+            return datum{-*rhs_long_long};
 
-        } else if (key.size() > 0 && is_vector()) {
-            size_t const index = std::stoll(key.at(0));
-            ttlet &next = (*this)[index];
-            return next.get_by_path({key.begin() + 1, key.end()});
-
-        } else if (key.size() > 0) {
-            throw operation_error("type {} does not support get() with '{}'", type_name(), key.at(0));
         } else {
-            return *this;
+            throw std::domain_error(std::format("Can not evaluate ~{}", repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator+(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+            return datum{doubles.lhs() + doubles.rhs()};
+
+        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+            return datum{decimals.lhs() + decimals.rhs()};
+
+        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return datum{long_longs.lhs() + long_longs.rhs()};
+
+        } else if (ttlet strings = promote_if<std::string>(lhs, rhs)) {
+            return datum{strings.lhs() + strings.rhs()};
+
+        } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
+            auto r = vectors.lhs();
+            r.insert(r.end(), vectors.rhs().begin(), vectors.rhs().end());
+            return datum{std::move(r)};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '+' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator-(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+            return datum{doubles.lhs() - doubles.rhs()};
+
+        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+            return datum{decimals.lhs() - decimals.rhs()};
+
+        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return datum{long_longs.lhs() - long_longs.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '-' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator*(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+            return datum{doubles.lhs() * doubles.rhs()};
+
+        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+            return datum{decimals.lhs() * decimals.rhs()};
+
+        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return datum{long_longs.lhs() * long_longs.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '*' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator/(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+            if (doubles.rhs() == 0) {
+                throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
+            }
+            return datum{doubles.lhs() / doubles.rhs()};
+
+        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+            if (decimals.rhs() == 0) {
+                throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
+            }
+            return datum{decimals.lhs() / decimals.rhs()};
+
+        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            if (long_longs.rhs() == 0) {
+                throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
+            }
+            return datum{long_longs.lhs() / long_longs.rhs()};
+
+        } else if (ttlet urls = promote_if<URL>(lhs, rhs)) {
+            return datum{urls.lhs() / urls.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '/' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator%(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            if (long_longs.rhs() == 0) {
+                throw std::domain_error(std::format("Divide by zero {} '%' {}", repr(lhs), repr(rhs)));
+            }
+            return datum{long_longs.lhs() % long_longs.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '%' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator&(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return datum{long_longs.lhs() & long_longs.rhs()};
+
+        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+            return datum{bools.lhs() and bools.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '&' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator|(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return datum{long_longs.lhs() | long_longs.rhs()};
+
+        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+            return datum{bools.lhs() or bools.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '|' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator^(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            return datum{long_longs.lhs() ^ long_longs.rhs()};
+
+        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+            return datum{bools.lhs() != bools.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '^' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator<<(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
+                throw std::domain_error(std::format("Invalid shift count {} '<<' {}", repr(lhs), repr(rhs)));
+            }
+            return datum{long_longs.lhs() << long_longs.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '<<' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    [[nodiscard]] friend constexpr datum operator>>(datum const &lhs, datum const &rhs)
+    {
+        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+            if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
+                throw std::domain_error(std::format("Invalid shift count {} '>>' {}", repr(lhs), repr(rhs)));
+            }
+            return datum{long_longs.lhs() >> long_longs.rhs()};
+
+        } else {
+            throw std::domain_error(std::format("Can not evaluate {} '>>' {}", repr(lhs), repr(rhs)));
+        }
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, datum const &rhs)
+    {
+        return lhs << to_string(rhs);
+    }
+
+#define X(op) \
+    [[nodiscard]] friend constexpr auto operator op(datum const &lhs, auto const &rhs) noexcept(noexcept(lhs op datum{rhs})) \
+    { \
+        return lhs op datum{rhs}; \
+    } \
+    [[nodiscard]] friend constexpr auto operator op(auto const &lhs, datum const &rhs) noexcept(noexcept(datum{lhs} op rhs)) \
+    { \
+        return datum{lhs} op rhs; \
+    }
+
+    X(==)
+    X(<=>)
+    X(+)
+    X(-)
+    X(*)
+    X(/)
+    X(%)
+    X(&)
+    X(|)
+    X(^) X(<<) X(>>)
+#undef X
+
+        /** Get the string representation of the value.
+         */
+        [[nodiscard]] friend std::string repr(datum const &rhs) noexcept
+    {
+        // XXX strings need quotes.
+        return static_cast<std::string>(rhs);
+    }
+
+    /** Get the string representation of the value.
+     */
+    [[nodiscard]] friend std::string to_string(datum const &rhs) noexcept
+    {
+        return static_cast<std::string>(rhs);
+    }
+
+    /** Check if the datum holds a type.
+     *
+     * @tparam T Type to check.
+     * @param rhs The datum to check the value-type of.
+     * @return True if the value-type matches the template parameter @a T
+     */
+    template<typename T>
+    [[nodiscard]] friend constexpr bool holds_alternative(datum const &rhs) noexcept
+    {
+        if constexpr (std::is_same_v<T, double>) {
+            return rhs._tag == tag_type::floating_point;
+        } else if constexpr (std::is_same_v<T, decimal>) {
+            return rhs._tag == tag_type::decimal;
+        } else if constexpr (std::is_same_v<T, long long>) {
+            return rhs._tag == tag_type::integral;
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return rhs._tag == tag_type::boolean;
+        } else if constexpr (std::is_same_v<T, std::chrono::year_month_day>) {
+            return rhs._tag == tag_type::year_month_day;
+        } else if constexpr (std::is_same_v<T, nullptr_t>) {
+            return rhs._tag == tag_type::null;
+        } else if constexpr (std::is_same_v<T, std::monostate>) {
+            return rhs._tag == tag_type::monostate;
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            return rhs._tag == tag_type::string;
+        } else if constexpr (std::is_same_v<T, vector_type>) {
+            return rhs._tag == tag_type::vector;
+        } else if constexpr (std::is_same_v<T, map_type>) {
+            return rhs._tag == tag_type::map;
+        } else if constexpr (std::is_same_v<T, URL>) {
+            return rhs._tag == tag_type::url;
+        } else if constexpr (std::is_same_v<T, bstring>) {
+            return rhs._tag == tag_type::bstring;
+        } else {
+            tt_static_no_default();
+        }
+    }
+
+    /** Check if the type held by the datum can be promoted.
+     */
+    template<typename T>
+    [[nodiscard]] friend constexpr bool promotable_to(datum const &rhs) noexcept
+    {
+        if constexpr (std::is_same_v<T, double>) {
+            return holds_alternative<double>(rhs) or holds_alternative<decimal>(rhs) or holds_alternative<long long>(rhs) or
+                holds_alternative<bool>(rhs);
+        } else if constexpr (std::is_same_v<T, decimal>) {
+            return holds_alternative<decimal>(rhs) or holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
+        } else if constexpr (std::is_same_v<T, long long>) {
+            return holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return holds_alternative<bool>(rhs);
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            return holds_alternative<URL>(rhs) or holds_alternative<std::string>(rhs);
+        } else if constexpr (std::is_same_v<T, URL>) {
+            return holds_alternative<URL>(rhs) or holds_alternative<std::string>(rhs);
+        } else {
+            return holds_alternative<T>(rhs);
+        }
+    }
+
+    /** Get the value of a datum.
+     *
+     * It is monostate behavior if the type does not match the stored value.
+     *
+     * @tparam T Type to check, must be one of: `bool`, `double`, `long long`, `decimal`, `std::chrono::year_month_day`
+     * @param rhs The datum to get the value from.
+     * @return A copy of the value in the datum.
+     */
+    template<typename T>
+    [[nodiscard]] friend constexpr T const &get(datum const &rhs) noexcept
+    {
+        tt_axiom(holds_alternative<T>(rhs));
+        if constexpr (std::is_same_v<T, double>) {
+            return rhs._value._double;
+        } else if constexpr (std::is_same_v<T, decimal>) {
+            return rhs._value._decimal;
+        } else if constexpr (std::is_same_v<T, long long>) {
+            return rhs._value._long_long;
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return rhs._value._bool;
+        } else if constexpr (std::is_same_v<T, std::chrono::year_month_day>) {
+            return rhs._value._year_month_day;
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            return *rhs._value._string;
+        } else if constexpr (std::is_same_v<T, vector_type>) {
+            return *rhs._value._vector;
+        } else if constexpr (std::is_same_v<T, map_type>) {
+            return *rhs._value._map;
+        } else if constexpr (std::is_same_v<T, URL>) {
+            return *rhs._value._url;
+        } else if constexpr (std::is_same_v<T, bstring>) {
+            return *rhs._value._bstring;
+        } else {
+            tt_static_no_default();
+        }
+    }
+
+    /** Get the value of a datum.
+     *
+     * It is monostate behavior if the type does not match the stored value.
+     *
+     * @tparam T Type to check, must be one of: `bool`, `double`, `long long`, `decimal`, `std::chrono::year_month_day`
+     * @param rhs The datum to get the value from.
+     * @return A copy of the value in the datum.
+     */
+    template<typename T>
+    [[nodiscard]] friend constexpr T &get(datum &rhs) noexcept
+    {
+        tt_axiom(holds_alternative<T>(rhs));
+        if constexpr (std::is_same_v<T, double>) {
+            return rhs._value._double;
+        } else if constexpr (std::is_same_v<T, decimal>) {
+            return rhs._value._decimal;
+        } else if constexpr (std::is_same_v<T, long long>) {
+            return rhs._value._long_long;
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return rhs._value._bool;
+        } else if constexpr (std::is_same_v<T, std::chrono::year_month_day>) {
+            return rhs._value._year_month_day;
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            return *rhs._value._string;
+        } else if constexpr (std::is_same_v<T, vector_type>) {
+            return *rhs._value._vector;
+        } else if constexpr (std::is_same_v<T, map_type>) {
+            return *rhs._value._map;
+        } else if constexpr (std::is_same_v<T, URL>) {
+            return *rhs._value._url;
+        } else if constexpr (std::is_same_v<T, bstring>) {
+            return *rhs._value._bstring;
+        } else {
+            tt_static_no_default();
+        }
+    }
+
+    /** Get the value of a datum.
+     *
+     * @tparam T Type to check.
+     * @param rhs The datum to get the value from.
+     * @return A pointer to the value, or nullptr.
+     */
+    template<typename T>
+    [[nodiscard]] friend constexpr T *get_if(datum &rhs) noexcept
+    {
+        if (holds_alternative<T>(rhs)) {
+            return &get<T>(rhs);
+        } else {
+            return nullptr;
         }
     }
 
     template<typename T>
-    [[nodiscard]] std::optional<T> get_optional_by_path(std::vector<std::string> const &key) const noexcept
+    [[nodiscard]] friend constexpr T const *get_if(datum const &rhs) noexcept
     {
-        try {
-            auto r = get_by_path(key);
-            if (holds_alternative<T>(r)) {
-                return {static_cast<T>(r)};
-            } else {
-                return {};
-            }
-        } catch (...) {
-            return {};
-        }
-    }
-
-    bool is_integer() const noexcept
-    {
-        return is_phy_integer() || is_phy_integer_ptr();
-    }
-    bool is_decimal() const noexcept
-    {
-        return is_phy_decimal() || is_phy_decimal_ptr();
-    }
-    bool is_ymd() const noexcept
-    {
-        return is_phy_ymd();
-    }
-    bool is_float() const noexcept
-    {
-        return is_phy_float();
-    }
-    bool is_string() const noexcept
-    {
-        return is_phy_string() || is_phy_string_ptr();
-    }
-    bool is_bytes() const noexcept
-    {
-        return is_phy_bytes_ptr();
-    }
-
-    bool is_bool() const noexcept
-    {
-        if (is_phy_small()) {
-            ttlet tmp = get_unsigned_integer();
-            return tmp == small_true || tmp == small_false;
+        if (holds_alternative<T>(rhs)) {
+            return &get<T>(rhs);
         } else {
-            return false;
+            return nullptr;
         }
     }
 
-    bool is_null() const noexcept
-    {
-        return is_phy_small() && get_unsigned_integer() == small_null;
-    }
-
-    bool is_undefined() const noexcept
-    {
-        return is_phy_small() && get_unsigned_integer() == small_undefined;
-    }
-
-    bool is_break() const noexcept
-    {
-        return is_phy_small() && get_unsigned_integer() == small_break;
-    }
-
-    bool is_continue() const noexcept
-    {
-        return is_phy_small() && get_unsigned_integer() == small_continue;
-    }
-    bool is_url() const noexcept
-    {
-        return is_phy_url_ptr();
-    }
-
-    bool is_vector() const noexcept
-    {
-        return is_phy_vector_ptr();
-    }
-    bool is_map() const noexcept
-    {
-        return is_phy_map_ptr();
-    }
-    bool is_numeric() const noexcept
-    {
-        return is_integer() || is_decimal() || is_float();
-    }
-
-    datum_type_t type() const noexcept
-    {
-        switch (type_id()) {
-        case phy_small_id:
-            switch (get_unsigned_integer()) {
-            case small_undefined: return datum_type_t::Undefined;
-            case small_null: return datum_type_t::Null;
-            case small_false: return datum_type_t::Boolean;
-            case small_true: return datum_type_t::Boolean;
-            case small_break: return datum_type_t::Break;
-            case small_continue: return datum_type_t::Continue;
-            default: tt_no_default();
-            }
-
-        case phy_integer_id:
-        case phy_integer_ptr_id: return datum_type_t::Integer;
-        case phy_decimal_id:
-        case phy_decimal_ptr_id: return datum_type_t::Decimal;
-        case phy_ymd_id: return datum_type_t::YearMonthDay;
-        case phy_string_id:
-        case phy_string_ptr_id: return datum_type_t::String;
-        case phy_url_ptr_id: return datum_type_t::URL;
-        case phy_vector_ptr_id: return datum_type_t::Vector;
-        case phy_map_ptr_id: return datum_type_t::Map;
-        case phy_bytes_ptr_id: return datum_type_t::Bytes;
-        default:
-            if (is_phy_float()) {
-                return datum_type_t::Float;
-            } else {
-                tt_no_default();
-            }
-        }
-    }
-
-    char const *type_name() const noexcept
-    {
-        switch (type_id()) {
-        case phy_small_id:
-            switch (get_unsigned_integer()) {
-            case small_undefined: return "Undefined";
-            case small_null: return "Null";
-            case small_false: return "Boolean";
-            case small_true: return "Boolean";
-            case small_break: return "Break";
-            case small_continue: return "Continue";
-            default: tt_no_default();
-            }
-
-        case phy_integer_id:
-        case phy_integer_ptr_id: return "Integer";
-        case phy_decimal_id:
-        case phy_decimal_ptr_id: return "Decimal";
-        case phy_ymd_id: return "YearMonthDay";
-        case phy_string_id:
-        case phy_string_ptr_id: return "String";
-        case phy_url_ptr_id: return "URL";
-        case phy_vector_ptr_id: return "Vector";
-        case phy_map_ptr_id: return "Map";
-        case phy_bytes_ptr_id: return "Bytes";
-        default:
-            if (is_phy_float()) {
-                return "Float";
-            } else {
-                tt_no_default();
-            }
-        }
-    }
-
-    size_t size() const
-    {
-        switch (type_id()) {
-        case phy_string_id: return (u64 >> 40) & 0xff;
-        case phy_string_ptr_id: return get_pointer<std::string>()->size();
-        case phy_vector_ptr_id: return get_pointer<datum_impl::vector>()->size();
-        case phy_map_ptr_id: return get_pointer<datum_impl::map>()->size();
-        case phy_bytes_ptr_id: return get_pointer<bstring>()->size();
-        default: throw operation_error("Can't get size of value {} of type {}.", this->repr(), this->type_name());
-        }
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    typename map::const_iterator map_begin() const
-    {
-        if (is_phy_map_ptr()) {
-            return get_pointer<datum_impl::map>()->begin();
-        } else {
-            throw operation_error("map_begin() expect datum to be a map, but it is a {}.", this->type_name());
-        }
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    typename map::const_iterator map_end() const
-    {
-        if (is_phy_map_ptr()) {
-            return get_pointer<datum_impl::map>()->end();
-        } else {
-            throw operation_error("map_end() expect datum to be a map, but it is a {}.", this->type_name());
-        }
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    typename vector::const_iterator vector_begin() const
-    {
-        if (is_phy_vector_ptr()) {
-            return get_pointer<datum_impl::vector>()->begin();
-        } else {
-            throw operation_error(
-                "vector_begin() expect datum to be a vector, but it is a {}.", this->type_name());
-        }
-    }
-
-    template<bool P = HasLargeObjects, std::enable_if_t<P, int> = 0>
-    typename vector::const_iterator vector_end() const
-    {
-        if (is_phy_vector_ptr()) {
-            return get_pointer<datum_impl::vector>()->end();
-        } else {
-            throw operation_error("vector_end() expect datum to be a vector, but it is a {}.", this->type_name());
-        }
-    }
-
-    size_t hash() const noexcept
-    {
-        if (is_phy_float()) {
-            return std::hash<double>{}(f64);
-        } else if (is_phy_pointer()) {
-            [[unlikely]] switch (type_id())
-            {
-            case phy_string_ptr_id: return std::hash<std::string>{}(*get_pointer<std::string>());
-            case phy_url_ptr_id: return std::hash<URL>{}(*get_pointer<URL>());
-            case phy_vector_ptr_id:
-                return std::accumulate(vector_begin(), vector_end(), size_t{0}, [](size_t a, auto x) {
-                    return a ^ x.hash();
-                });
-            case phy_map_ptr_id:
-                return std::accumulate(map_begin(), map_end(), size_t{0}, [](size_t a, auto x) {
-                    return a ^ (x.first.hash() ^ x.second.hash());
-                });
-            case phy_decimal_ptr_id: return std::hash<decimal>{}(*get_pointer<decimal>());
-            case phy_bytes_ptr_id: return std::hash<bstring>{}(*get_pointer<bstring>());
-            default: tt_no_default();
-            }
-        } else {
-            return std::hash<uint64_t>{}(u64);
-        }
-    }
-
-    datum_impl &operator++()
-    {
-        if (!this->is_numeric()) {
-            throw operation_error("Can't increment '++' value {} of type {}", this->repr(), this->type_name());
-        }
-
-        return *this += 1;
-    }
-
-    datum_impl &operator--()
-    {
-        if (!this->is_numeric()) {
-            throw operation_error("Can't increment '--' value {} of type {}", this->repr(), this->type_name());
-        }
-
-        return *this -= 1;
-    }
-
-    datum_impl operator++(int)
-    {
-        auto tmp = *this;
-        ++*this;
-        return tmp;
-    }
-
-    datum_impl operator--(int)
-    {
-        auto tmp = *this;
-        --*this;
-        return tmp;
-    }
-
-    datum_impl &operator+=(datum_impl const &rhs)
-    {
-        if (this->is_vector()) {
-            this->push_back(rhs);
-        } else {
-            *this = *this + rhs;
-        }
-        return *this;
-    }
-
-    datum_impl &operator-=(datum_impl const &rhs)
-    {
-        return *this = *this - rhs;
-    }
-
-    datum_impl &operator*=(datum_impl const &rhs)
-    {
-        return *this = *this * rhs;
-    }
-
-    datum_impl &operator/=(datum_impl const &rhs)
-    {
-        return *this = *this / rhs;
-    }
-
-    datum_impl &operator%=(datum_impl const &rhs)
-    {
-        return *this = *this % rhs;
-    }
-
-    datum_impl &operator<<=(datum_impl const &rhs)
-    {
-        return *this = *this << rhs;
-    }
-
-    datum_impl &operator>>=(datum_impl const &rhs)
-    {
-        return *this = *this >> rhs;
-    }
-
-    datum_impl &operator&=(datum_impl const &rhs)
-    {
-        return *this = *this & rhs;
-    }
-
-    datum_impl &operator|=(datum_impl const &rhs)
-    {
-        return *this = *this | rhs;
-    }
-
-    datum_impl &operator^=(datum_impl const &rhs)
-    {
-        return *this = *this ^ rhs;
-    }
-
-    friend datum_impl operator~(datum_impl const &rhs)
-    {
-        if (rhs.is_integer()) {
-            return datum_impl{~static_cast<int64_t>(rhs)};
-        } else {
-            throw operation_error("Can't bit-wise negate '~' value {} of type {}", rhs.repr(), rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator-(datum_impl const &rhs)
-    {
-        if (rhs.is_integer()) {
-            return datum_impl{-static_cast<int64_t>(rhs)};
-        } else if (rhs.is_decimal()) {
-            return datum_impl{-static_cast<decimal>(rhs)};
-        } else if (rhs.is_float()) {
-            return datum_impl{-static_cast<double>(rhs)};
-        } else {
-            throw operation_error("Can't arithmetic negate '-' value {} of type {}", rhs.repr(), rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator+(datum_impl const &rhs)
-    {
-        if (rhs.is_numeric()) {
-            return rhs;
-        } else {
-            throw operation_error("Can't arithmetic posgate '+' value {} of type {}", rhs.repr(), rhs.type_name());
-        }
-    }
-
-    friend bool operator==(datum_impl const &lhs, datum_impl const &rhs) noexcept
-    {
-        switch (lhs.type_id()) {
-        case datum_impl::phy_small_id: return rhs.is_phy_small() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
-        case datum_impl::phy_integer_id:
-        case datum_impl::phy_integer_ptr_id:
-            return (
-                (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) || // lgtm[cpp/equality-on-floats]
-                (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
-                (rhs.is_integer() && static_cast<int64_t>(lhs) == static_cast<int64_t>(rhs)));
-        case datum_impl::phy_decimal_id:
-        case datum_impl::phy_decimal_ptr_id:
-            return (
-                (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) || // lgtm[cpp/equality-on-floats]
-                (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
-                (rhs.is_integer() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)));
-        case datum_impl::phy_ymd_id: return rhs.is_ymd() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
-        case datum_impl::phy_string_id:
-        case datum_impl::phy_string_ptr_id:
-            return (
-                (rhs.is_string() && static_cast<std::string>(lhs) == static_cast<std::string>(rhs)) ||
-                (rhs.is_url() && static_cast<URL>(lhs) == static_cast<URL>(rhs)));
-        case datum_impl::phy_url_ptr_id:
-            return (rhs.is_url() || rhs.is_string()) && static_cast<URL>(lhs) == static_cast<URL>(rhs);
-        case datum_impl::phy_vector_ptr_id:
-            return rhs.is_vector() && *lhs.get_pointer<datum_impl::vector>() == *rhs.get_pointer<datum_impl::vector>();
-        case datum_impl::phy_map_ptr_id:
-            return rhs.is_map() && *lhs.get_pointer<datum_impl::map>() == *rhs.get_pointer<datum_impl::map>();
-        case datum_impl::phy_bytes_ptr_id: return (rhs.is_bytes() && static_cast<bstring>(lhs) == static_cast<bstring>(rhs));
-        default:
-            if (lhs.is_phy_float()) {
-                return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs); // lgtm[cpp/equality-on-floats]
-            } else {
-                tt_no_default();
-            }
-        }
-    }
-
-    friend bool operator<(datum_impl const &lhs, datum_impl const &rhs) noexcept
-    {
-        switch (lhs.type_id()) {
-        case datum_impl::phy_small_id:
-            if (lhs.is_bool() && rhs.is_bool()) {
-                return static_cast<bool>(lhs) < static_cast<bool>(rhs);
-            } else {
-                return lhs.get_unsigned_integer() < rhs.get_unsigned_integer();
-            }
-        case datum_impl::phy_integer_id:
-        case datum_impl::phy_integer_ptr_id:
-            if (rhs.is_float()) {
-                return static_cast<double>(lhs) < static_cast<double>(rhs);
-            } else if (rhs.is_decimal()) {
-                return static_cast<decimal>(lhs) < static_cast<decimal>(rhs);
-            } else if (rhs.is_integer()) {
-                return static_cast<int64_t>(lhs) < static_cast<int64_t>(rhs);
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
-        case datum_impl::phy_decimal_id:
-        case datum_impl::phy_decimal_ptr_id:
-            if (rhs.is_float()) {
-                return static_cast<double>(lhs) < static_cast<double>(rhs);
-            } else if (rhs.is_decimal()) {
-                return static_cast<decimal>(lhs) < static_cast<decimal>(rhs);
-            } else if (rhs.is_integer()) {
-                return static_cast<decimal>(lhs) < static_cast<decimal>(rhs);
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
-        case datum_impl::phy_ymd_id:
-            if (rhs.is_ymd()) {
-                return static_cast<std::chrono::year_month_day>(lhs) < static_cast<std::chrono::year_month_day>(rhs);
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
-        case datum_impl::phy_string_id:
-        case datum_impl::phy_string_ptr_id:
-            if (rhs.is_string()) {
-                return static_cast<std::string>(lhs) < static_cast<std::string>(rhs);
-            } else if (rhs.is_url()) {
-                return static_cast<URL>(lhs) < static_cast<URL>(rhs);
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
-        case datum_impl::phy_url_ptr_id:
-            if (rhs.is_url() || rhs.is_string()) {
-                return static_cast<URL>(lhs) < static_cast<URL>(rhs);
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
-        case datum_impl::phy_vector_ptr_id:
-            if (rhs.is_vector()) {
-                return *lhs.get_pointer<datum_impl::vector>() < *rhs.get_pointer<datum_impl::vector>();
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
-        case datum_impl::phy_map_ptr_id:
-            if (rhs.is_map()) {
-                return *lhs.get_pointer<datum_impl::map>() < *rhs.get_pointer<datum_impl::map>();
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
-        case datum_impl::phy_bytes_ptr_id:
-            if (rhs.is_bytes()) {
-                return static_cast<bstring>(lhs) < static_cast<bstring>(rhs);
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
-        default:
-            if (lhs.is_phy_float()) {
-                if (rhs.is_numeric()) {
-                    return static_cast<double>(lhs) < static_cast<double>(rhs);
-                } else {
-                    return lhs.type_order() < rhs.type_order();
-                }
-            } else {
-                tt_no_default();
-            }
-        }
-    }
-
-    friend bool operator!=(datum_impl const &lhs, datum_impl const &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-
-    friend bool operator>(datum_impl const &lhs, datum_impl const &rhs) noexcept
-    {
-        return rhs < lhs;
-    }
-
-    friend bool operator<=(datum_impl const &lhs, datum_impl const &rhs) noexcept
-    {
-        return !(rhs < lhs);
-    }
-
-    friend bool operator>=(datum_impl const &lhs, datum_impl const &rhs) noexcept
-    {
-        return !(lhs < rhs);
-    }
-
-    friend datum_impl operator+(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_float() || rhs.is_float()) {
-            ttlet lhs_ = static_cast<double>(lhs);
-            ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{lhs_ + rhs_};
-
-        } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            ttlet lhs_ = static_cast<decimal>(lhs);
-            ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{lhs_ + rhs_};
-
-        } else if (lhs.is_integer() || rhs.is_integer()) {
-            ttlet lhs_ = static_cast<long long int>(lhs);
-            ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{lhs_ + rhs_};
-
-        } else if (lhs.is_string() && rhs.is_string()) {
-            ttlet lhs_ = static_cast<std::string>(lhs);
-            ttlet rhs_ = static_cast<std::string>(rhs);
-            return datum_impl{std::move(lhs_ + rhs_)};
-
-        } else if (lhs.is_vector() && rhs.is_vector()) {
-            auto lhs_ = static_cast<datum_impl::vector>(lhs);
-            ttlet &rhs_ = *(rhs.get_pointer<datum_impl::vector>());
-            std::copy(rhs_.begin(), rhs_.end(), std::back_inserter(lhs_));
-            return datum_impl{std::move(lhs_)};
-
-        } else if (lhs.is_map() && rhs.is_map()) {
-            ttlet &lhs_ = *(lhs.get_pointer<datum_impl::map>());
-            auto rhs_ = static_cast<datum_impl::map>(rhs);
-            for (ttlet &item : lhs_) {
-                rhs_.try_emplace(item.first, item.second);
-            }
-            return datum_impl{std::move(rhs_)};
-
-        } else {
-            throw operation_error(
-                "Can't add '+' value {} of type {} to value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator-(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_float() || rhs.is_float()) {
-            ttlet lhs_ = static_cast<double>(lhs);
-            ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{lhs_ - rhs_};
-
-        } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            ttlet lhs_ = static_cast<decimal>(lhs);
-            ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{lhs_ - rhs_};
-
-        } else if (lhs.is_integer() || rhs.is_integer()) {
-            ttlet lhs_ = static_cast<long long int>(lhs);
-            ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{lhs_ - rhs_};
-
-        } else {
-            throw operation_error(
-                "Can't subtract '-' value {} of type {} from value {} of type {}",
-                rhs.repr(),
-                rhs.type_name(),
-                lhs.repr(),
-                lhs.type_name());
-        }
-    }
-
-    friend datum_impl operator*(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_float() || rhs.is_float()) {
-            ttlet lhs_ = static_cast<double>(lhs);
-            ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{lhs_ * rhs_};
-
-        } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            ttlet lhs_ = static_cast<decimal>(lhs);
-            ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{lhs_ * rhs_};
-
-        } else if (lhs.is_integer() || rhs.is_integer()) {
-            ttlet lhs_ = static_cast<long long int>(lhs);
-            ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{lhs_ * rhs_};
-
-        } else {
-            throw operation_error(
-                "Can't multiply '*' value {} of type {} with value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator/(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_float() || rhs.is_float()) {
-            ttlet lhs_ = static_cast<double>(lhs);
-            ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{lhs_ / rhs_};
-
-        } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            ttlet lhs_ = static_cast<decimal>(lhs);
-            ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{lhs_ / rhs_};
-
-        } else if (lhs.is_integer() || rhs.is_integer()) {
-            ttlet lhs_ = static_cast<long long int>(lhs);
-            ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{lhs_ / rhs_};
-
-        } else if (lhs.is_url() && (rhs.is_url() || rhs.is_string())) {
-            ttlet lhs_ = static_cast<URL>(lhs);
-            ttlet rhs_ = static_cast<URL>(rhs);
-            return datum_impl{lhs_ / rhs_};
-
-        } else {
-            throw operation_error(
-                "Can't divide '/' value {} of type {} by value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator%(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_float() || rhs.is_float()) {
-            ttlet lhs_ = static_cast<double>(lhs);
-            ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{fmod(lhs_, rhs_)};
-
-        } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            ttlet lhs_ = static_cast<decimal>(lhs);
-            ttlet rhs_ = static_cast<decimal>(rhs);
-            return datum_impl{lhs_ % rhs_};
-
-        } else if (lhs.is_integer() || rhs.is_integer()) {
-            ttlet lhs_ = static_cast<long long int>(lhs);
-            ttlet rhs_ = static_cast<long long int>(rhs);
-            return datum_impl{lhs_ % rhs_};
-
-        } else {
-            throw operation_error(
-                "Can't take modulo '%' value {} of type {} by value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator<<(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            ttlet lhs_ = static_cast<long long>(lhs);
-            ttlet rhs_ = static_cast<long long>(rhs);
-
-            if (rhs_ < 0) {
-                return lhs >> -rhs;
-            }
-
-            if (lhs_ < 0) {
-                throw operation_error("lhs value {} of left shift must not be negative", lhs);
-            }
-
-            if (rhs_ > 63) {
-                return datum_impl{0};
-            } else {
-                return datum_impl{lhs_ << rhs_};
-            }
-
-        } else {
-            throw operation_error(
-                "Can't arithmetic shift-left '<<' value {} of type {} with value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator>>(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            ttlet lhs_ = static_cast<long long>(lhs);
-            ttlet rhs_ = static_cast<long long>(rhs);
-
-            if (rhs < 0) {
-                return lhs << -rhs;
-            }
-
-            if (rhs_ > 63) {
-                return lhs_ < 0 ? datum_impl{-1} : datum_impl{0};
-            } else {
-                return datum_impl{lhs_ >> rhs_};
-            }
-
-        } else {
-            throw operation_error(
-                "Can't arithmetic shift-right '>>' value {} of type {} with value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator&(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            ttlet lhs_ = static_cast<uint64_t>(lhs);
-            ttlet rhs_ = static_cast<uint64_t>(rhs);
-            return datum_impl{lhs_ & rhs_};
-
-        } else {
-            throw operation_error(
-                "Can't AND '&' value {} of type {} with value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator|(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            ttlet lhs_ = static_cast<uint64_t>(lhs);
-            ttlet rhs_ = static_cast<uint64_t>(rhs);
-            return datum_impl{lhs_ | rhs_};
-
-        } else {
-            throw operation_error(
-                "Can't OR '|' value {} of type {} with value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend datum_impl operator^(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            ttlet lhs_ = static_cast<uint64_t>(lhs);
-            ttlet rhs_ = static_cast<uint64_t>(rhs);
-            return datum_impl{lhs_ ^ rhs_};
-
-        } else {
-            throw operation_error(
-                "Can't XOR '^' value {} of type {} with value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    friend std::string to_string(datum_impl const &d)
-    {
-        return static_cast<std::string>(d);
-    }
-
-    friend std::ostream &operator<<(std::ostream &os, datum_impl const &d)
-    {
-        return os << static_cast<std::string>(d);
-    }
-
-    friend void swap(datum_impl &lhs, datum_impl &rhs) noexcept
-    {
-        memswap(lhs, rhs);
-    }
-
-    friend datum_impl pow(datum_impl const &lhs, datum_impl const &rhs)
-    {
-        if (lhs.is_numeric() || rhs.is_numeric()) {
-            ttlet lhs_ = static_cast<double>(lhs);
-            ttlet rhs_ = static_cast<double>(rhs);
-            return datum_impl{std::pow(lhs_, rhs_)};
-
-        } else {
-            throw operation_error(
-                "Can't raise to a power '**' value {} of type {} with value {} of type {}",
-                lhs.repr(),
-                lhs.type_name(),
-                rhs.repr(),
-                rhs.type_name());
-        }
-    }
-
-    /** Merge two datums together, such that the second will override values on the first.
-     * This will merge map-datums together by recursively deep merging matching items.
+    /** Promote two datum-arguments to a common type.
      *
-     * @param lhs First datum.
-     * @param rhs Second datum that will override the first datum.
-     * @return
+     * @tparam To Type to promote to.
+     * @tparam LHS Type which has the `holds_alternative()` and `get()` free functions
+     * @tparam RHS Type which has the `holds_alternative()` and `get()` free functions
+     * @param lhs The left hand side.
+     * @param rhs The right hand side.
      */
-    friend datum_impl deep_merge(datum_impl const &lhs, datum_impl const &rhs) noexcept
+    template<typename To>
+    [[nodiscard]] friend constexpr auto promote_if(datum const &lhs, datum const &rhs) noexcept
     {
-        datum_impl result;
+        auto r = detail::datum_promotion_result<To>{};
+        if (holds_alternative<To>(lhs) and holds_alternative<To>(rhs)) {
+            r.set(get<To>(lhs), get<To>(rhs));
 
-        if (lhs.is_map() && rhs.is_map()) {
-            result = lhs;
+        } else if (holds_alternative<To>(lhs) and promotable_to<To>(rhs)) {
+            r.set(get<To>(lhs), static_cast<To>(rhs));
 
-            auto result_map = result.get_pointer<datum_impl::map>();
-            for (auto rhs_i = rhs.map_begin(); rhs_i != rhs.map_end(); rhs_i++) {
-                auto result_i = result_map->find(rhs_i->first);
-                if (result_i == result_map->end()) {
-                    result_map->insert(*rhs_i);
-                } else {
-                    result_i->second = deep_merge(result_i->second, rhs_i->second);
-                }
-            }
-
-        } else if (lhs.is_vector() && rhs.is_vector()) {
-            result = lhs;
-
-            auto result_vector = result.get_pointer<datum_impl::vector>();
-            for (auto rhs_i = rhs.vector_begin(); rhs_i != rhs.vector_end(); rhs_i++) {
-                result_vector->push_back(*rhs_i);
-            }
-
-        } else {
-            result = rhs;
+        } else if (promotable_to<To>(lhs) and holds_alternative<To>(rhs)) {
+            r.set(static_cast<To>(lhs), get<To>(rhs));
         }
 
-        return result;
+        return r;
     }
 
-    template<typename Alternative>
-    friend bool holds_alternative(datum_impl const &rhs) noexcept
+private:
+    static constexpr int64_t int48_max = 140737488355327LL;
+    static constexpr int64_t int48_min = -140737488355328LL;
+    static constexpr int64_t int40_max = 549755813887LL;
+    static constexpr int64_t int40_min = -549755813888LL;
+
+    enum class tag_type : signed char {
+        // scalars are detected by: `to_underlying(tag_type) >= 0`
+        monostate = 0,
+        floating_point = 1,
+        integral = 2,
+        decimal = 3,
+        boolean = 4,
+        null = 5,
+        year_month_day = 6,
+        flow_continue = 7,
+        flow_break = 8,
+
+        // pointers are detected by: `to_underlying(tag_type) < 0`.
+        string = -1,
+        vector = -2,
+        map = -3,
+        url = -4,
+        bstring = -5,
+    };
+
+    tag_type _tag = tag_type::monostate;
+    union value_type {
+        double _double;
+        long long _long_long;
+        decimal _decimal;
+        bool _bool;
+        std::chrono::year_month_day _year_month_day;
+        std::string *_string;
+        vector_type *_vector;
+        map_type *_map;
+        URL *_url;
+        bstring *_bstring;
+
+        constexpr value_type(numeric_integral auto value) noexcept : _long_long(static_cast<long long>(value)) {}
+        constexpr value_type(std::floating_point auto value) noexcept : _double(static_cast<double>(value)) {}
+        constexpr value_type(decimal value) noexcept : _decimal(value) {}
+        constexpr value_type(bool value) noexcept : _bool(value) {}
+        constexpr value_type(std::chrono::year_month_day value) noexcept : _year_month_day(value) {}
+        constexpr value_type(std::string *value) noexcept : _string(value) {}
+        constexpr value_type(vector_type *value) noexcept : _vector(value) {}
+        constexpr value_type(map_type *value) noexcept : _map(value) {}
+        constexpr value_type(URL *value) noexcept : _url(value) {}
+        constexpr value_type(bstring *value) noexcept : _bstring(value) {}
+    };
+
+    value_type _value;
+
+    [[nodiscard]] constexpr bool is_scalar() const noexcept
     {
-        if constexpr (std::is_same_v<Alternative, std::string>) {
-            return rhs.is_string();
-        } else {
-            return false;
+        return to_underlying(_tag) >= 0;
+    }
+
+    [[nodiscard]] constexpr bool is_pointer() const noexcept
+    {
+        return to_underlying(_tag) < 0;
+    }
+
+    tt_no_inline void copy_pointer(datum const &other) noexcept
+    {
+        tt_axiom(other.is_pointer());
+        switch (other._tag) {
+        case tag_type::string: _value._string = new std::string{*other._value._string}; return;
+        case tag_type::vector: _value._vector = new vector_type{*other._value._vector}; return;
+        case tag_type::map: _value._map = new map_type{*other._value._map}; return;
+        case tag_type::url: _value._url = new URL{*other._value._url}; return;
+        case tag_type::bstring: _value._bstring = new bstring{*other._value._bstring}; return;
+        default: tt_no_default();
+        }
+    }
+
+    tt_no_inline void _delete_pointer() noexcept
+    {
+        tt_axiom(is_pointer());
+        switch (_tag) {
+        case tag_type::string: delete _value._string; return;
+        case tag_type::vector: delete _value._vector; return;
+        case tag_type::map: delete _value._map; return;
+        case tag_type::url: delete _value._url; return;
+        case tag_type::bstring: delete _value._bstring; return;
+        default: tt_no_default();
+        }
+    }
+
+    constexpr void delete_pointer() noexcept
+    {
+        if (is_pointer()) {
+            delete_pointer();
         }
     }
 };
-
-template<typename T, bool HasLargeObjects>
-inline bool will_cast_to(datum_impl<HasLargeObjects> const &rhs)
-{
-    if constexpr (std::is_same_v<T, bool>) {
-        return true;
-    } else if constexpr (std::is_same_v<T, char>) {
-        return rhs.is_string();
-    } else if constexpr (std::is_arithmetic_v<T>) {
-        return rhs.is_numeric();
-    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::undefined>) {
-        return rhs.is_undefined();
-    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::null>) {
-        return rhs.is_null();
-    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::_break>) {
-        return rhs.is_break();
-    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::_continue>) {
-        return rhs.is_continue();
-    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::vector>) {
-        return rhs.is_vector();
-    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::map>) {
-        return rhs.is_map();
-    } else if constexpr (std::is_same_v<T, URL>) {
-        return rhs.is_url() || rhs.is_string();
-    } else if constexpr (std::is_same_v<T, std::string>) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-template<bool HasLargeObjects>
-bool operator<(
-    typename datum_impl<HasLargeObjects>::map const &lhs,
-    typename datum_impl<HasLargeObjects>::map const &rhs) noexcept
-{
-    auto lhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) {
-        return x.first;
-    });
-    auto rhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) {
-        return x.first;
-    });
-
-    if (lhs_keys == rhs_keys) {
-        for (ttlet &k : lhs_keys) {
-            if (lhs.at(k) == rhs.at(k)) {
-                continue;
-            } else if (lhs.at(k) < rhs.at(k)) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    } else {
-        return lhs_keys < rhs_keys;
-    }
-    return false;
-}
-
-using datum = datum_impl<true>;
-using sdatum = datum_impl<false>;
 
 } // namespace tt
 
 namespace std {
-
-template<bool HasLargeObjects>
-inline size_t hash<tt::datum_impl<HasLargeObjects>>::operator()(tt::datum_impl<HasLargeObjects> const &value) const
+[[nodiscard]] constexpr size_t hash<tt::datum>::operator()(tt::datum const &rhs) const noexcept
 {
-    return value.hash();
+    return rhs.hash();
 }
 
 template<typename CharT>
-struct formatter<tt::datum_impl<false>, CharT> : formatter<string_view, CharT> {
-    auto format(tt::datum_impl<false> t, auto &fc)
+struct std::formatter<tt::datum, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(tt::datum const &t, auto &fc)
     {
-        return formatter<string_view, CharT>::format(to_string(t), fc);
-    }
-};
-
-template<typename CharT>
-struct formatter<tt::datum_impl<true>, CharT> : formatter<string_view, CharT> {
-    auto format(tt::datum_impl<true> t, auto &fc)
-    {
-        return formatter<string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
 

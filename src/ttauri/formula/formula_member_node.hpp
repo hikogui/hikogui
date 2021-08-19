@@ -64,7 +64,7 @@ struct formula_member_node final : formula_binary_operator_node {
         }
     }
 
-    datum call(formula_evaluation_context& context, datum::vector const &arguments) const override {
+    datum call(formula_evaluation_context& context, datum::vector_type const &arguments) const override {
         auto &lhs_ = lhs->evaluate_lvalue(context);
         try {
             return method(context, lhs_, arguments);

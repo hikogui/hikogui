@@ -60,7 +60,7 @@ struct skeleton_function_node final: skeleton_node {
         return {};
     }
 
-    datum evaluate_call(formula_evaluation_context &context, datum::vector const &arguments) {
+    datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments) {
         context.push();
         if (std::ssize(argument_names) != std::ssize(arguments)) {
             throw operation_error("{}: Invalid number of arguments to function {}() expecting {} got {}.", location, name, argument_names.size(), arguments.size());

@@ -10,25 +10,26 @@
 #include "../exception.hpp"
 #include "../cast.hpp"
 #include <cstddef>
+#include <string>
 
 namespace tt {
 namespace detail {
 constexpr auto BON8_code_float_min_one = uint8_t{0xba};
-constexpr auto BON8_code_float_zero    = uint8_t{0xbb};
-constexpr auto BON8_code_float_one     = uint8_t{0xbc};
-constexpr auto BON8_code_array_empty   = uint8_t{0xbd};
-constexpr auto BON8_code_object_empty  = uint8_t{0xbe};
-constexpr auto BON8_code_null          = uint8_t{0xbf};
-constexpr auto BON8_code_bool_false    = uint8_t{0xc0};
-constexpr auto BON8_code_bool_true     = uint8_t{0xc1};
-constexpr auto BON8_code_int32         = uint8_t{0xf8};
-constexpr auto BON8_code_int64         = uint8_t{0xf9};
-constexpr auto BON8_code_binary32      = uint8_t{0xfa};
-constexpr auto BON8_code_binary64      = uint8_t{0xfb};
-constexpr auto BON8_code_array         = uint8_t{0xfc};
-constexpr auto BON8_code_object        = uint8_t{0xfd};
-constexpr auto BON8_code_eoc           = uint8_t{0xfe};
-constexpr auto BON8_code_eot           = uint8_t{0xff};
+constexpr auto BON8_code_float_zero = uint8_t{0xbb};
+constexpr auto BON8_code_float_one = uint8_t{0xbc};
+constexpr auto BON8_code_array_empty = uint8_t{0xbd};
+constexpr auto BON8_code_object_empty = uint8_t{0xbe};
+constexpr auto BON8_code_null = uint8_t{0xbf};
+constexpr auto BON8_code_bool_false = uint8_t{0xc0};
+constexpr auto BON8_code_bool_true = uint8_t{0xc1};
+constexpr auto BON8_code_int32 = uint8_t{0xf8};
+constexpr auto BON8_code_int64 = uint8_t{0xf9};
+constexpr auto BON8_code_binary32 = uint8_t{0xfa};
+constexpr auto BON8_code_binary64 = uint8_t{0xfb};
+constexpr auto BON8_code_array = uint8_t{0xfc};
+constexpr auto BON8_code_object = uint8_t{0xfd};
+constexpr auto BON8_code_eoc = uint8_t{0xfe};
+constexpr auto BON8_code_eot = uint8_t{0xff};
 
 /** Decode BON8 message from buffer.
  * @param ptr [in,out] Pointer to start of byte-buffer. After the call
@@ -40,7 +41,6 @@ constexpr auto BON8_code_eot           = uint8_t{0xff};
 
 [[nodiscard]] bstring encode_BON8(datum const &value);
 
-
 /** BON8 encoder.
  */
 class BON8_encoder {
@@ -48,31 +48,32 @@ class BON8_encoder {
     bstring output;
 
 public:
-    BON8_encoder() noexcept :
-        open_string(false), output() {}
+    BON8_encoder() noexcept : open_string(false), output() {}
 
     /** Return a byte_string of the encoded object.
      */
-    bstring const &get() const noexcept {
+    bstring const &get() const noexcept
+    {
         return output;
     }
 
     /** And a signed integer.
      * @param value A signed integer.
      */
-    void add(signed long long value) noexcept {
+    void add(signed long long value) noexcept
+    {
         open_string = false;
 
         if (value < std::numeric_limits<int32_t>::min()) {
             output += static_cast<std::byte>(BON8_code_int64);
             for (int i = 0; i != 8; ++i) {
-                output += static_cast<std::byte>(value >> (56 - i*8));
+                output += static_cast<std::byte>(value >> (56 - i * 8));
             }
 
         } else if (value < -33554432) {
             output += static_cast<std::byte>(BON8_code_int32);
             for (int i = 0; i != 4; ++i) {
-                output += static_cast<std::byte>(value >> (24 - i*8));
+                output += static_cast<std::byte>(value >> (24 - i * 8));
             }
 
         } else if (value < -262144) {
@@ -118,13 +119,13 @@ public:
         } else if (value <= std::numeric_limits<int32_t>::max()) {
             output += static_cast<std::byte>(BON8_code_int32);
             for (int i = 0; i != 4; ++i) {
-                output += static_cast<std::byte>(value >> (24 - i*8));
+                output += static_cast<std::byte>(value >> (24 - i * 8));
             }
 
         } else {
             output += static_cast<std::byte>(BON8_code_int64);
             for (int i = 0; i != 8; ++i) {
-                output += static_cast<std::byte>(value >> (56 - i*8));
+                output += static_cast<std::byte>(value >> (56 - i * 8));
             }
         }
     }
@@ -132,70 +133,80 @@ public:
     /** And a unsigned integer.
      * @param value A unsigned integer.
      */
-    void add(unsigned long long value) noexcept {
+    void add(unsigned long long value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
      * @param value A signed integer.
      */
-    void add(signed long value) noexcept {
+    void add(signed long value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
      * @param value A unsigned integer.
      */
-    void add(unsigned long value) noexcept {
+    void add(unsigned long value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
      * @param value A signed integer.
      */
-    void add(signed int value) noexcept {
+    void add(signed int value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
      * @param value A unsigned integer.
      */
-    void add(unsigned int value) noexcept {
+    void add(unsigned int value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
      * @param value A signed integer.
      */
-    void add(signed short value) noexcept {
+    void add(signed short value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
      * @param value A unsigned integer.
      */
-    void add(unsigned short value) noexcept {
+    void add(unsigned short value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a signed integer.
      * @param value A signed integer.
      */
-    void add(signed char value) noexcept {
+    void add(signed char value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** And a unsigned integer.
      * @param value A unsigned integer.
      */
-    void add(unsigned char value) noexcept {
+    void add(unsigned char value) noexcept
+    {
         return add(narrow_cast<signed long long>(value));
     }
 
     /** Add a floating point number.
      * @param value A floating point number.
      */
-    void add(double value) noexcept {
+    void add(double value) noexcept
+    {
         open_string = false;
 
         ttlet f32 = static_cast<float>(value);
@@ -216,7 +227,7 @@ public:
 
             output += static_cast<std::byte>(BON8_code_binary32);
             for (int i = 0; i != 4; ++i) {
-                output += static_cast<std::byte>(u32 >> (24 - i*8));
+                output += static_cast<std::byte>(u32 >> (24 - i * 8));
             }
 
         } else {
@@ -225,7 +236,7 @@ public:
 
             output += static_cast<std::byte>(BON8_code_binary64);
             for (int i = 0; i != 8; ++i) {
-                output += static_cast<std::byte>(u64 >> (56 - i*8));
+                output += static_cast<std::byte>(u64 >> (56 - i * 8));
             }
         }
     }
@@ -233,14 +244,16 @@ public:
     /** Add a floating point number.
      * @param value A floating point number.
      */
-    void add(float value) noexcept {
+    void add(float value) noexcept
+    {
         return add(narrow_cast<double>(value));
     }
 
     /** Add a boolean.
      * @param value A boolean value.
      */
-    void add(bool value) noexcept {
+    void add(bool value) noexcept
+    {
         open_string = false;
         output += static_cast<std::byte>(value ? BON8_code_bool_true : BON8_code_bool_false);
     }
@@ -248,7 +261,8 @@ public:
     /** Add a null.
      * @param value A null pointer.
      */
-    void add(nullptr_t value) noexcept {
+    void add(nullptr_t value) noexcept
+    {
         open_string = false;
         output += static_cast<std::byte>(BON8_code_null);
     }
@@ -258,7 +272,8 @@ public:
      *
      * @param value A UTF-8 string.
      */
-    void add(std::u8string_view value) noexcept {
+    void add(std::string_view value) noexcept
+    {
         if (open_string) {
             output += static_cast<std::byte>(BON8_code_eot);
         }
@@ -303,10 +318,11 @@ public:
     /** Add a UTF-8 string.
      * It is important that the UTF-8 string is valid.
      *
-     * @param value A UTF-8 string
+     * @param value A UTF-8 string.
      */
-    void add(std::u8string const &value) noexcept {
-        return add(std::u8string_view{value});
+    void add(std::string const &value) noexcept
+    {
+        add(std::string_view{value});
     }
 
     /** Add a UTF-8 string.
@@ -314,8 +330,9 @@ public:
      *
      * @param value A UTF-8 string.
      */
-    void add(char8_t const *value) noexcept {
-        return add(std::u8string_view{value});
+    void add(char const *value) noexcept
+    {
+        add(std::string_view{value});
     }
 
     /** Add a datum.
@@ -328,14 +345,15 @@ public:
      * @param items A vector of values.
      */
     template<typename T>
-    void add(std::vector<T> const &items) {
+    void add(std::vector<T> const &items)
+    {
         open_string = false;
         if (std::ssize(items) == 0) {
             output += static_cast<std::byte>(BON8_code_array_empty);
         } else {
             output += static_cast<std::byte>(BON8_code_array);
 
-            for (ttlet &item: items) {
+            for (ttlet &item : items) {
                 add(item);
             }
 
@@ -350,8 +368,9 @@ public:
      * @param items The map of key/value pairs.
      */
     template<typename Key, typename Value>
-    void add(std::map<Key,Value> const &items) {
-        using item_type = typename std::map<Key,Value>::value_type;
+    void add(std::map<Key, Value> const &items)
+    {
+        using item_type = typename std::map<Key, Value>::value_type;
 
         open_string = false;
         if (std::ssize(items) == 0) {
@@ -360,13 +379,11 @@ public:
             // Keys must be ordered lexically.
             auto sorted_items = std::vector<std::reference_wrapper<item_type>>{items.begin(), items.end()};
             std::sort(sorted_items.begin(), sorted_items.end(), [](item_type const &a, item_type const &b) {
-                return
-                    static_cast<std::u8string_view>(a.first) <
-                    static_cast<std::u8string_view>(b.first);
+                return static_cast<std::u8string_view>(a.first) < static_cast<std::u8string_view>(b.first);
             });
 
             output += static_cast<std::byte>(BON8_code_object);
-            for (item_type const &item: sorted_items) {
+            for (item_type const &item : sorted_items) {
                 add(static_cast<std::u8string_view>(item.first));
                 add(item.second);
             }
@@ -376,21 +393,24 @@ public:
     }
 };
 
-void BON8_encoder::add(datum const &value) {
-    if (value.is_string() || value.is_url()) {
+void BON8_encoder::add(datum const &value)
+{
+    if (holds_alternative<std::string>(value)) {
+        add(get<std::string>(value));
+    } else if (holds_alternative<URL>(value)) {
         add(static_cast<std::string>(value));
-    } else if (value.is_bool()) {
-        add(static_cast<bool>(value));
-    } else if (value.is_null()) {
+    } else if (holds_alternative<bool>(value)) {
+        add(get<bool>(value));
+    } else if (holds_alternative<nullptr_t>(value)) {
         add(nullptr);
-    } else if (value.is_integer()) {
-        add(static_cast<signed long long>(value));
-    } else if (value.is_float()) {
-        add(static_cast<double>(value));
-    } else if (value.is_vector()) {
-        add(static_cast<datum::vector>(value));
-    } else if (value.is_map()) {
-        add(static_cast<datum::map>(value));
+    } else if (holds_alternative<long long>(value)) {
+        add(get<long long>(value));
+    } else if (holds_alternative<double>(value)) {
+        add(get<double>(value));
+    } else if (holds_alternative<datum::vector_type>(value)) {
+        add(get<datum::vector_type>(value));
+    } else if (holds_alternative<datum::map_type>(value)) {
+        add(get<datum::map_type>(value));
     } else {
         throw operation_error("Datum value can not be encoded to BON8");
     }
@@ -404,12 +424,10 @@ void BON8_encoder::add(datum const &value) {
  * @return When positive: the number of bytes in the UTF-8 character.
  *         When negative: the number of bytes in the integer.
  */
-[[nodiscard]] int BON8_multibyte_count(cbyteptr ptr, cbyteptr last) {
+[[nodiscard]] int BON8_multibyte_count(cbyteptr ptr, cbyteptr last)
+{
     ttlet c0 = static_cast<uint8_t>(*ptr);
-    int count =
-        c0 <= 0xdf ? 2 :
-        c0 <= 0xef ? 3 :
-        4;
+    int count = c0 <= 0xdf ? 2 : c0 <= 0xef ? 3 : 4;
 
     tt_parse_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
 
@@ -472,7 +490,7 @@ void BON8_encoder::add(datum const &value) {
 
 [[nodiscard]] datum decode_BON8_array(cbyteptr &ptr, cbyteptr last)
 {
-    auto r = datum::vector{};
+    auto r = datum::vector_type{};
 
     while (ptr != last) {
         if (*ptr == static_cast<std::byte>(BON8_code_eoc)) {
@@ -488,7 +506,7 @@ void BON8_encoder::add(datum const &value) {
 
 [[nodiscard]] datum decode_BON8_object(cbyteptr &ptr, cbyteptr last)
 {
-    auto r = datum::map{};
+    auto r = datum::map_type{};
 
     while (ptr != last) {
         if (*ptr == static_cast<std::byte>(BON8_code_eoc)) {
@@ -546,7 +564,8 @@ void BON8_encoder::add(datum const &value) {
     return datum{is_positive ? value : -value};
 }
 
-[[nodiscard]] datum decode_BON8(cbyteptr &ptr, cbyteptr last) {
+[[nodiscard]] datum decode_BON8(cbyteptr &ptr, cbyteptr last)
+{
     std::string str;
 
     while (ptr != last) {
@@ -584,7 +603,7 @@ void BON8_encoder::add(datum const &value) {
             // This must be a non-string type, but first return the current string.
             return datum{str};
 
-        // Everything below this, are non-string types.
+            // Everything below this, are non-string types.
         } else if (c <= 0xaf) {
             // 1 byte positive integer
             return datum{c - 0x80};
@@ -596,59 +615,33 @@ void BON8_encoder::add(datum const &value) {
         } else {
             // This is one of the non-string types.
             switch (c) {
-            case BON8_code_null:
-                ++ptr;
-                return datum{datum::null{}};
+            case BON8_code_null: ++ptr; return datum{nullptr};
 
-            case BON8_code_bool_false:
-                ++ptr;
-                return datum{false};
+            case BON8_code_bool_false: ++ptr; return datum{false};
 
-            case BON8_code_bool_true:
-                ++ptr;
-                return datum{true};
+            case BON8_code_bool_true: ++ptr; return datum{true};
 
-            case BON8_code_float_min_one:
-                ++ptr;
-                return datum{-1.0f};
+            case BON8_code_float_min_one: ++ptr; return datum{-1.0f};
 
-            case BON8_code_float_zero:
-                ++ptr;
-                return datum{-0.0f};
+            case BON8_code_float_zero: ++ptr; return datum{-0.0f};
 
-            case BON8_code_float_one:
-                ++ptr;
-                return datum{1.0f};
+            case BON8_code_float_one: ++ptr; return datum{1.0f};
 
-            case BON8_code_int32:
-                ++ptr;
-                return decode_BON8_int(ptr, last, 4);
+            case BON8_code_int32: ++ptr; return decode_BON8_int(ptr, last, 4);
 
-            case BON8_code_int64:
-                ++ptr;
-                return decode_BON8_int(ptr, last, 8);
+            case BON8_code_int64: ++ptr; return decode_BON8_int(ptr, last, 8);
 
-            case BON8_code_binary32:
-                ++ptr;
-                return decode_BON8_float(ptr, last, 4);
+            case BON8_code_binary32: ++ptr; return decode_BON8_float(ptr, last, 4);
 
-            case BON8_code_binary64:
-                ++ptr;
-                return decode_BON8_float(ptr, last, 8);
+            case BON8_code_binary64: ++ptr; return decode_BON8_float(ptr, last, 8);
 
-            case BON8_code_eoc:
-                throw parse_error("Unexpected end-of-container");
+            case BON8_code_eoc: throw parse_error("Unexpected end-of-container");
 
-            case BON8_code_array:
-                ++ptr;
-                return decode_BON8_array(ptr, last);
+            case BON8_code_array: ++ptr; return decode_BON8_array(ptr, last);
 
-            case BON8_code_object:
-                ++ptr;
-                return decode_BON8_object(ptr, last);
+            case BON8_code_object: ++ptr; return decode_BON8_object(ptr, last);
 
-            default:
-                tt_no_default();
+            default: tt_no_default();
             }
         }
     }
@@ -700,4 +693,4 @@ void BON8_encoder::add(datum const &value) {
     return encoder.get();
 }
 
-}
+} // namespace tt

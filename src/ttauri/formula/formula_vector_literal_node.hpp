@@ -21,7 +21,7 @@ struct formula_vector_literal_node final : formula_node {
     }
 
     datum evaluate(formula_evaluation_context& context) const override {
-        datum::vector r;
+        datum::vector_type r;
         for (ttlet &value: values) {
             r.push_back(value->evaluate(context));
         }
@@ -29,7 +29,7 @@ struct formula_vector_literal_node final : formula_node {
     }
 
     datum &assign(formula_evaluation_context& context, datum const &rhs) const override {
-        if (!rhs.is_vector()) {
+        if (!holds_alternative<datum::vector_type>(rhs)) {
             throw operation_error("{}: Unpacking values can only be done on vectors, got {}.", location, rhs);
         }
         if (values.size() < 1) {

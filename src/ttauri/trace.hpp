@@ -91,7 +91,7 @@ struct trace_data {
      */
     time_stamp_count time_stamp;
 
-    tagged_map<sdatum, InfoTags...> info;
+    tagged_map<datum, InfoTags...> info;
 
     trace_data(time_stamp_count time_stamp) : time_stamp(time_stamp) {}
 
@@ -103,13 +103,13 @@ struct trace_data {
     trace_data &operator=(trace_data &&other) = default;
 
     template<basic_fixed_string InfoTag>
-    sdatum &get() noexcept
+    datum &get() noexcept
     {
         return info.template get<InfoTag>();
     }
 
     template<basic_fixed_string InfoTag>
-    sdatum const &get() const noexcept
+    datum const &get() const noexcept
     {
         return info.template get<InfoTag>();
     }

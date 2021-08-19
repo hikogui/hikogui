@@ -170,7 +170,7 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
 
         } else if (*context == "null") {
             ++context;
-            return std::make_unique<formula_literal_node>(location, datum::null{});
+            return std::make_unique<formula_literal_node>(location, datum{nullptr});
 
         } else if (*context == "undefined") {
             ++context;

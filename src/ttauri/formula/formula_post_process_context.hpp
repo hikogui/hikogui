@@ -19,10 +19,10 @@ namespace tt {
 struct formula_post_process_context {
     using filter_type = std::function<std::string(std::string_view)>;
     using filter_table = std::unordered_map<std::string,filter_type>;
-    using function_type = std::function<datum(formula_evaluation_context&, datum::vector const &)>;
+    using function_type = std::function<datum(formula_evaluation_context&, datum::vector_type const &)>;
     using function_table = std::unordered_map<std::string,function_type>;
     using function_stack = std::vector<function_type>;
-    using method_type = std::function<datum(formula_evaluation_context&, datum &, datum::vector const &)>;
+    using method_type = std::function<datum(formula_evaluation_context&, datum &, datum::vector_type const &)>;
     using method_table = std::unordered_map<std::string,method_type>;
 
     function_table functions;

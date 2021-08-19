@@ -12,82 +12,82 @@ using namespace tt;
 
 
 TEST(JSON, ParseEmpty) {
-    ASSERT_EQ(parse_JSON("{}"), datum::map{});
+    ASSERT_EQ(parse_JSON("{}"), datum::make_map());
 }
 
 TEST(JSON, ParseInteger) {
-    auto expected = datum::map{};
+    auto expected = datum::make_map();
     expected["foo"] = 42;
     ASSERT_EQ(parse_JSON("{\"foo\": 42}"), expected);
 }
 
 TEST(JSON, ParseFloat) {
-    auto expected = datum::map{};
+    auto expected = datum::make_map();
     expected["foo"] = 42.0;
     ASSERT_EQ(parse_JSON("{\"foo\": 42.0}"), expected);
 }
 
 TEST(JSON, ParseString) {
-    auto expected = datum::map{};
+    auto expected = datum::make_map();
     expected["foo"] = "bar";
     ASSERT_EQ(parse_JSON("{\"foo\": \"bar\"}"), expected);
 }
 
 TEST(JSON, ParseBooleanTrue) {
-    auto expected = datum::map{};
+    auto expected = datum::make_map();
     expected["foo"] = true;
     ASSERT_EQ(parse_JSON("{\"foo\": true}"), expected);
 }
 
 TEST(JSON, ParseBooleanFalse) {
-    auto expected = datum::map{};
+    auto expected = datum::make_map();
     expected["foo"] = false;
     ASSERT_EQ(parse_JSON("{\"foo\": false}"), expected);
 }
 
 TEST(JSON, ParseNull) {
-    auto expected = datum::map{};
-    expected["foo"] = datum::null{};
+    auto expected = datum::make_map();
+    expected["foo"] = datum{nullptr};
     ASSERT_EQ(parse_JSON("{\"foo\": null}"), expected);
 }
 
 TEST(JSON, ParseEmptyArray) {
-    auto expected = datum::map{};
-    expected["foo"] = datum::vector{};
+    auto expected = datum::make_map();
+    expected["foo"] = datum::make_vector();
     ASSERT_EQ(parse_JSON("{\"foo\": []}"), expected);
 }
 
 TEST(JSON, ParseSingleItemArray) {
-    auto expected = datum::map{};
-    expected["foo"] = datum::vector{42};
+    auto expected = datum::make_map();
+    expected["foo"] = datum::make_vector(42);
     ASSERT_EQ(parse_JSON("{\"foo\": [42]}"), expected);
     ASSERT_EQ(parse_JSON("{\"foo\": [42,]}"), expected);
 }
 
 TEST(JSON, ParseTwoItemArray) {
-    auto expected = datum::map{};
-    expected["foo"] = datum::vector{42, 43};
+    auto expected = datum::make_map();
+    expected["foo"] = datum::make_vector(42, 43);
     ASSERT_EQ(parse_JSON("{\"foo\": [42, 43]}"), expected);
     ASSERT_EQ(parse_JSON("{\"foo\": [42, 43,]}"), expected);
 }
 
 TEST(JSON, ParseEmptyObject) {
-    auto expected = datum::map{};
-    expected["foo"] = datum::map{};
+    auto expected = datum::make_map();
+    expected["foo"] = datum::make_map();
     ASSERT_EQ(parse_JSON("{\"foo\": {}}"), expected);
 }
 
 TEST(JSON, ParseSingleItemObject) {
-    auto expected = datum::map{};
-    expected["foo"] = datum::map{};
+    auto expected = datum::make_map();
+    expected["foo"] = datum::make_map();
     expected["foo"]["bar"] = 42;
     ASSERT_EQ(parse_JSON("{\"foo\": {\"bar\": 42}}"), expected);
     ASSERT_EQ(parse_JSON("{\"foo\": {\"bar\": 42,}}"), expected);
 }
 
 TEST(JSON, ParseTwoItemObject) {
-    auto expected = datum::map{};
-    expected["foo"] = datum::map{};
+    auto expected = datum::make_map();
+    expected["foo"] = datum::make_map();
     expected["foo"]["bar"] = 42;
     expected["foo"]["baz"] = 43;
     ASSERT_EQ(parse_JSON("{\"foo\": {\"bar\": 42, \"baz\": 43}}"), expected);

@@ -21,7 +21,7 @@ struct skeleton_block_node final: skeleton_node {
         name = name_expression->get_name();
 
         super_function = context.set_function(name,
-            [&](formula_evaluation_context &context, datum::vector const &arguments) {
+            [&](formula_evaluation_context &context, datum::vector_type const &arguments) {
             return this->evaluate_call(context, arguments);
         }
         );
@@ -72,7 +72,7 @@ struct skeleton_block_node final: skeleton_node {
         }
     }
 
-    datum evaluate_call(formula_evaluation_context &context, datum::vector const &arguments) {
+    datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments) {
         context.push();
         auto tmp = evaluate_children(context, children);
         context.pop();
