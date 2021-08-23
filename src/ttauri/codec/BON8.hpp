@@ -368,7 +368,7 @@ public:
      * @param items The map of key/value pairs.
      */
     template<typename Key, typename Value>
-    void add(std::unordered_map<Key, Value> const &items)
+    void add(std::map<Key, Value> const &items)
     {
         using key_type = typename std::remove_cvref_t<decltype(items)>::key_type;
 
@@ -377,23 +377,10 @@ public:
             output += static_cast<std::byte>(BON8_code_object_empty);
 
         } else {
-            // Keys must be ordered lexically.
-            auto keys = std::vector<key_type const *>();
-            keys.reserve(std::size(items));
-            for (ttlet &item : items) {
-                keys.push_back(&(item.first));
-            }
-            std::sort(keys.begin(), keys.end(), [](ttlet &a, ttlet &b) {
-                return static_cast<std::string_view>(*a) < static_cast<std::string_view>(*b);
-            });
-
             output += static_cast<std::byte>(BON8_code_object);
-            for (ttlet &key : keys) {
-                auto it = items.find(*key);
-                tt_axiom(it != items.end());
-
-                add(static_cast<std::string_view>(it->first));
-                add(it->second);
+            for (ttlet &item : items) {
+                add(static_cast<std::string_view>(item.first));
+                add(item.second);
             }
             output += static_cast<std::byte>(BON8_code_eoc);
         }

@@ -66,9 +66,13 @@ public:
         return static_cast<bool>(_file);
     }
 
-    [[nodiscard]] URL const &file() const noexcept
+    [[nodiscard]] URL file() const noexcept
     {
-        return *_file;
+        if (_file) {
+            return *_file;
+        } else {
+            return {};
+        }
     }
 
     [[nodiscard]] int line() const noexcept
@@ -171,7 +175,7 @@ public:
 
     friend std::string to_string(parse_location const &l) noexcept
     {
-        return std::format("{0}:{1}:{2}", l.file(), l.line(), l.column());
+        return std::format("{}:{}:{}", l.file(), l.line(), l.column());
     }
 
     friend std::ostream &operator<<(std::ostream &os, parse_location const &l)

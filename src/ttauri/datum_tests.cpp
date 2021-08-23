@@ -82,7 +82,10 @@ TEST(Datum, FloatOperations) {
 
     ASSERT_EQ(static_cast<int>(v), 42);
     ASSERT_EQ(static_cast<float>(v), 42.0);
-    ASSERT_EQ(static_cast<std::string>(v), "42.0"s);
+    ASSERT_EQ(static_cast<std::string>(v), "42"s);
+    ASSERT_EQ(to_string(v), "42"s);
+    ASSERT_EQ(std::format("{}", v), "42"s);
+    ASSERT_EQ(repr(v), "42.0"s);
     ASSERT_EQ(static_cast<bool>(v), true);
 
     ASSERT_EQ(v == 42.0, true);
@@ -119,9 +122,9 @@ TEST(Datum, ArrayOperations) {
     ASSERT_EQ(v[2], 13);
     ASSERT_EQ(v[3], 14);
     ASSERT_EQ(v[4], 15);
-    ASSERT_THROW((void)(v[5]), operation_error);
-
-    ASSERT_THROW((void)(v[-6]), operation_error);
+    ASSERT_THROW((void)(v[5]), std::overflow_error);
+    
+    ASSERT_THROW((void)(v[-6]), std::overflow_error);
     ASSERT_EQ(v[-5], 11);
     ASSERT_EQ(v[-4], 12);
     ASSERT_EQ(v[-3], 13);

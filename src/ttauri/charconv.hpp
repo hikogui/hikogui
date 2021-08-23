@@ -24,7 +24,7 @@ template<std::integral T>
     ttlet last = first + std::size(buffer);
 
     ttlet[new_last, ec] = std::to_chars(first, last, value);
-    tt_assert(ec == std::errc{});
+    tt_axiom(ec == std::errc{});
 
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));
@@ -46,7 +46,7 @@ template<std::floating_point T>
     ttlet last = first + std::size(buffer);
 
     ttlet[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
-    tt_assert(ec != std::errc{});
+    tt_axiom(ec == std::errc{});
 
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));
@@ -70,7 +70,7 @@ template<std::integral T>
     ttlet last = first + std::ssize(str);
 
     ttlet[new_last, ec] = std::from_chars(first, last, value, base);
-    if (ec != std::errc{} || new_last != last) {
+    if (ec != std::errc{} or new_last != last) {
         throw parse_error("Can not convert string to integer");
     }
 

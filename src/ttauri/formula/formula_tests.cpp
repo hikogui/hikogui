@@ -396,7 +396,7 @@ TEST(Formula, FunctionCall)
     ASSERT_NO_THROW(e = parse_formula("float(5)"));
     ASSERT_EQ(e->string(), "(float(5))");
     ASSERT_NO_THROW(r = e->evaluate(context));
-    ASSERT_EQ(to_string(r), "5.0");
+    ASSERT_EQ(repr(r), "5.0");
 }
 
 TEST(Formula, MethodCall)

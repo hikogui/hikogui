@@ -12,6 +12,8 @@
 #include "URL.hpp"
 #include "byte_string.hpp"
 #include "hash.hpp"
+#include "charconv.hpp"
+#include "codec/base_n.hpp"
 #include <cstdint>
 #include <concepts>
 #include <bit>
@@ -19,7 +21,7 @@
 #include <chrono>
 #include <limits>
 #include <vector>
-#include <unordered_map>
+#include <map>
 
 namespace tt {
 class datum;
@@ -181,7 +183,7 @@ private :
 class datum {
 public:
     using vector_type = std::vector<datum>;
-    using map_type = std::unordered_map<datum, datum>;
+    using map_type = std::map<datum, datum>;
     struct break_type {};
     struct continue_type {};
 
@@ -465,11 +467,15 @@ public:
     explicit operator std::string() const noexcept
     {
         switch (_tag) {
+        case tag_type::monostate: return "undefined"s;
         case tag_type::floating_point: return tt::to_string(_value._double);
         case tag_type::decimal: return to_string(_value._decimal);
         case tag_type::integral: return to_string(_value._long_long);
         case tag_type::boolean: return _value._bool ? "true"s : "false"s;
         case tag_type::year_month_day: return std::format("{:%Y-%m-%d}", _value._year_month_day);
+        case tag_type::null: return "null"s;
+        case tag_type::flow_break: return "break"s;
+        case tag_type::flow_continue: return "continue"s;
         case tag_type::string: return *_value._string;
         case tag_type::url: return to_string(*_value._url);
         case tag_type::vector: {
@@ -530,8 +536,8 @@ public:
     {
         if (auto u = get_if<URL>(*this)) {
             return *u;
-        } else if (auto u = get_if<std::string>(*this)) {
-            return URL{*u};
+        } else if (auto s = get_if<std::string>(*this)) {
+            return URL{*s};
         } else {
             throw std::domain_error(std::format("Can't convert {} to an URL", repr(*this)));
         }
@@ -748,7 +754,6 @@ public:
             for (ttlet &kv : *m) {
                 r.push_back(kv.first);
             }
-            std::sort(r.begin(), r.end());
             return r;
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.keys()", repr(*this)));
@@ -779,11 +784,8 @@ public:
             auto r = vector_type{};
             r.reserve(std::size(*m));
 
-            ttlet keys_ = keys();
-            for (ttlet &key : keys_) {
-                auto it = m->find(key);
-                tt_axiom(it != m->end());
-                r.push_back(make_vector(it->first, it->second));
+            for (ttlet &item : *m) {
+                r.push_back(make_vector(item.first, item.second));
             }
             return r;
         } else {
@@ -946,13 +948,22 @@ public:
         }
     }
 
+    constexpr datum &operator+=(auto const &rhs)
+    {
+        if (holds_alternative<vector_type>(*this)) {
+            push_back(rhs);
+            return *this;
+        } else {
+            return (*this) = (*this) + rhs;
+        }
+    }
+
 #define X(op, inner_op) \
     constexpr datum &operator op(auto const &rhs) \
     { \
         return (*this) = (*this) inner_op rhs; \
     }
 
-    X(+=, +)
     X(-=, -)
     X(*=, *)
     X(/=, /)
@@ -994,7 +1005,7 @@ public:
             return maps.lhs() == maps.rhs();
 
         } else {
-            return false;
+            return lhs._tag == rhs._tag;
         }
     }
 
@@ -1055,32 +1066,30 @@ public:
             return vectors.lhs() <=> vectors.rhs();
 
         } else if (ttlet maps = promote_if<map_type>(lhs, rhs)) {
-            ttlet lhs_keys = maps.lhs().keys();
-            ttlet rhs_keys = maps.rhs().keys();
-            auto lhs_it = lhs_keys.begin();
-            auto rhs_it = rhs_keys.begin();
-            while (lhs_it != lhs_keys.end() and rhs_it != rhs_keys.end()) {
-                ttlet key_cmp = *lhs_it <=> *rhs_it;
-                if (key_cmp != std::partial_ordering::equal) {
+            auto lhs_it = maps.lhs().begin();
+            auto rhs_it = maps.rhs().begin();
+            ttlet lhs_end = maps.lhs().end();
+            ttlet rhs_end = maps.rhs().end();
+            while (lhs_it != lhs_end and rhs_it != rhs_end) {
+                ttlet key_cmp = lhs_it->first <=> rhs_it->first;
+                if (key_cmp != std::partial_ordering::equivalent) {
                     return key_cmp;
                 }
         
-                ttlet &lhs_value = maps.lhs()[*lhs_key];
-                ttlet &rhs_value = maps.rhs()[*rhs_key];
-                ttlet value_cmp = lhs_value <=> rhs_value;
-                if (value_cmp != std::partial_ordering::equal) {
+                ttlet value_cmp = lhs_it->second <=> rhs_it->second;
+                if (value_cmp != std::partial_ordering::equivalent) {
                     return value_cmp;
                 }
         
                 ++lhs_it;
                 ++rhs_it;
             }
-            if (lhs != lhs_keys.end()) {
+            if (lhs_it != lhs_end) {
                 return std::partial_ordering::greater;
-            } else if (rhs != rhs_keys.end()) {
-                return std::partial_ordering::smaller;
+            } else if (rhs_it != rhs_end) {
+                return std::partial_ordering::less;
             } else {
-                return std::partial_ordering::equal;
+                return std::partial_ordering::equivalent;
             }
 
         } else if (ttlet bstrings = promote_if<bstring>(lhs, rhs)) {
@@ -1129,7 +1138,7 @@ public:
     [[nodiscard]] friend constexpr datum operator~(datum const &rhs)
     {
         if (ttlet rhs_long_long = get_if<long long>(rhs)) {
-            return datum{-*rhs_long_long};
+            return datum{~*rhs_long_long};
 
         } else {
             throw std::domain_error(std::format("Can not evaluate ~{}", repr(rhs)));
@@ -1466,16 +1475,20 @@ public:
     [[nodiscard]] friend std::string repr(datum const &rhs) noexcept
     {
         switch (rhs._tag) {
-        case tag_type::floating_point: return tt::to_string(rhs._value._double);
+        case tag_type::monostate: return "undefined"s;
+        case tag_type::floating_point: return std::format("{:.1f}", rhs._value._double);
         case tag_type::decimal: return to_string(rhs._value._decimal);
-        case tag_type::integral: return to_string(rhs._value._long_long);
+        case tag_type::integral: return std::format("{}", rhs._value._long_long);
         case tag_type::boolean: return rhs._value._bool ? "true"s : "false"s;
         case tag_type::year_month_day: return std::format("{:%Y-%m-%d}", rhs._value._year_month_day);
-        case tag_type::string: return std::format("\"{}\"", *_value._string);
-        case tag_type::url: return to_string(*_value._url);
+        case tag_type::null: return "null"s;
+        case tag_type::flow_break: return "break"s;
+        case tag_type::flow_continue: return "continue"s;
+        case tag_type::string: return std::format("\"{}\"", *rhs._value._string);
+        case tag_type::url: return to_string(*rhs._value._url);
         case tag_type::vector: {
             auto r = std::string{"["};
-            for (ttlet &item: *_value._vector) {
+            for (ttlet &item: *rhs._value._vector) {
                 r += repr(item);
                 r += ',';
             }
@@ -1484,7 +1497,7 @@ public:
         };
         case tag_type::map: {
             auto r = std::string{"{"};
-            for (ttlet &item: *_value._map) {
+            for (ttlet &item: *rhs._value._map) {
                 r += repr(item.first);
                 r += ':';
                 r += repr(item.second);
@@ -1493,7 +1506,7 @@ public:
             r += '}';
             return r;
         };
-        case tag_type::bstring: return base64::encode(*_value._bstring);
+        case tag_type::bstring: return base64::encode(*rhs._value._bstring);
         default: tt_no_default();
         }
     }
@@ -1528,9 +1541,9 @@ public:
             return rhs._tag == tag_type::null;
         } else if constexpr (std::is_same_v<T, std::monostate>) {
             return rhs._tag == tag_type::monostate;
-        } else if constexpr (std::is_same_v<T, flow_break>) {
+        } else if constexpr (std::is_same_v<T, break_type>) {
             return rhs._tag == tag_type::flow_break;
-        } else if constexpr (std::is_same_v<T, flow_continue>) {
+        } else if constexpr (std::is_same_v<T, continue_type>) {
             return rhs._tag == tag_type::flow_continue;
         } else if constexpr (std::is_same_v<T, std::string>) {
             return rhs._tag == tag_type::string;
@@ -1804,7 +1817,7 @@ private:
     constexpr void delete_pointer() noexcept
     {
         if (is_pointer()) {
-            delete_pointer();
+            _delete_pointer();
         }
     }
 };
