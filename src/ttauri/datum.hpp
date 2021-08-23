@@ -169,53 +169,14 @@ private :
 
 } // namespace detail
 
-/** A 64 bit dynamic data type.
+/** A dynamic data type.
  *
+ * This class holds data of different types, useful as the data-type used for variables
+ * of scripting languages, or for serializig and deserializing JSON and other object
+ * storage formats.
  *
- * By default a datum is encoded as a double-precision floating-point value. Other
- * types are encoded in the mantissa-and-sign when the exponent is all '1'.
- *
- *   S | code  | sub | type
- *  :- |:----- |:--- |:--------
- *   0 | \-000 |     | +infinite or NaN.
- *   0 | \-001 |     | 48 bit signed integral.
- *   0 | \-010 |     | 40+8 bit decimal.
- *   0 | \-011 |     | `std::chrono::year_month_day`
- *   0 | \-100 |     | 6 char string encoded lsb to msb in uint64_t
- *   0 | \-101 | sss | 0-5 char string encoded lsb to msb in uint64_t
- *   0 | \-110 |     |
- *   0 | \-111 | 000 | false
- *   0 | \-111 | 001 | true
- *   0 | \-111 | 010 | null
- *   0 | \-111 | 011 | monostate
- *   0 | \-111 | 100 |
- *   0 | \-111 | 101 |
- *   0 | \-111 | 110 | flow-continue
- *   0 | \-111 | 111 | flow-break
- *   1 |  00   |     | -infinite or signaling NaN.
- *   1 |  01   |     | `std::string *`
- *   1 |  10   |     | `std::vector<datum> *`
- *   1 |  11   |     | `std::unordered_map<datum,datum> *`
- *
- * Pointers are encoded when the sign bit is '1'; the 2 msb bits of the mantissa
- * are used to encoded the pointer type. The pointer itself is stored in the
- * remaining 50 bits.
- *
- * Intel 5-level paging gives us a pointer of 57 bits. Bits [63:56] are
- * zero in user space programs on Linux and Windows. This leaves us with
- * 56 - 50 = 6 bits short. With an alignment to 64 bytes the bottom 6 bits
- * will be zero.
- *
- * ARM64 A pointer is 48 bits, with an extra 8 bits [63:56] used for tagging pointers.
- * As previous, bits [55:47] are '0' for user space programs, for a total of 55 bits.
- * This leaves us with 55 - 50 = 5 bits short. With an alignment to 32 bytes the bottom
- * 5 bits will be zero.
- *
- * ARM64 Also has an extended format which is 52 bits. This will not be supported yet,
- * or maybe through a special option.
- * ARM64 Also supports pointer authentication which uses all unused upper bits. On Linux
- * this is only supported for instruction pointers. These will not be supported by datum,
- * unless we extent datum to 128 bits.
+ * Not only does this datum handle the storage of data, but can also different operations
+ * which are dynamically executed.
  */
 class datum {
 public:
@@ -463,49 +424,77 @@ public:
     template<numeric_integral T>
     constexpr explicit operator T() const
     {
-        switch (_tag) {
-        case tag_type::floating_point: {
+        if (auto f = get_if<double>(*this)) {
             errno = 0;
-            auto r = std::round(get<double>(*this));
+            auto r = std::round(*f);
             if (errno == EDOM or errno == ERANGE or r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
                 throw std::overflow_error("double to integral");
             }
             return static_cast<T>(r);
-        }
-        case tag_type::integral: {
-            auto r = get<long long>(*this);
-            if (r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
+
+        } else if (auto i = get_if<long long>(*this)) {
+            if (*i < std::numeric_limits<T>::min() or *i > std::numeric_limits<T>::max()) {
                 throw std::overflow_error("long long to integral");
             }
-            return static_cast<T>(r);
-        }
-        case tag_type::decimal: {
-            auto r = static_cast<long long>(get<decimal>(*this));
+            return static_cast<T>(*i);
+
+        } else if (auto d = get_if<decimal>(*this)) {
+            auto r = static_cast<long long>(*d);
             if (r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
                 throw std::overflow_error("decimal to integral");
             }
             return static_cast<T>(r);
-        }
-        case tag_type::boolean: return static_cast<T>(get<bool>(*this));
-        default: throw std::domain_error(std::format("Can't convert {} to an integral", repr(*this)));
+
+        } else if (auto b = get_if<bool>(*this)) {
+            return static_cast<T>(*b);
+
+        } else {
+            throw std::domain_error(std::format("Can't convert {} to an integral", repr(*this)));
         }
     }
 
     constexpr explicit operator std::chrono::year_month_day() const
     {
-        if (_tag != tag_type::year_month_day) {
+        if (auto ymd = get_if<std::chrono::year_month_day>(*this)) {
+            return *ymd;
+        } else {
             throw std::domain_error(std::format("Can't convert {} to an std::chrono::year_month_day", repr(*this)));
         }
-        return get<std::chrono::year_month_day>(*this);
     }
 
     explicit operator std::string() const noexcept
     {
-        // XXX should handle every type.
-        if (_tag != tag_type::string) {
-            tt_not_implemented();
+        switch (_tag) {
+        case tag_type::floating_point: return tt::to_string(_value._double);
+        case tag_type::decimal: return to_string(_value._decimal);
+        case tag_type::integral: return to_string(_value._long_long);
+        case tag_type::boolean: return _value._bool ? "true"s : "false"s;
+        case tag_type::year_month_day: return std::format("{:%Y-%m-%d}", _value._year_month_day);
+        case tag_type::string: return *_value._string;
+        case tag_type::url: return to_string(*_value._url);
+        case tag_type::vector: {
+            auto r = std::string{"["};
+            for (ttlet &item: *_value._vector) {
+                r += repr(item);
+                r += ',';
+            }
+            r += ']';
+            return r;
+        };
+        case tag_type::map: {
+            auto r = std::string{"{"};
+            for (ttlet &item: *_value._map) {
+                r += repr(item.first);
+                r += ':';
+                r += repr(item.second);
+                r += ',';
+            }
+            r += '}';
+            return r;
+        };
+        case tag_type::bstring: return base64::encode(*_value._bstring);
+        default: tt_no_default();
         }
-        return get<std::string>(*this);
     }
 
     explicit operator std::string_view() const
@@ -521,28 +510,31 @@ public:
 
     explicit operator vector_type() const
     {
-        // XXX should be able to copy the keys of a map sorted.
-        if (_tag != tag_type::vector) {
+        if (auto v = get_if<vector_type>(*this)) {
+            return *v;
+        } else {
             throw std::domain_error(std::format("Can't convert {} to an vector", repr(*this)));
         }
-        return get<vector_type>(*this);
     }
 
     explicit operator map_type() const
     {
-        if (_tag != tag_type::map) {
+        if (auto m = get_if<map_type>(*this)) {
+            return *m;
+        } else {
             throw std::domain_error(std::format("Can't convert {} to an map", repr(*this)));
         }
-        return get<map_type>(*this);
     }
 
     explicit operator URL() const
     {
-        // XXX should be able to cast from a std::string.
-        if (_tag != tag_type::url) {
+        if (auto u = get_if<URL>(*this)) {
+            return *u;
+        } else if (auto u = get_if<std::string>(*this)) {
+            return URL{*u};
+        } else {
             throw std::domain_error(std::format("Can't convert {} to an URL", repr(*this)));
         }
-        return get<URL>(*this);
     }
 
     explicit operator bstring() const
@@ -1008,22 +1000,33 @@ public:
 
     /** Compare datums.
      *
-     * First promote numeric datums to the highest of @a lhs and @a rhs, then compare.
-     * - promotion order: long long -> decimal -> double.
-     * - NaNs compare equal
-     * - NaN is lower than any other value or type.
+     * Compare are done in the following order:
+     * - promote both arguments to `double`.
+     * - promote both arguments to `decimal`.
+     * - promote both arguments to `long long`.
+     * - promote both arguments to `bool`.
+     * - promote both arguments to `std::chrono::year_month_day`.
+     * - promote both arguments to `URL`.
+     * - promote both arguments to `std::string`.
+     * - promote both arguments to `datum::vector_type`.
+     * - promote both arguments to `datum::map_type` sorted by key.
+     * - promote both arguments to `bstring`.
+     * - Then compare the types them selfs, ordered in the following order:
+     *    + bstring = -5,
+     *    + url = -4,
+     *    + map = -3,
+     *    + vector = -2,
+     *    + string = -1,
+     *    + monostate = 0,
+     *    + floating_point = 1,
+     *    + integral = 2,
+     *    + decimal = 3,
+     *    + boolean = 4,
+     *    + null = 5,
+     *    + year_month_day = 6,
+     *    + flow_continue = 7,
+     *    + flow_break = 8,
      *
-     * If types compare equal, then compare the values of those types.
-     *
-     * If types are not equal then ordering is as follows:
-     * - NaN
-     * - numeric
-     * - year-month-day
-     * - boolean
-     * - null
-     * - monostate
-     * - flow continue
-     * - flow break
      */
     [[nodiscard]] friend constexpr std::partial_ordering operator<=>(datum const &lhs, datum const &rhs) noexcept
     {
@@ -1051,39 +1054,53 @@ public:
         } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() <=> vectors.rhs();
 
-            //} else if (ttlet maps = promote_if<map_type>(lhs, rhs)) {
-            //    ttlet lhs_keys = maps.lhs().keys();
-            //    ttlet rhs_keys = maps.rhs().keys();
-            //    auto lhs_it = lhs_keys.begin();
-            //    auto rhs_it = rhs_keys.begin();
-            //    while (lhs_it != lhs_keys.end() and rhs_it != rhs_keys.end()) {
-            //        ttlet key_cmp = *lhs_it <=> *rhs_it;
-            //        if (key_cmp != std::partial_ordering::equal) {
-            //            return key_cmp;
-            //        }
-            //
-            //        ttlet &lhs_value = maps.lhs()[*lhs_key];
-            //        ttlet &rhs_value = maps.rhs()[*rhs_key];
-            //        ttlet value_cmp = lhs_value <=> rhs_value;
-            //        if (value_cmp != std::partial_ordering::equal) {
-            //            return value_cmp;
-            //        }
-            //
-            //        ++lhs_it;
-            //        ++rhs_it;
-            //    }
-            //    if (lhs != lhs_keys.end()) {
-            //        return std::partial_ordering::greater;
-            //    } else if (rhs != rhs_keys.end()) {
-            //        return std::partial_ordering::smaller;
-            //    } else {
-            //        return std::partial_ordering::equal;
-            //    }
+        } else if (ttlet maps = promote_if<map_type>(lhs, rhs)) {
+            ttlet lhs_keys = maps.lhs().keys();
+            ttlet rhs_keys = maps.rhs().keys();
+            auto lhs_it = lhs_keys.begin();
+            auto rhs_it = rhs_keys.begin();
+            while (lhs_it != lhs_keys.end() and rhs_it != rhs_keys.end()) {
+                ttlet key_cmp = *lhs_it <=> *rhs_it;
+                if (key_cmp != std::partial_ordering::equal) {
+                    return key_cmp;
+                }
+        
+                ttlet &lhs_value = maps.lhs()[*lhs_key];
+                ttlet &rhs_value = maps.rhs()[*rhs_key];
+                ttlet value_cmp = lhs_value <=> rhs_value;
+                if (value_cmp != std::partial_ordering::equal) {
+                    return value_cmp;
+                }
+        
+                ++lhs_it;
+                ++rhs_it;
+            }
+            if (lhs != lhs_keys.end()) {
+                return std::partial_ordering::greater;
+            } else if (rhs != rhs_keys.end()) {
+                return std::partial_ordering::smaller;
+            } else {
+                return std::partial_ordering::equal;
+            }
+
+        } else if (ttlet bstrings = promote_if<bstring>(lhs, rhs)) {
+            return bstrings.lhs() <=> bstrings.rhs();
+
         } else {
             return lhs._tag <=> rhs._tag;
         }
     }
 
+    /** Arithmatic negation.
+     *
+     * A arithmatic negation hapens when the operand is `double`, `decimal` or `long long`.
+     *
+     * @throws std::domain_error When either argument can not be promoted to `double`,
+     *         `decimal` or `long long`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator-(datum const &rhs)
     {
         if (ttlet rhs_double = get_if<double>(rhs)) {
@@ -1100,6 +1117,15 @@ public:
         }
     }
 
+    /** Binary inversion.
+     *
+     * A binary inversion if the operand is `long long`.
+     *
+     * @throws std::domain_error When either argument can not be promoted to `long long`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator~(datum const &rhs)
     {
         if (ttlet rhs_long_long = get_if<long long>(rhs)) {
@@ -1110,6 +1136,20 @@ public:
         }
     }
 
+    /** add or concatenate.
+     *
+     * A numeric addition hapens when both operands are promoted to `double`,
+     * `decimal` or `long long` before the operation is executed.
+     *
+     * A concatenation happens when both operand are promoted to `std::string` or
+     * a `std::vector<datum>`.
+     *
+     * @throws std::domain_error When either argument can not be promoted to `double`,
+     *         `decimal` or `long long`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator+(datum const &lhs, datum const &rhs)
     {
         if (ttlet doubles = promote_if<double>(lhs, rhs)) {
@@ -1134,6 +1174,17 @@ public:
         }
     }
 
+    /** arithmatic subtract.
+     *
+     * Both operands are first promoted to `double`, `decimal` or `long long` before the
+     * operation is executed. 
+     *
+     * @throws std::domain_error When either argument can not be promoted to `double`,
+     *         `decimal` or `long long`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator-(datum const &lhs, datum const &rhs)
     {
         if (ttlet doubles = promote_if<double>(lhs, rhs)) {
@@ -1150,6 +1201,17 @@ public:
         }
     }
 
+    /** arithmatic multiply.
+     *
+     * Both operands are first promoted to `double`, `decimal` or `long long` before the
+     * operation is executed. 
+     *
+     * @throws std::domain_error When either argument can not be promoted to `double`,
+     *         `decimal` or `long long`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator*(datum const &lhs, datum const &rhs)
     {
         if (ttlet doubles = promote_if<double>(lhs, rhs)) {
@@ -1166,6 +1228,19 @@ public:
         }
     }
 
+    /** divide.
+     *
+     * Both operands are first promoted to `double`, `decimal` or `long long` before the
+     * operation is executed. 
+     *
+     * If both arguments can be promoted to `URL` then the two are concatenated.
+     *
+     * @throws std::domain_error When either argument can not be promoted to `long long`. Or when
+     *         the right hand operand is zero.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator/(datum const &lhs, datum const &rhs)
     {
         if (ttlet doubles = promote_if<double>(lhs, rhs)) {
@@ -1194,6 +1269,17 @@ public:
         }
     }
 
+    /** arithmatic modulo.
+     *
+     * Both operands are first promoted to `long long` before the
+     * operation is executed. 
+     *
+     * @throws std::domain_error When either argument can not be promoted to `long long`. Or when
+     *         the right hand operand is zero.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator%(datum const &lhs, datum const &rhs)
     {
         if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
@@ -1207,6 +1293,16 @@ public:
         }
     }
 
+    /** arithmatic logarithm.
+     *
+     * Both operands are first promoted to `double` or `long long` before the
+     * operation is executed. 
+     *
+     * @throws std::domain_error When either argument can not be promoted to `double` or `long long`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum pow(datum const &lhs, datum const &rhs)
     {
         if (ttlet doubles = promote_if<double>(lhs, rhs)) {
@@ -1220,6 +1316,16 @@ public:
         }
     }
 
+    /** binary and.
+     *
+     * Both operands are first promoted to `long long` or `bool` before the
+     * operation is executed. 
+     *
+     * @throws std::domain_error When either argument can not be promoted to `long long` or `bool`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator&(datum const &lhs, datum const &rhs)
     {
         if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
@@ -1233,6 +1339,16 @@ public:
         }
     }
 
+    /** binary or.
+     *
+     * Both operands are first promoted to `long long` or `bool` before the
+     * operation is executed. 
+     *
+     * @throws std::domain_error When either argument can not be promoted to `long long` or `bool`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator|(datum const &lhs, datum const &rhs)
     {
         if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
@@ -1246,6 +1362,16 @@ public:
         }
     }
 
+    /** binary xor.
+     *
+     * Both operands are first promoted to `long long` or `bool` before the
+     * operation is executed. 
+     *
+     * @throws std::domain_error When either argument can not be promoted to `long long` or `bool`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator^(datum const &lhs, datum const &rhs)
     {
         if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
@@ -1259,6 +1385,18 @@ public:
         }
     }
 
+    /** Shift left.
+     *
+     * Both operands are first promoted to `long long` before the
+     * operation is executed. Shift left of negative values are
+     * done modulo the size of a `long long`
+     *
+     * @throws std::domain_error On Negative or large shift counts, or when
+     *         either argument can not be promoted to `long long`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator<<(datum const &lhs, datum const &rhs)
     {
         if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
@@ -1272,6 +1410,17 @@ public:
         }
     }
 
+    /** Shift right arithmatically.
+     *
+     * Both operands are first promoted to `long long` before the
+     * operation is executed. Right shift will do sign extension.
+     *
+     * @throws std::domain_error On Negative or large shift counts, or when
+     *         either argument can not be promoted to `long long`.
+     * @param lhs The left-hand-side operand of the operation.
+     * @param lhs The right-hand-side operand of the operation.
+     * @return The result of the operation.
+     */
     [[nodiscard]] friend constexpr datum operator>>(datum const &lhs, datum const &rhs)
     {
         if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
@@ -1312,12 +1461,41 @@ public:
     X(^) X(<<) X(>>)
 #undef X
 
-        /** Get the string representation of the value.
-         */
-        [[nodiscard]] friend std::string repr(datum const &rhs) noexcept
+    /** Get the string representation of the value.
+     */
+    [[nodiscard]] friend std::string repr(datum const &rhs) noexcept
     {
-        // XXX strings need quotes.
-        return static_cast<std::string>(rhs);
+        switch (rhs._tag) {
+        case tag_type::floating_point: return tt::to_string(rhs._value._double);
+        case tag_type::decimal: return to_string(rhs._value._decimal);
+        case tag_type::integral: return to_string(rhs._value._long_long);
+        case tag_type::boolean: return rhs._value._bool ? "true"s : "false"s;
+        case tag_type::year_month_day: return std::format("{:%Y-%m-%d}", rhs._value._year_month_day);
+        case tag_type::string: return std::format("\"{}\"", *_value._string);
+        case tag_type::url: return to_string(*_value._url);
+        case tag_type::vector: {
+            auto r = std::string{"["};
+            for (ttlet &item: *_value._vector) {
+                r += repr(item);
+                r += ',';
+            }
+            r += ']';
+            return r;
+        };
+        case tag_type::map: {
+            auto r = std::string{"{"};
+            for (ttlet &item: *_value._map) {
+                r += repr(item.first);
+                r += ':';
+                r += repr(item.second);
+                r += ',';
+            }
+            r += '}';
+            return r;
+        };
+        case tag_type::bstring: return base64::encode(*_value._bstring);
+        default: tt_no_default();
+        }
     }
 
     /** Get the string representation of the value.
@@ -1327,7 +1505,7 @@ public:
         return static_cast<std::string>(rhs);
     }
 
-    /** Check if the datum holds a type.
+    /** Check if the stored value is of a specific type.
      *
      * @tparam T Type to check.
      * @param rhs The datum to check the value-type of.
@@ -1350,6 +1528,10 @@ public:
             return rhs._tag == tag_type::null;
         } else if constexpr (std::is_same_v<T, std::monostate>) {
             return rhs._tag == tag_type::monostate;
+        } else if constexpr (std::is_same_v<T, flow_break>) {
+            return rhs._tag == tag_type::flow_break;
+        } else if constexpr (std::is_same_v<T, flow_continue>) {
+            return rhs._tag == tag_type::flow_continue;
         } else if constexpr (std::is_same_v<T, std::string>) {
             return rhs._tag == tag_type::string;
         } else if constexpr (std::is_same_v<T, vector_type>) {
@@ -1366,25 +1548,34 @@ public:
     }
 
     /** Check if the type held by the datum can be promoted.
+     *
+     * A value can always be promoted to its own type.
+     * The following promotions also exist:
+     *  - `decimal` -> `double'
+     *  - `long long` -> `decimal'
+     *  - `bool` -> `long long'
+     *  - `std::string` -> `URL'
+     *  - `URL` -> `std::string'
+     *
+     * @tparam To Type to promote the value to.
+     * @param rhs The value to promote.
      */
-    template<typename T>
+    template<typename To>
     [[nodiscard]] friend constexpr bool promotable_to(datum const &rhs) noexcept
     {
-        if constexpr (std::is_same_v<T, double>) {
+        if constexpr (std::is_same_v<To, double>) {
             return holds_alternative<double>(rhs) or holds_alternative<decimal>(rhs) or holds_alternative<long long>(rhs) or
                 holds_alternative<bool>(rhs);
-        } else if constexpr (std::is_same_v<T, decimal>) {
+        } else if constexpr (std::is_same_v<To, decimal>) {
             return holds_alternative<decimal>(rhs) or holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
-        } else if constexpr (std::is_same_v<T, long long>) {
+        } else if constexpr (std::is_same_v<To, long long>) {
             return holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
-        } else if constexpr (std::is_same_v<T, bool>) {
-            return holds_alternative<bool>(rhs);
-        } else if constexpr (std::is_same_v<T, std::string>) {
+        } else if constexpr (std::is_same_v<To, std::string>) {
             return holds_alternative<URL>(rhs) or holds_alternative<std::string>(rhs);
-        } else if constexpr (std::is_same_v<T, URL>) {
+        } else if constexpr (std::is_same_v<To, URL>) {
             return holds_alternative<URL>(rhs) or holds_alternative<std::string>(rhs);
         } else {
-            return holds_alternative<T>(rhs);
+            return holds_alternative<To>(rhs);
         }
     }
 
@@ -1427,7 +1618,7 @@ public:
 
     /** Get the value of a datum.
      *
-     * It is monostate behavior if the type does not match the stored value.
+     * It is undefined behavior if the type does not match the stored value.
      *
      * @tparam T Type to check, must be one of: `bool`, `double`, `long long`, `decimal`, `std::chrono::year_month_day`
      * @param rhs The datum to get the value from.
@@ -1464,6 +1655,8 @@ public:
 
     /** Get the value of a datum.
      *
+     * If the type does not matched the stored value this function will return a nullptr.
+     *
      * @tparam T Type to check.
      * @param rhs The datum to get the value from.
      * @return A pointer to the value, or nullptr.
@@ -1478,6 +1671,14 @@ public:
         }
     }
 
+    /** Get the value of a datum.
+     *
+     * If the type does not matched the stored value this function will return a nullptr.
+     *
+     * @tparam T Type to check.
+     * @param rhs The datum to get the value from.
+     * @return A pointer to the value, or nullptr.
+     */
     template<typename T>
     [[nodiscard]] friend constexpr T const *get_if(datum const &rhs) noexcept
     {
@@ -1491,8 +1692,6 @@ public:
     /** Promote two datum-arguments to a common type.
      *
      * @tparam To Type to promote to.
-     * @tparam LHS Type which has the `holds_alternative()` and `get()` free functions
-     * @tparam RHS Type which has the `holds_alternative()` and `get()` free functions
      * @param lhs The left hand side.
      * @param rhs The right hand side.
      */
