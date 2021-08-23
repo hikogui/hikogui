@@ -379,7 +379,11 @@ public:
         } else {
             output += static_cast<std::byte>(BON8_code_object);
             for (ttlet &item : items) {
-                add(static_cast<std::string_view>(item.first));
+                if (auto *s = get_if<std::string>(item.first)){
+                    add(*s);
+                } else {
+                    throw operation_error("BON8 object keys must be strings");
+                }
                 add(item.second);
             }
             output += static_cast<std::byte>(BON8_code_eoc);
@@ -601,10 +605,12 @@ void BON8_encoder::add(datum const &value)
             // Everything below this, are non-string types.
         } else if (c <= 0xaf) {
             // 1 byte positive integer
+            ++ptr;
             return datum{c - 0x80};
 
         } else if (c <= 0xb9) {
             // 1 byte negative integer
+            ++ptr;
             return datum{-static_cast<int>(c - 0xb0)};
 
         } else {
@@ -635,6 +641,10 @@ void BON8_encoder::add(datum const &value)
             case BON8_code_array: ++ptr; return decode_BON8_array(ptr, last);
 
             case BON8_code_object: ++ptr; return decode_BON8_object(ptr, last);
+
+            case BON8_code_array_empty: ++ptr; return datum::make_vector();
+
+            case BON8_code_object_empty: ++ptr; return datum::make_map();
 
             default: tt_no_default();
             }
