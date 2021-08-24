@@ -77,25 +77,25 @@ public:
             }
 
         } else if (value < -262144) {
-            value = -value - 1;
+            value = ~value;
             output += static_cast<std::byte>(0xf0 + (value >> 22 & 0x07));
             output += static_cast<std::byte>(0xc0 + (value >> 16 & 0x3f));
             output += static_cast<std::byte>(value >> 8);
             output += static_cast<std::byte>(value);
 
         } else if (value < -1920) {
-            value = -value - 1;
+            value = ~value;
             output += static_cast<std::byte>(0xe0 + (value >> 14 & 0x0f));
             output += static_cast<std::byte>(0xc0 + (value >> 8 & 0x3f));
             output += static_cast<std::byte>(value);
 
         } else if (value < -10) {
-            value = -value - 1;
+            value = ~value;
             output += static_cast<std::byte>(0xc2 + (value >> 6 & 0x1f));
             output += static_cast<std::byte>(0xc0 + (value & 0x3f));
 
         } else if (value < 0) {
-            value = -value - 1;
+            value = ~value;
             output += static_cast<std::byte>(0xb0 + value);
 
         } else if (value <= 47) {
@@ -215,13 +215,14 @@ public:
         if (value == -1.0) {
             output += static_cast<std::byte>(BON8_code_float_min_one);
 
-        } else if (value == 0.0 || value == -0.0) {
+        } else if (value == 0.0) {
             output += static_cast<std::byte>(BON8_code_float_zero);
 
         } else if (value == 1.0) {
             output += static_cast<std::byte>(BON8_code_float_one);
 
         } else if (f32_64 == value) {
+            // After conversion to 32-bit float, precession was not reduced.
             uint32_t u32;
             std::memcpy(&u32, &f32, sizeof(u32));
 
@@ -246,7 +247,7 @@ public:
      */
     void add(float value) noexcept
     {
-        return add(narrow_cast<double>(value));
+        return add(static_cast<double>(value));
     }
 
     /** Add a boolean.
@@ -278,7 +279,7 @@ public:
             output += static_cast<std::byte>(BON8_code_eot);
         }
 
-        if (std::ssize(value) == 0) {
+        if (value.empty()) {
             output += static_cast<std::byte>(BON8_code_eot);
             open_string = false;
 
@@ -290,26 +291,25 @@ public:
 
                 if constexpr (build_type::current == build_type::debug) {
                     if (multi_byte == 0) {
-                        if (c >= 0xc2 && c <= 0xdf) {
+                        if (c >= 0xc2 and c <= 0xdf) {
                             multi_byte = 1;
-                        } else if (c >= 0xe0 && c <= 0xef) {
+                        } else if (c >= 0xe0 and c <= 0xef) {
                             multi_byte = 2;
-                        } else if (c >= 0xf0 && c <= 0xf7) {
+                        } else if (c >= 0xf0 and c <= 0xf7) {
                             multi_byte = 3;
                         } else {
                             tt_assert(c <= 0x7f);
                         }
 
                     } else {
-                        tt_assert(c >= 0x80 && c <= 0xbf);
+                        tt_assert(c >= 0x80 and c <= 0xbf);
                         --multi_byte;
                     }
                 }
 
                 output += static_cast<std::byte>(c);
             }
-
-            tt_assert(multi_byte == 0);
+            tt_axiom(multi_byte == 0);
 
             open_string = true;
         }
@@ -348,7 +348,7 @@ public:
     void add(std::vector<T> const &items)
     {
         open_string = false;
-        if (std::ssize(items) == 0) {
+        if (items.empty()) {
             output += static_cast<std::byte>(BON8_code_array_empty);
         } else {
             output += static_cast<std::byte>(BON8_code_array);
@@ -373,7 +373,7 @@ public:
         using key_type = typename std::remove_cvref_t<decltype(items)>::key_type;
 
         open_string = false;
-        if (std::ssize(items) == 0) {
+        if (items.empty()) {
             output += static_cast<std::byte>(BON8_code_object_empty);
 
         } else {
@@ -431,7 +431,7 @@ void BON8_encoder::add(datum const &value)
     tt_parse_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
 
     ttlet c1 = static_cast<uint8_t>(*(ptr + 1));
-    return (c1 < 0x80 || c1 > 0xbf) ? -count : count;
+    return (c1 < 0x80 or c1 > 0xbf) ? -count : count;
 }
 
 /** Decode a 4, or 8 byte signed integer.
@@ -529,21 +529,23 @@ void BON8_encoder::add(datum const &value)
     tt_axiom(ptr != last);
     ttlet c0 = static_cast<uint8_t>(*(ptr++));
 
-    ttlet mask = int{0b0111'1111} >> count;
-    auto value = static_cast<int>(c0) & mask;
+    ttlet mask = uint8_t{0b0111'1111} >> count;
+    auto value = static_cast<long long>(c0 & mask);
     if (count == 2) {
+        // The two byte sequence starts with 0xc2, leaving only 30 entries in the first byte.
         value -= 2;
     }
 
+    // The second byte determines the sign, and adds 6 or 7 bits to the number.
     tt_axiom(ptr != last);
     ttlet c1 = static_cast<uint8_t>(*(ptr++));
     ttlet is_positive = c1 <= 0x7f;
     if (is_positive) {
         value <<= 7;
-        value |= static_cast<int>(c1);
+        value |= static_cast<long long>(c1);
     } else {
         value <<= 6;
-        value |= static_cast<int>(c1 & 0b0011'11111);
+        value |= static_cast<long long>(c1 & 0b0011'1111);
     }
 
     switch (count) {
@@ -560,7 +562,7 @@ void BON8_encoder::add(datum const &value)
     default:;
     }
 
-    return datum{is_positive ? value : -value};
+    return datum{is_positive ? value : ~value};
 }
 
 [[nodiscard]] datum decode_BON8(cbyteptr &ptr, cbyteptr last)
@@ -583,22 +585,22 @@ void BON8_encoder::add(datum const &value)
         } else if (c >= 0xc2 && c <= 0xf7) {
             ttlet count = BON8_multibyte_count(ptr, last);
             if (count > 0) {
-                // Multibyte UTF-8 character
+                // Multibyte UTF-8 code-point, The count includes the first code-unit.
                 for (int i = 0; i != count; ++i) {
                     str += static_cast<char>(*(ptr++));
                 }
                 continue;
 
-            } else if (std::ssize(str) != 0) {
+            } else if (not str.empty()) {
                 // Multibyte integer found, but first return the current string.
                 return datum{str};
 
             } else {
-                // Multibyte integer.
+                // Multibyte integer, the first code-unit includes part of the integer.
                 return decode_BON8_UTF8_like_int(ptr, last, -count);
             }
 
-        } else if (std::ssize(str) != 0) {
+        } else if (not str.empty()) {
             // This must be a non-string type, but first return the current string.
             return datum{str};
 
@@ -611,41 +613,27 @@ void BON8_encoder::add(datum const &value)
         } else if (c <= 0xb9) {
             // 1 byte negative integer
             ++ptr;
-            return datum{-static_cast<int>(c - 0xb0)};
+            return datum{~static_cast<int>(c - 0xb0)};
 
         } else {
             // This is one of the non-string types.
+            ++ptr;
             switch (c) {
-            case BON8_code_null: ++ptr; return datum{nullptr};
-
-            case BON8_code_bool_false: ++ptr; return datum{false};
-
-            case BON8_code_bool_true: ++ptr; return datum{true};
-
-            case BON8_code_float_min_one: ++ptr; return datum{-1.0f};
-
-            case BON8_code_float_zero: ++ptr; return datum{-0.0f};
-
-            case BON8_code_float_one: ++ptr; return datum{1.0f};
-
-            case BON8_code_int32: ++ptr; return decode_BON8_int(ptr, last, 4);
-
-            case BON8_code_int64: ++ptr; return decode_BON8_int(ptr, last, 8);
-
-            case BON8_code_binary32: ++ptr; return decode_BON8_float(ptr, last, 4);
-
-            case BON8_code_binary64: ++ptr; return decode_BON8_float(ptr, last, 8);
-
+            case BON8_code_null: return datum{nullptr};
+            case BON8_code_bool_false: return datum{false};
+            case BON8_code_bool_true: return datum{true};
+            case BON8_code_float_min_one: return datum{-1.0f};
+            case BON8_code_float_zero: return datum{0.0f};
+            case BON8_code_float_one: return datum{1.0f};
+            case BON8_code_int32: return decode_BON8_int(ptr, last, 4);
+            case BON8_code_int64: return decode_BON8_int(ptr, last, 8);
+            case BON8_code_binary32: return decode_BON8_float(ptr, last, 4);
+            case BON8_code_binary64: return decode_BON8_float(ptr, last, 8);
+            case BON8_code_array: return decode_BON8_array(ptr, last);
+            case BON8_code_object: return decode_BON8_object(ptr, last);
+            case BON8_code_array_empty: return datum::make_vector();
+            case BON8_code_object_empty: return datum::make_map();
             case BON8_code_eoc: throw parse_error("Unexpected end-of-container");
-
-            case BON8_code_array: ++ptr; return decode_BON8_array(ptr, last);
-
-            case BON8_code_object: ++ptr; return decode_BON8_object(ptr, last);
-
-            case BON8_code_array_empty: ++ptr; return datum::make_vector();
-
-            case BON8_code_object_empty: ++ptr; return datum::make_map();
-
             default: tt_no_default();
             }
         }

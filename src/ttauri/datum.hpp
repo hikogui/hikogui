@@ -978,16 +978,22 @@ public:
     [[nodiscard]] friend constexpr bool operator==(datum const &lhs, datum const &rhs) noexcept
     {
         if (ttlet doubles = promote_if<double>(lhs, rhs)) {
-            return doubles.lhs() == doubles.rhs();
+            auto lhs_ = doubles.lhs();
+            auto rhs_ = doubles.rhs();
+            return lhs_ == rhs_;
 
         } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
             return decimals.lhs() == decimals.rhs();
 
         } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
-            return long_longs.lhs() == long_longs.rhs();
+            auto lhs_ = long_longs.lhs();
+            auto rhs_ = long_longs.rhs();
+            return lhs_ == rhs_;
 
         } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
-            return bools.lhs() == bools.rhs();
+            auto lhs_ = bools.lhs();
+            auto rhs_ = bools.rhs();
+            return lhs_ == rhs_;
 
         } else if (ttlet ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return ymds.lhs() == ymds.rhs();
@@ -996,7 +1002,10 @@ public:
             return urls.lhs() == urls.rhs();
 
         } else if (ttlet strings = promote_if<std::string>(lhs, rhs)) {
-            return strings.lhs() == strings.rhs();
+            auto lhs_ = strings.lhs();
+            auto rhs_ = strings.rhs();
+            auto r = lhs_ == rhs_;
+            return r;
 
         } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() == vectors.rhs();
