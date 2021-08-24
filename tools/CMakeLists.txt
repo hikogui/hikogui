@@ -6,6 +6,7 @@ project(ttauri_utilities C)
 #-------------------------------------------------------------------
 
 add_executable(embed_static_resource embed_static_resource.cpp)
+target_compile_features(embed_static_resource INTERFACE cxx_std_20)
 
 if (MSVC)
     target_compile_options(embed_static_resource PRIVATE -wd4068)

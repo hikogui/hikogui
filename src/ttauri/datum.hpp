@@ -174,7 +174,7 @@ private :
 /** A dynamic data type.
  *
  * This class holds data of different types, useful as the data-type used for variables
- * of scripting languages, or for serializig and deserializing JSON and other object
+ * of scripting languages, or for serializing and deserializing JSON and other object
  * storage formats.
  *
  * Not only does this datum handle the storage of data, but can also different operations
@@ -978,22 +978,16 @@ public:
     [[nodiscard]] friend constexpr bool operator==(datum const &lhs, datum const &rhs) noexcept
     {
         if (ttlet doubles = promote_if<double>(lhs, rhs)) {
-            auto lhs_ = doubles.lhs();
-            auto rhs_ = doubles.rhs();
-            return lhs_ == rhs_;
+            return doubles.lhs() == doubles.rhs();
 
         } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
             return decimals.lhs() == decimals.rhs();
 
         } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
-            auto lhs_ = long_longs.lhs();
-            auto rhs_ = long_longs.rhs();
-            return lhs_ == rhs_;
+            return long_longs.lhs() == long_longs.rhs();
 
         } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
-            auto lhs_ = bools.lhs();
-            auto rhs_ = bools.rhs();
-            return lhs_ == rhs_;
+            return bools.lhs() == bools.rhs();
 
         } else if (ttlet ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return ymds.lhs() == ymds.rhs();
@@ -1002,10 +996,7 @@ public:
             return urls.lhs() == urls.rhs();
 
         } else if (ttlet strings = promote_if<std::string>(lhs, rhs)) {
-            auto lhs_ = strings.lhs();
-            auto rhs_ = strings.rhs();
-            auto r = lhs_ == rhs_;
-            return r;
+            return strings.lhs() == strings.rhs();
 
         } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() == vectors.rhs();
@@ -1075,31 +1066,7 @@ public:
             return vectors.lhs() <=> vectors.rhs();
 
         } else if (ttlet maps = promote_if<map_type>(lhs, rhs)) {
-            auto lhs_it = maps.lhs().begin();
-            auto rhs_it = maps.rhs().begin();
-            ttlet lhs_end = maps.lhs().end();
-            ttlet rhs_end = maps.rhs().end();
-            while (lhs_it != lhs_end and rhs_it != rhs_end) {
-                ttlet key_cmp = lhs_it->first <=> rhs_it->first;
-                if (key_cmp != std::partial_ordering::equivalent) {
-                    return key_cmp;
-                }
-        
-                ttlet value_cmp = lhs_it->second <=> rhs_it->second;
-                if (value_cmp != std::partial_ordering::equivalent) {
-                    return value_cmp;
-                }
-        
-                ++lhs_it;
-                ++rhs_it;
-            }
-            if (lhs_it != lhs_end) {
-                return std::partial_ordering::greater;
-            } else if (rhs_it != rhs_end) {
-                return std::partial_ordering::less;
-            } else {
-                return std::partial_ordering::equivalent;
-            }
+            return maps.lhs() <=> maps.rhs();
 
         } else if (ttlet bstrings = promote_if<bstring>(lhs, rhs)) {
             return bstrings.lhs() <=> bstrings.rhs();
@@ -1109,9 +1076,9 @@ public:
         }
     }
 
-    /** Arithmatic negation.
+    /** Arithmetic negation.
      *
-     * A arithmatic negation hapens when the operand is `double`, `decimal` or `long long`.
+     * A arithmetic negation happens when the operand is `double`, `decimal` or `long long`.
      *
      * @throws std::domain_error When either argument can not be promoted to `double`,
      *         `decimal` or `long long`.
@@ -1156,7 +1123,7 @@ public:
 
     /** add or concatenate.
      *
-     * A numeric addition hapens when both operands are promoted to `double`,
+     * A numeric addition happens when both operands are promoted to `double`,
      * `decimal` or `long long` before the operation is executed.
      *
      * A concatenation happens when both operand are promoted to `std::string` or
@@ -1192,7 +1159,7 @@ public:
         }
     }
 
-    /** arithmatic subtract.
+    /** Arithmetic subtract.
      *
      * Both operands are first promoted to `double`, `decimal` or `long long` before the
      * operation is executed. 
@@ -1287,7 +1254,7 @@ public:
         }
     }
 
-    /** arithmatic modulo.
+    /** Arithmetic modulo.
      *
      * Both operands are first promoted to `long long` before the
      * operation is executed. 
@@ -1311,7 +1278,7 @@ public:
         }
     }
 
-    /** arithmatic logarithm.
+    /** Arithmetic logarithm.
      *
      * Both operands are first promoted to `double` or `long long` before the
      * operation is executed. 
@@ -1428,7 +1395,7 @@ public:
         }
     }
 
-    /** Shift right arithmatically.
+    /** Shift right arithmetically.
      *
      * Both operands are first promoted to `long long` before the
      * operation is executed. Right shift will do sign extension.
