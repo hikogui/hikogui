@@ -36,7 +36,7 @@ enum class tokenizer_state_t: uint8_t {
     OperatorFirstChar,
     OperatorSecondChar,
     OperatorThirdChar,
-
+    ColonOperatorSecondChar,
     Sentinal
 };
 constexpr size_t NR_TOKENIZER_STATES = static_cast<size_t>(tokenizer_state_t::Sentinal);
@@ -752,6 +752,33 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
 #undef MORE_CHARS
 }
 
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_ColonOperatorSecondChar()
+{
+#define LAST_CHAR \
+    transition.next = tokenizer_state_t::Initial; \
+    transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture; \
+    transition.name = tokenizer_name_t::Operator
+
+    std::array<tokenizer_transition_t, 256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        ttlet c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        switch (c) {
+        case '=': LAST_CHAR; break;
+        default:
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
+            transition.name = tokenizer_name_t::Operator;
+        }
+
+        r[i] = transition;
+    }
+    return r;
+#undef LAST_CHAR
+}
+
 constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_OperatorFirstChar()
 {
 #define LAST_CHAR\
@@ -796,7 +823,10 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         case '|': MORE_CHARS; break; // Possible: ||, |=
         case '&': MORE_CHARS; break; // Possible: &&, &=
         case '^': MORE_CHARS; break; // Possible: ^=
-        case ':': MORE_CHARS; break; // Possible: :=
+        case ':':
+            transition.next = tokenizer_state_t::ColonOperatorSecondChar;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
+            break; // Possible: :=
         default:
             // If we don't recognize the operator, it means this character is invalid.
             transition.next = tokenizer_state_t::Initial;
@@ -905,7 +935,7 @@ constexpr transitionTable_t calculateTransitionTable()
     CALCULATE_SUB_TABLE(OperatorFirstChar);
     CALCULATE_SUB_TABLE(OperatorSecondChar);
     CALCULATE_SUB_TABLE(OperatorThirdChar);
-
+    CALCULATE_SUB_TABLE(ColonOperatorSecondChar);
     return r;
 #undef CALCULATE_SUB_TABLE
 }

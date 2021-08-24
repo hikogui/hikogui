@@ -46,9 +46,9 @@ string := character character* | character* eot;
 
 character := utf8_1 | utf8_2 | utf8_3 | utf8_4;
 
-array := empty_array | start_array value* eoc;
+array := start_array_with_count value* | start_array value* eoc;
 
-object := empty_object | start_object (string value)* eoc
+object := start_object_with_count (string value)* | start_object (string value)* eoc
 ```
 
 This table gives an overview on the encoding:
@@ -59,30 +59,32 @@ This table gives an overview on the encoding:
   c2-df 80-bf             | 2 | UTF-8 Two byte sequence     |   11 |   U+0080 |    U+07ff
   e0-ef 80-bf byte\*1     | 3 | UTF-8 Three byte sequence   |   16 |   U+0800 |    U+ffff
   f0-f7 80-bf byte\*2     | 4 | UTF-8 Four byte sequence    |   21 | U+100000 |  U+10ffff
-  80-af                   | 1 | Positive Integer            |      |        0 |        47
-  b0-b9                   | 1 | Negative Integer            |      |       -1 |       -10
-  ba                      | 1 | Floating point -1.0         |      |          |
-  bb                      | 1 | Floating point 0.0          |      |          |
-  bc                      | 1 | Floating point 1.0          |      |          |
-  bd                      | 1 | Empty Array                 |      |          |
-  be                      | 1 | Empty Object                |      |          |
-  bf                      | 1 | Null                        |      |          |
-  c0                      | 1 | False                       |      |          |
-  c1                      | 1 | True                        |      |          |
+  80-84                   |   | Start array with count      |      |        0 |         4
+  85                      |   | Start array                 |      |          |
+  86-8a                   |   | Start object with count     |      |        0 |         4
+  8b                      |   | Start object                |      |          |
+  8c byte\*4              | 5 | Signed integer              |   32 |    -2^31 |  2^31 - 1
+  8d byte\*8              | 9 | Signed integer              |   64 |    -2^63 |  2^63 - 1
+  8e byte\*4              | 5 | Floating point binary32     |   32 |          |
+  8f byte\*8              | 9 | Floating point binary64     |   64 |          |
+  90-b7                   | 1 | Positive integer            |      |        0 |        39
+  b8-c1                   | 1 | Negative Integer            |      |       -1 |       -10
   c2-df 00-7f             | 2 | Positive Integer (30 * 128) |      |        0 |      3839
   e0-ef 00-7f byte\*1     | 3 | Positive Integer            |   19 |        0 |    524287
   f0-f7 00-7f byte\*2     | 4 | Positive Integer            |   26 |        0 |  67108863
   c2-df c0-ff             | 2 | Negative Integer (30 * 64)  |      |       -1 |     -1920
   e0-ef c0-ff byte\*1     | 3 | Negative Integer            |   18 |       -1 |   -262144
   f0-f7 c0-ff byte\*2     | 4 | Negative Integer            |   25 |       -1 | -33554432
-  f8 byte\*4              | 5 | Signed integer              |   32 |    -2^31 |  2^31 - 1
-  f9 byte\*8              | 9 | Signed integer              |   64 |    -2^63 |  2^63 - 1
-  fa byte\*4              | 5 | Floating point              |   32 |          |
-  fb byte\*8              | 9 | Floating point              |   64 |          |
-  fc                      | 1 | Start Array                 |      |          |
-  fd                      | 1 | Start Object                |      |          |
+  f8                      | 1 | False                       |      |          |
+  f9                      | 1 | True                        |      |          |
+  fa                      | 1 | null                        |      |          |
+  fb                      | 1 | -1.0                        |      |          |
+  fc                      | 1 | 0.0                         |      |          |
+  fd                      | 1 | 1.0                         |      |          |
   fe                      | 1 | End Of Container (eoc)      |      |          |
   ff                      | 1 | End Of Text (eot)           |      |          |
+
+
 
 Extra rules
 -----------
@@ -93,7 +95,7 @@ signing of the message repeatably. All encoders MUST follow these rules.
  - String MUST ONLY end with 0xff if at least one of the following is true:
    - The string is empty,
    - When another string is directly following this string,
-   - If the full message is this string.
+   - If the string ends the message.
  - Integers MUST be encoded in the least amount of bytes.
  - Floating point numbers MUST be encoded in the least amount of bytes
    while preserving precision. In other words: a binary64 number needs to be converted to

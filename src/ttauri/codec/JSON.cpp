@@ -159,7 +159,7 @@ struct parse_context_t {
 
     auto token = tokens.begin();
 
-    if (auto result = parseObject(context, token)) {
+    if (auto result = parseValue(context, token)) {
         root = std::move(*result);
         token = result.next_token;
 
