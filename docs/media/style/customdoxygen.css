@@ -370,3 +370,17 @@ code {
         /* Only two pixel border, otherwise the map becomes offset too much. */
         border: solid 2px #cccccc;
     }
+
+ul li div.image {
+    display: inline;
+}
+
+ul li div.image img {
+    margin-left: 20px;
+    text-align: left;
+}
+
+ul li div.image div.caption {
+    display: none;
+}
+

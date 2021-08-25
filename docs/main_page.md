@@ -5,7 +5,7 @@ TTauri is a cross platform C++ GUI library.
 
 Manuals
 -------
- - [How to use Widgets](how_to_use_widgets.md) ![new](media/images/new.png)
+ - [How to use Widgets](how_to/how_to_use_widgets.md) ![new](media/images/new.png)
 
 
 Subsystems
