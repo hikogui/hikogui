@@ -29,7 +29,7 @@ public:
     {
         auto r = super::serialize();
 
-        //r["audio_output_device_id"] = string_codec<audio_device_id>::serialize(*audio_output_device_id);
+        r["audio_output_device_id"] = tt::pickle<tt::audio_device_id>{}.encode(*audio_output_device_id);
         return r;
     }
 
@@ -37,8 +37,8 @@ public:
     {
         super::deserialize(data);
 
-        //if (auto device_id_string = get_optional_by_path<std::string>("audio_output_device_id")) {
-        //    audio_output_device_id = string_codec<audio_device_id>::deserialize(*device_id_string);
+        //if (auto str = get_if<std::string>(data, "audio_output_device_id")) {
+        //    audio_output_device_id = tt::pickle<tt::audio_device_id>{}.decode(*str);
         //} else {
         //    audio_output_device_id = {};
         //}

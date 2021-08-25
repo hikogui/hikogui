@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "../codec/pickle.hpp"
+#include "../exception.hpp"
+#include "../check.hpp"
 #include <array>
 
 namespace tt {
@@ -15,7 +18,8 @@ public:
     static constexpr char macos = 2;
     static constexpr char asio = 3;
 
-    audio_device_id() noexcept {
+    audio_device_id() noexcept
+    {
         _v[0] = none;
         _v[1] = 0;
     }
@@ -26,7 +30,7 @@ public:
     constexpr audio_device_id &operator=(audio_device_id const &) noexcept = default;
     constexpr audio_device_id &operator=(audio_device_id &&) noexcept = default;
 
-    explicit operator bool () const noexcept
+    explicit operator bool() const noexcept
     {
         return _v[0] != none;
     }
@@ -45,8 +49,62 @@ public:
     }
 
 private:
-    std::array<char,64> _v;
+    std::array<char, 64> _v;
+
+    friend struct pickle<audio_device_id>;
 };
 
+template<>
+struct pickle<audio_device_id> {
+    [[nodiscard]] std::string encode(audio_device_id const &rhs) const noexcept
+    {
+        auto r = std::string{};
 
-}
+        auto t = rhs._v[0];
+        if (t == audio_device_id::none) {
+            return r;
+        } else if (t == audio_device_id::win32) {
+            r += 'w';
+            for (auto i = 1_uz; i != std::size(rhs._v); ++i) {
+                if (auto c = rhs._v[i]) {
+                    r += c;
+                } else {
+                    break;
+                }
+            }
+            return r;
+
+        } else {
+            tt_not_implemented();
+        }
+    }
+
+    [[nodiscard]] audio_device_id decode(std::string_view rhs) const
+    {
+        auto r = audio_device_id{};
+        if (rhs.empty()) {
+            return r;
+
+        } else {
+            auto t = rhs[0];
+            if (t == 'w') {
+                tt_parse_check(std::size(rhs) <= std::size(r._v), "win32-audio_device_id pickle size to large {}", rhs);
+
+                r._v[0] = audio_device_id::win32;
+                auto i = 1_uz;
+                for (; i != std::size(rhs); ++i) {
+                    r._v[i] = rhs[i];
+                }
+                if (i != std::size(r._v)) {
+                    r._v[i] = 0;
+                }
+                return r;
+
+            } else {
+                throw parse_error("audio_device_id pickle unknown type {}", t);
+            }
+        }
+    }
+};
+
+} // namespace tt

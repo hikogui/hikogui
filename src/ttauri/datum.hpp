@@ -14,6 +14,7 @@
 #include "hash.hpp"
 #include "charconv.hpp"
 #include "codec/base_n.hpp"
+#include "jsonpath.hpp"
 #include <cstdint>
 #include <concepts>
 #include <bit>
@@ -184,8 +185,10 @@ class datum {
 public:
     using vector_type = std::vector<datum>;
     using map_type = std::map<datum, datum>;
-    struct break_type {};
-    struct continue_type {};
+    struct break_type {
+    };
+    struct continue_type {
+    };
 
     constexpr ~datum() noexcept
     {
@@ -480,7 +483,7 @@ public:
         case tag_type::url: return to_string(*_value._url);
         case tag_type::vector: {
             auto r = std::string{"["};
-            for (ttlet &item: *_value._vector) {
+            for (ttlet &item : *_value._vector) {
                 r += repr(item);
                 r += ',';
             }
@@ -489,7 +492,7 @@ public:
         };
         case tag_type::map: {
             auto r = std::string{"{"};
-            for (ttlet &item: *_value._map) {
+            for (ttlet &item : *_value._map) {
                 r += repr(item.first);
                 r += ':';
                 r += repr(item.second);
@@ -844,6 +847,126 @@ public:
         return contains(datum{arg});
     }
 
+    void find_wildcard(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum const *> &r) const noexcept
+    {
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            for (auto &item : *vector) {
+                item.find(it + 1, it_end, r);
+            }
+
+        } else if (auto map = get_if<datum::map_type>(*this)) {
+            for (auto &item : *map) {
+                item.second.find(it + 1, it_end, r);
+            }
+        }
+    }
+
+    void find_descent(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum const *> &r) const noexcept
+    {
+        this->find(it + 1, it_end, r);
+
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            for (auto &item : *vector) {
+                item.find(it, it_end, r);
+            }
+
+        } else if (auto map = get_if<datum::map_type>(*this)) {
+            for (auto &item : *map) {
+                item.second.find(it, it_end, r);
+            }
+        }
+    }
+
+    void find_indices(
+        jsonpath_indices const &indices,
+        jsonpath::const_iterator it,
+        jsonpath::const_iterator it_end,
+        std::vector<datum const *> &r) const noexcept
+    {
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            for (auto index : *indices) {
+                index = index >= 0 ? index : vector->size() + index;
+                if (index >= 0 and index < vector->size()) {
+                    (*vector)[index].find(it + 1, it_end, r);
+                }
+            }
+        }
+    }
+
+    void find_names(
+        jsonpath_names const &names,
+        jsonpath::const_iterator it,
+        jsonpath::const_iterator it_end,
+        std::vector<datum const *> &r) const noexcept
+    {
+        if (auto map = get_if<datum::map_type>(*this)) {
+            for (auto &name : *names) {
+                auto jt = map.find(name);
+                if (jt != std::cend(map)) {
+                    jt->find(it + 1, it_end, r);
+                }
+            }
+        }
+    }
+
+    void find_slice(
+        jsonpath_slice const &slice,
+        jsonpath::const_iterator it,
+        jsonpath::const_iterator it_end,
+        std::vector<datum const *> &r) const noexcept
+    {
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            auto first = slice->first >= 0 ? slice->first : vector->size() + slice->first;
+            auto last = slice->last >= 0 ? slice->last : vector->size() + slice->last;
+            auto steps = (last - first) / step;
+            last = first + (steps * step);
+
+            for (auto index = first; index != last; index += step) {
+                if (index >= 0 and index < vector->size()) {
+                    (*this)[index].find(it + 1, it_end, r);
+                }
+            }
+        }
+    }
+
+    void find(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum const *> &r) const noexcept
+    {
+        if (it == it_end) {
+            r.push_back(this);
+
+        } else if (std::holds_alternative<jsonpath_root>(*it)) {
+            find(it + 1, it_end, r);
+
+        } else if (std::holds_alternative<jsonpath_current>(*it)) {
+            find(it + 1, it_end, r);
+
+        } else if (std::holds_alternative<jsonpath_wildcard>(*it)) {
+            find_wildcard(it, it_end, r);
+
+        } else if (std::holds_alternative<jsonpath_decent>(*it)) {
+            find_descent(it, it_end, r);
+
+        } else if (auto indices = std::get_if<jsonpath_indices>(*it)) {
+            find_indices(*indices, it, it_end, r);
+
+        } else if (auto names = std::get_if<jsonpath_names>(*it)) {
+            find_names(*names, it, it_end, r);
+
+        } else if (auto slice = std::get_if<jsonpath_slice>(*it)) {
+            find_slice(*slice, it, it_end, r);
+
+        } else {
+            tt_no_default();
+        }
+    }
+
+    [[nodiscard]] std::vector<datum const *> find(jsonpath const &path) const noexcept
+    {
+        auto r = std::vector<datum const *>{};
+        find(std::cbegin(path), std::cend(path), r);
+        return r;
+    }
+
     [[nodiscard]] constexpr datum const &operator[](datum const &rhs) const
     {
         if (holds_alternative<vector_type>(*this) and holds_alternative<long long>(rhs)) {
@@ -961,7 +1084,7 @@ public:
 #define X(op, inner_op) \
     constexpr datum &operator op(auto const &rhs) \
     { \
-        return (*this) = (*this) inner_op rhs; \
+        return (*this) = (*this)inner_op rhs; \
     }
 
     X(-=, -)
@@ -1162,7 +1285,7 @@ public:
     /** Arithmetic subtract.
      *
      * Both operands are first promoted to `double`, `decimal` or `long long` before the
-     * operation is executed. 
+     * operation is executed.
      *
      * @throws std::domain_error When either argument can not be promoted to `double`,
      *         `decimal` or `long long`.
@@ -1189,7 +1312,7 @@ public:
     /** arithmatic multiply.
      *
      * Both operands are first promoted to `double`, `decimal` or `long long` before the
-     * operation is executed. 
+     * operation is executed.
      *
      * @throws std::domain_error When either argument can not be promoted to `double`,
      *         `decimal` or `long long`.
@@ -1216,7 +1339,7 @@ public:
     /** divide.
      *
      * Both operands are first promoted to `double`, `decimal` or `long long` before the
-     * operation is executed. 
+     * operation is executed.
      *
      * If both arguments can be promoted to `URL` then the two are concatenated.
      *
@@ -1257,7 +1380,7 @@ public:
     /** Arithmetic modulo.
      *
      * Both operands are first promoted to `long long` before the
-     * operation is executed. 
+     * operation is executed.
      *
      * @throws std::domain_error When either argument can not be promoted to `long long`. Or when
      *         the right hand operand is zero.
@@ -1281,7 +1404,7 @@ public:
     /** Arithmetic logarithm.
      *
      * Both operands are first promoted to `double` or `long long` before the
-     * operation is executed. 
+     * operation is executed.
      *
      * @throws std::domain_error When either argument can not be promoted to `double` or `long long`.
      * @param lhs The left-hand-side operand of the operation.
@@ -1304,7 +1427,7 @@ public:
     /** binary and.
      *
      * Both operands are first promoted to `long long` or `bool` before the
-     * operation is executed. 
+     * operation is executed.
      *
      * @throws std::domain_error When either argument can not be promoted to `long long` or `bool`.
      * @param lhs The left-hand-side operand of the operation.
@@ -1327,7 +1450,7 @@ public:
     /** binary or.
      *
      * Both operands are first promoted to `long long` or `bool` before the
-     * operation is executed. 
+     * operation is executed.
      *
      * @throws std::domain_error When either argument can not be promoted to `long long` or `bool`.
      * @param lhs The left-hand-side operand of the operation.
@@ -1350,7 +1473,7 @@ public:
     /** binary xor.
      *
      * Both operands are first promoted to `long long` or `bool` before the
-     * operation is executed. 
+     * operation is executed.
      *
      * @throws std::domain_error When either argument can not be promoted to `long long` or `bool`.
      * @param lhs The left-hand-side operand of the operation.
@@ -1446,9 +1569,9 @@ public:
     X(^) X(<<) X(>>)
 #undef X
 
-    /** Get the string representation of the value.
-     */
-    [[nodiscard]] friend std::string repr(datum const &rhs) noexcept
+        /** Get the string representation of the value.
+         */
+        [[nodiscard]] friend std::string repr(datum const &rhs) noexcept
     {
         switch (rhs._tag) {
         case tag_type::monostate: return "undefined"s;
@@ -1464,7 +1587,7 @@ public:
         case tag_type::url: return to_string(*rhs._value._url);
         case tag_type::vector: {
             auto r = std::string{"["};
-            for (ttlet &item: *rhs._value._vector) {
+            for (ttlet &item : *rhs._value._vector) {
                 r += repr(item);
                 r += ',';
             }
@@ -1473,7 +1596,7 @@ public:
         };
         case tag_type::map: {
             auto r = std::string{"{"};
-            for (ttlet &item: *rhs._value._map) {
+            for (ttlet &item : *rhs._value._map) {
                 r += repr(item.first);
                 r += ':';
                 r += repr(item.second);
@@ -1675,6 +1798,64 @@ public:
             return &get<T>(rhs);
         } else {
             return nullptr;
+        }
+    }
+
+    /** Get the value of a datum.
+     *
+     * If the type does not matched the stored value this function will return a nullptr.
+     *
+     * @tparam T Type to check.
+     * @param rhs The datum to get the value from.
+     * @param path The json-path to the value to extract.
+     * @return A pointer to the value, or nullptr.
+     * @throws std::domain_error When @a path does not yield exactly zero or one match.
+     */
+    template<typename T>
+    [[nodiscard]] friend constexpr T *get_if(datum const &rhs, json_path &path)
+    {
+        ttlet matches = rhs.find(path);
+        if (matches.empty()) {
+            return nullptr;
+        } else if (std::size(matches) == 1) {
+            auto match = matches[0];
+            tt_axiom(match);
+            if (holds_alternative<T>(*match)) {
+                return &get<T>(*match);
+            } else {
+                return nullptr;
+            }
+        } else {
+            throw std::domain_error("path yields more than one result");
+        }
+    }
+
+    /** Get the value of a datum.
+     *
+     * If the type does not matched the stored value this function will return a nullptr.
+     *
+     * @tparam T Type to check.
+     * @param rhs The datum to get the value from.
+     * @param path The json-path to the value to extract.
+     * @return A pointer to the value, or nullptr.
+     * @throws std::domain_error When @a path does not yield exactly zero or one match.
+     */
+    template<typename T>
+    [[nodiscard]] friend constexpr T const *get_if(datum const &rhs, json_path const &path)
+    {
+        ttlet matches = rhs.find(path);
+        if (matches.empty()) {
+            return nullptr;
+        } else if (std::size(matches) == 1) {
+            auto match = matches[0];
+            tt_axiom(match);
+            if (holds_alternative<T>(*match)) {
+                return &get<T>(*match);
+            } else {
+                return nullptr;
+            }
+        } else {
+            throw std::domain_error("path yields more than one result");
         }
     }
 
