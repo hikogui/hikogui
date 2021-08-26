@@ -90,6 +90,7 @@ target_sources(ttauri PRIVATE
     int_carry.hpp
     int_overflow.hpp
     interval.hpp
+    jsonpath.hpp
     l10n.hpp
     label.hpp
     locked_memory_allocator.hpp
@@ -207,6 +208,7 @@ if(TT_BUILD_TESTS)
         interval_tests.cpp
         int_carry_tests.cpp
         int_overflow_tests.cpp
+        jsonpath_tests.cpp
         math_tests.cpp
         graphic_path_tests.cpp
         observable_tests.cpp

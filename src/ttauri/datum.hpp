@@ -861,7 +861,7 @@ public:
         }
     }
 
-    void find_descent(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum const *> &r) const noexcept
+    void find_descend(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum const *> &r) const noexcept
     {
         this->find(it + 1, it_end, r);
 
@@ -884,11 +884,8 @@ public:
         std::vector<datum const *> &r) const noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (auto index : *indices) {
-                index = index >= 0 ? index : vector->size() + index;
-                if (index >= 0 and index < vector->size()) {
-                    (*vector)[index].find(it + 1, it_end, r);
-                }
+            for (ttlet index : indices.filter(std::ssize(*vector))) {
+                (*vector)[index].find(it + 1, it_end, r);
             }
         }
     }
@@ -900,10 +897,11 @@ public:
         std::vector<datum const *> &r) const noexcept
     {
         if (auto map = get_if<datum::map_type>(*this)) {
-            for (auto &name : *names) {
-                auto jt = map.find(name);
-                if (jt != std::cend(map)) {
-                    jt->find(it + 1, it_end, r);
+            for (ttlet &name : names) {
+                ttlet name_ = datum{name};
+                auto jt = map->find(name_);
+                if (jt != map->cend()) {
+                    jt->second.find(it + 1, it_end, r);
                 }
             }
         }
@@ -916,12 +914,10 @@ public:
         std::vector<datum const *> &r) const noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            auto first = slice->first >= 0 ? slice->first : vector->size() + slice->first;
-            auto last = slice->last >= 0 ? slice->last : vector->size() + slice->last;
-            auto steps = (last - first) / step;
-            last = first + (steps * step);
+            ttlet first = slice.begin(vector->size());
+            ttlet last = slice.end(vector->size());
 
-            for (auto index = first; index != last; index += step) {
+            for (auto index = first; index != last; index += slice.step) {
                 if (index >= 0 and index < vector->size()) {
                     (*this)[index].find(it + 1, it_end, r);
                 }
@@ -943,16 +939,16 @@ public:
         } else if (std::holds_alternative<jsonpath_wildcard>(*it)) {
             find_wildcard(it, it_end, r);
 
-        } else if (std::holds_alternative<jsonpath_decent>(*it)) {
-            find_descent(it, it_end, r);
+        } else if (std::holds_alternative<jsonpath_descend>(*it)) {
+            find_descend(it, it_end, r);
 
-        } else if (auto indices = std::get_if<jsonpath_indices>(*it)) {
+        } else if (auto indices = std::get_if<jsonpath_indices>(&*it)) {
             find_indices(*indices, it, it_end, r);
 
-        } else if (auto names = std::get_if<jsonpath_names>(*it)) {
+        } else if (auto names = std::get_if<jsonpath_names>(&*it)) {
             find_names(*names, it, it_end, r);
 
-        } else if (auto slice = std::get_if<jsonpath_slice>(*it)) {
+        } else if (auto slice = std::get_if<jsonpath_slice>(&*it)) {
             find_slice(*slice, it, it_end, r);
 
         } else {
@@ -1812,7 +1808,7 @@ public:
      * @throws std::domain_error When @a path does not yield exactly zero or one match.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T *get_if(datum const &rhs, json_path &path)
+    [[nodiscard]] friend constexpr T *get_if(datum const &rhs, jsonpath const &path)
     {
         ttlet matches = rhs.find(path);
         if (matches.empty()) {
@@ -1841,7 +1837,7 @@ public:
      * @throws std::domain_error When @a path does not yield exactly zero or one match.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T const *get_if(datum const &rhs, json_path const &path)
+    [[nodiscard]] friend constexpr T const *get_if(datum const &rhs, jsonpath const &path)
     {
         ttlet matches = rhs.find(path);
         if (matches.empty()) {
