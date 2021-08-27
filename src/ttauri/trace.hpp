@@ -11,6 +11,7 @@
 #include "tagged_map.hpp"
 #include "fixed_string.hpp"
 #include "statistics.hpp"
+#include "wfree_unordered_map.hpp"
 #include <format>
 #include <atomic>
 #include <array>

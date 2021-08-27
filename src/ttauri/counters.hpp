@@ -18,26 +18,19 @@
 
 namespace tt {
 namespace detail {
-class counter;
 
-/** A list of counters.
- */
-inline std::map<std::string, counter *> counter_map = {};
-
-template<basic_fixed_string Tag>
 class counter {
 public:
+    static inline std::map<std::string, counter *> map = {};
+
     counter(counter const &) = delete;
     counter(counter &&) = delete;
     counter &operator=(counter const &) = delete;
     counter &operator=(counter &&) = delete;
 
-    counter() noexcept
-    {
-        counter_map[static_cast<std::string>(Tag)] = this;
-    }
+    constexpr counter() noexcept {}
 
-    operator uint64_t () const noexcept
+    operator uint64_t() const noexcept
     {
         return _v.load(std::memory_order::relaxed);
     }
@@ -65,14 +58,34 @@ public:
         return _v.fetch_add(1, std::memory_order::relaxed);
     }
 
-private:
+protected:
     std::atomic<uint64_t> _v = 0;
-    uint64_t _prev_v = 0;
+    mutable uint64_t _prev_v = 0;
 };
 
-}
+template<basic_fixed_string Tag>
+class tagged_counter : public counter {
+public:
+    tagged_counter() noexcept : counter()
+    {
+        map[Tag] = this;
+    }
+};
+
+} // namespace detail
 
 template<basic_fixed_string Tag>
-inline detail::counter<Tag> counter;
+inline detail::tagged_counter<Tag> global_counter;
+
+[[nodiscard]] inline detail::counter *get_global_counter(std::string const &name)
+{
+    ttlet it = detail::counter::map.find(name);
+    if (it == detail::counter::map.cend()) {
+        return nullptr;
+    } else {
+        tt_axiom(it->second);
+        return it->second;
+    }
+}
 
 } // namespace tt

@@ -470,15 +470,15 @@ public:
     explicit operator std::string() const noexcept
     {
         switch (_tag) {
-        case tag_type::monostate: return "undefined"s;
+        case tag_type::monostate: return "undefined";
         case tag_type::floating_point: return tt::to_string(_value._double);
         case tag_type::decimal: return to_string(_value._decimal);
         case tag_type::integral: return to_string(_value._long_long);
-        case tag_type::boolean: return _value._bool ? "true"s : "false"s;
+        case tag_type::boolean: return _value._bool ? "true" : "false";
         case tag_type::year_month_day: return std::format("{:%Y-%m-%d}", _value._year_month_day);
-        case tag_type::null: return "null"s;
-        case tag_type::flow_break: return "break"s;
-        case tag_type::flow_continue: return "continue"s;
+        case tag_type::null: return "null";
+        case tag_type::flow_break: return "break";
+        case tag_type::flow_continue: return "continue";
         case tag_type::string: return *_value._string;
         case tag_type::url: return to_string(*_value._url);
         case tag_type::vector: {
@@ -1570,15 +1570,15 @@ public:
         [[nodiscard]] friend std::string repr(datum const &rhs) noexcept
     {
         switch (rhs._tag) {
-        case tag_type::monostate: return "undefined"s;
+        case tag_type::monostate: return "undefined";
         case tag_type::floating_point: return std::format("{:.1f}", rhs._value._double);
         case tag_type::decimal: return to_string(rhs._value._decimal);
         case tag_type::integral: return std::format("{}", rhs._value._long_long);
-        case tag_type::boolean: return rhs._value._bool ? "true"s : "false"s;
+        case tag_type::boolean: return rhs._value._bool ? "true" : "false";
         case tag_type::year_month_day: return std::format("{:%Y-%m-%d}", rhs._value._year_month_day);
-        case tag_type::null: return "null"s;
-        case tag_type::flow_break: return "break"s;
-        case tag_type::flow_continue: return "continue"s;
+        case tag_type::null: return "null";
+        case tag_type::flow_break: return "break";
+        case tag_type::flow_continue: return "continue";
         case tag_type::string: return std::format("\"{}\"", *rhs._value._string);
         case tag_type::url: return to_string(*rhs._value._url);
         case tag_type::vector: {

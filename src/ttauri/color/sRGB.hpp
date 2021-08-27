@@ -103,7 +103,7 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
 {
     auto tmp = std::string{str};
 
-    if (tmp.starts_with("#"s)) {
+    if (tmp.starts_with("#")) {
         tmp = tmp.substr(1);
     }
     if (std::ssize(tmp) != 6 && std::ssize(tmp) != 8) {

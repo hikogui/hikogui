@@ -74,6 +74,8 @@ void gui_system_win32::exit(int exit_code)
 
 int gui_system_win32::loop()
 {
+    using namespace std::literals::chrono_literals;
+
     // Run the message loop.
     std::optional<int> exit_code = {};
 
@@ -107,7 +109,7 @@ int gui_system_win32::loop()
 
             if (hires_utc_clock::now() >= dead_line) {
                 // dead line was passed while processing a message.
-                increment_counter<"gui_system_event_dead_line">();
+                ++global_counter<"gui_system_event_dead_line">;
                 break;
             }
         }
@@ -124,7 +126,7 @@ int gui_system_win32::loop()
 
             if (hires_utc_clock::now() >= dead_line) {
                 // dead line was passed while processing a message.
-                increment_counter<"gui_system_render_dead_line">();
+                ++global_counter<"gui_system_render_dead_line">;
             }
         }
 

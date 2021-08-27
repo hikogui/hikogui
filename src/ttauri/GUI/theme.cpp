@@ -128,7 +128,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 
     } else if (ttlet *color_name = get_if<std::string>(data)) {
         ttlet color_name_ = to_lower(*color_name);
-        if (color_name_.starts_with("#"s)) {
+        if (color_name_.starts_with("#")) {
             return color_from_sRGB(color_name_);
 
         } else {

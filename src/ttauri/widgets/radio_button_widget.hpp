@@ -81,7 +81,7 @@ public:
     void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
     /// @endprivatesection
 private:
-    static constexpr hires_utc_clock::duration _animation_duration = 150ms;
+    static constexpr hires_utc_clock::duration _animation_duration = std::chrono::milliseconds(150);
 
     extent2 _button_size;
     aarectangle _button_rectangle;

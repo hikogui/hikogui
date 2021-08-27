@@ -107,6 +107,8 @@ public:
      */
     [[nodiscard]] std::chrono::nanoseconds time_since_epoch() const noexcept
     {
+        using namespace std::literals::chrono_literals;
+
         auto [lo, hi] = mul_carry(_count, _period.load(std::memory_order::relaxed));
         return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
     }

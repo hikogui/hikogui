@@ -18,28 +18,28 @@ namespace tt {
 struct jsonpath_root {
     [[nodiscard]] std::string string() const noexcept
     {
-        return "$"s;
+        return "$";
     }
 };
 
 struct jsonpath_current {
     [[nodiscard]] std::string string() const noexcept
     {
-        return "@"s;
+        return "@";
     }
 };
 
 struct jsonpath_wildcard {
     [[nodiscard]] std::string string() const noexcept
     {
-        return "[*]"s;
+        return "[*]";
     }
 };
 
 struct jsonpath_descend {
     [[nodiscard]] std::string string() const noexcept
     {
-        return ".."s;
+        return "..";
     }
 };
 
@@ -58,7 +58,7 @@ struct jsonpath_names {
 
     [[nodiscard]] std::string string() const noexcept
     {
-        auto r = "["s;
+        auto r = std::string{"["};
         auto first = true;
         for (ttlet &name : names) {
             if (not first) {
@@ -105,7 +105,7 @@ struct jsonpath_indices {
 
     [[nodiscard]] std::string string() const noexcept
     {
-        auto r = "["s;
+        auto r = std::string{"["};
         auto first = true;
         for (ttlet index : indices) {
             if (not first) {

@@ -13,6 +13,8 @@ namespace tt {
 preferences::preferences(URL location) noexcept :
     _location(location), _deserializing(0), _modified(false)
 {
+    using namespace std::literals::chrono_literals;
+
     _set_modified_ptr = std::make_shared<std::function<void()>>([this]() {
         this->set_modified();
     });

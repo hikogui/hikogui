@@ -222,30 +222,30 @@ static datum method_day(formula_evaluation_context &context, datum &self, datum:
 }
 
 formula_post_process_context::function_table formula_post_process_context::global_functions = {
-    {"float"s, function_float},
-    {"integer"s, function_integer},
-    {"decimal"s, function_decimal},
-    {"string"s, function_string},
-    {"boolean"s, function_boolean},
-    {"url"s, function_url},
-    {"size"s, function_size},
-    {"keys"s, function_keys},
-    {"values"s, function_values},
-    {"items"s, function_items},
-    {"sort"s, function_sort}};
+    {"float", function_float},
+    {"integer", function_integer},
+    {"decimal", function_decimal},
+    {"string", function_string},
+    {"boolean", function_boolean},
+    {"url", function_url},
+    {"size", function_size},
+    {"keys", function_keys},
+    {"values", function_values},
+    {"items", function_items},
+    {"sort", function_sort}};
 formula_post_process_context::method_table formula_post_process_context::global_methods = {
-    {"append"s, method_append},
-    {"contains"s, method_contains},
-    {"push"s, method_append},
-    {"pop"s, method_pop},
-    {"year"s, method_year},
-    {"quarter"s, method_quarter},
-    {"month"s, method_month},
-    {"day"s, method_day},
+    {"append", method_append},
+    {"contains", method_contains},
+    {"push", method_append},
+    {"pop", method_pop},
+    {"year", method_year},
+    {"quarter", method_quarter},
+    {"month", method_month},
+    {"day", method_day},
 };
 
 formula_post_process_context::filter_table formula_post_process_context::global_filters = {
-    {"id"s, make_identifier},
-    {"url"s, url_encode}};
+    {"id", make_identifier},
+    {"url", url_encode}};
 
 } // namespace tt

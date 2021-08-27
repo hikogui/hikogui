@@ -36,6 +36,8 @@ namespace tt {
 
 [[nodiscard]] uint64_t time_stamp_count::measure_frequency(std::chrono::milliseconds sample_duration) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     // Only sample the frequency of one of the TSC clocks.
     auto prev_mask = set_thread_affinity(current_cpu_id());
 
@@ -113,6 +115,8 @@ void time_stamp_count::populate_aux_values() noexcept
 
 void time_stamp_count::configure_frequency() noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     // This function is called from the crt and must therefor be quick as we do not
     // want to keep the user waiting. We are satisfied if the measured frequency is
     // to within 1% accuracy.

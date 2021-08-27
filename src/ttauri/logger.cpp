@@ -23,8 +23,6 @@
 namespace tt {
 namespace detail {
 
-using namespace std::literals::chrono_literals;
-
 /*! Write to a log file and console.
  * This will write to the console if one is open.
  * It will also create a log file in the application-data directory.
@@ -39,6 +37,8 @@ std::jthread logger_thread;
 
 static void logger_thread_loop(std::stop_token stop_token) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     set_thread_name("logger");
     tt_log_info("logger thread started");
 

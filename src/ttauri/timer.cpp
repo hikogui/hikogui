@@ -116,6 +116,8 @@ timer::find_triggered_callbacks(timer::time_point current_time) noexcept
 
 void timer::loop(std::stop_token stop_token) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     tt_log_info("Timer {}: started", name);
     while (true) {
         ttlet current_time = hires_utc_clock::now();

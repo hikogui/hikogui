@@ -14,10 +14,11 @@
 
 namespace tt {
 
-using namespace std::chrono_literals;
 
 std::string format_engineering(hires_utc_clock::duration duration)
 {
+    using namespace std::chrono_literals;
+
     if (duration >= 1s) {
         return std::format("{:.3g} s ", static_cast<double>(duration / 1ns) / 1'000'000'000);
     } else if (duration >= 1ms) {
@@ -87,6 +88,8 @@ std::string format_engineering(hires_utc_clock::duration duration)
 
 void hires_utc_clock::subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     // Calibrate the TSC frequency to within 1 ppm.
     // A 1s measurement already brings is to about 1ppm. We are
     // going to be taking average of the IQR of 11 samples, just
@@ -129,6 +132,8 @@ static void advance_cpu_thread_mask(uint64_t const &process_cpu_mask, uint64_t &
 
 void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     set_thread_name("hires_utc_clock");
     subsystem_proc_frequency_calibration(stop_token);
 

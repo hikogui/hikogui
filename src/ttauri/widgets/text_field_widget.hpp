@@ -122,7 +122,7 @@ private:
     translate2 _text_translate;
     translate2 _text_inv_translate;
 
-    static constexpr hires_utc_clock::duration _blink_interval = 500ms;
+    static constexpr hires_utc_clock::duration _blink_interval = std::chrono::milliseconds(500);
     hires_utc_clock::time_point _next_redraw_time_point;
     hires_utc_clock::time_point _last_update_time_point;
 

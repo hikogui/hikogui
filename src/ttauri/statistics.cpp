@@ -14,7 +14,7 @@ std::jthread statistics_thread;
 static void statistics_flush_counters() noexcept
 {
     tt_log_statistics("{:>18} {:>9} {:>10} {:>10}", "total", "delta", "mean", "peak");
-    for (ttlet &[tag, counter_ptr] : detail::counter_map) {
+    for (ttlet &[tag, counter_ptr] : detail::counter::map) {
         tt_axiom(counter_ptr);
         ttlet [count, count_since_last_read] = counter_ptr->read();
         tt_log_statistics("{:>18} {:>+9} {:10} {:10} {}", count, count_since_last_read, "", "", tag);
@@ -55,6 +55,8 @@ static void statistics_flush() noexcept
 
 static void statistics_loop(std::stop_token stop_token) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     set_thread_name("statistics");
 
     auto next_time = std::chrono::ceil<std::chrono::minutes>(hires_utc_clock::now());

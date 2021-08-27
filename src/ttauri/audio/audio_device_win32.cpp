@@ -322,7 +322,7 @@ std::string audio_device_win32::name() const noexcept
     try {
         return get_property<std::string>(_property_store, PKEY_Device_FriendlyName);
     } catch (io_error const &) {
-        return "<unknown name>"s;
+        return "<unknown name>";
     }
 }
 
@@ -363,7 +363,7 @@ std::string audio_device_win32::device_name() const noexcept
     try {
         return get_property<std::string>(_property_store, PKEY_DeviceInterface_FriendlyName);
     } catch (io_error const &) {
-        return "<unknown device name>"s;
+        return "<unknown device name>";
     }
 }
 
@@ -372,7 +372,7 @@ std::string audio_device_win32::end_point_name() const noexcept
     try {
         return get_property<std::string>(_property_store, PKEY_Device_DeviceDesc);
     } catch (io_error const &) {
-        return "<unknown end point name>"s;
+        return "<unknown end point name>";
     }
 }
 
