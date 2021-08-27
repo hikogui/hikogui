@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "wfree_unordered_map.hpp"
 #include "architecture.hpp"
 #include "fixed_string.hpp"
 #include "statistics.hpp"
@@ -15,76 +14,65 @@
 #include <typeinfo>
 #include <typeindex>
 #include <string>
+#include <map>
 
 namespace tt {
+namespace detail {
+class counter;
 
-constexpr int MAX_NR_COUNTERS = 1024;
-
-struct counter_map_value_type {
-    std::atomic<int64_t> *counter;
-    int64_t previous_value;
-};
-
-using counter_map_type = wfree_unordered_map<std::string, counter_map_value_type, MAX_NR_COUNTERS>;
-
-// To reduce number of executed instruction this is a global variable.
-// The wfree_unordered_map does not need to be initialized.
-inline counter_map_type counter_map;
-
-template<basic_fixed_string Tag>
-struct counter_functor {
-    // Make sure non of the counters are false sharing cache-lines.
-    alignas(hardware_destructive_interference_size) inline static std::atomic<int64_t> counter = 0;
-
-    tt_no_inline void add_to_map() const noexcept
-    {
-        counter_map.insert(Tag, counter_map_value_type{&counter, 0});
-        statistics_start();
-    }
-
-    int64_t increment() const noexcept
-    {
-        ttlet value = counter.fetch_add(1, std::memory_order::relaxed);
-
-        if (value == 0) {
-            [[unlikely]] add_to_map();
-        }
-
-        return value + 1;
-    }
-
-    [[nodiscard]] int64_t read() const noexcept
-    {
-        return counter.load(std::memory_order::relaxed);
-    }
-
-    // Don't implement readAndSet, a set to zero would cause the counters to be reinserted.
-};
-
-template<basic_fixed_string Tag>
-inline int64_t increment_counter() noexcept
-{
-    return counter_functor<Tag>{}.increment();
-}
-
-template<basic_fixed_string Tag>
-[[nodiscard]] inline int64_t read_counter() noexcept
-{
-    return counter_functor<Tag>{}.read();
-}
-
-/*!
- * \return The current count, count since last read.
+/** A list of counters.
  */
-[[nodiscard]] inline std::pair<int64_t, int64_t> read_counter(std::string tag) noexcept
-{
-    auto &item = counter_map[tag];
+inline std::map<std::string, counter *> counter_map = {};
 
-    ttlet *const count_ptr = item.counter;
-    ttlet count = count_ptr != nullptr ? item.counter->load(std::memory_order::relaxed) : 0;
-    ttlet count_since_last_read = count - item.previous_value;
-    item.previous_value = count;
-    return {count, count_since_last_read};
+template<basic_fixed_string Tag>
+class counter {
+public:
+    counter(counter const &) = delete;
+    counter(counter &&) = delete;
+    counter &operator=(counter const &) = delete;
+    counter &operator=(counter &&) = delete;
+
+    counter() noexcept
+    {
+        counter_map[static_cast<std::string>(Tag)] = this;
+    }
+
+    operator uint64_t () const noexcept
+    {
+        return _v.load(std::memory_order::relaxed);
+    }
+
+    /** Read current and previous value of the counter.
+     *
+     * @pre Should be called from the statistics thread.
+     * @return current, previous counter value.
+     */
+    [[nodiscard]] std::pair<uint64_t, uint64_t> read() const noexcept
+    {
+        ttlet current = _v.load(std::memory_order::relaxed);
+        ttlet previous = std::exchange(_prev_v, current);
+        return {current, previous};
+    }
+
+    counter &operator++() noexcept
+    {
+        _v.fetch_add(1, std::memory_order::relaxed);
+        return *this;
+    }
+
+    uint64_t operator++(int) noexcept
+    {
+        return _v.fetch_add(1, std::memory_order::relaxed);
+    }
+
+private:
+    std::atomic<uint64_t> _v = 0;
+    uint64_t _prev_v = 0;
+};
+
 }
+
+template<basic_fixed_string Tag>
+inline detail::counter<Tag> counter;
 
 } // namespace tt

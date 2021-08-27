@@ -107,7 +107,7 @@ private:
 
 /** The global log queue contains messages to be displayed by the logger thread.
  */
-inline wfree_fifo<log_message_base, 256> log_fifo;
+inline wfree_fifo<log_message_base, 64> log_fifo;
 
 /** Deinitalize the logger system.
  */

@@ -19,10 +19,34 @@ This example will format and print the text, together with the
 cpu-id, thread-id, filename, line-number and the current date
 and time when the `tt_log_info()` macro was executed.
 
-For performance reasons the actual formatting of the text is delayed and
-done on the logger thread. Logging is wait-free as long as the log queue
-is not full and all the data being logged fits within a log queue slot of
-about 40 bytes.
+### Asynchronous logging
+By default logging is done synchronously, meaning that the `tt_log_*()`
+macros will block until the log entry is written to console and log files.
+
+Logging synchronously is quite slow, but maybe useful if you do not want
+to spawn an extra thread.
+
+By starting the logger, logging will be done asynchronously, messages
+are added to a fifo, and a logger-thread will write the messages from the
+fifo to the console and log files.
+
+```cpp
+// Start the logger-thread and change the log level.
+logger_start(global_state_type::log_level_info);
+```
+
+### Wait-free logging
+The `tt_log_*()` macros can log wait-free when all the following conditions
+are met:
+
+ - The logger-thread must be started to enable asynchronous logging.
+ - The logger FIFO must not be full, 1024 messages fit in the FIFO.
+ - The format-arguments must have a wait-free copy constructor.
+ - The format-arguments are together not more than: 32 bytes.
+
+### Accurate timestamps
+
+
 
 ### Available log macros:
 
@@ -33,12 +57,26 @@ about 40 bytes.
  - `tt_log_debug()`
  - `tt_log_audit()`
 
-### Asynchronous or synchronous logging
 
+Wait-free counting
+------------------
+Instead of logging, you may want to count how often a line of
+code is executed. This is a pretty cheap and wait-free operation,
+on x86-64 this is done with a single locked-increment instruction.
 
-### Changing the log level
+The following line of code increments a counter, the "my counter"
+is the name you can give to a counter.
 
-Counting
---------
+```cpp
+++counter<"my counter">;
+```
+
+By default the counters are not logged, by starting statistic subsystem
+the counters are logged on a 30 second interval.
+
+```cpp
+statistics_start();
+```
+
 
 

@@ -13,10 +13,10 @@ std::jthread statistics_thread;
 
 static void statistics_flush_counters() noexcept
 {
-    ttlet keys = counter_map.keys();
     tt_log_statistics("{:>18} {:>9} {:>10} {:>10}", "total", "delta", "mean", "peak");
-    for (ttlet &tag : keys) {
-        ttlet[count, count_since_last_read] = read_counter(tag);
+    for (ttlet &[tag, counter_ptr] : detail::counter_map) {
+        tt_axiom(counter_ptr);
+        ttlet [count, count_since_last_read] = counter_ptr->read();
         tt_log_statistics("{:>18} {:>+9} {:10} {:10} {}", count, count_since_last_read, "", "", tag);
     }
 }
