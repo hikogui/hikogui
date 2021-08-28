@@ -112,4 +112,28 @@ void transition(std::atomic<T> &state, T from, T to, std::memory_order order = s
     }
 }
 
+template<typename T>
+T fetch_max(std::atomic<T> &lhs, T rhs, std::memory_order order) noexcept
+{
+    auto expected = lhs.load(order);
+    while (expected < rhs) {
+        if (lhs.compare_exchange_weak(expected, rhs, order)) {
+            return expected;
+        }
+    }
+    return expected;
+}
+
+template<typename T>
+T fetch_min(std::atomic<T> &lhs, T rhs, std::memory_order order) noexcept
+{
+    auto expected = lhs.load(order);
+    while (lhs < expected) {
+        if (lhs.compare_exchange_weak(expected, rhs, order)) {
+            return expected;
+        }
+    }
+    return expected;
+}
+
 } // namespace tt
