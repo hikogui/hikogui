@@ -177,8 +177,7 @@ target_include_directories(ttauri PUBLIC
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 
-# CMAKE BUG, uses wrong option "/std::c++20" to enable c++20 on MSVC
-target_compile_features(ttauri INTERFACE cxx_std_23)
+target_compile_features(ttauri INTERFACE cxx_std_20)
 
 #
 # We will support the following CPUs:
