@@ -214,6 +214,9 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
+    # CMAKE BUG, uses wrong option "/std::c++20" to enable c++20 on MSVC
+    target_compile_options(ttauri PUBLIC /std:c++latest)
+
     # Turn on a lot of warnings by default.
     target_compile_options(ttauri PUBLIC -W4)
 
