@@ -6,16 +6,9 @@ Here are the reasons for creating the BON8 data format:
  - Exact translation between JSON and BON8
  - A canonical representation to allow signing of messages.
  - No extensibility, allows every parser to handle every BON8.
- - Low amount of overhead
+ - Low amount of overhead.
  - Quick encode / decode.
-
-Here are some other object-notation formats looked at:
-
- - Message Pack (complicated to parse, more data types than JSON)
- - BSON (data overhead, more data types than JSON)
- - CBOR (complicated concatenated data structure, more data types than JSON)
- - Smile (back references complicate encoding and decoding)
- - UBJSON (more data overhead)
+ - Self terminating, a valid BON8 message can be decoded without a buffer-length.
 
 Encoding
 --------
@@ -46,9 +39,11 @@ string := character character* | character* eot;
 
 character := utf8_1 | utf8_2 | utf8_3 | utf8_4;
 
-array := start_array_with_count value* | start_array value* eoc;
+array := start_array_with_count value*
+       | start_array value* eoc;
 
-object := start_object_with_count (string value)* | start_object (string value)* eoc
+object := start_object_with_count (string value)*
+        | start_object (string value)* eoc
 ```
 
 This table gives an overview on the encoding:
@@ -84,21 +79,43 @@ This table gives an overview on the encoding:
   fe                      | 1 | End Of Container (eoc)      |      |          |
   ff                      | 1 | End Of Text (eot)           |      |          |
 
-
-
 Extra rules
 -----------
 
-The rules below ensures minimum message size and allows for cryptographically
-signing of the message repeatably. All encoders MUST follow these rules.
+The rules below ensures minimum message size and consistency, which allows for cryptographically
+signing of messages. All encoders MUST follow these rules.
 
- - String MUST ONLY end with 0xff if at least one of the following is true:
+ - A message is a single value. Most often this value is of type Object or type Array.
+ - String MUST ONLY end with eot (0xff) if at least one of the following is true:
    - The string is empty,
    - When another string is directly following this string,
    - If the string ends the message.
+ - Strings MUST be a valid UTF-8 encoded string.
+ - Strings MAY contain any Unicode code-point between U+0000 and U+10ffff.
+ - Unicode code-points MUST be encoded with the least amount of UTF-8 code-units.
  - Integers MUST be encoded in the least amount of bytes.
  - Floating point numbers MUST be encoded in the least amount of bytes
-   while preserving precision. In other words: a binary64 number needs to be converted to
-   binary32 and back to determine if it can be encoded as binary32 while preserving precision.
- - Object keys MUST be lexically ordered based on UTF-8 code units.
+   while preserving precision. After conversion of a binary64 to binary32
+   the resulting value must be within 1 ULP of the original value,
+   this will allow for different rounding directions between systems.
+   Below is an C++ example for determining if a binary64 number can be
+   represented as binary32.
+ - Arrays MUST be encoded with the least amount of bytes.
+ - Objects MUST be encoded with the least amount of bytes.
+ - The keys of an Object MUST be lexically ordered based on UTF-8 code-units.
 
+```cpp
+bool binary64_can_be_represented_as_binary32(double x)
+{
+    if (std::isnan(x) or std::isinf(x)) {
+        return true;
+    } else if (x < -std::numeric_limits<float>::max() or x > std::numeric_limits<float>::max) {
+        return false;
+    } else {
+        auto y = static_cast<float>(x);
+        auto a = std::nextafter(x, -std::numeric_limits<double>::infinity());
+        auto b = std::nextafter(x, std::numeric_limits<double>::infinity());
+        return a <= y and y <= b;
+    }
+}
+```
