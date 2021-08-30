@@ -134,8 +134,6 @@ target_sources(ttauri PRIVATE
     stack.hpp
     static_resource_view.cpp
     static_resource_view.hpp
-    statistics.cpp
-    statistics.hpp
     strings.hpp
     subsystem.hpp
     tag.hpp

@@ -101,16 +101,26 @@ public:
         return _count;
     }
 
+    /** Convert a time-stamp count to a duration.
+     *
+     * @param count The number clock ticks.
+     * @return A period of nanoseconds representing the count of clock ticks.
+     */
+    [[nodiscard]] static std::chrono::nanoseconds duration_from_count(uint64_t count) noexcept
+    {
+        using namespace std::literals::chrono_literals;
+
+        ttlet [lo, hi] = mul_carry(count, _period.load(std::memory_order::relaxed));
+        return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
+    }
+
     /** Convert to nanoseconds since epoch.
      * The epoch is the same as the TSC count's epoch. In most cases the epoch
      * is at system startup time.
      */
     [[nodiscard]] std::chrono::nanoseconds time_since_epoch() const noexcept
     {
-        using namespace std::literals::chrono_literals;
-
-        auto [lo, hi] = mul_carry(_count, _period.load(std::memory_order::relaxed));
-        return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
+        return duration_from_count(_count);
     }
 
     constexpr time_stamp_count &operator+=(uint64_t rhs) noexcept
