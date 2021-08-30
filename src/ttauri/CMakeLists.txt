@@ -38,6 +38,7 @@ target_sources(ttauri PRIVATE
     coroutine.hpp
     command.hpp
     CommandLineParser.hpp
+    counters.cpp
     counters.hpp
     CP1252.hpp
     #cpu_id.hpp

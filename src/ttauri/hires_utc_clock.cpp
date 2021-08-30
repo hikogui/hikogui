@@ -15,18 +15,18 @@
 namespace tt {
 
 
-std::string format_engineering(hires_utc_clock::duration duration)
+std::string format_engineering(std::chrono::nanoseconds duration)
 {
     using namespace std::chrono_literals;
 
     if (duration >= 1s) {
-        return std::format("{:.3g} s ", static_cast<double>(duration / 1ns) / 1'000'000'000);
+        return std::format("{:.3g}s ", static_cast<double>(duration / 1ns) / 1'000'000'000);
     } else if (duration >= 1ms) {
-        return std::format("{:.3g} ms", static_cast<double>(duration / 1ns) / 1'000'000);
+        return std::format("{:.3g}ms", static_cast<double>(duration / 1ns) / 1'000'000);
     } else if (duration >= 1us) {
-        return std::format("{:.3g} us", static_cast<double>(duration / 1ns) / 1'000);
+        return std::format("{:.3g}us", static_cast<double>(duration / 1ns) / 1'000);
     } else {
-        return std::format("{:.3g} ns", static_cast<double>(duration / 1ns));
+        return std::format("{:.3g}ns", static_cast<double>(duration / 1ns));
     }
 }
 

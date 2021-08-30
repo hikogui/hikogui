@@ -2,7 +2,6 @@
 #include "my_preferences_window_controller.hpp"
 #include "my_preferences.hpp"
 #include "ttauri/logger.hpp"
-#include "ttauri/statistics.hpp"
 #include "ttauri/crt.hpp"
 #include "ttauri/hires_utc_clock.hpp"
 #include "ttauri/metadata.hpp"
@@ -51,9 +50,6 @@ int tt_main(int argc, char *argv[])
 
     // Start the logger system, so logging is done asynchronously.
     logger_start(global_state_type::log_level_info);
-
-    // Start the statistics logging.
-    statistics_start();
 
     // Startup renderdoc for debugging
     auto render_doc = RenderDoc();

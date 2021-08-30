@@ -179,7 +179,7 @@ void gui_window::render(hires_utc_clock::time_point displayTimePoint)
 
     if (auto optional_draw_context = surface->render_start(_request_redraw_rectangle)) {
         auto draw_context = *optional_draw_context;
-        auto tr = trace<"window_render", "frame_buffer_index">();
+        auto tr = trace<"window_render">();
 
         _request_redraw_rectangle = aarectangle{};
 

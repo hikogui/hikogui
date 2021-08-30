@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -9,8 +9,8 @@
 
 #include "architecture.hpp"
 #include "fixed_string.hpp"
-#include "statistics.hpp"
 #include "time_stamp_count.hpp"
+#include "atomic.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>
@@ -33,7 +33,7 @@ public:
 
     operator uint64_t() const noexcept
     {
-        return _v.load(std::memory_order::relaxed);
+        return _total_count.load(std::memory_order::relaxed);
     }
 
     static void log() noexcept
@@ -45,64 +45,34 @@ public:
         }
     }
 
-    static void log_header() noexcept
-    {
-        tt_log_statistics("{:>18} {:>9} {:>10} {:>10} {:>10}", "total", "delta", "mean", "min", "max");
-    }
+    static void log_header() noexcept;
 
     /** Log the counter.
      */
-    void log(std::string const &tag) const noexcept
-    {
-        ttlet total_count = _total_count.load(std::memory_order::relaxed);
-        ttlet prev_count = _prev_count.exchange(_total_count, std::memory_order::relaxed);
-        ttlet duration_max = time_stamp_count::duration_from_count(
-            _duration_max.exchange(0, std::memory_order::relaxed));
-        ttlet duration_min = time_stamp_count::duration_from_count(
-            _duration_max.exchange(std::numeric_limits<uint64_t>::max(), std::memory_order::relaxed));
-
-        ttlet duration_avg = _duration_avg.exchange(0, std::memory_order::relaxed);
-        if (duration_avg == 0) {
-            tt_log_statistics("{:>18} {:>+9} {:10} {:10} {:10} {}", total_count, total_count - prev_count, "", "", "", tag);
-
-        } else {
-            ttlet avg_count = duration_avg & 0x3'ff;
-            ttlet avg_sum = duration_avg >> 10;
-            ttlet average = time_stamp_count::duration_from_count(avg_sum / avg_count);
-
-            tt_log_statistics(
-                "{:18d} {:+9d} {:>10} {:>10} {:>10} {}",
-                total_count,
-                total_count - prev_count,
-                average,
-                duration_min,
-                duration_max,
-                tag);
-        }
-    }
+    void log(std::string const &tag) noexcept;
 
     counter &operator++() noexcept
     {
-        _v.fetch_add(1, std::memory_order::relaxed);
+        _total_count.fetch_add(1, std::memory_order::relaxed);
         return *this;
     }
 
     uint64_t operator++(int) noexcept
     {
-        return _v.fetch_add(1, std::memory_order::relaxed);
+        return _total_count.fetch_add(1, std::memory_order::relaxed);
     }
 
     /** Add a duration.
      */
     void add_duration(uint64_t duration) noexcept
     {
-        _count.fetch_add(1, std::memory_order::relaxed);
+        _total_count.fetch_add(1, std::memory_order::relaxed);
         fetch_max(_duration_max, duration, std::memory_order::relaxed);
         fetch_min(_duration_min, duration, std::memory_order::relaxed);
 
         // Combine duration with count in a single atomic.
         tt_axiom(duration <= (std::numeric_limits<uint64_t>::max() >> 10));
-        duration <<= 10;
+        duration <<= 16;
         ++duration;
         _duration_avg.fetch_add(duration, std::memory_order::relaxed);
     }
@@ -126,7 +96,7 @@ class tagged_counter : public counter {
 public:
     tagged_counter() noexcept : counter()
     {
-        map[Tag] = this;
+        map[std::string{Tag}] = this;
     }
 };
 

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "counters.hpp"
 #include <concepts>
 #include <atomic>
 #include <memory>

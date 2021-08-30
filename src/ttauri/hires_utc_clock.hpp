@@ -78,7 +78,7 @@ private:
     [[nodiscard]] static size_t find_cpu_id(uint32_t cpu_id) noexcept;
 };
 
-std::string format_engineering(hires_utc_clock::duration duration);
+std::string format_engineering(std::chrono::nanoseconds duration);
 
 /** Return a ISO-8601 formated date-time.
  * @param utc_timestamp The time_point to format.

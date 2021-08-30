@@ -42,14 +42,14 @@ static void logger_thread_loop(std::stop_token stop_token) noexcept
     set_thread_name("logger");
     tt_log_info("logger thread started");
 
-    auto counter_statistics_deadline = std::chrono::utc_clock::now() + 1m;
+    auto counter_statistics_deadline = std::chrono::utc_clock::now() + 1min;
 
     while (!stop_token.stop_requested()) {
         logger_flush();
 
         ttlet now = std::chrono::utc_clock::now();
         if (now >= counter_statistics_deadline) {
-            counter_statistics_deadline = now + 1m;
+            counter_statistics_deadline = now + 1min;
             counter::log();
         }
 

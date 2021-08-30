@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "counters.hpp"
 #include "time_stamp_count.hpp"
 #include "hires_utc_clock.hpp"
 #include "polymorphic_optional.hpp"
@@ -26,10 +25,6 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
-
-namespace tt {
-void trace_record() noexcept;
-}
 
 namespace tt {
 namespace detail {
@@ -72,7 +67,6 @@ public:
     {
     }
 
-
     std::string format() const noexcept override
     {
         ttlet time_point = hires_utc_clock::make(_time_stamp);
@@ -81,17 +75,17 @@ public:
         ttlet thread_id = _time_stamp.thread_id();
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
-            return std::format("{} {:5} {} tid={} cpu={}\n", local_timestring, log_level_name, _what(), thread_id, cpu_id);
+            return std::format("{} {:2}:{:<10} {:5} {}\n", local_timestring, cpu_id, thread_id, log_level_name, _what());
         } else {
             return std::format(
-                "{} {:5} {} ({}:{}) tid={} cpu={}\n",
+                "{} {:2}:{:<10} {:5} {} ({}:{})\n",
                 local_timestring,
+                cpu_id,
+                thread_id,
                 log_level_name,
                 _what(),
-                SourceFile,
-                SourceLine,
-                thread_id,
-                cpu_id);
+                URL::urlFromPath(SourceFile).filename(),
+                SourceLine);
         }
     }
 
@@ -133,9 +127,9 @@ tt_no_inline bool logger_init() noexcept;
 tt_no_inline void logger_flush() noexcept;
 
 /** Start the logger system.
-* 
+ *
  * Initialize the logger system if it is not already initialized and while the system is not in shutdown-mode.
- * 
+ *
  * @param log_level The level at which to log.
  * @return true if the logger system is initialized, false when the system is being shutdown.
  */
@@ -189,10 +183,6 @@ tt_force_inline void log(Args &&...args) noexcept
 
     if constexpr (to_bool(Level & global_state_type::log_fatal)) {
         std::terminate();
-
-    } else if constexpr (to_bool(Level & global_state_type::log_error)) {
-        // Actually logging of tracing will only work when we cleanly unwind the stack and destruct all trace objects.
-        trace_record();
     }
 }
 
