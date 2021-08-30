@@ -58,9 +58,30 @@ public:
         return _v.fetch_add(1, std::memory_order::relaxed);
     }
 
+    /** Add a duration.
+     */
+    void add_duration(uint64_t duration) noexcept
+    {
+        ttlet old_version = _count.fetch_add(1, std::memory_order::acquire);
+
+        _duration_sum.fetch_add(duration, std::memory_order::relaxed);
+
+        auto expected = _duration_peak.load(std::memory_order::relaxed);
+        while (expected < duration) {
+            if (_duration_peak.compare_exchange_strong(expected, duration, std::memory_order::relaxed)) {
+                break;
+            }
+        }
+
+        _version.store(old_version + 1, std::memory_order::release);
+    }
+
 protected:
-    std::atomic<uint64_t> _v = 0;
-    mutable uint64_t _prev_v = 0;
+    std::atomic<uint64_t> _count = 0;
+    std::atomic<uint64_t> _duration_peak = 0;    
+    std::atomic<uint64_t> _duration_sum = 0;    
+    std::atomic<uint64_t> _version = 0;
+    uint64_t _prev_count = 0;
 };
 
 template<basic_fixed_string Tag>
