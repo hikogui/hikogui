@@ -103,6 +103,8 @@ signing of messages. All encoders MUST follow these rules.
  - Arrays MUST be encoded with the least amount of bytes.
  - Objects MUST be encoded with the least amount of bytes.
  - The keys of an Object MUST be lexically ordered based on UTF-8 code-units.
+ - Number are stored most significant bits first (big endian).
+ - Negative integers, in the short representation are bit-inverted before being stored, this makes the value -1 -> 0, -2 -> 1.
 
 ```cpp
 bool binary64_can_be_represented_as_binary32(double x)
