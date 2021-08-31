@@ -179,11 +179,11 @@ target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 
 if(${CMAKE_VERSION} VERSION_LESS "3.21.0")
     message("Using c++20")
-    target_compile_features(ttauri INTERFACE cxx_std_20)
+    target_compile_features(ttauri PUBLIC cxx_std_20)
 else()
     # CMake uses the incorrect /std:c++20 on MSVC when cxx_std_20 is used.
     message("Using c++23, because of cmake bug")
-    target_compile_features(ttauri INTERFACE cxx_std_23)
+    target_compile_features(ttauri PUBLIC cxx_std_23)
 endif()
 
 #
