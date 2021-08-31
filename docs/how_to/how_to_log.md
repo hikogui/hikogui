@@ -1,5 +1,5 @@
-How To Log
-==========
+How To Log, Count and Trace
+===========================
 
 Logging text
 ------------
@@ -18,6 +18,20 @@ tt_log_info("This logs a integer {} and a float {}.", i, f);
 This example will format and print the text, together with the
 cpu-id, thread-id, filename, line-number and the current date
 and time when the `tt_log_info()` macro was executed.
+
+There are several log levels:
+
+ | Level      | Macro              | Desription                                                                   |
+ |:---------- |:------------------ |:---------------------------------------------------------------------------- |
+ | fatal      | `tt_log_fatal()`   | Errors that causes harm, including data corruption.                          |
+ | error      | `tt_log_error()`   | Errors that causes functionality to not be available.                        |
+ | warning    | `tt_log_warning()` | Errors which the application can ignore or solve itself.                     |
+ | info       | `tt_log_info()`    | Information possibly useful for a user to fix problems with the application. |
+ | debug      | `tt_log_debug()`   | Information possibly useful for a developer.                                 |
+ | audit      | `tt_log_audit()`   | Information required for the business or regulatory reasons.                 |
+ | statistics | `global_counter<>` | Statistical information for counters and durations.                          |
+ | trace      | `trace<>()`        | Debug information about a transaction that was aborted by an exception.      |
+
 
 ### Asynchronous logging
 By default logging is done synchronously, meaning that the `tt_log_*()`
@@ -48,16 +62,6 @@ are met:
 
 
 
-### Available log macros:
-
- - `tt_log_fatal()` - _also terminates the application._
- - `tt_log_error()`
- - `tt_log_warning()`
- - `tt_log_info()`
- - `tt_log_debug()`
- - `tt_log_audit()`
-
-
 Wait-free counting
 ------------------
 Instead of logging, you may want to count how often a line of
@@ -68,15 +72,10 @@ The following line of code increments a counter, the "my counter"
 is the name you can give to a counter.
 
 ```cpp
-++counter<"my counter">;
+++global_counter<"my counter">;
 ```
 
-By default the counters are not logged, by starting statistic subsystem
-the counters are logged on a 30 second interval.
-
-```cpp
-statistics_start();
-```
-
+The `logger_start()` function should be called to display these counters
+on a per minute interval.
 
 
