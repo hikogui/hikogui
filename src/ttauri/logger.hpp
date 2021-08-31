@@ -17,6 +17,7 @@
 #include "fixed_string.hpp"
 #include "subsystem.hpp"
 #include "global_state.hpp"
+#include "URL.hpp"
 #include <chrono>
 #include <format>
 #include <string>

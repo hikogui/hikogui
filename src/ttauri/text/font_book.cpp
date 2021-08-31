@@ -6,6 +6,7 @@
 #include "true_type_font.hpp"
 #include "../trace.hpp"
 #include "../ranges.hpp"
+#include "../logger.hpp"
 #include <ranges>
 #include <vector>
 
