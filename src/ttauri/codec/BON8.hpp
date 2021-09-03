@@ -233,7 +233,7 @@ public:
         if (value == -1.0) {
             output += static_cast<std::byte>(BON8_code_float_min_one);
 
-        } else if (value == 0.0) {
+        } else if (value == 0.0 and not std::signbit(value)) {
             output += static_cast<std::byte>(BON8_code_float_zero);
 
         } else if (value == 1.0) {

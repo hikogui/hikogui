@@ -35,7 +35,7 @@ float := binary32 | binary64;
 
 boolean := true | false;
 
-string := character character* | character* eot;
+string := character character* | character* eos;
 
 character := utf8_1 | utf8_2 | utf8_3 | utf8_4;
 
@@ -77,7 +77,7 @@ This table gives an overview on the encoding:
   fc                      | 1 | 0.0                         |      |          |
   fd                      | 1 | 1.0                         |      |          |
   fe                      | 1 | End Of Container (eoc)      |      |          |
-  ff                      | 1 | End Of Text (eot)           |      |          |
+  ff                      | 1 | End Of String (eos)         |      |          |
 
 Extra rules
 -----------
@@ -86,38 +86,87 @@ The rules below ensures minimum message size and consistency, which allows for c
 signing of messages. All encoders MUST follow these rules.
 
  - A message is a single value. Most often this value is of type Object or type Array.
- - String MUST ONLY end with eot (0xff) if at least one of the following is true:
+ - String MUST end with eos (0xff) when:
    - The string is empty,
-   - When another string is directly following this string,
-   - If the string ends the message.
+   - When the next byte in the message starts another string.
+   - If there are no more bytes left in the message.
  - Strings MUST be a valid UTF-8 encoded string.
  - Strings MAY contain any Unicode code-point between U+0000 and U+10ffff.
  - Unicode code-points MUST be encoded with the least amount of UTF-8 code-units.
+ - Integers and floating point numbers are stored most significant bits first (big endian).
  - Integers MUST be encoded in the least amount of bytes.
- - Floating point numbers MUST be encoded in the least amount of bytes
-   while preserving precision. After conversion of a binary64 to binary32
-   the resulting value must be within 1 ULP of the original value,
-   this will allow for different rounding directions between systems.
-   Below is an C++ example for determining if a binary64 number can be
-   represented as binary32.
+ - Negative integers, in the short representation are bit-inverted before being stored,
+   this makes the value -1 -> 0, -2 -> 1.
+ - Floating point negative zero, infinite and NaN MUST be encoded as binary32.
+ - Floating point numbers that can be converted to binary32 without loss
+   of precission or range MUST be encoded as binary32.
  - Arrays MUST be encoded with the least amount of bytes.
  - Objects MUST be encoded with the least amount of bytes.
  - The keys of an Object MUST be lexically ordered based on UTF-8 code-units.
- - Number are stored most significant bits first (big endian).
- - Negative integers, in the short representation are bit-inverted before being stored, this makes the value -1 -> 0, -2 -> 1.
 
-```cpp
-bool binary64_can_be_represented_as_binary32(double x)
-{
-    if (std::isnan(x) or std::isinf(x)) {
-        return true;
-    } else if (x < -std::numeric_limits<float>::max() or x > std::numeric_limits<float>::max) {
-        return false;
-    } else {
-        auto y = static_cast<float>(x);
-        auto a = std::nextafter(x, -std::numeric_limits<double>::infinity());
-        auto b = std::nextafter(x, std::numeric_limits<double>::infinity());
-        return a <= y and y <= b;
-    }
-}
+Examples
+--------
+
+### Single string
+
+"ab"
+
+ - A string at the end of a message needs to be terminated.
+
+
+```
+'a'  'b'  eos
+0x61 0x62 0xff
+```
+
+### Array with two strings
+
+["ab", "bc"]
+
+ - The first string needs to be terminated to differentiate it with the second.
+ - The array is not terminated because it has an count.
+ - The second string is at the end of the message so it must be terminated.
+
+```
+[2   'a'  'b'  eos  'b'  'c'  eos
+0x82 0x61 0x62 0xff 0x62 0x63 0xff
+```
+
+### Array with five strings
+
+["a", "b", "c", "d", "e"]
+
+ - All but the last string needs to be terminated to differentiate it with the next string.
+ - The array is terminated, because it does not have an count.
+ - The last string is not terminated because the array terminator is a natural ending.
+
+```
+[    'a'  eos  'b'  eos  'c'  eos  'd'  eos  'e'  ]
+0x85 0x61 0xff 0x62 0xff 0x63 0xff 0x64 0xff 0x65 0xfe
+```
+
+### A object with two integer values
+
+{"ab": 1, "bc", 2}
+
+ - The strings are not terminated because an integer is a natural ending of a string.
+ - The object is not terminated because it has a count.
+ - The message ends because the object ends.
+
+```
+{2   'a'  'b'  1    'b'  'c'  2
+0x88 0x61 0x62 0x91 0x62 0x63 0x92
+```
+
+### Nested array with strings.
+
+{"a": ["b", "c"], "d": 1}
+
+ - The strings "b" and "c" need to be terminated because the following byte is the start of a string.
+ - Both object and array do not have terminators because it has a count
+ - The strings "a" and "d" are followed by a non string so do not need to be terminated.
+
+```
+{2   'a'  [2   'b'  'c'  'd'  1
+0x88 0x61 0x82 0x62 0x63 0x64 0x91
 ```
