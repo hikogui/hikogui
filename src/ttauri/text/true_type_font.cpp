@@ -14,33 +14,51 @@
 #include <span>
 #include <cstddef>
 
-#define assert_or_return(x, y) if (!(x)) { [[unlikely]] return y; }
+#define assert_or_return(x, y) \
+    if (!(x)) { \
+        [[unlikely]] return y; \
+    }
 
 namespace tt {
 
 struct Fixed_buf_t {
     big_uint32_buf_t x;
-    float value() const noexcept { return static_cast<float>(x.value()) / 65536.0f; }
+    float value() const noexcept
+    {
+        return static_cast<float>(x.value()) / 65536.0f;
+    }
 };
 
 struct shortFrac_buf_t {
     big_int16_buf_t x;
-    float value() const noexcept { return static_cast<float>(x.value()) / 32768.0f; }
+    float value() const noexcept
+    {
+        return static_cast<float>(x.value()) / 32768.0f;
+    }
 };
 
 struct FWord_buf_t {
     big_int16_buf_t x;
-    float value(float unitsPerEm) const noexcept { return static_cast<float>(x.value()) / unitsPerEm; }
+    float value(float unitsPerEm) const noexcept
+    {
+        return static_cast<float>(x.value()) / unitsPerEm;
+    }
 };
 
 struct FByte_buf_t {
     int8_t x;
-    float value(float unitsPerEm) const noexcept { return static_cast<float>(x) / unitsPerEm; }
+    float value(float unitsPerEm) const noexcept
+    {
+        return static_cast<float>(x) / unitsPerEm;
+    }
 };
 
 struct uFWord_buf_t {
     big_uint16_buf_t x;
-    float value(float unitsPerEm) const noexcept { return static_cast<float>(x.value()) / unitsPerEm; }
+    float value(float unitsPerEm) const noexcept
+    {
+        return static_cast<float>(x.value()) / unitsPerEm;
+    }
 };
 
 struct CMAPHeader {
@@ -419,20 +437,20 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
                     // Use modulo 65536 arithmetic.
                     uint16_t glyphIndex = idDelta[i].value();
                     glyphIndex += static_cast<uint16_t>(c);
-                    return glyph_id{ glyphIndex };
+                    return glyph_id{glyphIndex};
 
                 } else {
                     ttlet charOffset = c - startCode_;
                     ttlet glyphOffset = (idRangeOffset_ / 2) + charOffset + i;
 
-                    assert_or_return(glyphOffset < idRangeOffset.size(), {}); 
+                    assert_or_return(glyphOffset < idRangeOffset.size(), {});
                     uint16_t glyphIndex = idRangeOffset[glyphOffset].value();
                     if (glyphIndex == 0) {
                         return {};
                     } else {
                         // Use modulo 65536 arithmetic.
                         glyphIndex += idDelta[i].value();
-                        return glyph_id{ glyphIndex};
+                        return glyph_id{glyphIndex};
                     }
                 }
 
@@ -504,8 +522,6 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
     return r;
 }
 
-
-
 static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c) noexcept
 {
     ssize_t offset = 0;
@@ -548,7 +564,7 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     ttlet numGroups = header->numGroups.value();
 
     ttlet entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
-    for (ttlet &entry: entries) {
+    for (ttlet &entry : entries) {
         r.add(static_cast<char32_t>(entry.startCharCode.value()), static_cast<char32_t>(entry.endCharCode.value()) + 1);
     }
     return r;
@@ -564,8 +580,7 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     case 4: return parseCharacterMapFormat4(cmapBytes);
     case 6: return parseCharacterMapFormat6(cmapBytes);
     case 12: return parseCharacterMapFormat12(cmapBytes);
-    default:
-        throw parse_error("Unknown character map format {}", format->value());
+    default: throw parse_error("Unknown character map format {}", format->value());
     }
 }
 
@@ -584,7 +599,6 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     }
 }
 
-
 void true_type_font::parseHheaTable(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HHEATable>(table_bytes);
@@ -595,7 +609,6 @@ void true_type_font::parseHheaTable(std::span<std::byte const> table_bytes)
     lineGap = table->lineGap.value(unitsPerEm);
     numberOfHMetrics = table->numberOfHMetrics.value();
 }
-
 
 void true_type_font::parseHeadTable(std::span<std::byte const> table_bytes)
 {
@@ -612,8 +625,13 @@ void true_type_font::parseHeadTable(std::span<std::byte const> table_bytes)
     emScale = 1.0f / unitsPerEm;
 }
 
-
-static std::optional<std::string> getStringFromNameTable(std::span<std::byte const> bytes, size_t offset, size_t lengthInBytes, uint16_t platformID, uint16_t platformSpecificID, uint16_t languageID)
+static std::optional<std::string> getStringFromNameTable(
+    std::span<std::byte const> bytes,
+    size_t offset,
+    size_t lengthInBytes,
+    uint16_t platformID,
+    uint16_t platformSpecificID,
+    uint16_t languageID)
 {
     tt_parse_check(offset + lengthInBytes <= std::size(bytes), "Requesting name at offset beyond name table");
 
@@ -627,21 +645,26 @@ static std::optional<std::string> getStringFromNameTable(std::span<std::byte con
 
             std::byte const *src = bytes.data() + offset;
             std::byte const *src_last = src + lengthInBytes;
+            ttlet src_endian = guess_utf16_endianess(src, src_last, std::endian::big);
 
-            auto cb_native = new char16_t[lengthInWords];
-            char16_t *dst = cb_native;
+            auto name = std::u16string{};
+            name.reserve(lengthInWords);
 
-            while (src != src_last) {
-                auto hi = *(src++);
-                auto lo = *(src++);
-                *(dst++) = (static_cast<char16_t>(hi) << 8) | static_cast<char16_t>(lo);
+            if (src_endian == std::endian::little) {
+                while (src != src_last) {
+                    auto lo = *(src++);
+                    auto hi = *(src++);
+                    name += (static_cast<char16_t>(hi) << 8) | static_cast<char16_t>(lo);
+                }
+            } else {
+                while (src != src_last) {
+                    auto hi = *(src++);
+                    auto lo = *(src++);
+                    name += (static_cast<char16_t>(hi) << 8) | static_cast<char16_t>(lo);
+                }
             }
 
-            // sanitize_u16string will swap to little endian when BOM is encountered.
-            auto s_native = sanitize_u16string(std::u16string(cb_native, lengthInWords));
-            auto name = tt::to_string(s_native);
-            delete[] cb_native;
-            return name;
+            return tt::to_string(name);
         }
         break;
 
@@ -660,24 +683,19 @@ static std::optional<std::string> getStringFromNameTable(std::span<std::byte con
             std::byte const *src = bytes.data() + offset;
             std::byte const *src_last = src + lengthInBytes;
 
-            auto cb_native = new char16_t[lengthInWords];
-            char16_t *dst = cb_native;
-
+            auto name = std::u16string{};
+            name.reserve(lengthInWords);
             while (src != src_last) {
                 auto hi = *(src++);
                 auto lo = *(src++);
-                *(dst++) = (static_cast<char16_t>(hi) << 8) | static_cast<char16_t>(lo);
+                name += (static_cast<char16_t>(hi) << 8) | static_cast<char16_t>(lo);
             }
 
-            auto s_native = std::u16string_view(cb_native, lengthInWords);
-            auto name = tt::to_string(s_native);
-            delete [] cb_native;
-            return name;
+            return tt::to_string(name);
         }
         break;
 
-    default:
-        break;
+    default: break;
     }
     return {};
 }
@@ -696,7 +714,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
     bool familyIsTypographic = false;
     bool subFamilyIsTypographic = false;
 
-    for (ttlet &record: records) {
+    for (ttlet &record : records) {
         ttlet languageID = record.languageID.value();
         ttlet platformID = record.platformID.value();
         ttlet platformSpecificID = record.platformSpecificID.value();
@@ -706,40 +724,43 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
         switch (record.nameID.value()) {
         case 1: { // font family.(Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
             if (!familyIsTypographic) {
-                auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+                auto s = getStringFromNameTable(
+                    table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
                     family_name = std::move(*s);
                 }
             }
-            } break;
+        } break;
 
         case 2: { // font sub-family. (Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
             if (!subFamilyIsTypographic) {
-                auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+                auto s = getStringFromNameTable(
+                    table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
                     sub_family_name = std::move(*s);
                 }
             }
-            } break;
+        } break;
 
         case 16: { // Typographic family.
-            auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+            auto s =
+                getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
             if (s) {
                 family_name = std::move(*s);
                 familyIsTypographic = true;
             }
-            } break;
+        } break;
 
         case 17: { // Typographic sub-family.
-            auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+            auto s =
+                getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
             if (s) {
                 sub_family_name = std::move(*s);
                 subFamilyIsTypographic = true;
             }
-            } break;
+        } break;
 
-        default:
-            continue;
+        default: continue;
         }
     }
 }
@@ -791,10 +812,19 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
     case 3: [[fallthrough]];
     case 4: [[fallthrough]];
     case 5: [[fallthrough]];
-    case 7: monospace = false; condensed = false; break;
+    case 7:
+        monospace = false;
+        condensed = false;
+        break;
     case 6: [[fallthrough]];
-    case 8: monospace = false; condensed = true; break;
-    case 9: monospace = true; condensed = false; break;
+    case 8:
+        monospace = false;
+        condensed = true;
+        break;
+    case 9:
+        monospace = true;
+        condensed = false;
+        break;
     }
 
     ttlet letterform_value = table->panose.bLetterform;
@@ -811,7 +841,6 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
         OS2_HHeight = table_v2->sCapHeight.value();
     }
 }
-
 
 void true_type_font::parseMaxpTable(std::span<std::byte const> table_bytes)
 {
@@ -856,7 +885,6 @@ bool true_type_font::getGlyphBytes(glyph_id glyph_id, std::span<std::byte const>
     return true;
 }
 
-
 static void getKerningFormat0(
     std::span<std::byte const> const &bytes,
     uint16_t coverage,
@@ -867,11 +895,11 @@ static void getKerningFormat0(
 {
     ssize_t offset = 0;
 
-    assert_or_return(check_placement_ptr<KERNFormat0>(bytes, offset),);
+    assert_or_return(check_placement_ptr<KERNFormat0>(bytes, offset), );
     ttlet formatheader = unsafe_make_placement_ptr<KERNFormat0>(bytes, offset);
     ttlet nPairs = formatheader->nPairs.value();
 
-    assert_or_return(check_placement_array<KERNFormat0_entry>(bytes, offset, nPairs),);
+    assert_or_return(check_placement_array<KERNFormat0_entry>(bytes, offset, nPairs), );
     ttlet entries = unsafe_make_placement_array<KERNFormat0_entry>(bytes, offset, nPairs);
 
     ttlet i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](ttlet &a, ttlet &b) {
@@ -881,7 +909,7 @@ static void getKerningFormat0(
             return a.left.value() < b.first;
         }
     });
-    assert_or_return(i != entries.end(),);
+    assert_or_return(i != entries.end(), );
 
     if (glyph1_id == i->left.value() && glyph2_id == i->right.value()) {
         // Writing direction is assumed horizontal.
@@ -911,7 +939,8 @@ static void getKerningFormat3(
     tt_not_implemented();
 }
 
-[[nodiscard]] static vector2 getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
+[[nodiscard]] static vector2
+getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
 {
     auto r = vector2{0.0f, 0.0f};
     ssize_t offset = 0;
@@ -1031,7 +1060,7 @@ bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, gra
     assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours), false);
     ttlet endPoints = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours);
 
-    for (ttlet endPoint: endPoints) {
+    for (ttlet endPoint : endPoints) {
         glyph.contourEndPoints.push_back(endPoint.value());
     }
 
@@ -1062,8 +1091,7 @@ bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, gra
     assert_or_return(flags.size() == numberOfPoints, false);
 
     ttlet point_table_size = std::accumulate(flags.begin(), flags.end(), static_cast<size_t>(0), [](auto size, auto flag) {
-        return size +
-            ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
+        return size + ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
             ((flag & FLAG_Y_SHORT) > 0 ? 1 : ((flag & FLAG_Y_SAME) > 0 ? 0 : 2));
     });
     assert_or_return(offset + point_table_size <= static_cast<size_t>(glyph_bytes.size()), false);
@@ -1071,7 +1099,7 @@ bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, gra
     // Get xCoordinates
     std::vector<int16_t> xCoordinates;
     xCoordinates.reserve(numberOfPoints);
-    for (ttlet flag: flags) {
+    for (ttlet flag : flags) {
         if ((flag & FLAG_X_SHORT) > 0) {
             if ((flag & FLAG_X_SAME) > 0) {
                 xCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
@@ -1092,7 +1120,7 @@ bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, gra
     // Get yCoordinates
     std::vector<int16_t> yCoordinates;
     yCoordinates.reserve(numberOfPoints);
-    for (ttlet flag: flags) {
+    for (ttlet flag : flags) {
         if ((flag & FLAG_Y_SHORT) > 0) {
             if ((flag & FLAG_Y_SAME) > 0) {
                 yCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
@@ -1120,15 +1148,9 @@ bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, gra
         x += xCoordinates[pointNr];
         y += yCoordinates[pointNr];
 
-        ttlet type = (flag & FLAG_ON_CURVE) > 0 ?
-            bezier_point::Type::Anchor :
-            bezier_point::Type::QuadraticControl;
+        ttlet type = (flag & FLAG_ON_CURVE) > 0 ? bezier_point::Type::Anchor : bezier_point::Type::QuadraticControl;
 
-        glyph.points.emplace_back(
-            x * emScale,
-            y * emScale,
-            type 
-        );
+        glyph.points.emplace_back(x * emScale, y * emScale, type);
         pointNr++;
     }
 
@@ -1146,8 +1168,9 @@ constexpr uint16_t FLAG_WE_HAVE_A_TWO_BY_TWO = 0x0080;
 constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
-[[maybe_unused]]constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph, glyph_id &metrics_glyph_id) const noexcept
+[[maybe_unused]] constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
+bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph, glyph_id &metrics_glyph_id)
+    const noexcept
 {
     ssize_t offset = ssizeof(GLYFEntry);
 
@@ -1196,23 +1219,18 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, g
         auto subGlyphScale = scale2{};
         if (flags & FLAG_WE_HAVE_A_SCALE) {
             assert_or_return(check_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset), false);
-            subGlyphScale = scale2(
-                unsafe_make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value()
-            );
+            subGlyphScale = scale2(unsafe_make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value());
 
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
             assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2), false);
             ttlet tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2);
-            subGlyphScale = scale2(
-                tmp[0].value(),
-                tmp[1].value()
-            );
+            subGlyphScale = scale2(tmp[0].value(), tmp[1].value());
 
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
             assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4), false);
             ttlet tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4);
             tt_not_implemented();
-            //subGlyphScale = mat::S(
+            // subGlyphScale = mat::S(
             //    tmp[0].value(),
             //    tmp[1].value(),
             //    tmp[2].value(),
@@ -1430,5 +1448,4 @@ void true_type_font::parse_font_directory()
     }
 }
 
-}
-
+} // namespace tt

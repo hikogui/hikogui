@@ -172,12 +172,7 @@ struct token_t {
 
     explicit operator std::string() const noexcept
     {
-        return value;
-    }
-
-    explicit operator std::u8string() const noexcept
-    {
-        return sanitize_u8string(make_u8string(value));
+        return utf8_to_utf8(value);
     }
 
     explicit operator decimal() const
