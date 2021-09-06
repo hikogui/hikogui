@@ -424,6 +424,7 @@ template<typename Container>
     return r;
 }
 
+
 /** Sanitize a UTF-8 string so it contains only valid encoded Unicode code points.
  *
  * This function will replace invalid code units by treating these as CP-1252 encoded

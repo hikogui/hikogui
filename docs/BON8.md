@@ -74,8 +74,8 @@ This table gives an overview on the encoding:
   f9                      | 1 | True                        |      |          |
   fa                      | 1 | null                        |      |          |
   fb                      | 1 | -1.0                        |      |          |
-  fc                      | 1 | 0.0                         |      |          |
-  fd                      | 1 | 1.0                         |      |          |
+  fc                      | 1 | +0.0                        |      |          |
+  fd                      | 1 | +1.0                        |      |          |
   fe                      | 1 | End Of Container (eoc)      |      |          |
   ff                      | 1 | End Of String (eos)         |      |          |
 
@@ -88,7 +88,7 @@ signing of messages. All encoders MUST follow these rules.
  - A message is a single value. Most often this value is of type Object or type Array.
  - String MUST end with eos (0xff) when:
    - The string is empty,
-   - When the next byte in the message starts another string.
+   - When the next byte in the message starts another string,
    - If there are no more bytes left in the message.
  - Strings MUST be a valid UTF-8 encoded string.
  - Strings MAY contain any Unicode code-point between U+0000 and U+10ffff.
@@ -158,7 +158,7 @@ Examples
 0x88 0x61 0x62 0x91 0x62 0x63 0x92
 ```
 
-### Nested array with strings.
+### Nested array with strings
 
 {"a": ["b", "c"], "d": 1}
 
@@ -170,3 +170,18 @@ Examples
 {2   'a'  [2   'b'  'c'  'd'  1
 0x88 0x61 0x82 0x62 0x63 0x64 0x91
 ```
+
+### Object with empty string key
+
+{"": 1, "a": 2}
+
+ - The first string is empty so it will be terminated.
+ - The second string is followed directly by an integer so is natually terminated.
+
+```
+{2   eos  1    'a'  2
+0x88 0xff 0x91 0x61 0x92
+```
+
+
+
