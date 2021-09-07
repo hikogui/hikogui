@@ -246,11 +246,12 @@ private:
      */
     [[nodiscard]] const_pointer _pointer() const noexcept
     {
-        switch (_state) {
-        case state::internal: return internal_pointer();
-        case state::external: return external_pointer();
-        case state::empty: return nullptr;
-        default: tt_no_default();
+        if (_state == state::internal) {
+            return internal_pointer();
+        } else if (_state == state::external) {
+            return external_pointer();
+        } else {
+            return nullptr;
         }
     }
 
@@ -260,11 +261,12 @@ private:
      */
     [[nodiscard]] pointer _pointer() noexcept
     {
-        switch (_state) {
-        case state::internal: return internal_pointer();
-        case state::external: return external_pointer();
-        case state::empty: return nullptr;
-        default: tt_no_default();
+        if (_state == state::internal) {
+            return internal_pointer();
+        } else if (_state == state::external) {
+            return external_pointer();
+        } else {
+            return nullptr;
         }
     }
 };

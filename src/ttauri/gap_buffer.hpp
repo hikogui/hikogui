@@ -1059,16 +1059,4 @@ private:
     }
 };
 
-//template<typename T, typename Allocator>
-//gap_buffer_iterator<T> make_gap_buffer_iterator(gap_buffer<T, Allocator> *buffer, T *it_ptr)
-//{
-//    return {buffer, it_ptr};
-//}
-//
-//template<typename T, typename Allocator>
-//gap_buffer_iterator<T const> make_gap_buffer_iterator(gap_buffer<T, Allocator> const *buffer, T *it_ptr)
-//{
-//    return {buffer, it_ptr};
-//}
-
 } // namespace tt
