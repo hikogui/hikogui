@@ -5,8 +5,6 @@
 #pragma once
 
 #include "UTF.hpp"
-#include "../required.hpp"
-#include "../cast.hpp"
 #include <string>
 #include <string_view>
 #include <bit>

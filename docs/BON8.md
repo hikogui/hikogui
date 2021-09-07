@@ -64,12 +64,12 @@ This table gives an overview on the encoding:
   8f byte\*8              | 9 | Floating point binary64     |   64 |          |
   90-b7                   | 1 | Positive integer            |      |        0 |        39
   b8-c1                   | 1 | Negative Integer            |      |       -1 |       -10
-  c2-df 00-7f             | 2 | Positive Integer (30 * 128) |      |        0 |      3839
-  e0-ef 00-7f byte\*1     | 3 | Positive Integer            |   19 |        0 |    524287
-  f0-f7 00-7f byte\*2     | 4 | Positive Integer            |   26 |        0 |  67108863
-  c2-df c0-ff             | 2 | Negative Integer (30 * 64)  |      |       -1 |     -1920
-  e0-ef c0-ff byte\*1     | 3 | Negative Integer            |   18 |       -1 |   -262144
-  f0-f7 c0-ff byte\*2     | 4 | Negative Integer            |   25 |       -1 | -33554432
+  c2-df 00-7f             | 2 | Positive Integer (30 * 128) |      |       40 |      3879
+  e0-ef 00-7f byte\*1     | 3 | Positive Integer            |   19 |     3880 |    528167
+  f0-f7 00-7f byte\*2     | 4 | Positive Integer            |   26 |   528168 |  67637031
+  c2-df c0-ff             | 2 | Negative Integer (30 * 64)  |      |      -11 |     -1930
+  e0-ef c0-ff byte\*1     | 3 | Negative Integer            |   18 |    -1931 |   -264074
+  f0-f7 c0-ff byte\*2     | 4 | Negative Integer            |   25 |  -264075 | -33818506
   f8                      | 1 | False                       |      |          |
   f9                      | 1 | True                        |      |          |
   fa                      | 1 | null                        |      |          |
@@ -86,22 +86,28 @@ The rules below ensures minimum message size and consistency, which allows for c
 signing of messages. All encoders MUST follow these rules.
 
  - A message is a single value. Most often this value is of type Object or type Array.
+ - A string does not need to be terminated with an eos (0xff), if the ending of a string
+   can be determined in other ways.
  - String MUST end with eos (0xff) when:
    - The string is empty,
    - When the next byte in the message starts another string,
    - If there are no more bytes left in the message.
  - Strings MUST be a valid UTF-8 encoded string.
  - Strings MAY contain any Unicode code-point between U+0000 and U+10ffff.
- - Unicode code-points MUST be encoded with the least amount of UTF-8 code-units.
  - Integers and floating point numbers are stored most significant bits first (big endian).
- - Integers MUST be encoded in the least amount of bytes.
- - Negative integers, in the short representation are bit-inverted before being stored,
-   this makes the value -1 -> 0, -2 -> 1.
+
+Canonical Representation
+------------------------
+The rules below ensure a minimum message and a consistent encoding between different
+implementation. The canonical representation is consistent enough to be used for cryptographically
+signing of data.
+
+ - The unicode string MUST be in Normalization Form C (NFC).
  - Floating point negative zero, infinite and NaN MUST be encoded as binary32.
+ - NaN should be encoded as a 0x7f800001. 
  - Floating point numbers that can be converted to binary32 without loss
-   of precission or range MUST be encoded as binary32.
- - Arrays MUST be encoded with the least amount of bytes.
- - Objects MUST be encoded with the least amount of bytes.
+   of precision or range MUST be encoded as binary32.
+ - Strings, Integers, Arrays and Objects MUST be encoded with the least amount of bytes.
  - The keys of an Object MUST be lexically ordered based on UTF-8 code-units.
 
 Examples

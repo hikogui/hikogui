@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../required.hpp"
+#include "../cast.hpp"
 #include <string>
 #include <string_view>
 

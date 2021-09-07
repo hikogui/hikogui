@@ -23,6 +23,7 @@ target_sources(ttauri PRIVATE
 
 if(TT_BUILD_TESTS)
     target_sources(ttauri_tests PRIVATE
+        BON8_tests.cpp
         JSON_tests.cpp
         gzip_tests.cpp
         base_n_tests.cpp

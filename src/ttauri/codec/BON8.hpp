@@ -88,47 +88,50 @@ public:
                 output += static_cast<std::byte>(value >> (56 - i * 8));
             }
 
-        } else if (value < -33554432) {
+        } else if (value <= -33818507) {
             output += static_cast<std::byte>(BON8_code_int32);
             for (int i = 0; i != 4; ++i) {
                 output += static_cast<std::byte>(value >> (24 - i * 8));
             }
 
-        } else if (value < -262144) {
-            value = ~value;
+        } else if (value <= -264075) {
+            value = -(value + 264075);
             output += static_cast<std::byte>(0xf0 + (value >> 22 & 0x07));
             output += static_cast<std::byte>(0xc0 + (value >> 16 & 0x3f));
             output += static_cast<std::byte>(value >> 8);
             output += static_cast<std::byte>(value);
 
-        } else if (value < -1920) {
-            value = ~value;
+        } else if (value <= -1931) {
+            value = -(value + 1931);
             output += static_cast<std::byte>(0xe0 + (value >> 14 & 0x0f));
             output += static_cast<std::byte>(0xc0 + (value >> 8 & 0x3f));
             output += static_cast<std::byte>(value);
 
-        } else if (value < -10) {
-            value = ~value;
+        } else if (value <= -11) {
+            value = -(value + 11);
             output += static_cast<std::byte>(0xc2 + (value >> 6 & 0x1f));
             output += static_cast<std::byte>(0xc0 + (value & 0x3f));
 
-        } else if (value < 0) {
-            value = ~value;
+        } else if (value <= -1) {
+            value = -(value + 1);
             output += static_cast<std::byte>(BON8_code_negative_s + value);
 
         } else if (value <= 39) {
             output += static_cast<std::byte>(BON8_code_positive_s + value);
 
-        } else if (value <= 3839) {
+        } else if (value <= 3879) {
+            value -= 40;
             output += static_cast<std::byte>(0xc2 + (value >> 7 & 0x1f));
             output += static_cast<std::byte>(value & 0x7f);
 
-        } else if (value <= 524287) {
+        } else if (value <= 528167) {
+            value -= 3880;
             output += static_cast<std::byte>(0xe0 + (value >> 15 & 0x0f));
             output += static_cast<std::byte>(value >> 8 & 0x7f);
             output += static_cast<std::byte>(value);
 
-        } else if (value <= 67108863) {
+        } else if (value <= 67637031) {
+            value -= 528168;
             output += static_cast<std::byte>(0xf0 + (value >> 23 & 0x17));
             output += static_cast<std::byte>(value >> 16 & 0x7f);
             output += static_cast<std::byte>(value >> 8);
@@ -574,7 +577,7 @@ void BON8_encoder::add(datum const &value)
     return r;
 }
 
-[[nodiscard]] datum decode_BON8_UTF8_like_int(cbyteptr &ptr, cbyteptr last, int count) noexcept
+[[nodiscard]] long long decode_BON8_UTF8_like_int(cbyteptr &ptr, cbyteptr last, int count) noexcept
 {
     tt_axiom(count >= 2 && count <= 4);
     tt_axiom(ptr != last);
@@ -613,7 +616,22 @@ void BON8_encoder::add(datum const &value)
     default:;
     }
 
-    return datum{is_positive ? value : ~value};
+    if (is_positive) {
+        switch (count) {
+        case 2: return value + 40;
+        case 3: return value + 3880;
+        case 4: return value + 528168;
+        default: tt_no_default();
+        }
+
+    } else {
+        switch (count) {
+        case 2: return -(value + 11);
+        case 3: return -(value + 1931);
+        case 4: return -(value + 264075);
+        default: tt_no_default();
+        }
+    }
 }
 
 [[nodiscard]] datum decode_BON8(cbyteptr &ptr, cbyteptr last)
@@ -648,7 +666,7 @@ void BON8_encoder::add(datum const &value)
 
             } else {
                 // Multibyte integer, the first code-unit includes part of the integer.
-                return decode_BON8_UTF8_like_int(ptr, last, -count);
+                return datum{decode_BON8_UTF8_like_int(ptr, last, -count)};
             }
 
         } else if (not str.empty()) {

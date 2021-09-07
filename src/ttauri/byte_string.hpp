@@ -8,6 +8,8 @@
 #include <string>
 #include <string_view>
 #include <cstring>
+#include <concepts>
+#include <type_traits>
 
 namespace tt {
 
@@ -83,8 +85,13 @@ using bstring = std::basic_string<std::byte, byte_char_traits>;
 using bstring_view = std::basic_string_view<std::byte, byte_char_traits>;
 
 
-[[nodiscard]] inline bstring to_bstring(std::string src) noexcept {
-    return bstring{reinterpret_cast<std::byte *>(src.data()), src.size()};
+[[nodiscard]] inline bstring to_bstring(std::string_view src) noexcept {
+    return bstring{reinterpret_cast<std::byte const *>(src.data()), src.size()};
+}
+
+[[nodiscard]] inline bstring to_bstring(std::integral auto... args) noexcept
+{
+    return bstring{{static_cast<std::byte>(args)...}};
 }
 
 }
