@@ -57,7 +57,7 @@ std::pair<int, char**> crt_start(int, char **, void *instance, int show_cmd)
 
     // Initialize tzdata base.
     try {
-        [[maybe_unused]] ttlet time_zone = std::chrono::current_zone();
+        detail::log_message_base::zone = std::chrono::get_tzdb().current_zone();
     } catch (std::runtime_error const &e) {
         tt_log_error("Could not get current time zone: \"{}\"", e.what());
     }

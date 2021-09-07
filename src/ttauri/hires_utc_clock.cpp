@@ -11,6 +11,7 @@
 #include <iterator>
 #include <algorithm>
 #include <numeric>
+#include <chrono>
 
 namespace tt {
 
@@ -28,6 +29,11 @@ std::string format_engineering(std::chrono::nanoseconds duration)
     } else {
         return std::format("{:.3g}ns", static_cast<double>(duration / 1ns));
     }
+}
+
+[[nodiscard]] hires_utc_clock::time_point hires_utc_clock::now() noexcept
+{
+    return std::chrono::utc_clock::now();
 }
 
 [[nodiscard]] hires_utc_clock::time_point hires_utc_clock::now(time_stamp_count &tsc) noexcept

@@ -37,6 +37,9 @@ public:
 
     [[nodiscard]] virtual std::string format() const noexcept = 0;
     [[nodiscard]] virtual std::unique_ptr<log_message_base> make_unique_copy() const noexcept = 0;
+
+public:
+    static inline std::chrono::time_zone const *zone = nullptr;
 };
 
 template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Values>
@@ -70,17 +73,19 @@ public:
 
     std::string format() const noexcept override
     {
-        ttlet time_point = hires_utc_clock::make(_time_stamp);
-        ttlet local_timestring = format_iso8601(time_point);
+        ttlet utc_time_point = hires_utc_clock::make(_time_stamp);
+        ttlet sys_time_point = std::chrono::clock_cast<std::chrono::system_clock>(utc_time_point);
+        ttlet local_time_point = zone->to_local(sys_time_point);
+
         ttlet cpu_id = _time_stamp.cpu_id();
         ttlet thread_id = _time_stamp.thread_id();
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
-            return std::format("{} {:2}:{:<10} {:5} {}\n", local_timestring, cpu_id, thread_id, log_level_name, _what());
+            return std::format("{} {:2}:{:<10} {:5} {}\n", local_time_point, cpu_id, thread_id, log_level_name, _what());
         } else {
             return std::format(
                 "{} {:2}:{:<10} {:5} {} ({}:{})\n",
-                local_timestring,
+                local_time_point,
                 cpu_id,
                 thread_id,
                 log_level_name,

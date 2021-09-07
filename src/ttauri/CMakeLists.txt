@@ -78,13 +78,8 @@ target_sources(ttauri PRIVATE
     global_state.hpp
     glob.hpp
     hash.hpp
-    #hires_system_clock.hpp
-    #$<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_system_clock_posix.cpp>
-    #$<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_system_clock_win32.cpp>
     hires_utc_clock.cpp
     hires_utc_clock.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_win32.cpp>
     huffman.hpp
     icon.cpp
     icon.hpp
