@@ -223,7 +223,7 @@ template<unsigned int Mask>
     //    tmp -> (0.0, 0.0, 0.0, 0.0) != (1.0, 1.0, 1.0, 1.0) -> (1,1,1,1)
     //    return -> x == 0 && y == 0 && z == 0 && w == 0 -> false
 
-    auto tmp = _mm_cmpneq_ps(to_m128(lhs), to_m128(rhs));
+    ttlet tmp = _mm_cmpneq_ps(to_m128(lhs), to_m128(rhs));
     return _mm_testz_ps(tmp, tmp);
 }
 

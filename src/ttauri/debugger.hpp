@@ -37,7 +37,7 @@ bool debugger_is_present() noexcept;
 * @param args Rest arguments to formatter
 */
 template<typename... Args>
-[[noreturn]] tt_no_inline void debugger_abort(char const *source_file, int source_line, std::string_view fmt, Args &&... args)
+[[noreturn]] tt_no_inline void debugger_abort(char const *source_file, int source_line, std::string_view fmt, Args &&... args) noexcept
 {
     logger_flush();
 
@@ -58,7 +58,7 @@ template<typename... Args>
     std::abort();
 }
 
-[[noreturn]] tt_no_inline inline void debugger_abort(char const *source_file, int source_line)
+[[noreturn]] tt_no_inline inline void debugger_abort(char const *source_file, int source_line) noexcept
 {
     debugger_abort(source_file, source_line, "<unknown>");
 }

@@ -1041,14 +1041,14 @@ private:
 
     [[nodiscard]] bool holds_invariant() const noexcept
     {
-        auto check = true;
-        check &= _buffer != nullptr;
-        check &= _it_ptr >= _buffer->_begin;
-        check &= _it_ptr <= _buffer->_it_end;
+        return
+            _buffer
+            and _it_ptr >= _buffer->_begin
+            and _it_ptr <= _buffer->_it_end
 #if TT_BUILT_TYPE == TT_BT_DEBUG
-        check &= _version == _buffer->_version;
+            and _version == _buffer->_version
 #endif
-        return check;
+        ;
     }
 
     template<typename O>

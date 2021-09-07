@@ -483,44 +483,10 @@ endif()
 
 if(TT_ENABLE_ANALYSIS)
     if(MSVC)
-        set(ttauri_do_not_analyze
-            src/ttauri/GUI/pipeline_flat.cpp
-            src/ttauri/GUI/gui_surface_vulkan.cpp
-            src/ttauri/GUI/gui_device_vulkan.cpp
-            src/ttauri/GUI/gui_system_vulkan.cpp
-            src/ttauri/GUI/gui_system.cpp
-            src/ttauri/GUI/gui_system_vulkan_win32.cpp
-            src/ttauri/GUI/gui_window.cpp
-            src/ttauri/GUI/gui_window_win32.cpp
-            src/ttauri/GUI/pipeline_flat_device_shared.cpp
-            src/ttauri/GUI/pipeline_image.cpp
-            src/ttauri/GUI/pipeline_tone_mapper.cpp
-            src/ttauri/GUI/pipeline_image_texture_map.cpp
-            src/ttauri/GUI/pipeline_box_device_shared.cpp
-            src/ttauri/GUI/pipeline_image_device_shared.cpp
-            src/ttauri/GUI/pipeline_tone_mapper_device_shared.cpp
-            src/ttauri/GUI/pipeline_image_image.cpp
-            src/ttauri/GUI/pipeline_SDF_texture_map.cpp
-            src/ttauri/GUI/pipeline_SDF_device_shared.cpp
-            src/ttauri/GUI/pipeline_SDF_atlas_rect.cpp
-            src/ttauri/GUI/pipeline_SDF.cpp
-            src/ttauri/GUI/pipeline_vulkan.cpp
-            src/ttauri/GUI/pipeline_box.cpp
-            src/ttauri/widgets/WindowWidget.cpp
-            src/ttauri/widgets/SystemMenuWidget.cpp
-            src/ttauri/widgets/grid_layout_widget.cpp
-            src/ttauri/widgets/WindowTrafficLightsWidget.cpp
-            src/ttauri/widgets/LineInputWidget.cpp
-            src/ttauri/widgets/widget.cpp
-            src/ttauri/stencils/glyph_stencil.cpp
-            src/ttauri/stencils/pixel_map_stencil.cpp
-            src/ttauri/stencils/text_stencil.cpp
-            src/ttauri/stencils/stencil.cpp
-            src/ttauri/application.cpp
-        )
-        set_source_files_properties(${ttauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
         target_compile_options(ttauri PUBLIC -analyze)
-        #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
+        
+        # The Core Guidelines checker, not so useful for real programs.
+        #target_compile_options(ttauri PUBLIC -analyze:plugin EspXEngine.dll)
    endif()
 endif()
 
