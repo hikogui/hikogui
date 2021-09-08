@@ -5,7 +5,6 @@
 #pragma once
 
 #include "notifier.hpp"
-#include "hires_utc_clock.hpp"
 #include "cast.hpp"
 #include "algorithm.hpp"
 #include "type_traits.hpp"

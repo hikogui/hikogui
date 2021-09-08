@@ -41,7 +41,7 @@ void text_field_widget::deinit() noexcept
 }
 
 [[nodiscard]] bool
-text_field_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+text_field_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -60,7 +60,7 @@ text_field_widget::constrain(hires_utc_clock::time_point display_time_point, boo
     }
 }
 
-void text_field_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void text_field_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -110,7 +110,7 @@ void text_field_widget::layout(hires_utc_clock::time_point display_time_point, b
     super::layout(display_time_point, need_layout);
 }
 
-void text_field_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -412,7 +412,7 @@ void text_field_widget::draw_partial_grapheme_caret(draw_context context) const 
     }
 }
 
-void text_field_widget::draw_caret(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void text_field_widget::draw_caret(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     // Display the caret and handle blinking.
     ttlet duration_since_last_update = display_time_point - _last_update_time_point;

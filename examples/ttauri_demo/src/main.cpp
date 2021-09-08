@@ -3,7 +3,7 @@
 #include "my_preferences.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/crt.hpp"
-#include "ttauri/hires_utc_clock.hpp"
+#include "ttauri/time_stamp_count.hpp"
 #include "ttauri/metadata.hpp"
 #include "ttauri/GFX/RenderDoc.hpp"
 #include "ttauri/GUI/gui_system.hpp"
@@ -50,6 +50,7 @@ int tt_main(int argc, char *argv[])
 
     // Start the logger system, so logging is done asynchronously.
     logger_start(global_state_type::log_level_info);
+    time_stamp_count::start_subsystem();
 
     // Startup renderdoc for debugging
     auto render_doc = RenderDoc();

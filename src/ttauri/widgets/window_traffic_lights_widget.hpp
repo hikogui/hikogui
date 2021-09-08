@@ -25,9 +25,9 @@ public:
 
     /// @privatesection
     [[nodiscard]] float margin() const noexcept override;
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
+    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
+    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
     /// @endprivatesection
@@ -64,8 +64,8 @@ private:
     bool pressedMinimize = false;
     bool pressedMaximize = false;
 
-    void drawMacOS(draw_context const &context, hires_utc_clock::time_point display_time_point) noexcept;
-    void drawWindows(draw_context const &context, hires_utc_clock::time_point display_time_point) noexcept;
+    void drawMacOS(draw_context const &context, utc_nanoseconds display_time_point) noexcept;
+    void drawWindows(draw_context const &context, utc_nanoseconds display_time_point) noexcept;
 };
 
 } // namespace tt

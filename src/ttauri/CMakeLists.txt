@@ -32,6 +32,7 @@ target_sources(ttauri PRIVATE
     bound_integer.hpp
     byte_string.hpp
     check.hpp
+    chrono.hpp
     concepts.hpp
     console.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
@@ -78,8 +79,6 @@ target_sources(ttauri PRIVATE
     global_state.hpp
     glob.hpp
     hash.hpp
-    hires_utc_clock.cpp
-    hires_utc_clock.hpp
     huffman.hpp
     icon.cpp
     icon.hpp
@@ -144,6 +143,8 @@ target_sources(ttauri PRIVATE
     time_stamp_count.cpp
     time_stamp_count.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>
+    time_stamp_utc.cpp
+    time_stamp_utc.hpp
     tokenizer.cpp
     tokenizer.hpp
     trace.cpp

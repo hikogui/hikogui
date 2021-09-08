@@ -4,20 +4,17 @@
 
 #pragma once
 
-//#include "../GUI/mouse_event.hpp"
-//#include "../GUI/keyboard_event.hpp"
 #include "../GUI/theme.hpp"
 #include "../GFX/draw_context.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
-//#include "../alignment.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
-#include "../hires_utc_clock.hpp"
 #include "../observable.hpp"
 #include "../command.hpp"
+#include "../chrono.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -254,7 +251,7 @@ public:
      * @param need_reconstrain Force the widget to re-constrain.
      * @return True if its or any children's constraints has changed.
      */
-    [[nodiscard]] virtual bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept;
+    [[nodiscard]] virtual bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
 
     /** Update the internal layout of the widget.
      * This function is called on each vertical sync, even if no drawing is to be done.
@@ -273,7 +270,7 @@ public:
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_layout Force the widget to layout
      */
-    [[nodiscard]] virtual void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] virtual void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 
@@ -300,7 +297,7 @@ public:
      * @param context The context to where the widget will draw.
      * @param display_time_point The time point when the widget will be shown on the screen.
      */
-    virtual void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept;
+    virtual void draw(draw_context context, utc_nanoseconds display_time_point) noexcept;
 
     virtual void request_redraw() const noexcept;
 

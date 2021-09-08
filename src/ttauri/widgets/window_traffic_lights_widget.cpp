@@ -19,7 +19,7 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
 }
 
 [[nodiscard]] bool
-window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+window_traffic_lights_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -44,7 +44,7 @@ window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time
     }
 }
 
-[[nodiscard]] void window_traffic_lights_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void window_traffic_lights_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -112,7 +112,7 @@ window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time
 
 void window_traffic_lights_widget::drawMacOS(
     draw_context const &drawContext,
-    hires_utc_clock::time_point displayTimePoint) noexcept
+    utc_nanoseconds displayTimePoint) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -152,7 +152,7 @@ void window_traffic_lights_widget::drawMacOS(
 
 void window_traffic_lights_widget::drawWindows(
     draw_context const &drawContext,
-    hires_utc_clock::time_point displayTimePoint) noexcept
+    utc_nanoseconds displayTimePoint) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -193,7 +193,7 @@ void window_traffic_lights_widget::drawWindows(
     }
 }
 
-void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void window_traffic_lights_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

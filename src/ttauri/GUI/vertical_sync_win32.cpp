@@ -6,7 +6,7 @@
 #include "../logger.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
-#include "../hires_utc_clock.hpp"
+#include "../chrono.hpp"
 #include "../trace.hpp"
 #include <Windows.h>
 #undef WIN32_NO_STATUS
@@ -131,7 +131,7 @@ void vertical_sync_win32::close_adapter() noexcept
     _adapter = 0;
 }
 
-hires_utc_clock::duration vertical_sync_win32::average_frame_duration(hires_utc_clock::time_point frame_time_point) noexcept 
+std::chrono::nanoseconds vertical_sync_win32::average_frame_duration(utc_nanoseconds frame_time_point) noexcept 
 {
     ttlet currentDuration = _frame_duration_counter == 0 ? 16ms : frame_time_point - _previous_frame_time_point;
     _previous_frame_time_point = frame_time_point;
@@ -144,7 +144,7 @@ hires_utc_clock::duration vertical_sync_win32::average_frame_duration(hires_utc_
     return sum / number_of_elements;
 }
 
-hires_utc_clock::time_point vertical_sync_win32::wait() noexcept
+utc_nanoseconds vertical_sync_win32::wait() noexcept
 {
     ttlet t = trace<"vertical_sync">();
 
@@ -174,7 +174,7 @@ hires_utc_clock::time_point vertical_sync_win32::wait() noexcept
         std::this_thread::sleep_for(16ms);
     }
 
-    ttlet now = hires_utc_clock::now();
+    ttlet now = std::chrono::utc_clock::now();
 
     return now + average_frame_duration(now);
 }

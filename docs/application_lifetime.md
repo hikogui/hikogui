@@ -37,14 +37,14 @@ and initialize subsystems before the main loop is entered.
 
 ### time\_stamp\_count (required)
 The time\_stamp\_count subsystem calibrates the frequency of the TSC.
-This calibration is needed to convert a TSC timestamp into a `hires_utc_clock::time_point`,
+This calibration is needed to convert a TSC timestamp into a `utc_nanoseconds`,
 which in turn is used when logging messages to the console.
 
 The CRT will start this subsystem and will take about 100 ms.
 
 ### hires\_utc\_clock (optional)
 The hires\_utc\_clock subsystem increases the accuracy and performance
-of converting a TSC to a `hires_utc_clock::time_point`.
+of converting a TSC to a `utc_nanoseconds`.
 
 Within a minute after starting this subsystem TSC to UTC conversion becomes
 a much more accurate 1ppm, wait-free operation.

@@ -57,7 +57,7 @@ void tab_widget::deinit() noexcept
     return 0.0f;
 }
 
-[[nodiscard]] bool tab_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool tab_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -81,7 +81,7 @@ void tab_widget::deinit() noexcept
     return has_updated_contraints;
 }
 
-[[nodiscard]] void tab_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void tab_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -142,7 +142,7 @@ void tab_widget::deinit() noexcept
     }
 }
 
-void tab_widget::draw_child(draw_context context, hires_utc_clock::time_point displayTimePoint, widget &child) noexcept
+void tab_widget::draw_child(draw_context context, utc_nanoseconds displayTimePoint, widget &child) noexcept
 {
     tt_axiom(is_gui_thread());
     auto child_context = context.make_child_context(child.parent_to_local(), child.local_to_window(), child.clipping_rectangle());

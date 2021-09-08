@@ -76,12 +76,12 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
+    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
+    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     /// @endprivatesection
 private:
-    static constexpr hires_utc_clock::duration _animation_duration = std::chrono::milliseconds(150);
+    static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     extent2 _button_size;
     aarectangle _button_rectangle;
@@ -97,7 +97,7 @@ private:
     }
 
     void draw_radio_button(draw_context const &context) noexcept;
-    void draw_radio_pip(draw_context const &context, hires_utc_clock::time_point display_time_point) noexcept;
+    void draw_radio_pip(draw_context const &context, utc_nanoseconds display_time_point) noexcept;
 };
 
 } // namespace tt

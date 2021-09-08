@@ -9,7 +9,9 @@ namespace tt::detail {
 
 void counter::log_header() noexcept
 {
+    tt_log_statistics("");
     tt_log_statistics("{:>18} {:>9} {:>10} {:>10} {:>10}", "total", "delta", "min", "max", "mean");
+    tt_log_statistics("------------------ --------- ---------- ---------- ----------");
 }
 
 /** Log the counter.

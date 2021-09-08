@@ -1,6 +1,6 @@
 
 #include "time_stamp_count.hpp"
-#include "hires_utc_clock.hpp"
+#include "time_stamp_utc.hpp"
 #include "logger.hpp"
 #include <emmintrin.h>
 #include <array>
@@ -42,12 +42,12 @@ namespace tt {
     auto prev_mask = set_thread_affinity(current_cpu_id());
 
     time_stamp_count tsc1;
-    auto tp1 = hires_utc_clock::now(tsc1);
+    auto tp1 = time_stamp_utc::now(tsc1);
 
     std::this_thread::sleep_for(sample_duration);
 
     time_stamp_count tsc2;
-    auto tp2 = hires_utc_clock::now(tsc2);
+    auto tp2 = time_stamp_utc::now(tsc2);
 
     // Reset the mask back.
     set_thread_affinity_mask(prev_mask);

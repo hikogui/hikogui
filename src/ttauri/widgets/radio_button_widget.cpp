@@ -6,7 +6,7 @@
 
 namespace tt {
 
-[[nodiscard]] bool radio_button_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool radio_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -29,7 +29,7 @@ namespace tt {
     }
 }
 
-[[nodiscard]] void radio_button_widget::layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
+[[nodiscard]] void radio_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -45,7 +45,7 @@ namespace tt {
     super::layout(displayTimePoint, need_layout);
 }
 
-void radio_button_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void radio_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -65,7 +65,7 @@ void radio_button_widget::draw_radio_button(draw_context const &context) noexcep
         _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
 }
 
-void radio_button_widget::draw_radio_pip(draw_context const &context, hires_utc_clock::time_point display_time_point) noexcept
+void radio_button_widget::draw_radio_pip(draw_context const &context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

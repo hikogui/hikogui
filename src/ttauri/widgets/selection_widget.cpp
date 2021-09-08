@@ -61,7 +61,7 @@ void selection_widget::deinit() noexcept
     super::deinit();
 }
 
-[[nodiscard]] bool selection_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool selection_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -96,7 +96,7 @@ void selection_widget::deinit() noexcept
     }
 }
 
-[[nodiscard]] void selection_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void selection_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -144,7 +144,7 @@ void selection_widget::deinit() noexcept
     super::layout(display_time_point, need_layout);
 }
 
-void selection_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void selection_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

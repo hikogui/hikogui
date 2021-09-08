@@ -105,7 +105,7 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
     return tmp;
 }
 
-bool grid_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -118,7 +118,7 @@ bool grid_widget::constrain(hires_utc_clock::time_point display_time_point, bool
     }
 }
 
-void grid_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void grid_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 

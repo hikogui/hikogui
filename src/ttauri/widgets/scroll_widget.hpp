@@ -116,7 +116,7 @@ public:
         return 0.0f;
     }
 
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override
+    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
@@ -161,7 +161,7 @@ public:
         return has_updated_contraints;
     }
 
-    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override
+    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);

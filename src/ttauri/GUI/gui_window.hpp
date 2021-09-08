@@ -15,7 +15,7 @@
 #include "theme.hpp"
 #include "../text/gstring.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../hires_utc_clock.hpp"
+#include "../chrono.hpp"
 #include "../label.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
@@ -162,7 +162,7 @@ public:
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
-    virtual void render(hires_utc_clock::time_point displayTimePoint);
+    virtual void render(utc_nanoseconds displayTimePoint);
 
     /** Check if the window was closed by the operating system.
      */
@@ -282,7 +282,7 @@ protected:
      * the WM_MOVING and WM_SIZING messages that are generated outside
      * the event loop, but on the same thread as the event loop.
      */
-    hires_utc_clock::time_point last_forced_redraw = {};
+    utc_nanoseconds last_forced_redraw = {};
 
     /** Let the operating system create the actual window.
      * @pre title and extent must be set.

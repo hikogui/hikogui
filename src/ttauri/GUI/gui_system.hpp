@@ -145,7 +145,7 @@ public:
      */
     ssize_t num_windows();
 
-    void render(hires_utc_clock::time_point display_time_point)
+    void render(utc_nanoseconds display_time_point)
     {
         tt_axiom(is_gui_thread());
 

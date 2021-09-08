@@ -68,9 +68,9 @@ public:
     /// @privatesection
     void init() noexcept override;
     void deinit() noexcept override;
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
+    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
+    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] color foreground_color() const noexcept override;
     void scroll_to_show(tt::rectangle rectangle) noexcept override;

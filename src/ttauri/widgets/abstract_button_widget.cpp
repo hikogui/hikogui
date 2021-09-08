@@ -60,7 +60,7 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
 }
 
 [[nodiscard]] bool
-abstract_button_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+abstract_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -85,7 +85,7 @@ abstract_button_widget::constrain(hires_utc_clock::time_point display_time_point
 }
 
 [[nodiscard]] void
-abstract_button_widget::layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
+abstract_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 

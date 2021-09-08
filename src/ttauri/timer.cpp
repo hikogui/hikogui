@@ -22,7 +22,7 @@ void timer::subsystem_deinit() noexcept
     }
 }
 
-[[nodiscard]] timer::time_point timer::calculate_next_wakeup(timer::time_point current_time, timer::duration interval) noexcept
+[[nodiscard]] utc_nanoseconds timer::calculate_next_wakeup(utc_nanoseconds current_time, std::chrono::nanoseconds interval) noexcept
 {
     ttlet current_time_ = narrow_cast<int64_t>(current_time.time_since_epoch().count());
     ttlet interval_ = narrow_cast<int64_t>(interval.count());
@@ -30,7 +30,7 @@ void timer::subsystem_deinit() noexcept
     ttlet intervals_since_epoch = current_time_ / interval_;
 
     ttlet next_wakeup_ = (intervals_since_epoch + 1) * interval_;
-    ttlet next_wakeup = timer::time_point{timer::duration{next_wakeup_}};
+    ttlet next_wakeup = utc_nanoseconds{std::chrono::nanoseconds{next_wakeup_}};
 
     tt_axiom(next_wakeup <= current_time + interval);
     return next_wakeup;
@@ -79,13 +79,13 @@ void timer::stop() noexcept
     mutex.unlock();
 }
 
-[[nodiscard]] std::pair<std::vector<timer::callback_ptr_type>, timer::time_point>
-timer::find_triggered_callbacks(timer::time_point current_time) noexcept
+[[nodiscard]] std::pair<std::vector<timer::callback_ptr_type>, utc_nanoseconds>
+timer::find_triggered_callbacks(utc_nanoseconds current_time) noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
 
     auto triggered_callbacks = std::vector<callback_ptr_type>{};
-    auto next_wakeup = timer::time_point::max();
+    auto next_wakeup = utc_nanoseconds::max();
 
     auto i = callback_list.begin();
     while (i != callback_list.end()) {
@@ -120,7 +120,7 @@ void timer::loop(std::stop_token stop_token) noexcept
 
     tt_log_info("Timer {}: started", name);
     while (true) {
-        ttlet current_time = hires_utc_clock::now();
+        ttlet current_time = std::chrono::utc_clock::now();
 
         ttlet & [ triggered_callbacks, next_wakeup ] = find_triggered_callbacks(current_time);
 
@@ -130,7 +130,7 @@ void timer::loop(std::stop_token stop_token) noexcept
         }
 
         // Sleep, but not for more than 100ms.
-        ttlet sleep_duration = std::min(next_wakeup - current_time, timer::duration{100ms});
+        ttlet sleep_duration = std::min(next_wakeup - current_time, std::chrono::nanoseconds{100ms});
         if (sleep_duration > 0ms) {
             std::this_thread::sleep_for(sleep_duration);
         }
@@ -144,7 +144,7 @@ void timer::loop(std::stop_token stop_token) noexcept
 
     ttlet lock = std::scoped_lock(mutex);
 
-    ttlet current_time = hires_utc_clock::now();
+    ttlet current_time = std::chrono::utc_clock::now();
     for (ttlet &item : callback_list) {
         if (auto callback_ptr_ = item.callback_ptr.lock()) {
             (*callback_ptr_)(current_time, true);

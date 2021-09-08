@@ -24,7 +24,7 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     return 0.0f;
 }
 
-[[nodiscard]] bool toolbar_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool toolbar_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -57,7 +57,7 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     }
 }
 
-void toolbar_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void toolbar_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -82,7 +82,7 @@ void toolbar_widget::layout(hires_utc_clock::time_point display_time_point, bool
     super::layout(display_time_point, need_layout);
 }
 
-void toolbar_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

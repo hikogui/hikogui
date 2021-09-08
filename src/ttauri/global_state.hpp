@@ -7,6 +7,7 @@
 #include "cast.hpp"
 #include <atomic>
 #include <type_traits>
+#include <bit>
 
 namespace tt {
 
@@ -30,6 +31,7 @@ enum class global_state_type : uint64_t {
     log_level_debug = log_debug | log_level_info,
 
     logger_is_running = 0x1'00,
+    time_stamp_utc_is_running = 0x2'00,
 
     system_is_running = 0x1'000000'00,
     system_is_shutting_down = 0x2'000000'00,
@@ -200,6 +202,28 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
     // First enable bits, then disable bits.
     global_state |= log_level;
     global_state &= (~global_state_type::log_mask | log_level);
+}
+
+/** Disable a subsystem.
+* 
+* @param subsystem The subsystem to disable.
+* @return True if the subsystem was enabled.
+ */
+inline bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
+{
+    tt_axiom(std::popcount(to_underlying(subsystem)) == 1);
+    return to_bool(global_state.fetch_and(~subsystem, order) & subsystem);
+}
+
+/** Enable a subsystem.
+ *
+ * @param subsystem The subsystem to disable.
+ * @return True if the subsystem was enabled.
+ */
+inline bool global_state_enable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
+{
+    tt_axiom(std::popcount(to_underlying(subsystem)) == 1);
+    return to_bool(global_state.fetch_or(subsystem, order) & subsystem);
 }
 
 } // namespace tt

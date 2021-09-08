@@ -81,7 +81,7 @@ int gui_system_win32::loop()
 
     // The first dead line is 15ms from now, in-time for the first
     // render to be performed at 60fps.
-    auto display_time_point = hires_utc_clock::now();
+    auto display_time_point = utc_nanoseconds{std::chrono::utc_clock::now()};
     auto dead_line = display_time_point + 15ms;
     do {
         // Process messages from the queue until the dead line is reached.
@@ -107,7 +107,7 @@ int gui_system_win32::loop()
                 goto bypass_render;
             }
 
-            if (hires_utc_clock::now() >= dead_line) {
+            if (std::chrono::utc_clock::now() >= dead_line) {
                 // dead line was passed while processing a message.
                 ++global_counter<"gui_system_event_dead_line">;
                 break;
@@ -116,7 +116,9 @@ int gui_system_win32::loop()
 
         {
             ttlet t = trace<"gui_system_event">();
-            _event_queue->take_all([](ttlet &event) { event(); });
+            _event_queue->take_all([](ttlet &event) {
+                event();
+            });
         }
 
         // Render right after user input has been processed by the event queue.
@@ -124,7 +126,7 @@ int gui_system_win32::loop()
             ttlet t = trace<"gui_system_render">();
             render(display_time_point);
 
-            if (hires_utc_clock::now() >= dead_line) {
+            if (std::chrono::utc_clock::now() >= dead_line) {
                 // dead line was passed while processing a message.
                 ++global_counter<"gui_system_render_dead_line">;
             }
@@ -135,7 +137,7 @@ bypass_render:
 
         // The next dead line is 5ms before the current rendered frame is to be displayed.
         // But give the event loop at least 5ms to process messages.
-        dead_line = std::max(hires_utc_clock::now() + 5ms, display_time_point - 5ms);
+        dead_line = std::max(utc_nanoseconds{std::chrono::utc_clock::now() + 5ms}, display_time_point - 5ms);
 
     } while (not exit_code);
 

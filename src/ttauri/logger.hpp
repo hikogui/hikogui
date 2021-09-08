@@ -5,7 +5,7 @@
 #pragma once
 
 #include "time_stamp_count.hpp"
-#include "hires_utc_clock.hpp"
+#include "time_stamp_utc.hpp"
 #include "polymorphic_optional.hpp"
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
@@ -73,7 +73,7 @@ public:
 
     std::string format() const noexcept override
     {
-        ttlet utc_time_point = hires_utc_clock::make(_time_stamp);
+        ttlet utc_time_point = time_stamp_utc::make(_time_stamp);
         ttlet sys_time_point = std::chrono::clock_cast<std::chrono::system_clock>(utc_time_point);
         ttlet local_time_point = zone->to_local(sys_time_point);
 

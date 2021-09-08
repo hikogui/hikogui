@@ -117,7 +117,7 @@ void gui_window::set_device(gfx_device *device) noexcept
     return std::ceil(dpi / 100.0f);
 }
 
-void gui_window::render(hires_utc_clock::time_point displayTimePoint)
+void gui_window::render(utc_nanoseconds displayTimePoint)
 {
     tt_axiom(is_gui_thread());
     tt_axiom(surface);
