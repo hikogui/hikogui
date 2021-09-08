@@ -30,6 +30,17 @@
       "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
+      "name": "x64-MSVC-Debug-ASAN",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DTT_ENABLE_ASAN=ON",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "-C Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    },
+    {
       "name": "x64-MSVC-Debug-pchoff",
       "generator": "Ninja",
       "configurationType": "Debug",

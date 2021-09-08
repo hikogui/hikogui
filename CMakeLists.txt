@@ -18,6 +18,7 @@ option(TT_BUILD_TESTS       "Build tests"                        ON)
 option(TT_BUILD_PCH         "Build precompiled headers"          ON)
 option(TT_INSTALL           "Generate installation target"       ON)
 option(TT_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
+option(TT_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -295,6 +296,17 @@ elseif (MSVC)
         # Just my code enables the VS debugger to step over system, framework, library, and other non-user calls.
         target_compile_options(ttauri PUBLIC -JMC)
     endif()
+
+    if(TT_ENABLE_ASAN)
+        target_compile_options(ttauri PUBLIC -fsanitize=address)
+    endif()
+
+    if(TT_ENABLE_ANALYSIS)
+        target_compile_options(ttauri PUBLIC -analyze)
+        
+        # The Core Guidelines checker, not so useful for real programs.
+        #target_compile_options(ttauri PUBLIC -analyze:plugin EspXEngine.dll)
+    endif()
 endif()
 
 if (WIN32)
@@ -475,19 +487,6 @@ if(TT_BUILD_EXAMPLES)
     add_subdirectory(examples/ttauri_demo)
     add_subdirectory(examples/widgets)
     add_subdirectory(examples/codec)
-endif()
-
-#-------------------------------------------------------------------
-# Remove certain files from static analysis
-#-------------------------------------------------------------------
-
-if(TT_ENABLE_ANALYSIS)
-    if(MSVC)
-        target_compile_options(ttauri PUBLIC -analyze)
-        
-        # The Core Guidelines checker, not so useful for real programs.
-        #target_compile_options(ttauri PUBLIC -analyze:plugin EspXEngine.dll)
-   endif()
 endif()
 
 #-------------------------------------------------------------------

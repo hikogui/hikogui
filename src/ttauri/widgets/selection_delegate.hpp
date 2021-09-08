@@ -16,6 +16,8 @@ class selection_delegate {
 public:
     using callback_ptr_type = std::shared_ptr<std::function<void()>>;
 
+    virtual ~selection_delegate() = default;
+
     virtual void init(selection_widget &sender) noexcept {}
 
     virtual void deinit(selection_widget &sender) noexcept {}
