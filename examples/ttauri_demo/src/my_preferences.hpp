@@ -1,4 +1,4 @@
-// Copyright 2020 Pokitec
+// Copyright 2020, 2021 Pokitec
 // All rights reserved.
 
 #pragma once
@@ -12,38 +12,19 @@ public:
     using super = tt::preferences;
 
     tt::observable<tt::audio_device_id> audio_output_device_id;
-    tt::observable<double> sample_rate;
+    tt::observable<bool> audio_output_exclusive;
+    tt::observable<double> audio_output_sample_rate;
+    tt::observable<tt::speaker_mapping> audio_output_speaker_mapping;
 
     my_preferences(tt::URL location) noexcept : super(location)
     {
-        audio_output_device_id.subscribe(_set_modified_ptr);
+        register_item("audio_output_device_id", audio_output_device_id);
+        register_item("audio_output_exclusive", audio_output_exclusive);
+        register_item("audio_output_sample_rate", audio_output_sample_rate);
+        register_item("audio_output_speaker_mapping", audio_output_speaker_mapping, tt::speaker_mapping::direct);
     }
     
-    void reset() noexcept override
-    {
-        super::reset();
-        audio_output_device_id = {};
-    }
-
-    [[nodiscard]] tt::datum serialize() const noexcept override
-    {
-        auto r = super::serialize();
-
-        r["audio_output_device_id"] = tt::pickle<tt::audio_device_id>{}.encode(*audio_output_device_id);
-        return r;
-    }
-
-    void deserialize(tt::datum const &data) noexcept override
-    {
-        super::deserialize(data);
-
-        //if (auto str = get_if<std::string>(data, "audio_output_device_id")) {
-        //    audio_output_device_id = tt::pickle<tt::audio_device_id>{}.decode(*str);
-        //} else {
-        //    audio_output_device_id = {};
-        //}
-    }
-
 };
 
 inline std::unique_ptr<my_preferences> g_my_preferences;
+

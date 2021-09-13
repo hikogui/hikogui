@@ -23,6 +23,29 @@ class observable;
 
 namespace detail {
 
+template<typename T>
+class observable_proxy {
+public:
+    using value_type = T;
+
+    observable_proxy(T &value) noexcept : _value(value)
+    {
+    }
+
+    ~observable_proxy()
+    {
+
+    }
+
+    obserable_proxy(T const &) noexcept = delete;
+    obserable_proxy(T &&) noexcept = default;
+    obserable_proxy &operator=(T const &) noexcept = delete;
+    obserable_proxy &operator=(T &&) noexcept = default;
+
+private:
+    T &_value;
+};
+
 /** Observable abstract base class.
  * Objects of the observable_base class will notify listeners through
  * callbacks of changes of its value.
