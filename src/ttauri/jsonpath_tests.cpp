@@ -9,15 +9,15 @@ using namespace tt;
 
 TEST(jsonpath, parse)
 {
-    ASSERT_EQ(to_string(parse_jsonpath("$.store.book[*].author")), "$['store']['book'][*]['author']");
-    ASSERT_EQ(to_string(parse_jsonpath("$..author")), "$..['author']");
-    ASSERT_EQ(to_string(parse_jsonpath("$.store.*")), "$['store'][*]");
-    ASSERT_EQ(to_string(parse_jsonpath("$['store'].*")), "$['store'][*]");
-    ASSERT_EQ(to_string(parse_jsonpath("$['store','author'].*")), "$['store','author'][*]");
-    ASSERT_EQ(to_string(parse_jsonpath("$.store..price")), "$['store']..['price']");
-    ASSERT_EQ(to_string(parse_jsonpath("$..book[2]")), "$..['book'][2]");
-    ASSERT_EQ(to_string(parse_jsonpath("$..book[-1:]")), "$..['book'][-1:e:1]");
-    ASSERT_EQ(to_string(parse_jsonpath("$..book[0,1]")), "$..['book'][0,1]");
-    ASSERT_EQ(to_string(parse_jsonpath("$..book[:2]")), "$..['book'][0:2:1]");
-    ASSERT_EQ(to_string(parse_jsonpath("$..*")), "$..[*]");
+    ASSERT_EQ(to_string(jsonpath("$.store.book[*].author")), "$['store']['book'][*]['author']");
+    ASSERT_EQ(to_string(jsonpath("$..author")), "$..['author']");
+    ASSERT_EQ(to_string(jsonpath("$.store.*")), "$['store'][*]");
+    ASSERT_EQ(to_string(jsonpath("$['store'].*")), "$['store'][*]");
+    ASSERT_EQ(to_string(jsonpath("$['store','author'].*")), "$['store','author'][*]");
+    ASSERT_EQ(to_string(jsonpath("$.store..price")), "$['store']..['price']");
+    ASSERT_EQ(to_string(jsonpath("$..book[2]")), "$..['book'][2]");
+    ASSERT_EQ(to_string(jsonpath("$..book[-1:]")), "$..['book'][-1:e:1]");
+    ASSERT_EQ(to_string(jsonpath("$..book[0,1]")), "$..['book'][0,1]");
+    ASSERT_EQ(to_string(jsonpath("$..book[:2]")), "$..['book'][0:2:1]");
+    ASSERT_EQ(to_string(jsonpath("$..*")), "$..[*]");
 }

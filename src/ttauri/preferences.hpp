@@ -6,17 +6,21 @@
 #include "datum.hpp"
 #include "timer.hpp"
 #include "logger.hpp"
+#include "jsonpath.hpp"
+#include "observable.hpp"
+#include "codec/pickle.hpp"
 #include <typeinfo>
 
 #pragma once
 
 namespace tt {
+class preferences;
+
 namespace detail {
 
 class preference_item_base {
 public:
-    preference_item_base(std::string_view path) noexcept :
-        _path(parse_jsonpath(path)) {}
+    preference_item_base(preferences &parent, std::string_view path) noexcept;
 
     preference_item_base(preference_item_base const &) = delete;
     preference_item_base(preference_item_base &&) = delete;
@@ -24,24 +28,31 @@ public:
     preference_item_base &operator=(preference_item_base &&) = delete;
     virtual ~preference_item_base() = default;
 
+    /** Reset the value.
+     */
     virtual void reset() const noexcept = 0;
 
-    virtual void serialize(datum &data) const noexcept = 0;
-
-    virtual void deserialize(data const &data) const noexcept = 0;
+    /** Load a value from the preferences.
+     */
+    void load() const noexcept;
 
 protected:
+    std::shared_ptr<std::function<void()>> _modified_callback_ptr;
+    preferences &_parent;
     jsonpath _path;
-};
 
+    virtual datum serialize() const noexcept = 0;
+
+    virtual void deserialize(datum const &data) const noexcept = 0;
+};
 
 template<typename T>
 class preference_item : public preference_item_base {
 public:
-    preference_item(preferences &self, std::string_view path, observable<T> &value, T &&init) noexcept :
-        preference_item_base(path), _value(value), _init(std::forward<T>(init))
+    preference_item(preferences &parent, std::string_view path, observable<T> &value, T &&init) noexcept :
+        preference_item_base(parent, path), _value(value), _init(std::forward<T>(init))
     {
-        _value.subscribe(self._set_modified_ptr);
+        _value.subscribe(this->_modified_callback_ptr);
     }
 
     virtual void reset() const noexcept
@@ -49,14 +60,15 @@ public:
         _value = _init;
     }
 
-    virtual void serialize(datum &data) const noexcept
+protected:
+    virtual datum serialize() const noexcept
     {
-        data.put(_path, *_value);
+        return tt::pickle<T>{}.serialize(*_value);
     }
 
-    virtual void deserialize(data const &data) const noexcept
+    virtual void deserialize(datum const &data) noexcept
     {
-        _value = data.get(_path, _init);
+        _value = tt::pickle<T>{}.deserialize(data);
     }
 
 private:
@@ -64,14 +76,9 @@ private:
     observable<T> &_value;
 };
 
-
-}
+} // namespace detail
 
 /** user preferences.
- * User preferences are kept in an instance of the preferences subclass.
- *
- * This class will automatically load preferences from the location given in its
- * constructor and save the preferences when they are modified.
  *
  * The saving if preferences is delayed to combine multiple modification into a single
  * save. By locking the mutex external to the preferences multiple modifications can
@@ -81,104 +88,94 @@ class preferences {
 public:
     mutable std::recursive_mutex mutex;
 
+    /** Construct a preferences instance.
+     *
+     * No current preferences file will be selected.
+     *
+     * It is recommended to call `preferences::load(URL)` after the constructor.
+     */
+    preferences() noexcept;
+
+    /** Construct a preferences instance.
+     *
+     * The current preferences file is changed to the location give.
+     *
+     * @param location The location of the preferences file to load from.
+     */
     preferences(URL location) noexcept;
-    virtual ~preferences();
+
+    ~preferences();
     preferences(preferences const &) = delete;
     preferences(preferences &&) = delete;
     preferences &operator=(preferences const &) = delete;
     preferences &operator=(preferences &&) = delete;
 
     /** Save the preferences.
+     *
+     * This will load the preferences from the current selected file.
      */
     void save() const noexcept;
 
+    /** Save the preferences.
+     *
+     * This will change the current preferences file to the location given.
+     *
+     * @param location The file to save the preferences to.
+     */
+    void save(URL location) noexcept;
+
     /** Load the preferences.
+     *
+     * This will load the preferences from the current selected file.
      */
     void load() noexcept;
 
+    /** Load the preferences.
+     *
+     * This will change the current preferences file to the location given.
+     *
+     * @param location The file to save the preferences to.
+     */
+    void load(URL location) noexcept;
+
     /** Reset data members to their default value.
      */
-    [[nodiscard]] virtual void reset() noexcept
-    {
-        for (ttlet &item: _items) {
-            item->reset();
-        }
-    }
+    [[nodiscard]] void reset() noexcept;
 
-    /** Serialize the preferences data.
-     * The serialize method is called when the preferences need to be saved.
-     * A subclass should implement serialize() to serialize all the members
-     * of its class.
-     *
-     * It is recommended to call super::serialize() from subclass implementations.
+    /** Write a value to the data.
      */
-    [[nodiscard]] virtual datum serialize() const noexcept
-    {
-        auto r = datum::make_map();
+    void write(jsonpath const &path, datum const value) noexcept;
 
-        for (ttlet &item: _items) {
-            item->serialize(r);
-        }
-
-        return r;
-    }
-
-    /** Deserialize the preferences.
-     * The deserialize method is called when the preferences are loaded.
-     * A subclass should implement the deserialize() to read the data and
-     * rebuild its members. It should ignore any data it does not know about.
-     *
-     * It is recommended to call super::deserialize() from subclass implementations.
+    /** Read a value from the data.
      */
-    virtual void deserialize(datum const &data) noexcept
-    {
-        for (ttlet &item: _items) {
-            item->deserialize(data);
-        }
-    }
+    datum read(jsonpath const &path) noexcept;
 
-protected:
-    /** The function pointer which will call the data_modified() method.
-     * This pointer should be used to subscribe the preferences to
-     * each of its observable members.
-     */
-    std::shared_ptr<std::function<void()>> _set_modified_ptr;
-
-    /** Preferences are loading.
-     * During deserializing this flag should be incremented
-     * to prevent reactions to modification of the data.
-     */
-    int _deserializing = 0;
-
-    template<typename T, typename Observable, typename Key>
-    static void deserialize_value(Observable &obj, datum const &data, Key const &key) noexcept
-    {
-        if (data.contains(key)) {
-            auto const &data_value = data[key];
-            if (holds_alternative<T>(data_value)) {
-                obj = static_cast<T>(data_value);
-            } else {
-                tt_log_error(
-                    "Could not deserialize '{}' for key '{}' to a '{}' type.",
-                    to_string(data_value),
-                    key,
-                    typeid(T).name());
-            }
-        }
-    }
-
+    /** Register an observable to a preferences file.
+    * 
+    * The lifetime of @a item must extent beyond the last call to
+    * `preferences::load()` or `preferences::reset()`.
+    * 
+    * XXX Modify observable to be able to get a weak_ptr to the internals of observable
+    * to check-or-extent the lifetime of the observable.
+    * 
+    * @param path The json-path inside the preference file.
+    * @param item The observable to monitor.
+    * @param init The value of the observable when it is not present in the preferences file.
+    */
     template<typename T>
-    static void register_item(std::string_view key, observable<T> &item, T &&init = T{}) noexcept
+    static void register_item(std::string_view path, observable<T> &item, T &&init = T{}) noexcept
     {
-        items.push_back(std::make_unique<preference_item<T>>(*this, key, item, std::forward<T>(init));
+        auto item = std::make_unique<preference_item<T>>(*this, path, item, std::forward<T>(init));
+        item->load();
+        items.push_back(std::move(item));
     }
 
 private:
     URL _location;
 
-    /** List of registered items.
+    /** The data from the preferences file.
      */
-    std::vector<std::unique_ptr<detail::preference_item_base>> items;
+    datum data;
 
     /** The data was modified.
      * When this flag is true the preferences should be saved.
@@ -187,26 +184,14 @@ private:
 
     timer::callback_ptr_type _check_modified_ptr;
 
-    /** This function is called whenever data is modified.
+    /** List of registered items.
      */
-    void set_modified() noexcept
-    {
-        ttlet lock = std::scoped_lock(mutex);
-        tt_axiom(_deserializing >= 0);
-        if (_deserializing == 0) {
-            _modified = true;
-        }
-    }
+    std::vector<std::unique_ptr<detail::preference_item_base>> items;
 
-    void check_modified() noexcept
-    {
-        ttlet lock = std::scoped_lock(mutex);
-        tt_axiom(_deserializing >= 0);
+    void _load() noexcept;
+    void _save() const noexcept;
 
-        if (_modified) {
-            save();
-        }
-    }
+    void check_modified() noexcept;
 };
 
 } // namespace tt

@@ -11,18 +11,25 @@
 #include "ttauri/label.hpp"
 
 class my_preferences_window_controller :
-    public std::enable_shared_from_this<my_preferences_window_controller>,
     public tt::gui_window_delegate,
     public tt::audio_system_delegate {
 public:
-    my_preferences_window_controller(std::shared_ptr<my_preferences> preferences) noexcept :
-        _preferences(preferences) {}
+    my_preferences_window_controller(tt::preferences &preferences) noexcept
+    {
+        preferences.subscribe(audio_output_device_id, "audio_output_device_id");
+        preferences.subscribe(audio_output_exclusive, "audio_output_exclusive");
+        preferences.subscribe(audio_output_sample_rate, "audio_output_sample_rate");
+        preferences.subscribe(audio_output_speaker_mapping, "audio_output_speaker_mapping", tt::speaker_mapping::none);
+    }
 
     void init(tt::gui_window& window) noexcept override;
     void audio_device_list_changed(tt::audio_system& system) noexcept;
 
 private:
-    std::shared_ptr<my_preferences> _preferences;
+    tt::observable<tt::audio_device_id> audio_output_device_id;
+    tt::observable<bool> audio_output_exclusive;
+    tt::observable<double> audio_output_sample_rate;
+    tt::observable<tt::speaker_mapping> audio_output_speaker_mapping;
 
     tt::observable<int> tab_index = 0;
     tt::observable<bool> toggleValue;

@@ -9,34 +9,56 @@
 #include "logger.hpp"
 
 namespace tt {
+namespace detail {
 
-preferences::preferences(URL location) noexcept :
-    _location(location), _deserializing(0), _modified(false)
+preference_item_base::preference_item_base(preferences &parent, std::string_view path) noexcept :
+    _parent(parent), _path(path)
+{
+    _modified_callback_ptr = std::make_shared<std::function<void()>>([this]() {
+        this->_parent.write(_path, this->serialize());
+    });
+}
+
+void preference_item_base::load() const noexcept
+{
+    ttlet value = this->_parent.read(_path);
+    if (value.is_undefined()) {
+        this->reset();
+    } else {
+        this->deserialize(value);
+    }
+}
+
+}
+
+preferences::preferences() noexcept :
+    _location(), _modified(false)
 {
     using namespace std::literals::chrono_literals;
-
-    _set_modified_ptr = std::make_shared<std::function<void()>>([this]() {
-        this->set_modified();
-    });
 
     _check_modified_ptr = timer::global().add_callback(5s, [this](auto...) {
         this->check_modified();
     });
 }
 
-preferences::~preferences()
+preferences::preferences(URL location) noexcept :
+    preferences()
 {
+    load(location);
 }
 
-void preferences::save() const noexcept
+preferences::~preferences()
 {
-    ttlet lock = std::scoped_lock(mutex);
+    timer::global().remove_callback(_check_modified_ptr);
+    save();
+}
 
-    ttlet tmp_location = _location.urlByAppendingExtension(".tmp");
-
-    auto text = format_JSON(serialize());
-
+void preferences::_save() const noexcept
+{
     try {
+        auto text = format_JSON(data);
+
+        ttlet tmp_location = _location.urlByAppendingExtension(".tmp");
         auto file = tt::file(tmp_location, access_mode::truncate_or_create_for_write | access_mode::rename);
         file.write(text);
         file.flush();
@@ -49,27 +71,94 @@ void preferences::save() const noexcept
     _modified = false;
 }
 
-void preferences::load() noexcept
+void preferences::_load() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
-    ++_deserializing;
-
-    reset();
-    
     try {
+        reset();
+
         auto file = tt::file(_location, access_mode::open_for_read);
         auto text = file.read_string();
-        auto data = parse_JSON(text);
-        deserialize(data);
-        --_deserializing;
+        data = parse_JSON(text);
+
+        for (auto &item : items) {
+            item->load();
+        }
 
     } catch (io_error const &e) {
         tt_log_warning("Could not read preferences file. \"{}\"", e.what());
-        --_deserializing = false;
 
     } catch (parse_error const &e) {
         tt_log_error("Could not parse preferences file. \"{}\"", e.what());
-        --_deserializing = false;
+    }
+}
+
+void preferences::reset() noexcept
+{
+    for (auto &item: items) {
+        item->reset();
+    }
+}
+
+void preferences::save(URL location) noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+    _location = std::move(location);
+    _save();
+}
+
+void preferences::save() const noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+    _save();
+}
+
+void preferences::load(URL location) noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+    _location = std::move(location);
+    _load();
+}
+
+void preferences::load() noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+    _load();
+}
+
+/** Write a value to the data.
+ */
+void preferences::write(jsonpath const &path, datum const value) noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+    auto *v = data.find_one_or_create(path);
+    if (v == nullptr) {
+        tt_log_fatal("Could not write '{}' to preference file '{}'", path, _location);
+    }
+
+    if (*v != value) {
+        *v = value;
+        _modified = true;
+    }
+}
+
+/** Read a value from the data.
+ */
+datum preferences::read(jsonpath const &path) noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+    if (auto *r = data.find_one(path)) {
+        return *r;
+    } else {
+        return datum{std::monostate{}};
+    }
+}
+
+void preferences::check_modified() noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+
+    if (_modified) {
+        save();
     }
 }
 

@@ -21,12 +21,22 @@ struct jsonpath_root {
     {
         return "$";
     }
+
+    [[nodiscard]] bool is_singular() const noexcept
+    {
+        return true;
+    }
 };
 
 struct jsonpath_current {
     [[nodiscard]] std::string string() const noexcept
     {
         return "@";
+    }
+
+    [[nodiscard]] bool is_singular() const noexcept
+    {
+        return true;
     }
 };
 
@@ -35,12 +45,22 @@ struct jsonpath_wildcard {
     {
         return "[*]";
     }
+
+    [[nodiscard]] bool is_singular() const noexcept
+    {
+        return false;
+    }
 };
 
 struct jsonpath_descend {
     [[nodiscard]] std::string string() const noexcept
     {
         return "..";
+    }
+
+    [[nodiscard]] bool is_singular() const noexcept
+    {
+        return false;
     }
 };
 
@@ -75,6 +95,16 @@ struct jsonpath_names {
         return r;
     }
 
+    [[nodiscard]] size_t size() const noexcept
+    {
+        return names.size();
+    }
+
+    [[nodiscard]] std::string const &front() const noexcept
+    {
+        return names.front();
+    }
+
     [[nodiscard]] auto begin() const noexcept
     {
         return std::begin(names);
@@ -88,6 +118,11 @@ struct jsonpath_names {
     void push_back(std::string rhs) noexcept
     {
         names.push_back(std::move(rhs));
+    }
+
+    [[nodiscard]] bool is_singular() const noexcept
+    {
+        return std::size(names) == 1;
     }
 };
 
@@ -132,9 +167,24 @@ struct jsonpath_indices {
         }
     }
 
+    [[nodiscard]] size_t size() const noexcept
+    {
+        return indices.size();
+    }
+
+    [[nodiscard]] size_t const &front() const noexcept
+    {
+        return indices.front();
+    }
+
     void push_back(ssize_t rhs) noexcept
     {
         indices.push_back(rhs);
+    }
+
+    [[nodiscard]] bool is_singular() const noexcept
+    {
+        return std::size(indices) == 1;
     }
 };
 
@@ -199,13 +249,17 @@ struct jsonpath_slice {
             return std::format("[{}:{}:{}]", first, last, step);
         }
     }
+
+    [[nodiscard]] bool is_singular() const noexcept
+    {
+        return false;
+    }
 };
 
 // clang-format off
 using jsonpath_node = std::variant<
     jsonpath_root, jsonpath_current, jsonpath_wildcard, jsonpath_descend, jsonpath_names, jsonpath_indices, jsonpath_slice>;
 // clang-format on
-using jsonpath = std::vector<jsonpath_node>;
 
 [[nodiscard]] inline jsonpath_node parse_jsonpath_slicing_operator(auto &it, auto it_end, ssize_t first)
 {
@@ -322,58 +376,127 @@ using jsonpath = std::vector<jsonpath_node>;
     }
 }
 
-[[nodiscard]] inline jsonpath parse_jsonpath(std::string_view rhs)
-{
-    auto r = jsonpath{};
+class jsonpath {
+public:
+    using container_type = std::vector<jsonpath_node>;
+    using value_type = typename container_type::value_type;
+    using iterator = typename container_type::iterator;
+    using const_iterator = typename container_type::const_iterator;
 
-    auto tokens = parseTokens(rhs);
-    ttlet it_end = std::cend(tokens);
-    for (auto it = std::cbegin(tokens); it != it_end; ++it) {
-        if (*it == tokenizer_name_t::Operator and *it == ".") {
-            r.emplace_back(parse_jsonpath_child_operator(it, it_end));
+    [[nodiscard]] jsonpath(std::string_view rhs) : _nodes()
+    {
+        auto tokens = parseTokens(rhs);
+        ttlet it_end = std::cend(tokens);
+        for (auto it = std::cbegin(tokens); it != it_end; ++it) {
+            if (*it == tokenizer_name_t::Operator and *it == ".") {
+                _nodes.emplace_back(parse_jsonpath_child_operator(it, it_end));
 
-        } else if (*it == tokenizer_name_t::Operator and *it == "[") {
-            r.emplace_back(parse_jsonpath_indexing_operator(it, it_end));
+            } else if (*it == tokenizer_name_t::Operator and *it == "[") {
+                _nodes.emplace_back(parse_jsonpath_indexing_operator(it, it_end));
 
-        } else if (*it == tokenizer_name_t::Name and *it == "$") {
-            tt_parse_check(r.empty(), "Root node '$' not at start of path.");
-            r.emplace_back(jsonpath_root{});
+            } else if (*it == tokenizer_name_t::Name and *it == "$") {
+                tt_parse_check(_nodes.empty(), "Root node '$' not at start of path.");
+                _nodes.emplace_back(jsonpath_root{});
 
-        } else if (*it == tokenizer_name_t::Operator and *it == "@") {
-            tt_parse_check(r.empty(), "Current node '@' not at start of path.");
-            r.emplace_back(jsonpath_current{});
+            } else if (*it == tokenizer_name_t::Operator and *it == "@") {
+                tt_parse_check(_nodes.empty(), "Current node '@' not at start of path.");
+                _nodes.emplace_back(jsonpath_current{});
 
-        } else if (*it == tokenizer_name_t::Name) {
-            tt_parse_check(r.empty(), "Unexpected child name {}.", *it);
-            r.emplace_back(jsonpath_names{static_cast<std::string>(*it)});
+            } else if (*it == tokenizer_name_t::Name) {
+                tt_parse_check(_nodes.empty(), "Unexpected child name {}.", *it);
+                _nodes.emplace_back(jsonpath_names{static_cast<std::string>(*it)});
 
-        } else if (*it == tokenizer_name_t::End) {
-            continue;
+            } else if (*it == tokenizer_name_t::End) {
+                continue;
 
-        } else {
-            throw parse_error("Unexpected token {}.", *it);
+            } else {
+                throw parse_error("Unexpected token {}.", *it);
+            }
         }
     }
 
-    return r;
-}
-
-[[nodiscard]] inline std::string to_string(jsonpath_node const &node) noexcept
-{
-    return std::visit(
-        [](ttlet &node_) {
-            return node_.string();
-        },
-        node);
-}
-
-[[nodiscard]] inline std::string to_string(jsonpath const &path) noexcept
-{
-    auto r = std::string{};
-    for (auto &component : path) {
-        r += to_string(component);
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return _nodes.empty();
     }
-    return r;
-}
+
+    /** The json-path will result in zero or one match.
+     */
+    [[nodiscard]] bool is_singular() const noexcept
+    {
+        auto r = true;
+        for (ttlet &node : _nodes) {
+            r &= std::visit(
+                [](ttlet &node_) {
+                    return node_.is_singular();
+                },
+                node);
+        }
+        return r;
+    }
+
+    [[nodiscard]] size_t size() const noexcept
+    {
+        return _nodes.size();
+    }
+
+    [[nodiscard]] iterator begin() noexcept
+    {
+        return _nodes.begin();
+    }
+
+    [[nodiscard]] const_iterator begin() const noexcept
+    {
+        return _nodes.begin();
+    }
+
+    [[nodiscard]] const_iterator cbegin() const noexcept
+    {
+        return _nodes.cbegin();
+    }
+
+    [[nodiscard]] iterator end() noexcept
+    {
+        return _nodes.end();
+    }
+
+    [[nodiscard]] const_iterator end() const noexcept
+    {
+        return _nodes.end();
+    }
+
+    [[nodiscard]] const_iterator cend() const noexcept
+    {
+        return _nodes.cend();
+    }
+
+    [[nodiscard]] friend std::string to_string(jsonpath const &path) noexcept
+    {
+        auto r = std::string{};
+        for (ttlet &node : path._nodes) {
+            r += std::visit(
+                [](ttlet &node_) {
+                    return node_.string();
+                },
+                node);
+        }
+        return r;
+    }
+
+private:
+    std::vector<jsonpath_node> _nodes;
+};
 
 } // namespace tt
+
+namespace std {
+
+template<typename CharT>
+struct formatter<tt::jsonpath, CharT> : formatter<char const *, CharT> {
+    auto format(tt::jsonpath const &t, auto &fc)
+    {
+        return formatter<char const *, CharT>::format(to_string(t), fc);
+    }
+};
+
+} // namespace std

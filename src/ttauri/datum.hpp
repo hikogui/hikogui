@@ -173,15 +173,30 @@ private :
 } // namespace detail
 
 template<typename T>
-class is_datum_type : public std::false_type {};
+class is_datum_type : public std::false_type {
+};
 
-template<> class is_datum_type<long long> : public std::true_type {};
-template<> class is_datum_type<decimal> : public std::true_type {};
-template<> class is_datum_type<double> : public std::true_type {};
-template<> class is_datum_type<bool> : public std::true_type {};
-template<> class is_datum_type<std::chrono::year_month_day> : public std::true_type {};
-template<> class is_datum_type<std::string> : public std::true_type {};
-template<> class is_datum_type<bstring> : public std::true_type {};
+template<>
+class is_datum_type<long long> : public std::true_type {
+};
+template<>
+class is_datum_type<decimal> : public std::true_type {
+};
+template<>
+class is_datum_type<double> : public std::true_type {
+};
+template<>
+class is_datum_type<bool> : public std::true_type {
+};
+template<>
+class is_datum_type<std::chrono::year_month_day> : public std::true_type {
+};
+template<>
+class is_datum_type<std::string> : public std::true_type {
+};
+template<>
+class is_datum_type<bstring> : public std::true_type {
+};
 
 template<typename T>
 constexpr bool is_datum_type_v = is_datum_type<T>::value;
@@ -254,9 +269,25 @@ public:
         return datum{vector_type{datum{args}...}};
     }
 
-    [[nodiscard]] static datum make_map() noexcept
+    template<typename Key, typename Value, typename... Args>
+    [[nodiscard]] static void populate_map(map_type &r, Key const &key, Value const &value, Args const &...args) noexcept
     {
-        return datum{map_type{}};
+        r.insert(std::pair<datum, datum>{datum{key}, datum{value}});
+        if constexpr (sizeof...(Args) > 0) {
+            populate_map(r, args...);
+        }
+    }
+
+    template<typename... Args>
+    [[nodiscard]] static datum make_map(Args const &...args) noexcept
+    {
+        static_assert(sizeof...(Args) % 2 == 0, "Expect key value pairs for the arguments of make_map()");
+
+        auto r = map_type{};
+        if constexpr (sizeof...(Args) > 0) {
+            populate_map(r, args...);
+        }
+        return datum{std::move(r)};
     }
 
     [[nodiscard]] static datum make_break() noexcept
@@ -861,120 +892,38 @@ public:
         return contains(datum{arg});
     }
 
-    void find_wildcard(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum const *> &r) const noexcept
+    [[nodiscard]] std::vector<datum *> find(jsonpath const &path) noexcept
     {
-        if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (auto &item : *vector) {
-                item.find(it + 1, it_end, r);
-            }
-
-        } else if (auto map = get_if<datum::map_type>(*this)) {
-            for (auto &item : *map) {
-                item.second.find(it + 1, it_end, r);
-            }
-        }
-    }
-
-    void find_descend(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum const *> &r) const noexcept
-    {
-        this->find(it + 1, it_end, r);
-
-        if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (auto &item : *vector) {
-                item.find(it, it_end, r);
-            }
-
-        } else if (auto map = get_if<datum::map_type>(*this)) {
-            for (auto &item : *map) {
-                item.second.find(it, it_end, r);
-            }
-        }
-    }
-
-    void find_indices(
-        jsonpath_indices const &indices,
-        jsonpath::const_iterator it,
-        jsonpath::const_iterator it_end,
-        std::vector<datum const *> &r) const noexcept
-    {
-        if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (ttlet index : indices.filter(std::ssize(*vector))) {
-                (*vector)[index].find(it + 1, it_end, r);
-            }
-        }
-    }
-
-    void find_names(
-        jsonpath_names const &names,
-        jsonpath::const_iterator it,
-        jsonpath::const_iterator it_end,
-        std::vector<datum const *> &r) const noexcept
-    {
-        if (auto map = get_if<datum::map_type>(*this)) {
-            for (ttlet &name : names) {
-                ttlet name_ = datum{name};
-                auto jt = map->find(name_);
-                if (jt != map->cend()) {
-                    jt->second.find(it + 1, it_end, r);
-                }
-            }
-        }
-    }
-
-    void find_slice(
-        jsonpath_slice const &slice,
-        jsonpath::const_iterator it,
-        jsonpath::const_iterator it_end,
-        std::vector<datum const *> &r) const noexcept
-    {
-        if (auto vector = get_if<datum::vector_type>(*this)) {
-            ttlet first = slice.begin(vector->size());
-            ttlet last = slice.end(vector->size());
-
-            for (auto index = first; index != last; index += slice.step) {
-                if (index >= 0 and index < vector->size()) {
-                    (*this)[index].find(it + 1, it_end, r);
-                }
-            }
-        }
-    }
-
-    void find(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum const *> &r) const noexcept
-    {
-        if (it == it_end) {
-            r.push_back(this);
-
-        } else if (std::holds_alternative<jsonpath_root>(*it)) {
-            find(it + 1, it_end, r);
-
-        } else if (std::holds_alternative<jsonpath_current>(*it)) {
-            find(it + 1, it_end, r);
-
-        } else if (std::holds_alternative<jsonpath_wildcard>(*it)) {
-            find_wildcard(it, it_end, r);
-
-        } else if (std::holds_alternative<jsonpath_descend>(*it)) {
-            find_descend(it, it_end, r);
-
-        } else if (auto indices = std::get_if<jsonpath_indices>(&*it)) {
-            find_indices(*indices, it, it_end, r);
-
-        } else if (auto names = std::get_if<jsonpath_names>(&*it)) {
-            find_names(*names, it, it_end, r);
-
-        } else if (auto slice = std::get_if<jsonpath_slice>(&*it)) {
-            find_slice(*slice, it, it_end, r);
-
-        } else {
-            tt_no_default();
-        }
+        auto r = std::vector<datum *>{};
+        find(std::cbegin(path), std::cend(path), r);
+        return r;
     }
 
     [[nodiscard]] std::vector<datum const *> find(jsonpath const &path) const noexcept
     {
+        auto tmp = std::vector<datum *>{};
+        const_cast<datum *>(this)->find(std::cbegin(path), std::cend(path), tmp);
         auto r = std::vector<datum const *>{};
-        find(std::cbegin(path), std::cend(path), r);
+        std::copy(tmp.begin(), tmp.end(), std::back_inserter(r));
         return r;
+    }
+
+    [[nodiscard]] datum *find_one(jsonpath const &path) noexcept
+    {
+        tt_axiom(path.is_singular());
+        return find_one(std::cbegin(path), std::cend(path), false);
+    }
+
+    [[nodiscard]] datum *find_one_or_create(jsonpath const &path) noexcept
+    {
+        tt_axiom(path.is_singular());
+        return find_one(std::cbegin(path), std::cend(path), true);
+    }
+
+    [[nodiscard]] datum const *find_one(jsonpath const &path) const noexcept
+    {
+        tt_axiom(path.is_singular());
+        return const_cast<datum *>(this)->find_one(std::cbegin(path), std::cend(path), false);
     }
 
     [[nodiscard]] constexpr datum const &operator[](datum const &rhs) const
@@ -1819,24 +1768,18 @@ public:
      * @param rhs The datum to get the value from.
      * @param path The json-path to the value to extract.
      * @return A pointer to the value, or nullptr.
-     * @throws std::domain_error When @a path does not yield exactly zero or one match.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T *get_if(datum const &rhs, jsonpath const &path)
+    [[nodiscard]] friend T *get_if(datum &rhs, jsonpath const &path) noexcept
     {
-        ttlet matches = rhs.find(path);
-        if (matches.empty()) {
-            return nullptr;
-        } else if (std::size(matches) == 1) {
-            auto match = matches[0];
-            tt_axiom(match);
-            if (holds_alternative<T>(*match)) {
-                return &get<T>(*match);
+        if (auto *value = rhs.find_one(path)) {
+            if (holds_alternative<T>(*value)) {
+                return &get<T>(*value);
             } else {
                 return nullptr;
             }
         } else {
-            throw std::domain_error("path yields more than one result");
+            return nullptr;
         }
     }
 
@@ -1848,24 +1791,18 @@ public:
      * @param rhs The datum to get the value from.
      * @param path The json-path to the value to extract.
      * @return A pointer to the value, or nullptr.
-     * @throws std::domain_error When @a path does not yield exactly zero or one match.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T const *get_if(datum const &rhs, jsonpath const &path)
+    [[nodiscard]] friend T const *get_if(datum const &rhs, jsonpath const &path) noexcept
     {
-        ttlet matches = rhs.find(path);
-        if (matches.empty()) {
-            return nullptr;
-        } else if (std::size(matches) == 1) {
-            auto match = matches[0];
-            tt_axiom(match);
-            if (holds_alternative<T>(*match)) {
-                return &get<T>(*match);
+        if (auto *value = const_cast<datum &>(rhs).find_one(path)) {
+            if (holds_alternative<T>(*value)) {
+                return &get<T>(*value);
             } else {
                 return nullptr;
             }
         } else {
-            throw std::domain_error("path yields more than one result");
+            return nullptr;
         }
     }
 
@@ -1890,22 +1827,6 @@ public:
         }
 
         return r;
-    }
-
-    template<typename T>
-    constexpr T get(jsonpath const &path, T &&init) noexcept
-    {
-        if (auto tmp = this->find_one(path)) {
-            return pickle<T>::deserialize(*this);
-        } else {
-            return std::forward<T>(init);
-        }
-    }
-
-    template<typename T>
-    constexpr void put(jsonpath const &path, T &&value) noexcept
-    {
-        this->find_one_or_create(path) = pickle<T>::serialize(std::forward<T>(value));
     }
 
 private:
@@ -1996,6 +1917,188 @@ private:
     {
         if (is_pointer()) {
             _delete_pointer();
+        }
+    }
+
+    void find_wildcard(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *> &r) noexcept
+    {
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            for (auto &item : *vector) {
+                item.find(it + 1, it_end, r);
+            }
+
+        } else if (auto map = get_if<datum::map_type>(*this)) {
+            for (auto &item : *map) {
+                item.second.find(it + 1, it_end, r);
+            }
+        }
+    }
+
+    void find_descend(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *> &r) noexcept
+    {
+        this->find(it + 1, it_end, r);
+
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            for (auto &item : *vector) {
+                item.find(it, it_end, r);
+            }
+
+        } else if (auto map = get_if<datum::map_type>(*this)) {
+            for (auto &item : *map) {
+                item.second.find(it, it_end, r);
+            }
+        }
+    }
+
+    void find_indices(
+        jsonpath_indices const &indices,
+        jsonpath::const_iterator it,
+        jsonpath::const_iterator it_end,
+        std::vector<datum *> &r) noexcept
+    {
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            for (ttlet index : indices.filter(std::ssize(*vector))) {
+                (*vector)[index].find(it + 1, it_end, r);
+            }
+        }
+    }
+
+    void find_names(
+        jsonpath_names const &names,
+        jsonpath::const_iterator it,
+        jsonpath::const_iterator it_end,
+        std::vector<datum *> &r) noexcept
+    {
+        if (auto map = get_if<datum::map_type>(*this)) {
+            for (ttlet &name : names) {
+                ttlet name_ = datum{name};
+                auto jt = map->find(name_);
+                if (jt != map->cend()) {
+                    jt->second.find(it + 1, it_end, r);
+                }
+            }
+        }
+    }
+
+    void find_slice(
+        jsonpath_slice const &slice,
+        jsonpath::const_iterator it,
+        jsonpath::const_iterator it_end,
+        std::vector<datum *> &r) noexcept
+    {
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            ttlet first = slice.begin(vector->size());
+            ttlet last = slice.end(vector->size());
+
+            for (auto index = first; index != last; index += slice.step) {
+                if (index >= 0 and index < vector->size()) {
+                    (*this)[index].find(it + 1, it_end, r);
+                }
+            }
+        }
+    }
+
+    void find(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *> &r) noexcept
+    {
+        if (it == it_end) {
+            r.push_back(this);
+
+        } else if (std::holds_alternative<jsonpath_root>(*it)) {
+            find(it + 1, it_end, r);
+
+        } else if (std::holds_alternative<jsonpath_current>(*it)) {
+            find(it + 1, it_end, r);
+
+        } else if (std::holds_alternative<jsonpath_wildcard>(*it)) {
+            find_wildcard(it, it_end, r);
+
+        } else if (std::holds_alternative<jsonpath_descend>(*it)) {
+            find_descend(it, it_end, r);
+
+        } else if (auto indices = std::get_if<jsonpath_indices>(&*it)) {
+            find_indices(*indices, it, it_end, r);
+
+        } else if (auto names = std::get_if<jsonpath_names>(&*it)) {
+            find_names(*names, it, it_end, r);
+
+        } else if (auto slice = std::get_if<jsonpath_slice>(&*it)) {
+            find_slice(*slice, it, it_end, r);
+
+        } else {
+            tt_no_default();
+        }
+    }
+
+    [[nodiscard]] datum *
+    find_one_name(datum const &name, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
+    {
+        tt_axiom(holds_alternative<std::string>(name));
+
+        if (auto *map = get_if<map_type>(*this)) {
+            auto i = map->find(name);
+            if (i != map->end()) {
+                return i->second.find_one(it + 1, it_end, create);
+
+            } else if (create) {
+                (*map)[name] = datum{std::monostate{}};
+                return find_one_name(name, it, it_end, create);
+
+            } else {
+                return nullptr;
+            }
+
+        } else if (holds_alternative<std::monostate>(*this) and create) {
+            *this = datum::make_map(name, std::monostate{});
+            return find_one_name(name, it, it_end, create);
+
+        } else {
+            return nullptr;
+        }
+    }
+
+    [[nodiscard]] datum *
+    find_one_index(size_t index, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
+    {
+        if (auto *vector = get_if<vector_type>(*this)) {
+            if (index < vector->size()) {
+                return (*vector)[index].find_one(it + 1, it_end, create);
+            } else if (index == vector->size() and create) {
+                vector->push_back(datum{std::monostate{}});
+                return find_one_index(index, it, it_end, create);
+            } else {
+                return nullptr;
+            }
+
+        } else if (holds_alternative<std::monostate>(*this) and index == 0 and create) {
+            *this = datum::make_vector(std::monostate{});
+            return find_one_index(index, it, it_end, create);
+
+        } else {
+            return nullptr;
+        }
+    }
+
+    [[nodiscard]] datum *find_one(jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
+    {
+        if (it == it_end) {
+            return this;
+
+        } else if (std::holds_alternative<jsonpath_root>(*it)) {
+            return find_one(it + 1, it_end, create);
+
+        } else if (std::holds_alternative<jsonpath_current>(*it)) {
+            return find_one(it + 1, it_end, create);
+
+        } else if (ttlet *indices = std::get_if<jsonpath_indices>(&*it)) {
+            tt_axiom(indices->size() == 1);
+            return find_one_index(indices->front(), it, it_end, create);
+
+        } else if (ttlet *names = std::get_if<jsonpath_names>(&*it)) {
+            tt_axiom(names->size() == 1);
+            return find_one_name(datum{names->front()}, it, it_end, create);
+
+        } else {
+            tt_no_default();
         }
     }
 };
