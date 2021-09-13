@@ -172,6 +172,20 @@ private :
 
 } // namespace detail
 
+template<typename T>
+class is_datum_type : public std::false_type {};
+
+template<> class is_datum_type<long long> : public std::true_type {};
+template<> class is_datum_type<decimal> : public std::true_type {};
+template<> class is_datum_type<double> : public std::true_type {};
+template<> class is_datum_type<bool> : public std::true_type {};
+template<> class is_datum_type<std::chrono::year_month_day> : public std::true_type {};
+template<> class is_datum_type<std::string> : public std::true_type {};
+template<> class is_datum_type<bstring> : public std::true_type {};
+
+template<typename T>
+constexpr bool is_datum_type_v = is_datum_type<T>::value;
+
 /** A dynamic data type.
  *
  * This class holds data of different types, useful as the data-type used for variables
@@ -1878,12 +1892,23 @@ public:
         return r;
     }
 
-private:
-    static constexpr int64_t int48_max = 140737488355327LL;
-    static constexpr int64_t int48_min = -140737488355328LL;
-    static constexpr int64_t int40_max = 549755813887LL;
-    static constexpr int64_t int40_min = -549755813888LL;
+    template<typename T>
+    constexpr T get(jsonpath const &path, T &&init) noexcept
+    {
+        if (auto tmp = this->find_one(path)) {
+            return pickle<T>::deserialize(*this);
+        } else {
+            return std::forward<T>(init);
+        }
+    }
 
+    template<typename T>
+    constexpr void put(jsonpath const &path, T &&value) noexcept
+    {
+        this->find_one_or_create(path) = pickle<T>::serialize(std::forward<T>(value));
+    }
+
+private:
     enum class tag_type : signed char {
         // scalars are detected by: `to_underlying(tag_type) >= 0`
         monostate = 0,

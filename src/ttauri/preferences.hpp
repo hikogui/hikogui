@@ -11,6 +11,61 @@
 #pragma once
 
 namespace tt {
+namespace detail {
+
+class preference_item_base {
+public:
+    preference_item_base(std::string_view path) noexcept :
+        _path(parse_jsonpath(path)) {}
+
+    preference_item_base(preference_item_base const &) = delete;
+    preference_item_base(preference_item_base &&) = delete;
+    preference_item_base &operator=(preference_item_base const &) = delete;
+    preference_item_base &operator=(preference_item_base &&) = delete;
+    virtual ~preference_item_base() = default;
+
+    virtual void reset() const noexcept = 0;
+
+    virtual void serialize(datum &data) const noexcept = 0;
+
+    virtual void deserialize(data const &data) const noexcept = 0;
+
+protected:
+    jsonpath _path;
+};
+
+
+template<typename T>
+class preference_item : public preference_item_base {
+public:
+    preference_item(preferences &self, std::string_view path, observable<T> &value, T &&init) noexcept :
+        preference_item_base(path), _value(value), _init(std::forward<T>(init))
+    {
+        _value.subscribe(self._set_modified_ptr);
+    }
+
+    virtual void reset() const noexcept
+    {
+        _value = _init;
+    }
+
+    virtual void serialize(datum &data) const noexcept
+    {
+        data.put(_path, *_value);
+    }
+
+    virtual void deserialize(data const &data) const noexcept
+    {
+        _value = data.get(_path, _init);
+    }
+
+private:
+    T _init;
+    observable<T> &_value;
+};
+
+
+}
 
 /** user preferences.
  * User preferences are kept in an instance of the preferences subclass.
@@ -33,10 +88,6 @@ public:
     preferences &operator=(preferences const &) = delete;
     preferences &operator=(preferences &&) = delete;
 
-    /** Reset data members to their default value.
-     */
-    [[nodiscard]] virtual void reset() noexcept {}
-
     /** Save the preferences.
      */
     void save() const noexcept;
@@ -44,6 +95,15 @@ public:
     /** Load the preferences.
      */
     void load() noexcept;
+
+    /** Reset data members to their default value.
+     */
+    [[nodiscard]] virtual void reset() noexcept
+    {
+        for (ttlet &item: _items) {
+            item->reset();
+        }
+    }
 
     /** Serialize the preferences data.
      * The serialize method is called when the preferences need to be saved.
@@ -54,7 +114,13 @@ public:
      */
     [[nodiscard]] virtual datum serialize() const noexcept
     {
-        return datum::make_map();
+        auto r = datum::make_map();
+
+        for (ttlet &item: _items) {
+            item->serialize(r);
+        }
+
+        return r;
     }
 
     /** Deserialize the preferences.
@@ -66,11 +132,9 @@ public:
      */
     virtual void deserialize(datum const &data) noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
-        tt_axiom(_deserializing >= 0);
-        ++_deserializing;
-
-        --_deserializing;
+        for (ttlet &item: _items) {
+            item->deserialize(data);
+        }
     }
 
 protected:
@@ -103,8 +167,18 @@ protected:
         }
     }
 
+    template<typename T>
+    static void register_item(std::string_view key, observable<T> &item, T &&init = T{}) noexcept
+    {
+        items.push_back(std::make_unique<preference_item<T>>(*this, key, item, std::forward<T>(init));
+    }
+
 private:
     URL _location;
+
+    /** List of registered items.
+     */
+    std::vector<std::unique_ptr<detail::preference_item_base>> items;
 
     /** The data was modified.
      * When this flag is true the preferences should be saved.
