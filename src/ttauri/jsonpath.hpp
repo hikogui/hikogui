@@ -172,7 +172,7 @@ struct jsonpath_indices {
         return indices.size();
     }
 
-    [[nodiscard]] size_t const &front() const noexcept
+    [[nodiscard]] ssize_t const &front() const noexcept
     {
         return indices.front();
     }
@@ -495,7 +495,7 @@ template<typename CharT>
 struct formatter<tt::jsonpath, CharT> : formatter<char const *, CharT> {
     auto format(tt::jsonpath const &t, auto &fc)
     {
-        return formatter<char const *, CharT>::format(to_string(t), fc);
+        return formatter<std::string, CharT>{}.format(to_string(t), fc);
     }
 };
 

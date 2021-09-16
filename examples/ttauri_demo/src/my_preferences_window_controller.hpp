@@ -3,12 +3,13 @@
 
 #pragma once
 
-#include "my_preferences.hpp"
 #include "ttauri/GUI/gui_window_delegate.hpp"
 #include "ttauri/audio/audio_system_delegate.hpp"
 #include "ttauri/audio/audio_device_id.hpp"
+#include "ttauri/audio/speaker_mapping.hpp"
 #include "ttauri/observable.hpp"
 #include "ttauri/label.hpp"
+#include "ttauri/preferences.hpp"
 
 class my_preferences_window_controller :
     public tt::gui_window_delegate,
@@ -16,10 +17,10 @@ class my_preferences_window_controller :
 public:
     my_preferences_window_controller(tt::preferences &preferences) noexcept
     {
-        preferences.subscribe(audio_output_device_id, "audio_output_device_id");
-        preferences.subscribe(audio_output_exclusive, "audio_output_exclusive");
-        preferences.subscribe(audio_output_sample_rate, "audio_output_sample_rate");
-        preferences.subscribe(audio_output_speaker_mapping, "audio_output_speaker_mapping", tt::speaker_mapping::none);
+        preferences.add("audio_output_device_id", audio_output_device_id);
+        preferences.add("audio_output_exclusive", audio_output_exclusive);
+        preferences.add("audio_output_sample_rate", audio_output_sample_rate);
+        preferences.add("audio_output_speaker_mapping", audio_output_speaker_mapping, tt::speaker_mapping::none);
     }
 
     void init(tt::gui_window& window) noexcept override;

@@ -69,6 +69,56 @@ public:
     }
 };
 
+template<std::floating_point T>
+class default_text_field_delegate<T> : public text_field_delegate {
+public:
+    using value_type = T;
+
+    observable<value_type> value;
+
+    template<typename Value>
+    default_text_field_delegate(Value &&value) noexcept : value(std::forward<Value>(value))
+    {
+    }
+
+    callback_ptr_type subscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
+    {
+        value.subscribe(callback_ptr);
+        return callback_ptr;
+    }
+
+    void unsubscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
+    {
+        value.unsubscribe(callback_ptr);
+    }
+
+    std::optional<label> validate(text_field_widget &sender, std::string_view text) noexcept override
+    {
+        try {
+            [[maybe_unused]] auto dummy = from_string<value_type>(text);
+        } catch (parse_error const &) {
+            return {l10n{"Invalid integer"}};
+        }
+
+        return {};
+    }
+
+    std::string text(text_field_widget &sender) noexcept override
+    {
+        return to_string(*value);
+    }
+
+    void set_text(text_field_widget &sender, std::string_view text) noexcept override
+    {
+        try {
+            value = from_string<value_type>(text);
+        } catch (std::exception const &) {
+            // Ignore the error, don't modify the value.
+            return;
+        }
+    }
+};
+
 template<typename Value>
 default_text_field_delegate(Value &&) -> default_text_field_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
 

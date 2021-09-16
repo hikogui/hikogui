@@ -181,8 +181,6 @@ struct parse_context_t {
 
 static void format_JSON_impl(datum const &value, std::string &result, tt::indent indent = {})
 {
-    bool first_item = true;
-
     if (holds_alternative<nullptr_t>(value)) {
         result += "null";
     } else if (ttlet *b = get_if<bool>(value)) {
@@ -254,8 +252,8 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
         result += '[';
         result += '\n';
 
-        for (auto it = v->begin(); it != v->end(); it++, first_item = true) {
-            if (!first_item) {
+        for (auto it = v->begin(); it != v->end(); it++) {
+            if (it != v->begin()) {
                 result += ',';
                 result += '\n';
             }
@@ -272,8 +270,8 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
         result += '{';
         result += '\n';
 
-        for (auto it = m->begin(); it != m->end(); it++, first_item = true) {
-            if (!first_item) {
+        for (auto it = m->begin(); it != m->end(); it++) {
+            if (it != m->begin()) {
                 result += ',';
                 result += '\n';
             }

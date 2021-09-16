@@ -109,6 +109,7 @@ target_sources(ttauri PRIVATE
     preferences.hpp
     graphic_path.cpp
     graphic_path.hpp
+    pickle.hpp
     pixel_map.cpp
     pixel_map.hpp
     pixel_map.inl

@@ -6,6 +6,7 @@
 
 #include "../assert.hpp"
 #include "../cast.hpp"
+#include "../pickle.hpp"
 #include "../text/ttauri_icon.hpp"
 #include <array>
 #include <string>
@@ -37,6 +38,18 @@ enum class speaker_mapping : uint64_t {
     top_back_left = 0x0'8000,
     top_back_center = 0x1'0000,
     top_back_right = 0x2'0000,
+
+    // A couple of isolated channel definitions
+    none = direct,
+    iso_0 = direct | (0ULL << 32),
+    iso_1 = direct | (1ULL << 32),
+    iso_2 = direct | (2ULL << 32),
+    iso_3 = direct | (3ULL << 32),
+    iso_4 = direct | (4ULL << 32),
+    iso_5 = direct | (5ULL << 32),
+    iso_6 = direct | (6ULL << 32),
+    iso_7 = direct | (7ULL << 32),
+    iso_8 = direct | (8ULL << 32),
 
     // Standard
     mono_1_0 = front_center,
@@ -197,6 +210,29 @@ constexpr auto speaker_mappings = std::array{
     speaker_mapping_info{speaker_mapping::surround_wide_7_1, ttauri_icon::surround_wide_7_1, "Surround 7.1 (wide)"},
     speaker_mapping_info{speaker_mapping::surround_atmos_5_1_4, ttauri_icon::surround_atmos_5_1_4, "Atmos 5.1.4"},
     speaker_mapping_info{speaker_mapping::surround_atmos_7_1_4, ttauri_icon::surround_atmos_7_1_4, "Atmos 7.1.4"},
+};
+
+template<>
+struct pickle<speaker_mapping> {
+    [[nodiscard]] datum encode(speaker_mapping const &rhs) const noexcept
+    {
+        return datum{narrow_cast<long long>(to_underlying(rhs))};
+    }
+
+    [[nodiscard]] speaker_mapping decode(long long rhs) const
+    {
+        tt_parse_check(rhs >= 0, "Expect speaker mapping to be encoded as a natural number, got {}.", rhs);
+        return static_cast<speaker_mapping>(rhs);
+    }
+
+    [[nodiscard]] speaker_mapping decode(datum const &rhs) const
+    {
+        if (auto *i = get_if<long long>(rhs)) {
+            return decode(*i);
+        } else {
+            throw parse_error("Expect speaker mapping to be encoded as a integer, got {}", rhs);
+        }
+    }
 };
 
 } // namespace tt

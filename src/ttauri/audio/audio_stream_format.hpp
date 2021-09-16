@@ -18,7 +18,7 @@ struct audio_stream_format {
     tt::speaker_mapping speaker_mapping;
 
     constexpr audio_stream_format() noexcept :
-        sample_format(), sample_rate(0.0f), speaker_mapping(tt::speaker_mapping::direct) {}
+        sample_format(), sample_rate(0.0f), speaker_mapping(tt::speaker_mapping::none) {}
 
     constexpr audio_stream_format(audio_stream_format const &) noexcept = default;
     constexpr audio_stream_format(audio_stream_format &&) noexcept = default;

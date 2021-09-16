@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../codec/pickle.hpp"
+#include "../pickle.hpp"
 #include "../exception.hpp"
 #include "../check.hpp"
 #include <array>
@@ -56,13 +56,13 @@ private:
 
 template<>
 struct pickle<audio_device_id> {
-    [[nodiscard]] std::string encode(audio_device_id const &rhs) const noexcept
+    [[nodiscard]] datum encode(audio_device_id const &rhs) const noexcept
     {
         auto r = std::string{};
 
         auto t = rhs._v[0];
         if (t == audio_device_id::none) {
-            return r;
+            return datum{std::move(r)};
         } else if (t == audio_device_id::win32) {
             r += 'w';
             for (auto i = 1_uz; i != std::size(rhs._v); ++i) {
@@ -72,14 +72,14 @@ struct pickle<audio_device_id> {
                     break;
                 }
             }
-            return r;
+            return datum{std::move(r)};
 
         } else {
             tt_not_implemented();
         }
     }
 
-    [[nodiscard]] audio_device_id decode(std::string_view rhs) const
+    [[nodiscard]] audio_device_id decode(std::string const &rhs) const
     {
         auto r = audio_device_id{};
         if (rhs.empty()) {
@@ -103,6 +103,16 @@ struct pickle<audio_device_id> {
             } else {
                 throw parse_error("audio_device_id pickle unknown type {}", t);
             }
+        }
+    }
+
+    [[nodiscard]] audio_device_id decode(datum rhs) const
+    {
+        if (auto *s = get_if<std::string>(rhs)) {
+            return decode(*s);
+            
+        } else {
+            throw parse_error("audio_device_id must be encoded as a string, got {}", rhs);
         }
     }
 };

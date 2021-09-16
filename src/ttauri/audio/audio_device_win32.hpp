@@ -49,7 +49,7 @@ private:
     audio_direction _direction;
     bool _exclusive = false;
     double _sample_rate = 0.0;
-    tt::speaker_mapping _speaker_mapping = tt::speaker_mapping::direct;
+    tt::speaker_mapping _speaker_mapping = tt::speaker_mapping::none;
     audio_stream_format _current_stream_format;
 
     IMMDevice *_device = nullptr;

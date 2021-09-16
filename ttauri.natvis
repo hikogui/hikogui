@@ -10,14 +10,14 @@
         <DisplayString Condition="_tag == 6">{_value._year_month_day}</DisplayString>
         <DisplayString Condition="_tag == 7">continue</DisplayString>
         <DisplayString Condition="_tag == 8">break</DisplayString>
-        <DisplayString Condition="_tag == -1">{_value._string}</DisplayString>
-        <DisplayString Condition="_tag == -2">vector {_value._vector}</DisplayString>
-        <DisplayString Condition="_tag == -3">map {_value._map}</DisplayString>
-        <DisplayString Condition="_tag == -4">{_value._url}</DisplayString>
-        <DisplayString Condition="_tag == -5">{_value._bstring}</DisplayString>
+        <DisplayString Condition="_tag == -1">{*_value._string}</DisplayString>
+        <DisplayString Condition="_tag == -2">{*_value._vector}</DisplayString>
+        <DisplayString Condition="_tag == -3">{*_value._map}</DisplayString>
+        <DisplayString Condition="_tag == -4">{*_value._url}</DisplayString>
+        <DisplayString Condition="_tag == -5">{*_value._bstring}</DisplayString>
         <Expand>
-            <Item Name="[vector]" Condition="_tag == -2">_value._vector</Item>
-            <Item Name="[map]" Condition="_tag == -3">_value._map</Item>
+            <ExpandedItem Condition="_tag == -2">*_value._vector</ExpandedItem>
+            <ExpandedItem Condition="_tag == -3">*_value._map</ExpandedItem>
         </Expand>
     </Type>
     <Type Name="tt::unicode_mask::entry_type">

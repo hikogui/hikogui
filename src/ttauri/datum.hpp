@@ -908,18 +908,46 @@ public:
         return r;
     }
 
+    /** Remove the object by path.
+     *
+     * This function will remove the object pointed to with path.
+     * Any resulting empty maps and arrays will also be removed.
+     *
+     * @param path A json path to remove.
+     * @return true if one or more objects where removed.
+     */
+    [[nodiscard]] bool remove(jsonpath const &path) noexcept
+    {
+        return static_cast<bool>(remove(std::cbegin(path), std::cend(path)));
+    }
+
+    /** Find a object by path.
+     *
+     * @param path The json path to use to find an object. Path must be singular.
+     * @return A pointer to the object found, or nullptr.
+     */
     [[nodiscard]] datum *find_one(jsonpath const &path) noexcept
     {
         tt_axiom(path.is_singular());
         return find_one(std::cbegin(path), std::cend(path), false);
     }
 
+    /** Find a object by path potentially creating intermediate objects.
+     *
+     * @param path The json path to use to find an object. Path must be singular.
+     * @return A pointer to the object found, or nullptr.
+     */
     [[nodiscard]] datum *find_one_or_create(jsonpath const &path) noexcept
     {
         tt_axiom(path.is_singular());
         return find_one(std::cbegin(path), std::cend(path), true);
     }
 
+    /** Find a object by path.
+     *
+     * @param path The json path to use to find an object. Path must be singular.
+     * @return A pointer to the object found, or nullptr.
+     */
     [[nodiscard]] datum const *find_one(jsonpath const &path) const noexcept
     {
         tt_axiom(path.is_singular());
@@ -2023,6 +2051,197 @@ private:
 
         } else if (auto slice = std::get_if<jsonpath_slice>(&*it)) {
             find_slice(*slice, it, it_end, r);
+
+        } else {
+            tt_no_default();
+        }
+    }
+
+    [[nodiscard]] int remove_wildcard(jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    {
+        int r = 0;
+
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            auto jt = vector->begin();
+            while (jt != vector->end()) {
+                ttlet match = jt->remove(it + 1, it_end);
+                r |= match ? 1 : 0;
+
+                if (match == 2) {
+                    jt = vector->erase(jt);
+                } else {
+                    ++jt;
+                }
+            }
+            return vector->empty() ? 2 : r;
+
+        } else if (auto map = get_if<datum::map_type>(*this)) {
+            auto jt = map->begin();
+            while (jt != map->end()) {
+                ttlet match = jt->second.remove(it + 1, it_end);
+                r |= match ? 1 : 0;
+
+                if (match == 2) {
+                    jt = map->erase(jt);
+                } else {
+                    ++jt;
+                }
+            }
+            return map->empty() ? 2 : r;
+
+        } else {
+            return 0;
+        }
+    }
+
+    [[nodiscard]] int remove_descend(jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    {
+        int r = 0;
+
+        {
+            ttlet match = this->remove(it + 1, it_end);
+            if (match == 2) {
+                return 2;
+            }
+            r |= match ? 1 : 0;
+        }
+
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            auto jt = vector->begin();
+            while (jt != vector->end()) {
+                ttlet match = jt->remove(it, it_end);
+                r |= match ? 1 : 0;
+
+                if (match == 2) {
+                    jt = vector->erase(jt);
+                } else {
+                    ++jt;
+                }
+            }
+            return vector->empty() ? 2 : r;
+
+        } else if (auto map = get_if<datum::map_type>(*this)) {
+            auto jt = map->begin();
+            while (jt != map->end()) {
+                ttlet match = jt->second.remove(it, it_end);
+                r |= match ? 1 : 0;
+
+                if (match == 2) {
+                    jt = map->erase(jt);
+                } else {
+                    ++jt;
+                }
+            }
+            return map->empty() ? 2 : r;
+
+        } else {
+            return 0;
+        }
+    }
+
+    [[nodiscard]] int
+    remove_indices(jsonpath_indices const &indices, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    {
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            int r = 0;
+            size_t offset = 0;
+
+            for (ttlet index : indices.filter(std::ssize(*vector))) {
+                ttlet match = (*vector)[index - offset].remove(it + 1, it_end);
+                r |= match ? 1 : 0;
+                if (match == 2) {
+                    vector->erase(vector->begin() + (index - offset));
+                    ++offset;
+                }
+            }
+
+            return vector->empty() ? 2 : r;
+
+        } else {
+            return 0;
+        }
+    }
+
+    [[nodiscard]] int
+    remove_names(jsonpath_names const &names, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    {
+        if (auto map = get_if<datum::map_type>(*this)) {
+            int r = 0;
+
+            for (ttlet &name : names) {
+                ttlet name_ = datum{name};
+                auto jt = map->find(name_);
+                if (jt != map->cend()) {
+                    ttlet match = jt->second.remove(it + 1, it_end);
+                    r |= match ? 1 : 0;
+                    if (match == 2) {
+                        map->erase(jt);
+                    }
+                }
+            }
+
+            return map->empty() ? 2 : r;
+
+        } else {
+            return 0;
+        }
+    }
+
+    [[nodiscard]] int
+    remove_slice(jsonpath_slice const &slice, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    {
+        if (auto vector = get_if<datum::vector_type>(*this)) {
+            int r = 0;
+
+            ttlet first = slice.begin(vector->size());
+            ttlet last = slice.end(vector->size());
+
+            size_t offset = 0;
+            for (auto index = first; index != last; index += slice.step) {
+                if (index >= 0 and index < vector->size()) {
+                    ttlet match = (*this)[index - offset].remove(it + 1, it_end);
+                    r |= match ? 1 : 0;
+
+                    if (match == 2) {
+                        vector->erase(vector->begin() + (index - offset));
+                        ++offset;
+                    }
+                }
+            }
+
+            return vector->empty() ? 2 : r;
+
+        } else {
+            return 0;
+        }
+    }
+
+    [[nodiscard]] int remove(jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    {
+        if (it == it_end) {
+            // Reached end, remove matching name or index in parent.
+            return 2;
+
+        } else if (std::holds_alternative<jsonpath_root>(*it)) {
+            return remove(it + 1, it_end);
+
+        } else if (std::holds_alternative<jsonpath_current>(*it)) {
+            return remove(it + 1, it_end);
+
+        } else if (std::holds_alternative<jsonpath_wildcard>(*it)) {
+            return remove_wildcard(it, it_end);
+
+        } else if (std::holds_alternative<jsonpath_descend>(*it)) {
+            return remove_descend(it, it_end);
+
+        } else if (auto indices = std::get_if<jsonpath_indices>(&*it)) {
+            return remove_indices(*indices, it, it_end);
+
+        } else if (auto names = std::get_if<jsonpath_names>(&*it)) {
+            return remove_names(*names, it, it_end);
+
+        } else if (auto slice = std::get_if<jsonpath_slice>(&*it)) {
+            return remove_slice(*slice, it, it_end);
 
         } else {
             tt_no_default();

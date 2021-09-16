@@ -8,7 +8,7 @@
 #include "logger.hpp"
 #include "jsonpath.hpp"
 #include "observable.hpp"
-#include "codec/pickle.hpp"
+#include "pickle.hpp"
 #include <typeinfo>
 
 #pragma once
@@ -30,20 +30,24 @@ public:
 
     /** Reset the value.
      */
-    virtual void reset() const noexcept = 0;
+    virtual void reset() noexcept = 0;
 
     /** Load a value from the preferences.
      */
-    void load() const noexcept;
+    void load() noexcept;
 
 protected:
     std::shared_ptr<std::function<void()>> _modified_callback_ptr;
     preferences &_parent;
     jsonpath _path;
 
-    virtual datum serialize() const noexcept = 0;
+    /** Encode the value into a datum.
+    * 
+    * @return A datum representing the value, or undefined if same as the initial value.
+    */
+    [[nodiscard]] virtual datum encode() const noexcept = 0;
 
-    virtual void deserialize(datum const &data) const noexcept = 0;
+    virtual void decode(datum const &data) noexcept = 0;
 };
 
 template<typename T>
@@ -55,20 +59,25 @@ public:
         _value.subscribe(this->_modified_callback_ptr);
     }
 
-    virtual void reset() const noexcept
+    void reset() noexcept override
     {
         _value = _init;
     }
 
 protected:
-    virtual datum serialize() const noexcept
+    [[nodiscard]] datum encode() const noexcept override
     {
-        return tt::pickle<T>{}.serialize(*_value);
+        auto tmp = *_value;
+        if (tmp != _init) {
+            return tt::pickle<T>{}.encode(tmp);
+        } else {
+            return datum{std::monostate{}};
+        }
     }
 
-    virtual void deserialize(datum const &data) noexcept
+    void decode(datum const &data) noexcept override
     {
-        _value = tt::pickle<T>{}.deserialize(data);
+        _value = tt::pickle<T>{}.decode(data);
     }
 
 private:
@@ -80,13 +89,32 @@ private:
 
 /** user preferences.
  *
- * The saving if preferences is delayed to combine multiple modification into a single
- * save. By locking the mutex external to the preferences multiple modifications can
- * be stored atomically.
+ * A preferences objects maintains a link between observables in the application and
+ * a preferences file.
+ *
+ * When loading preferences the observables are set to the value
+ * in the preferences file. When an observable changes a value the preferences file is
+ * updated to reflect this change. For performance reasons multiple modifications are
+ * combined into a single save.
+ *
+ * An application may open multiple preferences files, for example an application preferences file
+ * and a project-specific preferences file. The name of the project-specific preferences file
+ * can then be selected by the user.
+ *
+ * You should only load or reset preferences if the added observables are still within their
+ * lifetime. Saving preferences can be done even after the lifetime of the observables have ended.
+ * 
+ * The preferences file is updated by using the operating system specific call to
+ * overwrite an existing file atomically.
  */
 class preferences {
 public:
-    mutable std::recursive_mutex mutex;
+    /** Mutex used to synchronize changes to the preferences.
+     *
+     * This mutex may be used externally to atomically combine multiple observer modification
+     * into a single change of the preferences file.
+     */
+    mutable std::mutex mutex;
 
     /** Construct a preferences instance.
      *
@@ -142,6 +170,55 @@ public:
      */
     [[nodiscard]] void reset() noexcept;
 
+    /** Register an observable to a preferences file.
+     *
+     * The lifetime of @a item must extent beyond the last call to
+     * `preferences::load()` or `preferences::reset()`.
+     *
+     * XXX Modify observable to be able to get a weak_ptr to the internals of observable
+     * to check-or-extent the lifetime of the observable.
+     *
+     * @param path The json-path inside the preference file.
+     * @param item The observable to monitor.
+     * @param init The value of the observable when it is not present in the preferences file.
+     */
+    template<typename T>
+    void add(std::string_view path, observable<T> &item, T &&init = T{}) noexcept
+    {
+        auto item_ = std::make_unique<detail::preference_item<T>>(*this, path, item, std::forward<T>(init));
+        item_->load();
+        _items.push_back(std::move(item_));
+    }
+
+private:
+    /** The location of the preferences file.
+     */
+    URL _location;
+
+    /** The data from the preferences file.
+     */
+    datum _data;
+
+    /** The data was modified.
+     * When this flag is true the preferences should be saved.
+     */
+    mutable bool _modified = false;
+
+    /** Registered timer callback.
+     */
+    timer::callback_ptr_type _check_modified_callback_ptr;
+
+    /** List of registered items.
+     */
+    std::vector<std::unique_ptr<detail::preference_item_base>> _items;
+
+    void _load() noexcept;
+    void _save() const noexcept;
+
+    /** Check if there are modification in data and save when necessary.
+     */
+    void check_modified() noexcept;
+
     /** Write a value to the data.
      */
     void write(jsonpath const &path, datum const value) noexcept;
@@ -150,48 +227,11 @@ public:
      */
     datum read(jsonpath const &path) noexcept;
 
-    /** Register an observable to a preferences file.
-    * 
-    * The lifetime of @a item must extent beyond the last call to
-    * `preferences::load()` or `preferences::reset()`.
-    * 
-    * XXX Modify observable to be able to get a weak_ptr to the internals of observable
-    * to check-or-extent the lifetime of the observable.
-    * 
-    * @param path The json-path inside the preference file.
-    * @param item The observable to monitor.
-    * @param init The value of the observable when it is not present in the preferences file.
-    */
-    template<typename T>
-    static void register_item(std::string_view path, observable<T> &item, T &&init = T{}) noexcept
-    {
-        auto item = std::make_unique<preference_item<T>>(*this, path, item, std::forward<T>(init));
-        item->load();
-        items.push_back(std::move(item));
-    }
-
-private:
-    URL _location;
-
-    /** The data from the preferences file.
+    /** Remove a value from the data.
      */
-    datum data;
+    void remove(jsonpath const &path) noexcept;
 
-    /** The data was modified.
-     * When this flag is true the preferences should be saved.
-     */
-    mutable bool _modified = false;
-
-    timer::callback_ptr_type _check_modified_ptr;
-
-    /** List of registered items.
-     */
-    std::vector<std::unique_ptr<detail::preference_item_base>> items;
-
-    void _load() noexcept;
-    void _save() const noexcept;
-
-    void check_modified() noexcept;
+    friend class detail::preference_item_base;
 };
 
 } // namespace tt

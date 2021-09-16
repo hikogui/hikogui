@@ -77,4 +77,27 @@ template<std::integral T>
     return value;
 }
 
+/** Convert a string to an floating point.
+ * This function bypasses std::locale
+ *
+ * @tparam T The integer type.
+ * @param str The string is an integer.
+ * @return The integer converted from a string.
+ */
+template<std::floating_point T>
+[[nodiscard]] T from_string(std::string_view str)
+{
+    T value;
+
+    ttlet first = str.data();
+    ttlet last = first + std::ssize(str);
+
+    ttlet[new_last, ec] = std::from_chars(first, last, value);
+    if (ec != std::errc{} or new_last != last) {
+        throw parse_error("Can not convert string to floating point");
+    }
+
+    return value;
+}
+
 } // namespace tt

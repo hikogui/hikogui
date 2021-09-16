@@ -208,7 +208,7 @@ void audio_device_win32::set_sample_rate(double sample_rate) noexcept
     switch (_direction) {
     case audio_direction::input: [[fallthrough]];
     case audio_direction::bidirectional: return _speaker_mapping;
-    case audio_direction::output: return tt::speaker_mapping::direct;
+    case audio_direction::output: return tt::speaker_mapping::none;
     default: tt_no_default();
     }
 }
@@ -233,7 +233,7 @@ void audio_device_win32::set_input_speaker_mapping(tt::speaker_mapping speaker_m
     switch (_direction) {
     case audio_direction::output: [[fallthrough]];
     case audio_direction::bidirectional: return _speaker_mapping;
-    case audio_direction::input: return tt::speaker_mapping::direct;
+    case audio_direction::input: return tt::speaker_mapping::none;
     default: tt_no_default();
     }
 }
