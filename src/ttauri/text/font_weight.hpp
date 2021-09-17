@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <ostream>
+#include <array>
 
 namespace tt {
 
