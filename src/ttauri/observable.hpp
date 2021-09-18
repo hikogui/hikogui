@@ -59,7 +59,9 @@ struct observable_proxy {
     observable_proxy(observable_proxy const &) = delete;
     observable_proxy &operator=(observable_proxy const &) = delete;
 
-    observable_proxy &operator=(std::convertible_to<value_type> auto &&value) noexcept
+    // MSVC Compiler bug returning this with auto argument
+    template<std::convertible_to<value_type> Value>
+    observable_proxy &operator=(Value &&value) noexcept
     {
         tt_axiom(actual);
         actual->value = std::forward<decltype(value)>(value);
@@ -142,7 +144,9 @@ struct observable_proxy {
     X(-)
 #undef X
 
-    value_type operator+=(auto const &rhs) noexcept
+    // MSVC Internal compiler error
+    template<typename Rhs>
+    value_type operator+=(Rhs const &rhs) noexcept
     {
         tt_axiom(actual);
         return actual->value += rhs;
@@ -283,7 +287,9 @@ public:
         pimpl->add_owner(this);
     }
 
-    observable &operator=(std::convertible_to<value_type> auto &&value) noexcept
+    // MSVC Compiler bug returning this with auto argument
+    template<std::convertible_to<value_type> Value>
+    observable &operator=(Value &&value) noexcept
     {
         tt_axiom(pimpl);
         pimpl->get() = std::forward<decltype(value)>(value);
@@ -335,7 +341,9 @@ public:
 
 #undef X
 
-    value_type operator+=(auto const &rhs) noexcept
+    // MSVC Internal compiler error
+    template<typename Rhs>
+    value_type operator+=(Rhs const &rhs) noexcept
     {
         return pimpl->get() += rhs;
     }
