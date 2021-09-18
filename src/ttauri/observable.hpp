@@ -253,6 +253,8 @@ template<typename T>
 class observable {
 public:
     using value_type = T;
+    using reference = detail::observable_proxy<value_type,false>;
+    using const_reference = detail::observable_proxy<value_type,true>;
     using impl_type = detail::observable_impl<value_type>;
     using notifier_type = tt::notifier<void()>;
     using callback_ptr_type = notifier_type::callback_ptr_type;
@@ -281,6 +283,21 @@ public:
         return *this;
     }
 
+    const_reference cget() const noexcept
+    {
+        return pimpl->cget();
+    }
+
+    const_reference get() const noexcept
+    {
+        return pimpl->cget();
+    }
+
+    reference get() noexcept
+    {
+        return pimpl->get();
+    }
+
     observable(std::convertible_to<value_type> auto &&value) noexcept :
         pimpl(std::make_shared<impl_type>(std::forward<decltype(value)>(value)))
     {
@@ -292,39 +309,39 @@ public:
     observable &operator=(Value &&value) noexcept
     {
         tt_axiom(pimpl);
-        pimpl->get() = std::forward<decltype(value)>(value);
+        get() = std::forward<decltype(value)>(value);
         return *this;
     }
 
     value_type operator*() const noexcept
     {
-        return *(pimpl->cget());
+        return *(cget());
     }
 
     detail::observable_proxy<value_type, true> operator->() const noexcept
     {
-        return pimpl->cget();
+        return cget();
     }
 
     explicit operator bool() const noexcept
     {
-        return static_cast<bool>(pimpl->cget());
+        return static_cast<bool>(cget());
     }
 
 #define X(op) \
     [[nodiscard]] friend auto operator op(observable const &lhs, observable const &rhs) noexcept \
     { \
-        return lhs.pimpl->cget() op rhs.pimpl->cget(); \
+        return lhs.cget() op rhs.cget(); \
     } \
 \
     [[nodiscard]] friend auto operator op(observable const &lhs, auto const &rhs) noexcept \
     { \
-        return lhs.pimpl->cget() op rhs; \
+        return lhs.cget() op rhs; \
     } \
 \
     [[nodiscard]] friend auto operator op(auto const &lhs, observable const &rhs) noexcept \
     { \
-        return lhs op rhs.pimpl->cget(); \
+        return lhs op rhs.cget(); \
     }
 
     X(==)
@@ -334,7 +351,7 @@ public:
 #define X(op) \
     [[nodiscard]] auto operator op() const noexcept \
     { \
-        return op pimpl->cget(); \
+        return op cget(); \
     }
 
     X(-)
@@ -345,7 +362,7 @@ public:
     template<typename Rhs>
     value_type operator+=(Rhs const &rhs) noexcept
     {
-        return pimpl->get() += rhs;
+        return get() += rhs;
     }
 
     callback_ptr_type subscribe(callback_ptr_type const &callback_ptr) noexcept
