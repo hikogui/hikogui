@@ -12,16 +12,16 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
 
 void label_widget::init() noexcept
 {
-    _icon_widget = &super::make_widget<icon_widget>((*label).icon);
+    _icon_widget = &super::make_widget<icon_widget>(label->icon);
     _icon_widget->alignment = alignment;
-    _text_widget = &super::make_widget<text_widget>((*label).text);
+    _text_widget = &super::make_widget<text_widget>(label->text);
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
 
     _label_callback = label.subscribe([this] {
         this->window.gui.run([this] {
-            _icon_widget->icon = (*label).icon;
-            _text_widget->text = (*label).text;
+            _icon_widget->icon = label->icon;
+            _text_widget->text = label->text;
         });
     });
 }

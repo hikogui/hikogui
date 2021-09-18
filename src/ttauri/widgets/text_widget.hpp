@@ -55,9 +55,9 @@ public:
         TextStyle &&text_style = theme_text_style::label) noexcept :
         text_widget(window, parent)
     {
-        text = std::forward<Text>(text);
-        alignment = std::forward<Alignment>(alignment);
-        text_style = std::forward<TextStyle>(text_style);
+        this->text = std::forward<Text>(text);
+        this->alignment = std::forward<Alignment>(alignment);
+        this->text_style = std::forward<TextStyle>(text_style);
     }
 
     /// @privatesection
