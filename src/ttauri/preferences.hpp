@@ -53,8 +53,8 @@ protected:
 template<typename T>
 class preference_item : public preference_item_base {
 public:
-    preference_item(preferences &parent, std::string_view path, observable<T> &value, T &&init) noexcept :
-        preference_item_base(parent, path), _value(value), _init(std::forward<T>(init))
+    preference_item(preferences &parent, std::string_view path, observable<T> const &value, T init) noexcept :
+        preference_item_base(parent, path), _value(value), _init(std::move(init))
     {
         _value.subscribe(this->_modified_callback_ptr);
     }
@@ -82,7 +82,7 @@ protected:
 
 private:
     T _init;
-    observable<T> &_value;
+    observable<T> _value;
 };
 
 } // namespace detail
@@ -101,9 +101,6 @@ private:
  * and a project-specific preferences file. The name of the project-specific preferences file
  * can then be selected by the user.
  *
- * You should only load or reset preferences if the added observables are still within their
- * lifetime. Saving preferences can be done even after the lifetime of the observables have ended.
- * 
  * The preferences file is updated by using the operating system specific call to
  * overwrite an existing file atomically.
  */
@@ -172,20 +169,14 @@ public:
 
     /** Register an observable to a preferences file.
      *
-     * The lifetime of @a item must extent beyond the last call to
-     * `preferences::load()` or `preferences::reset()`.
-     *
-     * XXX Modify observable to be able to get a weak_ptr to the internals of observable
-     * to check-or-extent the lifetime of the observable.
-     *
      * @param path The json-path inside the preference file.
      * @param item The observable to monitor.
      * @param init The value of the observable when it is not present in the preferences file.
      */
     template<typename T>
-    void add(std::string_view path, observable<T> &item, T &&init = T{}) noexcept
+    void add(std::string_view path, observable<T> const &item, T init = T{}) noexcept
     {
-        auto item_ = std::make_unique<detail::preference_item<T>>(*this, path, item, std::forward<T>(init));
+        auto item_ = std::make_unique<detail::preference_item<T>>(*this, path, item, std::move(init));
         item_->load();
         _items.push_back(std::move(item_));
     }

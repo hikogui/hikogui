@@ -26,16 +26,14 @@ struct observable_proxy {
     using value_type = T;
     static constexpr bool is_atomic = may_be_atomic_v<T>;
     static constexpr bool is_constant = Constant;
-    static constexpr bool is_locking = not is_atomic;
-    static constexpr bool is_variable = not is_constant;
 
     ~observable_proxy()
     {
         if (actual) {
-            if constexpr (is_locking or is_variable) {
-                actual->unlock();
+            if constexpr (not is_atomic) {
+                actual->mutex.unlock();
             }
-            if constexpr (is_variable) {
+            if constexpr (not is_constant) {
                 actual->notify_owners();
             }
         }
@@ -43,8 +41,8 @@ struct observable_proxy {
 
     observable_proxy(observable_impl<T> &actual) : actual(&actual)
     {
-        if constexpr (is_locking or is_variable) {
-            this->actual->lock();
+        if constexpr (not is_atomic) {
+            this->actual->mutex.lock();
         }
     }
 
@@ -74,25 +72,25 @@ struct observable_proxy {
         return actual->value.load();
     }
 
-    value_type const &operator*() const requires(is_locking)
+    value_type const &operator*() const requires(not is_atomic)
     {
         tt_axiom(actual);
         return actual->value;
     }
 
-    value_type &operator*() requires(is_locking and is_variable)
+    value_type &operator*() requires(not is_atomic and not is_constant)
     {
         tt_axiom(actual);
         return actual->value;
     }
 
-    value_type const *operator->() const requires(is_locking)
+    value_type const *operator->() const requires(not is_atomic)
     {
         tt_axiom(actual);
         return &(actual->value);
     }
 
-    value_type *operator->() requires(is_locking and is_variable)
+    value_type *operator->() requires(not is_atomic and not is_constant)
     {
         tt_axiom(actual);
         return &(actual->value);
@@ -165,6 +163,9 @@ struct observable_impl {
 
     atomic_value_type value;
     std::vector<owner_type *> owners;
+
+    /** The mutex is used to serialize access to the owners list and non-atomic value.
+     */
     mutable unfair_mutex mutex;
 
     ~observable_impl()
@@ -203,23 +204,16 @@ struct observable_impl {
         std::erase(owners, owner);
     }
 
-    void lock() const noexcept
+    owner_type *get_owner(size_t index) const noexcept
     {
-        mutex.lock();
-    }
-
-    void unlock() const noexcept
-    {
-        mutex.unlock();
+        ttlet lock = std::scoped_lock(mutex);
+        return index < owners.size() ? owners[index] : nullptr;
     }
 
     void notify_owners() const noexcept
     {
-        mutex.lock();
-        ttlet owners_copy = owners;
-        mutex.unlock();
-
-        for (ttlet owner : owners_copy) {
+        size_t index = 0;
+        while (auto owner = get_owner(index++)) {
             owner->notify();
         }
     }
