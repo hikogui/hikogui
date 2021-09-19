@@ -249,6 +249,12 @@ struct observable_impl {
 
 } // namespace detail
 
+
+/** An observable notifies listeners of changed to its value.
+ *
+ * An observable can be changed to other observers by assigning them to each other.
+ *
+ */
 template<typename T>
 class observable {
 public:
@@ -265,16 +271,36 @@ public:
         pimpl->remove_owner(this);
     }
 
+    /** Construct an observerable.
+     *
+     * The observer is created with a value that is default constructed.
+     */
     observable() noexcept : pimpl(std::make_shared<impl_type>())
     {
         pimpl->add_owner(this);
     }
 
+    /** Construct an observerable and chain it to another.
+     *
+     * The new observable will share a value with the other observable.
+     *
+     * @param other The other observable to share the value with.
+     */
     observable(observable const &other) noexcept : pimpl(other.pimpl)
     {
         pimpl->add_owner(this);
     }
 
+    /** Chain with another observable.
+     *
+     * Replace the current shared value, with the value of the other observer.
+     * This means the other observers that share the current value will also
+     * be reseated with the new value.
+     *
+     * @post observers sharing the same value will be modified to share the new value.
+     * @post subscribers are notified
+     * @param other The other observable to share the value with.
+     */
     observable &operator=(observable const &other) noexcept
     {
         tt_return_on_self_assignment(other);
@@ -283,28 +309,63 @@ public:
         return *this;
     }
 
+    /** Get a constant reference to the shared value.
+     *
+     * In reality the reference is a proxy object which makes available
+     * operations to be used with the shared value. This proxy object will
+     * make sure any access is done atomically.
+     *
+     * @return A reference to the shared value.
+     */
     const_reference cget() const noexcept
     {
         return pimpl->cget();
     }
 
+    /** Get a constant reference to the shared value.
+     *
+     * In reality the reference is a proxy object which makes available
+     * operations to be used with the shared value. This proxy object will
+     * make sure any access is done atomically.
+     *
+     * @return A reference to the shared value.
+     */
     const_reference get() const noexcept
     {
         return pimpl->cget();
     }
 
+    /** Get a writable reference to the shared-value.
+     *
+     * In reality the reference is a proxy object which makes available
+     * operations to be used with the shared-value. This proxy object will
+     * make sure any access is done atomically and that subscribers 
+     * are notified when the proxy's lifetime has ended.
+     *
+     * @post subscribers are notified after reference's lifetime has ended.
+     * @return A reference to the shared value.
+     */
     reference get() noexcept
     {
         return pimpl->get();
     }
 
+    /** Construct an observable with its value set.
+     *
+     * @param value The value to assign to the shared-value.
+     */
     observable(std::convertible_to<value_type> auto &&value) noexcept :
         pimpl(std::make_shared<impl_type>(std::forward<decltype(value)>(value)))
     {
         pimpl->add_owner(this);
     }
 
-    // MSVC Compiler bug returning this with auto argument
+    // XXX MSVC-2019 Compiler bug returning this with auto argument
+    /** Assign a new value.
+     *
+     * @post subscribers are notified.
+     * @param value The value to assign to the shared-value.
+     */
     template<std::convertible_to<value_type> Value>
     observable &operator=(Value &&value) noexcept
     {
@@ -313,6 +374,10 @@ public:
         return *this;
     }
 
+    /** Get copy of the shared-value.
+     *
+     * @return a copy of the shared-value.
+     */
     value_type operator*() const noexcept
     {
         return *(cget());
