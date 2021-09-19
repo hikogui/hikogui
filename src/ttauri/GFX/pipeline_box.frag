@@ -1,112 +1,72 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(push_constant) uniform push_constants {
-    vec2 windowExtent;
-    vec2 viewportScale;
-} pushConstants;
-
-layout(location = 0) in flat vec4 inClippingRectangle;
-layout(location = 1) in vec4 inCornerCoordinates;
-layout(location = 2) in flat vec4 inBackgroundColor;
-layout(location = 3) in flat vec4 inBorderColor;
-layout(location = 4) in flat uvec4 inCornerShapes;
-layout(location = 5) in flat vec4 inCornerRadii;
-layout(location = 6) in flat float inBorderStart;
-layout(location = 7) in flat float inBorderEnd;
-
 layout(origin_upper_left) in vec4 gl_FragCoord;
-layout(location = 0) out vec4 outColor;
+
+layout(location = 0) in flat vec4 in_clipping_rectangle;
+layout(location = 1) in vec4 in_edge_distances;
+layout(location = 2) in vec4 in_fill_color;
+layout(location = 3) in vec4 in_border_color;
+layout(location = 4) in flat vec4 in_corner_radii;
+layout(location = 5) in flat float in_border_start;
+layout(location = 6) in flat float in_border_end;
+
+layout(location = 0) out vec4 out_color;
+
+#include "utils.glsl"
 
 
-bool isClipped()
+float distance_from_box_outline()
 {
-    return greaterThanEqual(gl_FragCoord.xyxy, inClippingRectangle) != bvec4(true, true, false, false);
-}
+    bvec4 in_corner = and(lessThan(in_edge_distances.xzxz, in_corner_radii), lessThan(in_edge_distances.yyww, in_corner_radii));
 
-float roundedDistance(vec2 distance2D, float cornerRadius)
-{
-    float x = cornerRadius - distance2D.x;
-    float y = cornerRadius - distance2D.y;
-    return cornerRadius - sqrt(x*x + y*y) ;
-}
+    if (any(in_corner)) {
+        vec2 coordinate;
+        vec2 radius;
 
-float cutDistance(vec2 distance2D, float cornerRadius)
-{
-    return distance2D.x + distance2D.y - cornerRadius;
-}
+        if (in_corner.x) {
+            coordinate = in_edge_distances.xy;
+            radius = in_corner_radii.xx;
+        } else if (in_corner.y) {
+            coordinate = in_edge_distances.zy;
+            radius = in_corner_radii.yy;
+        } else if (in_corner.z) {
+            coordinate = in_edge_distances.xw;
+            radius = in_corner_radii.zz;
+        } else {
+            coordinate = in_edge_distances.zw;
+            radius = in_corner_radii.ww;
+        }
 
-float edgeDistance(vec2 distance2D)
-{
-    return min(distance2D.x, distance2D.y);
-}
+        vec2 distance_from_center = radius - coordinate;
+        vec2 distance_from_center_squared = distance_from_center * distance_from_center;
 
-float cornerDistance(vec2 distance2D, float cornerRadius, uint shape)
-{
-    switch (shape) {
-    case 1: return roundedDistance(distance2D, cornerRadius);
-    case 2: return cutDistance(distance2D, cornerRadius);
-    default: return edgeDistance(distance2D);
-    }
-}
+        return radius.x - sqrt(distance_from_center_squared.x + distance_from_center_squared.y);
 
-bool insideBottomLeftCorner(float maximumDistanceFromCorner)
-{
-    return inCornerCoordinates.x < maximumDistanceFromCorner && inCornerCoordinates.y < maximumDistanceFromCorner;
-}
-
-bool insideBottomRightCorner(float maximumDistanceFromCorner)
-{
-    return inCornerCoordinates.z < maximumDistanceFromCorner && inCornerCoordinates.y < maximumDistanceFromCorner;
-}
-
-bool insideTopLeftCorner(float maximumDistanceFromCorner)
-{
-    return inCornerCoordinates.x < maximumDistanceFromCorner && inCornerCoordinates.w < maximumDistanceFromCorner;
-}
-
-bool insideTopRightCorner(float maximumDistanceFromCorner)
-{
-    return inCornerCoordinates.z < maximumDistanceFromCorner && inCornerCoordinates.w < maximumDistanceFromCorner;
-}
-
-float shapeAdjustedDistance(vec2 distance2D)
-{
-    if (insideBottomLeftCorner(inCornerRadii.x)) {
-        return cornerDistance(distance2D, inCornerRadii.x, inCornerShapes.x);
-    } else if (insideBottomRightCorner(inCornerRadii.y)) {
-        return cornerDistance(distance2D, inCornerRadii.y, inCornerShapes.y);
-    } else if (insideTopLeftCorner(inCornerRadii.z)) {
-        return cornerDistance(distance2D, inCornerRadii.z, inCornerShapes.z);
-    } else if (insideTopRightCorner(inCornerRadii.w)) {
-        return cornerDistance(distance2D, inCornerRadii.w, inCornerShapes.w);
     } else {
-        return edgeDistance(distance2D);
+        // The shortest distance to any of the edge distances.
+        vec2 tmp = min(in_edge_distances.xy, in_edge_distances.zw);
+        return min(tmp.x, tmp.y);
     }
 }
 
 void main() {
-    if (isClipped()) {
+    if (!contains(in_clipping_rectangle, gl_FragCoord.xy)) {
         discard;
-        //outColor = vec4(1.0, 1.0, 0.0, 1.0); return;
     }
         
-    vec2 distance2D = vec2(
-        min(inCornerCoordinates.x, inCornerCoordinates.z),
-        min(inCornerCoordinates.y, inCornerCoordinates.w)
-    );
-
-    float distance = shapeAdjustedDistance(distance2D);
+    float distance = distance_from_box_outline();
     
-    float background = clamp(distance - inBorderEnd + 0.5, 0.0, 1.0);
-    if (background == 1.0 && inBackgroundColor.a == 0.0) {
-        discard;
+    float fill_coverage = clamp(distance - in_border_end + 0.5, 0.0, 1.0);
+    if (fill_coverage == 1.0) {
+        out_color = in_fill_color;
+
+    } else {
+        float border_coverage = clamp(distance - in_border_start + 0.5, 0.0, 1.0);
+
+        vec4 border_color = in_border_color * border_coverage;
+        vec4 fill_color = in_fill_color * fill_coverage;
+
+        out_color = fill_color + border_color * (1.0 - fill_coverage);
     }
-
-    float border = clamp(distance - inBorderStart + 0.5, 0.0, 1.0);
-
-    vec4 borderColor = inBorderColor * border;
-    vec4 backgroundColor = inBackgroundColor * background;
-
-    outColor = backgroundColor + borderColor * (1.0 - background);
 }
