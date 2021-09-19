@@ -38,10 +38,7 @@ float distance_from_box_outline()
             radius = in_corner_radii.ww;
         }
 
-        vec2 distance_from_center = radius - coordinate;
-        vec2 distance_from_center_squared = distance_from_center * distance_from_center;
-
-        return radius.x - sqrt(distance_from_center_squared.x + distance_from_center_squared.y);
+        return radius.x - distance(radius, coordinate);
 
     } else {
         // The shortest distance to any of the edge distances.
@@ -63,6 +60,10 @@ void main() {
 
     } else {
         float border_coverage = clamp(distance - in_border_start + 0.5, 0.0, 1.0);
+        if (border_coverage == 0.0) {
+            // Don't update depth beyond the border.
+            discard;
+        }
 
         vec4 border_color = in_border_color * border_coverage;
         vec4 fill_color = in_fill_color * fill_coverage;
