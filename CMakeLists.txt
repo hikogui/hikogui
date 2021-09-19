@@ -346,8 +346,6 @@ add_shader(ttauri_shader_objects
     src/ttauri/GFX/utils.glsl
     src/ttauri/GFX/pipeline_image.vert
     src/ttauri/GFX/pipeline_image.frag
-    src/ttauri/GFX/pipeline_flat.vert
-    src/ttauri/GFX/pipeline_flat.frag
     src/ttauri/GFX/pipeline_box.vert
     src/ttauri/GFX/pipeline_box.frag
     src/ttauri/GFX/pipeline_SDF.vert

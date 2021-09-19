@@ -391,14 +391,14 @@ void text_field_widget::draw_background_box(draw_context context) const noexcept
     context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
     ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
-    context.draw_filled_quad(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
+    context.draw_box(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
 }
 
 void text_field_widget::draw_selection_rectangles(draw_context context) const noexcept
 {
     ttlet selection_rectangles = _field.selection_rectangles();
     for (ttlet selection_rectangle : selection_rectangles) {
-        context.draw_filled_quad(
+        context.draw_box(
             _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
     }
 }

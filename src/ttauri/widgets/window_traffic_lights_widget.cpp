@@ -159,27 +159,27 @@ void window_traffic_lights_widget::drawWindows(
     auto context = drawContext;
 
     if (pressedClose) {
-        context.draw_filled_quad(closeRectangle, color{1.0f, 0.0f, 0.0f});
+        context.draw_box(closeRectangle, color{1.0f, 0.0f, 0.0f});
     } else if (hoverClose) {
-        context.draw_filled_quad(closeRectangle, color{0.5f, 0.0f, 0.0f});
+        context.draw_box(closeRectangle, color{0.5f, 0.0f, 0.0f});
     } else {
-        context.draw_filled_quad(closeRectangle, theme().color(theme_color::fill, semantic_layer));
+        context.draw_box(closeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
     if (pressedMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme().color(theme_color::fill, semantic_layer + 2));
+        context.draw_box(minimizeRectangle, theme().color(theme_color::fill, semantic_layer + 2));
     } else if (hoverMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme().color(theme_color::fill, semantic_layer + 1));
+        context.draw_box(minimizeRectangle, theme().color(theme_color::fill, semantic_layer + 1));
     } else {
-        context.draw_filled_quad(minimizeRectangle, theme().color(theme_color::fill, semantic_layer));
+        context.draw_box(minimizeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
     if (pressedMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme().color(theme_color::fill, semantic_layer + 2));
+        context.draw_box(maximizeRectangle, theme().color(theme_color::fill, semantic_layer + 2));
     } else if (hoverMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme().color(theme_color::fill, semantic_layer + 1));
+        context.draw_box(maximizeRectangle, theme().color(theme_color::fill, semantic_layer + 1));
     } else {
-        context.draw_filled_quad(maximizeRectangle, theme().color(theme_color::fill, semantic_layer));
+        context.draw_box(maximizeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
     ttlet glyph_color = window.active ? label_color() : foreground_color();

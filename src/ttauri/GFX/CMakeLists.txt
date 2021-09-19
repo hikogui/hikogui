@@ -34,14 +34,6 @@ target_sources(ttauri PRIVATE
     pipeline_box_device_shared.hpp
     pipeline_box_push_constants.hpp
     pipeline_box_vertex.hpp
-    pipeline_flat.cpp
-    pipeline_flat.frag
-    pipeline_flat.hpp
-    pipeline_flat.vert
-    pipeline_flat_device_shared.cpp
-    pipeline_flat_device_shared.hpp
-    pipeline_flat_push_constants.hpp
-    pipeline_flat_vertex.hpp
     pipeline_image.cpp
     pipeline_image.frag
     pipeline_image.hpp

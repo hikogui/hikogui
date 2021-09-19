@@ -16,9 +16,6 @@ class gfx_device_vulkan;
 namespace pipeline_image {
 class pipeline_image;
 }
-namespace pipeline_flat {
-class pipeline_flat;
-}
 namespace pipeline_box {
 class pipeline_box;
 }
@@ -72,7 +69,6 @@ public:
     vk::Fence renderFinishedFence;
 
     std::unique_ptr<pipeline_image::pipeline_image> imagePipeline;
-    std::unique_ptr<pipeline_flat::pipeline_flat> flatPipeline;
     std::unique_ptr<pipeline_box::pipeline_box> boxPipeline;
     std::unique_ptr<pipeline_SDF::pipeline_SDF> SDFPipeline;
     std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> toneMapperPipeline;

@@ -106,7 +106,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_focus_line(draw_context context
         if (overlaps(context, line_rectangle)) {
             // Draw the line above every other direct child of the toolbar, and between
             // the selected-tab (0.6) and unselected-tabs (0.8).
-            context.draw_filled_quad(translate_z(0.7f) * line_rectangle, focus_color());
+            context.draw_box(translate_z(0.7f) * line_rectangle, focus_color());
         }
     }
 }

@@ -87,7 +87,7 @@ void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_poi
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
-        context.draw_filled_quad(rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
+        context.draw_box(rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
     }
 
     super::draw(std::move(context), display_time_point);

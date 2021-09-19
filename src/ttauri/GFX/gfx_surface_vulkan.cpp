@@ -5,7 +5,6 @@
 #include "gfx_surface_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
-#include "pipeline_flat.hpp"
 #include "pipeline_box.hpp"
 #include "pipeline_image.hpp"
 #include "pipeline_SDF.hpp"
@@ -53,7 +52,6 @@ void gfx_surface_vulkan::init()
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     gfx_surface::init();
-    flatPipeline = std::make_unique<pipeline_flat::pipeline_flat>(*this);
     boxPipeline = std::make_unique<pipeline_box::pipeline_box>(*this);
     imagePipeline = std::make_unique<pipeline_image::pipeline_image>(*this);
     SDFPipeline = std::make_unique<pipeline_SDF::pipeline_SDF>(*this);
@@ -164,7 +162,6 @@ void gfx_surface_vulkan::build(extent2 new_size)
 
     if (state == gfx_surface_state::no_device) {
         if (_device) {
-            flatPipeline->buildForNewDevice();
             boxPipeline->buildForNewDevice();
             imagePipeline->buildForNewDevice();
             SDFPipeline->buildForNewDevice();
@@ -178,7 +175,6 @@ void gfx_surface_vulkan::build(extent2 new_size)
             state = gfx_surface_state::device_lost;
             return;
         }
-        flatPipeline->buildForNewSurface();
         boxPipeline->buildForNewSurface();
         imagePipeline->buildForNewSurface();
         SDFPipeline->buildForNewSurface();
@@ -214,16 +210,14 @@ void gfx_surface_vulkan::build(extent2 new_size)
             buildFramebuffers(); // Framebuffer required render passes.
             buildCommandBuffers();
             buildSemaphores();
-            tt_axiom(flatPipeline);
             tt_axiom(boxPipeline);
             tt_axiom(imagePipeline);
             tt_axiom(SDFPipeline);
             tt_axiom(toneMapperPipeline);
-            flatPipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
-            boxPipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
-            imagePipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
-            SDFPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
-            toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
+            boxPipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
+            imagePipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
+            SDFPipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
+            toneMapperPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
 
             state = gfx_surface_state::ready_to_render;
 
@@ -249,7 +243,6 @@ void gfx_surface_vulkan::teardown()
         SDFPipeline->teardownForSwapchainLost();
         imagePipeline->teardownForSwapchainLost();
         boxPipeline->teardownForSwapchainLost();
-        flatPipeline->teardownForSwapchainLost();
         teardownSemaphores();
         teardownCommandBuffers();
         teardownFramebuffers();
@@ -263,7 +256,6 @@ void gfx_surface_vulkan::teardown()
             SDFPipeline->teardownForSurfaceLost();
             imagePipeline->teardownForSurfaceLost();
             boxPipeline->teardownForSurfaceLost();
-            flatPipeline->teardownForSurfaceLost();
             teardownSurface();
             nextState = gfx_surface_state::no_surface;
 
@@ -274,7 +266,6 @@ void gfx_surface_vulkan::teardown()
                 SDFPipeline->teardownForDeviceLost();
                 imagePipeline->teardownForDeviceLost();
                 boxPipeline->teardownForDeviceLost();
-                flatPipeline->teardownForDeviceLost();
                 teardownDevice();
                 nextState = gfx_surface_state::no_device;
 
@@ -285,7 +276,6 @@ void gfx_surface_vulkan::teardown()
                     SDFPipeline->teardownForWindowLost();
                     imagePipeline->teardownForWindowLost();
                     boxPipeline->teardownForWindowLost();
-                    flatPipeline->teardownForWindowLost();
                     nextState = gfx_surface_state::no_window;
                 }
             }
@@ -350,7 +340,6 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
         narrow_cast<size_t>(frame_buffer_index),
         size(),
         scissor_rectangle,
-        flatPipeline->vertexBufferData,
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
         SDFPipeline->vertexBufferData};
@@ -434,17 +423,11 @@ void gfx_surface_vulkan::fill_command_buffer(
         {renderPass, current_image.frame_buffer, renderArea, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
         vk::SubpassContents::eInline);
 
-    flatPipeline->drawInCommandBuffer(commandBuffer);
-
-    commandBuffer.nextSubpass(vk::SubpassContents::eInline);
     boxPipeline->drawInCommandBuffer(commandBuffer);
-
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
     imagePipeline->drawInCommandBuffer(commandBuffer);
-
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
     SDFPipeline->drawInCommandBuffer(commandBuffer);
-
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
     toneMapperPipeline->drawInCommandBuffer(commandBuffer);
 
@@ -760,7 +743,7 @@ void gfx_surface_vulkan::buildRenderPasses()
     ttlet swapchainAttachmentReferences = std::array{vk::AttachmentReference{3, vk::ImageLayout::eColorAttachmentOptimal}};
 
     ttlet subpassDescriptions = std::array{
-        vk::SubpassDescription{// Subpass 0
+        vk::SubpassDescription{// Subpass 0 Box
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
                                0, // inputAttchmentReferencesCount
@@ -771,7 +754,7 @@ void gfx_surface_vulkan::buildRenderPasses()
                                &depthAttachmentReference
 
         },
-        vk::SubpassDescription{// Subpass 1
+        vk::SubpassDescription{// Subpass 1 Image
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
                                0, // inputAttchmentReferencesCount
@@ -782,18 +765,7 @@ void gfx_surface_vulkan::buildRenderPasses()
                                &depthAttachmentReference
 
         },
-        vk::SubpassDescription{// Subpass 2
-                               vk::SubpassDescriptionFlags(),
-                               vk::PipelineBindPoint::eGraphics,
-                               0, // inputAttchmentReferencesCount
-                               nullptr, // inputAttachmentReferences
-                               narrow_cast<uint32_t>(color1AttachmentReferences.size()),
-                               color1AttachmentReferences.data(),
-                               nullptr, // resolveAttachments
-                               &depthAttachmentReference
-
-        },
-        vk::SubpassDescription{// Subpass 3
+        vk::SubpassDescription{// Subpass 2 SDF
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
                                narrow_cast<uint32_t>(color1InputAttachmentReferences.size()),
@@ -804,7 +776,7 @@ void gfx_surface_vulkan::buildRenderPasses()
                                &depthAttachmentReference
 
         },
-        vk::SubpassDescription{// Subpass 4 tone-mapper
+        vk::SubpassDescription{// Subpass 3 tone-mapper
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
                                narrow_cast<uint32_t>(color12InputAttachmentReferences.size()),
@@ -823,7 +795,7 @@ void gfx_surface_vulkan::buildRenderPasses()
             vk::AccessFlagBits::eMemoryRead,
             vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite,
             vk::DependencyFlagBits::eByRegion},
-        // Subpass 0: Render single color polygons to color+depth attachment.
+        // Subpass 0: Render shaded polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
             0,
             1,
@@ -832,16 +804,16 @@ void gfx_surface_vulkan::buildRenderPasses()
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eColorAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
-        // Subpass 1: Render shaded polygons to color+depth with fixed function alpha compositing
+        // Subpass 1: Render texture mapped polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
             1,
             2,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eColorAttachmentRead,
+            vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
-        // Subpass 2: Render texture mapped polygons to color+depth with fixed function alpha compositing
+        // Subpass 2: Render SDF-texture mapped polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
             2,
             3,
@@ -850,18 +822,9 @@ void gfx_surface_vulkan::buildRenderPasses()
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
-        // Subpass 3: Render SDF-texture mapped polygons to color+depth with fixed function alpha compositing
+        // Subpass 3: Tone mapping color to swapchain.
         vk::SubpassDependency{
             3,
-            4,
-            vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::PipelineStageFlagBits::eFragmentShader,
-            vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead,
-            vk::DependencyFlagBits::eByRegion},
-        // Subpass 4: Tone mapping color to swapchain.
-        vk::SubpassDependency{
-            4,
             VK_SUBPASS_EXTERNAL,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eBottomOfPipe,
