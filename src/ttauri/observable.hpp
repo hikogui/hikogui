@@ -244,10 +244,12 @@ struct observable_impl {
 } // namespace detail
 
 
-/** An observable notifies listeners of changed to its value.
+/** An observable notifies listeners of changes to its value.
  *
- * An observable can be changed to other observers by assigning them to each other.
+ * An observable holds a value and will notify subscribed callbacks
+ * when the value is being modified.
  *
+ * @tparam T The type of the value held by an observable.
  */
 template<typename T>
 class observable {
