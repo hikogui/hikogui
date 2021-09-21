@@ -203,7 +203,7 @@ template<size_t N> struct make_uintxx {};
  */
 template<size_t N> struct make_floatxx {};
 
-#if (TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC) && (TT_PROCESSOR == TT_X64)
+#if (TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC) && (TT_PROCESSOR == TT_CPU_X64)
 template<> struct has_intxx<128> : public std::true_type {};
 template<> struct has_uintxx<128> : public std::true_type {};
 template<> struct make_intxx<128> { using type = __int128; };
@@ -319,11 +319,6 @@ struct is_atomic<std::atomic<T>> : public std::true_type {};
 
 template<typename T>
 constexpr bool is_atomic_v = is_atomic<T>::value;
-
-template<typename T>
-constexpr bool may_be_atomic_v = std::is_trivially_copyable_v<T> and std::is_copy_constructible_v<T> and
-        std::is_move_constructible_v<T> and std::is_copy_assignable_v<T> and
-        std::is_move_assignable_v<T>;
 
 template<typename First, typename Second>
 struct use_first {

@@ -248,7 +248,7 @@ elseif (MSVC)
     target_compile_options(ttauri PUBLIC -arch:AVX)
 
     # The ttauri generic tokenizer uses large constexpr tables.
-    target_compile_options(ttauri PUBLIC -constexpr:steps 100000000)
+    target_compile_options(ttauri PUBLIC "-constexpr:steps100000000")
 
     # C4068: unknown pragma.
     # Ignore unknown pragmas, needed for other compilers.
@@ -304,6 +304,8 @@ elseif (MSVC)
 
     if(TT_ENABLE_ANALYSIS)
         target_compile_options(ttauri PUBLIC -analyze)
+
+        #target_compile_options(ttauri PUBLIC -analyze:ruleset ${CMAKE_CURRENT_SOURCE_DIR}/AllRules.ruleset)
         
         # The Core Guidelines checker, not so useful for real programs.
         #target_compile_options(ttauri PUBLIC -analyze:plugin EspXEngine.dll)

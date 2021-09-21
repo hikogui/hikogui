@@ -47,7 +47,7 @@ protected:
     */
     [[nodiscard]] virtual datum encode() const noexcept = 0;
 
-    virtual void decode(datum const &data) noexcept = 0;
+    virtual void decode(datum const &data) = 0;
 };
 
 template<typename T>
@@ -75,7 +75,7 @@ protected:
         }
     }
 
-    void decode(datum const &data) noexcept override
+    void decode(datum const &data) override
     {
         _value = tt::pickle<T>{}.decode(data);
     }

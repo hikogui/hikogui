@@ -78,18 +78,20 @@ enum class compiler {
 
 #define TT_CPU_X64 'i'
 #define TT_CPU_ARM 'a'
+#define TT_CPU_UNKNOWN 'u'
 
 #if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_AMD64)
 #define TT_PROCESSOR TT_CPU_X64
 #elif defined(__arm__) || defined(_M_ARM)
 #define TT_PROCESSOR TT_CPU_ARM
 #else
-#error "Could not detect processor."
+#define TT_PROCESSOR TT_CPU_UNKNOWN
 #endif
 
 enum class processor {
     x64 = TT_CPU_X64,
     arm = TT_CPU_ARM,
+    unknown = TT_CPU_UNKNOWN,
 
     current = TT_PROCESSOR
 };
@@ -208,8 +210,8 @@ constexpr bool x86_64_v4 = false;
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline __attribute__((noinline))
 #define tt_restrict __restrict__
-#define tt_warning_push() _Pragma(warning(push))
-#define tt_warning_pop() _Pragma(warning(push))
+#define tt_warning_push() _Pragma("warning(push)")
+#define tt_warning_pop() _Pragma("warning(push)")
 #define tt_msvc_pragma(a)
 #define clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
 
@@ -260,6 +262,10 @@ constexpr size_t hardware_destructive_interference_size = 64;
 /** Maximum size of contiguous memory to promote true sharing. Guaranteed to be at least alignof(std::max_align_t)
  * Part of c++17 but never implemented by clang or gcc.
  */
+constexpr size_t hardware_constructive_interference_size = 64;
+
+#elif TT_PROCESSOR == TT_CPU_UNKNOWN
+constexpr size_t hardware_destructive_interference_size = 128;
 constexpr size_t hardware_constructive_interference_size = 64;
 #else
 #error "Missing implementation of hardware_destructive_interference_size and hardware_constructive_interference_size"

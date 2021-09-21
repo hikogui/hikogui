@@ -465,7 +465,7 @@ struct numeric_array {
 
     template<typename Other>
     [[nodiscard]] constexpr friend Other bit_cast(numeric_array const &rhs) noexcept
-        requires(sizeof(Other) == sizeof(numeric_array))
+        requires(sizeof(Other) == sizeof(container_type))
     {
         using rhs_value_type = typename std::remove_cvref_t<decltype(rhs)>::value_type;
 
