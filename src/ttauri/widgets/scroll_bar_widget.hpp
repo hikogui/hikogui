@@ -35,13 +35,13 @@ public:
         offset(std::forward<Offset>(offset))
     {
         _content_callback = this->content.subscribe([this](auto...) {
-            this->window.request_layout = true;
+            _request_layout = true;
         });
         _aperture_callback = this->aperture.subscribe([this](auto...) {
-            this->window.request_layout = true;
+            _request_layout = true;
         });
         _offset_callback = this->offset.subscribe([this](auto...) {
-            this->window.request_layout = true;
+            _request_layout = true;
         });
     }
 

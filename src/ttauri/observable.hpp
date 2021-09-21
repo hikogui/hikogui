@@ -78,7 +78,7 @@ struct observable_proxy {
     template<std::convertible_to<value_type> Value>
     observable_proxy &operator=(Value &&value) noexcept requires(is_variable)
     {
-        prepare(state_type::modified);
+        prepare(state_type::write);
         _actual->value = std::forward<decltype(value)>(value);
         return *this;
     }
@@ -162,9 +162,21 @@ struct observable_proxy {
 
     // MSVC Internal compiler error
     template<typename Rhs>
-    value_type operator+=(Rhs const &rhs) noexcept requires(is_variable)
+    value_type operator+=(Rhs const &rhs) noexcept requires(is_variable and std::is_arithmetic_v<Rhs>)
     {
-        prepare(state_type::modified);
+        if (rhs != Rhs{}) {
+            prepare(state_type::modified);
+            return _actual->value += rhs;
+        } else {
+            prepare(state_type::read);
+            return _actual->value;
+        }
+    }
+
+    template<typename Rhs>
+    value_type operator+=(Rhs const &rhs) noexcept requires(is_variable and not std::is_arithmetic_v<Rhs>)
+    {
+        prepare(state_type::write);
         return _actual->value += rhs;
     }
 
