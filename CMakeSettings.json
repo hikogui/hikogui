@@ -1,7 +1,7 @@
 ﻿{
   "configurations": [
     {
-      "name": "x64-MSVC-Analysis",
+      "name": "x64-MSVC-Debug-Analysis",
       "generator": "Ninja",
       "configurationType": "Debug",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
@@ -9,6 +9,7 @@
       "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
       "buildCommandArgs": "",
       "ctestCommandArgs": "-C Debug",
+      "intelliSenseMode": "windows-msvc-x64",
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "variables": [
         {
@@ -27,6 +28,7 @@
       "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
       "buildCommandArgs": "",
       "ctestCommandArgs": "-C Debug",
+      "intelliSenseMode": "windows-msvc-x64",
       "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
@@ -38,6 +40,7 @@
       "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF -DTT_ENABLE_ASAN=ON",
       "buildCommandArgs": "",
       "ctestCommandArgs": "-C Debug",
+      "intelliSenseMode": "windows-msvc-x64",
       "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
@@ -49,6 +52,7 @@
       "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF TT_BUILD_PCH=OFF",
       "buildCommandArgs": "",
       "ctestCommandArgs": "-C Debug",
+      "intelliSenseMode": "windows-msvc-x64",
       "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
@@ -60,10 +64,11 @@
       "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
+      "intelliSenseMode": "windows-msvc-x64",
       "inheritEnvironments": [ "msvc_x64_x64" ]
     },
     {
-      "name": "x64-Clang-Debug",
+      "name": "zDISABLED x64-Clang-Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
@@ -75,7 +80,7 @@
       "inheritEnvironments": [ "clang_cl_x64" ]
     },
     {
-      "name": "x64-Clang-ReleaseWithDebugInfo",
+      "name": "zDISABLED x64-Clang-ReleaseWithDebugInfo",
       "generator": "Ninja",
       "configurationType": "RelWithDebInfo",
       "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
@@ -83,6 +88,7 @@
       "cmakeCommandArgs": "-DCMAKE_VERBOSE_MAKEFILE=ON -DVCPKG_TARGET_TRIPLET=x64-windows-static -DBUILD_SHARED_LIBS=OFF",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
+      "intelliSenseMode": "windows-clang-x64",
       "inheritEnvironments": [ "clang_cl_x64" ]
     }
   ]

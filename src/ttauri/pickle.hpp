@@ -46,7 +46,7 @@ struct pickle<T> {
     [[nodiscard]] T decode(datum rhs) const
     {
         if (auto *i = get_if<long long>(rhs)) {
-            if (*i < std::numeric_limits<T>::lower() or *i > std::numeric_limits<T>::max()) {
+            if (*i < std::numeric_limits<T>::lowest() or *i > std::numeric_limits<T>::max()) {
                 throw parse_error("Encoded value is to out of range, got {}", rhs);
             }
             return static_cast<T>(*i);

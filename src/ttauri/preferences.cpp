@@ -29,7 +29,12 @@ void preference_item_base::load() noexcept
     if (value.is_undefined()) {
         this->reset();
     } else {
-        this->decode(value);
+        try {
+            this->decode(value);
+        } catch (std::exception const &) {
+            tt_log_error("Could not decode preference {}, value {}", _path, value);
+            this->reset();
+        }
     }
 }
 

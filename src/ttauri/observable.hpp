@@ -18,114 +18,132 @@ class observable;
 
 namespace detail {
 
+/** Only scalar-observables should be atomic.
+* 
+* Non-scalars should be accessible by reference so that dereferencing works as expected.
+*/
+template<typename T>
+constexpr bool observable_is_atomic_v = std::is_scalar_v<T> and sizeof(T) <= sizeof(ptrdiff_t);
+
+
 template<typename T>
 struct observable_impl;
 
 template<typename T, bool Constant>
 struct observable_proxy {
     using value_type = T;
-    static constexpr bool is_atomic = may_be_atomic_v<T>;
+    static constexpr bool is_atomic = observable_is_atomic_v<T>;
     static constexpr bool is_constant = Constant;
+    static constexpr bool is_variable = not Constant;
+
+    enum class state_type : uint8_t { none, read, write, modified };
 
     ~observable_proxy()
     {
-        if (actual) {
-            if constexpr (not is_atomic) {
-                actual->mutex.unlock();
+        if (_actual) {
+            if (is_variable and _state == state_type::write and _actual->value != _original) {
+                _state = state_type::modified;
             }
-            if constexpr (not is_constant) {
-                actual->notify_owners();
+
+            if (not is_atomic and _state != state_type::none) {
+                _actual->mutex.unlock();
+            }
+
+            if (is_variable and _state == state_type::modified) {
+                _actual->notify_owners();
             }
         }
     }
 
-    observable_proxy(observable_impl<T> &actual) : actual(&actual)
-    {
-        if constexpr (not is_atomic) {
-            this->actual->mutex.lock();
-        }
-    }
+    observable_proxy(observable_impl<T> &actual) : _actual(&actual) {}
 
-    observable_proxy(observable_proxy &&other) noexcept : actual(std::exchange(other.actual, nullptr)) {}
-
-    observable_proxy &operator=(observable_proxy &&other) noexcept
-    {
-        actual = std::exchange(other.actual, nullptr);
-        return *this;
-    }
-
+    observable_proxy(observable_proxy &&other) noexcept = delete;
+    observable_proxy &operator=(observable_proxy &&other) noexcept = delete;
     observable_proxy(observable_proxy const &) = delete;
     observable_proxy &operator=(observable_proxy const &) = delete;
 
+    void prepare(state_type state) const noexcept
+    {
+        tt_axiom(state != state_type::none);
+        if (not is_atomic and _state == state_type::none) {
+            this->_actual->mutex.lock();
+        }
+        if (_state <= state_type::read and state == state_type::write) {
+            _original = _actual->value;
+        }
+        _state = state;
+    }
+
     // MSVC Compiler bug returning this with auto argument
     template<std::convertible_to<value_type> Value>
-    observable_proxy &operator=(Value &&value) noexcept
+    observable_proxy &operator=(Value &&value) noexcept requires(is_variable)
     {
-        tt_axiom(actual);
-        actual->value = std::forward<decltype(value)>(value);
+        prepare(state_type::write);
+        _actual->value = std::forward<decltype(value)>(value);
         return *this;
     }
 
     value_type operator*() const requires(is_atomic)
     {
-        tt_axiom(actual);
-        return actual->value.load();
+        prepare(state_type::read);
+        return _actual->value.load();
     }
 
-    value_type const &operator*() const requires(not is_atomic)
+    value_type const &operator*() const requires(is_constant and not is_atomic)
     {
-        tt_axiom(actual);
-        return actual->value;
+        prepare(state_type::read);
+        return _actual->value;
     }
 
-    value_type &operator*() requires(not is_atomic and not is_constant)
+    value_type &operator*() const requires(is_variable and not is_atomic)
     {
-        tt_axiom(actual);
-        return actual->value;
+        prepare(state_type::write);
+        return _actual->value;
     }
 
-    value_type const *operator->() const requires(not is_atomic)
+    value_type const *operator->() const requires(is_constant and not is_atomic)
     {
-        tt_axiom(actual);
-        return &(actual->value);
+        prepare(state_type::read);
+        return &(_actual->value);
     }
 
-    value_type *operator->() requires(not is_atomic and not is_constant)
+    value_type *operator->() const requires(is_variable and not is_atomic)
     {
-        tt_axiom(actual);
-        return &(actual->value);
+        prepare(state_type::write);
+        return &(_actual->value);
     }
 
     explicit operator bool() const noexcept
     {
-        tt_axiom(actual);
-        return static_cast<bool>(actual->value);
+        prepare(state_type::read);
+        return static_cast<bool>(_actual->value);
     }
 
     template<typename... Args>
-    auto operator()(Args &&...args) noexcept
+    auto operator()(Args &&...args) const noexcept
     {
-        tt_axiom(actual);
-        return actual->value(std::forward<Args>(args)...);
+        prepare(is_constant ? state_type::read : state_type::write);
+        return _actual->value(std::forward<Args>(args)...);
     }
 
 #define X(op) \
     [[nodiscard]] friend auto operator op(observable_proxy const &lhs, observable_proxy const &rhs) noexcept \
     { \
-        tt_axiom(lhs.actual and rhs.actual); \
-        return lhs.actual->value op rhs.actual->value; \
+        lhs.prepare(state_type::read); \
+        rhs.prepare(state_type::read); \
+        return lhs._actual->value op rhs._actual->value; \
     } \
 \
     [[nodiscard]] friend auto operator op(observable_proxy const &lhs, auto const &rhs) noexcept \
     { \
-        tt_axiom(lhs.actual); \
-        return lhs.actual->value op rhs; \
+        lhs.prepare(state_type::read); \
+        return lhs._actual->value op rhs; \
     } \
 \
     [[nodiscard]] friend auto operator op(auto const &lhs, observable_proxy const &rhs) noexcept \
     { \
-        tt_axiom(rhs.actual); \
-        return lhs op rhs.actual->value; \
+        rhs.prepare(state_type::read); \
+        return lhs op rhs._actual->value; \
     }
 
     X(==)
@@ -135,8 +153,8 @@ struct observable_proxy {
 #define X(op) \
     [[nodiscard]] auto operator op() const noexcept \
     { \
-        tt_axiom(actual); \
-        return op actual->value; \
+        prepare(state_type::read); \
+        return op _actual->value; \
     }
 
     X(-)
@@ -144,18 +162,32 @@ struct observable_proxy {
 
     // MSVC Internal compiler error
     template<typename Rhs>
-    value_type operator+=(Rhs const &rhs) noexcept
+    value_type operator+=(Rhs const &rhs) noexcept requires(is_variable and std::is_arithmetic_v<Rhs>)
     {
-        tt_axiom(actual);
-        return actual->value += rhs;
+        if (rhs != Rhs{}) {
+            prepare(state_type::modified);
+            return _actual->value += rhs;
+        } else {
+            prepare(state_type::read);
+            return _actual->value;
+        }
     }
 
-    observable_impl<T> *actual = nullptr;
+    template<typename Rhs>
+    value_type operator+=(Rhs const &rhs) noexcept requires(is_variable and not std::is_arithmetic_v<Rhs>)
+    {
+        prepare(state_type::write);
+        return _actual->value += rhs;
+    }
+
+    observable_impl<value_type> *_actual = nullptr;
+    mutable value_type _original;
+    mutable state_type _state = state_type::none;
 };
 
 template<typename T>
 struct observable_impl {
-    static constexpr bool is_atomic = may_be_atomic_v<T>;
+    static constexpr bool is_atomic = observable_is_atomic_v<T>;
 
     using value_type = T;
     using atomic_value_type = std::conditional_t<is_atomic, std::atomic<value_type>, value_type>;
@@ -164,7 +196,7 @@ struct observable_impl {
     atomic_value_type value;
     std::vector<owner_type *> owners;
 
-    /** The mutex is used to serialize access to the owners list and non-atomic value.
+    /** The mutex is used to serialize state to the owners list and non-atomic value.
      */
     mutable unfair_mutex mutex;
 
@@ -243,8 +275,7 @@ struct observable_impl {
 
 } // namespace detail
 
-
-/** An observable notifies listeners of changes to its value.
+/** An observable notifies listeners of changed to its value.
  *
  * An observable holds a value and will notify subscribed callbacks
  * when the value is being modified.
@@ -255,8 +286,8 @@ template<typename T>
 class observable {
 public:
     using value_type = T;
-    using reference = detail::observable_proxy<value_type,false>;
-    using const_reference = detail::observable_proxy<value_type,true>;
+    using reference = detail::observable_proxy<value_type, false>;
+    using const_reference = detail::observable_proxy<value_type, true>;
     using impl_type = detail::observable_impl<value_type>;
     using notifier_type = tt::notifier<void()>;
     using callback_ptr_type = notifier_type::callback_ptr_type;
@@ -309,7 +340,7 @@ public:
      *
      * In reality the reference is a proxy object which makes available
      * operations to be used with the shared value. This proxy object will
-     * make sure any access is done atomically.
+     * make sure any state is done atomically.
      *
      * @return A reference to the shared value.
      */
@@ -322,7 +353,7 @@ public:
      *
      * In reality the reference is a proxy object which makes available
      * operations to be used with the shared value. This proxy object will
-     * make sure any access is done atomically.
+     * make sure any state is done atomically.
      *
      * @return A reference to the shared value.
      */
@@ -335,7 +366,7 @@ public:
      *
      * In reality the reference is a proxy object which makes available
      * operations to be used with the shared-value. This proxy object will
-     * make sure any access is done atomically and that subscribers 
+     * make sure any state is done atomically and that subscribers
      * are notified when the proxy's lifetime has ended.
      *
      * @post subscribers are notified after reference's lifetime has ended.
@@ -382,6 +413,11 @@ public:
     detail::observable_proxy<value_type, true> operator->() const noexcept
     {
         return cget();
+    }
+
+    detail::observable_proxy<value_type, false> operator->() noexcept
+    {
+        return get();
     }
 
     explicit operator bool() const noexcept

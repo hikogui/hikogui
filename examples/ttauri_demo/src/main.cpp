@@ -52,7 +52,7 @@ int tt_main(int argc, char *argv[])
     // Startup renderdoc for debugging
     auto render_doc = tt::RenderDoc();
 
-    auto preferences = tt::preferences(tt::URL::urlFromExecutableDirectory() / "preferences.json");
+    auto preferences = tt::preferences(tt::URL::urlFromApplicationPreferencesFile());
     auto preferences_controller = std::make_shared<my_preferences_window_controller>(preferences);
 
     auto gui = tt::gui_system::make_unique();

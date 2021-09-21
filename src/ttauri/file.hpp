@@ -35,9 +35,9 @@ enum class access_mode {
     write_through = 0x8000, ///< Hint that writes should be send directly to disk.
     create_directories = 0x10000, ///< Create directory hierarchy, if the file could not be created.
     
-    open_for_read = 0x101, ///< Default open a file for reading.
-    open_for_read_and_write = 0x103, ///< Default open a file for reading and writing.
-    truncate_or_create_for_write = 0x702
+    open_for_read = open | read, ///< Default open a file for reading.
+    open_for_read_and_write = open | read | write, ///< Default open a file for reading and writing.
+    truncate_or_create_for_write = create_directories | open | create | truncate | write
 };
 
 [[nodiscard]] inline access_mode operator|(access_mode lhs, access_mode rhs) noexcept

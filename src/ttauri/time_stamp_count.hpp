@@ -29,6 +29,7 @@ namespace tt {
 class time_stamp_count {
 public:
     struct inplace {};
+    struct inplace_with_cpu_id {};
     struct inplace_with_thread_id {};
 
     constexpr time_stamp_count() noexcept : _count(0), _aux(0), _thread_id(0) {}
@@ -37,7 +38,19 @@ public:
 
     /** Use a constructor to in-place create the timestamp.
      */
-    explicit time_stamp_count(time_stamp_count::inplace) noexcept : _thread_id(0)
+    explicit time_stamp_count(time_stamp_count::inplace) noexcept : _aux(0), _thread_id(0)  
+    {
+        if constexpr (processor::current == processor::x64) {
+            uint32_t tmp;
+            _count = __rdtscp(&tmp);
+        } else {
+            tt_not_implemented();
+        }
+    }
+
+    /** Use a constructor to in-place create the timestamp.
+     */
+    explicit time_stamp_count(time_stamp_count::inplace_with_cpu_id) noexcept : _thread_id(0)
     {
         if constexpr (processor::current == processor::x64) {
             _count = __rdtscp(&_aux);
@@ -65,7 +78,7 @@ public:
      */
     [[nodiscard]] static time_stamp_count now() noexcept
     {
-        return time_stamp_count{time_stamp_count::inplace{}};
+        return time_stamp_count{time_stamp_count::inplace_with_cpu_id{}};
     }
 
     /** Get the logical CPU index.

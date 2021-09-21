@@ -66,6 +66,17 @@ public:
             // The tab-widget will not draw itself, only its selected content.
             semantic_layer = parent->semantic_layer;
         }
+
+        _layout_callback = std::make_shared<std::function<void()>>([this]() {
+            _request_layout = true;
+        });
+
+        _scroll_content_width.subscribe(_layout_callback);
+        _scroll_content_height.subscribe(_layout_callback);
+        _scroll_aperture_width.subscribe(_layout_callback);
+        _scroll_aperture_height.subscribe(_layout_callback);
+        _scroll_offset_x.subscribe(_layout_callback);
+        _scroll_offset_y.subscribe(_layout_callback);
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -293,6 +304,7 @@ private:
     observable<float> _scroll_aperture_height;
     observable<float> _scroll_offset_x;
     observable<float> _scroll_offset_y;
+    observable<float>::callback_ptr_type _layout_callback;
 
     aarectangle _aperture_rectangle;
 

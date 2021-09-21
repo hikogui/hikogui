@@ -153,6 +153,7 @@ public:
     [[nodiscard]] static URL urlFromApplicationDataDirectory() noexcept;
     [[nodiscard]] static URL urlFromApplicationLogDirectory() noexcept;
     [[nodiscard]] static URL urlFromSystemfontDirectory() noexcept;
+    [[nodiscard]] static URL urlFromApplicationPreferencesFile() noexcept;
 
     /*! Return file names in the directory pointed by the url.
      * \param path path to the directory to scan.
