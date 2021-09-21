@@ -36,24 +36,6 @@ auto create_main_window(tt::gui_system &gui, std::shared_ptr<my_preferences_wind
     return callback;
 }
 
-struct bar {
-    int one;
-    int two;
-
-    friend bool operator==(bar const &, bar const &) = default;
-};
-
-template<>
-struct tt::pickle<bar> {
-    [[nodiscard]] datum encode(bar const& x) const noexcept {
-        return datum::make_map("one", x.one, "two", x.two);
-    }
-
-    [[nodiscard]] bar decode(datum const& x) const {
-        return bar{ static_cast<int>(x["one"]), static_cast<int>(x["two"]) };
-    };
-};
-
 int tt_main(int argc, char *argv[])
 {
     // Set the version at the very beginning, because file system paths depend on it.
@@ -71,15 +53,6 @@ int tt_main(int argc, char *argv[])
     auto render_doc = tt::RenderDoc();
 
     auto preferences = tt::preferences(tt::URL::urlFromApplicationPreferencesFile());
-
-
-    tt::observable<bar> foo;
-    preferences.add("foo", foo);
-
-    tt_log_info("old: {}", foo->one);
-    foo->one += 1;
-    tt_log_info("new: {}", foo->one);
-
     auto preferences_controller = std::make_shared<my_preferences_window_controller>(preferences);
 
     auto gui = tt::gui_system::make_unique();
