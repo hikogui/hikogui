@@ -27,12 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF}
-          - { VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON}
-          #- { VCPKG_TARGET_TRIPLET: x64-windows,       TT_BUILD_PCH: ON}
+          - { BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF}
+          - { BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON}
+          - { BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON}
 
     env:
-      BUILD_TYPE: RelWithDebInfo
       PLATFORM: x64
       VCPKG_ROOT: C:\vcpkg
       VULKAN_SDK: ${{ needs.install-vulkan-sdk-and-runtime.outputs.VULKAN_SDK }}
@@ -171,24 +170,27 @@ jobs:
           path: test_results_*.xml
 
       - name: 🔽 Install 'OpenCppCoverage' and 'codecov.io Report Uploader'
+        if: ${{ matrix.config.BUILD_TYPE == 'Debug' }}
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
           OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
           curl -L https://uploader.codecov.io/latest/windows/codecov.exe --output bin\coverage\codecov.exe
 
       - name: 📑 Generate CodeCoverage Report
+        if: ${{ matrix.config.BUILD_TYPE == 'Debug' }}
         run: |
           .\bin\coverage\OpenCppCoverage.exe --sources=src        ^
           --excluded_sources=src\*_tests.cpp                      ^
+          --excluded_sources=src\*\*_tests.cpp                    ^
           --excluded_sources=build\_deps                          ^
           --export_type=cobertura:ttauri_coverage.xml             ^
           --working_dir=.\\build\ttauri-%VERSION%\tests           ^
           -- ".\\build\ttauri-%VERSION%\tests\\ttauri_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
+        if: ${{ matrix.config.BUILD_TYPE == 'Debug' }}
         uses: codecov/codecov-action@v2 # https://github.com/codecov/codecov-action
         with:
-          #token: ${{ secrets.CODECOV_TOKEN }}
           files: ./ttauri_coverage.xml
 
       #
