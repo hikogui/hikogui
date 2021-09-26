@@ -5,7 +5,7 @@
 #pragma once
 
 #include "sfloat_rgba16.hpp"
-#include "sRGB.hpp"
+#include "../color/sRGB.hpp"
 #include <algorithm>
 
 namespace tt {
