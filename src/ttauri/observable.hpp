@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "type_traits.hpp"
 #include "unfair_mutex.hpp"
 #include "notifier.hpp"
 #include <memory>
 #include <vector>
 #include <atomic>
 #include <concepts>
+#include <type_traits>
 
 namespace tt {
 template<typename T>
@@ -18,21 +18,22 @@ class observable;
 
 namespace detail {
 
-/** Only scalar-observables should be atomic.
-* 
-* Non-scalars should be accessible by reference so that dereferencing works as expected.
-*/
-template<typename T>
-constexpr bool observable_is_atomic_v = std::is_scalar_v<T> and sizeof(T) <= sizeof(ptrdiff_t);
-
-
 template<typename T>
 struct observable_impl;
 
+/** A proxy to the shared-value inside an observable.
+ *
+ * This proxy object makes sure that updates to a value
+ * is atomic and that modifications causes notifcations to be
+ * sent.
+ *
+ * @tparam T The type of the observed value.
+ * @tparam Constant True when there is read-only access to the value. False if there is read-write access.
+ */
 template<typename T, bool Constant>
 struct observable_proxy {
     using value_type = T;
-    static constexpr bool is_atomic = observable_is_atomic_v<T>;
+    static constexpr bool is_atomic = std::is_scalar_v<T>;
     static constexpr bool is_constant = Constant;
     static constexpr bool is_variable = not Constant;
 
@@ -76,10 +77,19 @@ struct observable_proxy {
 
     // MSVC Compiler bug returning this with auto argument
     template<std::convertible_to<value_type> Value>
-    observable_proxy &operator=(Value &&value) noexcept requires(is_variable)
+    observable_proxy &operator=(Value &&value) noexcept requires(is_variable and not is_atomic)
     {
         prepare(state_type::write);
         _actual->value = std::forward<decltype(value)>(value);
+        return *this;
+    }
+
+    template<std::convertible_to<value_type> Value>
+    observable_proxy &operator=(Value value) noexcept requires(is_variable and is_atomic)
+    {
+        if (_actual->value.exchange(value) != value) {
+            state = state_type::modified;
+        }
         return *this;
     }
 
@@ -185,9 +195,11 @@ struct observable_proxy {
     mutable state_type _state = state_type::none;
 };
 
+/** The shared value, shared between observers.
+ */
 template<typename T>
 struct observable_impl {
-    static constexpr bool is_atomic = observable_is_atomic_v<T>;
+    static constexpr bool is_atomic = std::is_scalar_v<T>;
 
     using value_type = T;
     using atomic_value_type = std::conditional_t<is_atomic, std::atomic<value_type>, value_type>;
@@ -224,16 +236,27 @@ struct observable_impl {
         return observable_proxy<value_type, true>(*this);
     }
 
-    void add_owner(owner_type *owner) noexcept
+    /** Add an observer as one of the owners of the shared-value.
+     *
+     * @param owner A reference to observer
+     */
+    void add_owner(owner_type &owner) noexcept
     {
+        tt_axiom(std::find(owners.cbegin(), owners.cend(), &owner) == owner.cend());
+
         ttlet lock = std::scoped_lock(mutex);
-        owners.push_back(owner);
+        owners.push_back(&owner);
     }
 
-    void remove_owner(owner_type *owner) noexcept
+    /** Remove an observer as one of the owners of the shared-value.
+     *
+     * @param owner A reference to observer
+     */
+    void remove_owner(owner_type &owner) noexcept
     {
         ttlet lock = std::scoped_lock(mutex);
-        std::erase(owners, owner);
+        ttlet nr_erased = std::erase(owners, &owner);
+        tt_axiom(nr_erased == 1);
     }
 
     owner_type *get_owner(size_t index) const noexcept
@@ -259,7 +282,7 @@ struct observable_impl {
 
         for (auto owner : owners) {
             owner->pimpl = new_impl;
-            new_impl->add_owner(owner);
+            new_impl->add_owner(*owner);
         }
 
         auto old_owners = std::move(owners);
@@ -275,12 +298,40 @@ struct observable_impl {
 
 } // namespace detail
 
-/** An observable notifies listeners of changed to its value.
+/** A value which can be observed for modifications.
  *
- * An observable holds a value and will notify subscribed callbacks
- * when the value is being modified.
+ * An observable is used to share a value between different objects, and
+ * for those objects to be notified when this shared-value is modified.
  *
- * @tparam T The type of the value held by an observable.
+ * Typically each object will contain an instance of an observable and `subscribe()`
+ * one of its methods to the observable. By assigning the observables of each
+ * object to each other they will start to share the same value.
+ * Now if one object changes the shared value, the other objects will get notified.
+ *
+ * Multiple observers can share the same value. This makes it possible for each
+ * object to be an owner of a observer, while linking oberservers between objects
+ * together, without having to worry about lifetime management.
+ *
+ * ```
+ * auto a = observable<int>{1};
+ * auto b = observable<int>{5};
+ * auto c = observable<int>{42};
+ * auto d = observable<int>{9};
+ *
+ * a = b; // both 'a' and 'b' share the value 5.
+ * b = c; // 'a', 'b' and 'c' all share the value 42.
+ * b = d; // 'a', 'b', 'c' and 'd' all share the value 9.
+ * ```
+ * 
+ * A proxy object is returned when dereferencing an observable, this allows
+ * multiple read/write/modify operations to be treated atomically. The
+ * callbacks are called when both the value has actually changed and the
+ * lifetime of the proxy object has ended.
+ * 
+ * 
+ *
+ *
+ * @tparam T The type of the value to be observed.
  */
 template<typename T>
 class observable {
@@ -295,7 +346,7 @@ public:
 
     ~observable()
     {
-        pimpl->remove_owner(this);
+        pimpl->remove_owner(*this);
     }
 
     /** Construct an observerable.
@@ -304,7 +355,7 @@ public:
      */
     observable() noexcept : pimpl(std::make_shared<impl_type>())
     {
-        pimpl->add_owner(this);
+        pimpl->add_owner(*this);
     }
 
     /** Construct an observerable and chain it to another.
@@ -315,7 +366,7 @@ public:
      */
     observable(observable const &other) noexcept : pimpl(other.pimpl)
     {
-        pimpl->add_owner(this);
+        pimpl->add_owner(*this);
     }
 
     /** Chain with another observable.
@@ -384,7 +435,7 @@ public:
     observable(std::convertible_to<value_type> auto &&value) noexcept :
         pimpl(std::make_shared<impl_type>(std::forward<decltype(value)>(value)))
     {
-        pimpl->add_owner(this);
+        pimpl->add_owner(*this);
     }
 
     // XXX MSVC-2019 Compiler bug returning this with auto argument
@@ -405,9 +456,19 @@ public:
      *
      * @return a copy of the shared-value.
      */
-    value_type operator*() const noexcept
+    value_type operator*() const noexcept requires(is_atomic)
     {
         return *(cget());
+    }
+
+    detail::observable_proxy<value_type, true>  operator*() const noexcept requires(not is_atomic)
+    {
+        return *(cget());
+    }
+
+    detail::observable_proxy<value_type, false>  operator*() noexcept requires(not is_atomic)
+    {
+        return *(get());
     }
 
     detail::observable_proxy<value_type, true> operator->() const noexcept
