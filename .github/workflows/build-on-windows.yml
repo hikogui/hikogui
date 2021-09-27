@@ -128,18 +128,18 @@ jobs:
           if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
           echo %GENERATOR%
           mkdir build && cd build
-          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} ..                                    ^
-                -DCMAKE_BUILD_TYPE=%BUILD_TYPE%                                             ^
+          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} ..                                  ^
+                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }}                          ^
                 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake            ^
                 -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }}            ^
                 -DTT_BUILD_PCH=${{ matrix.config.TT_BUILD_PCH }}                            ^
                 -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: 🙏 CMake ➔ Build
-        run: cmake --build build --config %BUILD_TYPE% -j %NUMBER_OF_PROCESSORS%
+        run: cmake --build build --config ${{ matrix.config.BUILD_TYPE }} -j %NUMBER_OF_PROCESSORS%
 
       - name: 📦 CMake ➔ Install
-        run: cmake --install build --config %BUILD_TYPE% --prefix build/ttauri-%VERSION% --verbose
+        run: cmake --install build --config ${{ matrix.config.BUILD_TYPE }} --prefix build/ttauri-%VERSION% --verbose
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
