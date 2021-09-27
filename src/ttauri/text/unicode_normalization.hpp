@@ -8,7 +8,6 @@
 #include <string>
 #include <string_view>
 
-
 namespace tt {
 
 /** Convert text to Unicode-NFD normal form.

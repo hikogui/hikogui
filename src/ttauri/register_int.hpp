@@ -45,7 +45,6 @@ using register_signed_long = __int128_t;
 using register_unsigned_long = unsigned __int128_t;
 
 #else
-#include "bigint.hpp"
 using register_long = bigint<register_unsigned_int,2,true>;
 using register_signed_long = bigint<register_unsigned_int,2,true>;
 using register_unsigned_long = bigint<register_unsigned_int,2,false>;
