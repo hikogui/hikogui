@@ -18,7 +18,7 @@ jobs:
 
 # ---------------------------------------------------------------------------------------
 
-    name: ${{ matrix.config.COMPILER}} | ${{ matrix.config.VCPKG_TARGET_TRIPLET }} | PCH:${{ matrix.config.TT_BUILD_PCH }}
+    name: ${{ matrix.config.COMPILER }} | ${{ matrix.config.VCPKG_TARGET_TRIPLET }} | PCH:${{ matrix.config.TT_BUILD_PCH }}
     needs: install-vulkan-sdk-and-runtime
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
@@ -28,10 +28,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC16"}
-          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC17"}
-          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17"}
-          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17"}
+          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC16" }
+          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC17" }
+          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17" }
+          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17" }
 
     env:
       PLATFORM: x64
@@ -65,7 +65,7 @@ jobs:
           $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
           $COMPILER="${{ matrix.config.COMPILER }}"
           $TRIPLET="${{ matrix.config.VCPKG_TARGET_TRIPLET }}"
-          $BUILD_TYPE="$env:BUILD_TYPE"
+          $BUILD_TYPE="${{ matrix.config.BUILD_TYPE }}"
           $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-$COMPILER-$TRIPLET-$BUILD_TYPE"
           echo "Artifact Name:" $ARTIFACT_NAME
           echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
