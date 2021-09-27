@@ -418,15 +418,15 @@ struct observable_impl {
  * An observable is used to share a value between different objects, and
  * for those objects to be notified when this shared-value is modified.
  *
- * Typically each object will contain an instance of an observable and `subscribe()`
+ * Typically objects will own an instance of an observable and `subscribe()`
  * one of its methods to the observable. By assigning the observables of each
- * object to each other they will start to share the same value.
+ * object to each other they will share the same value.
  * Now if one object changes the shared value, the other objects will get notified.
  *
- * Multiple observers can share the same value. This makes it possible for each
- * object to be an owner of a observer, while linking observers between objects
- * together, without having to worry about lifetime management.
- *
+ * When assigning observables to each other, the subscriptions
+ * to the observable remain unmodified. However which value is shared is shown in the
+ * example below:
+ * 
  * ```
  * auto a = observable<int>{1};
  * auto b = observable<int>{5};
@@ -438,13 +438,24 @@ struct observable_impl {
  * b = d; // 'a', 'b', 'c' and 'd' all share the value 9.
  * ```
  *
- * A proxy object is returned when dereferencing an observable, this allows
- * multiple read/write/modify operations to be treated atomically. The
- * callbacks are called when both the value has actually changed and the
- * lifetime of the proxy object has ended.
+ * A subscription to a observable is maintained using a `std::weak_ptr`
+ * to a callback function. This means that the object that subscribed
+ * to the observable needs to own the `std::shared_ptr` that is returned
+ * by the `subscribe()` method.
+ * 
+ * A proxy object is returned when dereferencing an observable. The
+ * callbacks are called when both the value has changed and the
+ * lifetime of all non-scalar proxy objects in the system has ended.
  *
+ * A proxy of a non-scalar observable holds a mutex. It may be useful
+ * to extend the lifetime of a proxy to handle multiple steps atomically.
+ * However due to the mutex held, it may be possible to dead-lock when
+ * the lifetime of multiple proxy objects are extended in different orders.
  *
- *
+ * Constant proxies are more efficient than non-constant proxies. You can
+ * get a non-constant proxy using the `cget()` function. Many of the
+ * operations available directly on the observable uses constant proxies
+ * internally for this reason.
  *
  * @tparam T The type of the value to be observed.
  */
