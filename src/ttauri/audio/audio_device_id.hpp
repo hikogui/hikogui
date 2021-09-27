@@ -18,10 +18,8 @@ public:
     static constexpr char macos = 2;
     static constexpr char asio = 3;
 
-    audio_device_id() noexcept
+    audio_device_id() noexcept : _v{}
     {
-        _v[0] = none;
-        _v[1] = 0;
     }
 
     audio_device_id(char type, wchar_t const *id) noexcept;
@@ -35,18 +33,7 @@ public:
         return _v[0] != none;
     }
 
-    [[nodiscard]] friend bool operator==(audio_device_id const &lhs, audio_device_id const &rhs) noexcept
-    {
-        for (size_t i = 0; i != std::size(lhs._v); ++i) {
-            if (lhs._v[i] != rhs._v[i]) {
-                return false;
-            }
-            if (lhs._v[i] == 0 or rhs._v[i] == 0) {
-                break;
-            }
-        }
-        return true;
-    }
+    [[nodiscard]] friend bool operator==(audio_device_id const &lhs, audio_device_id const &rhs) noexcept = default;
 
 private:
     std::array<char, 64> _v;
