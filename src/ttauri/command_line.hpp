@@ -2,10 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "coroutine"
-#include "architecture.hpp"
-
 #pragma once
+
+#include <coroutine>
+#include "architecture.hpp"
 
 namespace tt {
 
@@ -50,7 +50,7 @@ using cmdline_option = std::variant<cmline_executable, cmdline_short_option, cmd
  *
  * This function will properly handle UTF-8 encoded strings. Including single character
  * options where the character is represented with multiple UTF-8 code units.
- * 
+ *
  * @tparam It A forward iterator
  * @param first Iterator to the first command line token
  * @param last Iterator one beyond the last command line token
@@ -146,7 +146,7 @@ public:
     /**
      *
      * Syntax:
-     *    
+     *
      *    option_help = [ short_option ',' ] long_option ' ' description
      *
      *    short_option = '-' /[^-=]/

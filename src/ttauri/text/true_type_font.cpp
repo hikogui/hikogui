@@ -12,7 +12,6 @@
 #include "../geometry/point.hpp"
 #include <cstddef>
 #include <span>
-#include <cstddef>
 
 #define assert_or_return(x, y) \
     if (!(x)) { \

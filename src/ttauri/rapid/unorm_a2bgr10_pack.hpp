@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../geometry/numeric_array.hpp"
+#include "numeric_array.hpp"
 #include <algorithm>
 
 namespace tt {
