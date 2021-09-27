@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "hires_utc_clock.hpp"
+#include "chrono.hpp"
 #include "algorithm.hpp"
-#include <chrono>
-#include <cmath>
 #include "concepts.hpp"
+#include <cmath>
 
 namespace tt {
 
@@ -22,13 +21,13 @@ public:
     /** Constructor.
      * @param animation_duration The duration to animate from start to end value.
      */
-    animator(hires_utc_clock::duration animation_duration) noexcept : _animation_duration(animation_duration) {}
+    animator(std::chrono::nanoseconds animation_duration) noexcept : _animation_duration(animation_duration) {}
 
     /** Update the value and time.
      * @param new_value The value to animate toward.
      * @param current_time The current time.
      */
-    void update(value_type new_value, hires_utc_clock::time_point current_time) noexcept
+    void update(value_type new_value, utc_nanoseconds current_time) noexcept
     {
         if (not initialized) {
             initialized = true;
@@ -62,13 +61,15 @@ public:
 private:
     value_type _old_value;
     value_type _new_value;
-    hires_utc_clock::time_point _start_time;
-    hires_utc_clock::time_point _current_time;
-    hires_utc_clock::duration _animation_duration;
+    utc_nanoseconds _start_time;
+    utc_nanoseconds _current_time;
+    std::chrono::nanoseconds _animation_duration;
     bool initialized = false;
 
     float progress() const noexcept
     {
+        using namespace std::literals::chrono_literals;
+
         ttlet dt = _current_time - _start_time;
         ttlet p = static_cast<float>(dt / 1ms) / static_cast<float>(_animation_duration / 1ms);
         return std::clamp(p, 0.0f, 1.0f);

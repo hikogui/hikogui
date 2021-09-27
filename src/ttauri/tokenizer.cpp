@@ -20,10 +20,13 @@ enum class tokenizer_state_t: uint8_t {
     Float,
     Date,
     Time,
+    Quote,
+    QuoteString,
+    QuoteStringEscape,
     DQuote,                 // Could be the start of a string, an empty string, or block string.
     DoubleDQuote,           // Is an empty string or a block string.
-    String,
-    StringEscape,
+    DQuoteString,
+    DQuoteStringEscape,
     BlockString,
     BlockStringDQuote,
     BlockStringDoubleDQuote,
@@ -36,7 +39,7 @@ enum class tokenizer_state_t: uint8_t {
     OperatorFirstChar,
     OperatorSecondChar,
     OperatorThirdChar,
-
+    ColonOperatorSecondChar,
     Sentinal
 };
 constexpr size_t NR_TOKENIZER_STATES = static_cast<size_t>(tokenizer_state_t::Sentinal);
@@ -452,6 +455,29 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockC
     return r;
 }
 
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Quote()
+{
+    std::array<tokenizer_transition_t, 256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        ttlet c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        if (c == '\'') {
+            // Empty string.
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Found;
+            transition.name = tokenizer_name_t::StringLiteral;
+
+        } else {
+            transition.next = tokenizer_state_t::QuoteString;
+        }
+
+        r[i] = transition;
+    }
+    return r;
+}
+
 constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuote()
 {
     std::array<tokenizer_transition_t,256> r{};
@@ -464,7 +490,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuote
             transition.next = tokenizer_state_t::DoubleDQuote;
             transition.action = tokenizer_action_t::Read;
         } else {
-            transition.next = tokenizer_state_t::String;
+            transition.next = tokenizer_state_t::DQuoteString;
         }
 
         r[i] = transition;
@@ -495,7 +521,41 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Double
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_QuoteString()
+{
+    std::array<tokenizer_transition_t, 256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        ttlet c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        if (c == '\0') {
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
+            transition.name = tokenizer_name_t::ErrorEOTInString;
+        } else if (is_line_feed(c)) {
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture |
+                tokenizer_action_t::Start | c;
+            transition.name = tokenizer_name_t::ErrorLFInString;
+        } else if (c == '\\') {
+            transition.next = tokenizer_state_t::QuoteStringEscape;
+            transition.action = tokenizer_action_t::Read;
+        } else if (c == '\'') {
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read;
+            transition.name = tokenizer_name_t::StringLiteral;
+        } else {
+            transition.next = tokenizer_state_t::QuoteString;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | c;
+        }
+
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuoteString()
 {
     std::array<tokenizer_transition_t,256> r{};
 
@@ -512,14 +572,14 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String
             transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start | c;
             transition.name = tokenizer_name_t::ErrorLFInString;
         } else if (c == '\\') {
-            transition.next = tokenizer_state_t::StringEscape;
+            transition.next = tokenizer_state_t::DQuoteStringEscape;
             transition.action = tokenizer_action_t::Read;
         } else if (c == '"') {
             transition.next = tokenizer_state_t::Initial;
             transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read;
             transition.name = tokenizer_name_t::StringLiteral;
         } else {
-            transition.next = tokenizer_state_t::String;
+            transition.next = tokenizer_state_t::DQuoteString;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | c;
         }
 
@@ -528,7 +588,39 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_StringEscape()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_QuoteStringEscape()
+{
+    std::array<tokenizer_transition_t, 256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        ttlet c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        switch (c) {
+        case '\0':
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
+            transition.name = tokenizer_name_t::ErrorEOTInString;
+            r[i] = transition;
+            continue;
+
+        case 'a': transition.c = '\a'; break;
+        case 'b': transition.c = '\b'; break;
+        case 'f': transition.c = '\f'; break;
+        case 'n': transition.c = '\n'; break;
+        case 'r': transition.c = '\r'; break;
+        case 't': transition.c = '\t'; break;
+        case 'v': transition.c = '\v'; break;
+        }
+
+        transition.next = tokenizer_state_t::QuoteString;
+        transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuoteStringEscape()
 {
     std::array<tokenizer_transition_t,256> r{};
 
@@ -553,7 +645,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String
         case 'v': transition.c = '\v'; break;
         }
 
-        transition.next = tokenizer_state_t::String;
+        transition.next = tokenizer_state_t::DQuoteString;
         transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         r[i] = transition;
     }
@@ -752,6 +844,33 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
 #undef MORE_CHARS
 }
 
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_ColonOperatorSecondChar()
+{
+#define LAST_CHAR \
+    transition.next = tokenizer_state_t::Initial; \
+    transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture; \
+    transition.name = tokenizer_name_t::Operator
+
+    std::array<tokenizer_transition_t, 256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        ttlet c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        switch (c) {
+        case '=': LAST_CHAR; break;
+        default:
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
+            transition.name = tokenizer_name_t::Operator;
+        }
+
+        r[i] = transition;
+    }
+    return r;
+#undef LAST_CHAR
+}
+
 constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_OperatorFirstChar()
 {
 #define LAST_CHAR\
@@ -796,7 +915,10 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         case '|': MORE_CHARS; break; // Possible: ||, |=
         case '&': MORE_CHARS; break; // Possible: &&, &=
         case '^': MORE_CHARS; break; // Possible: ^=
-        case ':': MORE_CHARS; break; // Possible: :=
+        case ':':
+            transition.next = tokenizer_state_t::ColonOperatorSecondChar;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
+            break; // Possible: :=
         default:
             // If we don't recognize the operator, it means this character is invalid.
             transition.next = tokenizer_state_t::Initial;
@@ -840,6 +962,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initia
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (c == '"') {
             transition.next = tokenizer_state_t::DQuote;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Start;
+        } else if (c == '\'') {
+            transition.next = tokenizer_state_t::Quote;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Start;
         } else if (is_white_space(c)) {
             transition.next = tokenizer_state_t::Initial;
@@ -889,10 +1014,13 @@ constexpr transitionTable_t calculateTransitionTable()
     CALCULATE_SUB_TABLE(Date);
     CALCULATE_SUB_TABLE(Time);
     CALCULATE_SUB_TABLE(Float);
+    CALCULATE_SUB_TABLE(Quote);
+    CALCULATE_SUB_TABLE(QuoteString);
+    CALCULATE_SUB_TABLE(QuoteStringEscape);
     CALCULATE_SUB_TABLE(DQuote);
     CALCULATE_SUB_TABLE(DoubleDQuote);
-    CALCULATE_SUB_TABLE(String);
-    CALCULATE_SUB_TABLE(StringEscape);
+    CALCULATE_SUB_TABLE(DQuoteString);
+    CALCULATE_SUB_TABLE(DQuoteStringEscape);
     CALCULATE_SUB_TABLE(BlockString);
     CALCULATE_SUB_TABLE(BlockStringDQuote);
     CALCULATE_SUB_TABLE(BlockStringDoubleDQuote);
@@ -905,7 +1033,7 @@ constexpr transitionTable_t calculateTransitionTable()
     CALCULATE_SUB_TABLE(OperatorFirstChar);
     CALCULATE_SUB_TABLE(OperatorSecondChar);
     CALCULATE_SUB_TABLE(OperatorThirdChar);
-
+    CALCULATE_SUB_TABLE(ColonOperatorSecondChar);
     return r;
 #undef CALCULATE_SUB_TABLE
 }

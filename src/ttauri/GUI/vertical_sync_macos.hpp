@@ -17,7 +17,7 @@ private:
     CVDisplayLinkRef *displayLink;
 
 public:
-    vertical_sync_macos(std::function<void(void *,hires_utc_clock::time_point)> callback, void *callbackData) noexcept;
+    vertical_sync_macos(std::function<void(void *,utc_nanoseconds)> callback, void *callbackData) noexcept;
     ~vertical_sync_macos();
 };
 

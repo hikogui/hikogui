@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../hires_utc_clock.hpp"
+#include "../chrono.hpp"
 #include "../subsystem.hpp"
 #include <atomic>
 
@@ -19,7 +19,7 @@ public:
     /** Wait for the vertical sync.
      * @return The time when the frame that is currently rendered will be displayed.
      */
-    virtual hires_utc_clock::time_point wait() noexcept = 0;
+    virtual utc_nanoseconds wait() noexcept = 0;
 };
 
 }

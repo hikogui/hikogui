@@ -15,6 +15,7 @@ class row_column_widget;
 template<axis Axis>
 class row_column_delegate {
 public:
+    virtual ~row_column_delegate() = default;
     virtual void init(row_column_widget<Axis> &sender) noexcept {}
     virtual void deinit(row_column_widget<Axis> &sender) noexcept {}
 };

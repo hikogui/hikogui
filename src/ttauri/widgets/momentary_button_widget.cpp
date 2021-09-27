@@ -7,7 +7,7 @@
 namespace tt {
 
 [[nodiscard]] bool
-momentary_button_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+momentary_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -25,7 +25,7 @@ momentary_button_widget::constrain(hires_utc_clock::time_point display_time_poin
     }
 }
 
-[[nodiscard]] void momentary_button_widget::layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
+[[nodiscard]] void momentary_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -36,7 +36,7 @@ momentary_button_widget::constrain(hires_utc_clock::time_point display_time_poin
     super::layout(displayTimePoint, need_layout);
 }
 
-void momentary_button_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void momentary_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

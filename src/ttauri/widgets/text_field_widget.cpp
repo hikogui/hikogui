@@ -41,14 +41,12 @@ void text_field_widget::deinit() noexcept
 }
 
 [[nodiscard]] bool
-text_field_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+text_field_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
         ttlet text_style = theme().text_style(theme_text_style::label);
-        ttlet &text_font = font_book().find_font(text_style.family_id, text_style.variant);
-        ttlet text_digit_width = text_font.DigitWidth * text_style.scaled_size();
 
         _text_width = 100.0;
 
@@ -62,7 +60,7 @@ text_field_widget::constrain(hires_utc_clock::time_point display_time_point, boo
     }
 }
 
-void text_field_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void text_field_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -112,7 +110,7 @@ void text_field_widget::layout(hires_utc_clock::time_point display_time_point, b
     super::layout(display_time_point, need_layout);
 }
 
-void text_field_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -393,14 +391,14 @@ void text_field_widget::draw_background_box(draw_context context) const noexcept
     context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
 
     ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
-    context.draw_filled_quad(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
+    context.draw_box(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
 }
 
 void text_field_widget::draw_selection_rectangles(draw_context context) const noexcept
 {
     ttlet selection_rectangles = _field.selection_rectangles();
     for (ttlet selection_rectangle : selection_rectangles) {
-        context.draw_filled_quad(
+        context.draw_box(
             _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
     }
 }
@@ -414,7 +412,7 @@ void text_field_widget::draw_partial_grapheme_caret(draw_context context) const 
     }
 }
 
-void text_field_widget::draw_caret(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void text_field_widget::draw_caret(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     // Display the caret and handle blinking.
     ttlet duration_since_last_update = display_time_point - _last_update_time_point;

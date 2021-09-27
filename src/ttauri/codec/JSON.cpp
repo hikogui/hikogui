@@ -8,14 +8,13 @@ namespace tt {
 
 struct parse_context_t {
     std::string_view::const_iterator text_begin;
-
 };
 
 [[nodiscard]] static parse_result<datum> parseValue(parse_context_t &context, token_iterator token);
 
 [[nodiscard]] static parse_result<datum> parseArray(parse_context_t &context, token_iterator token)
 {
-    auto array = datum{datum::vector{}};
+    auto v = datum::make_vector();
 
     // Required '['
     if ((*token == tokenizer_name_t::Operator) && (*token == "[")) {
@@ -31,13 +30,13 @@ struct parse_context_t {
             token++;
             break;
 
-        // Required a value.
+            // Required a value.
         } else if (auto result = parseValue(context, token)) {
             if (!commaAfterValue) {
                 throw parse_error("{}: Missing expected ','", token->location);
             }
 
-            array.push_back(*result);
+            v.push_back(*result);
             token = result.next_token;
 
             if ((*token == tokenizer_name_t::Operator) && (*token == ",")) {
@@ -52,12 +51,12 @@ struct parse_context_t {
         }
     }
 
-    return {std::move(array), token};
+    return {std::move(v), token};
 }
 
 [[nodiscard]] static parse_result<datum> parseObject(parse_context_t &context, token_iterator token)
 {
-    auto object = datum{datum::map{}};
+    auto object = datum::make_map();
 
     // Required '{'
     if ((*token == tokenizer_name_t::Operator) && (*token == "{")) {
@@ -73,7 +72,7 @@ struct parse_context_t {
             token++;
             break;
 
-        // Required a string name.
+            // Required a string name.
         } else if (*token == tokenizer_name_t::StringLiteral) {
             if (!commaAfterValue) {
                 throw parse_error("{}: Missing expected ','", token->location);
@@ -116,15 +115,15 @@ struct parse_context_t {
     case tokenizer_name_t::StringLiteral: {
         auto value = datum{static_cast<std::string>(*token++)};
         return {std::move(value), token};
-        } break;
+    } break;
     case tokenizer_name_t::IntegerLiteral: {
         auto value = datum{static_cast<long long>(*token++)};
         return {std::move(value), token};
-        } break;
+    } break;
     case tokenizer_name_t::FloatLiteral: {
         auto value = datum{static_cast<double>(*token++)};
         return {std::move(value), token};
-        } break;
+    } break;
     case tokenizer_name_t::Name: {
         ttlet name = static_cast<std::string>(*token++);
         if (name == "true") {
@@ -132,11 +131,11 @@ struct parse_context_t {
         } else if (name == "false") {
             return {datum{false}, token};
         } else if (name == "null") {
-            return {datum{datum::null{}}, token};
+            return {datum{nullptr}, token};
         } else {
             throw parse_error("{}: Unexpected name '{}'", token->location, name);
         }
-        } break;
+    } break;
     default:
         if (auto result1 = parseObject(context, token)) {
             return result1;
@@ -160,7 +159,7 @@ struct parse_context_t {
 
     auto token = tokens.begin();
 
-    if (auto result = parseObject(context, token)) {
+    if (auto result = parseValue(context, token)) {
         root = std::move(*result);
         token = result.next_token;
 
@@ -180,87 +179,114 @@ struct parse_context_t {
     return parse_JSON(url.loadView()->string_view());
 }
 
-static void format_JSON_impl(datum const &value, std::string &result, tt::indent indent={})
+static void format_JSON_impl(datum const &value, std::string &result, tt::indent indent = {})
 {
-    bool first_item = true;
-
-    switch (value.type()) {
-    case datum_type_t::Null:
+    if (holds_alternative<nullptr_t>(value)) {
         result += "null";
-        break;
-
-    case datum_type_t::Boolean:
-        result += value ? "true" : "false";
-        break;
-
-    case datum_type_t::Integer:
-        result += tt::to_string(static_cast<long long>(value));
-        break;
-
-    case datum_type_t::Float:
-        result += tt::to_string(static_cast<double>(value));
-        break;
-
-    case datum_type_t::String:
-    case datum_type_t::URL:
+    } else if (ttlet *b = get_if<bool>(value)) {
+        result += *b ? "true" : "false";
+    } else if (ttlet *i = get_if<long long>(value)) {
+        result += tt::to_string(*i);
+    } else if (ttlet *f = get_if<double>(value)) {
+        result += tt::to_string(*f);
+    } else if (ttlet *s = get_if<std::string>(value)) {
         result += '"';
-        for (ttlet c: static_cast<std::string>(value)) {
+        for (ttlet c : *s) {
             switch (c) {
-            case '\n': result += '\\'; result += 'n'; break;
-            case '\r': result += '\\'; result += 'r'; break;
-            case '\t': result += '\\'; result += 't'; break;
-            case '\f': result += '\\'; result += 'f'; break;
-            case '"': result += '\\'; result += '"'; break;
+            case '\n':
+                result += '\\';
+                result += 'n';
+                break;
+            case '\r':
+                result += '\\';
+                result += 'r';
+                break;
+            case '\t':
+                result += '\\';
+                result += 't';
+                break;
+            case '\f':
+                result += '\\';
+                result += 'f';
+                break;
+            case '"':
+                result += '\\';
+                result += '"';
+                break;
             default: result += c;
             }
         }
         result += '"';
-        break;
 
-    case datum_type_t::Vector:
+    } else if (ttlet *u = get_if<URL>(value)) {
+        result += '"';
+        for (ttlet c : to_string(*u)) {
+            switch (c) {
+            case '\n':
+                result += '\\';
+                result += 'n';
+                break;
+            case '\r':
+                result += '\\';
+                result += 'r';
+                break;
+            case '\t':
+                result += '\\';
+                result += 't';
+                break;
+            case '\f':
+                result += '\\';
+                result += 'f';
+                break;
+            case '"':
+                result += '\\';
+                result += '"';
+                break;
+            default: result += c;
+            }
+        }
+        result += '"';
+
+    } else if (ttlet *v = get_if<datum::vector_type>(value)) {
         result += indent;
         result += '[';
         result += '\n';
 
-        for (auto i = value.vector_begin(); i != value.vector_end(); i++, first_item = true) {
-            if (!first_item) {
+        for (auto it = v->begin(); it != v->end(); it++) {
+            if (it != v->begin()) {
                 result += ',';
                 result += '\n';
             }
             result += indent + 1;
 
-            format_JSON_impl(*i, result, indent + 1);
+            format_JSON_impl(*it, result, indent + 1);
         }
 
         result += '\n';
         result += indent;
         result += ']';
-        break;
-
-    case datum_type_t::Map:
+    } else if (ttlet *m = get_if<datum::map_type>(value)) {
         result += indent;
         result += '{';
         result += '\n';
 
-        for (auto i = value.map_begin(); i != value.map_end(); i++, first_item = true) {
-            if (!first_item) {
+        for (auto it = m->begin(); it != m->end(); it++) {
+            if (it != m->begin()) {
                 result += ',';
                 result += '\n';
             }
             result += indent + 1;
 
-            format_JSON_impl(i->first, result, indent + 1);
+            format_JSON_impl(it->first, result, indent + 1);
             result += ':';
             result += ' ';
-            format_JSON_impl(i->second, result, indent + 1);
+            format_JSON_impl(it->second, result, indent + 1);
         }
 
         result += '\n';
         result += indent;
         result += '}';
-        break;
-
-    default:
+    } else {
         tt_no_default();
     }
 }
@@ -272,6 +298,4 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
     r += '\n';
     return r;
 }
-
-
-}
+} // namespace tt

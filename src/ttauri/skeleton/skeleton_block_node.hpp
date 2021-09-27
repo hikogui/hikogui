@@ -21,7 +21,7 @@ struct skeleton_block_node final: skeleton_node {
         name = name_expression->get_name();
 
         super_function = context.set_function(name,
-            [&](formula_evaluation_context &context, datum::vector const &arguments) {
+            [&](formula_evaluation_context &context, datum::vector_type const &arguments) {
             return this->evaluate_call(context, arguments);
         }
         );
@@ -52,7 +52,7 @@ struct skeleton_block_node final: skeleton_node {
     datum evaluate(formula_evaluation_context &context) override {
         datum tmp;
         try {
-            tmp = function(context, datum::vector{});
+            tmp = function(context, datum::vector_type{});
 
         } catch (std::exception const &e) {
             throw operation_error("{}: Could not evaluate block.\n{}", location, e.what());
@@ -72,7 +72,7 @@ struct skeleton_block_node final: skeleton_node {
         }
     }
 
-    datum evaluate_call(formula_evaluation_context &context, datum::vector const &arguments) {
+    datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments) {
         context.push();
         auto tmp = evaluate_children(context, children);
         context.pop();

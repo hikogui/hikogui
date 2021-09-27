@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <format>
 
 namespace tt {
@@ -51,19 +52,9 @@ struct basic_fixed_string {
         }
     }
 
-    [[nodiscard]] operator std::basic_string<CharT>() const noexcept
-    {
-        return std::basic_string<CharT>{data(), size()};
-    }
-
     [[nodiscard]] operator std::basic_string_view<CharT>() const noexcept
     {
         return std::basic_string_view<CharT>{data(), size()};
-    }
-
-    [[nodiscard]] operator CharT const *() const noexcept
-    {
-        return data();
     }
 
     [[nodiscard]] constexpr auto begin() const noexcept

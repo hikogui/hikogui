@@ -66,6 +66,16 @@ public:
 
     URL &operator=(URL &&other) noexcept = default;
 
+    explicit operator bool() const noexcept
+    {
+        return not empty();
+    }
+
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return value.empty();
+    }
+
     [[nodiscard]] size_t hash() const noexcept;
 
     [[nodiscard]] std::string_view scheme() const noexcept;
@@ -143,6 +153,7 @@ public:
     [[nodiscard]] static URL urlFromApplicationDataDirectory() noexcept;
     [[nodiscard]] static URL urlFromApplicationLogDirectory() noexcept;
     [[nodiscard]] static URL urlFromSystemfontDirectory() noexcept;
+    [[nodiscard]] static URL urlFromApplicationPreferencesFile() noexcept;
 
     /*! Return file names in the directory pointed by the url.
      * \param path path to the directory to scan.
@@ -158,29 +169,9 @@ public:
         return lhs.value == rhs.value;
     }
 
-    [[nodiscard]] friend bool operator<(URL const &lhs, URL const &rhs) noexcept
+    [[nodiscard]] friend auto operator<=>(URL const &lhs, URL const &rhs) noexcept
     {
-        return lhs.value < rhs.value;
-    }
-
-    [[nodiscard]] friend bool operator>(URL const &lhs, URL const &rhs) noexcept
-    {
-        return rhs < lhs;
-    }
-
-    [[nodiscard]] friend bool operator!=(URL const &lhs, URL const &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-
-    [[nodiscard]] friend bool operator>=(URL const &lhs, URL const &rhs) noexcept
-    {
-        return !(lhs < rhs);
-    }
-
-    [[nodiscard]] friend bool operator<=(URL const &lhs, URL const &rhs) noexcept
-    {
-        return !(lhs > rhs);
+        return lhs.value <=> rhs.value;
     }
 
     [[nodiscard]] friend URL operator/(URL const &lhs, URL const &rhs) noexcept
@@ -193,7 +184,7 @@ public:
         return lhs.urlByAppendingPath(URL{rhs});
     }
 
-    [[nodiscard]] friend std::string to_string(URL const &url) noexcept
+    [[nodiscard]] friend std::string const &to_string(URL const &url) noexcept
     {
         return url.value;
     }

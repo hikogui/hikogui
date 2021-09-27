@@ -16,7 +16,7 @@ struct formula_index_node final : formula_binary_operator_node {
         auto lhs_ = lhs->evaluate(context);
         auto rhs_ = rhs->evaluate(context);
 
-        if (!lhs_.contains(rhs_)) {
+        if (holds_alternative<datum::map_type>(lhs_) and not lhs_.contains(rhs_)) {
             throw operation_error("{}: Unknown key '{}'.", location, rhs_);
         }
 

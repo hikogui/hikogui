@@ -22,7 +22,7 @@ void system_menu_widget::init() noexcept
 }
 
 [[nodiscard]] bool
-system_menu_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -37,7 +37,7 @@ system_menu_widget::constrain(hires_utc_clock::time_point display_time_point, bo
     }
 }
 
-[[nodiscard]] void system_menu_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void system_menu_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 

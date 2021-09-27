@@ -2,7 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** logical and.
+ */
+bvec4 and(bvec4 lhs, bvec4 rhs)
+{
+    return bvec4(
+        lhs.x && rhs.x,
+        lhs.y && rhs.y,
+        lhs.z && rhs.z,
+        lhs.w && rhs.w
+    );
+}
+
 /** Check if the rectangle contains the point.
+ *
  * @param rectangle A axis-aligned rectangle encoded as left-bottom=(x,y), right-top=(z,w)
  * @param point A 2D point
  * @return True is the point is inside the rectangle.

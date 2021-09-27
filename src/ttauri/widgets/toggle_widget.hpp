@@ -79,12 +79,12 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept override;
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
+    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
+    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     /// @endprivatesection
 private:
-    static constexpr hires_utc_clock::duration _animation_duration = 150ms;
+    static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     extent2 _button_size;
     aarectangle _button_rectangle;
@@ -94,7 +94,7 @@ private:
 
     toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     void draw_toggle_button(draw_context context) noexcept;
-    void draw_toggle_pip(draw_context draw_context, hires_utc_clock::time_point display_time_point) noexcept;
+    void draw_toggle_pip(draw_context draw_context, utc_nanoseconds display_time_point) noexcept;
 };
 
 } // namespace tt

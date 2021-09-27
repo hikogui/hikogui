@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "hires_utc_clock.hpp"
 #include "unfair_mutex.hpp"
 #include "subsystem.hpp"
+#include "chrono.hpp"
 #include <mutex>
 #include <vector>
 #include <functional>
@@ -20,14 +20,11 @@ namespace tt {
  */
 class timer {
 public:
-    using duration = hires_utc_clock::duration;
-    using time_point = hires_utc_clock::time_point;
-
     /** Timer callback.
      * @param current_time The current time of executing this timer.
      * @param last True if this is the last time this timer is called, on emergency stop.
      */
-    using callback_type = std::function<void(time_point,bool)>;
+    using callback_type = std::function<void(utc_nanoseconds,bool)>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
     timer(std::string name) noexcept;
@@ -59,9 +56,9 @@ public:
      *         the callback can no longer be called.
      */
     template<typename Callback> requires(std::is_invocable_v<Callback>)
-    [[nodiscard]] std::shared_ptr<callback_type> add_callback(duration interval, Callback callback, bool immediate=false) noexcept
+    [[nodiscard]] std::shared_ptr<callback_type> add_callback(std::chrono::nanoseconds interval, Callback callback, bool immediate=false) noexcept
     {
-        ttlet current_time = hires_utc_clock::now();
+        ttlet current_time = utc_nanoseconds(std::chrono::utc_clock::now());
         auto callback_ptr = std::make_shared<callback_type>(std::forward<Callback>(callback));
 
         {
@@ -95,11 +92,14 @@ public:
 
 private:
     struct callback_entry {
-        duration interval;
-        time_point next_wakeup;
+        std::chrono::nanoseconds interval;
+        utc_nanoseconds next_wakeup;
         std::weak_ptr<callback_type> callback_ptr;
 
-        callback_entry(duration interval, time_point next_wakeup, std::shared_ptr<callback_type> const &callback_ptr) noexcept :
+        callback_entry(
+            std::chrono::nanoseconds interval,
+            utc_nanoseconds next_wakeup,
+            std::shared_ptr<callback_type> const &callback_ptr) noexcept :
             interval(interval), next_wakeup(next_wakeup), callback_ptr(callback_ptr)
         {
         }
@@ -121,8 +121,8 @@ private:
      *
      * @return List of triggered callbacks, Time to wakeup to trigger on the next callback.
      */
-    [[nodiscard]] std::pair<std::vector<callback_ptr_type>, timer::time_point>
-    find_triggered_callbacks(timer::time_point current_time) noexcept;
+    [[nodiscard]] std::pair<std::vector<callback_ptr_type>, utc_nanoseconds>
+    find_triggered_callbacks(utc_nanoseconds current_time) noexcept;
 
     /** The thread procedure.
      */
@@ -140,7 +140,7 @@ private:
      */
     void stop_with_lock_held() noexcept;
 
-    [[nodiscard]] static time_point calculate_next_wakeup(time_point current_time, duration interval) noexcept;
+    [[nodiscard]] static utc_nanoseconds calculate_next_wakeup(utc_nanoseconds current_time, std::chrono::nanoseconds interval) noexcept;
 
     [[nodiscard]] static timer *subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;

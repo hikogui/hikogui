@@ -16,15 +16,15 @@ public:
     vertical_sync_win32() noexcept;
     ~vertical_sync_win32() override;
 
-    [[nodiscard]] hires_utc_clock::time_point wait() noexcept override;
+    [[nodiscard]] utc_nanoseconds wait() noexcept override;
 
 private:
     void *_gdi;
     unsigned int _adapter = 0;
     unsigned int _video_present_source_id;
 
-    hires_utc_clock::time_point _previous_frame_time_point;
-    std::array<hires_utc_clock::duration, 15> _frame_duration_data;
+    utc_nanoseconds _previous_frame_time_point;
+    std::array<std::chrono::nanoseconds, 15> _frame_duration_data;
     size_t _frame_duration_counter = 0;
 
     void open_adapter() noexcept;
@@ -32,7 +32,7 @@ private:
 
     /** Returns the median duration between two frames.
      */
-    [[nodiscard]] hires_utc_clock::duration average_frame_duration(hires_utc_clock::time_point frameTimestamp) noexcept;
+    [[nodiscard]] std::chrono::nanoseconds average_frame_duration(utc_nanoseconds frameTimestamp) noexcept;
 };
 
 }

@@ -19,7 +19,7 @@ struct formula_literal_node final : formula_node {
     }
 
     std::string string() const noexcept override {
-        return value.repr();
+        return repr(value);
     }
 };
 

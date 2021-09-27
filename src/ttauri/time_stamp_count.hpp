@@ -29,15 +29,28 @@ namespace tt {
 class time_stamp_count {
 public:
     struct inplace {};
+    struct inplace_with_cpu_id {};
     struct inplace_with_thread_id {};
 
-    constexpr time_stamp_count() noexcept : _count(0), _aux(0) {}
+    constexpr time_stamp_count() noexcept : _count(0), _aux(0), _thread_id(0) {}
 
-    constexpr time_stamp_count(uint64_t count, uint32_t aux) noexcept : _count(count), _aux(aux) {}
+    constexpr time_stamp_count(uint64_t count, uint32_t aux) noexcept : _count(count), _aux(aux), _thread_id(0) {}
 
-    /** Use a constructor to inplace create the timestamp.
+    /** Use a constructor to in-place create the timestamp.
      */
-    explicit time_stamp_count(time_stamp_count::inplace) noexcept
+    explicit time_stamp_count(time_stamp_count::inplace) noexcept : _aux(0), _thread_id(0)  
+    {
+        if constexpr (processor::current == processor::x64) {
+            uint32_t tmp;
+            _count = __rdtscp(&tmp);
+        } else {
+            tt_not_implemented();
+        }
+    }
+
+    /** Use a constructor to in-place create the timestamp.
+     */
+    explicit time_stamp_count(time_stamp_count::inplace_with_cpu_id) noexcept : _thread_id(0)
     {
         if constexpr (processor::current == processor::x64) {
             _count = __rdtscp(&_aux);
@@ -46,7 +59,7 @@ public:
         }
     }
 
-    /** Use a constructor to inplace create the timestamp.
+    /** Use a constructor to in-place create the timestamp.
      */
     explicit time_stamp_count(time_stamp_count::inplace_with_thread_id) noexcept
     {
@@ -61,14 +74,14 @@ public:
     }
 
     /** Get the current count from the CPU's time stamp count.
-     * @return The current clock count and cpu-id.
+     * @return The current clock count and CPU-id.
      */
     [[nodiscard]] static time_stamp_count now() noexcept
     {
-        return time_stamp_count{time_stamp_count::inplace{}};
+        return time_stamp_count{time_stamp_count::inplace_with_cpu_id{}};
     }
 
-    /** Get the logical cpu index.
+    /** Get the logical CPU index.
      * This is logical CPU id that the operating system uses for things
      * like thread affinity.
      *
@@ -101,14 +114,26 @@ public:
         return _count;
     }
 
+    /** Convert a time-stamp count to a duration.
+     *
+     * @param count The number clock ticks.
+     * @return A period of nanoseconds representing the count of clock ticks.
+     */
+    [[nodiscard]] static std::chrono::nanoseconds duration_from_count(uint64_t count) noexcept
+    {
+        using namespace std::literals::chrono_literals;
+
+        ttlet [lo, hi] = mul_carry(count, _period.load(std::memory_order::relaxed));
+        return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
+    }
+
     /** Convert to nanoseconds since epoch.
      * The epoch is the same as the TSC count's epoch. In most cases the epoch
      * is at system startup time.
      */
     [[nodiscard]] std::chrono::nanoseconds time_since_epoch() const noexcept
     {
-        auto [lo, hi] = mul_carry(_count, _period.load(std::memory_order::relaxed));
-        return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
+        return duration_from_count(_count);
     }
 
     constexpr time_stamp_count &operator+=(uint64_t rhs) noexcept
@@ -142,16 +167,16 @@ public:
 private:
     uint64_t _count;
 
-    /** On intel x64 this is the TSC_AUX register value for this
-     * cpu. The operating system writes this value and is often not document.
+    /** On Intel x64 this is the TSC_AUX register value for this
+     * CPU. The operating system writes this value and is often not document.
      *
-     * We check if the lower 12 bits match the logical cpu id to use the fast
-     * pad for aux value to cpu id conversion. Otherwise we keep track in a table
-     * of each aux value and cpu id.
+     * We check if the lower 12 bits match the logical CPU id to use the fast
+     * pad for aux value to CPU id conversion. Otherwise we keep track in a table
+     * of each aux value and CPU id.
      */
     uint32_t _aux;
 
-    /** As struct packing optimization, add the thread id in this same struct.
+    /** A struct packing optimization, add the thread id in this same struct.
      */
     uint32_t _thread_id;
 

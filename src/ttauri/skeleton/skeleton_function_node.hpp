@@ -26,7 +26,7 @@ struct skeleton_function_node final: skeleton_node {
         argument_names = std::move(name_and_arguments);
 
         super_function = context.set_function(name,
-            [this,&location](formula_evaluation_context &context, datum::vector const &arguments) {
+            [this,&location](formula_evaluation_context &context, datum::vector_type const &arguments) {
             try {
                 return this->evaluate_call(context, arguments);
 
@@ -60,7 +60,7 @@ struct skeleton_function_node final: skeleton_node {
         return {};
     }
 
-    datum evaluate_call(formula_evaluation_context &context, datum::vector const &arguments) {
+    datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments) {
         context.push();
         if (std::ssize(argument_names) != std::ssize(arguments)) {
             throw operation_error("{}: Invalid number of arguments to function {}() expecting {} got {}.", location, name, argument_names.size(), arguments.size());

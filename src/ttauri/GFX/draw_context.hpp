@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "pipeline_flat_vertex.hpp"
 #include "pipeline_box_vertex.hpp"
 #include "pipeline_image_vertex.hpp"
 #include "pipeline_SDF_vertex.hpp"
@@ -39,7 +38,6 @@ public:
         size_t frame_buffer_index,
         extent2 surface_size,
         aarectangle scissor_rectangle,
-        vspan<pipeline_flat::vertex> &flatVertices,
         vspan<pipeline_box::vertex> &boxVertices,
         vspan<pipeline_image::vertex> &imageVertices,
         vspan<pipeline_SDF::vertex> &sdfVertices) noexcept;
@@ -58,24 +56,6 @@ public:
     [[nodiscard]] matrix3 transform() const noexcept;
 
     gfx_device &device() const noexcept;
-
-    /** Draw a polygon with four corners of one color.
-     * This function will draw a polygon between the four given points.
-     * This will use the current:
-     *  - transform, to transform each point.
-     *  - clippingRectangle
-     *  - fill_color
-     */
-    void draw_filled_quad(point3 p1, point3 p2, point3 p3, point3 p4, color fill_color) const noexcept;
-
-    /** Draw a rectangle of one color.
-     * This function will draw the given rectangle.
-     * This will use the current:
-     *  - transform, to transform each corner of the rectangle.
-     *  - clippingRectangle
-     *  - fill_color
-     */
-    void draw_filled_quad(rectangle r, color fill_color) const noexcept;
 
     /** Draw an axis aligned box
      * This function will draw the given box.
@@ -98,6 +78,8 @@ public:
     void draw_box(rectangle box, color fill_color, color line_color, tt::corner_shapes corner_shapes) const noexcept;
 
     void draw_box(rectangle box, color fill_color, tt::corner_shapes corner_shapes) const noexcept;
+
+    void draw_box(rectangle box, color fill_color) const noexcept;
 
     /** Draw an axis aligned box
      * This function will shrink to include the size of the border inside
@@ -189,7 +171,6 @@ public:
 private:
     gfx_device_vulkan &_device;
 
-    vspan<pipeline_flat::vertex> *_flat_vertices;
     vspan<pipeline_box::vertex> *_box_vertices;
     vspan<pipeline_image::vertex> *_image_vertices;
     vspan<pipeline_SDF::vertex> *_sdf_vertices;

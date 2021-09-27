@@ -19,7 +19,7 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
 {
 }
 
-[[nodiscard]] bool checkbox_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool checkbox_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -42,7 +42,7 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
     }
 }
 
-[[nodiscard]] void checkbox_widget::layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
+[[nodiscard]] void checkbox_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -65,7 +65,7 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
     super::layout(displayTimePoint, need_layout);
 }
 
-void checkbox_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void checkbox_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

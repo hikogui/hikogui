@@ -61,6 +61,7 @@ requires(is_atomic_v<T>) tt_no_inline typename T::value_type start_subsystem(
 
 tt_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
 {
+    tt_axiom(std::popcount(to_underlying(state_bit)) == 1);
     ttlet lock = std::scoped_lock(subsystem_mutex);
 
     ttlet old_state = global_state.load(std::memory_order::acquire);
@@ -76,7 +77,7 @@ tt_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*ini
 
     if (init_function()) {
         subsystem_deinit_list.emplace_back(deinit_function);
-        global_state.fetch_or(state_bit, std::memory_order::release);
+        global_state_enable(state_bit, std::memory_order::release);
         return true;
     }
 

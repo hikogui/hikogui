@@ -13,6 +13,8 @@ target_sources(ttauri PRIVATE
     png.cpp
     png.hpp
     SHA2.hpp
+    UTF.cpp
+    UTF.hpp
     zlib.cpp
     zlib.hpp
     BON8.hpp
@@ -21,9 +23,11 @@ target_sources(ttauri PRIVATE
 
 if(TT_BUILD_TESTS)
     target_sources(ttauri_tests PRIVATE
+        BON8_tests.cpp
         JSON_tests.cpp
         gzip_tests.cpp
         base_n_tests.cpp
         SHA2_tests.cpp
+        UTF_tests.cpp
     )
 endif()

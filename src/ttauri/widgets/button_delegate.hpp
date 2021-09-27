@@ -15,6 +15,8 @@ class button_delegate {
 public:
     using callback_ptr_type = std::shared_ptr<std::function<void()>>;
 
+    virtual ~button_delegate() = default;
+
     virtual void init(abstract_button_widget &sender) noexcept {}
 
     virtual void deinit(abstract_button_widget &sender) noexcept {}

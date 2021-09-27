@@ -180,6 +180,11 @@ public:
         return static_cast<float>(static_cast<long double>(*this));
     }
 
+    explicit operator bool() const noexcept
+    {
+        return mantissa() != 0;
+    }
+
     size_t hash() const noexcept
     {
         auto v = this->normalize();

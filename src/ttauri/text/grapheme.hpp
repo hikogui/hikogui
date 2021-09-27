@@ -212,11 +212,6 @@ public:
         return tt::to_string(g.NFC());
     }
 
-    [[nodiscard]] friend std::u8string to_u8string(grapheme const &g) noexcept
-    {
-        return tt::to_u8string(g.NFC());
-    }
-
     friend std::ostream &operator<<(std::ostream &lhs, grapheme const &rhs)
     {
         return lhs << to_string(rhs);

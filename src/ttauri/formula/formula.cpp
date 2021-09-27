@@ -151,26 +151,26 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
 
     switch (context->name) {
     case tokenizer_name_t::IntegerLiteral:
-        return std::make_unique<formula_literal_node>(location, static_cast<long long>(*context++));
+        return std::make_unique<formula_literal_node>(location, datum{static_cast<long long>(*context++)});
 
     case tokenizer_name_t::FloatLiteral:
-        return std::make_unique<formula_literal_node>(location, static_cast<double>(*context++));
+        return std::make_unique<formula_literal_node>(location, datum{static_cast<double>(*context++)});
 
     case tokenizer_name_t::StringLiteral:
-        return std::make_unique<formula_literal_node>(location, static_cast<std::string>(*context++));
+        return std::make_unique<formula_literal_node>(location, datum{static_cast<std::string>(*context++)});
 
     case tokenizer_name_t::Name:
         if (*context == "true") {
             ++context;
-            return std::make_unique<formula_literal_node>(location, true);
+            return std::make_unique<formula_literal_node>(location, datum{true});
 
         } else if (*context == "false") {
             ++context;
-            return std::make_unique<formula_literal_node>(location, false);
+            return std::make_unique<formula_literal_node>(location, datum{false});
 
         } else if (*context == "null") {
             ++context;
-            return std::make_unique<formula_literal_node>(location, datum::null{});
+            return std::make_unique<formula_literal_node>(location, datum{nullptr});
 
         } else if (*context == "undefined") {
             ++context;

@@ -92,11 +92,21 @@ bool dead_lock_detector::unlock(void *object) noexcept
 
 void dead_lock_detector::clear_stack() noexcept
 {
+    if (is_system_shutting_down()) {
+        // thread_local variables used by `stack` do not work on MSVC when main() returns.
+        return;
+    }
+
     stack.clear();
 }
 
 void dead_lock_detector::clear_graph() noexcept
 {
+    if (is_system_shutting_down()) {
+        // thread_local variables used by `lock_graph` do not work on MSVC when main() returns.
+        return;
+    }
+
     ttlet lock = std::scoped_lock(dead_lock_detector_mutex);
     lock_graph.clear();
 }
@@ -104,6 +114,11 @@ void dead_lock_detector::clear_graph() noexcept
 void dead_lock_detector::remove_object(void *object) noexcept
 {
     tt_axiom(object != nullptr);
+
+    if (is_system_shutting_down()) {
+        // thread_local variables used by `lock_graph` do not work on MSVC when main() returns.
+        return;
+    }
 
     ttlet lock = std::scoped_lock(dead_lock_detector_mutex);
 

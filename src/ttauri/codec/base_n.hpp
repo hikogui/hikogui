@@ -240,7 +240,7 @@ public:
     {
         auto r = bstring{};
         auto i = decode(begin(str), end(str), std::back_inserter(r));
-        tt_parse_check(i == end(str));
+        tt_parse_check(i == end(str), "base-n encoded string not completely decoded");
         return r;
     }
 

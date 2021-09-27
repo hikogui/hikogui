@@ -19,7 +19,7 @@ static CVReturn proc(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const
     self->callback();
 }
 
-vertical_sync_macos::vertical_sync_macos(std::function<void(void *,hires_utc_clock::time_point)> callback, void *callbackData) noexcept :
+vertical_sync_macos::vertical_sync_macos(std::function<void(void *,utc_nanoseconds)> callback, void *callbackData) noexcept :
     vertical_sync_base(std::move(callback), callbackData)
 {
 

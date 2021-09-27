@@ -28,7 +28,7 @@ struct formula_map_literal_node final : formula_node {
     datum evaluate(formula_evaluation_context& context) const override {
         tt_assert(keys.size() == values.size());
 
-        datum::map r;
+        datum::map_type r;
         for (size_t i = 0; i < keys.size(); i++) {
             ttlet &key = keys[i];
             ttlet &value = values[i];

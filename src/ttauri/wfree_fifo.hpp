@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "counters.hpp"
 #include <concepts>
 #include <atomic>
 #include <memory>
@@ -93,8 +94,10 @@ public:
 
     tt_no_inline void contended() noexcept
     {
+        using namespace std::literals::chrono_literals;
+
         // If we get here, that would suck, but nothing to do about it.
-        [[unlikely]] increment_counter<"wfree_fifo">();
+        ++global_counter<"wfree_fifo">;
         std::this_thread::sleep_for(16ms);
     }
 
@@ -173,7 +176,7 @@ public:
     }
 
 private:
-    std::array<slot_type, 256> _slots = {};
+    std::array<slot_type, num_slots> _slots = {};
     std::atomic<uint16_t> _head = 0;
     uint16_t _tail = 0;
 };

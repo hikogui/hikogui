@@ -73,13 +73,9 @@ struct gstring {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept;
 
-[[nodiscard]] inline gstring to_gstring(std::u8string_view rhs) noexcept {
-    return to_gstring(tt::to_u32string(rhs));
-}
-
 [[nodiscard]] inline gstring to_gstring(std::string_view rhs) noexcept
 {
-    return to_gstring(tt::to_u32string(rhs));
+    return to_gstring(to_u32string(rhs));
 }
 
 

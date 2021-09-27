@@ -83,7 +83,7 @@ struct formula_node {
 
     /** Call a function with a datum::vector as arguments.
      */
-    virtual datum call(formula_evaluation_context &context, datum::vector const &arguments) const
+    virtual datum call(formula_evaluation_context &context, datum::vector_type const &arguments) const
     {
         throw operation_error("{}: Expression is not callable.", location);
     }

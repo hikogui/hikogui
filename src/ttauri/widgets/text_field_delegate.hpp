@@ -16,6 +16,7 @@ class text_field_delegate {
 public:
     using callback_ptr_type = std::shared_ptr<std::function<void()>>;
 
+    virtual ~text_field_delegate() = default;
     virtual void init(text_field_widget const &sender) noexcept {}
     virtual void deinit(text_field_widget const &sender) noexcept {}
 

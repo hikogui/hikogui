@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="tt::datum">
+        <DisplayString Condition="_tag == 0">undefined</DisplayString>
+        <DisplayString Condition="_tag == 1">{_value._double}</DisplayString>
+        <DisplayString Condition="_tag == 2">{_value._long_long}</DisplayString>
+        <DisplayString Condition="_tag == 3">{_value._decimal}</DisplayString>
+        <DisplayString Condition="_tag == 4">{_value._bool}</DisplayString>
+        <DisplayString Condition="_tag == 5">null</DisplayString>
+        <DisplayString Condition="_tag == 6">{_value._year_month_day}</DisplayString>
+        <DisplayString Condition="_tag == 7">continue</DisplayString>
+        <DisplayString Condition="_tag == 8">break</DisplayString>
+        <DisplayString Condition="_tag == -1">{*_value._string}</DisplayString>
+        <DisplayString Condition="_tag == -2">{*_value._vector}</DisplayString>
+        <DisplayString Condition="_tag == -3">{*_value._map}</DisplayString>
+        <DisplayString Condition="_tag == -4">{*_value._url}</DisplayString>
+        <DisplayString Condition="_tag == -5">{*_value._bstring}</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="_tag == -2">*_value._vector</ExpandedItem>
+            <ExpandedItem Condition="_tag == -3">*_value._map</ExpandedItem>
+        </Expand>
+    </Type>
     <Type Name="tt::unicode_mask::entry_type">
         <DisplayString>{(_value &amp; 0x7ff) == 0 ? 0 : _value >> 11} - {(_value &amp; 0x7ff) == 0 ? 0 : (_value >> 11) + (_value &amp; 0x7ff)}</DisplayString>
         <Expand>

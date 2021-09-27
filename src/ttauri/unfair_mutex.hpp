@@ -45,6 +45,11 @@ public:
 
     ~unfair_mutex_impl() = default;
 
+    bool is_locked() const noexcept
+    {
+        return semaphore.load(std::memory_order::relaxed) != 0;
+    }
+
     void lock() noexcept
     {
         if constexpr (UseDeadLockDetector) {
@@ -53,15 +58,15 @@ public:
             tt_axiom(other == nullptr, "Potential dead-lock.");
         }
 
-        tt_axiom(semaphore.load() <= 2);
+        tt_axiom(holds_invariant());
 
         // Switch to 1 means there are no waiters.
-        uint32_t expected = 0;
+        semaphore_value_type expected = 0;
         if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
             [[unlikely]] lock_contended(expected);
         }
 
-        tt_axiom(semaphore.load() <= 2);
+        tt_axiom(holds_invariant());
     }
 
     /**
@@ -78,12 +83,12 @@ public:
             tt_axiom(other == nullptr, "Potential dead-lock.");
         }
 
-        tt_axiom(semaphore.load() <= 2);
+        tt_axiom(holds_invariant());
 
         // Switch to 1 means there are no waiters.
-        uint32_t expected = 0;
+        semaphore_value_type expected = 0;
         if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
-            tt_axiom(semaphore.load() <= 2);
+            tt_axiom(holds_invariant());
 
             if constexpr (UseDeadLockDetector) {
                 tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
@@ -92,7 +97,7 @@ public:
             [[unlikely]] return false;
         }
 
-        tt_axiom(semaphore.load() <= 2);
+        tt_axiom(holds_invariant());
         return true;
     }
 
@@ -101,7 +106,7 @@ public:
             tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
         }
 
-        tt_axiom(semaphore.load() <= 2);
+        tt_axiom(holds_invariant());
 
         if (semaphore.fetch_sub(1, std::memory_order::relaxed) != 1) {
             [[unlikely]] semaphore.store(0, std::memory_order::release);
@@ -111,7 +116,7 @@ public:
             atomic_thread_fence(std::memory_order::release);
         }
 
-        tt_axiom(semaphore.load() <= 2);
+        tt_axiom(holds_invariant());
     }
 
 private:
@@ -121,11 +126,17 @@ private:
      *  1 - Locked, no other thread is waiting.
      *  2 - Locked, zero or more threads are waiting.
      */
-    std::atomic<uint32_t> semaphore = 0;
+    std::atomic_unsigned_lock_free semaphore = 0;
+    using semaphore_value_type = typename decltype(semaphore)::value_type;
 
-    tt_no_inline void lock_contended(uint32_t expected) noexcept
+    bool holds_invariant() const noexcept
     {
-        tt_axiom(semaphore.load() <= 2);
+        return semaphore.load(std::memory_order::relaxed) <= 2;
+    }
+
+    tt_no_inline void lock_contended(semaphore_value_type expected) noexcept
+    {
+        tt_axiom(holds_invariant());
 
         do {
             ttlet should_wait = expected == 2;
@@ -133,11 +144,11 @@ private:
             // Set to 2 when we are waiting.
             expected = 1;
             if (should_wait || semaphore.compare_exchange_strong(expected, 2)) {
-                tt_axiom(semaphore.load() <= 2);
+                tt_axiom(holds_invariant());
                 semaphore.wait(2);
             }
 
-            tt_axiom(semaphore.load() <= 2);
+            tt_axiom(holds_invariant());
             // Set to 2 when acquiring the lock, so that during unlock we wake other waiting threads.
             expected = 0;
         } while (!semaphore.compare_exchange_strong(expected, 2));

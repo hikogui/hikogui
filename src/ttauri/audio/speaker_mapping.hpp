@@ -4,7 +4,9 @@
 
 #pragma once
 
-#include "../architecture.hpp"
+#include "../assert.hpp"
+#include "../cast.hpp"
+#include "../pickle.hpp"
 #include "../text/ttauri_icon.hpp"
 #include <array>
 #include <string>
@@ -12,8 +14,9 @@
 
 namespace tt {
 
-enum class speaker_mapping : uint32_t {
+enum class speaker_mapping : uint64_t {
     /** Direct. speakers are not assigned, and no matrix-mixing is done.
+     * Upper 32 bits contains the number of channels.
      */
     direct = 0x0'0000,
 
@@ -35,6 +38,18 @@ enum class speaker_mapping : uint32_t {
     top_back_left = 0x0'8000,
     top_back_center = 0x1'0000,
     top_back_right = 0x2'0000,
+
+    // A couple of isolated channel definitions
+    none = direct,
+    iso_0 = direct | (0ULL << 32),
+    iso_1 = direct | (1ULL << 32),
+    iso_2 = direct | (2ULL << 32),
+    iso_3 = direct | (3ULL << 32),
+    iso_4 = direct | (4ULL << 32),
+    iso_5 = direct | (5ULL << 32),
+    iso_6 = direct | (6ULL << 32),
+    iso_7 = direct | (7ULL << 32),
+    iso_8 = direct | (8ULL << 32),
 
     // Standard
     mono_1_0 = front_center,
@@ -82,26 +97,70 @@ enum class speaker_mapping : uint32_t {
     surround_atmos_7_1_4 = surround_7_1 | top_front_left | top_front_right | top_back_left | top_back_right,
 };
 
-
-[[nodiscard]] inline bool to_bool(speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(speaker_mapping const &rhs) noexcept
 {
-    return static_cast<bool>(static_cast<uint32_t>(rhs));
+    return static_cast<bool>(static_cast<uint64_t>(rhs));
 }
 
-[[nodiscard]] inline speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr bool holds_invariant(speaker_mapping const &rhs) noexcept
 {
-    return static_cast<speaker_mapping>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+    auto rhs_ = static_cast<uint64_t>(rhs);
+    return static_cast<uint32_t>(rhs_) ? (rhs_ >> 32) == 0 : (rhs_ >> 32) > 0;
 }
 
-[[nodiscard]] inline speaker_mapping operator&(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr bool is_direct(speaker_mapping const &rhs) noexcept
 {
-    return static_cast<speaker_mapping>(static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
+    return static_cast<uint32_t>(static_cast<uint64_t>(rhs)) == 0;
 }
 
-inline speaker_mapping &operator|=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr bool is_empty(speaker_mapping const &rhs) noexcept
 {
-    lhs = lhs | rhs;
-    return lhs;
+    return to_underlying(rhs) == 0;
+}
+
+[[nodiscard]] constexpr speaker_mapping make_direct_speaker_mapping(size_t num_speakers) noexcept
+{
+    tt_axiom(num_speakers <= std::numeric_limits<uint32_t>::max());
+    ttlet r = static_cast<speaker_mapping>(num_speakers << 32);
+    tt_axiom(holds_invariant(r));
+    return r;
+}
+
+[[nodiscard]] constexpr speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+{
+    tt_axiom((is_empty(lhs) or not is_direct(lhs)) and (is_empty(rhs) or not is_direct(rhs)));
+
+    ttlet r = static_cast<speaker_mapping>(to_underlying(lhs) | to_underlying(rhs));
+    tt_axiom(holds_invariant(r));
+    return r;
+}
+
+[[nodiscard]] constexpr speaker_mapping operator&(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
+{
+    tt_axiom(not is_direct(lhs) and not is_direct(rhs));
+
+    ttlet r = static_cast<speaker_mapping>(to_underlying(lhs) & to_underlying(rhs));
+    tt_axiom(holds_invariant(r));
+    return r;
+}
+
+constexpr speaker_mapping &operator|=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
+{
+    return lhs = lhs | rhs;
+}
+
+constexpr speaker_mapping &operator&=(speaker_mapping &lhs, speaker_mapping const &rhs) noexcept
+{
+    return lhs = lhs & rhs;
+}
+
+[[nodiscard]] constexpr size_t num_channels(speaker_mapping const &rhs) noexcept
+{
+    if (is_direct(rhs)) {
+        return static_cast<uint64_t>(rhs) >> 32;
+    } else {
+        return std::popcount(static_cast<uint64_t>(rhs));
+    }
 }
 
 [[nodiscard]] std::string to_string(speaker_mapping rhs) noexcept;
@@ -153,4 +212,27 @@ constexpr auto speaker_mappings = std::array{
     speaker_mapping_info{speaker_mapping::surround_atmos_7_1_4, ttauri_icon::surround_atmos_7_1_4, "Atmos 7.1.4"},
 };
 
-}
+template<>
+struct pickle<speaker_mapping> {
+    [[nodiscard]] datum encode(speaker_mapping const &rhs) const noexcept
+    {
+        return datum{narrow_cast<long long>(to_underlying(rhs))};
+    }
+
+    [[nodiscard]] speaker_mapping decode(long long rhs) const
+    {
+        tt_parse_check(rhs >= 0, "Expect speaker mapping to be encoded as a natural number, got {}.", rhs);
+        return static_cast<speaker_mapping>(rhs);
+    }
+
+    [[nodiscard]] speaker_mapping decode(datum const &rhs) const
+    {
+        if (auto *i = get_if<long long>(rhs)) {
+            return decode(*i);
+        } else {
+            throw parse_error("Expect speaker mapping to be encoded as a integer, got {}", rhs);
+        }
+    }
+};
+
+} // namespace tt

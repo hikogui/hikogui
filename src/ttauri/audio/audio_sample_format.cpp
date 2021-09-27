@@ -8,8 +8,6 @@ namespace tt {
 
 [[nodiscard]] float audio_sample_format::pack_multiplier() const noexcept
 {
-    tt_axiom(is_valid());
-
     if (is_float) {
         return 1.0f;
 
@@ -29,42 +27,37 @@ namespace tt {
     return 1.0f / pack_multiplier();
 }
 
-[[nodiscard]] int audio_sample_format::num_samples_per_chunk() const noexcept
+[[nodiscard]] size_t audio_sample_format::num_samples_per_chunk(size_t stride) const noexcept
 {
-    tt_axiom(is_valid());
-
     auto r = narrow_cast<int>(std::bit_floor((((16u - num_bytes) / stride) & 3) + 1));
     tt_axiom(r == 1 || r == 2 || r == 4);
     return r;
 }
 
-[[nodiscard]] int audio_sample_format::chunk_stride() const noexcept
+[[nodiscard]] size_t audio_sample_format::chunk_stride(size_t stride) const noexcept
 {
-    return stride * num_samples_per_chunk();
+    return stride * num_samples_per_chunk(stride);
 }
 
-[[nodiscard]] int audio_sample_format::num_chunks_per_quad() const noexcept
+[[nodiscard]] size_t audio_sample_format::num_chunks_per_quad(size_t stride) const noexcept
 {
-    return 4 / num_samples_per_chunk();
+    return 4 / num_samples_per_chunk(stride);
 }
 
-[[nodiscard]] size_t audio_sample_format::num_fast_quads(size_t num_samples) const noexcept
+[[nodiscard]] size_t audio_sample_format::num_fast_quads(size_t stride, size_t num_samples) const noexcept
 {
-    tt_axiom(is_valid());
-
     ttlet src_buffer_size = (num_samples - 1) * stride + num_bytes;
     if (src_buffer_size < 16) {
         return 0;
     }
 
-    auto num_chunks = (src_buffer_size - 16) / chunk_stride() + 1;
-    return num_chunks / num_chunks_per_quad();
+    auto num_chunks = (src_buffer_size - 16) / chunk_stride(stride) + 1;
+    return num_chunks / num_chunks_per_quad(stride);
 }
 
-[[nodiscard]] i8x16 audio_sample_format::load_shuffle_indices() const noexcept
+[[nodiscard]] i8x16 audio_sample_format::load_shuffle_indices(size_t stride) const noexcept
 {
-    tt_axiom(is_valid());
-    ttlet num_samples = num_samples_per_chunk();
+    ttlet num_samples = num_samples_per_chunk(stride);
 
     // Indices set to -1 result in a zero after a byte shuffle.
     auto r = i8x16::broadcast(-1);
@@ -91,10 +84,9 @@ namespace tt {
     return r;
 }
 
-[[nodiscard]] i8x16 audio_sample_format::store_shuffle_indices() const noexcept
+[[nodiscard]] i8x16 audio_sample_format::store_shuffle_indices(size_t stride) const noexcept
 {
-    tt_axiom(is_valid());
-    ttlet num_samples = num_samples_per_chunk();
+    ttlet num_samples = num_samples_per_chunk(stride);
 
     // Indices set to -1 result in a zero after a byte shuffle.
     auto r = i8x16::broadcast(-1);
@@ -121,21 +113,14 @@ namespace tt {
     return r;
 }
 
-[[nodiscard]] i8x16 audio_sample_format::concat_shuffle_indices() const noexcept
+[[nodiscard]] i8x16 audio_sample_format::concat_shuffle_indices(size_t stride) const noexcept
 {
-    tt_axiom(is_valid());
-    ttlet num_samples = num_samples_per_chunk();
+    ttlet num_samples = num_samples_per_chunk(stride);
 
     // The bytes are shifted right.
     ttlet byte_shift = (4 - num_samples) * 4;
 
-    return i8x16::byte_srl_shuffle_indices(byte_shift);
-}
-
-[[nodiscard]] bool audio_sample_format::is_valid() const noexcept
-{
-    return (num_bytes >= 1 && num_bytes <= 4) && (num_bits + num_guard_bits <= num_bytes * 8) &&
-        (endian == std::endian::little || endian == std::endian::big) && (stride >= num_bytes);
+    return i8x16::byte_srl_shuffle_indices(narrow_cast<unsigned int>(byte_shift));
 }
 
 } // namespace tt

@@ -434,7 +434,7 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     mouse_event mouseEvent;
-    ttlet current_time = hires_utc_clock::now();
+    ttlet current_time = std::chrono::utc_clock::now();
 
     switch (uMsg) {
     case WM_DESTROY: {
@@ -717,7 +717,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     tt_axiom(is_gui_thread());
 
     auto mouseEvent = mouse_event{};
-    mouseEvent.timePoint = hires_utc_clock::now();
+    mouseEvent.timePoint = std::chrono::utc_clock::now();
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
@@ -807,7 +807,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = 2;
-        doubleClickTimePoint = hires_utc_clock::now();
+        doubleClickTimePoint = std::chrono::utc_clock::now();
         break;
 
     case WM_MOUSEWHEEL:

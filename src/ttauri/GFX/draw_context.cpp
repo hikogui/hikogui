@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "draw_context.hpp"
-#include "pipeline_flat_device_shared.hpp"
 #include "pipeline_box_device_shared.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_SDF_device_shared.hpp"
@@ -18,20 +17,17 @@ draw_context::draw_context(
     size_t frame_buffer_index,
     extent2 surface_size,
     aarectangle scissor_rectangle,
-    vspan<pipeline_flat::vertex> &flatVertices,
     vspan<pipeline_box::vertex> &boxVertices,
     vspan<pipeline_image::vertex> &imageVertices,
     vspan<pipeline_SDF::vertex> &sdfVertices) noexcept :
     _device(device),
     _frame_buffer_index(frame_buffer_index),
     _scissor_rectangle(scissor_rectangle),
-    _flat_vertices(&flatVertices),
     _box_vertices(&boxVertices),
     _image_vertices(&imageVertices),
     _sdf_vertices(&sdfVertices),
     _clipping_rectangle(surface_size)
 {
-    _flat_vertices->clear();
     _box_vertices->clear();
     _image_vertices->clear();
     _sdf_vertices->clear();
@@ -77,20 +73,6 @@ gfx_device &draw_context::device() const noexcept
     return _device;
 }
 
-void draw_context::draw_filled_quad(point3 p1, point3 p2, point3 p3, point3 p4, color fill_color) const noexcept
-{
-    tt_axiom(_flat_vertices != nullptr);
-    _flat_vertices->emplace_back(aarectangle{_transform * _clipping_rectangle}, _transform * p1, fill_color);
-    _flat_vertices->emplace_back(aarectangle{_transform * _clipping_rectangle}, _transform * p2, fill_color);
-    _flat_vertices->emplace_back(aarectangle{_transform * _clipping_rectangle}, _transform * p3, fill_color);
-    _flat_vertices->emplace_back(aarectangle{_transform * _clipping_rectangle}, _transform * p4, fill_color);
-}
-
-void draw_context::draw_filled_quad(rectangle r, color fill_color) const noexcept
-{
-    draw_filled_quad(get<0>(r), get<1>(r), get<2>(r), get<3>(r), fill_color);
-}
-
 void draw_context::draw_box(
     rectangle box,
     color fill_color,
@@ -118,6 +100,11 @@ void draw_context::draw_box(rectangle box, color fill_color, color line_color, t
 void draw_context::draw_box(rectangle box, color fill_color, tt::corner_shapes corner_shapes) const noexcept
 {
     draw_box(box, fill_color, fill_color, 0.0, corner_shapes);
+}
+
+void draw_context::draw_box(rectangle box, color fill_color) const noexcept
+{
+    draw_box(box, fill_color, fill_color, 0.0, tt::corner_shapes{});
 }
 
 void draw_context::draw_box_with_border_inside(

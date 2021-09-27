@@ -75,6 +75,11 @@ URL URL::urlFromSystemfontDirectory() noexcept
     return get_folder_by_id(FOLDERID_Fonts);
 }
 
+URL URL::urlFromApplicationPreferencesFile() noexcept
+{
+    return URL::urlFromApplicationDataDirectory() / "preferences.json";
+}
+
 std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path) noexcept
 {
     auto searchPath = static_cast<std::string>(path);

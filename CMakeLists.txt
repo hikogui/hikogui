@@ -18,6 +18,7 @@ option(TT_BUILD_TESTS       "Build tests"                        ON)
 option(TT_BUILD_PCH         "Build precompiled headers"          ON)
 option(TT_INSTALL           "Generate installation target"       ON)
 option(TT_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
+option(TT_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -177,13 +178,6 @@ target_include_directories(ttauri PUBLIC
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 
-if(${CMAKE_VERSION} VERSION_LESS "3.21.0")
-    target_compile_features(ttauri PUBLIC cxx_std_20)
-else()
-    # CMake uses the incorrect /std:c++20 on MSVC when cxx_std_20 is used.
-    target_compile_features(ttauri PUBLIC cxx_std_23)
-endif()
-
 #
 # We will support the following CPUs:
 #   * Intel Ivy Bridge from 2012, still used by Mac Pro sold in 2019.
@@ -219,6 +213,14 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
+
+    if(${CMAKE_VERSION} VERSION_LESS "3.21.0")
+        target_compile_features(ttauri PUBLIC cxx_std_20)
+    else()
+        # CMake uses the incorrect /std:c++20 on MSVC when cxx_std_20 is used.
+        target_compile_features(ttauri PUBLIC cxx_std_23)
+    endif()
+
     # Turn on a lot of warnings by default.
     target_compile_options(ttauri PUBLIC -W4)
 
@@ -246,7 +248,7 @@ elseif (MSVC)
     target_compile_options(ttauri PUBLIC -arch:AVX)
 
     # The ttauri generic tokenizer uses large constexpr tables.
-    target_compile_options(ttauri PUBLIC -constexpr:steps 100000000)
+    target_compile_options(ttauri PUBLIC "-constexpr:steps100000000")
 
     # C4068: unknown pragma.
     # Ignore unknown pragmas, needed for other compilers.
@@ -295,6 +297,19 @@ elseif (MSVC)
         # Just my code enables the VS debugger to step over system, framework, library, and other non-user calls.
         target_compile_options(ttauri PUBLIC -JMC)
     endif()
+
+    if(TT_ENABLE_ASAN)
+        target_compile_options(ttauri PUBLIC -fsanitize=address)
+    endif()
+
+    if(TT_ENABLE_ANALYSIS)
+        target_compile_options(ttauri PUBLIC -analyze)
+
+        #target_compile_options(ttauri PUBLIC -analyze:ruleset ${CMAKE_CURRENT_SOURCE_DIR}/AllRules.ruleset)
+        
+        # The Core Guidelines checker, not so useful for real programs.
+        #target_compile_options(ttauri PUBLIC -analyze:plugin EspXEngine.dll)
+    endif()
 endif()
 
 if (WIN32)
@@ -333,8 +348,6 @@ add_shader(ttauri_shader_objects
     src/ttauri/GFX/utils.glsl
     src/ttauri/GFX/pipeline_image.vert
     src/ttauri/GFX/pipeline_image.frag
-    src/ttauri/GFX/pipeline_flat.vert
-    src/ttauri/GFX/pipeline_flat.frag
     src/ttauri/GFX/pipeline_box.vert
     src/ttauri/GFX/pipeline_box.frag
     src/ttauri/GFX/pipeline_SDF.vert
@@ -474,53 +487,7 @@ endif()
 if(TT_BUILD_EXAMPLES)
     add_subdirectory(examples/ttauri_demo)
     add_subdirectory(examples/widgets)
-endif()
-
-#-------------------------------------------------------------------
-# Remove certain files from static analysis
-#-------------------------------------------------------------------
-
-if(TT_ENABLE_ANALYSIS)
-    if(MSVC)
-        set(ttauri_do_not_analyze
-            src/ttauri/GUI/pipeline_flat.cpp
-            src/ttauri/GUI/gui_surface_vulkan.cpp
-            src/ttauri/GUI/gui_device_vulkan.cpp
-            src/ttauri/GUI/gui_system_vulkan.cpp
-            src/ttauri/GUI/gui_system.cpp
-            src/ttauri/GUI/gui_system_vulkan_win32.cpp
-            src/ttauri/GUI/gui_window.cpp
-            src/ttauri/GUI/gui_window_win32.cpp
-            src/ttauri/GUI/pipeline_flat_device_shared.cpp
-            src/ttauri/GUI/pipeline_image.cpp
-            src/ttauri/GUI/pipeline_tone_mapper.cpp
-            src/ttauri/GUI/pipeline_image_texture_map.cpp
-            src/ttauri/GUI/pipeline_box_device_shared.cpp
-            src/ttauri/GUI/pipeline_image_device_shared.cpp
-            src/ttauri/GUI/pipeline_tone_mapper_device_shared.cpp
-            src/ttauri/GUI/pipeline_image_image.cpp
-            src/ttauri/GUI/pipeline_SDF_texture_map.cpp
-            src/ttauri/GUI/pipeline_SDF_device_shared.cpp
-            src/ttauri/GUI/pipeline_SDF_atlas_rect.cpp
-            src/ttauri/GUI/pipeline_SDF.cpp
-            src/ttauri/GUI/pipeline_vulkan.cpp
-            src/ttauri/GUI/pipeline_box.cpp
-            src/ttauri/widgets/WindowWidget.cpp
-            src/ttauri/widgets/SystemMenuWidget.cpp
-            src/ttauri/widgets/grid_layout_widget.cpp
-            src/ttauri/widgets/WindowTrafficLightsWidget.cpp
-            src/ttauri/widgets/LineInputWidget.cpp
-            src/ttauri/widgets/widget.cpp
-            src/ttauri/stencils/glyph_stencil.cpp
-            src/ttauri/stencils/pixel_map_stencil.cpp
-            src/ttauri/stencils/text_stencil.cpp
-            src/ttauri/stencils/stencil.cpp
-            src/ttauri/application.cpp
-        )
-        set_source_files_properties(${ttauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
-        target_compile_options(ttauri PUBLIC -analyze)
-        #target_compile_options(ttauri PUBLIC /analyze:plugin EspXEngine.dll)
-   endif()
+    add_subdirectory(examples/codec)
 endif()
 
 #-------------------------------------------------------------------

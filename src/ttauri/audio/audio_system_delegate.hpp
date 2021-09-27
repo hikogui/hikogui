@@ -11,6 +11,7 @@ class audio_system;
 
 class audio_system_delegate {
 public:
+    virtual ~audio_system_delegate() = default;
     virtual void init(audio_system &sender) noexcept {}
     virtual void deinit(audio_system &sender) noexcept {}
 

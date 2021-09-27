@@ -12,6 +12,7 @@ class grid_widget;
 
 class grid_delegate {
 public:
+    virtual ~grid_delegate() = default;
 
     virtual void init(grid_widget &sender) noexcept {}
 

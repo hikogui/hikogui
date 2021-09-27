@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../hires_utc_clock.hpp"
+#include "../chrono.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../rapid/numeric_array.hpp"
@@ -54,7 +54,7 @@ public:
 
     /** Time point when the sample was at the input or will be at the output of the audio interface.
      */
-    hires_utc_clock::time_point time_stamp;
+    utc_nanoseconds time_stamp;
 
     /** The state of the audio block.
      *  - normal: The sample buffers contain normalized -1.0 to 1.0 sample data.

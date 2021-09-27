@@ -56,8 +56,8 @@ private:
     bool trackingMouseLeaveEvent = false;
     char32_t highSurrogate = 0;
     mouse_event mouseButtonEvent;
-    hires_utc_clock::time_point doubleClickTimePoint;
-    hires_utc_clock::duration doubleClickMaximumDuration;
+    utc_nanoseconds doubleClickTimePoint;
+    std::chrono::nanoseconds doubleClickMaximumDuration;
     UINT_PTR move_and_resize_timer_id;
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;
     [[nodiscard]] keyboard_modifiers getkeyboard_modifiers() noexcept;

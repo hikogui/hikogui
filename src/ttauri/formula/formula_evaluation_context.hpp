@@ -123,7 +123,7 @@ struct formula_evaluation_context {
         auto i = loop_stack.crbegin();
 
         while (short_name[0] == '$') {
-            if (i == loop_stack.crend() || i->count.is_undefined()) {
+            if (i == loop_stack.crend() || holds_alternative<std::monostate>(i->count)) {
                 throw operation_error("Accessing loop variable {} while not in loop", name);
             }
 
@@ -136,12 +136,12 @@ struct formula_evaluation_context {
         } else if (short_name == "first") {
             return i->first;
         } else if (short_name == "size" || short_name == "length") {
-            if (i->size.is_undefined()) {
+            if (holds_alternative<std::monostate>(i->size)) {
                 throw operation_error("Accessing loop variable {} only available in #for loops", name);
             }
             return i->size;
         } else if (short_name == "last") {
-            if (i->last.is_undefined()) {
+            if (holds_alternative<std::monostate>(i->last)) {
                 throw operation_error("Accessing loop variable {} only available in #for loops", name);
             }
             return i->last;

@@ -9,14 +9,10 @@
 
 namespace tt {
 
-#define tt_parse_check(expression, ...) \
+#define tt_parse_check(expression, message, ...) \
     do { \
         if (!(expression)) { \
-            if constexpr (::tt::nr_arguments(__VA_ARGS__) == 0) { \
-                throw ::tt::parse_error(#expression); \
-            } else { \
-                throw ::tt::parse_error(__VA_ARGS__); \
-            } \
+            throw ::tt::parse_error(message __VA_OPT__(,) __VA_ARGS__); \
         } \
     } while (false)
 
