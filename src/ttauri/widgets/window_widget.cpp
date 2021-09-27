@@ -25,7 +25,7 @@ void window_widget::init() noexcept
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
         _title_callback = title.subscribe([this]{
             window.gui.run([this] {
-                this->_system_menu->icon = (*this->title).icon;
+                this->_system_menu->icon = this->title->icon;
             });
         });
 #endif

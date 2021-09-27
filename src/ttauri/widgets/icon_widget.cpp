@@ -26,7 +26,7 @@ void icon_widget::init() noexcept
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
-        ttlet &icon_ = *icon;
+        ttlet icon_ = icon.cget();
 
         if (holds_alternative<std::monostate>(icon_)) {
             _icon_type = icon_type::no;

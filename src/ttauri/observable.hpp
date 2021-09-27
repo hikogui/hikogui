@@ -5,7 +5,6 @@
 #pragma once
 
 #include "unfair_mutex.hpp"
-#include "notifier.hpp"
 #include <memory>
 #include <vector>
 #include <atomic>
@@ -21,10 +20,78 @@ namespace detail {
 template<typename T>
 struct observable_impl;
 
+inline unfair_mutex observable_mutex;
+
+struct observable_notifier_type {
+    using callback_ptr_type = std::weak_ptr<std::function<void()>>;
+
+    uint64_t proxy_count = 0;
+    std::vector<callback_ptr_type> callbacks;
+
+    observable_notifier_type() = default;
+    observable_notifier_type(observable_notifier_type const &) = delete;
+    observable_notifier_type(observable_notifier_type &&) = delete;
+    observable_notifier_type &operator=(observable_notifier_type const &) = delete;
+    observable_notifier_type &operator=(observable_notifier_type &&) = delete;
+
+    void start_proxy() noexcept
+    {
+        ttlet lock = std::scoped_lock(observable_mutex);
+        ++proxy_count;
+    }
+
+    void finish_proxy() noexcept
+    {
+        observable_mutex.lock();
+
+        tt_axiom(proxy_count != 0);
+        --proxy_count;
+
+        notify();
+    }
+
+    /** Add a callback to the list.
+    * 
+    * @pre observable_mutex must be locked.
+    */
+    void push(callback_ptr_type callback_ptr) noexcept
+    {
+        tt_axiom(observable_mutex.is_locked());
+        callbacks.push_back(std::move(callback_ptr));
+    }
+
+    /** Notify all callbacks that have been pushed.
+     * 
+     * @pre observable_mutex must be locked.
+     * @post obervable_mutex is unlocked
+     * @post All registered callbacks have been called.
+     * @post List of registered callbacks has been cleared.
+     */
+    void notify() noexcept {
+        tt_axiom(observable_mutex.is_locked());
+
+        if (proxy_count == 0 and not callbacks.empty()) {
+            auto to_call = std::vector<callback_ptr_type>{};
+            std::swap(to_call, callbacks);
+            observable_mutex.unlock();
+
+            for (ttlet &callback_ptr : to_call) {
+                if (auto callback = callback_ptr.lock()) {
+                    (*callback)();
+                }
+            }
+        } else {
+            observable_mutex.unlock();
+        }
+    }
+};
+
+inline observable_notifier_type observable_notifier;
+
 /** A proxy to the shared-value inside an observable.
  *
  * This proxy object makes sure that updates to a value
- * is atomic and that modifications causes notifcations to be
+ * is atomic and that modifications causes notifications to be
  * sent.
  *
  * @tparam T The type of the observed value.
@@ -37,137 +104,201 @@ struct observable_proxy {
     static constexpr bool is_constant = Constant;
     static constexpr bool is_variable = not Constant;
 
-    enum class state_type : uint8_t { none, read, write, modified };
+    enum class state_type : uint8_t { read, write, modified };
+
+    observable_impl<value_type> *_actual = nullptr;
+    mutable value_type _original;
+    mutable state_type _state = state_type::none;
 
     ~observable_proxy()
     {
-        if (_actual) {
-            if (is_variable and _state == state_type::write and _actual->value != _original) {
-                _state = state_type::modified;
-            }
+        tt_axiom(_actual);
 
-            if (not is_atomic and _state != state_type::none) {
-                _actual->mutex.unlock();
-            }
+        if (is_variable and _state == state_type::write and _actual->value != _original) {
+            _state = state_type::modified;
+        }
 
-            if (is_variable and _state == state_type::modified) {
-                _actual->notify_owners();
-            }
+        if (not is_atomic) {
+            _actual->mutex.unlock();
+            observable_notifier.finish_proxy();
+        }
+
+        if (is_variable and _state == state_type::modified) {
+            _actual->notify_owners();
         }
     }
 
-    observable_proxy(observable_impl<T> &actual) : _actual(&actual) {}
-
-    observable_proxy(observable_proxy &&other) noexcept = delete;
-    observable_proxy &operator=(observable_proxy &&other) noexcept = delete;
-    observable_proxy(observable_proxy const &) = delete;
-    observable_proxy &operator=(observable_proxy const &) = delete;
-
-    void prepare(state_type state) const noexcept
+    observable_proxy(observable_impl<T> &actual) : _actual(&actual), _original(), _state(state_type::read)
     {
-        tt_axiom(state != state_type::none);
-        if (not is_atomic and _state == state_type::none) {
+        if (not is_atomic) {
+            observable_notifier.start_proxy();
             this->_actual->mutex.lock();
         }
-        if (_state <= state_type::read and state == state_type::write) {
+        tt_axiom(this->_actual);
+    }
+
+    observable_proxy(observable_proxy &&) = delete;
+    observable_proxy(observable_proxy const &) = delete;
+
+    void prepare(state_type new_state) const noexcept
+    {
+        tt_axiom(new_state != state_type::read);
+        if (_state == state_type::read and new_state == state_type::write) {
             _original = _actual->value;
         }
-        _state = state;
+        _state = new_state;
+    }
+
+    operator value_type() const noexcept requires(is_atomic)
+    {
+        return _actual->value;
+    }
+
+    operator value_type &() const noexcept requires(is_variable and not is_atomic)
+    {
+        prepare(state_type::write);
+        return _actual->value;
+    }
+
+    operator value_type const &() const noexcept requires(is_constant and not is_atomic)
+    {
+        return _actual->value;
+    }
+
+    /** Copy the value from a temporary proxy.
+     */
+    observable_proxy &operator=(observable_proxy &&other) noexcept
+    {
+        tt_return_on_self_assignment(other);
+
+        return *this = other._actual->value;
+    }
+
+    /** Copy the value from a proxy.
+     */
+    observable_proxy &operator=(observable_proxy const &other) noexcept
+    {
+        tt_return_on_self_assignment(other);
+
+        return *this = other._actual->value;
     }
 
     // MSVC Compiler bug returning this with auto argument
-    template<std::convertible_to<value_type> Value>
-    observable_proxy &operator=(Value &&value) noexcept requires(is_variable and not is_atomic)
+    template<typename Arg = value_type>
+    observable_proxy &operator=(Arg &&arg) noexcept
+        requires(is_variable and not is_atomic and not std::is_same_v<std::remove_cvref_t<Arg>, observable_proxy>)
     {
         prepare(state_type::write);
-        _actual->value = std::forward<decltype(value)>(value);
+        _actual->value = std::forward<Arg>(arg);
         return *this;
     }
 
-    template<std::convertible_to<value_type> Value>
-    observable_proxy &operator=(Value value) noexcept requires(is_variable and is_atomic)
+    template<typename Arg = value_type>
+    observable_proxy &operator=(Arg &&arg) noexcept
+        requires(is_variable and is_atomic and not std::is_same_v<std::remove_cvref_t<Arg>, observable_proxy>)
     {
-        if (_actual->value.exchange(value) != value) {
-            state = state_type::modified;
+        // value is not std::forwarded, that means exchange() and operator!=() are called
+        // with a const lvalue reference.
+        if (_actual->value.exchange(arg) != arg) {
+            _state = state_type::modified;
         }
         return *this;
     }
 
-    value_type operator*() const requires(is_atomic)
+    value_type operator*() const noexcept requires(is_atomic)
     {
-        prepare(state_type::read);
         return _actual->value.load();
     }
 
-    value_type const &operator*() const requires(is_constant and not is_atomic)
+    value_type const &operator*() const noexcept requires(is_constant and not is_atomic)
     {
-        prepare(state_type::read);
         return _actual->value;
     }
 
-    value_type &operator*() const requires(is_variable and not is_atomic)
+    value_type &operator*() const noexcept requires(is_variable and not is_atomic)
     {
         prepare(state_type::write);
         return _actual->value;
     }
 
-    value_type const *operator->() const requires(is_constant and not is_atomic)
+    value_type const *operator->() const noexcept requires(is_constant and not is_atomic)
     {
-        prepare(state_type::read);
         return &(_actual->value);
     }
 
-    value_type *operator->() const requires(is_variable and not is_atomic)
+    value_type *operator->() const noexcept requires(is_variable and not is_atomic)
     {
         prepare(state_type::write);
         return &(_actual->value);
-    }
-
-    explicit operator bool() const noexcept
-    {
-        prepare(state_type::read);
-        return static_cast<bool>(_actual->value);
     }
 
     template<typename... Args>
-    auto operator()(Args &&...args) const noexcept
+    decltype(auto) operator()(Args &&...args) const noexcept
     {
-        prepare(is_constant ? state_type::read : state_type::write);
+        prepare(state_type::write);
         return _actual->value(std::forward<Args>(args)...);
+    }
+
+    template<typename Arg>
+    decltype(auto) operator[](Arg &&arg) const noexcept requires(is_variable and not is_atomic)
+    {
+        prepare(state_type::write);
+        return _actual->value[std::forward<Arg>(arg)];
+    }
+
+    template<typename Arg>
+    decltype(auto) operator[](Arg &&arg) const noexcept requires(is_constant and not is_atomic)
+    {
+        return const_cast<value_type const &>(_actual->value)[std::forward<Arg>(arg)];
     }
 
 #define X(op) \
     [[nodiscard]] friend auto operator op(observable_proxy const &lhs, observable_proxy const &rhs) noexcept \
     { \
-        lhs.prepare(state_type::read); \
-        rhs.prepare(state_type::read); \
         return lhs._actual->value op rhs._actual->value; \
     } \
 \
     [[nodiscard]] friend auto operator op(observable_proxy const &lhs, auto const &rhs) noexcept \
     { \
-        lhs.prepare(state_type::read); \
         return lhs._actual->value op rhs; \
     } \
 \
     [[nodiscard]] friend auto operator op(auto const &lhs, observable_proxy const &rhs) noexcept \
     { \
-        rhs.prepare(state_type::read); \
         return lhs op rhs._actual->value; \
     }
 
     X(==)
+    X(<=>)
     X(-)
+    X(+)
+    X(*)
+    X(/)
+    X(%)
+    X(&)
+    X(|)
 #undef X
 
 #define X(op) \
     [[nodiscard]] auto operator op() const noexcept \
     { \
-        prepare(state_type::read); \
         return op _actual->value; \
     }
 
     X(-)
+    X(~)
+#undef X
+
+#define X(func) \
+    [[nodiscard]] friend decltype(auto) func(observable_proxy const &rhs) noexcept \
+    { \
+        return func(rhs._actual->value); \
+    }
+
+    X(size)
+    X(ssize)
+    X(begin)
+    X(end)
 #undef X
 
     // MSVC Internal compiler error
@@ -178,7 +309,6 @@ struct observable_proxy {
             prepare(state_type::modified);
             return _actual->value += rhs;
         } else {
-            prepare(state_type::read);
             return _actual->value;
         }
     }
@@ -189,10 +319,6 @@ struct observable_proxy {
         prepare(state_type::write);
         return _actual->value += rhs;
     }
-
-    observable_impl<value_type> *_actual = nullptr;
-    mutable value_type _original;
-    mutable state_type _state = state_type::none;
 };
 
 /** The shared value, shared between observers.
@@ -242,9 +368,9 @@ struct observable_impl {
      */
     void add_owner(owner_type &owner) noexcept
     {
-        tt_axiom(std::find(owners.cbegin(), owners.cend(), &owner) == owner.cend());
+        tt_axiom(std::find(owners.cbegin(), owners.cend(), &owner) == owners.cend());
 
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(observable_mutex);
         owners.push_back(&owner);
     }
 
@@ -254,45 +380,34 @@ struct observable_impl {
      */
     void remove_owner(owner_type &owner) noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(observable_mutex);
         ttlet nr_erased = std::erase(owners, &owner);
         tt_axiom(nr_erased == 1);
     }
 
-    owner_type *get_owner(size_t index) const noexcept
-    {
-        ttlet lock = std::scoped_lock(mutex);
-        return index < owners.size() ? owners[index] : nullptr;
-    }
-
     void notify_owners() const noexcept
     {
-        size_t index = 0;
-        while (auto owner = get_owner(index++)) {
+        observable_mutex.lock();
+        for (auto owner : owners) {
             owner->notify();
         }
+        observable_notifier.notify();
     }
 
     void reseat_owners(std::shared_ptr<observable_impl> const &new_impl) noexcept
     {
-        mutex.lock();
+        observable_mutex.lock();
 
         tt_axiom(not owners.empty());
-        auto keep_this_alive = owners.front()->pimpl;
+        auto keep_this_alive = owners.front()->_pimpl;
 
         for (auto owner : owners) {
-            owner->pimpl = new_impl;
-            new_impl->add_owner(*owner);
-        }
-
-        auto old_owners = std::move(owners);
-        owners.clear();
-
-        mutex.unlock();
-
-        for (auto owner : old_owners) {
+            owner->_pimpl = new_impl;
+            new_impl->owners.push_back(owner);
             owner->notify();
         }
+        owners.clear();
+        observable_notifier.notify();
     }
 };
 
@@ -309,7 +424,7 @@ struct observable_impl {
  * Now if one object changes the shared value, the other objects will get notified.
  *
  * Multiple observers can share the same value. This makes it possible for each
- * object to be an owner of a observer, while linking oberservers between objects
+ * object to be an owner of a observer, while linking observers between objects
  * together, without having to worry about lifetime management.
  *
  * ```
@@ -322,13 +437,13 @@ struct observable_impl {
  * b = c; // 'a', 'b' and 'c' all share the value 42.
  * b = d; // 'a', 'b', 'c' and 'd' all share the value 9.
  * ```
- * 
+ *
  * A proxy object is returned when dereferencing an observable, this allows
  * multiple read/write/modify operations to be treated atomically. The
  * callbacks are called when both the value has actually changed and the
  * lifetime of the proxy object has ended.
- * 
- * 
+ *
+ *
  *
  *
  * @tparam T The type of the value to be observed.
@@ -340,33 +455,32 @@ public:
     using reference = detail::observable_proxy<value_type, false>;
     using const_reference = detail::observable_proxy<value_type, true>;
     using impl_type = detail::observable_impl<value_type>;
-    using notifier_type = tt::notifier<void()>;
-    using callback_ptr_type = notifier_type::callback_ptr_type;
+    using callback_ptr_type = std::shared_ptr<std::function<void()>>;
     static constexpr bool is_atomic = impl_type::is_atomic;
 
     ~observable()
     {
-        pimpl->remove_owner(*this);
+        _pimpl->remove_owner(*this);
     }
 
-    /** Construct an observerable.
+    /** Construct an observable.
      *
      * The observer is created with a value that is default constructed.
      */
-    observable() noexcept : pimpl(std::make_shared<impl_type>())
+    observable() noexcept : _pimpl(std::make_shared<impl_type>())
     {
-        pimpl->add_owner(*this);
+        _pimpl->add_owner(*this);
     }
 
-    /** Construct an observerable and chain it to another.
+    /** Construct an observable and chain it to another.
      *
      * The new observable will share a value with the other observable.
      *
      * @param other The other observable to share the value with.
      */
-    observable(observable const &other) noexcept : pimpl(other.pimpl)
+    observable(observable const &other) noexcept : _pimpl(other._pimpl)
     {
-        pimpl->add_owner(*this);
+        _pimpl->add_owner(*this);
     }
 
     /** Chain with another observable.
@@ -383,7 +497,7 @@ public:
     {
         tt_return_on_self_assignment(other);
 
-        pimpl->reseat_owners(other.pimpl);
+        _pimpl->reseat_owners(other._pimpl);
         return *this;
     }
 
@@ -397,7 +511,7 @@ public:
      */
     const_reference cget() const noexcept
     {
-        return pimpl->cget();
+        return _pimpl->cget();
     }
 
     /** Get a constant reference to the shared value.
@@ -410,7 +524,7 @@ public:
      */
     const_reference get() const noexcept
     {
-        return pimpl->cget();
+        return _pimpl->cget();
     }
 
     /** Get a writable reference to the shared-value.
@@ -425,7 +539,7 @@ public:
      */
     reference get() noexcept
     {
-        return pimpl->get();
+        return _pimpl->get();
     }
 
     /** Construct an observable with its value set.
@@ -433,22 +547,21 @@ public:
      * @param value The value to assign to the shared-value.
      */
     observable(std::convertible_to<value_type> auto &&value) noexcept :
-        pimpl(std::make_shared<impl_type>(std::forward<decltype(value)>(value)))
+        _pimpl(std::make_shared<impl_type>(std::forward<decltype(value)>(value)))
     {
-        pimpl->add_owner(*this);
+        _pimpl->add_owner(*this);
     }
 
-    // XXX MSVC-2019 Compiler bug returning this with auto argument
     /** Assign a new value.
      *
      * @post subscribers are notified.
      * @param value The value to assign to the shared-value.
      */
-    template<std::convertible_to<value_type> Value>
-    observable &operator=(Value &&value) noexcept
+    template<typename Value = value_type>
+    observable &operator=(Value &&value) noexcept requires(not std::is_same_v<std::remove_cvref_t<Value>, observable>)
     {
-        tt_axiom(pimpl);
-        get() = std::forward<decltype(value)>(value);
+        tt_axiom(_pimpl);
+        get() = std::forward<Value>(value);
         return *this;
     }
 
@@ -461,14 +574,14 @@ public:
         return *(cget());
     }
 
-    detail::observable_proxy<value_type, true>  operator*() const noexcept requires(not is_atomic)
+    detail::observable_proxy<value_type, true> operator*() const noexcept requires(not is_atomic)
     {
-        return *(cget());
+        return cget();
     }
 
-    detail::observable_proxy<value_type, false>  operator*() noexcept requires(not is_atomic)
+    detail::observable_proxy<value_type, false> operator*() noexcept requires(not is_atomic)
     {
-        return *(get());
+        return get();
     }
 
     detail::observable_proxy<value_type, true> operator->() const noexcept
@@ -525,29 +638,59 @@ public:
 
     callback_ptr_type subscribe(callback_ptr_type const &callback_ptr) noexcept
     {
-        return notifier.subscribe(callback_ptr);
+        ttlet lock = std::scoped_lock(detail::observable_mutex);
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        auto it = std::find_if(_callbacks.cbegin(), _callbacks.cend(), [&callback_ptr](ttlet &item) {
+            return item.lock() == callback_ptr;
+        });
+        tt_axiom(it == _callbacks.cend());
+#endif
+        _callbacks.push_back(callback_ptr);
+        return callback_ptr;
     }
 
     template<typename Callback>
     [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept requires(std::is_invocable_v<Callback>)
     {
-        auto callback_ptr = notifier.subscribe(std::forward<Callback>(callback));
-        (*callback_ptr)();
+        auto callback_ptr = std::make_shared<std::function<void()>>(std::forward<Callback>(callback));
+        subscribe(callback_ptr);
+
+        detail::observable_mutex.lock();
+        detail::observable_notifier.push(callback_ptr);
+        detail::observable_notifier.notify();
         return callback_ptr;
     }
 
     void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
     {
-        notifier.unsubscribe(callback_ptr);
+        ttlet lock = std::scoped_lock(detail::observable_mutex);
+        ttlet erase_count = std::erase_if(_callbacks, [&callback_ptr](ttlet &item) {
+            return item.expired() or item.lock() == callback_ptr;
+        });
+        tt_axiom(erase_count == 1);
     }
 
 private:
-    std::shared_ptr<impl_type> pimpl;
-    notifier_type notifier;
+    std::shared_ptr<impl_type> _pimpl;
+    mutable std::vector<std::weak_ptr<std::function<void()>>> _callbacks;
 
     void notify() const noexcept
     {
-        notifier();
+        auto has_expired_callbacks = false;
+        for (ttlet &callback_ptr : _callbacks) {
+            if (callback_ptr.expired()) {
+                has_expired_callbacks = true;
+            } else {
+                detail::observable_notifier.push(callback_ptr);
+            }
+        }
+
+        if (has_expired_callbacks) {
+            ttlet erase_count = std::erase_if(_callbacks, [](ttlet &callback_ptr) {
+                return callback_ptr.expired();
+            });
+            tt_axiom(erase_count > 0);
+        }
     }
 
     friend impl_type;
