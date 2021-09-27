@@ -7,7 +7,6 @@
 #include "gfx_device.hpp"
 #include "gfx_system_globals.hpp"
 #include "gfx_queue_vulkan.hpp"
-#include "pipeline_flat_device_shared.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_box_device_shared.hpp"
 #include "pipeline_SDF_device_shared.hpp"
@@ -79,7 +78,6 @@ public:
     vk::Buffer quadIndexBuffer;
     VmaAllocation quadIndexBufferAllocation = {};
 
-    std::unique_ptr<pipeline_flat::device_shared> flatPipeline;
     std::unique_ptr<pipeline_box::device_shared> boxPipeline;
     std::unique_ptr<pipeline_image::device_shared> imagePipeline;
     std::unique_ptr<pipeline_SDF::device_shared> SDFPipeline;

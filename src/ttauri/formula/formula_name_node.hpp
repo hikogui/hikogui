@@ -62,7 +62,7 @@ struct formula_name_node final : formula_node {
         }
     }
 
-    datum call(formula_evaluation_context& context, datum::vector const &arguments) const override {
+    datum call(formula_evaluation_context& context, datum::vector_type const &arguments) const override {
         return function(context, arguments);
     }
 

@@ -18,7 +18,7 @@ toggle_widget::toggle_widget(gui_window &window, widget *parent, std::unique_ptr
 }
 
 [[nodiscard]] bool
-toggle_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+toggle_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -41,7 +41,7 @@ toggle_widget::constrain(hires_utc_clock::time_point display_time_point, bool ne
     }
 }
 
-[[nodiscard]] void toggle_widget::layout(hires_utc_clock::time_point displayTimePoint, bool need_layout) noexcept
+[[nodiscard]] void toggle_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -63,7 +63,7 @@ toggle_widget::constrain(hires_utc_clock::time_point display_time_point, bool ne
     super::layout(displayTimePoint, need_layout);
 }
 
-void toggle_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void toggle_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -84,7 +84,7 @@ void toggle_widget::draw_toggle_button(draw_context context) noexcept
         _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
 }
 
-void toggle_widget::draw_toggle_pip(draw_context draw_context, hires_utc_clock::time_point display_time_point) noexcept
+void toggle_widget::draw_toggle_pip(draw_context draw_context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

@@ -14,8 +14,6 @@
 
 namespace tt {
 
-using namespace std::literals;
-
 /** A parser to parse command line arguments.
  */
 class CommandLineParser {

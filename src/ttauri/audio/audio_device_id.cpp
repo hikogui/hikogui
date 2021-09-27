@@ -8,23 +8,20 @@
 
 namespace tt {
 
-audio_device_id::audio_device_id(char type, wchar_t const *id) noexcept
+audio_device_id::audio_device_id(char type, wchar_t const *id) noexcept : _v{}
 {
     tt_axiom(id);
     tt_axiom(type == audio_device_id::win32);
 
-    auto out_it = std::begin(_v);
-    ttlet out_end = std::cend(_v);
+    auto id_ = tt::to_string(id);
+    _v[0] = type;
 
-    while (out_it != out_end) {
-        auto c32 = utf16_to_utf32(id, nullptr);
-        utf32_to_utf8(c32, out_it, out_end);
+    auto id_size_with_nul = std::min(std::size(id_) + 1, std::size(_v) - 1);
+    std::memcpy(&_v[1], id_.c_str(), id_size_with_nul);
 
-        if (c32 == 0) {
-            return;
-        }
+    if (std::size(id_) > std::size(_v) - 1) {
+        tt_log_error("Audio device id is too large '{}'.", id_);
     }
-    tt_log_error("Audio device id is too large '{}'.", to_string(std::wstring(id)));
 }
 
 

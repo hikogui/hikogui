@@ -1,6 +1,6 @@
 
 #include "time_stamp_count.hpp"
-#include "hires_utc_clock.hpp"
+#include "time_stamp_utc.hpp"
 #include "logger.hpp"
 #include <emmintrin.h>
 #include <array>
@@ -36,16 +36,18 @@ namespace tt {
 
 [[nodiscard]] uint64_t time_stamp_count::measure_frequency(std::chrono::milliseconds sample_duration) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     // Only sample the frequency of one of the TSC clocks.
     auto prev_mask = set_thread_affinity(current_cpu_id());
 
     time_stamp_count tsc1;
-    auto tp1 = hires_utc_clock::now(tsc1);
+    auto tp1 = time_stamp_utc::now(tsc1);
 
     std::this_thread::sleep_for(sample_duration);
 
     time_stamp_count tsc2;
-    auto tp2 = hires_utc_clock::now(tsc2);
+    auto tp2 = time_stamp_utc::now(tsc2);
 
     // Reset the mask back.
     set_thread_affinity_mask(prev_mask);
@@ -113,6 +115,8 @@ void time_stamp_count::populate_aux_values() noexcept
 
 void time_stamp_count::configure_frequency() noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     // This function is called from the crt and must therefor be quick as we do not
     // want to keep the user waiting. We are satisfied if the measured frequency is
     // to within 1% accuracy.

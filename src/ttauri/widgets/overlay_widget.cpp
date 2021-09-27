@@ -38,7 +38,7 @@ void overlay_widget::deinit() noexcept
 }
 
 [[nodiscard]] bool
-overlay_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -55,7 +55,7 @@ overlay_widget::constrain(hires_utc_clock::time_point display_time_point, bool n
     return has_updated_contraints;
 }
 
-[[nodiscard]] void overlay_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void overlay_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -68,7 +68,7 @@ overlay_widget::constrain(hires_utc_clock::time_point display_time_point, bool n
     super::layout(display_time_point, need_layout);
 }
 
-void overlay_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

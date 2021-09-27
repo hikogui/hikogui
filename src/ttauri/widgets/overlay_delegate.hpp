@@ -12,6 +12,7 @@ class overlay_widget;
 
 class overlay_delegate {
 public:
+    virtual ~overlay_delegate() = default;
     virtual void init(overlay_widget &sender) noexcept {}
     virtual void deinit(overlay_widget &sender) noexcept {}
 };

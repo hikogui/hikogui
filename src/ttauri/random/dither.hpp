@@ -32,7 +32,7 @@ public:
      * @param num_bits Number of significant fraction bits, excluding the sign bit.
      *                 For 24 bit signed PCM samples this value is 23.
      */
-    dither(int num_bits) noexcept : _state(), _multiplier()
+    dither(int num_bits) noexcept 
     {
         tt_axiom(num_bits > 0);
         auto maximum_value = static_cast<float>((1_uz << num_bits) - 1);
@@ -86,9 +86,9 @@ public:
     }
 
 private:
-    f32x4 _multiplier;
-    i16x8 _tpdf;
-    xorshift128p _state;
+    f32x4 _multiplier = {};
+    i16x8 _tpdf = {};
+    xorshift128p _state = {};
     unsigned char _counter = 0;
 };
 

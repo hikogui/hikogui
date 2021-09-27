@@ -34,7 +34,7 @@ bool _dialog(dialog_type type, const char *title, std::string_view text)
 
     ttlet title_ = tt::to_wstring(title);
     ttlet text_ = tt::to_wstring(text);
-    ttlet r = MessageBoxW(nullptr, title_.c_str(), text_.c_str(), type_);
+    ttlet r = MessageBoxW(nullptr, text_.c_str(), title_.c_str(), type_);
 
     switch (r) {
     case IDABORT:

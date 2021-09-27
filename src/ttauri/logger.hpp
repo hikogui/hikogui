@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "counters.hpp"
 #include "time_stamp_count.hpp"
-#include "hires_utc_clock.hpp"
+#include "time_stamp_utc.hpp"
 #include "polymorphic_optional.hpp"
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
@@ -18,6 +17,7 @@
 #include "fixed_string.hpp"
 #include "subsystem.hpp"
 #include "global_state.hpp"
+#include "URL.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -26,10 +26,6 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
-
-namespace tt {
-void trace_record() noexcept;
-}
 
 namespace tt {
 namespace detail {
@@ -41,6 +37,9 @@ public:
 
     [[nodiscard]] virtual std::string format() const noexcept = 0;
     [[nodiscard]] virtual std::unique_ptr<log_message_base> make_unique_copy() const noexcept = 0;
+
+public:
+    static inline std::chrono::time_zone const *zone = nullptr;
 };
 
 template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Values>
@@ -72,26 +71,27 @@ public:
     {
     }
 
-
     std::string format() const noexcept override
     {
-        ttlet time_point = hires_utc_clock::make(_time_stamp);
-        ttlet local_timestring = format_iso8601(time_point);
+        ttlet utc_time_point = time_stamp_utc::make(_time_stamp);
+        ttlet sys_time_point = std::chrono::clock_cast<std::chrono::system_clock>(utc_time_point);
+        ttlet local_time_point = zone->to_local(sys_time_point);
+
         ttlet cpu_id = _time_stamp.cpu_id();
         ttlet thread_id = _time_stamp.thread_id();
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
-            return std::format("{} {:5} {} tid={} cpu={}\n", local_timestring, log_level_name, _what(), thread_id, cpu_id);
+            return std::format("{} {:2}:{:<10} {:5} {}\n", local_time_point, cpu_id, thread_id, log_level_name, _what());
         } else {
             return std::format(
-                "{} {:5} {} ({}:{}) tid={} cpu={}\n",
-                local_timestring,
+                "{} {:2}:{:<10} {:5} {} ({}:{})\n",
+                local_time_point,
+                cpu_id,
+                thread_id,
                 log_level_name,
                 _what(),
-                SourceFile,
-                SourceLine,
-                thread_id,
-                cpu_id);
+                URL::urlFromPath(SourceFile).filename(),
+                SourceLine);
         }
     }
 
@@ -107,7 +107,7 @@ private:
 
 /** The global log queue contains messages to be displayed by the logger thread.
  */
-inline wfree_fifo<log_message_base, 256> log_fifo;
+inline wfree_fifo<log_message_base, 64> log_fifo;
 
 /** Deinitalize the logger system.
  */
@@ -133,9 +133,9 @@ tt_no_inline bool logger_init() noexcept;
 tt_no_inline void logger_flush() noexcept;
 
 /** Start the logger system.
-* 
+ *
  * Initialize the logger system if it is not already initialized and while the system is not in shutdown-mode.
- * 
+ *
  * @param log_level The level at which to log.
  * @return true if the logger system is initialized, false when the system is being shutdown.
  */
@@ -189,10 +189,6 @@ tt_force_inline void log(Args &&...args) noexcept
 
     if constexpr (to_bool(Level & global_state_type::log_fatal)) {
         std::terminate();
-
-    } else if constexpr (to_bool(Level & global_state_type::log_error)) {
-        // Actually logging of tracing will only work when we cleanly unwind the stack and destruct all trace objects.
-        trace_record();
     }
 }
 

@@ -1,9 +1,8 @@
 
 #include "my_preferences_window_controller.hpp"
-#include "my_preferences.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/crt.hpp"
-#include "ttauri/hires_utc_clock.hpp"
+#include "ttauri/time_stamp_count.hpp"
 #include "ttauri/metadata.hpp"
 #include "ttauri/GFX/RenderDoc.hpp"
 #include "ttauri/GUI/gui_system.hpp"
@@ -39,35 +38,29 @@ auto create_main_window(tt::gui_system &gui, std::shared_ptr<my_preferences_wind
 
 int tt_main(int argc, char *argv[])
 {
-    using namespace tt;
-
     // Set the version at the very beginning, because file system paths depend on it.
-    auto &m = metadata::application();
+    auto &m = tt::metadata::application();
     m.name = "ttauri-demo";
     m.display_name = "TTauri Demo";
-    m.vendor = metadata::library().vendor;
-    m.version = metadata::library().version;
+    m.vendor = tt::metadata::library().vendor;
+    m.version = tt::metadata::library().version;
 
     // Start the logger system, so logging is done asynchronously.
-    logger_start(global_state_type::log_level_info);
+    logger_start(tt::global_state_type::log_level_info);
+    tt::time_stamp_count::start_subsystem();
 
     // Startup renderdoc for debugging
-    auto render_doc = RenderDoc();
+    auto render_doc = tt::RenderDoc();
 
-
-    auto preferences = std::make_shared<my_preferences>(tt::URL::urlFromExecutableDirectory() / "preferences.json");
-    preferences->load();
-
+    auto preferences = tt::preferences(tt::URL::urlFromApplicationPreferencesFile());
     auto preferences_controller = std::make_shared<my_preferences_window_controller>(preferences);
 
-    auto gui = gui_system::make_unique();
-    auto audio = audio_system::make_unique(gui->event_queue(), preferences_controller);
+    auto gui = tt::gui_system::make_unique();
+    auto audio = tt::audio_system::make_unique(gui->event_queue(), preferences_controller);
 
     auto callback = create_main_window(*gui, preferences_controller);
 
-    auto exit_code = gui->loop();
-    preferences->save();
-    return exit_code;
+    return gui->loop();
 }
 
 //extern "C" const char *__asan_default_options() {

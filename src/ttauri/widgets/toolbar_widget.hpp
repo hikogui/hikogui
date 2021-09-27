@@ -63,9 +63,9 @@ public:
 
     /// @privatesection
     [[nodiscard]] float margin() const noexcept override;
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept;
-    void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
-    void draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept override;
+    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
+    void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
+    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     hitbox hitbox_test(point2 position) const noexcept override;
     /// @endprivatesection
 private:

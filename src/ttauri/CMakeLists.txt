@@ -32,12 +32,14 @@ target_sources(ttauri PRIVATE
     bound_integer.hpp
     byte_string.hpp
     check.hpp
+    chrono.hpp
     concepts.hpp
     console.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
     coroutine.hpp
     command.hpp
     CommandLineParser.hpp
+    counters.cpp
     counters.hpp
     CP1252.hpp
     #cpu_id.hpp
@@ -77,19 +79,13 @@ target_sources(ttauri PRIVATE
     global_state.hpp
     glob.hpp
     hash.hpp
-    #hires_system_clock.hpp
-    #$<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_system_clock_posix.cpp>
-    #$<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_system_clock_win32.cpp>
-    hires_utc_clock.cpp
-    hires_utc_clock.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_win32.cpp>
     huffman.hpp
     icon.cpp
     icon.hpp
     int_carry.hpp
     int_overflow.hpp
     interval.hpp
+    jsonpath.hpp
     l10n.hpp
     label.hpp
     locked_memory_allocator.hpp
@@ -113,6 +109,7 @@ target_sources(ttauri PRIVATE
     preferences.hpp
     graphic_path.cpp
     graphic_path.hpp
+    pickle.hpp
     pixel_map.cpp
     pixel_map.hpp
     pixel_map.inl
@@ -133,8 +130,6 @@ target_sources(ttauri PRIVATE
     stack.hpp
     static_resource_view.cpp
     static_resource_view.hpp
-    statistics.cpp
-    statistics.hpp
     strings.hpp
     subsystem.hpp
     tag.hpp
@@ -149,6 +144,8 @@ target_sources(ttauri PRIVATE
     time_stamp_count.cpp
     time_stamp_count.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>
+    time_stamp_utc.cpp
+    time_stamp_utc.hpp
     tokenizer.cpp
     tokenizer.hpp
     trace.cpp
@@ -207,6 +204,7 @@ if(TT_BUILD_TESTS)
         interval_tests.cpp
         int_carry_tests.cpp
         int_overflow_tests.cpp
+        jsonpath_tests.cpp
         math_tests.cpp
         graphic_path_tests.cpp
         observable_tests.cpp

@@ -3,15 +3,24 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "speaker_mapping_win32.hpp"
+#include "../check.hpp"
 #include <windows.h>
 #include <ks.h>
 #include <ksmedia.h>
 
 namespace tt {
 
-[[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from) noexcept
+[[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from)
 {
     auto r = speaker_mapping{0};
+
+    constexpr uint32_t valid_mask = SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY |
+        SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_FRONT_LEFT_OF_CENTER | SPEAKER_FRONT_RIGHT_OF_CENTER |
+        SPEAKER_BACK_CENTER | SPEAKER_SIDE_LEFT | SPEAKER_SIDE_RIGHT | SPEAKER_TOP_CENTER | SPEAKER_TOP_FRONT_LEFT |
+        SPEAKER_TOP_FRONT_CENTER | SPEAKER_TOP_FRONT_RIGHT | SPEAKER_TOP_BACK_LEFT | SPEAKER_TOP_BACK_CENTER |
+        SPEAKER_TOP_BACK_RIGHT;
+
+    tt_parse_check((from & ~valid_mask) == 0, "Unknown speaker locations");
 
     if (from & SPEAKER_FRONT_LEFT) {
         r |= speaker_mapping::front_left;
@@ -74,6 +83,11 @@ namespace tt {
 
 [[nodiscard]] uint32_t speaker_mapping_to_win32(speaker_mapping from) noexcept
 {
+    if (is_direct(from)) {
+        // If the speaker mapping is direct, then the win32 speaker mapping is empty.
+        return 0;
+    }
+
     auto r = uint32_t{0};
 
     if (to_bool(from & speaker_mapping::front_left)) {

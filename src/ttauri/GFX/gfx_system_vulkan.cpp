@@ -50,6 +50,11 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
     return r;
 }
 
+__declspec(no_sanitize_address) vk::Instance vk_create_instance_no_asan(vk::InstanceCreateInfo instance_create_info)
+{
+    return vk::createInstance(instance_create_info);
+}
+
 gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
 {
     if constexpr (operating_system::current == operating_system::windows) {
@@ -104,7 +109,7 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
 
     tt_log_info("Creating Vulkan instance.");
-    intrinsic = vk::createInstance(instanceCreateInfo);
+    intrinsic = vk_create_instance_no_asan(instanceCreateInfo);
 
 #if (VK_HEADER_VERSION == 97)
     _loader = vk::DispatchLoaderDynamic(intrinsic);

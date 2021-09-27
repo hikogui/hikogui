@@ -51,6 +51,10 @@ public:
 
     [[nodiscard]] constexpr color() noexcept : _v(0.0, 0.0, 0.0, 1.0) {}
     [[nodiscard]] constexpr color(float r, float g, float b, float a = 1.0) noexcept : _v(r, g, b, a) {}
+    [[nodiscard]] constexpr color(double r, double g, double b, double a = 1.0) noexcept :
+        _v(static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a))
+    {
+    }
 
     [[nodiscard]] static constexpr color transparent() noexcept
     {

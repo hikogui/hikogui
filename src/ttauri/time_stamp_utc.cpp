@@ -1,8 +1,8 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hires_utc_clock.hpp"
+#include "time_stamp_utc.hpp"
 #include "time_stamp_count.hpp"
 #include "logger.hpp"
 #include "thread.hpp"
@@ -11,35 +11,36 @@
 #include <iterator>
 #include <algorithm>
 #include <numeric>
+#include <chrono>
 
 namespace tt {
 
-using namespace std::chrono_literals;
-
-std::string format_engineering(hires_utc_clock::duration duration)
+std::string format_engineering(std::chrono::nanoseconds duration)
 {
+    using namespace std::chrono_literals;
+
     if (duration >= 1s) {
-        return std::format("{:.3g} s ", static_cast<double>(duration / 1ns) / 1'000'000'000);
+        return std::format("{:.3g}s ", static_cast<double>(duration / 1ns) / 1'000'000'000);
     } else if (duration >= 1ms) {
-        return std::format("{:.3g} ms", static_cast<double>(duration / 1ns) / 1'000'000);
+        return std::format("{:.3g}ms", static_cast<double>(duration / 1ns) / 1'000'000);
     } else if (duration >= 1us) {
-        return std::format("{:.3g} us", static_cast<double>(duration / 1ns) / 1'000);
+        return std::format("{:.3g}us", static_cast<double>(duration / 1ns) / 1'000);
     } else {
-        return std::format("{:.3g} ns", static_cast<double>(duration / 1ns));
+        return std::format("{:.3g}ns", static_cast<double>(duration / 1ns));
     }
 }
 
-[[nodiscard]] hires_utc_clock::time_point hires_utc_clock::now(time_stamp_count &tsc) noexcept
+[[nodiscard]] utc_nanoseconds time_stamp_utc::now(time_stamp_count &tsc) noexcept
 {
     auto shortest_diff = std::numeric_limits<uint64_t>::max();
     time_stamp_count shortest_tsc;
-    hires_utc_clock::time_point shortest_tp;
+    utc_nanoseconds shortest_tp;
 
     // With three samples gathered on the same CPU we should
     // have a TSC/UTC/TSC combination that was run inside a single time-slice.
     for (auto i = 0; i != 10; ++i) {
         ttlet tmp_tsc1 = time_stamp_count::now();
-        ttlet tmp_tp = hires_utc_clock::now();
+        ttlet tmp_tp = std::chrono::utc_clock::now();
         ttlet tmp_tsc2 = time_stamp_count::now();
 
         if (tmp_tsc1.cpu_id() != tmp_tsc2.cpu_id()) {
@@ -68,25 +69,27 @@ std::string format_engineering(hires_utc_clock::duration duration)
     return shortest_tp;
 }
 
-[[nodiscard]] hires_utc_clock::time_point hires_utc_clock::make(time_stamp_count const &tsc) noexcept
+[[nodiscard]] utc_nanoseconds time_stamp_utc::make(time_stamp_count const &tsc) noexcept
 {
     auto i = tsc.cpu_id();
     if (i >= 0) {
         ttlet tsc_epoch = tsc_epochs[i].load(std::memory_order::relaxed);
-        if (tsc_epoch != hires_utc_clock::time_point{}) {
+        if (tsc_epoch != utc_nanoseconds{}) {
             return tsc_epoch + tsc.time_since_epoch();
         }
     }
 
     // Fallback.
-    ttlet ref_tp = hires_utc_clock::now();
+    ttlet ref_tp = std::chrono::utc_clock::now();
     ttlet ref_tsc = time_stamp_count::now();
     ttlet diff_ns = ref_tsc.time_since_epoch() - tsc.time_since_epoch();
     return ref_tp - diff_ns;
 }
 
-void hires_utc_clock::subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept
+void time_stamp_utc::subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     // Calibrate the TSC frequency to within 1 ppm.
     // A 1s measurement already brings is to about 1ppm. We are
     // going to be taking average of the IQR of 11 samples, just
@@ -127,9 +130,11 @@ static void advance_cpu_thread_mask(uint64_t const &process_cpu_mask, uint64_t &
     } while ((process_cpu_mask & thread_cpu_mask) == 0);
 }
 
-void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
+void time_stamp_utc::subsystem_proc(std::stop_token stop_token) noexcept
 {
-    set_thread_name("hires_utc_clock");
+    using namespace std::literals::chrono_literals;
+
+    set_thread_name("time_stamp_utc");
     subsystem_proc_frequency_calibration(stop_token);
 
     ttlet process_cpu_mask = process_affinity_mask();
@@ -139,38 +144,38 @@ void hires_utc_clock::subsystem_proc(std::stop_token stop_token) noexcept
         ttlet current_cpu = advance_thread_affinity(next_cpu);
 
         std::this_thread::sleep_for(100ms);
-        ttlet lock = std::scoped_lock(hires_utc_clock::mutex);
+        ttlet lock = std::scoped_lock(time_stamp_utc::mutex);
 
         time_stamp_count tsc;
-        ttlet tp = hires_utc_clock::now(tsc);
+        ttlet tp = time_stamp_utc::now(tsc);
         tt_axiom(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
 
         tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);
     }
 }
 
-[[nodiscard]] bool hires_utc_clock::init_subsystem() noexcept
+[[nodiscard]] bool time_stamp_utc::init_subsystem() noexcept
 {
-    hires_utc_clock::subsystem_thread = std::jthread{subsystem_proc};
+    time_stamp_utc::subsystem_thread = std::jthread{subsystem_proc};
     return true;
 }
 
-void hires_utc_clock::deinit_subsystem() noexcept
+void time_stamp_utc::deinit_subsystem() noexcept
 {
-    if (subsystem_is_running.exchange(false)) {
-        if (hires_utc_clock::subsystem_thread.joinable()) {
-            hires_utc_clock::subsystem_thread.request_stop();
-            hires_utc_clock::subsystem_thread.join();
+    if (global_state_disable(global_state_type::time_stamp_utc_is_running)) {
+        if (time_stamp_utc::subsystem_thread.joinable()) {
+            time_stamp_utc::subsystem_thread.request_stop();
+            time_stamp_utc::subsystem_thread.join();
         }
     }
 }
 
-bool hires_utc_clock::start_subsystem() noexcept
+bool time_stamp_utc::start_subsystem() noexcept
 {
-    return tt::start_subsystem(subsystem_is_running, false, init_subsystem, deinit_subsystem);
+    return tt::start_subsystem(global_state_type::time_stamp_utc_is_running, init_subsystem, deinit_subsystem);
 }
 
-void hires_utc_clock::stop_subsystem() noexcept
+void time_stamp_utc::stop_subsystem() noexcept
 {
     return tt::stop_subsystem(deinit_subsystem);
 }

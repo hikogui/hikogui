@@ -295,7 +295,7 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
     return _clipping_rectangle;
 }
 
-[[nodiscard]] bool widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -310,7 +310,7 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
     return need_reconstrain;
 }
 
-void widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+void widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -328,7 +328,7 @@ void widget::layout(hires_utc_clock::time_point display_time_point, bool need_la
     }
 }
 
-void widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

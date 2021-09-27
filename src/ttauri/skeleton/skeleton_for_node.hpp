@@ -60,7 +60,7 @@ struct skeleton_for_node final: skeleton_node {
     datum evaluate(formula_evaluation_context &context) override {
         auto list_data = evaluate_formula_without_output(context, *list_expression, location);
 
-        if (!list_data.is_vector()) {
+        if (!holds_alternative<datum::vector_type>(list_data)) {
             throw operation_error("{}: Expecting expression returns a vector, got {}", location, list_data);
         }
 
@@ -68,8 +68,7 @@ struct skeleton_for_node final: skeleton_node {
         if (list_data.size() > 0) {
             ttlet loop_size = std::ssize(list_data);
             ssize_t loop_count = 0;
-            for (auto i = list_data.vector_begin(); i != list_data.vector_end(); ++i) {
-                ttlet &item = *i;
+            for (ttlet &item : list_data) {
                 try {
                     name_expression->assign_without_output(context, item);
 

@@ -50,7 +50,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         throw parse_error("Missing '{}'", object_name);
     }
     ttlet object = data[object_name];
-    if (!object.is_string()) {
+    if (!holds_alternative<std::string>(object)) {
         throw parse_error("'{}' attribute must be a string, got {}.", object_name, object.type_name());
     }
     return static_cast<std::string>(object);
@@ -63,11 +63,11 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 
     ttlet object = data[object_name];
-    if (!object.is_numeric()) {
+    if (auto f = get_if<double>(object)) {
+        return static_cast<float>(*f);
+    } else {
         throw parse_error("'{}' attribute must be a number, got {}.", object_name, object.type_name());
     }
-
-    return static_cast<float>(object);
 }
 
 [[nodiscard]] bool theme::parse_bool(datum const &data, char const *object_name)
@@ -77,7 +77,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 
     ttlet object = data[object_name];
-    if (!object.is_bool()) {
+    if (!holds_alternative<bool>(object)) {
         throw parse_error("'{}' attribute must be a boolean, got {}.", object_name, object.type_name());
     }
 
@@ -86,28 +86,50 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 
 [[nodiscard]] color theme::parse_color_value(datum const &data)
 {
-    if (data.is_vector()) {
+    if (holds_alternative<datum::vector_type>(data)) {
         if (std::ssize(data) != 3 && std::ssize(data) != 4) {
             throw parse_error("Expect 3 or 4 values for a color, got {}.", data);
         }
         ttlet r = data[0];
         ttlet g = data[1];
         ttlet b = data[2];
-        ttlet a = std::ssize(data) == 4 ? data[3] : (r.is_integer() ? datum{255} : datum{1.0});
+        ttlet a = std::ssize(data) == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
 
-        if (r.is_integer() && g.is_integer() && b.is_integer() && a.is_integer()) {
+        if (holds_alternative<long long>(r) and holds_alternative<long long>(g) and holds_alternative<long long>(b) and
+            holds_alternative<long long>(a)) {
+
+            auto r_ = get<long long>(r);
+            auto g_ = get<long long>(g);
+            auto b_ = get<long long>(b);
+            auto a_ = get<long long>(a);
+
+            tt_parse_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
+            tt_parse_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
+            tt_parse_check(b_ >= 0 and b_ <= 255, "integer blue-color value not within 0 and 255");
+            tt_parse_check(a_ >= 0 and a_ <= 255, "integer alpha-color value not within 0 and 255");
+
             return color_from_sRGB(
-                static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b), static_cast<uint8_t>(a));
-        } else if (r.is_float() && g.is_float() && b.is_float() && a.is_float()) {
-            return tt::color(static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a));
+                static_cast<uint8_t>(r_), static_cast<uint8_t>(g_), static_cast<uint8_t>(b_), static_cast<uint8_t>(a_));
+
+        } else if (
+            holds_alternative<double>(r) and holds_alternative<double>(g) and holds_alternative<double>(b) and
+            holds_alternative<double>(a)) {
+
+            auto r_ = get<double>(r);
+            auto g_ = get<double>(g);
+            auto b_ = get<double>(b);
+            auto a_ = get<double>(a);
+
+            return tt::color(r_, g_, b_, a_);
+
         } else {
             throw parse_error("Expect all integers or all floating point numbers in a color, got {}.", data);
         }
 
-    } else if (data.is_string()) {
-        ttlet color_name = to_lower(static_cast<std::string>(data));
-        if (color_name.starts_with("#"s)) {
-            return color_from_sRGB(color_name);
+    } else if (ttlet *color_name = get_if<std::string>(data)) {
+        ttlet color_name_ = to_lower(*color_name);
+        if (color_name_.starts_with("#")) {
+            return color_from_sRGB(color_name_);
 
         } else {
             throw parse_error("Unable to parse color, got {}.", data);
@@ -128,8 +150,8 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     try {
         return parse_color_value(color_object);
     } catch (parse_error const &) {
-        if (color_object.is_string()) {
-            ttlet theme_color = theme_color_from_string(static_cast<std::string>(color_object));
+        if (auto s = get_if<std::string>(color_object)) {
+            ttlet theme_color = theme_color_from_string(*s);
             return this->color(theme_color);
         } else {
             throw;
@@ -145,12 +167,14 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 
     ttlet color_list_object = data[object_name];
-    if (color_list_object.is_vector() and std::size(color_list_object) > 0 and color_list_object[0].is_vector()) {
+    if (holds_alternative<datum::vector_type>(color_list_object) and std::size(color_list_object) > 0 and
+        holds_alternative<datum::vector_type>(color_list_object[0])) {
+
         auto r = std::vector<tt::color>{};
         ssize_t i = 0;
-        for (auto it = color_list_object.vector_begin(); it != color_list_object.vector_end(); ++it, ++i) {
+        for (ttlet &color : color_list_object) {
             try {
-                r.push_back(parse_color_value(*it));
+                r.push_back(parse_color_value(color));
             } catch (parse_error const &e) {
                 throw parse_error("Could not parse {}nd entry of color list '{}'\n{}", i + 1, object_name, e.what());
             }
@@ -173,10 +197,10 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 
     ttlet object = data[object_name];
-    if (object.is_numeric()) {
-        return font_weight_from_int(static_cast<int>(object));
-    } else if (object.is_string()) {
-        return font_weight_from_string(static_cast<std::string>(object));
+    if (auto i = get_if<long long>(object)) {
+        return font_weight_from_int(*i);
+    } else if (auto s = get_if<std::string>(object)) {
+        return font_weight_from_string(*s);
     } else {
         throw parse_error("Unable to parse font weight, got {}.", object.type_name());
     }
@@ -184,7 +208,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 
 [[nodiscard]] text_style theme::parse_text_style_value(tt::font_book const &font_book, datum const &data)
 {
-    if (!data.is_map()) {
+    if (!holds_alternative<datum::map_type>(data)) {
         throw parse_error("Expect a text-style to be an object, got '{}'", data);
     }
 
@@ -226,7 +250,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 
 void theme::parse(tt::font_book const &font_book, datum const &data)
 {
-    tt_assert(data.is_map());
+    tt_assert(holds_alternative<datum::map_type>(data));
 
     this->name = parse_string(data, "name");
 

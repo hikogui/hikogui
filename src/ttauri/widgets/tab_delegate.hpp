@@ -15,6 +15,7 @@ public:
     using callback_type = std::function<void()>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
+    virtual ~tab_delegate() = default;
     virtual void init(tab_widget &sender) noexcept {}
     virtual void deinit(tab_widget &sender) noexcept {}
 

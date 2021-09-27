@@ -47,13 +47,13 @@ public:
 
     true_type_font(URL const &url) : url(url), view(url.loadView())
     {
-        increment_counter<"ttf:map">();
+        ++global_counter<"ttf:map">;
         try {
             parse_font_directory();
 
             // Clear the view to reclaim resources.
             view = {};
-            increment_counter<"ttf:unmap">();
+            ++global_counter<"ttf:unmap">;
 
         } catch (std::exception const &e) {
             throw parse_error("{}: Could not parse font directory.\n{}", to_string(url), e.what());

@@ -23,8 +23,6 @@
 namespace tt {
 namespace detail {
 
-using namespace std::literals::chrono_literals;
-
 /*! Write to a log file and console.
  * This will write to the console if one is open.
  * It will also create a log file in the application-data directory.
@@ -39,11 +37,22 @@ std::jthread logger_thread;
 
 static void logger_thread_loop(std::stop_token stop_token) noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     set_thread_name("logger");
     tt_log_info("logger thread started");
 
+    auto counter_statistics_deadline = std::chrono::utc_clock::now() + 1min;
+
     while (!stop_token.stop_requested()) {
         logger_flush();
+
+        ttlet now = std::chrono::utc_clock::now();
+        if (now >= counter_statistics_deadline) {
+            counter_statistics_deadline = now + 1min;
+            counter::log();
+        }
+
         std::this_thread::sleep_for(100ms);
     }
 
@@ -52,7 +61,7 @@ static void logger_thread_loop(std::stop_token stop_token) noexcept
 
 void logger_deinit() noexcept
 {
-    if (to_bool(global_state.fetch_and(~global_state_type::logger_is_running) & global_state_type::logger_is_running)) {
+    if (global_state_disable(global_state_type::logger_is_running)) {
         if (logger_thread.joinable()) {
             logger_thread.request_stop();
             logger_thread.join();

@@ -227,14 +227,13 @@ public:
 
     [[nodiscard]] friend bool operator==(font_glyph_ids const &lhs, font_glyph_ids const &rhs) noexcept
     {
-        if (lhs.is_long() == rhs.is_long()) {
+        if (lhs._font == rhs._font and lhs.is_long() == rhs.is_long()) {
             if (lhs.is_long()) {
                 return *lhs._glyphs.ids_long == *rhs._glyphs.ids_long;
             } else {
                 return lhs._glyphs.ids_short == rhs._glyphs.ids_short;
             }
         } else {
-            tt_axiom(lhs.size() != rhs.size());
             return false;
         }
     }

@@ -35,7 +35,7 @@ struct formula_filter_node final : formula_binary_operator_node {
     datum evaluate(formula_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
         try {
-            return {filter(static_cast<std::string>(lhs_))};
+            return datum{filter(static_cast<std::string>(lhs_))};
         } catch (std::exception const &e) {
             throw operation_error("{}: Can not evaluate filter.\n{}", location, e.what());
         }

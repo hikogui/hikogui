@@ -19,7 +19,7 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
 }
 
 [[nodiscard]] bool
-window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept
+window_traffic_lights_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -44,7 +44,7 @@ window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time
     }
 }
 
-[[nodiscard]] void window_traffic_lights_widget::layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept
+[[nodiscard]] void window_traffic_lights_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -112,7 +112,7 @@ window_traffic_lights_widget::constrain(hires_utc_clock::time_point display_time
 
 void window_traffic_lights_widget::drawMacOS(
     draw_context const &drawContext,
-    hires_utc_clock::time_point displayTimePoint) noexcept
+    utc_nanoseconds displayTimePoint) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -152,34 +152,34 @@ void window_traffic_lights_widget::drawMacOS(
 
 void window_traffic_lights_widget::drawWindows(
     draw_context const &drawContext,
-    hires_utc_clock::time_point displayTimePoint) noexcept
+    utc_nanoseconds displayTimePoint) noexcept
 {
     tt_axiom(is_gui_thread());
 
     auto context = drawContext;
 
     if (pressedClose) {
-        context.draw_filled_quad(closeRectangle, color{1.0f, 0.0f, 0.0f});
+        context.draw_box(closeRectangle, color{1.0f, 0.0f, 0.0f});
     } else if (hoverClose) {
-        context.draw_filled_quad(closeRectangle, color{0.5f, 0.0f, 0.0f});
+        context.draw_box(closeRectangle, color{0.5f, 0.0f, 0.0f});
     } else {
-        context.draw_filled_quad(closeRectangle, theme().color(theme_color::fill, semantic_layer));
+        context.draw_box(closeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
     if (pressedMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme().color(theme_color::fill, semantic_layer + 2));
+        context.draw_box(minimizeRectangle, theme().color(theme_color::fill, semantic_layer + 2));
     } else if (hoverMinimize) {
-        context.draw_filled_quad(minimizeRectangle, theme().color(theme_color::fill, semantic_layer + 1));
+        context.draw_box(minimizeRectangle, theme().color(theme_color::fill, semantic_layer + 1));
     } else {
-        context.draw_filled_quad(minimizeRectangle, theme().color(theme_color::fill, semantic_layer));
+        context.draw_box(minimizeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
     if (pressedMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme().color(theme_color::fill, semantic_layer + 2));
+        context.draw_box(maximizeRectangle, theme().color(theme_color::fill, semantic_layer + 2));
     } else if (hoverMaximize) {
-        context.draw_filled_quad(maximizeRectangle, theme().color(theme_color::fill, semantic_layer + 1));
+        context.draw_box(maximizeRectangle, theme().color(theme_color::fill, semantic_layer + 1));
     } else {
-        context.draw_filled_quad(maximizeRectangle, theme().color(theme_color::fill, semantic_layer));
+        context.draw_box(maximizeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
     ttlet glyph_color = window.active ? label_color() : foreground_color();
@@ -193,7 +193,7 @@ void window_traffic_lights_widget::drawWindows(
     }
 }
 
-void window_traffic_lights_widget::draw(draw_context context, hires_utc_clock::time_point display_time_point) noexcept
+void window_traffic_lights_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 

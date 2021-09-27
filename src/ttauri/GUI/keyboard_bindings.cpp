@@ -17,11 +17,10 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
         tt_parse_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
         ttlet binding_list = data["bindings"];
-        tt_parse_check(binding_list.is_vector(), "Expecting array value for key 'bindings' at top level.");
+        tt_parse_check(holds_alternative<datum::vector_type>(binding_list), "Expecting array value for key 'bindings' at top level.");
 
-        for (auto i = binding_list.vector_begin(); i != binding_list.vector_end(); ++i) {
-            ttlet binding = *i;
-            tt_parse_check(binding.is_map(), "Expecting object for a binding, got {}", binding);
+        for (ttlet &binding: binding_list) {
+            tt_parse_check(holds_alternative<datum::map_type>(binding), "Expecting object for a binding, got {}", binding);
 
             tt_parse_check(
                 binding.contains("key") && binding.contains("command"),

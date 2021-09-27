@@ -32,7 +32,7 @@ struct formula_call_node final : formula_node {
     }
 
     datum evaluate(formula_evaluation_context& context) const override {
-        ttlet args_ = transform<datum::vector>(args, [&](ttlet& x) {
+        ttlet args_ = transform<datum::vector_type>(args, [&](ttlet& x) {
             return x->evaluate(context);
         });
 

@@ -19,8 +19,6 @@
 
 namespace tt {
 
-using namespace std::literals::chrono_literals;
-
 [[nodiscard]] std::string get_last_error_message() noexcept
 {
     DWORD const errorCode = GetLastError();

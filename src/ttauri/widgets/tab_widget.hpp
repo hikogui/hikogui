@@ -80,8 +80,8 @@ public:
     void init() noexcept override;
     void deinit() noexcept override;
     [[nodiscard]] float margin() const noexcept override;
-    [[nodiscard]] bool constrain(hires_utc_clock::time_point display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(hires_utc_clock::time_point display_time_point, bool need_layout) noexcept override;
+    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
     [[nodiscard]] widget const *find_next_widget(
         widget const *current_widget,
         keyboard_focus_group group,
@@ -95,7 +95,7 @@ private:
     [[nodiscard]] auto find_selected_child() const noexcept;
     [[nodiscard]] auto find_selected_child() noexcept;
     [[nodiscard]] widget const &selected_child() const noexcept;
-    void draw_child(draw_context context, hires_utc_clock::time_point displayTimePoint, widget &child) noexcept;
+    void draw_child(draw_context context, utc_nanoseconds displayTimePoint, widget &child) noexcept;
 };
 
 } // namespace tt

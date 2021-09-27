@@ -188,8 +188,6 @@ gfx_device_vulkan::~gfx_device_vulkan()
         imagePipeline = nullptr;
         boxPipeline->destroy(this);
         boxPipeline = nullptr;
-        flatPipeline->destroy(this);
-        flatPipeline = nullptr;
 
         destroy_quad_index_buffer();
 
@@ -510,7 +508,6 @@ void gfx_device_vulkan::initialize_device()
     initialize_queues(device_queue_create_infos);
     initialize_quad_index_buffer();
 
-    flatPipeline = std::make_unique<pipeline_flat::device_shared>(*this);
     boxPipeline = std::make_unique<pipeline_box::device_shared>(*this);
     imagePipeline = std::make_unique<pipeline_image::device_shared>(*this);
     SDFPipeline = std::make_unique<pipeline_SDF::device_shared>(*this);

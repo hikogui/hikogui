@@ -8,7 +8,7 @@
 #include "../geometry/point.hpp"
 #include "../geometry/vector.hpp"
 #include "../geometry/transform.hpp"
-#include "../hires_utc_clock.hpp"
+#include <chrono>
 
 namespace tt {
 
@@ -17,7 +17,7 @@ struct mouse_event {
 
     Type type;
 
-    hires_utc_clock::time_point timePoint;
+    std::chrono::utc_time<std::chrono::nanoseconds> timePoint;
 
     //! The current position of the mouse pointer.
     point2 position;

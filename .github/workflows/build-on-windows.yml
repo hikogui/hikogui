@@ -18,18 +18,19 @@ jobs:
 
 # ---------------------------------------------------------------------------------------
 
-    name: ${{ matrix.config.VCPKG_TARGET_TRIPLET }} PCH:${{ matrix.config.TT_BUILD_PCH }}
+    name: ${{ matrix.config.COMPILER}} | ${{ matrix.config.VCPKG_TARGET_TRIPLET }} | PCH:${{ matrix.config.TT_BUILD_PCH }}
     needs: install-vulkan-sdk-and-runtime
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md
-    runs-on: windows-latest
+    # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
+    runs-on: ${{ matrix.config.OS }}
 
     strategy:
       fail-fast: false
       matrix:
         config:
-          - { BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF}
-          - { BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON}
-          - { BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON}
+          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC16"}
+          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC16"}
+          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17"}
 
     env:
       PLATFORM: x64
@@ -61,7 +62,7 @@ jobs:
           $NAME=$(jq -r .name vcpkg.json)
           $VERSION=$(jq -r .version vcpkg.json)
           $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
-          $COMPILER="MSVC19"
+          $COMPILER="${{ matrix.config.COMPILER }}"
           $TRIPLET="${{ matrix.config.VCPKG_TARGET_TRIPLET }}"
           $BUILD_TYPE="$env:BUILD_TYPE"
           $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-$COMPILER-$TRIPLET-$BUILD_TYPE"
@@ -77,7 +78,8 @@ jobs:
           key: use-wrong-cache-key-to-trigger-partial-matching-of-restore-keys
           restore-keys: cache-windows-vulkan
 
-      - name: 🔽 Install Visual Studio Components for C++, CMake, Win10SDK
+      - name: 🔽 Install Visual Studio 16 2019 - Components for C++, CMake, Win10SDK
+        if: matrix.config.COMPILER == 'VC16'
         shell: pwsh
         run: |
           $VSConfig = Resolve-Path ".\.github\.vsconfig" | select -ExpandProperty Path
@@ -87,8 +89,14 @@ jobs:
           $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
           $process.ExitCode
 
-      - name: 📥 Setup VC Environment (➔ vcvarsall)
+      - name: 📥 Setup VC16 Environment (➔ vcvarsall)
+        if: matrix.config.COMPILER == 'VC16'
         run: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%
+
+      # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md#visual-studio-enterprise-2022
+      - name: 📥 Setup VC17 Environment (→ vcvarsall)
+        if: matrix.config.COMPILER == 'VC17'
+        run: call "C:/Program Files/Microsoft Visual Studio/2022/Preview/VC/Auxiliary/Build/vcvars64.bat"
 
       - name: 🔽 Update VCPKG
         run: |
@@ -116,8 +124,11 @@ jobs:
 
       - name: ✏ CMake ➔ Configure (including VCPKG ➔ Install Dependencies)
         run: |
+          if "${{ matrix.config.COMPILER }}" == "VC16"; set "GENERATOR=Visual Studio 16 2019"
+          if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
+          echo %GENERATOR%
           mkdir build && cd build
-          cmake -G "Visual Studio 16 2019" -A ${{ env.PLATFORM }} ..                        ^
+          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} ..                                    ^
                 -DCMAKE_BUILD_TYPE=%BUILD_TYPE%                                             ^
                 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake            ^
                 -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }}            ^
@@ -156,7 +167,7 @@ jobs:
           $xsl.Load("${{ github.workspace }}\.github\gtest_to_junit.xsl")
           $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{ github.workspace }}\test_results.xml")
           cd ${{ github.workspace }}
-          ren test_results.xml test_results_${{ matrix.config.VCPKG_TARGET_TRIPLET }}_PCH_${{ matrix.config.TT_BUILD_PCH }}.xml
+          ren test_results.xml test_results_${{ matrix.config.COMPILER }}_${{ matrix.config.VCPKG_TARGET_TRIPLET }}_PCH_${{ matrix.config.TT_BUILD_PCH }}.xml
 
       # We upload multiple files into the same artifact file (zip).
       # Each file is differently named by adding the job name of the matrix as a suffix.
@@ -219,7 +230,7 @@ jobs:
 
 # ---------------------------------------------------------------------------------------
 
-    name: "Install Vulkan SDK & Runtime [x64]"
+    name: "Install Vulkan SDK"
     runs-on: windows-latest
     if: success() || failure() # don't run job, if skipped
     defaults:
@@ -257,7 +268,7 @@ jobs:
         if: steps.cache-vulkan.outputs.cache-hit != 'true'
         run: |
           curl -L --silent --show-error --output VulkanSDK.exe %VULKAN_SDK_URL%
-          VulkanSDK.exe /S
+          VulkanSDK.exe in com.lunarg.vulkan.core --accept-licenses --default-answer --confirm-command --root %VULKAN_SDK%
 
       - name: 🔽 Install VULKAN Runtime (➔ vulkan-1.dll)
         if: steps.cache-vulkan.outputs.cache-hit != 'true'
@@ -276,13 +287,14 @@ jobs:
         run: |
           cd ${{ env.VULKAN_SDK }}
           "Folder size before: {0:N2} MB" -f ((ls . -r | Measure-Object -Property Length -Sum).Sum / 1MB)
-          Remove-Item -Recurse -Force "Bin32"
           Remove-Item -Recurse -Force "Demos"
-          Remove-Item -Recurse -Force "Lib32"
+          Remove-Item -Recurse -Force "Helpers"
+          Remove-Item -Recurse -Force "installerResources"
+          Remove-Item -Recurse -Force "Licenses"
           Remove-Item -Recurse -Force "Templates"
-          Remove-Item -Recurse -Force "Third-Party"
           Remove-Item -Recurse -Force "Tools"
-          Remove-Item -Recurse -Force "Tools32"
+          Remove-Item -Recurse -Force "Source"
+          Remove-Item .\maintenancetool.*, .\components.xml, .\network.xml, .\installer.dat, .\InstallationLog.txt
           "Folder size after: {0:N2} MB" -f ((ls . -r | Measure-Object -Property Length -Sum).Sum / 1MB)
 
       - name: 📤 Set outputs

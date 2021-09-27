@@ -6,9 +6,11 @@
 
 #include "../exception.hpp"
 #include "../strings.hpp"
+#include "../concepts.hpp"
 #include <string>
 #include <unordered_map>
 #include <ostream>
+#include <array>
 
 namespace tt {
 
@@ -53,7 +55,7 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string, fon
 
 /** Convert a font weight value between 50 and 1000 to a font weight.
  */
-[[nodiscard]] constexpr font_weight font_weight_from_int(int rhs)
+[[nodiscard]] constexpr font_weight font_weight_from_int(numeric_integral auto rhs)
 {
     if (rhs < 50 || rhs > 1000) {
         throw parse_error("Unknown font-weight {}", rhs);
