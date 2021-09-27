@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "format"
+#include <format>
 #include <exception>
 #include <string_view>
 
@@ -13,13 +13,13 @@ namespace tt {
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax
  * in both text and binary files.
- * 
+ *
  * The what-string should start with the location of the error in the file followed with ": " and the error message.
  * The what-string may be shown to the user, when the parser was working on user supplied files.
- * 
+ *
  * The location for a text file will be: a path followed by line_nr (starting at line 1) and column_nr (starting at column 1).
  * The location for a binary: a path followed by an optional chunk names, followed by a byte number within the chunk.
- * 
+ *
  * If there are nested errors, such as an error in an included file, then the what-string may be multiple-lines, where the
  * nested error appears later in the what-string.
  */

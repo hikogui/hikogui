@@ -8,10 +8,6 @@
 #include <unordered_map>
 
 namespace tt {
-class Application_macos;
-}
-
-namespace tt {
 
 class gui_window_vulkan_macos final : public gfx_surface_vulkan {
 public:
