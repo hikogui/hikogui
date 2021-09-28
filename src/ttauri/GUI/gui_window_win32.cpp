@@ -8,7 +8,7 @@
 #include "theme_book.hpp"
 #include "../GFX/gfx_system_vulkan.hpp"
 #include "../widgets/window_widget.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
 #include <windowsx.h>

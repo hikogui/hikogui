@@ -1,7 +1,7 @@
 
 #include "time_stamp_count.hpp"
 #include "time_stamp_utc.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include <emmintrin.h>
 #include <array>
 #include <cstdint>

@@ -4,7 +4,7 @@
 
 #include "language.hpp"
 #include "../required.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include <Windows.h>
 #include <Winnls.h>
 

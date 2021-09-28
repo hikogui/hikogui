@@ -5,7 +5,7 @@
 #include "debugger.hpp"
 #include "dialog.hpp"
 #include "console.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include <exception>
 
 namespace tt {

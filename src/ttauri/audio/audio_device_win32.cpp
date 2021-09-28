@@ -8,7 +8,7 @@
 #include "audio_stream_format_win32.hpp"
 #include "speaker_mapping.hpp"
 #include "speaker_mapping_win32.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../strings.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"

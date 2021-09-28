@@ -4,7 +4,7 @@
 
 #include "file_view.hpp"
 #include "exception.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include "memory.hpp"
 #include "URL.hpp"
 #include "required.hpp"

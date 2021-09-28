@@ -7,7 +7,7 @@
 #include "audio_system_aggregate.hpp"
 #include "audio_device_id.hpp"
 #include "../required.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../exception.hpp"
 #include "../locked_memory_allocator.hpp"
 #include "../event_queue.hpp"

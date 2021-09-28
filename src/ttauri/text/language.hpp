@@ -6,7 +6,7 @@
 
 #include "../cast.hpp"
 #include "../utils.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../subsystem.hpp"
 #include "../notifier.hpp"
 #include "../timer.hpp"

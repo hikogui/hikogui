@@ -4,7 +4,7 @@
 
 #include "theme_mode.hpp"
 #include "../strings.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>

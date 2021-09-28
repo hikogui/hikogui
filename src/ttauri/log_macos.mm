@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "logger.hpp"
+#include "log.hpp"
 #include "trace.hpp"
 #include "cpu_utc_clock.hpp"
 #include "globals.hpp"

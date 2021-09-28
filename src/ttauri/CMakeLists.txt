@@ -91,10 +91,10 @@ target_sources(ttauri PRIVATE
     label.hpp
     locked_memory_allocator.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
-    logger.cpp
-    logger.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/logger_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/logger_win32.cpp>
+    log.cpp
+    log.hpp
+    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
     math.hpp
     memory.hpp
     meta.hpp
@@ -175,7 +175,7 @@ if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
         datum.hpp
         debugger.hpp
         exception.hpp
-        logger.hpp
+        log.hpp
         architecture.hpp
         required.hpp
         strings.hpp
@@ -231,7 +231,7 @@ if(TT_BUILD_TESTS AND TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
         datum.hpp
         debugger.hpp
         exception.hpp
-        logger.hpp
+        log.hpp
         architecture.hpp
         required.hpp
         strings.hpp

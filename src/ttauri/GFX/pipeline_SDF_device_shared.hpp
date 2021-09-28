@@ -9,7 +9,7 @@
 #include "pipeline_SDF_specialization_constants.hpp"
 #include "../text/font_glyph_ids.hpp"
 #include "../required.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../vspan.hpp"
 #include "../geometry/rectangle.hpp"
 #include <vk_mem_alloc.h>

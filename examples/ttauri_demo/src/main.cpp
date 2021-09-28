@@ -1,6 +1,6 @@
 
 #include "my_preferences_window_controller.hpp"
-#include "ttauri/logger.hpp"
+#include "ttauri/log.hpp"
 #include "ttauri/crt.hpp"
 #include "ttauri/time_stamp_count.hpp"
 #include "ttauri/metadata.hpp"
