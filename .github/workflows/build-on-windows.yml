@@ -18,7 +18,7 @@ jobs:
 
 # ---------------------------------------------------------------------------------------
 
-    name: ${{ matrix.config.COMPILER }} | ${{ matrix.config.VCPKG_TARGET_TRIPLET }} | PCH:${{ matrix.config.TT_BUILD_PCH }}
+    name: ${{ matrix.config.JOB_NAME }}
     needs: install-vulkan-sdk-and-runtime
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
@@ -28,10 +28,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC16" }
-          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC16" }
-          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17" }
-          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17" }
+          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC16", JOB_NAME: "VC16 | x64-win-static | RelWithDebInfo | PCH:OFF" }
+          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC16", JOB_NAME: "VC16 | x64-win-static | RelWithDebInfo"           }
+          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | RelWithDebInfo"           }
+          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"                    }
 
     env:
       PLATFORM: x64
