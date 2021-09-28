@@ -1,6 +1,40 @@
 Change log
 ==========
 
+0.5.0 Eager Elephant
+--------------------
+The changes in this version are pretty random, but there is a theme
+of improving the application developer's view of the API.
+
+ * Removing the singletons of gui\_system, gfx\_system, audio\_system,
+   vertical\_sync, theme\_book, font\_book, keyboard\_bindings and
+   preferences. These are no longer owned by the ttauri library, instead
+   they may be owned by local variables in the application.
+ * Improve performance of the font-book by letting the application hold a
+   reference to individual fonts directly.
+ * Wrote a how-to for logging, counting and tracing:
+   - Improved performance of counters.
+   - Improved performance of tracing.
+   - Logging is now done in local time.
+   - Replaced `tt::hires_utc_clock` with
+     `std::chrono::utc_time<std::chrono::nanoseconds>`
+   - Reimplemented CPU-timestamp-counter conversion using
+     `std::chrono::utc_clock`.
+ * Wrote a how-to for application preference:
+   - Implemented JSON-path for selecting values in a JSON file.
+   - Reimplemented a robust UTF-8, UTF-16, UTF-32 codec for properly
+     handling invalid encoded text strings.
+   - Reimplemented dynamic data type `tt::datum`.
+   - Implement `tt::pickle` system to convert between custom types and
+     `tt::datum`.
+   - Reimplemented observables with better automatic ownership model and
+     better callback handling.
+   - Multiple preference-files may now be opened at the same time.
+ * Preparing for a how-to for writing custom widgets:
+   - Replaced flat shader with a better optimized rounded box shader.
+ * Add address-sanitizer builds.
+ * Finalize BON8 (Binary Object Notation 8) specification.
+
 0.4.0 Lovely Lizard
 -------------------
 This version is focused on making it practical for application developers to
