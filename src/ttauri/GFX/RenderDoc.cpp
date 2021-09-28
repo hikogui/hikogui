@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "RenderDoc.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../URL.hpp"
 #include <renderdoc/renderdoc_app.h>
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS

@@ -9,7 +9,7 @@
 #include "vertical_sync.hpp"
 #include "../GFX/gfx_system.hpp"
 #include "../text/font_book.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include <chrono>
 
 namespace tt {

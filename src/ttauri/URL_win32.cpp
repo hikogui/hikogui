@@ -6,7 +6,7 @@
 #include "strings.hpp"
 #include "required.hpp"
 #include "url_parser.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include "metadata.hpp"
 #include <regex>
 

@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "vertical_sync_win32.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
 #include "../chrono.hpp"

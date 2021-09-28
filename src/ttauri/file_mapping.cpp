@@ -4,7 +4,7 @@
 
 #include "file_mapping.hpp"
 #include "exception.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include "memory.hpp"
 #include "required.hpp"
 #include "unfair_mutex.hpp"

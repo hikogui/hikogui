@@ -5,7 +5,7 @@
 #include "keyboard_bindings.hpp"
 #include "../codec/JSON.hpp"
 #include "../command.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 
 namespace tt {
 

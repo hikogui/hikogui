@@ -5,7 +5,7 @@
 #include "URL.hpp"
 #include "datum.hpp"
 #include "timer.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include "jsonpath.hpp"
 #include "observable.hpp"
 #include "pickle.hpp"

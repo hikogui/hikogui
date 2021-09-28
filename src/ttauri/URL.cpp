@@ -10,7 +10,7 @@
 #include "file_view.hpp"
 #include "exception.hpp"
 #include "static_resource_view.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include <regex>
 
 namespace tt {

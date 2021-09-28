@@ -2,18 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
 #pragma once
 
 #include "architecture.hpp"
-#include "console.hpp"
-#include "dialog.hpp"
 #include <format>
 
 namespace tt {
-tt_no_inline void logger_flush() noexcept;
 
-#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 void _debugger_break();
 #define tt_debugger_break() _debugger_break()
 
@@ -24,38 +20,23 @@ void _debugger_break();
 #error "Not implemented"
 #endif
 
-
 /*! Check if the program is being debugged.
  */
 bool debugger_is_present() noexcept;
 
+[[noreturn]] void debugger_abort(std::string const &message) noexcept;
 
 /** Abort the application.
-* @param source_file __FILE__
-* @param source_line __LINE__
-* @param fmt Message to display.
-* @param args Rest arguments to formatter
-*/
+ * @param source_file __FILE__
+ * @param source_line __LINE__
+ * @param fmt Message to display.
+ * @param args Rest arguments to formatter
+ */
 template<typename... Args>
-[[noreturn]] tt_no_inline void debugger_abort(char const *source_file, int source_line, std::string_view fmt, Args &&... args) noexcept
+[[noreturn]] tt_no_inline void
+debugger_abort(char const *source_file, int source_line, std::string_view fmt, Args &&...args) noexcept
 {
-    logger_flush();
-
-    std::string message;
-    if constexpr (sizeof...(Args) == 0) {
-        message = fmt;
-    } else {
-        message = std::format(fmt, std::forward<Args>(args)...);
-    }
-
-    if (debugger_is_present()) {
-        print("{}:{} {}\n", source_file, source_line, message);
-        tt_debugger_break();
-    } else {
-        dialog_ok("Aborting", "{}:{} {}", source_file, source_line, message);
-    }
-
-    std::abort();
+    debugger_abort(std::format(fmt, std::forward<Args>(args)...));
 }
 
 [[noreturn]] tt_no_inline inline void debugger_abort(char const *source_file, int source_line) noexcept
@@ -63,6 +44,6 @@ template<typename... Args>
     debugger_abort(source_file, source_line, "<unknown>");
 }
 
-#define tt_debugger_abort(...) ::tt::debugger_abort(__FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
+#define tt_debugger_abort(...) ::tt::debugger_abort(__FILE__, __LINE__ __VA_OPT__(, ) __VA_ARGS__)
 
-}
+} // namespace tt

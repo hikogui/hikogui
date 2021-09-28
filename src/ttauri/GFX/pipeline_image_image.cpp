@@ -6,7 +6,7 @@
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_image_image_location.hpp"
 #include "pipeline_image_vertex.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../geometry/translate.hpp"
