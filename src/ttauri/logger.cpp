@@ -10,7 +10,6 @@
 #include "thread.hpp"
 #include "url_parser.hpp"
 #include "timer.hpp"
-#include "unfair_recursive_mutex.hpp"
 #include "console.hpp"
 #include <format>
 #include <exception>
@@ -21,53 +20,40 @@
 #include <thread>
 
 namespace tt {
-namespace detail {
 
-/*! Write to a log file and console.
- * This will write to the console if one is open.
- * It will also create a log file in the application-data directory.
- */
-static void logger_write(std::string const &str) noexcept
-{
-    console_output(str);
-}
-
-unfair_mutex logger_mutex;
-std::jthread logger_thread;
-
-static void logger_thread_loop(std::stop_token stop_token) noexcept
+void log::log_thread_main(std::stop_token stop_token) noexcept
 {
     using namespace std::literals::chrono_literals;
 
-    set_thread_name("logger");
-    tt_log_info("logger thread started");
+    set_thread_name("log");
+    tt_log_info("log thread started");
 
     auto counter_statistics_deadline = std::chrono::utc_clock::now() + 1min;
 
-    while (!stop_token.stop_requested()) {
-        logger_flush();
+    while (not stop_token.stop_requested()) {
+        log_global.flush();
 
         ttlet now = std::chrono::utc_clock::now();
         if (now >= counter_statistics_deadline) {
             counter_statistics_deadline = now + 1min;
-            counter::log();
+            detail::counter::log();
         }
 
         std::this_thread::sleep_for(100ms);
     }
 
-    tt_log_info("logger thread finished");
+    tt_log_info("log thread finished");
 }
 
-void logger_deinit() noexcept
+void log::subsystem_deinit() noexcept
 {
-    if (global_state_disable(global_state_type::logger_is_running)) {
-        if (logger_thread.joinable()) {
-            logger_thread.request_stop();
-            logger_thread.join();
+    if (global_state_disable(global_state_type::log_is_running)) {
+        if (_log_thread.joinable()) {
+            _log_thread.request_stop();
+            _log_thread.join();
         }
 
-        logger_flush();
+        log_global.flush();
     }
 }
 
@@ -76,17 +62,22 @@ void logger_deinit() noexcept
  * checks the log_queue for new messages and then
  * call log_flush_messages().
  */
-bool logger_init() noexcept
+bool log::subsystem_init() noexcept
 {
-    logger_thread = std::jthread(logger_thread_loop);
+    _log_thread = std::jthread(log_thread_main);
     return true;
 }
 
+/*! Write to a log file and console.
+ * This will write to the console if one is open.
+ * It will also create a log file in the application-data directory.
+ */
+void log::write(std::string const &str) const noexcept
+{
+    console_output(str);
 }
 
-/** Flush all messages from the log_queue directly from this thread.
- */
-void logger_flush() noexcept
+void log::flush() noexcept
 {
     ttlet t = trace<"log_flush">{};
 
@@ -95,16 +86,16 @@ void logger_flush() noexcept
         std::unique_ptr<detail::log_message_base> copy_of_message;
 
         {
-            ttlet lock = std::scoped_lock(detail::logger_mutex);
+            ttlet lock = std::scoped_lock(_mutex);
 
-            wrote_message = detail::log_fifo.take_one([&copy_of_message](auto &message) {
+            wrote_message = _fifo.take_one([&copy_of_message](auto &message) {
                 copy_of_message = message.make_unique_copy();
             });
         }
 
         if (wrote_message) {
             tt_axiom(copy_of_message);
-            detail::logger_write(copy_of_message->format());
+            write(copy_of_message->format());
         }
     } while (wrote_message);
 }

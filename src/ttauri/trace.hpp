@@ -63,6 +63,9 @@ public:
     template<typename T>
     void set(char const *key, T &&value) noexcept
     {
+        // XXX Use type erase to store the type of the value and a pointer
+        // to the location of the value on the stack.
+
         tt_axiom(size < NumItems);
         items[size++] = {key, datum{std::forward<T>(value)}};
     }

@@ -51,6 +51,7 @@ target_sources(ttauri PRIVATE
     datum.hpp
     dead_lock_detector.cpp
     dead_lock_detector.hpp
+    debugger.cpp
     debugger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>

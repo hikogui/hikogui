@@ -46,7 +46,7 @@ int tt_main(int argc, char *argv[])
     m.version = tt::metadata::library().version;
 
     // Start the logger system, so logging is done asynchronously.
-    logger_start(tt::global_state_type::log_level_info);
+    tt::log::start_subsystem(tt::global_state_type::log_level_info);
     tt::time_stamp_count::start_subsystem();
 
     // Startup renderdoc for debugging

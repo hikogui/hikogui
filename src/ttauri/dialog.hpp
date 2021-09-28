@@ -26,7 +26,7 @@ enum class dialog_type {
 bool _dialog(dialog_type type, char const *title, std::string_view text);
 
 template<typename... Args>
-void dialog_ok(char const *title, char const *fmt, Args const &...args) noexcept
+void dialog_ok(char const *title, std::string_view fmt, Args const &...args) noexcept
 {
     _dialog(dialog_type::ok, title, std::format(fmt, args...));
 }

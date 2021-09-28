@@ -30,7 +30,7 @@ enum class global_state_type : uint64_t {
     log_level_info = log_info | log_statistics | log_level_warning,
     log_level_debug = log_debug | log_level_info,
 
-    logger_is_running = 0x1'00,
+    log_is_running = 0x1'00,
     time_stamp_utc_is_running = 0x2'00,
 
     system_is_running = 0x1'000000'00,

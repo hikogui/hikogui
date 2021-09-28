@@ -18,6 +18,7 @@
 #include "subsystem.hpp"
 #include "global_state.hpp"
 #include "URL.hpp"
+#include "unfair_mutex.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -26,6 +27,7 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
+#include <thread>
 
 namespace tt {
 namespace detail {
@@ -105,102 +107,126 @@ private:
     delayed_format<Fmt, Values...> _what;
 };
 
-/** The global log queue contains messages to be displayed by the logger thread.
- */
-inline wfree_fifo<log_message_base, 64> log_fifo;
-
-/** Deinitalize the logger system.
- */
-tt_no_inline void logger_deinit() noexcept;
-
-/** Initialize the log system.
- * This will start the logging threads which periodically
- * checks the log_queue for new messages and then
- * call log_flush_messages().
- */
-tt_no_inline bool logger_init() noexcept;
 
 } // namespace detail
+
+class log {
+public:
+    /** Log a message.
+     * @tparam Level log level of message, must be greater or equal to the log level of the `system_status`.
+     * @tparam SourceFile The source file where this function was called.
+     * @tparam SourceLine The source line where this function was called.
+     * @tparam Fmt The format string.
+     * @param timestamp The timestamp when the message is logged.
+     * @param args Arguments to std::format.
+     */
+    template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+    tt_force_inline void add(Args &&...args) noexcept
+    {
+        static_assert(std::popcount(to_underlying(Level)) == 1);
+
+        ttlet state = global_state.load(std::memory_order::relaxed);
+        if (not to_bool(state & Level)) {
+            return;
+        }
+
+        // Add messages in the queue, block when full.
+        // * This reduces amount of instructions needed to be executed during logging.
+        // * Simplifies logged_fatal_message logic.
+        // * Will make sure everything gets logged.
+        // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
+
+        // Emplace a message directly on the queue.
+        _fifo.emplace<detail::log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
+            std::forward<Args>(args)...);
+
+        if (to_bool(Level & global_state_type::log_fatal) or not to_bool(state & global_state_type::log_is_running)) {
+            // If the logger did not start we will log in degraded mode and log from the current thread.
+            // On fatal error we also want to log from the current thread.
+            [[unlikely]] flush();
+        }
+
+        if constexpr (to_bool(Level & global_state_type::log_fatal)) {
+            std::terminate();
+        }
+    }
+
+    /** Flush all messages from the log_queue directly from this thread.
+     * Flushing includes writing the message to a log file or displaying
+     * them on the console.
+     */
+    tt_no_inline void flush() noexcept;
+
+    /** Start the logger system.
+     *
+     * Initialize the logger system if it is not already initialized and while the system is not in shutdown-mode.
+     *
+     * @param log_level The level at which to log.
+     * @return true if the logger system is initialized, false when the system is being shutdown.
+     */
+    static bool start_subsystem(global_state_type log_level = global_state_type::log_level_default)
+    {
+        set_log_level(log_level);
+        return tt::start_subsystem(global_state_type::log_is_running, log::subsystem_init, log::subsystem_deinit);
+    }
+
+    /** Stop the logger system.
+     * De-initialize the logger system if it is initialized.
+     */
+    static void stop_subsystem()
+    {
+        return tt::stop_subsystem(log::subsystem_deinit);
+    }
+
+private:
+
+    /** The global log queue contains messages to be displayed by the logger thread.
+     */
+    wfree_fifo<detail::log_message_base, 64> _fifo;
+    mutable unfair_mutex _mutex;
+
+    /** Write to a log file and console.
+     * This will write to the console if one is open.
+     * It will also create a log file in the application-data directory.
+     */
+    void write(std::string const &str) const noexcept;
+
+    /** The global logger thread.
+     */
+    static inline std::jthread _log_thread;
+
+    /** The function of the logger thread.
+     */
+    static void log_thread_main(std::stop_token stop_token) noexcept;
+
+    /** Deinitalize the logger system.
+     */
+    static void subsystem_deinit() noexcept;
+
+    /** Initialize the log system.
+     * This will start the logging threads which periodically
+     * checks the log_queue for new messages and then
+     * call log_flush_messages().
+     */
+    static bool subsystem_init() noexcept;
+};
+
+inline log log_global;
 
 /** Get the OS error message from the last error received on this thread.
  */
 [[nodiscard]] std::string get_last_error_message() noexcept;
 
-/** Flush all messages from the log_queue directly from this thread.
- * Flushing includes writing the message to a log file or displaying
- * them on the console.
- */
-tt_no_inline void logger_flush() noexcept;
-
-/** Start the logger system.
- *
- * Initialize the logger system if it is not already initialized and while the system is not in shutdown-mode.
- *
- * @param log_level The level at which to log.
- * @return true if the logger system is initialized, false when the system is being shutdown.
- */
-inline bool logger_start(global_state_type log_level = global_state_type::log_level_default)
-{
-    set_log_level(log_level);
-    return start_subsystem(global_state_type::logger_is_running, detail::logger_init, detail::logger_deinit);
-}
-
-/** Stop the logger system.
- * De-initialize the logger system if it is initialized.
- */
-inline void logger_stop()
-{
-    return stop_subsystem(detail::logger_deinit);
-}
-
-/** Log a message.
- * @tparam Level log level of message, must be greater or equal to the log level of the `system_status`.
- * @tparam SourceFile The source file where this function was called.
- * @tparam SourceLine The source line where this function was called.
- * @tparam Fmt The format string.
- * @param timestamp The timestamp when the message is logged.
- * @param args Arguments to std::format.
- */
-template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
-tt_force_inline void log(Args &&...args) noexcept
-{
-    static_assert(std::popcount(to_underlying(Level)) == 1);
-
-    ttlet state = global_state.load(std::memory_order::relaxed);
-    if (not to_bool(state & Level)) {
-        return;
-    }
-
-    // Add messages in the queue, block when full.
-    // * This reduces amount of instructions needed to be executed during logging.
-    // * Simplifies logged_fatal_message logic.
-    // * Will make sure everything gets logged.
-    // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
-
-    // Emplace a message directly on the queue.
-    detail::log_fifo.emplace<detail::log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
-        std::forward<Args>(args)...);
-
-    if (to_bool(Level & global_state_type::log_fatal) or not to_bool(state & global_state_type::logger_is_running)) {
-        // If the logger did not start we will log in degraded mode and log from the current thread.
-        // On fatal error we also want to log from the current thread.
-        [[unlikely]] logger_flush();
-    }
-
-    if constexpr (to_bool(Level & global_state_type::log_fatal)) {
-        std::terminate();
-    }
-}
-
 } // namespace tt
 
-#define tt_log_debug(fmt, ...) ::tt::log<::tt::global_state_type::log_debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_info(fmt, ...) ::tt::log<::tt::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_statistics(fmt, ...) ::tt::log<::tt::global_state_type::log_statistics, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_trace(fmt, ...) ::tt::log<::tt::global_state_type::log_trace, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_audit(fmt, ...) ::tt::log<::tt::global_state_type::log_audit, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_warning(fmt, ...) ::tt::log<::tt::global_state_type::log_warning, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_error(fmt, ...) ::tt::log<::tt::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_debug(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_info(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_statistics(fmt, ...) \
+    ::tt::log_global.add<::tt::global_state_type::log_statistics, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_trace(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_trace, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_audit(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_audit, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_warning(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_warning, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define tt_log_error(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
 #define tt_log_fatal(fmt, ...) \
-    ::tt::log<::tt::global_state_type::log_fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+    ::tt::log_global.add<::tt::global_state_type::log_fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
     tt_unreachable()
