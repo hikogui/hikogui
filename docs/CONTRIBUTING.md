@@ -13,7 +13,7 @@ When reporting an issue with ttauri, make sure to clearly state:
  - The machine setup: "Windows 10 with RenderDoc installed."
  - The steps to reproduce: "I build ttauri in x64-MSVC-Debug, then run ttauri\_demo from Visual Studio"
  - The outcome you expected: "I expected to see log messages in the Output window"
- - The actual outcome: "I get no output at all" or "I get a exception at line 123 of logger.hpp"
+ - The actual outcome: "I get no output at all" or "I get a exception at line 123 of log.hpp"
 
 Pull Requests
 -------------

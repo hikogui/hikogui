@@ -1,6 +1,6 @@
 
 #include "my_preferences_window_controller.hpp"
-#include "ttauri/logger.hpp"
+#include "ttauri/log.hpp"
 #include "ttauri/widgets/selection_widget.hpp"
 #include "ttauri/widgets/text_field_widget.hpp"
 #include "ttauri/widgets/toggle_widget.hpp"

@@ -5,7 +5,7 @@
 #include "gfx_system.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include <chrono>
 
 namespace tt {

@@ -5,7 +5,7 @@
 #include "attributed_glyph.hpp"
 #include "font.hpp"
 #include "../graphic_path.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 
 namespace tt {
 

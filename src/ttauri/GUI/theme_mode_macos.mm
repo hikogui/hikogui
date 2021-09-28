@@ -3,7 +3,7 @@
 
 #include "theme_mode.hpp"
 #include "../strings.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 
 namespace tt {
 

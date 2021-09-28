@@ -4,7 +4,7 @@
 
 #include "timer.hpp"
 #include "thread.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include <algorithm>
 
 namespace tt {

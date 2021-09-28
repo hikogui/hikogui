@@ -4,7 +4,7 @@
 
 #include "thread.hpp"
 #include "strings.hpp"
-#include "logger.hpp"
+#include "log.hpp"
 #include "exception.hpp"
 #include <Windows.h>
 #include <Synchapi.h>

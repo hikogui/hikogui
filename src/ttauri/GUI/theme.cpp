@@ -7,7 +7,7 @@
 #include "../text/font_book.hpp"
 #include "../codec/JSON.hpp"
 #include "../color/sRGB.hpp"
-#include "../logger.hpp"
+#include "../log.hpp"
 #include "../URL.hpp"
 
 namespace tt {
