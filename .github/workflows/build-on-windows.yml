@@ -18,7 +18,7 @@ jobs:
 
 # ---------------------------------------------------------------------------------------
 
-    name: ${{ matrix.config.COMPILER}} | ${{ matrix.config.VCPKG_TARGET_TRIPLET }} | PCH:${{ matrix.config.TT_BUILD_PCH }}
+    name: ${{ matrix.config.JOB_NAME }}
     needs: install-vulkan-sdk-and-runtime
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
@@ -28,12 +28,12 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { OS: windows-2019, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC16"}
-          - { OS: windows-2019, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC16"}
-          - { OS: windows-2022, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17"}
+          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC16", JOB_NAME: "VC16 | x64-win-static | RelWithDebInfo | PCH:OFF" }
+          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC16", JOB_NAME: "VC16 | x64-win-static | RelWithDebInfo"           }
+          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | RelWithDebInfo"           }
+          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"                    }
 
     env:
-      BUILD_TYPE: RelWithDebInfo
       PLATFORM: x64
       VCPKG_ROOT: C:\vcpkg
       VULKAN_SDK: ${{ needs.install-vulkan-sdk-and-runtime.outputs.VULKAN_SDK }}
@@ -65,7 +65,7 @@ jobs:
           $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
           $COMPILER="${{ matrix.config.COMPILER }}"
           $TRIPLET="${{ matrix.config.VCPKG_TARGET_TRIPLET }}"
-          $BUILD_TYPE="$env:BUILD_TYPE"
+          $BUILD_TYPE="${{ matrix.config.BUILD_TYPE }}"
           $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-$COMPILER-$TRIPLET-$BUILD_TYPE"
           echo "Artifact Name:" $ARTIFACT_NAME
           echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
@@ -129,18 +129,18 @@ jobs:
           if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
           echo %GENERATOR%
           mkdir build && cd build
-          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} ..                                    ^
-                -DCMAKE_BUILD_TYPE=%BUILD_TYPE%                                             ^
+          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} ..                                  ^
+                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }}                          ^
                 -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake            ^
                 -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }}            ^
                 -DTT_BUILD_PCH=${{ matrix.config.TT_BUILD_PCH }}                            ^
                 -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: 🙏 CMake ➔ Build
-        run: cmake --build build --config %BUILD_TYPE% -j %NUMBER_OF_PROCESSORS%
+        run: cmake --build build --config ${{ matrix.config.BUILD_TYPE }} -j %NUMBER_OF_PROCESSORS%
 
       - name: 📦 CMake ➔ Install
-        run: cmake --install build --config %BUILD_TYPE% --prefix build/ttauri-%VERSION% --verbose
+        run: cmake --install build --config ${{ matrix.config.BUILD_TYPE }} --prefix build/ttauri-%VERSION% --verbose
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
@@ -180,6 +180,30 @@ jobs:
         with:
           name: test-results
           path: test_results_*.xml
+
+      - name: 🔽 Install 'OpenCppCoverage' and 'codecov.io Report Uploader'
+        if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
+          OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
+          curl -L https://uploader.codecov.io/latest/windows/codecov.exe --output bin\coverage\codecov.exe
+
+      - name: 📑 Generate CodeCoverage Report
+        if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          .\bin\coverage\OpenCppCoverage.exe --sources=src        ^
+          --excluded_sources=src\*_tests.cpp                      ^
+          --excluded_sources=src\*\*_tests.cpp                    ^
+          --excluded_sources=build\_deps                          ^
+          --export_type=cobertura:ttauri_coverage.xml             ^
+          --working_dir=.\\build\ttauri-%VERSION%\tests           ^
+          -- ".\\build\ttauri-%VERSION%\tests\\ttauri_tests.exe"
+
+      - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
+        if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: codecov/codecov-action@v2 # https://github.com/codecov/codecov-action
+        with:
+          files: ./ttauri_coverage.xml
 
       #
       # We only upload artifacts for static builds with pre-compiled headers (TT_BUILD_PCH:ON).
