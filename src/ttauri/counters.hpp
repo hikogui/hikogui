@@ -19,6 +19,7 @@
 #include <atomic>
 #include <map>
 #include <memory>
+#include <mutex>
 
 namespace tt {
 namespace detail {
