@@ -118,8 +118,8 @@ inline detail::tagged_counter<Tag> global_counter;
 
 [[nodiscard]] inline detail::counter *get_global_counter(std::string const &name)
 {
-    ttlet it = detail::counter::map.find(name);
-    if (it == detail::counter::map.cend()) {
+    ttlet it = detail::counter::map->find(name);
+    if (it == detail::counter::map->cend()) {
         return nullptr;
     } else {
         tt_axiom(it->second);
