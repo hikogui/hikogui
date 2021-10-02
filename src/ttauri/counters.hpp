@@ -11,25 +11,33 @@
 #include "fixed_string.hpp"
 #include "time_stamp_count.hpp"
 #include "atomic.hpp"
+#include "unfair_mutex.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>
 #include <string>
+#include <atomic>
 #include <map>
+#include <memory>
 
 namespace tt {
 namespace detail {
 
 class counter {
 public:
-    static inline std::map<std::string, counter *> map = {};
+    using map_type = std::map<std::string, counter *>;
+
+    static inline unfair_mutex mutex = {};
+    static inline std::unique_ptr<map_type> map = nullptr;
 
     counter(counter const &) = delete;
     counter(counter &&) = delete;
     counter &operator=(counter const &) = delete;
     counter &operator=(counter &&) = delete;
 
-    constexpr counter() noexcept {}
+    constexpr counter() noexcept
+    {
+    }
 
     operator uint64_t() const noexcept
     {
@@ -38,8 +46,9 @@ public:
 
     static void log() noexcept
     {
+        ttlet lock = std::scoped_lock(mutex);
         log_header();
-        for (ttlet &[string, counter]: map) {
+        for (ttlet &[string, counter]: *map) {
             tt_axiom(counter);
             counter->log(string);
         }
@@ -96,7 +105,9 @@ class tagged_counter : public counter {
 public:
     tagged_counter() noexcept : counter()
     {
-        map[std::string{Tag}] = this;
+        ttlet lock = std::scoped_lock(mutex);
+        map = std::make_unique<map_type>();
+        (*map)[std::string{Tag}] = this;
     }
 };
 
