@@ -25,6 +25,14 @@ struct dead_lock_detector_pair {
 
 }
 
+/** Dead lock detector.
+* 
+* The dead lock detector should not be used before and after main().
+* By using `tt::unfair_mutex_impl<false>` you can get a mutex without a dead lock detector.
+* 
+* In the future when MSVC allows constinit thread_local variables we can change the implementation
+* to allow the dead lock detector before main().
+*/
 class dead_lock_detector {
 public:
     /** Lock an object on this thread.

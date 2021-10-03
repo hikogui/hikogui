@@ -11,25 +11,48 @@
 #include "fixed_string.hpp"
 #include "time_stamp_count.hpp"
 #include "atomic.hpp"
+#include "unfair_mutex.hpp"
 #include <span>
 #include <typeinfo>
 #include <typeindex>
 #include <string>
+#include <atomic>
 #include <map>
+#include <memory>
+#include <mutex>
 
 namespace tt {
 namespace detail {
 
 class counter {
 public:
-    static inline std::map<std::string, counter *> map = {};
+    /** Get the named counter.
+     * 
+     * @pre main() must have been started.
+     * @param name The name of the counter.
+     * @return A pointer to the counter, or nullptr if the counter is not found.
+     */
+    [[nodiscard]] static counter *get_if(std::string const &name) noexcept
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+        ttlet &map_ = _map.get_or_make();
+        ttlet it = map_.find(name);
+        if (it == map_.cend()) {
+            return nullptr;
+        } else {
+            tt_axiom(it->second);
+            return it->second;
+        }
+    }
 
     counter(counter const &) = delete;
     counter(counter &&) = delete;
     counter &operator=(counter const &) = delete;
     counter &operator=(counter &&) = delete;
 
-    constexpr counter() noexcept {}
+    constexpr counter() noexcept
+    {
+    }
 
     operator uint64_t() const noexcept
     {
@@ -38,8 +61,9 @@ public:
 
     static void log() noexcept
     {
+        ttlet lock = std::scoped_lock(_mutex);
         log_header();
-        for (ttlet &[string, counter]: map) {
+        for (ttlet &[string, counter]: _map.get_or_make()) {
             tt_axiom(counter);
             counter->log(string);
         }
@@ -78,6 +102,14 @@ public:
     }
 
 protected:
+    using map_type = std::map<std::string, counter *>;
+
+    /** Mutex for managing _map.
+    * We disable the dead_lock_detector, so that this mutex can be used before main().
+    */
+    constinit static inline unfair_mutex_impl<false> _mutex;
+    constinit static inline atomic_unique_ptr<map_type> _map;
+
     std::atomic<uint64_t> _total_count = 0;
     std::atomic<uint64_t> _prev_count = 0;
     std::atomic<uint64_t> _duration_max = 0;
@@ -96,7 +128,8 @@ class tagged_counter : public counter {
 public:
     tagged_counter() noexcept : counter()
     {
-        map[std::string{Tag}] = this;
+        ttlet lock = std::scoped_lock(_mutex);
+        _map.get_or_make()[std::string{Tag}] = this;
     }
 };
 
@@ -105,15 +138,9 @@ public:
 template<basic_fixed_string Tag>
 inline detail::tagged_counter<Tag> global_counter;
 
-[[nodiscard]] inline detail::counter *get_global_counter(std::string const &name)
+[[nodiscard]] inline detail::counter *get_global_counter_if(std::string const &name)
 {
-    ttlet it = detail::counter::map.find(name);
-    if (it == detail::counter::map.cend()) {
-        return nullptr;
-    } else {
-        tt_axiom(it->second);
-        return it->second;
-    }
+    return detail::counter::get_if(name);
 }
 
 } // namespace tt
