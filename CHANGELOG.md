@@ -1,6 +1,10 @@
 Change log
 ==========
 
+0.5.1 Bad Butterfly
+-------------------
+Fix bug; pre-main initialization order of global_counter. 
+
 0.5.0 Eager Elephant
 --------------------
 The changes in this version are pretty random, but there is a theme
