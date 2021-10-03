@@ -26,7 +26,7 @@ TEST(Counters, RunTimeRead) {
     ++global_counter<"bar_b">;
     ++global_counter<"bar_b">;
 
-    ASSERT_EQ(get_global_counter("baz_b"), nullptr);
-    ASSERT_EQ(*get_global_counter("foo_b"), 1);
-    ASSERT_EQ(*get_global_counter("bar_b"), 2);
+    ASSERT_EQ(get_global_counter_if("baz_b"), nullptr);
+    ASSERT_EQ(*get_global_counter_if("foo_b"), 1);
+    ASSERT_EQ(*get_global_counter_if("bar_b"), 2);
 }
