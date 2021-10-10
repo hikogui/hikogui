@@ -1,12 +1,13 @@
 TTauri GUI library [![Build on Windows](https://github.com/ttauri-project/ttauri/actions/workflows/build-on-windows.yml/badge.svg?branch=main)](https://github.com/ttauri-project/ttauri/actions/workflows/build-on-windows.yml) [![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/ttauri-project/ttauri/main/vcpkg.json&label=Latest%20Version&query=$[%27version%27]&color=blue)](https://github.com/ttauri-project/ttauri/releases/latest) [![License](https://img.shields.io/github/license/ttauri-project/ttauri.svg)](https://github.com/ttauri-project/ttauri/blob/main/LICENSE_1_0.txt)
 ==================
 
-Current releases are broken
----------------------------
-Due to Visual Studio removing std::format from C++20, and cmake changing the compiler flag for C++20
-ttauri releases will be broken until Visual Studio 2022 is officially released. After
-Visual Studio 2022 we should be able to make c++23 builds which should work for some time.
-However in the future it will break again due to ABI changes of std::format.
+Currently VCPKG builds are not recommended
+------------------------------------------
+
+Due to future changes to the C++20 standard involving ABI changes in
+std::format and std::ranges there are some issues with compatibility
+between compiler and cmake versions. Please use the non-vcpkg builds
+which ensures that cmake and compiler versions are exactly the same.
 
 
 A portable, low latency, retained-mode GUI framework written in C++
