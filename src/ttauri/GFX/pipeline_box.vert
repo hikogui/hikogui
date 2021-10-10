@@ -15,9 +15,9 @@ layout(location = 5) in vec4 in_corner_radii;
 layout(location = 6) in float in_border_width;
 
 layout(location = 0) out flat vec4 out_clipping_rectangle;
-layout(location = 1) out vec4 out_edge_distances;
-layout(location = 2) out vec4 out_fill_color;
-layout(location = 3) out vec4 out_border_color;
+layout(location = 1) out noperspective vec4 out_edge_distances;
+layout(location = 2) out noperspective vec4 out_fill_color;
+layout(location = 3) out noperspective vec4 out_border_color;
 layout(location = 4) out flat vec4 out_corner_radii;
 layout(location = 5) out flat float out_border_start;
 layout(location = 6) out flat float out_border_end;
