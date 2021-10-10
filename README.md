@@ -63,13 +63,14 @@ int tt_main(int argc, char *argv[])
 {
     observable<int> value = 0;
 
-    auto &window = gui_system::global().make_window(l10n("Radio button example"));
+    auto gui = tt::gui_system::make_unique();
+    auto &window = gui.make_window(l10n("Radio button example"));
     window.content().make_widget<label_widget>("A1", l10n("radio buttons:"));
     window.content().make_widget<radio_button_widget>("B1", l10n("one"), value, 1);
     window.content().make_widget<radio_button_widget>("B2", l10n("two"), value, 2);
     window.content().make_widget<radio_button_widget>("B3", l10n("three"), value, 3);
 
-    return gui_system::global().loop();
+    return gui->loop();
 }
 ```
 
