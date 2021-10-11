@@ -4,9 +4,9 @@
 layout(origin_upper_left) in vec4 gl_FragCoord;
 
 layout(location = 0) in flat vec4 in_clipping_rectangle;
-layout(location = 1) in vec4 in_edge_distances;
-layout(location = 2) in vec4 in_fill_color;
-layout(location = 3) in vec4 in_border_color;
+layout(location = 1) in noperspective vec4 in_edge_distances;
+layout(location = 2) in noperspective vec4 in_fill_color;
+layout(location = 3) in noperspective vec4 in_border_color;
 layout(location = 4) in flat vec4 in_corner_radii;
 layout(location = 5) in flat float in_border_start;
 layout(location = 6) in flat float in_border_end;

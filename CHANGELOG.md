@@ -3,7 +3,12 @@ Change log
 
 0.5.1 Bad Butterfly
 -------------------
-Fix bug; pre-main initialization order of global_counter. 
+ * Fix bug; pre-main initialization order of global\_counter. 
+ * Make it easier to build out-of-tree application without vcpkg.
+ * vcpkg builds are not recommended at the moment due to future
+   changes of std::format and std::ranges to the c++20 standard.
+   Please build using non-vcpkg to ensure equal versions of cmake
+   and the compiler.
 
 0.5.0 Eager Elephant
 --------------------

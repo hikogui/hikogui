@@ -13,7 +13,7 @@ layout(location = 1) in vec4 inClippingRectangle;
 layout(location = 2) in vec3 inTextureCoord;
 
 layout(location = 0) out flat vec4 outClippingRectangle;
-layout(location = 1) out vec3 outTextureCoord;
+layout(location = 1) out noperspective vec3 outTextureCoord;
 
 vec4 convertPositionToViewport(vec3 windowPosition)
 {
