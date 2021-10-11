@@ -11,102 +11,197 @@
 
 namespace tt {
 
-/** Class which represents an rectangle.
+/** A rectangle / parallelogram in 3D space.
+ *
+ * This class actually describes a parallelogram in 3D space using
+ * a point to the left bottom corner and a right & up vector.
+ *
  */
 class rectangle {
-    /** Intrinsic of the rectangle.
-     */
-    std::array<point3, 4> corners;
-
 public:
-    rectangle() noexcept : corners() {}
-    rectangle(rectangle const &rhs) noexcept = default;
-    rectangle &operator=(rectangle const &rhs) noexcept = default;
-    rectangle(rectangle &&rhs) noexcept = default;
-    rectangle &operator=(rectangle &&rhs) noexcept = default;
+    point3 origin;
+    vector3 right;
+    vector3 up;
 
-    rectangle(point3 corner0, point3 corner1, point3 corner2, point3 corner3) noexcept : corners{corner0, corner1, corner2, corner3} {}
+    constexpr rectangle() noexcept : origin(), right(), up() {}
+    constexpr rectangle(rectangle const &rhs) noexcept = default;
+    constexpr rectangle &operator=(rectangle const &rhs) noexcept = default;
+    constexpr rectangle(rectangle &&rhs) noexcept = default;
+    constexpr rectangle &operator=(rectangle &&rhs) noexcept = default;
 
-    rectangle(aarectangle rhs) noexcept : corners{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs)} {}
+    /** Create a rectangle from a corner point and two vectors.
+     *
+     * @param origin The left-bottom corner.
+     * @param right The right vector.
+     * @param up The up vector.
+     */
+    constexpr rectangle(point3 origin, vector3 right, vector3 up) noexcept :
+        origin(origin), right(right), up(up) {}
 
-    rectangle &operator=(aarectangle rhs) noexcept
+    /** Create a rectangle from 4 corner points.
+     *
+     * @param origin The left-bottom corner.
+     * @param right_bottom The right-bottom corner.
+     * @param left_top The left-top corner.
+     * @param right_top The right-top corner.
+     */
+    constexpr rectangle(point3 origin, point3 right_bottom, point3 left_top, point3 right_top) noexcept :
+        rectangle(origin, right_bottom - origin, left_top - origin) {}
+
+    constexpr rectangle(aarectangle rhs) noexcept
     {
-        std::get<0>(corners) = get<0>(rhs);
-        std::get<1>(corners) = get<1>(rhs);
-        std::get<2>(corners) = get<2>(rhs);
-        std::get<3>(corners) = get<3>(rhs);
+        ttlet p0 = get<0>(rhs);
+        ttlet p2 = get<2>(rhs);
+        ttlet diagonal = static_cast<f32x4>(p2 - p0);
+
+        origin = p0;
+        right = vector3{diagonal.x000()};
+        up = vector3{diagonal._0y00()};
+    }
+
+    constexpr rectangle &operator=(aarectangle rhs) noexcept
+    {
+        ttlet p0 = get<0>(rhs);
+        ttlet p2 = get<2>(rhs);
+        ttlet diagonal = static_cast<f32x4>(p2 - p0);
+
+        origin = p0;
+        right = vector3{diagonal.x000()};
+        up = vector3{diagonal._0y00()};
         return *this;
     }
 
-    rectangle(point3 corner0, extent2 extent) noexcept :
-        corners{corner0, corner0 + extent.right(), corner0 + extent.up(), corner0 + extent.right() + extent.up()}
+    constexpr rectangle(point3 origin, extent2 extent) noexcept :
+        corners(origin, extent.right(), extent.up())
     {
     }
 
-    [[nodiscard]] explicit operator aarectangle() const noexcept
-    {
-        // XXX - Should actually check maximum and minimums of all points.
-        return aarectangle{point2{std::get<0>(corners)}, point2{std::get<3>(corners)}};
-    }
-
-    /** Get the right vector of a rectangle.
+    /** Check if the rectangle has an area.
+     *
+     * @return True is there is a area.
      */
-    vector3 right_vector() const noexcept
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
-        return std::get<1>(corners) - std::get<0>(corners);
+        // min() is smallest normal float.
+        return area() > std::numeric_limits<float>::min();
     }
 
-    /** Get the up vector of a rectangle.
+    /** Check if this is a rectangle.
+     *
+     * @return True if rectangle, false if another parallelogram.
      */
-    vector3 up_vector() const noexcept
+    [[nodiscard]] constexpr bool is_rectangle() const noexcept
     {
-        return std::get<2>(corners) - std::get<0>(corners);
+        ttlet dp = dot(right, up);
+        return -std::numeric_limits<float>::min() <= dp and dp <= std::numeric_limits<float>::min();
     }
 
-    float width() const noexcept
+    /** Check if this is an axis aligned rectangle.
+     *
+     * @return True if this is a axis aligned rectangle.
+     */
+    [[nodiscard]] constexpr bool is_axis_aligned() const noexcept
     {
-        return hypot(right_vector());
+        ttlet should_be_zeroes = static_cast<f32x4>(right).yz00() | static_cast<f32x4>(up)._00xz();
+        return not should_be_zeroes;
     }
 
-    float height() const noexcept
+    [[nodiscard]] constexpr float width() const noexcept
     {
-        return hypot(up_vector());
+        return hypot(right);
     }
 
-    extent2 extent() const noexcept
+    [[nodiscard]] constexpr float height() const noexcept
+    {
+        return hypot(up);
+    }
+
+    [[nodiscard]] constexpr extent2 extent() const noexcept
     {
         return {width(), height()};
     }
 
-    [[nodiscard]] point3 constexpr operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr float area() const noexcept
     {
-        tt_axiom(i < 4);
-        return corners[i];
+        return hypot(cross(right, up));
+    }
+
+    [[nodiscard]] constexpr point3 operator[](size_t i) const noexcept
+    {
+        switch (i) {
+        case 0: return get<0>(*this);
+        case 1: return get<1>(*this);
+        case 2: return get<2>(*this);
+        case 3: return get<3>(*this);
+        default: tt_no_default();
+        }
     }
 
     template<size_t I>
     [[nodiscard]] friend constexpr point3 get(rectangle const &rhs) noexcept
     {
         static_assert(I < 4);
-        return std::get<I>(rhs.corners);
+        if constexpr (I == 0) {
+            return origin;
+        } else if constexpr (I == 1) {
+            return origin + right;
+        } else if constexpr (I == 2) {
+            return origin + up;
+        } else {
+            return origin + right + up;
+        }
     }
 
-    [[nodiscard]] friend rectangle expand(rectangle const &lhs, float rhs) noexcept
+    /** Expand the rectangle by adding an absolute distance on each side.
+     *
+     * The expansion is done by:
+     *  - translating the origin point in opposite direction of the
+     *    right and up vectors.
+     *  - increase the size of the right and up vectors twice.
+     *
+     * It is possible for the rectangle to flip, when the right-hand-side is negative.
+     *
+     * @param lhs The rectangle to expand.
+     * @param rhs The scalar value which is added to the rectangle in each side.
+     * @return A new rectangle expanded in each side.
+     */
+    [[nodiscard]] friend constexpr rectangle expand(rectangle const &lhs, float rhs) noexcept
     {
-        ttlet rightDirection = normalize(lhs.right_vector());
-        ttlet upDirection = normalize(lhs.up_vector());
+        ttlet extra_right = normalize(right) * rhs;
+        ttlet extra_up = normalize(up) * rhs;
+        ttlet extra_diagonal = extraright + extraup;
 
         return {
-            get<0>(lhs) + rhs * -rightDirection + rhs * -upDirection,
-            get<1>(lhs) + rhs * rightDirection + rhs * -upDirection,
-            get<2>(lhs) + rhs * -rightDirection + rhs * upDirection,
-            get<3>(lhs) + rhs * rightDirection + rhs * upDirection};
+            origin - extra_diagonal
+            right + 2.0f * extra_right,
+            up + 2.0f * extra_up
+        };
     }
 
-    [[nodiscard]] friend rectangle shrink(rectangle const &lhs, float rhs) noexcept
+    /** Shrink the rectangle by removing an absolute distance on each side.
+     *
+     * The shrinking is done by:
+     *  - translating the origin point in the same direction of the
+     *    right and up vectors.
+     *  - decreasing the size of the right and up vectors twice.
+     *
+     * It is possible for the rectangle to flip, when the right-hand-side is positive.
+     *
+     * @param lhs The rectangle to shrink.
+     * @param rhs The scalar value which is removed from the rectangle in each side.
+     * @return A new rectangle shrunk in each side.
+     */
+    [[nodiscard]] friend constexpr rectangle shrink(rectangle const &lhs, float rhs) noexcept
     {
         return expand(lhs, -rhs);
     }
+
+    constexpr save_bounds(aarectangle &bounding_box) noexcept
+    {
+        bounding_box.add(
+
+    }
+
 };
 
 } // namespace tt

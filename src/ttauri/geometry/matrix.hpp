@@ -160,7 +160,7 @@ public:
 
     [[nodiscard]] constexpr auto operator*(rectangle const &rhs) const noexcept
     {
-        return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
+        return rectangle{*this * rhs.origin, *this * rhs.right, *this * rhs.up};
     }
 
     /** Transform a color by a color matrix.

@@ -318,6 +318,11 @@ struct numeric_array {
         return r;
     }
 
+    [[nodiscard]] static constexpr numeric_array epsilon() noexcept
+    {
+        return broadcast(std::numeric_limits<float>::min());
+    }
+
     [[nodiscard]] numeric_array(std::array<T, N> const &rhs) noexcept : v(rhs) {}
 
     numeric_array &operator=(std::array<T, N> const &rhs) noexcept
@@ -576,6 +581,16 @@ struct numeric_array {
     constexpr void store(std::byte *ptr) const noexcept
     {
         store<sizeof(*this)>(ptr);
+    }
+
+    /** Check if the vector is non-zero.
+     * @return True if at least one element is non-zero. 
+     */
+    constexpr explicit operator bool () const noexcept
+    {
+        ttlet ep = epsilon();
+        // check if any of the elements is outside of epsilon range, 
+        return static_cast<bool>(gt(-ep, *this) | gt(*this, ep));
     }
 
     [[nodiscard]] constexpr T const &operator[](size_t i) const noexcept

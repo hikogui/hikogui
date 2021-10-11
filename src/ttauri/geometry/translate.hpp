@@ -139,7 +139,7 @@ public:
 
     [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
     {
-        return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
+        return rectangle{*this * rhs.origin, rhs.right, rhs.up};
     }
 
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept
