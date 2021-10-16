@@ -15,6 +15,7 @@
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../chrono.hpp"
+#include "../coroutine.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -382,14 +383,10 @@ public:
      */
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
-    /** Remove and deallocate all child widgets.
-     */
-    void clear() noexcept;
-
     /** Add a widget directly to this widget.
      * Thread safety: locks.
      */
-    widget &add_widget(std::unique_ptr<widget> widget) noexcept;
+    [[deprecated]] widget &add_widget(std::unique_ptr<widget> widget) noexcept;
 
 protected:
     /** A list of child widgets.
@@ -451,10 +448,24 @@ protected:
     std::shared_ptr<std::function<void()>> _relayout_callback;
     std::shared_ptr<std::function<void()>> _reconstrain_callback;
 
+    [[nodiscard]] virtual generator<widget *> children() const noexcept
+    {
+        for (ttlet &child : _children) {
+            co_yield child.get();
+        }
+    }
+
+    [[nodiscard]] virtual generator<widget *> reverse_children() const noexcept
+    {
+        for (ttlet &child : std::ranges::reverse_view(_children)) {
+            co_yield child.get();
+        }
+    }
+
     /** Add a widget directly to this widget.
      */
     template<typename T, typename... Args>
-    T &make_widget(Args &&...args)
+    [[deprecated]] T &make_widget(Args &&...args)
     {
         tt_axiom(is_gui_thread());
         auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);

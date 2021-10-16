@@ -23,7 +23,7 @@ void window_widget::init() noexcept
     if (theme().operating_system == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
-        _title_callback = title.subscribe([this]{
+        _title_callback = title.subscribe([this] {
             window.gui.run([this] {
                 this->_system_menu->icon = this->title->icon;
             });
@@ -39,8 +39,7 @@ void window_widget::init() noexcept
     _content = &make_widget<grid_widget>(_content_delegate);
 }
 
-[[nodiscard]] bool
-window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -54,8 +53,7 @@ window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstra
             _toolbar->preferred_size().height() + _content->preferred_size().height()};
 
         _maximum_size = {
-            _content->maximum_size().width(),
-            _toolbar->preferred_size().height() + _content->maximum_size().height()};
+            _content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
 
         // Override maximum size and preferred size.
         _maximum_size = max(_maximum_size, _minimum_size);
@@ -125,8 +123,10 @@ hitbox window_widget::hitbox_test(point2 position) const noexcept
         return r;
     }
 
-    for (ttlet &child : _children) {
-        r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+    for (auto *child : children()) {
+        if (child) {
+            r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+        }
     }
 
     return r;

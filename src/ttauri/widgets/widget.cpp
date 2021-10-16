@@ -39,7 +39,8 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     _maximum_size = extent2::nan();
 }
 
-widget::~widget() {
+widget::~widget()
+{
     // The window must remove references such as mouse and keyboard targets to
     // this widget when it is removed.
     window.widget_is_destructing(this);
@@ -301,10 +302,11 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 
     need_reconstrain |= _request_constrain.exchange(false);
 
-    for (auto &&child : _children) {
-        tt_axiom(child);
-        tt_axiom(child->parent == this);
-        need_reconstrain |= child->constrain(display_time_point, need_reconstrain);
+    for (auto *child : children()) {
+        if (child) {
+            tt_axiom(child->parent == this);
+            need_reconstrain |= child->constrain(display_time_point, need_reconstrain);
+        }
     }
 
     return need_reconstrain;
@@ -315,11 +317,12 @@ void widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexce
     tt_axiom(is_gui_thread());
 
     need_layout |= _request_layout.exchange(false);
-    for (auto &&child : _children) {
-        tt_axiom(child);
-        tt_axiom(child->parent == this);
-        if (child->visible) {
-            child->layout(display_time_point, need_layout);
+    for (auto *child : children()) {
+        if (child) {
+            tt_axiom(child->parent == this);
+            if (child->visible) {
+                child->layout(display_time_point, need_layout);
+            }
         }
     }
 
@@ -332,14 +335,15 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 {
     tt_axiom(is_gui_thread());
 
-    for (auto &child : _children) {
-        tt_axiom(child);
-        tt_axiom(child->parent == this);
+    for (auto *child : children()) {
+        if (child) {
+            tt_axiom(child->parent == this);
 
-        if (child->visible) {
-            auto child_context =
-                context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
-            child->draw(child_context, display_time_point);
+            if (child->visible) {
+                auto child_context =
+                    context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
+                child->draw(child_context, display_time_point);
+            }
         }
     }
 }
@@ -365,11 +369,12 @@ void widget::request_redraw() const noexcept
     tt_axiom(is_gui_thread());
 
     auto r = hitbox{};
-    for (ttlet &child : _children) {
-        tt_axiom(child);
-        tt_axiom(child->parent == this);
-        if (child->visible) {
-            r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+    for (auto *child : children()) {
+        if (child) {
+            tt_axiom(child->parent == this);
+            if (child->visible) {
+                r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+            }
         }
     }
     return r;
@@ -415,10 +420,11 @@ bool widget::handle_command_recursive(command command, std::vector<widget const 
     tt_axiom(is_gui_thread());
 
     auto handled = false;
-    for (auto &child : _children) {
-        tt_axiom(child);
-        tt_axiom(child->parent == this);
-        handled |= child->handle_command_recursive(command, reject_list);
+    for (auto *child : children()) {
+        if (child) {
+            tt_axiom(child->parent == this);
+            handled |= child->handle_command_recursive(command, reject_list);
+        }
     }
 
     if (!std::ranges::any_of(reject_list, [this](ttlet &x) {
@@ -460,27 +466,24 @@ widget const *widget::find_next_widget(
         found = true;
     }
 
-    ssize_t first = direction == keyboard_focus_direction::forward ? 0 : ssize(_children) - 1;
-    ssize_t last = direction == keyboard_focus_direction::forward ? ssize(_children) : -1;
-    ssize_t step = direction == keyboard_focus_direction::forward ? 1 : -1;
-    for (ssize_t i = first; i != last; i += step) {
-        auto &&child = _children[i];
-        tt_axiom(child);
+    auto children_ = direction == keyboard_focus_direction::forward ? children() : reverse_children();
+    for (auto *child : children_) {
+        if (child) {
+            if (found) {
+                // Find the first focus accepting widget.
+                if (auto tmp = child->find_next_widget({}, group, direction)) {
+                    return tmp;
+                }
 
-        if (found) {
-            // Find the first focus accepting widget.
-            if (auto tmp = child->find_next_widget({}, group, direction)) {
-                return tmp;
-            }
+            } else {
+                auto tmp = child->find_next_widget(current_keyboard_widget, group, direction);
+                if (tmp == current_keyboard_widget) {
+                    // The current widget was found, but no next widget available in the child.
+                    found = true;
 
-        } else {
-            auto tmp = child->find_next_widget(current_keyboard_widget, group, direction);
-            if (tmp == current_keyboard_widget) {
-                // The current widget was found, but no next widget available in the child.
-                found = true;
-
-            } else if (tmp) {
-                return tmp;
+                } else if (tmp) {
+                    return tmp;
+                }
             }
         }
     }
@@ -500,9 +503,9 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    for (ttlet &child : _children) {
-        if (child->accepts_keyboard_focus(group)) {
-            return &(*child);
+    for (auto *child : children()) {
+        if (child and child->accepts_keyboard_focus(group)) {
+            return child;
         }
     }
     return nullptr;
@@ -512,9 +515,9 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    for (ttlet &child : std::views::reverse(_children)) {
-        if (child->accepts_keyboard_focus(group)) {
-            return &(*child);
+    for (auto *child : reverse_children()) {
+        if (child and child->accepts_keyboard_focus(group)) {
+            return child;
         }
     }
     return nullptr;
@@ -558,15 +561,6 @@ void widget::scroll_to_show(tt::rectangle rectangle) noexcept
     }
 
     return chain;
-}
-
-/** Remove and deallocate all child widgets.
- */
-void widget::clear() noexcept
-{
-    tt_axiom(is_gui_thread());
-    _children.clear();
-    _request_constrain = true;
 }
 
 /** Add a widget directly to this widget.

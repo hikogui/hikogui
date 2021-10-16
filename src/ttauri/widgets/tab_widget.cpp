@@ -64,8 +64,9 @@ void tab_widget::deinit() noexcept
     auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
     if (has_updated_contraints) {
         ttlet &selected_child_ = selected_child();
-        for (ttlet &child : _children) {
-            child->visible = child.get() == &selected_child_;
+        for (auto *child : children()) {
+            tt_axiom(child);
+            child->visible = child == &selected_child_;
         }
 
         auto size_changed = compare_then_assign(_minimum_size, selected_child_.minimum_size());
@@ -87,7 +88,8 @@ void tab_widget::deinit() noexcept
 
     need_layout |= _request_layout.exchange(false);
     if (need_layout) {
-        for (ttlet &child : _children) {
+        for (auto *child : children()) {
+            tt_axiom(child);
             if (child->visible) {
                 child->set_layout_parameters_from_parent(rectangle());
             }

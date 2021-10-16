@@ -103,7 +103,8 @@ hitbox toolbar_widget::hitbox_test(point2 position) const noexcept
         r = hitbox{this, draw_layer, hitbox::Type::MoveArea};
     }
 
-    for (ttlet &child : _children) {
+    for (auto *child : children()) {
+        tt_axiom(child);
         r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
     }
     return r;

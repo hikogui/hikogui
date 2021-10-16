@@ -77,6 +77,15 @@ public:
         return super::make_widget<Widget>(std::forward<Args>(args)...);
     }
 
+    /** Remove and deallocate all child widgets.
+     */
+    void clear() noexcept
+    {
+        tt_axiom(is_gui_thread());
+        _children.clear();
+        _request_constrain = true;
+    }
+
     /// @privatesection
     void init() noexcept override
     {
