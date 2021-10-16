@@ -16,7 +16,7 @@ namespace tt {
 
 using namespace std;
 
-void window_widget::init() noexcept
+void window_widget::constructor_implementation() noexcept
 {
     _toolbar = &make_widget<toolbar_widget>();
 

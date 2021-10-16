@@ -8,6 +8,7 @@
 #include <concepts>
 #include <coroutine>
 #include <optional>
+#include <memory>
 
 namespace tt {
 
@@ -21,19 +22,71 @@ namespace tt {
  * The incrementing the iterator will resume the generator-function until
  * the generator-function co_yields another value.
  */
-template<typename T>
+template<typename T, typename Allocator = std::allocator<char>>
 class generator {
 public:
+    static_assert(sizeof(std::allocator_traits<Allocator>::value_type) == 1, "Requires a allocator with a byte sized value type");
     using value_type = T;
 
     class promise_type {
     public:
-        generator<value_type> get_return_object()
+        struct allocator_info {
+            Allocator *allocator;
+            size_t size;
+        };
+
+        void operator delete(void *ptr)
+        {
+            if (ptr) {
+                auto *ptr_ = reinterpret_cast<char *>(ptr) - sizeof(allocator_info);
+                auto &info = *std::launder(reinterpret_cast<allocator_info *>(ptr_));
+
+                if constexpr (std::allocator_traits<Allocator>::is_always_equal::value) {
+                    auto allocator = Allocator{};
+                    std::allocator_traits<Allocator>::deallocate(allocator, ptr_, info.size);
+                } else {
+                    std::allocator_traits<Allocator>::deallocate(*(info.allocator), ptr_, info.size);
+                }
+            }
+        }
+
+        void *operator new(size_t size)
+        {
+            auto size_plus_info = size + sizeof(allocator_info);
+
+            // The allocator will add a allocator info in front of the allocated data.
+            auto allocator = Allocator{};
+            auto *ptr = std::allocator_traits<Allocator>::allocate(allocator, size_plus_info);
+            [[maybe_unused]] auto *info = new (ptr) allocator_info(nullptr, size_plus_info);
+            return ptr + sizeof(allocator_info);
+        }
+
+        template<typename FirstArg, typename... Args>
+        void *operator new(size_t size, std::align_val_t alignment, FirstArg const &first_arg, Args const &...args)
+        {
+            auto size_plus_info = size + sizeof(allocator_info);
+
+            // The allocator will add a allocator info in front of the allocated data.
+            if constexpr (std::allocator_traits<Allocator>::is_always_equal::value) {
+                auto allocator = Allocator{};
+                auto *ptr = std::allocator_traits<Allocator>::allocate(allocator, size_plus_info);
+                [[maybe_unused]] auto *info = new (ptr) allocator_info(nullptr, size_plus_info);
+                return ptr + sizeof(allocator_info);
+
+            } else {
+                auto *ptr = std::allocator_traits<Allocator>::allocate(first_arg, size_plus_info);
+                [[maybe_unused]] auto *info = new (ptr) allocator_info(&first_arg, size_plus_info);
+                return ptr + sizeof(allocator_info);
+            }
+        }
+
+        generator get_return_object()
         {
             return generator{handle_type::from_promise(*this)};
         }
 
-        value_type const &value() {
+        value_type const &value()
+        {
             return *_value;
         }
 
@@ -75,6 +128,38 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
+    /** A forward iterator which iterates through values co_yieled by the generator-function.
+     */
+    class iterator {
+    public:
+        explicit iterator(handle_type coroutine) : _coroutine{coroutine} {}
+
+        /** Resume the generator-function.
+         */
+        iterator &operator++()
+        {
+            _coroutine.resume();
+            return *this;
+        }
+
+        /** Retrieve the value co_yielded by the generator-function.
+         */
+        value_type const &operator*() const
+        {
+            return _coroutine.promise().value();
+        }
+
+        /** Check if the generator-function has finished.
+         */
+        [[nodiscard]] bool operator==(std::default_sentinel_t) const
+        {
+            return !_coroutine || _coroutine.done();
+        }
+
+    private:
+        handle_type _coroutine;
+    };
+
     explicit generator(handle_type coroutine) : _coroutine(coroutine) {}
 
     generator() = default;
@@ -105,39 +190,6 @@ public:
         return *this;
     }
 
-    /** A forward iterator which iterates through values co_yieled by the generator-function.
-     */
-    class iterator {
-    public:
-        explicit iterator(handle_type coroutine) : _coroutine{coroutine} {}
-
-        /** Resume the generator-function.
-         */
-        iterator &operator++()
-        {
-            _coroutine.resume();
-            return *this;
-        }
-
-        /** Retrieve the value co_yielded by the generator-function.
-         */
-        value_type const &operator*() const
-        {
-            return _coroutine.promise().value();
-        }
-
-        /** Check if the generator-function has finished.
-         */
-        [[nodiscard]] bool operator==(std::default_sentinel_t) const
-        {
-            return !_coroutine || _coroutine.done();
-        }
-
-
-    private:
-        handle_type _coroutine;
-    };
-
     /** Start the generator-function and return an iterator.
      */
     iterator begin()
@@ -160,4 +212,3 @@ private:
 };
 
 } // namespace tt
-

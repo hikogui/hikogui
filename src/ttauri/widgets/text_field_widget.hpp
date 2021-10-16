@@ -62,6 +62,8 @@ public:
      */
     observable<bool> continues = false;
 
+    virtual ~text_field_widget();
+
     text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
 
     template<typename Value>
@@ -72,8 +74,6 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override;
-    void deinit() noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;

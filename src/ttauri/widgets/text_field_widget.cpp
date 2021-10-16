@@ -10,12 +10,16 @@
 namespace tt {
 
 text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), _delegate(std::move(delegate)), _field(font_book(), theme().text_style(theme_text_style::label)), _shaped_text()
+    super(window, parent),
+    _delegate(std::move(delegate)),
+    _field(font_book(), theme().text_style(theme_text_style::label)),
+    _shaped_text()
 {
     if (auto d = _delegate.lock()) {
         _delegate_callback = d->subscribe(*this, [this] {
             _request_layout = true;
         });
+        d->init(*this);
     }
 }
 
@@ -24,24 +28,14 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, std::we
 {
 }
 
-void text_field_widget::init() noexcept
-{
-    super::init();
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
-    }
-}
-
-void text_field_widget::deinit() noexcept
+text_field_widget::~text_field_widget()
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
-    super::deinit();
 }
 
-[[nodiscard]] bool
-text_field_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool text_field_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -398,8 +392,7 @@ void text_field_widget::draw_selection_rectangles(draw_context context) const no
 {
     ttlet selection_rectangles = _field.selection_rectangles();
     for (ttlet selection_rectangle : selection_rectangles) {
-        context.draw_box(
-            _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
+        context.draw_box(_text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
     }
 }
 
@@ -431,4 +424,4 @@ void text_field_widget::draw_text(draw_context context) const noexcept
     context.draw_text(_shaped_text, label_color(), _text_translate * translate_z(0.2f));
 }
 
-}
+} // namespace tt

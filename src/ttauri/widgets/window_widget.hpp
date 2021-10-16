@@ -26,7 +26,9 @@ public:
     window_widget(gui_window &window, Title &&title, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
     {
+        constructor_implementation();
     }
+
     /** The background color of the window.
      * This function is used during rendering to use the optimized
      * GPU clear function.
@@ -50,7 +52,6 @@ public:
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
 
     /// @privatesection
-    void init() noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept;
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
@@ -69,6 +70,8 @@ private:
     bool _right_resize_border_has_priority = true;
     bool _bottom_resize_border_has_priority = true;
     bool _top_resize_border_has_priority = true;
+
+    void constructor_implementation() noexcept;
 };
 
 } // namespace tt
