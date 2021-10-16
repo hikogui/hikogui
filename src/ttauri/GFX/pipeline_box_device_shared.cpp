@@ -46,23 +46,23 @@ void device_shared::place_vertices(
 )
 {
     ttlet extra_space = (line_width * 0.5f) + 1.0f;
-    ttlet outer_box = expand(box, extra_space);
+    ttlet outer_box = box + extra_space;
 
     ttlet v0 = get<0>(outer_box);
     ttlet v1 = get<1>(outer_box);
     ttlet v2 = get<2>(outer_box);
     ttlet v3 = get<3>(outer_box);
 
-    ttlet outer_extent = outer_box.extent();
+    ttlet outer_size = outer_box.size();
 
     // x = Number of pixels to the right from the left edge of the quad.
     // y = Number of pixels above the bottom edge.
     // z = Number of pixels to the left from the right edge of the quad.
     // w = Number of pixels below the top edge.
-    ttlet t0 = static_cast<f32x4>(outer_extent)._00xy();
-    ttlet t1 = static_cast<f32x4>(outer_extent).x00y();
-    ttlet t2 = static_cast<f32x4>(outer_extent)._0yx0();
-    ttlet t3 = static_cast<f32x4>(outer_extent).xy00();
+    ttlet t0 = static_cast<f32x4>(outer_size)._00xy();
+    ttlet t1 = static_cast<f32x4>(outer_size).x00y();
+    ttlet t2 = static_cast<f32x4>(outer_size)._0yx0();
+    ttlet t3 = static_cast<f32x4>(outer_size).xy00();
 
     vertices.emplace_back(clipping_rectangle, v0, t0, fill_color, line_color, line_width, corner_shapes);
     vertices.emplace_back(clipping_rectangle, v1, t1, fill_color, line_color, line_width, corner_shapes);

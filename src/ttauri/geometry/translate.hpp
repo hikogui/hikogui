@@ -139,7 +139,12 @@ public:
 
     [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
     {
-        return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
+        return rectangle{*this * rhs.origin, rhs.right, rhs.up};
+    }
+
+    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    {
+        return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
 
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept

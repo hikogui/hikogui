@@ -95,7 +95,7 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
 void toolbar_tab_button_widget::draw_toolbar_tab_focus_line(draw_context context) noexcept
 {
     if (_focus and window.active and state() == tt::button_state::on) {
-        ttlet parent_rectangle = aarectangle{_parent_to_local * parent->rectangle()};
+        ttlet parent_rectangle = bounding_rectangle(_parent_to_local * parent->rectangle());
 
         // Create a line, on the bottom of the toolbar over the full width.
         ttlet line_rectangle = aarectangle{
@@ -117,7 +117,8 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context context) no
 
     // Override the clipping rectangle to match the toolbar rectangle exactly
     // so that the bottom border of the tab button is not drawn.
-    context.set_clipping_rectangle(aarectangle{_parent_to_local * parent->clipping_rectangle()});
+    context.set_clipping_rectangle(bounding_rectangle(_parent_to_local * parent->clipping_rectangle()
+));
 
     ttlet offset = theme().margin + theme().border_width;
     ttlet outline_rectangle =

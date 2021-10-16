@@ -190,7 +190,7 @@ bool device_shared::_place_vertices(
 
     // If none of the vertices is inside the clipping rectangle then don't add the
     // quad to the vertex list.
-    if (!overlaps(clipping_rectangle, aarectangle{box})) {
+    if (!overlaps(clipping_rectangle, bounding_rectangle(box))) {
         return glyph_was_added;
     }
 
@@ -237,7 +237,7 @@ void device_shared::place_vertices(
     color color
     ) noexcept
 {
-    if (_place_vertices(vertices, clippingRectangle, expand(box, glyph_size * scaledDrawBorder), glyphs, color)) {
+    if (_place_vertices(vertices, clippingRectangle, box + (glyph_size * scaledDrawBorder), glyphs, color)) {
         prepareAtlasForRendering();
     }
 }

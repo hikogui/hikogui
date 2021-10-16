@@ -117,6 +117,11 @@ public:
         return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
+    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    {
+        return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
+    }
+
     [[nodiscard]] constexpr scale operator*(identity const &) const noexcept
     {
         tt_axiom(is_valid());
