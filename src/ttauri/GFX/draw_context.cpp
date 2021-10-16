@@ -37,7 +37,7 @@ draw_context::draw_context(
 draw_context::make_child_context(matrix3 parent_to_local, matrix3 local_to_window, aarectangle clipping_rectangle) const noexcept
 {
     auto new_context = *this;
-    new_context._scissor_rectangle = aarectangle{parent_to_local * this->_scissor_rectangle};
+    new_context._scissor_rectangle = bounding_rectangle(parent_to_local * this->_scissor_rectangle);
     new_context._clipping_rectangle = clipping_rectangle;
     new_context._transform = local_to_window;
     return new_context;
@@ -84,7 +84,7 @@ void draw_context::draw_box(
 
     pipeline_box::device_shared::place_vertices(
         *_box_vertices,
-        aarectangle{_transform * _clipping_rectangle},
+        bounding_rectangle(_transform * _clipping_rectangle),
         _transform * box,
         fill_color,
         line_color,
@@ -118,13 +118,13 @@ void draw_context::draw_box_with_border_inside(
 
     ttlet shrink_value = line_width * 0.5f;
 
-    ttlet new_rectangle = shrink(rectangle, shrink_value);
+    ttlet new_rectangle = rectangle - shrink_value;
 
     ttlet new_corner_shapes = corner_shapes - shrink_value;
 
     pipeline_box::device_shared::place_vertices(
         *_box_vertices,
-        aarectangle{_transform * _clipping_rectangle},
+        bounding_rectangle(_transform * _clipping_rectangle),
         _transform * new_rectangle,
         fill_color,
         line_color,
@@ -153,13 +153,13 @@ void draw_context::draw_box_with_border_outside(
 
     ttlet expand_value = line_width * 0.5f;
 
-    ttlet new_rectangle = expand(rectangle, expand_value);
+    ttlet new_rectangle = rectangle + expand_value;
 
     ttlet new_corner_shapes = corner_shapes + expand_value;
 
     pipeline_box::device_shared::place_vertices(
         *_box_vertices,
-        aarectangle{_transform * _clipping_rectangle},
+        bounding_rectangle(_transform * _clipping_rectangle),
         _transform * new_rectangle,
         fill_color,
         line_color,
@@ -181,7 +181,7 @@ void draw_context::draw_image(pipeline_image::image &image, matrix3 image_transf
 {
     tt_axiom(_image_vertices != nullptr);
 
-    image.place_vertices(*_image_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * image_transform);
+    image.place_vertices(*_image_vertices, bounding_rectangle(_transform * _clipping_rectangle), _transform * image_transform);
 }
 
 void draw_context::draw_text(shaped_text const &text, std::optional<color> text_color, matrix3 transform)
@@ -191,10 +191,10 @@ void draw_context::draw_text(shaped_text const &text, std::optional<color> text_
 
     if (text_color) {
         narrow_cast<gfx_device_vulkan &>(device()).SDFPipeline->place_vertices(
-            *_sdf_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * transform, text, *text_color);
+            *_sdf_vertices, bounding_rectangle(_transform * _clipping_rectangle), _transform * transform, text, *text_color);
     } else {
         narrow_cast<gfx_device_vulkan &>(device()).SDFPipeline->place_vertices(
-            *_sdf_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * transform, text);
+            *_sdf_vertices, bounding_rectangle(_transform * _clipping_rectangle), _transform * transform, text);
     }
 }
 
@@ -203,7 +203,7 @@ void draw_context::draw_glyph(font_glyph_ids const &glyph, float glyph_size, rec
     tt_axiom(_sdf_vertices != nullptr);
 
     narrow_cast<gfx_device_vulkan &>(device()).SDFPipeline->place_vertices(
-        *_sdf_vertices, aarectangle{_transform * _clipping_rectangle}, _transform * box, glyph, glyph_size, text_color);
+        *_sdf_vertices, bounding_rectangle(_transform * _clipping_rectangle), _transform * box, glyph, glyph_size, text_color);
 }
 
 }

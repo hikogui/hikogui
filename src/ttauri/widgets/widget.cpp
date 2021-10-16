@@ -350,7 +350,7 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 
 void widget::request_redraw() const noexcept
 {
-    window.request_redraw(aarectangle{_local_to_window * _clipping_rectangle});
+    window.request_redraw(bounding_rectangle(_local_to_window * _clipping_rectangle));
 }
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept
@@ -582,10 +582,10 @@ widget &widget::add_widget(std::unique_ptr<widget> widget) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    ttlet requested_window_rectangle = aarectangle{local_to_window() * requested_rectangle};
+    ttlet requested_window_rectangle = bounding_rectangle(local_to_window() * requested_rectangle);
     ttlet window_bounds = shrink(aarectangle{window.screen_rectangle.size()}, theme().margin);
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
-    return aarectangle{window_to_local() * response_window_rectangle};
+    return bounding_rectangle(window_to_local() * response_window_rectangle);
 }
 
 } // namespace tt

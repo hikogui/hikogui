@@ -267,7 +267,7 @@ public:
 
     void scroll_to_show(tt::rectangle rectangle) noexcept override
     {
-        auto rectangle_ = aarectangle{rectangle};
+        auto rectangle_ = bounding_rectangle(rectangle);
 
         float delta_x = 0.0f;
         if (rectangle_.right() > _aperture_rectangle.right()) {
