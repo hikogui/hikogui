@@ -15,11 +15,9 @@ public:
     point3 p2; ///< Left-top
     point3 p3; ///< Right-top
 
-    constexpr quad() noexcept :
-        p0(), p1(), p2(), p3() {}
+    constexpr quad() noexcept : p0(), p1(), p2(), p3() {}
 
-    constexpr quad(point3 p0, point3 p1, point3 p2, point3 p3) noexcept :
-        p0(p0), p1(p1), p2(p2), p3(p3) {}
+    constexpr quad(point3 p0, point3 p1, point3 p2, point3 p3) noexcept : p0(p0), p1(p1), p2(p2), p3(p3) {}
 
     constexpr quad(quad const &) noexcept = default;
     constexpr quad(quad &&) noexcept = default;
@@ -62,19 +60,18 @@ public:
      * @param rhs The width and height to add to each corner of the quad.
      * @return The new quad extended by the size.
      */
-    [[nodiscard]] friend constexpr quad operator+(quad const &lhs, extent2 const &rhs) const noexcept
+    [[nodiscard]] friend constexpr quad operator+(quad const &lhs, extent2 const &rhs) noexcept
     {
-        ttlet top_extra = normalize(top()) * rhs.width();
-        ttlet bottom_extra = normalize(bottom()) * rhs.width();
-        ttlet left_extra = normalize(left()) * rhs.height();
-        ttlet right_extra = normalize(right()) * rhs.height();
+        ttlet top_extra = normalize(lhs.top()) * rhs.width();
+        ttlet bottom_extra = normalize(lhs.bottom()) * rhs.width();
+        ttlet left_extra = normalize(lhs.left()) * rhs.height();
+        ttlet right_extra = normalize(lhs.right()) * rhs.height();
 
         return {
-            p0 - bottom_extra - left_extra,
-            p1 + bottom_extra - right_extra,
-            p2 - top_extra + left_extra,
-            p3 + top_extra + right_extra
-        };
+            lhs.p0 - bottom_extra - left_extra,
+            lhs.p1 + bottom_extra - right_extra,
+            lhs.p2 - top_extra + left_extra,
+            lhs.p3 + top_extra + right_extra};
     }
 
     /** scale the quad.
@@ -85,27 +82,26 @@ public:
      * @param rhs The width and height to scale each edge with.
      * @return The new quad extended by the size.
      */
-    [[nodiscard]] friend constexpr quad operator*(quad const &lhs, extent2 const &rhs) const noexcept
+    [[nodiscard]] friend constexpr quad operator*(quad const &lhs, extent2 const &rhs) noexcept
     {
-        ttlet top_extra = (top() * rhs.width() - top()) * 0.5f;
-        ttlet bottom_extra = (bottom() * rhs.width() - bottom()) * 0.5f;
-        ttlet left_extra = (left() * rhs.height() - left()) * 0.5f;
-        ttlet right_extra = (right() * rhs.height() - right()) * 0.5f;
+        ttlet top_extra = (lhs.top() * rhs.width() - lhs.top()) * 0.5f;
+        ttlet bottom_extra = (lhs.bottom() * rhs.width() - lhs.bottom()) * 0.5f;
+        ttlet left_extra = (lhs.left() * rhs.height() - lhs.left()) * 0.5f;
+        ttlet right_extra = (lhs.right() * rhs.height() - lhs.right()) * 0.5f;
 
         return {
-            p0 - bottom_extra - left_extra,
-            p1 + bottom_extra - right_extra,
-            p2 - top_extra + left_extra,
-            p3 + top_extra + right_extra
-        };
+            lhs.p0 - bottom_extra - left_extra,
+            lhs.p1 + bottom_extra - right_extra,
+            lhs.p2 - top_extra + left_extra,
+            lhs.p3 + top_extra + right_extra};
     }
 
-    constexpr quad &operator+=(extent2 const &rhs) const noexcept
+    constexpr quad &operator+=(extent2 const &rhs) noexcept
     {
         return *this = *this + rhs;
     }
 
-    constexpr quad &operator*=(extent2 const &rhs) const noexcept
+    constexpr quad &operator*=(extent2 const &rhs) noexcept
     {
         return *this = *this * rhs;
     }
@@ -113,3 +109,4 @@ public:
     [[nodiscard]] friend constexpr bool operator==(quad const &lhs, quad const &rhs) noexcept = default;
 };
 
+} // namespace tt

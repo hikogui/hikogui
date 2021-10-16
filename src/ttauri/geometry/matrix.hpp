@@ -8,6 +8,7 @@
 #include "extent.hpp"
 #include "point.hpp"
 #include "rectangle.hpp"
+#include "quad.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 

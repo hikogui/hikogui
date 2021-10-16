@@ -35,8 +35,7 @@ public:
      * @param right The right vector.
      * @param up The up vector.
      */
-    constexpr rectangle(point3 origin, vector3 right, vector3 up) noexcept :
-        origin(origin), right(right), up(up) {}
+    constexpr rectangle(point3 origin, vector3 right, vector3 up) noexcept : origin(origin), right(right), up(up) {}
 
     /** Create a rectangle from 4 corner points.
      *
@@ -46,13 +45,15 @@ public:
      * @param right_top The right-top corner.
      */
     constexpr rectangle(point3 origin, point3 right_bottom, point3 left_top, point3 right_top) noexcept :
-        rectangle(origin, right_bottom - origin, left_top - origin) {}
+        rectangle(origin, right_bottom - origin, left_top - origin)
+    {
+    }
 
     constexpr rectangle(aarectangle rhs) noexcept
     {
         ttlet p0 = get<0>(rhs);
-        ttlet p2 = get<2>(rhs);
-        ttlet diagonal = static_cast<f32x4>(p2 - p0);
+        ttlet p3 = get<3>(rhs);
+        ttlet diagonal = static_cast<f32x4>(p3 - p0);
 
         origin = p0;
         right = vector3{diagonal.x000()};
@@ -62,8 +63,8 @@ public:
     constexpr rectangle &operator=(aarectangle rhs) noexcept
     {
         ttlet p0 = get<0>(rhs);
-        ttlet p2 = get<2>(rhs);
-        ttlet diagonal = static_cast<f32x4>(p2 - p0);
+        ttlet p3 = get<3>(rhs);
+        ttlet diagonal = static_cast<f32x4>(p3 - p0);
 
         origin = p0;
         right = vector3{diagonal.x000()};
@@ -71,10 +72,7 @@ public:
         return *this;
     }
 
-    constexpr rectangle(point3 origin, extent2 extent) noexcept :
-        corners(origin, extent.right(), extent.up())
-    {
-    }
+    constexpr rectangle(point3 origin, extent2 extent) noexcept : rectangle(origin, extent.right(), extent.up()) {}
 
     /** Check if the rectangle has an area.
      *
@@ -108,24 +106,24 @@ public:
 
     /** The axis-aligned bounding box around the rectangle.
      */
-    [[nodiscard]] constexpr aarectangle bounding_box() const noexcept
+    [[nodiscard]] constexpr friend aarectangle bounding_rectangle(rectangle const &rhs) noexcept
     {
         auto left_bottom = f32x4::broadcast(std::numeric_limits<float>::max());
         auto right_top = f32x4::broadcast(-std::numeric_limits<float>::max());
 
-        ttlet p0 = origin;
+        ttlet p0 = rhs.origin;
         left_bottom = min(left_bottom, static_cast<f32x4>(p0));
         right_top = max(right_top, static_cast<f32x4>(p0));
 
-        ttlet p1 = p0 + right;
+        ttlet p1 = p0 + rhs.right;
         left_bottom = min(left_bottom, static_cast<f32x4>(p1));
         right_top = max(right_top, static_cast<f32x4>(p1));
 
-        ttlet p2 = p0 + up;
+        ttlet p2 = p0 + rhs.up;
         left_bottom = min(left_bottom, static_cast<f32x4>(p2));
         right_top = max(right_top, static_cast<f32x4>(p2));
 
-        ttlet p3 = p2 + right;
+        ttlet p3 = p2 + rhs.right;
         left_bottom = min(left_bottom, static_cast<f32x4>(p3));
         right_top = max(right_top, static_cast<f32x4>(p3));
 
@@ -174,14 +172,58 @@ public:
     {
         static_assert(I < 4);
         if constexpr (I == 0) {
-            return origin;
+            return rhs.origin;
         } else if constexpr (I == 1) {
-            return origin + right;
+            return rhs.origin + rhs.right;
         } else if constexpr (I == 2) {
-            return origin + up;
+            return rhs.origin + rhs.up;
         } else {
-            return origin + right + up;
+            return rhs.origin + rhs.right + rhs.up;
         }
+    }
+
+    /** Expand the rectangle by adding an absolute distance on each side.
+     *
+     * The expansion is done by:
+     *  - translating the origin point in opposite direction of the
+     *    right and up vectors.
+     *  - increase the size of the right and up vectors twice.
+     *
+     * It is possible for the rectangle to flip, when the right-hand-side is negative.
+     *
+     * @param lhs The rectangle to expand.
+     * @param rhs The size in 2D to expand the rectangle
+     * @return A new rectangle expanded in each side.
+     */
+    [[nodiscard]] friend constexpr rectangle operator+(rectangle const &lhs, extent2 rhs) noexcept
+    {
+        ttlet extra_right = normalize(lhs.right) * rhs.width();
+        ttlet extra_up = normalize(lhs.up) * rhs.height();
+        ttlet extra_diagonal = extra_right + extra_up;
+
+        return rectangle{lhs.origin - extra_diagonal, lhs.right + 2.0f * extra_right, lhs.up + 2.0f * extra_up};
+    }
+
+    /** Shrink the rectangle by subtracting an absolute distance from each side.
+     *
+     * The shrinking is done by:
+     *  - translating the origin point in the same direction of the
+     *    right and up vectors.
+     *  - decrease the size of the right and up vectors twice.
+     *
+     * It is possible for the rectangle to flip, when the right-hand-side is negative.
+     *
+     * @param lhs The rectangle to shrink.
+     * @param rhs The size in 2D to shrink the rectangle
+     * @return A new rectangle expanded in each side.
+     */
+    [[nodiscard]] friend constexpr rectangle operator-(rectangle const &lhs, extent2 rhs) noexcept
+    {
+        ttlet extra_right = normalize(lhs.right) * rhs.width();
+        ttlet extra_up = normalize(lhs.up) * rhs.height();
+        ttlet extra_diagonal = extra_right + extra_up;
+
+        return rectangle{lhs.origin + extra_diagonal, lhs.right - 2.0f * extra_right, lhs.up - 2.0f * extra_up};
     }
 
     /** Expand the rectangle by adding an absolute distance on each side.
@@ -197,38 +239,28 @@ public:
      * @param rhs The scalar value which is added to the rectangle in each side.
      * @return A new rectangle expanded in each side.
      */
-    [[nodiscard]] friend constexpr rectangle expand(rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend constexpr rectangle operator+(rectangle const &lhs, float rhs) noexcept
     {
-        ttlet extra_right = normalize(right) * rhs;
-        ttlet extra_up = normalize(up) * rhs;
-        ttlet extra_diagonal = extraright + extraup;
+        return lhs + extent2{rhs, rhs};
+    };
 
-        return {
-            origin - extra_diagonal
-            right + 2.0f * extra_right,
-            up + 2.0f * extra_up
-        };
-    }
-
-    /** Shrink the rectangle by removing an absolute distance on each side.
+    /** Shrink the rectangle by subtracting an absolute distance from each side.
      *
      * The shrinking is done by:
      *  - translating the origin point in the same direction of the
      *    right and up vectors.
-     *  - decreasing the size of the right and up vectors twice.
+     *  - decrease the size of the right and up vectors twice.
      *
-     * It is possible for the rectangle to flip, when the right-hand-side is positive.
+     * It is possible for the rectangle to flip, when the right-hand-side is negative.
      *
      * @param lhs The rectangle to shrink.
-     * @param rhs The scalar value which is removed from the rectangle in each side.
-     * @return A new rectangle shrunk in each side.
+     * @param rhs The scalar value which is added to the rectangle in each side.
+     * @return A new rectangle expanded in each side.
      */
-    [[nodiscard]] friend constexpr rectangle shrink(rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend constexpr rectangle operator-(rectangle const &lhs, float rhs) noexcept
     {
-        return expand(lhs, -rhs);
+        return lhs - extent2{rhs, rhs};
     }
-
-
 };
 
 } // namespace tt

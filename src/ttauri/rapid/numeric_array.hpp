@@ -584,12 +584,12 @@ struct numeric_array {
     }
 
     /** Check if the vector is non-zero.
-     * @return True if at least one element is non-zero. 
+     * @return True if at least one element is non-zero.
      */
-    constexpr explicit operator bool () const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         ttlet ep = epsilon();
-        // check if any of the elements is outside of epsilon range, 
+        // check if any of the elements is outside of epsilon range,
         return static_cast<bool>(gt(-ep, *this) | gt(*this, ep));
     }
 
@@ -1321,7 +1321,7 @@ struct numeric_array {
         }
         return std::bit_cast<value_type>(bytes);
     }
-    
+
     [[nodiscard]] friend constexpr numeric_array gt_mask(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -1346,7 +1346,6 @@ struct numeric_array {
         return r;
     }
 
-    
     [[nodiscard]] friend constexpr numeric_array ge_mask(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -1437,13 +1436,26 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (std::is_integral_v<T> and x86_64_v2) {
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
+                return numeric_array{_mm_or_ps(lhs.reg(), rhs.reg())};
+            }
+#endif
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_f64x2) {
+                return numeric_array{_mm_or_pd(lhs.reg(), rhs.reg())};
+            } else if constexpr (std::is_integral_v<T>) {
                 return numeric_array{_mm_or_si128(lhs.reg(), rhs.reg())};
             }
+#endif
         }
+
+        using uint_type = make_uintxx_t<sizeof(T) * CHAR_BIT>;
+
         auto r = numeric_array{};
         for (size_t i = 0; i != N; ++i) {
-            r.v[i] = lhs.v[i] | rhs.v[i];
+            r.v[i] =
+                std::bit_cast<T>(static_cast<uint_type>(std::bit_cast<uint_type>(lhs.v[i]) | std::bit_cast<uint_type>(rhs.v[i])));
         }
         return r;
     }
@@ -2141,7 +2153,6 @@ struct numeric_array {
 #undef SWIZZLE_3D_GEN1
 #undef SWIZZLE_3D_GEN2
 #undef SWIZZLE_2D_GEN1
-
 
     template<int I, typename First, typename... Rest>
     friend constexpr void transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
