@@ -158,9 +158,14 @@ public:
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
     }
 
-    [[nodiscard]] constexpr auto operator*(rectangle const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
     {
         return rectangle{*this * rhs.origin, *this * rhs.right, *this * rhs.up};
+    }
+
+    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    {
+        return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
 
     /** Transform a color by a color matrix.

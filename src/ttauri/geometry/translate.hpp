@@ -142,6 +142,11 @@ public:
         return rectangle{*this * rhs.origin, rhs.right, rhs.up};
     }
 
+    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    {
+        return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
+    }
+
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept
     {
         tt_axiom(is_valid());
