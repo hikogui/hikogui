@@ -106,17 +106,49 @@ public:
         return not should_be_zeroes;
     }
 
+    /** The axis-aligned bounding box around the rectangle.
+     */
+    [[nodiscard]] constexpr aarectangle bounding_box() const noexcept
+    {
+        auto left_bottom = f32x4::broadcast(std::numeric_limits<float>::max());
+        auto right_top = f32x4::broadcast(-std::numeric_limits<float>::max());
+
+        ttlet p0 = origin;
+        left_bottom = min(left_bottom, static_cast<f32x4>(p0));
+        right_top = max(right_top, static_cast<f32x4>(p0));
+
+        ttlet p1 = p0 + right;
+        left_bottom = min(left_bottom, static_cast<f32x4>(p1));
+        right_top = max(right_top, static_cast<f32x4>(p1));
+
+        ttlet p2 = p0 + up;
+        left_bottom = min(left_bottom, static_cast<f32x4>(p2));
+        right_top = max(right_top, static_cast<f32x4>(p2));
+
+        ttlet p3 = p2 + right;
+        left_bottom = min(left_bottom, static_cast<f32x4>(p3));
+        right_top = max(right_top, static_cast<f32x4>(p3));
+
+        return aarectangle{left_bottom.xy00() | right_top._00xy()};
+    }
+
+    /** The width, or length of the right vector.
+     */
     [[nodiscard]] constexpr float width() const noexcept
     {
         return hypot(right);
     }
 
+    /** The height, or length of the up vector.
+     */
     [[nodiscard]] constexpr float height() const noexcept
     {
         return hypot(up);
     }
 
-    [[nodiscard]] constexpr extent2 extent() const noexcept
+    /** The size, or length of the right and up vectors.
+     */
+    [[nodiscard]] constexpr extent2 size() const noexcept
     {
         return {width(), height()};
     }
@@ -196,11 +228,6 @@ public:
         return expand(lhs, -rhs);
     }
 
-    constexpr save_bounds(aarectangle &bounding_box) noexcept
-    {
-        bounding_box.add(
-
-    }
 
 };
 
