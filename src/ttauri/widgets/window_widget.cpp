@@ -11,19 +11,20 @@
 #endif
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
+#include "../scoped_buffer.hpp"
 
 namespace tt {
 
 using namespace std;
 
-void window_widget::init() noexcept
+void window_widget::constructor_implementation() noexcept
 {
-    _toolbar = &make_widget<toolbar_widget>();
+    _toolbar = std::make_unique<toolbar_widget>(window, this);
 
     if (theme().operating_system == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
-        _title_callback = title.subscribe([this]{
+        _title_callback = title.subscribe([this] {
             window.gui.run([this] {
                 this->_system_menu->icon = this->title->icon;
             });
@@ -36,11 +37,16 @@ void window_widget::init() noexcept
         tt_no_default();
     }
 
-    _content = &make_widget<grid_widget>(_content_delegate);
+    _content = std::make_unique<grid_widget>(window, this, _content_delegate);
 }
 
-[[nodiscard]] bool
-window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] pmr::generator<widget *> window_widget::children(std::pmr::polymorphic_allocator<> &) const noexcept
+{
+    co_yield _toolbar.get();
+    co_yield _content.get();
+}
+
+[[nodiscard]] bool window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -54,8 +60,7 @@ window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstra
             _toolbar->preferred_size().height() + _content->preferred_size().height()};
 
         _maximum_size = {
-            _content->maximum_size().width(),
-            _toolbar->preferred_size().height() + _content->maximum_size().height()};
+            _content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
 
         // Override maximum size and preferred size.
         _maximum_size = max(_maximum_size, _minimum_size);
@@ -125,8 +130,11 @@ hitbox window_widget::hitbox_test(point2 position) const noexcept
         return r;
     }
 
-    for (ttlet &child : _children) {
-        r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+    auto buffer = pmr::scoped_buffer<256>{};
+    for (auto *child : children(buffer.allocator())) {
+        if (child) {
+            r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+        }
     }
 
     return r;

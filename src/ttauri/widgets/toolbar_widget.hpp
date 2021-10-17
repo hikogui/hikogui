@@ -57,11 +57,20 @@ public:
     Widget &make_widget(Args &&...args)
     {
         auto widget = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        widget->init();
         return static_cast<Widget &>(add_widget(Alignment, std::move(widget)));
     }
 
     /// @privatesection
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        for (ttlet &child : _left_children) {
+            co_yield child.get();
+        }
+        for (ttlet &child : std::ranges::reverse_view(_right_children)) {
+            co_yield child.get();
+        }
+    }
+
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
     void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
@@ -69,8 +78,8 @@ public:
     hitbox hitbox_test(point2 position) const noexcept override;
     /// @endprivatesection
 private:
-    std::vector<widget *> _left_children;
-    std::vector<widget *> _right_children;
+    std::vector<std::unique_ptr<widget>> _left_children;
+    std::vector<std::unique_ptr<widget>> _right_children;
     flow_layout _layout;
 
     void update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept;

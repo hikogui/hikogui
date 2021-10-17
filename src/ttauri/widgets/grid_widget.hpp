@@ -31,13 +31,15 @@ namespace tt {
  *
  * When laid out, each child is sized to where it will occupy the full width and
  * height of each cell.
- * 
+ *
  * @image html grid_widget.png
  */
 class grid_widget : public widget {
 public:
     using super = widget;
     using delegate_type = grid_delegate;
+
+    ~grid_widget();
 
     /** Constructs an empty grid widget.
      *
@@ -60,12 +62,11 @@ public:
     Widget &make_widget(size_t column_nr, size_t row_nr, Args &&...args)
     {
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        tmp->init();
         return static_cast<Widget &>(add_widget(column_nr, row_nr, std::move(tmp)));
     }
 
     /** Add a widget directly to this grid-widget.
-     * 
+     *
      * @tparam Widget The type of the widget to be constructed.
      * @param address The spreadsheet-like address of the cell,
      *                see `parse_spreadsheet_address()`.
@@ -80,8 +81,13 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override;
-    void deinit() noexcept override;
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        for (ttlet &cell: _cells) {
+            co_yield cell.widget.get();
+        }
+    }
+
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
@@ -90,9 +96,10 @@ private:
     struct cell {
         size_t column_nr;
         size_t row_nr;
-        tt::widget *widget;
+        std::unique_ptr<tt::widget> widget;
 
-        cell(size_t column_nr, size_t row_nr, tt::widget *widget) noexcept : column_nr(column_nr), row_nr(row_nr), widget(widget)
+        cell(size_t column_nr, size_t row_nr, std::unique_ptr<tt::widget> widget) noexcept :
+            column_nr(column_nr), row_nr(row_nr), widget(std::move(widget))
         {
         }
 

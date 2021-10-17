@@ -42,6 +42,13 @@ public:
     using delegate_type = row_column_delegate<Axis>;
     static constexpr tt::axis axis = Axis;
 
+    ~row_column_widget()
+    {
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
+}
+
     /** Constructs an empty row/column widget.
      *
      * @param window The window.
@@ -56,6 +63,9 @@ public:
 
         if (parent) {
             semantic_layer = parent->semantic_layer;
+        }
+        if (auto d = _delegate.lock()) {
+            d->init(*this);
         }
     }
 
@@ -74,22 +84,27 @@ public:
     template<typename Widget, typename... Args>
     Widget &make_widget(Args &&...args)
     {
-        return super::make_widget<Widget>(std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto &ref = *tmp;
+        _children.push_back(std::move(tmp));
+        _request_constrain = true;
+        return ref;
+    }
+
+    /** Remove and deallocate all child widgets.
+     */
+    void clear() noexcept
+    {
+        tt_axiom(is_gui_thread());
+        _children.clear();
+        _request_constrain = true;
     }
 
     /// @privatesection
-    void init() noexcept override
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
     {
-        super::init();
-        if (auto delegate = _delegate.lock()) {
-            delegate->init(*this);
-        }
-    }
-
-    void deinit() noexcept override
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
+        for (ttlet &child : _children) {
+            co_yield child.get();
         }
     }
 
@@ -152,6 +167,7 @@ public:
     }
     /// @endprivatesection
 private:
+    std::vector<std::unique_ptr<widget>> _children;
     std::weak_ptr<delegate_type> _delegate;
     flow_layout _layout;
 

@@ -34,6 +34,8 @@ public:
     using super = widget;
     using delegate_type = tab_delegate;
 
+    ~tab_widget();
+
     /** Construct a tab widget with a delegate.
      *
      * @param window The window that this widget is shown on.
@@ -65,20 +67,29 @@ public:
      * @param args The arguments to pass to the constructor of widget to add.
      */
     template<typename WidgetType, typename Key, typename... Args>
-    WidgetType &make_widget(Key const &key, Args &&...args) noexcept
+    WidgetType &make_widget(Key const &key, Args &&...args)
     {
         tt_axiom(is_gui_thread());
 
+
+        auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
+        auto &ref = *tmp;
         if (auto delegate = _delegate.lock()) {
             delegate->add_tab(*this, static_cast<size_t>(key), std::size(_children));
         }
-        auto &widget = super::make_widget<WidgetType>(std::forward<Args>(args)...);
-        return widget;
+        _children.push_back(std::move(tmp));
+        _request_constrain = true;
+        return ref;
     }
 
     /// @privatesection
-    void init() noexcept override;
-    void deinit() noexcept override;
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        for (ttlet &child: _children) {
+            co_yield child.get();
+        }
+    }
+
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
@@ -88,6 +99,7 @@ public:
         keyboard_focus_direction direction) const noexcept override;
     /// @endprivatsectopn
 private:
+    std::vector<std::unique_ptr<widget>> _children;
     weak_or_unique_ptr<delegate_type> _delegate;
     typename delegate_type::callback_ptr_type _delegate_callback;
 

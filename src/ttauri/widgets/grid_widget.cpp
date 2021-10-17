@@ -19,16 +19,12 @@ grid_widget::grid_widget(
     if (parent) {
         semantic_layer = parent->semantic_layer;
     }
-}
-
-void grid_widget::init() noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
+    if (auto d = _delegate.lock()) {
+        d->init(*this);
     }
 }
 
-void grid_widget::deinit() noexcept
+grid_widget::~grid_widget()
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
@@ -100,9 +96,10 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
     tt_axiom(is_gui_thread());
     tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
 
-    auto &tmp = super::add_widget(std::move(widget));
-    _cells.emplace_back(column_nr, row_nr, &tmp);
-    return tmp;
+    auto &ref = *widget;
+    _cells.emplace_back(column_nr, row_nr, std::move(widget));
+    _request_constrain = true;
+    return ref;
 }
 
 bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept

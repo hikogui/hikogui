@@ -12,9 +12,7 @@
 
 namespace tt {
 
-icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
-
-void icon_widget::init() noexcept
+icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _icon_callback = icon.subscribe([this]() {
         _request_constrain = true;

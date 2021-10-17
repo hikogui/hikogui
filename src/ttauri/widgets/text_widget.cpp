@@ -6,9 +6,7 @@
 
 namespace tt {
 
-text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
-
-void text_widget::init() noexcept
+text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _text_callback = text.subscribe([this] {
         _request_constrain = true;

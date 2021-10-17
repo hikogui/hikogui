@@ -4,8 +4,16 @@
 
 #include "tab_widget.hpp"
 #include "../GUI/gui_window.hpp"
+#include "../scoped_buffer.hpp"
 
 namespace tt {
+
+tab_widget::~tab_widget()
+{
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
+}
 
 tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
@@ -29,27 +37,15 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     _preferred_size = {};
     _maximum_size = {32767.0f, 32767.0f};
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+
+        if (auto d = _delegate.lock()) {
+        d->init(*this);
+    }
 }
 
 tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     tab_widget(window, parent, weak_or_unique_ptr<delegate_type>{delegate})
 {
-}
-
-void tab_widget::init() noexcept
-{
-    super::init();
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
-    }
-}
-
-void tab_widget::deinit() noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
-    super::deinit();
 }
 
 [[nodiscard]] float tab_widget::margin() const noexcept
@@ -64,8 +60,11 @@ void tab_widget::deinit() noexcept
     auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
     if (has_updated_contraints) {
         ttlet &selected_child_ = selected_child();
-        for (ttlet &child : _children) {
-            child->visible = child.get() == &selected_child_;
+
+        auto buffer = pmr::scoped_buffer<256>{};
+        for (auto *child : children(buffer.allocator())) {
+            tt_axiom(child);
+            child->visible = child == &selected_child_;
         }
 
         auto size_changed = compare_then_assign(_minimum_size, selected_child_.minimum_size());
@@ -87,7 +86,9 @@ void tab_widget::deinit() noexcept
 
     need_layout |= _request_layout.exchange(false);
     if (need_layout) {
-        for (ttlet &child : _children) {
+        auto buffer = pmr::scoped_buffer<256>{};
+        for (auto *child : children(buffer.allocator())) {
+            tt_axiom(child);
             if (child->visible) {
                 child->set_layout_parameters_from_parent(rectangle());
             }

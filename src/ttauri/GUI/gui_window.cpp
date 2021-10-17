@@ -66,7 +66,6 @@ void gui_window::init()
     tt_axiom(is_gui_thread());
 
     widget = std::make_unique<window_widget>(*this, title, _delegate);
-    widget->init();
     if (auto delegate = _delegate.lock()) {
         delegate->init(*this);
     }

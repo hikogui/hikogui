@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_widget.hpp"
+#include "../scoped_buffer.hpp"
 
 namespace tt {
 
@@ -103,7 +104,9 @@ hitbox toolbar_widget::hitbox_test(point2 position) const noexcept
         r = hitbox{this, draw_layer, hitbox::Type::MoveArea};
     }
 
-    for (ttlet &child : _children) {
+    auto buffer = pmr::scoped_buffer<256>{};
+    for (auto *child : children(buffer.allocator())) {
+        tt_axiom(child);
         r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
     }
     return r;
@@ -139,15 +142,15 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index) const
 
 widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
 {
-    auto &tmp = super::add_widget(std::move(widget));
+    auto &ref = *widget;
     switch (alignment) {
         using enum horizontal_alignment;
-    case left: _left_children.push_back(&tmp); break;
-    case right: _right_children.push_back(&tmp); break;
+    case left: _left_children.push_back(std::move(widget)); break;
+    case right: _right_children.push_back(std::move(widget)); break;
     default: tt_no_default();
     }
 
-    return tmp;
+    return ref;
 }
 
 } // namespace tt

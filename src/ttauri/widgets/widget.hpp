@@ -15,9 +15,11 @@
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../chrono.hpp"
+#include "../coroutine.hpp"
 #include <memory>
 #include <vector>
 #include <string>
+#include <ranges>
 
 namespace tt {
 class gui_window;
@@ -107,14 +109,6 @@ public:
     widget &operator=(const widget &) = delete;
     widget(widget &&) = delete;
     widget &operator=(widget &&) = delete;
-
-    /** Should be called right after allocating and constructing a widget.
-     */
-    virtual void init() noexcept;
-
-    /** Should be called right after allocating and constructing a widget.
-     */
-    virtual void deinit() noexcept;
 
     [[nodiscard]] bool is_gui_thread() const noexcept;
 
@@ -382,20 +376,7 @@ public:
      */
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
-    /** Remove and deallocate all child widgets.
-     */
-    void clear() noexcept;
-
-    /** Add a widget directly to this widget.
-     * Thread safety: locks.
-     */
-    widget &add_widget(std::unique_ptr<widget> widget) noexcept;
-
 protected:
-    /** A list of child widgets.
-     */
-    std::vector<std::unique_ptr<widget>> _children;
-
     /** Mouse cursor is hovering over the widget.
      */
     bool _hover = false;
@@ -451,15 +432,9 @@ protected:
     std::shared_ptr<std::function<void()>> _relayout_callback;
     std::shared_ptr<std::function<void()>> _reconstrain_callback;
 
-    /** Add a widget directly to this widget.
-     */
-    template<typename T, typename... Args>
-    T &make_widget(Args &&...args)
+    [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept
     {
-        tt_axiom(is_gui_thread());
-        auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
-        tmp->init();
-        return static_cast<T &>(add_widget(std::move(tmp)));
+        co_return;
     }
 
     /** Make an overlay rectangle.

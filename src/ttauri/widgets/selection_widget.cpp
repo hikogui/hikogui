@@ -9,28 +9,24 @@
 
 namespace tt {
 
+selection_widget::~selection_widget()
+{
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
+}
+
 selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
-}
-
-selection_widget::selection_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-    selection_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
-{
-}
-
-void selection_widget::init() noexcept
-{
-    super::init();
-
-    _current_label_widget = &make_widget<label_widget>(l10n("<current>"));
+    _current_label_widget = std::make_unique<label_widget>(window, this, l10n("<current>"));
     _current_label_widget->visible = false;
     _current_label_widget->alignment = alignment::middle_left;
-    _unknown_label_widget = &make_widget<label_widget>(unknown_label);
+    _unknown_label_widget = std::make_unique<label_widget>(window, this, unknown_label);
     _unknown_label_widget->alignment = alignment::middle_left;
     _unknown_label_widget->text_style = theme_text_style::placeholder;
 
-    _overlay_widget = &make_widget<overlay_widget>();
+    _overlay_widget = std::make_unique<overlay_widget>(window, this);
     _overlay_widget->visible = false;
     _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
@@ -39,9 +35,9 @@ void selection_widget::init() noexcept
         _request_constrain = true;
     });
 
-    if (auto delegate = _delegate.lock()) {
-        _delegate_callback = delegate->subscribe(*this, [this] {
-            window.gui.run([this] {
+    if (auto d = _delegate.lock()) {
+        _delegate_callback = d->subscribe(*this, [this] {
+            this->window.gui.run([this] {
                 repopulate_options();
                 _request_constrain = true;
             });
@@ -49,16 +45,13 @@ void selection_widget::init() noexcept
 
         (*_delegate_callback)();
 
-        delegate->init(*this);
+        d->init(*this);
     }
 }
 
-void selection_widget::deinit() noexcept
+selection_widget::selection_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+    selection_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
-    super::deinit();
 }
 
 [[nodiscard]] bool selection_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept

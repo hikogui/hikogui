@@ -19,22 +19,17 @@ overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr
         draw_layer = parent->draw_layer + 20.0f;
         semantic_layer = 0;
     }
-}
 
-void overlay_widget::init() noexcept
-{
-    super::init();
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
+        if (auto d = _delegate.lock()) {
+        d->init(*this);
     }
 }
 
-void overlay_widget::deinit() noexcept
+overlay_widget::~overlay_widget()
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
-    super::deinit();
 }
 
 [[nodiscard]] bool
