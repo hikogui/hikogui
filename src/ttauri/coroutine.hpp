@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <ranges>
 #include <concepts>
 #include <coroutine>
 #include <optional>
 #include <memory>
+#include <memory_resource>
 
 namespace tt {
 
@@ -26,12 +26,13 @@ template<typename T, typename Allocator = std::allocator<char>>
 class generator {
 public:
     static_assert(sizeof(std::allocator_traits<Allocator>::value_type) == 1, "Requires a allocator with a byte sized value type");
+    using allocator_type = Allocator;
     using value_type = T;
 
     class promise_type {
     public:
         struct allocator_info {
-            Allocator *allocator;
+            allocator_type *allocator;
             size_t size;
         };
 
@@ -41,11 +42,11 @@ public:
                 auto *ptr_ = reinterpret_cast<char *>(ptr) - sizeof(allocator_info);
                 auto &info = *std::launder(reinterpret_cast<allocator_info *>(ptr_));
 
-                if constexpr (std::allocator_traits<Allocator>::is_always_equal::value) {
-                    auto allocator = Allocator{};
-                    std::allocator_traits<Allocator>::deallocate(allocator, ptr_, info.size);
+                if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
+                    auto allocator = allocator_type{};
+                    std::allocator_traits<allocator_type>::deallocate(allocator, ptr_, info.size);
                 } else {
-                    std::allocator_traits<Allocator>::deallocate(*(info.allocator), ptr_, info.size);
+                    std::allocator_traits<allocator_type>::deallocate(*(info.allocator), ptr_, info.size);
                 }
             }
         }
@@ -55,8 +56,8 @@ public:
             auto size_plus_info = size + sizeof(allocator_info);
 
             // The allocator will add a allocator info in front of the allocated data.
-            auto allocator = Allocator{};
-            auto *ptr = std::allocator_traits<Allocator>::allocate(allocator, size_plus_info);
+            auto allocator = allocator_type{};
+            auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
             [[maybe_unused]] auto *info = new (ptr) allocator_info(nullptr, size_plus_info);
             return ptr + sizeof(allocator_info);
         }
@@ -67,14 +68,14 @@ public:
             auto size_plus_info = size + sizeof(allocator_info);
 
             // The allocator will add a allocator info in front of the allocated data.
-            if constexpr (std::allocator_traits<Allocator>::is_always_equal::value) {
-                auto allocator = Allocator{};
-                auto *ptr = std::allocator_traits<Allocator>::allocate(allocator, size_plus_info);
+            if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
+                auto allocator = allocator_type{};
+                auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
                 [[maybe_unused]] auto *info = new (ptr) allocator_info(nullptr, size_plus_info);
                 return ptr + sizeof(allocator_info);
 
             } else {
-                auto *ptr = std::allocator_traits<Allocator>::allocate(first_arg, size_plus_info);
+                auto *ptr = std::allocator_traits<allocator_type>::allocate(first_arg, size_plus_info);
                 [[maybe_unused]] auto *info = new (ptr) allocator_info(&first_arg, size_plus_info);
                 return ptr + sizeof(allocator_info);
             }
@@ -210,5 +211,12 @@ public:
 private:
     handle_type _coroutine;
 };
+
+namespace pmr {
+
+template<typename T>
+using generator = tt::generator<T, std::pmr::polymorphic_allocator>;
+
+}
 
 } // namespace tt

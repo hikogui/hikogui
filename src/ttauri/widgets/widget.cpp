@@ -302,7 +302,8 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 
     need_reconstrain |= _request_constrain.exchange(false);
 
-    for (auto *child : children()) {
+    pmr::scoped_buffer<256> buffer;
+    for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
             need_reconstrain |= child->constrain(display_time_point, need_reconstrain);
@@ -317,7 +318,9 @@ void widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexce
     tt_axiom(is_gui_thread());
 
     need_layout |= _request_layout.exchange(false);
-    for (auto *child : children()) {
+
+    pmr::scoped_buffer<256> buffer;
+    for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
             if (child->visible) {
@@ -335,7 +338,8 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 {
     tt_axiom(is_gui_thread());
 
-    for (auto *child : children()) {
+    pmr::scoped_buffer<256> buffer;
+    for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
 
@@ -369,7 +373,9 @@ void widget::request_redraw() const noexcept
     tt_axiom(is_gui_thread());
 
     auto r = hitbox{};
-    for (auto *child : children()) {
+
+    pmr::scoped_buffer<256> buffer;
+    for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
             if (child->visible) {
@@ -420,7 +426,9 @@ bool widget::handle_command_recursive(command command, std::vector<widget const 
     tt_axiom(is_gui_thread());
 
     auto handled = false;
-    for (auto *child : children()) {
+
+    pmr::scoped_buffer<256> buffer;
+    for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
             handled |= child->handle_command_recursive(command, reject_list);
@@ -466,7 +474,9 @@ widget const *widget::find_next_widget(
         found = true;
     }
 
-    auto children_ = direction == keyboard_focus_direction::forward ? children() : reverse_children();
+
+    pmr::scoped_buffer<256> buffer;
+    auto children_ = direction == keyboard_focus_direction::forward ? children(buffer.allocator()) : reverse_children(buffer.allocator());
     for (auto *child : children_) {
         if (child) {
             if (found) {
@@ -503,7 +513,8 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    for (auto *child : children()) {
+    pmr::scoped_buffer<256> buffer;
+    for (auto *child : children(buffer.allocator())) {
         if (child and child->accepts_keyboard_focus(group)) {
             return child;
         }
@@ -515,7 +526,8 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    for (auto *child : reverse_children()) {
+    pmr::scoped_buffer<256> buffer;
+    for (auto *child : reverse_children(buffer.allocator())) {
         if (child and child->accepts_keyboard_focus(group)) {
             return child;
         }

@@ -448,14 +448,14 @@ protected:
     std::shared_ptr<std::function<void()>> _relayout_callback;
     std::shared_ptr<std::function<void()>> _reconstrain_callback;
 
-    [[nodiscard]] virtual generator<widget *> children() const noexcept
+    [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator &allocator) const noexcept
     {
         for (ttlet &child : _children) {
             co_yield child.get();
         }
     }
 
-    [[nodiscard]] virtual generator<widget *> reverse_children() const noexcept
+    [[nodiscard]] virtual pmr::generator<widget *> reverse_children(std::pmr::polymorphic_allocator &allocator) const noexcept
     {
         for (ttlet &child : std::ranges::reverse_view(_children)) {
             co_yield child.get();
