@@ -47,10 +47,6 @@ widget::~widget()
     window.widget_is_destructing(this);
 }
 
-void widget::init() noexcept {}
-
-void widget::deinit() noexcept {}
-
 [[nodiscard]] bool widget::is_gui_thread() const noexcept
 {
     return window.is_gui_thread();

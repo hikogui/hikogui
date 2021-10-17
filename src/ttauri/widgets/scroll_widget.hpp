@@ -50,6 +50,13 @@ public:
     static constexpr tt::axis axis = Axis;
     static constexpr bool controls_window = ControlsWindow;
 
+    ~scroll_widget()
+    {
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
+    }
+
     /** Constructs an empty scroll widget.
      *
      * @param window The window.
@@ -77,6 +84,15 @@ public:
         _scroll_aperture_height.subscribe(_layout_callback);
         _scroll_offset_x.subscribe(_layout_callback);
         _scroll_offset_y.subscribe(_layout_callback);
+
+        _horizontal_scroll_bar =
+            &super::make_widget<horizontal_scroll_bar_widget>(_scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
+        _vertical_scroll_bar =
+            &super::make_widget<vertical_scroll_bar_widget>(_scroll_content_height, _scroll_aperture_height, _scroll_offset_y);
+
+        if (auto d = _delegate.lock()) {
+            d->init(*this);
+        }
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -100,28 +116,6 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override
-    {
-        super::init();
-
-        _horizontal_scroll_bar =
-            &super::make_widget<horizontal_scroll_bar_widget>(_scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
-        _vertical_scroll_bar =
-            &super::make_widget<vertical_scroll_bar_widget>(_scroll_content_height, _scroll_aperture_height, _scroll_offset_y);
-
-        if (auto delegate = _delegate.lock()) {
-            delegate->init(*this);
-        }
-    }
-
-    void deinit() noexcept override
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
-        super::deinit();
-    }
-
     [[nodiscard]] float margin() const noexcept override
     {
         return 0.0f;

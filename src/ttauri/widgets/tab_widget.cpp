@@ -8,6 +8,13 @@
 
 namespace tt {
 
+tab_widget::~tab_widget()
+{
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
+}
+
 tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
@@ -30,27 +37,15 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     _preferred_size = {};
     _maximum_size = {32767.0f, 32767.0f};
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+
+        if (auto d = _delegate.lock()) {
+        d->init(*this);
+    }
 }
 
 tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     tab_widget(window, parent, weak_or_unique_ptr<delegate_type>{delegate})
 {
-}
-
-void tab_widget::init() noexcept
-{
-    super::init();
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
-    }
-}
-
-void tab_widget::deinit() noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
-    super::deinit();
 }
 
 [[nodiscard]] float tab_widget::margin() const noexcept

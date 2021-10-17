@@ -14,30 +14,20 @@ abstract_button_widget::abstract_button_widget(
     weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
-    if (auto d = _delegate.lock()) {
-        d->subscribe(*this, _relayout_callback);
-    }
-}
-
-void abstract_button_widget::init() noexcept
-{
-    super::init();
-
     _on_label_widget = &make_widget<label_widget>(on_label, label_alignment);
     _off_label_widget = &make_widget<label_widget>(off_label, label_alignment);
     _other_label_widget = &make_widget<label_widget>(other_label, label_alignment);
-
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
+    if (auto d = _delegate.lock()) {
+        d->subscribe(*this, _relayout_callback);
+        d->init(*this);
     }
 }
 
-void abstract_button_widget::deinit() noexcept
+abstract_button_widget::~abstract_button_widget()
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
-    super::deinit();
 }
 
 void abstract_button_widget::activate() noexcept

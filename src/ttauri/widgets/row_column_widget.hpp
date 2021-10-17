@@ -42,6 +42,13 @@ public:
     using delegate_type = row_column_delegate<Axis>;
     static constexpr tt::axis axis = Axis;
 
+    ~row_column_widget()
+    {
+        if (auto delegate = _delegate.lock()) {
+            delegate->deinit(*this);
+        }
+}
+
     /** Constructs an empty row/column widget.
      *
      * @param window The window.
@@ -56,6 +63,9 @@ public:
 
         if (parent) {
             semantic_layer = parent->semantic_layer;
+        }
+        if (auto d = _delegate.lock()) {
+            d->init(*this);
         }
     }
 
@@ -87,21 +97,6 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override
-    {
-        super::init();
-        if (auto delegate = _delegate.lock()) {
-            delegate->init(*this);
-        }
-    }
-
-    void deinit() noexcept override
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
-    }
-
     [[nodiscard]] float margin() const noexcept override
     {
         return 0.0f;

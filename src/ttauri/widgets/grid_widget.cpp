@@ -19,16 +19,12 @@ grid_widget::grid_widget(
     if (parent) {
         semantic_layer = parent->semantic_layer;
     }
-}
-
-void grid_widget::init() noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
+    if (auto d = _delegate.lock()) {
+        d->init(*this);
     }
 }
 
-void grid_widget::deinit() noexcept
+grid_widget::~grid_widget()
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);

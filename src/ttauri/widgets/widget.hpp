@@ -110,14 +110,6 @@ public:
     widget(widget &&) = delete;
     widget &operator=(widget &&) = delete;
 
-    /** Should be called right after allocating and constructing a widget.
-     */
-    virtual void init() noexcept;
-
-    /** Should be called right after allocating and constructing a widget.
-     */
-    virtual void deinit() noexcept;
-
     [[nodiscard]] bool is_gui_thread() const noexcept;
 
     /** Get the theme.
@@ -470,7 +462,6 @@ protected:
     {
         tt_axiom(is_gui_thread());
         auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
-        tmp->init();
         return static_cast<T &>(add_widget(std::move(tmp)));
     }
 

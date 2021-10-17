@@ -30,7 +30,6 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override;
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;

@@ -57,7 +57,6 @@ public:
     Widget &make_widget(Args &&...args)
     {
         auto widget = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        widget->init();
         return static_cast<Widget &>(add_widget(Alignment, std::move(widget)));
     }
 

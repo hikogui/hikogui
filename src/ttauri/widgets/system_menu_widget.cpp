@@ -9,10 +9,6 @@ namespace tt {
 system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept :
     super(window, parent)
 {
-}
-
-void system_menu_widget::init() noexcept
-{
     _icon_widget = &make_widget<icon_widget>(icon);
 }
 

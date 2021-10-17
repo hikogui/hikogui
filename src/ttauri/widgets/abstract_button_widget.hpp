@@ -80,8 +80,6 @@ public:
     void unsubscribe(callback_ptr_type &callback_ptr) noexcept;
 
     /// @privatesection
-    void init() noexcept override;
-    void deinit() noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
@@ -101,6 +99,7 @@ protected:
     notifier<void()> _notifier;
     weak_or_unique_ptr<delegate_type> _delegate;
 
+    ~abstract_button_widget();
     abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
 };
 

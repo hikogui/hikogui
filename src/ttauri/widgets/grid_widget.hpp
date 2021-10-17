@@ -39,6 +39,8 @@ public:
     using super = widget;
     using delegate_type = grid_delegate;
 
+    ~grid_widget();
+
     /** Constructs an empty grid widget.
      *
      * @param window The window.
@@ -60,7 +62,6 @@ public:
     Widget &make_widget(size_t column_nr, size_t row_nr, Args &&...args)
     {
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        tmp->init();
         return static_cast<Widget &>(add_widget(column_nr, row_nr, std::move(tmp)));
     }
 
@@ -80,8 +81,6 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override;
-    void deinit() noexcept override;
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;

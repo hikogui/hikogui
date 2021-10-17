@@ -8,9 +8,7 @@
 
 namespace tt {
 
-label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
-
-void label_widget::init() noexcept
+label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _icon_widget = &super::make_widget<icon_widget>(label->icon);
     _icon_widget->alignment = alignment;

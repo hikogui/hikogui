@@ -34,6 +34,8 @@ public:
     using super = widget;
     using delegate_type = tab_delegate;
 
+    ~tab_widget();
+
     /** Construct a tab widget with a delegate.
      *
      * @param window The window that this widget is shown on.
@@ -77,8 +79,6 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override;
-    void deinit() noexcept override;
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
