@@ -14,9 +14,9 @@ abstract_button_widget::abstract_button_widget(
     weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
-    _on_label_widget = &make_widget<label_widget>(on_label, label_alignment);
-    _off_label_widget = &make_widget<label_widget>(off_label, label_alignment);
-    _other_label_widget = &make_widget<label_widget>(other_label, label_alignment);
+    _on_label_widget = std::make_unique<label_widget>(window, this, on_label, label_alignment);
+    _off_label_widget = std::make_unique<label_widget>(window, this, off_label, label_alignment);
+    _other_label_widget = std::make_unique<label_widget>(window, this, other_label, label_alignment);
     if (auto d = _delegate.lock()) {
         d->subscribe(*this, _relayout_callback);
         d->init(*this);

@@ -62,12 +62,19 @@ public:
         tt_axiom(is_gui_thread());
         tt_axiom(not _content);
 
-        auto &widget = super::make_widget<Widget>(std::forward<Args>(args)...);
-        _content = &widget;
-        return widget;
+        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto &ref = *tmp;
+        _content = std::move(tmp);
+        _request_constrain = true;
+        return ref;
     }
 
     /// @privatesection
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        co_yield _content.get();
+    }
+
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
@@ -77,7 +84,7 @@ public:
     /// @endprivatesection
 private:
     std::weak_ptr<delegate_type> _delegate;
-    widget *_content = nullptr;
+    std::unique_ptr<widget> _content;
 
     void draw_background(draw_context context) noexcept;
 };

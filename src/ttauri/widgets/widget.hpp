@@ -376,16 +376,7 @@ public:
      */
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
-    /** Add a widget directly to this widget.
-     * Thread safety: locks.
-     */
-    [[deprecated]] widget &add_widget(std::unique_ptr<widget> widget) noexcept;
-
 protected:
-    /** A list of child widgets.
-     */
-    std::vector<std::unique_ptr<widget>> _children;
-
     /** Mouse cursor is hovering over the widget.
      */
     bool _hover = false;
@@ -441,28 +432,9 @@ protected:
     std::shared_ptr<std::function<void()>> _relayout_callback;
     std::shared_ptr<std::function<void()>> _reconstrain_callback;
 
-    [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &allocator) const noexcept
+    [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept
     {
-        for (ttlet &child : _children) {
-            co_yield child.get();
-        }
-    }
-
-    [[nodiscard]] virtual pmr::generator<widget *> reverse_children(std::pmr::polymorphic_allocator<> &allocator) const noexcept
-    {
-        for (ttlet &child : std::ranges::reverse_view(_children)) {
-            co_yield child.get();
-        }
-    }
-
-    /** Add a widget directly to this widget.
-     */
-    template<typename T, typename... Args>
-    [[deprecated]] T &make_widget(Args &&...args)
-    {
-        tt_axiom(is_gui_thread());
-        auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
-        return static_cast<T &>(add_widget(std::move(tmp)));
+        co_return;
     }
 
     /** Make an overlay rectangle.

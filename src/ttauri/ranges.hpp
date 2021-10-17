@@ -127,14 +127,27 @@ template<typename View>
 /** Make a vector from a view.
  * This function will make a vector with a by moving the elements of a view.
  */
-template<typename View>
-[[nodiscard]] std::vector<typename View::value_type> make_vector(View &&view)
+template<std::ranges::sized_range View>
+[[nodiscard]] std::vector<typename View::value_type> make_vector(View &&view) noexcept
 {
     auto r = std::vector<View::value_type>{};
     auto first = std::begin(view);
     auto last = std::end(view);
     r.reserve(std::distance(first, last));
-    std::move(first, last, std::back_inserter(r));
+    std::ranges::copy(first, last, std::back_inserter(r));
+    return r;
+}
+
+/** Make a vector from a view.
+ * This function will make a vector with a by moving the elements of a view.
+ */
+template<typename View>
+[[nodiscard]] std::vector<typename View::value_type> make_vector(View &&view) noexcept
+{
+    auto r = std::vector<View::value_type>{};
+    auto first = std::begin(view);
+    auto last = std::end(view);
+    std::ranges::copy(first, last, std::back_inserter(r));
     return r;
 }
 

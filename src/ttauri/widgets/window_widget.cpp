@@ -19,7 +19,7 @@ using namespace std;
 
 void window_widget::constructor_implementation() noexcept
 {
-    _toolbar = &make_widget<toolbar_widget>();
+    _toolbar = std::make_unique<toolbar_widget>(window, this);
 
     if (theme().operating_system == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
@@ -37,7 +37,13 @@ void window_widget::constructor_implementation() noexcept
         tt_no_default();
     }
 
-    _content = &make_widget<grid_widget>(_content_delegate);
+    _content = std::make_unique<grid_widget>(window, this, _content_delegate);
+}
+
+[[nodiscard]] pmr::generator<widget *> window_widget::children(std::pmr::polymorphic_allocator<> &) const noexcept
+{
+    co_yield _toolbar.get();
+    co_yield _content.get();
 }
 
 [[nodiscard]] bool window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept

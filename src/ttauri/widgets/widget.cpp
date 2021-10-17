@@ -473,9 +473,13 @@ widget const *widget::find_next_widget(
 
 
     auto buffer = pmr::scoped_buffer<256>{};
-    auto children_ =
-        direction == keyboard_focus_direction::forward ? children(buffer.allocator()) : reverse_children(buffer.allocator());
-    for (auto *child : children_) {
+    auto children_copy = make_vector(children(buffer.allocator()));
+
+    if (direction == keyboard_focus_direction::backward) {
+        std::reverse(begin(children_copy), end(children_copy));
+    }
+
+    for (auto *child : children_copy) {
         if (child) {
             if (found) {
                 // Find the first focus accepting widget.
@@ -525,12 +529,13 @@ widget const *widget::find_next_widget(
     tt_axiom(is_gui_thread());
 
     auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : reverse_children(buffer.allocator())) {
+    widget *found = nullptr;
+    for (auto *child : children(buffer.allocator())) {
         if (child and child->accepts_keyboard_focus(group)) {
-            return child;
+            found = child;
         }
     }
-    return nullptr;
+    return found;
 }
 
 [[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
@@ -571,21 +576,6 @@ void widget::scroll_to_show(tt::rectangle rectangle) noexcept
     }
 
     return chain;
-}
-
-/** Add a widget directly to this widget.
- * Thread safety: locks.
- */
-widget &widget::add_widget(std::unique_ptr<widget> widget) noexcept
-{
-    tt_axiom(is_gui_thread());
-    tt_axiom(widget->parent == this);
-
-    auto widget_ptr = &(*widget);
-    _children.push_back(std::move(widget));
-    _request_constrain = true;
-    window.request_layout = true;
-    return *widget_ptr;
 }
 
 [[nodiscard]] aarectangle widget::make_overlay_rectangle(aarectangle requested_rectangle) const noexcept

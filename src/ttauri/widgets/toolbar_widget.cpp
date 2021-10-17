@@ -142,15 +142,15 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index) const
 
 widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
 {
-    auto &tmp = super::add_widget(std::move(widget));
+    auto &ref = *widget;
     switch (alignment) {
         using enum horizontal_alignment;
-    case left: _left_children.push_back(&tmp); break;
-    case right: _right_children.push_back(&tmp); break;
+    case left: _left_children.push_back(std::move(widget)); break;
+    case right: _right_children.push_back(std::move(widget)); break;
     default: tt_no_default();
     }
 
-    return tmp;
+    return ref;
 }
 
 } // namespace tt

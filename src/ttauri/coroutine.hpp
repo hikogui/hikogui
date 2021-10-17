@@ -138,10 +138,29 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
+    class value_proxy {
+    public:
+        value_proxy(value_type const &value) noexcept : _value(value) {}
+
+        value_type const &operator*() const noexcept
+        {
+            return _value;
+        }
+
+    private:
+        value_type _value;
+    };
+
     /** A forward iterator which iterates through values co_yieled by the generator-function.
      */
     class iterator {
     public:
+        using difference_type = ptrdiff_t;
+        using value_type = std::remove_cv_t<value_type>;
+        using pointer = value_type *;
+        using reference = value_type &;
+        using iterator_category = std::input_iterator_tag;
+
         explicit iterator(handle_type coroutine) : _coroutine{coroutine} {}
 
         /** Resume the generator-function.
@@ -152,6 +171,13 @@ public:
             return *this;
         }
 
+        value_proxy operator++(int)
+        {
+            auto tmp = value_proxy(**this);
+            _coroutine.resume();
+            return tmp;
+        }
+
         /** Retrieve the value co_yielded by the generator-function.
          */
         value_type const &operator*() const
@@ -159,11 +185,16 @@ public:
             return _coroutine.promise().value();
         }
 
+        value_type const *operator->() const
+        {
+            return std::addressof(_coroutine.promise().value());
+        }
+
         /** Check if the generator-function has finished.
          */
         [[nodiscard]] bool operator==(std::default_sentinel_t) const
         {
-            return !_coroutine || _coroutine.done();
+            return (not _coroutine) or _coroutine.done();
         }
 
     private:

@@ -19,14 +19,14 @@ selection_widget::~selection_widget()
 selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
-    _current_label_widget = &make_widget<label_widget>(l10n("<current>"));
+    _current_label_widget = std::make_unique<label_widget>(window, this, l10n("<current>"));
     _current_label_widget->visible = false;
     _current_label_widget->alignment = alignment::middle_left;
-    _unknown_label_widget = &make_widget<label_widget>(unknown_label);
+    _unknown_label_widget = std::make_unique<label_widget>(window, this, unknown_label);
     _unknown_label_widget->alignment = alignment::middle_left;
     _unknown_label_widget->text_style = theme_text_style::placeholder;
 
-    _overlay_widget = &make_widget<overlay_widget>();
+    _overlay_widget = std::make_unique<overlay_widget>(window, this);
     _overlay_widget->visible = false;
     _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();

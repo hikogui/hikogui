@@ -9,7 +9,7 @@ namespace tt {
 system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept :
     super(window, parent)
 {
-    _icon_widget = &make_widget<icon_widget>(icon);
+    _icon_widget = std::make_unique<icon_widget>(window, this, icon);
 }
 
 [[nodiscard]] float system_menu_widget::margin() const noexcept

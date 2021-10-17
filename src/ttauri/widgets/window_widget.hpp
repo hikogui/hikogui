@@ -9,7 +9,6 @@
 #include "../weak_or_unique_ptr.hpp"
 
 namespace tt {
-
 class toolbar_widget;
 class system_menu_widget;
 class grid_widget;
@@ -52,6 +51,7 @@ public:
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
 
     /// @privatesection
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept;
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
@@ -60,8 +60,8 @@ private:
     decltype(title)::callback_ptr_type _title_callback;
 
     std::weak_ptr<delegate_type> _content_delegate;
-    grid_widget *_content = nullptr;
-    toolbar_widget *_toolbar = nullptr;
+    std::unique_ptr<grid_widget> _content;
+    std::unique_ptr<toolbar_widget> _toolbar;
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;
 #endif

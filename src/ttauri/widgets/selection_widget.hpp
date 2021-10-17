@@ -76,6 +76,13 @@ public:
     }
 
     /// @privatesection
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        co_yield _overlay_widget.get();
+        co_yield _current_label_widget.get();
+        co_yield _unknown_label_widget.get();
+    }
+
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
@@ -91,8 +98,8 @@ private:
     typename delegate_type::callback_ptr_type _delegate_callback;
     typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
 
-    label_widget *_current_label_widget = nullptr;
-    label_widget *_unknown_label_widget = nullptr;
+    std::unique_ptr<label_widget> _current_label_widget;
+    std::unique_ptr<label_widget> _unknown_label_widget;
 
     aarectangle _option_rectangle;
     aarectangle _left_box_rectangle;
@@ -103,7 +110,7 @@ private:
     bool _selecting = false;
     bool _has_options = false;
 
-    overlay_widget *_overlay_widget = nullptr;
+    std::unique_ptr<overlay_widget> _overlay_widget;
     vertical_scroll_widget<> *_scroll_widget = nullptr;
     column_widget *_column_widget = nullptr;
 

@@ -85,10 +85,10 @@ public:
         _scroll_offset_x.subscribe(_layout_callback);
         _scroll_offset_y.subscribe(_layout_callback);
 
-        _horizontal_scroll_bar =
-            &super::make_widget<horizontal_scroll_bar_widget>(_scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
-        _vertical_scroll_bar =
-            &super::make_widget<vertical_scroll_bar_widget>(_scroll_content_height, _scroll_aperture_height, _scroll_offset_y);
+        _horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_widget>(
+            window, this, _scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
+        _vertical_scroll_bar = std::make_unique<vertical_scroll_bar_widget>(
+            window, this, _scroll_content_height, _scroll_aperture_height, _scroll_offset_y);
 
         if (auto d = _delegate.lock()) {
             d->init(*this);
@@ -110,12 +110,20 @@ public:
         tt_axiom(is_gui_thread());
         tt_axiom(not _content);
 
-        auto &widget = super::make_widget<Widget>(std::forward<Args>(args)...);
-        _content = &widget;
-        return widget;
+        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto &ref = *tmp;
+        _content = std::move(tmp);
+        return ref;
     }
 
     /// @privatesection
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        co_yield _content.get();
+        co_yield _vertical_scroll_bar.get();
+        co_yield _horizontal_scroll_bar.get();
+    }
+
     [[nodiscard]] float margin() const noexcept override
     {
         return 0.0f;
@@ -288,9 +296,9 @@ public:
     // @endprivatesection
 private:
     std::weak_ptr<delegate_type> _delegate;
-    widget *_content = nullptr;
-    horizontal_scroll_bar_widget *_horizontal_scroll_bar = nullptr;
-    vertical_scroll_bar_widget *_vertical_scroll_bar = nullptr;
+    std::unique_ptr<widget> _content;
+    std::unique_ptr<horizontal_scroll_bar_widget> _horizontal_scroll_bar;
+    std::unique_ptr<vertical_scroll_bar_widget> _vertical_scroll_bar;
 
     observable<float> _scroll_content_width;
     observable<float> _scroll_content_height;

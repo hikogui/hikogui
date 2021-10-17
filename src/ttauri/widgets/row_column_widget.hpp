@@ -84,7 +84,11 @@ public:
     template<typename Widget, typename... Args>
     Widget &make_widget(Args &&...args)
     {
-        return super::make_widget<Widget>(std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto &ref = *tmp;
+        _children.push_back(std::move(tmp));
+        _request_constrain = true;
+        return ref;
     }
 
     /** Remove and deallocate all child widgets.
@@ -97,6 +101,13 @@ public:
     }
 
     /// @privatesection
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        for (ttlet &child : _children) {
+            co_yield child.get();
+        }
+    }
+
     [[nodiscard]] float margin() const noexcept override
     {
         return 0.0f;
@@ -156,6 +167,7 @@ public:
     }
     /// @endprivatesection
 private:
+    std::vector<std::unique_ptr<widget>> _children;
     std::weak_ptr<delegate_type> _delegate;
     flow_layout _layout;
 
