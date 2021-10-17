@@ -9,6 +9,7 @@
 #include <optional>
 #include <memory>
 #include <memory_resource>
+#include "arguments.hpp"
 
 namespace tt {
 
@@ -22,10 +23,12 @@ namespace tt {
  * The incrementing the iterator will resume the generator-function until
  * the generator-function co_yields another value.
  */
-template<typename T, typename Allocator = std::allocator<char>>
+template<typename T, typename Allocator = std::allocator<std::byte>>
 class generator {
 public:
-    static_assert(sizeof(std::allocator_traits<Allocator>::value_type) == 1, "Requires a allocator with a byte sized value type");
+    static_assert(
+        std::is_same_v<std::allocator_traits<Allocator>::value_type, std::byte>,
+        "Allocator's value_type must be std::byte");
     using allocator_type = Allocator;
     using value_type = T;
 
@@ -39,8 +42,10 @@ public:
         void operator delete(void *ptr)
         {
             if (ptr) {
-                auto *ptr_ = reinterpret_cast<char *>(ptr) - sizeof(allocator_info);
-                auto &info = *std::launder(reinterpret_cast<allocator_info *>(ptr_));
+                auto *ptr_ = reinterpret_cast<std::byte *>(ptr) - sizeof(allocator_info);
+                auto *info_ptr = std::launder(reinterpret_cast<allocator_info *>(ptr_));
+                auto info = *info_ptr;
+                std::destroy_at(info_ptr);
 
                 if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
                     auto allocator = allocator_type{};
@@ -51,33 +56,37 @@ public:
             }
         }
 
-        void *operator new(size_t size)
+        [[nodiscard]] static void *simple_new(size_t size)
         {
             auto size_plus_info = size + sizeof(allocator_info);
 
-            // The allocator will add a allocator info in front of the allocated data.
+            // Prefix the allocated memory with the allocated size.
             auto allocator = allocator_type{};
             auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
             [[maybe_unused]] auto *info = new (ptr) allocator_info(nullptr, size_plus_info);
             return ptr + sizeof(allocator_info);
         }
 
-        template<typename FirstArg, typename... Args>
-        void *operator new(size_t size, std::align_val_t alignment, FirstArg const &first_arg, Args const &...args)
+        [[nodiscard]] static void *allocator_new(size_t size, allocator_type &allocator)
         {
             auto size_plus_info = size + sizeof(allocator_info);
 
-            // The allocator will add a allocator info in front of the allocated data.
-            if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
-                auto allocator = allocator_type{};
-                auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
-                [[maybe_unused]] auto *info = new (ptr) allocator_info(nullptr, size_plus_info);
-                return ptr + sizeof(allocator_info);
+            // Allocator is in the trailing argument, because coroutines can be methods
+            // and the first argument would be `this`.
+            // Prefix the allocated memory with a pointer to the allocator and the allocated size.
+            auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
+            [[maybe_unused]] auto *info = new (ptr) allocator_info(&allocator, size_plus_info);
+            return ptr + sizeof(allocator_info);
+        }
 
+        template<typename... Args>
+        void *operator new(size_t size, Args &&...args)
+        {
+            if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
+                // This is just a coroutine with arguments.
+                return promise_type::simple_new(size);
             } else {
-                auto *ptr = std::allocator_traits<allocator_type>::allocate(first_arg, size_plus_info);
-                [[maybe_unused]] auto *info = new (ptr) allocator_info(&first_arg, size_plus_info);
-                return ptr + sizeof(allocator_info);
+                return promise_type::allocator_new(size, get_last_argument(args...));
             }
         }
 
@@ -215,7 +224,7 @@ private:
 namespace pmr {
 
 template<typename T>
-using generator = tt::generator<T, std::pmr::polymorphic_allocator>;
+using generator = tt::generator<T, std::pmr::polymorphic_allocator<>>;
 
 }
 

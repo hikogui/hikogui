@@ -5,6 +5,7 @@
 #include "widget.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
+#include "../scoped_buffer.hpp"
 #include <ranges>
 
 namespace tt {
@@ -302,7 +303,7 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 
     need_reconstrain |= _request_constrain.exchange(false);
 
-    pmr::scoped_buffer<256> buffer;
+    auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
@@ -319,7 +320,7 @@ void widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexce
 
     need_layout |= _request_layout.exchange(false);
 
-    pmr::scoped_buffer<256> buffer;
+    auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
@@ -338,7 +339,7 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 {
     tt_axiom(is_gui_thread());
 
-    pmr::scoped_buffer<256> buffer;
+    auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
@@ -374,7 +375,7 @@ void widget::request_redraw() const noexcept
 
     auto r = hitbox{};
 
-    pmr::scoped_buffer<256> buffer;
+    auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
@@ -427,7 +428,7 @@ bool widget::handle_command_recursive(command command, std::vector<widget const 
 
     auto handled = false;
 
-    pmr::scoped_buffer<256> buffer;
+    auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
@@ -475,8 +476,9 @@ widget const *widget::find_next_widget(
     }
 
 
-    pmr::scoped_buffer<256> buffer;
-    auto children_ = direction == keyboard_focus_direction::forward ? children(buffer.allocator()) : reverse_children(buffer.allocator());
+    auto buffer = pmr::scoped_buffer<256>{};
+    auto children_ =
+        direction == keyboard_focus_direction::forward ? children(buffer.allocator()) : reverse_children(buffer.allocator());
     for (auto *child : children_) {
         if (child) {
             if (found) {
@@ -513,7 +515,7 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    pmr::scoped_buffer<256> buffer;
+    auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child and child->accepts_keyboard_focus(group)) {
             return child;
@@ -526,7 +528,7 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    pmr::scoped_buffer<256> buffer;
+    auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : reverse_children(buffer.allocator())) {
         if (child and child->accepts_keyboard_focus(group)) {
             return child;

@@ -11,6 +11,7 @@
 #endif
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
+#include "../scoped_buffer.hpp"
 
 namespace tt {
 
@@ -123,7 +124,8 @@ hitbox window_widget::hitbox_test(point2 position) const noexcept
         return r;
     }
 
-    for (auto *child : children()) {
+    auto buffer = pmr::scoped_buffer<256>{};
+    for (auto *child : children(buffer.allocator())) {
         if (child) {
             r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
         }

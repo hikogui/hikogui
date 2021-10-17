@@ -4,6 +4,7 @@
 
 #include "tab_widget.hpp"
 #include "../GUI/gui_window.hpp"
+#include "../scoped_buffer.hpp"
 
 namespace tt {
 
@@ -64,7 +65,9 @@ void tab_widget::deinit() noexcept
     auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
     if (has_updated_contraints) {
         ttlet &selected_child_ = selected_child();
-        for (auto *child : children()) {
+
+        auto buffer = pmr::scoped_buffer<256>{};
+        for (auto *child : children(buffer.allocator())) {
             tt_axiom(child);
             child->visible = child == &selected_child_;
         }
@@ -88,7 +91,8 @@ void tab_widget::deinit() noexcept
 
     need_layout |= _request_layout.exchange(false);
     if (need_layout) {
-        for (auto *child : children()) {
+        auto buffer = pmr::scoped_buffer<256>{};
+        for (auto *child : children(buffer.allocator())) {
             tt_axiom(child);
             if (child->visible) {
                 child->set_layout_parameters_from_parent(rectangle());

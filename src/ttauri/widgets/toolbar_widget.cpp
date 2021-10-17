@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_widget.hpp"
+#include "../scoped_buffer.hpp"
 
 namespace tt {
 
@@ -103,7 +104,8 @@ hitbox toolbar_widget::hitbox_test(point2 position) const noexcept
         r = hitbox{this, draw_layer, hitbox::Type::MoveArea};
     }
 
-    for (auto *child : children()) {
+    auto buffer = pmr::scoped_buffer<256>{};
+    for (auto *child : children(buffer.allocator())) {
         tt_axiom(child);
         r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
     }
