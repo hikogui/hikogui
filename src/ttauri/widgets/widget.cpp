@@ -310,27 +310,6 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
     return need_reconstrain;
 }
 
-void widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    need_layout |= _relayout.exchange(false);
-
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            tt_axiom(child->parent == this);
-            if (child->visible) {
-                child->layout(new_size, display_time_point, need_layout);
-            }
-        }
-    }
-
-    if (need_layout) {
-        request_redraw();
-    }
-}
-
 void widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());

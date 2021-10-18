@@ -266,7 +266,7 @@ public:
      * @param need_layout Force the widget to layout
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    [[nodiscard]] virtual void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] virtual void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept = 0;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 

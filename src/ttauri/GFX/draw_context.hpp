@@ -36,7 +36,6 @@ public:
     draw_context(
         gfx_device_vulkan &device,
         size_t frame_buffer_index,
-        extent2 surface_size,
         aarectangle scissor_rectangle,
         vspan<pipeline_box::vertex> &boxVertices,
         vspan<pipeline_image::vertex> &imageVertices,

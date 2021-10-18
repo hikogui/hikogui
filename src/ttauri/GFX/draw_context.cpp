@@ -15,7 +15,6 @@ namespace tt {
 draw_context::draw_context(
     gfx_device_vulkan &device,
     size_t frame_buffer_index,
-    extent2 surface_size,
     aarectangle scissor_rectangle,
     vspan<pipeline_box::vertex> &boxVertices,
     vspan<pipeline_image::vertex> &imageVertices,
@@ -25,8 +24,7 @@ draw_context::draw_context(
     _scissor_rectangle(scissor_rectangle),
     _box_vertices(&boxVertices),
     _image_vertices(&imageVertices),
-    _sdf_vertices(&sdfVertices),
-    _clipping_rectangle(surface_size)
+    _sdf_vertices(&sdfVertices)
 {
     _box_vertices->clear();
     _image_vertices->clear();

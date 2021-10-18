@@ -338,7 +338,6 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
     return draw_context{
         *narrow_cast<gfx_device_vulkan *>(_device),
         narrow_cast<size_t>(frame_buffer_index),
-        size(),
         scissor_rectangle,
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
