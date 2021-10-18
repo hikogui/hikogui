@@ -91,7 +91,12 @@ public:
      */
     float dpi = 72.0;
 
-    //! The widget covering the complete window.
+    /** The size of the widget.
+     */
+    extent2 widget_size;
+
+    /** The widget covering the complete window.
+     */
     std::unique_ptr<window_widget> widget;
 
     gui_window(gui_system &gui, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;

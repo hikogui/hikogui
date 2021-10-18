@@ -73,7 +73,7 @@ void window_widget::constructor_implementation() noexcept
     }
 }
 
-void window_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void window_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -87,7 +87,7 @@ void window_widget::layout(utc_nanoseconds display_time_point, bool need_layout)
         _content->set_layout_parameters_from_parent(content_rectangle);
     }
 
-    super::layout(display_time_point, need_layout);
+    return super::layout(new_size, display_time_point, need_layout);
 }
 
 hitbox window_widget::hitbox_test(point2 position) const noexcept

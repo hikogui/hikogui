@@ -115,7 +115,7 @@ bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_recons
     }
 }
 
-void grid_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void grid_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -131,7 +131,7 @@ void grid_widget::layout(utc_nanoseconds display_time_point, bool need_layout) n
         }
     }
 
-    super::layout(display_time_point, need_layout);
+    super::layout(new_size, display_time_point, need_layout);
 }
 
 } // namespace tt

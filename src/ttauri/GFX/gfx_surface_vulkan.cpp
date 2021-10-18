@@ -284,7 +284,7 @@ void gfx_surface_vulkan::teardown()
     state = nextState;
 }
 
-[[nodiscard]] void gfx_surface_vulkan::update(extent2 new_size) noexcept
+void gfx_surface_vulkan::update(extent2 new_size) noexcept
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 

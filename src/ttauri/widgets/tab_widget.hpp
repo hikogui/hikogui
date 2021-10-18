@@ -92,7 +92,7 @@ public:
 
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
+    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override;
     [[nodiscard]] widget const *find_next_widget(
         widget const *current_widget,
         keyboard_focus_group group,

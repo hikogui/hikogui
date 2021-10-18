@@ -18,8 +18,7 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
     return 0.0f;
 }
 
-[[nodiscard]] bool
-window_traffic_lights_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool window_traffic_lights_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -44,7 +43,7 @@ window_traffic_lights_widget::constrain(utc_nanoseconds display_time_point, bool
     }
 }
 
-[[nodiscard]] void window_traffic_lights_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void window_traffic_lights_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -107,12 +106,10 @@ window_traffic_lights_widget::constrain(utc_nanoseconds display_time_point, bool
         restoreWindowGlyphRectangle =
             align(maximizeRectangle, scale(restoreWindowGlyphBB, _glyph_size), alignment::middle_center);
     }
-    super::layout(display_time_point, need_layout);
+    super::layout(new_size, display_time_point, need_layout);
 }
 
-void window_traffic_lights_widget::drawMacOS(
-    draw_context const &drawContext,
-    utc_nanoseconds displayTimePoint) noexcept
+void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext, utc_nanoseconds displayTimePoint) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -150,9 +147,7 @@ void window_traffic_lights_widget::drawMacOS(
     }
 }
 
-void window_traffic_lights_widget::drawWindows(
-    draw_context const &drawContext,
-    utc_nanoseconds displayTimePoint) noexcept
+void window_traffic_lights_widget::drawWindows(draw_context const &drawContext, utc_nanoseconds displayTimePoint) noexcept
 {
     tt_axiom(is_gui_thread());
 

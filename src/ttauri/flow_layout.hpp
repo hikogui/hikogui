@@ -193,7 +193,7 @@ private:
         }
     }
 
-    [[nodiscard]] void resize_items(int nr_items, int grow_by, bool resize_beyond_maximum) noexcept
+    void resize_items(int nr_items, int grow_by, bool resize_beyond_maximum) noexcept
     {
         tt_axiom(grow_by != 0);
         tt_axiom(nr_items > 0);

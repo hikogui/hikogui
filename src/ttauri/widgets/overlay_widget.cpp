@@ -50,7 +50,7 @@ overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstr
     return has_updated_contraints;
 }
 
-[[nodiscard]] void overlay_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void overlay_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -60,7 +60,7 @@ overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstr
         _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
     }
 
-    super::layout(display_time_point, need_layout);
+    super::layout(new_size, display_time_point, need_layout);
 }
 
 void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

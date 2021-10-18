@@ -29,7 +29,7 @@ namespace tt {
     }
 }
 
-[[nodiscard]] void radio_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void radio_button_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -42,7 +42,7 @@ namespace tt {
         _pip_rectangle =
             align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
     }
-    super::layout(displayTimePoint, need_layout);
+    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void radio_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

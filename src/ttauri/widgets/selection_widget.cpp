@@ -89,7 +89,7 @@ selection_widget::selection_widget(gui_window &window, widget *parent, std::weak
     }
 }
 
-[[nodiscard]] void selection_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void selection_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -134,7 +134,7 @@ selection_widget::selection_widget(gui_window &window, widget *parent, std::weak
         _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
         _current_label_widget->set_layout_parameters_from_parent(_option_rectangle);
     }
-    super::layout(display_time_point, need_layout);
+    super::layout(new_size, display_time_point, need_layout);
 }
 
 void selection_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

@@ -44,7 +44,7 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-[[nodiscard]] void text_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void text_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -53,7 +53,7 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
     }
-    super::layout(displayTimePoint, need_layout);
+    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void text_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

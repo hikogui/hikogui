@@ -310,7 +310,7 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
     return need_reconstrain;
 }
 
-void widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -321,7 +321,7 @@ void widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexce
         if (child) {
             tt_axiom(child->parent == this);
             if (child->visible) {
-                child->layout(display_time_point, need_layout);
+                child->layout(new_size, display_time_point, need_layout);
             }
         }
     }

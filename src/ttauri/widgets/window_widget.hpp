@@ -53,7 +53,7 @@ public:
     /// @privatesection
     [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept;
+    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept;
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
     /// @endprivatesection
 private:

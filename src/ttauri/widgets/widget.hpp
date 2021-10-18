@@ -248,11 +248,11 @@ public:
     [[nodiscard]] virtual bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
 
     /** Update the internal layout of the widget.
-     * This function is called on each vertical sync, even if no drawing is to be done.
+     * This function is called when the size of this widget must change, or if any of the
+     * widget request a re-layout.
      *
      * This function may be used for expensive calculations, such as geometry calculations,
-     * which should only be done when the data or sizes change. Because this function is called
-     * on every vertical sync it should cache these calculations.
+     * which should only be done when the data or sizes change; it should cache these calculations.
      *
      * Subclasses should call `widget::set_layout_parameters()` to position and size each child
      * relative to this widget. At the end of the function the subclass should call `layout()`
@@ -261,10 +261,12 @@ public:
      * @pre `widget::set_layout_parameters()` should be called.
      * @post This function will change what is returned by `widget::size()` and the transformation
      *       matrices.
+     * @param new_size The new size for the widget to layout against.
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_layout Force the widget to layout
+     * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    [[nodiscard]] virtual void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] virtual void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 

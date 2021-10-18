@@ -33,7 +33,7 @@ system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reco
     }
 }
 
-[[nodiscard]] void system_menu_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void system_menu_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -53,7 +53,7 @@ system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reco
             rectangle().height() - theme().margin};
     }
 
-    super::layout(display_time_point, need_layout);
+    super::layout(new_size, display_time_point, need_layout);
 }
 
 hitbox system_menu_widget::hitbox_test(point2 position) const noexcept

@@ -76,7 +76,7 @@ public:
     }
 
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
+    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] color foreground_color() const noexcept override;

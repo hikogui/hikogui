@@ -42,7 +42,7 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
     }
 }
 
-[[nodiscard]] void checkbox_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void checkbox_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -62,7 +62,7 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
         _minus_glyph_rectangle =
             align(_button_rectangle, scale(minus_glyph_bb, theme().icon_size), alignment::middle_center);
     }
-    super::layout(displayTimePoint, need_layout);
+    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void checkbox_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

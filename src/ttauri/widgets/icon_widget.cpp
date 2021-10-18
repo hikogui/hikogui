@@ -107,7 +107,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-[[nodiscard]] void icon_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void icon_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -119,7 +119,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
             _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), *alignment);
         }
     }
-    super::layout(displayTimePoint, need_layout);
+    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

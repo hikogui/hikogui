@@ -7,8 +7,7 @@
 
 namespace tt {
 
-[[nodiscard]] bool
-toolbar_tab_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool toolbar_tab_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -26,17 +25,15 @@ toolbar_tab_button_widget::constrain(utc_nanoseconds display_time_point, bool ne
     }
 }
 
-[[nodiscard]] void
-toolbar_tab_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void toolbar_tab_button_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
     need_layout |= _relayout.exchange(false);
     if (need_layout) {
-        _label_rectangle =
-            aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
+        _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
     }
-    super::layout(displayTimePoint, need_layout);
+    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void toolbar_tab_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
@@ -98,8 +95,8 @@ void toolbar_tab_button_widget::draw_toolbar_tab_focus_line(draw_context context
         ttlet parent_rectangle = bounding_rectangle(_parent_to_local * parent->rectangle());
 
         // Create a line, on the bottom of the toolbar over the full width.
-        ttlet line_rectangle = aarectangle{
-            parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme().border_width};
+        ttlet line_rectangle =
+            aarectangle{parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme().border_width};
 
         context.set_clipping_rectangle(line_rectangle);
 
@@ -117,8 +114,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context context) no
 
     // Override the clipping rectangle to match the toolbar rectangle exactly
     // so that the bottom border of the tab button is not drawn.
-    context.set_clipping_rectangle(bounding_rectangle(_parent_to_local * parent->clipping_rectangle()
-));
+    context.set_clipping_rectangle(bounding_rectangle(_parent_to_local * parent->clipping_rectangle()));
 
     ttlet offset = theme().margin + theme().border_width;
     ttlet outline_rectangle =
@@ -134,4 +130,4 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context context) no
     context.draw_box_with_border_inside(
         button_z * outline_rectangle, button_color, (_focus && window.active) ? focus_color() : button_color, corner_shapes);
 }
-}
+} // namespace tt

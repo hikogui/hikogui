@@ -148,7 +148,7 @@ public:
         }
     }
 
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
@@ -163,7 +163,7 @@ public:
 
             tt_axiom(index == std::ssize(_children));
         }
-        super::layout(display_time_point, need_layout);
+        super::layout(new_size, display_time_point, need_layout);
     }
     /// @endprivatesection
 private:

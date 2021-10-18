@@ -41,7 +41,7 @@ toggle_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstra
     }
 }
 
-[[nodiscard]] void toggle_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void toggle_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -60,7 +60,7 @@ toggle_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstra
         ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
         _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
     }
-    super::layout(displayTimePoint, need_layout);
+    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void toggle_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

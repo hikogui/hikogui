@@ -54,7 +54,7 @@ text_field_widget::~text_field_widget()
     }
 }
 
-void text_field_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void text_field_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -101,7 +101,7 @@ void text_field_widget::layout(utc_nanoseconds display_time_point, bool need_lay
         _last_update_time_point = display_time_point;
     }
 
-    super::layout(display_time_point, need_layout);
+    super::layout(new_size, display_time_point, need_layout);
 }
 
 void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

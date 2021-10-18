@@ -174,7 +174,7 @@ public:
         return has_updated_contraints;
     }
 
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
@@ -234,7 +234,7 @@ public:
             }
         }
 
-        super::layout(display_time_point, need_layout);
+        super::layout(new_size, display_time_point, need_layout);
     }
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override

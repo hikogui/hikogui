@@ -96,7 +96,7 @@ public:
     }
 
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
+    void layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
     /// @endprivatesection
 private:
     float _icon_size;

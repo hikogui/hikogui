@@ -58,7 +58,7 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     }
 }
 
-void toolbar_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void toolbar_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -80,7 +80,7 @@ void toolbar_widget::layout(utc_nanoseconds display_time_point, bool need_layout
 
         tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
     }
-    super::layout(display_time_point, need_layout);
+    super::layout(new_size, display_time_point, need_layout);
 }
 
 void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

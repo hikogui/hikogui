@@ -80,7 +80,7 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     return has_updated_contraints;
 }
 
-[[nodiscard]] void tab_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void tab_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -94,7 +94,7 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
             }
         }
     }
-    super::layout(display_time_point, need_layout);
+    return super::layout(new_size, display_time_point, need_layout);
 }
 
 [[nodiscard]] widget const *tab_widget::find_next_widget(
