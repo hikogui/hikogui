@@ -357,7 +357,7 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
         narrow_cast<float>(rectangle.right - rectangle.left),
         narrow_cast<float>(rectangle.bottom - rectangle.top)};
 
-    request_layout = true;
+    request_relayout();
 }
 
 void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
@@ -550,7 +550,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             break;
         default: tt_log_error("Unknown WM_ACTIVE value.");
         }
-        request_layout = true;
+        request_relayout();
     } break;
 
     case WM_GETMINMAXINFO: {
@@ -679,7 +679,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
         gui.set_theme_mode(read_os_theme_mode());
-        request_constrain = true;
+        request_reconstrain();
     } break;
 
     case WM_DPICHANGED: {
@@ -687,7 +687,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
         tt_log_info("DPI has changed to {}", dpi);
-        request_layout = true;
+        request_relayout();
     } break;
 
     default: break;

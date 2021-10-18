@@ -79,7 +79,7 @@ abstract_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layou
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         auto state_ = state();
         _on_label_widget->visible = state_ == button_state::on;

@@ -15,7 +15,7 @@ namespace tt {
 icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _icon_callback = icon.subscribe([this]() {
-        _request_constrain = true;
+        request_reconstrain();
     });
 }
 
@@ -55,7 +55,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
                 _pixmap_hash = 0;
                 _pixmap_backing = {};
                 _icon_bounding_box = {};
-                _request_constrain = true;
+                request_reconstrain();
 
             } else if (pixmap.hash() != _pixmap_hash) {
                 _pixmap_hash = pixmap.hash();
@@ -111,7 +111,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};

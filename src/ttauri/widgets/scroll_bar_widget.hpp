@@ -35,13 +35,13 @@ public:
         offset(std::forward<Offset>(offset))
     {
         _content_callback = this->content.subscribe([this](auto...) {
-            _request_layout = true;
+            request_relayout();
         });
         _aperture_callback = this->aperture.subscribe([this](auto...) {
-            _request_layout = true;
+            request_relayout();
         });
         _offset_callback = this->offset.subscribe([this](auto...) {
-            _request_layout = true;
+            request_relayout();
         });
     }
 
@@ -70,7 +70,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_layout.exchange(false);
+        need_layout |= _relayout.exchange(false);
         if (need_layout) {
             tt_axiom(*content != 0.0f);
 

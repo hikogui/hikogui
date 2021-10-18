@@ -293,7 +293,22 @@ public:
      */
     virtual void draw(draw_context context, utc_nanoseconds display_time_point) noexcept;
 
+    /** Request the widget to be redrawn on the next frame.
+     */
     virtual void request_redraw() const noexcept;
+
+    /** Request the widget to be layed-out again.
+     *
+     * This should be done if the change of data needs a recalculation of the layout.
+     */
+    void request_relayout() noexcept;
+
+    /** Request the widget to be constrained again.
+     *
+     * This should be done if the change of data would cause the minimum/maximum/preferred size
+     * of this widget to change.
+     */
+    void request_reconstrain() noexcept;
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -416,13 +431,11 @@ protected:
      */
     aarectangle _visible_rectangle;
 
+    std::atomic<bool> _relayout = true;
+
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
-    std::atomic<bool> _request_constrain = true;
-
-    /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
-     */
-    std::atomic<bool> _request_layout = true;
+    std::atomic<bool> _reconstrain = true;
 
     extent2 _minimum_size;
     extent2 _preferred_size;

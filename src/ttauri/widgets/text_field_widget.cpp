@@ -17,7 +17,7 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
 {
     if (auto d = _delegate.lock()) {
         _delegate_callback = d->subscribe(*this, [this] {
-            _request_layout = true;
+            request_relayout();
         });
         d->init(*this);
     }
@@ -62,7 +62,7 @@ void text_field_widget::layout(utc_nanoseconds display_time_point, bool need_lay
         request_redraw();
     }
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, _size.height()}};
 
@@ -131,7 +131,7 @@ void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_
 bool text_field_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
-    _request_layout = true;
+    request_relayout();
 
     if (enabled) {
         switch (command) {
@@ -270,7 +270,7 @@ bool text_field_widget::handle_event(keyboard_event const &event) noexcept
         }
     }
 
-    _request_layout = true;
+    request_relayout();
     return handled;
 }
 

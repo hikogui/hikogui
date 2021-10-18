@@ -98,7 +98,7 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
 
     auto &ref = *widget;
     _cells.emplace_back(column_nr, row_nr, std::move(widget));
-    _request_constrain = true;
+    request_reconstrain();
     return ref;
 }
 
@@ -119,7 +119,7 @@ void grid_widget::layout(utc_nanoseconds display_time_point, bool need_layout) n
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         _columns.set_size(width());
         _rows.set_size(height());

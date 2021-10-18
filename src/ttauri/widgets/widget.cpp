@@ -26,10 +26,10 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     });
 
     _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        _request_layout = true;
+        request_relayout();
     });
     _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        _request_constrain = true;
+        request_reconstrain();
     });
 
     enabled.subscribe(_redraw_callback);
@@ -297,7 +297,7 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 {
     tt_axiom(is_gui_thread());
 
-    need_reconstrain |= _request_constrain.exchange(false);
+    need_reconstrain |= _reconstrain.exchange(false);
 
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
@@ -314,7 +314,7 @@ void widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexce
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
 
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
@@ -352,6 +352,18 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 void widget::request_redraw() const noexcept
 {
     window.request_redraw(bounding_rectangle(_local_to_window * _clipping_rectangle));
+}
+
+void widget::request_relayout() noexcept
+{
+    _relayout.store(true, std::memory_order::relaxed);
+    window.request_relayout();
+}
+
+void widget::request_reconstrain() noexcept
+{
+    _reconstrain.store(true, std::memory_order::relaxed);
+    window.request_reconstrain();
 }
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept

@@ -31,7 +31,7 @@ toolbar_tab_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_la
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         _label_rectangle =
             aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};

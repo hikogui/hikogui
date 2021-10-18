@@ -48,7 +48,7 @@ window_traffic_lights_widget::constrain(utc_nanoseconds display_time_point, bool
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         auto extent = rectangle().size();
         if (extent.height() > theme().toolbar_height * 1.2f) {

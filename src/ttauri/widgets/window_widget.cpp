@@ -77,7 +77,7 @@ void window_widget::layout(utc_nanoseconds display_time_point, bool need_layout)
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         ttlet toolbar_height = _toolbar->preferred_size().height();
         ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};

@@ -41,7 +41,7 @@ namespace tt {
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         ttlet inside_rectangle = shrink(rectangle(), theme().margin);
 

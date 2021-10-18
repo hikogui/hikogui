@@ -75,7 +75,7 @@ public:
         }
 
         _layout_callback = std::make_shared<std::function<void()>>([this]() {
-            _request_layout = true;
+            request_relayout();
         });
 
         _scroll_content_width.subscribe(_layout_callback);
@@ -179,7 +179,7 @@ public:
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
-        need_layout |= _request_layout.exchange(false);
+        need_layout |= _relayout.exchange(false);
         if (need_layout) {
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->preferred_size().width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->preferred_size().height();
@@ -261,7 +261,7 @@ public:
             handled = true;
             _scroll_offset_x += event.wheelDelta.x();
             _scroll_offset_y += event.wheelDelta.y();
-            _request_layout = true;
+            request_relayout();
             return true;
         }
         return handled;

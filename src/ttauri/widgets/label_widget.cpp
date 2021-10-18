@@ -84,7 +84,7 @@ label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrai
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         auto text_rect = aarectangle{};
         if (*alignment == horizontal_alignment::left) {

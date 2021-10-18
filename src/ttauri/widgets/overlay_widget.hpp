@@ -65,7 +65,7 @@ public:
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
         _content = std::move(tmp);
-        _request_constrain = true;
+        request_reconstrain();
         return ref;
     }
 

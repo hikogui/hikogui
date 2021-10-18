@@ -9,7 +9,7 @@ namespace tt {
 text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _text_callback = text.subscribe([this] {
-        _request_constrain = true;
+        request_reconstrain();
     });
 }
 
@@ -48,7 +48,7 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});

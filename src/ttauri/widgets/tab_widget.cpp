@@ -28,7 +28,7 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
 
     if (auto d = _delegate.lock()) {
         _delegate_callback = d->subscribe(*this, [this](auto...) {
-            this->_request_constrain = true;
+            this->request_reconstrain();
         });
     }
 
@@ -84,7 +84,7 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         auto buffer = pmr::scoped_buffer<256>{};
         for (auto *child : children(buffer.allocator())) {

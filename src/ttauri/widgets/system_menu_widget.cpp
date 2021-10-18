@@ -37,7 +37,7 @@ system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reco
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         ttlet icon_height =
             rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;

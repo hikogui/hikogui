@@ -87,7 +87,7 @@ public:
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
         _children.push_back(std::move(tmp));
-        _request_constrain = true;
+        request_reconstrain();
         return ref;
     }
 
@@ -97,7 +97,7 @@ public:
     {
         tt_axiom(is_gui_thread());
         _children.clear();
-        _request_constrain = true;
+        request_reconstrain();
     }
 
     /// @privatesection
@@ -152,7 +152,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_layout.exchange(false);
+        need_layout |= _relayout.exchange(false);
         if (need_layout) {
             _layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
 

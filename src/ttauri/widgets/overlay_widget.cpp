@@ -54,7 +54,7 @@ overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstr
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         tt_axiom(_content);
         _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);

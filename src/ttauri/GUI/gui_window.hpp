@@ -64,17 +64,9 @@ public:
      */
     mouse_cursor currentmouse_cursor = mouse_cursor::None;
 
-    /** When set to true the widget will calculate their constraints.
-     */
-    std::atomic<bool> request_constrain = true;
-
     /** When set to true the window will resize to the preferred size of the contained widget.
      */
     std::atomic<bool> request_resize = true;
-
-    /** When set to true the widgets will be laid out.
-     */
-    std::atomic<bool> request_layout = true;
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
@@ -140,7 +132,7 @@ public:
      */
     void request_redraw(aarectangle rectangle) noexcept
     {
-        _request_redraw_rectangle |= rectangle;
+        _redraw_rectangle |= rectangle;
     }
 
     /** Request a rectangle on the window to be redrawn
@@ -149,6 +141,16 @@ public:
     {
         tt_axiom(is_gui_thread());
         request_redraw(aarectangle{screen_rectangle.size()});
+    }
+
+    void request_relayout() noexcept
+    {
+        _relayout.store(true, std::memory_order::relaxed);
+    }
+
+    void request_reconstrain() noexcept
+    {
+        _reconstrain.store(true, std::memory_order::relaxed);
     }
 
     /** By how much the font needs to be scaled compared to current windowScale.
@@ -273,7 +275,11 @@ public:
 protected:
     std::weak_ptr<delegate_type> _delegate;
 
-    std::atomic<aarectangle> _request_redraw_rectangle = aarectangle{};
+    std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
+
+    std::atomic<bool> _relayout = true;
+
+    std::atomic<bool> _reconstrain = true;
 
     /** The time of the last forced redraw.
      * A forced redraw may happen when needing to draw outside

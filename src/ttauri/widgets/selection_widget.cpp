@@ -32,14 +32,14 @@ selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_u
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
     _unknown_label_callback = this->unknown_label.subscribe([this] {
-        _request_constrain = true;
+        request_reconstrain();
     });
 
     if (auto d = _delegate.lock()) {
         _delegate_callback = d->subscribe(*this, [this] {
             this->window.gui.run([this] {
                 repopulate_options();
-                _request_constrain = true;
+                request_reconstrain();
             });
         });
 
@@ -93,7 +93,7 @@ selection_widget::selection_widget(gui_window &window, widget *parent, std::weak
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
+    need_layout |= _relayout.exchange(false);
     if (need_layout) {
         // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
         // from the point of view of the selection widget.
@@ -169,7 +169,7 @@ bool selection_widget::handle_event(mouse_event const &event) noexcept
 bool selection_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
-    _request_layout = true;
+    request_relayout();
 
     if (enabled and _has_options) {
         switch (command) {
