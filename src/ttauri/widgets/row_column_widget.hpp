@@ -47,7 +47,7 @@ public:
         if (auto delegate = _delegate.lock()) {
             delegate->deinit(*this);
         }
-}
+    }
 
     /** Constructs an empty row/column widget.
      *
@@ -158,12 +158,12 @@ public:
 
             ssize_t index = 0;
             for (ttlet &child : _children) {
-                update_layout_for_child(*child, index++);
+                update_layout_for_child(*child, index++, display_time_point, need_layout);
             }
 
             tt_axiom(index == std::ssize(_children));
+            request_redraw();
         }
-        super::layout(new_size, display_time_point, need_layout);
     }
     /// @endprivatesection
 private:
@@ -202,7 +202,8 @@ private:
         }
     }
 
-    void update_layout_for_child(widget &child, ssize_t index) const noexcept
+    void
+    update_layout_for_child(widget &child, ssize_t index, utc_nanoseconds display_time_point, bool need_layout) const noexcept
     {
         tt_axiom(is_gui_thread());
 
@@ -221,6 +222,9 @@ private:
                 child_length};
 
         child.set_layout_parameters_from_parent(child_rectangle);
+        if (child.visible) {
+            child.layout(child_rectangle.size(), display_time_point, need_layout);
+        }
     }
 };
 

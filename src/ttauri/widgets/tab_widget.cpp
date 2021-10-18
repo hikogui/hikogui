@@ -91,10 +91,11 @@ void tab_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bo
             tt_axiom(child);
             if (child->visible) {
                 child->set_layout_parameters_from_parent(rectangle());
+                child->layout(rectangle().size(), display_time_point, need_layout);
             }
         }
+        request_redraw();
     }
-    return super::layout(new_size, display_time_point, need_layout);
 }
 
 [[nodiscard]] widget const *tab_widget::find_next_widget(

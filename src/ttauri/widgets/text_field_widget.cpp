@@ -99,9 +99,8 @@ void text_field_widget::layout(extent2 new_size, utc_nanoseconds display_time_po
 
         // Record the last time the text is modified, so that the caret remains lit.
         _last_update_time_point = display_time_point;
+        request_redraw();
     }
-
-    super::layout(new_size, display_time_point, need_layout);
 }
 
 void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

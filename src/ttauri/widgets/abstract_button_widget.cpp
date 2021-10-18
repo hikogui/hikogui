@@ -49,8 +49,7 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
     return _notifier.unsubscribe(callback_ptr);
 }
 
-[[nodiscard]] bool
-abstract_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool abstract_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -74,7 +73,7 @@ abstract_button_widget::constrain(utc_nanoseconds display_time_point, bool need_
     }
 }
 
-void abstract_button_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void abstract_button_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -86,10 +85,22 @@ void abstract_button_widget::layout(extent2 new_size, utc_nanoseconds displayTim
         _other_label_widget->visible = state_ == button_state::other;
 
         _on_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+        if (_on_label_widget->visible) {
+            _on_label_widget->layout(_label_rectangle.size(), display_time_point, need_layout);
+        }
+
         _off_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+        if (_off_label_widget->visible) {
+            _off_label_widget->layout(_label_rectangle.size(), display_time_point, need_layout);
+        }
+
         _other_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+        if (_other_label_widget->visible) {
+            _other_label_widget->layout(_label_rectangle.size(), display_time_point, need_layout);
+        }
+
+        request_redraw();
     }
-    widget::layout(new_size, displayTimePoint, need_layout);
 }
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept
@@ -159,4 +170,4 @@ void activate() noexcept;
     return handled;
 }
 
-}
+} // namespace tt

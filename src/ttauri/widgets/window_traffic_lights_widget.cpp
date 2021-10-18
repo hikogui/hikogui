@@ -105,8 +105,8 @@ void window_traffic_lights_widget::layout(extent2 new_size, utc_nanoseconds disp
             align(maximizeRectangle, scale(maximizeWindowGlyphBB, _glyph_size), alignment::middle_center);
         restoreWindowGlyphRectangle =
             align(maximizeRectangle, scale(restoreWindowGlyphBB, _glyph_size), alignment::middle_center);
+        request_redraw();
     }
-    super::layout(new_size, display_time_point, need_layout);
 }
 
 void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext, utc_nanoseconds displayTimePoint) noexcept

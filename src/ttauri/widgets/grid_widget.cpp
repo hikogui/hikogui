@@ -128,10 +128,12 @@ void grid_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, b
             auto &&child = cell.widget;
             ttlet child_rectangle = cell.rectangle(_columns, _rows, height());
             child->set_layout_parameters_from_parent(child_rectangle);
+            if (child->visible) {
+                child->layout(child_rectangle.size(), display_time_point, need_layout);
+            }
         }
+        request_redraw();
     }
-
-    super::layout(new_size, display_time_point, need_layout);
 }
 
 } // namespace tt

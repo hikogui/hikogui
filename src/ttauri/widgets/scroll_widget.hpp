@@ -195,9 +195,6 @@ public:
             ttlet horizontal_scroll_bar_rectangle =
                 aarectangle{0.0f, 0.0f, width() - width_adjustment, horizontal_scroll_bar_height};
 
-            _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
-            _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
-
             _aperture_rectangle = aarectangle{0.0f, height_adjustment, width() - width_adjustment, height() - height_adjustment};
 
             // We use the preferred size of the content for determining what to scroll.
@@ -224,17 +221,27 @@ public:
             ttlet content_rectangle = aarectangle{
                 -_scroll_offset_x, -_scroll_offset_y - height_adjustment, content_size.width(), content_size.height()};
 
+            _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
+            if (_vertical_scroll_bar->visible) {
+                _vertical_scroll_bar->layout(vertical_scroll_bar_rectangle.size(), display_time_point, need_layout);
+            }
+            _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
+            if (_horizontal_scroll_bar->visible) {
+                _horizontal_scroll_bar->layout(horizontal_scroll_bar_rectangle.size(), display_time_point, need_layout);
+            }
+
             // Make a clipping rectangle that fits the aperture_rectangle exactly.
-            _content->set_layout_parameters_from_parent(
-                content_rectangle, _aperture_rectangle, _content->draw_layer - draw_layer);
+            if (_content->visible) {
+                _content->set_layout_parameters_from_parent(
+                    content_rectangle, _aperture_rectangle, _content->draw_layer - draw_layer);
+                _content->layout(content_rectangle.size(), display_time_point, need_layout);
+            }
 
             if constexpr (controls_window) {
                 window.set_resize_border_priority(
                     true, not _vertical_scroll_bar->visible, not _horizontal_scroll_bar->visible, true);
             }
         }
-
-        super::layout(new_size, display_time_point, need_layout);
     }
 
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override

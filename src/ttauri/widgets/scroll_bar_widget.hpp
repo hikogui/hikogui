@@ -84,9 +84,8 @@ public:
                 slider_rectangle =
                     aarectangle{rectangle().left() + slider_offset, rectangle().bottom(), slider_length(), rectangle().height()};
             }
+            request_redraw();
         }
-
-        super::layout(new_size, display_time_point, need_layout);
     }
 
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override

@@ -82,12 +82,13 @@ void window_widget::layout(extent2 new_size, utc_nanoseconds display_time_point,
         ttlet toolbar_height = _toolbar->preferred_size().height();
         ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
         _toolbar->set_layout_parameters_from_parent(toolbar_rectangle);
+        _toolbar->layout(toolbar_rectangle.size(), display_time_point, need_layout);
 
         ttlet content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
         _content->set_layout_parameters_from_parent(content_rectangle);
+        _content->layout(content_rectangle.size(), display_time_point, need_layout);
+        request_redraw();
     }
-
-    return super::layout(new_size, display_time_point, need_layout);
 }
 
 hitbox window_widget::hitbox_test(point2 position) const noexcept

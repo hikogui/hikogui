@@ -44,6 +44,7 @@ void system_menu_widget::layout(extent2 new_size, utc_nanoseconds display_time_p
         ttlet icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
         _icon_widget->set_layout_parameters_from_parent(icon_rectangle);
+        _icon_widget->layout(icon_rectangle.size(), display_time_point, need_layout);
 
         // Leave space for window resize handles on the left and top.
         system_menu_rectangle = aarectangle{
@@ -51,9 +52,8 @@ void system_menu_widget::layout(extent2 new_size, utc_nanoseconds display_time_p
             rectangle().bottom(),
             rectangle().width() - theme().margin,
             rectangle().height() - theme().margin};
+        request_redraw();
     }
-
-    super::layout(new_size, display_time_point, need_layout);
 }
 
 hitbox system_menu_widget::hitbox_test(point2 position) const noexcept

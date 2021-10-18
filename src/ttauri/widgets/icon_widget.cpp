@@ -118,8 +118,8 @@ void icon_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, boo
         } else {
             _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), *alignment);
         }
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

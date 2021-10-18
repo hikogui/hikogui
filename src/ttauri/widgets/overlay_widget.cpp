@@ -58,9 +58,11 @@ void overlay_widget::layout(extent2 new_size, utc_nanoseconds display_time_point
     if (need_layout) {
         tt_axiom(_content);
         _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
+        if (_content->visible) {
+            _content->layout(rectangle().size(), display_time_point, need_layout);
+        }
+        request_redraw();
     }
-
-    super::layout(new_size, display_time_point, need_layout);
 }
 
 void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

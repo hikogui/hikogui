@@ -52,8 +52,8 @@ void text_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, boo
     if (need_layout) {
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void text_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

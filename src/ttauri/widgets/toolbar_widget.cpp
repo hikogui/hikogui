@@ -68,19 +68,19 @@ void toolbar_widget::layout(extent2 new_size, utc_nanoseconds display_time_point
 
         ssize_t index = 0;
         for (ttlet &child : _left_children) {
-            update_layout_for_child(*child, index++);
+            update_layout_for_child(*child, index++, display_time_point, need_layout);
         }
 
         // Skip over the cell between left and right children.
         index++;
 
         for (ttlet &child : std::views::reverse(_right_children)) {
-            update_layout_for_child(*child, index++);
+            update_layout_for_child(*child, index++, display_time_point, need_layout);
         }
 
         tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
+        request_redraw();
     }
-    super::layout(new_size, display_time_point, need_layout);
 }
 
 void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
@@ -112,10 +112,7 @@ hitbox toolbar_widget::hitbox_test(point2 position) const noexcept
     return r;
 }
 
-void toolbar_widget::update_constraints_for_child(
-    widget const &child,
-    ssize_t index,
-    float &shared_height) noexcept
+void toolbar_widget::update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -125,7 +122,8 @@ void toolbar_widget::update_constraints_for_child(
     shared_height = std::max(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
 }
 
-void toolbar_widget::update_layout_for_child(widget &child, ssize_t index) const noexcept
+void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, utc_nanoseconds display_time_point, bool need_layout)
+    const noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -137,7 +135,10 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index) const
         child_width,
         rectangle().height() - child.margin() * 2.0f};
 
-    child.set_layout_parameters_from_parent(child_rectangle);
+    if (child.visible) {
+        child.set_layout_parameters_from_parent(child_rectangle);
+        child.layout(child_rectangle.size(), display_time_point, need_layout);
+    }
 }
 
 widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept

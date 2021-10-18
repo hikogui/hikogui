@@ -80,7 +80,7 @@ label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrai
     }
 }
 
-void label_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void label_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -123,9 +123,15 @@ void label_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bo
         ttlet icon_rect = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
 
         _icon_widget->set_layout_parameters_from_parent(icon_rect);
+        if (_icon_widget->visible) {
+            _icon_widget->layout(icon_rect.size(), display_time_point, need_layout);
+        }
         _text_widget->set_layout_parameters_from_parent(text_rect);
+        if (_text_widget->visible) {
+            _text_widget->layout(text_rect.size(), display_time_point, need_layout);
+        }
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 } // namespace tt

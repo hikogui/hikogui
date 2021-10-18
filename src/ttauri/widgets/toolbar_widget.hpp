@@ -84,7 +84,8 @@ private:
 
     void update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept;
 
-    void update_layout_for_child(widget &child, ssize_t index) const noexcept;
+    void
+    update_layout_for_child(widget &child, ssize_t index, utc_nanoseconds display_time_point, bool need_layout) const noexcept;
 
     /** Add a widget directly to this widget.
      */
